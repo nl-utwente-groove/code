@@ -276,6 +276,11 @@ public final class Multiplicity {
         return this.add(mult, Parameters.getEdgeMultBound());
     }
 
+    /** Returns the unbounded sum of two multiplicities. */
+    public Multiplicity uadd(Multiplicity mult) {
+        return add(mult, Integer.MAX_VALUE);
+    }
+
     /**
      * Subtracts mult from this.
      * @param mult - the value to be subtracted; required that mult <= this.

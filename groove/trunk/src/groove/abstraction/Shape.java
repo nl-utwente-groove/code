@@ -1198,41 +1198,32 @@ public class Shape extends DefaultGraph implements DeltaTarget {
             for (EquivClass<ShapeNode> ecO : this.equivRel) {
                 // For all equivalence classes. (As incoming)
                 for (EquivClass<ShapeNode> ecI : this.equivRel) {
-                    // Accumulators for test of item 2.
-                    Multiplicity outMultSum = Multiplicity.getMultOf(0);
-                    Multiplicity inMultSum = Multiplicity.getMultOf(0);
 
-                    // For all nodes in the outgoing equivalence class.
+                    // Compute the unbounded sum of the nodes on the outgoing
+                    // equivalence class.
+                    Multiplicity outMultSum = Multiplicity.getMultOf(0);
                     for (ShapeNode nO : ecO) {
                         Multiplicity nOMult = this.getNodeMult(nO);
                         EdgeSignature nOEs =
                             this.getEdgeSignature(nO, label, ecI);
                         Multiplicity eOMult = this.getEdgeSigOutMult(nOEs);
                         Multiplicity outMult = nOMult.multiply(eOMult);
-
-                        // For all nodes in the incoming equivalence class.
-                        for (ShapeNode nI : ecI) {
-                            Multiplicity nIMult = this.getNodeMult(nI);
-                            EdgeSignature nIEs =
-                                this.getEdgeSignature(nI, label, ecO);
-                            Multiplicity eIMult = this.getEdgeSigInMult(nIEs);
-                            Multiplicity inMult = nIMult.multiply(eIMult);
-
-                            // Test item 1.
-                            if (!inMult.isAtMost(outMult)) {
-                                // Violation of condition.
-                                result = false;
-                                break outerLoop;
-                            }
-
-                            // Accumulate the values.
-                            outMultSum = outMultSum.addEdgeMult(outMult);
-                            inMultSum = inMultSum.addEdgeMult(inMult);
-                        }
+                        outMultSum = outMultSum.uadd(outMult);
                     }
 
-                    // Check item 2.
-                    if (!outMultSum.isAtMost(inMultSum)) {
+                    // Compute the unbounded sum of the nodes on the incoming
+                    // equivalence class.
+                    Multiplicity inMultSum = Multiplicity.getMultOf(0);
+                    for (ShapeNode nI : ecI) {
+                        Multiplicity nIMult = this.getNodeMult(nI);
+                        EdgeSignature nIEs =
+                            this.getEdgeSignature(nI, label, ecO);
+                        Multiplicity eIMult = this.getEdgeSigInMult(nIEs);
+                        Multiplicity inMult = nIMult.multiply(eIMult);
+                        inMultSum = inMultSum.uadd(inMult);
+                    }
+
+                    if (!outMultSum.overlaps(inMultSum)) {
                         // Violation of condition.
                         result = false;
                         break outerLoop;
