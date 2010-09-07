@@ -93,7 +93,6 @@ public class Materialisation {
     private Materialisation(Shape shape, RuleMatch preMatch) {
         this.shape = shape;
         this.preMatch = preMatch;
-        // EDUARDO: This copy of the pre-match doesn't make sense anymore...
         this.match = preMatch.getElementMap().clone();
         this.tasks = new PriorityQueue<MatOp>();
         this.planTasks();
@@ -659,7 +658,7 @@ public class Materialisation {
          * materialised nodes.
          * This method used to be non-deterministic. Now we only take an
          * arbitrary match because the transformation always leads to an
-         * isomorphic shape. This still has to be proven.
+         * isomorphic shape.
          */
         @Override
         public void perform() {
@@ -687,6 +686,85 @@ public class Materialisation {
             // operation.
             this.result.add(this.mat);
         }
+    }
+
+    // ---------------------
+    // Class SingulariseNode
+    // ---------------------
+
+    private class SingulariseNode extends MatOp {
+
+        private ShapeNode nodeS;
+
+        public SingulariseNode(Materialisation mat, ShapeNode nodeS) {
+            super(mat);
+            this.nodeS = nodeS;
+        }
+
+        private SingulariseNode(SingulariseNode singNode) {
+            super();
+            this.setMat(singNode.mat);
+            this.nodeS = singNode.nodeS;
+        }
+
+        @Override
+        public MatOp clone() {
+            return new SingulariseNode(this);
+        }
+
+        @Override
+        public String toString() {
+            return "SingulariseNode: " + this.nodeS;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            boolean result = false;
+            if (o instanceof SingulariseNode) {
+                SingulariseNode other = (SingulariseNode) o;
+                result = this.nodeS.equals(other.nodeS);
+            }
+            return result;
+        }
+
+        @Override
+        public int getPriority() {
+            return 2;
+        }
+
+        @Override
+        public void perform() {
+            if (this.mat.shape.getEquivClassOf(this.nodeS).size() == 1) {
+                // Nothing to do, the node is already in a singleton
+                // equivalence class.
+                this.result.add(this.mat);
+            } else {
+                EquationSystem eqSys =
+                    new EquationSystem(this.mat.shape, this.nodeS);
+                eqSys.solve();
+                Set<Shape> validShapes = eqSys.getResultShapes();
+
+                // Create the new materialisation objects.
+                for (Shape newShape : validShapes) {
+                    Materialisation newMat;
+                    // Check if we need to clone the materialisation object.
+                    if (validShapes.size() == 1) {
+                        // No, we don't need to clone.
+                        newMat = this.mat;
+                    } else {
+                        // Yes, we do need to clone.
+                        newMat = this.mat.clone();
+                    }
+                    // Set the new shape to the materialisation object.
+                    newMat.shape = newShape;
+                    // Add this new materialisation to the result set of this
+                    // operation.
+                    this.result.add(newMat);
+                }
+
+            }
+        }
+
     }
 
     // ---------------------
@@ -735,7 +813,7 @@ public class Materialisation {
 
         @Override
         public int getPriority() {
-            return 2;
+            return 8;
         }
 
         @Override
@@ -786,7 +864,7 @@ public class Materialisation {
 
         @Override
         public int getPriority() {
-            return 3;
+            return 9;
         }
 
         /** 
@@ -809,56 +887,9 @@ public class Materialisation {
 
     }
 
-    // ---------------------
-    // Class SingulariseNode
-    // ---------------------
-
-    private class SingulariseNode extends MatOp {
-
-        private ShapeNode nodeS;
-
-        public SingulariseNode(Materialisation mat, ShapeNode nodeS) {
-            super(mat);
-            this.nodeS = nodeS;
-        }
-
-        private SingulariseNode(SingulariseNode singNode) {
-            super();
-            this.setMat(singNode.mat);
-            this.nodeS = singNode.nodeS;
-        }
-
-        @Override
-        public MatOp clone() {
-            return new SingulariseNode(this);
-        }
-
-        @Override
-        public String toString() {
-            return "SingulariseNode: " + this.nodeS;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            boolean result = false;
-            if (o instanceof SingulariseNode) {
-                SingulariseNode other = (SingulariseNode) o;
-                result = this.nodeS.equals(other.nodeS);
-            }
-            return result;
-        }
-
-        @Override
-        public int getPriority() {
-            return 4;
-        }
-
-        @Override
-        public void perform() {
-            this.result.add(this.mat);
-        }
-
-    }
+    // ------------------------------------------------------------------------
+    // Test methods.
+    // ------------------------------------------------------------------------
 
     /** Test method. */
     private static void test0() {
