@@ -92,18 +92,21 @@ public class JaxbGxlIO implements GxlIO {
      */
     public Pair<Graph,Map<String,Node>> loadGraphWithMap(InputStream in)
         throws IOException {
-        GraphType gxlGraph = unmarshal(in);
-        in.close();
-        Pair<Graph,Map<String,Node>> result = gxlToGraph(gxlGraph);
-        Graph graph = result.first();
-        if (!Version.isKnownGxlVersion(GraphInfo.getVersion(graph))) {
-            GraphInfo.addErrors(
-                graph,
-                Arrays.asList(new FormatError(
-                    "GXL file format version '%s' is higher than supported version '%s'",
-                    GraphInfo.getVersion(graph), Version.GXL_VERSION)));
+        try {
+            GraphType gxlGraph = unmarshal(in);
+            Pair<Graph,Map<String,Node>> result = gxlToGraph(gxlGraph);
+            Graph graph = result.first();
+            if (!Version.isKnownGxlVersion(GraphInfo.getVersion(graph))) {
+                GraphInfo.addErrors(
+                    graph,
+                    Arrays.asList(new FormatError(
+                        "GXL file format version '%s' is higher than supported version '%s'",
+                        GraphInfo.getVersion(graph), Version.GXL_VERSION)));
+            }
+            return result;
+        } finally {
+            in.close();
         }
-        return result;
     }
 
     /**
