@@ -262,7 +262,8 @@ public class AspectEdge extends AbstractEdge<AspectNode,Label,AspectNode>
     public int isNodeType() {
         int result = 0;
         try {
-            result = getModelLabel().isNodeType() ? 1 : 0;
+            Label modelLabel = getModelLabel();
+            result = modelLabel != null && modelLabel.isNodeType() ? 1 : 0;
         } catch (FormatException e) {
             // do nothing
         }
@@ -273,7 +274,8 @@ public class AspectEdge extends AbstractEdge<AspectNode,Label,AspectNode>
     public int isFlag() {
         int result = 0;
         try {
-            result = getModelLabel().isFlag() ? 1 : 0;
+            Label modelLabel = getModelLabel();
+            result = modelLabel != null && modelLabel.isFlag() ? 1 : 0;
         } catch (FormatException e) {
             // do nothing
         }

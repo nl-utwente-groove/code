@@ -276,6 +276,8 @@ public final class DefaultLabel extends AbstractLabel {
             result = Converter.green.on("+ " + result);
         } else if (RuleAspect.EMBARGO.equals(edgeRole)) {
             result = Converter.red.on("! " + result);
+        } else if (RuleAspect.REMARK.equals(edgeRole)) {
+            result = Converter.remark.on("// " + result);
         }
         return result;
     }
@@ -466,7 +468,7 @@ public final class DefaultLabel extends AbstractLabel {
     /** Prefix indicating that a label is a flag. */
     static public final String NODE_TYPE_PREFIX = "type";
     /** Array of descriptions for the various label kinds. */
-    static private final String[] kindDescriptors =
-        new String[] {"Type", "Flag", "Binary"};
+    static private final String[] kindDescriptors = new String[] {"Type",
+        "Flag", "Binary"};
 
 }
