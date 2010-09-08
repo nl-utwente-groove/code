@@ -126,7 +126,7 @@ public class StoredGrammarView implements GrammarView, Observer {
             result = stateGraph.toGraphView(getProperties());
             TypeGraph type = null;
             try {
-                type = getTypeViews().toModel();
+                type = getTypeViewList().toModel();
             } catch (FormatException e) {
                 // don't set the type graph
             }
@@ -142,7 +142,7 @@ public class StoredGrammarView implements GrammarView, Observer {
             result = ruleGraph.toRuleView(getProperties());
             TypeGraph type = null;
             try {
-                type = getTypeViews().toModel();
+                type = getTypeViewList().toModel();
             } catch (FormatException e) {
                 // don't set the type graph
             }
@@ -158,31 +158,21 @@ public class StoredGrammarView implements GrammarView, Observer {
 
     /**
      * Lazily creates a list of selected type views.
-     * @param checkedTypes the list of checked types to construct the type graph.
      * @return a list of type views that yield a composite type graph.
      */
-    public TypeViewList getTypeViews(List<String> checkedTypes) {
-        if (this.composedTypeView == null
-            || !this.composedTypeView.typeViewMap.keySet().equals(checkedTypes)) {
-            this.composedTypeView = new TypeViewList(checkedTypes);
+    public TypeViewList getTypeViewList() {
+        if (this.composedTypeView == null) {
+            this.composedTypeView = new TypeViewList();
         }
         return this.composedTypeView;
     }
 
     /**
-     * Lazily creates a list of selected type views.
-     * @return a list of type views that yield a composite type graph.
-     */
-    public TypeViewList getTypeViews() {
-        return getTypeViews(getSetTypeNames());
-    }
-
-    /**
-     * Returns a list of the type graph to be used. This is taken from the
+     * Returns a list of the active type graph names. This is taken from the
      * system properties. The empty list means that no type graph is set.
      * @see SystemProperties#getTypeNames()
      */
-    public List<String> getSetTypeNames() {
+    public List<String> getActiveTypeNames() {
         return getProperties().getTypeNames();
     }
 
@@ -331,7 +321,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         GraphGrammar result = new GraphGrammar(getName());
         List<FormatError> errors = new ArrayList<FormatError>();
         // check type correctness
-        for (String typeName : getSetTypeNames()) {
+        for (String typeName : getActiveTypeNames()) {
             TypeView typeView = getTypeView(typeName);
             if (typeView == null) {
                 errors.add(new FormatError("Type graph '%s' cannot be found",
@@ -351,7 +341,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         // We have constructed all views of the type graphs.
         // Make the composition now.
         try {
-            result.setType(this.getTypeViews().toModel());
+            result.setType(this.getTypeViewList().toModel());
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
@@ -616,14 +606,10 @@ public class StoredGrammarView implements GrammarView, Observer {
         private List<FormatError> errors;
 
         private TypeViewList() {
-            this(getSetTypeNames());
-        }
-
-        private TypeViewList(List<String> setTypeNames) {
             this.typeViewMap = new HashMap<String,TypeView>();
             this.model = null;
             this.errors = new ArrayList<FormatError>();
-            for (String typeName : setTypeNames) {
+            for (String typeName : getActiveTypeNames()) {
                 TypeView typeView = getTypeView(typeName);
                 if (typeView != null) {
                     this.typeViewMap.put(typeName, typeView);

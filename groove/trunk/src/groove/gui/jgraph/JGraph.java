@@ -1512,7 +1512,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         @Override
         public void setModel(GraphModel model) {
             super.setModel(model);
-            Object[] cells = DefaultGraphModel.getRoots(getModel());
+            Object[] cells = DefaultGraphModel.getRoots(this.getModel());
             CellView[] cellViews = getMapping(cells, true);
             insertViews(cellViews);
             // Update PortView Cache and Notify Observers

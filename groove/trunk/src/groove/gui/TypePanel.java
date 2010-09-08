@@ -200,15 +200,10 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
      */
     public void doSaveProperties() {
         List<String> checkedTypes = getNameListModel().getCheckedTypes();
-        try {
-            getGrammarView().getTypeViews(checkedTypes).toModel();
-            SystemProperties oldProperties = getGrammarView().getProperties();
-            SystemProperties newProperties = oldProperties.clone();
-            newProperties.setTypeNames(checkedTypes);
-            getSimulator().doSaveProperties(newProperties);
-        } catch (FormatException e) {
-            // Does nothing.
-        }
+        SystemProperties oldProperties = getGrammarView().getProperties();
+        SystemProperties newProperties = oldProperties.clone();
+        newProperties.setTypeNames(checkedTypes);
+        getSimulator().doSaveProperties(newProperties);
     }
 
     /**
