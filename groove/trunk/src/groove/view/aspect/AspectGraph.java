@@ -246,7 +246,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                 elementMap.putEdge(edge, edgeImage);
                 edgeImage.initAspects();
                 // add abstract type inference
-                if (edgeImage.getModelLabel().isNodeType()
+                if (edgeImage.getModelLabel() != null
+                    && edgeImage.getModelLabel().isNodeType()
                     && TypeAspect.isAbstract(edgeImage)) {
                     edgeImage.source().addInferredValue(TypeAspect.ABS);
                 }
@@ -512,8 +513,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                                 replacement);
                     }
                     newData.setText(DefaultLabel.toPrefixedString(replacement));
-                    oldToNew.put(edge, createAspectEdge(edge.source(),
-                        edge.target(), newData));
+                    oldToNew.put(edge,
+                        createAspectEdge(edge.source(), edge.target(), newData));
                 }
             } catch (FormatException exc) {
                 // do nothing with this label
