@@ -802,7 +802,7 @@ final public class SPOEvent extends
             VarNodeEdgeMap anchorMap = getAnchorMap();
             NodeEdgeMap mergeMap =
                 getRule().hasMergers() ? getMergeMap() : null;
-            Set<Node> erasedNodes = getErasedNodes();
+            Set<Node> erasedNodes = this.getErasedNodes();
             // add coanchor mappings for creator edge ends that are themselves
             // not creators
             for (Map.Entry<Node,Node> creatorEntry : getRule().getCreatorMap().nodeMap().entrySet()) {
@@ -863,7 +863,7 @@ final public class SPOEvent extends
                 mergeMap.putNode(mergeKey, mergeImage);
             }
             // now map the erased nodes to null
-            for (Node node : getErasedNodes()) {
+            for (Node node : this.getErasedNodes()) {
                 mergeMap.removeNode(node);
             }
             return mergeMap;

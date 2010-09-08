@@ -299,7 +299,7 @@ public class Simulator {
     /** Returns the type graph associated with the grammar, if any. */
     private TypeViewList getTypeView() {
         return getGrammarView() == null ? null
-                : getGrammarView().getTypeViews();
+                : getGrammarView().getTypeViewList();
     }
 
     /**
@@ -597,7 +597,7 @@ public class Simulator {
                     typeGraph.getErrors()));
             } else {
                 getGrammarStore().putType(typeGraph);
-                if (getGrammarView().getSetTypeNames().contains(
+                if (getGrammarView().getActiveTypeNames().contains(
                     GraphInfo.getName(typeGraph))) {
                     updateGrammar();
                 } else {
@@ -659,7 +659,7 @@ public class Simulator {
 
     /** Removes a type graph from this grammar. */
     void doDeleteType(String name) {
-        boolean isUsed = getGrammarView().getSetTypeNames().contains(name);
+        boolean isUsed = getGrammarView().getActiveTypeNames().contains(name);
         getGrammarStore().deleteType(name);
         // we only need to refresh the grammar if the deleted
         // type graph was the currently active one
@@ -1029,7 +1029,7 @@ public class Simulator {
         // test now if this is the type graph, before it is deleted from the
         // grammar
         boolean isTypeGraph =
-            getGrammarView().getSetTypeNames().contains(oldName);
+            getGrammarView().getActiveTypeNames().contains(oldName);
         try {
             getGrammarStore().renameType(oldName, newName);
             if (isTypeGraph) {
