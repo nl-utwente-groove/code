@@ -85,13 +85,12 @@ public class Triple<L,M,R> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public final boolean equals(Object o) {
         if (!(o instanceof Triple)) {
             return false;
         }
 
-        final Triple<?,?,?> other = (Triple) o;
+        final Triple<?,?,?> other = (Triple<?,?,?>) o;
         return equal(getLeft(), other.getLeft())
             && equal(getRight(), other.getRight())
             && equal(getMiddle(), other.getMiddle());

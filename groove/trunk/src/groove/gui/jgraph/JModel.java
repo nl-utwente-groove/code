@@ -505,12 +505,11 @@ abstract public class JModel extends DefaultGraphModel {
      * Invokes {@link JCellContent#clone()} to do the job.
      */
     @Override
-    @SuppressWarnings("unchecked")
     protected Object cloneUserObject(Object userObject) {
         if (userObject == null) {
             return null;
         } else {
-            return ((JCellContent) userObject).clone();
+            return ((JCellContent<?>) userObject).clone();
         }
     }
 

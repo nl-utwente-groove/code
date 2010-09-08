@@ -230,7 +230,7 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
     /**
      * Callback factory method to create a fresh, empty edge set.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     protected Set<Edge> createEdgeSet() {
         return (Set) new DefaultEdgeSet();
     }
@@ -239,7 +239,7 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
      * Callback factory method to create a fresh, empty edge set with a given
      * initial capacity.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     protected Set<Edge> createEdgeSet(int capacity) {
         return (Set) new DefaultEdgeSet(capacity);
     }

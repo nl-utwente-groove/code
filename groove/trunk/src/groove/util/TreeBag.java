@@ -72,12 +72,14 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable,
          * Two <tt>Multiplicity</tt> objects are considered equal if they
          * contain the same values.
          */
+        @SuppressWarnings("unchecked")
         @Override
         public boolean equals(Object obj) {
             return obj instanceof Multiplicity
                 && ((MyMultiplicity) obj).value == this.value;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public MyMultiplicity clone() {
             try {
@@ -281,6 +283,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable,
     /**
      * Returns the sum of all elements' hash codes.
      */
+    @SuppressWarnings("unchecked")
     @Override
     public int hashCode() {
         int result = 0;

@@ -48,8 +48,7 @@ public class SetOfDisjointSets<T> extends CollectionOfCollections<T> implements
         if (!(other instanceof Set<?>)) {
             return false;
         } else {
-            @SuppressWarnings("unchecked")
-            Set<?> otherCollection = (Set) other;
+            Set<?> otherCollection = (Set<?>) other;
             for (T elem : this) {
                 if (!otherCollection.contains(elem)) {
                     return false;
@@ -63,7 +62,7 @@ public class SetOfDisjointSets<T> extends CollectionOfCollections<T> implements
     @Override
     public int hashCode() {
         int result = 0;
-        for (T elem: this) {
+        for (T elem : this) {
             result += elem.hashCode();
         }
         return result;

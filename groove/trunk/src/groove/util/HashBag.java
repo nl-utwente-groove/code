@@ -35,12 +35,12 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
     public HashBag() {
         // empty
     }
-    
+
     /** Constructs a bag from an existing collection. */
     public HashBag(Collection<T> input) {
         addAll(input);
     }
-    
+
     @Override
     public boolean contains(Object key) {
         return this.bag.containsKey(key);
@@ -325,12 +325,14 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable,
          * Two <tt>Multiplicity</tt> objects are considered equal if they
          * contain the same values.
          */
+        @SuppressWarnings("unchecked")
         @Override
         public boolean equals(Object obj) {
             return obj instanceof HashBag<?>.MyMultiplicity
                 && ((MyMultiplicity) obj).value == this.value;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public MyMultiplicity clone() {
             try {

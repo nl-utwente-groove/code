@@ -480,7 +480,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
             int prevKeyIndex = -1;
             // walk the list of MyListEntries, if any
             while (knownKey instanceof MyListEntry) {
-                MyListEntry<T> entry = (MyListEntry) knownKey;
+                MyListEntry<T> entry = (MyListEntry<T>) knownKey;
                 int nextKeyIndex = entry.getNext();
                 if (areEqual(key, entry.getValue())) {
                     keys[keyIndex] = keys[nextKeyIndex];
@@ -502,7 +502,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                     // the previous key has to be converted from a
                     // MyListEntry to the object inside
                     keys[prevKeyIndex] =
-                        ((MyListEntry) keys[prevKeyIndex]).getValue();
+                        ((MyListEntry<?>) keys[prevKeyIndex]).getValue();
                 }
                 disposeKey(keyIndex);
                 result = true;
@@ -629,7 +629,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         Object oldKey = keys[keyIndex];
         // walk the list of MyListEntries, if any
         while (oldKey instanceof MyListEntry) {
-            MyListEntry<T> entry = (MyListEntry) oldKey;
+            MyListEntry<T> entry = (MyListEntry<T>) oldKey;
             if (areEqual(newKey, entry.getValue())) {
                 return true;
             } else {
@@ -728,9 +728,11 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                 if (FILL_PRINT) {
                     System.out.printf(
                         "Extending: %d records (%d slots) for %d keys (average %f)%n",
-                        this.recordCount, getRecordIx(this.recordCount),
-                        this.size + 1, getAverageFill(
-                            getRecordIx(this.recordCount), this.size + 1));
+                        this.recordCount,
+                        getRecordIx(this.recordCount),
+                        this.size + 1,
+                        getAverageFill(getRecordIx(this.recordCount),
+                            this.size + 1));
                 }
             }
             setParentIx(resultNr, parentIx);
@@ -843,7 +845,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
             Object key = keys[keyIndex];
             // as long as the key is a MyListEntry, walk through the list
             while (key instanceof MyListEntry) {
-                MyListEntry<T> entry = (MyListEntry) key;
+                MyListEntry<T> entry = (MyListEntry<T>) key;
                 T value = entry.getValue();
                 if (areEqual(newKey, value)) {
                     // the key existed already
@@ -1100,8 +1102,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * {@link Object#equals(java.lang.Object)} in
      * <code>Equator.areEqual(Object, Object)</code>.
      */
-    @SuppressWarnings("unchecked")
-    static public final Equator EQUALS_EQUATOR = new Equator() {
+    @SuppressWarnings({"rawtypes"})
+    static public final Equator EQUALS_EQUATOR = new Equator<Object>() {
         /**
          * @return <code>key.hashCode()</code>.
          */
@@ -1127,8 +1129,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * <code>Equator.getCode(Object)</code> and object equality in
      * <code>Equator.areEqual(Object, Object)</code>.
      */
-    @SuppressWarnings("unchecked")
-    static public final Equator IDENTITY_EQUATOR = new Equator() {
+    @SuppressWarnings({"rawtypes"})
+    static public final Equator IDENTITY_EQUATOR = new Equator<Object>() {
         /**
          * @return <code>System.identityHashCode(key)</code>
          */
@@ -1154,8 +1156,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * <code>Equator.getCode(Object)</code> and always returns <code>true</code>
      * in <code>Equator.areEqual(Object, Object)</code>.
      */
-    @SuppressWarnings("unchecked")
-    static public final Equator HASHCODE_EQUATOR = new Equator() {
+    @SuppressWarnings({"rawtypes"})
+    static public final Equator HASHCODE_EQUATOR = new Equator<Object>() {
         /**
          * @return <code>key.hashCode()</code>
          */
@@ -1180,7 +1182,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * The equator to be used if none is indicated explicitly. Set to
      * {@link #EQUALS_EQUATOR}.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"rawtypes"})
     static public final Equator DEFAULT_EQUATOR = EQUALS_EQUATOR;
     /**
      * Number of bytes in an <code>int</code>.
