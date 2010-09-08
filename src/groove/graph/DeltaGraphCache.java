@@ -231,7 +231,7 @@ public class DeltaGraphCache extends GraphCache {
         AbstractGraph<?> basis = getCacheBasis();
         // otherwise, we can use the cache delta
         DeltaApplier delta = getCacheDelta();
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({"rawtypes", "unchecked"})
         final List<Map<Label,Set<Edge>>> basisMaps =
             (List) basis.getLabelEdgeMaps();
         final List<Map<Label,Set<Edge>>> result =
@@ -285,7 +285,7 @@ public class DeltaGraphCache extends GraphCache {
             // so we have to compute it the hard way
             return super.computeNodeEdgeMap();
         } else {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings({"unchecked", "rawtypes"})
             Map<Node,Set<Edge>> basisMap = (Map) basis.nodeEdgeMap();
             Map<Node,Set<Edge>> result = new HashMap<Node,Set<Edge>>(basisMap);
             DeltaTarget target = createNodeEdgeMapTarget(basisMap, result);

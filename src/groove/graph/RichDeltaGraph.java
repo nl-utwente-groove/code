@@ -341,8 +341,8 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
     /** The certificate strategy of this graph, set on demand. */
     private Reference<CertificateStrategy> certifier;
     /** Factory instance of this class. */
-    static private final RichDeltaGraph instance =
-        new RichDeltaGraph(null, null);
+    static private final RichDeltaGraph instance = new RichDeltaGraph(null,
+        null);
 
     /**
      * Returns a fixed factory instance of the {@link RichDeltaGraph} class.
@@ -471,7 +471,7 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
                 Label label = elem.label();
                 Map<Label,Set<Edge>> arityLabelEdgeMap =
                     this.labelEdgeMaps.get(arity);
-                @SuppressWarnings("unchecked")
+                @SuppressWarnings({"unchecked", "rawtypes"})
                 EdgeSet<Edge> edgeSet = (EdgeSet) arityLabelEdgeMap.get(label);
                 if (edgeSet == null) {
                     arityLabelEdgeMap.put(label, edgeSet =
