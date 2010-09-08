@@ -148,7 +148,7 @@ public class GraphShapeCache implements GraphShapeListener {
      * @return the label-to-edge mapping for arity <tt>i</tt>
      * @see #computeLabelEdgeMaps()
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     protected List<Map<Label,? extends Set<? extends Edge>>> getLabelEdgeMaps() {
         List<Map<Label,? extends Set<? extends Edge>>> result =
             (List) this.labelEdgeMaps;

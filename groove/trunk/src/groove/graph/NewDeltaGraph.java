@@ -60,6 +60,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
                 @Override
                 @SuppressWarnings("unchecked")
                 protected Set<Edge> createEdgeSet(Collection<? extends Edge> set) {
+                    @SuppressWarnings("rawtypes")
                     Set result;
                     if (set instanceof DefaultEdgeSet) {
                         result = new DefaultEdgeSet((DefaultEdgeSet) set);
@@ -348,11 +349,11 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
      */
     static private final boolean ALIAS_SETS = true;
     /** Factory instance of this class. */
-    static private final NewDeltaGraph copyInstance =
-        new NewDeltaGraph(null, null, true);
+    static private final NewDeltaGraph copyInstance = new NewDeltaGraph(null,
+        null, true);
     /** Factory instance of this class. */
-    static private final NewDeltaGraph swingInstance =
-        new NewDeltaGraph(null, null, false);
+    static private final NewDeltaGraph swingInstance = new NewDeltaGraph(null,
+        null, false);
 
     /**
      * Returns a fixed factory instance of the {@link NewDeltaGraph} class,

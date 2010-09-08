@@ -302,10 +302,8 @@ public class GraphProperties extends Properties {
             return Boolean.toString(true);
         } else if (key.equals(CONFLUENT_KEY)) {
             return Boolean.toString(false);
-        } else if (key.equals(TRANSITION_LABEL_KEY) || key.equals(REMARK_KEY)) {
-            return "";
         } else {
-            throw new IllegalArgumentException("Invalid key: " + key);
+            return "";
         }
     }
 
