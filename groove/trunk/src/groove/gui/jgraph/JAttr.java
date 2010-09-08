@@ -192,14 +192,13 @@ public class JAttr {
      * An empty border, to be used as the inner border of a compound border,
      * which inserts some space to the left and right of the label text.
      */
-    public static final Border EMPTY_INSET_BORDER =
-        new EmptyBorder(DEFAULT_INSETS);
+    public static final Border EMPTY_INSET_BORDER = new EmptyBorder(
+        DEFAULT_INSETS);
     /**
      * The border used for nodes.
      */
-    public static final Border DEFAULT_BORDER =
-        JAttr.createNodeBorder(new LineBorder(DEFAULT_CELL_COLOR,
-            DEFAULT_LINE_WIDTH), false);
+    public static final Border DEFAULT_BORDER = JAttr.createNodeBorder(
+        new LineBorder(DEFAULT_CELL_COLOR, DEFAULT_LINE_WIDTH), false);
 
     /**
      * The standard bounds used for nodes.
@@ -319,13 +318,13 @@ public class JAttr {
     public static final Color EMPH_COLOR =
         Colors.findColor(Groove.getGUIProperty("state.emphasis.color"));
     /** Node border used for emphasised cells. */
-    public static final Border EMPH_BORDER =
-        createNodeBorder(new LineBorder(JAttr.EMPH_COLOR, JAttr.EMPH_WIDTH) {
-            // @Override
-            // public Insets getBorderInsets(Component c) {
-            // return new Insets(0,0,0,0);
-            // }
-        }, true);
+    public static final Border EMPH_BORDER = createNodeBorder(new LineBorder(
+        JAttr.EMPH_COLOR, JAttr.EMPH_WIDTH) {
+        // @Override
+        // public Insets getBorderInsets(Component c) {
+        // return new Insets(0,0,0,0);
+        // }
+    }, true);
 
     /** The emphasis attribute changes for graph edges. */
     public static final AttributeMap EMPH_EDGE_CHANGE = new AttributeMap();
@@ -405,16 +404,15 @@ public class JAttr {
     /**
      * Borders of active LTS nodes.
      */
-    static private final Border LTS_ACTIVE_BORDER =
-        createNodeBorder(new LineBorder(LTS_ACTIVE_COLOR, LTS_ACTIVE_WIDTH),
-            false);
+    static private final Border LTS_ACTIVE_BORDER = createNodeBorder(
+        new LineBorder(LTS_ACTIVE_COLOR, LTS_ACTIVE_WIDTH), false);
 
     /**
      * Emphasised borders of active LTS nodes.
      */
-    static public final Border LTS_ACTIVE_EMPH_BORDER =
-        createNodeBorder(new LineBorder(LTS_ACTIVE_COLOR, LTS_ACTIVE_WIDTH
-            + EMPH_INCREMENT), true);
+    static public final Border LTS_ACTIVE_EMPH_BORDER = createNodeBorder(
+        new LineBorder(LTS_ACTIVE_COLOR, LTS_ACTIVE_WIDTH + EMPH_INCREMENT),
+        true);
     /** The default node attributes of the LTS */
     static public final AttributeMap LTS_NODE_ATTR;
     /** The start node attributes of the LTS */
@@ -486,9 +484,8 @@ public class JAttr {
     }
 
     /** Border consisting of a double line. */
-    static public final Border DOUBLE_BORDER =
-        new CompoundBorder(new LineBorder(Color.BLUE, 2), new LineBorder(
-            Color.BLUE, 2));
+    static public final Border DOUBLE_BORDER = new CompoundBorder(
+        new LineBorder(Color.BLUE, 2), new LineBorder(Color.BLUE, 2));
 
     /** The default node attributes of the control automaton */
     static public final AttributeMap CONTROL_NODE_ATTR;
@@ -538,7 +535,7 @@ public class JAttr {
     /**
      * Store of colours for each role.
      */
-    static private final Map<AspectValue,Color> RULE_COLOR =
+    static public final Map<AspectValue,Color> RULE_COLOR =
         new HashMap<AspectValue,Color>();
 
     /**
@@ -584,9 +581,9 @@ public class JAttr {
     /**
      * Border used for nesting elements.
      */
-    static private final Border NESTED_BORDER =
-        createNodeBorder(new StrokedLineBorder(DEFAULT_CELL_COLOR,
-            createStroke(DEFAULT_LINE_WIDTH, NESTED_DASH)), false);
+    static private final Border NESTED_BORDER = createNodeBorder(
+        new StrokedLineBorder(DEFAULT_CELL_COLOR, createStroke(
+            DEFAULT_LINE_WIDTH, NESTED_DASH)), false);
     /**
      * Arrow used for nesting edges.
      */
@@ -626,10 +623,12 @@ public class JAttr {
         RULE_PREFIXES.put(RuleAspect.REMARK, "remark.");
         // RULE_PREFIXES.put(RuleAspect.RULE, "rule.");
         for (AspectValue role : RuleAspect.getInstance().getValues()) {
-            RULE_COLOR.put(role,
+            RULE_COLOR.put(
+                role,
                 Colors.findColor(Groove.getGUIProperty(RULE_PREFIXES.get(role)
                     + "color")));
-            RULE_WIDTH.put(role,
+            RULE_WIDTH.put(
+                role,
                 Integer.parseInt(Groove.getGUIProperty(RULE_PREFIXES.get(role)
                     + "width")));
             float[] dash =
@@ -643,13 +642,17 @@ public class JAttr {
                 RULE_BACKGROUND.put(role, whitewash(RULE_COLOR.get(role)));
             }
             RULE_DASH.put(role, dash == null ? JAttr.NO_DASH : dash);
-            RULE_BORDER.put(role, createNodeBorder(
-                createRuleBorder(RULE_COLOR.get(role), RULE_WIDTH.get(role),
-                    RULE_DASH.get(role)), false));
+            RULE_BORDER.put(
+                role,
+                createNodeBorder(
+                    createRuleBorder(RULE_COLOR.get(role),
+                        RULE_WIDTH.get(role), RULE_DASH.get(role)), false));
             RULE_EMPH_WIDTH.put(role, RULE_WIDTH.get(role) + EMPH_INCREMENT);
-            RULE_EMPH_BORDER.put(role, createNodeBorder(createRuleBorder(
-                RULE_COLOR.get(role), RULE_EMPH_WIDTH.get(role),
-                RULE_DASH.get(role)), true));
+            RULE_EMPH_BORDER.put(
+                role,
+                createNodeBorder(
+                    createRuleBorder(RULE_COLOR.get(role),
+                        RULE_EMPH_WIDTH.get(role), RULE_DASH.get(role)), true));
         }
     }
 

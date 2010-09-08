@@ -26,9 +26,11 @@ import groove.graph.Node;
 import groove.graph.NodeSet;
 import groove.gui.jgraph.EditorJModel;
 import groove.gui.jgraph.GraphJModel;
+import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.gui.layout.LayoutMap;
+import groove.view.aspect.RuleAspect;
 
 import java.awt.Color;
 import java.io.BufferedReader;
@@ -352,8 +354,8 @@ public class Converter {
     /** Name of the font strikethrough tag (<code>s</code>). */
     static public final String STRIKETHROUGH_TAG_NAME = "s";
     /** Font strikethrough tag. */
-    static public final HTMLTag STRIKETHROUGH_TAG =
-        new HTMLTag(STRIKETHROUGH_TAG_NAME);
+    static public final HTMLTag STRIKETHROUGH_TAG = new HTMLTag(
+        STRIKETHROUGH_TAG_NAME);
     /** Name of the italic font tag (<code>i</code>). */
     static public final String ITALIC_TAG_NAME = "i";
     /** Italic font tag. */
@@ -394,6 +396,9 @@ public class Converter {
         createColorTag(Colors.findColor("green.darker"));
     /** Red color tag. */
     public static final HTMLTag red = createColorTag(Colors.findColor("red"));
+    /** Remark color tag. */
+    public static final HTMLTag remark =
+        createColorTag(JAttr.RULE_COLOR.get(RuleAspect.REMARK));
 
     /**
      * Class that allows some handling of HTML text.
