@@ -382,7 +382,8 @@ public class AlgebraRegister {
 
     /** Returns the signature implemented by a given algebra. */
     @SuppressWarnings("unchecked")
-    static private Class<Signature> getSignature(Algebra algebra) {
+    static private Class<Signature> getSignature(Algebra<?> algebra) {
+        @SuppressWarnings("rawtypes")
         Class<? extends Algebra> algebraClass = algebra.getClass();
         if (algebraClass.isInterface()) {
             throw new IllegalArgumentException(String.format(
@@ -390,7 +391,6 @@ public class AlgebraRegister {
         }
         // find the implemented signature
         Class<?> signature = algebraClass.getSuperclass();
-        // for (int i = 0; signature == null && i < interfaces.length; i++) {
         if (!Signature.class.isAssignableFrom(signature)) {
             throw new IllegalArgumentException(String.format(
                 "Algebra '%s' is not a subclass of '%s'", algebra.getName(),

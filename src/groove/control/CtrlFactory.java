@@ -50,8 +50,8 @@ public class CtrlFactory {
         CtrlAut result = new CtrlAut();
         CtrlState middle = result.addState();
         // convert the call arguments using the context
-        result.addTransition(result.getStart(), createLabel(ruleName, args,
-            EMPTY_GUARD), middle);
+        result.addTransition(result.getStart(),
+            createLabel(ruleName, args, EMPTY_GUARD), middle);
         result.addTransition(middle, createOmegaLabel(), result.getFinal());
         return result;
     }
@@ -207,8 +207,9 @@ public class CtrlFactory {
                 }
                 // add to the call source outgoing transitions from the call target
                 for (CtrlTransition targetTrans : callTrans.target().getTransitions()) {
-                    first.addTransition(newSource, createLabel(
-                        targetTrans.label(), newGuard), targetTrans.target());
+                    first.addTransition(newSource,
+                        createLabel(targetTrans.label(), newGuard),
+                        targetTrans.target());
                 }
             } else {
                 CtrlState newTarget = secondToFirstMap.get(funcTrans.target());
@@ -389,7 +390,7 @@ public class CtrlFactory {
      * @throws FormatException if the automaton is not deterministic
      */
     public void minimise(CtrlAut aut) throws FormatException {
-
+        // TODO to be provided
     }
 
     /** 

@@ -201,7 +201,7 @@ public class CacheReference<C> extends SoftReference<C> {
      * <code>true</code>.
      */
     private final List<CacheReference<C>> strongNull; // = new
-                                                        // CacheReference<Object>(true);
+                                                      // CacheReference<Object>(true);
     /**
      * Constant null reference, with {@link #isStrong()} set to
      * <code>false</code>.
@@ -293,13 +293,13 @@ public class CacheReference<C> extends SoftReference<C> {
     static private List<Integer> frequencies = new ArrayList<Integer>();
 
     /** The singleton null instance for strong references. */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     static private final CacheReference strongInstance =
-        new CacheReference(true, 0, null);
+        new CacheReference<Object>(true, 0, null);
     /** The singleton null instance for weak references. */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     static private final CacheReference softInstance =
-        new CacheReference(false, 0, null);
+        new CacheReference<Object>(false, 0, null);
 
     /**
      * Global counter of the total number of cache reincarnations.

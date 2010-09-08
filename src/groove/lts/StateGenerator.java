@@ -63,7 +63,7 @@ public class StateGenerator {
         if (event instanceof VirtualEvent<?>) {
             @SuppressWarnings("unchecked")
             VirtualEvent<GraphTransitionStub> virtualEvent =
-                (VirtualEvent) event;
+                (VirtualEvent<GraphTransitionStub>) event;
             appl =
                 new DefaultAliasApplication(virtualEvent.getInnerEvent(),
                     (GraphNextState) source, virtualEvent.getInnerTarget());

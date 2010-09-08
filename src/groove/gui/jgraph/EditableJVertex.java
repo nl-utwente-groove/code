@@ -79,14 +79,13 @@ public class EditableJVertex extends JVertex implements EditableJCell {
      * If the value is a collection or a string, loads the user object from it.
      */
     @Override
-    @SuppressWarnings("unchecked")
     public void setUserObject(Object value) {
         EditableContent newObject = createUserObject();
         newObject.setNumber(getNumber());
         super.setUserObject(newObject);
         if (value instanceof JCellContent) {
-            newObject.load(((JCellContent) value).getLabelSet());
-            newObject.setNumber(((JCellContent) value).getNumber());
+            newObject.load(((JCellContent<?>) value).getLabelSet());
+            newObject.setNumber(((JCellContent<?>) value).getNumber());
         } else if (value != null) {
             newObject.load(value.toString());
         }

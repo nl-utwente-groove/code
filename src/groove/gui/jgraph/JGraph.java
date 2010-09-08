@@ -1644,10 +1644,10 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         public void update(Observable o, Object arg) {
             Set<Label> changedLabelSet = null;
             if (arg instanceof ObservableSet.AddUpdate) {
-                changedLabelSet = ((ObservableSet.AddUpdate) arg).getAddedSet();
+                changedLabelSet = ((ObservableSet.AddUpdate<Label>) arg).getAddedSet();
             } else {
                 changedLabelSet =
-                    ((ObservableSet.RemoveUpdate) arg).getRemovedSet();
+                    ((ObservableSet.RemoveUpdate<Label>) arg).getRemovedSet();
             }
             Set<JCell> changedCellSet = new HashSet<JCell>();
             for (Label label : changedLabelSet) {

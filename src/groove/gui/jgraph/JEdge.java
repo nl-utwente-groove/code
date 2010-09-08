@@ -89,13 +89,12 @@ abstract public class JEdge extends DefaultEdge implements JCell {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public JCellContent<?> getUserObject() {
         if (!this.userObjectSet) {
             this.userObjectSet = true;
             super.setUserObject(createUserObject());
         }
-        return (JCellContent) super.getUserObject();
+        return (JCellContent<?>) super.getUserObject();
     }
 
     /**
