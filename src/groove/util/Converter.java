@@ -311,9 +311,6 @@ public class Converter {
         } else if (!red.off(htmlLine).equals(originalLine)) {
             result = 3;
         }
-        if (result != 0) {
-            htmlLine.delete(0, 2);
-        }
         return result;
     }
 

@@ -24,13 +24,13 @@ import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.jgraph.ControlJModel;
+import groove.gui.jgraph.ControlJModel.TransitionJEdge;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.LTSJModel;
-import groove.gui.jgraph.ControlJModel.TransitionJEdge;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
@@ -854,9 +854,11 @@ public final class GraphToTikz {
                 result.append(FORALL_STR);
             }
         } else if (line.indexOf(Converter.ITALIC_TAG.tagBegin) > -1) {
-            aux = encloseItalicStyle(Converter.ITALIC_TAG.off(line));
+            aux = encloseItalicStyle(removeAllTags(line, Converter.ITALIC_TAG));
         } else if (line.indexOf(Converter.STRONG_TAG.tagBegin) > -1) {
-            aux = enclose(Converter.STRONG_TAG.off(line), BOLD_STYLE, "}");
+            aux =
+                enclose(removeAllTags(line, Converter.STRONG_TAG), BOLD_STYLE,
+                    "}");
         } else {
             aux = line.toString();
         }
@@ -879,6 +881,18 @@ public final class GraphToTikz {
         result.append(CRLF);
 
         return result;
+    }
+
+    private static String removeAllTags(StringBuilder line,
+            Converter.HTMLTag tag) {
+        String origLine = line.toString();
+        StringBuilder newLine = new StringBuilder(line);
+        tag.off(newLine);
+        while (!newLine.toString().equals(origLine)) {
+            origLine = newLine.toString();
+            tag.off(newLine);
+        }
+        return origLine;
     }
 
     /**
@@ -934,6 +948,12 @@ public final class GraphToTikz {
                 break;
             case '~':
                 result.append(TILDE);
+                break;
+            case '+':
+                result.append(PLUS);
+                break;
+            case '-':
+                result.append(MINUS);
                 break;
             case '\\':
                 result.append(BACKSLASH);
@@ -1300,9 +1320,9 @@ public final class GraphToTikz {
     private static final String CRLF = "\\\\";
     private static final String BEGIN_TIKZ_FIG =
         "\\begin{tikzpicture}[scale=\\tikzscale]";
-    private static final String END_TIKZ_FIG =
-        "\\userdefinedmacro\n" + "\\end{tikzpicture}\n"
-            + "\\renewcommand{\\userdefinedmacro}{\\relax}";
+    private static final String END_TIKZ_FIG = "\\userdefinedmacro\n"
+        + "\\end{tikzpicture}\n"
+        + "\\renewcommand{\\userdefinedmacro}{\\relax}";
     private static final String BEGIN_NODE = "\\node";
     private static final String AT_KEYWORD = "at";
     private static final String BEGIN_NODE_LAB = " {\\ml{";
@@ -1317,9 +1337,9 @@ public final class GraphToTikz {
     private static final String END_PATH = ";\n";
     private static final String END_EDGE = END_PATH;
     private static final String NODE = "node";
-    private static final String BEGIN_COLOR_BLUE = "{\\color{\\blue}$-$ ";
-    private static final String BEGIN_COLOR_GREEN = "{\\color{\\green}$+$ ";
-    private static final String BEGIN_COLOR_RED = "{\\color{\\red}$!$ ";
+    private static final String BEGIN_COLOR_BLUE = "{\\color{\\blue}";
+    private static final String BEGIN_COLOR_GREEN = "{\\color{\\green}";
+    private static final String BEGIN_COLOR_RED = "{\\color{\\red}";
     private static final String BASIC_NODE_STYLE = "node";
     private static final String BASIC_EDGE_STYLE = "edge";
     private static final String BASIC_LABEL_STYLE = "lab";
@@ -1374,6 +1394,8 @@ public final class GraphToTikz {
     private static final String LEFT_SQUARE = "$[$";
     private static final String RIGHT_SQUARE = "$]$";
     private static final String CIRCUNFLEX = "\\^{}";
+    private static final String PLUS = "$+$";
+    private static final String MINUS = "$-$";
     private static final String TILDE = "\\~{}";
     private static final String VERT_BAR = "$|$";
     private static final String BACKSLASH = "$\\backslash$";
@@ -1382,7 +1404,6 @@ public final class GraphToTikz {
     private static final String SOUTH = ".south -| ";
     private static final String EAST = ".east |- ";
     private static final String WEST = ".west |- ";
-    private static final String DOC =
-        "% To use this figure in your LaTeX "
-            + "document\n% import the package groove/resources/groove2tikz.sty\n";
+    private static final String DOC = "% To use this figure in your LaTeX "
+        + "document\n% import the package groove/resources/groove2tikz.sty\n";
 }
