@@ -17,7 +17,6 @@
 package groove.abstraction;
 
 import groove.graph.DefaultGraph;
-import groove.graph.DeltaTarget;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
@@ -51,7 +50,7 @@ import java.util.Set;
  * 
  * @author Eduardo Zambon
  */
-public class Shape extends DefaultGraph implements DeltaTarget {
+public class Shape extends DefaultGraph implements Cloneable {
 
     // ------------------------------------------------------------------------
     // Object Fields

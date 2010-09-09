@@ -81,10 +81,9 @@ public abstract class TemporalFormula {
     /**
      * Comment for <code>prototypes</code>
      */
-    static private final TemporalFormula[] prototypes =
-        new TemporalFormula[] {new Exists(), new All(), new Finally(),
-            new Globally(), new And(), new Or(), new Next(), new Until(),
-            new Neg(), new Atom()};
+    static private final TemporalFormula[] prototypes = new TemporalFormula[] {
+        new Exists(), new All(), new Finally(), new Globally(), new And(),
+        new Or(), new Next(), new Until(), new Neg(), new Atom()};
 
     /**
      * The list of operators into which a ctl expression will be parsed, in
@@ -181,10 +180,8 @@ public abstract class TemporalFormula {
                 if (property.toString().equals(ruleName)
                     || (property.toString().startsWith(ruleName + "(") && property.toString().endsWith(
                         ")"))
-                    || property.toString().equals(
-                        CTLStarFormula.TRUE.toString())
-                    || property.toString().equals(
-                        CTLStarFormula.FALSE.toString())) {
+                    || property.toString().equals(CTLStarFormula.TRUE)
+                    || property.toString().equals(CTLStarFormula.FALSE)) {
                     validAtom |= true;
                 }
             }

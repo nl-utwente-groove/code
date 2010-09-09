@@ -242,7 +242,6 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
      */
     private void initData() {
         if (this.edgeSet == null) {
-            assert this.edgeSet == null;
             assert this.outEdgeMap == null;
             assert this.inEdgeMap == null;
             assert this.labelEdgeMaps == null;

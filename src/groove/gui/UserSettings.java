@@ -21,8 +21,6 @@ import javax.swing.JSplitPane;
  * Class that saves some basic information on the status of the Simulator.
  * @author Eduardo Zambon
  */
-
-/** Class saving a previous user settings. */
 public class UserSettings {
 
     /** Reads and applies previously stored settings. */
@@ -78,11 +76,11 @@ public class UserSettings {
 
     /** Synchronizes saved settings with the current ones. */
     public static void synchSettings(JFrame frame) {
-        String simMax = new Boolean(isFrameMaximized(frame)).toString();
-        String simWidth = new Integer(getFrameWidth(frame)).toString();
-        String simHeight = new Integer(getFrameHeight(frame)).toString();
-        String rulePos = new Integer(getRuleDivPos(frame)).toString();
-        String mainPos = new Integer(getMainDivPos(frame)).toString();
+        String simMax = Boolean.toString(isFrameMaximized(frame));
+        String simWidth = Integer.toString(getFrameWidth(frame));
+        String simHeight = Integer.toString(getFrameHeight(frame));
+        String rulePos = Integer.toString(getRuleDivPos(frame));
+        String mainPos = Integer.toString(getMainDivPos(frame));
 
         Options.userPrefs.put(SIM_MAX, simMax);
         Options.userPrefs.put(SIM_WIDTH, simWidth);

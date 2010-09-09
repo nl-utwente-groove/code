@@ -39,8 +39,7 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
         assert RegExprLabel.isWildcard(edge.label())
             && RegExprLabel.getWildcardId(edge.label()) == null : String.format(
             "Edge %s is not a true wildcard edge", edge);
-        assert edge.endCount() <= Edge.END_COUNT : String.format(
-            "Search item undefined for hyperedge", edge);
+        assert edge.endCount() <= Edge.END_COUNT : "Search item undefined for hyperedge";
     }
 
     /** This implementation returns <code>false</code>. */

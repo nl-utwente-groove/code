@@ -29,15 +29,15 @@ public class GrooveModules {
     /**
      * Value for system properties of enabled modules.
      */
-    public static String GROOVE_MODULE_ENABLED = "enabled";
+    public static final String GROOVE_MODULE_ENABLED = "enabled";
     /**
      * Value for system properties of disabled modules.
      */
-    public static String GROOVE_MODULE_DISABLED = "disabled";
+    public static final String GROOVE_MODULE_DISABLED = "disabled";
 
     /**
      * Id of the system property for ltl verification
      */
-    public static String GROOVE_MODULE_LTL_VERIFICATION =
+    public static final String GROOVE_MODULE_LTL_VERIFICATION =
         "groove.modules.verification.ltl";
 }
