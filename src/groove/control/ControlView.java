@@ -94,7 +94,8 @@ public class ControlView {
                 frame.setVisible(true);
             }
 
-            List<String> errors = parser.getErrors();
+            List<String> errors = lexer.getErrors();
+            errors.addAll(parser.getErrors());
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
             }
