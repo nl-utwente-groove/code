@@ -23,6 +23,7 @@ import groove.graph.Node;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 class CNN {
     private final Node n1;
     Node n2;

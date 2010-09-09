@@ -23,6 +23,7 @@ package groove.abs;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public interface MultiplicityInformation {
     // empty
 }

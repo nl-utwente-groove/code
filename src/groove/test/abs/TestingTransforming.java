@@ -66,6 +66,7 @@ import junit.framework.TestCase;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 @SuppressWarnings("all")
 public class TestingTransforming extends TestCase {
 

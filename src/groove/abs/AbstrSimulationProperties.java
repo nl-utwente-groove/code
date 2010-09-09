@@ -29,6 +29,7 @@ import java.util.Properties;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public class AbstrSimulationProperties extends Properties {
 
     /** The precision set. */

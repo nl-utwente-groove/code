@@ -17,13 +17,13 @@
 package groove.test.abs;
 
 import groove.abs.AbstrGraph;
+import groove.abs.Abstraction.AbstrGraphsRelation;
 import groove.abs.DefaultAbstrGraph;
 import groove.abs.ExceptionIncompatibleWithMaxIncidence;
 import groove.abs.ExceptionRemovalImpossible;
 import groove.abs.GraphPattern;
 import groove.abs.PatternFamily;
 import groove.abs.Util;
-import groove.abs.Abstraction.AbstrGraphsRelation;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
@@ -49,6 +49,7 @@ import junit.framework.TestCase;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public class TestingAbstGraph extends TestCase {
 
     /** A prefix for the examples. */
@@ -289,8 +290,8 @@ public class TestingAbstGraph extends TestCase {
 
         this.s_l5_1.removeFrom(middle5_1, 1);
         this.s_l10_1.removeFrom(middle10_1, 1);
-        assertEquals(AbstrGraphsRelation.EQUAL, this.s_l5_1.compare(
-            this.s_l10_1, false));
+        assertEquals(AbstrGraphsRelation.EQUAL,
+            this.s_l5_1.compare(this.s_l10_1, false));
 
         this.s_l4_2.addTo(this.s_l4_2.typeOf(middle4_2), 1);
         Morphism m = this.s_l4_2.getIsomorphismToAbstrGraph(this.s_l4_1);
@@ -302,41 +303,41 @@ public class TestingAbstGraph extends TestCase {
     /** */
     public void testCompare() throws ExceptionRemovalImpossible, AssertionError {
 
-        assertEquals(AbstrGraphsRelation.EQUAL, this.s_l4_1.compare(
-            this.s_l10_1, false));
-        assertEquals(AbstrGraphsRelation.NOTEQUAL, this.s_l5_2.compare(
-            this.s_l10_1, false));
+        assertEquals(AbstrGraphsRelation.EQUAL,
+            this.s_l4_1.compare(this.s_l10_1, false));
+        assertEquals(AbstrGraphsRelation.NOTEQUAL,
+            this.s_l5_2.compare(this.s_l10_1, false));
 
         // remove twice from middle5_1
         Node middle5_1 = middleInList(this.s_l5_1);
         this.s_l5_1.removeFrom(middle5_1, 1);
-        assertEquals(AbstrGraphsRelation.SUPER, this.s_l5_1.compare(
-            this.s_l10_1, false));
+        assertEquals(AbstrGraphsRelation.SUPER,
+            this.s_l5_1.compare(this.s_l10_1, false));
         this.s_l5_1.removeFrom(middle5_1, 1);
-        assertEquals(AbstrGraphsRelation.SUPER, this.s_l5_1.compare(
-            this.s_l10_1, false));
+        assertEquals(AbstrGraphsRelation.SUPER,
+            this.s_l5_1.compare(this.s_l10_1, false));
 
         // remove one from middle5_2 and two from middle10_2
         Node middle5_2 = middleInList(this.s_l5_2);
         this.s_l5_2.removeFrom(middle5_2, 1);
-        assertEquals(AbstrGraphsRelation.SUPER, this.s_l5_2.compare(
-            this.s_l10_2, false));
+        assertEquals(AbstrGraphsRelation.SUPER,
+            this.s_l5_2.compare(this.s_l10_2, false));
         Node middle10_2 = middleInList(this.s_l10_2);
         this.s_l10_2.removeFrom(middle10_2, 2);
-        assertEquals(AbstrGraphsRelation.SUB, this.s_l5_2.compare(this.s_l10_2,
-            false));
+        assertEquals(AbstrGraphsRelation.SUB,
+            this.s_l5_2.compare(this.s_l10_2, false));
 
         // remove one more from middle5_2
         this.s_l5_2.removeFrom(middle5_2, 1);
-        assertEquals(AbstrGraphsRelation.EQUAL, this.s_l10_2.compare(
-            this.s_l5_2, false));
+        assertEquals(AbstrGraphsRelation.EQUAL,
+            this.s_l10_2.compare(this.s_l5_2, false));
 
         Node middle4_2 = middleInList(this.s_l4_2);
         this.s_l4_2.removeFrom(middle4_2, 1);
-        assertEquals(AbstrGraphsRelation.SUB, this.s_l4_2.compare(this.s_l5_2,
-            true));
-        assertEquals(AbstrGraphsRelation.QUASI, this.s_l5_2.compare(
-            this.s_l4_2, false));
+        assertEquals(AbstrGraphsRelation.SUB,
+            this.s_l4_2.compare(this.s_l5_2, true));
+        assertEquals(AbstrGraphsRelation.QUASI,
+            this.s_l5_2.compare(this.s_l4_2, false));
     }
 
     /** */

@@ -38,6 +38,7 @@ import java.io.IOException;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public class MyGenerator {
 
     private GraphGrammar grammar;

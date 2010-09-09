@@ -32,6 +32,7 @@ import groove.trans.RuleMatch;
  * @author Eduardo Zambon
  * @version $Revision $
  */
+@Deprecated
 public class ShapeGraphNextState extends ShapeGraphState implements
         GraphNextState, GraphTransitionStub {
 

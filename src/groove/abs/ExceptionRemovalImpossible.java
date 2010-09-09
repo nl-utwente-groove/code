@@ -22,6 +22,7 @@ package groove.abs;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public class ExceptionRemovalImpossible extends Exception {
     /* */
 }

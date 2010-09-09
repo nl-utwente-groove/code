@@ -26,6 +26,7 @@ import java.util.NoSuchElementException;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public class MyHashSetExtended<T> extends MyHashSet<T> {
 
     /**

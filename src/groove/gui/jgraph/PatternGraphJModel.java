@@ -16,17 +16,18 @@
  */
 package groove.gui.jgraph;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import groove.abs.GraphPattern;
 import groove.gui.Options;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A JModel for a graph pattern.
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public class PatternGraphJModel extends GraphJModel {
 
     /** Creates a model from a pattern graph and options */

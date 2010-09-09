@@ -48,6 +48,7 @@ import java.util.Set;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public class PatternFamily implements Iterable<GraphPattern> {
 
     /** The radius around the central node */

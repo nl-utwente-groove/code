@@ -41,6 +41,7 @@ import java.util.Set;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public class ConcretePart {
 
     /** Associates types (graph patterns) with nodes */

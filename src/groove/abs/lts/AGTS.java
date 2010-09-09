@@ -50,6 +50,7 @@ import java.util.Set;
  * @invariant (TypeInv) Transitions of the system are always of type
  *            {@link ShapeGraphTransition}
  */
+@Deprecated
 public class AGTS extends GTS {
 
     @Override

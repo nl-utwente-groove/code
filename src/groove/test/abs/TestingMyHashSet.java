@@ -17,9 +17,9 @@
 package groove.test.abs;
 
 import groove.abs.MyHashSet;
-import groove.abs.MyHashSetExtended;
 import groove.abs.MyHashSet.Equalizer;
 import groove.abs.MyHashSet.Hasher;
+import groove.abs.MyHashSetExtended;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -33,6 +33,7 @@ import junit.framework.TestCase;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public class TestingMyHashSet extends TestCase {
 
     /**
