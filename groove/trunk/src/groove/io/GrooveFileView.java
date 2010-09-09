@@ -121,9 +121,8 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
         if (isGpsTraversable()) {
             return superTraversable;
         } else {
-            return new Boolean(
-                (superTraversable == null || superTraversable.booleanValue())
-                    && !isGpsFolder(f));
+            return Boolean.valueOf((superTraversable == null || superTraversable.booleanValue())
+                && !isGpsFolder(f));
         }
     }
 

@@ -32,7 +32,7 @@ public class ShapeNodeFactory implements NodeFactory {
     // ------------------------------------------------------------------------
 
     /** The factory reference. */
-    public static ShapeNodeFactory FACTORY = new ShapeNodeFactory();
+    public static final ShapeNodeFactory FACTORY = new ShapeNodeFactory();
 
     // ------------------------------------------------------------------------
     // Constructors

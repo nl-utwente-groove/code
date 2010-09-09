@@ -266,7 +266,7 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
 
         @Override
         public boolean remove(Object o) {
-            if (o instanceof ControlTransition) {
+            if (o instanceof CtrlTransition) {
                 CtrlTransition trans = (CtrlTransition) o;
                 return trans.source().removeTransition(trans);
             } else {

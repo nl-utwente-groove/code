@@ -44,8 +44,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         this.boundVars = Collections.singleton(this.var);
         assert this.var != null : String.format(
             "Edge %s is not a variable edge", edge);
-        assert edge.endCount() <= Edge.END_COUNT : String.format(
-            "Search item undefined for hyperedge", edge);
+        assert edge.endCount() <= Edge.END_COUNT : "Search item undefined for hyperedge";
     }
 
     /**

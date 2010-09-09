@@ -54,7 +54,7 @@ import java.util.Set;
  * 
  * @author Eduardo Zambon
  */
-public class Materialisation {
+public class Materialisation implements Cloneable {
 
     // ------------------------------------------------------------------------
     // Object fields
@@ -505,7 +505,7 @@ public class Materialisation {
     // Class MaterialiseNode
     // ---------------------
 
-    private class MaterialiseNode extends MatOp {
+    private class MaterialiseNode extends MatOp implements Cloneable {
 
         private ShapeNode nodeS;
         private Set<Node> nodesR;
@@ -692,7 +692,7 @@ public class Materialisation {
     // Class SingulariseNode
     // ---------------------
 
-    private class SingulariseNode extends MatOp {
+    private class SingulariseNode extends MatOp implements Cloneable {
 
         private ShapeNode nodeS;
 

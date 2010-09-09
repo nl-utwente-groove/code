@@ -350,7 +350,7 @@ public class Converter {
     /** Name of the font underline tag (<code>u</code>). */
     static public final String UNDERLINE_TAG_NAME = "u";
     /** Font underline tag. */
-    static public HTMLTag UNDERLINE_TAG = new HTMLTag(UNDERLINE_TAG_NAME);
+    static public final HTMLTag UNDERLINE_TAG = new HTMLTag(UNDERLINE_TAG_NAME);
     /** Name of the font strikethrough tag (<code>s</code>). */
     static public final String STRIKETHROUGH_TAG_NAME = "s";
     /** Font strikethrough tag. */

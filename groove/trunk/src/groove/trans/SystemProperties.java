@@ -18,8 +18,8 @@ import java.util.InvalidPropertiesFormatException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Properties class for graph production systems.
@@ -73,7 +73,7 @@ public class SystemProperties extends java.util.Properties implements Fixable,
      */
     public boolean isUseControl() {
         String control = getProperty(SystemProperties.CONTROL_KEY);
-        return control == null || new Boolean(control)
+        return control == null || Boolean.valueOf(control)
             || control.equals(SystemProperties.CONTROL_YES);
     }
 
@@ -89,7 +89,7 @@ public class SystemProperties extends java.util.Properties implements Fixable,
     public boolean isShowTransitionBrackets() {
         String property = getProperty(SystemProperties.TRANSITION_BRACKETS_KEY);
         return property != null
-            && (new Boolean(property) || property.equals(SystemProperties.TRANSITION_BRACKETS_YES));
+            && (Boolean.valueOf(property) || property.equals(SystemProperties.TRANSITION_BRACKETS_YES));
     }
 
     /**
@@ -99,7 +99,7 @@ public class SystemProperties extends java.util.Properties implements Fixable,
     public boolean isUseParameters() {
         String params = getProperty(SystemProperties.PARAMETERS_KEY);
         return params != null
-            && (new Boolean(params) || params.equals(SystemProperties.PARAMETERS_YES));
+            && (Boolean.valueOf(params) || params.equals(SystemProperties.PARAMETERS_YES));
     }
 
     /** Sets the {@link #PARAMETERS_KEY} property to the given value * */
@@ -150,8 +150,8 @@ public class SystemProperties extends java.util.Properties implements Fixable,
      * @see #CONTROL_LABELS_KEY
      */
     public void setControlLabels(List<String> controlLabels) {
-        setProperty(CONTROL_LABELS_KEY, Groove.toString(
-            controlLabels.toArray(), "", "", " "));
+        setProperty(CONTROL_LABELS_KEY,
+            Groove.toString(controlLabels.toArray(), "", "", " "));
     }
 
     /**
@@ -173,8 +173,8 @@ public class SystemProperties extends java.util.Properties implements Fixable,
      * @see #COMMON_LABELS_KEY
      */
     public void setCommonLabels(List<String> commonLabels) {
-        setProperty(COMMON_LABELS_KEY, Groove.toString(commonLabels.toArray(),
-            "", "", " "));
+        setProperty(COMMON_LABELS_KEY,
+            Groove.toString(commonLabels.toArray(), "", "", " "));
     }
 
     /**
@@ -210,7 +210,7 @@ public class SystemProperties extends java.util.Properties implements Fixable,
      */
     public boolean isInjective() {
         String result = getProperty(INJECTIVE_KEY);
-        return result != null && new Boolean(result);
+        return result != null && Boolean.valueOf(result);
     }
 
     /**
@@ -228,7 +228,7 @@ public class SystemProperties extends java.util.Properties implements Fixable,
      */
     public boolean isCheckDangling() {
         String result = getProperty(DANGLING_KEY);
-        return result != null && new Boolean(result);
+        return result != null && Boolean.valueOf(result);
     }
 
     /**
@@ -306,7 +306,7 @@ public class SystemProperties extends java.util.Properties implements Fixable,
      */
     public boolean isCheckCreatorEdges() {
         String result = getProperty(CREATOR_EDGE_KEY);
-        return result != null && new Boolean(result);
+        return result != null && Boolean.valueOf(result);
     }
 
     /**
@@ -324,7 +324,7 @@ public class SystemProperties extends java.util.Properties implements Fixable,
      */
     public boolean isCheckIsomorphism() {
         String result = getProperty(ISOMORPHISM_KEY);
-        return result == null || new Boolean(result);
+        return result == null || Boolean.valueOf(result);
     }
 
     /**
@@ -335,7 +335,7 @@ public class SystemProperties extends java.util.Properties implements Fixable,
      */
     public boolean isRhsAsNac() {
         String result = getProperty(RHS_AS_NAC_KEY);
-        return result != null && new Boolean(result);
+        return result != null && Boolean.valueOf(result);
     }
 
     /**
@@ -714,10 +714,13 @@ public class SystemProperties extends java.util.Properties implements Fixable,
                 true));
         defaultKeys.put(CONTROL_KEY, new IsExtendedBoolean(
             "Flag determining if control is enabled"));
-        defaultKeys.put(CONTROL_NAME_KEY, new Property.True<String>(
-            String.format("Name of the control program (default: '%s')",
+        defaultKeys.put(
+            CONTROL_NAME_KEY,
+            new Property.True<String>(String.format(
+                "Name of the control program (default: '%s')",
                 Groove.DEFAULT_CONTROL_NAME)));
-        defaultKeys.put(TYPE_NAME_KEY,
+        defaultKeys.put(
+            TYPE_NAME_KEY,
             new Property.True<String>(String.format(
                 "Name of the type graph (default: '%s')",
                 Groove.DEFAULT_TYPE_NAME)));
