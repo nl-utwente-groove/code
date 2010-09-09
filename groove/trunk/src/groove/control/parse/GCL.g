@@ -27,26 +27,45 @@ import java.util.LinkedList;
 package groove.control.parse;
 import groove.control.*;
 import java.util.LinkedList;
+import groove.util.ExprParser;
 
 }
 
 
-@members {
+@lexer::members {
     private List<String> errors = new LinkedList<String>();
+    
     public void displayRecognitionError(String[] tokenNames,
                                         RecognitionException e) {
         String hdr = getErrorHeader(e);
         String msg = getErrorMessage(e, tokenNames);
         errors.add(hdr + " " + msg);
     }
+
+    public List<String> getErrors() {
+        return errors;
+    }
+}
+
+@members {
+    private List<String> errors = new LinkedList<String>();
+    
+    public void displayRecognitionError(String[] tokenNames,
+                                        RecognitionException e) {
+        String hdr = getErrorHeader(e);
+        String msg = getErrorMessage(e, tokenNames);
+        errors.add(hdr + " " + msg);
+    }
+
     public List<String> getErrors() {
         return errors;
     }
 
 	CommonTree concat(CommonTree seq) {
-        String result;
-        List children = seq.getChildren();
-        if (children == null) {
+        String result = "";
+        if (seq == null) {
+            result = "";
+        } else if (seq.getChildren() == null) {
             result = seq.getText();
         } else {
             StringBuilder builder = new StringBuilder();
@@ -56,6 +75,22 @@ import java.util.LinkedList;
             result = builder.toString();
         }
         return new CommonTree(new CommonToken(IDENTIFIER, result));
+    }
+    
+    CommonTree toUnquoted(String text) {
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == '\\') {
+                i++;
+                c = text.charAt(i);
+                result.append(c);
+            } else if (c != '"') {
+                result.append(c);
+            }
+        }
+        System.out.printf("From \%s to \%s\%n", text, result);
+        return new CommonTree(new CommonToken(IDENTIFIER, result.toString()));      
     }
 }
 
@@ -142,7 +177,7 @@ variable
 literal
 	: TRUE -> BOOL_TYPE TRUE
 	| FALSE -> BOOL_TYPE FALSE
-	| dqText -> STRING_TYPE dqText
+	| STRING -> STRING_TYPE { toUnquoted($STRING.text) }
 	| integer -> INT_TYPE { concat($integer.tree) }
 	| real -> REAL_TYPE { concat($real.tree) }
 	;
@@ -207,7 +242,7 @@ IDENTIFIER 	: ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*;
 //STRING : QUOTE (options {greedy=false;} : .)* QUOTE ;
 //{ setText(getText().substring(1, getText().length()-1)); };
 NUMBER : ('0'..'9')+;
-
+STRING : QUOTE (~(QUOTE|BSLASH) | BSLASH(QUOTE|BSLASH))* QUOTE ;
 
 ML_COMMENT : '/*' ( options {greedy=false;} : . )* '*/' { $channel=HIDDEN; };
 SL_COMMENT : '//' ( options {greedy=false;} : . )* '\n' { $channel=HIDDEN; };
@@ -220,3 +255,4 @@ WS  :   (   ' '
         { $channel=HIDDEN; }
     ;    
     
+ANY_CHAR : . ;
