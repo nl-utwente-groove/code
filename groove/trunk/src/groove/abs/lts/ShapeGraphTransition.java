@@ -26,6 +26,7 @@ import groove.trans.RuleEvent;
  * @author Eduardo Zambon
  * @version $Revision $
  */
+@Deprecated
 public class ShapeGraphTransition extends DefaultGraphTransition {
 
     // ------------------------------------------------------------------------

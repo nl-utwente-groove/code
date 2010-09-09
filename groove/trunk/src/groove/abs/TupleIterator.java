@@ -38,6 +38,7 @@ import java.util.NoSuchElementException;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public class TupleIterator<Idx,Val> implements Iterator<Map<Idx,Val>> {
 
     /**
@@ -94,8 +95,8 @@ public class TupleIterator<Idx,Val> implements Iterator<Map<Idx,Val>> {
                 this.nextVal.put(i, it.next()); // NoSuchElementException
                                                 // possible
             } catch (NoSuchElementException e) { // the inner iterator it is
-                                                    // empty, thus this iterator
-                                                    // is also empty
+                                                 // empty, thus this iterator
+                                                 // is also empty
                 this.hasNext = false;
                 this.consumed = true;
                 this.nextVal.clear();
@@ -138,7 +139,7 @@ public class TupleIterator<Idx,Val> implements Iterator<Map<Idx,Val>> {
         if (!this.consumed) {
             return;
         } // no need to compute because next() was not called since the last
-            // computation
+          // computation
         // find the first iterator that can be incremented
         int k = 0;
         while (k < this.iset.size()) { // && (! iterators.get(k).hasNext())) {

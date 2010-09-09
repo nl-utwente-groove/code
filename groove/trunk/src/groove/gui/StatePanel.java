@@ -22,7 +22,6 @@ import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import groove.abs.AbstrGraph;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -30,7 +29,6 @@ import groove.graph.LabelStore;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
-import groove.gui.jgraph.AbstrGraphJModel;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JCell;
@@ -378,9 +376,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     /** Creates a j-model for a given graph. */
     private GraphJModel createStateJModel(GraphState state) {
         Graph graph = state.getGraph();
-        return getSimulator().isAbstractSimulation()
-                ? AbstrGraphJModel.newInstance((AbstrGraph) graph, getOptions())
-                : GraphJModel.newInstance(graph, getOptions());
+        return GraphJModel.newInstance(graph, getOptions());
     }
 
     /**

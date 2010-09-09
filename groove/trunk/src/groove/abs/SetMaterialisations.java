@@ -45,6 +45,7 @@ import java.util.Set;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public class SetMaterialisations {
 
     /**
@@ -168,9 +169,10 @@ public class SetMaterialisations {
             if (!this.morph.containsKey(n)) {
                 continue;
             } // check whether deleted node
-            // this is a read central node
+              // this is a read central node
             try {
-                this.centerType.put(n,
+                this.centerType.put(
+                    n,
                     this.abstrPart.family().computeAddPattern(
                         this.newConcrPart, this.morph.getNode(n)));
             } catch (ExceptionIncompatibleWithMaxIncidence e) {
@@ -180,7 +182,8 @@ public class SetMaterialisations {
         // compute the types for the new nodes
         for (Node n : appl.getCreatedNodes()) {
             try {
-                this.centerType.put(n,
+                this.centerType.put(
+                    n,
                     this.abstrPart.family().computeAddPattern(
                         this.newConcrPart, n));
             } catch (ExceptionIncompatibleWithMaxIncidence e) {

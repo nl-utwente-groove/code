@@ -26,6 +26,7 @@ import groove.graph.NodeEdgeMap;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public interface AbstrGraph extends Graph {
 
     /**

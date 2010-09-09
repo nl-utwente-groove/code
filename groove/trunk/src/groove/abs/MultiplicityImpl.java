@@ -27,6 +27,7 @@ import java.util.Map;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public class MultiplicityImpl implements Multiplicity {
 
     /** */

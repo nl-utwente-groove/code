@@ -20,6 +20,7 @@ import groove.abs.AbstrGraph;
 import groove.gui.Options;
 
 /** The abstract graph version of a GraphJModel */
+@Deprecated
 public class AbstrGraphJModel extends GraphJModel {
 
     /**

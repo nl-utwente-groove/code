@@ -18,9 +18,10 @@ package groove.abs;
 
 import groove.graph.Graph;
 import groove.graph.Node;
-import java.util.Collection;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
+
+import java.util.Collection;
 
 /**
  * A graph pattern is a graph with identified central node. The radius of the
@@ -30,6 +31,7 @@ import groove.rel.VarNodeEdgeMap;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public interface GraphPattern extends Graph {
 
     /**

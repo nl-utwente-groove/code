@@ -36,6 +36,7 @@ import java.util.Set;
  * @author Eduardo Zambon
  * @version $Revision $
  */
+@Deprecated
 public class ShapeGraphState extends AbstractGraphState {
 
     /**

@@ -33,6 +33,7 @@ import java.util.Map;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 class ExtendedVarNodeEdgeMap extends VarNodeEdgeHashMap {
 
     @Override

@@ -33,6 +33,7 @@ import junit.framework.TestCase;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public class TestingAbstracting extends TestCase {
 
     /** */

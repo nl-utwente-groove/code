@@ -17,10 +17,10 @@
 package groove.test.abs;
 
 import groove.abs.Abstraction;
+import groove.abs.Abstraction.MultInfoRelation;
 import groove.abs.ExceptionRemovalImpossible;
 import groove.abs.Multiplicity;
 import groove.abs.MultiplicityInformation;
-import groove.abs.Abstraction.MultInfoRelation;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -34,6 +34,7 @@ import junit.framework.TestCase;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public class TestingMultiplicities extends TestCase {
 
     // do not change

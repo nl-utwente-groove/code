@@ -31,6 +31,7 @@ import java.util.Set;
 import org.jgraph.graph.AttributeMap;
 
 /** Extends an {@link LTSJModel} with a set of active transitions */
+@Deprecated
 public class AbstrLTSJModel extends LTSJModel {
 
     /** @require lts should be of type AGTS */

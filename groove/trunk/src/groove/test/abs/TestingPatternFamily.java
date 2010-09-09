@@ -34,6 +34,7 @@ import groove.match.SearchPlanStrategy;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public class TestingPatternFamily extends junit.framework.TestCase {
 
     Node[] nodes;
@@ -124,11 +125,11 @@ public class TestingPatternFamily extends junit.framework.TestCase {
         Graph g3_2 = getG32(nl); // (0) 1 -b-> 0 2 -b-> 0 0 -b-> 3 (0,0)
         Graph g3_3 = getG33(nl); // (0) 1 -b-> 0 1 -b-> 2 (0,0)
         Graph g4_0 = getG40(nl); // (0) 1 -c-> 0 2 -c-> 0 1 -d-> 2 2 -d-> 1
-                                    // (1,2)
+                                 // (1,2)
         Graph g4_1 = getG41(nl); // (0) 1 -c-> 0 2 -c-> 0 1 -d-> 2 0 -b-> 3
-                                    // (1,2)
+                                 // (1,2)
         Graph g4_2 = getG42(nl); // (0) 1 -c-> 0 2 -c-> 0 3 -c-> 0 1 -d-> 2 2
-                                    // -d-> 3 (0,0)
+                                 // -d-> 3 (0,0)
         Graph g7_0 = getG70(nl); // (0) 1 -e-> 0 (2,2)
 
         assertEquals(1, pf.getSelfIsomorphisms(p0).size());

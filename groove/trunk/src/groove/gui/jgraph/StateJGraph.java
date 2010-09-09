@@ -16,22 +16,12 @@
  */
 package groove.gui.jgraph;
 
-import groove.abs.AbstrGraph;
-import groove.abs.GraphPattern;
 import groove.graph.DefaultGraph;
-import groove.graph.Node;
 import groove.gui.Exporter;
-import groove.gui.GraphPatternPopupWindow;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.lts.GraphState;
-
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 import javax.swing.JPopupMenu;
-
-import org.jgraph.graph.DefaultGraphCell;
 
 /**
  * Implementation of {@link JGraph} that provides the proper popup menu. To
@@ -60,10 +50,6 @@ public class StateJGraph extends JGraph {
         setDisconnectable(false);
         setEnabled(false);
         this.simulator = simulator;
-
-        // add a mouse listener used in case of abstract simulation
-        addMouseListener(new MyMouseListener());
-
     }
 
     /** Specialises the return type to a {@link JModel}. */
@@ -76,7 +62,6 @@ public class StateJGraph extends JGraph {
     protected void fillPopupMenu(JPopupMenu result) {
         addSeparatorUnlessFirst(result);
         result.add(this.simulator.getApplyTransitionAction());
-        // IOVKA editing a graph is not allowed for abstract simulation
         if (!this.simulator.isAbstractSimulation()) {
             result.addSeparator();
             result.add(this.simulator.getEditGraphAction());
@@ -103,45 +88,5 @@ public class StateJGraph extends JGraph {
      * The simulator to which this j-graph is associated.
      */
     final private Simulator simulator;
-
-    /**
-     * Mouse listener that creates the pop-up menu and switches the view to the
-     * rule panel on double-clicks.
-     */
-    private class MyMouseListener extends MouseAdapter {
-        /** Empty constructor with the correct visibility. */
-        MyMouseListener() {
-            // empty
-        }
-
-        @Override
-        public void mouseClicked(MouseEvent evt) {
-            if (!StateJGraph.this.simulator.isAbstractSimulation()) {
-                return;
-            }
-            if (evt.getButton() == MouseEvent.BUTTON1
-                && evt.getClickCount() == 2) {
-                // scale from screen to model
-                java.awt.Point loc = evt.getPoint();
-                // find cell in model coordinates
-                DefaultGraphCell cell =
-                    (DefaultGraphCell) getFirstCellForLocation(loc.x, loc.y);
-                if (cell instanceof GraphJVertex) {
-                    GraphJVertex vertex = (GraphJVertex) cell;
-                    Node node = vertex.getNode();
-                    GraphState state =
-                        StateJGraph.this.simulator.getCurrentState();
-                    GraphPattern pattern =
-                        ((AbstrGraph) vertex.getGraphJModel().getGraph()).typeOf(node);
-                    new GraphPatternPopupWindow(pattern,
-                        vertex.getGraphJModel().getOptions(), "Type of node "
-                            + node.toString()
-                            + (state == null ? "" : " of state "
-                                + state.toString()));
-                }
-
-            }
-        }
-    }
 
 }

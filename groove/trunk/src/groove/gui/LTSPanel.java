@@ -22,7 +22,6 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphShape;
 import groove.graph.Node;
-import groove.gui.jgraph.AbstrLTSJModel;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
@@ -90,12 +89,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
 
     public synchronized void startSimulationUpdate(GTS gts) {
         setGTS(gts);
-        if (getSimulator().isAbstractSimulation()) {
-            getJGraph().setModel(AbstrLTSJModel.newInstance(gts, getOptions()));
-        } else {
-            getJGraph().setModel(LTSJModel.newInstance(gts, getOptions()));
-        }
-
+        getJGraph().setModel(LTSJModel.newInstance(gts, getOptions()));
         setStateUpdate(gts.startState());
         setEnabled(true);
         refreshStatus();

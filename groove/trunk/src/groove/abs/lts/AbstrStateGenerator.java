@@ -35,6 +35,7 @@ import java.util.Collection;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public class AbstrStateGenerator implements RuleEventApplier {
 
     /**

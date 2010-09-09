@@ -44,6 +44,7 @@ import java.util.Set;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 
     /** Used by AGTS. */

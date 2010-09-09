@@ -26,6 +26,7 @@ import junit.framework.TestSuite;
  * @author Iovka Boneva
  * @version $Revision $
  */
+@Deprecated
 public class TestAbstraction extends TestCase {
 
     /** suite method for testing abstract simulation */

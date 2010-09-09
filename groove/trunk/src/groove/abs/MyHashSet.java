@@ -38,6 +38,7 @@ import java.util.Vector;
  * @version $Revision $
  * @param <T>
  */
+@Deprecated
 public class MyHashSet<T> implements Iterable<T>, Set<T> {
 
     /** Defines an equivalence relation over the objects of the same type. */
