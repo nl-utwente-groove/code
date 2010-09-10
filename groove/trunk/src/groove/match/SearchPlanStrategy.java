@@ -289,7 +289,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     static final Reporter getMatchIterReporter =
         reporter.register("getMatchIter()");
     /** Handle for profiling {@link Search#find()} */
-    static public Reporter searchFindReporter =
+    static public final Reporter searchFindReporter =
         reporter.register("Search.find()");
 
     /**
