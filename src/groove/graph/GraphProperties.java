@@ -446,7 +446,7 @@ public class GraphProperties extends Properties {
      */
     public static final String VERSION_KEY = SYSTEM_KEY_START + "version";
     /** The set of all special property keys. */
-    static public Set<String> SYSTEM_KEYS =
+    public static final Set<String> SYSTEM_KEYS =
         Collections.unmodifiableSet(new TreeSet<String>(
             Arrays.asList(new String[] {VERSION_KEY})));
     /** Array of keys, in order of display appearance. */

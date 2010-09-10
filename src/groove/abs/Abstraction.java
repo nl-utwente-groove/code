@@ -88,7 +88,7 @@ public class Abstraction {
     public static final int MAX_ALLOWED_PRECISION = 5;
 
     /** To be unset after debugging phase */
-    public static boolean DEBUG = true;
+    public static final boolean DEBUG = true;
 
     /** */
     public enum LinkPrecision {
