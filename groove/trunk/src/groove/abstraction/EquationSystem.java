@@ -52,11 +52,14 @@ public class EquationSystem {
     private Shape shape;
     private ShapeNode node; // Node to singularise: v
     private int varCount;
+    private List<MultVar> vars;
     private List<Equation> equations;
     private List<SetConstraint> setConstrs;
     private List<AdmissibilityConstraint> admisConstrs;
     private Map<EdgeSignature,Pair<MultVar,MultVar>> outMap;
     private Map<EdgeSignature,Pair<MultVar,MultVar>> inMap;
+    private int setCIdx;
+    private int eqIdx;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -69,6 +72,7 @@ public class EquationSystem {
         this.shape = shape;
         this.node = node;
         this.varCount = 0;
+        this.vars = new ArrayList<MultVar>();
         this.equations = new ArrayList<Equation>();
         this.setConstrs = new ArrayList<SetConstraint>();
         this.admisConstrs = new ArrayList<AdmissibilityConstraint>();
@@ -125,7 +129,6 @@ public class EquationSystem {
                         this.newEquation(p, q, oM);
                         // Create the constraint: p \in {0, 1}
                         this.newSetConstr(p, zeroOneSet);
-                        this.newSetConstr(q, zeroOneSet);
                         // Create a new entry in the map.
                         Pair<MultVar,MultVar> pair =
                             new Pair<MultVar,MultVar>(p, q);
@@ -234,6 +237,7 @@ public class EquationSystem {
 
     private MultVar newMultVar() {
         MultVar result = new MultVar(this.varCount);
+        this.vars.add(result);
         this.varCount++;
         return result;
     }
@@ -261,32 +265,35 @@ public class EquationSystem {
      * EDUARDO: Comment this...
      */
     public void solve() {
-        int i = this.setConstrs.size() - 1;
-        while (i >= 0) {
-            this.computeEquations();
-            int j = this.equations.size() - 1;
-            while (j >= 0) {
-                int jj = this.equations.size() - 1;
-                while (jj < this.equations.size()) {
-                    if (this.areAdmisContrsSatisfied()) {
-                        this.storeResultShape();
-                    }
-                    if (this.equations.get(jj).hasNext()) {
-                        this.equations.get(jj).next();
-                    } else {
-                        if (jj == j) {
-                            // EDUARDO: Argh! Code this properly!
-                        }
-                    }
-                }
-            }
-        }
-    }
+        System.out.println("------------------------------------------");
+        System.out.println("Solving " + this.toString() + "\n");
 
-    private void computeEquations() {
+        this.setCIdx = this.setConstrs.size() - 1;
+        this.eqIdx = this.equations.size() - 1;
         for (Equation eq : this.equations) {
             eq.compute();
         }
+        while (!this.isSolvingFinished()) {
+            this.printVars();
+            if (this.areAdmisContrsSatisfied()) {
+                System.out.println("Valid!");
+                this.storeResultShape();
+            } else {
+                System.out.println("Invalid!");
+            }
+            this.updateSolutionValues();
+        }
+    }
+
+    private void printVars() {
+        System.out.print("Possible solution: ");
+        for (MultVar var : this.vars) {
+            System.out.print(var.toString() + " = " + var.mult + " ");
+        }
+    }
+
+    private boolean isSolvingFinished() {
+        return this.setCIdx == -1 && this.eqIdx == -1;
     }
 
     private boolean areAdmisContrsSatisfied() {
@@ -298,6 +305,34 @@ public class EquationSystem {
             }
         }
         return result;
+    }
+
+    private void updateSolutionValues() {
+        while (this.eqIdx >= 0 && !this.equations.get(this.eqIdx).hasNext()) {
+            this.eqIdx--;
+        }
+        if (this.eqIdx >= 0) {
+            this.equations.get(this.eqIdx).next();
+            for (int i = this.eqIdx + 1; i < this.equations.size(); i++) {
+                this.equations.get(i).resetIterator();
+            }
+        } else {
+            // We finished iterating the equations. Change the set constraints.
+            while (this.setCIdx >= 0
+                && !this.setConstrs.get(this.setCIdx).hasNext()) {
+                this.setCIdx--;
+            }
+            if (this.setCIdx >= 0) {
+                this.setConstrs.get(this.setCIdx).next();
+                for (int i = this.setCIdx + 1; i < this.setConstrs.size(); i++) {
+                    this.setConstrs.get(i).resetIterator();
+                }
+                for (Equation eq : this.equations) {
+                    eq.compute();
+                }
+                this.eqIdx = this.equations.size() - 1;
+            }
+        }
     }
 
     private void storeResultShape() {
