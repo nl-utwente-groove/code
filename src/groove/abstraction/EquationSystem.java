@@ -22,6 +22,7 @@ import groove.util.Pair;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,7 +52,6 @@ public class EquationSystem {
     private Shape shape;
     private ShapeNode node; // Node to singularise: v
     private int varCount;
-    private List<MultVar> vars;
     private List<Equation> equations;
     private List<SetConstraint> setConstrs;
     private List<AdmissibilityConstraint> admisConstrs;
@@ -69,7 +69,6 @@ public class EquationSystem {
         this.shape = shape;
         this.node = node;
         this.varCount = 0;
-        this.vars = new ArrayList<MultVar>();
         this.equations = new ArrayList<Equation>();
         this.setConstrs = new ArrayList<SetConstraint>();
         this.admisConstrs = new ArrayList<AdmissibilityConstraint>();
@@ -126,6 +125,7 @@ public class EquationSystem {
                         this.newEquation(p, q, oM);
                         // Create the constraint: p \in {0, 1}
                         this.newSetConstr(p, zeroOneSet);
+                        this.newSetConstr(q, zeroOneSet);
                         // Create a new entry in the map.
                         Pair<MultVar,MultVar> pair =
                             new Pair<MultVar,MultVar>(p, q);
@@ -234,7 +234,6 @@ public class EquationSystem {
 
     private MultVar newMultVar() {
         MultVar result = new MultVar(this.varCount);
-        this.vars.add(result);
         this.varCount++;
         return result;
     }
@@ -262,7 +261,47 @@ public class EquationSystem {
      * EDUARDO: Comment this...
      */
     public void solve() {
-        // EDUARDO: Implement this...
+        int i = this.setConstrs.size() - 1;
+        while (i >= 0) {
+            this.computeEquations();
+            int j = this.equations.size() - 1;
+            while (j >= 0) {
+                int jj = this.equations.size() - 1;
+                while (jj < this.equations.size()) {
+                    if (this.areAdmisContrsSatisfied()) {
+                        this.storeResultShape();
+                    }
+                    if (this.equations.get(jj).hasNext()) {
+                        this.equations.get(jj).next();
+                    } else {
+                        if (jj == j) {
+                            // EDUARDO: Argh! Code this properly!
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void computeEquations() {
+        for (Equation eq : this.equations) {
+            eq.compute();
+        }
+    }
+
+    private boolean areAdmisContrsSatisfied() {
+        boolean result = true;
+        for (AdmissibilityConstraint admisConstr : this.admisConstrs) {
+            if (!admisConstr.isSatisfied()) {
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
+
+    private void storeResultShape() {
+        // EDUARDO: to implement.
     }
 
     /**
@@ -285,10 +324,10 @@ public class EquationSystem {
 
     private static class MultVar {
 
-        private int number;
-        private Multiplicity mult;
+        public int number;
+        public Multiplicity mult;
 
-        private MultVar(int number) {
+        public MultVar(int number) {
             this.number = number;
             this.mult = null;
         }
@@ -312,19 +351,42 @@ public class EquationSystem {
      */
     private static class Equation {
 
-        private MultVar singVar; // x
-        private MultVar remVar; // y
-        private Multiplicity origMult; // c
+        public MultVar singVar; // x
+        public MultVar remVar; // y
+        public Multiplicity origMult; // c
+        public Set<Multiplicity> resultSet;
+        public Iterator<Multiplicity> iter;
 
-        private Equation(MultVar singVar, MultVar remVar, Multiplicity origMult) {
+        public Equation(MultVar singVar, MultVar remVar, Multiplicity origMult) {
             this.singVar = singVar;
             this.remVar = remVar;
             this.origMult = origMult;
+            this.resultSet = null;
+            this.iter = null;
         }
 
         @Override
         public String toString() {
             return this.remVar + " = " + this.origMult + " - " + this.singVar;
+        }
+
+        public void compute() {
+            assert this.singVar.mult != null;
+            this.resultSet = this.origMult.subEdgeMult(this.singVar.mult);
+            this.resetIterator();
+        }
+
+        public void resetIterator() {
+            this.iter = this.resultSet.iterator();
+            this.next();
+        }
+
+        public boolean hasNext() {
+            return this.iter.hasNext();
+        }
+
+        public void next() {
+            this.remVar.mult = this.iter.next();
         }
 
     }
@@ -340,17 +402,32 @@ public class EquationSystem {
      */
     private static class SetConstraint {
 
-        private MultVar singVar; // x
-        private Set<Multiplicity> multSet;
+        public MultVar singVar; // x
+        public Set<Multiplicity> multSet;
+        public Iterator<Multiplicity> iter;
 
-        private SetConstraint(MultVar singVar, Set<Multiplicity> multSet) {
+        public SetConstraint(MultVar singVar, Set<Multiplicity> multSet) {
             this.singVar = singVar;
             this.multSet = multSet;
+            this.resetIterator();
         }
 
         @Override
         public String toString() {
             return this.singVar + " in " + this.multSet;
+        }
+
+        public void resetIterator() {
+            this.iter = this.multSet.iterator();
+            this.next();
+        }
+
+        public boolean hasNext() {
+            return this.iter.hasNext();
+        }
+
+        public void next() {
+            this.singVar.mult = this.iter.next();
         }
     }
 
@@ -360,10 +437,10 @@ public class EquationSystem {
 
     private static class MultTerm {
 
-        private Multiplicity nodeMult;
-        private MultVar multVar;
+        public Multiplicity nodeMult;
+        public MultVar multVar;
 
-        private MultTerm(Multiplicity nodeMult, MultVar multVar) {
+        public MultTerm(Multiplicity nodeMult, MultVar multVar) {
             this.nodeMult = nodeMult;
             this.multVar = multVar;
         }
@@ -373,7 +450,7 @@ public class EquationSystem {
             return this.nodeMult + "*" + this.multVar;
         }
 
-        private Multiplicity multiply() {
+        public Multiplicity multiply() {
             assert this.multVar.mult != null;
             return this.nodeMult.multiply(this.multVar.mult);
         }
@@ -385,12 +462,12 @@ public class EquationSystem {
 
     private static class AdmissibilityConstraint {
 
-        private List<MultTerm> outSumTerms;
-        private Multiplicity outSumConst;
-        private List<MultTerm> inSumTerms;
-        private Multiplicity inSumConst;
+        public List<MultTerm> outSumTerms;
+        public Multiplicity outSumConst;
+        public List<MultTerm> inSumTerms;
+        public Multiplicity inSumConst;
 
-        private AdmissibilityConstraint() {
+        public AdmissibilityConstraint() {
             this.outSumTerms = new ArrayList<MultTerm>();
             this.outSumConst = Multiplicity.getMultOf(0);
             this.inSumTerms = new ArrayList<MultTerm>();
@@ -404,24 +481,23 @@ public class EquationSystem {
                 + "]";
         }
 
-        private void addToOutSum(MultTerm term) {
+        public void addToOutSum(MultTerm term) {
             this.outSumTerms.add(term);
         }
 
-        private void addToOutSum(Multiplicity mult) {
+        public void addToOutSum(Multiplicity mult) {
             this.outSumConst = this.outSumConst.uadd(mult);
         }
 
-        private void addToInSum(MultTerm term) {
+        public void addToInSum(MultTerm term) {
             this.inSumTerms.add(term);
         }
 
-        private void addToInSum(Multiplicity mult) {
+        public void addToInSum(Multiplicity mult) {
             this.inSumConst = this.inSumConst.uadd(mult);
         }
 
-        private Multiplicity doSum(List<MultTerm> sumTerms,
-                Multiplicity sumConst) {
+        public Multiplicity doSum(List<MultTerm> sumTerms, Multiplicity sumConst) {
             Multiplicity result = sumConst;
             for (MultTerm term : sumTerms) {
                 result = result.uadd(term.multiply());
@@ -429,13 +505,13 @@ public class EquationSystem {
             return result;
         }
 
-        private boolean isVacuous() {
+        public boolean isVacuous() {
             return this.outSumTerms.isEmpty() && this.inSumTerms.isEmpty()
                 && !this.outSumConst.isPositive()
                 && !this.inSumConst.isPositive();
         }
 
-        private boolean isSatisfied() {
+        public boolean isSatisfied() {
             Multiplicity outM = this.doSum(this.outSumTerms, this.outSumConst);
             Multiplicity inM = this.doSum(this.inSumTerms, this.inSumConst);
             return outM.overlaps(inM);
