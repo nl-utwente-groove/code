@@ -166,9 +166,15 @@ public class EquationSystem {
                 // For all equivalence classes. (As incoming)
                 for (EquivClass<ShapeNode> ecI : this.shape.getEquivRelation()) {
 
-                    // For each pair of equivalence classes we have a
-                    // constraint.
-                    AdmissibilityConstraint constr = this.newAdmisConstr();
+                    // For each pair of equivalence classes we have two
+                    // constraints.
+                    // This constraint is about the summation of all flux
+                    // between two equivalence classes.
+                    AdmissibilityConstraint sumConstr = this.newAdmisConstr();
+                    // This constraint is about the summation of the flux
+                    // between an arbitrary equivalence class and the remainder
+                    // of the equivalence class that is being split.
+                    AdmissibilityConstraint remConstr = this.newAdmisConstr();
 
                     // Create the terms of the sum for the outgoing equivalence
                     // class.
@@ -185,9 +191,13 @@ public class EquationSystem {
                             // element in the pair.
                             MultTerm term;
                             term = new MultTerm(nOMult, outMultVars.first());
-                            constr.addToOutSum(term);
+                            sumConstr.addToOutSum(term);
                             term = new MultTerm(nOMult, outMultVars.second());
-                            constr.addToOutSum(term);
+                            sumConstr.addToOutSum(term);
+                            // Add the second term to the remainder constraint
+                            // as well.
+                            term = new MultTerm(nOMult, outMultVars.second());
+                            remConstr.addToOutSum(term);
                         } else {
                             // No, we don't. Multiply the two multiplicities
                             // and add the result to the constant in the
@@ -195,7 +205,12 @@ public class EquationSystem {
                             Multiplicity eOMult =
                                 this.shape.getEdgeSigOutMult(nOEs);
                             Multiplicity outMult = nOMult.multiply(eOMult);
-                            constr.addToOutSum(outMult);
+                            sumConstr.addToOutSum(outMult);
+                            if (!nO.equals(this.node)) {
+                                // The sum does not consider the node that is
+                                // being singularised.
+                                remConstr.addToOutSum(outMult);
+                            }
                         }
                     }
 
@@ -213,9 +228,13 @@ public class EquationSystem {
                             // element in the pair.
                             MultTerm term;
                             term = new MultTerm(nIMult, inMultVars.first());
-                            constr.addToInSum(term);
+                            sumConstr.addToInSum(term);
                             term = new MultTerm(nIMult, inMultVars.second());
-                            constr.addToInSum(term);
+                            sumConstr.addToInSum(term);
+                            // Add the second term to the remainder constraint
+                            // as well.
+                            term = new MultTerm(nIMult, inMultVars.second());
+                            remConstr.addToInSum(term);
                         } else {
                             // No, we don't. Multiply the two multiplicities
                             // and add the result to the constant in the
@@ -223,12 +242,21 @@ public class EquationSystem {
                             Multiplicity eIMult =
                                 this.shape.getEdgeSigInMult(nIEs);
                             Multiplicity inMult = nIMult.multiply(eIMult);
-                            constr.addToInSum(inMult);
+                            sumConstr.addToInSum(inMult);
+                            if (!nI.equals(this.node)) {
+                                // The sum does not consider the node that is
+                                // being singularised.
+                                remConstr.addToInSum(inMult);
+                            }
                         }
                     }
 
-                    if (!constr.isVacuous()) {
-                        this.admisConstrs.add(constr);
+                    // We don't want trivially valid constraints.
+                    if (!sumConstr.isVacuous()) {
+                        this.admisConstrs.add(sumConstr);
+                    }
+                    if (!remConstr.isVacuous()) {
+                        this.admisConstrs.add(remConstr);
                     }
                 }
             }
