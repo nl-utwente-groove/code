@@ -44,7 +44,7 @@ public class ValueNode extends VariableNode {
     private ValueNode(int nr, Algebra<?> algebra, Object value) {
         super(-Math.abs(nr), algebra);
         this.value = value;
-        assert value == null || algebra != null;
+        assert (value == null) == (algebra == null);
     }
 
     /**
