@@ -1592,19 +1592,18 @@ public class DefaultRuleView implements RuleView {
             // Merged equal types are not caught, so we have to
             // check them for sharpness separately
             for (Edge edge : this.viewToLevelMap.edgeMap().values()) {
-                if (edge.label() instanceof MergeLabel) {
-                    // this is a merger edge
-                    Node source = edge.source();
-                    if (!lhsTyping.isSharp(source)) {
+                Node source = edge.source();
+                Label sourceType = lhsTyping.getType(source);
+                Node target = edge.target();
+                Label targetType = lhsTyping.getType(target);
+                if (edge.label() instanceof MergeLabel
+                    && sourceType.equals(targetType)) {
+                    // this is a merger edge with equal source and target types
+                    if (!lhsTyping.isSharp(source)
+                        && !lhsTyping.isSharp(target)) {
                         errors.add(new FormatError(
-                            "Merged type '%s' should be sharp",
-                            lhsTyping.getType(source), source));
-                    }
-                    Node target = edge.target();
-                    if (!lhsTyping.isSharp(target)) {
-                        errors.add(new FormatError(
-                            "Merged type '%s' should be sharp",
-                            lhsTyping.getType(target), target));
+                            "One of the merged types '%s' or '%s' should be sharp",
+                            sourceType, targetType, edge));
                     }
                 }
             }
