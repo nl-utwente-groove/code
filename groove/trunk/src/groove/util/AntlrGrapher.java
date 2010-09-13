@@ -131,7 +131,7 @@ public class AntlrGrapher {
         int tokenType = tree.getType();
         graph.addEdge(result, DefaultLabel.createLabel(this.tokens[tokenType],
             Label.NODE_TYPE), result);
-        if (this.textTypes.get(tokenType)) {
+        if (this.textTypes.get(tokenType) && tree.getText() != null) {
             ValueNode nameNode =
                 ValueNode.createValueNode(StringAlgebra.instance,
                     tree.getText());
