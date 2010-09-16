@@ -437,8 +437,8 @@ public class GraphJModel extends JModel implements GraphShapeListener {
             result = isPotentialUnaryEdge(edge);
         } else if (edge instanceof AspectEdge) {
             result =
-                ((AspectEdge) edge).isUnaryEdge()
-                    || RuleAspect.isRemark((AspectEdge) edge);
+                ((AspectEdge) edge).isUnaryEdge() || isPotentialUnaryEdge(edge)
+                    && RuleAspect.isRemark((AspectEdge) edge);
         } else {
             result = !edge.label().isBinary();
         }
