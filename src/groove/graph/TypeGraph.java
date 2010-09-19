@@ -250,8 +250,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                     if (algebra != null) {
                         String signature =
                             AlgebraRegister.getSignatureName(algebra);
-                        nodeTypeMap.put(node, DefaultLabel.createLabel(
-                            signature, Label.NODE_TYPE));
+                        nodeTypeMap.put(
+                            node,
+                            DefaultLabel.createLabel(signature, Label.NODE_TYPE));
                     }
                 } else if (node instanceof ProductNode) {
                     untypedNodes.remove(node);
@@ -416,13 +417,15 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
             "Label '%s' is not a node type label", sourceType);
         Set<Label> supertypes =
             this.labelStore.getSupertypes(getActualType(sourceType));
-        Set<? extends Edge> edges = labelEdgeSet(2, label);
-        for (Edge edge : edges) {
-            Label edgeType = getType(edge.source());
-            if (supertypes.contains(edgeType)) {
-                if (result == null || isSubtype(edgeType, resultType)) {
-                    result = edge;
-                    resultType = edgeType;
+        if (supertypes != null) {
+            Set<? extends Edge> edges = labelEdgeSet(2, label);
+            for (Edge edge : edges) {
+                Label edgeType = getType(edge.source());
+                if (supertypes.contains(edgeType)) {
+                    if (result == null || isSubtype(edgeType, resultType)) {
+                        result = edge;
+                        resultType = edgeType;
+                    }
                 }
             }
         }
