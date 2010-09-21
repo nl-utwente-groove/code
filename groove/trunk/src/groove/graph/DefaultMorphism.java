@@ -110,20 +110,6 @@ public class DefaultMorphism extends AbstractMorphism {
         return result;
     }
 
-    @Deprecated
-    @Override
-    public Node removeNode(Node key) {
-        testNotFixed();
-        return super.removeNode(key);
-    }
-
-    @Deprecated
-    @Override
-    public Edge removeEdge(Edge key) {
-        testNotFixed();
-        return super.removeEdge(key);
-    }
-
     /**
      * This implementation returns a new <tt>DefaultMorphism</tt>, sharing
      * the domain and codomain but with a copy of the element map. The resulting
@@ -147,7 +133,8 @@ public class DefaultMorphism extends AbstractMorphism {
     @Override
     protected MatchStrategy<VarNodeEdgeMap> createMatchStrategy() {
         return GraphSearchPlanFactory.getInstance().createMatcher(dom(),
-            elementMap().nodeMap().keySet(), elementMap().edgeMap().keySet(), null);
+            elementMap().nodeMap().keySet(), elementMap().edgeMap().keySet(),
+            null);
     }
 
     /**
