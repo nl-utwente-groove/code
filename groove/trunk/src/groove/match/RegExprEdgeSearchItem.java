@@ -78,7 +78,7 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
         this.allVarsFound = true;
         this.varIxMap = new HashMap<LabelVar,Integer>();
         for (LabelVar var : this.allVars) {
-            this.allVarsFound &= strategy.isVarFound(var);
+            this.allVarsFound = this.allVarsFound && strategy.isVarFound(var);
             this.varIxMap.put(var, strategy.getVarIx(var));
         }
     }

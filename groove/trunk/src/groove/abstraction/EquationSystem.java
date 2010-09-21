@@ -51,15 +51,23 @@ public class EquationSystem {
 
     private Shape shape;
     private ShapeNode node; // Node to singularise: v
+    private EquivClass<ShapeNode> origEc; // The original equivalence class: C
+    private EquivClass<ShapeNode> singEc; // The singularised equivalence class: C'
+    private EquivClass<ShapeNode> remEc; // The remaining equivalence class: C''
+
     private int varCount;
     private List<MultVar> vars;
     private List<Equation> equations;
     private List<SetConstraint> setConstrs;
     private List<AdmissibilityConstraint> admisConstrs;
+
     private Map<EdgeSignature,Pair<MultVar,MultVar>> outMap;
     private Map<EdgeSignature,Pair<MultVar,MultVar>> inMap;
+
     private int setCIdx;
     private int eqIdx;
+
+    private Set<Shape> results;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -78,6 +86,7 @@ public class EquationSystem {
         this.admisConstrs = new ArrayList<AdmissibilityConstraint>();
         this.outMap = new HashMap<EdgeSignature,Pair<MultVar,MultVar>>();
         this.inMap = new HashMap<EdgeSignature,Pair<MultVar,MultVar>>();
+        this.results = new HashSet<Shape>();
         this.buildEquationSystem();
     }
 
@@ -98,16 +107,16 @@ public class EquationSystem {
 
     private void buildEquationSystem() {
         // The original equivalence class: C
-        EquivClass<ShapeNode> origEc = this.shape.getEquivClassOf(this.node);
-        assert origEc.size() > 1;
+        this.origEc = this.shape.getEquivClassOf(this.node);
+        assert this.origEc.size() > 1;
 
         // The singularised equivalence class: C'
-        EquivClass<ShapeNode> singEc = new EquivClass<ShapeNode>();
-        singEc.add(this.node);
+        this.singEc = new EquivClass<ShapeNode>();
+        this.singEc.add(this.node);
 
         // The remaining equivalence class: C''
-        EquivClass<ShapeNode> remEc = origEc.clone();
-        remEc.remove(this.node);
+        this.remEc = this.origEc.clone();
+        this.remEc.remove(this.node);
 
         // For all binary labels.
         for (Label label : Util.binaryLabelSet(this.shape)) {
@@ -116,7 +125,7 @@ public class EquationSystem {
                 // For all nodes in the equivalence class: w \in D
                 for (ShapeNode w : D) {
                     EdgeSignature es =
-                        this.shape.getEdgeSignature(w, label, origEc);
+                        this.shape.getEdgeSignature(w, label, this.origEc);
 
                     // Outgoing multiplicity.
                     Multiplicity oM = this.shape.getEdgeSigOutMult(es);
@@ -364,17 +373,17 @@ public class EquationSystem {
     }
 
     private void storeResultShape() {
-        // EDUARDO: to implement.
+        Shape newShape = this.shape.clone();
+        //newShape
+        this.results.add(newShape);
     }
 
     /**
-     * EDUARDO: Comment this...
+     * Returns clones of the original shape that satisfy the equation system.
+     * If the system has no solutions, this set in empty.
      */
     public Set<Shape> getResultShapes() {
-        // EDUARDO: Implement this...
-        Set<Shape> result = new HashSet<Shape>();
-        result.add(this.shape);
-        return result;
+        return this.results;
     }
 
     // ------------------------------------------------------------------------
