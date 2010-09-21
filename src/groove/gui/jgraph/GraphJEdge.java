@@ -41,9 +41,9 @@ import java.util.Set;
 public class GraphJEdge extends JEdge implements GraphJCell {
     /**
      * Constructs a model edge based on a graph edge. The graph edge is required
-     * to have at least arity two; yet we cannot rely on it being a
-     * {@link groove.graph.BinaryEdge}, it might be regular with some
-     * pseudo-ends or it might be a {@link groove.view.aspect.AspectEdge}.
+     * to have at least arity two; yet we cannot rely on it being a binary
+     * edge, it might be regular with some pseudo-ends or it might be a
+     * {@link groove.view.aspect.AspectEdge}.
      * @param edge the underlying graph edge of this model edge.
      * @require <tt>edge != null && edge.endCount() >= 0</tt>
      * @ensure labels().size()==1, labels().contains(edge.label) source() ==

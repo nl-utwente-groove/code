@@ -78,12 +78,6 @@ public class DefaultGraphCalculator implements GraphCalculator {
         return scenario;
     }
 
-    /** See getFinal() * */
-    @Deprecated
-    public GraphState getMax() {
-        return getFinal();
-    }
-
     /**
      * Final states are all states with only transitions of unmodifying rules.
      */
@@ -149,12 +143,6 @@ public class DefaultGraphCalculator implements GraphCalculator {
         scenario.prepare(getGTS());
         return scenario.play().getValue();
 
-    }
-
-    /** See getAllFinal() * */
-    @Deprecated
-    public Collection<GraphState> getAllMax() {
-        return getAllFinal();
     }
 
     public Collection<GraphState> getAll(String conditionName) {

@@ -52,17 +52,6 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     }
 
     /**
-     * Constructs a successor state on the basis of a given parent state and
-     * rule application, and a given control location.
-     */
-    @Deprecated
-    public DefaultGraphNextState(AbstractGraphState source,
-            RuleApplication appl, Location control) {
-        this(source, appl.getEvent(), appl.getCreatedNodes(), control);
-        // getCache().setGraph(appl.getTarget());
-    }
-
-    /**
      * Initializes the variables for this state based on the previous state and
      * the transition taken to get here.
      */
