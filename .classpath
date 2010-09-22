@@ -7,7 +7,6 @@
 	<classpathentry kind="lib" path="lib/epsgraphics-1.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jgraph-5_13_0.jar"/>
 	<classpathentry kind="lib" path="lib/jgraphaddons-1_0_4.jar"/>
-	<classpathentry kind="lib" path="lib/junit-3_8_1.jar"/>
 	<classpathentry kind="lib" path="lib/layouts.jar"/>
 	<classpathentry kind="lib" path="lib/ltl2ba4j.jar"/>
 	<classpathentry kind="lib" path="lib/ltl2buchi.jar"/>
@@ -18,5 +17,6 @@
 	<classpathentry kind="lib" path="lib/emf-ecore-2_5_0.jar"/>
 	<classpathentry kind="lib" path="lib/emf-ecore-xmi-2_5_0.jar"/>
 	<classpathentry kind="lib" path="lib/OSXAdapter.jar"/>
+	<classpathentry kind="lib" path="lib/junit-4_8_2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
