@@ -4128,7 +4128,7 @@ public class Simulator {
                         "The last exploration is no longer valid in the "
                             + "current grammar. \n" + "Cannot apply '"
                             + this.exploration.getIdentifier() + "'.\n\n"
-                            + "Use the default exploration instead?\n";
+                            + "Use Breadth-First Exploration instead?\n";
                     int response =
                         JOptionPane.showOptionDialog(Simulator.this.getFrame(),
                             message, "Invalid Exploration",
