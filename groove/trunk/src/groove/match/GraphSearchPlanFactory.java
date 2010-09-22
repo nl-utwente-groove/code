@@ -615,7 +615,8 @@ public class GraphSearchPlanFactory {
      * @version $Revision$
      */
     static class BoundPartsComparator implements Comparator<SearchItem> {
-        BoundPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
+        BoundPartsComparator(Set<Node> remainingNodes,
+                Set<LabelVar> remainingVars) {
             this.remainingNodes = remainingNodes;
             this.remainingVars = remainingVars;
         }
@@ -650,7 +651,7 @@ public class GraphSearchPlanFactory {
         /** The set of (as yet) unscheduled nodes. */
         private final Set<Node> remainingNodes;
         /** The set of (as yet) unscheduled variables. */
-        private final Set<String> remainingVars;
+        private final Set<LabelVar> remainingVars;
     }
 
     /**
