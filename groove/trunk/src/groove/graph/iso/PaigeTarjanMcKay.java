@@ -214,7 +214,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
     }
 
     /** Computes the node and edge certificate arrays. */
-    synchronized private void computeCertificates() {
+    private void computeCertificates() {
         // we compute the certificate map
         PartitionRefiner.computeCertReporter.start();
         initCertificates();
