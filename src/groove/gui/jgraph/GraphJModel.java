@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.jgraph.graph.AttributeMap;
@@ -685,7 +686,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * information.
      */
     private int randomCoordinate() {
-        return (int) (this.toJCellMap.size() * 5 * Math.random());
+        return randomGenerator.nextInt(this.toJCellMap.size() * 5);
     }
 
     /**
@@ -856,4 +857,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
             GraphConstants.setFont(DATA_EDGE_ATTR, JAttr.DATA_FONT);
         }
     }
+
+    /** Random generator for coordinates of new nodes. */
+    private static final Random randomGenerator = new Random();
 }

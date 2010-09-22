@@ -244,28 +244,6 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
         return !this.boundVarSet.isEmpty();
     }
 
-    /**
-     * Indicates if a given variable occurs in this automaton. Convenience
-     * method for <code>allVarSet().contains(var)</code>.
-     */
-    public boolean hasVar(String var) {
-        if (this.allVarSet == null) {
-            initVarSets();
-        }
-        return this.allVarSet.contains(var);
-    }
-
-    /**
-     * Indicates if this automaton binds a given wildcard variable. Convenience
-     * method for <code>boundVarSet().contains(var)</code>.
-     */
-    public boolean bindsVar(String var) {
-        if (this.boundVarSet == null) {
-            initVarSets();
-        }
-        return !this.boundVarSet.contains(var);
-    }
-
     @Override
     public Set<Label> getAlphabet() {
         Set<Label> result = new HashSet<Label>();
