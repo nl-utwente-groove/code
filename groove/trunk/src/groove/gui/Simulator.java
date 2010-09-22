@@ -1052,6 +1052,7 @@ public class Simulator {
      * @param exploration - the exploration strategy to be used
      */
     public void doRunExploration(Exploration exploration) {
+        setDefaultExploration(exploration);
         GraphJModel ltsJModel = getLtsPanel().getJModel();
         synchronized (ltsJModel) {
             // unhook the lts' jmodel from the lts, for efficiency's sake
@@ -1078,7 +1079,6 @@ public class Simulator {
         if (ltsJGraph.getLayouter() != null) {
             ltsJGraph.getLayouter().start(false);
         }
-        setDefaultExploration(exploration);
     }
 
     /**
@@ -4123,7 +4123,28 @@ public class Simulator {
                 try {
                     this.exploration.play(getGTS(), getCurrentState());
                 } catch (FormatException exc) {
-                    showErrorDialog("Error: cannot parse exploration.", exc);
+                    String[] options = {"Yes", "No"};
+                    String message =
+                        "The last exploration is no longer valid in the "
+                            + "current grammar. \n" + "Cannot apply '"
+                            + this.exploration.getIdentifier() + "'.\n\n"
+                            + "Use the default exploration instead?\n";
+                    int response =
+                        JOptionPane.showOptionDialog(Simulator.this.getFrame(),
+                            message, "Invalid Exploration",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.QUESTION_MESSAGE, null, options,
+                            options[0]);
+                    if (response == 0) {
+                        Exploration newExplore = new Exploration();
+                        setDefaultExploration(newExplore);
+                        try {
+                            newExplore.play(getGTS(), getCurrentState());
+                        } catch (FormatException e) {
+                            showErrorDialog("Error: cannot parse exploration.",
+                                e);
+                        }
+                    }
                 }
             }
             gts.removeGraphListener(this.progressListener);
