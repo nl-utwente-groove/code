@@ -152,25 +152,12 @@ arg
 	;
 
 literal
-	: TRUE -> BOOL_TYPE TRUE
-	| FALSE -> BOOL_TYPE FALSE
-	| dqText -> STRING_TYPE dqText
-	| integer -> INT_TYPE { concat($integer.tree) }
-	| real -> REAL_TYPE { concat($real.tree) }
+	: TRUE -> ^(BOOL_TYPE TRUE)
+	| FALSE -> ^(BOOL_TYPE FALSE)
+	| STRING -> ^(STRING_TYPE { toUnquoted($STRING.text) } )
+	| integer -> ^(INT_TYPE { concat($integer.tree) } )
+	| real -> ^(REAL_TYPE { concat($real.tree) } )
 	;
-
-dqText
-   : QUOTE dqContent QUOTE -> { concat($dqContent.tree) }
-   ;
-
-dqContent
-   : dqTextChar*
-   ;
-
-dqTextChar
-   : ~(QUOTE|BSLASH)
-   | BSLASH (BSLASH|QUOTE)
-   ;
 
 real
 	: MINUS? NUMBER? DOT NUMBER?;
@@ -222,6 +209,8 @@ RCURLY    : '}' ;
 ID 	: ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*;
 
 NUMBER : ('0'..'9')+;
+
+STRING : QUOTE (~(QUOTE|BSLASH) | BSLASH(QUOTE|BSLASH))* QUOTE ;
 
 ML_COMMENT : '/*' ( options {greedy=false;} : . )* '*/' { $channel=HIDDEN; };
 SL_COMMENT : '//' ( options {greedy=false;} : . )* '\n' { $channel=HIDDEN; };

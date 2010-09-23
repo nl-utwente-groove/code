@@ -686,7 +686,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * information.
      */
     private int randomCoordinate() {
-        return randomGenerator.nextInt(this.toJCellMap.size() * 5);
+        return randomGenerator.nextInt(this.toJCellMap.size() * 5 + 1);
     }
 
     /**
