@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph id="copyEdge" role="rule" edgeids="false" edgemode="directed">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <attr name="remark">
+            <string>Copies al edges between original nodes to their copies</string>
+        </attr>
+        <node id="n16818"/>
+        <node id="n16819"/>
+        <node id="n16820"/>
+        <node id="n16821"/>
+        <node id="n16822"/>
+        <edge from="n16821" to="n16821">
+            <attr name="label">
+                <string>forall:</string>
+            </attr>
+        </edge>
+        <edge from="n16820" to="n16818">
+            <attr name="label">
+                <string>{?x}</string>
+            </attr>
+        </edge>
+        <edge from="n16819" to="n16821">
+            <attr name="label">
+                <string>nested:at</string>
+            </attr>
+        </edge>
+        <edge from="n16820" to="n16819">
+            <attr name="label">
+                <string>del:copy</string>
+            </attr>
+        </edge>
+        <edge from="n16819" to="n16822">
+            <attr name="label">
+                <string>new:{?x}</string>
+            </attr>
+        </edge>
+        <edge from="n16822" to="n16821">
+            <attr name="label">
+                <string>nested:at</string>
+            </attr>
+        </edge>
+        <edge from="n16818" to="n16822">
+            <attr name="label">
+                <string>del:copy</string>
+            </attr>
+        </edge>
+        <edge from="n16818" to="n16821">
+            <attr name="label">
+                <string>nested:at</string>
+            </attr>
+        </edge>
+        <edge from="n16820" to="n16821">
+            <attr name="label">
+                <string>nested:at</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

@@ -1,0 +1,5 @@
+<FindBugsFilter>
+    <Match classregex="groove.test.*" />
+    <Match classregex="groove.control.parse.*" />
+    <Match classregex="groove.view.parse.*" />
+</FindBugsFilter>
