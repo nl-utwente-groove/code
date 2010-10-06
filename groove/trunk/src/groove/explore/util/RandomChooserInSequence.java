@@ -15,13 +15,11 @@ import java.util.Random;
  * one does not want to store the whole sequence.
  * @author Iovka Boneva
  * 
- * @param <E>
  */
 public class RandomChooserInSequence<E> {
 
     /**
      * Shows an element to the random chooser.
-     * @param e
      * @throws NullPointerException if <code>e</code> is null
      */
     public void show(E e) {

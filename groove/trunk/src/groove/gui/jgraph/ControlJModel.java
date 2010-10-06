@@ -60,8 +60,6 @@ public class ControlJModel extends GraphJModel {
 
     /**
      * Creates a controlJmodel given a control automaton
-     * @param shape
-     * @param options
      */
     public ControlJModel(GraphShape shape, Options options) {
         super(shape, JAttr.CONTROL_NODE_ATTR, JAttr.CONTROL_EDGE_ATTR, options);

@@ -53,7 +53,6 @@ public class Result {
 
     /**
      * Adds an element to the result.
-     * @param t
      */
     public void add(GraphState t) {
         this.elements.add(t);
@@ -72,7 +71,7 @@ public class Result {
     public int getBound() {
         return this.bound;
     }
-    
+
     /** Factory method for a new result of the same type as this one. */
     public Result newInstance() {
         return new Result(this.bound);

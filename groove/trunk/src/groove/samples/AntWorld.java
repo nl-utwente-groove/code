@@ -44,7 +44,7 @@ import java.io.IOException;
 public class AntWorld {
 
     /**
-     * @param args
+     * @param args - two arguments: <grammar-name> <rounds>
      */
     public static void main(String[] args) {
         if (args.length != 2) {

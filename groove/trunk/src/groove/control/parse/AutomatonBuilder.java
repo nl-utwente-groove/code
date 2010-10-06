@@ -110,9 +110,7 @@ public class AutomatonBuilder extends Namespace {
     }
 
     /**
-     * @param s1
-     * @param s2
-     * @param tar
+     * Merge initialized variables.
      */
     public void mergeInitializedVariables(ControlState s1, ControlState s2,
             ControlState tar) {
@@ -215,7 +213,6 @@ public class AutomatonBuilder extends Namespace {
 
     /**
      * Add a delta to the init of this state.
-     * @param state
      */
     public void tagDelta(ControlState state) {
         state.addInit(_DELTA_);
@@ -224,8 +221,6 @@ public class AutomatonBuilder extends Namespace {
 
     /**
      * Copies the init of the source state to the target state
-     * @param source
-     * @param target
      */
     public void initCopy(ControlState source, ControlState target) {
         debug("initCopy: " + source + " to " + target);
@@ -236,7 +231,6 @@ public class AutomatonBuilder extends Namespace {
     /**
      * Copies the init of the source state to the target state. The delta is
      * removed from the target before the init is copied from the source.
-     * @param source
      * @param target has a delta in its init
      */
     public void deltaInitCopy(ControlState source, ControlState target) {
@@ -254,8 +248,6 @@ public class AutomatonBuilder extends Namespace {
     /**
      * A failure is added to the transitions using the init from the given
      * state.
-     * @param state
-     * @param trans
      */
     public void fail(ControlState state, ControlTransition trans) {
         debug("fail: " + state + " to " + trans);
@@ -276,7 +268,7 @@ public class AutomatonBuilder extends Namespace {
     }
 
     /**
-     * Creates a nwe state and adds this state to the automaton.
+     * Creates a new state and adds this state to the automaton.
      * @return the fresh state.
      */
     public ControlState newState() {
@@ -289,7 +281,6 @@ public class AutomatonBuilder extends Namespace {
     /**
      * Stores a transition in the automaton, and in the local cache of
      * transitions.
-     * @param ct
      */
     private void storeTransition(ControlTransition ct) {
         this.transitions.add(ct);
@@ -299,7 +290,6 @@ public class AutomatonBuilder extends Namespace {
 
     /**
      * Deletes a transition from the automaton and in any local cache it is in.
-     * @param ct
      */
     private void rmTransition(ControlTransition ct) {
         debug("rmTransition: removed transition " + ct);
@@ -312,7 +302,6 @@ public class AutomatonBuilder extends Namespace {
 
     /**
      * Removes a state from the automaton.
-     * @param state
      */
     public void rmState(ControlState state) {
         debug("rmState: " + state);
@@ -621,8 +610,6 @@ public class AutomatonBuilder extends Namespace {
     /**
      * Adds a rule instance to the RuleControlTransitions and then adds the
      * transitions to the source states of the transitions.
-     * 
-     * @param grammar
      */
     public void finalize(GraphGrammar grammar) throws FormatException {
         Set<Rule> otherRules = new HashSet<Rule>(grammar.getRules());
@@ -764,7 +751,6 @@ public class AutomatonBuilder extends Namespace {
 
     /**
      * Tags this transition as a candidate for merging source and target.
-     * @param ct
      */
     private void testMerge(ControlTransition ct) {
         this.mergeCandidates.add(ct);

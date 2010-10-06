@@ -194,7 +194,6 @@ public class ControlView {
 
     /**
      * Saves the program to the given OutputStream.
-     * @param controlProgram
      * @param out the output stream to write the control program to.
      */
     public static void store(String controlProgram, OutputStream out) {

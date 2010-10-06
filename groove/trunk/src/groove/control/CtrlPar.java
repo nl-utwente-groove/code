@@ -215,7 +215,6 @@ public abstract class CtrlPar {
 
         /**
          * Constructs a constant argument 
-         * @param node
          */
         public Const(ValueNode node) {
             this.node = node;

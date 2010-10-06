@@ -24,33 +24,28 @@ import groove.verify.ModelChecking;
 import java.util.Set;
 
 import junit.framework.Assert;
-
 import rwth.i2.ltl2ba4j.model.IGraphProposition;
 
 /**
  * @author Harmen Kastenberg
  * @version $Revision $
  */
-public class LTL2BuchiTransition extends DefaultBuchiTransition
-{
+public class LTL2BuchiTransition extends DefaultBuchiTransition {
+
     /**
      * Constructor for creating a new Buchi
-     * 
-     * @param source
-     * @param label
-     * @param target
      */
-    public LTL2BuchiTransition(BuchiLocation source, LTL2BuchiLabel label, BuchiLocation target)
-    {
+    public LTL2BuchiTransition(BuchiLocation source, LTL2BuchiLabel label,
+            BuchiLocation target) {
         super(source, label, target);
     }
 
     @Override
-    public boolean isEnabled(Set<String> applicableRules)
-    {
+    public boolean isEnabled(Set<String> applicableRules) {
         boolean result = true;
         BuchiLabel label = label();
-        Assert.assertTrue("Label is of wrong type: " + label.getClass(), label instanceof LTL2BuchiLabel);
+        Assert.assertTrue("Label is of wrong type: " + label.getClass(),
+            label instanceof LTL2BuchiLabel);
         LTL2BuchiLabel castedLabel = (LTL2BuchiLabel) label;
         for (IGraphProposition gp : castedLabel.getLabels()) {
             if (gp.getFullLabel().equals(ModelChecking.SIGMA)) {
@@ -72,8 +67,8 @@ public class LTL2BuchiTransition extends DefaultBuchiTransition
     }
 
     @Override
-    public String toString()
-    {
-        return source().toString() + " --" + label().toString() + "--> " + target().toString();
+    public String toString() {
+        return source().toString() + " --" + label().toString() + "--> "
+            + target().toString();
     }
 }

@@ -55,7 +55,7 @@ public class NotCondition extends AbstractCondition<CompositeMatch> {
 
     /**
      * Adding sub-conditions is not allowed and will give rise to an exception.
-     * @throws UnsupportedOperationException
+     * @throws UnsupportedOperationException always.
      */
     @Override
     final public void addSubCondition(Condition condition) {

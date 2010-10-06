@@ -35,7 +35,6 @@ public class ControlJGraph extends JGraph {
 
     /**
      * Creates a ControlJGraph given a ControlJModel
-     * @param model
      * @param simulator the simulator that is the context of this jgraph; may be
      *        <code>null</code>.
      */

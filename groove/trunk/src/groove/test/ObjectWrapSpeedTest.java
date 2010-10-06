@@ -57,7 +57,7 @@ public class ObjectWrapSpeedTest {
     private final Action getAction;
 
     /**
-     * @param args
+     * @param args ignores the arguments.
      */
     public static void main(String[] args) {
         new ObjectWrapSpeedTest("Bare", new Action() {

@@ -162,8 +162,6 @@ public class Version {
 
     /**
      * Checks whether version s1 can open version s2.
-     * @param s1
-     * @param s2
      * @return true if s1 can open s2, false otherwise.
      */
     public static boolean canOpen(String s1, String s2) {

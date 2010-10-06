@@ -27,8 +27,7 @@ import junit.framework.Assert;
  * @author Harmen Kastenberg
  * @version $Revision $
  */
-public class NASABuchiTransition extends DefaultBuchiTransition
-{
+public class NASABuchiTransition extends DefaultBuchiTransition {
     /** symbol used for unguarded enabledness */
     private final String TRUE_SYMBOL = "-";
 
@@ -37,78 +36,63 @@ public class NASABuchiTransition extends DefaultBuchiTransition
 
     /**
      * Constructor for creating a new Buchi
-     * 
-     * @param source
-     * @param label
-     * @param target
      */
-    public NASABuchiTransition(BuchiLocation source, NASABuchiLabel label, BuchiLocation target)
-    {
+    public NASABuchiTransition(BuchiLocation source, NASABuchiLabel label,
+            BuchiLocation target) {
         super(source, label, target);
     }
 
     @Override
-    public boolean isEnabled(Set<String> applicableRules)
-    {
+    public boolean isEnabled(Set<String> applicableRules) {
         String guard = ((NASABuchiLabel) label()).guard();
-        if (guard.equals(this.TRUE_SYMBOL))
-        {
+        if (guard.equals(this.TRUE_SYMBOL)) {
             return true;
-        }
-        else
-        {
+        } else {
             // extract all components of the conjunction
             String[] args = guard.split("&");
             boolean result = true;
-            for (String arg: args)
-            {
-                if (isNegated(arg))
-                {
+            for (String arg : args) {
+                if (isNegated(arg)) {
                     String nArg = arg.substring(1);
                     // if applicable and negated, the transition is not enabled
                     // we can return value false
-                    if (applicableRules.contains(nArg))
-                    {
+                    if (applicableRules.contains(nArg)) {
                         return false;
                     }
                     // if not applicable and negated, the transition can still be enabled
                     // the below else-statement could be left out
-                    else
-                    {
+                    else {
                         result &= true;
                     }
-                }
-                else
-                {
+                } else {
                     // if applicable and not negated, transition can still be enabled
                     // the below else-statement could be left out
-                    if (applicableRules.contains(arg))
-                    {
+                    if (applicableRules.contains(arg)) {
                         result &= true;
-                    }
-                    else
-                    {
+                    } else {
                         return false;
                     }
                 }
             }
             // when reaching this part, the variable 'result' should be true
-            Assert.assertTrue("I have not been able to think of a situation in which we should return 'false' here. Double check this.", result);
+            Assert.assertTrue(
+                "I have not been able to think of a situation in which we should return 'false' here. Double check this.",
+                result);
             return result;
         }
     }
 
-    private boolean isNegated(String argument)
-    {
-        if (argument.startsWith(this.NEGATION_SYMBOL))
+    private boolean isNegated(String argument) {
+        if (argument.startsWith(this.NEGATION_SYMBOL)) {
             return true;
+        }
 
         return false;
     }
 
     @Override
-    public String toString()
-    {
-        return source().toString() + this.label().toString() + target().toString();
+    public String toString() {
+        return source().toString() + this.label().toString()
+            + target().toString();
     }
 }

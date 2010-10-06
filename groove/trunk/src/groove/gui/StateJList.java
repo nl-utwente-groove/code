@@ -58,7 +58,6 @@ import javax.swing.event.ListSelectionListener;
 public class StateJList extends JList implements SimulationListener {
     /**
      * Creates a new state list viewer.
-     * @param simulator
      */
     protected StateJList(final Simulator simulator) {
         this.simulator = simulator;
@@ -345,9 +344,8 @@ public class StateJList extends JList implements SimulationListener {
     /** The background colour of the start graph. */
     static private final Color START_GRAPH_BACKGROUND_COLOR =
         new JLabel().getBackground();
-    static private final Border START_GRAPH_BORDER =
-        new CompoundBorder(LineBorder.createBlackLineBorder(), new EmptyBorder(
-            0, 2, 0, 2));
+    static private final Border START_GRAPH_BORDER = new CompoundBorder(
+        LineBorder.createBlackLineBorder(), new EmptyBorder(0, 2, 0, 2));
 
     /** Class to deal with mouse events over the label list. */
     private class MyMouseListener extends MouseAdapter {

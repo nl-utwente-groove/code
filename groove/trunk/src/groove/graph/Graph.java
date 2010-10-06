@@ -67,7 +67,7 @@ public interface Graph extends GraphShape, DeltaTarget {
      * {@link FormatException} if there is a compatibility problem.
      * @param graph the current graph
      * @return the new graph
-     * @throws FormatException
+     * @throws FormatException if there is a compatibility problem.
      */
     Graph newGraph(Graph graph) throws FormatException;
 

@@ -242,7 +242,7 @@ public class SystemRecord implements NodeFactory {
      * explore cache returned depends on the presence of rule priorities and the
      * presence of control program. It is incremented whenever the state gives
      * information on rules that match in this state.
-     * @param state
+     * @param state the exploration state.
      * @param isRuleInterrupted Indicates whether a rule may be interrupted.
      * @param isRandomized Indicates whether rules should be given in a random
      *        order TODO for the moment, isRandomized is not taken into account

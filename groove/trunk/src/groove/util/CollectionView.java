@@ -108,7 +108,7 @@ public abstract class CollectionView<T> extends AbstractCollection<T> {
 
     /**
      * Adding elements to this type of collection is not possible.
-     * @throws UnsupportedOperationException
+     * @throws UnsupportedOperationException always
      */
     @Override
     public boolean add(Object elem) {
@@ -117,7 +117,7 @@ public abstract class CollectionView<T> extends AbstractCollection<T> {
 
     /**
      * Removing elements from this type of collection is not possible.
-     * @throws UnsupportedOperationException
+     * @throws UnsupportedOperationException always
      */
     @Override
     public boolean remove(Object elem) {

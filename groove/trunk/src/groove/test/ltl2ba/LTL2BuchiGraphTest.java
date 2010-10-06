@@ -30,169 +30,167 @@ import java.util.Set;
  * @author Harmen Kastenberg
  * @version $Revision $
  */
-public class LTL2BuchiGraphTest
-{
+public class LTL2BuchiGraphTest {
+
     /**
      * Main method.
-     * @param args
      */
-    public static void main(String args[])
-    {
+    public static void main(String args[]) {
         LTL2BuchiGraphTest test = new LTL2BuchiGraphTest();
-//        test.testOrFormula();
-//        test.testAndFormula();
-//        test.testImplyFormula();
-//        test.testNegationFormula();
-//        test.testAndOrFormula();
-//        test.testOrAndFormula();
+        //        test.testOrFormula();
+        //        test.testAndFormula();
+        //        test.testImplyFormula();
+        //        test.testNegationFormula();
+        //        test.testAndOrFormula();
+        //        test.testOrAndFormula();
         test.testFinallyFormula();
     }
 
     /**
      * Test method.
      */
-    public void testOrFormula()
-    {
+    public void testOrFormula() {
         String formula = "[](put || get)";
-        BuchiGraphFactory factory = BuchiGraphFactory.getInstance(LTL2BuchiGraph.getPrototype());
+        BuchiGraphFactory factory =
+            BuchiGraphFactory.getInstance(LTL2BuchiGraph.getPrototype());
         BuchiGraph buchiGraph = factory.newBuchiGraph(formula);
 
-        String rules[] = { "put", "get" };
+        String rules[] = {"put", "get"};
         Set<String> set = new HashSet<String>(Arrays.asList(rules));
         // check whether the Buchi-graph is the one we expected
-        for (BuchiLocation initialLocation : buchiGraph.initialLocations())
-        {
-            testAllTransitions(initialLocation, set, new HashSet<BuchiLocation>());
+        for (BuchiLocation initialLocation : buchiGraph.initialLocations()) {
+            testAllTransitions(initialLocation, set,
+                new HashSet<BuchiLocation>());
         }
     }
 
     /**
      * Test method.
      */
-    public void testAndFormula()
-    {
+    public void testAndFormula() {
         String formula = "[](put && get)";
-        BuchiGraphFactory factory = BuchiGraphFactory.getInstance(LTL2BuchiGraph.getPrototype());
+        BuchiGraphFactory factory =
+            BuchiGraphFactory.getInstance(LTL2BuchiGraph.getPrototype());
         BuchiGraph buchiGraph = factory.newBuchiGraph(formula);
 
-        String rules[] = { "put", "get" };
+        String rules[] = {"put", "get"};
         Set<String> set = new HashSet<String>(Arrays.asList(rules));
         // check whether the Buchi-graph is the one we expected
-        for (BuchiLocation initialLocation : buchiGraph.initialLocations())
-        {
-            testAllTransitions(initialLocation, set, new HashSet<BuchiLocation>());
+        for (BuchiLocation initialLocation : buchiGraph.initialLocations()) {
+            testAllTransitions(initialLocation, set,
+                new HashSet<BuchiLocation>());
         }
     }
 
     /**
      * Test method.
      */
-    public void testImplyFormula()
-    {
+    public void testImplyFormula() {
         String formula = "!([](put-><>get))";
-        BuchiGraphFactory factory = BuchiGraphFactory.getInstance(LTL2BuchiGraph.getPrototype());
+        BuchiGraphFactory factory =
+            BuchiGraphFactory.getInstance(LTL2BuchiGraph.getPrototype());
         BuchiGraph buchiGraph = factory.newBuchiGraph(formula);
 
-        System.out.println("Initial locations: " + buchiGraph.initialLocations());
+        System.out.println("Initial locations: "
+            + buchiGraph.initialLocations());
 
-        String rules[] = { "put", "get" };
+        String rules[] = {"put", "get"};
         Set<String> set = new HashSet<String>(Arrays.asList(rules));
         // check whether the Buchi-graph is the one we expected
-        for (BuchiLocation initialLocation : buchiGraph.initialLocations())
-        {
-            testAllTransitions(initialLocation, set, new HashSet<BuchiLocation>());
+        for (BuchiLocation initialLocation : buchiGraph.initialLocations()) {
+            testAllTransitions(initialLocation, set,
+                new HashSet<BuchiLocation>());
         }
     }
 
     /**
      * Test method.
      */
-    public void testNegationFormula()
-    {
+    public void testNegationFormula() {
         String formula = "<>[](!put)";
-        BuchiGraphFactory factory = BuchiGraphFactory.getInstance(LTL2BuchiGraph.getPrototype());
+        BuchiGraphFactory factory =
+            BuchiGraphFactory.getInstance(LTL2BuchiGraph.getPrototype());
         BuchiGraph buchiGraph = factory.newBuchiGraph(formula);
 
-        String rules[] = { "put" };
+        String rules[] = {"put"};
         Set<String> set = new HashSet<String>(Arrays.asList(rules));
         // check whether the Buchi-graph is the one we expected
-        for (BuchiLocation initialLocation : buchiGraph.initialLocations())
-        {
-            testAllTransitions(initialLocation, set, new HashSet<BuchiLocation>());
+        for (BuchiLocation initialLocation : buchiGraph.initialLocations()) {
+            testAllTransitions(initialLocation, set,
+                new HashSet<BuchiLocation>());
         }
     }
 
     /**
      * Test method.
      */
-    public void testAndOrFormula()
-    {
+    public void testAndOrFormula() {
         String formula = "<>[](put && (get || empty))";
-        BuchiGraphFactory factory = BuchiGraphFactory.getInstance(LTL2BuchiGraph.getPrototype());
+        BuchiGraphFactory factory =
+            BuchiGraphFactory.getInstance(LTL2BuchiGraph.getPrototype());
         BuchiGraph buchiGraph = factory.newBuchiGraph(formula);
 
-        String rules[] = { "put" };
+        String rules[] = {"put"};
         Set<String> set = new HashSet<String>(Arrays.asList(rules));
         // check whether the Buchi-graph is the one we expected
-        for (BuchiLocation initialLocation : buchiGraph.initialLocations())
-        {
-            testAllTransitions(initialLocation, set, new HashSet<BuchiLocation>());
+        for (BuchiLocation initialLocation : buchiGraph.initialLocations()) {
+            testAllTransitions(initialLocation, set,
+                new HashSet<BuchiLocation>());
         }
     }
 
     /**
      * Test method.
      */
-    public void testOrAndFormula()
-    {
+    public void testOrAndFormula() {
         String formula = "<>[](put || (get && !empty))";
-        BuchiGraphFactory factory = BuchiGraphFactory.getInstance(LTL2BuchiGraph.getPrototype());
+        BuchiGraphFactory factory =
+            BuchiGraphFactory.getInstance(LTL2BuchiGraph.getPrototype());
         BuchiGraph buchiGraph = factory.newBuchiGraph(formula);
 
-        String rules[] = { "get" , "put" };
+        String rules[] = {"get", "put"};
         Set<String> set = new HashSet<String>(Arrays.asList(rules));
         // check whether the Buchi-graph is the one we expected
-        for (BuchiLocation initialLocation : buchiGraph.initialLocations())
-        {
-            testAllTransitions(initialLocation, set, new HashSet<BuchiLocation>());
+        for (BuchiLocation initialLocation : buchiGraph.initialLocations()) {
+            testAllTransitions(initialLocation, set,
+                new HashSet<BuchiLocation>());
         }
     }
 
     /**
      * Test method.
      */
-    public void testFinallyFormula()
-    {
+    public void testFinallyFormula() {
         String formula = "<>(extend)";
-        BuchiGraphFactory factory = BuchiGraphFactory.getInstance(LTL2BuchiGraph.getPrototype());
+        BuchiGraphFactory factory =
+            BuchiGraphFactory.getInstance(LTL2BuchiGraph.getPrototype());
         BuchiGraph buchiGraph = factory.newBuchiGraph(formula);
 
-        System.out.println("Initial location(s): " + buchiGraph.initialLocations());
-        System.out.println("Accepting location(s): " + buchiGraph.acceptingLocations());
-        
-        String rules[] = { "get" , "put" };
+        System.out.println("Initial location(s): "
+            + buchiGraph.initialLocations());
+        System.out.println("Accepting location(s): "
+            + buchiGraph.acceptingLocations());
+
+        String rules[] = {"get", "put"};
         Set<String> set = new HashSet<String>(Arrays.asList(rules));
         // check whether the Buchi-graph is the one we expected
-        for (BuchiLocation initialLocation : buchiGraph.initialLocations())
-        {
-            testAllTransitions(initialLocation, set, new HashSet<BuchiLocation>());
+        for (BuchiLocation initialLocation : buchiGraph.initialLocations()) {
+            testAllTransitions(initialLocation, set,
+                new HashSet<BuchiLocation>());
         }
     }
 
-    private void testAllTransitions(BuchiLocation location, Set<String> applicableRules, Set<BuchiLocation> done)
-    {
-        if (!done.contains(location))
-        {
+    private void testAllTransitions(BuchiLocation location,
+            Set<String> applicableRules, Set<BuchiLocation> done) {
+        if (!done.contains(location)) {
             done.add(location);
-            for (BuchiTransition transition: location.outTransitions())
-            {
-                if (transition.isEnabled(applicableRules))
-                {
-                    System.out.println("Transition " + transition.toString() + " is enabled by " + applicableRules.toString());
-                }
-                else
-                {
-                    System.out.println("Transition " + transition.toString() + " is not enabled by " + applicableRules.toString());
+            for (BuchiTransition transition : location.outTransitions()) {
+                if (transition.isEnabled(applicableRules)) {
+                    System.out.println("Transition " + transition.toString()
+                        + " is enabled by " + applicableRules.toString());
+                } else {
+                    System.out.println("Transition " + transition.toString()
+                        + " is not enabled by " + applicableRules.toString());
                 }
                 testAllTransitions(transition.target(), applicableRules, done);
             }

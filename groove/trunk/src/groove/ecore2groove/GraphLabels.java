@@ -27,14 +27,12 @@ import org.eclipse.emf.ecore.EStructuralFeature;
  * Class with static methods that return string values that are use for
  * representing Ecore elements in graphs.
  * @author Stefan Teijgeler
- * @version
  */
 public class GraphLabels {
 
     /**
      * Method to get a string for a label to represent an EClassifier
      * in a graph.
-     * @param classifier
      * @return string to use for label of representation
      */
     public static String getLabel(EClassifier classifier) {
@@ -59,7 +57,6 @@ public class GraphLabels {
     /**
      * Method to get a string for a label to represent an EAtribute or
      * EReference in a graph
-     * @param feature
      * @return string to use for label of representation
      */
     public static String getLabel(EStructuralFeature feature) {
@@ -181,7 +178,6 @@ public class GraphLabels {
      * Method to get a string for a label to represent an EEnum. Representation
      * is same as for EClassifier, but this method is required else the
      * EDataType version catches the method call.
-     * @param aEnum
      * @return string to use for label of representation
      */
     public static String getLabel(EEnum aEnum) {
@@ -204,7 +200,6 @@ public class GraphLabels {
 
     /**
      * Returns a string for a label to represent an EEnumLiteral
-     * @param literal
      * @return string to use for label of representation
      */
     public static String getLabel(EEnumLiteral literal) {
@@ -216,7 +211,6 @@ public class GraphLabels {
      * Method to get a string to represent an EClassifier in a graph, but 
      * without the type: prefix, so the string can be used for other
      * identification purposes.
-     * @param classifier 
      * @return string to use for label of representation
      */
     public static String getLabelNoType(EClassifier classifier) {
@@ -242,7 +236,6 @@ public class GraphLabels {
      * Method to get a string to represent an EEnum in a graph, but 
      * without the type: prefix, so the string can be used for other
      * identification purposes.
-     * @param aEnum
      * @return string to use for label of representation
      */
     public static String getLabelNoType(EEnum aEnum) {
@@ -254,7 +247,6 @@ public class GraphLabels {
      * Method to get a string to represent an EStructuralefature in a graph,
      * but without the type: prefix, so the string can be used for other
      * identification purposes.
-     * @param feature
      * @return string to use for label of representation
      */
     public static String getLabelNoType(EStructuralFeature feature) {

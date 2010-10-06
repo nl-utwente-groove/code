@@ -64,20 +64,17 @@ public interface BuchiGraph {
 
     /**
      * Add the provided Buechi location to the set of initial locations.
-     * @param location
      * @return see {@link Set#add(Object)}
      */
     public boolean addInitialLocation(BuchiLocation location);
 
     /**
      * Add the provided Buechi location to the set of accepting locations.
-     * @param location
      * @return see {@link Set#add(Object)}
      */
     public boolean addAcceptingLocation(BuchiLocation location);
 
     /**
-     * @param transition
      * @return see {@link Set#add(Object)}
      */
     public boolean addTransition(BuchiTransition transition);

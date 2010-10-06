@@ -77,7 +77,6 @@ public class PriorityFileName {
 
     /**
      * Convenience method to create a PriorityFileName for a URL.
-     * @param url
      */
     public PriorityFileName(URL url) {
         this(Groove.toFile(url));

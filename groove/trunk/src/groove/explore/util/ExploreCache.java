@@ -11,7 +11,7 @@ import groove.trans.Rule;
  * over rules that will avoid giving rules that have been fully explored. The
  * cache takes into account information on explored and matched rules for
  * computing the location resulting in applying a given rule.
- * @author
+ * @author Arend Rensink
  * 
  */
 public interface ExploreCache extends ResumableIterator<Rule> {
@@ -34,7 +34,6 @@ public interface ExploreCache extends ResumableIterator<Rule> {
 
     /**
      * The target location when a rule is applied.
-     * @param rule
      * @return The target location when a rule is applied.
      */
     public Location getTarget(Rule rule);

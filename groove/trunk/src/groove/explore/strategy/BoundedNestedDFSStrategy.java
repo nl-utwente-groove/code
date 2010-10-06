@@ -146,7 +146,7 @@ public class BoundedNestedDFSStrategy extends
     }
 
     /**
-     * @param transition
+     * @param transition may be null
      */
     protected void processFinalState(BuchiTransition transition) {
         if (transition == null) {

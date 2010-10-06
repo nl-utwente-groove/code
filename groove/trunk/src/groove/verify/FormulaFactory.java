@@ -25,7 +25,6 @@ package groove.verify;
 public interface FormulaFactory {
 
     /**
-     * @param expression
      * @return the created temporal formula
      */
     public TemporalFormula createFormula(String expression);

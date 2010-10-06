@@ -42,7 +42,6 @@ import org.eclipse.emf.ecore.EReference;
  * of the Ecore metamodel that was loaded by the ModelHandler.
  * 
  * @author Stefan Teijgeler
- * @version
  */
 public class TypeGraphRep {
 

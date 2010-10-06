@@ -39,7 +39,6 @@ public interface ConditionalStrategy extends Strategy {
     /**
      * The exploration condition that, when not satisfied by a state, forbids
      * exploring this state.
-     * @param condition
      */
     public void setExploreCondition(ExploreCondition<?> condition);
 

@@ -910,8 +910,6 @@ public class RuleJTree extends JTree implements SimulationListener {
         /**
          * Creates a new match node on the basis of a given number and the
          * RuleMatch. The node cannot have children.
-         * @param nr
-         * @param event
          */
         public MatchTreeNode(int nr, RuleEvent event) {
             super(event, false);
