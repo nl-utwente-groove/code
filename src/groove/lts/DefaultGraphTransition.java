@@ -41,7 +41,6 @@ public class DefaultGraphTransition extends
     /**
      * Constructs a GraphTransition on the basis of a given rule event, between
      * a given source and target state.
-     * @param addedNodes
      */
     public DefaultGraphTransition(RuleEvent event, Node[] addedNodes,
             GraphState source, GraphState target, boolean symmetry) {
