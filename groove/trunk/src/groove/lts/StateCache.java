@@ -362,7 +362,7 @@ class StateCache {
      */
     private final boolean freezeGraphs;
     /** Factory used to create the state graphs. */
-    @SuppressWarnings({"rawtypes"})
+    @SuppressWarnings("unchecked")
     private final DeltaGraphFactory graphFactory;
     /**
      * The depth of the graph above which the underlying graph will be frozen.
