@@ -390,7 +390,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         return this.copyAction;
     }
 
-    /** Singular instance of the {@link CopyAction}. */
+    /** Singular instance of the CopyAction. */
     private CopyAction copyAction;
 
     /**
@@ -469,7 +469,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         return this.deleteAction;
     }
 
-    /** Singular instance of the {@link DeleteAction}. */
+    /** Singular instance of the DeleteAction. */
     private DeleteAction deleteAction;
 
     /**
@@ -511,7 +511,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         return this.uncheckAllAction;
     }
 
-    /** Singular instance of the {@link CheckAllAction}. */
+    /** Singular instance of the UncheckAllAction. */
     private UncheckAllAction uncheckAllAction;
 
     /** Action to disable the currently displayed type graph. */
@@ -542,7 +542,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         return this.checkAllAction;
     }
 
-    /** Singular instance of the {@link CheckAllAction}. */
+    /** Singular instance of the CheckAllAction. */
     private CheckAllAction checkAllAction;
 
     /** Action to enable the currently displayed type graph. */
@@ -573,7 +573,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         return this.editAction;
     }
 
-    /** Singular instance of the {@link EditAction}. */
+    /** Singular instance of the EditAction. */
     private EditAction editAction;
 
     /** Action to start editing the currently displayed type graph. */
@@ -609,7 +609,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         return this.newAction;
     }
 
-    /** Singular instance of the {@link NewAction}. */
+    /** Singular instance of the NewAction. */
     private NewAction newAction;
 
     /** Action to create and start editing a new type graph. */
@@ -643,7 +643,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         return this.renameAction;
     }
 
-    /** Singular instance of the {@link RenameAction}. */
+    /** Singular instance of the RenameAction. */
     private RenameAction renameAction;
 
     /**

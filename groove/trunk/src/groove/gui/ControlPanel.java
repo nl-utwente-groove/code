@@ -530,7 +530,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         return this.cancelAction;
     }
 
-    /** Singular instance of the {@link CancelAction}. */
+    /** Singular instance of the CancelAction. */
     private CancelAction cancelAction;
 
     /**
@@ -552,8 +552,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
     }
 
     /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link CopyAction}.
+     * Lazily creates and returns the singleton instance of the CopyAction.
      */
     private CopyAction getCopyAction() {
         if (this.copyAction == null) {
@@ -562,7 +561,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         return this.copyAction;
     }
 
-    /** Singular instance of the {@link CopyAction}. */
+    /** Singular instance of the CopyAction. */
     private CopyAction copyAction;
 
     /**
@@ -599,8 +598,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
     }
 
     /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link DeleteAction}.
+     * Lazily creates and returns the singleton instance of the DeleteAction.
      */
     private DeleteAction getDeleteAction() {
         if (this.deleteAction == null) {
@@ -609,7 +607,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         return this.deleteAction;
     }
 
-    /** Singular instance of the {@link DeleteAction}. */
+    /** Singular instance of the DeleteAction. */
     private DeleteAction deleteAction;
 
     /**
@@ -664,7 +662,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         return this.disableAction;
     }
 
-    /** Singular instance of the {@link EnableAction}. */
+    /** Singular instance of the EnableAction. */
     private DisableAction disableAction;
 
     /** Action to disable the currently displayed control program. */
@@ -701,7 +699,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         return this.enableAction;
     }
 
-    /** Singular instance of the {@link EnableAction}. */
+    /** Singular instance of the EnableAction. */
     private EnableAction enableAction;
 
     /** Action to enable the currently displayed control program. */
@@ -744,7 +742,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         return this.editAction;
     }
 
-    /** Singular instance of the {@link EditAction}. */
+    /** Singular instance of the EditAction. */
     private EditAction editAction;
 
     /** Action to start editing the currently displayed control program. */
@@ -778,7 +776,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         return this.newAction;
     }
 
-    /** Singular instance of the {@link NewAction}. */
+    /** Singular instance of the NewAction. */
     private NewAction newAction;
 
     /** Action to create and start editing a new control program. */
@@ -820,7 +818,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         return this.previewAction;
     }
 
-    /** Singular instance of the {@link PreviewAction}. */
+    /** Singular instance of the PreviewAction. */
     private PreviewAction previewAction;
 
     /**
@@ -883,7 +881,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         return this.renameAction;
     }
 
-    /** Singular instance of the {@link RenameAction}. */
+    /** Singular instance of the RenameAction. */
     private RenameAction renameAction;
 
     /**
@@ -934,7 +932,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         return this.saveAction;
     }
 
-    /** Singular instance of the {@link SaveAction}. */
+    /** Singular instance of the SaveAction. */
     private SaveAction saveAction;
 
     private class SaveAction extends RefreshableAction {

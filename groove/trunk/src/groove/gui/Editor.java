@@ -46,8 +46,8 @@ import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.GraphView;
 import groove.view.RuleView;
-import groove.view.View;
 import groove.view.StoredGrammarView.TypeViewList;
+import groove.view.View;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
@@ -343,15 +343,15 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             try {
                 doOpenGraph(selectedFile);
             } catch (IOException exc) {
-                showErrorDialog(String.format("Error while loading %s",
-                    selectedFile), exc);
+                showErrorDialog(
+                    String.format("Error while loading %s", selectedFile), exc);
             }
         }
     }
 
     /**
-     * Handler method to execute a {@link Editor.SaveGraphAction} or
-     * {@link SaveGraphAsAction}. If the action was save-as, or there is no
+     * Handler method to execute an Editor.SaveGraphAction or
+     * SaveGraphAsAction. If the action was save-as, or there is no
      * model name, invokes a file chooser dialog. Calls
      * {@link #doSaveGraph(File)} if a file is selected. The return value is the
      * save file, or <code>null</code> if nothing was saved.
@@ -391,8 +391,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                             + ExtensionFilter.getExtension(toFile));
                     setCurrentFile(toFile);
                 } catch (Exception exc) {
-                    showErrorDialog(String.format("Error while saving to %s",
-                        toFile), exc);
+                    showErrorDialog(
+                        String.format("Error while saving to %s", toFile), exc);
                     toFile = null;
                 }
             }
@@ -1253,8 +1253,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             createCancelButtonOnPreviewDialog(Options.CANCEL_BUTTON,
                 previewPane, propertiesDialog)});
         JDialog dialog =
-            previewPane.createDialog(getFrame(), String.format("%s preview",
-                getRole(true)));
+            previewPane.createDialog(getFrame(),
+                String.format("%s preview", getRole(true)));
         dialog.setSize(this.previewSize);
         dialog.setResizable(true);
         dialog.setVisible(true);
@@ -2082,8 +2082,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         public void actionPerformed(ActionEvent evt) {
             if (getType() != null) {
                 String typeName = showTypeGraphSelectionDialog();
-                showPreviewDialog(getTypeViewList().getTypeViewMap().get(
-                    typeName), Options.OK_BUTTON);
+                showPreviewDialog(
+                    getTypeViewList().getTypeViewMap().get(typeName),
+                    Options.OK_BUTTON);
             } else {
                 super.actionPerformed(evt);
                 if (!setRole(TYPE_INDEX)) {
@@ -2327,8 +2328,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         private ExtensionFilter typeFilter;
 
         /** Array of extension filters, ordered by role index. */
-        private final ExtensionFilter[] filters =
-            {getStateFilter(), getRuleFilter(), getTypeFilter(), getGxlFilter()};
+        private final ExtensionFilter[] filters = {getStateFilter(),
+            getRuleFilter(), getTypeFilter(), getGxlFilter()};
 
         /**
          * Returns the role for which a given extension filter acts.
@@ -2386,8 +2387,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     public static final String MODIFIED_INDICATOR = "> ";
 
     /** Size of the preview dialog window. */
-    private static final Dimension DEFAULT_PREVIEW_SIZE =
-        new Dimension(500, 500);
+    private static final Dimension DEFAULT_PREVIEW_SIZE = new Dimension(500,
+        500);
 
     /** Index of the graph role. */
     static final int GRAPH_INDEX = 0;
@@ -2403,8 +2404,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         roleIndexMap.put(Groove.RULE_ROLE, RULE_INDEX);
         roleIndexMap.put(Groove.TYPE_ROLE, TYPE_INDEX);
     }
-    private static final String[] roles =
-        {Groove.GRAPH_ROLE, Groove.RULE_ROLE, Groove.TYPE_ROLE};
+    private static final String[] roles = {Groove.GRAPH_ROLE, Groove.RULE_ROLE,
+        Groove.TYPE_ROLE};
     /**
      * Property name of the edit type of the editor. The edit type is the kind
      * of object being edited. Possible values are {@link Groove#GRAPH_ROLE},

@@ -583,7 +583,7 @@ public class InstanceModelRep {
 
     /**
      * Returns the resource that has the Ecore instance model
-     * @returns the instance model
+     * @return the instance model
      */
     public Resource getInstanceModel() {
         return this.instanceModel;

@@ -544,10 +544,10 @@ public class ExprParser {
      * Transforms a string by removing quote characters around it, if there are
      * any, and unescaping all characters within the string. The original string
      * does not need to be quoted.
+     * - boolean test if <code>true</code>, the method throws an exception upon
+     *           finding a format error; otherwise, it returns <code>null</code
      * @param string the original string
      * @param quote the quote character to be used
-     * @boolean test if <code>true</code>, the method throws an exception upon
-     *          finding a format error; otherwise, it returns <code>null</code>
      * @return the unquoted string (which may equal the original, if there are
      *         no quotes or escaped characters in the string), or
      *         <code>null</code> if <code>test</code> is <code>false</code> and
@@ -852,15 +852,15 @@ public class ExprParser {
      * Array of default quote characters, containing the single and double
      * quotes ({@link #DOUBLE_QUOTE_CHAR} and {@link #SINGLE_QUOTE_CHAR}).
      */
-    static private final char[] DEFAULT_QUOTE_CHARS =
-        {DOUBLE_QUOTE_CHAR, SINGLE_QUOTE_CHAR};
+    static private final char[] DEFAULT_QUOTE_CHARS = {DOUBLE_QUOTE_CHAR,
+        SINGLE_QUOTE_CHAR};
     /**
      * Array of default bracket pairs: {@link #ROUND_BRACKETS},
      * {@link #ANGLE_BRACKETS}, {@link #CURLY_BRACKETS} and
      * {@link #SQUARE_BRACKETS}.
      */
-    static private final char[][] DEFAULT_BRACKETS =
-        {ROUND_BRACKETS, ANGLE_BRACKETS, CURLY_BRACKETS, SQUARE_BRACKETS};
+    static private final char[][] DEFAULT_BRACKETS = {ROUND_BRACKETS,
+        ANGLE_BRACKETS, CURLY_BRACKETS, SQUARE_BRACKETS};
     /** The default character to use as a placeholder in the parse result. */
     static public final char PLACEHOLDER = '\uFFFF';
 

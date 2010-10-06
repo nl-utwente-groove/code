@@ -825,8 +825,8 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
      */
     protected class MatchingAlgorithm {
         /** Dummy object used in matching. */
-        final MatchingComputation MATCH_DUMMY =
-            new MatchingComputation(0, null, null);
+        final MatchingComputation MATCH_DUMMY = new MatchingComputation(0,
+            null, null);
 
         /**
          * Wraps a single computation of the enclosing {@link MatchingAlgorithm}
@@ -1111,7 +1111,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
              * @return the result previously computed for <code>keyIndex</code>
              *         and <code>image</code>, or <code>null</code> if no result
              *         is stored
-             * @see #putMatch(MatchingComputation)
+             * @see #putMatch
              */
             protected MatchingComputation getMatch(int keyIndex, Node image) {
                 if (MatchingAlgorithm.this.auxResults[keyIndex] == null) {

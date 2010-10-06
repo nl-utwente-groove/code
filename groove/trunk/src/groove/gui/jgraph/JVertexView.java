@@ -57,9 +57,8 @@ import org.jgraph.graph.VertexView;
 
 /**
  * A multi-lined vertex view that caches the label text. The functionality for
- * multi-line editing was taken from
- * {@link org.jgraph.cellview.JGraphMultilineView}, but the class had to be
- * copied to turn the line wrap off.
+ * multi-line editing was taken from org.jgraph.cellview.JGraphMultilineView,
+ * but the class had to be copied to turn the line wrap off.
  * @author Arend Rensink
  * @version $Revision$
  */
