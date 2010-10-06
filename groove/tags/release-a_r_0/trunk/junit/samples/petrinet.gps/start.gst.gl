@@ -1,0 +1,24 @@
+# Layout information for /Users/kramor/Development/EclipseWorkspace/groove_samples/petrinet.gps/start.gst
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n0 306 373 61 16 
+n n1 100 370 61 16 
+n n4 187 209 61 16 
+n n9 298 49 61 16 
+n n5 364 180 36 16 
+n n6 49 175 36 16 
+n n2 87 450 33 16 
+n n3 300 119 33 16 
+n n11 235 274 33 16 
+n n12 112 42 61 16 
+n n8 127 279 33 16 
+n n10 114 123 33 16 
+n n7 391 433 33 16 
+e n7 n9 "in" 500 0 428 433 514 374 514 102 369 68 11
+e n10 n6 "mark" 714 8 135 134 72 186 11
+e n2 n12 "in" 500 0 95 450 14 384 14 126 127 64 11

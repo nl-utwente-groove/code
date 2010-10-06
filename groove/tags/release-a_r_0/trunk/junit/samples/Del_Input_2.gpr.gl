@@ -1,0 +1,27 @@
+# Layout information for C:\local\eclipse\workspace\groove\junit\samples\Del_Input_2.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n4 381 45 29 15 
+n n5 174 307 35 15 
+n n3 163 162 56 30 
+n n1 605 304 35 15 
+n n8 9 12 115 15 
+n n6 594 34 28 15 
+n n7 174 45 28 15 
+n n0 772 34 29 15 
+n n2 551 145 20 15 
+n n9 274 126 46 30 
+e n7 n5 "new:target" 707 -28 180 66 100 134 190 307 11
+e n2 n0 "at" 500 0 569 161 534 367 858 47 791 44 14
+e n2 n2 "InputPin" 500 0 569 161 649 169 649 143 569 161 12
+e n7 n5 "new:source" 432 54 184 66 74 210 184 307 11
+e n7 n3 "target" 500 8 196 66 196 162 11
+e n5 n4 "at" 500 0 236 325 390 235 400 55 14
+e n1 n0 "at" 500 0 627 314 781 224 791 44 14
+e n6 n1 "new:target" 929 -10 613 44 726 167 627 314 11
+e n3 n4 "at" 500 0 178 172 143 378 467 58 400 55 14
