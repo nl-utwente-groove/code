@@ -84,7 +84,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
     /** 
      * This method is not supported for type graphs; use {@link #addNode(Label)}
      * instead.
-     * @throw UnsupportedOperationException always 
+     * @throws UnsupportedOperationException always 
      */
     @Override
     public Node addNode() {

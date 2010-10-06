@@ -32,7 +32,7 @@ public class DefaultExplorationValidator extends SimulationAdapter {
 
     /**
      * Stores reference to the simulator, and sets itself up as a listener.
-     * @simulator - reference to the simulator
+     * @param simulator - reference to the simulator
      */
     public DefaultExplorationValidator(Simulator simulator) {
         this.simulator = simulator;

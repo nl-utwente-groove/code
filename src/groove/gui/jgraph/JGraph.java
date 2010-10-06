@@ -75,10 +75,10 @@ import javax.swing.KeyStroke;
 import javax.swing.ToolTipManager;
 
 import org.jgraph.event.GraphModelEvent;
+import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.event.GraphModelListener;
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
-import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.CellView;
@@ -864,14 +864,14 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         };
     }
 
-    /** Sets the exporter used in the {@link ExportAction}. */
+    /** Sets the exporter used in the ExportAction. */
     public void setExporter(Exporter exporter) {
         this.exporter = exporter;
     }
 
     /**
      * Callback method to lazily creates and return the exporter used in the
-     * {@link ExportAction}.
+     * ExportAction.
      */
     protected Exporter getExporter() {
         if (this.exporter == null) {
@@ -1059,23 +1059,22 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     protected Layouter layouter;
 
-    /** The permanent {@link AddPointAction} associated with this j-graph. */
+    /** The permanent AddPointAction associated with this j-graph. */
     protected AddPointAction addPointAction;
     /**
-     * The permanent {@link RemovePointAction} associated with this j-graph.
+     * The permanent RemovePointAction associated with this j-graph.
      */
     protected RemovePointAction removePointAction;
     /**
-     * The permanent {@link EditLabelAction} associated with this j-graph.
+     * The permanent EditLabelAction associated with this j-graph.
      */
     protected EditLabelAction editLabelAction;
     /**
-     * The permanent {@link ExportAction} associated with this j-graph.
+     * The permanent ExportAction associated with this j-graph.
      */
     protected ExportAction exportAction;
     /**
-     * The permanent {@link ResetLabelPositionAction} associated with this
-     * j-graph.
+     * The permanent ResetLabelPositionAction associated with this j-graph.
      */
     protected ResetLabelPositionAction resetLabelPositionAction;
     /** Map from line style names to corresponding actions. */
@@ -1083,7 +1082,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         new HashMap<String,JCellEditAction>();
 
     /**
-     * The exporter used in the {@link ExportAction}. Lazily created in
+     * The exporter used in the ExportAction. Lazily created in
      * {@link #getExportAction()}.
      */
     private Exporter exporter;
@@ -1644,7 +1643,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         public void update(Observable o, Object arg) {
             Set<Label> changedLabelSet = null;
             if (arg instanceof ObservableSet.AddUpdate) {
-                changedLabelSet = ((ObservableSet.AddUpdate<Label>) arg).getAddedSet();
+                changedLabelSet =
+                    ((ObservableSet.AddUpdate<Label>) arg).getAddedSet();
             } else {
                 changedLabelSet =
                     ((ObservableSet.RemoveUpdate<Label>) arg).getRemovedSet();

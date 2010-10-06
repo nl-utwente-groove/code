@@ -74,7 +74,7 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
     }
 
     /**
-     * Identical to {@link #computePlus(Plus, Automaton)}, except that the empty
+     * Identical to {@link #computePlus}, except that the empty
      * word is also always allowed.
      */
     public Automaton computeStar(Star expr, Automaton arg) {

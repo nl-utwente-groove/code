@@ -411,7 +411,7 @@ public class Simulator {
 
     /**
      * Sets the internally stored default exploration.
-     * @exploration may not be null
+     * @param exploration may not be null
      */
     public void setDefaultExploration(Exploration exploration) {
         this.defaultExploration = exploration;
@@ -4997,7 +4997,7 @@ public class Simulator {
     }
 
     /**
-     * Lazily creates and returns an instance of {@link SetStartGraphAction}.
+     * Lazily creates and returns an instance of SetStartGraphAction.
      */
     public Action getSetStartGraphAction() {
         // lazily create the action
