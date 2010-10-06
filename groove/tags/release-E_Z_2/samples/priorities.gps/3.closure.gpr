@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph id="graph" role="graph" edgeids="false" edgemode="directed">
+        <node id="n137"/>
+        <node id="n136"/>
+        <node id="n135"/>
+        <edge from="n135" to="n136">
+            <attr name="label">
+                <string>not:next</string>
+            </attr>
+        </edge>
+        <edge from="n135" to="n137">
+            <attr name="label">
+                <string>next</string>
+            </attr>
+        </edge>
+        <edge from="n135" to="n136">
+            <attr name="label">
+                <string>new:next</string>
+            </attr>
+        </edge>
+        <edge from="n136" to="n136">
+            <attr name="label">
+                <string>A</string>
+            </attr>
+        </edge>
+        <edge from="n137" to="n136">
+            <attr name="label">
+                <string>next</string>
+            </attr>
+        </edge>
+        <edge from="n137" to="n137">
+            <attr name="label">
+                <string>A</string>
+            </attr>
+        </edge>
+        <edge from="n135" to="n135">
+            <attr name="label">
+                <string>A</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

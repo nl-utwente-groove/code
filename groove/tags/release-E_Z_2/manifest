@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Class-Path: lib/antlr_3.2.jar 
+ lib/epsgraphics-1.0.0.jar 
+ lib/jaxb-gxl-1_0.jar 
+ lib/jgraph-5_13_0.jar 
+ lib/jgraphaddons-1_0_4.jar 
+ lib/junit-3_8_1.jar 
+ lib/layouts.jar  
+ lib/looks-2.1.4.jar 
+ lib/ltl2ba4j.jar 
+ lib/ltl2buchi.jar 
+ lib/rsyntaxtextarea.jar 
+ org.eclipse.jdt.launching.JRE_CONTAINER
+Main-Class: groove.Simulator

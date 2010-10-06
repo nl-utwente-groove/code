@@ -1,0 +1,6 @@
+node var1, var2;
+a;
+a(out var1);
+a;
+a(out var2);
+a;
