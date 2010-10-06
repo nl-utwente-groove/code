@@ -16,6 +16,7 @@
  */
 package groove.trans;
 
+import groove.graph.DefaultEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -405,24 +406,27 @@ public class RuleDependencies {
         Set<Edge> freshTargetEdges = new HashSet<Edge>(target.edgeSet());
         freshTargetEdges.removeAll(pattern.edgeMap().values());
         for (Edge edge : freshTargetEdges) {
-            Label label = edge.label();
-            // flag indicating that the edge always tests positively
-            // for the presence of connecting structure
-            boolean presence = true;
-            Set<Label> affectedSet;
-            if (RegExprLabel.isNeg(label)) {
-                label = RegExprLabel.getNegOperand(label).toLabel();
-                affectedSet = negative;
-                presence = false;
-            } else {
-                affectedSet = positive;
-                presence =
-                    !(label instanceof RegExprLabel && ((RegExprLabel) label).getAutomaton(
-                        this.labelStore).isAcceptsEmptyWord());
-            }
-            affectedSet.addAll(getMatchedLabels(label));
-            if (presence) {
-                isolatedNodes.removeAll(Arrays.asList(edge.ends()));
+            // don't look at attribute-related edges
+            if (edge instanceof DefaultEdge) {
+                Label label = edge.label();
+                // flag indicating that the edge always tests positively
+                // for the presence of connecting structure
+                boolean presence = true;
+                Set<Label> affectedSet;
+                if (RegExprLabel.isNeg(label)) {
+                    label = RegExprLabel.getNegOperand(label).toLabel();
+                    affectedSet = negative;
+                    presence = false;
+                } else {
+                    affectedSet = positive;
+                    presence =
+                        !(label instanceof RegExprLabel && ((RegExprLabel) label).getAutomaton(
+                            this.labelStore).isAcceptsEmptyWord());
+                }
+                affectedSet.addAll(getMatchedLabels(label));
+                if (presence) {
+                    isolatedNodes.removeAll(Arrays.asList(edge.ends()));
+                }
             }
         }
         // if the condition pattern is non-injective, it means merging is part
