@@ -24,13 +24,15 @@ import java.io.IOException;
  */
 public class GstToAut {
     /**
-     * @param args
+     * @param args - the GXL file name.
      */
     public static void main(String[] args) {
         try {
             String gxlFilename = args[0];
-            String bareFilename = Groove.createStateFilter().stripExtension(gxlFilename);
-            String autFilename = Groove.createAutFilter().addExtension(bareFilename);
+            String bareFilename =
+                Groove.createStateFilter().stripExtension(gxlFilename);
+            String autFilename =
+                Groove.createAutFilter().addExtension(bareFilename);
             System.out.printf("From '%s' to '%s'", gxlFilename, autFilename);
             Groove.exportGraph(Groove.loadGraph(args[0]), autFilename);
         } catch (IOException e) {

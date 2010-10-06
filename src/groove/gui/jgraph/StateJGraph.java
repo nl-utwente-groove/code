@@ -41,8 +41,6 @@ public class StateJGraph extends JGraph {
     /**
      * Constructs a state graph associated with a given simulator, and with
      * pre-defined underlying model.
-     * @param simulator
-     * @param graphModel
      */
     protected StateJGraph(Simulator simulator, GraphJModel graphModel) {
         super(graphModel, true, null);

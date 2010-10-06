@@ -93,8 +93,6 @@ public class ProgressBarDialog extends JDialog {
 
     /**
      * Sets the range of the progress bar.
-     * @param lower
-     * @param upper
      */
     public void setRange(int lower, int upper) {
         getBar().setMinimum(lower);

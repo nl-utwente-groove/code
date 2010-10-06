@@ -594,7 +594,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
 
     /** Renumbers all nodes in the rules and graphs of this grammar
      * to a consecutive sequence starting with {@code 0}.
-     * @throws IOException
+     * @throws IOException -
      */
     public void renumber() throws IOException {
         Edit edit = doRenumber();

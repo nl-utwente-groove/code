@@ -37,10 +37,10 @@ import java.util.Set;
  * @version $Revision $
  */
 public class ControlState implements Node, Location {
+
     /**
      * Create a ControlState. A ControlState needs to know the ControlShape it
      * is in to be able to properly delete it.
-     * @param parent
      */
     public ControlState(ControlShape parent) {
         this.parent = parent;
@@ -58,7 +58,6 @@ public class ControlState implements Node, Location {
 
     /**
      * Add an outgoing transition to this control state.
-     * @param transition
      */
     public void add(ControlTransition transition) {
         if (transition.isLambda()) {
@@ -217,7 +216,7 @@ public class ControlState implements Node, Location {
     }
 
     /**
-     * @param variables
+     * @param variables the list of variables
      */
     public void initializeVariables(List<String> variables) {
         for (String var : variables) {
@@ -226,7 +225,7 @@ public class ControlState implements Node, Location {
     }
 
     /**
-     * @param variables
+     * @param variables the list of variables
      */
     public void setInitializedVariables(List<String> variables) {
         this.initializedVariables.clear();
@@ -245,7 +244,6 @@ public class ControlState implements Node, Location {
     /**
      * Returns the index of the given variable in this ControlState's list
      * of variables
-     * @param variable
      * @return the index of the given variable in this ControlState's list 
      * of variables
      */

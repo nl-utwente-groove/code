@@ -49,7 +49,7 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
     }
 
     /**
-     * @param verifier
+     * Default constructor.
      */
     public CTLMatchingMarker(CTLModelChecker verifier) {
         try {

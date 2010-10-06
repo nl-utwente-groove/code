@@ -30,7 +30,8 @@ import java.util.Set;
  * of space. Arbitrary edge arities are supported.
  * @version $Revision$ $Date: 2008-01-30 09:32:50 $
  */
-public class NodeEdgeMapGraph extends AbstractGraph<GraphCache> {
+public class NodeEdgeMapGraph extends AbstractGraph<GraphCache> implements
+        Cloneable {
     /**
      * Constructs a protytpe object of this class, to be used as a factory for
      * new (default) graphs.

@@ -39,7 +39,8 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AspectMap implements Iterable<AspectValue>, Comparable<AspectMap> {
+public class AspectMap implements Iterable<AspectValue>, Comparable<AspectMap>,
+        Cloneable {
     /**
      * Constructs an empty aspect map.
      * @param rule flag indicating if we are in the context of a rule.

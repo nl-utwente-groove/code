@@ -29,7 +29,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class DefaultMorphism extends AbstractMorphism {
+public class DefaultMorphism extends AbstractMorphism implements Cloneable {
     /**
      * Constructs a new, fixed morphism with a given domain, codomain and
      * element map. The element map is aliased!

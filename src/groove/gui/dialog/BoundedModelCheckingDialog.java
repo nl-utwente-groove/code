@@ -144,7 +144,6 @@ public class BoundedModelCheckingDialog {
 
     /**
      * Shows the dialog that requests the boundary.
-     * @param frame
      */
     public void showDialog(JFrame frame) {
         // createContentPane();
@@ -169,7 +168,6 @@ public class BoundedModelCheckingDialog {
 
     /**
      * Set the grammar for which a boundary is to be given.
-     * @param grammar
      */
     public void setGrammar(GraphGrammar grammar) {
         this.grammar = grammar;

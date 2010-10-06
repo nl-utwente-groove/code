@@ -39,8 +39,6 @@ public class FormatError implements Comparable<FormatError> {
      * Constructs an error consisting of a message to be formatted.
      * The actual message is constructed by calling {@link String#format(String, Object...)}
      * The parameters are interpreted as giving information about the error.
-     * @param message
-     * @param pars
      */
     public FormatError(String message, Object... pars) {
         this(String.format(message, pars));

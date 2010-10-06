@@ -13,7 +13,6 @@ public class ListComparator<T extends Comparable<T>> implements Comparator<T> {
     /**
      * Constructs a comparator based on a given list of keys. These keys are
      * ordered first, in the order given; other keys are ordered alphabetically.
-     * @param defaultKeys
      */
     public ListComparator(Iterable<T> defaultKeys) {
         int index = 0;

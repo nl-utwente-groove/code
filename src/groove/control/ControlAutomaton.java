@@ -80,7 +80,6 @@ public class ControlAutomaton extends AbstractGraphShape<GraphCache> implements
 
     /**
      * Returns true if the given state is a success-state.
-     * @param state
      * @return boolean
      */
     public boolean isSuccess(ControlState state) {

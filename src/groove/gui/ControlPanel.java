@@ -180,8 +180,8 @@ public class ControlPanel extends JPanel implements SimulationListener {
         if (isDirty()) {
             String name = getSelectedControl();
             int answer =
-                JOptionPane.showConfirmDialog(this, String.format(
-                    "Save changes in '%s'?", name), null,
+                JOptionPane.showConfirmDialog(this,
+                    String.format("Save changes in '%s'?", name), null,
                     JOptionPane.YES_NO_CANCEL_OPTION);
             if (answer == JOptionPane.YES_OPTION) {
                 getSaveAction().doSave(name, getControlTextArea().getText());
@@ -965,7 +965,6 @@ public class ControlPanel extends JPanel implements SimulationListener {
         /**
          * The constructor of this panel creates a panel with the Control
          * Automaton of the current grammar.
-         * @param simulator
          */
         public AutomatonPanel(Simulator simulator, ControlJGraph graph) {
             super(graph, true, false, simulator.getOptions());

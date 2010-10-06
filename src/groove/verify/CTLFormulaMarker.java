@@ -27,10 +27,6 @@ public interface CTLFormulaMarker {
 
     /**
      * Starts the marking process.
-     * @param marking
-     * @param expr
-     * @param gts
-     * @param modelChecker
      */
     public void mark(Marking marking, TemporalFormula expr, GTS gts,
             CTLModelChecker modelChecker);

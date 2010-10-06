@@ -25,7 +25,6 @@ import java.util.Random;
  * 
  * @author Iovka Boneva
  * 
- * @param <T>
  */
 public class RandomizedIterator<T> implements Iterator<T> {
     public boolean hasNext() {
@@ -74,7 +73,6 @@ public class RandomizedIterator<T> implements Iterator<T> {
 
     /**
      * Constructs a randomized iterator over the elements of a collection.
-     * @param elements
      * @require Several copies of elements.iterator() should iterate over
      *          <code>elements</code> in the same order.
      */

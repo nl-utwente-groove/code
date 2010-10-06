@@ -500,7 +500,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
 
     /**
      * Set the current buchi state
-     * @param atState
+     * @param atState the state to set
      */
     public void setAtBuchiState(BuchiGraphState atState) {
         this.atBuchiState = atState;
@@ -516,7 +516,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
 
     /**
      * Pushes the given state on the search stack.
-     * @param state
+     * @param state the state to push
      */
     public void pushState(BuchiGraphState state) {
         searchStack().push(state);
@@ -531,7 +531,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
 
     /**
      * Pushes a transition on the transition stack.
-     * @param transition
+     * @param transition the transition to push
      */
     public void pushTransition(ProductTransition transition) {
         transitionStack().push(transition);

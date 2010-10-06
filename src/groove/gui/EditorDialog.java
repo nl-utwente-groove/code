@@ -46,7 +46,7 @@ abstract public class EditorDialog {
      * @param graph the input graph for the editor
      * @param typeView type graph against which the edited object should be
      *        checked
-     * @throws HeadlessException
+     * @throws HeadlessException -
      */
     public EditorDialog(JFrame owner, Options options, Graph graph,
             TypeViewList typeView) throws HeadlessException {
@@ -195,9 +195,10 @@ abstract public class EditorDialog {
         this.ok = false;
         if (!hasErrors() && isModified()) {
             int confirm =
-                JOptionPane.showConfirmDialog(this.parent, String.format(
-                    "Use edited %s?", this.editor.getRole(false)), null,
-                    JOptionPane.YES_NO_CANCEL_OPTION);
+                JOptionPane.showConfirmDialog(
+                    this.parent,
+                    String.format("Use edited %s?", this.editor.getRole(false)),
+                    null, JOptionPane.YES_NO_CANCEL_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
                 this.ok = true;
                 dispose();

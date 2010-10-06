@@ -9,7 +9,6 @@ import java.util.Iterator;
  * {@link ExploreCache}.
  * @author Iovka Boneva
  * 
- * @param <T>
  */
 public interface ResumableIterator<T> extends Iterator<T> {
 

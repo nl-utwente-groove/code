@@ -30,7 +30,6 @@ public class SimpleCache implements ExploreCache {
 
     /**
      * Creates a simple cache over a set of rules.
-     * @param rules
      */
     public SimpleCache(Collection<Rule> rules, boolean isRandomized) {
         this.last = null;

@@ -121,7 +121,7 @@ public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView,T
      * exception if the view has errors.
      * @return a rule system based on the name, properties and rules stored as
      *         views
-     * @throws FormatException
+     * @throws FormatException if the view has errors.
      */
     public GraphGrammar toGrammar() throws FormatException;
 }

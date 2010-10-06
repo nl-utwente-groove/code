@@ -58,7 +58,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AspectGraph extends NodeSetEdgeSetGraph {
+public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
     // /**
     // * Constructor that returns an empty graph.
     // */
@@ -358,7 +358,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      * value, and throws an exception if the edge is not a self-edge or contains
      * more than one aspect value.
      * @param edge the edge to be tested
-     * @param parser
+     * @param parser the parser to use
      * @return a node aspect value for the (unique) endpoint of the edge, or
      *         <code>null</code> if <code>edge</code> does not encode a node
      *         aspect value.

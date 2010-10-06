@@ -35,7 +35,7 @@ import java.util.Iterator;
 
 /**
  * A partial (abstract) implementation of a strategy.
- * @author
+ * @author Arend Rensink
  * 
  */
 public abstract class AbstractStrategy implements Strategy {

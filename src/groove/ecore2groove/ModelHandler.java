@@ -47,7 +47,6 @@ import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
  * Class that deals with loading Ecore models and instance models, and 
  * creating and storing instance models of the loaded Ecore meta model.
  * @author Stefan Teijgeler
- * @version
  */
 public class ModelHandler {
 

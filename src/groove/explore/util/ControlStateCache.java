@@ -35,7 +35,6 @@ public class ControlStateCache implements ExploreCache {
      * Creates a new ControlStateCache
      * @param location the location this ControlStateCache will operate on
      * @param state the GraphState this ControlStateCache will operate on
-     * @param isRandomized
      */
     public ControlStateCache(Location location, GraphState state,
             boolean isRandomized) {

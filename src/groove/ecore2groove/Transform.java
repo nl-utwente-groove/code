@@ -38,7 +38,6 @@ import java.util.Vector;
  * Class with main method to start the transformation of Ecore to GROOVE
  * or GROOVE to Ecore.
  * @author Stefan Teijgeler
- * @version
  */
 public class Transform {
 

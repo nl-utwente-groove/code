@@ -31,27 +31,24 @@ public interface ControlShape {
 
     /**
      * Adds a ControlState to this shape
-     * @param state
      */
     public void addState(ControlState state);
 
     /**
      * Removes the state from this ControlShape
-     * @param state
      */
     public void removeState(ControlState state);
 
     /**
      * Adds a ControlTransitions to this ControlShape
-     * @param ct
      */
     public void addTransition(ControlTransition ct);
 
     /**
      * Removes a transition;
-     * @param ct
      */
     public void removeTransition(ControlTransition ct);
+
     /**
      * Returns all ControlTransitions owned by this ControlShape.
      * @return Set<ControlTransition>
@@ -68,11 +65,9 @@ public interface ControlShape {
      * Sets the start-state of this ControlShape. Maybe be <i>null</i>. Should
      * not be null if parent is null. In other words, the top-level shape should
      * have a start, otherwise the whole structure has no start.
-     * 
-     * @param start
      */
     public void setStart(ControlState start);
-    
+
     /**
      * Returns the State state (if there is one). Typically, only the top-level
      * shape has a start state.

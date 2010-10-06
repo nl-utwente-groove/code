@@ -362,7 +362,6 @@ public class CTLStarFormula {
         }
 
         /**
-         * @param operands
          * @return a fresh AND-instance
          */
         static protected TemporalFormula createInstance(
@@ -693,7 +692,7 @@ public class CTLStarFormula {
      */
     static public class Atom extends TemporalFormula {
         /**
-         * @param condition
+         * @param condition the string
          */
         public Atom(String condition) {
             super("");
@@ -830,10 +829,9 @@ public class CTLStarFormula {
     /**
      * Comment for <code>prototypes</code>
      */
-    protected final TemporalFormula[] prototypes =
-        new TemporalFormula[] {new And(), new Or(), new Exists(), new All(),
-            new Finally(), new Globally(), new Next(), new Until(), new Neg(),
-            new Atom()};
+    protected final TemporalFormula[] prototypes = new TemporalFormula[] {
+        new And(), new Or(), new Exists(), new All(), new Finally(),
+        new Globally(), new Next(), new Until(), new Neg(), new Atom()};
 
     /**
      * Parses the string given to this method. It throws a

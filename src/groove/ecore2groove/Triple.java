@@ -28,9 +28,6 @@ package groove.ecore2groove;
  * 
  * @author Anonymous
  *
- * @param <L>
- * @param <M>
- * @param <R>
  */
 public class Triple<L,M,R> {
 
@@ -61,9 +58,6 @@ public class Triple<L,M,R> {
 
     /**
      * Constructor method for a new Triple
-     * @param left
-     * @param middle
-     * @param right
      */
     public Triple(final L left, final M middle, final R right) {
         this.left = left;
@@ -72,12 +66,6 @@ public class Triple<L,M,R> {
     }
 
     /**
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param left
-     * @param middle
-     * @param right
      * @return new Triple with left, middle and right elements
      */
     public static <A,B,C> Triple<A,B,C> create(A left, B middle, C right) {
@@ -97,8 +85,6 @@ public class Triple<L,M,R> {
     }
 
     /**
-     * @param o1
-     * @param o2
      * @return true if Triples contain the same elements
      */
     public static final boolean equal(Object o1, Object o2) {

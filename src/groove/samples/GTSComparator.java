@@ -45,7 +45,7 @@ import java.util.HashMap;
 public class GTSComparator {
 
     /**
-     * @param args
+     * @param args - grammar name and start graph name.
      */
     public static void main(String[] args) {
         if (args.length == 0 || args.length > 2) {
@@ -69,15 +69,18 @@ public class GTSComparator {
     static private GTS runScenario1(GraphGrammar grammar) {
         GTS result = new GTS(grammar);
         result.addGraphListener(new GenerateProgressMonitor());
-        Scenario scenario1 = ScenarioFactory.getScenario(new BFSStrategy(), null, null, null);
+        Scenario scenario1 =
+            ScenarioFactory.getScenario(new BFSStrategy(), null, null, null);
         scenario1.prepare(result);
         scenario1.play();
-        System.out.printf("%nStates: %d, transitions: %d%n%n", result.nodeCount(), result.edgeCount());
+        System.out.printf("%nStates: %d, transitions: %d%n%n",
+            result.nodeCount(), result.edgeCount());
         return result;
     }
-    
+
     static private void runScenario2(GraphGrammar grammar, final GTS result1) {
-        final java.util.Map<GraphState,GraphState> relation = new HashMap<GraphState,GraphState>();
+        final java.util.Map<GraphState,GraphState> relation =
+            new HashMap<GraphState,GraphState>();
         GTS result = new GTS(grammar);
         result.addGraphListener(new GenerateProgressMonitor());
         result.addGraphListener(new LTSAdapter() {
@@ -85,10 +88,10 @@ public class GTSComparator {
             public void closeUpdate(LTS graph, State explored) {
                 GraphState otherState = result1.addState((GraphState) explored);
                 if (otherState.getTransitionSet().size() != ((GraphState) explored).getTransitionSet().size()) {
-                    throw new IllegalStateException();                    
+                    throw new IllegalStateException();
                 }
             }
-            
+
             @Override
             public void addUpdate(GraphShape graph, Node node) {
                 GraphState state = (GraphState) node;
@@ -98,19 +101,22 @@ public class GTSComparator {
                     relation.put(state, result1.getStateSet().put(state));
                 }
             }
+
             @Override
             public void addUpdate(GraphShape graph, Edge edge) {
                 GraphTransition trans = (GraphTransition) edge;
                 if (!result1.containsElement(trans)) {
                     throw new IllegalStateException();
                 } else {
-//                    relation.put(trans, result1.getStateSet().put(trans));
+                    //                    relation.put(trans, result1.getStateSet().put(trans));
                 }
             }
         });
-        Scenario scenario2 = ScenarioFactory.getScenario(new DFSStrategy(), null, null, null);
+        Scenario scenario2 =
+            ScenarioFactory.getScenario(new DFSStrategy(), null, null, null);
         scenario2.prepare(result);
         scenario2.play();
-        System.out.printf("%nStates: %d, transitions: %d%n%n", result.nodeCount(), result.edgeCount());
+        System.out.printf("%nStates: %d, transitions: %d%n%n",
+            result.nodeCount(), result.edgeCount());
     }
 }

@@ -47,7 +47,7 @@ public class TypeReconstructor {
     private final MergeMap nodeTypes = new MergeMap();
 
     /**
-     * @param grammar
+     * @param grammar the grammar for which the type graph should be build.
      */
     protected TypeReconstructor(GraphGrammar grammar) {
         Graph startGraph = grammar.getStartGraph();
@@ -154,7 +154,7 @@ public class TypeReconstructor {
     }
 
     /**
-     * @param graph
+     * @param graph the graph from which the types will be extracted.
      */
     private void addTyping(Graph graph) {
 

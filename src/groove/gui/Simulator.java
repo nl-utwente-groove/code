@@ -687,7 +687,6 @@ public class Simulator {
 
     /**
      * Is only called from the Generator. Will be replaced by doRunExploration.
-     * @param scenario
      */
     public void doGenerate(Scenario scenario) {
 

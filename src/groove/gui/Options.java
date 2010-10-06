@@ -54,7 +54,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class Options {
+public class Options implements Cloneable {
     /**
      * Callback method to determine whether a mouse event could be intended to
      * edit edge points.
