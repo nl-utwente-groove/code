@@ -24,6 +24,7 @@ import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.util.Groove;
 import groove.util.Pair;
+import groove.view.FormatException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -117,9 +118,13 @@ public class DefaultGxl extends AbstractXml {
             // note: don't set the name,
             // there is no general scheme to derive it from the URL
             return result;
+        } catch (FormatException exc) {
+            throw new IOException(String.format(
+                "Format error while loading '%s':\n%s", url, exc.getMessage()),
+                exc);
         } catch (IOException exc) {
-            throw new IOException(String.format("Error while loading '%s': %s",
-                url, exc.getMessage()), exc);
+            throw new IOException(String.format(
+                "Error while loading '%s':\n%s", url, exc.getMessage()), exc);
         }
     }
 

@@ -19,6 +19,7 @@ package groove.io;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.util.Pair;
+import groove.view.FormatException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,12 +40,13 @@ public interface GxlIO {
      * input to node identities in the resulting graph.
      */
     public abstract Pair<Graph,Map<String,Node>> loadGraphWithMap(InputStream in)
-        throws IOException;
+        throws FormatException, IOException;
 
     /**
      * Loads a graph from an input stream. Convenience method for
      * <code>loadGraphWithMap(in).first()</code>.
      */
-    public abstract Graph loadGraph(InputStream in) throws IOException;
+    public abstract Graph loadGraph(InputStream in) throws FormatException,
+        IOException;
 
 }
