@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -129,7 +130,7 @@ public class EquationSystem {
 
                     // Outgoing multiplicity.
                     Multiplicity oM = this.shape.getEdgeSigOutMult(es);
-                    if (oM.isPositive()) {
+                    if (oM.isPositive() && !this.shape.isOutEdgeSigUnique(es)) {
                         // Outgoing MultVar for C'
                         MultVar p = this.newMultVar();
                         // Outgoing MultVar for C''
@@ -146,7 +147,7 @@ public class EquationSystem {
 
                     // Incoming multiplicity.
                     Multiplicity iM = this.shape.getEdgeSigInMult(es);
-                    if (iM.isPositive()) {
+                    if (iM.isPositive() && !this.shape.isInEdgeSigUnique(es)) {
                         // Incoming MultVar for C'
                         MultVar r = this.newMultVar();
                         // Incoming MultVar for C''
@@ -175,11 +176,15 @@ public class EquationSystem {
                 // For all equivalence classes. (As incoming)
                 for (EquivClass<ShapeNode> ecI : this.shape.getEquivRelation()) {
 
-                    // For each pair of equivalence classes we have two
+                    // For each pair of equivalence classes we have three
                     // constraints.
                     // This constraint is about the summation of all flux
                     // between two equivalence classes.
                     AdmissibilityConstraint sumConstr = this.newAdmisConstr();
+                    // This constraint is about the summation of the flux
+                    // between an arbitrary equivalence class and the singleton
+                    // of the equivalence class that is being split.
+                    AdmissibilityConstraint singConstr = this.newAdmisConstr();
                     // This constraint is about the summation of the flux
                     // between an arbitrary equivalence class and the remainder
                     // of the equivalence class that is being split.
@@ -203,6 +208,10 @@ public class EquationSystem {
                             sumConstr.addToOutSum(term);
                             term = new MultTerm(nOMult, outMultVars.second());
                             sumConstr.addToOutSum(term);
+                            // Add the first term to the singleton constraint
+                            // as well.
+                            term = new MultTerm(nOMult, outMultVars.first());
+                            singConstr.addToOutSum(term);
                             // Add the second term to the remainder constraint
                             // as well.
                             term = new MultTerm(nOMult, outMultVars.second());
@@ -219,6 +228,8 @@ public class EquationSystem {
                                 // The sum does not consider the node that is
                                 // being singularised.
                                 remConstr.addToOutSum(outMult);
+                            } else {
+                                singConstr.addToOutSum(outMult);
                             }
                         }
                     }
@@ -240,6 +251,10 @@ public class EquationSystem {
                             sumConstr.addToInSum(term);
                             term = new MultTerm(nIMult, inMultVars.second());
                             sumConstr.addToInSum(term);
+                            // Add the first term to the singleton constraint
+                            // as well.
+                            term = new MultTerm(nIMult, inMultVars.first());
+                            singConstr.addToInSum(term);
                             // Add the second term to the remainder constraint
                             // as well.
                             term = new MultTerm(nIMult, inMultVars.second());
@@ -256,6 +271,8 @@ public class EquationSystem {
                                 // The sum does not consider the node that is
                                 // being singularised.
                                 remConstr.addToInSum(inMult);
+                            } else {
+                                singConstr.addToInSum(inMult);
                             }
                         }
                     }
@@ -263,6 +280,9 @@ public class EquationSystem {
                     // We don't want trivially valid constraints.
                     if (!sumConstr.isVacuous()) {
                         this.admisConstrs.add(sumConstr);
+                    }
+                    if (!singConstr.isVacuous()) {
+                        this.admisConstrs.add(singConstr);
                     }
                     if (!remConstr.isVacuous()) {
                         this.admisConstrs.add(remConstr);
@@ -302,8 +322,8 @@ public class EquationSystem {
      * EDUARDO: Comment this...
      */
     public void solve() {
-        System.out.println("------------------------------------------");
-        System.out.println("Solving " + this.toString() + "\n");
+        this.println("------------------------------------------");
+        this.println("Solving " + this.toString() + "\n");
 
         this.setCIdx = this.setConstrs.size() - 1;
         this.eqIdx = this.equations.size() - 1;
@@ -313,19 +333,19 @@ public class EquationSystem {
         while (!this.isSolvingFinished()) {
             this.printVars();
             if (this.areAdmisContrsSatisfied()) {
-                System.out.println("Valid!");
+                this.println("Valid!");
                 this.storeResultShape();
             } else {
-                System.out.println("Invalid!");
+                this.println("Invalid!");
             }
             this.updateSolutionValues();
         }
     }
 
     private void printVars() {
-        System.out.print("Possible solution: ");
+        this.print("Possible solution: ");
         for (MultVar var : this.vars) {
-            System.out.print(var.toString() + " = " + var.mult + " ");
+            this.print(var.toString() + " = " + var.mult + " ");
         }
     }
 
@@ -374,7 +394,41 @@ public class EquationSystem {
 
     private void storeResultShape() {
         Shape newShape = this.shape.clone();
-        //newShape
+
+        // Split the equivalence class.
+        newShape.splitEc(this.origEc, this.singEc, this.remEc);
+
+        // Update multiplicities from the variables values.
+        // Outgoing multiplicities.
+        for (Entry<EdgeSignature,Pair<MultVar,MultVar>> entry : this.outMap.entrySet()) {
+            EdgeSignature origEs = entry.getKey();
+            EdgeSignature singEs =
+                newShape.getEdgeSignature(origEs.getNode(), origEs.getLabel(),
+                    this.singEc);
+            EdgeSignature remEs =
+                newShape.getEdgeSignature(origEs.getNode(), origEs.getLabel(),
+                    this.remEc);
+            MultVar singVar = entry.getValue().first();
+            MultVar remVar = entry.getValue().second();
+            newShape.setEdgeOutMult(singEs, singVar.mult);
+            newShape.setEdgeOutMult(remEs, remVar.mult);
+        }
+        // Incoming multiplicities.
+        for (Entry<EdgeSignature,Pair<MultVar,MultVar>> entry : this.inMap.entrySet()) {
+            EdgeSignature origEs = entry.getKey();
+            EdgeSignature singEs =
+                newShape.getEdgeSignature(origEs.getNode(), origEs.getLabel(),
+                    this.singEc);
+            EdgeSignature remEs =
+                newShape.getEdgeSignature(origEs.getNode(), origEs.getLabel(),
+                    this.remEc);
+            MultVar singVar = entry.getValue().first();
+            MultVar remVar = entry.getValue().second();
+            newShape.setEdgeInMult(singEs, singVar.mult);
+            newShape.setEdgeInMult(remEs, remVar.mult);
+        }
+
+        assert newShape.isAdmissible();
         this.results.add(newShape);
     }
 
@@ -384,6 +438,14 @@ public class EquationSystem {
      */
     public Set<Shape> getResultShapes() {
         return this.results;
+    }
+
+    private void println(String s) {
+        this.print(s + "\n");
+    }
+
+    private void print(String s) {
+        System.out.print(s);
     }
 
     // ------------------------------------------------------------------------
@@ -579,8 +641,7 @@ public class EquationSystem {
 
         public boolean isVacuous() {
             return this.outSumTerms.isEmpty() && this.inSumTerms.isEmpty()
-                && !this.outSumConst.isPositive()
-                && !this.inSumConst.isPositive();
+                && this.outSumConst.equals(this.inSumConst);
         }
 
         public boolean isSatisfied() {
@@ -590,5 +651,4 @@ public class EquationSystem {
         }
 
     }
-
 }

@@ -175,7 +175,7 @@ public class Materialisation implements Cloneable {
             if (mat.isFinished()) {
                 // This one is done.
                 // EDUARDO: turn this assertion on when the code is complete.
-                // assert mat.isMatchingConcrete();
+                assert mat.hasConcreteMatch();
                 result.add(mat);
             } else { // Process the next operation on the materialisation.
                 MatOp op = mat.getNextOp();
@@ -279,10 +279,14 @@ public class Materialisation implements Cloneable {
                         Multiplicity inMult = this.shape.getEdgeSigInMult(es);
                         Set<Edge> vInterW =
                             Util.getIntersectEdges(this.shape, v, w, label);
-                        Multiplicity interMult =
+                        Multiplicity vInterWMult =
                             Multiplicity.getEdgeSetMult(vInterW);
-                        if (!outMult.equals(interMult)
-                            || !inMult.equals(interMult)) {
+                        Set<Edge> wInterV =
+                            Util.getIntersectEdges(this.shape, w, v, label);
+                        Multiplicity wInterVMult =
+                            Multiplicity.getEdgeSetMult(wInterV);
+                        if (!outMult.equals(vInterWMult)
+                            || !inMult.equals(wInterVMult)) {
                             complyToEdgeMult = false;
                             break;
                         }
@@ -892,7 +896,40 @@ public class Materialisation implements Cloneable {
     // ------------------------------------------------------------------------
 
     /** Test method. */
-    private static void test0() {
+    public static void test0() {
+        final String DIRECTORY = "junit/samples/abs-test.gps/";
+
+        File file = new File(DIRECTORY);
+        try {
+            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
+            Graph graph = view.getGraphView("materialisation-test-0").toModel();
+            Shape shape = new Shape(graph);
+            GraphGrammar grammar = view.toGrammar();
+            Rule rule = grammar.getRule("test-mat-0");
+            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            for (RuleMatch preMatch : preMatches) {
+                Set<Materialisation> mats =
+                    Materialisation.getMaterialisations(shape, preMatch);
+                for (Materialisation mat : mats) {
+                    String test;
+                    if (mat.hasConcreteMatch()) {
+                        test = "concrete";
+                    } else {
+                        test = "abstract";
+                    }
+                    Shape matShape = mat.getShape();
+                    new ShapeDialog(matShape, test);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /** Test method. */
+    public static void test1() {
         final String DIRECTORY = "junit/samples/abs-test.gps/";
 
         File file = new File(DIRECTORY);
@@ -925,9 +962,42 @@ public class Materialisation implements Cloneable {
     }
 
     /** Test method. */
+    public static void test2() {
+        final String DIRECTORY = "junit/samples/abs-test.gps/";
+
+        File file = new File(DIRECTORY);
+        try {
+            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
+            Graph graph = view.getGraphView("materialisation-test-2").toModel();
+            Shape shape = new Shape(graph);
+            GraphGrammar grammar = view.toGrammar();
+            Rule rule = grammar.getRule("test-mat-1");
+            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            for (RuleMatch preMatch : preMatches) {
+                Set<Materialisation> mats =
+                    Materialisation.getMaterialisations(shape, preMatch);
+                for (Materialisation mat : mats) {
+                    String test;
+                    if (mat.hasConcreteMatch()) {
+                        test = "concrete";
+                    } else {
+                        test = "abstract";
+                    }
+                    Shape matShape = mat.getShape();
+                    new ShapeDialog(matShape, test);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /** Test method. */
     public static void main(String args[]) {
         Multiplicity.initMultStore();
-        test0();
+        test2();
     }
 
 }
