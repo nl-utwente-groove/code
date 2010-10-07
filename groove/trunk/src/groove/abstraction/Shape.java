@@ -626,6 +626,9 @@ public class Shape extends DefaultGraph implements Cloneable {
     public void setEdgeOutMult(EdgeSignature es, Multiplicity mult) {
         if (mult.isPositive()) {
             this.outEdgeMultMap.put(es, mult);
+        } else {
+            // EDUARDO: Check this... Remove all edges from signature?
+            this.outEdgeMultMap.remove(es);
         }
     }
 
@@ -633,6 +636,9 @@ public class Shape extends DefaultGraph implements Cloneable {
     public void setEdgeInMult(EdgeSignature es, Multiplicity mult) {
         if (mult.isPositive()) {
             this.inEdgeMultMap.put(es, mult);
+        } else {
+            // EDUARDO: Check this... Remove all edges from signature?
+            this.inEdgeMultMap.remove(es);
         }
     }
 
@@ -1083,6 +1089,26 @@ public class Shape extends DefaultGraph implements Cloneable {
         return edgeCount;
     }
 
+    /**
+     * EDUARDO: Comment this...
+     */
+    public void splitEc(EquivClass<ShapeNode> origEc,
+            EquivClass<ShapeNode> singEc, EquivClass<ShapeNode> remEc) {
+        assert singEc.size() == 1 && origEc.containsAll(singEc)
+            && origEc.containsAll(remEc);
+        this.equivRel.remove(origEc);
+        this.equivRel.add(singEc);
+        this.equivRel.add(remEc);
+        this.purgeMultEntries(origEc);
+    }
+
+    private void purgeMultEntries(EquivClass<ShapeNode> origEc) {
+        for (EdgeSignature es : this.getEdgeSignatures(origEc)) {
+            this.outEdgeMultMap.remove(es);
+            this.inEdgeMultMap.remove(es);
+        }
+    }
+
     /** Normalise the shape object and returns the newly modified shape. */
     public Shape normalise() {
         Shape normalisedShape = new Shape();
@@ -1230,6 +1256,7 @@ public class Shape extends DefaultGraph implements Cloneable {
                 }
             }
         }
+        this.cleanEdgeSigSet();
         return result;
     }
 
