@@ -514,20 +514,30 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         for (Map.Entry<String,ZipEntry> graphEntry : graphs.entrySet()) {
             String graphName = filter.stripExtension(graphEntry.getKey());
             InputStream in = file.getInputStream(graphEntry.getValue());
-            Pair<Graph,Map<String,Node>> plainGraphAndMap =
-                JaxbGxlIO.getInstance().loadGraphWithMap(in);
-            Graph plainGraph = plainGraphAndMap.first();
-            /*
-             * For backward compatibility, we set the role and name of the graph
-             * graph
-             */
-            GraphInfo.setRole(plainGraph, role);
-            GraphInfo.setName(plainGraph, graphName);
-            addLayout(file, graphEntry.getKey(), plainGraph,
-                plainGraphAndMap.second());
-            AspectGraph graph = AspectGraph.newInstance(plainGraph);
-            /* Store the graph */
-            result.put(graphName, graph);
+            try {
+                Pair<Graph,Map<String,Node>> plainGraphAndMap =
+                    JaxbGxlIO.getInstance().loadGraphWithMap(in);
+                Graph plainGraph = plainGraphAndMap.first();
+                /*
+                 * For backward compatibility, we set the role and name of the
+                 * graph.
+                 */
+                GraphInfo.setRole(plainGraph, role);
+                GraphInfo.setName(plainGraph, graphName);
+                addLayout(file, graphEntry.getKey(), plainGraph,
+                    plainGraphAndMap.second());
+                AspectGraph graph = AspectGraph.newInstance(plainGraph);
+                /* Store the graph */
+                result.put(graphName, graph);
+            } catch (FormatException exc) {
+                throw new IOException(String.format(
+                    "Format error while loading '%s':\n%s", graphName,
+                    exc.getMessage()), exc);
+            } catch (IOException exc) {
+                throw new IOException(String.format(
+                    "Error while loading '%s':\n%s", graphName,
+                    exc.getMessage()), exc);
+            }
         }
         return result;
     }
@@ -626,11 +636,11 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     /** Name of the ZIP protocol and file extension. */
     static private final String ZIP_PROTOCOL = "zip";
     /** File filter to accept JAR files. */
-    static private final ExtensionFilter JAR_FILTER =
-        new ExtensionFilter("." + JAR_PROTOCOL);
+    static private final ExtensionFilter JAR_FILTER = new ExtensionFilter("."
+        + JAR_PROTOCOL);
     /** File filter to accept ZIP files. */
-    static private final ExtensionFilter ZIP_FILTER =
-        new ExtensionFilter("." + ZIP_PROTOCOL);
+    static private final ExtensionFilter ZIP_FILTER = new ExtensionFilter("."
+        + ZIP_PROTOCOL);
     /** File filter for graph grammars in the GPS format. */
     static private final ExtensionFilter GRAMMAR_FILTER =
         Groove.createRuleSystemFilter();
@@ -656,8 +666,8 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         Groove.createControlFilter();
 
     /** File filter for layout files. */
-    static private final ExtensionFilter LAYOUT_FILTER =
-        new ExtensionFilter(Groove.LAYOUT_EXTENSION);
+    static private final ExtensionFilter LAYOUT_FILTER = new ExtensionFilter(
+        Groove.LAYOUT_EXTENSION);
 
     private class MyEdit extends AbstractUndoableEdit implements Edit {
         public MyEdit(int change) {
