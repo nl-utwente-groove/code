@@ -627,8 +627,16 @@ public class Shape extends DefaultGraph implements Cloneable {
         if (mult.isPositive()) {
             this.outEdgeMultMap.put(es, mult);
         } else {
-            // EDUARDO: Check this... Remove all edges from signature?
-            this.outEdgeMultMap.remove(es);
+            // Setting an outgoing multiplicity to zero is equivalent to
+            // removing all edges in the signature from the shape.
+            ShapeNode src = es.getNode();
+            Label label = es.getLabel();
+            EquivClass<ShapeNode> ec = es.getEquivClass();
+            for (ShapeEdge edge : this.outBinaryEdgeSet(src)) {
+                if (edge.label().equals(label) && ec.contains(edge.target())) {
+                    super.removeEdge(edge);
+                }
+            }
         }
     }
 
@@ -637,8 +645,16 @@ public class Shape extends DefaultGraph implements Cloneable {
         if (mult.isPositive()) {
             this.inEdgeMultMap.put(es, mult);
         } else {
-            // EDUARDO: Check this... Remove all edges from signature?
-            this.inEdgeMultMap.remove(es);
+            // Setting an incoming multiplicity to zero is equivalent to
+            // removing all edges in the signature from the shape.
+            ShapeNode tgt = es.getNode();
+            Label label = es.getLabel();
+            EquivClass<ShapeNode> ec = es.getEquivClass();
+            for (ShapeEdge edge : this.inBinaryEdgeSet(tgt)) {
+                if (edge.label().equals(label) && ec.contains(edge.source())) {
+                    super.removeEdge(edge);
+                }
+            }
         }
     }
 
