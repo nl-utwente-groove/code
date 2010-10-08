@@ -65,8 +65,10 @@ public class EquationSystem {
     private Map<EdgeSignature,Pair<MultVar,MultVar>> outMap;
     private Map<EdgeSignature,Pair<MultVar,MultVar>> inMap;
 
-    private int setCIdx;
-    private int eqIdx;
+    private int eqI;
+    private int eqJ;
+    private int setCI;
+    private int setCJ;
 
     private Set<Shape> results;
 
@@ -325,11 +327,7 @@ public class EquationSystem {
         this.println("------------------------------------------");
         this.println("Solving " + this.toString() + "\n");
 
-        this.setCIdx = this.setConstrs.size() - 1;
-        this.eqIdx = this.equations.size() - 1;
-        for (Equation eq : this.equations) {
-            eq.compute();
-        }
+        this.initSolve();
         while (!this.isSolvingFinished()) {
             this.printVars();
             if (this.areAdmisContrsSatisfied()) {
@@ -342,6 +340,20 @@ public class EquationSystem {
         }
     }
 
+    private void initSolve() {
+        this.setCI = this.setConstrs.size() - 1;
+        this.setCJ = this.setCI;
+        this.computeEquations();
+    }
+
+    private void computeEquations() {
+        this.eqI = this.equations.size() - 1;
+        this.eqJ = this.eqI;
+        for (Equation eq : this.equations) {
+            eq.compute();
+        }
+    }
+
     private void printVars() {
         this.print("Possible solution: ");
         for (MultVar var : this.vars) {
@@ -350,7 +362,7 @@ public class EquationSystem {
     }
 
     private boolean isSolvingFinished() {
-        return this.setCIdx == -1 && this.eqIdx == -1;
+        return this.setCI == -1 && this.setCJ == -1;
     }
 
     private boolean areAdmisContrsSatisfied() {
@@ -365,30 +377,93 @@ public class EquationSystem {
     }
 
     private void updateSolutionValues() {
-        while (this.eqIdx >= 0 && !this.equations.get(this.eqIdx).hasNext()) {
-            this.eqIdx--;
+        // First check for the equations.
+
+        // Update eqJ.
+        while (this.eqJ >= this.eqI && !this.equations.get(this.eqJ).hasNext()) {
+            this.eqJ--;
         }
-        if (this.eqIdx >= 0) {
-            this.equations.get(this.eqIdx).next();
-            for (int i = this.eqIdx + 1; i < this.equations.size(); i++) {
-                this.equations.get(i).resetIterator();
+
+        // Check to see if we need to update eqI.
+        if (this.eqJ < this.eqI) {
+            // Yes, we do. Try to decrease eqI.
+            while (this.eqI >= 0 && !this.equations.get(this.eqI).hasNext()) {
+                // The constraint pointed by eqI has no next value.
+                this.eqI--;
+            }
+            if (this.eqI >= 0) {
+                // Get the next element of eqI.
+                this.equations.get(this.eqI).next();
+                // Reset all iterators from the elements below eqI.
+                for (int i = this.eqI + 1; i < this.equations.size(); i++) {
+                    this.equations.get(i).resetIterator();
+                }
+                // Reset eqJ.
+                this.eqJ = this.equations.size() - 1;
+                // We are done for now.
+                return;
             }
         } else {
-            // We finished iterating the equations. Change the set constraints.
-            while (this.setCIdx >= 0
-                && !this.setConstrs.get(this.setCIdx).hasNext()) {
-                this.setCIdx--;
+            // We don't need to update eqI. This means that eqJ is pointing
+            // to an element that has a next value.
+            // Get the next element of eqJ.
+            this.equations.get(this.eqJ).next();
+            // Reset all iterators from the elements below eqJ.
+            for (int i = this.eqJ + 1; i < this.equations.size(); i++) {
+                this.equations.get(i).resetIterator();
             }
-            if (this.setCIdx >= 0) {
-                this.setConstrs.get(this.setCIdx).next();
-                for (int i = this.setCIdx + 1; i < this.setConstrs.size(); i++) {
+            // Reset eqJ.
+            this.eqJ = this.equations.size() - 1;
+            // We are done for now.
+            return;
+        }
+
+        // Now update the set constraints.
+
+        // Update setCJ.
+        while (this.setCJ >= this.setCI
+            && !this.setConstrs.get(this.setCJ).hasNext()) {
+            // The constraint pointed by setCJ has no next value.
+            this.setCJ--;
+        }
+
+        // Check to see if we need to update setCI.
+        if (this.setCJ < this.setCI) {
+            // Yes, we do. Try to decrease setCI.
+            while (this.setCI >= 0
+                && !this.setConstrs.get(this.setCI).hasNext()) {
+                // The constraint pointed by setCI has no next value.
+                this.setCI--;
+            }
+            if (this.setCI >= 0) {
+                // Get the next element of setCI.
+                this.setConstrs.get(this.setCI).next();
+                // Reset all iterators from the elements below setCI.
+                for (int i = this.setCI + 1; i < this.setConstrs.size(); i++) {
                     this.setConstrs.get(i).resetIterator();
                 }
-                for (Equation eq : this.equations) {
-                    eq.compute();
-                }
-                this.eqIdx = this.equations.size() - 1;
+                // Recompute the equations.
+                this.computeEquations();
+                // Reset setCJ.
+                this.setCJ = this.setConstrs.size() - 1;
+                // We are done for now.
+                return;
             }
+        } else {
+            // We don't need to update setCI. This means that setCJ is pointing
+            // to an element that has a next value.
+            // Get the next element of setCJ.
+            this.setConstrs.get(this.setCJ).next();
+            // Reset all iterators from the elements below setCJ.
+            for (int i = this.setCJ + 1; i < this.setConstrs.size(); i++) {
+                this.setConstrs.get(i).resetIterator();
+            }
+            // Recompute the equations.
+            this.computeEquations();
+            // Reset setCJ.
+            this.setCJ = this.setConstrs.size() - 1;
+            // We are done for now.
+            return;
         }
     }
 
