@@ -637,6 +637,7 @@ public class Shape extends DefaultGraph implements Cloneable {
                     super.removeEdge(edge);
                 }
             }
+            this.outEdgeMultMap.remove(es);
         }
     }
 
@@ -655,6 +656,7 @@ public class Shape extends DefaultGraph implements Cloneable {
                     super.removeEdge(edge);
                 }
             }
+            this.inEdgeMultMap.remove(es);
         }
     }
 
@@ -1109,19 +1111,53 @@ public class Shape extends DefaultGraph implements Cloneable {
      * EDUARDO: Comment this...
      */
     public void splitEc(EquivClass<ShapeNode> origEc,
-            EquivClass<ShapeNode> singEc, EquivClass<ShapeNode> remEc) {
+            EquivClass<ShapeNode> singEc, EquivClass<ShapeNode> remEc,
+            boolean trivial) {
         assert singEc.size() == 1 && origEc.containsAll(singEc)
             && origEc.containsAll(remEc);
         this.equivRel.remove(origEc);
         this.equivRel.add(singEc);
         this.equivRel.add(remEc);
-        this.purgeMultEntries(origEc);
+        this.purgeMultEntries(origEc, singEc, remEc, trivial);
     }
 
-    private void purgeMultEntries(EquivClass<ShapeNode> origEc) {
-        for (EdgeSignature es : this.getEdgeSignatures(origEc)) {
-            this.outEdgeMultMap.remove(es);
-            this.inEdgeMultMap.remove(es);
+    private void purgeMultEntries(EquivClass<ShapeNode> origEc,
+            EquivClass<ShapeNode> singEc, EquivClass<ShapeNode> remEc,
+            boolean trivial) {
+        ShapeNode singNode = singEc.iterator().next();
+        for (EdgeSignature origEs : this.getEdgeSignatures(origEc)) {
+            Multiplicity outMult = this.outEdgeMultMap.remove(origEs);
+            Multiplicity inMult = this.inEdgeMultMap.remove(origEs);
+
+            EquivClass<ShapeNode> outEc = remEc;
+            EquivClass<ShapeNode> inEc = remEc;
+            if (trivial
+                && (this.getShapeEdge(origEs.getNode(), origEs.getLabel(),
+                    singNode) != null)) {
+                // We have a trivial split of outgoing multiplicities into
+                // the singleton node.
+                outEc = singEc;
+            }
+            if (trivial
+                && (this.getShapeEdge(singNode, origEs.getLabel(),
+                    origEs.getNode()) != null)) {
+                // We have a trivial split of incoming multiplicities from
+                // the singleton node.
+                inEc = singEc;
+            }
+
+            EdgeSignature outEs =
+                this.getEdgeSignature(origEs.getNode(), origEs.getLabel(),
+                    outEc);
+            if (outMult != null) {
+                this.setEdgeOutMult(outEs, outMult);
+            }
+
+            EdgeSignature inEs =
+                this.getEdgeSignature(origEs.getNode(), origEs.getLabel(), inEc);
+            if (inMult != null) {
+                this.setEdgeInMult(inEs, inMult);
+            }
         }
     }
 
@@ -1272,7 +1308,7 @@ public class Shape extends DefaultGraph implements Cloneable {
                 }
             }
         }
-        this.cleanEdgeSigSet();
+        this.checkShapeInvariant();
         return result;
     }
 
@@ -1280,7 +1316,7 @@ public class Shape extends DefaultGraph implements Cloneable {
      * Check if the shape is in a state that complies to the shape invariant.
      * See last item of Def. 7, pg. 10.
      */
-    private void checkShapeInvariant() {
+    public void checkShapeInvariant() {
         // For all nodes in the shape.
         for (ShapeNode node : this.nodeSet()) {
             // For all labels.
