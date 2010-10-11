@@ -38,6 +38,8 @@ public class EquationSystem {
     // Static fields
     // ------------------------------------------------------------------------
 
+    private static boolean DEBUG = false;
+
     private static Set<Multiplicity> zeroOneSet;
 
     static {
@@ -167,7 +169,9 @@ public class EquationSystem {
             }
         }
 
-        this.buildAdmissibilityConstraints();
+        if (this.varCount > 0) {
+            this.buildAdmissibilityConstraints();
+        }
     }
 
     private void buildAdmissibilityConstraints() {
@@ -327,16 +331,24 @@ public class EquationSystem {
         this.println("------------------------------------------");
         this.println("Solving " + this.toString() + "\n");
 
-        this.initSolve();
-        while (!this.isSolvingFinished()) {
-            this.printVars();
-            if (this.areAdmisContrsSatisfied()) {
-                this.println("Valid!");
-                this.storeResultShape();
-            } else {
-                this.println("Invalid!");
+        if (this.varCount == 0) {
+            // Trivial equation system. The node the be singularised has no
+            // shared multiplicities. Just split the equivalence classes.
+            this.println("Valid!");
+            this.storeTrivialResultShape();
+        } else {
+            // We have a real equation system to solve.
+            this.initSolve();
+            while (!this.isSolvingFinished()) {
+                this.printVars();
+                if (this.areAdmisContrsSatisfied()) {
+                    this.println("Valid!");
+                    this.storeResultShape();
+                } else {
+                    this.println("Invalid!");
+                }
+                this.updateSolutionValues();
             }
-            this.updateSolutionValues();
         }
     }
 
@@ -467,11 +479,22 @@ public class EquationSystem {
         }
     }
 
+    private void storeTrivialResultShape() {
+        assert this.varCount == 0;
+        Shape newShape = this.shape;
+
+        // Split the equivalence class.
+        newShape.splitEc(this.origEc, this.singEc, this.remEc, true);
+
+        assert newShape.isAdmissible();
+        this.results.add(newShape);
+    }
+
     private void storeResultShape() {
         Shape newShape = this.shape.clone();
 
         // Split the equivalence class.
-        newShape.splitEc(this.origEc, this.singEc, this.remEc);
+        newShape.splitEc(this.origEc, this.singEc, this.remEc, false);
 
         // Update multiplicities from the variables values.
         // Outgoing multiplicities.
@@ -520,7 +543,9 @@ public class EquationSystem {
     }
 
     private void print(String s) {
-        System.out.print(s);
+        if (DEBUG) {
+            System.out.print(s);
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -716,7 +741,7 @@ public class EquationSystem {
 
         public boolean isVacuous() {
             return this.outSumTerms.isEmpty() && this.inSumTerms.isEmpty()
-                && this.outSumConst.equals(this.inSumConst);
+                && this.outSumConst.overlaps(this.inSumConst);
         }
 
         public boolean isSatisfied() {
