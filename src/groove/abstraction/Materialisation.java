@@ -174,7 +174,6 @@ public class Materialisation implements Cloneable {
             Materialisation mat = queue.remove();
             if (mat.isFinished()) {
                 // This one is done.
-                // EDUARDO: turn this assertion on when the code is complete.
                 assert mat.hasConcreteMatch();
                 result.add(mat);
             } else { // Process the next operation on the materialisation.
@@ -335,7 +334,7 @@ public class Materialisation implements Cloneable {
                     // We have an edge in the rule that was matched to an edge
                     // in the shape with a shared multiplicity. We need to
                     // materialise this shared edge.
-                    this.tasks.add(new MaterialiseEdge(this, edgeS, edgeR));
+                    this.tasks.add(new MaterialiseEdge(this, edgeR));
                 }
             }
         }
@@ -403,45 +402,12 @@ public class Materialisation implements Cloneable {
                         // edge in the shape with a shared multiplicity. We
                         // need to materialise this shared edge. Create the
                         // proper operation.
-                        this.tasks.add(new MaterialiseEdge(this, newEdgeS,
-                            edgeR));
+                        this.tasks.add(new MaterialiseEdge(this, edgeR));
                     } else {
                         this.match.putEdge(edgeR, newEdgeS);
                     }
                 }
             }
-        }
-    }
-
-    private void extendMatch(Edge edgeR, ShapeEdge edgeS) {
-        // The pre-condition of this method is that both source and target
-        // nodes are properly matched.
-        ShapeNode matchedSrc = (ShapeNode) this.match.getNode(edgeR.source());
-        ShapeNode matchedTgt = (ShapeNode) this.match.getNode(edgeR.opposite());
-        assert matchedSrc.equals(edgeS.source())
-            && matchedTgt.equals(edgeS.opposite());
-
-        // OK, the pre-condition holds. Put the edge in the match.
-        this.match.putEdge(edgeR, edgeS);
-    }
-
-    /**
-     * Given an edge matched by the rule, clear all other shared edges in the
-     * shape that can no longer exist. 
-     */
-    private void removeImpossibleEdges(ShapeEdge mappedEdge) {
-        Multiplicity oneMult = Multiplicity.getMultOf(1);
-        // Check outgoing multiplicities.
-        EdgeSignature outEs = this.shape.getEdgeOutSignature(mappedEdge);
-        Multiplicity outMult = this.shape.getEdgeSigOutMult(outEs);
-        if (outMult.equals(oneMult)) {
-            this.shape.removeImpossibleOutEdges(outEs, mappedEdge);
-        }
-        // Check incoming multiplicities.
-        EdgeSignature inEs = this.shape.getEdgeInSignature(mappedEdge);
-        Multiplicity inMult = this.shape.getEdgeSigInMult(inEs);
-        if (inMult.equals(oneMult)) {
-            this.shape.removeImpossibleInEdges(inEs, mappedEdge);
         }
     }
 
@@ -680,12 +646,6 @@ public class Materialisation implements Cloneable {
                 this.mat.extendMatch(nodeR, nodeS);
             }
 
-            // Create the new tasks that will be performed after this one.
-            // Cleanup impossible edges. 
-            CleanupImpossibleEdges cleanupImpossibleEdges =
-                new CleanupImpossibleEdges(this.mat);
-            this.mat.tasks.add(cleanupImpossibleEdges);
-
             // Add this materialisation to the result set of this
             // operation.
             this.result.add(this.mat);
@@ -777,19 +737,16 @@ public class Materialisation implements Cloneable {
 
     private class MaterialiseEdge extends MatOp {
 
-        private ShapeEdge edgeS;
         private Edge edgeR;
 
-        public MaterialiseEdge(Materialisation mat, ShapeEdge edgeS, Edge edgeR) {
+        public MaterialiseEdge(Materialisation mat, Edge edgeR) {
             super(mat);
-            this.edgeS = edgeS;
             this.edgeR = edgeR;
         }
 
         private MaterialiseEdge(MaterialiseEdge matEdge) {
             super();
             this.setMat(matEdge.mat);
-            this.edgeS = matEdge.edgeS;
             this.edgeR = matEdge.edgeR;
         }
 
@@ -800,7 +757,7 @@ public class Materialisation implements Cloneable {
 
         @Override
         public String toString() {
-            return "MaterialiseEdge: " + this.edgeS + ", " + this.edgeR;
+            return "MaterialiseEdge: " + this.edgeR;
         }
 
         @Override
@@ -808,9 +765,7 @@ public class Materialisation implements Cloneable {
             boolean result = false;
             if (o instanceof MaterialiseEdge) {
                 MaterialiseEdge other = (MaterialiseEdge) o;
-                result =
-                    this.edgeS.equals(other.edgeS)
-                        && this.edgeR.equals(other.edgeR);
+                result = this.edgeR.equals(other.edgeR);
             }
             return result;
         }
@@ -822,71 +777,32 @@ public class Materialisation implements Cloneable {
 
         @Override
         public void perform() {
-            this.mat.extendMatch(this.edgeR, this.edgeS);
+            NodeEdgeMap match = this.mat.match;
+            Shape shape = this.mat.shape;
 
-            // Create the new tasks that will be performed after this one.
-            // Cleanup impossible edges. 
-            CleanupImpossibleEdges cleanupImpossibleEdges =
-                new CleanupImpossibleEdges(this.mat);
-            this.mat.tasks.add(cleanupImpossibleEdges);
+            // The pre-condition of this method is that both source and target
+            // nodes are properly matched.
+            ShapeNode matchedSrc =
+                (ShapeNode) match.getNode(this.edgeR.source());
+            ShapeNode matchedTgt =
+                (ShapeNode) match.getNode(this.edgeR.opposite());
+            assert matchedSrc != null && matchedTgt != null;
 
-            // This operation is deterministic. No need to clone.
-            this.result.add(this.mat);
-        }
+            // Check if both source and target are singletons.
+            assert shape.getEquivClassOf(matchedSrc).size() == 1
+                && shape.getEquivClassOf(matchedTgt).size() == 1;
 
-    }
-
-    // ----------------------------
-    // Class CleanupImpossibleEdges
-    // ----------------------------
-
-    private class CleanupImpossibleEdges extends MatOp {
-
-        public CleanupImpossibleEdges(Materialisation mat) {
-            super(mat);
-        }
-
-        private CleanupImpossibleEdges(CleanupImpossibleEdges cleanIe) {
-            super();
-            this.setMat(cleanIe.mat);
-        }
-
-        @Override
-        public MatOp clone() {
-            return new CleanupImpossibleEdges(this);
-        }
-
-        @Override
-        public String toString() {
-            return "CleanupImpossibleEdges";
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return (o instanceof CleanupImpossibleEdges);
-        }
-
-        @Override
-        public int getPriority() {
-            return 9;
-        }
-
-        /** 
-         * Finishes the materialisation by removing impossible edge
-         * configurations.
-         */
-        @Override
-        public void perform() {
-            // At this point we assume that all variations on the nodes were
-            // resolved, and that the rule match is complete and fixed.
-            // Now, we go through the matched edges of the rule and adjust the 
-            // shared edge multiplicities.
-            for (Edge edgeR : this.mat.match.edgeMap().keySet()) {
-                ShapeEdge edgeS = (ShapeEdge) this.mat.match.getEdge(edgeR);
-                this.mat.removeImpossibleEdges(edgeS);
-            }
-            // This operation is deterministic. No need to clone.
-            this.result.add(this.mat);
+            // OK, the pre-condition holds. Check if there is an edge in the
+            // shape for which we can match.
+            Label label = this.edgeR.label();
+            ShapeEdge edgeS = shape.getShapeEdge(matchedSrc, label, matchedTgt);
+            if (edgeS != null) {
+                // Yes, there is. Put the edge in the match.
+                match.putEdge(this.edgeR, edgeS);
+                // Operation successful. Store the result.
+                // This operation is deterministic. No need to clone.
+                this.result.add(this.mat);
+            } // else, the operation fails. Nothing to do.
         }
 
     }

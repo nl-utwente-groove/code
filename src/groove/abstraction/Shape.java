@@ -1028,36 +1028,6 @@ public class Shape extends DefaultGraph implements Cloneable {
     }
 
     /**
-     * Removes the edges in the signature from the shape, with the
-     * exception of the edge given.
-     */
-    public void removeImpossibleOutEdges(EdgeSignature es, ShapeEdge edgeToKeep) {
-        ShapeNode source = es.getNode();
-        Label label = es.getLabel();
-        for (ShapeNode target : es.getEquivClass()) {
-            ShapeEdge edge = this.getShapeEdge(source, label, target);
-            if (edge != null && !edgeToKeep.equals(edge)) {
-                this.removeEdge(edge);
-            }
-        }
-    }
-
-    /**
-     * Removes the edges in the signature from the shape, with the
-     * exception of the edge given.
-     */
-    public void removeImpossibleInEdges(EdgeSignature es, ShapeEdge edgeToKeep) {
-        ShapeNode target = es.getNode();
-        Label label = es.getLabel();
-        for (ShapeNode source : es.getEquivClass()) {
-            ShapeEdge edge = this.getShapeEdge(source, label, target);
-            if (edge != null && !edgeToKeep.equals(edge)) {
-                this.removeEdge(edge);
-            }
-        }
-    }
-
-    /**
      * Returns true if the number of edges from the signature occurring in 
      * the shape is one.
      */
