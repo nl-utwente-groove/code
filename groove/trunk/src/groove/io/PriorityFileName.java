@@ -106,7 +106,7 @@ public class PriorityFileName {
      * Returns the priority.
      */
     public Integer getPriority() {
-        return new Integer(this.priority);
+        return Integer.valueOf(this.priority);
     }
 
     /** Indicates if the file name has an explicit priority. */

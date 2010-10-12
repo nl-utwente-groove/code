@@ -46,13 +46,13 @@ public class ModelChecking {
     public static final int RED_TOGGLE = -5;
 
     /** the value for the colour white in the current colour-scheme. */
-    public static int CURRENT_WHITE = WHITE;
+    private static int CURRENT_WHITE = WHITE;
     /** the value for the colour cyan in the current colour-scheme. */
-    public static int CURRENT_CYAN = CYAN;
+    private static int CURRENT_CYAN = CYAN;
     /** the value for the colour blue in the current colour-scheme. */
-    public static int CURRENT_BLUE = BLUE;
+    private static int CURRENT_BLUE = BLUE;
     /** the value for the colour red in the current colour-scheme. */
-    public static int CURRENT_RED = RED;
+    private static int CURRENT_RED = RED;
 
     /** constant to keep track of dynamic colour-schemes */
     private static int NEXT_FREE_COLOUR = 6;

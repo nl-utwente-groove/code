@@ -826,11 +826,11 @@ public class ExprParser {
     /** Pair of round brackets, to control parsing. */
     static public final char[] ROUND_BRACKETS = {LPAR_CHAR, RPAR_CHAR};
     /** Pair of curly brackets, to control parsing. */
-    static public final char[] CURLY_BRACKETS = {LCURLY_CHAR, RCURLY_CHAR};
+    static private final char[] CURLY_BRACKETS = {LCURLY_CHAR, RCURLY_CHAR};
     /** Pair of square brackets, to control parsing. */
-    static public final char[] SQUARE_BRACKETS = {'[', ']'};
+    static private final char[] SQUARE_BRACKETS = {'[', ']'};
     /** Pair of angle brackets, to control parsing. */
-    static public final char[] ANGLE_BRACKETS = {LANGLE_CHAR, RANGLE_CHAR};
+    static private final char[] ANGLE_BRACKETS = {LANGLE_CHAR, RANGLE_CHAR};
 
     /**
      * Positioning value for an infix operator.

@@ -157,11 +157,11 @@ public class RuleSystem {
 
     @Override
     public String toString() {
-        String res = "";
+        StringBuilder res = new StringBuilder();
         for (Rule production : getRules()) {
-            res += production + "\n";
+            res.append(production + "\n");
         }
-        return res;
+        return res.toString();
     }
 
     /**

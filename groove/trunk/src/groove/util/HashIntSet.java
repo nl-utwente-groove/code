@@ -47,7 +47,7 @@ final public class HashIntSet implements IntSet {
      * underlying set.
      */
     public boolean add(int key) {
-        return this.store.add(new Integer(key));
+        return this.store.add(Integer.valueOf(key));
     }
 
     /**

@@ -62,7 +62,7 @@ public class AUTreader implements LTSreader {
                 this.label = tmp;
             }
             this.label[this.nextlbl] = this.current_lbls;
-            ilabel = new Integer(this.nextlbl);
+            ilabel = Integer.valueOf(this.nextlbl);
             this.nextlbl++;
             this.table.put(this.current_lbls, ilabel);
         }

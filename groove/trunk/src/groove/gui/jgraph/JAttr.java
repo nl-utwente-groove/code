@@ -219,7 +219,7 @@ public class JAttr {
     /**
      * Dash pattern specifying "no dash"
      */
-    static public final float[] NO_DASH = {10f, 0f};
+    static private final float[] NO_DASH = {10f, 0f};
 
     /** The color used for grayed-out cells. */
     static public final Color GRAYED_OUT_COLOR =

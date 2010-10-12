@@ -71,8 +71,8 @@ public class AlgebraConstants {
      * Array of attribute prefixes. <b>Important:</b> the indices within this
      * array correspond to the attribute code.
      */
-    static public final String[] TYPE_PREFIX =
-        {INTEGER_PREFIX, STRING_PREFIX, BOOLEAN_PREFIX, ABSTRACT_INTEGER_PREFIX};
+    static private final String[] TYPE_PREFIX = {INTEGER_PREFIX, STRING_PREFIX,
+        BOOLEAN_PREFIX, ABSTRACT_INTEGER_PREFIX};
 
     /**
      * Checks whether the label equals the attribute-prefix indicating that this

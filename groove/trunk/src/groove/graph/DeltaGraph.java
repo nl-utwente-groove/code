@@ -563,7 +563,7 @@ public class DeltaGraph extends AbstractGraph<DeltaGraphCache> implements
     private static int fixedDeltaGraphCount;
 
     /** The total number of delta graphs frozen. */
-    protected static int frozenDeltaGraphCount;
+    private static int frozenDeltaGraphCount;
 
     /**
      * An empty array constant, to share in order to save space.

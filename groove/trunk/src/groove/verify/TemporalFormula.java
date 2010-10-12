@@ -102,10 +102,10 @@ public abstract class TemporalFormula {
     }
 
     /** The factory for creating new instances of the logical operators. */
-    static public CTLStarFormula FACTORY;
+    static protected CTLStarFormula FACTORY;
     /** The top-level operator of this formula. */
     private final String operator;
-    /** The set of states that do not fulfil this formula. */
+    /** The set of states that do not fulfill this formula. */
     private Set<State> counterExamples;
 
     /**

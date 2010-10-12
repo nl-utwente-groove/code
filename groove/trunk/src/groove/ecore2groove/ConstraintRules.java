@@ -1369,25 +1369,25 @@ public class ConstraintRules {
             this.ruleNames.put(constraintRule, name);
 
             DefaultNode node = addEnumNode(constraintRule, eEnum);
-            String regExpr = "";
+            StringBuilder regExpr = new StringBuilder();
             EList<EEnumLiteral> literals = eEnum.getELiterals();
             for (int i = 0; i < literals.size() - 1; i++) {
-                regExpr += GraphLabels.getLabel(literals.get(i)) + ".(";
+                regExpr.append(GraphLabels.getLabel(literals.get(i)) + ".(");
                 for (int j = i + 1; j < literals.size(); j++) {
-                    regExpr += GraphLabels.getLabel(literals.get(j));
+                    regExpr.append(GraphLabels.getLabel(literals.get(j)));
                     if (j < literals.size() - 1) {
-                        regExpr += "|";
+                        regExpr.append("|");
                     }
                 }
-                regExpr += ")";
+                regExpr.append(")");
                 if (i < literals.size() - 2) {
-                    regExpr += "|";
+                    regExpr.append("|");
                 }
             }
 
-            regExpr = "path:" + regExpr;
+            String regExprStr = "path:" + regExpr.toString();
 
-            DefaultEdge edge = DefaultEdge.createEdge(node, regExpr, node);
+            DefaultEdge edge = DefaultEdge.createEdge(node, regExprStr, node);
             constraintRule.addEdge(edge);
 
             GraphInfo.setRuleRole(constraintRule);
