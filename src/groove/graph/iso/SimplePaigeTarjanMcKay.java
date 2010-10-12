@@ -454,7 +454,7 @@ public class SimplePaigeTarjanMcKay implements CertificateStrategy {
     @SuppressWarnings("unused")
     private final boolean strong;
     /** The pre-computed graph certificate, if any. */
-    private long graphCertificate;
+    protected long graphCertificate;
     /** The pre-computed certificate map, if any. */
     private Map<Element,Certificate<?>> certificateMap;
     /** The pre-computed node partition map, if any. */

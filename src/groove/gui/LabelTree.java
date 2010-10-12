@@ -416,9 +416,9 @@ public class LabelTree extends JTree implements GraphModelListener,
             LabelTreeNode labelNode = new LabelTreeNode(label, true);
             this.topNode.add(labelNode);
             if (labelStore != null && labelStore.getLabels().contains(label)) {
-                addRelatedTypes(labelNode, isShowsSubtypes()
-                        ? labelStore.getDirectSubtypeMap()
-                        : labelStore.getDirectSupertypeMap(), newNodes);
+                addRelatedTypes(labelNode,
+                    isShowsSubtypes() ? labelStore.getDirectSubtypeMap()
+                            : labelStore.getDirectSupertypeMap(), newNodes);
             }
         }
         this.treeModel.reload(this.topNode);
@@ -1190,8 +1190,9 @@ public class LabelTree extends JTree implements GraphModelListener,
                         }
                     } else {
                         Label keyType =
-                            DefaultLabel.createLabel(dataRow.substring(0,
-                                separatorIndex), Label.NODE_TYPE);
+                            DefaultLabel.createLabel(
+                                dataRow.substring(0, separatorIndex),
+                                Label.NODE_TYPE);
                         Label valueType =
                             DefaultLabel.createLabel(
                                 dataRow.substring(separatorIndex + 1),
@@ -1270,7 +1271,7 @@ public class LabelTree extends JTree implements GraphModelListener,
                     }
                 }
                 if (keepSelection.size() > 0) {
-                    setSelectionPaths(keepSelection.toArray(new TreePath[0]));
+                    setSelectionPaths(keepSelection.toArray(new TreePath[keepSelection.size()]));
                     result = new StringSelection(content.toString());
                 }
             }

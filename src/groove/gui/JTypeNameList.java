@@ -90,7 +90,8 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
     // Object Fields
     // ------------------------------------------------------------------------
 
-    private final TypePanel panel;
+    /** The panel showing the type graphs. */
+    protected final TypePanel panel;
     private final CheckBoxListModel model;
     private final ListSelectionListener selectionListener;
 
