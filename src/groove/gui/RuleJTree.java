@@ -784,7 +784,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     /**
      * Priority nodes (used only if the rule system has multiple priorities)
      */
-    private class PriorityTreeNode extends DefaultMutableTreeNode {
+    private static class PriorityTreeNode extends DefaultMutableTreeNode {
         /**
          * Creates a new priority node based on a given priority. The node can
          * (and will) have children.
@@ -797,7 +797,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     /**
      * Rule nodes (= level 1 nodes) of the directory
      */
-    private class RuleTreeNode extends DefaultMutableTreeNode {
+    private static class RuleTreeNode extends DefaultMutableTreeNode {
         /**
          * Creates a new rule node based on a given rule name. The node can have
          * children.
@@ -868,7 +868,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     /**
      * Directory nodes (= level 0 nodes) of the directory
      */
-    private class DirectoryTreeNode extends DefaultMutableTreeNode {
+    private static class DirectoryTreeNode extends DefaultMutableTreeNode {
         /**
          * Creates a new rule node based on a given rule name. The node can have
          * children.

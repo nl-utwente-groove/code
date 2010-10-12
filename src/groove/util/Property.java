@@ -181,8 +181,8 @@ abstract public class Property<S> {
         /** Representation of <code>false</code>. */
         static private final String falseString = Boolean.toString(false);
         /** The property description. */
-        static private final String description =
-            String.format("%s or %s", trueString, falseString);
+        static private final String description = String.format("%s or %s",
+            trueString, falseString);
     }
 
     /**
@@ -259,7 +259,7 @@ abstract public class Property<S> {
 
         /** enumType has to be an enumeration type. */
         private static String getDescription(Class<?> enumType) {
-            String result = new String();
+            String result = "";
             Field[] fields = enumType.getFields();
             if (fields.length == 0) {
                 return " Error : no value possible.";

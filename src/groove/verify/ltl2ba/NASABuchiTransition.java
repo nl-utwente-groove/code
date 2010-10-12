@@ -29,10 +29,10 @@ import junit.framework.Assert;
  */
 public class NASABuchiTransition extends DefaultBuchiTransition {
     /** symbol used for unguarded enabledness */
-    private final String TRUE_SYMBOL = "-";
+    private static final String TRUE_SYMBOL = "-";
 
     /** symbol used for negation */
-    private final String NEGATION_SYMBOL = "!";
+    private static final String NEGATION_SYMBOL = "!";
 
     /**
      * Constructor for creating a new Buchi
@@ -45,7 +45,7 @@ public class NASABuchiTransition extends DefaultBuchiTransition {
     @Override
     public boolean isEnabled(Set<String> applicableRules) {
         String guard = ((NASABuchiLabel) label()).guard();
-        if (guard.equals(this.TRUE_SYMBOL)) {
+        if (guard.equals(TRUE_SYMBOL)) {
             return true;
         } else {
             // extract all components of the conjunction
@@ -83,7 +83,7 @@ public class NASABuchiTransition extends DefaultBuchiTransition {
     }
 
     private boolean isNegated(String argument) {
-        if (argument.startsWith(this.NEGATION_SYMBOL)) {
+        if (argument.startsWith(NEGATION_SYMBOL)) {
             return true;
         }
 

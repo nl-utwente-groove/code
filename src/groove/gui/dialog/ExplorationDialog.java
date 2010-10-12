@@ -66,17 +66,16 @@ public class ExplorationDialog extends JDialog implements ActionListener,
     private static final String EXPLORE_COMMAND = "Run";
     private static final String CANCEL_COMMAND = "Cancel";
 
-    private static final String RESULT_TOOLTIP =
-        "<HTML>"
-            + "Exploration can be interrupted between atomic steps of the "
-            + "strategy.<BR> "
-            + "The size of the atomic steps depends on the chosen "
-            + "strategy.<BR> "
-            + "The interruption condition is determined by the indicated "
-            + "number of times that the acceptor succeeds." + "</HTML>";
-    private static final String EXPLORE_TOOLTIP =
-        "<HTML>" + "Run the customized exploration, and set it as the default."
-            + "</HTML>";
+    private static final String RESULT_TOOLTIP = "<HTML>"
+        + "Exploration can be interrupted between atomic steps of the "
+        + "strategy.<BR> "
+        + "The size of the atomic steps depends on the chosen "
+        + "strategy.<BR> "
+        + "The interruption condition is determined by the indicated "
+        + "number of times that the acceptor succeeds." + "</HTML>";
+    private static final String EXPLORE_TOOLTIP = "<HTML>"
+        + "Run the customized exploration, and set it as the default."
+        + "</HTML>";
 
     /**
      * Color to be used for headers on the dialog.
@@ -284,7 +283,7 @@ public class ExplorationDialog extends JDialog implements ActionListener,
      * exploration can be selected.
      * <!--------------------------------------------------------------------->
      */
-    private class ResultPanel extends JPanel implements ActionListener {
+    private static class ResultPanel extends JPanel implements ActionListener {
 
         JRadioButton[] checkboxes;
         JTextField customNumber;

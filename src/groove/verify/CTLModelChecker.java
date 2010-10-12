@@ -58,7 +58,7 @@ public class CTLModelChecker extends CommandLineTool {
     /** Extension for graph files */
     static public final String GRAPH_FILE_EXTENSION = ".graphs";
     /** QUIT option */
-    private final String QUIT_OPTION = "Q";
+    private static final String QUIT_OPTION = "Q";
 
     /**
      * Symbol used for special states, i.e. final and unexplored states
@@ -274,10 +274,10 @@ public class CTLModelChecker extends CommandLineTool {
         try {
             BufferedReader in =
                 new BufferedReader(new InputStreamReader(System.in));
-            System.out.print("Enter CTL-expression (or '" + this.QUIT_OPTION
+            System.out.print("Enter CTL-expression (or '" + QUIT_OPTION
                 + "' to quit):\n> ");
             String expression = in.readLine();
-            if (!(expression.equals(this.QUIT_OPTION))) {
+            if (!(expression.equals(QUIT_OPTION))) {
                 setProperty(CTLFormula.parseFormula(expression));
                 result = true;
             }

@@ -127,7 +127,7 @@ public class ControlledScenario extends DefaultScenario {
         }
     }
 
-    private class ControlledCache implements ExploreCache {
+    private static class ControlledCache implements ExploreCache {
         private Rule rule;
         private Rule last;
 

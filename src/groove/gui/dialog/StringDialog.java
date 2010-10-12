@@ -231,7 +231,7 @@ public class StringDialog {
      * Overrides the {@link JComboBox#configureEditor(ComboBoxEditor, Object)}
      * method to avoid confusing the editor. 
      */
-    private class MyComboBox extends JComboBox {
+    private static class MyComboBox extends JComboBox {
         @Override
         public void configureEditor(ComboBoxEditor anEditor, Object anItem) {
             if (anItem != null && this.configure) {

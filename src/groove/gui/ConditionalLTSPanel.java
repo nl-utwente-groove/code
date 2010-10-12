@@ -19,6 +19,7 @@ package groove.gui;
 import java.awt.BorderLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -32,38 +33,36 @@ import javax.swing.JPanel;
  * These elements are aligned vertically in a BorderLayout.
  */
 public class ConditionalLTSPanel extends JPanel implements MouseListener {
-    
+
     /*
      * JLabel for the status line. Contents are changed dynamically.
     */
-    private JLabel          statusText;
-    
+    private JLabel statusText;
+
     /*
      * Inner reference to the actual LTSPanel. Is added/removed to the panel dynamically.
     */
-    private LTSPanel        LTSPanel;
-       
+    private LTSPanel LTSPanel;
+
     /*
      * Internal bookkeeping of visibility of the LTSPanel.
     */
-    private boolean         LTSPanelVisible;
-    
+    private boolean LTSPanelVisible;
+
     /*
      * Displayed text when the LTSPanel is hidden.
     */
-    private final String    hiddenText  = "<HTML><BODY>"
-                                        + "The LTSPanel is currently <FONT color=red>hidden</FONT>. "
-                                        + "Click anywhere on this line to display it."
-                                        + "</BODY></HTML>";
-    
+    private static final String hiddenText = "<HTML><BODY>"
+        + "The LTSPanel is currently <FONT color=red>hidden</FONT>. "
+        + "Click anywhere on this line to display it." + "</BODY></HTML>";
+
     /* 
      * Displayed text when the LTSPanel is visible.
     */
-    private final String    visibleText = "<HTML><BODY>"
-                                        + "The LTSPanel is currently <FONT color=green>visible</FONT>. "
-                                        + "Click anywhere on this line to hide it."
-                                        + "</BODY></HTML>";
-    
+    private static final String visibleText = "<HTML><BODY>"
+        + "The LTSPanel is currently <FONT color=green>visible</FONT>. "
+        + "Click anywhere on this line to hide it." + "</BODY></HTML>";
+
     /**
      * Constructor for the ConditionalLTSPanel.
      * Draws the LTSPanel (initially always visible), and a status line.
@@ -74,14 +73,14 @@ public class ConditionalLTSPanel extends JPanel implements MouseListener {
          * Create the JPanel.
         */
         super(new BorderLayout());
-        
+
         /*
          * Initialize the local variables.
         */
         this.LTSPanel = theLTSPanel;
         this.LTSPanelVisible = true;
-        this.statusText = new JLabel(this.visibleText);
-        
+        this.statusText = new JLabel(visibleText);
+
         /*
          * The status line can be clicked. See below for event handler.
         */
@@ -93,14 +92,14 @@ public class ConditionalLTSPanel extends JPanel implements MouseListener {
         this.add(this.LTSPanel, BorderLayout.CENTER);
         this.add(this.statusText, BorderLayout.PAGE_END);
     }
-    
+
     /*
      * Hides the internal LTSPanel.
      * Precondition: LTSPanel is currently visible.
     */
     private void hideLTSPanel() {
         this.remove(this.LTSPanel);
-        this.statusText.setText(this.hiddenText);
+        this.statusText.setText(hiddenText);
     }
 
     /*
@@ -109,10 +108,9 @@ public class ConditionalLTSPanel extends JPanel implements MouseListener {
     */
     private void showLTSPanel() {
         this.add(this.LTSPanel, BorderLayout.CENTER);
-        this.statusText.setText(this.visibleText);
-}
-    
-    
+        this.statusText.setText(visibleText);
+    }
+
     /*
      * Event handler for the status line. Responds to arbitrary mouse clicks.
      * If clicked when visible, it hides the LTSPanel. If clicked when hidden, it displays the LTSPanel.

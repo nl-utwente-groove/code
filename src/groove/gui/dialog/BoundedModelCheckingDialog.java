@@ -155,7 +155,7 @@ public class BoundedModelCheckingDialog {
     }
 
     private String createTitle() {
-        return this.DIALOG_TITLE;
+        return DIALOG_TITLE;
     }
 
     /**
@@ -200,7 +200,7 @@ public class BoundedModelCheckingDialog {
     private final Set<String> selectedRuleNames = new HashSet<String>();
     private Boundary boundary;
 
-    private final String DIALOG_TITLE = "Set the boundary";
+    private static final String DIALOG_TITLE = "Set the boundary";
     JDialog dialog = new JDialog();
     JOptionPane pane;
 

@@ -959,7 +959,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         }
     }
 
-    private class AutomatonPanel extends JGraphPanel<ControlJGraph> {
+    private static class AutomatonPanel extends JGraphPanel<ControlJGraph> {
         /**
          * The constructor of this panel creates a panel with the Control
          * Automaton of the current grammar.
