@@ -379,7 +379,7 @@ public class ExplorationDialog extends JDialog implements ActionListener,
         /*
          * KeyAdapter that throws away all non-digit keystrokes.
          */
-        private class OnlyListenToNumbers extends KeyAdapter {
+        private static class OnlyListenToNumbers extends KeyAdapter {
             @Override
             public void keyTyped(KeyEvent evt) {
                 char ch = evt.getKeyChar();

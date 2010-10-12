@@ -50,7 +50,7 @@ public class ControlledScenario extends DefaultScenario {
         this.str.nextRule();
     }
 
-    private class ControlledStrategy extends AbstractStrategy {
+    private static class ControlledStrategy extends AbstractStrategy {
         public boolean next() {
             if (getAtState() == null || this.currRule == null) {
                 getGTS().removeGraphListener(this.toExplore);

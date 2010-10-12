@@ -96,7 +96,7 @@ public class EditableContent extends JCellContent<String> {
      * @see #isAllowEmptyLabelSet()
      */
     public void load(String value) {
-        load(Arrays.asList(value.split(this.loadSeparator, 0)));
+        load(Arrays.asList(value.split(loadSeparator, 0)));
     }
 
     /**
@@ -156,18 +156,13 @@ public class EditableContent extends JCellContent<String> {
      * an editable string.
      */
     private static final String editSeparator = NEWLINE;
+    /** Whitespace recognizer in a regular expression. */
+    public static final String WHITESPACE = "\\s*";
     /**
      * The separator used in loading the string description of the entire user
      * object, between the descriptions of the individual objects in the
      * collection.
      */
-    private final String loadSeparator = WHITESPACE + editSeparator
+    private static final String loadSeparator = WHITESPACE + editSeparator
         + WHITESPACE;
-
-    //
-    // /** Quote character for {@link #getPrintLabel(String)}. */
-    // public static final char QUOTE = '\'';
-
-    /** Whitespace recognizer in a regular expression. */
-    public static final String WHITESPACE = "\\s*";
 }

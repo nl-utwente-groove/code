@@ -174,7 +174,7 @@ public class ForestLayouter extends AbstractLayouter {
                     }
                 }
                 // add the cell to the count map
-                Integer inEdgeCountKey = new Integer(inEdgeCount);
+                Integer inEdgeCountKey = Integer.valueOf(inEdgeCount);
                 Set<Layoutable> cellsWithInEdgeCount =
                     this.inDegreeMap.get(inEdgeCountKey);
                 if (cellsWithInEdgeCount == null) {
@@ -243,7 +243,7 @@ public class ForestLayouter extends AbstractLayouter {
                     }
                 }
                 // add the cell to the count map
-                Integer inEdgeCountKey = new Integer(inEdgeCount);
+                Integer inEdgeCountKey = Integer.valueOf(inEdgeCount);
                 Set<Layoutable> cellsWithInEdgeCount =
                     this.inDegreeMap.get(inEdgeCountKey);
                 if (cellsWithInEdgeCount == null) {
@@ -385,7 +385,7 @@ public class ForestLayouter extends AbstractLayouter {
             }
             previousBranches.add(branch);
         }
-        return new Object[] {new Integer(width), leftIndent, rightIndent};
+        return new Object[] {Integer.valueOf(width), leftIndent, rightIndent};
     }
 
     /**
@@ -398,8 +398,8 @@ public class ForestLayouter extends AbstractLayouter {
         // recursively call layouting for the next level of the tree
         Set<Layoutable> branches = this.branchMap.get(layoutable);
         Object[] branchLayout =
-            layout(branches, height + VERTICAL_SPACE
-                + (int) layoutable.getHeight());
+            layout(branches,
+                height + VERTICAL_SPACE + (int) layoutable.getHeight());
         int branchWidth = ((Integer) branchLayout[0]).intValue();
         int[] branchLeftIndent = (int[]) branchLayout[1];
         int[] branchRightIndent = (int[]) branchLayout[2];
@@ -436,7 +436,7 @@ public class ForestLayouter extends AbstractLayouter {
         }
         layoutable.setLocation(leftIndent[0], height);
         int width = leftIndent[0] + cellWidth + rightIndent[0];
-        return new Object[] {new Integer(width), leftIndent, rightIndent};
+        return new Object[] {Integer.valueOf(width), leftIndent, rightIndent};
     }
 
     /**

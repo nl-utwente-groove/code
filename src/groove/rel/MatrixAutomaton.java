@@ -436,7 +436,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
         int nodeIndex = 0;
         while (nodeIndex < nodeList.size()) {
             Node node = nodeList.get(nodeIndex);
-            this.nodeIndexMap.put(node, new Integer(nodeIndex));
+            this.nodeIndexMap.put(node, Integer.valueOf(nodeIndex));
             nodeIndex++;
             for (Edge outEdge : outEdgeSet(node)) {
                 Node opposite = outEdge.opposite();

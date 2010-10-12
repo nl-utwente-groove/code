@@ -450,7 +450,7 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
             while (predecessorIter.hasNext()) {
                 GraphState predecessor = predecessorIter.next();
                 int newNb = (nb.get(predecessor)).intValue() - 1;
-                nb.put(predecessor, new Integer(newNb));
+                nb.put(predecessor, Integer.valueOf(newNb));
                 if (newNb == 0 && marking.satisfies(predecessor, firstOperand)
                     && !marking.satisfies(predecessor, property)) {
                     todo.add(predecessor);

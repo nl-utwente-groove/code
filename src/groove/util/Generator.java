@@ -633,7 +633,7 @@ public class Generator extends CommandLineTool {
      * profiling. The field is cleared in the constructor, so consecutive
      * Generator instances work as expected.
      */
-    protected static GTS gts;
+    private static GTS gts;
 
     /**
      * The exploration to be used for the state space generation.

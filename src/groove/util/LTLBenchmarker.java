@@ -1438,18 +1438,18 @@ public class LTLBenchmarker extends CommandLineTool {
     private long endTime;
 
     /**
-     * The amunt of memory used at the moment at which exploration was started.
+     * The amount of memory used at the moment at which exploration was started.
      */
     private long startUsedMemory;
 
     /**
-     * The GTS that is being constructed. We make it static to enable mamory
+     * The GTS that is being constructed. We make it static to enable memory
      * profiling.
      */
-    protected static ProductGTS productGTS;
+    private static ProductGTS productGTS;
 
     /**
-     * The GTS that is being constructed. We make it static to enable mamory
+     * The GTS that is being constructed. We make it static to enable memory
      * profiling.
      */
     protected GTS gts;
@@ -1476,8 +1476,8 @@ public class LTLBenchmarker extends CommandLineTool {
     protected static final ExtensionFilter gstFilter =
         Groove.createStateFilter();
     /** File filter for graph files (GXL or GST). */
-    protected static final ExtensionFilter graphFilter =
-        new ExtensionFilter("Serialized graph files", GRAPH_FILE_EXTENSION);
+    protected static final ExtensionFilter graphFilter = new ExtensionFilter(
+        "Serialized graph files", GRAPH_FILE_EXTENSION);
 
     /** Listener to an LTS that counts the nodes and edges of the states. */
     private static class StatisticsListener extends GraphAdapter {

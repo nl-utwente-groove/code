@@ -376,7 +376,7 @@ public class Bisimulator implements CertificateStrategy {
             iterateCount++;
         } while (goOn);
         this.nodePartitionCount = partitionCount;
-        this.graphCertificate = new Long(certificateValue);
+        this.graphCertificate = Long.valueOf(certificateValue);
         if (USE_EDGE1_CERTIFICATES) {
             // so far we have done nothing with the flags, so
             // give them a chance to get their hash code right
