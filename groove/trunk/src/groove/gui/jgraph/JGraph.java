@@ -1350,7 +1350,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         }
     }
 
-    private class MyGraphUI extends org.jgraph.plaf.basic.BasicGraphUI {
+    private static class MyGraphUI extends org.jgraph.plaf.basic.BasicGraphUI {
         MyGraphUI() {
             // empty
         }

@@ -130,7 +130,7 @@ public class ErrorListPanel extends JPanel {
     /** Colour of selected but unfocused list items. */
     private static Color SELECTED_NON_FOCUS_COLOR = JAttr.ERROR_COLOR;
 
-    private class CellRenderer extends DefaultListCellRenderer {
+    private static class CellRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value,
                 int index, boolean isSelected, boolean cellHasFocus) {

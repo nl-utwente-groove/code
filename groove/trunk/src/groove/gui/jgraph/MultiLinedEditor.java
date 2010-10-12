@@ -107,7 +107,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
     }
 
     /** Internal editor implementation. */
-    private class RealCellEditor extends AbstractCellEditor implements
+    private static class RealCellEditor extends AbstractCellEditor implements
             GraphCellEditor, DocumentListener {
         /**
          * Initialises the editor component with the edit string of the user

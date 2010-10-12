@@ -69,7 +69,7 @@ public class EditableContent extends JCellContent<String> {
      * @see #load(String)
      */
     public String getEditSeparator() {
-        return this.editSeparator;
+        return editSeparator;
     }
 
     /**
@@ -149,21 +149,20 @@ public class EditableContent extends JCellContent<String> {
      * be interpreted as an empty set.
      */
     private boolean allowEmptyLabelSet = true;
+    /** The default label separator. */
+    public static final String NEWLINE = "\n";
     /**
      * The separator used between the labels when turning this user object into
      * an editable string.
      */
-    private final String editSeparator = NEWLINE;
+    private static final String editSeparator = NEWLINE;
     /**
      * The separator used in loading the string description of the entire user
      * object, between the descriptions of the individual objects in the
      * collection.
      */
-    private final String loadSeparator =
-        WHITESPACE + this.editSeparator + WHITESPACE;
-
-    /** The default label separator. */
-    public static final String NEWLINE = "\n";
+    private final String loadSeparator = WHITESPACE + editSeparator
+        + WHITESPACE;
 
     //
     // /** Quote character for {@link #getPrintLabel(String)}. */

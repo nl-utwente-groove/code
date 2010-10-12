@@ -669,7 +669,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     static private final ExtensionFilter LAYOUT_FILTER = new ExtensionFilter(
         Groove.LAYOUT_EXTENSION);
 
-    private class MyEdit extends AbstractUndoableEdit implements Edit {
+    private static class MyEdit extends AbstractUndoableEdit implements Edit {
         public MyEdit(int change) {
             this.change = change;
         }

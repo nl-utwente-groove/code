@@ -196,8 +196,10 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
     /**
      * Holds a String and a value indicating whether or not it is selected.
      */
-    class ListItem {
+    protected static class ListItem {
+        /** The item in the list. */
         public String dataItem;
+        /** The check box. */
         public boolean checked;
 
         /**

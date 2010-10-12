@@ -1172,7 +1172,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     /** Edit wrapping a relabelling. */
-    private class MyCompoundEdit extends CompoundEdit implements Edit {
+    private static class MyCompoundEdit extends CompoundEdit implements Edit {
         /** Constructs a compound edit with a given name. */
         public MyCompoundEdit(String presentationName) {
             this.presentationName = presentationName;

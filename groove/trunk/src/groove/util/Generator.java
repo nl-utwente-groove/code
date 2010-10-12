@@ -658,8 +658,8 @@ public class Generator extends CommandLineTool {
     /** File filter for graph state files (GST). */
     protected final ExtensionFilter gstFilter = Groove.createStateFilter();
     /** File filter for graph files (GXL or GST). */
-    protected final ExtensionFilter graphFilter =
-        new ExtensionFilter("Serialized graph files", GRAPH_FILE_EXTENSION);
+    protected final ExtensionFilter graphFilter = new ExtensionFilter(
+        "Serialized graph files", GRAPH_FILE_EXTENSION);
 
     /**
      * The <code>ExportSimulationPathOption</code> is the command line option
@@ -669,7 +669,7 @@ public class Generator extends CommandLineTool {
      * 
      * @see StoreCommandLineOption
      */
-    protected class ExportSimulationOption extends
+    protected static class ExportSimulationOption extends
             StoreCommandLineOption<String> {
 
         /** 
@@ -727,7 +727,7 @@ public class Generator extends CommandLineTool {
      * 
      * @see StoreCommandLineOption
      */
-    protected class ExportSimulationFlagsOption extends
+    protected static class ExportSimulationFlagsOption extends
             StoreCommandLineOption<ExportSimulationFlags> {
 
         /** 
@@ -798,7 +798,8 @@ public class Generator extends CommandLineTool {
      * 
      * @see StoreCommandLineOption 
      */
-    protected class FinalSaveOption extends StoreCommandLineOption<String> {
+    protected static class FinalSaveOption extends
+            StoreCommandLineOption<String> {
 
         /** 
          * Default constructor. Defines '-f' to be the name of the command
@@ -827,7 +828,7 @@ public class Generator extends CommandLineTool {
      * 
      * @see StoreCommandLineOption
      */
-    protected class ResultOption extends StoreCommandLineOption<Integer> {
+    protected static class ResultOption extends StoreCommandLineOption<Integer> {
 
         /** 
          * Default constructor. Defines '-r' to be the name of the command
@@ -869,7 +870,7 @@ public class Generator extends CommandLineTool {
      * @see Serialized
      * @see StoreCommandLineOption
      */
-    protected class TemplatedOption<A> extends
+    protected static class TemplatedOption<A> extends
             StoreCommandLineOption<Serialized> {
 
         // Enumerator of all allowed options.
@@ -921,7 +922,8 @@ public class Generator extends CommandLineTool {
      * It is implemented by means of a <code>StoreCommandLineOption</code>,
      * which converts its argument to a <code>Serialized</code>.
      */
-    protected class ScenarioOption extends StoreCommandLineOption<Exploration> {
+    protected static class ScenarioOption extends
+            StoreCommandLineOption<Exploration> {
 
         /** 
          * Default constructor. Defines '-x' to be the name of the command

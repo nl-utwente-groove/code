@@ -357,7 +357,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
     /** Name list of type graphs. */
     private TypeNamesPane nameListPane;
 
-    private class TypeNamesPane extends JScrollPane {
+    private static class TypeNamesPane extends JScrollPane {
         TypeNamesPane(JTypeNameList nameList) {
             super(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
