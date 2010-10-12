@@ -189,7 +189,7 @@ public class BoundedModelCheckingDialog {
     /**
      * The graph-grammar from which to obtain the rules.
      */
-    private GraphGrammar grammar;
+    protected GraphGrammar grammar;
     /**
      * The set of rules from which to select the boundary.
      */
@@ -197,7 +197,7 @@ public class BoundedModelCheckingDialog {
     /**
      * The set of rules selected for the boundary.
      */
-    private final Set<String> selectedRuleNames = new HashSet<String>();
+    protected final Set<String> selectedRuleNames = new HashSet<String>();
     private Boundary boundary;
 
     private static final String DIALOG_TITLE = "Set the boundary";
@@ -210,7 +210,8 @@ public class BoundedModelCheckingDialog {
     /** The CANCEL button on the option pane. */
     private JButton cancelButton;
     private JButton addButton;
-    private JButton deleteButton;
+    /** The Delete button on the option pane. */
+    protected JButton deleteButton;
 
     private JLabel boundLabel;
     private JTextField boundField;

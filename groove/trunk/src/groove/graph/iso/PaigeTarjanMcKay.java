@@ -579,7 +579,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
      */
     private final boolean strong;
     /** The pre-computed graph certificate, if any. */
-    private long graphCertificate;
+    protected long graphCertificate;
     /** The pre-computed certificate map, if any. */
     private Map<Element,Certificate<?>> certificateMap;
     /** The pre-computed node partition map, if any. */
@@ -587,7 +587,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
     /** The pre-computed edge partition map, if any. */
     private PartitionMap<Edge> edgePartitionMap;
     /** The current partition of the node certificates. */
-    private NodePartition partition;
+    protected NodePartition partition;
     // /**
     // * The number of pre-computed node partitions.
     // */

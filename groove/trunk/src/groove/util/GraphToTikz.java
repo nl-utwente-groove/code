@@ -353,7 +353,7 @@ public final class GraphToTikz {
         boolean isLoop = srcVertex.getNode().equals(tgtVertex.getNode());
 
         // Compute the bezier line.
-        Bezier bezier = new Bezier(points.toArray(new Point2D[0]));
+        Bezier bezier = new Bezier(points.toArray(new Point2D[points.size()]));
         Point2D[] bPoints = bezier.getPoints();
 
         if (bPoints == null) {

@@ -66,7 +66,7 @@ public class Materialisation implements Cloneable {
      * implies that the materialisation object needs to be cloned every time
      * we perform some modifying operation on the shape. 
      */
-    private Shape shape;
+    protected Shape shape;
     /**
      * The pre-match of the rule into the shape. This is the starting point for
      * the materialisation. We assume that the pre-match is a valid one.
@@ -75,12 +75,12 @@ public class Materialisation implements Cloneable {
     /**
      * The concrete match of the rule into the (partially) materialised shape.
      */
-    private NodeEdgeMap match;
+    protected NodeEdgeMap match;
     /**
      * The queue of operations that need to be performed on the materialisation
      * object. When this queue is empty, the materialisation is complete. 
      */
-    private PriorityQueue<MatOp> tasks;
+    protected PriorityQueue<MatOp> tasks;
 
     // ------------------------------------------------------------------------
     // Constructors
