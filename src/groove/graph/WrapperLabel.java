@@ -21,8 +21,7 @@ package groove.graph;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class WrapperLabel<Type extends Comparable<Type>> extends AbstractLabel
-        implements Label {
+public class WrapperLabel<Type extends Comparable<Type>> extends AbstractLabel {
     /** Constructs a label wrapping a given object. */
     public WrapperLabel(Type content) {
         this.content = content;

@@ -596,7 +596,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     private void setAnchor(Collection<Element> parentAnchor) {
         Collection<Element> myAnchor =
             new TreeSet<Element>(Arrays.asList(computeNestedAnchor()));
-        this.anchor = myAnchor.toArray(new Element[0]);
+        this.anchor = myAnchor.toArray(new Element[myAnchor.size()]);
     }
 
     /**
@@ -715,7 +715,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
             }
         }
         result.removeAll(getRootMap().nodeMap().values());
-        return result.toArray(new Node[0]);
+        return result.toArray(new Node[result.size()]);
     }
 
     /**
@@ -855,7 +855,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         for (Node eraserNode : getEraserNodes()) {
             eraserEdgeSet.removeAll(lhs().edgeSet(eraserNode));
         }
-        return eraserEdgeSet.toArray(new Edge[0]);
+        return eraserEdgeSet.toArray(new Edge[eraserEdgeSet.size()]);
     }
 
     /** Returns the eraser edges that are not themselves anchors. */
@@ -873,7 +873,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         Set<Edge> eraserNonAnchorEdgeSet =
             new HashSet<Edge>(Arrays.asList(getEraserEdges()));
         eraserNonAnchorEdgeSet.removeAll(Arrays.asList(anchor()));
-        return eraserNonAnchorEdgeSet.toArray(new Edge[0]);
+        return eraserNonAnchorEdgeSet.toArray(new Edge[eraserNonAnchorEdgeSet.size()]);
     }
 
     /**
@@ -894,7 +894,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         Set<Node> eraserNodeSet = new HashSet<Node>(lhs().nodeSet());
         eraserNodeSet.removeAll(getMorphism().nodeMap().keySet());
         // eraserNodeSet.removeAll(getCoRootMap().nodeMap().values());
-        return eraserNodeSet.toArray(new Node[0]);
+        return eraserNodeSet.toArray(new Node[eraserNodeSet.size()]);
     }
 
     /**
@@ -1007,7 +1007,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
                 result.add(edge);
             }
         }
-        return result.toArray(new Edge[0]);
+        return result.toArray(new Edge[result.size()]);
     }
 
     /**
@@ -1046,7 +1046,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         Set<Edge> result = new HashSet<Edge>(rhs().edgeSet());
         result.removeAll(getMorphism().edgeMap().values());
         result.removeAll(getCoRootMap().edgeMap().values());
-        return result.toArray(new Edge[0]);
+        return result.toArray(new Edge[result.size()]);
     }
 
     /**
@@ -1066,7 +1066,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         Set<Node> result = new HashSet<Node>(rhs().nodeSet());
         result.removeAll(getMorphism().nodeMap().values());
         result.removeAll(getCoRootMap().nodeMap().values());
-        return result.toArray(new Node[0]);
+        return result.toArray(new Node[result.size()]);
     }
 
     /**
@@ -1093,7 +1093,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
                 creatorVarSet.add(creatorVar);
             }
         }
-        return creatorVarSet.toArray(new LabelVar[0]);
+        return creatorVarSet.toArray(new LabelVar[creatorVarSet.size()]);
     }
 
     /**

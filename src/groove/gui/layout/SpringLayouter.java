@@ -211,9 +211,9 @@ public class SpringLayouter extends AbstractLayouter {
         assert !edgeFragmentSourceList.contains(null);
         assert !edgeFragmentTargetList.contains(null);
         this.edgeFragmentSources =
-            edgeFragmentSourceList.toArray(new Layoutable[0]);
+            edgeFragmentSourceList.toArray(new Layoutable[edgeFragmentSourceList.size()]);
         this.edgeFragmentTargets =
-            edgeFragmentTargetList.toArray(new Layoutable[0]);
+            edgeFragmentTargetList.toArray(new Layoutable[edgeFragmentTargetList.size()]);
     }
 
     /**
@@ -235,7 +235,7 @@ public class SpringLayouter extends AbstractLayouter {
 
     private void damp() {
         if (this.motionRatio <= 0.001) { // This is important. Only damp when
-                                            // the graph starts to move
+                                         // the graph starts to move
             // faster
             // When there is noise, you damp roughly half the time. (Which is a
             // lot)
@@ -270,8 +270,8 @@ public class SpringLayouter extends AbstractLayouter {
             Layoutable bf = this.edgeFragmentSources[i];
             Layoutable bt = this.edgeFragmentTargets[i];
             double dx = (bt.getX() - bf.getX()) * this.workingRigidity / 100; // rigidity
-                                                                                // makes
-                                                                                // edges
+                                                                              // makes
+                                                                              // edges
             // tighter
             double dy = (bt.getY() - bf.getY()) * this.workingRigidity / 100;
             shiftDelta(bt, -dx, -dy);
@@ -294,8 +294,8 @@ public class SpringLayouter extends AbstractLayouter {
                 double vy = bf.y - bt.y;
                 if (Math.abs(vx) < repSum && Math.abs(vy) < repSum) {
                     double len = (vx * vx + vy * vy) / repSum; // so it's
-                                                                // length
-                                                                // squared
+                                                               // length
+                                                               // squared
                     double dx, dy;
                     if (len < 1 / repSum) {
                         dx = repSum * (float) Math.random();
@@ -339,12 +339,12 @@ public class SpringLayouter extends AbstractLayouter {
                     }
                     Point2D.Double position = this.positions[i];
                     position.x += Math.max(-5, Math.min(5, dx)) - shiftX; // prevents
-                                                                            // too
-                                                                            // wild
+                                                                          // too
+                                                                          // wild
                     // oscillations
                     position.y += Math.max(-5, Math.min(5, dy)) - shiftY; // prevents
-                                                                            // too
-                                                                            // wild
+                                                                          // too
+                                                                          // wild
                     // oscillations
                     if (position.x < 0) {
                         shiftX += position.x;
@@ -360,9 +360,9 @@ public class SpringLayouter extends AbstractLayouter {
                         }
                         position.y = 0;
                     }
-                    key.setLocation(Math.max(0, (int) position.x
-                        - key.getWidth() / 2), Math.max(0, (int) position.y
-                        - key.getHeight() / 2));
+                    key.setLocation(
+                        Math.max(0, (int) position.x - key.getWidth() / 2),
+                        Math.max(0, (int) position.y - key.getHeight() / 2));
                     this.repaintNeeded = true;
                 }
             }
@@ -453,10 +453,10 @@ public class SpringLayouter extends AbstractLayouter {
     private boolean repaintNeeded = false;
 
     double damper = 1.0; // A low damper value causes the graph to move
-                            // slowly
+                         // slowly
 
     private double maxMotion = 0; // Keep an eye on the fastest moving node to
-                                    // see if the graph is
+                                  // see if the graph is
     // stabilizing
 
     private double lastMaxMotion = 0;
@@ -507,11 +507,11 @@ public class SpringLayouter extends AbstractLayouter {
 
     /** Bound for <tt>maxMotion</tt> below which we start damping medium */
     static private final float MEDIUM_DAMPING_MOTION_TRESHHOLD = 0.8f; // was
-                                                                        // 0.4
+                                                                       // 0.4
 
     /** Bound for <tt>maxMotion</tt> below which we start damping fast */
     static private final float FAST_DAMPING_MOTION_TRESHHOLD = 0.4f; // was
-                                                                        // 0.2
+                                                                     // 0.2
 
     /** Bound for <tt>damper</tt> below which we start damping fast */
     static private final float FAST_DAMPING_DAMPER_TRESHHOLD = 0.9f;

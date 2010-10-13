@@ -26,8 +26,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class SystemProperties extends java.util.Properties implements Fixable,
-        Cloneable {
+public class SystemProperties extends java.util.Properties implements Fixable {
 
     /**
      * Default constructor.

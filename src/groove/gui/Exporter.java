@@ -342,8 +342,8 @@ public class Exporter {
                     JVertexLayout layout = layoutMap.nodeMap().get(node);
                     Rectangle2D r = layout.getBounds();
 
-                    x = new Double(r.getCenterX());
-                    y = new Double(r.getCenterY());
+                    x = Double.valueOf(r.getCenterX());
+                    y = Double.valueOf(r.getCenterY());
 
                     // check whether current node is
                     // aligned on the grid with the ones seen so far
@@ -470,8 +470,8 @@ public class Exporter {
         /**
          * Extension filter used for exporting graphs in lisp format.
          */
-        private final ExtensionFilter lispFilter =
-            Groove.getFilter("Lisp layout files", Groove.LISP_EXTENSION, true);
+        private final ExtensionFilter lispFilter = Groove.getFilter(
+            "Lisp layout files", Groove.LISP_EXTENSION, true);
 
         /**
          * Map from nodes to numbers built up during
@@ -537,8 +537,8 @@ public class Exporter {
         /**
          * Extension filter used for exporting graphs in jpeg format.
          */
-        private final ExtensionFilter jpgFilter =
-            new ExtensionFilter("JPEG image files", Groove.JPG_EXTENSION);
+        private final ExtensionFilter jpgFilter = new ExtensionFilter(
+            "JPEG image files", Groove.JPG_EXTENSION);
 
         /** Returns the singleton instance of this class. */
         public static Format getInstance() {
@@ -572,8 +572,8 @@ public class Exporter {
         /**
          * Extension filter used for exporting graphs in png format.
          */
-        private final ExtensionFilter pngFilter =
-            new ExtensionFilter("PNG image files", Groove.PNG_EXTENSION);
+        private final ExtensionFilter pngFilter = new ExtensionFilter(
+            "PNG image files", Groove.PNG_EXTENSION);
 
         /** Returns the singleton instance of this class. */
         public static Format getInstance() {
@@ -614,8 +614,8 @@ public class Exporter {
         /**
          * Extension filter used for exporting graphs in png format.
          */
-        private final ExtensionFilter epsFilter =
-            new ExtensionFilter("EPS image files", Groove.EPS_EXTENSION);
+        private final ExtensionFilter epsFilter = new ExtensionFilter(
+            "EPS image files", Groove.EPS_EXTENSION);
 
         /** Returns the singleton instance of this class. */
         public static Format getInstance() {
@@ -665,8 +665,8 @@ public class Exporter {
         /**
          * Extension filter used for exporting graphs in .aut format.
          */
-        private final ExtensionFilter autFilter =
-            new ExtensionFilter("CADP .aut files", Groove.AUT_EXTENSION);
+        private final ExtensionFilter autFilter = new ExtensionFilter(
+            "CADP .aut files", Groove.AUT_EXTENSION);
 
         /** Returns the singleton instance of this class. */
         public static Format getInstance() {
@@ -701,8 +701,8 @@ public class Exporter {
         /**
          * Extension filter used for exporting graphs in Tikz format.
          */
-        private final ExtensionFilter tikzFilter =
-            new ExtensionFilter("LaTeX tikz files", ".tikz");
+        private final ExtensionFilter tikzFilter = new ExtensionFilter(
+            "LaTeX tikz files", ".tikz");
 
         /** Returns the singleton instance of this class. */
         public static Format getInstance() {
@@ -754,8 +754,8 @@ public class Exporter {
         /**
          * Extension filter used for exporting graphs in .kth format.
          */
-        private final ExtensionFilter kthFilter =
-            new ExtensionFilter("Simple .kth files", Groove.KTH_EXTENSION);
+        private final ExtensionFilter kthFilter = new ExtensionFilter(
+            "Simple .kth files", Groove.KTH_EXTENSION);
 
         /** Returns the singleton instance of this class. */
         public static Format getInstance() {

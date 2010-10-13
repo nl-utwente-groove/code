@@ -39,7 +39,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class LayedOutXml extends AbstractXml implements Xml<Graph> {
+public class LayedOutXml extends AbstractXml {
     /**
      * Constructs an xml (un)marshaller, based on {@link DefaultGxl}, also able
      * to deal with layout information. The graphs constructed by
@@ -144,6 +144,6 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
      */
     private final AbstractXml marshaller;
     /** Extension filter for layout extension. */
-    private final ExtensionFilter layoutFilter =
-        new ExtensionFilter(Groove.LAYOUT_EXTENSION);
+    private final ExtensionFilter layoutFilter = new ExtensionFilter(
+        Groove.LAYOUT_EXTENSION);
 }

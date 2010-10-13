@@ -29,8 +29,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract public class TransformSet<T,U> extends AbstractSet<U> implements
-        Set<U> {
+abstract public class TransformSet<T,U> extends AbstractSet<U> {
     /** Constructs a set transforming a given inner set. */
     public TransformSet(Set<T> inner) {
         this.inner = inner;
