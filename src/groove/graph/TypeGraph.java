@@ -22,6 +22,7 @@ import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.VariableNode;
+import groove.rel.MatrixAutomaton;
 import groove.rel.RegExprLabel;
 import groove.view.FormatError;
 import groove.view.FormatException;
@@ -250,9 +251,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                     if (algebra != null) {
                         String signature =
                             AlgebraRegister.getSignatureName(algebra);
-                        nodeTypeMap.put(
-                            node,
-                            DefaultLabel.createLabel(signature, Label.NODE_TYPE));
+                        nodeTypeMap.put(node, DefaultLabel.createLabel(
+                            signature, Label.NODE_TYPE));
                     }
                 } else if (node instanceof ProductNode) {
                     untypedNodes.remove(node);
@@ -551,9 +551,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
         testFixed(true);
         Graph result = new NodeSetEdgeSetGraph();
         Map<Label,Node> typeNodeMap = new HashMap<Label,Node>();
+        /* Inverse subtyping-saturated set of flag-bearing node types. */
+        Set<Label> flaggedNodes = new HashSet<Label>();
+        /* Inverse subtype-saturated mapping from node types to all outgoing binary edge neighbours. */
+        Map<Label,Set<Label>> connectMap = new HashMap<Label,Set<Label>>();
         for (Node typeNode : nodeSet()) {
             result.addNode(typeNode);
             typeNodeMap.put(getType(typeNode), typeNode);
+            connectMap.put(getType(typeNode), new HashSet<Label>());
         }
         for (Edge typeEdge : edgeSet()) {
             Label edgeType = typeEdge.label();
@@ -566,12 +571,36 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                             edgeType, typeNodeMap.get(targetSubtype));
                     }
                 }
+                if (connectMap.get(sourceType).add(targetType)) {
+                    for (Label sourceSuperType : this.labelStore.getSupertypes(sourceType)) {
+                        connectMap.get(sourceSuperType).addAll(
+                            this.labelStore.getSupertypes(targetType));
+                    }
+                }
             } else {
                 for (Label sourceSubtype : this.labelStore.getSubtypes(sourceType)) {
                     result.addEdge(typeNodeMap.get(sourceSubtype), edgeType,
                         typeNodeMap.get(sourceSubtype));
                 }
+                if (edgeType.isFlag() && flaggedNodes.add(sourceType)) {
+                    for (Label sourceSuperType : this.labelStore.getSupertypes(sourceType)) {
+                        flaggedNodes.add(sourceSuperType);
+                    }
+                }
             }
+        }
+        for (Map.Entry<Label,Set<Label>> connectEntry : connectMap.entrySet()) {
+            for (Label targetType : connectEntry.getValue()) {
+                Node source = typeNodeMap.get(connectEntry.getKey());
+                Node target = typeNodeMap.get(targetType);
+                result.addEdge(source,
+                    MatrixAutomaton.DUMMY_LABELS[Label.BINARY], target);
+            }
+        }
+        for (Label flaggedType : flaggedNodes) {
+            Node source = typeNodeMap.get(flaggedType);
+            result.addEdge(source, MatrixAutomaton.DUMMY_LABELS[Label.FLAG],
+                source);
         }
         return result;
     }

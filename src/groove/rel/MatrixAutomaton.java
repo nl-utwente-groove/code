@@ -17,6 +17,7 @@
 package groove.rel;
 
 import groove.graph.DefaultGraph;
+import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphShape;
@@ -180,7 +181,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
      */
     protected Set<Node> createStartImages(GraphShape graph) {
         Set<Node> result = new HashSet<Node>();
-        if (isAcceptsEmptyWord()) {
+        if (isAcceptsEmptyWord() || isInitWildcard()) {
             // too bad, all graph nodes can be start images
             result.addAll(graph.nodeSet());
         } else {
@@ -340,7 +341,18 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
     }
 
     /**
-     * Initializes all the node-to-label-to-edge-sets maps of this automaton.
+     * Indicates if the automaton has an initial (normal or inverse) edge with a
+     * wildcard label inside.
+     */
+    protected boolean isInitWildcard() {
+        if (this.initPosLabels == null) {
+            initNodeLabelEdgeMaps();
+        }
+        return this.initWildcard;
+    }
+
+    /**
+     * Initialises all the node-to-label-to-edge-sets maps of this automaton.
      * @throws IllegalStateException if the method is called before the graph is
      *         fixed
      */
@@ -365,7 +377,9 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             Set<Label> derivedLabels;
             if (RegExprLabel.isWildcard(label)) {
                 derivedLabels =
-                    this.labelStore.getLabels(RegExprLabel.getWildcardKind(label));
+                    new HashSet<Label>(
+                        this.labelStore.getLabels(RegExprLabel.getWildcardKind(label)));
+                derivedLabels.add(DUMMY_LABELS[RegExprLabel.getWildcardKind(label)]);
             } else if (label.isNodeType() && !RegExprLabel.isSharp(label)) {
                 derivedLabels = this.labelStore.getSubtypes(label);
             } else {
@@ -380,11 +394,9 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
                     addToNodeLabelEdgeSetMap(nodeLabelEdgeMap[direction], end,
                         derivedLabel, edge);
                 }
-            }
-            if (edge.source() == getStartNode()) {
-                Set<Label> initLabelSet =
-                    isInverse ? initInvLabelSet : initPosLabelSet;
-                initLabelSet.addAll(derivedLabels);
+                if (edge.source() == getStartNode()) {
+                    (isInverse ? initInvLabelSet : initPosLabelSet).add(derivedLabel);
+                }
             }
         }
         // now convert the sets of nodes to arrays of node indices
@@ -761,6 +773,12 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
      */
     private Label[] initInvLabels;
     /**
+     * Flag to indicate that the initial edges of this automaton include one
+     * with wildcard label. Used to create a set of initial start images if none
+     * is provided.
+     */
+    private boolean initWildcard;
+    /**
      * The set of nodes of this automaton that lie on a cycle reachable from the
      * start node.
      */
@@ -818,6 +836,21 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
      * Indication of backward matching direction.
      */
     static private final int BACKWARD = 1;
+    /** Text of the dummy labels {@link #DUMMY_LABELS}. */
+    static private final String DUMMY_LABEL_TEXT = "\u0000";
+    /** 
+     * Array of dummy labels for each label kind.
+     * Can be used to match wildcards in case there is no proper match for them. 
+     */
+    public static final Label[] DUMMY_LABELS = new Label[3];
+    static {
+        DUMMY_LABELS[Label.NODE_TYPE] =
+            DefaultLabel.createLabel(DUMMY_LABEL_TEXT, Label.NODE_TYPE);
+        DUMMY_LABELS[Label.BINARY] =
+            DefaultLabel.createLabel(DUMMY_LABEL_TEXT, Label.BINARY);
+        DUMMY_LABELS[Label.FLAG] =
+            DefaultLabel.createLabel(DUMMY_LABEL_TEXT, Label.FLAG);
+    }
 
     /**
      * Class to encapsulate the algorithm used to compute the result of
@@ -944,17 +977,19 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
                     Collection<? extends Edge> imageEdgeSet,
                     Map<LabelVar,Label> valuation, boolean positive) {
                 if (keyLabelEdgeMap != null) {
-                    Iterator<? extends Edge> imageEdgeIter =
-                        imageEdgeSet.iterator();
-                    while (MatchingAlgorithm.this.remainingImageCount != 0
-                        && imageEdgeIter.hasNext()) {
-                        Edge imageEdge = imageEdgeIter.next();
+                    for (Edge imageEdge : imageEdgeSet) {
+                        if (MatchingAlgorithm.this.remainingImageCount == 0) {
+                            break;
+                        }
                         Label imageLabel = imageEdge.label();
                         Node imageNode =
                             positive ? getOpposite(imageEdge)
                                     : getThisEnd(imageEdge);
-                        extend(keyLabelEdgeMap.get(imageLabel), imageNode,
-                            imageLabel, valuation);
+                        extend(keyLabelEdgeMap.get(imageEdge.label()),
+                            imageNode, imageLabel, valuation);
+                        //                        extend(
+                        //                            keyLabelEdgeMap.get(DUMMY_LABELS[imageEdge.label().getKind()]),
+                        //                            imageNode, imageLabel, valuation);
                     }
                 }
             }
@@ -970,9 +1005,10 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             private void extend(int[] keyEdgeIndices, Node imageNode,
                     Label label, Map<LabelVar,Label> valuation) {
                 if (keyEdgeIndices != null) {
-                    for (int i = 0; MatchingAlgorithm.this.remainingImageCount != 0
-                        && i < keyEdgeIndices.length; i++) {
-                        int keyEdgeIndex = keyEdgeIndices[i];
+                    for (int keyEdgeIndex : keyEdgeIndices) {
+                        if (MatchingAlgorithm.this.remainingImageCount == 0) {
+                            break;
+                        }
                         Label edgeLabel = getLabel(keyEdgeIndex);
                         boolean labelOk = true;
                         if (RegExprLabel.isWildcard(edgeLabel)) {
