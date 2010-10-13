@@ -16,14 +16,14 @@
  */
 package groove.trans;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
 import groove.rel.VarSupport;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Morphism specialization that includes the possibility to simulate regular
@@ -64,6 +64,6 @@ public class NodeAnchorFactory implements AnchorFactory<Rule> {
             removableEnds.addAll(Arrays.asList(lhsVarEdge.ends()));
         }
         anchors.removeAll(removableEnds);
-        return anchors.toArray(new Element[0]);
+        return anchors.toArray(new Element[anchors.size()]);
     }
 }

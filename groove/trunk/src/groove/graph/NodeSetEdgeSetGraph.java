@@ -27,8 +27,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
-        InternalGraph {
+public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> {
     /**
      * Constructs a prototype object of this class, to be used as a factory for
      * new (default) graphs.

@@ -133,7 +133,7 @@ public class RuleName extends WrapperLabel<String> {
         while (tokenizer.hasMoreTokens()) {
             result.add(tokenizer.nextToken());
         }
-        return result.toArray(new String[0]);
+        return result.toArray(new String[result.size()]);
     }
 
     @Override

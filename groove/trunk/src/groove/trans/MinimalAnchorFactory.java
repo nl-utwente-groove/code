@@ -88,7 +88,7 @@ public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
             }
         }
         anchors.removeAll(removableEnds);
-        return anchors.toArray(new Element[0]);
+        return anchors.toArray(new Element[anchors.size()]);
     }
 
     /**

@@ -3,14 +3,14 @@
  */
 package groove.trans;
 
+import groove.graph.Edge;
+import groove.graph.Element;
+import groove.graph.Node;
+
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-
-import groove.graph.Edge;
-import groove.graph.Element;
-import groove.graph.Node;
 
 /**
  * This implementation does not try to save space by minimizing the size of the
@@ -62,6 +62,6 @@ public class EdgeAnchorFactory implements AnchorFactory<Rule> {
             }
         }
         anchors.addAll(rule.getMergeMap().keySet());
-        return anchors.toArray(new Element[0]);
+        return anchors.toArray(new Element[anchors.size()]);
     }
 }

@@ -488,9 +488,8 @@ public class Imager extends CommandLineTool {
     static final ExtensionFilter gpsFilter = Groove.createRuleSystemFilter();
 
     /** An array of all filters identifying files that can be imaged. */
-    static final ExtensionFilter[] acceptFilters =
-        new ExtensionFilter[] {gpsFilter, ruleFilter, typeFilter, stateFilter,
-            gxlFilter};
+    static final ExtensionFilter[] acceptFilters = new ExtensionFilter[] {
+        gpsFilter, ruleFilter, typeFilter, stateFilter, gxlFilter};
 
     private class EditorViewOption implements CommandLineOption {
         @Override
@@ -552,7 +551,7 @@ public class Imager extends CommandLineTool {
                 }
                 result.add(format);
             }
-            return result.toArray(new String[0]);
+            return result.toArray(new String[result.size()]);
         }
 
         public String getParameterName() {
@@ -848,12 +847,12 @@ public class Imager extends CommandLineTool {
         final JButton outFileBrowseButton = new JButton(BROWSE_LABEL);
 
         /** Button to start the imaging. */
-        private final JButton imageButton =
-            new JButton(Options.IMAGE_ACTION_NAME);
+        private final JButton imageButton = new JButton(
+            Options.IMAGE_ACTION_NAME);
 
         /** Button to close the imager. */
-        private final JButton closeButton =
-            new JButton(Options.CLOSE_ACTION_NAME);
+        private final JButton closeButton = new JButton(
+            Options.CLOSE_ACTION_NAME);
 
         /** Checkbox to enable the out file. */
         final JCheckBox outFileEnabler = new JCheckBox();
@@ -865,7 +864,7 @@ public class Imager extends CommandLineTool {
         private final JTextArea logArea = new JTextArea();
 
         /** Combo box for the available image formats. */
-        final JComboBox formatBox =
-            new JComboBox(Imager.this.exporter.getExtensions().toArray());
+        final JComboBox formatBox = new JComboBox(
+            Imager.this.exporter.getExtensions().toArray());
     }
 }

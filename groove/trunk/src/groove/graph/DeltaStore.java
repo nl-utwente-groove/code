@@ -24,8 +24,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class DeltaStore extends DefaultDeltaApplier implements DeltaTarget,
-        DeltaApplier {
+public class DeltaStore extends DefaultDeltaApplier implements DeltaTarget {
     /**
      * Created an initially empty delta store.
      */
