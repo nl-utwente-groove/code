@@ -113,7 +113,7 @@ public class ControlledScenario extends DefaultScenario {
         /** Iterator over the matches of the current state. */
 
         /** A queue with states to be explored, used as a FIFO. */
-        protected class ToExploreListener extends GraphAdapter {
+        protected static class ToExploreListener extends GraphAdapter {
             LinkedList<GraphState> queue;
 
             void setQueue(LinkedList<GraphState> queue) {

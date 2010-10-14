@@ -22,7 +22,6 @@ import groove.graph.GraphShapeCache;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.State;
 import groove.trans.GraphGrammar;
 import groove.trans.SystemRecord;
 
@@ -89,11 +88,6 @@ public class AGTS extends GTS {
     @Override
     protected GraphShapeCache createCache() {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    protected void notifyLTSListenersOfClose(State closed) {
-        super.notifyLTSListenersOfClose(closed);
     }
 
     @Override

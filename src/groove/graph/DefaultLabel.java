@@ -337,7 +337,7 @@ public final class DefaultLabel extends AbstractLabel {
             char result = (char) textList.size();
             textList.add(text);
             labelList.add(new DefaultLabel(result, kind));
-            getIndexMap(kind).put(text, new Character(result));
+            getIndexMap(kind).put(text, Character.valueOf(result));
             return result;
         } else {
             return index.charValue();
