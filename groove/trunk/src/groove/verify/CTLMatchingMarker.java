@@ -433,7 +433,7 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
         Iterator<? extends GraphState> stateIter = gts.nodeSet().iterator();
         while (stateIter.hasNext()) {
             GraphState nextState = stateIter.next();
-            nb.put(nextState, new Integer(gts.outEdgeSet(nextState).size()));
+            nb.put(nextState, Integer.valueOf(gts.outEdgeSet(nextState).size()));
             if (marking.satisfies(nextState, secondOperand)) {
                 todo.add(nextState);
             }
