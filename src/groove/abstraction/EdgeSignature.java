@@ -77,6 +77,20 @@ public class EdgeSignature {
         return result;
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result =
+            prime * result
+                + ((this.equivClass == null) ? 0 : this.equivClass.hashCode());
+        result =
+            prime * result + ((this.label == null) ? 0 : this.label.hashCode());
+        result =
+            prime * result + ((this.node == null) ? 0 : this.node.hashCode());
+        return result;
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------

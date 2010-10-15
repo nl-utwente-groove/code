@@ -38,7 +38,7 @@ public class EquationSystem {
     // Static fields
     // ------------------------------------------------------------------------
 
-    private static boolean DEBUG = true;
+    private static boolean DEBUG = false;
 
     private static Set<Multiplicity> zeroOneSet;
 

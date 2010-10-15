@@ -49,4 +49,14 @@ public class EquivClass<T> extends HashSet<T> {
         return (EquivClass<T>) super.clone();
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        for (T elem : this) {
+            result = prime * result + elem.hashCode();
+        }
+        return result;
+    }
+
 }

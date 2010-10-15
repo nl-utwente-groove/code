@@ -75,6 +75,16 @@ public class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result =
+            prime * result
+                + ((this.transition == null) ? 0 : this.transition.hashCode());
+        return result;
+    }
+
+    @Override
     public GraphState source() {
         return this.transition.source();
     }
