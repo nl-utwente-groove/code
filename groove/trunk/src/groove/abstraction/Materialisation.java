@@ -29,6 +29,7 @@ import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.SPOEvent;
+import groove.util.Pair;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
@@ -316,25 +317,27 @@ public class Materialisation implements Cloneable {
             }
         }
 
-        // Search for edges in the match image that have shared
+        // Search for edges in the match image that have abstract
         // multiplicities.
         Set<ShapeEdge> processedEdges = new HashSet<ShapeEdge>();
         for (Entry<Edge,Edge> edgeEntry : originalMap.edgeMap().entrySet()) {
             Edge edgeR = edgeEntry.getKey();
             ShapeEdge edgeS = (ShapeEdge) edgeEntry.getValue();
-            if (!Util.isUnary(edgeR) && !processedEdges.contains(edgeS)
-                && !processedNodes.contains(edgeS.source())
-                && !processedNodes.contains(edgeS.opposite())) {
-                // This edge needs to be handled here because there will be
-                // no node materialisation for any of the edge ends.
+            if (!Util.isUnary(edgeR) && !processedEdges.contains(edgeS)) {
+                // Check if the image edge in the shape has abstract
+                // multiplicities.
                 EdgeSignature outEs = this.shape.getEdgeOutSignature(edgeS);
                 EdgeSignature inEs = this.shape.getEdgeInSignature(edgeS);
-                if (!this.shape.isOutEdgeSigUnique(outEs)
-                    || !this.shape.isInEdgeSigUnique(inEs)) {
+                if (!this.shape.isOutEdgeSigConcrete(outEs)
+                    || !this.shape.isInEdgeSigConcrete(inEs)) {
                     // We have an edge in the rule that was matched to an edge
-                    // in the shape with a shared multiplicity. We need to
-                    // materialise this shared edge.
-                    this.tasks.add(new MaterialiseEdge(this, edgeR));
+                    // in the shape with an abstract multiplicity. We need to
+                    // materialise this edge.
+                    // Check the edges on the rule that were mapped to edgeS.
+                    Set<Edge> edgesR =
+                        Util.getReverseEdgeMap(originalMap, edgeS);
+                    this.tasks.add(new MaterialiseEdge(this, edgeS, edgesR));
+                    processedEdges.add(edgeS);
                 }
             }
         }
@@ -396,16 +399,12 @@ public class Materialisation implements Cloneable {
                         this.shape.getEdgeOutSignature(newEdgeS);
                     EdgeSignature inEs =
                         this.shape.getEdgeInSignature(newEdgeS);
-                    if (!this.shape.isOutEdgeSigUnique(outEs)
-                        || !this.shape.isInEdgeSigUnique(inEs)) {
-                        // We have an edge in the rule that was matched to an 
-                        // edge in the shape with a shared multiplicity. We
-                        // need to materialise this shared edge. Create the
-                        // proper operation.
-                        this.tasks.add(new MaterialiseEdge(this, edgeR));
-                    } else {
+                    if (this.shape.isOutEdgeSigConcrete(outEs)
+                        && this.shape.isInEdgeSigConcrete(inEs)) {
                         this.match.putEdge(edgeR, newEdgeS);
-                    }
+                    } // else, we have an edge that needs to be materialised.
+                      // Wait for the MaterialiseEdge operation to take care
+                      // of this edge.
                 }
             }
         }
@@ -419,7 +418,7 @@ public class Materialisation implements Cloneable {
     // Class MatOp
     // -----------
 
-    private abstract class MatOp implements Comparable<MatOp> {
+    private abstract class MatOp implements Comparable<MatOp>, Cloneable {
 
         protected Materialisation mat;
         protected Set<Materialisation> result;
@@ -448,6 +447,9 @@ public class Materialisation implements Cloneable {
             }
             return result;
         }
+
+        @Override
+        abstract public boolean equals(Object o);
 
         @Override
         abstract public MatOp clone();
@@ -517,6 +519,20 @@ public class Materialisation implements Cloneable {
         }
 
         @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + getOuterType().hashCode();
+            result =
+                prime * result
+                    + ((this.nodeS == null) ? 0 : this.nodeS.hashCode());
+            result =
+                prime * result
+                    + ((this.nodesR == null) ? 0 : this.nodesR.hashCode());
+            return result;
+        }
+
+        @Override
         public int getPriority() {
             return 0;
         }
@@ -569,6 +585,10 @@ public class Materialisation implements Cloneable {
             }
         }
 
+        private Materialisation getOuterType() {
+            return Materialisation.this;
+        }
+
     }
 
     // --------------------
@@ -617,6 +637,20 @@ public class Materialisation implements Cloneable {
         }
 
         @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + getOuterType().hashCode();
+            result =
+                prime * result
+                    + ((this.newNodes == null) ? 0 : this.newNodes.hashCode());
+            result =
+                prime * result
+                    + ((this.nodesR == null) ? 0 : this.nodesR.hashCode());
+            return result;
+        }
+
+        @Override
         public int getPriority() {
             return 1;
         }
@@ -649,6 +683,138 @@ public class Materialisation implements Cloneable {
             // Add this materialisation to the result set of this
             // operation.
             this.result.add(this.mat);
+        }
+
+        private Materialisation getOuterType() {
+            return Materialisation.this;
+        }
+    }
+
+    // ---------------------
+    // Class MaterialiseEdge
+    // ---------------------
+
+    private class MaterialiseEdge extends MatOp {
+
+        private ShapeEdge edgeS;
+        private Set<Edge> edgesR;
+
+        public MaterialiseEdge(Materialisation mat, ShapeEdge edgeS,
+                Set<Edge> edgesR) {
+            super(mat);
+            this.edgeS = edgeS;
+            this.edgesR = edgesR;
+        }
+
+        private MaterialiseEdge(MaterialiseEdge matEdge) {
+            super();
+            this.setMat(matEdge.mat);
+            this.edgeS = matEdge.edgeS;
+            this.edgesR = matEdge.edgesR;
+        }
+
+        @Override
+        public MatOp clone() {
+            return new MaterialiseEdge(this);
+        }
+
+        @Override
+        public String toString() {
+            return "MaterialiseEdge: " + this.edgeS + ", " + this.edgesR;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            boolean result = false;
+            if (o instanceof MaterialiseEdge) {
+                MaterialiseEdge other = (MaterialiseEdge) o;
+                result =
+                    this.edgeS.equals(other.edgeS)
+                        && this.edgesR.equals(other.edgesR);
+            }
+            return result;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + getOuterType().hashCode();
+            result =
+                prime * result
+                    + ((this.edgeS == null) ? 0 : this.edgeS.hashCode());
+            result =
+                prime * result
+                    + ((this.edgesR == null) ? 0 : this.edgesR.hashCode());
+            return result;
+        }
+
+        @Override
+        public int getPriority() {
+            return 2;
+        }
+
+        /**
+         * Pre-condition: all MaterialiseNode operations have been performed,
+         * and the node images in the match are final. 
+         */
+        @Override
+        public void perform() {
+            NodeEdgeMap match = this.mat.match;
+            Shape shape = this.mat.shape;
+
+            // Collect all signatures that will be affected by this operation.
+            CountingSet<EdgeSignature> outEsSet =
+                new CountingSet<EdgeSignature>();
+            CountingSet<EdgeSignature> inEsSet =
+                new CountingSet<EdgeSignature>();
+            for (Edge edgeR : this.edgesR) {
+                // For each edge in the rule.
+                Label label = edgeR.label();
+                // Get the image of source and target from the match.
+                ShapeNode srcS = (ShapeNode) match.getNode(edgeR.source());
+                ShapeNode tgtS = (ShapeNode) match.getNode(edgeR.target());
+                // Outgoing signatures.
+                EdgeSignature outEs =
+                    shape.getEdgeSignature(srcS, label,
+                        shape.getEquivClassOf(tgtS));
+                if (!shape.isOutEdgeSigUnique(outEs)
+                    || !shape.isOutEdgeSigConcrete(outEs)) {
+                    outEsSet.add(outEs);
+                }
+                // Incoming signatures.
+                EdgeSignature inEs =
+                    shape.getEdgeSignature(tgtS, label,
+                        shape.getEquivClassOf(srcS));
+                if (!shape.isInEdgeSigUnique(inEs)
+                    || !shape.isInEdgeSigConcrete(inEs)) {
+                    inEsSet.add(inEs);
+                }
+            }
+
+            // Materialise the edge in the shape and get the multiplicities
+            // back.
+            Set<Pair<EdgeSignature,Set<Multiplicity>>> mults =
+                shape.materialiseEdgeInit(outEsSet, inEsSet);
+            // Construct an iterator for all possible multiplicities
+            // combinations. 
+            PairSetIterator<EdgeSignature,Multiplicity> iter =
+                new PairSetIterator<EdgeSignature,Multiplicity>(mults);
+            while (iter.hasNext()) {
+                Set<Pair<EdgeSignature,Multiplicity>> pairs = iter.next();
+                // These pairs correspond to a new materialisation object.
+                Materialisation newMat = this.mat.clone();
+                // Adjust the shape of the new materialisation with the
+                // new multiplicities.
+                newMat.shape.materialiseEdgeFinish(pairs, this.edgeS);
+                // Add this new materialisation to the result set of this
+                // operation.
+                this.result.add(newMat);
+            }
+        }
+
+        private Materialisation getOuterType() {
+            return Materialisation.this;
         }
     }
 
@@ -692,8 +858,19 @@ public class Materialisation implements Cloneable {
         }
 
         @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + getOuterType().hashCode();
+            result =
+                prime * result
+                    + ((this.nodeS == null) ? 0 : this.nodeS.hashCode());
+            return result;
+        }
+
+        @Override
         public int getPriority() {
-            return 2;
+            return 3;
         }
 
         @Override
@@ -729,80 +906,8 @@ public class Materialisation implements Cloneable {
             }
         }
 
-    }
-
-    // ---------------------
-    // Class MaterialiseEdge
-    // ---------------------
-
-    private class MaterialiseEdge extends MatOp {
-
-        private Edge edgeR;
-
-        public MaterialiseEdge(Materialisation mat, Edge edgeR) {
-            super(mat);
-            this.edgeR = edgeR;
-        }
-
-        private MaterialiseEdge(MaterialiseEdge matEdge) {
-            super();
-            this.setMat(matEdge.mat);
-            this.edgeR = matEdge.edgeR;
-        }
-
-        @Override
-        public MatOp clone() {
-            return new MaterialiseEdge(this);
-        }
-
-        @Override
-        public String toString() {
-            return "MaterialiseEdge: " + this.edgeR;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            boolean result = false;
-            if (o instanceof MaterialiseEdge) {
-                MaterialiseEdge other = (MaterialiseEdge) o;
-                result = this.edgeR.equals(other.edgeR);
-            }
-            return result;
-        }
-
-        @Override
-        public int getPriority() {
-            return 8;
-        }
-
-        @Override
-        public void perform() {
-            NodeEdgeMap match = this.mat.match;
-            Shape shape = this.mat.shape;
-
-            // The pre-condition of this method is that both source and target
-            // nodes are properly matched.
-            ShapeNode matchedSrc =
-                (ShapeNode) match.getNode(this.edgeR.source());
-            ShapeNode matchedTgt =
-                (ShapeNode) match.getNode(this.edgeR.opposite());
-            assert matchedSrc != null && matchedTgt != null;
-
-            // Check if both source and target are singletons.
-            assert shape.getEquivClassOf(matchedSrc).size() == 1
-                && shape.getEquivClassOf(matchedTgt).size() == 1;
-
-            // OK, the pre-condition holds. Check if there is an edge in the
-            // shape for which we can match.
-            Label label = this.edgeR.label();
-            ShapeEdge edgeS = shape.getShapeEdge(matchedSrc, label, matchedTgt);
-            if (edgeS != null) {
-                // Yes, there is. Put the edge in the match.
-                match.putEdge(this.edgeR, edgeS);
-                // Operation successful. Store the result.
-                // This operation is deterministic. No need to clone.
-                this.result.add(this.mat);
-            } // else, the operation fails. Nothing to do.
+        private Materialisation getOuterType() {
+            return Materialisation.this;
         }
 
     }
@@ -913,7 +1018,7 @@ public class Materialisation implements Cloneable {
     /** Test method. */
     public static void main(String args[]) {
         Multiplicity.initMultStore();
-        test2();
+        test1();
     }
 
 }

@@ -26,6 +26,7 @@ import groove.graph.iso.DefaultIsoChecker;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
+import groove.util.Pair;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -91,11 +92,11 @@ public class Shape extends DefaultGraph implements Cloneable {
     /**
      * The outgoing edge multiplicity map.
      */
-    private final Map<EdgeSignature,Multiplicity> outEdgeMultMap;
+    private Map<EdgeSignature,Multiplicity> outEdgeMultMap;
     /**
      * The incoming edge multiplicity map.
      */
-    private final Map<EdgeSignature,Multiplicity> inEdgeMultMap;
+    private Map<EdgeSignature,Multiplicity> inEdgeMultMap;
     /**
      * Auxiliary set to store edge signatures. As as invariant, this set will
      * contain at least all the edge signatures occurring as keys on the
@@ -325,6 +326,8 @@ public class Shape extends DefaultGraph implements Cloneable {
             nodeEc.remove(nodeS);
         }
 
+        this.updateMultHashMaps();
+
         // Remove node from graph.
         return super.removeNodeWithoutCheck(node);
     }
@@ -377,6 +380,32 @@ public class Shape extends DefaultGraph implements Cloneable {
                 result = this.isValidIsomorphism(morphism, shape);
             }
         }
+        return result;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result =
+            prime * result
+                + ((this.equivRel == null) ? 0 : this.equivRel.hashCode());
+        result =
+            prime * result + ((this.graph == null) ? 0 : this.graph.hashCode());
+        result =
+            prime
+                * result
+                + ((this.inEdgeMultMap == null) ? 0
+                        : this.inEdgeMultMap.hashCode());
+        result =
+            prime
+                * result
+                + ((this.nodeMultMap == null) ? 0 : this.nodeMultMap.hashCode());
+        result =
+            prime
+                * result
+                + ((this.outEdgeMultMap == null) ? 0
+                        : this.outEdgeMultMap.hashCode());
         return result;
     }
 
@@ -720,6 +749,22 @@ public class Shape extends DefaultGraph implements Cloneable {
     }
 
     /**
+     * Returns the set of edges in the shaping relation that maps to the
+     * given edges.
+     * It is an error to call this method if this.graph is not a Shape. 
+     */
+    public Set<ShapeEdge> getReverseEdgeMap(ShapeEdge edgeS) {
+        assert this.graph instanceof Shape : "Invalid method call.";
+        Set<ShapeEdge> edgesG = new HashSet<ShapeEdge>();
+        for (Entry<Edge,ShapeEdge> entry : this.edgeShaping.entrySet()) {
+            if (edgeS.equals(entry.getValue())) {
+                edgesG.add((ShapeEdge) entry.getKey());
+            }
+        }
+        return edgesG;
+    }
+
+    /**
      * Returns the equivalence class in the shaping relation that maps to values
      * occurring in the given equivalence class.
      * It is an error to call this method if this.graph is not a Shape. 
@@ -903,6 +948,21 @@ public class Shape extends DefaultGraph implements Cloneable {
         }
     }
 
+    private void updateMultHashMaps() {
+        HashMap<EdgeSignature,Multiplicity> newOutEdgeMultMap =
+            new HashMap<EdgeSignature,Multiplicity>();
+        HashMap<EdgeSignature,Multiplicity> newInEdgeMultMap =
+            new HashMap<EdgeSignature,Multiplicity>();
+        for (Entry<EdgeSignature,Multiplicity> entry : this.outEdgeMultMap.entrySet()) {
+            newOutEdgeMultMap.put(entry.getKey(), entry.getValue());
+        }
+        for (Entry<EdgeSignature,Multiplicity> entry : this.inEdgeMultMap.entrySet()) {
+            newInEdgeMultMap.put(entry.getKey(), entry.getValue());
+        }
+        this.outEdgeMultMap = newOutEdgeMultMap;
+        this.inEdgeMultMap = newInEdgeMultMap;
+    }
+
     /**
      * Materialises a node in the shape. Note that all edges adjacent to the
      * node being materialised are also duplicated.
@@ -934,6 +994,10 @@ public class Shape extends DefaultGraph implements Cloneable {
             // Update the shaping morphism.
             this.nodeShaping.put(newNode, origNode);
         }
+
+        // We modified the equivalence classes, so the hash codes for the
+        // edge signatures have changed.
+        this.updateMultHashMaps();
 
         // Now that we have all new nodes, duplicate all incoming and
         // outgoing edges were the original node occurs. Also, update
@@ -987,6 +1051,88 @@ public class Shape extends DefaultGraph implements Cloneable {
         Multiplicity toSub = Multiplicity.getMultOf(copies);
         Set<Multiplicity> mults = this.getNodeMult(origNode).subNodeMult(toSub);
         return mults;
+    }
+
+    /**
+     * EDUARDO: Comment this...
+     */
+    public Set<Pair<EdgeSignature,Set<Multiplicity>>> materialiseEdgeInit(
+            CountingSet<EdgeSignature> outEsSet,
+            CountingSet<EdgeSignature> inEsSet) {
+
+        Set<Pair<EdgeSignature,Set<Multiplicity>>> result =
+            new HashSet<Pair<EdgeSignature,Set<Multiplicity>>>();
+
+        // Outgoing multiplicities.
+        for (Entry<EdgeSignature,Integer> entry : outEsSet.entrySet()) {
+            EdgeSignature outEs = entry.getKey();
+            Multiplicity toSub = Multiplicity.getMultOf(entry.getValue());
+            Multiplicity origMult = this.getEdgeSigOutMult(outEs);
+            Set<Multiplicity> remainderMults = origMult.subEdgeMult(toSub);
+            Pair<EdgeSignature,Set<Multiplicity>> pair =
+                new Pair<EdgeSignature,Set<Multiplicity>>(outEs, remainderMults);
+            result.add(pair);
+        }
+
+        // Incoming multiplicities.
+        for (Entry<EdgeSignature,Integer> entry : inEsSet.entrySet()) {
+            EdgeSignature inEs = entry.getKey();
+            Multiplicity toSub = Multiplicity.getMultOf(entry.getValue());
+            Multiplicity origMult = this.getEdgeSigInMult(inEs);
+            Set<Multiplicity> remainderMults = origMult.subEdgeMult(toSub);
+            Pair<EdgeSignature,Set<Multiplicity>> pair =
+                new Pair<EdgeSignature,Set<Multiplicity>>(inEs, remainderMults);
+            result.add(pair);
+        }
+
+        return result;
+    }
+
+    /**
+     * EDUARDO: Comment this...
+     */
+    public void materialiseEdgeFinish(
+            Set<Pair<EdgeSignature,Multiplicity>> pairs, ShapeEdge edgeS) {
+        // Look in the shaping morphism to get the new edges that were
+        // materialised from the original edge.
+        Set<ShapeEdge> newEdges = this.getReverseEdgeMap(edgeS);
+        // Remove the original edge from the set of new edges because
+        // the original edge will not help to extend the match.
+        newEdges.remove(edgeS);
+
+        // Iterate over the pairs set.
+        for (Pair<EdgeSignature,Multiplicity> pair : pairs) {
+            EdgeSignature es = pair.first();
+            Multiplicity mult = pair.second();
+            if (mult.isPositive()) {
+                this.outEdgeMultMap.put(es, mult);
+            } else {
+                // Normally, setting an outgoing multiplicity to zero is
+                // equivalent to removing all edges in the signature from the
+                // shape. Here we keep the new edges.
+                ShapeNode src = es.getNode();
+                Label label = es.getLabel();
+                EquivClass<ShapeNode> ec = es.getEquivClass();
+                for (ShapeEdge edge : this.outBinaryEdgeSet(src)) {
+                    if (edge.label().equals(label)
+                        && ec.contains(edge.target())
+                        && !newEdges.contains(edge)) {
+                        super.removeEdge(edge);
+                    }
+                }
+                this.outEdgeMultMap.remove(es);
+            }
+        }
+
+        // Store a new signature for the new edges.
+        Multiplicity oneMult = Multiplicity.getMultOf(1);
+        for (ShapeEdge newEdge : newEdges) {
+            EquivClass<ShapeNode> newEc = new EquivClass<ShapeNode>();
+            newEc.add((ShapeNode) newEdge.target());
+            EdgeSignature newEs =
+                this.getEdgeSignature(newEdge.source(), newEdge.label(), newEc);
+            this.outEdgeMultMap.put(newEs, oneMult);
+        }
     }
 
     /** Basic getter method. */
@@ -1075,6 +1221,22 @@ public class Shape extends DefaultGraph implements Cloneable {
             }
         }
         return edgeCount;
+    }
+
+    /**
+     * Returns true if the outgoing multiplicity of the given edge
+     * signature is one.
+     */
+    public boolean isOutEdgeSigConcrete(EdgeSignature es) {
+        return this.getEdgeSigOutMult(es).equals(Multiplicity.getMultOf(1));
+    }
+
+    /**
+     * Returns true if the incoming multiplicity of the given edge
+     * signature is one.
+     */
+    public boolean isInEdgeSigConcrete(EdgeSignature es) {
+        return this.getEdgeSigInMult(es).equals(Multiplicity.getMultOf(1));
     }
 
     /**
