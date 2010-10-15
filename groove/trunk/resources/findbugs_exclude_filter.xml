@@ -1,5 +1,48 @@
 <FindBugsFilter>
+    <!-- Remove test and parsing classes. -->
     <Match classregex="groove.test.*" />
     <Match classregex="groove.control.parse.*" />
     <Match classregex="groove.view.parse.*" />
+
+    <!-- Remove Internationalization warnings. -->
+    <Match>
+       <Bug pattern="DM_CONVERT_CASE" />
+    </Match>
+
+    <!-- Remove GC warnings on code that does profiling. -->
+    <Match>
+       <Class name="groove.explore.util.ExplorationStatistics" />
+       <Method name="report" />
+       <Bug pattern="DM_GC" />
+    </Match>
+
+    <!-- Remove warnings shadowing of JGraph class. -->
+    <Match>
+       <Class name="groove.gui.jgraph.JGraph" />
+       <Bug pattern="NM_SAME_SIMPLE_NAME_AS_SUPERCLASS" />
+    </Match>
+
+    <!-- Remove warnings for calling System.exit(). -->
+    <Match>
+       <Class name="groove.Editor" />
+       <Bug pattern="DM_EXIT" />
+    </Match>
+    <Match>
+       <Class name="groove.Simulator" />
+       <Bug pattern="DM_EXIT" />
+    </Match>
+    <Match>
+       <Class name="groove.util.CommandLineTool" />
+       <Bug pattern="DM_EXIT" />
+    </Match>
+
+    <!-- Remove Circular Dependencies warnings. -->
+    <Match>
+       <Bug pattern="CD_CIRCULAR_DEPENDENCY" />
+    </Match>
+
+    <!-- Remove serialVersionUID warnings. -->
+    <Match>
+       <Bug pattern="SE_NO_SERIALVERSIONID" />
+    </Match>
 </FindBugsFilter>
