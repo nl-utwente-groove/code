@@ -418,7 +418,7 @@ public class Materialisation implements Cloneable {
     // Class MatOp
     // -----------
 
-    private abstract class MatOp implements Comparable<MatOp>, Cloneable {
+    private static abstract class MatOp implements Comparable<MatOp>, Cloneable {
 
         protected Materialisation mat;
         protected Set<Materialisation> result;
@@ -477,7 +477,7 @@ public class Materialisation implements Cloneable {
     // Class MaterialiseNode
     // ---------------------
 
-    private class MaterialiseNode extends MatOp implements Cloneable {
+    private static class MaterialiseNode extends MatOp {
 
         private ShapeNode nodeS;
         private Set<Node> nodesR;
@@ -522,7 +522,6 @@ public class Materialisation implements Cloneable {
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result = prime * result + getOuterType().hashCode();
             result =
                 prime * result
                     + ((this.nodeS == null) ? 0 : this.nodeS.hashCode());
@@ -538,7 +537,7 @@ public class Materialisation implements Cloneable {
         }
 
         @Override
-        public void perform() {
+        public void perform() { // MaterialiseNode
             // Compute how many copies of the abstract node we need to
             // materialise.
             int copies = this.nodesR.size();
@@ -585,17 +584,13 @@ public class Materialisation implements Cloneable {
             }
         }
 
-        private Materialisation getOuterType() {
-            return Materialisation.this;
-        }
-
     }
 
     // --------------------
     // Class ExtendPreMatch
     // --------------------
 
-    private class ExtendPreMatch extends MatOp {
+    private static class ExtendPreMatch extends MatOp {
 
         private Set<Node> nodesR;
         private Set<ShapeNode> newNodes;
@@ -640,7 +635,6 @@ public class Materialisation implements Cloneable {
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result = prime * result + getOuterType().hashCode();
             result =
                 prime * result
                     + ((this.newNodes == null) ? 0 : this.newNodes.hashCode());
@@ -665,7 +659,7 @@ public class Materialisation implements Cloneable {
          * isomorphic shape.
          */
         @Override
-        public void perform() {
+        public void perform() { // ExtendPreMatch
             assert (this.nodesR.size() == this.newNodes.size()) : "Sets should have the same size!";
 
             // Both sets have the same size. Go over both of them at the same
@@ -685,16 +679,13 @@ public class Materialisation implements Cloneable {
             this.result.add(this.mat);
         }
 
-        private Materialisation getOuterType() {
-            return Materialisation.this;
-        }
     }
 
     // ---------------------
     // Class MaterialiseEdge
     // ---------------------
 
-    private class MaterialiseEdge extends MatOp {
+    private static class MaterialiseEdge extends MatOp {
 
         private ShapeEdge edgeS;
         private Set<Edge> edgesR;
@@ -739,7 +730,6 @@ public class Materialisation implements Cloneable {
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result = prime * result + getOuterType().hashCode();
             result =
                 prime * result
                     + ((this.edgeS == null) ? 0 : this.edgeS.hashCode());
@@ -759,7 +749,7 @@ public class Materialisation implements Cloneable {
          * and the node images in the match are final. 
          */
         @Override
-        public void perform() {
+        public void perform() { // MaterialiseEdge
             NodeEdgeMap match = this.mat.match;
             Shape shape = this.mat.shape;
 
@@ -813,16 +803,13 @@ public class Materialisation implements Cloneable {
             }
         }
 
-        private Materialisation getOuterType() {
-            return Materialisation.this;
-        }
     }
 
     // ---------------------
     // Class SingulariseNode
     // ---------------------
 
-    private class SingulariseNode extends MatOp implements Cloneable {
+    private static class SingulariseNode extends MatOp {
 
         private ShapeNode nodeS;
 
@@ -861,7 +848,6 @@ public class Materialisation implements Cloneable {
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result = prime * result + getOuterType().hashCode();
             result =
                 prime * result
                     + ((this.nodeS == null) ? 0 : this.nodeS.hashCode());
@@ -874,7 +860,7 @@ public class Materialisation implements Cloneable {
         }
 
         @Override
-        public void perform() {
+        public void perform() { // SingulariseNode
             if (this.mat.shape.getEquivClassOf(this.nodeS).size() == 1) {
                 // Nothing to do, the node is already in a singleton
                 // equivalence class.
@@ -904,10 +890,6 @@ public class Materialisation implements Cloneable {
                 }
 
             }
-        }
-
-        private Materialisation getOuterType() {
-            return Materialisation.this;
         }
 
     }
