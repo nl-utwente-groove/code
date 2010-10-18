@@ -825,8 +825,10 @@ public class Materialisation implements Cloneable {
                 // new multiplicities.
                 newMat.shape.materialiseEdgeFinish(pairs, this.edgeS);
                 // Add this new materialisation to the result set of this
-                // operation.
-                this.result.add(newMat);
+                // operation if the shape is admissible.
+                if (newMat.shape.isAdmissible()) {
+                    this.result.add(newMat);
+                }
             }
         }
 
