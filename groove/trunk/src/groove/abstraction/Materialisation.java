@@ -29,7 +29,6 @@ import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.SPOEvent;
-import groove.util.Pair;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
@@ -779,6 +778,7 @@ public class Materialisation implements Cloneable {
                 new CountingSet<EdgeSignature>();
             CountingSet<EdgeSignature> inEsSet =
                 new CountingSet<EdgeSignature>();
+            Set<ShapeEdge> frozenEdges = new HashSet<ShapeEdge>();
             for (Edge edgeR : this.edgesR) {
                 // For each edge in the rule.
                 Label label = edgeR.label();
@@ -806,29 +806,32 @@ public class Materialisation implements Cloneable {
                 ShapeEdge edge = shape.getShapeEdge(srcS, label, tgtS);
                 if (edge != null) {
                     match.putEdge(edgeR, edge);
+                    frozenEdges.add(edge);
                 }
             }
 
-            // Materialise the edge in the shape and get the multiplicities
-            // back.
-            Set<Pair<EdgeSigWrapper,Set<Multiplicity>>> mults =
-                shape.materialiseEdgeInit(outEsSet, inEsSet);
-            // Construct an iterator for all possible multiplicities
-            // combinations. 
-            PairSetIterator<EdgeSigWrapper,Multiplicity> iter =
-                new PairSetIterator<EdgeSigWrapper,Multiplicity>(mults);
-            while (iter.hasNext()) {
-                Set<Pair<EdgeSigWrapper,Multiplicity>> pairs = iter.next();
-                // These pairs correspond to a new materialisation object.
-                Materialisation newMat = this.mat.clone();
-                // Adjust the shape of the new materialisation with the
-                // new multiplicities.
-                newMat.shape.materialiseEdgeFinish(pairs, this.edgeS);
-                // Add this new materialisation to the result set of this
-                // operation if the shape is admissible.
-                if (newMat.shape.isAdmissible()) {
-                    this.result.add(newMat);
+            NewEquationSystem eqSys =
+                new NewEquationSystem(this.mat.shape, outEsSet, inEsSet,
+                    frozenEdges);
+            eqSys.solve();
+            Set<Shape> validShapes = eqSys.getResultShapes();
+
+            // Create the new materialisation objects.
+            for (Shape newShape : validShapes) {
+                Materialisation newMat;
+                // Check if we need to clone the materialisation object.
+                if (validShapes.size() == 1) {
+                    // No, we don't need to clone.
+                    newMat = this.mat;
+                } else {
+                    // Yes, we do need to clone.
+                    newMat = this.mat.clone();
                 }
+                // Set the new shape to the materialisation object.
+                newMat.shape = newShape;
+                // Add this new materialisation to the result set of this
+                // operation.
+                this.result.add(newMat);
             }
         }
 
