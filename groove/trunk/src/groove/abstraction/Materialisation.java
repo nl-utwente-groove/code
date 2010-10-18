@@ -131,20 +131,41 @@ public class Materialisation implements Cloneable {
         return new Materialisation(this);
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result =
+            prime * result + ((this.shape == null) ? 0 : this.shape.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        boolean result;
+        if (!(obj instanceof Materialisation)) {
+            result = false;
+        } else {
+            Materialisation other = (Materialisation) obj;
+            result = this.shape.equals(other.shape);
+        }
+        return result;
+    }
+
     // ------------------------------------------------------------------------
     // Static methods
     // ------------------------------------------------------------------------
 
     /**
-     * Constructs and returns the set of all possible materialisations of the
-     * given shape and pre-match. This method resolves all non-determinism
-     * in the materialisation phase, so the shapes in the returned
-     * materialisations are ready to be transformed by conventional rule
-     * application.
-     * Note that the returned set may be empty, even if the pre-match is valid.
-     * This is the case because the shape may not admit any valid
-     * materialisation.
-     */
+    * Constructs and returns the set of all possible materialisations of the
+    * given shape and pre-match. This method resolves all non-determinism
+    * in the materialisation phase, so the shapes in the returned
+    * materialisations are ready to be transformed by conventional rule
+    * application.
+    * Note that the returned set may be empty, even if the pre-match is valid.
+    * This is the case because the shape may not admit any valid
+    * materialisation.
+    */
     public static Set<Materialisation> getMaterialisations(Shape shape,
             RuleMatch preMatch) {
         Set<Materialisation> result = new HashSet<Materialisation>();
@@ -780,18 +801,24 @@ public class Materialisation implements Cloneable {
                     || !shape.isInEdgeSigConcrete(inEs)) {
                     inEsSet.add(inEs);
                 }
+
+                // We can already set the match here.
+                ShapeEdge edge = shape.getShapeEdge(srcS, label, tgtS);
+                if (edge != null) {
+                    match.putEdge(edgeR, edge);
+                }
             }
 
             // Materialise the edge in the shape and get the multiplicities
             // back.
-            Set<Pair<EdgeSignature,Set<Multiplicity>>> mults =
+            Set<Pair<EdgeSigWrapper,Set<Multiplicity>>> mults =
                 shape.materialiseEdgeInit(outEsSet, inEsSet);
             // Construct an iterator for all possible multiplicities
             // combinations. 
-            PairSetIterator<EdgeSignature,Multiplicity> iter =
-                new PairSetIterator<EdgeSignature,Multiplicity>(mults);
+            PairSetIterator<EdgeSigWrapper,Multiplicity> iter =
+                new PairSetIterator<EdgeSigWrapper,Multiplicity>(mults);
             while (iter.hasNext()) {
-                Set<Pair<EdgeSignature,Multiplicity>> pairs = iter.next();
+                Set<Pair<EdgeSigWrapper,Multiplicity>> pairs = iter.next();
                 // These pairs correspond to a new materialisation object.
                 Materialisation newMat = this.mat.clone();
                 // Adjust the shape of the new materialisation with the
