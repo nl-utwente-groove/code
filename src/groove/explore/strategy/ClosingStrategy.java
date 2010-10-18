@@ -116,7 +116,7 @@ abstract public class ClosingStrategy extends AbstractStrategy {
     }
 
     /** Internal store of newly generated states. */
-    private final Collection<GraphState> newStates =
+    protected final Collection<GraphState> newStates =
         new ArrayList<GraphState>();
     /** Parent transitions of the currently explored state. */
     private Collection<VirtualEvent.GraphState> virtualEvents;

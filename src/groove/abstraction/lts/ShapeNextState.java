@@ -148,7 +148,7 @@ public class ShapeNextState extends ShapeState implements GraphNextState,
 
     @Override
     public Node[] getAddedNodes() {
-        return this.transition.getAddedNodes();
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -163,22 +163,22 @@ public class ShapeNextState extends ShapeState implements GraphNextState,
 
     @Override
     public Morphism getMorphism() {
-        return this.transition.getMorphism();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean isSymmetry() {
-        return this.transition.isSymmetry();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public GraphTransitionStub toStub() {
-        return this.transition.toStub();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Node[] getAddedNodes(GraphState source) {
-        return this.transition.getAddedNodes();
+        throw new UnsupportedOperationException();
     }
 
     @Override

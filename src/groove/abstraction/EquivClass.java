@@ -59,4 +59,16 @@ public class EquivClass<T> extends HashSet<T> {
         return result;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        boolean result;
+        if (!(o instanceof EquivClass<?>)) {
+            result = false;
+        } else {
+            EquivClass<?> other = (EquivClass<?>) o;
+            result = this.containsAll(other) && other.containsAll(this);
+        }
+        return result;
+    }
+
 }
