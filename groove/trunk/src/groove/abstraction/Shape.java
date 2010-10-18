@@ -1515,7 +1515,10 @@ public class Shape extends DefaultGraph implements Cloneable {
                 }
             }
         }
-        this.checkShapeInvariant();
+        // Sanity check.
+        if (result) {
+            this.checkShapeInvariant();
+        }
         return result;
     }
 
