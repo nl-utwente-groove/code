@@ -263,7 +263,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
              * The number of remaining elements.
              */
             private int remainingCount = TreeHashSet.this.size;
-            /** Modifi8cation count at construction time of this iterator. */
+            /** Modification count at construction time of this iterator. */
             private final int expectedModCount = TreeHashSet.this.modCount;
         };
     }
@@ -361,7 +361,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
              */
             private boolean atEnd;
 
-            /** Modifi8cation count at construction time of this iterator. */
+            /** Modification count at construction time of this iterator. */
             private final int expectedModCount = TreeHashSet.this.modCount;
         };
     }
@@ -1032,13 +1032,13 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * The mask of the branch value within a key. This equals
      * <code>2^resolution - 1</code>.
      */
-    private final int mask;
+    protected final int mask;
     /**
-     * The strategy to compare keys whose hashcodes are equal.
+     * The strategy to compare keys whose hash codes are equal.
      */
     private final Equator<T> equator;
     /** Modification count, for fail-fast iterating. */
-    private int modCount;
+    protected int modCount;
 
     /**
      * Returns an equator which calls {@link #equals(Object)} to determine
