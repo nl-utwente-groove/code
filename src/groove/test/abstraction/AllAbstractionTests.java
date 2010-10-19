@@ -30,7 +30,6 @@ public class AllAbstractionTests {
         TestSuite suite = new TestSuite("Test for groove.test.abstraction");
         // $JUnit-BEGIN$
         suite.addTest(new TestSuite(TestMultiplicity.class));
-        suite.addTest(new TestSuite(TestPairSetIterator.class));
         suite.addTest(new TestSuite(TestGraphNeighEquiv.class));
         suite.addTest(new TestSuite(TestShape.class));
         suite.addTest(new TestSuite(TestPreMatch.class));
