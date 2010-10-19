@@ -581,15 +581,18 @@ public class RuleDependencies {
                     break;
                 }
             }
-            assert typeLabels != null : String.format("No type label among %s",
-                graph.edgeSet(node));
-            for (Label typeLabel : typeLabels) {
-                // find the type node
-                Node typeNode =
-                    this.type.labelEdgeSet(2, typeLabel).iterator().next().source();
-                // now find all incident labels of the type node
-                for (Edge typeEdge : this.type.edgeSet(typeNode)) {
-                    result.add(typeEdge.label());
+            // typeLabels could be null if we're on a lower nesting level
+            //            assert typeLabels != null : String.format("No type label among %s",
+            //                graph.edgeSet(node));
+            if (typeLabels != null) {
+                for (Label typeLabel : typeLabels) {
+                    // find the type node
+                    Node typeNode =
+                        this.type.labelEdgeSet(2, typeLabel).iterator().next().source();
+                    // now find all incident labels of the type node
+                    for (Edge typeEdge : this.type.edgeSet(typeNode)) {
+                        result.add(typeEdge.label());
+                    }
                 }
             }
         }
