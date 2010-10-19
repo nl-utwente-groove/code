@@ -52,11 +52,11 @@ public class EquivClass<T> extends HashSet<T> {
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = 1;
+        int sum = 0;
         for (T elem : this) {
-            result = prime * result + elem.hashCode();
+            sum += elem.hashCode();
         }
-        return result;
+        return prime * sum;
     }
 
     @Override
