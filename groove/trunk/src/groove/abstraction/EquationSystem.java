@@ -490,10 +490,9 @@ public class EquationSystem {
         // Split the equivalence class.
         newShape.splitEc(this.origEc, this.singEc, this.remEc, true);
 
-        //assert newShape.isAdmissible();
-        if (newShape.isAdmissible()) {
-            this.results.add(newShape);
-        }
+        // Sanity check.
+        newShape.checkShapeInvariant();
+        this.results.add(newShape);
     }
 
     private void storeResultShape() {
@@ -532,7 +531,8 @@ public class EquationSystem {
             newShape.setEdgeInMult(remEs, remVar.mult);
         }
 
-        assert newShape.isAdmissible();
+        // Sanity check.
+        newShape.checkShapeInvariant();
         this.results.add(newShape);
     }
 
