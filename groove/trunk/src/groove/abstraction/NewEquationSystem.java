@@ -428,6 +428,8 @@ public class NewEquationSystem {
             newShape.setEdgeInMult(es, var.mult);
         }
 
+        assert newShape.getOutEdgeMultMap().size() < 3;
+
         // Sanity check.
         newShape.checkShapeInvariant();
         this.results.add(newShape);
