@@ -1234,22 +1234,25 @@ public class Shape extends DefaultGraph implements Cloneable {
             boolean trivial) {
         assert singEc.size() == 1 && origEc.containsAll(singEc)
             && origEc.containsAll(remEc);
+
+        this.cleanEdgeSigSet();
+
+        for (EdgeSignature origEs : this.getEdgeSignatures(origEc)) {
+            EdgeSignature newEs =
+                new EdgeSignature(origEs.getNode(), origEs.getLabel(), remEc);
+            Multiplicity outMult = this.outEdgeMultMap.remove(origEs);
+            if (outMult != null) {
+                this.outEdgeMultMap.put(newEs, outMult);
+            }
+            Multiplicity inMult = this.inEdgeMultMap.remove(origEs);
+            if (inMult != null) {
+                this.inEdgeMultMap.put(newEs, inMult);
+            }
+        }
+
         this.equivRel.remove(origEc);
         this.equivRel.add(singEc);
         this.equivRel.add(remEc);
-        this.purgeMultEntries(origEc, singEc, remEc, trivial);
-        this.updateMultHashMaps();
-    }
-
-    private void purgeMultEntries(EquivClass<ShapeNode> origEc,
-            EquivClass<ShapeNode> singEc, EquivClass<ShapeNode> remEc,
-            boolean trivial) {
-        ShapeNode singNode = singEc.iterator().next();
-        if (trivial) {
-            origEc.remove(singNode);
-        } else {
-            System.out.println("What to do??");
-        }
     }
 
     /** EDUARDO: Comment this... */

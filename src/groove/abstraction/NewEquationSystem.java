@@ -38,7 +38,7 @@ public class NewEquationSystem {
     // Static fields
     // ------------------------------------------------------------------------
 
-    private static boolean DEBUG = true;
+    private static boolean DEBUG = false;
 
     // ------------------------------------------------------------------------
     // Object fields
@@ -427,8 +427,6 @@ public class NewEquationSystem {
             MultVar var = entry.getValue().second();
             newShape.setEdgeInMult(es, var.mult);
         }
-
-        assert newShape.getOutEdgeMultMap().size() < 3;
 
         // Sanity check.
         newShape.checkShapeInvariant();
