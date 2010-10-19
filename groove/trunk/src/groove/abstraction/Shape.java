@@ -26,7 +26,6 @@ import groove.graph.iso.DefaultIsoChecker;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
-import groove.util.Pair;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -672,8 +671,9 @@ public class Shape extends DefaultGraph implements Cloneable {
             Label label = es.getLabel();
             EquivClass<ShapeNode> ec = es.getEquivClass();
             for (ShapeEdge edge : this.outBinaryEdgeSet(src)) {
-                if (edge.label().equals(label) && ec.contains(edge.target())) {
-                    super.removeEdge(edge);
+                if (!this.frozenEdges.contains(edge)
+                    && edge.label().equals(label) && ec.contains(edge.target())) {
+                    this.removeEdge(edge);
                 }
             }
             this.outEdgeMultMap.remove(es);
@@ -691,8 +691,9 @@ public class Shape extends DefaultGraph implements Cloneable {
             Label label = es.getLabel();
             EquivClass<ShapeNode> ec = es.getEquivClass();
             for (ShapeEdge edge : this.inBinaryEdgeSet(tgt)) {
-                if (edge.label().equals(label) && ec.contains(edge.source())) {
-                    super.removeEdge(edge);
+                if (!this.frozenEdges.contains(edge)
+                    && edge.label().equals(label) && ec.contains(edge.source())) {
+                    this.removeEdge(edge);
                 }
             }
             this.inEdgeMultMap.remove(es);
@@ -1087,113 +1088,6 @@ public class Shape extends DefaultGraph implements Cloneable {
         return mults;
     }
 
-    /**
-     * EDUARDO: Comment this...
-     */
-    public Set<Pair<EdgeSigWrapper,Set<Multiplicity>>> materialiseEdgeInit(
-            CountingSet<EdgeSignature> outEsSet,
-            CountingSet<EdgeSignature> inEsSet) {
-
-        Set<Pair<EdgeSigWrapper,Set<Multiplicity>>> result =
-            new HashSet<Pair<EdgeSigWrapper,Set<Multiplicity>>>();
-
-        // Outgoing multiplicities.
-        for (Entry<EdgeSignature,Integer> entry : outEsSet.entrySet()) {
-            EdgeSignature outEs = entry.getKey();
-            Multiplicity toSub = Multiplicity.getMultOf(entry.getValue());
-            Multiplicity origMult = this.getEdgeSigOutMult(outEs);
-            Set<Multiplicity> remainderMults = origMult.subEdgeMult(toSub);
-            EdgeSigWrapper outEsWrap = new EdgeSigWrapper(outEs, true);
-            Pair<EdgeSigWrapper,Set<Multiplicity>> pair =
-                new Pair<EdgeSigWrapper,Set<Multiplicity>>(outEsWrap,
-                    remainderMults);
-            result.add(pair);
-        }
-
-        // Incoming multiplicities.
-        for (Entry<EdgeSignature,Integer> entry : inEsSet.entrySet()) {
-            EdgeSignature inEs = entry.getKey();
-            Multiplicity toSub = Multiplicity.getMultOf(entry.getValue());
-            Multiplicity origMult = this.getEdgeSigInMult(inEs);
-            Set<Multiplicity> remainderMults = origMult.subEdgeMult(toSub);
-            EdgeSigWrapper inEsWrap = new EdgeSigWrapper(inEs, false);
-            Pair<EdgeSigWrapper,Set<Multiplicity>> pair =
-                new Pair<EdgeSigWrapper,Set<Multiplicity>>(inEsWrap,
-                    remainderMults);
-            result.add(pair);
-        }
-
-        return result;
-    }
-
-    /**
-     * EDUARDO: Comment this...
-     */
-    public void materialiseEdgeFinish(
-            Set<Pair<EdgeSigWrapper,Multiplicity>> pairs, ShapeEdge edgeS) {
-        // Look in the shaping morphism to get the new edges that were
-        // materialised from the original edge.
-        Set<ShapeEdge> newEdges = this.getReverseEdgeMap(edgeS);
-        // Remove the original edge from the set of new edges because
-        // the original edge will not help to extend the match.
-        newEdges.remove(edgeS);
-
-        // Iterate over the pairs set.
-        for (Pair<EdgeSigWrapper,Multiplicity> pair : pairs) {
-            EdgeSigWrapper eSWrap = pair.first();
-            EdgeSignature es = eSWrap.getEdgeSig();
-            boolean outgoing = eSWrap.isOutgoing();
-            Multiplicity mult = pair.second();
-
-            if (outgoing) {
-                if (mult.isPositive()) {
-                    this.outEdgeMultMap.put(es, mult);
-                } else {
-                    // Normally, setting an outgoing multiplicity to zero is
-                    // equivalent to removing all edges in the signature from the
-                    // shape. Here we keep the new edges.
-                    ShapeNode src = es.getNode();
-                    Label label = es.getLabel();
-                    EquivClass<ShapeNode> ec = es.getEquivClass();
-                    for (ShapeEdge edge : this.outBinaryEdgeSet(src)) {
-                        if (edge.label().equals(label)
-                            && ec.contains(edge.target())
-                            && !newEdges.contains(edge)) {
-                            this.removeEdge(edge);
-                        }
-                    }
-                    this.outEdgeMultMap.remove(es);
-                }
-            } else { // Incoming.
-                if (mult.isPositive()) {
-                    this.inEdgeMultMap.put(es, mult);
-                } else {
-                    // Normally, setting an incoming multiplicity to zero is
-                    // equivalent to removing all edges in the signature from the
-                    // shape. Here we keep the new edges.
-                    ShapeNode tgt = es.getNode();
-                    Label label = es.getLabel();
-                    EquivClass<ShapeNode> ec = es.getEquivClass();
-                    for (ShapeEdge edge : this.inBinaryEdgeSet(tgt)) {
-                        if (edge.label().equals(label)
-                            && ec.contains(edge.source())
-                            && !newEdges.contains(edge)) {
-                            this.removeEdge(edge);
-                        }
-                    }
-                    this.inEdgeMultMap.remove(es);
-                }
-            }
-        }
-
-        // Freeze the new edges.
-        for (ShapeEdge newEdge : newEdges) {
-            this.frozenEdges.add(newEdge);
-        }
-        // Remove impossible multiplicity entries.
-        this.purgeMultEntries();
-    }
-
     /** Basic getter method. */
     public Map<Node,ShapeNode> getNodeShaping() {
         return this.nodeShaping;
@@ -1247,7 +1141,6 @@ public class Shape extends DefaultGraph implements Cloneable {
         Label label = es.getLabel();
         for (ShapeNode target : es.getEquivClass()) {
             ShapeEdge edge = this.getShapeEdge(source, label, target);
-            // if (edge != null) {
             if (edge != null && !this.frozenEdges.contains(edge)) {
                 edgeCount++;
                 if (edgeCount > 1) {
@@ -1273,7 +1166,6 @@ public class Shape extends DefaultGraph implements Cloneable {
         Label label = es.getLabel();
         for (ShapeNode source : es.getEquivClass()) {
             ShapeEdge edge = this.getShapeEdge(source, label, target);
-            // if (edge != null) {
             if (edge != null && !this.frozenEdges.contains(edge)) {
                 edgeCount++;
                 if (edgeCount > 1) {
@@ -1298,6 +1190,40 @@ public class Shape extends DefaultGraph implements Cloneable {
      */
     public boolean isInEdgeSigConcrete(EdgeSignature es) {
         return this.getEdgeSigInMult(es).equals(Multiplicity.getMultOf(1));
+    }
+
+    private Set<ShapeEdge> getEdgesFrom(EdgeSignature es, boolean outgoing) {
+        Set<ShapeEdge> result = new HashSet<ShapeEdge>();
+        ShapeNode node = es.getNode();
+        Label label = es.getLabel();
+        EquivClass<ShapeNode> ec = es.getEquivClass();
+        for (ShapeNode ecNode : ec) {
+            ShapeEdge edge;
+            if (outgoing) {
+                edge = this.getShapeEdge(node, label, ecNode);
+            } else { // incoming
+                edge = this.getShapeEdge(ecNode, label, node);
+            }
+            if (edge != null) {
+                result.add(edge);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * EDUARDO: Comment this...
+     */
+    public boolean sigContains(EdgeSignature es, Set<ShapeEdge> edges,
+            boolean outgoing) {
+        boolean result = false;
+        for (ShapeEdge edge : this.getEdgesFrom(es, outgoing)) {
+            if (edges.contains(edge)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     /**
@@ -1326,27 +1252,6 @@ public class Shape extends DefaultGraph implements Cloneable {
         }
     }
 
-    private void purgeMultEntries() {
-        Set<EdgeSignature> toRemove = new HashSet<EdgeSignature>();
-        for (EdgeSignature es : this.outEdgeMultMap.keySet()) {
-            if (this.areAllEdgesFromSigFrozen(es, true)) {
-                toRemove.add(es);
-            }
-        }
-        for (EdgeSignature es : toRemove) {
-            this.outEdgeMultMap.remove(es);
-        }
-        toRemove.clear();
-        for (EdgeSignature es : this.inEdgeMultMap.keySet()) {
-            if (this.areAllEdgesFromSigFrozen(es, false)) {
-                toRemove.add(es);
-            }
-        }
-        for (EdgeSignature es : toRemove) {
-            this.inEdgeMultMap.remove(es);
-        }
-    }
-
     /** EDUARDO: Comment this... */
     public boolean areAllEdgesFromSigFrozen(EdgeSignature es, boolean outgoing) {
         boolean result = true;
@@ -1366,6 +1271,22 @@ public class Shape extends DefaultGraph implements Cloneable {
             }
         }
         return result;
+    }
+
+    /** EDUARDO: Comment this... */
+    public void freezeEdges(Set<ShapeEdge> edgesToFreeze) {
+        for (ShapeEdge edgeToFreeze : edgesToFreeze) {
+            assert this.edgeSet().contains(edgeToFreeze);
+            EdgeSignature outEs = this.getEdgeOutSignature(edgeToFreeze);
+            if (this.isOutEdgeSigUnique(outEs)) {
+                this.outEdgeMultMap.remove(outEs);
+            }
+            EdgeSignature inEs = this.getEdgeInSignature(edgeToFreeze);
+            if (this.isInEdgeSigUnique(inEs)) {
+                this.inEdgeMultMap.remove(inEs);
+            }
+        }
+        this.frozenEdges.addAll(edgesToFreeze);
     }
 
     /** Normalise the shape object and returns the newly modified shape. */
