@@ -16,6 +16,9 @@
  */
 package groove.ecore2groove;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EEnum;
@@ -30,6 +33,47 @@ import org.eclipse.emf.ecore.EStructuralFeature;
  */
 public class GraphLabels {
 
+    private static final String DOLLAR = "$";
+
+    private static final String BOOL_PREFIX = "bool:";
+    private static final String FLAG_PREFIX = "flag:";
+    private static final String INT_PREFIX = "int:";
+    private static final String REAL_PREFIX = "real:";
+    private static final String STRING_PREFIX = "string:";
+    private static final String TYPE_PREFIX = "type:";
+
+    private static final Set<String> boolTypes = new HashSet<String>();
+    private static final Set<String> intTypes = new HashSet<String>();
+    private static final Set<String> realTypes = new HashSet<String>();
+    private static final Set<String> stringTypes = new HashSet<String>();
+
+    static {
+        boolTypes.add("boolean");
+        boolTypes.add("java.lang.Boolean");
+
+        intTypes.add("int");
+        intTypes.add("byte");
+        intTypes.add("short");
+        intTypes.add("long");
+        intTypes.add("java.lang.Integer");
+        intTypes.add("java.lang.Byte");
+        intTypes.add("java.lang.Short");
+        intTypes.add("java.lang.Long");
+        intTypes.add("java.math.BigInteger");
+
+        realTypes.add("float");
+        realTypes.add("double");
+        realTypes.add("java.lang.Float");
+        realTypes.add("java.lang.Double");
+        realTypes.add("java.math.BigDecimal");
+
+        stringTypes.add("char");
+        stringTypes.add("byte[]");
+        stringTypes.add("java.lang.String");
+        stringTypes.add("java.lang.Character");
+        stringTypes.add("java.util.Date");
+    }
+
     /**
      * Method to get a string for a label to represent an EClassifier
      * in a graph.
@@ -39,19 +83,19 @@ public class GraphLabels {
         String label;
 
         if (isRootEPackage(classifier.getEPackage())) {
-            return "type:" + classifier.getName();
+            return TYPE_PREFIX + classifier.getName();
         } else {
-            label = "$" + classifier.getName();
+            label = DOLLAR + classifier.getName();
         }
 
         EPackage curEPackage = classifier.getEPackage();
 
         while (!isRootEPackage(curEPackage)) {
-            label = curEPackage.getName() + "$" + label;
+            label = curEPackage.getName() + DOLLAR + label;
             curEPackage = curEPackage.getESuperPackage();
         }
 
-        return "type:" + label;
+        return TYPE_PREFIX + label;
     }
 
     /**
@@ -63,7 +107,7 @@ public class GraphLabels {
         String label;
 
         label = getLabel(feature.getEContainingClass());
-        label = label + "$" + feature.getName();
+        label = label + DOLLAR + feature.getName();
 
         return label;
     }
@@ -74,25 +118,19 @@ public class GraphLabels {
      * @return string to use for label of representation
      */
     public static String getLabel(EDataType datatype) {
-        String label = "";
+        String label;
 
         String type = datatype.getInstanceTypeName();
-        if (type == "int" || type == "java.lang.Integer"
-            || type == "java.math.BigInteger" || type == "byte"
-            || type == "java.lang.Byte" || type == "short"
-            || type == "java.lang.Short" || type == "long"
-            || type == "java.lang.Long") {
-            label = "type:int";
-        } else if (type == "boolean" || type == "java.lang.Boolean") {
-            label = "type:bool";
-        } else if (type == "java.math.BigDecimal" || type == "double"
-            || type == "java.lang.Double" || type == "float"
-            || type == "java.lang.Float") {
-            label = "type:real";
-        } else if (type == "byte[]" || type == "char"
-            || type == "java.lang.Character" || type == "java.util.Date"
-            || type == "java.lang.String") {
-            label = "type:string";
+        if (intTypes.contains(type)) {
+            label = TYPE_PREFIX + "int";
+        } else if (boolTypes.contains(type)) {
+            label = TYPE_PREFIX + "bool";
+        } else if (realTypes.contains(type)) {
+            label = TYPE_PREFIX + "real";
+        } else if (stringTypes.contains(type)) {
+            label = TYPE_PREFIX + "string";
+        } else {
+            label = "";
         }
 
         return label;
@@ -105,70 +143,37 @@ public class GraphLabels {
      * @return string to use for label of representation
      */
     public static String getLabel(EDataType datatype, Object value) {
-        String label = "";
+        String label;
 
         String type = datatype.getInstanceTypeName();
-        if (type == "int" || type == "java.lang.Integer"
-            || type == "java.math.BigInteger" || type == "byte"
-            || type == "java.lang.Byte" || type == "short"
-            || type == "java.lang.Short" || type == "long"
-            || type == "java.lang.Long") {
+        if (intTypes.contains(type)) {
             if (value == null) {
-                label = "int:";
+                label = INT_PREFIX;
             } else {
-                /*int intVal;
-                try {
-                    intVal = new Integer(value.toString());
-                } catch (NumberFormatException e) {
-                    System.out.println(value
-                        + " out of bounds of Integer range,"
-                        + " using MIN_VALUE or MAX_VALUE instead");
-                    if (new Integer(value.toString().substring(0, 2)) < 0) {
-                        intVal = Integer.MIN_VALUE;
-                    } else {
-                        intVal = Integer.MAX_VALUE;
-                    }
-                }
-                label = "int:" + intVal;*/
-                label = "int:" + value.toString();
+                label = INT_PREFIX + value.toString();
             }
-        } else if (type == "boolean" || type == "java.lang.Boolean") {
+        } else if (boolTypes.contains(type)) {
             if (value == null) {
-                label = "bool:";
+                label = BOOL_PREFIX;
             } else {
-                label = "bool:" + value.toString();
+                label = BOOL_PREFIX + value.toString();
             }
-        } else if (type == "java.math.BigDecimal" || type == "double"
-            || type == "java.lang.Double" || type == "float"
-            || type == "java.lang.Float") {
+        } else if (realTypes.contains(type)) {
             if (value == null) {
-                label = "real:";
+                label = REAL_PREFIX;
             } else {
-                /*float realVal;
-                try {
-                    realVal = new Float(value.toString());
-                } catch (Exception e) {
-                    System.out.println(value + " out of bounds of Float range,"
-                        + " using MIN_VALUE or MAX_VALUE instead");
-                    if (new Float(value.toString().substring(0, 2)) < 0) {
-                        realVal = Float.MIN_VALUE;
-                    } else {
-                        realVal = Float.MAX_VALUE;
-                    }
-                }
-                label = "real:" + realVal;*/
-                label = "real:" + value.toString();
+                label = REAL_PREFIX + value.toString();
             }
-        } else if (type == "byte[]" || type == "char"
-            || type == "java.lang.Character" || type == "java.util.Date"
-            || type == "java.lang.String") {
+        } else if (stringTypes.contains(type)) {
             if (value == null) {
-                label = "string:";
+                label = STRING_PREFIX;
             } else {
-                label = "string:\"" + value.toString() + "\"";
+                label = STRING_PREFIX + "\"" + value.toString() + "\"";
             }
-        } else if (datatype.eClass().getName().equals("EEnum")) {
+        } else if ("EEnum".equals(datatype.eClass().getName())) {
             label = getLabel((EEnum) datatype);
+        } else {
+            label = "";
         }
 
         return label;
@@ -182,7 +187,6 @@ public class GraphLabels {
      */
     public static String getLabel(EEnum aEnum) {
         return getLabel((EClassifier) aEnum);
-
     }
 
     /**
@@ -191,11 +195,7 @@ public class GraphLabels {
      * @return true if the EPackage is the root
      */
     private static boolean isRootEPackage(EPackage aPackage) {
-
-        if (aPackage.getESuperPackage() == null) {
-            return true;
-        }
-        return false;
+        return aPackage.getESuperPackage() == null;
     }
 
     /**
@@ -203,8 +203,7 @@ public class GraphLabels {
      * @return string to use for label of representation
      */
     public static String getLabel(EEnumLiteral literal) {
-
-        return "flag:" + literal.getLiteral();
+        return FLAG_PREFIX + literal.getLiteral();
     }
 
     /**
@@ -219,13 +218,13 @@ public class GraphLabels {
         if (isRootEPackage(classifier.getEPackage())) {
             return classifier.getName();
         } else {
-            label = "$" + classifier.getName();
+            label = DOLLAR + classifier.getName();
         }
 
         EPackage curEPackage = classifier.getEPackage();
 
         while (!isRootEPackage(curEPackage)) {
-            label = curEPackage.getName() + "$" + label;
+            label = curEPackage.getName() + DOLLAR + label;
             curEPackage = curEPackage.getESuperPackage();
         }
 
@@ -240,7 +239,6 @@ public class GraphLabels {
      */
     public static String getLabelNoType(EEnum aEnum) {
         return getLabelNoType((EClassifier) aEnum);
-
     }
 
     /**
@@ -253,7 +251,7 @@ public class GraphLabels {
         String label;
 
         label = getLabelNoType(feature.getEContainingClass());
-        label = label + "$" + feature.getName();
+        label = label + DOLLAR + feature.getName();
 
         return label;
     }

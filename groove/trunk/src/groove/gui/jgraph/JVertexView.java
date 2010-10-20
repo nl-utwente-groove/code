@@ -778,7 +778,7 @@ public class JVertexView extends VertexView {
         protected void firePropertyChange(String propertyName, Object oldValue,
                 Object newValue) {
             // Strings get interned...
-            if (propertyName == "text") {
+            if ("text".equals(propertyName)) {
                 super.firePropertyChange(propertyName, oldValue, newValue);
             }
         }
