@@ -51,13 +51,13 @@ import javax.swing.event.ListSelectionListener;
 public class TemplateList<A> implements EncodedType<A,Serialized> {
 
     /** The list of templates. */
-    protected final LinkedList<Template<A>> templates;
+    final LinkedList<Template<A>> templates;
     /** String identifying the type. */
-    protected final String typeIdentifier;
+    final String typeIdentifier;
     /** The tool tip string. */
-    protected final String typeToolTip;
+    final String typeToolTip;
     /** List of listeners connected to this list */
-    protected LinkedList<TemplateListListener> listeners;
+    LinkedList<TemplateListListener> listeners;
 
     /**
      * Constructor. Initializes an identifier and tool-tip for the type A.

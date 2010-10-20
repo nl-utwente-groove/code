@@ -31,13 +31,13 @@ import javax.swing.Action;
 import javax.swing.JPopupMenu;
 
 import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.AttributeMap.SerializableRectangle2D;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.PortView;
-import org.jgraph.graph.AttributeMap.SerializableRectangle2D;
 
 /**
  * A j-graph dedicated towards the editor. In particular, provides a method to
@@ -117,7 +117,8 @@ public class EditorJGraph extends JGraph {
         Point2D corner =
             new Double(atPoint.getX() - size.width / 2, atPoint.getY()
                 - size.height / 2);
-        GraphConstants.setBounds(jVertex.getAttributes(),
+        GraphConstants.setBounds(
+            jVertex.getAttributes(),
             new SerializableRectangle2D(corner.getX(), corner.getY(),
                 size.getWidth(), size.getHeight()));
         // add the cell to the jGraph

@@ -5,7 +5,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/antlr-3.2.jar" sourcepath="/antlr-3_2/runtime"/>
 	<classpathentry kind="lib" path="lib/epsgraphics-1.0.0.jar"/>
-	<classpathentry kind="lib" path="lib/jgraph-5_13_0.jar"/>
+	<classpathentry kind="lib" path="lib/jgraph-5_13_0.jar" sourcepath="/home/zambon/Sources/jgraph-5.13.0.4"/>
 	<classpathentry kind="lib" path="lib/jgraphaddons-1_0_4.jar"/>
 	<classpathentry kind="lib" path="lib/layouts.jar"/>
 	<classpathentry kind="lib" path="lib/ltl2ba4j.jar"/>
