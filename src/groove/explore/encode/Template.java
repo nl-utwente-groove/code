@@ -44,16 +44,16 @@ import javax.swing.SpringLayout;
 public abstract class Template<A> implements EncodedType<A,Serialized> {
 
     /** Serialized keyword. */
-    protected final String keyword;
+    final String keyword;
     /** Template name. */
-    protected final String name;
+    final String name;
     /** Template explanation. */
-    protected final String explanation;
+    final String explanation;
     private final SerializedParser commandlineParser; // for the arguments only
     /** Array of argument names. */
-    protected final String[] argumentNames;
+    final String[] argumentNames;
     /** Map of the argument types. */
-    protected final Map<String,EncodedType<?,String>> argumentTypes;
+    final Map<String,EncodedType<?,String>> argumentTypes;
 
     /**
      * Builds the template, which consists of a keyword for the command line, 

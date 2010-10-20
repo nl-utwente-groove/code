@@ -1032,13 +1032,13 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * The mask of the branch value within a key. This equals
      * <code>2^resolution - 1</code>.
      */
-    protected final int mask;
+    final int mask;
     /**
      * The strategy to compare keys whose hash codes are equal.
      */
     private final Equator<T> equator;
     /** Modification count, for fail-fast iterating. */
-    protected int modCount;
+    int modCount;
 
     /**
      * Returns an equator which calls {@link #equals(Object)} to determine
