@@ -63,7 +63,6 @@ public class ConstraintRules {
         eEnumConstraints(mh.getEEnums());
         eReferenceConstraints(mh.getEReferences());
         eAttributeConstraints(mh.getEAttributes());
-
     }
 
     /**
@@ -185,7 +184,6 @@ public class ConstraintRules {
 
         GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
-
     }
 
     /**
@@ -241,7 +239,6 @@ public class ConstraintRules {
 
         GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
-
     }
 
     /**
@@ -714,17 +711,7 @@ public class ConstraintRules {
             } else {
                 return;
             }
-        }/* else if (eAttribute.getEAttributeType().getName().equals("EFloat")
-            || eAttribute.getEAttributeType().getName().equals("EFloatObject")) {
-            lowerBound = "-" + (Float.MAX_VALUE - 1);
-            upperBound = "" + Float.MAX_VALUE;
-            type = "real:";
-         } else if (eAttribute.getEAttributeType().getName().equals("EDouble")
-           || eAttribute.getEAttributeType().getName().equals("EDouble")) {
-            lowerBound = "-" + (Double.MAX_VALUE - 1);
-            upperBound = "" + Double.MAX_VALUE;
-            type = "real:";
-         }*/else {
+        } else {
             return;
         }
 
@@ -1351,7 +1338,6 @@ public class ConstraintRules {
 
         GraphInfo.setRuleRole(constraintRule);
         this.constraintRules.add(constraintRule);
-
     }
 
     /**

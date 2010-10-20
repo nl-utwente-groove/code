@@ -45,7 +45,6 @@ import org.eclipse.emf.ecore.resource.Resource;
  */
 public class InstanceModelRep {
 
-    //private ModelHandler mh;
     private Graph instanceGraph;
     private Resource instanceModel;
 
@@ -53,7 +52,6 @@ public class InstanceModelRep {
     private Set<Edge> referenceEdgeSet;
     private Set<Edge> containmentReferenceEdgeSet;
     private Set<Edge> attributeEdgeSet;
-    //private Set<Edge> enumEdgeSet; //delete
 
     private Edge rootEdge;
 
@@ -77,18 +75,16 @@ public class InstanceModelRep {
      * the instance model that represents the graph
      * @param mh The ModelHandler with a Ecore model loaded
      * @param ig The instance graph to create a model for
-     * @require ig must represent a model that is an instance oof the Ecore
+     * @require ig must represent a model that is an instance of the Ecore
      * model loaded in mh, no constraints may be violated.
      */
     public InstanceModelRep(ModelHandler mh, AspectGraph ig) {
-        //this.mh = mh;
         this.instanceGraph = ig.toPlainGraph();
 
         this.classEdgeSet = new HashSet<Edge>();
         this.referenceEdgeSet = new HashSet<Edge>();
         this.containmentReferenceEdgeSet = new HashSet<Edge>();
         this.attributeEdgeSet = new HashSet<Edge>();
-        //enumEdgeSet = new HashSet<Edge>(); //delete
 
         this.rootEdge = null;
 
@@ -107,7 +103,7 @@ public class InstanceModelRep {
 
         this.nodeToObject = new HashMap<Node,EObject>();
 
-        // Fill maps from labeltext to the EObjects from the Ecore model
+        // Fill maps from label text to the EObjects from the Ecore model
         for (EClass eClass : mh.getEClasses()) {
             String classLabel = GraphLabels.getLabel(eClass);
             this.labelToClass.put(classLabel, eClass);
@@ -134,7 +130,6 @@ public class InstanceModelRep {
 
         for (EEnumLiteral eEnumLiteral : mh.getEEnumLiterals()) {
             String literalLabel = GraphLabels.getLabel(eEnumLiteral);
-            //System.out.println("literal label: " + literalLabel);
             this.labelToLiteral.put(literalLabel, eEnumLiteral);
         }
 
@@ -205,23 +200,8 @@ public class InstanceModelRep {
         this.nodeToObject.put(this.rootEdge.source(), rootElement);
         contents.add(rootElement);
 
-        //System.out.println("root element: " + rootEdge.label());
-
         // recursively add contained classes to the instance model 
         addContainedClasses(this.rootEdge);
-
-        // Check if all classes in the instance graph are added, classes that
-        // are not added form one or more circles
-        /*boolean exit = false;
-        for ( Edge classEdge : classEdgeSet ) {
-        	if ( !nodeToObject.keySet().contains(classEdge.source()) ) {
-        		if ( !exit ) System.out.println("Cyclicity violation in " 
-        			+ graphName + "! Part of one or more cycles are:");
-        		System.out.println(classEdge.label().text());
-        		exit = true;
-        	}
-        }
-        if ( exit ) System.exit(1);*/
 
         // add structural features
         addStructuralFeatures();
@@ -233,7 +213,6 @@ public class InstanceModelRep {
      */
     @SuppressWarnings("unchecked")
     private void addContainedClasses(Edge startEdge) {
-
         // Check all outgoing edges from the node of this the startEdge
         for (Edge outEdge : this.instanceGraph.outEdgeSet(startEdge.source())) {
 
@@ -328,7 +307,6 @@ public class InstanceModelRep {
      * every node representing an instance EClass
      */
     private void addStructuralFeatures() {
-
         // For all type edges of nodes that represent classes
         for (Edge classEdge : this.classEdgeSet) {
 
@@ -363,7 +341,6 @@ public class InstanceModelRep {
      */
     @SuppressWarnings("unchecked")
     private void addAttribute(Edge containerEdge, Edge featureEdge) {
-
         // check if it is ordered, and when not just add it
         if (!this.labelToAttribute.get(featureEdge.label().text()).isOrdered()) {
 
@@ -452,7 +429,6 @@ public class InstanceModelRep {
      */
     @SuppressWarnings("unchecked")
     private void addReference(Edge containerEdge, Edge featureEdge) {
-
         // check if it is ordered, and when not just add it
         if (!this.labelToReference.get(featureEdge.label().text()).isOrdered()) {
             Edge valueEdge =
@@ -500,7 +476,6 @@ public class InstanceModelRep {
                         values.add(valueInstance);
                     } else {
                         values.move(values.size() - 1, valueInstance);
-                        //System.out.println("After: " + values);
                     }
                 } else {
                     this.nodeToObject.get(containerEdge.source()).eSet(
@@ -519,7 +494,6 @@ public class InstanceModelRep {
      * @returns The node representing the value 
      */
     private Node getValue(Node featureNode) {
-
         Node value = null;
 
         for (Edge outEdge : this.instanceGraph.outEdgeSet(featureNode)) {
@@ -530,56 +504,6 @@ public class InstanceModelRep {
 
         return value;
     }
-
-    /**
-     * Method to get the type edge of the node that represents the root 
-     * element of an instance model. When there is more than one root, or of 
-     * some element has multiple containers, the program quits and shows an 
-     * error.
-     * @returns the type edge of the node that represents the root EClass
-     */
-    /*	private Edge getRootEdge() {	
-    		
-    		Map<Node, Edge> rootElements = new HashMap<Node, Edge>();
-    		
-    		// Make a set of all nodes that represent EClasses
-    		for ( Edge classEdge : classEdgeSet ) {
-    			rootElements.put(classEdge.source(), classEdge);
-    		}
-    		
-    		// Now for every edge of a node that represents a containment
-    		// EReference
-    		for ( Edge referenceEdge : containmentReferenceEdgeSet ) {
-    			
-    			// Check its target of the val edge
-    			for ( Edge targetEdge : 
-    					instanceGraph.outEdgeSet(referenceEdge.source())) {
-    				if ( targetEdge.label().text().equals("val") ) {
-    					
-    					// If it is in the set of EClasses, remove it from the set
-    					// If it was already removed, then the target had another 
-    					// container, which is a constraint violation
-    					if ( rootElements.remove(targetEdge.opposite()) == null ) {
-    						System.out.println("Constraint violation: Target of " 
-    								+ referenceEdge.label() 
-    								+ " has more than one container!");
-    						System.exit(1);
-    					}
-    				}
-    			}
-    		}
-
-    		// There must be exactly on rootElement left, else a constraint is 
-    		// violated
-    		if ( rootElements.size() != 1 ) {
-    			System.out.println("Constraint violation: There are "
-    					+ rootElements.size() + " root elements!");
-    			System.exit(1);
-    		}	
-    		
-    		return rootElements.values().iterator().next();
-    		
-    	}*/
 
     /**
      * Returns the resource that has the Ecore instance model
