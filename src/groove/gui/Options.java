@@ -387,6 +387,8 @@ public class Options implements Cloneable {
      * Show supertypes action name
      */
     public static final String SHOW_SUPERTYPES_ACTION_NAME = "Show supertypes";
+    /** Snap to grid action name */
+    public static final String SNAP_TO_GRID_NAME = "Snap to grid";
     /**
      * Edit action name
      */
@@ -403,13 +405,13 @@ public class Options implements Cloneable {
     public static final String SELECT_MODE_NAME = "Selection mode";
 
     /** Add point keystroke. */
-    public static final KeyStroke ADD_POINT_KEY =
-        KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_MASK);
+    public static final KeyStroke ADD_POINT_KEY = KeyStroke.getKeyStroke(
+        KeyEvent.VK_INSERT, InputEvent.ALT_MASK);
     /**
      * Apply keystroke
      */
-    static public final KeyStroke APPLY_KEY =
-        KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_MASK);
+    static public final KeyStroke APPLY_KEY = KeyStroke.getKeyStroke(
+        KeyEvent.VK_ENTER, InputEvent.CTRL_MASK);
     /** Back keystroke */
     public static final KeyStroke BACK_KEY =
         KeyStroke.getKeyStroke("control LEFT");
@@ -502,8 +504,8 @@ public class Options implements Cloneable {
      */
     public static final KeyStroke RENAME_KEY = KeyStroke.getKeyStroke("F2");
     /** Remove point keystroke. */
-    public static final KeyStroke REMOVE_POINT_KEY =
-        KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_MASK);
+    public static final KeyStroke REMOVE_POINT_KEY = KeyStroke.getKeyStroke(
+        KeyEvent.VK_DELETE, InputEvent.ALT_MASK);
     /** Save keystroke */
     public static final KeyStroke SAVE_KEY =
         KeyStroke.getKeyStroke("control S");

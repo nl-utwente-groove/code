@@ -837,6 +837,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     JMenu createDisplayMenu() {
         JMenu result = new JMenu(Options.DISPLAY_MENU_NAME);
         result.setMnemonic(Options.DISPLAY_MENU_MNEMONIC);
+        result.add(getSnapToGridAction());
         this.jgraph.fillOutDisplayMenu(result.getPopupMenu());
         result.addSeparator();
         result.add(getGraphPanel().getViewLabelListItem());
@@ -864,6 +865,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         addModeButtons(toolbar);
         addUndoButtons(toolbar);
         addCopyPasteButtons(toolbar);
+        addGridButtons(toolbar);
         return toolbar;
     }
 
@@ -888,7 +890,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         toolbar.add(getRuleRoleButton());
         toolbar.add(getTypeRoleButton());
         getTypeButtonGroup();
-
     }
 
     /**
@@ -925,6 +926,16 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         toolbar.add(getPasteAction());
         toolbar.add(getCutAction());
         toolbar.add(getDeleteAction());
+    }
+
+    /**
+     * Adds a separator and a snap to grid button to a given toolbar.
+     * @param toolbar the toolbar to be extended
+     */
+    void addGridButtons(JToolBar toolbar) {
+        // Grid Block
+        toolbar.addSeparator();
+        toolbar.add(getSnapToGridButton());
     }
 
     /**
@@ -1532,6 +1543,20 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** Collection of graph editing type buttons. */
     private ButtonGroup typeButtonGroup;
 
+    /**
+     * Returns the button for setting selection mode, lazily creating it first.
+     */
+    JToggleButton getSnapToGridButton() {
+        if (this.snapToGridButton == null) {
+            this.snapToGridButton = new JToggleButton(getSnapToGridAction());
+            this.snapToGridButton.setText(null);
+        }
+        return this.snapToGridButton;
+    }
+
+    /** Button for snap to grid. */
+    transient JToggleButton snapToGridButton;
+
     /** Returns the exporter of this editor. */
     public final Exporter getExporter() {
         return this.exporter;
@@ -1644,7 +1669,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     /**
      * General class for actions with toolbar buttons. Takes care of image, name
-     * and key accelleration; moreover, the
+     * and key acceleration; moreover, the
      * <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
@@ -2138,7 +2163,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             this.action = action;
         }
 
-        /** Redirects the Actionevent. */
+        /** Redirects the Action event. */
         @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
@@ -2153,6 +2178,42 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
         /** The action that this transfer action wraps. */
         protected Action action;
+    }
+
+    /** Returns the snap to grid action, lazily creating it first. */
+    Action getSnapToGridAction() {
+        if (this.snapToGridAction == null) {
+            this.snapToGridAction = new SnapToGridAction();
+        }
+        return this.snapToGridAction;
+    }
+
+    /** Action to toggle the snap to grid. */
+    private Action snapToGridAction;
+
+    /**
+     * Action to preview the current type graph.
+     */
+    private class SnapToGridAction extends ToolbarAction {
+        /** Constructs an instance of the action. */
+        protected SnapToGridAction() {
+            super(Options.SNAP_TO_GRID_NAME, null, Groove.GRID_ICON);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent evt) {
+            super.actionPerformed(evt);
+            JToggleButton button = Editor.this.snapToGridButton;
+            boolean toggle;
+            if (evt.getSource().equals(button)) {
+                toggle = button.isSelected();
+            } else {
+                toggle = !button.isSelected();
+            }
+            Editor.this.jgraph.setGridEnabled(toggle);
+            Editor.this.jgraph.setGridVisible(toggle);
+            button.setSelected(toggle);
+        }
     }
 
     /**

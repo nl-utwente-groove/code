@@ -144,6 +144,7 @@ abstract public class EditorDialog {
         this.editor.addModeButtons(toolbar);
         this.editor.addUndoButtons(toolbar);
         this.editor.addCopyPasteButtons(toolbar);
+        this.editor.addGridButtons(toolbar);
         return toolbar;
     }
 
