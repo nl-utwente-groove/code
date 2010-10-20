@@ -913,7 +913,10 @@ public class LabelTree extends JTree implements GraphModelListener,
         private class TypeFilterMenuItem extends AbstractAction {
             TypeFilterMenuItem(String name, Set<Label> labels) {
                 super(name);
-                this.labels = labels;
+                this.labels = new HashSet<Label>();
+                for (Label label : labels) {
+                    this.labels.addAll(getLabelStore().getSubtypes(label));
+                }
             }
 
             public void actionPerformed(ActionEvent e) {
