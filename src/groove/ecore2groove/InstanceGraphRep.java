@@ -304,7 +304,7 @@ public class InstanceGraphRep {
             DefaultEdge.createEdge(sourceNode, feature.getName(), attributeNode);
         this.ig.addEdge(sourceEdge);
 
-        if (datatypeLabel != "") {
+        if (!datatypeLabel.isEmpty()) {
             // Create and add a node to represent that datatype value
             DefaultNode datatypeNode = DefaultNode.createNode();
             DefaultEdge datatypeEdge =

@@ -234,7 +234,7 @@ public class TypeGraphRep {
             String labelText = GraphLabels.getLabel(datatype);
 
             // If label is not empty and not in the graph yet, add it
-            if (labelText != "") {
+            if (!labelText.isEmpty()) {
 
                 boolean present = false;
                 Node node = null;

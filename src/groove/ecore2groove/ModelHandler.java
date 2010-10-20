@@ -156,7 +156,7 @@ public class ModelHandler {
                 this.references.add((EReference) obj);
             } else if (obj.eClass().getName().equals("EAttribute")) {
                 this.attributes.add((EAttribute) obj);
-                if (((EAttribute) obj).getEAttributeType().eClass().getName() == "EDataType") {
+                if ("EDataType".equals(((EAttribute) obj).getEAttributeType().eClass().getName())) {
                     this.datatypes.add(((EAttribute) obj).getEAttributeType());
                     checkForBigAlgebra(((EAttribute) obj).getEAttributeType());
                 }
