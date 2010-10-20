@@ -79,7 +79,6 @@ public class ModelHandler {
      * ecore metamodel file.
      */
     public ModelHandler(String modelLoc) {
-
         // if modelLoc is -core, replace it with location of Ecore.ecore
         // and set core to true
         if (modelLoc.equals("-core")) {
@@ -128,7 +127,6 @@ public class ModelHandler {
                 // register all packages we find in the ResourceSet
                 this.rs.getPackageRegistry().put(modelPackage.getNsURI(),
                     modelPackage);
-                //if (metaModelRoot.getName().equals(findEPackage)) {
                 if (modelPackage.getESuperPackage() == null) {
                     if (this.metaModelRoot == null
                         || this.metaModelRoot.eContents().size() < modelPackage.eContents().size()) {
@@ -162,11 +160,6 @@ public class ModelHandler {
                 }
             }
         }
-        /*
-        System.out.println("Number of EClasses: " + this.classes.size());
-        System.out.println("Number of EReferences: " + this.references.size());
-        System.out.println("Number of EAttributes: " + this.attributes.size()
-            + "\n");*/
 
         // Vector with classes and enums used to check safe names
         Vector<EClassifier> elements = new Vector<EClassifier>();
@@ -225,7 +218,6 @@ public class ModelHandler {
                 }
             }
         } while (!safeName);
-
     }
 
     /**
@@ -305,7 +297,6 @@ public class ModelHandler {
      * @return a Vector with all EClasses of the loaded Ecore metamodel
      */
     public Vector<EClass> getEClasses() {
-
         return this.classes;
     }
 
@@ -313,7 +304,6 @@ public class ModelHandler {
      * @return Vector with all EEnums of the loaded Ecore metamodel
      */
     public Vector<EEnum> getEEnums() {
-
         return this.enums;
     }
 
@@ -321,7 +311,6 @@ public class ModelHandler {
      * @return a Vector with all EEnumLiterals of the loaded Ecore metamodel
      */
     public Vector<EEnumLiteral> getEEnumLiterals() {
-
         return this.literals;
     }
 
@@ -329,7 +318,6 @@ public class ModelHandler {
      * @return a Vector with all EReferences of the loaded Ecore metamodel
      */
     public Vector<EReference> getEReferences() {
-
         return this.references;
     }
 
@@ -337,7 +325,6 @@ public class ModelHandler {
      * @return a Vector with all EAttributes of the loaded Ecore metamodel
      */
     public Vector<EAttribute> getEAttributes() {
-
         return this.attributes;
     }
 
@@ -345,7 +332,6 @@ public class ModelHandler {
      * @return a Vector with all EDataTypes of the loaded Ecore metamodel
      */
     public Vector<EDataType> getEDataTypes() {
-
         return this.datatypes;
     }
 
@@ -407,33 +393,6 @@ public class ModelHandler {
         }
 
         this.instanceLoaded = true;
-
-        /*} catch (Exception e) {
-        	Resource new_r = null;
-        	ResourceSet new_rs = null;
-        	
-        	new_rs = new ResourceSetImpl();		
-        	new_rs.getResourceFactoryRegistry().getExtensionToFactoryMap().put(
-        			"ecore", new XMIResourceFactoryImpl()); 
-        	
-        	new_r = new_rs.getResource(modelURI, true);
-        	
-        	System.out.println(r);
-        	
-        	iClasses.clear();
-        	for(Iterator<EObject> it = new_r.getAllContents() ; it.hasNext() ; ) {
-            	EObject obj = it.next();	    	
-            	if ( obj.eClass().eClass().getName().equals("EClass")){
-        	    	iClasses.add(obj);
-              	}
-        	}
-        	instanceLoaded = true;
-        	
-        	for(Iterator<EObject> it = new_r.getAllContents() ; it.hasNext() ; ) {
-            	EObject obj = it.next();	
-            	System.out.println(obj);
-            }
-        }*/
     }
 
     /**
@@ -456,9 +415,8 @@ public class ModelHandler {
      * @return a blank model.
      */
     public Resource createModel(String name) {
-
         Resource resultModel = this.rs.createResource(URI.createURI(name));
-
         return resultModel;
     }
+
 }

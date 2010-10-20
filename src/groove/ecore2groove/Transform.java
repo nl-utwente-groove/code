@@ -46,7 +46,6 @@ public class Transform {
      * @param args command-line arguments
      */
     public static void main(String[] args) throws IOException {
-
         if (args.length < 2) {
             exitTransform();
         } else if (args[args.length - 1].endsWith(".gps")) {
@@ -58,30 +57,25 @@ public class Transform {
         } else {
             exitTransform();
         }
-
     }
 
     /**
      * Method to exit and output how to use the tool 
      */
     private static void exitTransform() {
-
-        System.out.println("Usage: \n"
-            + "groove.ecore2groove.jar <Ecore model> "
-            + "<Ecore instance models> <grammar>\n"
-            + "groove.ecore2groove.jar -core " + "<Ecore models> <grammar>\n"
-            + "groove.ecore2groove.jar <grammar> <Ecore model> "
-            + "<Ecore instance models location>\n" + "\n"
-            + "<Ecore model> - Ecore model\n"
-            + "-ecore - use when using Ecore core model as Ecore model\n"
-            + "<Ecore instance models> - Any number of "
-            + "instances of the specified Ecore model\n"
-            + "<grammar> - GROOVE grammar to create or read, "
-            + "must be directory that ends with .gps\n"
-            + "<Ecore instance models location> - Directory "
-            + "where to put generated instance models");
+        System.out.println("Ecore to GROOVE converter tool.\n"
+            + "Usage. There are two usage modes:\n"
+            + "- Ecore2Groove <Ecore model> <Ecore instance models> <grammar>\n"
+            + "    Converts from Ecore to GROOVE. The arguments are:\n"
+            + "      * <Ecore model> - the Ecore model file\n"
+            + "      * <Ecore instance models> - any number of instances of the specified Ecore model\n"
+            + "      * <grammar> - the GROOVE grammar to be created, must be a directory that ends with .gps\n\n"
+            + "- Ecore2Groove <grammar> <Ecore model> <Ecore instance models destination>\n"
+            + "    Converts from GROOVE to Ecore. The arguments are:\n"
+            + "      * <grammar> - the GROOVE grammar to be read, must be directory that ends with .gps\n"
+            + "      * <Ecore model> - the Ecore model file\n"
+            + "      * <Ecore instance models destination> - directory where to put generated instance models");
         System.exit(1);
-
     }
 
     /**
@@ -137,7 +131,6 @@ public class Transform {
         for (String graphName : grammar.getGraphs().keySet()) {
             start = new Date().getTime();
             AspectGraph instanceGraph = grammar.getGraphs().get(graphName);
-            // System.out.println(instanceGraph);
             InstanceModelRep im = new InstanceModelRep(mh, instanceGraph);
             mh.saveModel(im.getInstanceModel(), instancesLoc + File.separator
                 + graphName);
@@ -217,8 +210,6 @@ public class Transform {
         }
         grammar.putProperties(sp);
 
-        //printGraph(atg, "Type graph: " + modelName + " (" + total + " ms)");
-
         // Delete all former constraints since we are remaking them
         // and old ones need to go
         Set<RuleName> rulesToDelete = new HashSet<RuleName>();
@@ -240,8 +231,6 @@ public class Transform {
 
         start = new Date().getTime();
         for (DefaultGraph constraintRule : constraints.getConstraints()) {
-
-            // GraphInfo.setRuleRole(constraintRule);
             AspectGraph arg;
             try {
                 arg = AspectGraph.getFactory().fromPlainGraph(constraintRule);
@@ -259,7 +248,6 @@ public class Transform {
             arg.getInfo().getProperties(true).setPriority(50);
             grammar.putRule(arg);
 
-            // printGraph(arg, "Constraint rule: " + name);
             number++;
         }
         System.out.println("Stored constraint rules: " + number + " ("
@@ -285,19 +273,6 @@ public class Transform {
             AspectGraph aig =
                 AspectGraph.getFactory().fromPlainGraph(igr.getInstanceGraph());
 
-            /*DefaultGraph instance = igr.getInstanceGraph();
-            TypeGraph tg = tgr.getTypeGraph();
-            tg.add(tgr.getEcoreTypeGraph());
-            Typing typing = null;
-            try {
-                typing = tg.checkTyping(instance);
-            } catch (FormatException e) {
-                System.out.println("\n" + tg);
-                System.out.println("\n" + instance);
-                e.printStackTrace();
-            }
-            System.out.println(typing);*/
-
             // Set info about how to store the instance graph and then store it
             aig.getInfo().setFile(f + File.separator + instanceName);
             aig.getInfo().setName(instanceName);
@@ -308,11 +283,5 @@ public class Transform {
         }
 
         System.out.println("\nTotal: " + (new Date().getTime() - total) + " ms");
-
-        /*System.out.println("\nTest typing...");
-        
-        TypeGraph tg = new TypeGraph();
-        tg.grammar.getTypes().get("EcoreType");*/
-
     }
 }

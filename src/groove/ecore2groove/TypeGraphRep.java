@@ -83,7 +83,6 @@ public class TypeGraphRep {
         addEEnumLiterals(this.mh.getEEnumLiterals());
         addEDataTypes(this.mh.getEDataTypes());
         addEAttributes(this.mh.getEAttributes());
-
     }
 
     /**
@@ -92,7 +91,6 @@ public class TypeGraphRep {
      * the ModelHandler loaded by the constructor. 
      */
     private void addEcoreTypes() {
-
         Label eClassLabel = DefaultLabel.createLabel(this.mh.getEClassType());
         Label eReferenceLabel =
             DefaultLabel.createLabel(this.mh.getEReferenceType());
@@ -108,7 +106,6 @@ public class TypeGraphRep {
         this.eReferenceNode = this.ecoreTG.addNode(eReferenceLabel);
         this.eAttributeNode = this.ecoreTG.addNode(eAttributeLabel);
         this.eEnumNode = this.ecoreTG.addNode(eEnumLabel);
-        //ecoreTG.addNode(eContReferenceNode);          
 
         this.ecoreTG.addEdge(this.eClassNode, rootLabel, this.eClassNode);
         this.ecoreTG.addEdge(this.eReferenceNode, contLabel,
@@ -117,7 +114,6 @@ public class TypeGraphRep {
         this.ecoreTG.addEdge(this.eReferenceNode, absValLabel, this.eClassNode);
         this.ecoreTG.addEdge(this.eClassNode, absWildcardLabel,
             this.eReferenceNode);
-
     }
 
     /**
@@ -125,10 +121,7 @@ public class TypeGraphRep {
      * @param classes The EClasses of the Ecore meta model.
      */
     private void addEClasses(Vector<EClass> classes) {
-
         for (EClass aClass : classes) {
-            //System.out.println(GraphLabels.getLabel(aClass));
-
             // Add new labeled type node to tg 
             String labelText = GraphLabels.getLabel(aClass);
             DefaultLabel label = DefaultLabel.createLabel(labelText);
@@ -138,7 +131,7 @@ public class TypeGraphRep {
             // Add map of EClass to node representing it
             this.eClassToNodeMap.put(aClass, node);
 
-            // add as subtype to Ecore typegraph
+            // Add as subtype to Ecore typegraph
             Node ecoreNode = this.ecoreTG.addNode(label);
             this.ecoreTG.addEdge(ecoreNode, subLabel, this.eClassNode);
         }
@@ -152,7 +145,6 @@ public class TypeGraphRep {
      * in the type graph already.
      */
     private void addEClassSubInfo(Vector<EClass> classes) {
-
         for (EClass aClass : classes) {
             EList<EClass> superTypes = aClass.getESuperTypes();
 
@@ -161,18 +153,8 @@ public class TypeGraphRep {
                     DefaultEdge.createEdge(this.eClassToNodeMap.get(aClass),
                         "sub:", this.eClassToNodeMap.get(superType));
                 this.tg.addEdge(edge);
-                /*TypeNode superNode =
-                    (TypeNode) this.eClassToNodeMap.get(superType);
-                TypeNode subNode = (TypeNode) this.eClassToNodeMap.get(aClass);
-
-                try {
-                    this.tg.addSubtype(superNode, subNode);
-                } catch (FormatException e) {
-                    e.printStackTrace();
-                }*/
             }
         }
-
     }
 
     /**
@@ -180,10 +162,7 @@ public class TypeGraphRep {
      * @param enums the EEnums of the Ecore meta model
      */
     private void addEEnums(Vector<EEnum> enums) {
-
         for (EEnum aEnum : enums) {
-            //System.out.println(GraphLabels.getLabel(aEnum));
-
             // Add new labeled type node to tg 
             String labelText = GraphLabels.getLabel(aEnum);
             DefaultLabel label = DefaultLabel.createLabel(labelText);
@@ -206,10 +185,7 @@ public class TypeGraphRep {
      * in the type graph already.
      */
     private void addEEnumLiterals(Vector<EEnumLiteral> literals) {
-
         for (EEnumLiteral literal : literals) {
-            //System.out.println(GraphLabels.getLabel(literal));
-
             // Create and add flag to the Enum representation of this literal
             String labelText = GraphLabels.getLabel(literal);
             EEnum aEnum = literal.getEEnum();
@@ -229,7 +205,6 @@ public class TypeGraphRep {
      * @param datatypes The EDataTypes used in the Ecore meta model
      */
     private void addEDataTypes(Vector<EDataType> datatypes) {
-
         for (EDataType datatype : datatypes) {
             String labelText = GraphLabels.getLabel(datatype);
 
@@ -268,10 +243,7 @@ public class TypeGraphRep {
      * in the type graph already
      */
     private void addEReferences(Vector<EReference> references) {
-
         for (EReference aReference : references) {
-            //System.out.println(GraphLabels.getLabel(aReference));
-
             // Add new labeled type node to tg to represent the reference 
             String labelText = GraphLabels.getLabel(aReference);
             DefaultLabel label = DefaultLabel.createLabel(labelText);
@@ -322,10 +294,7 @@ public class TypeGraphRep {
      * a representation in the type graph already.
      */
     private void addEAttributes(Vector<EAttribute> attributes) {
-
         for (EAttribute aAttribute : attributes) {
-            //System.out.println(GraphLabels.getLabel(aAttribute));
-
             // Add new labeled type node to tg to represent the attribute 
             String labelText = GraphLabels.getLabel(aAttribute);
             DefaultLabel label = DefaultLabel.createLabel(labelText);
@@ -379,8 +348,6 @@ public class TypeGraphRep {
     public TypeGraph getTypeGraph() {
         // Create aspect graph from type graph to store
         GraphInfo.setTypeRole(this.tg);
-        //AspectGraph atg = AspectGraph.getFactory().fromPlainGraph(this.tg);
-
         return this.tg;
     }
 
@@ -392,14 +359,7 @@ public class TypeGraphRep {
     public TypeGraph getEcoreTypeGraph() {
         // Create aspect graph from type graph to store
         GraphInfo.setTypeRole(this.ecoreTG);
-        //AspectGraph atg = AspectGraph.getFactory().fromPlainGraph(this.ecoreTG);
-
         return this.ecoreTG;
     }
-
-    /*
-    public DefaultNode getClassNode(EClass eClass) {
-    	return eClassToNodeMap.get(eClass);
-    }*/
 
 }
