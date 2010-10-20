@@ -4,9 +4,25 @@
     <Match classregex="groove.control.parse.*" />
     <Match classregex="groove.view.parse.*" />
 
+    <!-- Remove Serialisation warnings. -->
+    <Match>
+       <Bug pattern="SE_BAD_FIELD" />
+    </Match>
+    
+    <!-- This one is annoying because there is no good solution (calling super is WRONG). -->
+    <Match>
+       <Bug pattern="IA_AMBIGUOUS_INVOCATION_OF_INHERITED_OR_OUTER_METHOD" />
+    </Match>
+    
+
     <!-- Remove Internationalization warnings. -->
     <Match>
        <Bug pattern="DM_CONVERT_CASE" />
+    </Match>
+
+    <!-- Ignore all issues in the benchmarker class. -->
+    <Match>
+       <Class name="groove.util.LTLBenchmarker" />
     </Match>
 
     <!-- Remove GC warnings on code that does profiling. -->
