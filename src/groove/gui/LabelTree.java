@@ -64,6 +64,7 @@ import javax.swing.DropMode;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JMenu;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
@@ -230,6 +231,11 @@ public class LabelTree extends JTree implements GraphModelListener,
     /** Convenience method to return the label store of the jgraph. */
     private LabelStore getLabelStore() {
         return this.jgraph.getLabelStore();
+    }
+
+    /** Convenience method to return the labels map of the jgraph. */
+    private Map<String,Set<Label>> getLabelsMap() {
+        return this.jgraph.getLabelsMap();
     }
 
     /**
@@ -416,9 +422,9 @@ public class LabelTree extends JTree implements GraphModelListener,
             LabelTreeNode labelNode = new LabelTreeNode(label, true);
             this.topNode.add(labelNode);
             if (labelStore != null && labelStore.getLabels().contains(label)) {
-                addRelatedTypes(labelNode,
-                    isShowsSubtypes() ? labelStore.getDirectSubtypeMap()
-                            : labelStore.getDirectSupertypeMap(), newNodes);
+                addRelatedTypes(labelNode, isShowsSubtypes()
+                        ? labelStore.getDirectSubtypeMap()
+                        : labelStore.getDirectSupertypeMap(), newNodes);
             }
         }
         this.treeModel.reload(this.topNode);
@@ -457,19 +463,22 @@ public class LabelTree extends JTree implements GraphModelListener,
     private JPopupMenu createPopupMenu() {
         JPopupMenu result = new JPopupMenu();
         TreePath[] selectedValues = getSelectionPaths();
-        boolean itemAdded = false;
         Simulator simulator = getJGraph().getSimulator();
         if (selectedValues != null && selectedValues.length == 1
             && simulator != null) {
             result.add(simulator.getRelabelAction());
-            itemAdded = true;
+            result.addSeparator();
+        }
+        if (isFiltering() && getLabelsMap() != null) {
+            if (getLabelsMap().size() > 1) {
+                result.add(new TypeFilterMenu(getLabelsMap(), true));
+                result.add(new TypeFilterMenu(getLabelsMap(), false));
+                result.addSeparator();
+            }
         }
         if (isFiltering() && selectedValues != null) {
             result.add(new FilterAction(selectedValues, true));
             result.add(new FilterAction(selectedValues, false));
-            itemAdded = true;
-        }
-        if (itemAdded) {
             result.addSeparator();
         }
         // add the show/hide menu
@@ -887,6 +896,38 @@ public class LabelTree extends JTree implements GraphModelListener,
         private final Collection<Label> labels;
     }
 
+    /** Menu offering a selection of type graphs to be filtered. */
+    private class TypeFilterMenu extends JMenu {
+        TypeFilterMenu(Map<String,Set<Label>> labelsMap, boolean filter) {
+            super(filter ? Options.FILTER_TYPE_ACTION_NAME
+                    : Options.UNFILTER_TYPE_ACTION_NAME);
+            this.filter = filter;
+            for (Map.Entry<String,Set<Label>> labelsEntry : labelsMap.entrySet()) {
+                add(new TypeFilterMenuItem(labelsEntry.getKey(),
+                    labelsEntry.getValue()));
+            }
+        }
+
+        private final boolean filter;
+
+        private class TypeFilterMenuItem extends AbstractAction {
+            TypeFilterMenuItem(String name, Set<Label> labels) {
+                super(name);
+                this.labels = labels;
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                if (TypeFilterMenu.this.filter) {
+                    LabelTree.this.filteredLabels.addAll(this.labels);
+                } else {
+                    LabelTree.this.filteredLabels.removeAll(this.labels);
+                }
+            }
+
+            private final Collection<Label> labels;
+        }
+    }
+
     /**
      * Special cell renderer that visualises the NO_LABEL label as well as
      * filtered labels.
@@ -1190,9 +1231,8 @@ public class LabelTree extends JTree implements GraphModelListener,
                         }
                     } else {
                         Label keyType =
-                            DefaultLabel.createLabel(
-                                dataRow.substring(0, separatorIndex),
-                                Label.NODE_TYPE);
+                            DefaultLabel.createLabel(dataRow.substring(0,
+                                separatorIndex), Label.NODE_TYPE);
                         Label valueType =
                             DefaultLabel.createLabel(
                                 dataRow.substring(separatorIndex + 1),

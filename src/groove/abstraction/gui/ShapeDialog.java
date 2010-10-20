@@ -64,7 +64,7 @@ public class ShapeDialog {
     /** Creates and shows a shape in a pop-up window. */
     public ShapeDialog(Shape shape, Options options, String windowTitle) {
         this.jgraph =
-            new JGraph(ShapeJModel.getInstance(shape, options), false, null);
+            new JGraph(ShapeJModel.getInstance(shape, options), false);
         this.jgraph.setPreferredSize(new Dimension(800, 350));
         this.title = windowTitle;
         this.shape = shape;

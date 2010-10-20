@@ -231,8 +231,10 @@ public class Options implements Cloneable {
     public static final String EXPORT_STATE_ACTION_NAME = "Export State ...";
     /** Export type action name */
     public static final String EXPORT_TYPE_ACTION_NAME = "Export Type ...";
-    /** Export state action name */
+    /** Export label filter action name */
     public static final String FILTER_ACTION_NAME = "Filter labels";
+    /** Export type-based label filter action name */
+    public static final String FILTER_TYPE_ACTION_NAME = "Filter type graph";
     /** Back action name */
     public static final String FORWARD_ACTION_NAME = "Forward";
     /** Goto start state action name */
@@ -392,19 +394,22 @@ public class Options implements Cloneable {
         "Grammar Properties ...";
     /** Undo action name */
     public static final String UNDO_ACTION_NAME = "Undo";
-    /** Unfilter action name */
+    /** Unfilter labels action name */
     public static final String UNFILTER_ACTION_NAME = "Reset label filter";
+    /** Unfilter type-based labels action name */
+    public static final String UNFILTER_TYPE_ACTION_NAME =
+        "Reset type graph filter";
     /** Select mode action name */
     public static final String SELECT_MODE_NAME = "Selection mode";
 
     /** Add point keystroke. */
-    public static final KeyStroke ADD_POINT_KEY = KeyStroke.getKeyStroke(
-        KeyEvent.VK_INSERT, InputEvent.ALT_MASK);
+    public static final KeyStroke ADD_POINT_KEY =
+        KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_MASK);
     /**
      * Apply keystroke
      */
-    static public final KeyStroke APPLY_KEY = KeyStroke.getKeyStroke(
-        KeyEvent.VK_ENTER, InputEvent.CTRL_MASK);
+    static public final KeyStroke APPLY_KEY =
+        KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_MASK);
     /** Back keystroke */
     public static final KeyStroke BACK_KEY =
         KeyStroke.getKeyStroke("control LEFT");
@@ -497,8 +502,8 @@ public class Options implements Cloneable {
      */
     public static final KeyStroke RENAME_KEY = KeyStroke.getKeyStroke("F2");
     /** Remove point keystroke. */
-    public static final KeyStroke REMOVE_POINT_KEY = KeyStroke.getKeyStroke(
-        KeyEvent.VK_DELETE, InputEvent.ALT_MASK);
+    public static final KeyStroke REMOVE_POINT_KEY =
+        KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_MASK);
     /** Save keystroke */
     public static final KeyStroke SAVE_KEY =
         KeyStroke.getKeyStroke("control S");

@@ -196,7 +196,7 @@ public class Imager extends CommandLineTool {
                         model = AspectJModel.newInstance(view, options);
                     }
 
-                    JGraph jGraph = new JGraph(model, false, null);
+                    JGraph jGraph = new JGraph(model, false);
                     jGraph.setModel(model);
                     // Ugly hack to prevent clipping of the image. We set the
                     // jGraph size

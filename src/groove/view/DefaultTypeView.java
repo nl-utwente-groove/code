@@ -89,7 +89,8 @@ public class DefaultTypeView implements TypeView {
     /** Returns the set of labels used in this graph. */
     public Set<Label> getLabels() {
         initialise();
-        return this.model.getLabelStore().getLabels();
+        return this.model == null ? null
+                : this.model.getLabelStore().getLabels();
     }
 
     /** Constructs the model and associated data structures from the view. */

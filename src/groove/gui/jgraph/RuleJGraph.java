@@ -37,7 +37,7 @@ public class RuleJGraph extends JGraph {
      * Creates a j-graph for a given simulator, with an initially empty j-model.
      */
     public RuleJGraph(Simulator simulator) {
-        super(AspectJModel.EMPTY_ASPECT_JMODEL, false, null);
+        super(AspectJModel.EMPTY_ASPECT_JMODEL, false);
         this.simulator = simulator;
         setLayouter(new SpringLayouter());
         doGraphLayout();

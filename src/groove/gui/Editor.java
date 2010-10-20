@@ -1363,7 +1363,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * {@link JModel}.
      */
     private JGraph createJGraph(AspectJModel jmodel) {
-        JGraph result = new JGraph(jmodel, false, null);
+        JGraph result = new JGraph(jmodel, false);
         result.setExporter(getExporter());
         return result;
     }
