@@ -60,7 +60,7 @@ public class LTSJGraph extends JGraph {
 
     /** Constructs an instance for a given simulator, with pre-defined model. */
     protected LTSJGraph(Simulator simulator, LTSJModel ltsModel) {
-        super(ltsModel, true, null);
+        super(ltsModel, true);
         this.simulator = simulator;
         getExploreMenu();
         getMCMenu();

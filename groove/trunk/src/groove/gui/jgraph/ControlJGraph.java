@@ -39,7 +39,7 @@ public class ControlJGraph extends JGraph {
      *        <code>null</code>.
      */
     public ControlJGraph(ControlJModel model, Simulator simulator) {
-        super(model, true, null);
+        super(model, true);
         this.exporter =
             simulator == null ? super.getExporter() : simulator.getExporter();
         getGraphLayoutCache().setSelectsAllInsertedCells(false);

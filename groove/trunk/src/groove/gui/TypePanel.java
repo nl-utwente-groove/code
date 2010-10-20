@@ -150,7 +150,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
             labelStore = grammar.getLabelStore();
             this.getNameList().refresh();
         }
-        this.jGraph.setLabelStore(labelStore);
+        this.jGraph.setLabelStore(labelStore, null);
         displayType();
     }
 

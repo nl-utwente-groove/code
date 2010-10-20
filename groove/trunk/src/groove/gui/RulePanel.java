@@ -103,7 +103,7 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements
             }
             newLabelStore = grammar.getLabelStore();
         }
-        this.jGraph.setLabelStore(newLabelStore);
+        this.jGraph.setLabelStore(newLabelStore, null);
         // reset the display
         RuleView currentRule = this.simulator.getCurrentRule();
         displayRule(currentRule == null ? null : currentRule.getRuleName(),

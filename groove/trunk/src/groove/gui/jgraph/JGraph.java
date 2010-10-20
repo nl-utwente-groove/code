@@ -75,10 +75,10 @@ import javax.swing.KeyStroke;
 import javax.swing.ToolTipManager;
 
 import org.jgraph.event.GraphModelEvent;
-import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.event.GraphModelListener;
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
+import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.CellView;
@@ -102,10 +102,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * Constructs a JGraph on the basis of a given j-model.
      * @param model the JModel for which to create a JGraph
      * @param hasFilters indicates if this JGraph is to use label filtering.
-     * @param labelStore set of labels and subtypes in the graph; may be
-     *        <code>null</code>
      */
-    public JGraph(JModel model, boolean hasFilters, LabelStore labelStore) {
+    public JGraph(JModel model, boolean hasFilters) {
         super((JModel) null);
         if (hasFilters) {
             this.filteredLabels = new ObservableSet<Label>();
@@ -117,7 +115,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         getGraphLayoutCache();
         setMarqueeHandler(createMarqueeHandler());
         setSelectionModel(createSelectionModel());
-        setLabelStore(labelStore);
         setModel(model);
         // Make Ports invisible by Default
         setPortsVisible(false);
@@ -152,9 +149,13 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 
     /**
      * Changes the label store of this {@link JGraph}.
+     * @param store the global label stores
+     * @param labelStoreMap map from names to subsets of labels; may be {@code null}
      */
-    public final void setLabelStore(LabelStore store) {
+    public final void setLabelStore(LabelStore store,
+            Map<String,Set<Label>> labelStoreMap) {
         this.labelStore = store;
+        this.labelsMap = labelStoreMap;
     }
 
     /**
@@ -163,6 +164,15 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     public final LabelStore getLabelStore() {
         return this.labelStore;
+    }
+
+    /**
+     * Returns a map from names to subsets of labels.
+     * This can be used to filter labels.
+     * May be {@code null} even if {@link #getLabelStore()} is not.
+     */
+    public final Map<String,Set<Label>> getLabelsMap() {
+        return this.labelsMap;
     }
 
     /** Returns the simulator associated with this {@link JGraph}, if any. */
@@ -1040,8 +1050,10 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 
     /** The set of labels currently filtered from view. */
     private final ObservableSet<Label> filteredLabels;
-    /** Set of labels and subtypes in the graph. */
+    /** Set of all labels and subtypes in the graph. */
     private LabelStore labelStore;
+    /** Mapping from names to sub-label stores. */
+    private Map<String,Set<Label>> labelsMap;
     /** The fixed refresh listener of this {@link JModel}. */
     private final RefreshListener refreshListener = new RefreshListener();
     /**
@@ -1124,7 +1136,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             this.allCells = true;
             this.vertexOnly = true;
             this.jCells = new ArrayList<JCell>();
-            setEnabled(false);
+            this.setEnabled(false);
             addGraphSelectionListener(this);
         }
 
@@ -1139,7 +1151,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             this.allCells = false;
             this.vertexOnly = vertexOnly;
             this.jCells = new ArrayList<JCell>();
-            setEnabled(false);
+            this.setEnabled(false);
             addGraphSelectionListener(this);
         }
 
@@ -1158,7 +1170,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                     this.jCells.add(jCell);
                 }
             }
-            setEnabled(this.jCell != null);
+            this.setEnabled(this.jCell != null);
         }
 
         /**
@@ -1346,7 +1358,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         }
 
         public void valueChanged(GraphSelectionEvent e) {
-            setEnabled(getSelectionCell() instanceof JEdge);
+            this.setEnabled(getSelectionCell() instanceof JEdge);
         }
     }
 

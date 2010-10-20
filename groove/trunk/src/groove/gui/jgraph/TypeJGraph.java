@@ -33,7 +33,7 @@ public class TypeJGraph extends JGraph {
      * @param simulator the simulator to which this j-graph is associated
      */
     public TypeJGraph(Simulator simulator) {
-        super(AspectJModel.EMPTY_ASPECT_JMODEL, true, null);
+        super(AspectJModel.EMPTY_ASPECT_JMODEL, true);
         setConnectable(false);
         setDisconnectable(false);
         setEnabled(false);

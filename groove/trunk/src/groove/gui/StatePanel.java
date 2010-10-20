@@ -25,6 +25,7 @@ import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
+import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.Morphism;
 import groove.graph.Node;
@@ -43,8 +44,10 @@ import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Converter;
+import groove.view.FormatException;
 import groove.view.GraphView;
 import groove.view.StoredGrammarView;
+import groove.view.TypeView;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -154,7 +157,16 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
             setEnabled(false);
         } else {
             GraphView startGraph = grammar.getStartGraphView();
-            this.jGraph.setLabelStore(grammar.getLabelStore());
+            Map<String,Set<Label>> labelsMap = new HashMap<String,Set<Label>>();
+            for (String typeName : grammar.getActiveTypeNames()) {
+                try {
+                    TypeView view = grammar.getTypeView(typeName);
+                    labelsMap.put(typeName, view.getLabels());
+                } catch (FormatException e) {
+                    // don't add labels from this type view
+                }
+            }
+            this.jGraph.setLabelStore(grammar.getLabelStore(), labelsMap);
             setJModel(getGraphJModel(startGraph));
             setEnabled(true);
         }
@@ -312,10 +324,10 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
                 GraphTransition trans = getSimulator().getCurrentTransition();
                 if (getOptions().isSelected(SHOW_ANCHORS_OPTION)) {
                     result.append(String.format(" (with match %s)",
-                        trans.source(), trans.getEvent()));
+                        trans.getEvent()));
                 } else {
                     result.append(String.format(" (with match of %s)",
-                        trans.source(), trans.getEvent().getRule().getName()));
+                        trans.getEvent().getRule().getName()));
                 }
             }
         } else {

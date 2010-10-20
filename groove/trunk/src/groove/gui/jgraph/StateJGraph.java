@@ -43,7 +43,7 @@ public class StateJGraph extends JGraph {
      * pre-defined underlying model.
      */
     protected StateJGraph(Simulator simulator, GraphJModel graphModel) {
-        super(graphModel, true, null);
+        super(graphModel, true);
         setConnectable(false);
         setDisconnectable(false);
         setEnabled(false);
