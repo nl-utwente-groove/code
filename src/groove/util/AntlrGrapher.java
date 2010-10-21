@@ -29,6 +29,7 @@ import org.antlr.runtime.tree.CommonTree;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Deprecated
 public class AntlrGrapher {
     /** 
      * Constructs an grapher for a particular Antlr parser.
@@ -129,8 +130,9 @@ public class AntlrGrapher {
     private Node createNode(Graph graph, CommonTree tree) {
         Node result = graph.addNode();
         int tokenType = tree.getType();
-        graph.addEdge(result, DefaultLabel.createLabel(this.tokens[tokenType],
-            Label.NODE_TYPE), result);
+        graph.addEdge(result,
+            DefaultLabel.createLabel(this.tokens[tokenType], Label.NODE_TYPE),
+            result);
         if (this.textTypes.get(tokenType) && tree.getText() != null) {
             ValueNode nameNode =
                 ValueNode.createValueNode(StringAlgebra.instance,
@@ -156,19 +158,19 @@ public class AntlrGrapher {
     /** Default label to be used for text edges. */
     public final static Label TEXT_LABEL = DefaultLabel.createLabel("text");
     /** Flag to be used for the first child. */
-    public final static Label FIRST_FLAG =
-        DefaultLabel.createLabel("first", Label.FLAG);
+    public final static Label FIRST_FLAG = DefaultLabel.createLabel("first",
+        Label.FLAG);
     /** Flag to be used for the last child. */
-    public final static Label LAST_FLAG =
-        DefaultLabel.createLabel("last", Label.FLAG);
+    public final static Label LAST_FLAG = DefaultLabel.createLabel("last",
+        Label.FLAG);
     /** Flag to be used for a childless token node. */
-    public final static Label LEAF_FLAG =
-        DefaultLabel.createLabel("leaf", Label.FLAG);
+    public final static Label LEAF_FLAG = DefaultLabel.createLabel("leaf",
+        Label.FLAG);
     /** Type of the (abstract) top node. */
-    public final static Label TOP_TYPE =
-        DefaultLabel.createLabel("TOP$", Label.NODE_TYPE);
+    public final static Label TOP_TYPE = DefaultLabel.createLabel("TOP$",
+        Label.NODE_TYPE);
     /** String type label. */
-    private final static Label STRING_TYPE =
-        DefaultLabel.createLabel("string", Label.NODE_TYPE);
+    private final static Label STRING_TYPE = DefaultLabel.createLabel("string",
+        Label.NODE_TYPE);
     /** Subtype edge label. */
 }

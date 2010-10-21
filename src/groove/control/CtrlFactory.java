@@ -35,6 +35,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
+@Deprecated
 public class CtrlFactory {
     /** 
      * Closes a given control automaton under the <i>as long as possible</i>

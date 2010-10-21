@@ -16,6 +16,9 @@
  */
 package groove.io;
 
+import groove.trans.Rule;
+import groove.trans.RuleSystem;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -25,14 +28,12 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import groove.trans.Rule;
-import groove.trans.RuleSystem;
-
 /**
  * List of rules, obtained from a file containing rule names.
  * @author Arend Rensink
  * @version $Revision$
  */
+@Deprecated
 public class RuleList extends ArrayList<String> {
     /**
      * Constructs a list by reading names from a given file and looking up the

@@ -20,18 +20,18 @@ import org.antlr.runtime.tree.TreeNodeStream;
 import org.antlr.runtime.tree.TreeParser;
 import org.antlr.runtime.tree.TreeRuleReturnScope;
 
+@Deprecated
 @SuppressWarnings("all")
 public class Label0Checker extends TreeParser {
-    public static final String[] tokenNames =
-        new String[] {"<invalid>", "<EOR>", "<DOWN>", "<UP>", "NEW", "DEL",
-            "NOT", "USE", "CNEW", "REM", "FORALL", "FORALLX", "EXISTS",
-            "NESTED", "INT", "REAL", "STRING", "BOOL", "ATTR", "PROD", "ARG",
-            "PAR", "TYPE", "FLAG", "PATH", "EMPTY", "ATOM", "TRUE", "FALSE",
-            "CONSTRAINT", "MINUS", "STAR", "PLUS", "DOT", "BAR", "HAT",
-            "EQUALS", "LBRACE", "RBRACE", "LPAR", "RPAR", "LSQUARE", "RSQUARE",
-            "PLING", "QUERY", "COLON", "COMMA", "SQUOTE", "DQUOTE", "DOLLAR",
-            "UNDER", "BSLASH", "IDENT", "LABEL", "NUMBER", "LETTER",
-            "IDENTCHAR", "DIGIT", "'\n'", "'\\n'"};
+    public static final String[] tokenNames = new String[] {"<invalid>",
+        "<EOR>", "<DOWN>", "<UP>", "NEW", "DEL", "NOT", "USE", "CNEW", "REM",
+        "FORALL", "FORALLX", "EXISTS", "NESTED", "INT", "REAL", "STRING",
+        "BOOL", "ATTR", "PROD", "ARG", "PAR", "TYPE", "FLAG", "PATH", "EMPTY",
+        "ATOM", "TRUE", "FALSE", "CONSTRAINT", "MINUS", "STAR", "PLUS", "DOT",
+        "BAR", "HAT", "EQUALS", "LBRACE", "RBRACE", "LPAR", "RPAR", "LSQUARE",
+        "RSQUARE", "PLING", "QUERY", "COLON", "COMMA", "SQUOTE", "DQUOTE",
+        "DOLLAR", "UNDER", "BSLASH", "IDENT", "LABEL", "NUMBER", "LETTER",
+        "IDENTCHAR", "DIGIT", "'\n'", "'\\n'"};
     public static final int DOLLAR = 49;
     public static final int STAR = 31;
     public static final int FORALLX = 11;
@@ -2287,133 +2287,133 @@ public class Label0Checker extends TreeParser {
 
     // Delegated rules
 
-    public static final BitSet FOLLOW_quantLabel_in_label67 =
-        new BitSet(new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_roleLabel_in_label73 =
-        new BitSet(new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_specialLabel_in_label79 =
-        new BitSet(new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_quantPrefix_in_quantLabel93 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_IDENT_in_quantLabel95 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_set_in_quantPrefix0 =
-        new BitSet(new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_rolePrefix_in_roleLabel132 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_IDENT_in_roleLabel135 =
-        new BitSet(new long[] {0x00001817C4000000L});
-    public static final BitSet FOLLOW_actualLabel_in_roleLabel138 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_actualLabel_in_roleLabel147 =
-        new BitSet(new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_rolePrefix0 =
-        new BitSet(new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_REM_in_specialLabel190 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_text_in_specialLabel192 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_PAR_in_specialLabel200 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_LABEL_in_specialLabel202 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_INT_in_specialLabel211 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_set_in_specialLabel213 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_REAL_in_specialLabel228 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_rnumber_in_specialLabel231 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_IDENT_in_specialLabel235 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_STRING_in_specialLabel245 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_DQUOTE_in_specialLabel249 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_text_in_specialLabel251 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_IDENT_in_specialLabel256 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_BOOL_in_specialLabel266 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_set_in_specialLabel268 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_ATTR_in_specialLabel286 =
-        new BitSet(new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_PROD_in_specialLabel292 =
-        new BitSet(new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_ARG_in_specialLabel299 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_NUMBER_in_specialLabel301 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_NUMBER_in_rnumber315 =
-        new BitSet(new long[] {0x0000000200000002L});
-    public static final BitSet FOLLOW_DOT_in_rnumber318 =
-        new BitSet(new long[] {0x0040000000000002L});
-    public static final BitSet FOLLOW_NUMBER_in_rnumber320 =
-        new BitSet(new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_DOT_in_rnumber329 =
-        new BitSet(new long[] {0x0040000000000000L});
-    public static final BitSet FOLLOW_NUMBER_in_rnumber331 =
-        new BitSet(new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_PLING_in_actualLabel345 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_regExpr_in_actualLabel347 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_regExpr_in_actualLabel354 =
-        new BitSet(new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_BAR_in_regExpr368 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_regExpr_in_regExpr370 =
-        new BitSet(new long[] {0x00001817C4000000L});
-    public static final BitSet FOLLOW_regExpr_in_regExpr372 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_DOT_in_regExpr380 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_regExpr_in_regExpr382 =
-        new BitSet(new long[] {0x00001817C4000000L});
-    public static final BitSet FOLLOW_regExpr_in_regExpr384 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_MINUS_in_regExpr392 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_regExpr_in_regExpr394 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_STAR_in_regExpr402 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_regExpr_in_regExpr404 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_PLUS_in_regExpr412 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_regExpr_in_regExpr414 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_EQUALS_in_regExpr421 =
-        new BitSet(new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_QUERY_in_regExpr428 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_IDENT_in_regExpr430 =
-        new BitSet(new long[] {0x0000181FC4000008L});
-    public static final BitSet FOLLOW_HAT_in_regExpr433 =
-        new BitSet(new long[] {0x00001817C4000008L});
-    public static final BitSet FOLLOW_atom_in_regExpr436 =
-        new BitSet(new long[] {0x00001817C4000008L});
-    public static final BitSet FOLLOW_atom_in_regExpr444 =
-        new BitSet(new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_ATOM_in_atom458 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_TYPE_in_atom462 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_IDENT_in_atom464 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_FLAG_in_atom468 =
-        new BitSet(new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_IDENT_in_atom470 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_text_in_atom475 =
-        new BitSet(new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_tokenseq_in_text492 =
-        new BitSet(new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_tokenseq509 =
-        new BitSet(new long[] {0x07FFFFFFFFFFFFF2L});
+    public static final BitSet FOLLOW_quantLabel_in_label67 = new BitSet(
+        new long[] {0x0000000000000002L});
+    public static final BitSet FOLLOW_roleLabel_in_label73 = new BitSet(
+        new long[] {0x0000000000000002L});
+    public static final BitSet FOLLOW_specialLabel_in_label79 = new BitSet(
+        new long[] {0x0000000000000002L});
+    public static final BitSet FOLLOW_quantPrefix_in_quantLabel93 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_IDENT_in_quantLabel95 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_set_in_quantPrefix0 = new BitSet(
+        new long[] {0x0000000000000002L});
+    public static final BitSet FOLLOW_rolePrefix_in_roleLabel132 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_IDENT_in_roleLabel135 = new BitSet(
+        new long[] {0x00001817C4000000L});
+    public static final BitSet FOLLOW_actualLabel_in_roleLabel138 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_actualLabel_in_roleLabel147 = new BitSet(
+        new long[] {0x0000000000000002L});
+    public static final BitSet FOLLOW_set_in_rolePrefix0 = new BitSet(
+        new long[] {0x0000000000000002L});
+    public static final BitSet FOLLOW_REM_in_specialLabel190 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_text_in_specialLabel192 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_PAR_in_specialLabel200 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_LABEL_in_specialLabel202 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_INT_in_specialLabel211 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_set_in_specialLabel213 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_REAL_in_specialLabel228 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_rnumber_in_specialLabel231 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_IDENT_in_specialLabel235 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_STRING_in_specialLabel245 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_DQUOTE_in_specialLabel249 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_text_in_specialLabel251 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_IDENT_in_specialLabel256 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_BOOL_in_specialLabel266 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_set_in_specialLabel268 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_ATTR_in_specialLabel286 = new BitSet(
+        new long[] {0x0000000000000002L});
+    public static final BitSet FOLLOW_PROD_in_specialLabel292 = new BitSet(
+        new long[] {0x0000000000000002L});
+    public static final BitSet FOLLOW_ARG_in_specialLabel299 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_NUMBER_in_specialLabel301 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_NUMBER_in_rnumber315 = new BitSet(
+        new long[] {0x0000000200000002L});
+    public static final BitSet FOLLOW_DOT_in_rnumber318 = new BitSet(
+        new long[] {0x0040000000000002L});
+    public static final BitSet FOLLOW_NUMBER_in_rnumber320 = new BitSet(
+        new long[] {0x0000000000000002L});
+    public static final BitSet FOLLOW_DOT_in_rnumber329 = new BitSet(
+        new long[] {0x0040000000000000L});
+    public static final BitSet FOLLOW_NUMBER_in_rnumber331 = new BitSet(
+        new long[] {0x0000000000000002L});
+    public static final BitSet FOLLOW_PLING_in_actualLabel345 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_regExpr_in_actualLabel347 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_regExpr_in_actualLabel354 = new BitSet(
+        new long[] {0x0000000000000002L});
+    public static final BitSet FOLLOW_BAR_in_regExpr368 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_regExpr_in_regExpr370 = new BitSet(
+        new long[] {0x00001817C4000000L});
+    public static final BitSet FOLLOW_regExpr_in_regExpr372 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_DOT_in_regExpr380 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_regExpr_in_regExpr382 = new BitSet(
+        new long[] {0x00001817C4000000L});
+    public static final BitSet FOLLOW_regExpr_in_regExpr384 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_MINUS_in_regExpr392 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_regExpr_in_regExpr394 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_STAR_in_regExpr402 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_regExpr_in_regExpr404 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_PLUS_in_regExpr412 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_regExpr_in_regExpr414 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_EQUALS_in_regExpr421 = new BitSet(
+        new long[] {0x0000000000000002L});
+    public static final BitSet FOLLOW_QUERY_in_regExpr428 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_IDENT_in_regExpr430 = new BitSet(
+        new long[] {0x0000181FC4000008L});
+    public static final BitSet FOLLOW_HAT_in_regExpr433 = new BitSet(
+        new long[] {0x00001817C4000008L});
+    public static final BitSet FOLLOW_atom_in_regExpr436 = new BitSet(
+        new long[] {0x00001817C4000008L});
+    public static final BitSet FOLLOW_atom_in_regExpr444 = new BitSet(
+        new long[] {0x0000000000000002L});
+    public static final BitSet FOLLOW_ATOM_in_atom458 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_TYPE_in_atom462 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_IDENT_in_atom464 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_FLAG_in_atom468 = new BitSet(
+        new long[] {0x0000000000000004L});
+    public static final BitSet FOLLOW_IDENT_in_atom470 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_text_in_atom475 = new BitSet(
+        new long[] {0x0000000000000008L});
+    public static final BitSet FOLLOW_tokenseq_in_text492 = new BitSet(
+        new long[] {0x0000000000000002L});
+    public static final BitSet FOLLOW_set_in_tokenseq509 = new BitSet(
+        new long[] {0x07FFFFFFFFFFFFF2L});
 
 }

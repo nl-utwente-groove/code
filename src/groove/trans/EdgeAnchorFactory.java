@@ -19,6 +19,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Deprecated
 public class EdgeAnchorFactory implements AnchorFactory<Rule> {
     /**
      * Returns the singleton instance of this class.

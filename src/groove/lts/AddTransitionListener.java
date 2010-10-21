@@ -23,6 +23,7 @@ import groove.graph.GraphShape;
  * Listener that tests if any transitions are added to the LTS.
  * @version $Revision $
  */
+@Deprecated
 public class AddTransitionListener extends LTSAdapter {
     /**
      * Resets the transitions-added flag to <code>false</code>.

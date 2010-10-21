@@ -11,6 +11,7 @@ import org.antlr.runtime.MismatchedSetException;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.RecognizerSharedState;
 
+@Deprecated
 @SuppressWarnings("all")
 public class GCLNewLexer extends Lexer {
     public static final int FUNCTION = 7;

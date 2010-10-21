@@ -24,6 +24,7 @@ package groove.util;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:01 $
  */
+@Deprecated
 final public class MinimizedTreeIntSet implements IntSet {
     /**
      * Uses the <code>capacity</code> parameter to assign a new length to the

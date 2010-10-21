@@ -25,6 +25,7 @@ import groove.util.Groove;
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2007/12/03 08:53:54 $
  */
+@Deprecated
 public class AlgebraConstants {
     /** Code for attributes of type integer. */
     static public final int INTEGER = 0;

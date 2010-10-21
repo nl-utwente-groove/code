@@ -30,6 +30,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:50 $
  */
+@Deprecated
 public class AdjacencyMapGraph extends AbstractGraph<GraphCache> {
     /**
      * Constructs a prototype object of this class, to be used as a factory for
@@ -57,8 +58,8 @@ public class AdjacencyMapGraph extends AbstractGraph<GraphCache> {
     protected AdjacencyMapGraph(AdjacencyMapGraph graph) {
         this();
         for (Map.Entry<Node,Set<Edge>> edgeEntry : graph.edgeMap.entrySet()) {
-            this.edgeMap.put(edgeEntry.getKey(), new HashSet<Edge>(
-                edgeEntry.getValue()));
+            this.edgeMap.put(edgeEntry.getKey(),
+                new HashSet<Edge>(edgeEntry.getValue()));
         }
     }
 

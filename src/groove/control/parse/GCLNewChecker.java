@@ -25,6 +25,7 @@ import org.antlr.runtime.tree.TreeNodeStream;
 import org.antlr.runtime.tree.TreeParser;
 import org.antlr.runtime.tree.TreeRuleReturnScope;
 
+@Deprecated
 @SuppressWarnings("all")
 public class GCLNewChecker extends TreeParser {
     public static final String[] tokenNames = new String[] {"<invalid>",

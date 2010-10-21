@@ -32,6 +32,7 @@ import org.antlr.runtime.tree.CommonTreeNodeStream;
  * @author Arend Rensink
  * @version $Revision $
  */
+@Deprecated
 @SuppressWarnings("all")
 public class LabelParseTest {
     public LabelParseTest(boolean isGraph) {

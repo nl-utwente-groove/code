@@ -24,6 +24,7 @@ import java.util.NoSuchElementException;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:14 $
  */
+@Deprecated
 public class ArrayIterator<T> implements Iterator<T> {
 
     /**

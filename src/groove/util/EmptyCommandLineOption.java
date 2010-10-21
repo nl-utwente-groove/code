@@ -24,6 +24,7 @@ package groove.util;
  * @see CommandLineOption
  * @author Maarten de Mol
  */
+@Deprecated
 public class EmptyCommandLineOption implements CommandLineOption {
 
     // Local store of the name and the description.
