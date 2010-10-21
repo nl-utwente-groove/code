@@ -940,8 +940,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                             throw new IllegalStateException(
                                 String.format(
                                     "Child record index %d at %d is not at record boundary",
-                                    value, treeIx,
-                                    getParentIx(getRecordNr(value))));
+                                    value, treeIx));
                         } else if (getParentIx(getRecordNr(value)) != treeIx) {
                             throw new IllegalStateException(
                                 String.format(
