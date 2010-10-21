@@ -8,12 +8,11 @@
     <Match>
        <Bug pattern="SE_BAD_FIELD" />
     </Match>
-    
+
     <!-- This one is annoying because there is no good solution (calling super is WRONG). -->
     <Match>
        <Bug pattern="IA_AMBIGUOUS_INVOCATION_OF_INHERITED_OR_OUTER_METHOD" />
     </Match>
-    
 
     <!-- Remove Internationalization warnings. -->
     <Match>
@@ -61,4 +60,31 @@
     <Match>
        <Bug pattern="SE_NO_SERIALVERSIONID" />
     </Match>
+
+    <!-- Remove control flow warnings that are intentional. -->
+    <Match>
+       <Class name="groove.graph.iso.PartitionRefiner" />
+       <Method name="computeCertificates" />
+       <Bug pattern="UCF_USELESS_CONTROL_FLOW_NEXT_LINE" />
+    </Match>
+    <Match>
+       <Class name="groove.graph.iso.PaigeTarjanMcKay" />
+       <Method name="computeCertificates" />
+       <Bug pattern="UCF_USELESS_CONTROL_FLOW_NEXT_LINE" />
+    </Match>
+
+    <!-- Remove stupid equals warning. -->
+    <Match>
+       <Class name="groove.graph.AbstractNodeEdgeMap" />
+       <Method name="equals" />
+       <Bug pattern="EQ_UNUSUAL" />
+    </Match>
+
+    <!-- Remove warning on writing to static field. -->
+    <Match>
+       <Class name="groove.util.Generator" />
+       <Method name="Generator" />
+       <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" />
+    </Match>
+
 </FindBugsFilter>

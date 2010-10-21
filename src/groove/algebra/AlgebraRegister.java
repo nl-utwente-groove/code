@@ -399,9 +399,9 @@ public class AlgebraRegister {
         int algebraModifiers = algebraClass.getModifiers();
         if (Modifier.isInterface(algebraModifiers)
             || Modifier.isAbstract(algebraModifiers)) {
-            throw new IllegalArgumentException(String.format(
-                "Signature '%s' is not an abstract class",
-                signature.getClass(), Signature.class));
+            throw new IllegalArgumentException(
+                String.format("Signature '%s' is not an abstract class",
+                    signature.getClass()));
         }
         return (Class<Signature>) signature;
     }
