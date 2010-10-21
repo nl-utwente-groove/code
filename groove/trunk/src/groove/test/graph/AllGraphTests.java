@@ -34,8 +34,10 @@ public class AllGraphTests {
         // all kinds of graphs
         suite.addTest(new TestSuite(DeltaGraphTest.class));
         suite.addTest(new TestSuite(DefaultGraphTest.class));
-        suite.addTest(new TestSuite(AdjacencyMapGraphTest.class));
-        suite.addTest(new TestSuite(NodeSetEdgeMapGraphTest.class));
+        /* @Deprecated EZ says to Arend: If the class under test is indeed
+         * not useful anymore, please remove this commented line(s). */
+        // suite.addTest(new TestSuite(AdjacencyMapGraphTest.class));
+        // suite.addTest(new TestSuite(NodeSetEdgeMapGraphTest.class));
         suite.addTest(new TestSuite(NodeSetEdgeSetGraphTest.class));
         // $JUnit-END$
         return suite;

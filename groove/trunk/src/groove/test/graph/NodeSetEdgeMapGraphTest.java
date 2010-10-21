@@ -23,8 +23,9 @@ import groove.graph.NodeSetLabelEdgeMapGraph;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Deprecated
 public class NodeSetEdgeMapGraphTest extends GraphTest {
-    
+
     /** Inializes a test for a NodeSetEdgeMapGraph */
     public NodeSetEdgeMapGraphTest(String name) {
         super(name, new NodeSetLabelEdgeMapGraph());

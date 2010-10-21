@@ -26,6 +26,7 @@ import groove.explore.encode.Serialized;
  * @see Serialized
  * @author Maarten de Mol
  */
+@Deprecated
 public class KeywordParser {
 
     // The keyword to search for. 

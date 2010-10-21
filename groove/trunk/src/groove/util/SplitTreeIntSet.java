@@ -23,6 +23,7 @@ package groove.util;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:11 $
  */
+@Deprecated
 final public class SplitTreeIntSet implements IntSet {
     /**
      * Creates an instance with a given branch resolution. The resolution is

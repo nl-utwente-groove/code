@@ -24,6 +24,7 @@ import groove.view.FormatException;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
+@Deprecated
 public class LTLFormula extends CTLStarFormula {
     @Override
     protected TemporalFormula createAll(TemporalFormula operand)

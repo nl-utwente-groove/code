@@ -26,6 +26,7 @@ import groove.util.Property;
  * 
  * @author Staijen
  */
+@Deprecated
 public class PropertyAcceptor extends Acceptor {
     /** Creates a new instance with a given property and a default {@link Result}. */
     public PropertyAcceptor(Property<GraphState> property) {

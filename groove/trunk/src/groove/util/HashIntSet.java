@@ -27,6 +27,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:02 $
  */
+@Deprecated
 final public class HashIntSet implements IntSet {
     /**
      * This implementation clears the underlying {@link HashSet}.

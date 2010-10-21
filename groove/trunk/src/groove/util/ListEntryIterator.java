@@ -23,6 +23,7 @@ import java.util.Iterator;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Deprecated
 final public class ListEntryIterator implements Iterator<ListEntry> {
     /**
      * Constructs an iterator over a list starting with a given

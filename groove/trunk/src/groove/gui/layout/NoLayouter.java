@@ -16,17 +16,18 @@
  */
 package groove.gui.layout;
 
-import org.jgraph.graph.GraphConstants;
-
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
+
+import org.jgraph.graph.GraphConstants;
 
 /**
  * A layouter that does nothing.
  * @author Arend Rensink
  * @version $Revision$
  */
+@Deprecated
 public class NoLayouter implements Layouter {
     /** Name of this layouter. */
     static public final String ACTION_NAME = "No layout";

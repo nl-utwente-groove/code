@@ -30,6 +30,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Deprecated
 public class StackedMap<T,U> extends AbstractMap<T,U> {
     /**
      * Creates a stacked map with an empty lower map.

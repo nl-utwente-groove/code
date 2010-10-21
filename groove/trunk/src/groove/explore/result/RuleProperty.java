@@ -28,6 +28,7 @@ import java.util.Iterator;
  * @author Arend Rensink
  * @version $Revision $
  */
+@Deprecated
 public class RuleProperty extends Property<GraphState> {
     /** Constructs a property that tests if a given rule has been applied. */
     public RuleProperty(Rule rule) {

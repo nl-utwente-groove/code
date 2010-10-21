@@ -33,6 +33,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Deprecated
 public class NodeAnchorFactory implements AnchorFactory<Rule> {
     /**
      * Returns a prototype matching, to be used as an anchor and matching

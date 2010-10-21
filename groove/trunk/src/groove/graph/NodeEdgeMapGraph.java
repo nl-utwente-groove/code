@@ -30,6 +30,7 @@ import java.util.Set;
  * of space. Arbitrary edge arities are supported.
  * @version $Revision$ $Date: 2008-01-30 09:32:50 $
  */
+@Deprecated
 public class NodeEdgeMapGraph extends AbstractGraph<GraphCache> implements
         Cloneable {
     /**

@@ -29,6 +29,7 @@ import java.util.Iterator;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Deprecated
 public class ExistsCondition extends PositiveCondition<ExistsMatch> {
     /**
      * Constructs a (named) graph condition based on a given pattern morphism.

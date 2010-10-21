@@ -33,6 +33,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Deprecated
 public class NodeSetLabelEdgeMapGraph extends AbstractGraph<GraphCache> {
     /**
      * Constructs a protytpe object of this class, to be used as a factory for

@@ -19,7 +19,6 @@ package groove.test.verify;
 
 import groove.verify.CTLFormula;
 import groove.verify.CTLStarFormula;
-import groove.verify.LTLFormula;
 import groove.verify.TemporalFormula;
 import groove.view.FormatException;
 import junit.framework.TestCase;
@@ -81,10 +80,12 @@ public class TemporalFormulaTest extends TestCase {
             // bounded by a path quantifier
             formula = CTLFormula.parseFormula("G(empty)");
 
+            /* @Deprecated EZ says to Arend: If the class under test is indeed
+             * not useful anymore, please remove this commented line(s). */
             // LTL formulae
-            formula = LTLFormula.parseFormula("G(empty | full)");
-            formula = LTLFormula.parseFormula("F(full | error)");
-            formula = LTLFormula.parseFormula("F(error & !(full))");
+            // formula = LTLFormula.parseFormula("G(empty | full)");
+            // formula = LTLFormula.parseFormula("F(full | error)");
+            // formula = LTLFormula.parseFormula("F(error & !(full))");
         } catch (FormatException efe) {
             efe.printStackTrace();
         }

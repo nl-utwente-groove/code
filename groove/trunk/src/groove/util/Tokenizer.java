@@ -25,19 +25,20 @@ import java.util.StringTokenizer;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:02 $
  */
+@Deprecated
 public class Tokenizer extends StringTokenizer {
 
     String delims;
     String str;
 
-    /** Initializer */ 
+    /** Initializer */
     public Tokenizer(String str, String delims) {
         super(str, delims);
         this.delims = delims;
         this.str = str;
     }
 
-    /** Initializer */ 
+    /** Initializer */
     public Tokenizer(String str, String delims, boolean returnDelims) {
         super(str, delims, returnDelims);
         this.delims = delims;

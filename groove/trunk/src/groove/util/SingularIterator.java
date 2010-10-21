@@ -24,6 +24,7 @@ import java.util.NoSuchElementException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Deprecated
 public class SingularIterator<T> implements Iterator<T> {
     /**
      * Constructs an iterator over a given inner object.

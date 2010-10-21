@@ -23,6 +23,7 @@ import groove.graph.AdjacencyMapGraph;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Deprecated
 @SuppressWarnings("all")
 public class AdjacencyMapGraphTest extends GraphTest {
     public AdjacencyMapGraphTest(String name) {

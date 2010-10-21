@@ -31,6 +31,7 @@ import java.util.Set;
  * @author Frank van Es
  * @version $Revision $
  */
+@Deprecated
 public class DefaultTypeGraph extends DefaultGraph {
 
     private final Map<Object,NodeEdgeMap> typings;
@@ -78,13 +79,13 @@ public class DefaultTypeGraph extends DefaultGraph {
         return map;
     }
 
-//    tom commented this method away away, since it is never used
-//    private void mergeNodeTypes(AbstractNodeEdgeMap<Node,Node,Edge,Edge> map) {
-//        for (Map.Entry<Node,Node> nodes : map.nodeMap().entrySet()) {
-//            mergeNodes(nodes.getKey(), nodes.getValue());
-//        }
-//    }
-//    private NodeEdgeMap getTyping(Object o) {
-//        return this.typings.get(o);
-//    }
+    //    tom commented this method away away, since it is never used
+    //    private void mergeNodeTypes(AbstractNodeEdgeMap<Node,Node,Edge,Edge> map) {
+    //        for (Map.Entry<Node,Node> nodes : map.nodeMap().entrySet()) {
+    //            mergeNodes(nodes.getKey(), nodes.getValue());
+    //        }
+    //    }
+    //    private NodeEdgeMap getTyping(Object o) {
+    //        return this.typings.get(o);
+    //    }
 }

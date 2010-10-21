@@ -21,6 +21,7 @@ package groove.util;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Deprecated
 public class IntCell implements Cloneable {
     /**
      * Returns the current value of this cell.
