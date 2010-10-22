@@ -1261,8 +1261,9 @@ public class Shape extends DefaultGraph implements Cloneable {
     }
 
     /** EDUARDO: Comment this... */
-    public boolean areAllEdgesFromSigFrozen(EdgeSignature es, boolean outgoing) {
-        boolean result = true;
+    public boolean isNonFrozenEdgeFromSigInvolved(EdgeSignature es,
+            ShapeNode singNode, boolean outgoing) {
+        boolean result = false;
         ShapeNode node = es.getNode();
         Label label = es.getLabel();
         EquivClass<ShapeNode> ec = es.getEquivClass();
@@ -1273,8 +1274,9 @@ public class Shape extends DefaultGraph implements Cloneable {
             } else { // incoming
                 edge = this.getShapeEdge(adjNode, label, node);
             }
-            if (edge != null && !this.isFrozen(edge)) {
-                result = false;
+            if (edge != null && !this.isFrozen(edge)
+                && adjNode.equals(singNode)) {
+                result = true;
                 break;
             }
         }

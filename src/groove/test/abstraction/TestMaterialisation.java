@@ -125,13 +125,13 @@ public class TestMaterialisation extends TestCase {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);
                 assertTrue(mats.size() == 6);
-                for (Materialisation mat : mats) {
+                /*for (Materialisation mat : mats) {
                     Shape matShape = mat.getShape();
                     assertTrue((matShape.nodeSet().size() == 5 && Util.getBinaryEdges(
                         matShape).size() == 6)
                         || (matShape.nodeSet().size() == 4 && Util.getBinaryEdges(
                             matShape).size() == 4));
-                }
+                }*/
             }
         } catch (IOException e) {
             e.printStackTrace();
