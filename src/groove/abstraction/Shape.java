@@ -1268,7 +1268,7 @@ public class Shape extends DefaultGraph implements Cloneable {
             } else { // incoming
                 edge = this.getShapeEdge(adjNode, label, node);
             }
-            if (edge == null || !this.frozenEdges.contains(edge)) {
+            if (edge != null && !this.frozenEdges.contains(edge)) {
                 result = false;
                 break;
             }

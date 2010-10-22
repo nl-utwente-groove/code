@@ -134,8 +134,9 @@ public class EquationSystem {
 
                     // Outgoing multiplicity.
                     Multiplicity oM = this.shape.getEdgeSigOutMult(es);
-                    if (oM.isPositive() && !this.shape.isOutEdgeSigUnique(es)
-                        && !this.shape.areAllEdgesFromSigFrozen(es, true)) {
+                    if (oM.isPositive()
+                        && !this.shape.areAllEdgesFromSigFrozen(es, true)
+                        && !this.shape.isOutEdgeSigUnique(es)) {
                         // Outgoing MultVar for C'
                         MultVar p = this.newMultVar();
                         // Outgoing MultVar for C''
@@ -152,8 +153,9 @@ public class EquationSystem {
 
                     // Incoming multiplicity.
                     Multiplicity iM = this.shape.getEdgeSigInMult(es);
-                    if (iM.isPositive() && !this.shape.isInEdgeSigUnique(es)
-                        && !this.shape.areAllEdgesFromSigFrozen(es, false)) {
+                    if (iM.isPositive()
+                        && !this.shape.areAllEdgesFromSigFrozen(es, false)
+                        && !this.shape.isInEdgeSigUnique(es)) {
                         // Incoming MultVar for C'
                         MultVar r = this.newMultVar();
                         // Incoming MultVar for C''
@@ -333,7 +335,7 @@ public class EquationSystem {
         this.println("------------------------------------------");
         this.println("Solving " + this.toString() + "\n");
 
-        // new ShapeDialog(this.shape, "");
+        //new ShapeDialog(this.shape, "original");
 
         if (this.varCount == 0) {
             // Trivial equation system. The node the be singularised has no
@@ -353,6 +355,11 @@ public class EquationSystem {
                 }
                 this.updateSolutionValues();
             }
+        }
+
+        this.println("Solving finished.");
+        for (Shape result : this.results) {
+            //new ShapeDialog(result, "result");
         }
     }
 
