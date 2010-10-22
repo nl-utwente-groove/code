@@ -297,17 +297,21 @@ public final class Multiplicity {
      *         - If this != omega, then the result is a singleton set with
      *           this.value - mult.value .
      *         - If this == omega, then the result is a set of multiplicities
-     *           in the range (bound + 1 - mult.value, ..., omega) .
+     *           in the range (bound + 1 - mult, ..., omega) .
      */
     public Set<Multiplicity> sub(Multiplicity mult, int bound) {
         assert mult.isAtMost(this) : "Cannot subtract " + mult + " from "
             + this;
         Set<Multiplicity> result = new HashSet<Multiplicity>();
-        if (this.value != OMEGA_VALUE
-            || (this.value == OMEGA_VALUE && mult.value == OMEGA_VALUE)) {
+        if (this.value != OMEGA_VALUE) {
             result.add(getMultOf(this.value - mult.value));
         } else {
-            int lowerBound = bound + 1 - mult.value;
+            int lowerBound;
+            if (mult.value == OMEGA_VALUE) {
+                lowerBound = 0;
+            } else {
+                lowerBound = bound + 1 - mult.value;
+            }
             for (int i = lowerBound; i <= bound; i++) {
                 result.add(getMultOf(i));
             }
@@ -324,15 +328,6 @@ public final class Multiplicity {
     /** Returns the subtraction of two edge multiplicities. */
     public Set<Multiplicity> subEdgeMult(Multiplicity mult) {
         return this.sub(mult, Parameters.getEdgeMultBound());
-    }
-
-    /**
-     * Returns the subtraction of two multiplicities.
-     * Neither multiplicities may be omega.
-     */
-    public Multiplicity sub(Multiplicity mult) {
-        assert !this.equals(OMEGA) && !mult.equals(OMEGA);
-        return this.sub(mult, 0).iterator().next();
     }
 
     /** Returns the unbounded product of two multiplicities. */

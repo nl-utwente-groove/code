@@ -358,9 +358,9 @@ public class EquationSystem {
         }
 
         this.println("Solving finished.");
-        for (Shape result : this.results) {
+        /*for (Shape result : this.results) {
             //new ShapeDialog(result, "result");
-        }
+        }*/
     }
 
     private void initSolve() {
