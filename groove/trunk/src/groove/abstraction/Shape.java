@@ -83,7 +83,7 @@ public class Shape extends DefaultGraph implements Cloneable {
     /**
      * The equivalence relation over the nodes of the shape.
      */
-    private final EquivRelation<ShapeNode> equivRel;
+    private EquivRelation<ShapeNode> equivRel;
     /**
      * The node multiplicity map.
      */
@@ -334,7 +334,7 @@ public class Shape extends DefaultGraph implements Cloneable {
             nodeEc.remove(nodeS);
         }
 
-        this.updateMultHashMaps();
+        this.updateHashMaps();
 
         // Remove node from graph.
         return super.removeNodeWithoutCheck(node);
@@ -344,7 +344,7 @@ public class Shape extends DefaultGraph implements Cloneable {
     @Override
     public boolean removeEdge(Edge edge) {
         ShapeEdge edgeS = (ShapeEdge) edge;
-        assert !this.frozenEdges.contains(edgeS);
+        assert !this.isFrozen(edgeS);
         // Remove entry from edge shaping map.
         this.edgeShaping.remove(edgeS);
         // Update outgoing multiplicity map.
@@ -671,8 +671,8 @@ public class Shape extends DefaultGraph implements Cloneable {
             Label label = es.getLabel();
             EquivClass<ShapeNode> ec = es.getEquivClass();
             for (ShapeEdge edge : this.outBinaryEdgeSet(src)) {
-                if (!this.frozenEdges.contains(edge)
-                    && edge.label().equals(label) && ec.contains(edge.target())) {
+                if (!this.isFrozen(edge) && edge.label().equals(label)
+                    && ec.contains(edge.target())) {
                     this.removeEdge(edge);
                 }
             }
@@ -691,8 +691,8 @@ public class Shape extends DefaultGraph implements Cloneable {
             Label label = es.getLabel();
             EquivClass<ShapeNode> ec = es.getEquivClass();
             for (ShapeEdge edge : this.inBinaryEdgeSet(tgt)) {
-                if (!this.frozenEdges.contains(edge)
-                    && edge.label().equals(label) && ec.contains(edge.source())) {
+                if (!this.isFrozen(edge) && edge.label().equals(label)
+                    && ec.contains(edge.source())) {
                     this.removeEdge(edge);
                 }
             }
@@ -712,7 +712,7 @@ public class Shape extends DefaultGraph implements Cloneable {
     /** Basic getter method. */
     public Multiplicity getEdgeOutMult(ShapeEdge edge) {
         Multiplicity mult;
-        if (this.frozenEdges.contains(edge)) {
+        if (this.isFrozen(edge)) {
             mult = Multiplicity.getMultOf(1);
         } else {
             EdgeSignature es = this.getEdgeOutSignature(edge);
@@ -727,7 +727,7 @@ public class Shape extends DefaultGraph implements Cloneable {
     /** Basic getter method. */
     public Multiplicity getEdgeInMult(ShapeEdge edge) {
         Multiplicity mult;
-        if (this.frozenEdges.contains(edge)) {
+        if (this.isFrozen(edge)) {
             mult = Multiplicity.getMultOf(1);
         } else {
             EdgeSignature es = this.getEdgeInSignature(edge);
@@ -983,17 +983,16 @@ public class Shape extends DefaultGraph implements Cloneable {
         }
     }
 
-    private void updateMultHashMaps() {
+    private void updateHashMaps() {
+        EquivRelation<ShapeNode> newEquivRel = new EquivRelation<ShapeNode>();
         HashMap<EdgeSignature,Multiplicity> newOutEdgeMultMap =
             new HashMap<EdgeSignature,Multiplicity>();
         HashMap<EdgeSignature,Multiplicity> newInEdgeMultMap =
             new HashMap<EdgeSignature,Multiplicity>();
-        for (Entry<EdgeSignature,Multiplicity> entry : this.outEdgeMultMap.entrySet()) {
-            newOutEdgeMultMap.put(entry.getKey(), entry.getValue());
-        }
-        for (Entry<EdgeSignature,Multiplicity> entry : this.inEdgeMultMap.entrySet()) {
-            newInEdgeMultMap.put(entry.getKey(), entry.getValue());
-        }
+        newEquivRel.addAll(this.equivRel);
+        newOutEdgeMultMap.putAll(this.outEdgeMultMap);
+        newInEdgeMultMap.putAll(this.inEdgeMultMap);
+        this.equivRel = newEquivRel;
         this.outEdgeMultMap = newOutEdgeMultMap;
         this.inEdgeMultMap = newInEdgeMultMap;
     }
@@ -1002,13 +1001,18 @@ public class Shape extends DefaultGraph implements Cloneable {
      * Materialises a node in the shape. Note that all edges adjacent to the
      * node being materialised are also duplicated.
      * @param nodeS - the node in the shape to be materialised.
+     * @param mult - the multiplicity for each materialised node.
      * @param copies - the number of new nodes that will be produced from
      *                 nodeS.
      * @return a set of multiplicities that the given node may have in
      *         the materialisation.
      */
-    public Set<Multiplicity> materialiseNode(ShapeNode nodeS, int copies) {
-        Multiplicity oneMult = Multiplicity.getMultOf(1);
+    public Set<Multiplicity> materialiseNode(ShapeNode nodeS,
+            Multiplicity mult, int copies) {
+        assert this.nodeSet().contains(nodeS);
+        assert mult != null && mult.isPositive();
+        assert copies > 0;
+
         ShapeNode origNode = nodeS;
 
         // Create the new nodes.
@@ -1021,7 +1025,7 @@ public class Shape extends DefaultGraph implements Cloneable {
             // we have additional information on the node to be added.
             super.addNode(newNode);
             // The new node is concrete so set its multiplicity to one.
-            this.setNodeMult(newNode, oneMult);
+            this.setNodeMult(newNode, mult);
             // Copy the labels from the original node.
             this.copyUnaryEdges(origNode, newNode);
             // Add the new node to the equivalence class of the original node.
@@ -1032,7 +1036,7 @@ public class Shape extends DefaultGraph implements Cloneable {
 
         // We modified the equivalence classes, so the hash codes for the
         // edge signatures have changed.
-        this.updateMultHashMaps();
+        this.updateHashMaps();
 
         // Now that we have all new nodes, duplicate all incoming and
         // outgoing edges were the original node occurs. Also, update
@@ -1083,7 +1087,7 @@ public class Shape extends DefaultGraph implements Cloneable {
 
         // OK, we materialised the node, now create the multiplicity set
         // that will come out from the original node.
-        Multiplicity toSub = Multiplicity.getMultOf(copies);
+        Multiplicity toSub = Multiplicity.getMultOf(copies).multiply(mult);
         Set<Multiplicity> mults = this.getNodeMult(origNode).subNodeMult(toSub);
         return mults;
     }
@@ -1141,7 +1145,7 @@ public class Shape extends DefaultGraph implements Cloneable {
         Label label = es.getLabel();
         for (ShapeNode target : es.getEquivClass()) {
             ShapeEdge edge = this.getShapeEdge(source, label, target);
-            if (edge != null && !this.frozenEdges.contains(edge)) {
+            if (edge != null && !this.isFrozen(edge)) {
                 edgeCount++;
                 if (edgeCount > 1) {
                     break;
@@ -1166,7 +1170,7 @@ public class Shape extends DefaultGraph implements Cloneable {
         Label label = es.getLabel();
         for (ShapeNode source : es.getEquivClass()) {
             ShapeEdge edge = this.getShapeEdge(source, label, target);
-            if (edge != null && !this.frozenEdges.contains(edge)) {
+            if (edge != null && !this.isFrozen(edge)) {
                 edgeCount++;
                 if (edgeCount > 1) {
                     break;
@@ -1234,6 +1238,7 @@ public class Shape extends DefaultGraph implements Cloneable {
             boolean trivial) {
         assert singEc.size() == 1 && origEc.containsAll(singEc)
             && origEc.containsAll(remEc);
+        assert this.equivRel.contains(origEc);
 
         this.cleanEdgeSigSet();
 
@@ -1268,7 +1273,7 @@ public class Shape extends DefaultGraph implements Cloneable {
             } else { // incoming
                 edge = this.getShapeEdge(adjNode, label, node);
             }
-            if (edge != null && !this.frozenEdges.contains(edge)) {
+            if (edge != null && !this.isFrozen(edge)) {
                 result = false;
                 break;
             }
@@ -1290,6 +1295,12 @@ public class Shape extends DefaultGraph implements Cloneable {
             }
         }
         this.frozenEdges.addAll(edgesToFreeze);
+    }
+
+    /** Returns true if the given edge is frozen in the shape. */
+    public boolean isFrozen(ShapeEdge edge) {
+        assert this.edgeSet().contains(edge);
+        return this.frozenEdges.contains(edge);
     }
 
     /** Normalise the shape object and returns the newly modified shape. */

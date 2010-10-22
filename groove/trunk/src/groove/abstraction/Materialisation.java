@@ -29,6 +29,7 @@ import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.SPOEvent;
+import groove.util.Pair;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
@@ -430,6 +431,57 @@ public class Materialisation implements Cloneable {
         }
     }
 
+    private Set<Pair<ShapeNode,Multiplicity>> getNodesToPullOut() {
+        Set<Pair<ShapeNode,Multiplicity>> result =
+            new HashSet<Pair<ShapeNode,Multiplicity>>();
+
+        // Check all nodes marked to be singularised.
+        outerLoop: for (MatOp op : this.tasks) {
+            if (!(op instanceof SingulariseNode)) {
+                // Ignore this operation.
+                continue outerLoop;
+            }
+
+            ShapeNode srcS = ((SingulariseNode) op).nodeS;
+
+            for (ShapeEdge edgeS : this.shape.outBinaryEdgeSet(srcS)) {
+                if (!this.shape.isFrozen(edgeS)) {
+                    EquivClass<ShapeNode> srcEc =
+                        this.shape.getEquivClassOf(srcS);
+                    Label label = edgeS.label();
+                    ShapeNode tgtS = edgeS.opposite();
+                    EdgeSignature inEs =
+                        this.shape.getEdgeSignature(tgtS, label, srcEc);
+                    if (!this.shape.isInEdgeSigUnique(inEs)) {
+                        // We need to pull out some nodes.
+
+                        // First, check if tgtS is abstract.
+                        Multiplicity tgtMult = this.shape.getNodeMult(tgtS);
+                        if (!tgtMult.isAbstract()) {
+                            // It's not. We can't pull out nodes from here.
+                            // Abort.
+                            result.clear();
+                            break outerLoop;
+                        }
+
+                        // OK, tgtS is abstract. Get the multiplicity from the
+                        // source signature.
+                        EquivClass<ShapeNode> tgtEc =
+                            this.shape.getEquivClassOf(tgtS);
+                        EdgeSignature outEs =
+                            this.shape.getEdgeSignature(srcS, label, tgtEc);
+                        Multiplicity mult = this.shape.getEdgeSigOutMult(outEs);
+                        Pair<ShapeNode,Multiplicity> pair =
+                            new Pair<ShapeNode,Multiplicity>(tgtS, mult);
+                        result.add(pair);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
     // ------------------------------------------------------------------------
     // Inner Classes
     // ------------------------------------------------------------------------
@@ -563,7 +615,8 @@ public class Materialisation implements Cloneable {
             int copies = this.nodesR.size();
             // Materialise the node and get the new multiplicity set back.
             Set<Multiplicity> mults =
-                this.mat.shape.materialiseNode(this.nodeS, copies);
+                this.mat.shape.materialiseNode(this.nodeS,
+                    Multiplicity.getMultOf(1), copies);
             // Look in the shaping morphism to get the new nodes that were
             // materialised from the original node.
             Set<ShapeNode> newNodes =
@@ -829,6 +882,104 @@ public class Materialisation implements Cloneable {
                 }
                 // Set the new shape to the materialisation object.
                 newMat.shape = newShape;
+                // Check if we need to pull out more nodes in the shape before
+                // starting to singularise nodes.
+                for (Pair<ShapeNode,Multiplicity> pair : newMat.getNodesToPullOut()) {
+                    PullOutNode pullNode =
+                        new PullOutNode(newMat, pair.first(), pair.second());
+                    newMat.tasks.add(pullNode);
+                }
+                // Add this new materialisation to the result set of this
+                // operation.
+                this.result.add(newMat);
+            }
+        }
+
+    }
+
+    // -----------------
+    // Class PullOutNode
+    // -----------------
+
+    private static class PullOutNode extends MatOp {
+
+        private ShapeNode nodeS;
+        private Multiplicity mult;
+
+        public PullOutNode(Materialisation mat, ShapeNode nodeS,
+                Multiplicity mult) {
+            super(mat);
+            this.nodeS = nodeS;
+            this.mult = mult;
+        }
+
+        private PullOutNode(PullOutNode pullNode) {
+            super();
+            this.setMat(pullNode.mat);
+            this.nodeS = pullNode.nodeS;
+            this.mult = pullNode.mult;
+        }
+
+        @Override
+        public MatOp clone() {
+            return new PullOutNode(this);
+        }
+
+        @Override
+        public String toString() {
+            return "PullOutNode: " + this.nodeS + "(" + this.mult + ")";
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            boolean result = false;
+            if (o instanceof PullOutNode) {
+                PullOutNode other = (PullOutNode) o;
+                result =
+                    this.nodeS.equals(other.nodeS)
+                        && this.mult.equals(other.mult);
+            }
+            return result;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result =
+                prime * result
+                    + ((this.mult == null) ? 0 : this.mult.hashCode());
+            result =
+                prime * result
+                    + ((this.nodeS == null) ? 0 : this.nodeS.hashCode());
+            return result;
+        }
+
+        @Override
+        public int getPriority() {
+            return 3;
+        }
+
+        @Override
+        public void perform() { // PullOutNode
+            // Materialise the node and get the new multiplicity set back.
+            Set<Multiplicity> mults =
+                this.mat.shape.materialiseNode(this.nodeS, this.mult, 1);
+
+            // Create the new materialisation objects.
+            for (Multiplicity mult : mults) {
+                Materialisation newMat;
+                // Check if we need to clone the materialisation object.
+                if (mults.size() == 1) {
+                    // No, we don't need to clone.
+                    newMat = this.mat;
+                } else {
+                    // Yes, we do need to clone.
+                    newMat = this.mat.clone();
+                }
+                // Update the multiplicity of the original node.
+                newMat.shape.setNodeMult(this.nodeS, mult);
+
                 // Add this new materialisation to the result set of this
                 // operation.
                 this.result.add(newMat);
@@ -888,7 +1039,7 @@ public class Materialisation implements Cloneable {
 
         @Override
         public int getPriority() {
-            return 3;
+            return 4;
         }
 
         @Override

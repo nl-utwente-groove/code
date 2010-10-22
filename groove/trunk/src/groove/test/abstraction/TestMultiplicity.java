@@ -188,8 +188,8 @@ public class TestMultiplicity extends TestCase {
         assertTrue(result.size() == 4 && result.contains(omega)
             && result.contains(three) && result.contains(two)
             && result.contains(one));
-        result = omega.sub(omega, 3);
-        assertTrue(result.size() == 1 && result.contains(zero));
+        result = omega.sub(omega, 1);
+        assertTrue(result.size() == 3);
     }
 
     public void testMultiply() {
