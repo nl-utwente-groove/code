@@ -262,8 +262,6 @@ public class NewEquationSystem {
         this.println("------------------------------------------");
         this.println("Solving " + this.toString() + "\n");
 
-        //new ShapeDialog(this.shape, "");
-
         // We have a real equation system to solve.
         this.initSolve();
         while (!this.isSolvingFinished()) {
