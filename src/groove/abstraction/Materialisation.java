@@ -863,8 +863,8 @@ public class Materialisation implements Cloneable {
                 }
             }
 
-            NewEquationSystem eqSys =
-                new NewEquationSystem(this.mat.shape, outEsSet, inEsSet,
+            EdgeMatEqSystem eqSys =
+                new EdgeMatEqSystem(this.mat.shape, outEsSet, inEsSet,
                     frozenEdges);
             eqSys.solve();
             Set<Shape> validShapes = eqSys.getResultShapes();
@@ -1050,7 +1050,7 @@ public class Materialisation implements Cloneable {
                 this.result.add(this.mat);
             } else {
                 EquationSystem eqSys =
-                    new EquationSystem(this.mat.shape, this.nodeS);
+                    new NodeSingEqSystem(this.mat.shape, this.nodeS);
                 eqSys.solve();
                 Set<Shape> validShapes = eqSys.getResultShapes();
 
