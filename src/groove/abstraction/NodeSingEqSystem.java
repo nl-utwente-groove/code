@@ -150,6 +150,7 @@ public class NodeSingEqSystem extends EquationSystem {
     }
 
     @Override
+    // EDUARDO: Improve this method... Maybe move to super?
     void buildAdmissibilityConstraints() {
         // For all binary labels.
         for (Label label : Util.binaryLabelSet(this.shape)) {
