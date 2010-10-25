@@ -34,7 +34,7 @@ public final class EdgeMatEqSystem extends EquationSystem {
     // Static fields
     // ------------------------------------------------------------------------
 
-    private static boolean DEBUG = false;
+    private static boolean DEBUG = true;
     private static boolean USE_GUI = false;
 
     // ------------------------------------------------------------------------
@@ -135,7 +135,6 @@ public final class EdgeMatEqSystem extends EquationSystem {
             for (EquivClass<ShapeNode> ecO : this.shape.getEquivRelation()) {
                 // For all equivalence classes. (As incoming)
                 for (EquivClass<ShapeNode> ecI : this.shape.getEquivRelation()) {
-
                     // For each pair of equivalence classes we have a constraint.
                     AdmissibilityConstraint admisConstr = this.newAdmisConstr();
 
@@ -200,9 +199,8 @@ public final class EdgeMatEqSystem extends EquationSystem {
 
                     // We don't want trivially valid constraints.
                     if (!admisConstr.isVacuous()) {
-                        this.admisConstrs.add(admisConstr);
+                        this.addAdmisConstr(admisConstr);
                     }
-
                 }
             }
         }

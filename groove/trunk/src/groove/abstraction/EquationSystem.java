@@ -126,6 +126,12 @@ public abstract class EquationSystem {
         return new AdmissibilityConstraint();
     }
 
+    void addAdmisConstr(AdmissibilityConstraint admisConstr) {
+        if (!this.admisConstrs.contains(admisConstr)) {
+            this.admisConstrs.add(admisConstr);
+        }
+    }
+
     /**
      * EDUARDO: Comment this...
      */
@@ -321,6 +327,16 @@ public abstract class EquationSystem {
             return "x" + this.number;
         }
 
+        @Override
+        public boolean equals(Object o) {
+            boolean result = false;
+            if (o instanceof MultVar) {
+                MultVar other = (MultVar) o;
+                result = this.number == other.number;
+            }
+            return result;
+        }
+
     }
 
     // --------
@@ -434,6 +450,18 @@ public abstract class EquationSystem {
             return this.nodeMult + "*" + this.multVar;
         }
 
+        @Override
+        public boolean equals(Object o) {
+            boolean result = false;
+            if (o instanceof MultTerm) {
+                MultTerm other = (MultTerm) o;
+                result =
+                    this.nodeMult.equals(other.nodeMult)
+                        && this.multVar.equals(other.multVar);
+            }
+            return result;
+        }
+
         public Multiplicity multiply() {
             assert this.multVar.mult != null;
             return this.nodeMult.multiply(this.multVar.mult);
@@ -463,6 +491,20 @@ public abstract class EquationSystem {
             return "[Out sum: " + this.outSumTerms + " + " + this.outSumConst
                 + ", In sum: " + this.inSumTerms + " + " + this.inSumConst
                 + "]";
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            boolean result = false;
+            if (o instanceof AdmissibilityConstraint) {
+                AdmissibilityConstraint other = (AdmissibilityConstraint) o;
+                result =
+                    this.outSumTerms.equals(other.outSumTerms)
+                        && this.outSumConst.equals(other.outSumConst)
+                        && this.inSumTerms.equals(other.inSumTerms)
+                        && this.inSumConst.equals(other.inSumConst);
+            }
+            return result;
         }
 
         public void addToOutSum(MultTerm term) {
