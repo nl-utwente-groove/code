@@ -16,6 +16,7 @@
  */
 package groove.abstraction;
 
+import groove.abstraction.gui.ShapeDialog;
 import groove.graph.Label;
 import groove.util.Pair;
 
@@ -34,12 +35,12 @@ public final class EdgeMatEqSystem extends EquationSystem {
     // ------------------------------------------------------------------------
 
     private static boolean DEBUG = false;
+    private static boolean USE_GUI = false;
 
     // ------------------------------------------------------------------------
     // Object fields
     // ------------------------------------------------------------------------
 
-    private Shape shape;
     private CountingSet<EdgeSignature> outEsSet;
     private CountingSet<EdgeSignature> inEsSet;
     private Set<ShapeEdge> frozenEdges;
@@ -124,8 +125,10 @@ public final class EdgeMatEqSystem extends EquationSystem {
     }
 
     @Override
-    // EDUARDO: Improve this method... Maybe move to super?
     void buildAdmissibilityConstraints() {
+        if (USE_GUI) {
+            new ShapeDialog(this.shape, "");
+        }
         // For all binary labels.
         for (Label label : Util.binaryLabelSet(this.shape)) {
             // For all equivalence classes. (As outgoing)
@@ -147,7 +150,7 @@ public final class EdgeMatEqSystem extends EquationSystem {
                         Pair<MultVar,MultVar> outMultVars =
                             this.outMap.get(nOEs);
                         if (outMultVars != null) {
-                            // Yes, we do. Create a new MultTerm for each
+                            // Yes, we do. Create a new MultTerm for the second
                             // element in the pair.
                             MultTerm term;
                             term = new MultTerm(nOMult, outMultVars.second());
@@ -176,7 +179,7 @@ public final class EdgeMatEqSystem extends EquationSystem {
                         // signature.
                         Pair<MultVar,MultVar> inMultVars = this.inMap.get(nIEs);
                         if (inMultVars != null) {
-                            // Yes, we do. Create a new MultTerm for each
+                            // Yes, we do. Create a new MultTerm for the second
                             // element in the pair.
                             MultTerm term;
                             term = new MultTerm(nIMult, inMultVars.second());
