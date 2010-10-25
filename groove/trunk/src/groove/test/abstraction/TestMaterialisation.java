@@ -124,14 +124,14 @@ public class TestMaterialisation extends TestCase {
             for (RuleMatch preMatch : preMatches) {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);
-                assertTrue(mats.size() == 6);
-                /*for (Materialisation mat : mats) {
+                assertTrue(mats.size() == 8);
+                for (Materialisation mat : mats) {
                     Shape matShape = mat.getShape();
                     assertTrue((matShape.nodeSet().size() == 5 && Util.getBinaryEdges(
-                        matShape).size() == 6)
-                        || (matShape.nodeSet().size() == 4 && Util.getBinaryEdges(
+                        matShape).size() == 3)
+                        || (matShape.nodeSet().size() == 6 && Util.getBinaryEdges(
                             matShape).size() == 4));
-                }*/
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
