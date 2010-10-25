@@ -341,6 +341,7 @@ public class Materialisation implements Cloneable {
         // Search for edges in the match image that have abstract
         // multiplicities.
         Set<ShapeEdge> processedEdges = new HashSet<ShapeEdge>();
+        Set<ShapeEdge> edgesToFreeze = new HashSet<ShapeEdge>();
         for (Entry<Edge,Edge> edgeEntry : originalMap.edgeMap().entrySet()) {
             Edge edgeR = edgeEntry.getKey();
             ShapeEdge edgeS = (ShapeEdge) edgeEntry.getValue();
@@ -350,7 +351,9 @@ public class Materialisation implements Cloneable {
                 EdgeSignature outEs = this.shape.getEdgeOutSignature(edgeS);
                 EdgeSignature inEs = this.shape.getEdgeInSignature(edgeS);
                 if (!this.shape.isOutEdgeSigConcrete(outEs)
-                    || !this.shape.isInEdgeSigConcrete(inEs)) {
+                    || !this.shape.isOutEdgeSigUnique(outEs)
+                    || !this.shape.isInEdgeSigConcrete(inEs)
+                    || !this.shape.isInEdgeSigUnique(inEs)) {
                     // We have an edge in the rule that was matched to an edge
                     // in the shape with an abstract multiplicity. We need to
                     // materialise this edge.
@@ -359,9 +362,13 @@ public class Materialisation implements Cloneable {
                         Util.getReverseEdgeMap(originalMap, edgeS);
                     this.tasks.add(new MaterialiseEdge(this, edgeS, edgesR));
                     processedEdges.add(edgeS);
+                } else {
+                    // We have a concrete match of an edge. Freeze it.
+                    edgesToFreeze.add(edgeS);
                 }
             }
         }
+        this.shape.freezeEdges(edgesToFreeze);
 
         // Check that all nodes of the LHS are in the same equivalence class.
         for (Entry<Node,Node> nodeEntry : originalMap.nodeMap().entrySet()) {
@@ -390,7 +397,8 @@ public class Materialisation implements Cloneable {
      * @param nodeR - the node in the rule.
      * @param nodeS - the newly materialised node in the shape.
      */
-    private void extendMatch(Node nodeR, ShapeNode nodeS) {
+    private void extendMatch(Node nodeR, ShapeNode nodeS,
+            Set<ShapeEdge> edgesToFreeze) {
         this.match.putNode(nodeR, nodeS);
         // Look for all edges where nodeR occurs and update the edge map.
         for (Entry<Edge,Edge> edgeEntry : this.match.edgeMap().entrySet()) {
@@ -421,8 +429,11 @@ public class Materialisation implements Cloneable {
                     EdgeSignature inEs =
                         this.shape.getEdgeInSignature(newEdgeS);
                     if (this.shape.isOutEdgeSigConcrete(outEs)
-                        && this.shape.isInEdgeSigConcrete(inEs)) {
+                        && this.shape.isOutEdgeSigUnique(outEs)
+                        && this.shape.isInEdgeSigConcrete(inEs)
+                        && this.shape.isInEdgeSigUnique(inEs)) {
                         this.match.putEdge(edgeR, newEdgeS);
+                        edgesToFreeze.add(newEdgeS);
                     } // else, we have an edge that needs to be materialised.
                       // Wait for the MaterialiseEdge operation to take care
                       // of this edge.
@@ -735,6 +746,8 @@ public class Materialisation implements Cloneable {
         public void perform() { // ExtendPreMatch
             assert (this.nodesR.size() == this.newNodes.size()) : "Sets should have the same size!";
 
+            Set<ShapeEdge> edgesToFreeze = new HashSet<ShapeEdge>();
+
             // Both sets have the same size. Go over both of them at the same
             // time, and take the returned values of the iterator as the match.
             int nodeSetsSize = this.nodesR.size();
@@ -744,8 +757,11 @@ public class Materialisation implements Cloneable {
                 Node nodeR = nodesRIter.next();
                 ShapeNode nodeS = newNodesIter.next();
                 // Adjust the match of the materialisation.
-                this.mat.extendMatch(nodeR, nodeS);
+                this.mat.extendMatch(nodeR, nodeS, edgesToFreeze);
             }
+
+            // Freeze all extended edges.
+            this.mat.shape.freezeEdges(edgesToFreeze);
 
             // Add this materialisation to the result set of this
             // operation.
@@ -1183,7 +1199,7 @@ public class Materialisation implements Cloneable {
     /** Test method. */
     public static void main(String args[]) {
         Multiplicity.initMultStore();
-        test2();
+        test0();
     }
 
 }
