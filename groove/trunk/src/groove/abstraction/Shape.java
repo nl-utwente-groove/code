@@ -1196,7 +1196,10 @@ public class Shape extends DefaultGraph implements Cloneable {
         return this.getEdgeSigInMult(es).equals(Multiplicity.getMultOf(1));
     }
 
-    private Set<ShapeEdge> getEdgesFrom(EdgeSignature es, boolean outgoing) {
+    /**
+     * EDUARDO: Comment this...
+     */
+    public Set<ShapeEdge> getEdgesFrom(EdgeSignature es, boolean outgoing) {
         Set<ShapeEdge> result = new HashSet<ShapeEdge>();
         ShapeNode node = es.getNode();
         Label label = es.getLabel();
