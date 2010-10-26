@@ -35,10 +35,12 @@ import groove.view.StoredGrammarView;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -56,6 +58,12 @@ import java.util.Set;
  * @author Eduardo Zambon
  */
 public class Materialisation implements Cloneable {
+
+    // ------------------------------------------------------------------------
+    // Static fields
+    // ------------------------------------------------------------------------
+
+    private static final boolean LOG = false;
 
     // ------------------------------------------------------------------------
     // Object fields
@@ -83,6 +91,11 @@ public class Materialisation implements Cloneable {
      */
     protected PriorityQueue<MatOp> tasks;
 
+    /**
+     * The sequence of operations applied in this materialisation.
+     */
+    protected List<String> log;
+
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
@@ -96,6 +109,9 @@ public class Materialisation implements Cloneable {
         this.preMatch = preMatch;
         this.match = preMatch.getElementMap().clone();
         this.tasks = new PriorityQueue<MatOp>();
+        if (LOG) {
+            this.log = new ArrayList<String>();
+        }
         this.planTasks();
     }
 
@@ -114,6 +130,9 @@ public class Materialisation implements Cloneable {
             cloneOp.setMat(this);
             this.tasks.add(cloneOp);
         }
+        if (LOG) {
+            this.log = new ArrayList<String>(mat.log);
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -123,7 +142,8 @@ public class Materialisation implements Cloneable {
     @Override
     public String toString() {
         return "Materialisation:\nShape:\n" + this.shape + "Match: "
-            + this.match + "\nTasks: " + this.tasks + "\n";
+            + this.match + "\nTasks: " + this.tasks + "\nLog: " + this.log
+            + "\n";
     }
 
     @Override
@@ -244,6 +264,12 @@ public class Materialisation implements Cloneable {
     private MatOp getNextOp() {
         assert !this.isFinished() : "Nothing to do!";
         return this.tasks.remove();
+    }
+
+    private void logOp(String op) {
+        if (LOG) {
+            this.log.add(op);
+        }
     }
 
     /**
@@ -621,6 +647,8 @@ public class Materialisation implements Cloneable {
 
         @Override
         public void perform() { // MaterialiseNode
+            this.mat.logOp(this.toString());
+
             // Compute how many copies of the abstract node we need to
             // materialise.
             int copies = this.nodesR.size();
@@ -746,6 +774,8 @@ public class Materialisation implements Cloneable {
         public void perform() { // ExtendPreMatch
             assert (this.nodesR.size() == this.newNodes.size()) : "Sets should have the same size!";
 
+            this.mat.logOp(this.toString());
+
             Set<ShapeEdge> edgesToFreeze = new HashSet<ShapeEdge>();
 
             // Both sets have the same size. Go over both of them at the same
@@ -839,6 +869,8 @@ public class Materialisation implements Cloneable {
          */
         @Override
         public void perform() { // MaterialiseEdge
+            this.mat.logOp(this.toString());
+
             NodeEdgeMap match = this.mat.match;
             Shape shape = this.mat.shape;
 
@@ -978,6 +1010,8 @@ public class Materialisation implements Cloneable {
 
         @Override
         public void perform() { // PullOutNode
+            this.mat.logOp(this.toString());
+
             // Materialise the node and get the new multiplicity set back.
             Set<Multiplicity> mults =
                 this.mat.shape.materialiseNode(this.nodeS, this.mult, 1);
@@ -1060,6 +1094,8 @@ public class Materialisation implements Cloneable {
 
         @Override
         public void perform() { // SingulariseNode
+            this.mat.logOp(this.toString());
+
             if (this.mat.shape.getEquivClassOf(this.nodeS).size() == 1) {
                 // Nothing to do, the node is already in a singleton
                 // equivalence class.
@@ -1146,6 +1182,7 @@ public class Materialisation implements Cloneable {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);
                 for (Materialisation mat : mats) {
+                    System.out.println(mat);
                     String test;
                     if (mat.hasConcreteMatch()) {
                         test = "concrete";
@@ -1179,6 +1216,7 @@ public class Materialisation implements Cloneable {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);
                 for (Materialisation mat : mats) {
+                    System.out.println(mat);
                     String test;
                     if (mat.hasConcreteMatch()) {
                         test = "concrete";
@@ -1199,7 +1237,7 @@ public class Materialisation implements Cloneable {
     /** Test method. */
     public static void main(String args[]) {
         Multiplicity.initMultStore();
-        test0();
+        test2();
     }
 
 }
