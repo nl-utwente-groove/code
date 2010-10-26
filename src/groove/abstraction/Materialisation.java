@@ -347,6 +347,8 @@ public class Materialisation implements Cloneable {
 
     private void planTasks() {
         NodeEdgeMap originalMap = this.preMatch.getElementMap();
+        boolean isMatNodeOpEmpty = true;
+        boolean isMatEdgeOpEmpty = true;
 
         // Search for nodes in the match image that have abstract
         // multiplicities. 
@@ -361,6 +363,7 @@ public class Materialisation implements Cloneable {
                 Set<Node> nodesR = Util.getReverseNodeMap(originalMap, nodeS);
                 this.tasks.add(new MaterialiseNode(this, nodeS, nodesR));
                 processedNodes.add(nodeS);
+                isMatNodeOpEmpty = false;
             }
         }
 
@@ -388,6 +391,7 @@ public class Materialisation implements Cloneable {
                         Util.getReverseEdgeMap(originalMap, edgeS);
                     this.tasks.add(new MaterialiseEdge(this, edgeS, edgesR));
                     processedEdges.add(edgeS);
+                    isMatEdgeOpEmpty = false;
                 } else {
                     // We have a concrete match of an edge. Freeze it.
                     edgesToFreeze.add(edgeS);
@@ -412,6 +416,15 @@ public class Materialisation implements Cloneable {
                 // no calls to MaterialiseNode with nodeS as a parameter.
                 this.tasks.add(new SingulariseNode(this, nodeS));
                 processedNodes.add(nodeS);
+            }
+        }
+        // Check if we need to pull out more nodes in the shape before
+        // starting to singularise nodes.
+        if (isMatNodeOpEmpty && isMatEdgeOpEmpty) {
+            for (Pair<ShapeNode,Multiplicity> pair : this.getNodesToPullOut()) {
+                PullOutNode pullNode =
+                    new PullOutNode(this, pair.first(), pair.second());
+                this.tasks.add(pullNode);
             }
         }
 
@@ -479,8 +492,8 @@ public class Materialisation implements Cloneable {
                 continue;
             }
 
+            // Outgoing edges
             ShapeNode srcS = ((SingulariseNode) op).nodeS;
-
             for (ShapeEdge edgeS : this.shape.outBinaryEdgeSet(srcS)) {
                 if (!this.shape.isFrozen(edgeS)) {
                     EquivClass<ShapeNode> srcEc =
@@ -504,6 +517,37 @@ public class Materialisation implements Cloneable {
                                 this.shape.getEdgeSigOutMult(outEs);
                             Pair<ShapeNode,Multiplicity> pair =
                                 new Pair<ShapeNode,Multiplicity>(tgtS, mult);
+                            result.add(pair);
+                        }
+                    }
+                }
+            }
+
+            // Incoming edges
+            ShapeNode tgtS = ((SingulariseNode) op).nodeS;
+            for (ShapeEdge edgeS : this.shape.inBinaryEdgeSet(tgtS)) {
+                if (!this.shape.isFrozen(edgeS)) {
+                    EquivClass<ShapeNode> tgtEc =
+                        this.shape.getEquivClassOf(tgtS);
+                    Label label = edgeS.label();
+                    srcS = edgeS.source();
+                    EdgeSignature outEs =
+                        this.shape.getEdgeSignature(srcS, label, tgtEc);
+                    if (!this.shape.isOutEdgeSigUnique(outEs)) {
+                        // We need to pull out some nodes.
+
+                        // First, check if srcS is abstract.
+                        Multiplicity srcMult = this.shape.getNodeMult(srcS);
+                        if (srcMult.isAbstract()) {
+                            // Get the multiplicity from the source signature.
+                            EquivClass<ShapeNode> srcEc =
+                                this.shape.getEquivClassOf(srcS);
+                            EdgeSignature inEs =
+                                this.shape.getEdgeSignature(tgtS, label, srcEc);
+                            Multiplicity mult =
+                                this.shape.getEdgeSigInMult(inEs);
+                            Pair<ShapeNode,Multiplicity> pair =
+                                new Pair<ShapeNode,Multiplicity>(srcS, mult);
                             result.add(pair);
                         }
                     }
@@ -1249,9 +1293,43 @@ public class Materialisation implements Cloneable {
     }
 
     /** Test method. */
+    public static void test3() {
+        final String DIRECTORY = "junit/samples/abs-test.gps/";
+
+        File file = new File(DIRECTORY);
+        try {
+            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
+            Graph graph = view.getGraphView("rule-app-test-0").toModel();
+            Shape shape = new Shape(graph);
+            GraphGrammar grammar = view.toGrammar();
+            Rule rule = grammar.getRule("add");
+            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            for (RuleMatch preMatch : preMatches) {
+                Set<Materialisation> mats =
+                    Materialisation.getMaterialisations(shape, preMatch);
+                for (Materialisation mat : mats) {
+                    System.out.println(mat);
+                    String test;
+                    if (mat.hasConcreteMatch()) {
+                        test = "concrete";
+                    } else {
+                        test = "abstract";
+                    }
+                    Shape matShape = mat.getShape();
+                    new ShapeDialog(matShape, test);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /** Test method. */
     public static void main(String args[]) {
         Multiplicity.initMultStore();
-        test0();
+        test3();
     }
 
 }

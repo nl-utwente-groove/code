@@ -16,26 +16,18 @@
  */
 package groove.test.abstraction;
 
-import groove.abstraction.Materialisation;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.Parameters;
-import groove.abstraction.PreMatch;
 import groove.abstraction.Shape;
 import groove.abstraction.ShapeEdge;
 import groove.abstraction.ShapeNode;
 import groove.abstraction.Util;
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.trans.GraphGrammar;
-import groove.trans.Rule;
-import groove.trans.RuleMatch;
 import groove.util.Groove;
-import groove.view.FormatException;
-import groove.view.StoredGrammarView;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -177,46 +169,6 @@ public class TestShape extends TestCase {
                 assertTrue(shape.getEdgeOutMult(se).equals(Multiplicity.OMEGA));
             }
         } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void testShapeIso() {
-        final String DIRECTORY = "junit/samples/abs-test.gps/";
-
-        File file = new File(DIRECTORY);
-        try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            Graph graph = view.getGraphView("rule-app-test-0").toModel();
-            Shape shape = new Shape(graph);
-
-            // Basic iso check.
-            assertTrue(shape.equals(shape));
-            // Compare to a clone.
-            assertTrue(shape.equals(shape.clone()));
-
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("add");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            for (RuleMatch preMatch : preMatches) {
-                Set<Materialisation> mats =
-                    Materialisation.getMaterialisations(shape, preMatch);
-                for (Materialisation mat : mats) {
-                    Shape result = mat.applyMatch();
-
-                    // The shape after rule application is different.
-                    assertFalse(shape.equals(result));
-
-                    Shape normalisedShape = result.normalise();
-
-                    // The shape after normalisation is isomorphic to the
-                    // original one.
-                    assertTrue(shape.equals(normalisedShape));
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
             e.printStackTrace();
         }
     }
