@@ -63,7 +63,7 @@ public class Materialisation implements Cloneable {
     // Static fields
     // ------------------------------------------------------------------------
 
-    private static final boolean LOG = false;
+    private static final boolean LOG = true;
 
     // ------------------------------------------------------------------------
     // Object fields
@@ -473,10 +473,10 @@ public class Materialisation implements Cloneable {
             new HashSet<Pair<ShapeNode,Multiplicity>>();
 
         // Check all nodes marked to be singularised.
-        outerLoop: for (MatOp op : this.tasks) {
+        for (MatOp op : this.tasks) {
             if (!(op instanceof SingulariseNode)) {
                 // Ignore this operation.
-                continue outerLoop;
+                continue;
             }
 
             ShapeNode srcS = ((SingulariseNode) op).nodeS;
@@ -494,23 +494,18 @@ public class Materialisation implements Cloneable {
 
                         // First, check if tgtS is abstract.
                         Multiplicity tgtMult = this.shape.getNodeMult(tgtS);
-                        if (!tgtMult.isAbstract()) {
-                            // It's not. We can't pull out nodes from here.
-                            // Abort.
-                            result.clear();
-                            break outerLoop;
+                        if (tgtMult.isAbstract()) {
+                            // Get the multiplicity from the source signature.
+                            EquivClass<ShapeNode> tgtEc =
+                                this.shape.getEquivClassOf(tgtS);
+                            EdgeSignature outEs =
+                                this.shape.getEdgeSignature(srcS, label, tgtEc);
+                            Multiplicity mult =
+                                this.shape.getEdgeSigOutMult(outEs);
+                            Pair<ShapeNode,Multiplicity> pair =
+                                new Pair<ShapeNode,Multiplicity>(tgtS, mult);
+                            result.add(pair);
                         }
-
-                        // OK, tgtS is abstract. Get the multiplicity from the
-                        // source signature.
-                        EquivClass<ShapeNode> tgtEc =
-                            this.shape.getEquivClassOf(tgtS);
-                        EdgeSignature outEs =
-                            this.shape.getEdgeSignature(srcS, label, tgtEc);
-                        Multiplicity mult = this.shape.getEdgeSigOutMult(outEs);
-                        Pair<ShapeNode,Multiplicity> pair =
-                            new Pair<ShapeNode,Multiplicity>(tgtS, mult);
-                        result.add(pair);
                     }
                 }
             }
@@ -1088,6 +1083,24 @@ public class Materialisation implements Cloneable {
         }
 
         @Override
+        public int compareTo(MatOp op) {
+            int result = super.compareTo(op);
+            if (result == 0) {
+                SingulariseNode other = (SingulariseNode) op;
+                int thisId = this.nodeS.getNumber();
+                int otherId = other.nodeS.getNumber();
+                if (thisId == otherId) {
+                    result = 0;
+                } else if (thisId < otherId) {
+                    result = -1;
+                } else {
+                    result = 1;
+                }
+            }
+            return result;
+        }
+
+        @Override
         public int getPriority() {
             return 4;
         }
@@ -1149,6 +1162,7 @@ public class Materialisation implements Cloneable {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);
                 for (Materialisation mat : mats) {
+                    System.out.println(mat);
                     String test;
                     if (mat.hasConcreteMatch()) {
                         test = "concrete";
@@ -1237,7 +1251,7 @@ public class Materialisation implements Cloneable {
     /** Test method. */
     public static void main(String args[]) {
         Multiplicity.initMultStore();
-        test2();
+        test0();
     }
 
 }

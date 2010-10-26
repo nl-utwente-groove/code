@@ -65,7 +65,7 @@ public class ShapeDialog {
     public ShapeDialog(Shape shape, Options options, String windowTitle) {
         this.jgraph =
             new JGraph(ShapeJModel.getInstance(shape, options), false);
-        this.jgraph.setPreferredSize(new Dimension(800, 350));
+        this.jgraph.setPreferredSize(new Dimension(600, 450));
         this.title = windowTitle;
         this.shape = shape;
 
