@@ -70,6 +70,26 @@ public class TestPreMatch extends TestCase {
     }
 
     public void testPreMatch1() {
+        Parameters.setNodeMultBound(3);
+        Parameters.setEdgeMultBound(1);
+        Multiplicity.initMultStore();
+        File file = new File(DIRECTORY);
+        try {
+            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
+            Graph graph = view.getGraphView("shape-build-test-2").toModel();
+            Shape shape = new Shape(graph);
+            GraphGrammar grammar = view.toGrammar();
+            Rule rule = grammar.getRule("test-match-4");
+            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            assertTrue(preMatches.isEmpty());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void testPreMatch2() {
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
         Multiplicity.initMultStore();
@@ -92,7 +112,7 @@ public class TestPreMatch extends TestCase {
         }
     }
 
-    public void testPreMatch2() {
+    public void testPreMatch3() {
         File file = new File(DIRECTORY);
         try {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
