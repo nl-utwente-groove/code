@@ -34,7 +34,7 @@ public final class EdgeMatEqSystem extends EquationSystem {
     // Static fields
     // ------------------------------------------------------------------------
 
-    private static boolean DEBUG = true;
+    private static boolean DEBUG = false;
     private static boolean USE_GUI = false;
 
     // ------------------------------------------------------------------------

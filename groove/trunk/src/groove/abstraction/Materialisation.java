@@ -1329,7 +1329,7 @@ public class Materialisation implements Cloneable {
     /** Test method. */
     public static void main(String args[]) {
         Multiplicity.initMultStore();
-        test3();
+        test2();
     }
 
 }
