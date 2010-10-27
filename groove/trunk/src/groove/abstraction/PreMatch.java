@@ -16,8 +16,10 @@
  */
 package groove.abstraction;
 
+import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphShape;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.trans.Rule;
@@ -25,6 +27,7 @@ import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 
 import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -57,7 +60,7 @@ public class PreMatch {
      * The given host must be a shape.
      */
     public static Set<RuleMatch> getPreMatches(GraphShape host, Rule rule) {
-        assert host instanceof Shape : "Cannot use abstract methods to non-abstract graphs.";
+        assert host instanceof Shape : "Cannot use abstract methods on non-abstract graphs.";
         Shape shape = (Shape) host;
         Set<RuleMatch> preMatches = new HashSet<RuleMatch>();
         // We use the normal matching algorithms for finding matches.
@@ -85,7 +88,7 @@ public class PreMatch {
      * respects node multiplicities.
      */
     public static boolean isValidPreMatch(GraphShape host, RuleMatch match) {
-        assert host instanceof Shape : "Cannot use abstract methods to non-abstract graphs.";
+        assert host instanceof Shape : "Cannot use abstract methods on non-abstract graphs.";
 
         Shape shape = (Shape) host;
         NodeEdgeMap map = match.getElementMap();
@@ -109,12 +112,12 @@ public class PreMatch {
 
         // Check edge multiplicities.
         boolean complyToEdgeMult = true;
+
         // EZ says: the snippet of code commented below comes from the
         // definition of pre-matching (see the technical report: 
         // "Graph Abstraction and Abstract Graph Transformation", page 21,
         // definition 35). However, item 2 of the definition is wrong since
-        // it excludes valid pre-matches. Instead, we leave for the
-        // materialisation algorithm to rule out invalid configurations.
+        // it excludes valid pre-matches.
 
         /*if (complyToNodeMult) {
             // For all edges in the image of the LHS.
@@ -141,7 +144,63 @@ public class PreMatch {
             }
         }*/
 
+        // EZ says: here is the correct version of item 2. It is split in
+        // two items: 2' and 2''. See the updated version of the report.
+
+        if (complyToNodeMult) {
+            Graph lhs = match.getRule().lhs();
+            // For all binary labels.
+            outerLoop: for (Label label : Util.binaryLabelSet(shape)) {
+                // For all nodes of the LHS.
+                for (Entry<Node,Node> entry : map.nodeMap().entrySet()) {
+                    Node v = entry.getKey();
+                    ShapeNode pV = (ShapeNode) entry.getValue();
+
+                    // For all outgoing edges from the image of v. Item 2'.
+                    for (Edge edge : Util.getOutEdges(shape, pV, label)) {
+                        ShapeEdge e = (ShapeEdge) edge;
+                        ShapeNode w = e.opposite();
+                        Set<Node> pInvW = Util.getReverseNodeMap(map, w);
+                        Set<Edge> vInterPInvW =
+                            Util.getIntersectEdges(lhs, v, pInvW, label);
+                        Multiplicity leftMult =
+                            Multiplicity.getEdgeSetMult(vInterPInvW);
+
+                        EquivClass<ShapeNode> ecW = shape.getEquivClassOf(w);
+                        EdgeSignature es =
+                            shape.getEdgeSignature(pV, label, ecW);
+                        Multiplicity rightMult = shape.getEdgeSigOutMult(es);
+
+                        if (!leftMult.isAtMost(rightMult)) {
+                            complyToEdgeMult = false;
+                            break outerLoop;
+                        }
+                    }
+
+                    // For all incoming edges from the image of v. Item 2''.
+                    for (Edge edge : Util.getInEdges(shape, pV, label)) {
+                        ShapeEdge e = (ShapeEdge) edge;
+                        ShapeNode w = e.source();
+                        Set<Node> pInvW = Util.getReverseNodeMap(map, w);
+                        Set<Edge> pInvWInterV =
+                            Util.getIntersectEdges(lhs, pInvW, v, label);
+                        Multiplicity leftMult =
+                            Multiplicity.getEdgeSetMult(pInvWInterV);
+
+                        EquivClass<ShapeNode> ecW = shape.getEquivClassOf(w);
+                        EdgeSignature es =
+                            shape.getEdgeSignature(pV, label, ecW);
+                        Multiplicity rightMult = shape.getEdgeSigInMult(es);
+
+                        if (!leftMult.isAtMost(rightMult)) {
+                            complyToEdgeMult = false;
+                            break outerLoop;
+                        }
+                    }
+                }
+            }
+        }
+
         return complyToNodeMult && complyToEdgeMult;
     }
-
 }
