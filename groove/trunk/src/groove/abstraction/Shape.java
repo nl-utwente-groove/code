@@ -1309,19 +1309,24 @@ public class Shape extends DefaultGraph implements Cloneable {
     }
 
     /** EDUARDO: Comment this... */
+    public void freezeEdge(ShapeEdge edgeToFreeze) {
+        assert this.edgeSet().contains(edgeToFreeze);
+        EdgeSignature outEs = this.getEdgeOutSignature(edgeToFreeze);
+        if (this.isOutEdgeSigUnique(outEs)) {
+            this.outEdgeMultMap.remove(outEs);
+        }
+        EdgeSignature inEs = this.getEdgeInSignature(edgeToFreeze);
+        if (this.isInEdgeSigUnique(inEs)) {
+            this.inEdgeMultMap.remove(inEs);
+        }
+        this.frozenEdges.add(edgeToFreeze);
+    }
+
+    /** EDUARDO: Comment this... */
     public void freezeEdges(Set<ShapeEdge> edgesToFreeze) {
         for (ShapeEdge edgeToFreeze : edgesToFreeze) {
-            assert this.edgeSet().contains(edgeToFreeze);
-            EdgeSignature outEs = this.getEdgeOutSignature(edgeToFreeze);
-            if (this.isOutEdgeSigUnique(outEs)) {
-                this.outEdgeMultMap.remove(outEs);
-            }
-            EdgeSignature inEs = this.getEdgeInSignature(edgeToFreeze);
-            if (this.isInEdgeSigUnique(inEs)) {
-                this.inEdgeMultMap.remove(inEs);
-            }
+            this.freezeEdge(edgeToFreeze);
         }
-        this.frozenEdges.addAll(edgesToFreeze);
     }
 
     /** Returns true if the given edge is frozen in the shape. */
