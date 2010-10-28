@@ -20,9 +20,7 @@ import groove.util.CollectionOfCollections;
 import groove.util.DeltaSet;
 import groove.util.StackedSet;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -226,25 +224,17 @@ public class DeltaGraphCache extends GraphCache {
      * delegates to super.
      */
     @Override
-    protected List<Map<Label,Set<Edge>>> computeLabelEdgeMaps() {
+    protected Map<Label,Set<Edge>> computeLabelEdgeMap() {
         // the cache basis
         AbstractGraph<?> basis = getCacheBasis();
         // otherwise, we can use the cache delta
         DeltaApplier delta = getCacheDelta();
-        @SuppressWarnings({"rawtypes", "unchecked"})
-        final List<Map<Label,Set<Edge>>> basisMaps =
-            (List) basis.getLabelEdgeMaps();
-        final List<Map<Label,Set<Edge>>> result =
-            new ArrayList<Map<Label,Set<Edge>>>();// [basisMaps.length];
-        result.add(null);
-        for (int i = 1; i < basisMaps.size(); i++) {
-            if (basisMaps.get(i) != null) {
-                result.add(new HashMap<Label,Set<Edge>>(basisMaps.get(i)));
-            }
-        }
+        @SuppressWarnings( {"rawtypes", "unchecked"})
+        final Map<Label,Set<Edge>> basisMaps = (Map) basis.getLabelEdgeMap();
+        final Map<Label,Set<Edge>> result = new HashMap<Label,Set<Edge>>();
         DeltaTarget target = new DeltaTarget() {
             public boolean addEdge(Edge elem) {
-                return addToLabelEdgeMaps(result, elem, basisMaps);
+                return addToLabelEdgeMap(result, elem, basisMaps);
             }
 
             public boolean addNode(Node elem) {
@@ -253,7 +243,7 @@ public class DeltaGraphCache extends GraphCache {
             }
 
             public boolean removeEdge(Edge elem) {
-                return removeFromLabelEdgeMaps(result, elem, basisMaps);
+                return removeFromLabelEdgeMap(result, elem, basisMaps);
             }
 
             public boolean removeNode(Node elem) {
@@ -263,10 +253,8 @@ public class DeltaGraphCache extends GraphCache {
         };
         delta.applyDelta(target, DeltaApplier.EDGES_ONLY);
         assert getEdgeSet().containsAll(
-            new CollectionOfCollections<Edge>(result.get(2).values())) : "Edges not correct: "
-            + getEdgeSet()
-            + " does not contains all of "
-            + result.get(2).values();
+            new CollectionOfCollections<Edge>(result.values())) : "Edges not correct: "
+            + getEdgeSet() + " does not contains all of " + result.values();
         return result;
     }
 
@@ -285,7 +273,7 @@ public class DeltaGraphCache extends GraphCache {
             // so we have to compute it the hard way
             return super.computeNodeEdgeMap();
         } else {
-            @SuppressWarnings({"unchecked", "rawtypes"})
+            @SuppressWarnings( {"unchecked", "rawtypes"})
             Map<Node,Set<Edge>> basisMap = (Map) basis.nodeEdgeMap();
             Map<Node,Set<Edge>> result = new HashMap<Node,Set<Edge>>(basisMap);
             DeltaTarget target = createNodeEdgeMapTarget(basisMap, result);
@@ -363,22 +351,20 @@ public class DeltaGraphCache extends GraphCache {
     }
 
     /**
-     * Adds an edge to a given label-to-edgeset mapping array, cloning the
+     * Adds an edge to a given label-to-edgeset map, cloning the
      * relevant entry if necessary.
-     * @param newMaps the array to be updated
+     * @param labelEdgeMap the map to be updated
      * @param edge the edge to be added
      * @return <code>true</code> if the edge was indeed added, i.e., was not
      *         yet there in the first place
      */
-    boolean addToLabelEdgeMaps(List<Map<Label,Set<Edge>>> newMaps, Edge edge,
-            List<Map<Label,Set<Edge>>> basisMaps) {
-        int arity = edge.endCount();
-        Map<Label,Set<Edge>> labelEdgeMap = newMaps.get(arity);
+    boolean addToLabelEdgeMap(Map<Label,Set<Edge>> labelEdgeMap, Edge edge,
+            Map<Label,Set<Edge>> basisMap) {
         Set<Edge> labelEdgeSet = labelEdgeMap.get(edge.label());
         if (labelEdgeSet == null) {
             labelEdgeSet = createEdgeSet(null);
             labelEdgeMap.put(edge.label(), labelEdgeSet);
-        } else if (labelEdgeSet == basisMaps.get(arity).get(edge.label())) {
+        } else if (labelEdgeSet == basisMap.get(edge.label())) {
             labelEdgeSet = createEdgeSet(labelEdgeSet);
             labelEdgeMap.put(edge.label(), labelEdgeSet);
         }
@@ -386,18 +372,17 @@ public class DeltaGraphCache extends GraphCache {
     }
 
     /**
-     * Removes an edge from a given label-to-edgeset mapping array.
+     * Removes an edge from a given label-to-edgeset map.
      * 
-     * @param newMaps the array to be updated
+     * @param labelEdgeMap the map to be updated
      * @param edge the edge to be removed
      * @return <code>true</code> if the edge was actually there in the first
      *         place
      */
-    boolean removeFromLabelEdgeMaps(List<Map<Label,Set<Edge>>> newMaps,
-            Edge edge, List<Map<Label,Set<Edge>>> basisMaps) {
-        Map<Label,Set<Edge>> labelEdgeMap = newMaps.get(edge.endCount());
+    boolean removeFromLabelEdgeMap(Map<Label,Set<Edge>> labelEdgeMap,
+            Edge edge, Map<Label,Set<Edge>> basisMap) {
         Set<Edge> labelEdgeSet = labelEdgeMap.get(edge.label());
-        if (labelEdgeSet == basisMaps.get(edge.endCount()).get(edge.label())) {
+        if (labelEdgeSet == basisMap.get(edge.label())) {
             labelEdgeSet = createEdgeSet(labelEdgeSet);
             labelEdgeMap.put(edge.label(), labelEdgeSet);
         }
@@ -419,20 +404,25 @@ public class DeltaGraphCache extends GraphCache {
      */
     boolean addToNodeEdgeMap(Map<Node,Set<Edge>> newMap, Edge edge,
             Map<Node,? extends Set<? extends Edge>> basisMap) {
-        boolean result = false;
         assert basisMap != null;
-        int arity = edge.endCount();
-        for (int i = 0; i < arity; i++) {
-            Node end = edge.end(i);
-            Set<Edge> edgeSet = newMap.get(end);
-            if (edgeSet == null) {
-                newMap.put(end, edgeSet = createEdgeSet(null));
-            } else if (edgeSet == basisMap.get(end)) {
-                newMap.put(end, edgeSet = createEdgeSet(edgeSet));
-            }
-            result |= edgeSet.add(edge);
-        }
+        boolean result = putEdge(newMap, basisMap, edge.source(), edge);
+        result |= putEdge(newMap, basisMap, edge.target(), edge);
         return result;
+    }
+
+    /** Adds an edge to the edge set associated with a given node.
+     * Creates the edge set if necessary.
+     */
+    private boolean putEdge(Map<Node,Set<Edge>> newMap,
+            Map<Node,? extends Set<? extends Edge>> basisMap, Node end,
+            Edge edge) {
+        Set<Edge> edgeSet = newMap.get(end);
+        if (edgeSet == null) {
+            newMap.put(end, edgeSet = createEdgeSet(null));
+        } else if (edgeSet == basisMap.get(end)) {
+            newMap.put(end, edgeSet = createEdgeSet(edgeSet));
+        }
+        return edgeSet.add(edge);
     }
 
     /**

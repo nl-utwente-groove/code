@@ -71,12 +71,13 @@ public class DeltaGraph extends AbstractGraph<DeltaGraphCache> implements
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
         boolean isNew = !getCachedEdgeSet().contains(edge);
         if (isNew) {
-            int arity = edge.endCount();
-            for (int i = 0; i < arity; i++) {
-                Node end = edge.end(i);
-                if (getCachedNodeSet().add(end)) {
-                    fireAddNode(end);
-                }
+            Node source = edge.source();
+            if (getCachedNodeSet().add(source)) {
+                fireAddNode(source);
+            }
+            Node target = edge.target();
+            if (getCachedNodeSet().add(target)) {
+                fireAddNode(target);
             }
             getCachedEdgeSet().add(edge);
             fireAddEdge(edge);
