@@ -32,8 +32,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * This is where the magic happens... :P
@@ -107,7 +107,7 @@ public class Shape extends DefaultGraph implements Cloneable {
      *  to exist. This imply also that they are concrete, i.e., have all
      *  multiplicities equal to one.
      */
-    private final Set<ShapeEdge> frozenEdges;
+    private final Set<FrozenEdge> frozenEdges;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -124,7 +124,7 @@ public class Shape extends DefaultGraph implements Cloneable {
         this.outEdgeMultMap = new HashMap<EdgeSignature,Multiplicity>();
         this.inEdgeMultMap = new HashMap<EdgeSignature,Multiplicity>();
         this.edgeSigSet = new HashSet<EdgeSignature>();
-        this.frozenEdges = new HashSet<ShapeEdge>();
+        this.frozenEdges = new HashSet<FrozenEdge>();
         this.buildShape(false);
     }
 
@@ -142,7 +142,7 @@ public class Shape extends DefaultGraph implements Cloneable {
         this.outEdgeMultMap = new HashMap<EdgeSignature,Multiplicity>();
         this.inEdgeMultMap = new HashMap<EdgeSignature,Multiplicity>();
         this.edgeSigSet = new HashSet<EdgeSignature>();
-        this.frozenEdges = new HashSet<ShapeEdge>();
+        this.frozenEdges = new HashSet<FrozenEdge>();
     }
 
     /** Copying constructor. Clones all structures of the shape. */
@@ -154,7 +154,7 @@ public class Shape extends DefaultGraph implements Cloneable {
         this.nodeMultMap =
             new HashMap<ShapeNode,Multiplicity>(shape.nodeMultMap);
         this.equivRel = new EquivRelation<ShapeNode>(shape.equivRel);
-        this.frozenEdges = new HashSet<ShapeEdge>(shape.frozenEdges);
+        this.frozenEdges = new HashSet<FrozenEdge>(shape.frozenEdges);
 
         // Clone the edge signature set.
         this.edgeSigSet = new HashSet<EdgeSignature>();
@@ -890,9 +890,10 @@ public class Shape extends DefaultGraph implements Cloneable {
         if (mult == null) {
             mult = Multiplicity.getMultOf(0);
             // Check the frozen edges.
-            for (ShapeEdge edge : this.frozenEdges) {
+            for (FrozenEdge frozenEdge : this.frozenEdges) {
+                ShapeEdge edge = frozenEdge.getEdge();
                 if (es.asOutSigContains(edge)) {
-                    mult = Multiplicity.getMultOf(1);
+                    mult = frozenEdge.getOutMult();
                     break;
                 }
             }
@@ -906,9 +907,10 @@ public class Shape extends DefaultGraph implements Cloneable {
         if (mult == null) {
             mult = Multiplicity.getMultOf(0);
             // Check the frozen edges.
-            for (ShapeEdge edge : this.frozenEdges) {
+            for (FrozenEdge frozenEdge : this.frozenEdges) {
+                ShapeEdge edge = frozenEdge.getEdge();
                 if (es.asInSigContains(edge)) {
-                    mult = Multiplicity.getMultOf(1);
+                    mult = frozenEdge.getInMult();
                     break;
                 }
             }
@@ -1309,7 +1311,8 @@ public class Shape extends DefaultGraph implements Cloneable {
     }
 
     /** EDUARDO: Comment this... */
-    public void freezeEdge(ShapeEdge edgeToFreeze) {
+    public void freezeEdge(ShapeEdge edgeToFreeze, Multiplicity outMult,
+            Multiplicity inMult) {
         assert this.edgeSet().contains(edgeToFreeze);
         EdgeSignature outEs = this.getEdgeOutSignature(edgeToFreeze);
         if (this.isOutEdgeSigUnique(outEs)) {
@@ -1319,20 +1322,28 @@ public class Shape extends DefaultGraph implements Cloneable {
         if (this.isInEdgeSigUnique(inEs)) {
             this.inEdgeMultMap.remove(inEs);
         }
-        this.frozenEdges.add(edgeToFreeze);
+        this.frozenEdges.add(new FrozenEdge(edgeToFreeze, outMult, inMult));
     }
 
     /** EDUARDO: Comment this... */
     public void freezeEdges(Set<ShapeEdge> edgesToFreeze) {
+        Multiplicity oneMult = Multiplicity.getMultOf(1);
         for (ShapeEdge edgeToFreeze : edgesToFreeze) {
-            this.freezeEdge(edgeToFreeze);
+            this.freezeEdge(edgeToFreeze, oneMult, oneMult);
         }
     }
 
     /** Returns true if the given edge is frozen in the shape. */
     public boolean isFrozen(ShapeEdge edge) {
         assert this.edgeSet().contains(edge);
-        return this.frozenEdges.contains(edge);
+        boolean result = false;
+        for (FrozenEdge frozenEdge : this.frozenEdges) {
+            if (frozenEdge.getEdge().equals(edge)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     /** Normalise the shape object and returns the newly modified shape. */
