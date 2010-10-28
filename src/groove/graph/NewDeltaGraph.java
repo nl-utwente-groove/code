@@ -38,7 +38,7 @@ import java.util.Stack;
  * @version $Revision $
  */
 public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
-        DeltaGraphFactory<NewDeltaGraph> {
+        DeltaGraphFactory<NewDeltaGraph>, Cloneable {
     /**
      * Constructs a graph with a given basis and delta The basis may be
      * <code>null</code>, meaning that it is the empty graph.
@@ -349,11 +349,11 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
      */
     static private final boolean ALIAS_SETS = true;
     /** Factory instance of this class. */
-    static private final NewDeltaGraph copyInstance = new NewDeltaGraph(null,
-        null, true);
+    static private final NewDeltaGraph copyInstance =
+        new NewDeltaGraph(null, null, true);
     /** Factory instance of this class. */
-    static private final NewDeltaGraph swingInstance = new NewDeltaGraph(null,
-        null, false);
+    static private final NewDeltaGraph swingInstance =
+        new NewDeltaGraph(null, null, false);
 
     /**
      * Returns a fixed factory instance of the {@link NewDeltaGraph} class,
@@ -428,11 +428,11 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
                     createEdgeSet(null));
             }
             outEdgeSet.add((DefaultEdge) elem);
-            if (elem.source() != elem.opposite()) {
-                DefaultEdgeSet inEdgeSet =
-                    this.nodeEdgeMap.get(elem.opposite());
+            Node target = elem.target();
+            if (elem.source() != target) {
+                DefaultEdgeSet inEdgeSet = this.nodeEdgeMap.get(target);
                 if (inEdgeSet == null) {
-                    this.nodeEdgeMap.put(elem.opposite(), inEdgeSet =
+                    this.nodeEdgeMap.put(target, inEdgeSet =
                         createEdgeSet(null));
                 }
                 inEdgeSet.add((DefaultEdge) elem);
@@ -470,8 +470,9 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
             int arity = elem.endCount();
             // adapt node-edge map
             this.nodeEdgeMap.get(elem.source()).remove(elem);
-            if (elem.source() != elem.opposite()) {
-                this.nodeEdgeMap.get(elem.opposite()).remove(elem);
+            Node target = elem.target();
+            if (elem.source() != target) {
+                this.nodeEdgeMap.get(target).remove(elem);
             }
             // adapt label-edge map
             if (this.labelEdgeMaps != null) {
@@ -534,22 +535,23 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
          * the label-edge maps (if it is set).
          */
         public boolean addEdge(Edge elem) {
+            assert elem instanceof DefaultEdge;
             boolean result = this.edgeSet.add((DefaultEdge) elem);
             assert result;
             int arity = elem.endCount();
             // adapt node-edge map
             Node source = elem.source();
-            Node opposite = elem.opposite();
+            Node target = elem.target();
             DefaultEdgeSet outEdgeSet = this.nodeEdgeMap.get(source);
             if (this.freshNodeKeys.add(source)) {
                 this.nodeEdgeMap.put(source, outEdgeSet =
                     createEdgeSet(outEdgeSet));
             }
             outEdgeSet.add((DefaultEdge) elem);
-            if (source != opposite) {
-                DefaultEdgeSet inEdgeSet = this.nodeEdgeMap.get(opposite);
-                if (this.freshNodeKeys.add(opposite)) {
-                    this.nodeEdgeMap.put(opposite, inEdgeSet =
+            if (source != target) {
+                DefaultEdgeSet inEdgeSet = this.nodeEdgeMap.get(target);
+                if (this.freshNodeKeys.add(target)) {
+                    this.nodeEdgeMap.put(target, inEdgeSet =
                         createEdgeSet(inEdgeSet));
                 }
                 inEdgeSet.add((DefaultEdge) elem);
@@ -590,17 +592,17 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
             int arity = elem.endCount();
             // adapt node-edge map
             Node source = elem.source();
-            Node opposite = elem.opposite();
+            Node target = elem.target();
             DefaultEdgeSet outEdgeSet = this.nodeEdgeMap.get(source);
             if (this.freshNodeKeys.add(source)) {
                 this.nodeEdgeMap.put(source, outEdgeSet =
                     createEdgeSet(outEdgeSet));
             }
             outEdgeSet.remove(elem);
-            if (source != opposite) {
-                DefaultEdgeSet inEdgeSet = this.nodeEdgeMap.get(opposite);
-                if (this.freshNodeKeys.add(opposite)) {
-                    this.nodeEdgeMap.put(opposite, inEdgeSet =
+            if (source != target) {
+                DefaultEdgeSet inEdgeSet = this.nodeEdgeMap.get(target);
+                if (this.freshNodeKeys.add(target)) {
+                    this.nodeEdgeMap.put(target, inEdgeSet =
                         createEdgeSet(inEdgeSet));
                 }
                 inEdgeSet.remove(elem);

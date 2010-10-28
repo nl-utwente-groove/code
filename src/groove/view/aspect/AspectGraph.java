@@ -204,7 +204,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
         for (Edge edge : graph.edgeSet()) {
             try {
                 AspectNode sourceImage = nodeMap.get(edge.source());
-                AspectNode targetImage = nodeMap.get(edge.opposite());
+                AspectNode targetImage = nodeMap.get(edge.target());
                 String labelText = edge.label().text();
                 AspectValue nodeValue = null;
                 try {
@@ -241,7 +241,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
             try {
                 AspectEdge edgeImage =
                     createAspectEdge(nodeMap.get(edge.source()),
-                        nodeMap.get(edge.opposite()), entry.getValue());
+                        nodeMap.get(edge.target()), entry.getValue());
                 result.addEdge(edgeImage);
                 elementMap.putEdge(edge, edgeImage);
                 edgeImage.initAspects();
@@ -373,7 +373,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
         AspectMap aspectMap = parser.parse(labelText);
         if (aspectMap.getText() == null) {
             // this edge is empty or indicates a node aspect
-            if (edge.opposite() != edge.source()) {
+            if (edge.target() != edge.source()) {
                 throw new FormatException("Label '%s' only allowed on nodes",
                     labelText);
             } else if (aspectMap.size() > 1) {
@@ -460,7 +460,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
                     AspectEdge image =
                         createAspectEdge(
                             (AspectNode) elementMap.getNode(edge.source()),
-                            (AspectNode) elementMap.getNode(edge.opposite()),
+                            (AspectNode) elementMap.getNode(edge.target()),
                             edge.getAspectMap());
                     result.addEdge(image);
                     elementMap.putEdge(edge, image);
@@ -513,8 +513,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
                                 replacement);
                     }
                     newData.setText(DefaultLabel.toPrefixedString(replacement));
-                    oldToNew.put(edge,
-                        createAspectEdge(edge.source(), edge.target(), newData));
+                    oldToNew.put(edge, createAspectEdge(edge.source(),
+                        edge.target(), newData));
                 }
             } catch (FormatException exc) {
                 // do nothing with this label

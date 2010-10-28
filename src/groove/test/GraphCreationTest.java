@@ -196,7 +196,7 @@ public class GraphCreationTest extends TestCase {
     private Set<Edge> inEdgeSet(Graph g, Node target) {
         Set<Edge> inEdges = new HashSet<Edge>();
         for (Edge edge : g.edgeSet()) {
-            if (edge.opposite().equals(target)) {
+            if (edge.target().equals(target)) {
                 inEdges.add(edge);
             }
         }

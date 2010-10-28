@@ -325,29 +325,31 @@ class Edge2SearchItem extends AbstractSearchItem {
 
         @Override
         boolean setImage(Edge image) {
+            Node source = image.source();
             if (this.sourceFind == null) {
                 // maybe the prospective source image was used as
                 // target image of this same edge in the previous attempt
                 rollBackTargetImage();
-                if (!this.search.putNode(this.sourceIx, image.source())) {
+                if (!this.search.putNode(this.sourceIx, source)) {
                     return false;
                 }
             } else if (this.checkSource) {
-                if (image.source() != this.sourceFind) {
+                if (source != this.sourceFind) {
                     return false;
                 }
             }
+            Node target = image.target();
             if (Edge2SearchItem.this.selfEdge) {
-                if (image.opposite() != image.source()) {
+                if (target != source) {
                     return false;
                 }
             } else {
                 if (this.targetFind == null) {
-                    if (!this.search.putNode(this.targetIx, image.opposite())) {
+                    if (!this.search.putNode(this.targetIx, target)) {
                         return false;
                     }
                 } else if (this.checkTarget) {
-                    if (image.opposite() != this.targetFind) {
+                    if (target != this.targetFind) {
                         return false;
                     }
                 }

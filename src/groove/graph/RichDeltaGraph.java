@@ -37,7 +37,7 @@ import java.util.Set;
  * @version $Revision $
  */
 public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
-        DeltaGraphFactory<RichDeltaGraph> {
+        DeltaGraphFactory<RichDeltaGraph>, Cloneable {
     /**
      * Constructs a graph with a given basis and delta The basis may be
      * <code>null</code>, meaning that it is the empty graph.
@@ -313,14 +313,20 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
 
     @Override
     public CertificateStrategy getCertifier(boolean strong) {
-        if (this.certifier == null || this.certifier.get() == null
-            || this.certifier.get().getStrength() != strong) {
-            this.certifier =
-                new WeakReference<CertificateStrategy>(
-                    AbstractGraph.getCertificateFactory().newInstance(this,
-                        strong));
+        CertificateStrategy result = null;
+        if (this.certifier != null) {
+            result = this.certifier.get();
+            // only accept this certifier if it has the correct strength
+            if (result != null && result.getStrength() != strong) {
+                result = null;
+            }
         }
-        return this.certifier.get();
+        if (result == null) {
+            result =
+                AbstractGraph.getCertificateFactory().newInstance(this, strong);
+            this.certifier = new WeakReference<CertificateStrategy>(result);
+        }
+        return result;
     }
 
     /** The fixed (possibly <code>null</code> basis of this graph. */
@@ -340,8 +346,8 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
     /** The certificate strategy of this graph, set on demand. */
     private Reference<CertificateStrategy> certifier;
     /** Factory instance of this class. */
-    static private final RichDeltaGraph instance = new RichDeltaGraph(null,
-        null);
+    static private final RichDeltaGraph instance =
+        new RichDeltaGraph(null, null);
 
     /**
      * Returns a fixed factory instance of the {@link RichDeltaGraph} class.
@@ -362,11 +368,11 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
         }
         boolean result = outEdgeSet.add(edge);
         assert result;
-        Node opposite = edge.opposite();
-        if (opposite != source) {
-            Set<Edge> inEdgeSet = nodeEdgeMap.get(opposite);
+        Node target = edge.target();
+        if (target != source) {
+            Set<Edge> inEdgeSet = nodeEdgeMap.get(target);
             if (inEdgeSet == null) {
-                nodeEdgeMap.put(opposite, inEdgeSet = new EdgeSet<Edge>());
+                nodeEdgeMap.put(target, inEdgeSet = new EdgeSet<Edge>());
             }
             inEdgeSet.add(edge);
         }
@@ -376,9 +382,9 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
         Map<Node,Set<Edge>> nodeEdgeMap = map.get(edge.label());
         Node source = edge.source();
         nodeEdgeMap.get(source).remove(edge);
-        Node opposite = edge.opposite();
-        if (opposite != source) {
-            nodeEdgeMap.get(opposite).remove(edge);
+        Node target = edge.target();
+        if (target != source) {
+            nodeEdgeMap.get(target).remove(edge);
         }
     }
 
@@ -470,7 +476,7 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
                 Label label = elem.label();
                 Map<Label,Set<Edge>> arityLabelEdgeMap =
                     this.labelEdgeMaps.get(arity);
-                @SuppressWarnings({"unchecked", "rawtypes"})
+                @SuppressWarnings( {"unchecked", "rawtypes"})
                 EdgeSet<Edge> edgeSet = (EdgeSet) arityLabelEdgeMap.get(label);
                 if (edgeSet == null) {
                     arityLabelEdgeMap.put(label, edgeSet =

@@ -156,7 +156,7 @@ abstract public class PositiveCondition<M extends Match> extends
                 BitSet arguments = productEntry.getValue();
                 for (Edge edge : getTarget().outEdgeSet(product)) {
                     if (edge instanceof ArgumentEdge
-                        && !this.unresolvedVariableNodes.contains(edge.opposite())) {
+                        && !this.unresolvedVariableNodes.contains(edge.target())) {
                         int argumentNumber = ((ArgumentEdge) edge).getNumber();
                         arguments.set(argumentNumber);
                     }

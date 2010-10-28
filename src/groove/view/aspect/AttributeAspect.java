@@ -262,8 +262,7 @@ public class AttributeAspect extends AbstractAspect {
      */
     public static boolean isConstant(AspectEdge edge) {
         boolean result =
-            hasDataValue(edge.getAspectMap())
-                && edge.source() == edge.opposite();
+            hasDataValue(edge.getAspectMap()) && edge.source() == edge.target();
         //        if (edgeValue != null && !ARGUMENT.equals(edgeValue)) {
         //            OperationLabelParser parser =
         //                (OperationLabelParser) edgeValue.getLabelParser();

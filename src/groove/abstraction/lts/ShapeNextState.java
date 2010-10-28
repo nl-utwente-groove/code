@@ -141,6 +141,7 @@ public class ShapeNextState extends ShapeState implements GraphNextState,
         return this.transition.label();
     }
 
+    @Deprecated
     @Override
     public Node opposite() {
         return target();

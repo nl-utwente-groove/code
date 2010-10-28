@@ -240,7 +240,7 @@ public class Bisimulator implements CertificateStrategy {
         assert sourceCert != null : "Edge source of " + edge + " not found in "
             + this.otherNodeCertMap + "; so not in the node set "
             + this.graph.nodeSet() + " of " + this.graph;
-        if (source == edge.opposite()) {
+        if (source == edge.target()) {
             if (USE_EDGE1_CERTIFICATES) {
                 Edge1Certificate edge1Cert =
                     new Edge1Certificate(edge, sourceCert);
@@ -255,7 +255,7 @@ public class Bisimulator implements CertificateStrategy {
                 sourceCert.addValue(edge.label().hashCode());
             }
         } else {
-            NodeCertificate targetCert = getNodeCert(edge.opposite());
+            NodeCertificate targetCert = getNodeCert(edge.target());
             assert targetCert != null : "Edge target of " + edge
                 + " not found in " + this.otherNodeCertMap
                 + "; so not in the node set " + this.graph.nodeSet() + " of "

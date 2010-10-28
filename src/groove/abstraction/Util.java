@@ -25,8 +25,8 @@ import groove.graph.NodeEdgeMap;
 
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * Utility functions for abstraction.
@@ -114,7 +114,7 @@ public class Util {
     public static Set<Edge> getInEdges(Graph graph, Node node, Label label) {
         Set<Edge> inEdges = new HashSet<Edge>();
         for (Edge edge : graph.edgeSet(node)) {
-            if (edge.opposite().equals(node) && edge.label().equals(label)) {
+            if (edge.target().equals(node) && edge.label().equals(label)) {
                 inEdges.add(edge);
             }
         }
@@ -129,7 +129,7 @@ public class Util {
         Set<Edge> inEdges = new HashSet<Edge>();
         for (Node node : nodes) {
             for (Edge edge : graph.edgeSet(node)) {
-                if (edge.opposite().equals(node) && edge.label().equals(label)) {
+                if (edge.target().equals(node) && edge.label().equals(label)) {
                     inEdges.add(edge);
                 }
             }

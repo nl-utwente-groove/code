@@ -135,7 +135,7 @@ public class InstanceModelRep {
 
         // Fill edge sets with self edges of nodes that represent this type
         for (Edge edge : this.instanceGraph.edgeSet()) {
-            if (edge.source() == edge.opposite()) {
+            if (edge.source() == edge.target()) {
                 if (this.labelToClass.containsKey(edge.label().text())) {
                     this.classEdgeSet.add(edge);
                     this.featureToType.put(edge.source(), edge);
@@ -176,7 +176,7 @@ public class InstanceModelRep {
                     this.rootEdge = edge;
                 }
             } else if (edge.label().text().equals("next")) {
-                this.nextNode.put(edge.source(), edge.opposite());
+                this.nextNode.put(edge.source(), edge.target());
             }
         }
 
@@ -218,7 +218,7 @@ public class InstanceModelRep {
 
             // Get type: edge of target node, and if exists check if it
             // represents a containment reference
-            Edge refEdge = this.featureToType.get(outEdge.opposite());
+            Edge refEdge = this.featureToType.get(outEdge.target());
             if (refEdge != null
                 && this.containmentReferenceEdgeSet.contains(refEdge)) {
                 // When not ordered, the order doesn't matter
@@ -255,9 +255,9 @@ public class InstanceModelRep {
                     // When ordered, check if it has no incoming next edges and
                     // only then add it plus add next ones
                 } else {
-                    if (!this.nextNode.containsValue(outEdge.opposite())) {
+                    if (!this.nextNode.containsValue(outEdge.target())) {
 
-                        Node next = outEdge.opposite();
+                        Node next = outEdge.target();
                         do {
                             Edge valueEdge =
                                 this.featureToType.get(this.referenceToVal.get(next));
@@ -314,7 +314,7 @@ public class InstanceModelRep {
             for (Edge outEdge : this.instanceGraph.outEdgeSet(classEdge.source())) {
 
                 // Get type: edge of target node, and if it exists 
-                Edge featureEdge = this.featureToType.get(outEdge.opposite());
+                Edge featureEdge = this.featureToType.get(outEdge.target());
                 if (featureEdge != null) {
 
                     // if it represents a non-containment and non-container ref
@@ -378,7 +378,7 @@ public class InstanceModelRep {
             }
 
             // Else check if it is the first in a sequence. If not, then ignore it
-        } else if (!this.nextNode.containsValue(featureEdge.opposite())) {
+        } else if (!this.nextNode.containsValue(featureEdge.target())) {
             Node next = featureEdge.source();
             do {
                 // create a new instance of a literal to add
@@ -453,7 +453,7 @@ public class InstanceModelRep {
                     valueEReference, valueInstance);
             }
             // Else check if it is the first in a sequence. If not, then ignore it
-        } else if (!this.nextNode.containsValue(featureEdge.opposite())) {
+        } else if (!this.nextNode.containsValue(featureEdge.target())) {
             Node next = featureEdge.source();
             do {
                 Edge valueEdge =
@@ -498,7 +498,7 @@ public class InstanceModelRep {
 
         for (Edge outEdge : this.instanceGraph.outEdgeSet(featureNode)) {
             if (outEdge.label().text().equals("val")) {
-                value = outEdge.opposite();
+                value = outEdge.target();
             }
         }
 

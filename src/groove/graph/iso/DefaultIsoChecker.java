@@ -280,7 +280,7 @@ public class DefaultIsoChecker implements IsoChecker {
                     boolean removed = usedNodeImages.remove(targetImages[i]);
                     assert removed : String.format(
                         "Image %s for target %s not present in used node set %s",
-                        targetImages[i], item.key.opposite(), usedNodeImages);
+                        targetImages[i], item.key.target(), usedNodeImages);
                     targetImages[i] = null;
                 }
             }
@@ -290,7 +290,9 @@ public class DefaultIsoChecker implements IsoChecker {
                 i--;
             } else {
                 Edge key = item.key;
+                Node keyTarget = key.target();
                 Edge image = records[i].next();
+                Node imageTarget = image.target();
                 if (item.sourcePreMatched) {
                     if (!result.getNode(key.source()).equals(image.source())) {
                         // the source node had a different image; take next edge
@@ -307,7 +309,7 @@ public class DefaultIsoChecker implements IsoChecker {
                 }
                 if (item.targetPreMatched) {
                     // check if the old and new images coincide
-                    if (!result.getNode(key.opposite()).equals(image.opposite())) {
+                    if (!result.getNode(keyTarget).equals(imageTarget)) {
                         // the target node had a different image; take next edge
                         // image
                         // but first roll back the choice of source node image
@@ -318,7 +320,7 @@ public class DefaultIsoChecker implements IsoChecker {
                         continue;
                     }
                 } else {
-                    if (!usedNodeImages.add(image.opposite())) {
+                    if (!usedNodeImages.add(imageTarget)) {
                         // injectivity is destroyed; take next edge image
                         // but first roll back the choice of source node image
                         if (!item.sourcePreMatched) {
@@ -327,8 +329,8 @@ public class DefaultIsoChecker implements IsoChecker {
                         }
                         continue;
                     }
-                    result.putNode(key.opposite(), image.opposite());
-                    targetImages[i] = image.opposite();
+                    result.putNode(keyTarget, imageTarget);
+                    targetImages[i] = imageTarget;
                 }
                 result.putEdge(key, image);
                 i++;
@@ -404,7 +406,7 @@ public class DefaultIsoChecker implements IsoChecker {
                 }
                 // add incident edges from the target node, if that was not
                 // already matched
-                Node keyTarget = next.key.opposite();
+                Node keyTarget = next.key.target();
                 next.targetPreMatched = !connectedNodes.add(keyTarget);
                 if (!next.targetPreMatched) {
                     for (Edge edge : dom.edgeSet(keyTarget)) {
@@ -705,7 +707,7 @@ public class DefaultIsoChecker implements IsoChecker {
 
     private boolean checkIsomorphism(Graph dom, Graph cod, NodeEdgeMap map) {
         for (Edge edge : dom.edgeSet()) {
-            if (edge.source() != edge.opposite()
+            if (edge.source() != edge.target()
                 && !map.edgeMap().containsKey(edge)) {
                 System.err.printf("Result contains no image for %s%n", edge);
                 return false;

@@ -334,7 +334,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         assert sourceCert != null : "Edge source of " + edge + " not found in "
             + this.otherNodeCertMap + "; so not in the node set "
             + this.graph.nodeSet() + " of " + this.graph;
-        if (source == edge.opposite()) {
+        if (source == edge.target()) {
             EdgeCertificate edge1Cert = new EdgeCertificate(edge, sourceCert);
             this.edgeCerts[this.edgeCerts.length - this.edge1CertCount - 1] =
                 edge1Cert;
@@ -343,7 +343,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
                 "%s unary and %s binary edges do not equal %s edges",
                 this.edge1CertCount, this.edge2CertCount, this.edgeCerts.length);
         } else {
-            NodeCertificate targetCert = getNodeCert(edge.opposite());
+            NodeCertificate targetCert = getNodeCert(edge.target());
             assert targetCert != null : "Edge target of " + edge
                 + " not found in " + this.otherNodeCertMap
                 + "; so not in the node set " + this.graph.nodeSet() + " of "

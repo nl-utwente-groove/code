@@ -53,7 +53,7 @@ public class GenericNodeEdgeHashMap<NS,NT,ES,ET> extends
     @Override
     public GenericNodeEdgeMap<NS,NT,ES,ET> clone() {
         try {
-            @SuppressWarnings({"unchecked", "rawtypes"})
+            @SuppressWarnings( {"unchecked", "rawtypes"})
             GenericNodeEdgeHashMap<NS,NT,ES,ET> result =
                 (GenericNodeEdgeHashMap) super.clone();
             result.nodeMap = null;

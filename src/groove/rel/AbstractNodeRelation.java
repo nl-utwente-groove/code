@@ -47,7 +47,7 @@ public abstract class AbstractNodeRelation implements NodeRelation {
         Set<Node> result = new HashSet<Node>();
         for (Edge relation : getAllRelated()) {
             if (relation.source().equals(node)) {
-                result.add(relation.opposite());
+                result.add(relation.target());
             }
         }
         return result;

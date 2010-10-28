@@ -33,7 +33,7 @@ import java.util.Set;
  * @version $Revision$
  */
 public class DeltaGraph extends AbstractGraph<DeltaGraphCache> implements
-        DeltaApplier {
+        DeltaApplier, Cloneable {
     /**
      * Creates a new, empty delta graph.
      */

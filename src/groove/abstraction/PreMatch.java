@@ -27,8 +27,8 @@ import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 
 import java.util.HashSet;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * A pre-match is a match of the left-hand side of a rule into the graph
@@ -159,7 +159,7 @@ public class PreMatch {
                     // For all outgoing edges from the image of v. Item 2'.
                     for (Edge edge : Util.getOutEdges(shape, pV, label)) {
                         ShapeEdge e = (ShapeEdge) edge;
-                        ShapeNode w = e.opposite();
+                        ShapeNode w = e.target();
                         Set<Node> pInvW = Util.getReverseNodeMap(map, w);
                         Set<Edge> vInterPInvW =
                             Util.getIntersectEdges(lhs, v, pInvW, label);

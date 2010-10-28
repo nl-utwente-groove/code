@@ -304,7 +304,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * that isolated value nodes are removed from the graph.
      */
     private void registerErasure(Edge edge) {
-        Node target = edge.opposite();
+        Node target = edge.target();
         if (target instanceof ValueNode) {
             Set<Edge> edges = getValueNodeEdges((ValueNode) target);
             edges.remove(edge);
@@ -509,7 +509,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * {@link InternalGraph}.
      */
     protected void addEdge(DeltaTarget target, Edge edge) {
-        Node targetNode = edge.opposite();
+        Node targetNode = edge.target();
         if (targetNode instanceof ValueNode
             && (!this.source.containsElement(targetNode) && !getAddedValueNodes().contains(
                 targetNode)) || this.removedValueNodes != null

@@ -396,13 +396,13 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      */
     private GraphJEdge addBinaryEdge(Edge edge) {
         Node source = edge.source();
-        Node target = edge.opposite();
+        Node target = edge.target();
         // don't do this for node types, as they need to be typeset in bold
         if (!edge.label().isNodeType()) {
             // maybe a j-edge between this source and target is already in the
             // graph
             for (Edge edgeBetween : getGraph().outEdgeSet(source)) {
-                if (edgeBetween.opposite().equals(target)) {
+                if (edgeBetween.target().equals(target)) {
                     // see if this edge is appropriate
                     JCell jEdge = getJCell(edgeBetween);
                     if (jEdge instanceof GraphJEdge
@@ -452,7 +452,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * node label.
      */
     protected boolean isPotentialUnaryEdge(Edge edge) {
-        return edge.source() == edge.opposite()
+        return edge.source() == edge.target()
             && this.layoutMap.getEdge(edge) == null;
     }
 

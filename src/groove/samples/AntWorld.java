@@ -110,7 +110,7 @@ public class AntWorld {
 
     /** Retrieves the int value that is the target of the only edge with a given label. */
     static private int getTargetValue(Graph graph, Label label) {
-        return (Integer) ((ValueNode) graph.labelEdgeSet(2, label).iterator().next().opposite()).getValue();
+        return (Integer) ((ValueNode) graph.labelEdgeSet(2, label).iterator().next().target()).getValue();
     }
 
     static private final Label TURN_COUNT_LABEL =

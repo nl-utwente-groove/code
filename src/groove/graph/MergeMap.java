@@ -86,7 +86,7 @@ public class MergeMap extends NodeEdgeHashMap {
     public Edge mapEdge(Edge key) {
         Map<Node,Node> nodeMap = nodeMap();
         if (!nodeMap.containsKey(key.source())
-            && !nodeMap.containsKey(key.opposite())) {
+            && !nodeMap.containsKey(key.target())) {
             return key;
         } else {
             return super.mapEdge(key);
