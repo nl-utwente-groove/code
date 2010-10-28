@@ -35,7 +35,7 @@ public class NodeSingEqSystem extends EquationSystem {
     // Static fields
     // ------------------------------------------------------------------------
 
-    private static boolean DEBUG = true;
+    private static boolean DEBUG = false;
     private static boolean USE_GUI = false;
 
     private static Set<Multiplicity> zeroOneSet;
@@ -228,7 +228,8 @@ public class NodeSingEqSystem extends EquationSystem {
                             Multiplicity outMult = nOMult.multiply(eOMult);
                             if (nO.equals(this.node)) {
                                 singConstr.addToOutSum(outMult);
-                            } else {
+                            } else if (this.shape.isNonFrozenEdgeFromSigInvolved(
+                                nOEs, true)) {
                                 remConstr.addToOutSum(outMult);
                             }
                         }
@@ -258,7 +259,8 @@ public class NodeSingEqSystem extends EquationSystem {
                             Multiplicity inMult = nIMult.multiply(eIMult);
                             if (nI.equals(this.node)) {
                                 singConstr.addToInSum(inMult);
-                            } else {
+                            } else if (this.shape.isNonFrozenEdgeFromSigInvolved(
+                                nIEs, false)) {
                                 remConstr.addToInSum(inMult);
                             }
                         }
@@ -311,7 +313,8 @@ public class NodeSingEqSystem extends EquationSystem {
                             Multiplicity outMult = nOMult.multiply(eOMult);
                             if (nO.equals(this.node)) {
                                 singConstr.addToOutSum(outMult);
-                            } else {
+                            } else if (this.shape.isNonFrozenEdgeFromSigInvolved(
+                                nOEs, true)) {
                                 remConstr.addToOutSum(outMult);
                             }
                         }
@@ -341,7 +344,8 @@ public class NodeSingEqSystem extends EquationSystem {
                             Multiplicity inMult = nIMult.multiply(eIMult);
                             if (nI.equals(this.node)) {
                                 singConstr.addToInSum(inMult);
-                            } else {
+                            } else if (this.shape.isNonFrozenEdgeFromSigInvolved(
+                                nIEs, false)) {
                                 remConstr.addToInSum(inMult);
                             }
                         }
