@@ -29,9 +29,10 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:51 $
  */
-public class DefaultGraph extends AbstractGraph<GraphCache> {
+public class DefaultGraph extends AbstractGraph<GraphCache> implements
+        Cloneable {
     /**
-     * Constructs a protytpe object of this class, to be used as a factory for
+     * Constructs a prototype object of this class, to be used as a factory for
      * new (default) graphs.
      * @return a prototype <tt>DefaultGraph</tt> instance, only intended to be
      *         used for its <tt>newGraph()</tt> method.

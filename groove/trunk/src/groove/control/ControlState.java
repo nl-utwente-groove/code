@@ -49,7 +49,18 @@ public class ControlState implements Node, Location {
     }
 
     public int compareTo(Element obj) {
-        return hashCode() - ((ControlState) obj).hashCode();
+        return getNumber() - ((ControlState) obj).getNumber();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        return getNumber() == ((ControlState) obj).getNumber();
     }
 
     public int getNumber() {

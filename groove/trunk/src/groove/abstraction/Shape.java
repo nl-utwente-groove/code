@@ -32,8 +32,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * This is where the magic happens... :P
@@ -519,7 +519,7 @@ public class Shape extends DefaultGraph implements Cloneable {
 
             // Create and add a shape edge to the shape.
             Node srcG = edgeG.source();
-            Node tgtG = edgeG.opposite();
+            Node tgtG = edgeG.target();
             ShapeNode srcS = this.nodeShaping.get(srcG);
             ShapeNode tgtS = this.nodeShaping.get(tgtG);
             Label labelS = edgeG.label();
@@ -813,7 +813,7 @@ public class Shape extends DefaultGraph implements Cloneable {
      * of the edge is taken to be the node of the signature.
      */
     public EdgeSignature getEdgeOutSignature(ShapeEdge edge) {
-        EquivClass<ShapeNode> ec = this.getEquivClassOf(edge.opposite());
+        EquivClass<ShapeNode> ec = this.getEquivClassOf(edge.target());
         return this.getEdgeSignature(edge.source(), edge.label(), ec);
     }
 
@@ -823,7 +823,7 @@ public class Shape extends DefaultGraph implements Cloneable {
      */
     public EdgeSignature getEdgeInSignature(ShapeEdge edge) {
         EquivClass<ShapeNode> ec = this.getEquivClassOf(edge.source());
-        return this.getEdgeSignature(edge.opposite(), edge.label(), ec);
+        return this.getEdgeSignature(edge.target(), edge.label(), ec);
     }
 
     /**
@@ -955,7 +955,7 @@ public class Shape extends DefaultGraph implements Cloneable {
     public Set<ShapeEdge> inBinaryEdgeSet(ShapeNode target) {
         Set<ShapeEdge> result = new HashSet<ShapeEdge>();
         for (ShapeEdge edge : this.edgeSet(target)) {
-            if (!Util.isUnary(edge) && edge.opposite().equals(target)) {
+            if (!Util.isUnary(edge) && edge.target().equals(target)) {
                 result.add(edge);
             }
         }
@@ -1046,7 +1046,7 @@ public class Shape extends DefaultGraph implements Cloneable {
         Set<ShapeEdge> newEdges = new HashSet<ShapeEdge>(copies);
         for (ShapeEdge origEdge : this.outBinaryEdgeSet(origNode)) {
             Label label = origEdge.label();
-            ShapeNode target = origEdge.opposite();
+            ShapeNode target = origEdge.target();
             Multiplicity origEdgeOutMult = this.getEdgeOutMult(origEdge);
             for (ShapeNode newNode : newNodes) {
                 ShapeEdge newEdge = this.createEdge(newNode, label, target);
@@ -1107,7 +1107,7 @@ public class Shape extends DefaultGraph implements Cloneable {
             ShapeNode target) {
         ShapeEdge result = null;
         for (ShapeEdge edge : this.outEdgeSet(source)) {
-            if (edge.label().equals(label) && edge.opposite().equals(target)) {
+            if (edge.label().equals(label) && edge.target().equals(target)) {
                 result = edge;
                 break;
             }

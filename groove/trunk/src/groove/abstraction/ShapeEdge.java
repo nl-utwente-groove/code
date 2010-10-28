@@ -73,6 +73,13 @@ public class ShapeEdge extends DefaultEdge {
 
     /** Specialises the returned type. */
     @Override
+    public ShapeNode target() {
+        return (ShapeNode) super.target();
+    }
+
+    /** Specialises the returned type. */
+    @Deprecated
+    @Override
     public ShapeNode opposite() {
         return (ShapeNode) super.opposite();
     }

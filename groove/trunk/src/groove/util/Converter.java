@@ -71,8 +71,7 @@ public class Converter {
         writer.println("---");
         for (Edge edge : graph.edgeSet()) {
             writer.println(nodeMap.get(edge.source()) + " "
-                + nodeMap.get(edge.opposite()) + " " + "\"" + edge.label()
-                + "\"");
+                + nodeMap.get(edge.target()) + " " + "\"" + edge.label() + "\"");
         }
     }
 
@@ -113,7 +112,7 @@ public class Converter {
                 format = "(%d,%s,%d)%n";
             }
             writer.printf(format, nodeNrMap.get(edge.source()), edge.label(),
-                nodeNrMap.get(edge.opposite()));
+                nodeNrMap.get(edge.target()));
         }
     }
 
@@ -351,8 +350,8 @@ public class Converter {
     /** Name of the font strikethrough tag (<code>s</code>). */
     static public final String STRIKETHROUGH_TAG_NAME = "s";
     /** Font strikethrough tag. */
-    static public final HTMLTag STRIKETHROUGH_TAG = new HTMLTag(
-        STRIKETHROUGH_TAG_NAME);
+    static public final HTMLTag STRIKETHROUGH_TAG =
+        new HTMLTag(STRIKETHROUGH_TAG_NAME);
     /** Name of the italic font tag (<code>i</code>). */
     static public final String ITALIC_TAG_NAME = "i";
     /** Italic font tag. */

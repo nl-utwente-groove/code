@@ -172,6 +172,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         return this;
     }
 
+    @Deprecated
     public Node opposite() {
         return target();
     }

@@ -37,11 +37,7 @@ public class SetNodeRelation extends AbstractNodeRelation {
     }
 
     public boolean addRelated(Edge edge) {
-        if (edge.endCount() >= 2) {
-            return this.relatedSet.add(edge);
-        } else {
-            return false;
-        }
+        return this.relatedSet.add(edge);
     }
 
     public boolean addSelfRelated(Node node) {
@@ -59,12 +55,13 @@ public class SetNodeRelation extends AbstractNodeRelation {
     }
 
     public NodeRelation doThen(NodeRelation other) {
+        assert other instanceof SetNodeRelation;
         this.relatedSet = new HashSet<Edge>();
         for (Edge oldRel : this.relatedSet) {
             for (Edge otherRel : ((SetNodeRelation) other).getRelatedSet()) {
-                if (otherRel.source().equals(oldRel.opposite())) {
+                if (otherRel.source().equals(oldRel.target())) {
                     RelationEdge<Node> newRel =
-                        createRelated(oldRel.source(), otherRel.opposite());
+                        createRelated(oldRel.source(), otherRel.target());
                     this.relatedSet.add(newRel);
                 }
             }
@@ -78,9 +75,9 @@ public class SetNodeRelation extends AbstractNodeRelation {
         Set<Edge> oldRelatedSet = new HashSet<Edge>(this.relatedSet);
         for (Edge oldRel : oldRelatedSet) {
             for (Edge otherRel : oldRelatedSet) {
-                if (otherRel.source().equals(oldRel.opposite())) {
+                if (otherRel.source().equals(oldRel.target())) {
                     RelationEdge<Node> newRel =
-                        createRelated(oldRel.source(), otherRel.opposite());
+                        createRelated(oldRel.source(), otherRel.target());
                     result |= this.relatedSet.add(newRel);
                 }
             }
@@ -100,7 +97,7 @@ public class SetNodeRelation extends AbstractNodeRelation {
         SetNodeRelation result = (SetNodeRelation) newInstance();
         for (Edge related : this.relatedSet) {
             result.getRelatedSet().add(
-                createRelated(related.opposite(), related.source()));
+                createRelated(related.target(), related.source()));
         }
         return result;
     }

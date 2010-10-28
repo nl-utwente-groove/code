@@ -195,7 +195,7 @@ public final class GraphToKth {
         result.append(SPACE);
         result.append(edge.source().getNumber());
         result.append(SPACE);
-        result.append(edge.opposite().getNumber());
+        result.append(edge.target().getNumber());
         result.append(SPACE);
         result.append(OUT_EMPTY_EDGE_LABEL);
         result.append(END_EDGE);
@@ -245,7 +245,7 @@ public final class GraphToKth {
         for (Edge edge : model.edgeSet()) {
             if (edge.source().getNumber() == node.getNumber()) {
                 String possibleKey = edge.label().text();
-                Node possibleTarget = edge.opposite();
+                Node possibleTarget = edge.target();
                 if (possibleTarget instanceof ValueNode
                     && ((ValueNode) possibleTarget).getAlgebra() instanceof StringAlgebra) {
                     // We found a string attribute.
@@ -267,7 +267,7 @@ public final class GraphToKth {
         ArrayList<String> props = new ArrayList<String>();
         for (AspectEdge edge : graph.outEdgeSet(node)) {
             if (PROP_EDGE_LABEL.equals(edge.label().text())) {
-                AspectNode propNode = edge.opposite();
+                AspectNode propNode = edge.target();
                 assert isFlowProp(propNode) : "Target node " + propNode
                     + " is not of type FlowProp.";
                 props.add(getStringAttributes(propNode).get(LABEL_ATTR));

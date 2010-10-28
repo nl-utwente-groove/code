@@ -188,28 +188,28 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
         } else if (firstOperand instanceof CTLStarFormula.Until) {
             markExistsUntil(marking, property, gts);
         } else if (firstOperand instanceof CTLStarFormula.Finally) {
-            markExistsFinally(marking, property, gts);
+            throw new UnsupportedOperationException(
+                "The EF(phi) construction should have been rewritten to a E(true U phi) construction.");
         } else if (firstOperand instanceof CTLStarFormula.Globally) {
-            markExistsGlobally(marking, property, gts);
+            throw new UnsupportedOperationException(
+                "The EG(phi) construction should have been rewritten to a !(AF(!phi)) construction.");
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see groove.verify.CTLExprMarker#markAll(groove.verify.Marking,
-     *      groove.verify.CTLExpr, groove.lts.GTS)
-     */
     public void markAll(Marking marking, TemporalFormula property, GTS gts) {
         List<TemporalFormula> operandList = property.getOperands();
         TemporalFormula firstOperand = operandList.get(0);
         if (firstOperand instanceof CTLStarFormula.Next) {
-            markAllNext(marking, property, gts);
+            throw new UnsupportedOperationException(
+                "The AX(phi) construction should have been rewritten to a !(EX(!phi)) construction.");
         } else if (firstOperand instanceof CTLStarFormula.Until) {
             markAllUntil(marking, property, gts);
         } else if (firstOperand instanceof CTLStarFormula.Finally) {
-            markAllFinally(marking, property, gts);
+            throw new UnsupportedOperationException(
+                "The AF(phi) construction should have been rewritten to a A(true U phi) construction.");
         } else if (firstOperand instanceof CTLStarFormula.Globally) {
-            markAllGlobally(marking, property, gts);
+            throw new UnsupportedOperationException(
+                "The AG(phi) construction should have been rewritten to a !(EF(!phi)) construction.");
         }
     }
 
@@ -361,6 +361,7 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      * @param property the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
+    @Deprecated
     public void markExistsFinally(Marking marking, TemporalFormula property,
             GTS gts) {
         // EF(phi) <==> E(true U phi)
@@ -381,6 +382,7 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      * @param property the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
+    @Deprecated
     public void markExistsGlobally(Marking marking, TemporalFormula property,
             GTS gts) {
         // EG(phi) <==> !(AF(!phi))
@@ -400,6 +402,7 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      * @param property the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
+    @Deprecated
     public void markAllNext(Marking marking, TemporalFormula property, GTS gts) {
         // AX(phi) <==> !EX(!phi)
         throw new UnsupportedOperationException(
@@ -476,6 +479,7 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      * @param property the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
+    @Deprecated
     public void markAllFinally(Marking marking, TemporalFormula property,
             GTS gts) {
         // AF(phi) <==> A(true U phi)
@@ -496,6 +500,7 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      * @param property the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
+    @Deprecated
     public void markAllGlobally(Marking marking, TemporalFormula property,
             GTS gts) {
         throw new UnsupportedOperationException(

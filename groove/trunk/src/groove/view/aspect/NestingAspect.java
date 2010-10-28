@@ -56,7 +56,7 @@ public class NestingAspect extends AbstractAspect {
                 }
             }
             // target nodes should be meta
-            if (!isMetaElement(edge.opposite())) {
+            if (!isMetaElement(edge.target())) {
                 throw new FormatException(
                     "Level edge '%s' should have a meta-node as target", edge);
             }
@@ -67,7 +67,7 @@ public class NestingAspect extends AbstractAspect {
                 throw new FormatException(
                     "Parent edge '%s' should have a meta-node as source", edge);
             }
-            if (!isMetaElement(edge.opposite())) {
+            if (!isMetaElement(edge.target())) {
                 throw new FormatException(
                     "Parent edge '%s' should have a meta-node as target", edge);
             }
@@ -83,7 +83,7 @@ public class NestingAspect extends AbstractAspect {
                 throw new FormatException(
                     "Quantified edge '%s' has a meta-node as source", edge);
             }
-            if (isMetaElement(edge.opposite())) {
+            if (isMetaElement(edge.target())) {
                 throw new FormatException(
                     "Quantified edge '%s' has a meta-node as target", edge);
             }
@@ -118,7 +118,7 @@ public class NestingAspect extends AbstractAspect {
         Set<AspectNode> parents = new HashSet<AspectNode>();
         parents.add(node);
         while (!outEdgeSet.isEmpty()) {
-            AspectNode current = outEdgeSet.iterator().next().opposite();
+            AspectNode current = outEdgeSet.iterator().next().target();
             if (!parents.add(current)) {
                 throw new FormatException("Parent edge cycle starting at %s",
                     node);

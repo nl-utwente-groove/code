@@ -83,7 +83,7 @@ public class NodeEdgeHashMap extends
         if (labelImage == null) {
             return null;
         }
-        Node targetImage = getNode(key.opposite());
+        Node targetImage = getNode(key.target());
         if (targetImage == null) {
             return null;
         } else {

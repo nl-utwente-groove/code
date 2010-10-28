@@ -701,7 +701,7 @@ public class DefaultRuleView implements RuleView {
                         }
                     } else {
                         AspectNode parentNode =
-                            outEdges.iterator().next().opposite();
+                            outEdges.iterator().next().target();
                         parentLevel = getIndex(parentNode);
                     }
 
@@ -871,7 +871,7 @@ public class DefaultRuleView implements RuleView {
                     break;
                 }
             }
-            return levelEdge == null ? null : levelEdge.opposite();
+            return levelEdge == null ? null : levelEdge.target();
         }
 
         /**
@@ -882,7 +882,7 @@ public class DefaultRuleView implements RuleView {
          */
         private Level getLevel(AspectEdge edge) throws FormatException {
             Level sourceLevel = getLevel(edge.source());
-            Level targetLevel = getLevel(edge.opposite());
+            Level targetLevel = getLevel(edge.target());
             Level result = sourceLevel.max(targetLevel);
             if (result == null) {
                 throw new FormatException(
@@ -1651,7 +1651,7 @@ public class DefaultRuleView implements RuleView {
                     // this is supposed to be a merge embargo
                     result =
                         createMergeEmbargo(lhs, embargoEdge.source(),
-                            embargoEdge.opposite());
+                            embargoEdge.target());
                 } else if (VarSupport.getAllVars(embargoEdge).isEmpty()) {
                     // this is supposed to be an edge embargo
                     result = createEdgeEmbargo(lhs, embargoEdge);

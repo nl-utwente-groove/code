@@ -47,7 +47,7 @@ public class SupportedSetNodeRelation extends AbstractNodeRelation implements
     public boolean addRelated(Edge edge) {
         Set<Element> support = new HashSet<Element>();
         support.add(edge);
-        return addToSupport(createRelated(edge.source(), edge.opposite()),
+        return addToSupport(createRelated(edge.source(), edge.target()),
             support);
     }
 
@@ -78,9 +78,9 @@ public class SupportedSetNodeRelation extends AbstractNodeRelation implements
             Edge rel = supportEntry.getKey();
             for (Map.Entry<Edge,Collection<Element>> otherSupportEntry : ((SupportedNodeRelation) other).getSupportMap().entrySet()) {
                 Edge otherRel = otherSupportEntry.getKey();
-                if (otherRel.source().equals(rel.opposite())) {
+                if (otherRel.source().equals(rel.target())) {
                     RelationEdge<Node> newRel =
-                        createRelated(rel.source(), otherRel.opposite());
+                        createRelated(rel.source(), otherRel.target());
                     addToSupport(newRel, supportEntry.getValue());
                     addToSupport(newRel, otherSupportEntry.getValue());
                 }
@@ -98,9 +98,9 @@ public class SupportedSetNodeRelation extends AbstractNodeRelation implements
             Edge rel = supportEntry.getKey();
             for (Map.Entry<Edge,Collection<Element>> otherSupportEntry : oldSupportEntrySet.entrySet()) {
                 Edge otherRel = otherSupportEntry.getKey();
-                if (otherRel.source().equals(rel.opposite())) {
+                if (otherRel.source().equals(rel.target())) {
                     RelationEdge<Node> newRel =
-                        createRelated(rel.source(), otherRel.opposite());
+                        createRelated(rel.source(), otherRel.target());
                     result |= addToSupport(newRel, supportEntry.getValue());
                     result |=
                         addToSupport(newRel, otherSupportEntry.getValue());

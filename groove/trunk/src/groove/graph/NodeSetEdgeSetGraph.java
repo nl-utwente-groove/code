@@ -27,7 +27,8 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> {
+public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
+        Cloneable {
     /**
      * Constructs a prototype object of this class, to be used as a factory for
      * new (default) graphs.

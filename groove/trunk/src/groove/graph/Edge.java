@@ -93,7 +93,9 @@ public interface Edge extends Element {
      * a binary edge typically the target.
      * @return the node "opposite" the source
      * @see #ends()
+     * @deprecated use {@link #target()} instead
      */
+    @Deprecated
     public Node opposite();
 
     /**

@@ -327,17 +327,18 @@ public class GraphSearchPlanFactory {
          */
         protected AbstractSearchItem createEdgeSearchItem(Edge edge) {
             Label label = edge.label();
+            Node target = edge.target();
+            Node source = edge.source();
             RegExpr negOperand = RegExprLabel.getNegOperand(label);
             if (negOperand instanceof RegExpr.Empty) {
                 if (!GraphSearchPlanFactory.this.ignoreNeg) {
-                    return createInjectionSearchItem(edge.source(),
-                        edge.opposite());
+                    return createInjectionSearchItem(source, target);
                 }
             } else if (negOperand != null) {
                 if (!GraphSearchPlanFactory.this.ignoreNeg) {
                     Edge negatedEdge =
-                        DefaultEdge.createEdge(edge.source(),
-                            negOperand.toLabel(), edge.opposite());
+                        DefaultEdge.createEdge(source, negOperand.toLabel(),
+                            target);
                     return createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
                 }
             } else if (RegExprLabel.isSharp(label)) {
@@ -350,8 +351,8 @@ public class GraphSearchPlanFactory {
                 return new NodeTypeSearchItem(edge, this.labelStore);
             } else if (RegExprLabel.isAtom(label)) {
                 DefaultEdge defaultEdge =
-                    DefaultEdge.createEdge(edge.source(),
-                        RegExprLabel.getAtomText(label), edge.opposite());
+                    DefaultEdge.createEdge(source,
+                        RegExprLabel.getAtomText(label), target);
                 return new Edge2SearchItem(defaultEdge);
             } else if (label instanceof RegExprLabel) {
                 return new RegExprEdgeSearchItem(edge, this.labelStore);
@@ -481,8 +482,7 @@ public class GraphSearchPlanFactory {
                 if (result == 0) {
                     // now test for the indegree of the target (higher = better)
                     result =
-                        indegree(first.opposite())
-                            - indegree(second.opposite());
+                        indegree(first.target()) - indegree(second.target());
                 }
             }
             return result;

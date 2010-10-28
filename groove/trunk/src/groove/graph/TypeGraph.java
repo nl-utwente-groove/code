@@ -288,7 +288,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
             }
             Node source = edge.source();
             Label sourceType = nodeTypeMap.get(source);
-            Node target = edge.opposite();
+            Node target = edge.target();
             Label targetType = nodeTypeMap.get(target);
             if (sourceType == null || targetType == null) {
                 // this must be due to an untyped node

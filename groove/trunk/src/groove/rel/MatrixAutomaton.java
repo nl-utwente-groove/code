@@ -132,10 +132,9 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
                             // if we're at the last index, we don't have to
                             // build the new mtch set
                             if (lastIndex) {
-                                accepts =
-                                    outEdge.opposite().equals(getEndNode());
+                                accepts = outEdge.target().equals(getEndNode());
                             } else {
-                                newMatchSet.put(outEdge.opposite(), idMap);
+                                newMatchSet.put(outEdge.target(), idMap);
                             }
                         }
                     }
@@ -153,18 +152,18 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             valuation = Collections.emptyMap();
         }
         if (startImages != null) {
-            // do forward maching from the start images
+            // do forward matching from the start images
             return getMatchingAlgorithm(FORWARD).computeMatches(graph,
                 startImages, endImages, valuation);
         } else if (endImages != null) {
             // do backwards matching from the end images
             return getMatchingAlgorithm(BACKWARD).computeMatches(graph,
-                endImages, startImages, valuation);
+                endImages, null, valuation);
         } else {
             // if we don't have any start or end images,
             // create a set of start images using the automaton's initial edges
             return getMatchingAlgorithm(FORWARD).computeMatches(graph,
-                createStartImages(graph), endImages, valuation);
+                createStartImages(graph), null, valuation);
 
         }
     }
@@ -451,7 +450,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             this.nodeIndexMap.put(node, Integer.valueOf(nodeIndex));
             nodeIndex++;
             for (Edge outEdge : outEdgeSet(node)) {
-                Node opposite = outEdge.opposite();
+                Node opposite = outEdge.target();
                 if (visitedNodes.add(opposite)) {
                     nodeList.add(opposite);
                 } else {
@@ -486,7 +485,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             this.edgeIndexMap.put(edge, edgeIndex);
             edgeIndex++;
             sourceList.add(edge.source());
-            targetList.add(edge.opposite());
+            targetList.add(edge.target());
             labelList.add(edge.label());
         }
         // convert the lists to arrays
@@ -858,8 +857,8 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
      */
     protected class MatchingAlgorithm {
         /** Dummy object used in matching. */
-        final MatchingComputation MATCH_DUMMY = new MatchingComputation(0,
-            null, null);
+        final MatchingComputation MATCH_DUMMY =
+            new MatchingComputation(0, null, null);
 
         /**
          * Wraps a single computation of the enclosing {@link MatchingAlgorithm}
@@ -1383,7 +1382,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             case FORWARD:
                 return edge.source();
             default:
-                return edge.opposite();
+                return edge.target();
             }
         }
 
@@ -1395,7 +1394,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
         protected Node getOpposite(Edge edge) {
             switch (this.direction) {
             case FORWARD:
-                return edge.opposite();
+                return edge.target();
             default:
                 return edge.source();
             }

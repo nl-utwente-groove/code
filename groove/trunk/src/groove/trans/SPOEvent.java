@@ -459,7 +459,7 @@ final public class SPOEvent extends
             Edge edgeImage = coAnchorMap.mapEdge(edge);
             if (edgeImage != null) {
                 if (erasedNodes == null
-                    || !(erasedNodes.contains(edgeImage.source()) || erasedNodes.contains(edgeImage.opposite()))) {
+                    || !(erasedNodes.contains(edgeImage.source()) || erasedNodes.contains(edgeImage.target()))) {
                     result.add(edgeImage);
                 }
             }
@@ -517,7 +517,7 @@ final public class SPOEvent extends
             if (image != null) {
                 // only add if image has no incident erased node
                 if (erasedNodes == null
-                    || !(erasedNodes.contains(image.source()) || erasedNodes.contains(image.opposite()))) {
+                    || !(erasedNodes.contains(image.source()) || erasedNodes.contains(image.target()))) {
                     result.add(image);
                 }
             }

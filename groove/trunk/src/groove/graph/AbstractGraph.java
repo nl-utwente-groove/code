@@ -429,7 +429,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends
 
     /** Fixed empty graphs, used for the constant <tt>{@link #EMPTY_GRAPH}</tt>. */
     private static class EmptyGraph<C extends GraphCache> extends
-            AbstractGraph<C> {
+            AbstractGraph<C> implements Cloneable {
         /**
          * The empty graph to which no elements can be added.
          */

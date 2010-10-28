@@ -74,10 +74,11 @@ public abstract class AbstractEdge<N extends Node,L extends Label,TN extends Nod
         return END_COUNT;
     }
 
-    public final TN target() {
+    public TN target() {
         return this.target;
     }
 
+    @Deprecated
     @Override
     public TN opposite() {
         return this.target;

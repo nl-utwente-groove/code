@@ -319,7 +319,7 @@ public class PartitionRefiner implements CertificateStrategy {
         assert sourceCert != null : "Edge source of " + edge + " not found in "
             + this.otherNodeCertMap + "; so not in the node set "
             + this.graph.nodeSet() + " of " + this.graph;
-        if (source == edge.opposite()) {
+        if (source == edge.target()) {
             Edge1Certificate edge1Cert = new Edge1Certificate(edge, sourceCert);
             this.edgeCerts[this.edgeCerts.length - this.edge1CertCount - 1] =
                 edge1Cert;
@@ -328,7 +328,7 @@ public class PartitionRefiner implements CertificateStrategy {
                 "%s unary and %s binary edges do not equal %s edges",
                 this.edge1CertCount, this.edge2CertCount, this.edgeCerts.length);
         } else {
-            NodeCertificate targetCert = getNodeCert(edge.opposite());
+            NodeCertificate targetCert = getNodeCert(edge.target());
             assert targetCert != null : "Edge target of " + edge
                 + " not found in " + this.otherNodeCertMap
                 + "; so not in the node set " + this.graph.nodeSet() + " of "

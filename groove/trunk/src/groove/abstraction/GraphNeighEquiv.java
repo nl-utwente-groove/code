@@ -283,7 +283,7 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
     public boolean areEquivalent(Edge e0, Edge e1) {
         return e0.label().equals(e1.label())
             && this.areEquivalent(e0.source(), e1.source())
-            && this.areEquivalent(e0.opposite(), e1.opposite());
+            && this.areEquivalent(e0.target(), e1.target());
     }
 
     /**

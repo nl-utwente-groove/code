@@ -24,7 +24,7 @@ import groove.util.Dispenser;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class DefaultNode implements Node {
+public class DefaultNode implements Node, Cloneable {
     /**
      * Constructs a fresh node, with an explicitly given number. Note that node
      * equality is determined by identity, but it is assumed that never two

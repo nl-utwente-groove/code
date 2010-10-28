@@ -103,7 +103,7 @@ public class EdgeSignature {
     public boolean asOutSigContains(Edge edge) {
         return this.node.equals(edge.source())
             && this.label.equals(edge.label())
-            && this.equivClass.contains(edge.opposite());
+            && this.equivClass.contains(edge.target());
     }
 
     /**
@@ -112,7 +112,7 @@ public class EdgeSignature {
      * The test is true if n == tgt(e) && l == lbl(e) && src(e) \in C .
      */
     public boolean asInSigContains(Edge edge) {
-        return this.node.equals(edge.opposite())
+        return this.node.equals(edge.target())
             && this.label.equals(edge.label())
             && this.equivClass.contains(edge.source());
     }

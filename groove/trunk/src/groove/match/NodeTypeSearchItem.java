@@ -339,7 +339,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
 
         @Override
         boolean setImage(Edge image) {
-            assert image.opposite() == image.source();
+            assert image.target() == image.source();
             if (this.sourceFind == null) {
                 if (!this.search.putNode(this.sourceIx, image.source())) {
                     return false;

@@ -40,10 +40,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * This class represents an attempt to materialise a certain shape, driven by
@@ -439,14 +439,14 @@ public class Materialisation implements Cloneable {
             ShapeEdge origEdgeS = (ShapeEdge) edgeEntry.getValue();
             // Start with the nodes from the original edge.
             ShapeNode srcS = origEdgeS.source();
-            ShapeNode tgtS = origEdgeS.opposite();
+            ShapeNode tgtS = origEdgeS.target();
 
             boolean modifyMatch = false;
             if (edgeR.source().equals(nodeR)) {
                 srcS = nodeS;
                 modifyMatch = true;
             }
-            if (edgeR.opposite().equals(nodeR)) {
+            if (edgeR.target().equals(nodeR)) {
                 tgtS = nodeS;
                 modifyMatch = true;
             }
@@ -468,8 +468,8 @@ public class Materialisation implements Cloneable {
                         this.match.putEdge(edgeR, newEdgeS);
                         edgesToFreeze.add(newEdgeS);
                     } // else, we have an edge that needs to be materialised.
-                      // Wait for the MaterialiseEdge operation to take care
-                      // of this edge.
+                    // Wait for the MaterialiseEdge operation to take care
+                    // of this edge.
                 }
             }
         }
@@ -491,7 +491,7 @@ public class Materialisation implements Cloneable {
                     EquivClass<ShapeNode> srcEc =
                         this.shape.getEquivClassOf(srcS);
                     Label label = edgeS.label();
-                    ShapeNode tgtS = edgeS.opposite();
+                    ShapeNode tgtS = edgeS.target();
                     EdgeSignature inEs =
                         this.shape.getEdgeSignature(tgtS, label, srcEc);
                     if (!this.shape.isInEdgeSigUnique(inEs)) {
