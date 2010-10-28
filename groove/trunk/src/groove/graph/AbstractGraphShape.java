@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -127,7 +126,7 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
     }
 
     public Set<? extends Edge> labelEdgeSet(int arity, Label label) {
-        Set<? extends Edge> result = labelEdgeMap(arity).get(label);
+        Set<? extends Edge> result = getLabelEdgeMap().get(label);
         if (result != null) {
             return Collections.unmodifiableSet(result);
         } else {
@@ -136,21 +135,11 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
     }
 
     /**
-     * Returns a map from the labels in this graph of a given arity to non-empty
-     * sets (actually, <tt>Collection</tt>s guaranteed to contain distinct
-     * elements) of all edges with that label and arity in this graph.
-     * @param arity the number of endpoints of the required edges
-     */
-    protected Map<Label,? extends Set<? extends Edge>> labelEdgeMap(int arity) {
-        return Collections.unmodifiableMap(getLabelEdgeMaps().get(arity));
-    }
-
-    /**
      * Returns the array of label-to-edge maps from the graph cache.
      * @return the array of label-to-edge maps from the graph cache
      */
-    protected List<? extends Map<Label,? extends Set<? extends Edge>>> getLabelEdgeMaps() {
-        return getCache().getLabelEdgeMaps();
+    protected Map<Label,? extends Set<? extends Edge>> getLabelEdgeMap() {
+        return getCache().getLabelEdgeMap();
     }
 
     public GraphInfo getInfo() {

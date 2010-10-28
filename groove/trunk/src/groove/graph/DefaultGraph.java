@@ -120,16 +120,18 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
         // assert edge instanceof BinaryEdge : "This graph implementation only
         // supports binary edges";
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
-        Set<Edge> sourceOutEdges = this.edgeMap.get(edge.source());
+        Node source = edge.source();
+        Node target = edge.target();
+        Set<Edge> sourceOutEdges = this.edgeMap.get(source);
         if (sourceOutEdges == null) {
-            addNode(edge.source());
-            sourceOutEdges = this.edgeMap.get(edge.source());
+            addNode(source);
+            sourceOutEdges = this.edgeMap.get(source);
         }
-        for (int i = 1; i < edge.endCount(); i++) {
-            Node end = edge.end(i);
-            if (!this.edgeMap.containsKey(end)) {
-                addNode(end);
-            }
+        if (!this.edgeMap.containsKey(source)) {
+            addNode(source);
+        }
+        if (!this.edgeMap.containsKey(target)) {
+            addNode(target);
         }
         boolean added = sourceOutEdges.add(edge);
         if (added) {

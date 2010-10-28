@@ -19,10 +19,8 @@ package groove.graph;
 import groove.util.Groove;
 import groove.util.TreeHashSet;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -94,7 +92,7 @@ public class GraphShapeCache implements GraphShapeListener {
      */
     public void addUpdate(GraphShape graph, Edge edge) {
         if (isLabelEdgeMapsSet()) {
-            addToLabelEdgeMaps(this.labelEdgeMaps, edge);
+            addToLabelEdgeMap(this.labelEdgeMap, edge);
         }
         if (isNodeEdgeMapSet()) {
             addToNodeEdgeMap(this.nodeEdgeMap, edge);
@@ -115,7 +113,7 @@ public class GraphShapeCache implements GraphShapeListener {
      */
     public void removeUpdate(GraphShape graph, Edge elem) {
         if (isLabelEdgeMapsSet()) {
-            removeFromLabelEdgeMaps(this.labelEdgeMaps, elem);
+            removeFromLabelEdgeMap(this.labelEdgeMap, elem);
         }
         if (isNodeEdgeMapSet()) {
             removeFromNodeEdgeMap(this.nodeEdgeMap, elem);
@@ -124,11 +122,11 @@ public class GraphShapeCache implements GraphShapeListener {
 
     /**
      * Signals if the label-to-edge map (to be returned by
-     * {@link #getLabelEdgeMaps()} is currently set, or if it yet has to be
+     * {@link #getLabelEdgeMap()} is currently set, or if it yet has to be
      * computed for this cache.
      */
     boolean isLabelEdgeMapsSet() {
-        return this.labelEdgeMaps != null;
+        return this.labelEdgeMap != null;
     }
 
     /**
@@ -141,23 +139,17 @@ public class GraphShapeCache implements GraphShapeListener {
     }
 
     /**
-     * Returns an array of label-to-edge mapping for labels of arbitrary edge
-     * arity. If no map is currently cached, it is created by a call to
-     * {@link #computeLabelEdgeMaps()}. If the graph is fixed (see
-     * {@link Graph#isFixed()}, the map is cached.
-     * @return the label-to-edge mapping for arity <tt>i</tt>
-     * @see #computeLabelEdgeMaps()
+     * Returns the label-to-edge mapping
+     * @see #computeLabelEdgeMap()
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    protected List<Map<Label,? extends Set<? extends Edge>>> getLabelEdgeMaps() {
-        List<Map<Label,? extends Set<? extends Edge>>> result =
-            (List) this.labelEdgeMaps;
+    protected Map<Label,? extends Set<? extends Edge>> getLabelEdgeMap() {
+        Map<Label,? extends Set<? extends Edge>> result = this.labelEdgeMap;
         if (result == null) {
-            List<Map<Label,Set<Edge>>> newMaps = computeLabelEdgeMaps();
+            Map<Label,Set<Edge>> newMaps = computeLabelEdgeMap();
             if (this.dynamic || this.graph.isFixed()) {
-                this.labelEdgeMaps = newMaps;
+                this.labelEdgeMap = newMaps;
             }
-            result = (List) newMaps;
+            result = newMaps;
         }
         return result;
     }
@@ -183,29 +175,13 @@ public class GraphShapeCache implements GraphShapeListener {
     }
 
     /**
-     * Computes and returns an arity-indexed array of mappings from labels to
-     * sets of edges with that arity and label. For all indices between 1 and
-     * {@link AbstractEdge#getMaxEndCount()}, the array elements are non-<tt>null</tt>
+     * Computes and returns a mapping from labels to
+     * sets of edges.
      */
-    protected List<Map<Label,Set<Edge>>> computeLabelEdgeMaps() {
-        List<Map<Label,Set<Edge>>> result = createLabelEdgeMaps();
+    protected Map<Label,Set<Edge>> computeLabelEdgeMap() {
+        Map<Label,Set<Edge>> result = new HashMap<Label,Set<Edge>>();
         for (Edge edge : this.graph.edgeSet()) {
-            addToLabelEdgeMaps(result, edge);
-        }
-        return result;
-    }
-
-    /**
-     * Creates and returns an array of mappings, containing empty maps for all
-     * valid end counts.
-     * @see AbstractEdge#getMaxEndCount()
-     */
-    protected List<Map<Label,Set<Edge>>> createLabelEdgeMaps() {
-        List<Map<Label,Set<Edge>>> result =
-            new ArrayList<Map<Label,Set<Edge>>>();// [AbstractEdge.getMaxEndCount()+1];
-        result.add(null);
-        for (int arity = 1; arity <= Edge.END_COUNT; arity++) {
-            result.add(new HashMap<Label,Set<Edge>>());
+            addToLabelEdgeMap(result, edge);
         }
         return result;
     }
@@ -244,30 +220,26 @@ public class GraphShapeCache implements GraphShapeListener {
     }
 
     /**
-     * Adds an edge to a given label-to-edgeset mapping array.
+     * Adds an edge to a given label-to-edgeset map.
      * @param currentMap the array to be updated
      * @param edge the edge to be added
      */
-    final void addToLabelEdgeMaps(List<Map<Label,Set<Edge>>> currentMap,
-            Edge edge) {
-        Map<Label,Set<Edge>> labelEdgeMap = currentMap.get(edge.endCount());
-        Set<Edge> labelEdgeSet = labelEdgeMap.get(edge.label());
+    final void addToLabelEdgeMap(Map<Label,Set<Edge>> currentMap, Edge edge) {
+        Set<Edge> labelEdgeSet = currentMap.get(edge.label());
         if (labelEdgeSet == null) {
             labelEdgeSet = createSmallEdgeSet();
-            labelEdgeMap.put(edge.label(), labelEdgeSet);
+            currentMap.put(edge.label(), labelEdgeSet);
         }
         labelEdgeSet.add(edge);
     }
 
     /**
-     * Removes an edge from a given label-to-edgeset mapping array.
+     * Removes an edge from a given label-to-edgeset map.
      * @param currentMap the array to be updated
      * @param edge the edge to be removed
      */
-    final void removeFromLabelEdgeMaps(List<Map<Label,Set<Edge>>> currentMap,
-            Edge edge) {
-        Map<Label,Set<Edge>> labelEdgeMap = currentMap.get(edge.endCount());
-        Set<Edge> labelEdgeSet = labelEdgeMap.get(edge.label());
+    final void removeFromLabelEdgeMap(Map<Label,Set<Edge>> currentMap, Edge edge) {
+        Set<Edge> labelEdgeSet = currentMap.get(edge.label());
         if (labelEdgeSet != null) {
             labelEdgeSet.remove(edge);
         }
@@ -383,7 +355,7 @@ public class GraphShapeCache implements GraphShapeListener {
      * An array of label-to-edge mappings, indexed by arity of the edges - 1.
      * Initially set to <tt>null</tt>.
      */
-    private List<Map<Label,Set<Edge>>> labelEdgeMaps;
+    private Map<Label,Set<Edge>> labelEdgeMap;
     /**
      * A node-to-outgoing-edge mapping.
      */
