@@ -19,7 +19,6 @@ package groove.test;
 import groove.util.HashIntSet;
 import groove.util.IntSet;
 import groove.util.Reporter;
-import groove.util.SplitTreeIntSet;
 import groove.util.TreeIntSet;
 
 /**
@@ -66,9 +65,6 @@ public class IntSetSpeedTest {
         new IntSetSpeedTest(new TreeIntSet(1)).start();
         new IntSetSpeedTest(new TreeIntSet(2)).start();
         new IntSetSpeedTest(new TreeIntSet(3)).start();
-        new IntSetSpeedTest(new SplitTreeIntSet(1)).start();
-        new IntSetSpeedTest(new SplitTreeIntSet(2)).start();
-        new IntSetSpeedTest(new SplitTreeIntSet(3)).start();
     }
 
     public IntSetSpeedTest(IntSet object) {
@@ -117,20 +113,20 @@ public class IntSetSpeedTest {
 
     static private final Reporter reporter =
         Reporter.register(IntSetSpeedTest.class);
-    private final Reporter[] TEST_RANDOM_SMALL = new Reporter[] {
-        reporter.register("Random, small sample:  "),
-        reporter.register("          Fresh addition: "),
-        reporter.register("           Next addition: ")};
-    private final Reporter[] TEST_RANDOM_LARGE = new Reporter[] {
-        reporter.register("Random, large sample:  "),
-        reporter.register("          Fresh addition: "),
-        reporter.register("           Next addition: ")};
-    private final Reporter[] TEST_REGULAR_SMALL = new Reporter[] {
-        reporter.register("Regular, small sample: "),
-        reporter.register("          Fresh addition: "),
-        reporter.register("           Next addition: ")};
-    private final Reporter[] TEST_REGULAR_LARGE = new Reporter[] {
-        reporter.register("Regular, large sample: "),
-        reporter.register("          Fresh addition: "),
-        reporter.register("           Next addition: ")};
+    private final Reporter[] TEST_RANDOM_SMALL =
+        new Reporter[] {reporter.register("Random, small sample:  "),
+            reporter.register("          Fresh addition: "),
+            reporter.register("           Next addition: ")};
+    private final Reporter[] TEST_RANDOM_LARGE =
+        new Reporter[] {reporter.register("Random, large sample:  "),
+            reporter.register("          Fresh addition: "),
+            reporter.register("           Next addition: ")};
+    private final Reporter[] TEST_REGULAR_SMALL =
+        new Reporter[] {reporter.register("Regular, small sample: "),
+            reporter.register("          Fresh addition: "),
+            reporter.register("           Next addition: ")};
+    private final Reporter[] TEST_REGULAR_LARGE =
+        new Reporter[] {reporter.register("Regular, large sample: "),
+            reporter.register("          Fresh addition: "),
+            reporter.register("           Next addition: ")};
 }
