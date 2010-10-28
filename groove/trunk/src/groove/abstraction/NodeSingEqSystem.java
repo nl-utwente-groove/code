@@ -183,100 +183,41 @@ public class NodeSingEqSystem extends EquationSystem {
             new ShapeDialog(this.shape, "");
         }
 
+        final int OUTGOING = 0;
+        final int INCOMING = 1;
+
         // For all binary labels.
         for (Label label : Util.binaryLabelSet(this.shape)) {
+            // For outgoing and incoming directions.
+            for (int direction = OUTGOING; direction <= INCOMING; direction++) {
+                EquivClass<ShapeNode> ecO = null;
+                EquivClass<ShapeNode> ecI = null;
 
-            // For all equivalence classes. (As outgoing)
-            for (EquivClass<ShapeNode> ecO : this.shape.getEquivRelation()) {
-                // Take the original equivalence class as incoming.            
-                EquivClass<ShapeNode> ecI = this.origEc;
-
-                if (this.haveVars(ecO, ecI, label, true)) {
-                    // For each pair of equivalence classes we have two constraints.
-
-                    // This constraint is about the flow between an arbitrary
-                    // equivalence class and the node that will be made singular.
-                    AdmissibilityConstraint singConstr = this.newAdmisConstr();
-                    // This constraint is about the flow between an arbitrary
-                    // equivalence class and the remainder equivalence class.
-                    AdmissibilityConstraint remConstr = this.newAdmisConstr();
-
-                    MultTerm term;
-
-                    // Outgoing terms.
-                    for (ShapeNode nO : ecO) {
-                        Multiplicity nOMult = this.shape.getNodeMult(nO);
-                        EdgeSignature nOEs =
-                            this.shape.getEdgeSignature(nO, label, ecI);
-                        // Check if we have MultVars associated with this
-                        // signature.
-                        Pair<MultVar,MultVar> outMultVars =
-                            this.outMap.get(nOEs);
-                        if (outMultVars != null) {
-                            // Yes, we do. Create a new MultTerm for each
-                            // element in the pair.
-                            term = new MultTerm(nOMult, outMultVars.first());
-                            singConstr.addToOutSum(term);
-                            term = new MultTerm(nOMult, outMultVars.second());
-                            remConstr.addToOutSum(term);
-                        } else {
-                            // No, we don't. Multiply the two multiplicities
-                            // and add the result to the constant in the
-                            // constraint.
-                            Multiplicity eOMult =
-                                this.shape.getEdgeSigOutMult(nOEs);
-                            Multiplicity outMult = nOMult.multiply(eOMult);
-                            if (nO.equals(this.node)) {
-                                singConstr.addToOutSum(outMult);
-                            } else if (this.shape.isNonFrozenEdgeFromSigInvolved(
-                                nOEs, true)) {
-                                remConstr.addToOutSum(outMult);
-                            }
-                        }
-                    }
-
-                    // Incoming terms.
-                    for (ShapeNode nI : ecI) {
-                        Multiplicity nIMult = this.shape.getNodeMult(nI);
-                        EdgeSignature nIEs =
-                            this.shape.getEdgeSignature(nI, label, ecO);
-                        // Check if we have MultVars associated with this
-                        // signature.
-                        Pair<MultVar,MultVar> inMultVars = this.inMap.get(nIEs);
-                        if (inMultVars != null) {
-                            // Yes, we do. Create a new MultTerm for each
-                            // element in the pair.
-                            term = new MultTerm(nIMult, inMultVars.first());
-                            singConstr.addToInSum(term);
-                            term = new MultTerm(nIMult, inMultVars.second());
-                            remConstr.addToInSum(term);
-                        } else {
-                            // No, we don't. Multiply the two multiplicities
-                            // and add the result to the constant in the
-                            // constraint.
-                            Multiplicity eIMult =
-                                this.shape.getEdgeSigInMult(nIEs);
-                            Multiplicity inMult = nIMult.multiply(eIMult);
-                            if (nI.equals(this.node)) {
-                                singConstr.addToInSum(inMult);
-                            } else if (this.shape.isNonFrozenEdgeFromSigInvolved(
-                                nIEs, false)) {
-                                remConstr.addToInSum(inMult);
-                            }
-                        }
-                    }
-
-                    this.addAdmisConstr(singConstr);
-                    this.addAdmisConstr(remConstr);
+                if (direction == OUTGOING) {
+                    // Take the original equivalence class as incoming.            
+                    ecI = this.origEc;
+                } else if (direction == INCOMING) {
+                    // Take the original equivalence class as outgoing.            
+                    ecO = this.origEc;
+                } else {
+                    assert false : "Something went very wrong...";
                 }
-            }
 
-            // For all equivalence classes. (As incoming)
-            for (EquivClass<ShapeNode> ecI : this.shape.getEquivRelation()) {
-                // Take the original equivalence class as outgoing.            
-                EquivClass<ShapeNode> ecO = this.origEc;
+                innerLoop: for (EquivClass<ShapeNode> ec : this.shape.getEquivRelation()) {
+                    if (direction == OUTGOING) {
+                        // For all equivalence classes. (As outgoing)
+                        ecO = ec;
+                    } else if (direction == INCOMING) {
+                        // For all equivalence classes. (As incoming)
+                        ecI = ec;
+                    } else {
+                        assert false : "Something went very wrong...";
+                    }
 
-                if (this.haveVars(ecO, ecI, label, false)) {
+                    if (!this.haveVars(ecO, ecI, label, direction == OUTGOING)) {
+                        continue innerLoop;
+                    }
+
                     // For each pair of equivalence classes we have two constraints.
 
                     // This constraint is about the flow between an arbitrary
@@ -357,103 +298,6 @@ public class NodeSingEqSystem extends EquationSystem {
             }
         }
     }
-
-    /*@Override
-    void buildAdmissibilityConstraints() {
-        if (USE_GUI) {
-            new ShapeDialog(this.shape, "");
-        }
-
-        // For all outgoing variables.
-        for (Entry<EdgeSignature,Pair<MultVar,MultVar>> entryO : this.outMap.entrySet()) {
-            EdgeSignature esO = entryO.getKey();
-            Label label = esO.getLabel();
-            EquivClass<ShapeNode> ecI = esO.getEquivClass();
-            EquivClass<ShapeNode> ecO =
-                this.shape.getEquivClassOf(esO.getNode());
-
-            assert this.origEc.equals(ecI);
-
-            AdmissibilityConstraint singConstr = this.newAdmisConstr();
-            AdmissibilityConstraint remConstr = this.newAdmisConstr();
-
-            for (ShapeNode nO : ecO) {
-                Multiplicity nOMult = this.shape.getNodeMult(nO);
-                EdgeSignature es = this.shape.getEdgeSignature(nO, label, ecI);
-                Pair<MultVar,MultVar> outVars = this.outMap.get(es);
-                if (outVars != null) {
-                    MultTerm term;
-                    term = new MultTerm(nOMult, outVars.first());
-                    singConstr.addToOutSum(term);
-                    term = new MultTerm(nOMult, outVars.second());
-                    remConstr.addToOutSum(term);
-                }
-            }
-
-            Multiplicity singNodeMult = this.shape.getNodeMult(this.node);
-            EdgeSignature esI =
-                this.shape.getEdgeSignature(this.node, label, ecO);
-            Multiplicity esIMult = this.shape.getEdgeSigInMult(esI);
-            Multiplicity inMult = singNodeMult.multiply(esIMult);
-            singConstr.addToInSum(inMult);
-
-            for (ShapeNode node : this.remEc) {
-                Multiplicity remNodeMult = this.shape.getNodeMult(node);
-                esI = this.shape.getEdgeSignature(node, label, ecO);
-                esIMult = this.shape.getEdgeSigInMult(esI);
-                inMult = remNodeMult.multiply(esIMult);
-                remConstr.addToInSum(inMult);
-            }
-
-            this.addAdmisConstr(singConstr);
-            this.addAdmisConstr(remConstr);
-        }
-
-        // For all incoming variables.
-        for (Entry<EdgeSignature,Pair<MultVar,MultVar>> entryI : this.inMap.entrySet()) {
-            EdgeSignature esI = entryI.getKey();
-            Label label = esI.getLabel();
-            EquivClass<ShapeNode> ecO = esI.getEquivClass();
-            EquivClass<ShapeNode> ecI =
-                this.shape.getEquivClassOf(esI.getNode());
-
-            assert this.origEc.equals(ecO);
-
-            AdmissibilityConstraint singConstr = this.newAdmisConstr();
-            AdmissibilityConstraint remConstr = this.newAdmisConstr();
-
-            for (ShapeNode nI : ecI) {
-                Multiplicity nIMult = this.shape.getNodeMult(nI);
-                EdgeSignature es = this.shape.getEdgeSignature(nI, label, ecO);
-                Pair<MultVar,MultVar> inVars = this.inMap.get(es);
-                if (inVars != null) {
-                    MultTerm term;
-                    term = new MultTerm(nIMult, inVars.first());
-                    singConstr.addToInSum(term);
-                    term = new MultTerm(nIMult, inVars.second());
-                    remConstr.addToInSum(term);
-                }
-            }
-
-            Multiplicity singNodeMult = this.shape.getNodeMult(this.node);
-            EdgeSignature esO =
-                this.shape.getEdgeSignature(this.node, label, ecI);
-            Multiplicity esOMult = this.shape.getEdgeSigOutMult(esO);
-            Multiplicity outMult = singNodeMult.multiply(esOMult);
-            singConstr.addToOutSum(outMult);
-
-            for (ShapeNode node : this.remEc) {
-                Multiplicity remNodeMult = this.shape.getNodeMult(node);
-                esO = this.shape.getEdgeSignature(node, label, ecI);
-                esOMult = this.shape.getEdgeSigOutMult(esO);
-                outMult = remNodeMult.multiply(esOMult);
-                remConstr.addToOutSum(outMult);
-            }
-
-            this.addAdmisConstr(singConstr);
-            this.addAdmisConstr(remConstr);
-        }
-    }*/
 
     @Override
     void storeTrivialResultShape() {
