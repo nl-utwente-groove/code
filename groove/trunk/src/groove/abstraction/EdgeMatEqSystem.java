@@ -55,7 +55,6 @@ public final class EdgeMatEqSystem extends EquationSystem {
     public EdgeMatEqSystem(Shape shape, CountingSet<EdgeSignature> outEsSet,
             CountingSet<EdgeSignature> inEsSet, Set<ShapeEdge> frozenEdges) {
         super(shape);
-        this.shape = shape;
         this.outEsSet = outEsSet;
         this.inEsSet = inEsSet;
         this.frozenEdges = frozenEdges;

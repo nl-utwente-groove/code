@@ -40,10 +40,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
-import java.util.Map.Entry;
 
 /**
  * This class represents an attempt to materialise a certain shape, driven by
@@ -468,8 +468,8 @@ public class Materialisation implements Cloneable {
                         this.match.putEdge(edgeR, newEdgeS);
                         edgesToFreeze.add(newEdgeS);
                     } // else, we have an edge that needs to be materialised.
-                    // Wait for the MaterialiseEdge operation to take care
-                    // of this edge.
+                      // Wait for the MaterialiseEdge operation to take care
+                      // of this edge.
                 }
             }
         }
@@ -1051,9 +1051,32 @@ public class Materialisation implements Cloneable {
         public void perform() { // PullNode
             this.mat.logOp(this.toString());
 
+            // Look in the shaping morphism to get the all the nodes that were
+            // materialised from the original node.
+            Set<ShapeNode> origNodes =
+                this.mat.shape.getReverseNodeMap(this.pulledNode);
             // Materialise the node and get the new multiplicity set back.
             Set<Multiplicity> mults =
                 this.mat.shape.materialiseNode(this.pulledNode, this.mult, 1);
+            // Look in the shaping morphism to get the new node that was
+            // materialised from the original node.
+            Set<ShapeNode> newNodes =
+                this.mat.shape.getReverseNodeMap(this.pulledNode);
+            // Remove the original nodes from the set of new nodes.
+            newNodes.removeAll(origNodes);
+            assert newNodes.size() == 1;
+            ShapeNode newNode = newNodes.iterator().next();
+            Label label = this.pullingEdge.label();
+            ShapeEdge pulledEdge;
+            if (this.pullingEdge.source().equals(this.pulledNode)) {
+                pulledEdge =
+                    this.mat.shape.getShapeEdge(newNode, label,
+                        this.pullingEdge.target());
+            } else {
+                pulledEdge =
+                    this.mat.shape.getShapeEdge(this.pullingEdge.source(),
+                        label, newNode);
+            }
 
             // Create the new materialisation objects.
             for (Multiplicity mult : mults) {
@@ -1069,10 +1092,8 @@ public class Materialisation implements Cloneable {
 
                 // Update the multiplicity of the original node.
                 newMat.shape.setNodeMult(this.pulledNode, mult);
-                // EDUARDO: Modify this... 
-                // Can't freeze the edge only, what about edge multiplicities?
-                // Need to modify the freezing mechanism in the shape... 
-                // newMat.shape.freezeEdge(this.pullingEdge);
+                // EDUARDO: Activate this...
+                // newMat.shape.removeImpossibleEdges(pulledEdge);
 
                 // Add this new materialisation to the result set of this
                 // operation.
@@ -1334,7 +1355,7 @@ public class Materialisation implements Cloneable {
     /** Test method. */
     public static void main(String args[]) {
         Multiplicity.initMultStore();
-        test3();
+        test0();
     }
 
 }
