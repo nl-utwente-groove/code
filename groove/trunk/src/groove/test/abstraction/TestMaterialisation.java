@@ -160,14 +160,12 @@ public class TestMaterialisation extends TestCase {
                 for (Materialisation mat : mats) {
                     assertTrue(mat.getShape().nodeSet().size() == 5);
                     assertTrue(Util.getBinaryEdges(mat.getShape()).size() == 7);
-                    /*Shape result = mat.applyMatch();
-                    new ShapeDialog(result, "result");
+                    Shape result = mat.applyMatch();
                     assertTrue(result.nodeSet().size() == 6);
                     assertTrue(Util.getBinaryEdges(result).size() == 8);
                     Shape normalisedShape = result.normalise();
-                    new ShapeDialog(normalisedShape, "normalised");
-                    assertTrue(normalisedShape.nodeSet().size() == 5);
-                    assertTrue(Util.getBinaryEdges(normalisedShape).size() == 7);*/
+                    assertTrue(normalisedShape.nodeSet().size() == 4);
+                    assertTrue(Util.getBinaryEdges(normalisedShape).size() == 5);
                 }
             }
         } catch (IOException e) {

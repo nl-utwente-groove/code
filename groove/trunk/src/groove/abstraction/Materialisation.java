@@ -215,8 +215,7 @@ public class Materialisation implements Cloneable {
             Materialisation mat = queue.remove();
             if (mat.isFinished()) {
                 // This one is done.
-                assert mat.hasConcreteMatch();
-                result.add(mat);
+                storeResult(mat, result);
             } else { // Process the next operation on the materialisation.
                 MatOp op = mat.getNextOp();
                 op.perform();
@@ -227,6 +226,13 @@ public class Materialisation implements Cloneable {
         }
 
         return result;
+    }
+
+    private static void storeResult(Materialisation mat,
+            Set<Materialisation> results) {
+        assert mat.hasConcreteMatch();
+        mat.shape.unfreezeEdges();
+        results.add(mat);
     }
 
     // ------------------------------------------------------------------------
