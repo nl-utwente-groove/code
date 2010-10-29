@@ -1359,6 +1359,30 @@ public class Shape extends DefaultGraph implements Cloneable {
         }
     }
 
+    /** EDUARDO: Comment this... */
+    public void unfreezeEdges() {
+        for (ShapeEdge frozenEdge : this.frozenEdges) {
+            Multiplicity oneMult = Multiplicity.getMultOf(1);
+            ShapeNode src = frozenEdge.source();
+            ShapeNode tgt = frozenEdge.target();
+            Label label = frozenEdge.label();
+            EquivClass<ShapeNode> srcEc = this.getEquivClassOf(src);
+            EquivClass<ShapeNode> tgtEc = this.getEquivClassOf(tgt);
+
+            assert srcEc.size() == 1 || tgtEc.size() == 1;
+
+            EdgeSignature outEs = this.getEdgeSignature(src, label, tgtEc);
+            if (!this.outEdgeMultMap.containsKey(outEs)) {
+                this.setEdgeOutMult(outEs, oneMult);
+            }
+            EdgeSignature inEs = this.getEdgeSignature(tgt, label, srcEc);
+            if (!this.inEdgeMultMap.containsKey(inEs)) {
+                this.setEdgeInMult(inEs, oneMult);
+            }
+        }
+        this.frozenEdges.clear();
+    }
+
     /** Normalise the shape object and returns the newly modified shape. */
     public Shape normalise() {
         Shape normalisedShape = new Shape();
