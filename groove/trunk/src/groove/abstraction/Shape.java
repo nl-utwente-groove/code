@@ -1335,6 +1335,30 @@ public class Shape extends DefaultGraph implements Cloneable {
         return this.frozenEdges.contains(edge);
     }
 
+    /** EDUARDO: Comment this... */
+    public void removeImpossibleEdges(ShapeEdge edgeToKeep) {
+        assert this.edgeSet().contains(edgeToKeep);
+
+        EdgeSignature outEs = this.getEdgeOutSignature(edgeToKeep);
+        EdgeSignature inEs = this.getEdgeInSignature(edgeToKeep);
+
+        if (outEs.getEquivClass().equals(inEs.getEquivClass())
+            && this.isOutEdgeSigConcrete(outEs)
+            && this.isInEdgeSigConcrete(inEs)) {
+            for (ShapeEdge edge : this.getEdgesFrom(outEs, true)) {
+                if (!edge.equals(edgeToKeep) && !this.isFrozen(edge)) {
+                    this.removeEdge(edge);
+                }
+            }
+            for (ShapeEdge edge : this.getEdgesFrom(inEs, false)) {
+                if (!edge.equals(edgeToKeep) && !this.isFrozen(edge)) {
+                    this.removeEdge(edge);
+                }
+            }
+            this.freezeEdge(edgeToKeep);
+        }
+    }
+
     /** Normalise the shape object and returns the newly modified shape. */
     public Shape normalise() {
         Shape normalisedShape = new Shape();

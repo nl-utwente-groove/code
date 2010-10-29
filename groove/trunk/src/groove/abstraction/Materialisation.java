@@ -1092,8 +1092,9 @@ public class Materialisation implements Cloneable {
 
                 // Update the multiplicity of the original node.
                 newMat.shape.setNodeMult(this.pulledNode, mult);
-                // EDUARDO: Activate this...
-                // newMat.shape.removeImpossibleEdges(pulledEdge);
+                // Simplify the shape, when possible to avoid some
+                // non-determinism.
+                newMat.shape.removeImpossibleEdges(pulledEdge);
 
                 // Add this new materialisation to the result set of this
                 // operation.
@@ -1355,7 +1356,7 @@ public class Materialisation implements Cloneable {
     /** Test method. */
     public static void main(String args[]) {
         Multiplicity.initMultStore();
-        test0();
+        test3();
     }
 
 }
