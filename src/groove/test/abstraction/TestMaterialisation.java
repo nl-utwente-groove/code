@@ -62,7 +62,7 @@ public class TestMaterialisation extends TestCase {
             for (RuleMatch preMatch : preMatches) {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);
-                assertTrue(mats.size() == 6 || mats.size() == 7);
+                assertTrue(mats.size() == 4);
                 for (Materialisation mat : mats) {
                     Shape matShape = mat.getShape();
                     assertTrue((matShape.nodeSet().size() == 5 && Util.getBinaryEdges(
