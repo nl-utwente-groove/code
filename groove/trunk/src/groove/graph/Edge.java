@@ -30,7 +30,9 @@ public interface Edge extends Element {
      * by <tt>SOURCE_INDEX</tt>.
      * @return an array of the endpoints of this edge
      * @ensure <tt>result</tt> does not contain <tt>null</tt> values
+     * @deprecated no longer necessary since all edges are binary
      */
+    @Deprecated
     public Node[] ends();
 
     /**
@@ -40,7 +42,9 @@ public interface Edge extends Element {
      * @see #ends()
      * @require <tt>0 <= i && i <= endCount()</tt>
      * @ensure <tt>result != null && result == ends()[i]</tt>
+     * @deprecated use {@link #source()} or {@link #target()} instead
      */
+    @Deprecated
     public Node end(int i);
 
     /**
@@ -49,7 +53,9 @@ public interface Edge extends Element {
      * @return The number of endpoints of this edge
      * @see #ends()
      * @ensure <tt>result >= 1 && result == ends().length</tt>
+     * @deprecated no longer necessary since all edges are binary
      */
+    @Deprecated
     public int endCount();
 
     /**
@@ -61,7 +67,9 @@ public interface Edge extends Element {
      * @require <tt>node != null</tt>
      * @ensure <tt>result == -1 || end(result).equals(node)</tt>
      * @see #end(int)
+     * @deprecated test against source or target
      */
+    @Deprecated
     public int endIndex(Node node);
 
     /**
@@ -73,7 +81,9 @@ public interface Edge extends Element {
      * @ensure <tt>result </tt> holds if <tt>end(i).equals(end)</tt> for some
      *         <tt>i</tt>
      * @see #endIndex(Node)
+     * @deprecated test against source or target
      */
+    @Deprecated
     public boolean hasEnd(Node node);
 
     /**
@@ -119,11 +129,16 @@ public interface Edge extends Element {
      * The index (in the edge ends) of the edge source.
      * @see #source()
      */
+    @Deprecated
     int SOURCE_INDEX = 0;
     /**
      * The endpoint index of the target node.
      */
+    @Deprecated
     int TARGET_INDEX = 1;
-    /** The number of ends of a binary edge. */
+    /** The number of ends of a binary edge.
+     * @deprecated no longer necessary since all edges are binary 
+     */
+    @Deprecated
     static public final int END_COUNT = 2;
 }

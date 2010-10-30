@@ -250,10 +250,9 @@ public class JaxbGxlIO implements GxlIO {
             Map<Label,Set<Label>> subtypeMap = labelStore.getDirectSubtypeMap();
             for (Map.Entry<Label,Set<Label>> subtypeEntry : subtypeMap.entrySet()) {
                 for (Label subtype : subtypeEntry.getValue()) {
-                    for (Edge subtypeEdge : graph.labelEdgeSet(2, subtype)) {
+                    for (Edge subtypeEdge : graph.labelEdgeSet(subtype)) {
                         Label supertype = subtypeEntry.getKey();
-                        for (Edge supertypeEdge : graph.labelEdgeSet(2,
-                            supertype)) {
+                        for (Edge supertypeEdge : graph.labelEdgeSet(supertype)) {
                             nodesEdges.add(createGxlEdge(nodeMap,
                                 subtypeEdge.source(), SUBTYPE_PREFIX,
                                 supertypeEdge.source()));

@@ -65,7 +65,6 @@ import groove.view.aspect.ParameterAspect;
 import groove.view.aspect.RuleAspect;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -393,22 +392,24 @@ public class DefaultRuleView implements RuleView {
             Map<? extends Node,Node> elementMap) throws FormatException {
         assert edge.getModelLabel() != null : String.format(
             "Edge '%s' does not belong in model", edge);
-        Node[] ends = new Node[edge.endCount()];
-        for (int i = 0; i < ends.length; i++) {
-            Node endImage = elementMap.get(edge.end(i));
-            if (endImage == null) {
-                throw new FormatException(
-                    "Cannot compute image of '%s'-edge: %s node does not have image",
-                    edge.label(), i == Edge.SOURCE_INDEX ? "source" : "target");
-            }
-            ends[i] = endImage;
+        Node sourceImage = elementMap.get(edge.source());
+        if (sourceImage == null) {
+            throw new FormatException(
+                "Cannot compute image of '%s'-edge: source node does not have image",
+                edge.label(), edge.source());
+        }
+        Node targetImage = elementMap.get(edge.target());
+        if (targetImage == null) {
+            throw new FormatException(
+                "Cannot compute image of '%s'-edge: target node does not have image",
+                edge.label(), edge.target());
         }
         // compute the label; either a DefaultLabel or a RegExprLabel
         if (getAttributeValue(edge) == null) {
-            return createEdge(ends, edge.getModelLabel());
+            return createEdge(sourceImage, edge.getModelLabel(), targetImage);
         } else {
             return DefaultRuleView.this.attributeFactory.createAttributeEdge(
-                edge, ends);
+                edge, sourceImage, targetImage);
         }
     }
 
@@ -422,16 +423,8 @@ public class DefaultRuleView implements RuleView {
 
     /**
      * Callback factory method for a binary edge.
-     * @param ends the end nodes for the new edge; should contain exactly two
-     *        element
-     * @param label the label for the new edge
-     * @return a DefaultEdge with the given end nodes and label
      */
-    private Edge createEdge(Node[] ends, Label label) {
-        assert ends.length == 2 : String.format(
-            "Cannot create edge with end nodes %s", Arrays.toString(ends));
-        Node source = ends[Edge.SOURCE_INDEX];
-        Node target = ends[Edge.TARGET_INDEX];
+    private Edge createEdge(Node source, Label label, Node target) {
         return DefaultEdge.createEdge(source, label, target);
     }
 
@@ -1097,19 +1090,8 @@ public class DefaultRuleView implements RuleView {
                 this.viewToLevelMap.putEdge(viewEdge, ruleEdge);
                 // add end nodes to this and all parent levels, if
                 // they are not yet there
-                for (int i = 0; i < viewEdge.endCount(); i++) {
-                    Level ascendingLevel = this;
-                    while (ascendingLevel.viewToLevelMap.putNode(
-                        viewEdge.end(i), ruleEdge.end(i)) == null) {
-                        assert !ascendingLevel.index.isTopLevel() : String.format(
-                            "End node '%s' of '%s' not found at any level", i,
-                            viewEdge);
-                        ascendingLevel = ascendingLevel.parent;
-                        assert ascendingLevel.viewToLevelMap != null : String.format(
-                            "Nodes on level %s not yet initialised",
-                            ascendingLevel.getIndex());
-                    }
-                }
+                addNodeToParents(viewEdge.source(), ruleEdge.source());
+                addNodeToParents(viewEdge.target(), ruleEdge.target());
             }
             // put the edge on the sublevels, if it is supposed to be there
             if (isForNextLevel(viewEdge)) {
@@ -1122,6 +1104,21 @@ public class DefaultRuleView implements RuleView {
                 for (Level sublevel : this.children) {
                     sublevel.addParentType(ruleEdge);
                 }
+            }
+        }
+
+        /**
+         * Adds a node to this and all parent levels, if it is not yet there
+         */
+        private void addNodeToParents(AspectNode viewNode, Node ruleNode) {
+            Level ascendingLevel = this;
+            while (ascendingLevel.viewToLevelMap.putNode(viewNode, ruleNode) == null) {
+                assert !ascendingLevel.index.isTopLevel() : String.format(
+                    "Node not found at any level", viewNode);
+                ascendingLevel = ascendingLevel.parent;
+                assert ascendingLevel.viewToLevelMap != null : String.format(
+                    "Nodes on level %s not yet initialised",
+                    ascendingLevel.getIndex());
             }
         }
 
@@ -1419,9 +1416,8 @@ public class DefaultRuleView implements RuleView {
             for (Edge newEdge : this.viewToLevelMap.edgeMap().keySet()) {
                 if (RuleAspect.isMerger((AspectEdge) newEdge)) {
                     SortedSet<AspectNode> newCell = new TreeSet<AspectNode>();
-                    for (Node mergedNode : newEdge.ends()) {
-                        newCell.addAll(result.get(mergedNode));
-                    }
+                    newCell.addAll(result.get(newEdge.source()));
+                    newCell.addAll(result.get(newEdge.target()));
                     for (AspectNode node : newCell) {
                         result.put(node, newCell);
                     }
@@ -1516,9 +1512,8 @@ public class DefaultRuleView implements RuleView {
                         // first add end nodes of NAC edges
                         Set<Node> typableNacNodes = new HashSet<Node>(nacNodes);
                         for (Edge nacEdge : nacEdges) {
-                            for (Node nacEdgeEnd : nacEdge.ends()) {
-                                typableNacNodes.add(nacEdgeEnd);
-                            }
+                            typableNacNodes.add(nacEdge.source());
+                            typableNacNodes.add(nacEdge.target());
                         }
                         Set<Edge> typableNacEdges = new HashSet<Edge>(nacEdges);
                         checkTyping(typableNacNodes, typableNacEdges,
@@ -1686,10 +1681,10 @@ public class DefaultRuleView implements RuleView {
                             if (nacVarBinder != null) {
                                 // add the edge and its end nodes to the nac, as
                                 // pre-matched elements
-                                for (Node end : nacVarBinder.ends()) {
-                                    nacTarget.addNode(end);
-                                    nacPatternMap.putNode(end, end);
-                                }
+                                addToNacPattern(nacTarget, nacPatternMap,
+                                    nacVarBinder.source());
+                                addToNacPattern(nacTarget, nacPatternMap,
+                                    nacVarBinder.target());
                                 nacTarget.addEdge(nacVarBinder);
                                 nacPatternMap.putEdge(nacVarBinder,
                                     nacVarBinder);
@@ -1701,17 +1696,23 @@ public class DefaultRuleView implements RuleView {
                     // means
                     // they are lhs nodes, so add them to the nacMorphism as
                     // well
-                    for (int i = 0; i < edge.endCount(); i++) {
-                        Node end = edge.end(i);
-                        if (nacTarget.addNode(end)) {
-                            // the node identity in the lhs is the same
-                            nacPatternMap.putNode(end, end);
-                        }
-                    }
+                    addToNacPattern(nacTarget, nacPatternMap, edge.source());
+                    addToNacPattern(nacTarget, nacPatternMap, edge.target());
                     nacTarget.addEdge(edge);
                 }
             }
             return result;
+        }
+
+        /**
+         * Adds a given node to a NAC pattern map.
+         */
+        private void addToNacPattern(Graph nacTarget,
+                NodeEdgeMap nacPatternMap, Node node) {
+            if (nacTarget.addNode(node)) {
+                // the node identity in the lhs is the same
+                nacPatternMap.putNode(node, node);
+            }
         }
 
         /**

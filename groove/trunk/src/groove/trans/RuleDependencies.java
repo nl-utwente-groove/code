@@ -32,7 +32,6 @@ import groove.rel.RegExprLabel;
 import groove.util.Groove;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -425,7 +424,8 @@ public class RuleDependencies {
                 }
                 affectedSet.addAll(getMatchedLabels(label));
                 if (presence) {
-                    isolatedNodes.removeAll(Arrays.asList(edge.ends()));
+                    isolatedNodes.remove(edge.source());
+                    isolatedNodes.remove(edge.target());
                 }
             }
         }
@@ -588,7 +588,7 @@ public class RuleDependencies {
                 for (Label typeLabel : typeLabels) {
                     // find the type node
                     Node typeNode =
-                        this.type.labelEdgeSet(2, typeLabel).iterator().next().source();
+                        this.type.labelEdgeSet(typeLabel).iterator().next().source();
                     // now find all incident labels of the type node
                     for (Edge typeEdge : this.type.edgeSet(typeNode)) {
                         result.add(typeEdge.label());

@@ -194,7 +194,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             boolean positive) {
         Label[] initLabels = positive ? getInitPosLabels() : getInitInvLabels();
         for (Label initLabel : initLabels) {
-            for (Edge graphEdge : graph.labelEdgeSet(2, initLabel)) {
+            for (Edge graphEdge : graph.labelEdgeSet(initLabel)) {
                 Node end = positive ? graphEdge.source() : graphEdge.target();
                 result.add(end);
             }
@@ -857,8 +857,8 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
      */
     protected class MatchingAlgorithm {
         /** Dummy object used in matching. */
-        final MatchingComputation MATCH_DUMMY =
-            new MatchingComputation(0, null, null);
+        final MatchingComputation MATCH_DUMMY = new MatchingComputation(0,
+            null, null);
 
         /**
          * Wraps a single computation of the enclosing {@link MatchingAlgorithm}
@@ -1353,7 +1353,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             case FORWARD:
                 return this.graph.outEdgeSet(node);
             default:
-                return this.graph.edgeSet(node, Edge.TARGET_INDEX);
+                return this.graph.inEdgeSet(node);
             }
         }
 
@@ -1366,7 +1366,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
         protected Collection<? extends Edge> getInvEdgeSet(Node node) {
             switch (this.direction) {
             case FORWARD:
-                return this.graph.edgeSet(node, Edge.TARGET_INDEX);
+                return this.graph.inEdgeSet(node);
             default:
                 return this.graph.outEdgeSet(node);
             }

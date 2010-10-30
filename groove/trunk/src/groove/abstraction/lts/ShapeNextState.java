@@ -95,6 +95,7 @@ public class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
+    @Deprecated
     public Node end(int i) {
         switch (i) {
         case SOURCE_INDEX:
@@ -107,11 +108,13 @@ public class ShapeNextState extends ShapeState implements GraphNextState,
         }
     }
 
+    @Deprecated
     @Override
     public int endCount() {
         return 2;
     }
 
+    @Deprecated
     @Override
     public int endIndex(Node node) {
         if (source().equals(node)) {
@@ -123,6 +126,7 @@ public class ShapeNextState extends ShapeState implements GraphNextState,
         return -1;
     }
 
+    @Deprecated
     @Override
     public Node[] ends() {
         Node[] result = new Node[2];
@@ -131,6 +135,7 @@ public class ShapeNextState extends ShapeState implements GraphNextState,
         return result;
     }
 
+    @Deprecated
     @Override
     public boolean hasEnd(Node node) {
         return source().equals(node) || target().equals(node);

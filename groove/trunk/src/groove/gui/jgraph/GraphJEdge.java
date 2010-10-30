@@ -52,8 +52,8 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      */
     GraphJEdge(GraphJModel jModel, Edge edge) {
         this.jModel = jModel;
-        this.source = edge.end(Edge.SOURCE_INDEX);
-        this.target = edge.end(Edge.TARGET_INDEX);
+        this.source = edge.source();
+        this.target = edge.target();
         getUserObject().add(edge);
     }
 

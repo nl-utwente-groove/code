@@ -39,7 +39,6 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
         assert RegExprLabel.isWildcard(edge.label())
             && RegExprLabel.getWildcardId(edge.label()) == null : String.format(
             "Edge %s is not a true wildcard edge", edge);
-        assert edge.endCount() <= Edge.END_COUNT : "Search item undefined for hyperedge";
     }
 
     /** This implementation returns <code>false</code>. */
@@ -61,7 +60,7 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
     }
 
     /** The constraint on the wildcard valuation, if any. */
-    private final groove.util.Property<Label> labelConstraint;
+    final groove.util.Property<Label> labelConstraint;
 
     /** Record for this type of search item. */
     class WildcardEdgeRecord extends Edge2MultipleRecord {
@@ -77,7 +76,7 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
             if (this.sourceFind != null) {
                 edgeSet = this.host.outEdgeSet(this.sourceFind);
             } else if (this.targetFind != null) {
-                edgeSet = this.host.edgeSet(this.targetFind, Edge.TARGET_INDEX);
+                edgeSet = this.host.inEdgeSet(this.targetFind);
             } else {
                 edgeSet = this.host.edgeSet();
             }

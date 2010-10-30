@@ -406,16 +406,14 @@ public class GraphTest extends TestCase {
         Set<Edge> bEdgeSet = new HashSet<Edge>();
         bEdgeSet.add(this.bEdge);
         Set<Edge> cEdgeSet = new HashSet<Edge>();
-        assertEquals(new HashSet<Edge>(), this.graph.labelEdgeSet(1,
-            this.aLabel));
-        assertEquals(aEdgeSet, this.graph.labelEdgeSet(2, this.aLabel));
-        assertEquals(bEdgeSet, this.graph.labelEdgeSet(2, this.bLabel));
-        assertEquals(cEdgeSet, this.graph.labelEdgeSet(2, this.cLabel));
+        assertEquals(aEdgeSet, this.graph.labelEdgeSet(this.aLabel));
+        assertEquals(bEdgeSet, this.graph.labelEdgeSet(this.bLabel));
+        assertEquals(cEdgeSet, this.graph.labelEdgeSet(this.cLabel));
         // if we add an edge to the graph, that should be visible
         Edge cEdge =
             this.graph.addEdge(this.bTarget, this.cLabel, this.aTarget);
         cEdgeSet.add(cEdge);
-        assertEquals(cEdgeSet, this.graph.labelEdgeSet(2, this.cLabel));
+        assertEquals(cEdgeSet, this.graph.labelEdgeSet(this.cLabel));
     }
 
     //

@@ -24,7 +24,6 @@ import groove.graph.algebra.ValueNode;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.RegExprLabel;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -47,9 +46,10 @@ class Edge2SearchItem extends AbstractSearchItem {
         this.label =
             RegExprLabel.isSharp(edge.label())
                     ? RegExprLabel.getSharpLabel(edge.label()) : edge.label();
-        this.arity = edge.endCount();
         this.selfEdge = this.source == this.target;
-        this.boundNodes = new HashSet<Node>(Arrays.asList(edge.ends()));
+        this.boundNodes = new HashSet<Node>();
+        this.boundNodes.add(edge.source());
+        this.boundNodes.add(edge.target());
     }
 
     /**
@@ -90,8 +90,11 @@ class Edge2SearchItem extends AbstractSearchItem {
             // compare first the edge labels, then the edge ends
             Edge otherEdge = ((Edge2SearchItem) other).getEdge();
             result = getEdge().label().compareTo(otherEdge.label());
-            for (int i = 0; result == 0 && i < this.arity; i++) {
-                result = this.edge.end(i).compareTo(otherEdge.end(i));
+            if (result == 0) {
+                result = this.edge.source().compareTo(otherEdge.source());
+            }
+            if (result == 0) {
+                result = this.edge.target().compareTo(otherEdge.target());
             }
         }
         if (result == 0) {
@@ -178,8 +181,6 @@ class Edge2SearchItem extends AbstractSearchItem {
     final Node target;
     /** The label of {@link #edge}, separately stored for efficiency. */
     final Label label;
-    /** The number of ends of {@link #edge}. */
-    final int arity;
     /**
      * Flag indicating that {@link #edge} is a self-edge.
      */
@@ -406,8 +407,7 @@ class Edge2SearchItem extends AbstractSearchItem {
             // structures takes more
             // time than is saved by trying out fewer images
             Set<? extends Edge> labelEdgeSet =
-                this.host.labelEdgeSet(Edge2SearchItem.this.arity,
-                    Edge2SearchItem.this.label);
+                this.host.labelEdgeSet(Edge2SearchItem.this.label);
             if (this.sourceFind != null) {
                 Set<? extends Edge> nodeEdgeSet =
                     this.host.edgeSet(this.sourceFind);

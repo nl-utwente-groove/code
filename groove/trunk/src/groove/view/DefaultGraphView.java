@@ -310,8 +310,7 @@ public class DefaultGraphView implements GraphView {
             "Target of '%s' is not in element map %s", viewEdge.target(),
             elementMap);
         // create an image for the view edge
-        if (this.attributeFactory.createAttributeEdge(viewEdge, new Node[] {
-            modelSource, modelTarget}) != null) {
+        if (this.attributeFactory.createAttributeEdge(viewEdge, null, null) != null) {
             throw new FormatException(
                 "Edge aspect value '%s' not allowed in graphs",
                 getAttributeValue(viewEdge), viewEdge);

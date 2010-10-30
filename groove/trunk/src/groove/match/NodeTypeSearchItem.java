@@ -48,7 +48,6 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         this.label = edge.label();
         assert this.label.isNodeType() : String.format(
             "Label '%s' is not a node type", this.label);
-        this.arity = edge.endCount();
         this.boundNodes = new HashSet<Node>(Arrays.asList(edge.source()));
         Set<Label> labelStoreSubtypes = labelStore.getSubtypes(this.label);
         this.subtypes =
@@ -96,8 +95,11 @@ class NodeTypeSearchItem extends AbstractSearchItem {
             // compare first the edge labels, then the edge ends
             Edge otherEdge = ((NodeTypeSearchItem) other).getEdge();
             result = getEdge().label().compareTo(otherEdge.label());
-            for (int i = 0; result == 0 && i < this.arity; i++) {
-                result = this.edge.end(i).compareTo(otherEdge.end(i));
+            if (result == 0) {
+                result = getEdge().source().compareTo(otherEdge.source());
+            }
+            if (result == 0) {
+                result = getEdge().target().compareTo(otherEdge.target());
             }
         }
         if (result == 0) {
@@ -170,8 +172,6 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     final Node source;
     /** The label of {@link #edge}, separately stored for efficiency. */
     final Label label;
-    /** The number of ends of {@link #edge}. */
-    final int arity;
     /** The set of end nodes of this edge. */
     private final Set<Node> boundNodes;
 
@@ -407,7 +407,6 @@ class NodeTypeSearchItem extends AbstractSearchItem {
                                 @Override
                                 public Iterator<? extends Edge> next() {
                                     return NodeTypeMultipleRecord.this.host.labelEdgeSet(
-                                        NodeTypeSearchItem.this.arity,
                                         subtypeIter.next()).iterator();
                                 }
 
@@ -418,8 +417,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
                             });
                 } else {
                     this.imageIter =
-                        this.host.labelEdgeSet(NodeTypeSearchItem.this.arity,
-                            NodeTypeSearchItem.this.label).iterator();
+                        this.host.labelEdgeSet(NodeTypeSearchItem.this.label).iterator();
                 }
                 this.checkLabel = false;
                 this.checkSource = true;

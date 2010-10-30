@@ -90,19 +90,11 @@ public abstract class AbstractGraph<C extends GraphCache> extends
      * @return the freshly created Edge
      * @throws IllegalArgumentException if the number of edges is not supported
      *         by this graph.
+     * @deprecated use {@link #createEdge(Node, Label, Node)} instead
      */
+    @Deprecated
     public Edge createEdge(Node[] ends, Label label) {
-        switch (ends.length) {
-        case 1:
-            assert false : "Unary edges are not supported";
-            return null;
-        case 2:
-            return createEdge(ends[Edge.SOURCE_INDEX], label,
-                ends[Edge.TARGET_INDEX]);
-        default:
-            throw new IllegalArgumentException("Hyperedges with " + ends.length
-                + " tentacles not supported");
-        }
+        return createEdge(ends[0], label, ends[1]);
     }
 
     /**
@@ -151,6 +143,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends
     /**
      * Creates its result using {@link #createEdge(Node[], Label)}.
      */
+    @Deprecated
     public Edge addEdge(Node[] ends, Label label) {
         Edge newEdge = createEdge(ends, label);
         addEdge(newEdge);
@@ -211,15 +204,18 @@ public abstract class AbstractGraph<C extends GraphCache> extends
             // compute edge replacements and add new edges
             for (Edge edge : new HashSet<Edge>(edgeSet(from))) {
                 boolean changed = false;
-                Node[] ends = edge.ends();
-                for (int i = 0; i < ends.length; i++) {
-                    if (ends[i].equals(from)) {
-                        ends[i] = to;
-                        changed = true;
-                    }
+                Node source = edge.source();
+                if (source.equals(from)) {
+                    source = to;
+                    changed = true;
+                }
+                Node target = edge.target();
+                if (target.equals(from)) {
+                    target = to;
+                    changed = true;
                 }
                 if (changed) {
-                    Edge newEdge = createEdge(ends, edge.label());
+                    Edge newEdge = createEdge(source, edge.label(), target);
                     addEdgeWithoutCheck(newEdge);
                     fireReplaceEdge(edge, newEdge);
                     removeEdge(edge);
@@ -339,33 +335,32 @@ public abstract class AbstractGraph<C extends GraphCache> extends
                 new HashSet<E>()));
         }
         for (E edge : edgeSet) {
-            Pair<Set<N>,Set<E>> cell = null;
-            for (int i = 0; i < edge.endCount(); i++) {
-                Pair<Set<N>,Set<E>> newCell = resultMap.get(edge.end(i));
-                if (newCell != null) {
-                    if (cell == null) {
-                        cell = newCell;
-                    } else if (newCell != cell) {
-                        cell.first().addAll(newCell.first());
-                        cell.second().addAll(newCell.second());
-                        for (N loser : newCell.first()) {
-                            resultMap.put(loser, cell);
-                        }
-                        for (E loser : newCell.second()) {
-                            resultMap.put(loser, cell);
-                        }
+            Pair<Set<N>,Set<E>> sourceCell = resultMap.get(edge.source());
+            Pair<Set<N>,Set<E>> targetCell = resultMap.get(edge.target());
+            if (targetCell != null) {
+                if (sourceCell == null) {
+                    sourceCell = targetCell;
+                } else if (targetCell != sourceCell) {
+                    sourceCell.first().addAll(targetCell.first());
+                    sourceCell.second().addAll(targetCell.second());
+                    for (N loser : targetCell.first()) {
+                        resultMap.put(loser, sourceCell);
+                    }
+                    for (E loser : targetCell.second()) {
+                        resultMap.put(loser, sourceCell);
                     }
                 }
             }
-            if (cell == null) {
+            if (sourceCell == null) {
                 // no end nodes of edge have a cell
                 Set<E> cellSecond = new HashSet<E>();
                 cellSecond.add(edge);
-                cell = new Pair<Set<N>,Set<E>>(new HashSet<N>(), cellSecond);
+                sourceCell =
+                    new Pair<Set<N>,Set<E>>(new HashSet<N>(), cellSecond);
             } else {
-                cell.second().add(edge);
+                sourceCell.second().add(edge);
             }
-            resultMap.put(edge, cell);
+            resultMap.put(edge, sourceCell);
         }
         return new HashSet<Pair<Set<N>,Set<E>>>(resultMap.values());
     }

@@ -33,7 +33,6 @@ import groove.rel.RegExpr.Star;
 import groove.rel.RegExpr.Wildcard;
 import groove.util.DefaultDispenser;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -92,17 +91,12 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
         Node newNode = createNode();
         result.addNode(newNode);
         // copy final edges
-        for (Edge finalEdge : result.edgeSet(result.getEndNode(),
-            Edge.TARGET_INDEX)) {
-            Node[] ends = Arrays.asList(finalEdge.ends()).toArray(new Node[0]);
-            ends[Edge.TARGET_INDEX] = newNode;
-            result.addEdge(ends, finalEdge.label());
+        for (Edge finalEdge : result.inEdgeSet(result.getEndNode())) {
+            result.addEdge(finalEdge.source(), finalEdge.label(), newNode);
         }
         // copy initial edges
         for (Edge initEdge : result.outEdgeSet(result.getStartNode())) {
-            Node[] ends = Arrays.asList(initEdge.ends()).toArray(new Node[0]);
-            ends[Edge.SOURCE_INDEX] = newNode;
-            result.addEdge(ends, initEdge.label());
+            result.addEdge(newNode, initEdge.label(), initEdge.target());
         }
         return result;
     }
@@ -115,15 +109,7 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
         Automaton result = createAutomaton();
         for (Edge edge : arg.edgeSet()) {
             Label label = invert(edge.label());
-            if (edge.endCount() == 1) {
-                result.addEdge(edge.ends(), label);
-            } else {
-                Node[] ends = edge.ends();
-                Node tmp = ends[Edge.SOURCE_INDEX];
-                ends[Edge.SOURCE_INDEX] = ends[Edge.TARGET_INDEX];
-                ends[Edge.TARGET_INDEX] = tmp;
-                result.addEdge(ends, label);
-            }
+            result.addEdge(edge.target(), label, edge.source());
         }
         result.mergeNodes(arg.getEndNode(), result.getStartNode());
         result.mergeNodes(arg.getStartNode(), result.getEndNode());
@@ -148,22 +134,16 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
             if (result.isAcceptsEmptyWord()) {
                 // add initial edges for all the initial edges of next
                 for (Edge nextInitEdge : next.outEdgeSet(next.getStartNode())) {
-                    Node[] ends =
-                        Arrays.asList(nextInitEdge.ends()).toArray(new Node[0]);
-                    ends[Edge.SOURCE_INDEX] = result.getStartNode();
-                    result.addEdge(ends, nextInitEdge.label());
+                    result.addEdge(result.getStartNode(), nextInitEdge.label(),
+                        nextInitEdge.target());
                 }
                 result.setAcceptsEmptyWord(next.isAcceptsEmptyWord());
             }
             if (next.isAcceptsEmptyWord()) {
                 // add final edges for all the final edges of result
-                for (Edge resultFinalEdge : result.edgeSet(result.getEndNode(),
-                    Edge.TARGET_INDEX)) {
-                    Node[] ends =
-                        Arrays.asList(resultFinalEdge.ends()).toArray(
-                            new Node[0]);
-                    ends[Edge.TARGET_INDEX] = next.getEndNode();
-                    result.addEdge(ends, resultFinalEdge.label());
+                for (Edge resultFinalEdge : result.inEdgeSet(result.getEndNode())) {
+                    result.addEdge(resultFinalEdge.source(),
+                        resultFinalEdge.label(), next.getEndNode());
                 }
             }
             result.mergeNodes(result.getEndNode(), next.getStartNode());

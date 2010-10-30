@@ -85,10 +85,8 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
         boolean added = !this.graphEdgeSet.contains(edge);
         if (added) {
-            Node[] dependentNodes = edge.ends();
-            for (Node element : dependentNodes) {
-                this.graphNodeSet.add(element);
-            }
+            this.graphNodeSet.add(edge.source());
+            this.graphNodeSet.add(edge.target());
             addEdgeWithoutCheck(edge);
         }
         return added;
@@ -107,7 +105,7 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
             Iterator<Edge> edgeIter = this.graphEdgeSet.iterator();
             while (edgeIter.hasNext()) {
                 Edge edge = edgeIter.next();
-                if (edge.hasEnd(node)) {
+                if (edge.source().equals(node) || edge.target().equals(node)) {
                     edgeIter.remove();
                 }
             }
@@ -130,13 +128,9 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
         Iterator<Edge> edgeIter = this.graphEdgeSet.iterator();
         while (edgeIter.hasNext()) {
             Edge other = edgeIter.next();
-            boolean otherRemoved = false;
-            Node[] parts = other.ends();
-            for (int i = 0; !otherRemoved && i < parts.length; i++) {
-                if (nodeSet.contains(parts[i])) {
-                    edgeIter.remove();
-                    otherRemoved = true;
-                }
+            if (nodeSet.contains(other.source())
+                || nodeSet.contains(other.target())) {
+                edgeIter.remove();
             }
         }
         // now remove the nodes

@@ -758,10 +758,8 @@ final public class SPOEvent extends
                     // edges
                     Edge edgeKey = (Edge) key;
                     Edge edgeImage = (Edge) image;
-                    int arity = edgeKey.endCount();
-                    for (int end = 0; end < arity; end++) {
-                        result.putNode(edgeKey.end(end), edgeImage.end(end));
-                    }
+                    result.putNode(edgeKey.source(), edgeImage.source());
+                    result.putNode(edgeKey.target(), edgeImage.target());
                     LabelVar var = RegExprLabel.getWildcardId(edgeKey.label());
                     if (var != null) {
                         result.putVar(var, edgeImage.label());

@@ -118,11 +118,9 @@ public class SupportedSetNodeRelation extends AbstractNodeRelation implements
         SupportedSetNodeRelation result = newInstance();
         for (Map.Entry<Edge,Collection<Element>> entry : this.supportMap.entrySet()) {
             Edge related = entry.getKey();
-            if (related.endCount() >= 2) {
-                result.addToSupport(createRelated(
-                    related.end(Edge.TARGET_INDEX), related.source()),
-                    entry.getValue());
-            }
+            result.addToSupport(
+                createRelated(related.target(), related.source()),
+                entry.getValue());
         }
         return result;
     }

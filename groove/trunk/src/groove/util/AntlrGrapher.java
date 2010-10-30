@@ -29,7 +29,6 @@ import org.antlr.runtime.tree.CommonTree;
  * @author Arend Rensink
  * @version $Revision$
  */
-@Deprecated
 public class AntlrGrapher {
     /** 
      * Constructs an grapher for a particular Antlr parser.

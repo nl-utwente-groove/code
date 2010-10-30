@@ -58,8 +58,8 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
     protected DefaultGraph(DefaultGraph graph) {
         this();
         for (Map.Entry<Node,Set<Edge>> edgeEntry : graph.edgeMap.entrySet()) {
-            this.edgeMap.put(edgeEntry.getKey(), new HashSet<Edge>(
-                edgeEntry.getValue()));
+            this.edgeMap.put(edgeEntry.getKey(),
+                new HashSet<Edge>(edgeEntry.getValue()));
         }
     }
 
@@ -175,11 +175,8 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
                 Iterator<Edge> edgeIter = edgeSet.iterator();
                 while (edgeIter.hasNext()) {
                     Edge edge = edgeIter.next();
-                    boolean nodeFound = false;
-                    for (int i = 1; !nodeFound && i < edge.endCount(); i++) {
-                        nodeFound = edge.end(i).equals(node);
-                    }
-                    if (nodeFound) {
+                    if (edge.source().equals(node)
+                        || edge.target().equals(node)) {
                         // remove and notify observers
                         edgeIter.remove();
                         fireRemoveEdge(edge);

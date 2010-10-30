@@ -458,10 +458,8 @@ public class GraphSearchPlanFactory {
             // compute indegrees
             Bag<Node> indegrees = new HashBag<Node>();
             for (Edge edge : remainingEdges) {
-                for (int i = 1; i < edge.endCount(); i++) {
-                    if (!edge.end(i).equals(edge.source())) {
-                        indegrees.add(edge.end(i));
-                    }
+                if (!edge.target().equals(edge.source())) {
+                    indegrees.add(edge.target());
                 }
             }
             this.indegrees = indegrees;
@@ -490,16 +488,12 @@ public class GraphSearchPlanFactory {
 
         /**
          * This method is called when a new edge is scheduled. It decreases the
-         * indegree of all end nodes of that edge except its source.
+         * indegree of all the edge target.
          */
         public void update(Observable o, Object arg) {
             if (arg instanceof Edge2SearchItem) {
                 Edge selected = ((Edge2SearchItem) arg).getEdge();
-                for (Node end : selected.ends()) {
-                    if (!end.equals(selected.source())) {
-                        this.indegrees.remove(end);
-                    }
-                }
+                this.indegrees.remove(selected.target());
             }
         }
 

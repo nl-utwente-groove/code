@@ -247,16 +247,13 @@ public class LTSJModel extends GraphJModel {
     }
 
     /**
-     * Tests if the edge is special in the sense of being a <i>flag</i> (orfor
+     * Tests if the edge is special in the sense of being a <i>flag</i> (or for
      * legacy reasons a self-edge) with a label that is special according to
      * {@link #isSpecialLabel(String)}.
      * @see #isSpecialLabel(String)
      */
     protected boolean isSpecialEdge(Edge edge) {
-        if (edge.endCount() == 1) {
-            return isSpecialLabel(edge.label().text());
-        } else if (edge.endCount() == 2
-            && edge.source().equals(edge.end(Edge.TARGET_INDEX))) {
+        if (edge.source().equals(edge.target())) {
             return isSpecialLabel(edge.label().text());
         } else {
             return false;

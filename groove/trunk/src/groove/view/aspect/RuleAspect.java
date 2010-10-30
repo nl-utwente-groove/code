@@ -19,7 +19,6 @@ package groove.view.aspect;
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.graph.MergeLabel;
-import groove.graph.Node;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.util.Groove;
@@ -79,11 +78,10 @@ public class RuleAspect extends AbstractAspect {
         // test for merge edges between creator nodes
         if (isMerger(edge)) {
             AspectNode creatorEnd = null;
-            for (Node end : edge.ends()) {
-                if (isCreator((AspectNode) end)) {
-                    creatorEnd = (AspectNode) end;
-                    break;
-                }
+            if (isCreator(edge.source())) {
+                creatorEnd = edge.source();
+            } else if (isCreator(edge.target())) {
+                creatorEnd = edge.target();
             }
             if (creatorEnd != null) {
                 throw new FormatException(

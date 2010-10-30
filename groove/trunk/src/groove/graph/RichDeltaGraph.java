@@ -177,6 +177,7 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
     }
 
     @Override
+    @Deprecated
     public Set<? extends Edge> edgeSet(Node node, int i) {
         if (i == Edge.SOURCE_INDEX) {
             return outEdgeSet(node);
@@ -194,6 +195,7 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
     /**
      * Returns the set of incoming edges of a given node.
      */
+    @Override
     public Set<Edge> inEdgeSet(Node node) {
         initData();
         return this.inEdgeMap.getCell(node);
@@ -333,8 +335,8 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
     /** The certificate strategy of this graph, set on demand. */
     private Reference<CertificateStrategy> certifier;
     /** Factory instance of this class. */
-    static private final RichDeltaGraph instance =
-        new RichDeltaGraph(null, null);
+    static private final RichDeltaGraph instance = new RichDeltaGraph(null,
+        null);
 
     /**
      * Returns a fixed factory instance of the {@link RichDeltaGraph} class.
@@ -461,7 +463,7 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
             if (this.labelEdgeMap != null) {
                 Label label = elem.label();
                 Map<Label,Set<Edge>> labelEdgeMap = this.labelEdgeMap;
-                @SuppressWarnings( {"unchecked", "rawtypes"})
+                @SuppressWarnings({"unchecked", "rawtypes"})
                 EdgeSet<Edge> edgeSet = (EdgeSet) labelEdgeMap.get(label);
                 if (edgeSet == null) {
                     labelEdgeMap.put(label, edgeSet = createEdgeSet(edgeSet));
@@ -491,7 +493,6 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
         public boolean removeEdge(Edge elem) {
             boolean result = this.edgeSet.remove(elem);
             assert result;
-            int arity = elem.endCount();
             // adapt node-edge map
             result = this.outEdgeMap.remove(elem);
             assert result;

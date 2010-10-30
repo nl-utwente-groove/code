@@ -923,10 +923,13 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         }
         // add the end nodes of eraser edges
         for (Edge eraserEdge : getEraserEdges()) {
-            for (Node end : eraserEdge.ends()) {
-                if (getMorphism().containsKey(end)) {
-                    result.add(end);
-                }
+            Node end = eraserEdge.source();
+            if (getMorphism().containsKey(end)) {
+                result.add(end);
+            }
+            end = eraserEdge.target();
+            if (getMorphism().containsKey(end)) {
+                result.add(end);
             }
         }
         // add merged nodes
@@ -1003,7 +1006,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         // iterate over all creator edges
         for (Edge edge : getCreatorEdges()) {
             // determine if this edge is simple
-            if (nonCreatorNodes.containsAll(Arrays.asList(edge.ends()))) {
+            if (nonCreatorNodes.contains(edge.source())
+                && nonCreatorNodes.contains(edge.target())) {
                 result.add(edge);
             }
         }
@@ -1256,7 +1260,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
             if (elem instanceof Node) {
                 result.add((Node) elem);
             } else {
-                result.addAll(Arrays.asList(((Edge) elem).ends()));
+                result.add(((Edge) elem).source());
+                result.add(((Edge) elem).target());
             }
         }
         // add the root map sources of the sub-conditions

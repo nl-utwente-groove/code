@@ -167,9 +167,8 @@ public class TypeReconstructor {
         }
         for (Edge edge : graph.edgeSet()) {
             Edge newEdge =
-                DefaultEdge.createEdge(
-                    typing.getNode(edge.end(Edge.SOURCE_INDEX)), edge.label(),
-                    typing.getNode(edge.end(Edge.TARGET_INDEX)));
+                DefaultEdge.createEdge(typing.getNode(edge.source()),
+                    edge.label(), typing.getNode(edge.target()));
             typing.putEdge(edge, newEdge);
             this.typeGraph.addEdge(newEdge);
         }

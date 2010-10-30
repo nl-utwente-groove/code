@@ -44,7 +44,6 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         this.boundVars = Collections.singleton(this.var);
         assert this.var != null : String.format(
             "Edge %s is not a variable edge", edge);
-        assert edge.endCount() <= Edge.END_COUNT : "Search item undefined for hyperedge";
     }
 
     /**
@@ -164,9 +163,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
             Set<? extends Edge> edgeSet;
             if (this.varFind != null) {
                 if (isLabelConstraintSatisfied(this.varFind)) {
-                    edgeSet =
-                        this.host.labelEdgeSet(VarEdgeSearchItem.this.arity,
-                            this.varFind);
+                    edgeSet = this.host.labelEdgeSet(this.varFind);
                 } else {
                     edgeSet = EMPTY_IMAGE_SET;
                 }
@@ -177,8 +174,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
                 if (this.sourceFind != null) {
                     edgeSet = this.host.outEdgeSet(this.sourceFind);
                 } else if (this.targetFind != null) {
-                    edgeSet =
-                        this.host.edgeSet(this.targetFind, Edge.TARGET_INDEX);
+                    edgeSet = this.host.inEdgeSet(this.targetFind);
                 } else {
                     edgeSet = this.host.edgeSet();
                 }

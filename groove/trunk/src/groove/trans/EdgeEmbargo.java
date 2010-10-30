@@ -40,21 +40,25 @@ public class EdgeEmbargo extends NotCondition {
             SystemProperties properties, LabelStore labelStore) {
         super(graph.newGraph(), properties, labelStore);
         this.embargoEdge = embargoEdge;
-        int arity = embargoEdge.endCount();
-        Node[] endImages = new Node[arity];
-        for (int i = 0; i < arity; i++) {
-            Node end = embargoEdge.end(i);
-            endImages[i] = getRootMap().getNode(end);
-            if (endImages[i] == null) {
-                endImages[i] = getTarget().addNode();
-                getRootMap().putNode(end, endImages[i]);
-            }
-        }
-        getTarget().addEdge(endImages, embargoEdge.label());
+        Node sourceImage = addRoot(embargoEdge.source());
+        Node targetImage = addRoot(embargoEdge.target());
+        getTarget().addEdge(sourceImage, embargoEdge.label(), targetImage);
         if (CONSTRUCTOR_DEBUG) {
             Groove.message("Edge embargo: " + this);
             Groove.message("Embargo edge: " + embargoEdge);
         }
+    }
+
+    /**
+     * Adds a node to the root map with a fresh image, and returns the image. 
+     */
+    private Node addRoot(Node root) {
+        Node result = getRootMap().getNode(root);
+        if (result == null) {
+            result = getTarget().addNode();
+            getRootMap().putNode(root, result);
+        }
+        return result;
     }
 
     /**

@@ -22,7 +22,6 @@ import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -68,15 +67,18 @@ public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
             anchors.add(lhsVarEdge);
             // if we have the edge in the anchors, its end nodes need not be
             // there
-            removableEnds.addAll(Arrays.asList(lhsVarEdge.ends()));
+            removableEnds.add(lhsVarEdge.source());
+            removableEnds.add(lhsVarEdge.target());
         }
         for (Edge eraserEdge : rule.getEraserEdges()) {
-            Collection<Node> eraserEdgeEnds = Arrays.asList(eraserEdge.ends());
-            if (!anchors.containsAll(eraserEdgeEnds)) {
+            Node source = eraserEdge.source();
+            Node target = eraserEdge.target();
+            if (!(anchors.contains(source) && anchors.contains(target))) {
                 anchors.add(eraserEdge);
                 // if we have the edge in the anchors, its end nodes need not be
                 // there
-                removableEnds.addAll(eraserEdgeEnds);
+                removableEnds.add(source);
+                removableEnds.add(target);
             }
         }
         anchors.addAll(rule.getModifierEnds());
