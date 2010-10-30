@@ -159,10 +159,16 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
     }
 
     @Override
-    public Set<DefaultEdge> labelEdgeSet(int arity, Label label) {
+    public Set<DefaultEdge> labelEdgeSet(Label label) {
         DefaultEdgeSet result = (DefaultEdgeSet) getLabelEdgeMap().get(label);
         return (ALIAS_SETS || this.copyData) && result != null ? result
                 : createEdgeSet(result);
+    }
+
+    @Override
+    @Deprecated
+    public Set<DefaultEdge> labelEdgeSet(int arity, Label label) {
+        return labelEdgeSet(label);
     }
 
     @Override
@@ -336,11 +342,11 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
      */
     static private final boolean ALIAS_SETS = true;
     /** Factory instance of this class. */
-    static private final NewDeltaGraph copyInstance =
-        new NewDeltaGraph(null, null, true);
+    static private final NewDeltaGraph copyInstance = new NewDeltaGraph(null,
+        null, true);
     /** Factory instance of this class. */
-    static private final NewDeltaGraph swingInstance =
-        new NewDeltaGraph(null, null, false);
+    static private final NewDeltaGraph swingInstance = new NewDeltaGraph(null,
+        null, false);
 
     /**
      * Returns a fixed factory instance of the {@link NewDeltaGraph} class,
@@ -452,7 +458,6 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
         public boolean removeEdge(Edge elem) {
             boolean result = this.edgeSet.remove(elem);
             assert result;
-            int arity = elem.endCount();
             // adapt node-edge map
             this.nodeEdgeMap.get(elem.source()).remove(elem);
             Node target = elem.target();
@@ -561,7 +566,6 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
         public boolean removeEdge(Edge elem) {
             boolean result = this.edgeSet.remove(elem);
             assert result;
-            int arity = elem.endCount();
             // adapt node-edge map
             Node source = elem.source();
             Node target = elem.target();

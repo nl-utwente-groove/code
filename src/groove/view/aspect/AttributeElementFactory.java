@@ -35,7 +35,6 @@ import groove.trans.SystemProperties;
 import groove.view.FormatException;
 import groove.view.aspect.AttributeAspect.ConstantAspectValue;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -189,29 +188,30 @@ public class AttributeElementFactory {
      * <code>null</code> if the edge contains no special {@link AttributeAspect}
      * value or stands for a constant.
      * @param edge the edge for which we want an attribute-related edge
-     * @param ends the end nodes for the new edge
+     * @param source the source node of the new edge
+     * @param target the target node of the new edge
      * @return a {@link OperatorEdge} or {@link ArgumentEdge} corresponding to
      *         <code>edge</code>, or <code>null</code>
      * @throws FormatException if attribute-related errors are found in
      *         <code>graph</code>
      */
-    public Edge createAttributeEdge(AspectEdge edge, Node[] ends)
+    public Edge createAttributeEdge(AspectEdge edge, Node source, Node target)
         throws FormatException {
         Edge result;
         AspectValue attributeValue = getAttributeValue(edge);
-        if (attributeValue == null
-            || ends[Edge.SOURCE_INDEX] == ends[Edge.TARGET_INDEX]) {
+        if (attributeValue == null || source == target) {
             result = null;
         } else if (attributeValue == ARGUMENT) {
             int argNumber = Integer.parseInt(edge.label().text());
-            ArgumentEdge argEdge = createArgumentEdge(argNumber, ends);
+            ArgumentEdge argEdge =
+                createArgumentEdge(argNumber, source, target);
             result = argEdge;
         } else {
             try {
                 Operation operation =
                     this.register.getOperation(attributeValue.getName(),
                         edge.label().text());
-                result = createOperatorEdge(operation, ends);
+                result = createOperatorEdge(operation, source, target);
             } catch (UnknownSymbolException e) {
                 throw new FormatException(e.getMessage());
             }
@@ -223,18 +223,17 @@ public class AttributeElementFactory {
      * Creates and returns a fresh {@link OperatorEdge} derived from a given
      * aspect edge (which should have attribute value {@link #PRODUCT}).
      * @param operator the edge for which the image is to be created
-     * @param ends the end nodes of the edge to be created
+     * @param source the source node of the edge to be created
+     * @param target the target node of the edge to be created
      * @return a fresh {@link OperatorEdge}
      * @throws FormatException if <code>edge</code> does not have a correct set
      *         of outgoing attribute edges in <code>graph</code>
      */
-    private Edge createOperatorEdge(Operation operator, Node[] ends)
+    private Edge createOperatorEdge(Operation operator, Node source, Node target)
         throws FormatException {
         assert operator != null : String.format(
-            "Cannot create edge between nodes %s for empty operator",
-            Arrays.toString(ends));
-        Node source = ends[Edge.SOURCE_INDEX];
-        Node target = ends[Edge.TARGET_INDEX];
+            "Cannot create edge between %s and %s for empty operator", source,
+            target);
         if (!(source instanceof ProductNode)) {
             throw new FormatException(
                 "Source of '%s'-edge should be a product node", operator);
@@ -254,13 +253,13 @@ public class AttributeElementFactory {
      * Returns an {@link ArgumentEdge} derived from a given aspect edge (which
      * should have attribute aspect value {@link #ARGUMENT}).
      * @param argNumber the argument number on the edge to be created
-     * @param ends the end nodes of the edge to be created
+     * @param source the source node of the edge to be created
+     * @param target the target node of the edge to be created
      * @return a fresh {@link ArgumentEdge}
      * @throws FormatException if one of the ends is <code>null</code>
      */
-    private ArgumentEdge createArgumentEdge(int argNumber, Node[] ends)
-        throws FormatException {
-        Node source = ends[Edge.SOURCE_INDEX];
+    private ArgumentEdge createArgumentEdge(int argNumber, Node source,
+            Node target) throws FormatException {
         if (source == null) {
             throw new FormatException("Source of '%d'-edge has no image",
                 argNumber);
@@ -268,7 +267,6 @@ public class AttributeElementFactory {
             throw new FormatException(
                 "Source of '%d'-edge should be product node", argNumber);
         }
-        Node target = ends[Edge.TARGET_INDEX];
         if (target == null) {
             throw new FormatException("Target of '%d'-edge has no image",
                 argNumber);

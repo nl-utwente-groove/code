@@ -32,11 +32,13 @@ public abstract class AbstractEdge<N extends Node,L extends Label,TN extends Nod
         this.target = target;
     }
 
+    @Deprecated
     final public Node[] ends() {
         return new Node[] {this.source, this.target};
     }
 
     @Override
+    @Deprecated
     final public Node end(int i) {
         switch (i) {
         case SOURCE_INDEX:
@@ -50,6 +52,7 @@ public abstract class AbstractEdge<N extends Node,L extends Label,TN extends Nod
     }
 
     @Override
+    @Deprecated
     final public int endIndex(Node node) {
         if (this.source.equals(node)) {
             return SOURCE_INDEX;
@@ -65,11 +68,13 @@ public abstract class AbstractEdge<N extends Node,L extends Label,TN extends Nod
      * <tt>target</tt>.
      */
     @Override
+    @Deprecated
     final public boolean hasEnd(Node other) {
         return this.source.equals(other) || this.target.equals(other);
     }
 
     @Override
+    @Deprecated
     final public int endCount() {
         return END_COUNT;
     }
@@ -164,8 +169,6 @@ public abstract class AbstractEdge<N extends Node,L extends Label,TN extends Nod
         } else {
             result = compareToEdge((Edge) obj);
         }
-        // assert result != 0 || this.equals(obj) : String.format("Ordering of
-        // distinct objects %s and %s yields 0", this, obj);
         return result;
     }
 
@@ -175,17 +178,14 @@ public abstract class AbstractEdge<N extends Node,L extends Label,TN extends Nod
     protected int compareToEdge(Edge other) {
         int result;
         result = source().compareTo(other.source());
-        // for other edges, first the end count, then the label, then the
-        // other ends
-        if (result == 0) {
-            result = endCount() - other.endCount();
+        if (result != 0) {
+            return result;
         }
-        if (result == 0) {
-            result = label().compareTo(other.label());
+        result = label().compareTo(other.label());
+        if (result != 0) {
+            return result;
         }
-        for (int i = 1; result == 0 && i < endCount(); i++) {
-            result = end(i).compareTo(other.end(i));
-        }
+        result = target().compareTo(other.target());
         return result;
     }
 
@@ -224,8 +224,7 @@ public abstract class AbstractEdge<N extends Node,L extends Label,TN extends Nod
      */
     protected boolean isEndEqual(Edge other) {
         return (this.source.equals(other.source()))
-            && other.endCount() == END_COUNT
-            && this.target.equals(other.end(TARGET_INDEX));
+            && this.target.equals(other.target());
     }
 
     /**
@@ -269,8 +268,9 @@ public abstract class AbstractEdge<N extends Node,L extends Label,TN extends Nod
      * @param endCount the new maximum end count
      * @ensure if <tt>getMaxEndCount() &gtr;= endCount</tt>
      * @see #getMaxEndCount()
+     * @deprecated no longer relevant since all edges are binary
      */
-
+    @Deprecated
     static public void setMaxEndCount(int endCount) {
         maxEndCount = Math.max(maxEndCount, endCount);
     }
@@ -280,7 +280,9 @@ public abstract class AbstractEdge<N extends Node,L extends Label,TN extends Nod
      * Note that this may be dynamically increased by any concrete edge class.
      * @return the maximum number of ends of any edge
      * @ensure <tt>result &gtr;= 1</tt>
+     * @deprecated no longer relevant since all edges are binary
      */
+    @Deprecated
     static public int getMaxEndCount() {
         return maxEndCount;
     }
@@ -297,7 +299,4 @@ public abstract class AbstractEdge<N extends Node,L extends Label,TN extends Nod
     static private final int BIT_COUNT = 32;
     static private final int SOURCE_RIGHT_SHIFT = BIT_COUNT - SOURCE_SHIFT;
     static private final int TARGET_RIGHT_SHIFT = BIT_COUNT - TARGET_SHIFT;
-    static {
-        AbstractEdge.setMaxEndCount(END_COUNT);
-    }
 }

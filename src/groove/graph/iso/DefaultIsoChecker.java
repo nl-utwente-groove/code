@@ -586,20 +586,32 @@ public class DefaultIsoChecker implements IsoChecker {
      */
     private boolean setEdge(Edge key, Edge value, NodeEdgeMap result,
             Set<Node> connectedNodes, Set<Node> usedCodNodes) {
-        for (int i = 0; i < key.endCount(); i++) {
-            Node end = key.end(i);
-            Node endImage = value.end(i);
-            Node oldEndImage = result.putNode(end, endImage);
-            if (oldEndImage == null) {
-                if (!usedCodNodes.add(endImage)) {
-                    return false;
-                }
-            } else if (oldEndImage != endImage) {
-                return false;
-            }
-            connectedNodes.add(end);
+        if (!setNode(key.source(), value.source(), result, connectedNodes,
+            usedCodNodes)) {
+            return false;
+        }
+        if (!setNode(key.target(), value.target(), result, connectedNodes,
+            usedCodNodes)) {
+            return false;
         }
         result.putEdge(key, value);
+        return true;
+    }
+
+    /**
+     * Inserts a node into the result mapping, testing if this is consistent.
+     */
+    private boolean setNode(Node end, Node endImage, NodeEdgeMap result,
+            Set<Node> connectedNodes, Set<Node> usedCodNodes) {
+        Node oldEndImage = result.putNode(end, endImage);
+        if (oldEndImage == null) {
+            if (!usedCodNodes.add(endImage)) {
+                return false;
+            }
+        } else if (oldEndImage != endImage) {
+            return false;
+        }
+        connectedNodes.add(end);
         return true;
     }
 
@@ -647,17 +659,6 @@ public class DefaultIsoChecker implements IsoChecker {
         result = true;
         // map to store dom-to-cod node mapping
         Map<Node,Node> nodeMap = new HashMap<Node,Node>();
-        // // iterate over the dom node certificates
-        // int nodeCount = nodeCerts.length;
-        // for (int i = 0; result && i < nodeCount; i++) {
-        // Certificate<Node> domNodeCert = nodeCerts[i];
-        // SmallCollection<Node> image = codPartitionMap.get(domNodeCert);
-        // result = image.isSingleton();
-        // if (result) {
-        // nodeMap.put(domNodeCert.getElement(), image.getSingleton());
-        // }
-        // }
-        // iterate over the dom edge certificates
         int edgeCount = edgeCerts.length;
         for (int i = 0; result && i < edgeCount && edgeCerts[i] != null; i++) {
             Certificate<Edge> domEdgeCert = edgeCerts[i];
@@ -666,21 +667,33 @@ public class DefaultIsoChecker implements IsoChecker {
             if (result) {
                 Edge edgeKey = domEdgeCert.getElement();
                 Edge edgeImage = image.getSingleton();
-                int endCount = edgeKey.endCount();
-                for (int end = 0; result && end < endCount; end++) {
-                    Node endImage = nodeMap.get(edgeKey.end(end));
-                    if (endImage == null) {
-                        nodeMap.put(edgeKey.end(end), edgeImage.end(end));
-                    } else {
-                        result = endImage.equals(edgeImage.end(end));
-                    }
-                }
+                result =
+                    checkNodeMap(nodeMap, edgeKey.source(), edgeImage.source())
+                        && checkNodeMap(nodeMap, edgeKey.target(),
+                            edgeImage.target());
             }
         }
         if (ISO_PRINT) {
             if (!result) {
                 System.err.printf("Graphs have distinct but unequal certificates%n");
             }
+        }
+        return result;
+    }
+
+    /**
+     * Tests if a given node map contains an entry consisting of a certain
+     * key and image. Adds the entry if the key is not in the map.
+     * @return {@code true} if the key is new or the image equals the
+     * given image; {@code false} if the key is mapped to a different image
+     */
+    private boolean checkNodeMap(Map<Node,Node> nodeMap, Node key, Node image) {
+        boolean result = true;
+        Node oldImage = nodeMap.get(key);
+        if (oldImage == null) {
+            nodeMap.put(key, image);
+        } else {
+            result = oldImage.equals(image);
         }
         return result;
     }
@@ -716,13 +729,17 @@ public class DefaultIsoChecker implements IsoChecker {
         for (Map.Entry<Edge,Edge> edgeEntry : map.edgeMap().entrySet()) {
             Edge key = edgeEntry.getKey();
             Edge value = edgeEntry.getValue();
-            for (int i = 0; i < key.endCount(); i++) {
-                if (!map.getNode(key.end(i)).equals(value.end(i))) {
-                    System.err.printf(
-                        "Edge %s mapped to %s, but end %s mapped to %s%n", key,
-                        value, key.end(i), map.getNode(key.end(i)));
-                    return false;
-                }
+            if (!map.getNode(key.source()).equals(value.source())) {
+                System.err.printf(
+                    "Edge %s mapped to %s, but source mapped to %s%n", key,
+                    value, key.source(), map.getNode(key.source()));
+                return false;
+            }
+            if (!map.getNode(key.target()).equals(value.target())) {
+                System.err.printf(
+                    "Edge %s mapped to %s, but end %s mapped to %s%n", key,
+                    value, key.target(), map.getNode(key.target()));
+                return false;
             }
         }
         if (map.nodeMap().size() != new HashSet<Node>(map.nodeMap().values()).size()) {
@@ -937,8 +954,8 @@ public class DefaultIsoChecker implements IsoChecker {
     private static void testIso(String name) {
         try {
             Graph graph1 = Groove.loadGraph(name);
-            System.out.printf("Graph certificate: %s%n", graph1.getCertifier(
-                true).getGraphCertificate());
+            System.out.printf("Graph certificate: %s%n",
+                graph1.getCertifier(true).getGraphCertificate());
             IsoChecker checker = new DefaultIsoChecker(true);
             for (int i = 0; i < 1000; i++) {
                 Graph graph2 = new NodeSetEdgeSetGraph();

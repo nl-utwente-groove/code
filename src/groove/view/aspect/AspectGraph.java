@@ -88,9 +88,19 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
      * Specialises the return type.
      */
     @Override
+    @Deprecated
     @SuppressWarnings("unchecked")
     public Set<AspectEdge> edgeSet(Node node, int end) {
         return (Set<AspectEdge>) super.edgeSet(node, end);
+    }
+
+    /**
+     * Specialises the return type.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public Set<AspectEdge> inEdgeSet(Node node) {
+        return (Set<AspectEdge>) super.inEdgeSet(node);
     }
 
     /**
@@ -327,12 +337,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
             }
         }
         for (AspectEdge edge : edgeSet()) {
-            Node[] nodeImages = new Node[edge.endCount()];
-            for (int i = 0; i < edge.endCount(); i++) {
-                nodeImages[i] = elementMap.getNode(edge.end(i));
-            }
             Edge edgeImage =
-                result.addEdge(nodeImages, createLabel(edge.getPlainText()));
+                result.addEdge(elementMap.getNode(edge.source()),
+                    createLabel(edge.getPlainText()),
+                    elementMap.getNode(edge.target()));
             elementMap.putEdge(edge, edgeImage);
         }
         GraphInfo.transfer(this, result, elementMap);
@@ -513,8 +521,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
                                 replacement);
                     }
                     newData.setText(DefaultLabel.toPrefixedString(replacement));
-                    oldToNew.put(edge, createAspectEdge(edge.source(),
-                        edge.target(), newData));
+                    oldToNew.put(edge,
+                        createAspectEdge(edge.source(), edge.target(), newData));
                 }
             } catch (FormatException exc) {
                 // do nothing with this label

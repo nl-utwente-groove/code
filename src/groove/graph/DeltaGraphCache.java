@@ -229,7 +229,7 @@ public class DeltaGraphCache extends GraphCache {
         AbstractGraph<?> basis = getCacheBasis();
         // otherwise, we can use the cache delta
         DeltaApplier delta = getCacheDelta();
-        @SuppressWarnings( {"rawtypes", "unchecked"})
+        @SuppressWarnings({"rawtypes", "unchecked"})
         final Map<Label,Set<Edge>> basisMaps = (Map) basis.getLabelEdgeMap();
         final Map<Label,Set<Edge>> result = new HashMap<Label,Set<Edge>>();
         DeltaTarget target = new DeltaTarget() {
@@ -273,7 +273,7 @@ public class DeltaGraphCache extends GraphCache {
             // so we have to compute it the hard way
             return super.computeNodeEdgeMap();
         } else {
-            @SuppressWarnings( {"unchecked", "rawtypes"})
+            @SuppressWarnings({"unchecked", "rawtypes"})
             Map<Node,Set<Edge>> basisMap = (Map) basis.nodeEdgeMap();
             Map<Node,Set<Edge>> result = new HashMap<Node,Set<Edge>>(basisMap);
             DeltaTarget target = createNodeEdgeMapTarget(basisMap, result);
@@ -435,18 +435,26 @@ public class DeltaGraphCache extends GraphCache {
      */
     boolean removeFromNodeEdgeMap(Map<Node,Set<Edge>> newMap, Edge edge,
             Map<Node,? extends Set<? extends Edge>> basisMap) {
+        boolean result =
+            removeFromNodeEdgeMap(basisMap, newMap, edge, edge.source());
+        result |= removeFromNodeEdgeMap(basisMap, newMap, edge, edge.target());
+        return result;
+    }
+
+    /**
+     * Removes an edge from the image of a given node, cloning
+     * the entry if necessary.
+     */
+    private boolean removeFromNodeEdgeMap(
+            Map<Node,? extends Set<? extends Edge>> basisMap,
+            Map<Node,Set<Edge>> newMap, Edge edge, Node end) {
         boolean result = false;
-        assert basisMap != null;
-        int arity = edge.endCount();
-        for (int i = 0; i < arity; i++) {
-            Node end = edge.end(i);
-            Set<Edge> edgeSet = newMap.get(end);
-            if (edgeSet != null) {
-                if (edgeSet == basisMap.get(end)) {
-                    newMap.put(end, edgeSet = createEdgeSet(edgeSet));
-                }
-                result |= edgeSet.remove(edge);
+        Set<Edge> edgeSet = newMap.get(end);
+        if (edgeSet != null) {
+            if (edgeSet == basisMap.get(end)) {
+                newMap.put(end, edgeSet = createEdgeSet(edgeSet));
             }
+            result = edgeSet.remove(edge);
         }
         return result;
     }

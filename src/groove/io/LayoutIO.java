@@ -221,8 +221,8 @@ public class LayoutIO {
             if (points != null && points.size() > 0) {
                 Point2D relativePos = version1RelativePos(label, points);
                 result =
-                    version2LabelPos(relativePos, version2LabelVector(points,
-                        isLoop));
+                    version2LabelPos(relativePos,
+                        version2LabelVector(points, isLoop));
             } else {
                 result = new Point2D.Double(label.getX(), 0);
             }
@@ -386,9 +386,8 @@ public class LayoutIO {
     private String toString(Edge edge, JEdgeLayout layout) {
         StringBuffer result = new StringBuffer();
         result.append(EDGE_PREFIX + " ");
-        for (int i = 0; i < edge.endCount(); i++) {
-            result.append(edge.end(i) + " ");
-        }
+        result.append(edge.source() + " ");
+        result.append(edge.target() + " ");
         result.append(ExprParser.toQuoted(edge.label().text(), DOUBLE_QUOTE)
             + " ");
         result.append(toString(layout.getLabelPosition()));
@@ -497,11 +496,11 @@ public class LayoutIO {
     /** The current version number. */
     static public final int CURRENT_VERSION_NUMBER = VERSION2;
     /** Line for the layoutfile with the version information. */
-    static private final String VERSION_LINE =
-        String.format("%s %d", VERSION_PREFIX, CURRENT_VERSION_NUMBER);
+    static private final String VERSION_LINE = String.format("%s %d",
+        VERSION_PREFIX, CURRENT_VERSION_NUMBER);
     /** Error message in case an error is detected in the layout file. */
-    static private final String LAYOUT_FORMAT_ERROR =
-        String.format("Error in %s file", Groove.LAYOUT_EXTENSION);
+    static private final String LAYOUT_FORMAT_ERROR = String.format(
+        "Error in %s file", Groove.LAYOUT_EXTENSION);
     /** Double quote character. */
     static private final char DOUBLE_QUOTE = '\"';
     /** Splitting expression for non-empty white space. */

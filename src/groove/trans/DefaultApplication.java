@@ -575,8 +575,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
         }
         Set<Edge> result = this.valueNodeEdgesMap.get(node);
         if (result == null) {
-            result =
-                new HashSet<Edge>(this.source.edgeSet(node, Edge.TARGET_INDEX));
+            result = new HashSet<Edge>(this.source.inEdgeSet(node));
             this.valueNodeEdgesMap.put(node, result);
         }
         return result;

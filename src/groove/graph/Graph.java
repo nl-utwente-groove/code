@@ -106,7 +106,9 @@ public interface Graph extends GraphShape, DeltaTarget {
      * @see Graph#addEdge(Edge)
      * @throws IllegalArgumentException if the graph implementation does not
      *         support edges with the required arity <code>ends.length</code>.
+     * @deprecated use {@link #addEdge(Node, Label, Node)} instead
      */
+    @Deprecated
     Edge addEdge(Node[] ends, Label label);
 
     /**

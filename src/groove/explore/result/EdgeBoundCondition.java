@@ -16,13 +16,13 @@
  */
 package groove.explore.result;
 
-import java.util.Map;
-import java.util.Set;
-
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.lts.GraphState;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Condition on the number of edges in a graph state.
@@ -39,7 +39,7 @@ public class EdgeBoundCondition extends ExploreCondition<Map<Label,Integer>> {
         boolean result = true;
         Graph g = state.getGraph();
         for (Map.Entry<Label,Integer> entry : this.condition.entrySet()) {
-            Set<? extends Edge> labelSet = g.labelEdgeSet(2, entry.getKey());
+            Set<? extends Edge> labelSet = g.labelEdgeSet(entry.getKey());
             if (labelSet != null) {
                 result = labelSet.size() <= entry.getValue();
             }

@@ -83,17 +83,31 @@ public interface GraphShape extends java.io.Serializable, Fixable {
      * @ensure result == { edge \in E | edge.end(i).equals(node) }
      * @see #edgeSet(Node)
      * @see #outEdgeSet(Node)
+     * @deprecated use {@link #inEdgeSet(Node)} or {@link #outEdgeSet(Node)}
      */
+    @Deprecated
     Set<? extends Edge> edgeSet(Node node, int i);
 
     /**
-     * Returns the set of outgoing edges of a given node of this graph. This is
-     * a convenience method for <tt>edgeSet(node,Edge.SOURCE_INDEX)</tt>.
-     * @param node the node of which the outgoing Edges are required
-     * @require node != null
-     * @ensure result == { edge \in E | edge.source().equals(node) }
+     * Returns the set of incoming edges of a given node of this graph.
+     * @param node the node of which the incoming edges are required
+     */
+    Set<? extends Edge> inEdgeSet(Node node);
+
+    /**
+     * Returns the set of outgoing edges of a given node of this graph.
+     * @param node the node of which the outgoing edges are required
      */
     Set<? extends Edge> outEdgeSet(Node node);
+
+    /**
+     * Returns the set of all edges in this graph with a given label.
+     * Although the return
+     * type is a <tt>Collection</tt> to allow efficient implementation, it is
+     * guaranteed to contain distinct elements.
+     * @param label the label of the required edges
+     */
+    Set<? extends Edge> labelEdgeSet(Label label);
 
     /**
      * Returns the set of all edges in this graph with a given label and arity.
@@ -106,7 +120,9 @@ public interface GraphShape extends java.io.Serializable, Fixable {
      * @require <tt>label != null</tt> and
      *          <tt>1 <= arity <= AbstractEdge.getMaxEndCount()</tt>
      * @ensure <tt>result == labelEdgeMap(arity).get(Label).get(arity)</tt>
+     * @deprecated Use {@link #labelEdgeSet(Label)} instead
      */
+    @Deprecated
     Set<? extends Edge> labelEdgeSet(int arity, Label label);
 
     /**

@@ -181,6 +181,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * Returns <code>getBasis()</code> or <code>this</code>, depending on
      * the index.
      */
+    @Deprecated
     public AbstractGraphState end(int i) {
         switch (i) {
         case SOURCE_INDEX:
@@ -195,10 +196,12 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     /**
      * @return {@link #END_COUNT}.
      */
+    @Deprecated
     public int endCount() {
         return END_COUNT;
     }
 
+    @Deprecated
     public int endIndex(Node node) {
         if (source().equals(node)) {
             return SOURCE_INDEX;
@@ -210,10 +213,12 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         }
     }
 
+    @Deprecated
     public Node[] ends() {
         return new Node[] {source(), target()};
     }
 
+    @Deprecated
     public boolean hasEnd(Node node) {
         return source().equals(node) || target().equals(node);
     }

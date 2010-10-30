@@ -470,8 +470,10 @@ public class AutomatonTest extends TestCase {
             result.addRelated(this.nC2, this.nC4);
             result.addRelated(this.nC3, this.nC4);
             result.addSelfRelated(this.nC4);
-            assertEquals(result, aut.getMatches(this.testGraph, null,
-                Collections.singleton(this.nC4)));
+            assertEquals(
+                result,
+                aut.getMatches(this.testGraph, null,
+                    Collections.singleton(this.nC4)));
             result = new SetNodeRelation(this.testGraph);
             result.addRelated(this.nC2, this.nC2);
             result.addRelated(this.nC2, this.nC3);
@@ -491,16 +493,18 @@ public class AutomatonTest extends TestCase {
             result.addRelated(this.nC1, this.nC4);
             result.addRelated(this.nC2, this.nC3);
             result.addRelated(this.nC2, this.nC4);
-            assertEquals(result, aut.getMatches(this.testGraph, this.nC12,
-                this.nC34));
+            assertEquals(result,
+                aut.getMatches(this.testGraph, this.nC12, this.nC34));
             result.addRelated(this.nC1, this.nC2);
             assertEquals(result,
                 aut.getMatches(this.testGraph, this.nC12, null));
             result = new SetNodeRelation(this.testGraph);
             result.addRelated(this.nC1, this.nC3);
             result.addRelated(this.nC2, this.nC3);
-            assertEquals(result, aut.getMatches(this.testGraph, null,
-                Collections.singleton(this.nC3)));
+            assertEquals(
+                result,
+                aut.getMatches(this.testGraph, null,
+                    Collections.singleton(this.nC3)));
             aut = createAutomaton("?.2");
             result = new SetNodeRelation(this.testGraph);
             result.addRelated(this.nI2, this.nI2);
@@ -519,11 +523,15 @@ public class AutomatonTest extends TestCase {
             result.addRelated(this.nC3, this.nI3);
             result.addRelated(this.nC4, this.nI3);
             assertEquals(result, aut.getMatches(this.testGraph, null, null));
-            assertEquals(result, aut.getMatches(this.testGraph, null,
-                Collections.singleton(this.nI3)));
+            assertEquals(
+                result,
+                aut.getMatches(this.testGraph, null,
+                    Collections.singleton(this.nI3)));
             result = new SetNodeRelation(this.testGraph);
-            assertEquals(result, aut.getMatches(this.testGraph, null,
-                Collections.singleton(this.nI2)));
+            assertEquals(
+                result,
+                aut.getMatches(this.testGraph, null,
+                    Collections.singleton(this.nI2)));
         } catch (FormatException exc) {
             fail("Regular expression parse error: " + exc.getMessage());
         }
@@ -536,8 +544,8 @@ public class AutomatonTest extends TestCase {
             addRelated(result, this.nI3, new String[] {"x", "3"}, this.nI3);
             addRelated(result, this.nC3, new String[] {"x", "val"}, this.nI3);
             addRelated(result, this.nC4, new String[] {"x", "val"}, this.nI3);
-            assertEquals(result, aut.getMatches(this.testGraph, null, null,
-                null));
+            assertEquals(result,
+                aut.getMatches(this.testGraph, null, null, null));
             result = new SetNodeRelation(this.testGraph);
             addRelated(result, this.nC3, new String[] {"x", "val"}, this.nI3);
             addRelated(result, this.nC4, new String[] {"x", "val"}, this.nI3);
@@ -547,8 +555,8 @@ public class AutomatonTest extends TestCase {
             aut = (VarAutomaton) createAutomaton("?x.?x.3");
             result = new SetNodeRelation(this.testGraph);
             addRelated(result, this.nI3, new String[] {"x", "3"}, this.nI3);
-            assertEquals(result, aut.getMatches(this.testGraph, null, null,
-                null));
+            assertEquals(result,
+                aut.getMatches(this.testGraph, null, null, null));
             aut = (VarAutomaton) createAutomaton("(List.?x.?y)+.?x");
             result = new SetNodeRelation(this.testGraph);
             addRelated(result, this.nList, new String[] {"x", "first", "y",
@@ -557,8 +565,8 @@ public class AutomatonTest extends TestCase {
                 new String[] {"x", "last", "y", "in"}, this.nC4);
             addRelated(result, this.nList, new String[] {"x", "List", "y",
                 "List"}, this.nList);
-            assertEquals(result, aut.getMatches(this.testGraph, null, null,
-                null));
+            assertEquals(result,
+                aut.getMatches(this.testGraph, null, null, null));
             result = new SetNodeRelation(this.testGraph);
             addRelated(result, this.nList, new String[] {"x", "first", "y",
                 "in"}, this.nC1);
@@ -614,7 +622,7 @@ public class AutomatonTest extends TestCase {
 
     protected Node getNode(String selfLabel) {
         Collection<? extends Edge> edgeSet =
-            this.testGraph.labelEdgeSet(2, DefaultLabel.createLabel(selfLabel));
+            this.testGraph.labelEdgeSet(DefaultLabel.createLabel(selfLabel));
         if (edgeSet == null || edgeSet.isEmpty()) {
             return null;
         } else {

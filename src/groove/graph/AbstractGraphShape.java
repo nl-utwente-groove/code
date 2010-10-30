@@ -23,7 +23,6 @@ import groove.util.Groove;
 import groove.util.SetView;
 
 import java.lang.ref.Reference;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -64,8 +63,8 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
         if (elem instanceof Node) {
             return nodeSet().contains(elem);
         } else if (elem instanceof RelationEdge<?>) {
-            return nodeSet().containsAll(
-                Arrays.asList(((RelationEdge<?>) elem).ends()));
+            return nodeSet().contains(((Edge) elem).source())
+                && nodeSet().contains(((Edge) elem).target());
         } else {
             return edgeSet().contains(elem);
         }
@@ -105,17 +104,41 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
      * This implementation returns a set view on the incident edge set,
      * selecting just those edges of which <tt>end(i).equals(node)</tt>.
      */
+    @Deprecated
     public Set<? extends Edge> edgeSet(final Node node, final int i) {
+        if (i == Edge.SOURCE_INDEX) {
+            return outEdgeSet(node);
+        } else {
+            return inEdgeSet(node);
+        }
+    }
+
+    /**
+     * This implementation returns a set view on the incident edge set,
+     * selecting just those edges of which the source equals {@code node}.
+     */
+    public Set<? extends Edge> outEdgeSet(final Node node) {
         return new SetView<Edge>(edgeSet(node)) {
             @Override
             public boolean approves(Object obj) {
-                return obj instanceof Edge && ((Edge) obj).end(i).equals(node);
+                return obj instanceof Edge
+                    && ((Edge) obj).source().equals(node);
             }
         };
     }
 
-    public Set<? extends Edge> outEdgeSet(Node node) {
-        return edgeSet(node, Edge.SOURCE_INDEX);
+    /**
+     * This implementation returns a set view on the incident edge set,
+     * selecting just those edges of which the target equals {@code node}.
+     */
+    public Set<? extends Edge> inEdgeSet(final Node node) {
+        return new SetView<Edge>(edgeSet(node)) {
+            @Override
+            public boolean approves(Object obj) {
+                return obj instanceof Edge
+                    && ((Edge) obj).target().equals(node);
+            }
+        };
     }
 
     /**
@@ -125,13 +148,18 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
         return Collections.unmodifiableMap(getCache().getNodeEdgeMap());
     }
 
-    public Set<? extends Edge> labelEdgeSet(int arity, Label label) {
+    public Set<? extends Edge> labelEdgeSet(Label label) {
         Set<? extends Edge> result = getLabelEdgeMap().get(label);
         if (result != null) {
             return Collections.unmodifiableSet(result);
         } else {
             return Collections.emptySet();
         }
+    }
+
+    @Deprecated
+    public Set<? extends Edge> labelEdgeSet(int arity, Label label) {
+        return labelEdgeSet(label);
     }
 
     /**

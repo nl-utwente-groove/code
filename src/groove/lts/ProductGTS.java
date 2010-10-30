@@ -449,6 +449,7 @@ public class ProductGTS implements LTS {
         return null;
     }
 
+    @Deprecated
     public Set<? extends Edge> edgeSet(Node node, int i) {
         // TODO Auto-generated method stub
         return null;
@@ -469,14 +470,23 @@ public class ProductGTS implements LTS {
         return false;
     }
 
-    public Set<? extends Edge> labelEdgeSet(int arity, Label label) {
-        // TODO Auto-generated method stub
+    public Set<? extends Edge> labelEdgeSet(Label label) {
         return null;
+    }
+
+    @Deprecated
+    public Set<? extends Edge> labelEdgeSet(int arity, Label label) {
+        return labelEdgeSet(label);
     }
 
     public int nodeCount() {
         // TODO Auto-generated method stub
         return this.stateSet.size();
+    }
+
+    public Set<? extends GraphTransition> inEdgeSet(Node node) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     public Set<? extends GraphTransition> outEdgeSet(Node node) {

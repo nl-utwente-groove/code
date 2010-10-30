@@ -198,7 +198,7 @@ public abstract class AbstractNodeRelation implements NodeRelation {
      * string to a {@link DefaultLabel} and then queries the graph.
      */
     protected Collection<? extends Edge> getRelatedSet(Label label) {
-        return this.graph.labelEdgeSet(2, label);
+        return this.graph.labelEdgeSet(label);
     }
 
     /**

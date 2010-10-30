@@ -253,16 +253,26 @@ public class GraphShapeCache implements GraphShapeListener {
      *         yet there in the first place
      */
     final boolean addToNodeEdgeMap(Map<Node,Set<Edge>> currentMap, Edge edge) {
-        boolean result = false;
-        for (int i = 0; i < edge.endCount(); i++) {
-            Node end = edge.end(i);
-            Set<Edge> edgeSet = currentMap.get(end);
-            if (edgeSet == null) {
-                currentMap.put(end, edgeSet = createSmallEdgeSet());
-            }
-            result |= edgeSet.add(edge);
-        }
+        boolean result = addToNodeEdgeMap(currentMap, edge.source(), edge);
+        result |= addToNodeEdgeMap(currentMap, edge.target(), edge);
         return result;
+    }
+
+    /**
+     * Adds an edge to a given node-to-edgeset mapping.
+     * @param currentMap the mapping to be updated
+     * @param node the key for the node
+     * @param edge the edge to be added
+     * @return <code>true</code> if the edge was indeed added, i.e., was not
+     *         yet there in the first place
+     */
+    private boolean addToNodeEdgeMap(Map<Node,Set<Edge>> currentMap, Node node,
+            Edge edge) {
+        Set<Edge> edgeSet = currentMap.get(node);
+        if (edgeSet == null) {
+            currentMap.put(node, edgeSet = createSmallEdgeSet());
+        }
+        return edgeSet.add(edge);
     }
 
     /**
@@ -289,12 +299,13 @@ public class GraphShapeCache implements GraphShapeListener {
      * @param edge the edge to be removed
      */
     void removeFromNodeEdgeMap(Map<Node,Set<Edge>> currentMap, Edge edge) {
-        for (int i = 0; i < edge.endCount(); i++) {
-            Node end = edge.end(i);
-            Set<Edge> edgeSet = currentMap.get(end);
-            if (edgeSet != null) {
-                edgeSet.remove(edge);
-            }
+        Set<Edge> edgeSet = currentMap.get(edge.source());
+        if (edgeSet != null) {
+            edgeSet.remove(edge);
+        }
+        edgeSet = currentMap.get(edge.target());
+        if (edgeSet != null) {
+            edgeSet.remove(edge);
         }
     }
 

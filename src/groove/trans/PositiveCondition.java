@@ -116,7 +116,7 @@ abstract public class PositiveCondition<M extends Match> extends
         for (Node node : getTarget().nodeSet()) {
             if (node instanceof VariableNode && !(node instanceof ValueNode)) {
                 boolean hasIncomingNonAttributeEdge = false;
-                for (Edge edge : getTarget().edgeSet(node, Edge.TARGET_INDEX)) {
+                for (Edge edge : getTarget().inEdgeSet(node)) {
                     if (edge instanceof DefaultEdge) {
                         hasIncomingNonAttributeEdge = true;
                     }
@@ -126,8 +126,8 @@ abstract public class PositiveCondition<M extends Match> extends
                 }
             } else if (node instanceof ProductNode) {
                 ProductNode product = (ProductNode) node;
-                this.unresolvedProductNodes.put(product, new BitSet(
-                    product.arity()));
+                this.unresolvedProductNodes.put(product,
+                    new BitSet(product.arity()));
             }
         }
         this.unresolvedVariableNodes.removeAll(getRootMap().nodeMap().values());
