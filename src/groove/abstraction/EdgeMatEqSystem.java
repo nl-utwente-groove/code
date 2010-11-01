@@ -25,7 +25,14 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * EDUARDO: Comment this...
+ * Class that implements an equation system for the MaterialiseEdge operation.
+ * 
+ * In this equation system the set constraints are always singletons sets and
+ * the values come from the number of edges that are materialised (frozen). The
+ * derived variables in the equations represent the remainder multiplicities
+ * of the edge signatures when the edges being materialised are removed from
+ * the signature. 
+ * 
  * @author Eduardo Zambon
  */
 public final class EdgeMatEqSystem extends EquationSystem {
@@ -34,15 +41,20 @@ public final class EdgeMatEqSystem extends EquationSystem {
     // Static fields
     // ------------------------------------------------------------------------
 
+    /** Debug flag. If set to true, text will be printed in stdout. */
     private static boolean DEBUG = false;
+    /** Debug flag. If set to true, the shapes will be shown in a dialog. */
     private static boolean USE_GUI = false;
 
     // ------------------------------------------------------------------------
     // Object fields
     // ------------------------------------------------------------------------
 
+    /** The set of outgoing edge signatures involved in the operation. */
     private CountingSet<EdgeSignature> outEsSet;
+    /** The set of incoming edge signatures involved in the operation. */
     private CountingSet<EdgeSignature> inEsSet;
+    /** The set of edges that will be frozen by the operation. */
     private Set<ShapeEdge> frozenEdges;
 
     // ------------------------------------------------------------------------
@@ -50,7 +62,17 @@ public final class EdgeMatEqSystem extends EquationSystem {
     // ------------------------------------------------------------------------    
 
     /**
-     * EDUARDO: Comment this...
+     * Basic constructor.
+     * @param shape - the shape for which the equation system is to be built.
+     * @param outEsSet - set of outgoing edge signatures affected by this
+     *                   operation. The count in the counting set should
+     *                   correspond to the multiplicity that will be subtracted
+     *                   from the edge signature multiplicity.
+     * @param inEsSet - set of incoming edge signatures affected by this
+     *                  operation. The count in the counting set should
+     *                  correspond to the multiplicity that will be subtracted
+     *                  from the edge signature multiplicity.
+     * @param frozenEdges - set of edges that will be frozen by this operation.
      */
     public EdgeMatEqSystem(Shape shape, CountingSet<EdgeSignature> outEsSet,
             CountingSet<EdgeSignature> inEsSet, Set<ShapeEdge> frozenEdges) {
@@ -77,6 +99,11 @@ public final class EdgeMatEqSystem extends EquationSystem {
         }
     }
 
+    /**
+     * Creates a pair of MultVars for each signature in the counting sets.
+     * One of the MultVar in the pair goes in a set constraint and the other
+     * is a derived variable in an equation.
+     */
     @Override
     void buildEquationSystem() {
         // For each signature in the counting sets, create a pair of variables.
@@ -123,6 +150,15 @@ public final class EdgeMatEqSystem extends EquationSystem {
         this.buildAdmissibilityConstraints();
     }
 
+    /**
+     * Builds the admissibility constraints for this equation system. This
+     * method should only be called after all the variables of the system are
+     * created.
+     * The constraints make sure that no invalid values are assigned to the
+     * derived variables of the equations. For example, we cannot assign a
+     * multiplicity zero to an edge signature if this signature still have
+     * non-frozen edges in the shape.
+     */
     @Override
     void buildAdmissibilityConstraints() {
         if (USE_GUI) {
@@ -205,6 +241,12 @@ public final class EdgeMatEqSystem extends EquationSystem {
         }
     }
 
+    /**
+     * Clones the shape associated with this equation system and modifies the
+     * clone accordingly to the current values of the variables of the equation
+     * system. It is assumed that these values correspond to a valid shape
+     * configuration. The cloned shape is stored in the result set.
+     */
     @Override
     void storeResultShape() {
         Shape newShape = this.shape.clone();
@@ -231,6 +273,11 @@ public final class EdgeMatEqSystem extends EquationSystem {
         this.results.add(newShape);
     }
 
+    /**
+     * The MaterialiseEdge operation does not give rise to trivial equation
+     * systems. Therefore, this method should never be called. It throws an
+     * UnsupportedOperationException.
+     */
     @Override
     void storeTrivialResultShape() {
         throw new UnsupportedOperationException();
