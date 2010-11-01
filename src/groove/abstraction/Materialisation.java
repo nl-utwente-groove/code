@@ -715,12 +715,30 @@ public class Materialisation implements Cloneable {
                 // Update the multiplicity of the original node.
                 newMat.shape.setNodeMult(this.nodeS, mult);
 
-                // Create the new tasks that will be performed after this one.
-                // First, extend the pre-match into the new nodes.
-                ExtendPreMatch extendPreMatch =
-                    new ExtendPreMatch(newMat, this.nodesR, newNodes);
-                newMat.tasks.add(extendPreMatch);
-                // Second, make sure that all materialised nodes will be in a
+                // ------------------------------------------------------------
+                // Begin Extend Pre-Match
+                // ------------------------------------------------------------
+                Set<ShapeEdge> edgesToFreeze = new HashSet<ShapeEdge>();
+
+                // Both sets have the same size. Go over both of them at the
+                // same time, and take the returned values of the iterator as
+                // the match.
+                Iterator<Node> nodesRIter = this.nodesR.iterator();
+                Iterator<ShapeNode> newNodesIter = newNodes.iterator();
+                for (int i = 0; i < copies; i++) {
+                    Node nodeR = nodesRIter.next();
+                    ShapeNode nodeS = newNodesIter.next();
+                    // Adjust the match of the materialisation.
+                    newMat.extendMatch(nodeR, nodeS, edgesToFreeze);
+                }
+
+                // Freeze all extended edges.
+                newMat.shape.freezeEdges(edgesToFreeze);
+                // ------------------------------------------------------------
+                // End Extend Pre-Match
+                // ------------------------------------------------------------
+
+                // Make sure that all materialised nodes will be in a
                 // singleton equivalence class.
                 for (ShapeNode newNode : newNodes) {
                     SingulariseNode singulariseNode =
@@ -732,109 +750,6 @@ public class Materialisation implements Cloneable {
                 this.result.add(newMat);
             }
         }
-
-    }
-
-    // --------------------
-    // Class ExtendPreMatch
-    // --------------------
-
-    private static class ExtendPreMatch extends MatOp {
-
-        private Set<Node> nodesR;
-        private Set<ShapeNode> newNodes;
-
-        public ExtendPreMatch(Materialisation mat, Set<Node> nodesR,
-                Set<ShapeNode> newNodes) {
-            super(mat);
-            this.nodesR = nodesR;
-            this.newNodes = newNodes;
-        }
-
-        private ExtendPreMatch(ExtendPreMatch extPm) {
-            super();
-            this.setMat(extPm.mat);
-            this.nodesR = extPm.nodesR;
-            this.newNodes = extPm.newNodes;
-        }
-
-        @Override
-        public MatOp clone() {
-            return new ExtendPreMatch(this);
-        }
-
-        @Override
-        public String toString() {
-            return "ExtendPreMatch: " + this.nodesR + ", " + this.newNodes;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            boolean result = false;
-            if (o instanceof ExtendPreMatch) {
-                ExtendPreMatch other = (ExtendPreMatch) o;
-                result =
-                    this.nodesR.equals(other.nodesR)
-                        && this.newNodes.equals(other.newNodes);
-            }
-            return result;
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result =
-                prime * result
-                    + ((this.newNodes == null) ? 0 : this.newNodes.hashCode());
-            result =
-                prime * result
-                    + ((this.nodesR == null) ? 0 : this.nodesR.hashCode());
-            return result;
-        }
-
-        @Override
-        public int getPriority() {
-            return 1;
-        }
-
-        /**
-         * Extends the pre-match of a partially constructed materialisation
-         * object. In this method, the nodes of the pre-match that were mapped
-         * to abstract nodes in the shape are re-mapped to the newly
-         * materialised nodes.
-         * This method used to be non-deterministic. Now we only take an
-         * arbitrary match because the transformation always leads to an
-         * isomorphic shape.
-         */
-        @Override
-        public void perform() { // ExtendPreMatch
-            assert (this.nodesR.size() == this.newNodes.size()) : "Sets should have the same size!";
-
-            this.mat.logOp(this.toString());
-
-            Set<ShapeEdge> edgesToFreeze = new HashSet<ShapeEdge>();
-
-            // Both sets have the same size. Go over both of them at the same
-            // time, and take the returned values of the iterator as the match.
-            int nodeSetsSize = this.nodesR.size();
-            Iterator<Node> nodesRIter = this.nodesR.iterator();
-            Iterator<ShapeNode> newNodesIter = this.newNodes.iterator();
-            for (int i = 0; i < nodeSetsSize; i++) {
-                Node nodeR = nodesRIter.next();
-                ShapeNode nodeS = newNodesIter.next();
-                // Adjust the match of the materialisation.
-                this.mat.extendMatch(nodeR, nodeS, edgesToFreeze);
-            }
-
-            // Freeze all extended edges.
-            this.mat.shape.freezeEdges(edgesToFreeze);
-
-            // Add this materialisation to the result set of this
-            // operation.
-            this.result.add(this.mat);
-        }
-
     }
 
     // ---------------------
@@ -897,7 +812,7 @@ public class Materialisation implements Cloneable {
 
         @Override
         public int getPriority() {
-            return 2;
+            return 1;
         }
 
         /**
@@ -1050,7 +965,7 @@ public class Materialisation implements Cloneable {
 
         @Override
         public int getPriority() {
-            return 3;
+            return 2;
         }
 
         @Override
@@ -1179,7 +1094,7 @@ public class Materialisation implements Cloneable {
 
         @Override
         public int getPriority() {
-            return 4;
+            return 3;
         }
 
         @Override
