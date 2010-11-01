@@ -1113,8 +1113,7 @@ public class DefaultRuleView implements RuleView {
         private void addNodeToParents(AspectNode viewNode, Node ruleNode) {
             Level ascendingLevel = this;
             while (ascendingLevel.viewToLevelMap.putNode(viewNode, ruleNode) == null) {
-                assert !ascendingLevel.index.isTopLevel() : String.format(
-                    "Node not found at any level", viewNode);
+                assert !ascendingLevel.index.isTopLevel() : String.format("Node not found at any level");
                 ascendingLevel = ascendingLevel.parent;
                 assert ascendingLevel.viewToLevelMap != null : String.format(
                     "Nodes on level %s not yet initialised",
