@@ -27,7 +27,24 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * EDUARDO: Comment this...
+ * Class that implements the common functionality of an equation system.
+ * 
+ * An equation system is formed by multiplicity variables (MultVars). These
+ * variables may appear in three sub-parts of the equation system (x, y are
+ * MultVars):
+ * - Set constraints - constraints of the form: x \in Set_of_Multiplicities.
+ * - Equations - equality constraints that express the dependency between
+ *   variables. E.g., y = Multiplicity - x .
+ * - Admissibility constraints - the constraints that talk about the overall
+ *   admissibility of a shape configuration. 
+ * 
+ * An equation system that has no variables is said to be trivial. 
+ * 
+ * The only methods that need to be implemented by sub-classes are the
+ * construction of the equation system and the storage of shapes from a
+ * given solution. The code that solves an equation system is given in this
+ * class.
+ * 
  * @author Eduardo Zambon
  */
 public abstract class EquationSystem {
@@ -36,22 +53,38 @@ public abstract class EquationSystem {
     // Object fields
     // ------------------------------------------------------------------------
 
+    /** The shape that will produce the equation system. */
     Shape shape;
 
+    /** The number of multiplicity variables of the system. */
     int varCount;
+    /** An ordered list of variables of the system. */
     List<MultVar> vars;
+    /** The collection of equations (y = Multiplicity - x) of the system. */
     List<Equation> equations;
+    /**
+     * The collection of set constraints (x \in Set_of_Multiplicities) of the
+     * system.
+     */
     List<SetConstraint> setConstrs;
+    /** The collection of admissibility constraints of the system. */
     List<AdmissibilityConstraint> admisConstrs;
 
+    /** Maps used in the construction of the system. */
     Map<EdgeSignature,Pair<MultVar,MultVar>> outMap;
     Map<EdgeSignature,Pair<MultVar,MultVar>> inMap;
 
+    /**
+     * Indices used when solving the equation system.
+     * IMPORTANT: this indices always start at the maximum value and are
+     * decreased until they reach zero.
+     */
     int eqI;
     int eqJ;
     int setCI;
     int setCJ;
 
+    /** The set of shapes that are valid according to the equation system. */
     Set<Shape> results;
 
     // ------------------------------------------------------------------------
@@ -59,7 +92,9 @@ public abstract class EquationSystem {
     // ------------------------------------------------------------------------    
 
     /**
-     * EDUARDO: Comment this...
+     * Basic constructor. Initialises all collections of the system but does
+     * not actually builds the equation system. For that, call
+     * buildEquationSystem() .
      */
     public EquationSystem(Shape shape) {
         this.shape = shape;
@@ -77,14 +112,28 @@ public abstract class EquationSystem {
     // Abstract methods
     // ------------------------------------------------------------------------
 
+    /**
+     * This method analyses the shape and the operation to be performed and
+     * creates the MultVars needed. It also creates the equations and the
+     * set constraints. In the end, it should also call the 
+     * buildAdmissibilityConstraints() method, to finish the construction of
+     * the equation system.
+     */
     abstract void buildEquationSystem();
 
+    /**
+     * Defines the admissibility constraints for this equation system based
+     * on the operation that is being performed.
+     */
     abstract void buildAdmissibilityConstraints();
 
+    /** Creates a new shape from the current valid result of the system. */
     abstract void storeResultShape();
 
+    /** Creates a new shape from the current result of the trivial system. */
     abstract void storeTrivialResultShape();
 
+    /** Debug method. */
     abstract void print(String s);
 
     // ------------------------------------------------------------------------
@@ -102,6 +151,10 @@ public abstract class EquationSystem {
     // Other methods
     // ------------------------------------------------------------------------
 
+    /**
+     * Creates and returns a new MultVar, that is also stored in the variables
+     * set.
+     */
     MultVar newMultVar() {
         MultVar result = new MultVar(this.varCount);
         this.vars.add(result);
@@ -109,6 +162,11 @@ public abstract class EquationSystem {
         return result;
     }
 
+    /**
+     * Creates and returns a new equation, that is also stored in the equation
+     * set. The equation is of the form: remVar = origMult - singVar .
+     * The given multiplicity must be positive.
+     */
     Equation newEquation(MultVar singVar, MultVar remVar, Multiplicity origMult) {
         assert origMult.isPositive();
         Equation eq = new Equation(singVar, remVar, origMult);
@@ -116,16 +174,31 @@ public abstract class EquationSystem {
         return eq;
     }
 
+    /**
+     * Creates and returns a new set constraint, that is also stored in the
+     * proper set. The constraint is of the form: singVar \in multSet .
+     */
     SetConstraint newSetConstr(MultVar singVar, Set<Multiplicity> multSet) {
         SetConstraint setConst = new SetConstraint(singVar, multSet);
         this.setConstrs.add(setConst);
         return setConst;
     }
 
+    /**
+     * Creates and returns a new admissibility constraint, which is NOT stored.
+     * Make sure to call the method addAdmisConstr when the constraint is
+     * build. The constraint is not added automatically because in some systems
+     * we may have vacuously true constraints, which don't have to be added
+     * to the equation system.  
+     */
     AdmissibilityConstraint newAdmisConstr() {
         return new AdmissibilityConstraint();
     }
 
+    /**
+     * Adds the given admissibility constraint to the proper collection in the
+     * equation system if the constraint is not already present. 
+     */
     void addAdmisConstr(AdmissibilityConstraint admisConstr) {
         if (!this.admisConstrs.contains(admisConstr)) {
             this.admisConstrs.add(admisConstr);
@@ -133,15 +206,18 @@ public abstract class EquationSystem {
     }
 
     /**
-     * EDUARDO: Comment this...
+     * Solves the equation system.
+     * The method is very simple. It just goes over all possible valid values
+     * for the variables and checks if all admissibility constraints are
+     * satisfied. If yes, the shape corresponding to the current set of values
+     * is stored in the result set.
      */
     public void solve() {
         this.println("------------------------------------------");
         this.println("Solving " + this.toString() + "\n");
 
         if (this.varCount == 0) {
-            // Trivial equation system. The node the be singularised has no
-            // shared multiplicities. Just split the equivalence classes.
+            // Trivial equation system.
             this.println("Valid!");
             this.storeTrivialResultShape();
         } else {
@@ -162,12 +238,22 @@ public abstract class EquationSystem {
         this.println("Solving finished.");
     }
 
+    /**
+     * Initialises the indices for the variables that occur in the set
+     * constraints, and compute the possible values for the derived 
+     * variables in the equations.
+     */
     void initSolve() {
         this.setCI = this.setConstrs.size() - 1;
         this.setCJ = this.setCI;
         this.computeEquations();
     }
 
+    /**
+     * Initialises the indices for the derived variables that occur in the
+     * equations, and compute the possible values for the derived 
+     * variables in the equations.
+     */
     void computeEquations() {
         this.eqI = this.equations.size() - 1;
         this.eqJ = this.eqI;
@@ -176,6 +262,7 @@ public abstract class EquationSystem {
         }
     }
 
+    /** Debug method. */
     void printVars() {
         this.print("Possible solution: ");
         for (MultVar var : this.vars) {
@@ -183,10 +270,18 @@ public abstract class EquationSystem {
         }
     }
 
+    /**
+     * Returns true if all values of all the variables in the set constraints
+     * were tried.
+     */
     boolean isSolvingFinished() {
         return this.setCI == -1 && this.setCJ == -1;
     }
 
+    /**
+     * Returns true if all admissibility constraints of the equation system are
+     * satisfied by the current values of the variables.
+     */
     boolean areAdmisConstrsSatisfied() {
         boolean result = true;
         for (AdmissibilityConstraint admisConstr : this.admisConstrs) {
@@ -198,6 +293,19 @@ public abstract class EquationSystem {
         return result;
     }
 
+    /**
+     * Updates the working indices of the equation system and sets all the
+     * variables to a proper value.
+     * We first check if there are unexplored values in the equations. If yes,
+     * then we just update the indices for the equations. If no, then we need
+     * to update the indices for the variables in the set constraints. Every
+     * time that we modify such an index, all the equations need to be computed
+     * again, and we reset all equation indices.
+     * The method always keeps the invariant: j >= i, for both j's and i's.
+     * The j indices are the working indices.
+     * The i indices store the last element that was modified. Every time that
+     * i changes, all iterators from i+1 to the maximum value are reset.
+     */
     void updateSolutionValues() {
         // First check for the equations.
 
@@ -300,6 +408,7 @@ public abstract class EquationSystem {
         return this.results;
     }
 
+    /** Debug method. */
     void println(String s) {
         this.print(s + "\n");
     }
@@ -308,15 +417,22 @@ public abstract class EquationSystem {
     // Inner Classes
     // ------------------------------------------------------------------------
 
-    // ------
-    // MatVar
-    // ------
+    // -------
+    // MultVar
+    // -------
 
+    /** A multiplicity variable. It has a number and (possibly) a value. */
     static class MultVar {
 
+        /** The variable unique number. */
         public int number;
+        /** The current multiplicity value. May be null. */
         public Multiplicity mult;
 
+        /**
+         * Basic constructor.
+         * Should not be called directly. See newMultVar() method.
+         */
         public MultVar(int number) {
             this.number = number;
             this.mult = null;
@@ -344,19 +460,24 @@ public abstract class EquationSystem {
     // --------
 
     /**
-     * Class that represents equations of the form: y = c - x, where:
-     * x - is the MultVar of the singularised equivalence class;
-     * y - is the MultVar for the remainder of the equivalence class; and
-     * c - is the original constant multiplicity.
+     * Class that represents equations of the form: y = c - x, where
+     * x and y are MultVars that are complementary; and c is a constant
+     * multiplicity.
      */
     static class Equation {
 
         public MultVar singVar; // x
         public MultVar remVar; // y
         public Multiplicity origMult; // c
+        /** The possible values of y when x is assigned a value. */
         public Set<Multiplicity> resultSet;
+        /** The iterator over the result set. */
         public Iterator<Multiplicity> iter;
 
+        /**
+         * Basic constructor.
+         * Should not be called directly. See newEquation() method.
+         */
         public Equation(MultVar singVar, MultVar remVar, Multiplicity origMult) {
             this.singVar = singVar;
             this.remVar = remVar;
@@ -370,6 +491,10 @@ public abstract class EquationSystem {
             return this.remVar + " = " + this.origMult + " - " + this.singVar;
         }
 
+        /**
+         * Computes the possible values for y.
+         * Assumes that x has a proper value set.
+         */
         public void compute() {
             assert this.singVar.mult != null;
             this.resultSet = this.origMult.subEdgeMult(this.singVar.mult);
@@ -385,6 +510,7 @@ public abstract class EquationSystem {
             return this.iter.hasNext();
         }
 
+        /** Sets the next value of y. */
         public void next() {
             this.remVar.mult = this.iter.next();
         }
@@ -404,8 +530,13 @@ public abstract class EquationSystem {
 
         public MultVar singVar; // x
         public Set<Multiplicity> multSet;
+        /** The iterator over the multiplicity set. */
         public Iterator<Multiplicity> iter;
 
+        /**
+         * Basic constructor.
+         * Should not be called directly. See newSetConstr() method.
+         */
         public SetConstraint(MultVar singVar, Set<Multiplicity> multSet) {
             this.singVar = singVar;
             this.multSet = multSet;
@@ -426,6 +557,7 @@ public abstract class EquationSystem {
             return this.iter.hasNext();
         }
 
+        /** Sets the next value of x. */
         public void next() {
             this.singVar.mult = this.iter.next();
         }
@@ -435,19 +567,24 @@ public abstract class EquationSystem {
     // MultTerm
     // --------
 
+    /**
+     * Class representing a multiplication term, formed by a constant
+     * multiplicity 'c' and a multiplicity variable 'x'. The term corresponds
+     * then to: c * x .
+     */
     static class MultTerm {
 
-        public Multiplicity nodeMult;
-        public MultVar multVar;
+        public Multiplicity constMult; // c
+        public MultVar multVar; // x
 
-        public MultTerm(Multiplicity nodeMult, MultVar multVar) {
-            this.nodeMult = nodeMult;
+        public MultTerm(Multiplicity constMult, MultVar multVar) {
+            this.constMult = constMult;
             this.multVar = multVar;
         }
 
         @Override
         public String toString() {
-            return this.nodeMult + "*" + this.multVar;
+            return this.constMult + "*" + this.multVar;
         }
 
         @Override
@@ -456,15 +593,16 @@ public abstract class EquationSystem {
             if (o instanceof MultTerm) {
                 MultTerm other = (MultTerm) o;
                 result =
-                    this.nodeMult.equals(other.nodeMult)
+                    this.constMult.equals(other.constMult)
                         && this.multVar.equals(other.multVar);
             }
             return result;
         }
 
+        /** Multiplies c with the current value of x and returns the result. */
         public Multiplicity multiply() {
             assert this.multVar.mult != null;
-            return this.nodeMult.multiply(this.multVar.mult);
+            return this.constMult.multiply(this.multVar.mult);
         }
     }
 
@@ -472,6 +610,13 @@ public abstract class EquationSystem {
     // AdmissibilityConstraint
     // -----------------------
 
+    /**
+     * Class representing an admissibility constraint.
+     * Such constraint is formed by terms and constants, grouped in outgoing
+     * and incoming sums. The constraint is satisfied if the resulting
+     * multiplicities of both sums are overlapping, i.e., have a non-empty
+     * intersection.
+     */
     static class AdmissibilityConstraint {
 
         public List<MultTerm> outSumTerms;
@@ -479,6 +624,10 @@ public abstract class EquationSystem {
         public List<MultTerm> inSumTerms;
         public Multiplicity inSumConst;
 
+        /**
+         * Basic constructor.
+         * Should not be called directly. See newAdmisConstr() method.
+         */
         public AdmissibilityConstraint() {
             this.outSumTerms = new ArrayList<MultTerm>();
             this.outSumConst = Multiplicity.getMultOf(0);
@@ -523,6 +672,7 @@ public abstract class EquationSystem {
             this.inSumConst = this.inSumConst.uadd(mult);
         }
 
+        /** Performs an unbounded sum for one side of the constraint. */
         public Multiplicity doSum(List<MultTerm> sumTerms, Multiplicity sumConst) {
             Multiplicity result = sumConst;
             for (MultTerm term : sumTerms) {
@@ -531,11 +681,19 @@ public abstract class EquationSystem {
             return result;
         }
 
+        /**
+         * Returns true if there are no outgoing or incoming terms and the
+         * constants are overlapping.
+         */
         public boolean isVacuous() {
             return this.outSumTerms.isEmpty() && this.inSumTerms.isEmpty()
                 && this.outSumConst.overlaps(this.inSumConst);
         }
 
+        /**
+         * The constraint is satisfied if the resulting multiplicities of both
+         * sums are overlapping, i.e., have a non-empty intersection.
+         */
         public boolean isSatisfied() {
             Multiplicity outM = this.doSum(this.outSumTerms, this.outSumConst);
             Multiplicity inM = this.doSum(this.inSumTerms, this.inSumConst);

@@ -16,24 +16,16 @@
  */
 package groove.abstraction;
 
-import groove.abstraction.gui.ShapeDialog;
 import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.DefaultApplication;
-import groove.trans.GraphGrammar;
-import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.SPOEvent;
-import groove.view.FormatException;
-import groove.view.StoredGrammarView;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -62,7 +54,11 @@ public class Materialisation implements Cloneable {
     // Static fields
     // ------------------------------------------------------------------------
 
-    private static final boolean LOG = true;
+    /**
+     * Debug flag. If set to true each materialisation object will store the
+     * sequence of operations performed.
+     */
+    private static final boolean LOG = false;
 
     // ------------------------------------------------------------------------
     // Object fields
@@ -89,7 +85,6 @@ public class Materialisation implements Cloneable {
      * object. When this queue is empty, the materialisation is complete. 
      */
     protected PriorityQueue<MatOp> tasks;
-
     /**
      * The sequence of operations applied in this materialisation.
      */
@@ -181,9 +176,6 @@ public class Materialisation implements Cloneable {
     * in the materialisation phase, so the shapes in the returned
     * materialisations are ready to be transformed by conventional rule
     * application.
-    * Note that the returned set may be empty, even if the pre-match is valid.
-    * This is the case because the shape may not admit any valid
-    * materialisation.
     */
     public static Set<Materialisation> getMaterialisations(Shape shape,
             RuleMatch preMatch) {
@@ -201,9 +193,9 @@ public class Materialisation implements Cloneable {
         // Initial materialisation object.
         Materialisation initialMat = new Materialisation(shapeClone, preMatch);
 
-        // Some operations that need to be performed during the materialisation
+        // The operations that need to be performed during the materialisation
         // phase are non-deterministic. This implies that, when performing a
-        // certain operation, we may get back a collection of new
+        // certain operation, we get back a collection of new
         // materialisations. We use a queue to store these temporary
         // materialisation objects and move them to the result set when the
         // materialisation is complete.
@@ -228,10 +220,17 @@ public class Materialisation implements Cloneable {
         return result;
     }
 
+    /**
+     * Stores the given materialisation in the given result set. The shape
+     * in the given materialisation is checked for isomorphism against the
+     * ones already in the result set. If there is already an isomorphic shape
+     * in the result set, the new shape is not added. 
+     */
     private static void storeResult(Materialisation mat,
             Set<Materialisation> results) {
         assert mat.hasConcreteMatch();
         mat.shape.unfreezeEdges();
+        // EDUARDO: Collapse this set under isomorphism.
         results.add(mat);
     }
 
@@ -271,6 +270,7 @@ public class Materialisation implements Cloneable {
         return this.tasks.remove();
     }
 
+    /** Logs the given operation string. */
     private void logOp(String op) {
         if (LOG) {
             this.log.add(op);
@@ -481,6 +481,12 @@ public class Materialisation implements Cloneable {
         }
     }
 
+    /**
+     * Creates PullNode operations for this materialisation object when needed.
+     * This method checks all nodes marked to be singularised. For each such
+     * nodes, we look in the neighbourhood, and if there are any shared
+     * multiplicities, then we create new PullNode operations.
+     */
     private void addPullNodeOps() {
         PriorityQueue<PullNode> pullNodeOps = new PriorityQueue<PullNode>();
         // Check all nodes marked to be singularised.
@@ -490,7 +496,7 @@ public class Materialisation implements Cloneable {
                 continue;
             }
 
-            // Outgoing edges
+            // Outgoing edges.
             ShapeNode srcS = ((SingulariseNode) op).nodeS;
             for (ShapeEdge edgeS : this.shape.outBinaryEdgeSet(srcS)) {
                 if (!this.shape.isFrozen(edgeS)) {
@@ -501,8 +507,7 @@ public class Materialisation implements Cloneable {
                     EdgeSignature inEs =
                         this.shape.getEdgeSignature(tgtS, label, srcEc);
                     if (!this.shape.isInEdgeSigUnique(inEs)) {
-                        // We need to pull out some nodes.
-
+                        // We need to pull some nodes.
                         // First, check if tgtS is abstract.
                         Multiplicity tgtMult = this.shape.getNodeMult(tgtS);
                         if (tgtMult.isAbstract()) {
@@ -521,7 +526,7 @@ public class Materialisation implements Cloneable {
                 }
             }
 
-            // Incoming edges
+            // Incoming edges.
             ShapeNode tgtS = ((SingulariseNode) op).nodeS;
             for (ShapeEdge edgeS : this.shape.inBinaryEdgeSet(tgtS)) {
                 if (!this.shape.isFrozen(edgeS)) {
@@ -532,8 +537,7 @@ public class Materialisation implements Cloneable {
                     EdgeSignature outEs =
                         this.shape.getEdgeSignature(srcS, label, tgtEc);
                     if (!this.shape.isOutEdgeSigUnique(outEs)) {
-                        // We need to pull out some nodes.
-
+                        // We need to pull some nodes.
                         // First, check if srcS is abstract.
                         Multiplicity srcMult = this.shape.getNodeMult(srcS);
                         if (srcMult.isAbstract()) {
@@ -564,21 +568,45 @@ public class Materialisation implements Cloneable {
     // Class MatOp
     // -----------
 
+    /**
+     * Abstract class for the materialisation operations. The rationale on
+     * creating the sub-classes of this class is:
+     * - Each materialisation operation should be somewhat independent and
+     *   understandable on its own.
+     * - Each materialisation operation must introduce only one level of
+     *   non-determinism.
+     * Each operation has a priority. Zero is highest priority. Operations are
+     * processed in the priority order.
+     * Not all operations can be determined when the materialisation process
+     * starts, so an operation can create other ones. It is expected that those
+     * newly created operations have a lower priority than the one that is
+     * being performed.  
+     */
     private static abstract class MatOp implements Comparable<MatOp>, Cloneable {
 
+        /** The materialisation object handled by the operation. */
         protected Materialisation mat;
+        /** The result of performing the operation. */
         protected Set<Materialisation> result;
 
+        /** Used in the copying constructor. */
         protected MatOp() {
             this.mat = null;
             this.result = new HashSet<Materialisation>();
         }
 
+        /** Default constructor. */
         public MatOp(Materialisation mat) {
             this.mat = mat;
             this.result = new HashSet<Materialisation>();
         }
 
+        /**
+         * Compares two operations based on their priorities.
+         * @return 0, if both operations have the same priorities.
+         *        -1, if priority(this) < priority(o) .
+         *         1, if priority(this) > priority(o) .
+         */
         @Override
         public int compareTo(MatOp o) {
             int thisOp = this.getPriority();
@@ -600,18 +628,33 @@ public class Materialisation implements Cloneable {
         @Override
         abstract public MatOp clone();
 
+        /**
+         * Executes the operation in this object. This may produce zero or more
+         * materialisation objects, which are stored in the result set of
+         * this operation. If the execution of the operation yields zero
+         * results, then it is said that the operation failed, i.e., performing
+         * the operation on the materialisation object does not produce a
+         * valid shape. 
+         */
         abstract public void perform();
 
+        /**
+         * Returns the priority of this operation. Zero is the highest
+         * priority.
+         */
         abstract public int getPriority();
 
+        /** Basic setter method. */
         public void setMat(Materialisation mat) {
             this.mat = mat;
         }
 
+        /** Returns true if the result set is non-empty, false otherwise. */
         public boolean isSuccesful() {
             return !this.result.isEmpty();
         }
 
+        /** Adds the results of this operation to the collection given. */
         public void collectResults(Collection<Materialisation> collector) {
             assert this.isSuccesful() : "Invalid call!";
             collector.addAll(this.result);
@@ -623,11 +666,30 @@ public class Materialisation implements Cloneable {
     // Class MaterialiseNode
     // ---------------------
 
+    /**
+     * Class that represents the operation of materialising one or more nodes
+     * from a collector node, i.e., a node with multiplicity greater than one.
+     * The decision on which nodes have to be materialised comes from the
+     * image of the pre-match of the rule.
+     * The non-determinism on this operation comes from the choice on the 
+     * remaining multiplicity of the collector node, once the new nodes are
+     * materialised.
+     * This operation creates a SingulariseNode operation for each of the
+     * newly materialised nodes.
+     */
     private static class MaterialiseNode extends MatOp {
 
+        /**
+         * The collector node, from which the new nodes will be materialised.
+         */
         private ShapeNode nodeS;
+        /**
+         * The nodes in the LHS of the rule that were mapped to the collector
+         * node by the pre-match.
+         */
         private Set<Node> nodesR;
 
+        /** Default constructor. */
         public MaterialiseNode(Materialisation mat, ShapeNode nodeS,
                 Set<Node> nodesR) {
             super(mat);
@@ -635,6 +697,7 @@ public class Materialisation implements Cloneable {
             this.nodesR = nodesR;
         }
 
+        /** Copying constructor. */
         private MaterialiseNode(MaterialiseNode matNode) {
             super();
             this.setMat(matNode.mat);
@@ -682,6 +745,20 @@ public class Materialisation implements Cloneable {
             return 0;
         }
 
+        /**
+         * Executes the materialise node operation.
+         * The number of new copies of the collector node is determined by the
+         * number of nodes of the LHS of the rule. All new materialised nodes
+         * are created with multiplicity one and the mapping of the pre-match
+         * is adjusted to the new nodes.
+         * Keep in mind that when materialising a node, all adjacent edges
+         * are duplicated.
+         * The non-determinism on this operation comes from the choice on the 
+         * remaining multiplicity of the collector node, when the new nodes are
+         * materialised.
+         * This operation creates a SingulariseNode operation for each of the
+         * newly materialised nodes.  
+         */
         @Override
         public void perform() { // MaterialiseNode
             this.mat.logOp(this.toString());
@@ -689,7 +766,7 @@ public class Materialisation implements Cloneable {
             // Compute how many copies of the abstract node we need to
             // materialise.
             int copies = this.nodesR.size();
-            // Materialise the node and get the new multiplicity set back.
+            // Materialise the nodes and get the new multiplicity set back.
             Set<Multiplicity> mults =
                 this.mat.shape.materialiseNode(this.nodeS,
                     Multiplicity.getMultOf(1), copies);
@@ -715,6 +792,7 @@ public class Materialisation implements Cloneable {
                 // Update the multiplicity of the original node.
                 newMat.shape.setNodeMult(this.nodeS, mult);
 
+                // This used to be a separate operation. It was merged here.
                 // ------------------------------------------------------------
                 // Begin Extend Pre-Match
                 // ------------------------------------------------------------
@@ -756,11 +834,29 @@ public class Materialisation implements Cloneable {
     // Class MaterialiseEdge
     // ---------------------
 
+    /**
+     * Class that represents the operation of materialising one or more edges
+     * from a collector edge, i.e., an edge with multiplicity greater than one.
+     * The decision on which edges have to be materialised comes from the
+     * image of the pre-match of the rule.
+     * The non-determinism on this operation comes from the choice on the 
+     * remaining multiplicity of the collector edge, once the new edges are
+     * materialised.
+     * This operation may create new PullNode operations.
+     */
     private static class MaterialiseEdge extends MatOp {
 
+        /**
+         * The collector edge, from which the new edges will be materialised.
+         */
         private ShapeEdge edgeS;
+        /**
+         * The edges in the LHS of the rule that were mapped to the collector
+         * edge by the pre-match.
+         */
         private Set<Edge> edgesR;
 
+        /** Default constructor. */
         public MaterialiseEdge(Materialisation mat, ShapeEdge edgeS,
                 Set<Edge> edgesR) {
             super(mat);
@@ -768,6 +864,7 @@ public class Materialisation implements Cloneable {
             this.edgesR = edgesR;
         }
 
+        /** Copying constructor. */
         private MaterialiseEdge(MaterialiseEdge matEdge) {
             super();
             this.setMat(matEdge.mat);
@@ -816,8 +913,17 @@ public class Materialisation implements Cloneable {
         }
 
         /**
+         * Executes the materialise edge operation.
          * Pre-condition: all MaterialiseNode operations have been performed,
-         * and the node images in the match are final. 
+         * and the node images in the match are final.
+         * This operation goes over the images of the edges in the rule and
+         * freezes them.
+         * After this, an equation system is created and solved, and the valid
+         * solutions correspond to the result of the operation.
+         * The non-determinism on this operation comes from the choice on the 
+         * remaining outgoing and incoming multiplicities of the collector edge,
+         * once the new edges are materialised (frozen).
+         * This operation may create new PullNode operations.
          */
         @Override
         public void perform() { // MaterialiseEdge
@@ -832,8 +938,8 @@ public class Materialisation implements Cloneable {
             CountingSet<EdgeSignature> inEsSet =
                 new CountingSet<EdgeSignature>();
             Set<ShapeEdge> frozenEdges = new HashSet<ShapeEdge>();
+            // For each edge involved edge in the rule.
             for (Edge edgeR : this.edgesR) {
-                // For each edge in the rule.
                 Label label = edgeR.label();
                 // Get the image of source and target from the match.
                 ShapeNode srcS = (ShapeNode) match.getNode(edgeR.source());
@@ -863,6 +969,7 @@ public class Materialisation implements Cloneable {
                 }
             }
 
+            // Build the equation system and solve it.
             EdgeMatEqSystem eqSys =
                 new EdgeMatEqSystem(this.mat.shape, outEsSet, inEsSet,
                     frozenEdges);
@@ -897,12 +1004,27 @@ public class Materialisation implements Cloneable {
     // Class PullNode
     // --------------
 
+    /**
+     * Class that represents the operation of pulling a node out from a
+     * collector node, i.e., a node with multiplicity greater than one.
+     * This operation is very similar to MaterialiseNode, with the exception
+     * that only one new node is created, which can have an arbitrary positive
+     * multiplicity. This new node will not be singularised later.
+     * This operation does not create any new operations.
+     * The source of non-determinism is the same as in the MaterialiseNode
+     * operation, i.e., the choices on the remaining multiplicity of the
+     * collector node.
+     */
     private static class PullNode extends MatOp {
 
+        /** The edge that is pulling a new node from the collector node. */
         private ShapeEdge pullingEdge;
+        /** The collector node that is being pulled by the edge. */
         private ShapeNode pulledNode;
+        /** The multiplicity for the new node that will be created. */
         private Multiplicity mult;
 
+        /** Default constructor. */
         public PullNode(Materialisation mat, ShapeEdge pullingEdge,
                 ShapeNode pulledNode, Multiplicity mult) {
             super(mat);
@@ -911,6 +1033,7 @@ public class Materialisation implements Cloneable {
             this.mult = mult;
         }
 
+        /** Copying constructor. */
         private PullNode(PullNode pullNode) {
             super();
             this.setMat(pullNode.mat);
@@ -968,11 +1091,27 @@ public class Materialisation implements Cloneable {
             return 2;
         }
 
+        /**
+         * Executes the pull node operation.
+         * Pre-condition: all MaterialiseNode and MaterialiseEdge operations
+         * have been performed. This implies that the match is final.
+         * This operation is very similar to MaterialiseNode with the exception
+         * that here only one node is materialised in the shape. Node that, also
+         * here, all adjacent edges are duplicated.
+         * The newly created node also produces a pulled edge. When possible,
+         * this pulled edge is frozen to ensure that it remains in the shape.
+         * However, there cases where it is not possible at this point to freeze
+         * the pulled edge. We leave to the SingulariseNode operation to decide
+         * on the valid configurations that contain the pulled edge. This may
+         * seem strange but actually leads to less non-determinism in the end,
+         * because otherwise we would have to perform another MaterialiseEdge
+         * operation on the pulled edge.
+         */
         @Override
         public void perform() { // PullNode
             this.mat.logOp(this.toString());
 
-            // Look in the shaping morphism to get the all the nodes that were
+            // Look in the shaping morphism to get all the nodes that were
             // materialised from the original node.
             Set<ShapeNode> origNodes =
                 this.mat.shape.getReverseNodeMap(this.pulledNode);
@@ -988,6 +1127,7 @@ public class Materialisation implements Cloneable {
             assert newNodes.size() == 1;
             ShapeNode newNode = newNodes.iterator().next();
             Label label = this.pullingEdge.label();
+            // Find the new pulled edge.
             ShapeEdge pulledEdge;
             if (this.pullingEdge.source().equals(this.pulledNode)) {
                 pulledEdge =
@@ -1013,7 +1153,7 @@ public class Materialisation implements Cloneable {
 
                 // Update the multiplicity of the original node.
                 newMat.shape.setNodeMult(this.pulledNode, mult);
-                // Simplify the shape, when possible to avoid some
+                // Simplify the shape, when possible, to avoid some
                 // non-determinism.
                 newMat.shape.removeImpossibleEdges(pulledEdge);
 
@@ -1029,15 +1169,29 @@ public class Materialisation implements Cloneable {
     // Class SingulariseNode
     // ---------------------
 
+    /**
+     * Class that represents the operation of putting a node in a singleton
+     * equivalence class.
+     * The non-determinism of this operation comes from the choices on the
+     * edge multiplicities that are affected by the splitting. These choices
+     * are made on the basis of another equation system, where the valid
+     * results indicate the shape configurations.
+     * This operation has the lowest priority and therefore is always executed
+     * last.
+     * This operation does not create new operations. 
+     */
     private static class SingulariseNode extends MatOp {
 
+        /** The node to be singularised. */
         private ShapeNode nodeS;
 
+        /** Default constructor. */
         public SingulariseNode(Materialisation mat, ShapeNode nodeS) {
             super(mat);
             this.nodeS = nodeS;
         }
 
+        /** Copying constructor. */
         private SingulariseNode(SingulariseNode singNode) {
             super();
             this.setMat(singNode.mat);
@@ -1074,6 +1228,12 @@ public class Materialisation implements Cloneable {
             return result;
         }
 
+        /**
+         * Experimentation seems to show that it is better to singularise first
+         * the images of the LHS of the rule. This usually leads to less
+         * non-determinism. We do this choice here, on the basis of the node
+         * identities. Nodes with smaller numbers are singularised first. 
+         */
         @Override
         public int compareTo(MatOp op) {
             int result = super.compareTo(op);
@@ -1097,15 +1257,29 @@ public class Materialisation implements Cloneable {
             return 3;
         }
 
+        /**
+         * Executes the singularise node operation.
+         * Pre-condition: all MaterialiseNode, MaterialiseEdge and PullNode
+         * operations have been performed. This implies that the match is final
+         * and that the number of nodes in the shape will no longer change.
+         * What is left to decide are the outgoing and incoming multiplicities
+         * of the edge signatures that will be affected by this operation.
+         * This decision is based on another equation system. The valid
+         * solutions of this equation system give rise to valid shape
+         * configurations.
+         * This operation does not create new operations.
+         */
         @Override
         public void perform() { // SingulariseNode
             this.mat.logOp(this.toString());
 
             if (this.mat.shape.getEquivClassOf(this.nodeS).size() == 1) {
                 // Nothing to do, the node is already in a singleton
-                // equivalence class.
+                // equivalence class. This may happen as a side-effect of
+                // another SingulariseNode operation.
                 this.result.add(this.mat);
             } else {
+                // Create an equation system and solve it.
                 EquationSystem eqSys =
                     new NodeSingEqSystem(this.mat.shape, this.nodeS);
                 eqSys.solve();
@@ -1132,152 +1306,6 @@ public class Materialisation implements Cloneable {
             }
         }
 
-    }
-
-    // ------------------------------------------------------------------------
-    // Test methods.
-    // ------------------------------------------------------------------------
-
-    /** Test method. */
-    public static void test0() {
-        final String DIRECTORY = "junit/samples/abs-test.gps/";
-
-        File file = new File(DIRECTORY);
-        try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            Graph graph = view.getGraphView("materialisation-test-0").toModel();
-            Shape shape = new Shape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-0");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            for (RuleMatch preMatch : preMatches) {
-                Set<Materialisation> mats =
-                    Materialisation.getMaterialisations(shape, preMatch);
-                for (Materialisation mat : mats) {
-                    System.out.println(mat);
-                    String test;
-                    if (mat.hasConcreteMatch()) {
-                        test = "concrete";
-                    } else {
-                        test = "abstract";
-                    }
-                    Shape matShape = mat.getShape();
-                    new ShapeDialog(matShape, test);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /** Test method. */
-    public static void test1() {
-        final String DIRECTORY = "junit/samples/abs-test.gps/";
-
-        File file = new File(DIRECTORY);
-        try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            Graph graph = view.getGraphView("materialisation-test-1").toModel();
-            Shape shape = new Shape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-1");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            for (RuleMatch preMatch : preMatches) {
-                Set<Materialisation> mats =
-                    Materialisation.getMaterialisations(shape, preMatch);
-                for (Materialisation mat : mats) {
-                    System.out.println(mat);
-                    String test;
-                    if (mat.hasConcreteMatch()) {
-                        test = "concrete";
-                    } else {
-                        test = "abstract";
-                    }
-                    Shape matShape = mat.getShape();
-                    new ShapeDialog(matShape, test);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /** Test method. */
-    public static void test2() {
-        final String DIRECTORY = "junit/samples/abs-test.gps/";
-
-        File file = new File(DIRECTORY);
-        try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            Graph graph = view.getGraphView("materialisation-test-2").toModel();
-            Shape shape = new Shape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-1");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            for (RuleMatch preMatch : preMatches) {
-                Set<Materialisation> mats =
-                    Materialisation.getMaterialisations(shape, preMatch);
-                for (Materialisation mat : mats) {
-                    System.out.println(mat);
-                    String test;
-                    if (mat.hasConcreteMatch()) {
-                        test = "concrete";
-                    } else {
-                        test = "abstract";
-                    }
-                    Shape matShape = mat.getShape();
-                    new ShapeDialog(matShape, test);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /** Test method. */
-    public static void test3() {
-        final String DIRECTORY = "junit/samples/abs-test.gps/";
-
-        File file = new File(DIRECTORY);
-        try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            Graph graph = view.getGraphView("rule-app-test-0").toModel();
-            Shape shape = new Shape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("add");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            for (RuleMatch preMatch : preMatches) {
-                Set<Materialisation> mats =
-                    Materialisation.getMaterialisations(shape, preMatch);
-                for (Materialisation mat : mats) {
-                    System.out.println(mat);
-                    String test;
-                    if (mat.hasConcreteMatch()) {
-                        test = "concrete";
-                    } else {
-                        test = "abstract";
-                    }
-                    Shape matShape = mat.getShape();
-                    new ShapeDialog(matShape, test);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /** Test method. */
-    public static void main(String args[]) {
-        Multiplicity.initMultStore();
-        test3();
     }
 
 }

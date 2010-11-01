@@ -26,7 +26,18 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * EDUARDO: Comment this...
+ * Class that implements an equation system for the SingulariseNode operation.
+ * 
+ * In this equation system the variables represent the multiplicities of
+ * edge signatures that will be affected by the operation. For each such
+ * signatures, we create a pair of variables. One variable of the pair (x)
+ * represents the multiplicity related to the singular equivalence class that
+ * will be created and the other variable (y) is for the multiplicity related
+ * to the remainder equivalence class after the split.
+ * Variable x is put in a set constraint, ranging on the set {0,1}. This is
+ * because all nodes to be singularised need to be concrete.
+ * Variable y is a derived variable put in an equation.
+ * 
  * @author Eduardo Zambon
  */
 public class NodeSingEqSystem extends EquationSystem {
@@ -35,7 +46,9 @@ public class NodeSingEqSystem extends EquationSystem {
     // Static fields
     // ------------------------------------------------------------------------
 
+    /** Debug flag. If set to true, text will be printed in stdout. */
     private static boolean DEBUG = false;
+    /** Debug flag. If set to true, the shapes will be shown in a dialog. */
     private static boolean USE_GUI = false;
 
     private static Set<Multiplicity> zeroOneSet;
@@ -50,17 +63,23 @@ public class NodeSingEqSystem extends EquationSystem {
     // Object fields
     // ------------------------------------------------------------------------
 
-    private ShapeNode node; // Node to singularise: v
-    private EquivClass<ShapeNode> origEc; // The original equivalence class: C
-    private EquivClass<ShapeNode> singEc; // The singularised equivalence class: C'
-    private EquivClass<ShapeNode> remEc; // The remaining equivalence class: C''
+    /** Node to singularise. */
+    private ShapeNode node; // v
+    /** The original equivalence class of v . */
+    private EquivClass<ShapeNode> origEc; // C
+    /** The singularised equivalence class. */
+    private EquivClass<ShapeNode> singEc; // C'
+    /** The remaining equivalence class. */
+    private EquivClass<ShapeNode> remEc; // C''
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------    
 
     /**
-     * EDUARDO: Comment this...
+     * Basic constructor.
+     * @param shape - the shape for which the equation system is to be built.
+     * @param node - the node that will be singularised.
      */
     public NodeSingEqSystem(Shape shape, ShapeNode node) {
         super(shape);
@@ -77,9 +96,12 @@ public class NodeSingEqSystem extends EquationSystem {
         return "NodeSingEqSystem:\n" + super.toString();
     }
 
-    // ------------------------------------------------------------------------
-    // Other methods
-    // ------------------------------------------------------------------------
+    @Override
+    void print(String s) {
+        if (DEBUG) {
+            System.out.print(s);
+        }
+    }
 
     @Override
     void buildEquationSystem() {
@@ -150,31 +172,6 @@ public class NodeSingEqSystem extends EquationSystem {
         if (this.varCount > 0) {
             this.buildAdmissibilityConstraints();
         }
-    }
-
-    private boolean haveVars(EquivClass<ShapeNode> ec0,
-            EquivClass<ShapeNode> ec1, Label label, boolean outgoing) {
-        boolean result = false;
-        Map<EdgeSignature,Pair<MultVar,MultVar>> map;
-        EquivClass<ShapeNode> ec;
-        EquivClass<ShapeNode> iterEc;
-        if (outgoing) {
-            map = this.outMap;
-            ec = ec1;
-            iterEc = ec0;
-        } else {
-            map = this.inMap;
-            ec = ec0;
-            iterEc = ec1;
-        }
-        for (ShapeNode n : iterEc) {
-            EdgeSignature es = this.shape.getEdgeSignature(n, label, ec);
-            if (map.containsKey(es)) {
-                result = true;
-                break;
-            }
-        }
-        return result;
     }
 
     @Override
@@ -299,6 +296,11 @@ public class NodeSingEqSystem extends EquationSystem {
         }
     }
 
+    /**
+     * Stores the result of a trivial equation system. Since there are no
+     * variables, we only have to split the equivalence class in the shape.
+     * No cloning is necessary.
+     */
     @Override
     void storeTrivialResultShape() {
         assert this.varCount == 0;
@@ -312,6 +314,12 @@ public class NodeSingEqSystem extends EquationSystem {
         this.results.add(newShape);
     }
 
+    /**
+     * Clones the shape associated with this equation system and modifies the
+     * clone accordingly to the current values of the variables of the equation
+     * system. It is assumed that these values correspond to a valid shape
+     * configuration. The cloned shape is stored in the result set.
+     */
     @Override
     void storeResultShape() {
         Shape newShape = this.shape.clone();
@@ -354,11 +362,37 @@ public class NodeSingEqSystem extends EquationSystem {
         this.results.add(newShape);
     }
 
-    @Override
-    void print(String s) {
-        if (DEBUG) {
-            System.out.print(s);
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    /**
+     * Returns true if there are any variables in the equation system associated
+     * with an element of one equivalence class and the other.
+     */
+    private boolean haveVars(EquivClass<ShapeNode> ec0,
+            EquivClass<ShapeNode> ec1, Label label, boolean outgoing) {
+        boolean result = false;
+        Map<EdgeSignature,Pair<MultVar,MultVar>> map;
+        EquivClass<ShapeNode> ec;
+        EquivClass<ShapeNode> iterEc;
+        if (outgoing) {
+            map = this.outMap;
+            ec = ec1;
+            iterEc = ec0;
+        } else {
+            map = this.inMap;
+            ec = ec0;
+            iterEc = ec1;
         }
+        for (ShapeNode n : iterEc) {
+            EdgeSignature es = this.shape.getEdgeSignature(n, label, ec);
+            if (map.containsKey(es)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
 }
