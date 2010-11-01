@@ -36,8 +36,17 @@ import java.util.TreeSet;
 
 /**
  * This class implements a control automaton graph.
- * The graph has CtrlStates for nodes and CtrlTransitions for edges.
- * The class offers various operations to compose automata.
+ * The graph has {@link CtrlState}s for nodes and {@link CtrlTransition}s for edges.
+ * Termination is modelled by omega-labelled transitions.
+ * A control automaton is built up in several stages:
+ * <ul>
+ * <li> The object is constructed. This initialises the initial and final state.
+ * <li> States, transitions and parameters are added. 
+ * At this stage rules are just represented by names.
+ * <li> The automaton is instantiated to a given rule system. 
+ * This replaces all rule names by actual rules. Some more type checking 
+ * is done at this stage.
+ * </ul>
  * @author Arend Rensink
  */
 public class CtrlAut extends AbstractGraphShape<GraphCache> {
@@ -168,12 +177,12 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
         Set<FormatError> errors = new TreeSet<FormatError>();
         Map<CtrlState,CtrlState> oldToNewStateMap =
             new HashMap<CtrlState,CtrlState>();
-        CtrlState newStart = getStart().instantiate(oldToNewStateMap, rules);
-        CtrlState newFinal = getFinal().instantiate(oldToNewStateMap, rules);
+        CtrlState newStart = getStart().instantiate(oldToNewStateMap);
+        CtrlState newFinal = getFinal().instantiate(oldToNewStateMap);
         CtrlAut result = new CtrlAut(newStart, newFinal);
         for (CtrlState oldState : nodeSet()) {
             try {
-                result.addState(oldState.instantiate(oldToNewStateMap, rules));
+                result.addState(oldState.instantiate(oldToNewStateMap));
             } catch (FormatException exc) {
                 errors.addAll(exc.getErrors());
             }
