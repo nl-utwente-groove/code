@@ -20,7 +20,6 @@ import groove.control.parse.Counter;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
-import groove.trans.RuleSystem;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -31,11 +30,10 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Represents a state in a control automaton. Typically a member of a
- * ControlShape. Can be viewed (as member of a GraphShape) in a viewer (Node
- * interface) Supplies methods for getting allowed outgoing transitions
- * (Location interface) (for exploration).
- * @author Tom Staijen
+ * A state in a control automaton.
+ * The state stores a set of bound variables, and the
+ * set of its outgoing (control) transitions.
+ * @author Arend Rensink
  * @version $Revision $
  */
 public class CtrlState implements Node {
@@ -134,16 +132,15 @@ public class CtrlState implements Node {
     /**
      * Returns an instantiation of this (virtual) control state using a given 
      * rule system.
-     * The instantiation is recorded in a state map passed as a parameter
+     * The instantiated state has as yet no outgoing transitions.
+     * The instantiation is recorded in a state map passed as a parameter.
      * @param stateMap mapping from virtual to instantiated states
-     * @param rules the rule system used to instantiate the transition
      * @return the image of this state in {@code stateMap}, or a fresh 
      * instantiated control state if there is no image
      * @throws FormatException if the rule or one of the failures do not 
      * exist in the given rule system
      */
-    public CtrlState instantiate(Map<CtrlState,CtrlState> stateMap,
-            RuleSystem rules) throws FormatException {
+    public CtrlState instantiate(Map<CtrlState,CtrlState> stateMap) throws FormatException {
         CtrlState result = stateMap.get(this);
         if (result == null) {
             result = new CtrlState(getNumber());
