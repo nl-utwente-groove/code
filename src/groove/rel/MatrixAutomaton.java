@@ -837,11 +837,19 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
     static private final int BACKWARD = 1;
     /** Text of the dummy labels {@link #DUMMY_LABELS}. */
     static private final String DUMMY_LABEL_TEXT = "\u0000";
+
+    /** Returns the dummy label for a given label kind.
+     *  The dummy labels can be used to match wildcards in case there is no proper match for them. 
+     */
+    static public Label getDummyLabel(int kind) {
+        return DUMMY_LABELS[kind];
+    }
+
     /** 
      * Array of dummy labels for each label kind.
      * Can be used to match wildcards in case there is no proper match for them. 
      */
-    public static final Label[] DUMMY_LABELS = new Label[3];
+    private static final Label[] DUMMY_LABELS = new Label[3];
     static {
         DUMMY_LABELS[Label.NODE_TYPE] =
             DefaultLabel.createLabel(DUMMY_LABEL_TEXT, Label.NODE_TYPE);
@@ -855,10 +863,10 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
      * Class to encapsulate the algorithm used to compute the result of
      * {@link VarAutomaton#getMatches(GraphShape, Set, Set, Map)}.
      */
-    protected class MatchingAlgorithm {
+    private class MatchingAlgorithm {
         /** Dummy object used in matching. */
-        final MatchingComputation MATCH_DUMMY = new MatchingComputation(0,
-            null, null);
+        final MatchingComputation MATCH_DUMMY =
+            new MatchingComputation(0, null, null);
 
         /**
          * Wraps a single computation of the enclosing {@link MatchingAlgorithm}
@@ -1500,7 +1508,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
          * start or end node, depending on whether we do forward or backward
          * matching.
          */
-        private final int startIndex;
+        final int startIndex;
 
         /**
          * Automaton node where the matching ends. This may be the automaton's
@@ -1514,23 +1522,23 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
          * reflect the automaton's outgoing or incoming edge structure,
          * depending on whether we do forward or backward matching.
          */
-        private final Map<Label,int[]>[] nodePosLabelEdgeMap;
+        final Map<Label,int[]>[] nodePosLabelEdgeMap;
 
         /**
          * Mapping from automaton nodes to inverse label-to-opposite-node-ends
          * maps. May reflect the automaton's outgoing or incoming edge
          * structure, depending on whether we do forward or backward matching.
          */
-        private final Map<Label,int[]>[] nodeInvLabelEdgeMap;
+        final Map<Label,int[]>[] nodeInvLabelEdgeMap;
         /**
          * Flag indicating if we are doing forward or backward matching.
          */
-        private final int direction;
+        final int direction;
 
         /**
          * Graph on which the current matching computation is performed.
          */
-        private transient GraphShape graph;
+        transient GraphShape graph;
 
         /**
          * Set of potential end images for the current matching computation.
@@ -1546,12 +1554,12 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
          * Relation where the result of the current matching computation is
          * built.
          */
-        private transient NodeRelation result;
+        transient NodeRelation result;
         /**
          * Flag indicating if intermediate results are to be stored during
          * matching.
          */
-        private transient boolean storeIntermediates;
+        transient boolean storeIntermediates;
 
         /**
          * Array containing for each automaton node a mapping from images of
