@@ -18,11 +18,14 @@ package groove.abstraction;
 
 import groove.graph.DefaultGraph;
 import groove.graph.Edge;
+import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
+import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.graph.iso.DefaultIsoChecker;
+import groove.graph.iso.DefaultIsoChecker.IsoCheckerState;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
@@ -370,7 +373,7 @@ public class Shape extends DefaultGraph implements Cloneable {
         return removed;
     }
 
-    /** Compares two shapes for isomorphism. */
+    /** Compares two shapes first using the hash codes and then isomorphism. */
     @Override
     public boolean equals(Object o) {
         boolean result;
@@ -378,15 +381,10 @@ public class Shape extends DefaultGraph implements Cloneable {
             result = false;
         } else {
             Shape shape = (Shape) o;
-            // Check first the graph structure of both shapes.
-            NodeEdgeMap morphism = this.getPreIsomorphism(shape);
-            if (morphism == null) {
-                // The graph structure differs...
-                result = false;
-            } else {
-                // The graph structure is isomorphic, so now check if the shape
-                // constraints are equivalent. 
-                result = this.isValidIsomorphism(morphism, shape);
+            result = this.hashCode() == shape.hashCode();
+            if (result) {
+                // The shapes may be isomorphic.
+                result = this.isIsomorphicTo(shape);
             }
         }
         return result;
@@ -394,20 +392,23 @@ public class Shape extends DefaultGraph implements Cloneable {
 
     @Override
     public int hashCode() {
-        // EDUARDO: This method is probably wrong...
         final int prime = 31;
-        int result = 1;
-        result =
-            prime * result
-                + ((this.equivRel == null) ? 0 : this.equivRel.hashCode());
-        result =
-            prime * result + ((this.graph == null) ? 0 : this.graph.hashCode());
-        result =
-            prime
-                * result
-                + ((this.inEdgeMultMap == null) ? 0
-                        : this.inEdgeMultMap.hashCode());
-        result =
+        // First get the certificate of the graph structure.
+        int result = super.getCertifier(true).getGraphCertificate().hashCode();
+
+        Map<Element,? extends Certificate<?>> certMap =
+            super.getCertifier(true).getCertificateMap();
+
+        // Add the hashes for the equivalence relation.
+        for (EquivClass<ShapeNode> ec : this.equivRel) {
+            int temp = 0;
+            for (ShapeNode n : ec) {
+                temp += certMap.get(n).hashCode();
+            }
+            result = prime * result + temp * temp;
+        }
+
+        /*result =
             prime
                 * result
                 + ((this.nodeMultMap == null) ? 0 : this.nodeMultMap.hashCode());
@@ -416,6 +417,11 @@ public class Shape extends DefaultGraph implements Cloneable {
                 * result
                 + ((this.outEdgeMultMap == null) ? 0
                         : this.outEdgeMultMap.hashCode());
+        result =
+            prime
+                * result
+                + ((this.inEdgeMultMap == null) ? 0
+                        : this.inEdgeMultMap.hashCode());*/
         return result;
     }
 
@@ -1442,11 +1448,36 @@ public class Shape extends DefaultGraph implements Cloneable {
     }
 
     /**
-     * Computes the pre-isomorphism between two shapes, i.e., the isomorphism
-     * map between the underlying graph structures of the shapes.
+     * Returns true if the given this object and the given shape are isomorphic.
+     * Two shapes are isomorphic if:
+     * (0) their underlying graph structures are isomorphic;
+     * (1) they have the same node multiplicities;
+     * (2) they have the same outgoing and incoming edge multiplicities; and
+     * (3) they have the same equivalence relation. 
      */
-    private NodeEdgeMap getPreIsomorphism(Shape shape) {
-        return DefaultIsoChecker.getInstance(true).getIsomorphism(this, shape);
+    public boolean isIsomorphicTo(Shape other) {
+        boolean result = false;
+        IsoCheckerState state = new IsoCheckerState();
+        DefaultIsoChecker isoChecker = DefaultIsoChecker.getInstance(true);
+        NodeEdgeMap morphism = isoChecker.getIsomorphism(this, other, state);
+        while (morphism != null) {
+            // We found an isomorphism between the graph structures.
+            // Check for the extra conditions.
+            if (this.isValidIsomorphism(morphism, other)) {
+                // Valid shape isomorphism.
+                result = true;
+                break;
+            } else {
+                // Keep trying.
+                morphism = isoChecker.getIsomorphism(this, other, state);
+                if (state.isPlanEmpty()) {
+                    // We got the same morphism back. The check fails.
+                    result = false;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     /**

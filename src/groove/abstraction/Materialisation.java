@@ -161,7 +161,9 @@ public class Materialisation implements Cloneable {
             result = false;
         } else {
             Materialisation other = (Materialisation) obj;
-            result = this.shape.equals(other.shape);
+            result =
+                this.shape.equals(other.shape)
+                    && this.tasks.equals(other.tasks);
         }
         return result;
     }

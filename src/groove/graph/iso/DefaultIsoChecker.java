@@ -171,7 +171,8 @@ public class DefaultIsoChecker implements IsoChecker {
 
     private boolean hasIsomorphism(CertificateStrategy domCertifier,
             CertificateStrategy codCertifier) {
-        boolean result = computeIsomorphism(domCertifier, codCertifier) != null;
+        boolean result =
+            computeIsomorphism(domCertifier, codCertifier, null) != null;
         return result;
     }
 
@@ -185,12 +186,28 @@ public class DefaultIsoChecker implements IsoChecker {
      */
     public synchronized NodeEdgeMap getIsomorphism(Graph dom, Graph cod) {
         return getIsomorphism(dom.getCertifier(isStrong()),
-            cod.getCertifier(isStrong()));
+            cod.getCertifier(isStrong()), null);
+    }
+
+    /**
+     * Tries to construct an isomorphism between the two given graphs. The
+     * result is a bijective mapping from the nodes and edges of the source
+     * graph to those of the target graph, or <code>null</code> if no such
+     * mapping could be found.
+     * @param dom the first graph to be compared
+     * @param cod the second graph to be compared
+     * @param state the state for the iso checker
+     */
+    public synchronized NodeEdgeMap getIsomorphism(Graph dom, Graph cod,
+            IsoCheckerState state) {
+        return getIsomorphism(dom.getCertifier(isStrong()),
+            cod.getCertifier(isStrong()), state);
     }
 
     private NodeEdgeMap getIsomorphism(CertificateStrategy domCertifier,
-            CertificateStrategy codCertifier) {
-        NodeEdgeMap result = computeIsomorphism(domCertifier, codCertifier);
+            CertificateStrategy codCertifier, IsoCheckerState state) {
+        NodeEdgeMap result =
+            computeIsomorphism(domCertifier, codCertifier, state);
         if (result != null
             && result.nodeMap().size() != domCertifier.getGraph().nodeCount()) {
             // there's sure to be an isomorphism, but we have to add the
@@ -234,8 +251,9 @@ public class DefaultIsoChecker implements IsoChecker {
      * @param codCertifier the certificate strategy of the second graph to be
      *        compared
      */
+    @SuppressWarnings("unchecked")
     private NodeEdgeMap computeIsomorphism(CertificateStrategy domCertifier,
-            CertificateStrategy codCertifier) {
+            CertificateStrategy codCertifier, IsoCheckerState state) {
         Graph dom = domCertifier.getGraph();
         Graph cod = codCertifier.getGraph();
         // make sure the graphs are of the same size
@@ -243,17 +261,46 @@ public class DefaultIsoChecker implements IsoChecker {
             || dom.edgeCount() != cod.edgeCount()) {
             return null;
         }
-        NodeEdgeMap result = new NodeEdgeHashMap();
-        Set<Node> usedNodeImages = new HashSet<Node>();
-        List<IsoSearchItem> plan =
-            computePlan(domCertifier, codCertifier, result, usedNodeImages);
+        NodeEdgeMap result;
+        Set<Node> usedNodeImages;
+
+        // Compute a new plan or restore the one from the state.
+        List<IsoSearchItem> plan;
+        if (state != null && state.plan != null && state.usedNodeImages != null
+            && state.result != null) {
+            plan = state.plan;
+            usedNodeImages = state.usedNodeImages;
+            result = state.result;
+        } else {
+            result = new NodeEdgeHashMap();
+            usedNodeImages = new HashSet<Node>();
+            plan =
+                computePlan(domCertifier, codCertifier, result, usedNodeImages);
+        }
         if (plan == null) {
             return null;
         }
-        @SuppressWarnings("unchecked")
-        Iterator<Edge>[] records = new Iterator[plan.size()];
-        Node[] sourceImages = new Node[plan.size()];
-        Node[] targetImages = new Node[plan.size()];
+
+        // Create new records and images or restore the ones from the state.
+        Iterator<Edge>[] records;
+        Node[] sourceImages;
+        Node[] targetImages;
+        if (state != null && state.records != null) {
+            records = state.records;
+        } else {
+            records = new Iterator[plan.size()];
+        }
+        if (state != null && state.sourceImages != null) {
+            sourceImages = state.sourceImages;
+        } else {
+            sourceImages = new Node[plan.size()];
+        }
+        if (state != null && state.targetImages != null) {
+            targetImages = state.targetImages;
+        } else {
+            targetImages = new Node[plan.size()];
+        }
+
         if (ISO_PRINT) {
             System.err.printf("%nIsomorphism check: ");
         }
@@ -347,6 +394,15 @@ public class DefaultIsoChecker implements IsoChecker {
             }
             assert checkIsomorphism(dom, cod, result) : String.format(
                 "Erronous result using plan %s", plan);
+            // Store the variables in the state.
+            if (state != null) {
+                state.plan = plan;
+                state.usedNodeImages = usedNodeImages;
+                state.records = records;
+                state.sourceImages = sourceImages;
+                state.targetImages = targetImages;
+                state.result = result;
+            }
             return result;
         }
     }
@@ -1139,4 +1195,21 @@ public class DefaultIsoChecker implements IsoChecker {
         /** Flag indicating if the key target node has already been matched. */
         boolean targetPreMatched;
     }
+
+    /** EDUARDO: Comment this... */
+    public static class IsoCheckerState {
+
+        List<IsoSearchItem> plan = null;
+        Set<Node> usedNodeImages = null;
+        Iterator<Edge>[] records = null;
+        Node[] sourceImages = null;
+        Node[] targetImages = null;
+        NodeEdgeMap result = null;
+
+        /** EDUARDO: Comment this... */
+        public boolean isPlanEmpty() {
+            return this.plan.size() == 0;
+        }
+    }
+
 }
