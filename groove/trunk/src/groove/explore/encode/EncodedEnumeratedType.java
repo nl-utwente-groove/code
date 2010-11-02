@@ -71,11 +71,11 @@ public abstract class EncodedEnumeratedType<A> implements EncodedType<A,String> 
             this.selector.setBackground(ExplorationDialog.INFO_BOX_BG_COLOR);
             this.keys = new String[options.size()];
             this.nrKeys = 0;
-            for (String key : options.keySet()) {
+            for (Map.Entry<String,String> optionEntry : options.entrySet()) {
                 this.selector.addItem("<HTML><FONT color="
-                    + ExplorationDialog.INFO_COLOR + ">" + options.get(key)
-                    + "</FONT></HTML>");
-                this.keys[this.nrKeys] = key;
+                    + ExplorationDialog.INFO_COLOR + ">"
+                    + options.get(optionEntry.getKey()) + "</FONT></HTML>");
+                this.keys[this.nrKeys] = optionEntry.getKey();
                 this.nrKeys++;
             }
             if (this.nrKeys == 0) {

@@ -1,5 +1,5 @@
 #FindBugs User Preferences
-#Fri Sep 10 09:56:58 CEST 2010
+#Wed Oct 06 11:01:16 CEST 2010
 detectorAppendingToAnObjectOutputStream=AppendingToAnObjectOutputStream|true
 detectorBCPMethodReturnCheck=BCPMethodReturnCheck|true
 detectorBadAppletConstructor=BadAppletConstructor|false
@@ -159,4 +159,4 @@ effort=max
 excludefilter0=resources/findbugs_exclude_filter.xml
 filter_settings=Low|BAD_PRACTICE,CORRECTNESS,EXPERIMENTAL,I18N,MALICIOUS_CODE,MT_CORRECTNESS,PERFORMANCE,SECURITY,STYLE|false
 filter_settings_neg=NOISE|
-run_at_full_build=false
+run_at_full_build=true

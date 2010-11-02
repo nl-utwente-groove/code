@@ -252,9 +252,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                     if (algebra != null) {
                         String signature =
                             AlgebraRegister.getSignatureName(algebra);
-                        nodeTypeMap.put(
-                            node,
-                            DefaultLabel.createLabel(signature, Label.NODE_TYPE));
+                        nodeTypeMap.put(node, DefaultLabel.createLabel(
+                            signature, Label.NODE_TYPE));
                     }
                 } else if (node instanceof ProductNode) {
                     untypedNodes.remove(node);
@@ -596,12 +595,12 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                 Node source = typeNodeMap.get(connectEntry.getKey());
                 Node target = typeNodeMap.get(targetType);
                 result.addEdge(source,
-                    MatrixAutomaton.DUMMY_LABELS[Label.BINARY], target);
+                    MatrixAutomaton.getDummyLabel(Label.BINARY), target);
             }
         }
         for (Label flaggedType : flaggedNodes) {
             Node source = typeNodeMap.get(flaggedType);
-            result.addEdge(source, MatrixAutomaton.DUMMY_LABELS[Label.FLAG],
+            result.addEdge(source, MatrixAutomaton.getDummyLabel(Label.FLAG),
                 source);
         }
         return result;

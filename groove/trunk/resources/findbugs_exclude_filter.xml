@@ -8,6 +8,9 @@
     <Match>
        <Bug pattern="SE_BAD_FIELD" />
     </Match>
+    <Match>
+       <Bug pattern="SE_BAD_FIELD_INNER_CLASS" />
+    </Match>
 
     <!-- This one is annoying because there is no good solution (calling super is WRONG). -->
     <Match>
