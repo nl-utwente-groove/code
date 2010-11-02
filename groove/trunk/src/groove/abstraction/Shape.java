@@ -102,10 +102,10 @@ public class Shape extends DefaultGraph implements Cloneable {
      * multiplicity map.
      */
     private final Set<EdgeSignature> edgeSigSet;
-
-    /** Set of frozen edges of the shape, i.e., the edges that are guaranteed
-     *  to exist. This imply also that they are concrete, i.e., have all
-     *  multiplicities equal to one.
+    /** 
+     * Set of frozen edges of the shape, i.e., the edges that are guaranteed
+     * to exist. This also imply that they are concrete, i.e., have all
+     * multiplicities equal to one.
      */
     private final Set<ShapeEdge> frozenEdges;
 
@@ -394,6 +394,7 @@ public class Shape extends DefaultGraph implements Cloneable {
 
     @Override
     public int hashCode() {
+        // EDUARDO: This method is probably wrong...
         final int prime = 31;
         int result = 1;
         result =
@@ -801,9 +802,7 @@ public class Shape extends DefaultGraph implements Cloneable {
         return rEc;
     }
 
-    /**
-     * Returns the node in the shaping relation mapped by the given key.
-     */
+    /** Returns the node in the shaping relation mapped by the given key. */
     private ShapeNode getShapeNode(Node node) {
         return this.nodeShaping.get(node);
     }
@@ -924,7 +923,7 @@ public class Shape extends DefaultGraph implements Cloneable {
     /**
      * Returns true if the given match in the host is a valid pre-match.
      * A pre-match is valid if the non-injective matching of the LHS
-     * respects node multiplicities.
+     * respects node and edge multiplicities.
      */
     public boolean isValidPreMatch(RuleEvent event) {
         return PreMatch.isValidPreMatch(this, event);
@@ -983,6 +982,13 @@ public class Shape extends DefaultGraph implements Cloneable {
         }
     }
 
+    /**
+     * Updates all the entries in the hash maps of this shape. This has to be
+     * done because the equivalence relation and the edge signatures of the
+     * shape may be modified and their hash code may change. This is an ugly
+     * hack that hurts performance a lot but at least it solves the problem for
+     * now...
+     */
     private void updateHashMaps() {
         EquivRelation<ShapeNode> newEquivRel = new EquivRelation<ShapeNode>();
         HashMap<EdgeSignature,Multiplicity> newOutEdgeMultMap =
@@ -1131,14 +1137,17 @@ public class Shape extends DefaultGraph implements Cloneable {
     }
 
     /**
-     * Returns true if the number of edges from the signature occurring in 
-     * the shape is one.
+     * Returns true if the number of outgoing edges from the signature
+     * occurring in the shape is one.
      */
     public boolean isOutEdgeSigUnique(EdgeSignature es) {
         return this.getOutEdgeSigCount(es) == 1;
     }
 
-    /** Returns the number of edges from the signature occurring in the shape. */
+    /**
+     * Returns the number of outgoing edges from the signature occurring in
+     * the shape.
+     */
     private int getOutEdgeSigCount(EdgeSignature es) {
         int edgeCount = 0;
         ShapeNode source = es.getNode();
@@ -1156,14 +1165,17 @@ public class Shape extends DefaultGraph implements Cloneable {
     }
 
     /**
-     * Returns true if the number of edges from the signature occurring in 
-     * the shape is one.
+     * Returns true if the number of incoming edges from the signature
+     * occurring in the shape is one.
      */
     public boolean isInEdgeSigUnique(EdgeSignature es) {
         return this.getInEdgeSigCount(es) == 1;
     }
 
-    /** Returns the number of edges from the signature occurring in the shape. */
+    /**
+     * Returns the number of incoming edges from the signature occurring in
+     * the shape.
+     */
     private int getInEdgeSigCount(EdgeSignature es) {
         int edgeCount = 0;
         ShapeNode target = es.getNode();
@@ -1197,7 +1209,12 @@ public class Shape extends DefaultGraph implements Cloneable {
     }
 
     /**
-     * EDUARDO: Comment this...
+     * Getter method.
+     * @param es - the edge signature to be searched.
+     * @param outgoing - flag indicating if the given edge signature should be
+     *                   used as outgoing or incoming.
+     * @return all the edges of the shape that can be mapped to the given
+     *         edge signature. Frozen edges are also returned.
      */
     public Set<ShapeEdge> getEdgesFrom(EdgeSignature es, boolean outgoing) {
         Set<ShapeEdge> result = new HashSet<ShapeEdge>();
@@ -1219,7 +1236,14 @@ public class Shape extends DefaultGraph implements Cloneable {
     }
 
     /**
-     * EDUARDO: Comment this...
+     * Inspection method.
+     * @param es - the edge signature to be searched.
+     * @param edges - the set of edges to be checked for containment.
+     * @param outgoing - flag indicating if the given edge signature should be
+     *                   used as outgoing or incoming.
+     * @return true if there is at least one edge in parameter 'edges' that can
+     *         be mapped to the given edge signature. Frozen edges are also
+     *         considered.
      */
     public boolean sigContains(EdgeSignature es, Set<ShapeEdge> edges,
             boolean outgoing) {
@@ -1234,11 +1258,17 @@ public class Shape extends DefaultGraph implements Cloneable {
     }
 
     /**
-     * EDUARDO: Comment this...
+     * Splits an equivalence class of the shape. The equivalence relation of
+     * the shape and the edge multiplicity maps are all properly updated.
+     * @param origEc - the original equivalence class to be split. Must be
+     *                 present in the shape.
+     * @param singEc - the singular equivalence class created by the
+     *                 SingulariseNode operation. Must contain only one node.
+     * @param remEc - the remaining equivalence class after singularisation.
+     * It is required that origEc = singEc U remEc.
      */
     public void splitEc(EquivClass<ShapeNode> origEc,
-            EquivClass<ShapeNode> singEc, EquivClass<ShapeNode> remEc,
-            boolean trivial) {
+            EquivClass<ShapeNode> singEc, EquivClass<ShapeNode> remEc) {
         assert singEc.size() == 1 && origEc.containsAll(singEc)
             && origEc.containsAll(remEc);
         assert this.equivRel.contains(origEc);
@@ -1263,22 +1293,22 @@ public class Shape extends DefaultGraph implements Cloneable {
         this.equivRel.add(remEc);
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Returns true if there is a non-frozen edge in the shape that is mapped
+     * to the given edge signature and have the given node as source or target
+     * (decided by the given outgoing flag).
+     */
     public boolean isNonFrozenEdgeFromSigInvolved(EdgeSignature es,
             ShapeNode singNode, boolean outgoing) {
         boolean result = false;
-        ShapeNode node = es.getNode();
-        Label label = es.getLabel();
-        EquivClass<ShapeNode> ec = es.getEquivClass();
-        for (ShapeNode adjNode : ec) {
-            ShapeEdge edge;
+        for (ShapeEdge edge : this.getEdgesFrom(es, outgoing)) {
+            ShapeNode adjNode;
             if (outgoing) {
-                edge = this.getShapeEdge(node, label, adjNode);
+                adjNode = edge.target();
             } else { // incoming
-                edge = this.getShapeEdge(adjNode, label, node);
+                adjNode = edge.source();
             }
-            if (edge != null && !this.isFrozen(edge)
-                && adjNode.equals(singNode)) {
+            if (!this.isFrozen(edge) && adjNode.equals(singNode)) {
                 result = true;
                 break;
             }
@@ -1286,21 +1316,15 @@ public class Shape extends DefaultGraph implements Cloneable {
         return result;
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Returns true if there is a non-frozen edge in the shape that is mapped
+     * to the given edge signature.
+     */
     public boolean isNonFrozenEdgeFromSigInvolved(EdgeSignature es,
             boolean outgoing) {
         boolean result = false;
-        ShapeNode node = es.getNode();
-        Label label = es.getLabel();
-        EquivClass<ShapeNode> ec = es.getEquivClass();
-        for (ShapeNode adjNode : ec) {
-            ShapeEdge edge;
-            if (outgoing) {
-                edge = this.getShapeEdge(node, label, adjNode);
-            } else { // incoming
-                edge = this.getShapeEdge(adjNode, label, node);
-            }
-            if (edge != null && !this.isFrozen(edge)) {
+        for (ShapeEdge edge : this.getEdgesFrom(es, outgoing)) {
+            if (!this.isFrozen(edge)) {
                 result = true;
                 break;
             }
@@ -1308,7 +1332,14 @@ public class Shape extends DefaultGraph implements Cloneable {
         return result;
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Freezes the given edge in the shape. The given edge must be part of
+     * the shape.
+     * Recall that frozen edges are considered concrete, i.e., have outgoing
+     * and incoming multiplicities equal to one. This invariant is not check by
+     * this method. It is assumed that either before or after calling the
+     * method, the called will ensure that the invariant is true.  
+     */
     public void freezeEdge(ShapeEdge edgeToFreeze) {
         assert this.edgeSet().contains(edgeToFreeze);
         EdgeSignature outEs = this.getEdgeOutSignature(edgeToFreeze);
@@ -1322,7 +1353,14 @@ public class Shape extends DefaultGraph implements Cloneable {
         this.frozenEdges.add(edgeToFreeze);
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Freezes the given edges in the shape. The given edges must be part of
+     * the shape.
+     * Recall that frozen edges are considered concrete, i.e., have outgoing
+     * and incoming multiplicities equal to one. This invariant is not check by
+     * this method. It is assumed that either before or after calling the
+     * method, the called will ensure that the invariant is true.  
+     */
     public void freezeEdges(Set<ShapeEdge> edgesToFreeze) {
         for (ShapeEdge edgeToFreeze : edgesToFreeze) {
             this.freezeEdge(edgeToFreeze);
@@ -1331,11 +1369,20 @@ public class Shape extends DefaultGraph implements Cloneable {
 
     /** Returns true if the given edge is frozen in the shape. */
     public boolean isFrozen(ShapeEdge edge) {
-        assert this.edgeSet().contains(edge);
         return this.frozenEdges.contains(edge);
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Performs a minor simplification on the shape by removing edges that
+     * cannot exist once the given edge is considered to be present.
+     * This method looks at outgoing and incoming edge signatures that have
+     * the same equivalence class. This means that the source and target of
+     * all edges are in the same equivalence class. Only edge signatures with
+     * multiplicity one are considered. If these conditions are not met, this
+     * means that we need to resort to other materialisation operations to
+     * check the validity of a certain configuration. If the conditions are met,
+     * the given edge is frozen, since it is certainly concrete.
+     */
     public void removeImpossibleEdges(ShapeEdge edgeToKeep) {
         assert this.edgeSet().contains(edgeToKeep);
 
@@ -1359,7 +1406,11 @@ public class Shape extends DefaultGraph implements Cloneable {
         }
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Thaws the frozen edges of the shape. This is the last step of the
+     * materialisation phase. The frozen edges are set to be normal edges
+     * again and the edge multiplicity maps are properly updated.
+     */
     public void unfreezeEdges() {
         for (ShapeEdge frozenEdge : this.frozenEdges) {
             Multiplicity oneMult = Multiplicity.getMultOf(1);
@@ -1480,59 +1531,6 @@ public class Shape extends DefaultGraph implements Cloneable {
             if (ec.equals(es.getEquivClass())) {
                 result.add(es);
             }
-        }
-        return result;
-    }
-
-    /**
-     * Checks if the shape admits concretisations by looking at opposite
-     * outgoing and incoming multiplicities from equivalence classes.
-     * @return true if the multiplicity configuration is valid, false otherwise.
-     */
-    public boolean isAdmissible() {
-        boolean result = true;
-        // For all binary labels.
-        outerLoop: for (Label label : Util.binaryLabelSet(this)) {
-            // For all equivalence classes. (As outgoing)
-            for (EquivClass<ShapeNode> ecO : this.equivRel) {
-                // For all equivalence classes. (As incoming)
-                for (EquivClass<ShapeNode> ecI : this.equivRel) {
-
-                    // Compute the unbounded sum of the nodes on the outgoing
-                    // equivalence class.
-                    Multiplicity outMultSum = Multiplicity.getMultOf(0);
-                    for (ShapeNode nO : ecO) {
-                        Multiplicity nOMult = this.getNodeMult(nO);
-                        EdgeSignature nOEs =
-                            this.getEdgeSignature(nO, label, ecI);
-                        Multiplicity eOMult = this.getEdgeSigOutMult(nOEs);
-                        Multiplicity outMult = nOMult.multiply(eOMult);
-                        outMultSum = outMultSum.uadd(outMult);
-                    }
-
-                    // Compute the unbounded sum of the nodes on the incoming
-                    // equivalence class.
-                    Multiplicity inMultSum = Multiplicity.getMultOf(0);
-                    for (ShapeNode nI : ecI) {
-                        Multiplicity nIMult = this.getNodeMult(nI);
-                        EdgeSignature nIEs =
-                            this.getEdgeSignature(nI, label, ecO);
-                        Multiplicity eIMult = this.getEdgeSigInMult(nIEs);
-                        Multiplicity inMult = nIMult.multiply(eIMult);
-                        inMultSum = inMultSum.uadd(inMult);
-                    }
-
-                    if (!outMultSum.overlaps(inMultSum)) {
-                        // Violation of condition.
-                        result = false;
-                        break outerLoop;
-                    }
-                }
-            }
-        }
-        // Sanity check.
-        if (result) {
-            this.checkShapeInvariant();
         }
         return result;
     }
