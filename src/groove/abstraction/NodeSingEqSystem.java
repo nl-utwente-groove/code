@@ -103,6 +103,11 @@ public class NodeSingEqSystem extends EquationSystem {
         }
     }
 
+    /**
+     * Creates a pair of multiplicity variables for each outgoing or incoming
+     * edge signature that is affected by the SingulariseNode operation.
+     * See the detailed description on the class header.
+     */
     @Override
     void buildEquationSystem() {
         // The original equivalence class: C
@@ -174,6 +179,15 @@ public class NodeSingEqSystem extends EquationSystem {
         }
     }
 
+    /**
+     * Builds the admissibility constraints for this equation system. This
+     * method should only be called after all the variables of the system are
+     * created.
+     * The constraints make sure that no invalid values are assigned to the
+     * variables. For example, we cannot set the outgoing multiplicity of an
+     * edge signature to zero if there is a corresponding positive incoming
+     * multiplicity.
+     */
     @Override
     void buildAdmissibilityConstraints() {
         if (USE_GUI) {
@@ -196,8 +210,6 @@ public class NodeSingEqSystem extends EquationSystem {
                 } else if (direction == INCOMING) {
                     // Take the original equivalence class as outgoing.            
                     ecO = this.origEc;
-                } else {
-                    assert false : "Something went very wrong...";
                 }
 
                 innerLoop: for (EquivClass<ShapeNode> ec : this.shape.getEquivRelation()) {
@@ -207,8 +219,6 @@ public class NodeSingEqSystem extends EquationSystem {
                     } else if (direction == INCOMING) {
                         // For all equivalence classes. (As incoming)
                         ecI = ec;
-                    } else {
-                        assert false : "Something went very wrong...";
                     }
 
                     if (!this.haveVars(ecO, ecI, label, direction == OUTGOING)) {
@@ -307,7 +317,7 @@ public class NodeSingEqSystem extends EquationSystem {
         Shape newShape = this.shape;
 
         // Split the equivalence class.
-        newShape.splitEc(this.origEc, this.singEc, this.remEc, true);
+        newShape.splitEc(this.origEc, this.singEc, this.remEc);
 
         // Sanity check.
         newShape.checkShapeInvariant();
@@ -325,7 +335,7 @@ public class NodeSingEqSystem extends EquationSystem {
         Shape newShape = this.shape.clone();
 
         // Split the equivalence class.
-        newShape.splitEc(this.origEc, this.singEc, this.remEc, false);
+        newShape.splitEc(this.origEc, this.singEc, this.remEc);
 
         // Update multiplicities from the variables values.
         // Outgoing multiplicities.
@@ -368,7 +378,9 @@ public class NodeSingEqSystem extends EquationSystem {
 
     /**
      * Returns true if there are any variables in the equation system associated
-     * with an element of one equivalence class and the other.
+     * with an edge signature that can be build from elements of the given
+     * equivalence classes. The boolean parameter defines which two equivalence
+     * classes should be iterated.
      */
     private boolean haveVars(EquivClass<ShapeNode> ec0,
             EquivClass<ShapeNode> ec1, Label label, boolean outgoing) {

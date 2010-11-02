@@ -103,6 +103,7 @@ public final class EdgeMatEqSystem extends EquationSystem {
      * Creates a pair of MultVars for each signature in the counting sets.
      * One of the MultVar in the pair goes in a set constraint and the other
      * is a derived variable in an equation.
+     * See the detailed description on the class header.
      */
     @Override
     void buildEquationSystem() {
