@@ -31,7 +31,7 @@ import groove.trans.SystemRecord;
  * 
  * @author Eduardo Zambon
  */
-public class AGTS extends GTS {
+public final class AGTS extends GTS {
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -102,10 +102,10 @@ public class AGTS extends GTS {
     // ------------------------------------------------------------------------
 
     /** Class to store the states of the GTS. */
-    public static class ShapeStateSet extends GTS.StateSet {
+    private static final class ShapeStateSet extends GTS.StateSet {
 
         /** Default constructor, delegates to super class. */
-        public ShapeStateSet(int collapse) {
+        private ShapeStateSet(int collapse) {
             super(collapse);
         }
 

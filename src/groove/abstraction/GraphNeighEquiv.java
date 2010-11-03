@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -48,7 +49,7 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
     /** The radius of the iteration. */
     private int radius;
     /** The graph on which the equivalence relation was computed. */
-    protected Graph graph;
+    final Graph graph;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -95,10 +96,11 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
 
             // Look in all label sets and try to find an equivalence class.
             EquivClass<Node> ec = null;
-            for (Set<Label> labels : labelsToClass.keySet()) {
+            for (Entry<Set<Label>,EquivClass<Node>> entry : labelsToClass.entrySet()) {
+                Set<Label> labels = entry.getKey();
                 if (labels.equals(nodeLabels)) {
                     // Found the equivalence class.
-                    ec = labelsToClass.get(labels);
+                    ec = entry.getValue();
                 }
             }
 
@@ -250,7 +252,7 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
      * iteration. This method implements the second item of Def. 17 (see
      * comment on the class definition, top of this file).
      */
-    protected boolean areStillEquivalent(Node n0, Node n1) {
+    boolean areStillEquivalent(Node n0, Node n1) {
         boolean equiv = true;
         // For all labels.
         labelLoop: for (Label label : Util.binaryLabelSet(this.graph)) {
@@ -280,7 +282,7 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
      * equivalence relation, i.e., if both edges have the same label, and if
      * both sources and targets are equivalent.
      */
-    public boolean areEquivalent(Edge e0, Edge e1) {
+    private boolean areEquivalent(Edge e0, Edge e1) {
         return e0.label().equals(e1.label())
             && this.areEquivalent(e0.source(), e1.source())
             && this.areEquivalent(e0.target(), e1.target());

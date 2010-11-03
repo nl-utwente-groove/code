@@ -29,7 +29,7 @@ import java.util.Set;
  * 
  * @author Eduardo Zambon 
  */
-public class Transform {
+public final class Transform {
 
     // ------------------------------------------------------------------------
     // Constructors

@@ -32,7 +32,16 @@ import java.util.Set;
  * 
  * @author Eduardo Zambon
  */
-public class ShapeStateGenerator implements RuleEventApplier {
+public final class ShapeStateGenerator implements RuleEventApplier {
+
+    // ------------------------------------------------------------------------
+    // Static fields
+    // ------------------------------------------------------------------------
+
+    /** Debug flag. If set to true, text will be printed in stdout. */
+    private static final boolean DEBUG = false;
+    /** Debug flag. If set to true, the shapes will be shown in a dialog. */
+    private static final boolean USE_GUI = false;
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -77,16 +86,16 @@ public class ShapeStateGenerator implements RuleEventApplier {
                 // The state was not added as an equivalent state existed.
                 trans =
                     new ShapeTransition((ShapeState) source, event, oldState);
-                System.out.println("New transition: " + trans);
+                this.println("New transition: " + trans);
             } else {
                 // The state was added as a next-state.
                 trans = newState;
-                // BEGIN DEBUG CODE.
-                System.out.println("New state: " + source + "--" + event
-                    + "-->" + newState);
-                new ShapeDialog((Shape) newState.getGraph(),
-                    Integer.toString(newState.getNumber()));
-                // END DEBUG CODE.
+                this.println("New state: " + source + "--" + event + "-->"
+                    + newState);
+                if (USE_GUI) {
+                    new ShapeDialog((Shape) newState.getGraph(),
+                        Integer.toString(newState.getNumber()));
+                }
                 this.states++;
             }
             getGTS().addTransition(trans);
@@ -109,6 +118,16 @@ public class ShapeStateGenerator implements RuleEventApplier {
     /** Basic getter method. */
     public int getTransitionCount() {
         return this.transitions;
+    }
+
+    private void print(String s) {
+        if (DEBUG) {
+            System.out.print(s);
+        }
+    }
+
+    private void println(String s) {
+        this.print(s + "\n");
     }
 
 }

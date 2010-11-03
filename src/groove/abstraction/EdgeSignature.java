@@ -26,15 +26,15 @@ import groove.graph.Label;
  * 
  * @author Eduardo Zambon
  */
-public class EdgeSignature {
+public final class EdgeSignature {
 
     // ------------------------------------------------------------------------
     // Object Fields
     // ------------------------------------------------------------------------
 
-    private Label label;
-    private ShapeNode node;
-    private EquivClass<ShapeNode> equivClass;
+    private final Label label;
+    private final ShapeNode node;
+    private final EquivClass<ShapeNode> equivClass;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -64,16 +64,19 @@ public class EdgeSignature {
      */
     @Override
     public boolean equals(Object o) {
-        assert o != null : "Cannot compare to null!";
         boolean result;
-        if (o instanceof EdgeSignature) {
+        if (this == o) {
+            result = true;
+        } else if (!(o instanceof EdgeSignature)) {
+            result = false;
+        } else {
             EdgeSignature es = (EdgeSignature) o;
             result =
                 this.node.equals(es.node) && this.label.equals(es.label)
                     && this.equivClass.equals(es.equivClass);
-        } else {
-            result = false;
         }
+        // Check for consistency between equals and hashCode.
+        assert (!result || this.hashCode() == o.hashCode());
         return result;
     }
 
@@ -81,13 +84,9 @@ public class EdgeSignature {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result =
-            prime * result
-                + ((this.equivClass == null) ? 0 : this.equivClass.hashCode());
-        result =
-            prime * result + ((this.label == null) ? 0 : this.label.hashCode());
-        result =
-            prime * result + ((this.node == null) ? 0 : this.node.hashCode());
+        result = prime * result + this.node.hashCode();
+        result = prime * result + this.label.hashCode();
+        result = prime * result + this.equivClass.hashCode();
         return result;
     }
 
@@ -135,11 +134,6 @@ public class EdgeSignature {
     /** Returns true if C is a singleton set. */
     public boolean isUnique() {
         return this.equivClass.size() == 1;
-    }
-
-    /** Returns true if n \in C . */
-    public boolean isSelfReferencing() {
-        return this.equivClass.contains(this.node);
     }
 
 }

@@ -53,7 +53,7 @@ import java.util.Set;
  * 
  * @author Eduardo Zambon
  */
-public class Shape extends DefaultGraph implements Cloneable {
+public final class Shape extends DefaultGraph {
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -377,14 +377,16 @@ public class Shape extends DefaultGraph implements Cloneable {
     @Override
     public boolean equals(Object o) {
         boolean result;
-        if (!(o instanceof Shape)) {
+        if (this == o) {
+            result = true;
+        } else if (!(o instanceof Shape)) {
             result = false;
         } else {
-            Shape shape = (Shape) o;
-            result = this.hashCode() == shape.hashCode();
+            Shape other = (Shape) o;
+            result = this.hashCode() == other.hashCode();
             if (result) {
                 // The shapes may be isomorphic.
-                result = this.isIsomorphicTo(shape);
+                result = this.isIsomorphicTo(other);
             }
         }
         return result;

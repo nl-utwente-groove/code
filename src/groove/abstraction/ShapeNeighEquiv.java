@@ -30,7 +30,7 @@ import java.util.Set;
  * 
  * @author Eduardo Zambon
  */
-public class ShapeNeighEquiv extends GraphNeighEquiv {
+public final class ShapeNeighEquiv extends GraphNeighEquiv {
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -52,7 +52,7 @@ public class ShapeNeighEquiv extends GraphNeighEquiv {
      * comment on the class definition, top of this file).
      */
     @Override
-    protected boolean areStillEquivalent(Node n0, Node n1) {
+    boolean areStillEquivalent(Node n0, Node n1) {
         Shape shape = (Shape) this.graph;
         Set<EquivClass<ShapeNode>> kSet = new HashSet<EquivClass<ShapeNode>>();
         boolean equiv = true;

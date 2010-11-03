@@ -33,7 +33,7 @@ import java.io.IOException;
  * 
  * @author Eduardo Zambon
  */
-public class ShapeGenerator {
+public final class ShapeGenerator {
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -61,16 +61,15 @@ public class ShapeGenerator {
                 Groove.loadGrammar(grammarFile, startGraph).toGrammar();
         } catch (FormatException e) {
             e.printStackTrace();
-            System.exit(1);
         } catch (IOException e) {
             e.printStackTrace();
-            System.exit(1);
         }
     }
 
     private void exploreGrammar() {
         this.gts = new AGTS(this.grammar);
 
+        // EDUARDO: Replace this code with the new exploration classes.
         BranchingStrategy strategy = new BranchingStrategy();
         Scenario scenario =
             ScenarioFactory.getScenario(strategy, new NoStateAcceptor(), "", "");
