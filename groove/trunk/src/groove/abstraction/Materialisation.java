@@ -1344,4 +1344,150 @@ public final class Materialisation implements Cloneable {
 
     }
 
+    // ------------------------------------------------------------------------
+    // Test methods.
+    // ------------------------------------------------------------------------
+
+    /** Test method. */
+    /*public static void test0() {
+        final String DIRECTORY = "junit/samples/abs-test.gps/";
+
+        File file = new File(DIRECTORY);
+        try {
+            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
+            Graph graph = view.getGraphView("materialisation-test-0").toModel();
+            Shape shape = new Shape(graph);
+            GraphGrammar grammar = view.toGrammar();
+            Rule rule = grammar.getRule("test-mat-0");
+            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            for (RuleMatch preMatch : preMatches) {
+                Set<Materialisation> mats =
+                    Materialisation.getMaterialisations(shape, preMatch);
+                for (Materialisation mat : mats) {
+                    System.out.println(mat);
+                    String test;
+                    if (mat.hasConcreteMatch()) {
+                        test = "concrete";
+                    } else {
+                        test = "abstract";
+                    }
+                    Shape matShape = mat.getShape();
+                    new ShapeDialog(matShape, test);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+    }*/
+
+    /** Test method. */
+    /*public static void test1() {
+        final String DIRECTORY = "junit/samples/abs-test.gps/";
+
+        File file = new File(DIRECTORY);
+        try {
+            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
+            Graph graph = view.getGraphView("materialisation-test-1").toModel();
+            Shape shape = new Shape(graph);
+            GraphGrammar grammar = view.toGrammar();
+            Rule rule = grammar.getRule("test-mat-1");
+            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            for (RuleMatch preMatch : preMatches) {
+                Set<Materialisation> mats =
+                    Materialisation.getMaterialisations(shape, preMatch);
+                for (Materialisation mat : mats) {
+                    System.out.println(mat);
+                    String test;
+                    if (mat.hasConcreteMatch()) {
+                        test = "concrete";
+                    } else {
+                        test = "abstract";
+                    }
+                    Shape matShape = mat.getShape();
+                    new ShapeDialog(matShape, test);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+    }*/
+
+    /** Test method. */
+    /*public static void test2() {
+        final String DIRECTORY = "junit/samples/abs-test.gps/";
+
+        File file = new File(DIRECTORY);
+        try {
+            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
+            Graph graph = view.getGraphView("materialisation-test-2").toModel();
+            Shape shape = new Shape(graph);
+            GraphGrammar grammar = view.toGrammar();
+            Rule rule = grammar.getRule("test-mat-1");
+            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            for (RuleMatch preMatch : preMatches) {
+                Set<Materialisation> mats =
+                    Materialisation.getMaterialisations(shape, preMatch);
+                for (Materialisation mat : mats) {
+                    System.out.println(mat);
+                    String test;
+                    if (mat.hasConcreteMatch()) {
+                        test = "concrete";
+                    } else {
+                        test = "abstract";
+                    }
+                    Shape matShape = mat.getShape();
+                    new ShapeDialog(matShape, test);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+    }*/
+
+    /** Test method. */
+    /*public static void test3() {
+        final String DIRECTORY = "junit/samples/abs-test.gps/";
+
+        File file = new File(DIRECTORY);
+        try {
+            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
+            Graph graph = view.getGraphView("rule-app-test-0").toModel();
+            Shape shape = new Shape(graph);
+            GraphGrammar grammar = view.toGrammar();
+            Rule rule = grammar.getRule("add");
+            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            for (RuleMatch preMatch : preMatches) {
+                Set<Materialisation> mats =
+                    Materialisation.getMaterialisations(shape, preMatch);
+                for (Materialisation mat : mats) {
+                    System.out.println(mat);
+                    String test;
+                    if (mat.hasConcreteMatch()) {
+                        test = "concrete";
+                    } else {
+                        test = "abstract";
+                    }
+                    Shape matShape = mat.getShape();
+                    new ShapeDialog(matShape, test);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+    }*/
+
+    /** Test method. */
+    /*public static void main(String args[]) {
+        Multiplicity.initMultStore();
+        test2();
+    }*/
+
 }

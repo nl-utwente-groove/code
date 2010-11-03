@@ -304,7 +304,12 @@ public class DefaultIsoChecker implements IsoChecker {
         if (ISO_PRINT) {
             System.err.printf("%nIsomorphism check: ");
         }
-        int i = 0;
+        int i;
+        if (state != null) {
+            i = state.i;
+        } else {
+            i = 0;
+        }
         while (i >= 0 && i < records.length) {
             if (ISO_PRINT) {
                 System.err.printf("%d ", i);
@@ -397,11 +402,12 @@ public class DefaultIsoChecker implements IsoChecker {
             // Store the variables in the state.
             if (state != null) {
                 state.plan = plan;
-                state.usedNodeImages = usedNodeImages;
-                state.records = records;
+                state.result = result.clone();
+                state.usedNodeImages = new HashSet<Node>(usedNodeImages);
                 state.sourceImages = sourceImages;
                 state.targetImages = targetImages;
-                state.result = result;
+                state.records = records;
+                state.i = i - 1;
             }
             return result;
         }
@@ -1209,6 +1215,7 @@ public class DefaultIsoChecker implements IsoChecker {
         Node[] sourceImages = null;
         Node[] targetImages = null;
         NodeEdgeMap result = null;
+        int i = 0;
 
         /** Returns true if the plan size is zero. */
         public boolean isPlanEmpty() {
