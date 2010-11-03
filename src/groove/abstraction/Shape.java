@@ -410,20 +410,6 @@ public final class Shape extends DefaultGraph {
             result = prime * result + temp * temp;
         }
 
-        /*result =
-            prime
-                * result
-                + ((this.nodeMultMap == null) ? 0 : this.nodeMultMap.hashCode());
-        result =
-            prime
-                * result
-                + ((this.outEdgeMultMap == null) ? 0
-                        : this.outEdgeMultMap.hashCode());
-        result =
-            prime
-                * result
-                + ((this.inEdgeMultMap == null) ? 0
-                        : this.inEdgeMultMap.hashCode());*/
         return result;
     }
 
