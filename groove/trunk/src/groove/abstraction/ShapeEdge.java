@@ -27,7 +27,7 @@ import groove.graph.Node;
  * 
  * @author Eduardo Zambon
  */
-public class ShapeEdge extends DefaultEdge {
+public final class ShapeEdge extends DefaultEdge {
 
     // ------------------------------------------------------------------------
     // Static Fields
@@ -41,7 +41,7 @@ public class ShapeEdge extends DefaultEdge {
     // ------------------------------------------------------------------------
 
     /** Default constructor. */
-    protected ShapeEdge(Node source, Label label, Node target, int nr) {
+    private ShapeEdge(Node source, Label label, Node target, int nr) {
         super(source, label, target, nr);
     }
 

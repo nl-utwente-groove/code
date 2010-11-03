@@ -25,15 +25,30 @@ import groove.graph.NodeEdgeMap;
 
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
- * Utility functions for abstraction.
-
- * @author Eduardo Zambon
+ * This class is only a collection of utility methods for abstraction and
+ * therefore should not be instantiated.
+ * Stupid packaging system of Java... >:(
+ * 
+ * @author Eduardo Zambon 
  */
-public class Util {
+public final class Util {
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
+    private Util() {
+        // We make the constructor private to prevent the creation of objects
+        // of this class.
+    }
+
+    // ------------------------------------------------------------------------
+    // Static methods
+    // ------------------------------------------------------------------------
 
     /** Returns the set of labels used as node labels. */
     public static Set<Label> getNodeLabels(Graph graph, Node node) {
@@ -176,15 +191,6 @@ public class Util {
             if (s2.contains(elem)) {
                 result.add(elem);
             }
-        }
-        return result;
-    }
-
-    /** Returns the label set of the given graph */
-    public static Set<Label> labelSet(Graph graph) {
-        Set<Label> result = new HashSet<Label>();
-        for (Edge edge : graph.edgeSet()) {
-            result.add(edge.label());
         }
         return result;
     }

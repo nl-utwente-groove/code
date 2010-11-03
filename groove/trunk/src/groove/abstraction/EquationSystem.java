@@ -54,25 +54,25 @@ public abstract class EquationSystem {
     // ------------------------------------------------------------------------
 
     /** The shape that will produce the equation system. */
-    Shape shape;
+    final Shape shape;
 
     /** The number of multiplicity variables of the system. */
     int varCount;
     /** An ordered list of variables of the system. */
-    List<MultVar> vars;
+    final List<MultVar> vars;
     /** The collection of equations (y = Multiplicity - x) of the system. */
-    List<Equation> equations;
+    final List<Equation> equations;
     /**
      * The collection of set constraints (x \in Set_of_Multiplicities) of the
      * system.
      */
-    List<SetConstraint> setConstrs;
+    final List<SetConstraint> setConstrs;
     /** The collection of admissibility constraints of the system. */
-    List<AdmissibilityConstraint> admisConstrs;
+    final List<AdmissibilityConstraint> admisConstrs;
 
     /** Maps used in the construction of the system. */
-    Map<EdgeSignature,Pair<MultVar,MultVar>> outMap;
-    Map<EdgeSignature,Pair<MultVar,MultVar>> inMap;
+    final Map<EdgeSignature,Pair<MultVar,MultVar>> outMap;
+    final Map<EdgeSignature,Pair<MultVar,MultVar>> inMap;
 
     /**
      * Indices used when solving the equation system.
@@ -85,7 +85,7 @@ public abstract class EquationSystem {
     int setCJ;
 
     /** The set of shapes that are valid according to the equation system. */
-    Set<Shape> results;
+    final Set<Shape> results;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -422,10 +422,10 @@ public abstract class EquationSystem {
     // -------
 
     /** A multiplicity variable. It has a number and (possibly) a value. */
-    static class MultVar {
+    static final class MultVar {
 
         /** The variable unique number. */
-        public int number;
+        public final int number;
         /** The current multiplicity value. May be null. */
         public Multiplicity mult;
 
@@ -443,14 +443,27 @@ public abstract class EquationSystem {
             return "x" + this.number;
         }
 
+        /** Two multiplicity variables are equal if they have the same number. */
         @Override
         public boolean equals(Object o) {
-            boolean result = false;
-            if (o instanceof MultVar) {
+            boolean result;
+            if (this == o) {
+                result = true;
+            } else if (!(o instanceof MultVar)) {
+                result = false;
+            } else {
                 MultVar other = (MultVar) o;
                 result = this.number == other.number;
             }
+            // Check for consistency between equals and hashCode.
+            assert (!result || this.hashCode() == o.hashCode());
             return result;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            return prime * this.number * this.number;
         }
 
     }
@@ -464,11 +477,11 @@ public abstract class EquationSystem {
      * x and y are MultVars that are complementary; and c is a constant
      * multiplicity.
      */
-    static class Equation {
+    static final class Equation {
 
-        public MultVar singVar; // x
-        public MultVar remVar; // y
-        public Multiplicity origMult; // c
+        public final MultVar singVar; // x
+        public final MultVar remVar; // y
+        public final Multiplicity origMult; // c
         /** The possible values of y when x is assigned a value. */
         public Set<Multiplicity> resultSet;
         /** The iterator over the result set. */
@@ -526,10 +539,10 @@ public abstract class EquationSystem {
      * x \in {0, 1, ..., \omega}, where:
      * x - is the MultVar of the singularised equivalence class.
      */
-    static class SetConstraint {
+    static final class SetConstraint {
 
-        public MultVar singVar; // x
-        public Set<Multiplicity> multSet;
+        public final MultVar singVar; // x
+        public final Set<Multiplicity> multSet;
         /** The iterator over the multiplicity set. */
         public Iterator<Multiplicity> iter;
 
@@ -572,10 +585,10 @@ public abstract class EquationSystem {
      * multiplicity 'c' and a multiplicity variable 'x'. The term corresponds
      * then to: c * x .
      */
-    static class MultTerm {
+    static final class MultTerm {
 
-        public Multiplicity constMult; // c
-        public MultVar multVar; // x
+        public final Multiplicity constMult; // c
+        public final MultVar multVar; // x
 
         public MultTerm(Multiplicity constMult, MultVar multVar) {
             this.constMult = constMult;
@@ -587,15 +600,34 @@ public abstract class EquationSystem {
             return this.constMult + "*" + this.multVar;
         }
 
+        /** 
+         * Two multiplicity terms are equal if they have the same constant and
+         * variable.
+         */
         @Override
         public boolean equals(Object o) {
-            boolean result = false;
-            if (o instanceof MultTerm) {
+            boolean result;
+            if (this == o) {
+                result = true;
+            } else if (!(o instanceof MultTerm)) {
+                result = false;
+            } else {
                 MultTerm other = (MultTerm) o;
                 result =
                     this.constMult.equals(other.constMult)
                         && this.multVar.equals(other.multVar);
             }
+            // Check for consistency between equals and hashCode.
+            assert (!result || this.hashCode() == o.hashCode());
+            return result;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + this.constMult.hashCode();
+            result = prime * result + this.multVar.hashCode();
             return result;
         }
 
@@ -604,6 +636,7 @@ public abstract class EquationSystem {
             assert this.multVar.mult != null;
             return this.constMult.multiply(this.multVar.mult);
         }
+
     }
 
     // -----------------------
@@ -617,11 +650,11 @@ public abstract class EquationSystem {
      * multiplicities of both sums are overlapping, i.e., have a non-empty
      * intersection.
      */
-    static class AdmissibilityConstraint {
+    static final class AdmissibilityConstraint {
 
-        public List<MultTerm> outSumTerms;
+        public final List<MultTerm> outSumTerms;
         public Multiplicity outSumConst;
-        public List<MultTerm> inSumTerms;
+        public final List<MultTerm> inSumTerms;
         public Multiplicity inSumConst;
 
         /**
@@ -642,10 +675,18 @@ public abstract class EquationSystem {
                 + "]";
         }
 
+        /** 
+         * Two admissibility constraints are equal if all terms and constants
+         * are equal.
+         */
         @Override
         public boolean equals(Object o) {
-            boolean result = false;
-            if (o instanceof AdmissibilityConstraint) {
+            boolean result;
+            if (this == o) {
+                result = true;
+            } else if (!(o instanceof AdmissibilityConstraint)) {
+                result = false;
+            } else {
                 AdmissibilityConstraint other = (AdmissibilityConstraint) o;
                 result =
                     this.outSumTerms.equals(other.outSumTerms)
@@ -653,6 +694,19 @@ public abstract class EquationSystem {
                         && this.inSumTerms.equals(other.inSumTerms)
                         && this.inSumConst.equals(other.inSumConst);
             }
+            // Check for consistency between equals and hashCode.
+            assert (!result || this.hashCode() == o.hashCode());
+            return result;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + this.outSumTerms.hashCode();
+            result = prime * result + this.outSumConst.hashCode();
+            result = prime * result + this.inSumTerms.hashCode();
+            result = prime * result + this.inSumConst.hashCode();
             return result;
         }
 

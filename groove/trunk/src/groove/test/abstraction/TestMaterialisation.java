@@ -62,7 +62,6 @@ public class TestMaterialisation extends TestCase {
             for (RuleMatch preMatch : preMatches) {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);
-                System.out.println(mats.size());
                 assertTrue(mats.size() == 4);
                 for (Materialisation mat : mats) {
                     Shape matShape = mat.getShape();

@@ -44,11 +44,15 @@ import java.util.Set;
  * (pg 27) of the Technical Report "Graph Abstraction and Abstract Graph
  * Transformation".
  * 
+ * The constructors of this class are all private. This means that it is not
+ * possible to freely create objects of this class. The only way to do so is
+ * by calling the static method getMaterialisations().
+ * 
  * WARNING: Beware of the code in this class. It's rather tricky.
  * 
  * @author Eduardo Zambon
  */
-public class Materialisation implements Cloneable {
+public final class Materialisation implements Cloneable {
 
     // ------------------------------------------------------------------------
     // Static fields
@@ -70,25 +74,25 @@ public class Materialisation implements Cloneable {
      * implies that the materialisation object needs to be cloned every time
      * we perform some modifying operation on the shape. 
      */
-    protected Shape shape;
+    Shape shape;
     /**
      * The pre-match of the rule into the shape. This is the starting point for
      * the materialisation. We assume that the pre-match is a valid one.
      */
-    private RuleMatch preMatch;
+    private final RuleMatch preMatch;
     /**
      * The concrete match of the rule into the (partially) materialised shape.
      */
-    protected NodeEdgeMap match;
+    final NodeEdgeMap match;
     /**
      * The queue of operations that need to be performed on the materialisation
      * object. When this queue is empty, the materialisation is complete. 
      */
-    protected PriorityQueue<MatOp> tasks;
+    final PriorityQueue<MatOp> tasks;
     /**
      * The sequence of operations applied in this materialisation.
      */
-    protected List<String> log;
+    private final List<String> log;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -105,6 +109,8 @@ public class Materialisation implements Cloneable {
         this.tasks = new PriorityQueue<MatOp>();
         if (LOG) {
             this.log = new ArrayList<String>();
+        } else {
+            this.log = null;
         }
         this.planTasks();
     }
@@ -126,6 +132,8 @@ public class Materialisation implements Cloneable {
         }
         if (LOG) {
             this.log = new ArrayList<String>(mat.log);
+        } else {
+            this.log = null;
         }
     }
 
@@ -145,26 +153,34 @@ public class Materialisation implements Cloneable {
         return new Materialisation(this);
     }
 
+    /**
+     * Two materialisation objects are equal if the shapes and the tasks to
+     * be performed are equal.
+     */
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result =
-            prime * result + ((this.shape == null) ? 0 : this.shape.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
+    public boolean equals(Object o) {
         boolean result;
-        if (!(obj instanceof Materialisation)) {
+        if (this == o) {
+            result = true;
+        } else if (!(o instanceof Materialisation)) {
             result = false;
         } else {
-            Materialisation other = (Materialisation) obj;
+            Materialisation other = (Materialisation) o;
             result =
                 this.shape.equals(other.shape)
                     && this.tasks.equals(other.tasks);
         }
+        // Check for consistency between equals and hashCode.
+        assert (!result || this.hashCode() == o.hashCode());
+        return result;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + this.shape.hashCode();
+        result = prime * result + this.tasks.hashCode();
         return result;
     }
 
@@ -232,7 +248,6 @@ public class Materialisation implements Cloneable {
             Set<Materialisation> results) {
         assert mat.hasConcreteMatch();
         mat.shape.unfreezeEdges();
-        // EDUARDO: Collapse this set under isomorphism.
         results.add(mat);
     }
 
@@ -284,7 +299,7 @@ public class Materialisation implements Cloneable {
      * and 5 of Def. 35 in pg. 21 of the technical report. 
      * @return true if all three items are satisfied; false, otherwise.
      */
-    public boolean hasConcreteMatch() {
+    private boolean hasConcreteMatch() {
         // Item 3: check that all nodes in the image of the LHS have
         // multiplicity one.
         boolean complyToNodeMult = true;
@@ -489,7 +504,7 @@ public class Materialisation implements Cloneable {
      * nodes, we look in the neighbourhood, and if there are any shared
      * multiplicities, then we create new PullNode operations.
      */
-    private void addPullNodeOps() {
+    void addPullNodeOps() {
         PriorityQueue<PullNode> pullNodeOps = new PriorityQueue<PullNode>();
         // Check all nodes marked to be singularised.
         for (MatOp op : this.tasks) {
@@ -587,18 +602,18 @@ public class Materialisation implements Cloneable {
     private static abstract class MatOp implements Comparable<MatOp>, Cloneable {
 
         /** The materialisation object handled by the operation. */
-        protected Materialisation mat;
+        Materialisation mat;
         /** The result of performing the operation. */
-        protected Set<Materialisation> result;
+        final Set<Materialisation> result;
 
         /** Used in the copying constructor. */
-        protected MatOp() {
+        private MatOp() {
             this.mat = null;
             this.result = new HashSet<Materialisation>();
         }
 
         /** Default constructor. */
-        public MatOp(Materialisation mat) {
+        private MatOp(Materialisation mat) {
             this.mat = mat;
             this.result = new HashSet<Materialisation>();
         }
@@ -638,26 +653,26 @@ public class Materialisation implements Cloneable {
          * the operation on the materialisation object does not produce a
          * valid shape. 
          */
-        abstract public void perform();
+        abstract void perform();
 
         /**
          * Returns the priority of this operation. Zero is the highest
          * priority.
          */
-        abstract public int getPriority();
+        abstract int getPriority();
 
         /** Basic setter method. */
-        public void setMat(Materialisation mat) {
+        void setMat(Materialisation mat) {
             this.mat = mat;
         }
 
         /** Returns true if the result set is non-empty, false otherwise. */
-        public boolean isSuccesful() {
+        private boolean isSuccesful() {
             return !this.result.isEmpty();
         }
 
         /** Adds the results of this operation to the collection given. */
-        public void collectResults(Collection<Materialisation> collector) {
+        private void collectResults(Collection<Materialisation> collector) {
             assert this.isSuccesful() : "Invalid call!";
             collector.addAll(this.result);
         }
@@ -679,20 +694,20 @@ public class Materialisation implements Cloneable {
      * This operation creates a SingulariseNode operation for each of the
      * newly materialised nodes.
      */
-    private static class MaterialiseNode extends MatOp {
+    private static final class MaterialiseNode extends MatOp {
 
         /**
          * The collector node, from which the new nodes will be materialised.
          */
-        private ShapeNode nodeS;
+        private final ShapeNode nodeS;
         /**
          * The nodes in the LHS of the rule that were mapped to the collector
          * node by the pre-match.
          */
-        private Set<Node> nodesR;
+        private final Set<Node> nodesR;
 
         /** Default constructor. */
-        public MaterialiseNode(Materialisation mat, ShapeNode nodeS,
+        private MaterialiseNode(Materialisation mat, ShapeNode nodeS,
                 Set<Node> nodesR) {
             super(mat);
             this.nodeS = nodeS;
@@ -717,15 +732,25 @@ public class Materialisation implements Cloneable {
             return "MaterialiseNode: " + this.nodeS + ", " + this.nodesR;
         }
 
+        /**
+         * Two materialise node operations are equal if the collector node and
+         * the rule nodes are equal.
+         */
         @Override
         public boolean equals(Object o) {
-            boolean result = false;
-            if (o instanceof MaterialiseNode) {
+            boolean result;
+            if (this == o) {
+                result = true;
+            } else if (!(o instanceof MaterialiseNode)) {
+                result = false;
+            } else {
                 MaterialiseNode other = (MaterialiseNode) o;
                 result =
                     this.nodeS.equals(other.nodeS)
                         && this.nodesR.equals(other.nodesR);
             }
+            // Check for consistency between equals and hashCode.
+            assert (!result || this.hashCode() == o.hashCode());
             return result;
         }
 
@@ -733,17 +758,13 @@ public class Materialisation implements Cloneable {
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result =
-                prime * result
-                    + ((this.nodeS == null) ? 0 : this.nodeS.hashCode());
-            result =
-                prime * result
-                    + ((this.nodesR == null) ? 0 : this.nodesR.hashCode());
+            result = prime * result + this.nodeS.hashCode();
+            result = prime * result + this.nodesR.hashCode();
             return result;
         }
 
         @Override
-        public int getPriority() {
+        int getPriority() {
             return 0;
         }
 
@@ -762,7 +783,7 @@ public class Materialisation implements Cloneable {
          * newly materialised nodes.  
          */
         @Override
-        public void perform() { // MaterialiseNode
+        void perform() { // MaterialiseNode
             this.mat.logOp(this.toString());
 
             // Compute how many copies of the abstract node we need to
@@ -846,20 +867,20 @@ public class Materialisation implements Cloneable {
      * materialised.
      * This operation may create new PullNode operations.
      */
-    private static class MaterialiseEdge extends MatOp {
+    private static final class MaterialiseEdge extends MatOp {
 
         /**
          * The collector edge, from which the new edges will be materialised.
          */
-        private ShapeEdge edgeS;
+        private final ShapeEdge edgeS;
         /**
          * The edges in the LHS of the rule that were mapped to the collector
          * edge by the pre-match.
          */
-        private Set<Edge> edgesR;
+        private final Set<Edge> edgesR;
 
         /** Default constructor. */
-        public MaterialiseEdge(Materialisation mat, ShapeEdge edgeS,
+        private MaterialiseEdge(Materialisation mat, ShapeEdge edgeS,
                 Set<Edge> edgesR) {
             super(mat);
             this.edgeS = edgeS;
@@ -884,15 +905,25 @@ public class Materialisation implements Cloneable {
             return "MaterialiseEdge: " + this.edgeS + ", " + this.edgesR;
         }
 
+        /**
+         * Two materialise edges operations are equal if the collector edge and
+         * the rule edges are equal.
+         */
         @Override
         public boolean equals(Object o) {
-            boolean result = false;
-            if (o instanceof MaterialiseEdge) {
+            boolean result;
+            if (this == o) {
+                result = true;
+            } else if (!(o instanceof MaterialiseEdge)) {
+                result = false;
+            } else {
                 MaterialiseEdge other = (MaterialiseEdge) o;
                 result =
                     this.edgeS.equals(other.edgeS)
                         && this.edgesR.equals(other.edgesR);
             }
+            // Check for consistency between equals and hashCode.
+            assert (!result || this.hashCode() == o.hashCode());
             return result;
         }
 
@@ -900,17 +931,13 @@ public class Materialisation implements Cloneable {
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result =
-                prime * result
-                    + ((this.edgeS == null) ? 0 : this.edgeS.hashCode());
-            result =
-                prime * result
-                    + ((this.edgesR == null) ? 0 : this.edgesR.hashCode());
+            result = prime * result + this.edgeS.hashCode();
+            result = prime * result + this.edgesR.hashCode();
             return result;
         }
 
         @Override
-        public int getPriority() {
+        int getPriority() {
             return 1;
         }
 
@@ -928,7 +955,7 @@ public class Materialisation implements Cloneable {
          * This operation may create new PullNode operations.
          */
         @Override
-        public void perform() { // MaterialiseEdge
+        void perform() { // MaterialiseEdge
             this.mat.logOp(this.toString());
 
             NodeEdgeMap match = this.mat.match;
@@ -1017,17 +1044,17 @@ public class Materialisation implements Cloneable {
      * operation, i.e., the choices on the remaining multiplicity of the
      * collector node.
      */
-    private static class PullNode extends MatOp {
+    private static final class PullNode extends MatOp {
 
         /** The edge that is pulling a new node from the collector node. */
-        private ShapeEdge pullingEdge;
+        private final ShapeEdge pullingEdge;
         /** The collector node that is being pulled by the edge. */
-        private ShapeNode pulledNode;
+        private final ShapeNode pulledNode;
         /** The multiplicity for the new node that will be created. */
-        private Multiplicity mult;
+        private final Multiplicity mult;
 
         /** Default constructor. */
-        public PullNode(Materialisation mat, ShapeEdge pullingEdge,
+        private PullNode(Materialisation mat, ShapeEdge pullingEdge,
                 ShapeNode pulledNode, Multiplicity mult) {
             super(mat);
             this.pullingEdge = pullingEdge;
@@ -1055,16 +1082,26 @@ public class Materialisation implements Cloneable {
                 + this.pullingEdge;
         }
 
+        /**
+         * Two pull node operations are equal if the pulled node, the pulling
+         * edge and the new node multiplicity are equal.
+         */
         @Override
         public boolean equals(Object o) {
-            boolean result = false;
-            if (o instanceof PullNode) {
+            boolean result;
+            if (this == o) {
+                result = true;
+            } else if (!(o instanceof PullNode)) {
+                result = false;
+            } else {
                 PullNode other = (PullNode) o;
                 result =
                     this.pullingEdge.equals(other.pullingEdge)
                         && this.pulledNode.equals(other.pulledNode)
                         && this.mult.equals(other.mult);
             }
+            // Check for consistency between equals and hashCode.
+            assert (!result || this.hashCode() == o.hashCode());
             return result;
         }
 
@@ -1072,24 +1109,14 @@ public class Materialisation implements Cloneable {
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result =
-                prime * result
-                    + ((this.mult == null) ? 0 : this.mult.hashCode());
-            result =
-                prime
-                    * result
-                    + ((this.pulledNode == null) ? 0
-                            : this.pulledNode.hashCode());
-            result =
-                prime
-                    * result
-                    + ((this.pullingEdge == null) ? 0
-                            : this.pullingEdge.hashCode());
+            result = prime * result + this.pullingEdge.hashCode();
+            result = prime * result + this.pulledNode.hashCode();
+            result = prime * result + this.mult.hashCode();
             return result;
         }
 
         @Override
-        public int getPriority() {
+        int getPriority() {
             return 2;
         }
 
@@ -1110,7 +1137,7 @@ public class Materialisation implements Cloneable {
          * operation on the pulled edge.
          */
         @Override
-        public void perform() { // PullNode
+        void perform() { // PullNode
             this.mat.logOp(this.toString());
 
             // Look in the shaping morphism to get all the nodes that were
@@ -1182,13 +1209,13 @@ public class Materialisation implements Cloneable {
      * last.
      * This operation does not create new operations. 
      */
-    private static class SingulariseNode extends MatOp {
+    private static final class SingulariseNode extends MatOp {
 
         /** The node to be singularised. */
-        private ShapeNode nodeS;
+        private final ShapeNode nodeS;
 
         /** Default constructor. */
-        public SingulariseNode(Materialisation mat, ShapeNode nodeS) {
+        private SingulariseNode(Materialisation mat, ShapeNode nodeS) {
             super(mat);
             this.nodeS = nodeS;
         }
@@ -1210,30 +1237,37 @@ public class Materialisation implements Cloneable {
             return "SingulariseNode: " + this.nodeS;
         }
 
+        /**
+         * Two singularise node operations are equal if the nodes to be made
+         * singular are equal.
+         */
         @Override
         public boolean equals(Object o) {
-            boolean result = false;
-            if (o instanceof SingulariseNode) {
+            boolean result;
+            if (this == o) {
+                result = true;
+            } else if (!(o instanceof SingulariseNode)) {
+                result = false;
+            } else {
                 SingulariseNode other = (SingulariseNode) o;
                 result = this.nodeS.equals(other.nodeS);
             }
+            // Check for consistency between equals and hashCode.
+            assert (!result || this.hashCode() == o.hashCode());
             return result;
         }
 
         @Override
         public int hashCode() {
             final int prime = 31;
-            int result = 1;
-            result =
-                prime * result
-                    + ((this.nodeS == null) ? 0 : this.nodeS.hashCode());
-            return result;
+            int hash = this.nodeS.hashCode();
+            return prime * hash * hash;
         }
 
         /**
          * Experimentation seems to show that it is better to singularise first
          * the images of the LHS of the rule. This usually leads to less
-         * non-determinism. We do this choice here, on the basis of the node
+         * non-determinism. We make this choice here, on the basis of the node
          * identities. Nodes with smaller numbers are singularised first. 
          */
         @Override
@@ -1255,7 +1289,7 @@ public class Materialisation implements Cloneable {
         }
 
         @Override
-        public int getPriority() {
+        int getPriority() {
             return 3;
         }
 
@@ -1272,7 +1306,7 @@ public class Materialisation implements Cloneable {
          * This operation does not create new operations.
          */
         @Override
-        public void perform() { // SingulariseNode
+        void perform() { // SingulariseNode
             this.mat.logOp(this.toString());
 
             if (this.mat.shape.getEquivClassOf(this.nodeS).size() == 1) {

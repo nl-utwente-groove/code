@@ -42,20 +42,20 @@ public final class EdgeMatEqSystem extends EquationSystem {
     // ------------------------------------------------------------------------
 
     /** Debug flag. If set to true, text will be printed in stdout. */
-    private static boolean DEBUG = false;
+    private static final boolean DEBUG = false;
     /** Debug flag. If set to true, the shapes will be shown in a dialog. */
-    private static boolean USE_GUI = false;
+    private static final boolean USE_GUI = false;
 
     // ------------------------------------------------------------------------
     // Object fields
     // ------------------------------------------------------------------------
 
     /** The set of outgoing edge signatures involved in the operation. */
-    private CountingSet<EdgeSignature> outEsSet;
+    private final CountingSet<EdgeSignature> outEsSet;
     /** The set of incoming edge signatures involved in the operation. */
-    private CountingSet<EdgeSignature> inEsSet;
+    private final CountingSet<EdgeSignature> inEsSet;
     /** The set of edges that will be frozen by the operation. */
-    private Set<ShapeEdge> frozenEdges;
+    private final Set<ShapeEdge> frozenEdges;
 
     // ------------------------------------------------------------------------
     // Constructors

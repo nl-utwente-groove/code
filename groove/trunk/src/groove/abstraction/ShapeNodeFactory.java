@@ -25,7 +25,7 @@ import groove.graph.NodeFactory;
  *  
  * @author Eduardo Zambon
  */
-public class ShapeNodeFactory implements NodeFactory {
+public final class ShapeNodeFactory implements NodeFactory {
 
     // ------------------------------------------------------------------------
     // Static Fields

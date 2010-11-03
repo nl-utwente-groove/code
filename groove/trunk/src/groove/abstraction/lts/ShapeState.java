@@ -140,19 +140,22 @@ public class ShapeState extends AbstractGraphState {
      */
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof ShapeState)) {
-            return false;
+        boolean result;
+        if (this == o) {
+            result = true;
+        } else if (!(o instanceof ShapeState) || o instanceof ShapeNextState) {
+            result = false;
+        } else {
+            ShapeState other = (ShapeState) o;
+            if (this.hasNumber() && other.hasNumber()
+                && this.getNumber() == other.getNumber()) {
+                result = true;
+            } else {
+                result = getGraph().equals(((ShapeState) o).getGraph());
+            }
         }
-        if (o instanceof ShapeNextState) {
-            return false;
-        }
-        ShapeState other = (ShapeState) o;
-        if (this.hasNumber() && other.hasNumber()
-            && this.getNumber() == other.getNumber()) {
-            return true;
-        }
-        boolean result = getGraph().equals(((ShapeState) o).getGraph());
-        assert (!result || other.hashCode() == hashCode()) : "The equals method does not comply with the hash code method !!!";
+        // Check for consistency between equals and hashCode.
+        assert (!result || this.hashCode() == o.hashCode());
         return result;
     }
 

@@ -46,15 +46,11 @@ public final class Multiplicity {
     // ------------------------------------------------------------------------
 
     /** Stores the multiplicity value. It is a natural number or omega. */
-    private int value;
+    private final int value;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
-
-    private Multiplicity() {
-        // Does nothing by design.
-    }
 
     /**
      * Creates a multiplicity.
@@ -69,22 +65,27 @@ public final class Multiplicity {
     // Overridden methods
     // ------------------------------------------------------------------------
 
-    /** This method is equivalent to number comparison. */
+    /** Two multiplicities are equal if they have the same value. */
     @Override
     public boolean equals(Object o) {
         boolean result;
-        result =
-            (o instanceof Multiplicity)
-                && (((Multiplicity) o).value == this.value);
+        if (this == o) {
+            result = true;
+        } else if (!(o instanceof Multiplicity)) {
+            result = false;
+        } else {
+            Multiplicity other = (Multiplicity) o;
+            result = this.value == other.value;
+        }
+        // Check for consistency between equals and hashCode.
+        assert (!result || this.hashCode() == o.hashCode());
         return result;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = 1;
-        result = prime * result + this.value;
-        return result;
+        return prime * this.value * this.value;
     }
 
     @Override

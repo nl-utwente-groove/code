@@ -40,18 +40,18 @@ import java.util.Set;
  * 
  * @author Eduardo Zambon
  */
-public class NodeSingEqSystem extends EquationSystem {
+public final class NodeSingEqSystem extends EquationSystem {
 
     // ------------------------------------------------------------------------
     // Static fields
     // ------------------------------------------------------------------------
 
     /** Debug flag. If set to true, text will be printed in stdout. */
-    private static boolean DEBUG = false;
+    private static final boolean DEBUG = false;
     /** Debug flag. If set to true, the shapes will be shown in a dialog. */
-    private static boolean USE_GUI = false;
+    private static final boolean USE_GUI = false;
 
-    private static Set<Multiplicity> zeroOneSet;
+    private static final Set<Multiplicity> zeroOneSet;
 
     static {
         zeroOneSet = new HashSet<Multiplicity>();
@@ -64,13 +64,13 @@ public class NodeSingEqSystem extends EquationSystem {
     // ------------------------------------------------------------------------
 
     /** Node to singularise. */
-    private ShapeNode node; // v
+    private final ShapeNode node; // v
     /** The original equivalence class of v . */
-    private EquivClass<ShapeNode> origEc; // C
+    private final EquivClass<ShapeNode> origEc; // C
     /** The singularised equivalence class. */
-    private EquivClass<ShapeNode> singEc; // C'
+    private final EquivClass<ShapeNode> singEc; // C'
     /** The remaining equivalence class. */
-    private EquivClass<ShapeNode> remEc; // C''
+    private final EquivClass<ShapeNode> remEc; // C''
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -84,6 +84,19 @@ public class NodeSingEqSystem extends EquationSystem {
     public NodeSingEqSystem(Shape shape, ShapeNode node) {
         super(shape);
         this.node = node;
+
+        // The original equivalence class: C
+        this.origEc = this.shape.getEquivClassOf(this.node);
+        assert this.origEc.size() > 1;
+
+        // The singularised equivalence class: C'
+        this.singEc = new EquivClass<ShapeNode>();
+        this.singEc.add(this.node);
+
+        // The remaining equivalence class: C''
+        this.remEc = this.origEc.clone();
+        this.remEc.remove(this.node);
+
         this.buildEquationSystem();
     }
 
@@ -110,18 +123,6 @@ public class NodeSingEqSystem extends EquationSystem {
      */
     @Override
     void buildEquationSystem() {
-        // The original equivalence class: C
-        this.origEc = this.shape.getEquivClassOf(this.node);
-        assert this.origEc.size() > 1;
-
-        // The singularised equivalence class: C'
-        this.singEc = new EquivClass<ShapeNode>();
-        this.singEc.add(this.node);
-
-        // The remaining equivalence class: C''
-        this.remEc = this.origEc.clone();
-        this.remEc.remove(this.node);
-
         // For all binary labels.
         for (Label label : Util.binaryLabelSet(this.shape)) {
             // For all equivalence classes of the shape: D \in N_S/~

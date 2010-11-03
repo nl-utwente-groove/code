@@ -32,7 +32,7 @@ import groove.trans.RuleMatch;
  * 
  * @author Eduardo Zambon
  */
-public class ShapeNextState extends ShapeState implements GraphNextState,
+public final class ShapeNextState extends ShapeState implements GraphNextState,
         GraphTransitionStub {
 
     // ------------------------------------------------------------------------
@@ -57,20 +57,26 @@ public class ShapeNextState extends ShapeState implements GraphNextState,
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof ShapeNextState)) {
-            return false;
+        boolean result;
+        if (this == o) {
+            result = true;
+        } else if (!(o instanceof ShapeNextState)) {
+            result = false;
+        } else {
+            ShapeNextState other = (ShapeNextState) o;
+            result = getGraph().equals(other.getGraph());
+            result = result && super.equals(other);
+            // The targets of this.transition and other.transition cannot
+            // be compared with equals, as they are both null
+            result =
+                result
+                    && this.transition.source().equals(
+                        other.transition.source())
+                    && this.transition.label().equals(other.transition.label());
+
         }
-        ShapeNextState other = (ShapeNextState) o;
-        boolean result = getGraph().equals(((ShapeNextState) o).getGraph());
-        result = result && super.equals(other);
-        // The targets of this.transition and other.transition cannot
-        // be compared with equals, as they are both null
-        result =
-            result
-                && this.transition.source().equals(other.transition.source());
-        result =
-            result && this.transition.label().equals(other.transition.label());
-        assert (!result || other.hashCode() == hashCode()) : "The equals method does not comply with the hash code method !!!";
+        // Check for consistency between equals and hashCode.
+        assert (!result || this.hashCode() == o.hashCode());
         return result;
     }
 
@@ -78,9 +84,7 @@ public class ShapeNextState extends ShapeState implements GraphNextState,
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result =
-            prime * result
-                + ((this.transition == null) ? 0 : this.transition.hashCode());
+        result = prime * result + this.transition.hashCode();
         return result;
     }
 

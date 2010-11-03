@@ -29,7 +29,7 @@ import java.util.Set;
  * 
  * @author Eduardo Zambon
  */
-public class EquivClass<T> extends HashSet<T> {
+public final class EquivClass<T> extends HashSet<T> {
 
     /** 
      * Method to downcast the elements of the equivalence class, in order
@@ -49,6 +49,23 @@ public class EquivClass<T> extends HashSet<T> {
         return (EquivClass<T>) super.clone();
     }
 
+    /** Two equivalence classes are equal if they have the same objects. */
+    @Override
+    public boolean equals(Object o) {
+        boolean result;
+        if (this == o) {
+            result = true;
+        } else if (!(o instanceof EquivClass<?>)) {
+            result = false;
+        } else {
+            EquivClass<?> other = (EquivClass<?>) o;
+            result = this.containsAll(other) && other.containsAll(this);
+        }
+        // Check for consistency between equals and hashCode.
+        assert (!result || this.hashCode() == o.hashCode());
+        return result;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -57,18 +74,6 @@ public class EquivClass<T> extends HashSet<T> {
             sum += elem.hashCode();
         }
         return prime * sum;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        boolean result;
-        if (!(o instanceof EquivClass<?>)) {
-            result = false;
-        } else {
-            EquivClass<?> other = (EquivClass<?>) o;
-            result = this.containsAll(other) && other.containsAll(this);
-        }
-        return result;
     }
 
 }

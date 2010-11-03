@@ -27,7 +27,7 @@ import groove.trans.RuleEvent;
  * 
  * @author Eduardo Zambon
  */
-public class ShapeTransition extends DefaultGraphTransition {
+public final class ShapeTransition extends DefaultGraphTransition {
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -43,16 +43,24 @@ public class ShapeTransition extends DefaultGraphTransition {
     // Overridden methods
     // ------------------------------------------------------------------------
 
+    /**
+     * Two transitions are equal if they have the same source and target, and
+     * the same event.
+     */
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof ShapeTransition)) {
+        boolean result;
+        if (this == o) {
+            result = true;
+        } else if (!(o instanceof ShapeTransition)) {
             return false;
         }
         ShapeTransition t = (ShapeTransition) o;
-        boolean result =
+        result =
             source().equals(t.source()) && target().equals(t.target())
                 && getEvent().equals(t.getEvent());
-        assert (!result || t.hashCode() == hashCode()) : "The equals method does not comply with the hash code method !!!";
+        // Check for consistency between equals and hashCode.
+        assert (!result || this.hashCode() == o.hashCode());
         return result;
     }
 

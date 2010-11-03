@@ -24,7 +24,7 @@ import java.util.HashMap;
  * 
  * @author Eduardo Zambon
  */
-public class CountingSet<T> extends HashMap<T,Integer> {
+public final class CountingSet<T> extends HashMap<T,Integer> {
 
     /**
      * Keeps track of the number of times a certain element has been inserted

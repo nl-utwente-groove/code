@@ -27,8 +27,8 @@ import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 
 import java.util.HashSet;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * A pre-match is a match of the left-hand side of a rule into the graph
@@ -40,7 +40,7 @@ import java.util.Map.Entry;
  * 
  * @author Eduardo Zambon
  */
-public class PreMatch {
+public final class PreMatch {
 
     // ------------------------------------------------------------------------
     // Constructors

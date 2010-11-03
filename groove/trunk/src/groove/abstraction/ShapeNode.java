@@ -25,7 +25,7 @@ import groove.graph.DefaultNode;
  * 
  * @author Eduardo Zambon
  */
-public class ShapeNode extends DefaultNode {
+public final class ShapeNode extends DefaultNode {
 
     // ------------------------------------------------------------------------
     // Static Fields
@@ -39,7 +39,7 @@ public class ShapeNode extends DefaultNode {
     // ------------------------------------------------------------------------
 
     /** Default constructor. */
-    protected ShapeNode(int nr) {
+    private ShapeNode(int nr) {
         super(nr);
     }
 

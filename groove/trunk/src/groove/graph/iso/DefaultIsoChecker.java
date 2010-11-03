@@ -1196,7 +1196,11 @@ public class DefaultIsoChecker implements IsoChecker {
         boolean targetPreMatched;
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Simple class to store the state of the isomorphism checker method in
+     * order to allow resuming of the search. Can be used to produce all
+     * isomorphisms between two graphs.
+     */
     public static class IsoCheckerState {
 
         List<IsoSearchItem> plan = null;
@@ -1206,7 +1210,7 @@ public class DefaultIsoChecker implements IsoChecker {
         Node[] targetImages = null;
         NodeEdgeMap result = null;
 
-        /** EDUARDO: Comment this... */
+        /** Returns true if the plan size is zero. */
         public boolean isPlanEmpty() {
             return this.plan.size() == 0;
         }

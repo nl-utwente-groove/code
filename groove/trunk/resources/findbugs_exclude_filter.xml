@@ -42,11 +42,11 @@
 
     <!-- Remove warnings for calling System.exit(). -->
     <Match>
-       <Class name="groove.Editor" />
+       <Class name="groove.Editor$1" />
        <Bug pattern="DM_EXIT" />
     </Match>
     <Match>
-       <Class name="groove.Simulator" />
+       <Class name="groove.Simulator$1" />
        <Bug pattern="DM_EXIT" />
     </Match>
     <Match>
@@ -89,5 +89,23 @@
        <Method name="Generator" />
        <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" />
     </Match>
+
+    <!-- Remove warning on useless method call. -->
+    <Match>
+       <Class name="groove.abstraction.Shape" />
+       <Method name="nodeSet" />
+       <Bug pattern="USM_USELESS_SUBCLASS_METHOD" />
+    </Match>
+    <Match>
+       <Class name="groove.abstraction.Shape" />
+       <Method name="edgeSet" />
+       <Bug pattern="USM_USELESS_SUBCLASS_METHOD" />
+    </Match>
+    <Match>
+       <Class name="groove.abstraction.Shape" />
+       <Method name="outEdgeSet" />
+       <Bug pattern="USM_USELESS_SUBCLASS_METHOD" />
+    </Match>
+
 
 </FindBugsFilter>
