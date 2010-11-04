@@ -404,13 +404,15 @@ public final class Shape extends DefaultGraph {
             super.getCertifier(true).getCertificateMap();
 
         // Add the hashes for the equivalence relation.
+        int erHash = 0;
         for (EquivClass<ShapeNode> ec : this.equivRel) {
             int temp = 0;
             for (ShapeNode n : ec) {
                 temp += certMap.get(n).hashCode();
             }
-            result = prime * result + temp * temp;
+            erHash += temp * temp;
         }
+        result = prime * result + erHash;
 
         return result;
     }
