@@ -16,18 +16,26 @@
  */
 package groove.test.abstraction;
 
+import groove.abstraction.Materialisation;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.Parameters;
+import groove.abstraction.PreMatch;
 import groove.abstraction.Shape;
 import groove.abstraction.ShapeEdge;
 import groove.abstraction.ShapeNode;
 import groove.abstraction.Util;
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.trans.GraphGrammar;
+import groove.trans.Rule;
+import groove.trans.RuleMatch;
 import groove.util.Groove;
+import groove.view.FormatException;
+import groove.view.StoredGrammarView;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -169,6 +177,56 @@ public class TestShape extends TestCase {
                 assertTrue(shape.getEdgeOutMult(se).equals(Multiplicity.OMEGA));
             }
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void testShapeIso() {
+        File file = new File(DIRECTORY);
+        try {
+            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
+            GraphGrammar grammar = view.toGrammar();
+
+            Graph graph0 =
+                view.getGraphView("materialisation-test-0").toModel();
+            Shape shape0 = new Shape(graph0);
+            Graph graph1 =
+                view.getGraphView("materialisation-test-1").toModel();
+            Shape shape1 = new Shape(graph1);
+            Graph graph2 =
+                view.getGraphView("materialisation-test-2").toModel();
+            Shape shape2 = new Shape(graph2);
+
+            // Basic tests.
+            // A shape must be isomorphic to itself.
+            assertTrue(shape0.equals(shape0));
+            // Compare to a clone.
+            assertTrue(shape0.equals(shape0.clone()));
+            // Two completely different shapes.
+            assertFalse(shape0.equals(shape1));
+            // Shapes with same graph structure but different multiplicities.
+            assertFalse(shape1.equals(shape2));
+
+            // More elaborated tests.
+            Rule rule0 = grammar.getRule("add");
+            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape0, rule0);
+            for (RuleMatch preMatch : preMatches) {
+                Set<Materialisation> mats =
+                    Materialisation.getMaterialisations(shape0, preMatch);
+                for (Materialisation mat : mats) {
+                    Shape result = mat.applyMatch();
+                    // The shape after rule application is different.
+                    assertFalse(shape0.equals(result));
+                    Shape normalisedShape = result.normalise();
+                    // The shape after normalisation is isomorphic to the
+                    // original one.
+                    assertTrue(shape0.equals(normalisedShape));
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
             e.printStackTrace();
         }
     }
