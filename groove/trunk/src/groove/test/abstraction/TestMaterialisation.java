@@ -41,6 +41,8 @@ import junit.framework.TestCase;
 @SuppressWarnings("all")
 public class TestMaterialisation extends TestCase {
 
+    static private final String DIRECTORY = "junit/samples/abs-test.gps/";
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -48,8 +50,6 @@ public class TestMaterialisation extends TestCase {
     }
 
     public void testMaterialisation0() {
-        final String DIRECTORY = "junit/samples/abs-test.gps/";
-
         File file = new File(DIRECTORY);
         try {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
@@ -79,8 +79,6 @@ public class TestMaterialisation extends TestCase {
     }
 
     public void testMaterialisation1() {
-        final String DIRECTORY = "junit/samples/abs-test.gps/";
-
         File file = new File(DIRECTORY);
         try {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
@@ -110,8 +108,6 @@ public class TestMaterialisation extends TestCase {
     }
 
     public void testMaterialisation2() {
-        final String DIRECTORY = "junit/samples/abs-test.gps/";
-
         File file = new File(DIRECTORY);
         try {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
@@ -141,8 +137,6 @@ public class TestMaterialisation extends TestCase {
     }
 
     public void testRuleApplicationAndShapeNormalisation() {
-        final String DIRECTORY = "junit/samples/abs-test.gps/";
-
         File file = new File(DIRECTORY);
         try {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
