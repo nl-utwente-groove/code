@@ -178,7 +178,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     /**
      * @return Returns the gts.
      */
-    final GTS getGts() {
+    final GTS getGTS() {
         return this.gts;
     }
 
@@ -258,7 +258,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     protected String emphasiseStates(Set<State> counterExamples,
             boolean allStates) {
         if (!allStates) {
-            State initial = getGts().startState();
+            State initial = getGTS().startState();
             boolean initialIsCounterexample = counterExamples.contains(initial);
             counterExamples = new HashSet<State>();
             if (initialIsCounterexample) {
@@ -330,7 +330,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
          */
         @Override
         public void addUpdate(GraphShape graph, Node node) {
-            assert graph == getGts() : "I want to listen only to my lts";
+            assert graph == getGTS() : "I want to listen only to my lts";
             this.stateAdded = true;
             refreshStatus();
         }
@@ -341,7 +341,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
          */
         @Override
         public void addUpdate(GraphShape graph, Edge edge) {
-            assert graph == getGts() : "I want to listen only to my lts";
+            assert graph == getGTS() : "I want to listen only to my lts";
             refreshStatus();
         }
 

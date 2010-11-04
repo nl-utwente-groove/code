@@ -79,6 +79,7 @@ public final class PreMatch {
      * respects node multiplicities.
      */
     public static boolean isValidPreMatch(GraphShape host, RuleEvent event) {
+        assert host instanceof Graph;
         return isValidPreMatch(host, event.getMatch((Graph) host));
     }
 

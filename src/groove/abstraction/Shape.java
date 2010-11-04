@@ -299,8 +299,9 @@ public final class Shape extends DefaultGraph {
     /** Removes the node from the shape and updates all related structures. */
     @Override
     public boolean removeNode(Node node) {
-        assert this.nodeSet().contains(node) : "Cannot remove non-existent node.";
+        assert node instanceof ShapeNode;
         ShapeNode nodeS = (ShapeNode) node;
+        assert this.nodeSet().contains(node);
 
         // Remove entry from node multiplicity map.
         this.nodeMultMap.remove(nodeS);
@@ -346,6 +347,7 @@ public final class Shape extends DefaultGraph {
     /** Removes the edge from the shape and updates all related structures. */
     @Override
     public boolean removeEdge(Edge edge) {
+        assert edge instanceof ShapeEdge;
         ShapeEdge edgeS = (ShapeEdge) edge;
         assert !this.isFrozen(edgeS);
         // Remove entry from edge shaping map.
@@ -449,6 +451,7 @@ public final class Shape extends DefaultGraph {
         this.createShapeNodesEquivRel(prevGraphNeighEquiv);
         this.createShapeEdges(currGraphNeighEquiv.getEdgesEquivRel());
         if (fromShape) {
+            assert currGraphNeighEquiv instanceof ShapeNeighEquiv;
             this.createEdgeMultMaps((ShapeNeighEquiv) currGraphNeighEquiv);
         } else {
             this.createEdgeMultMaps(currGraphNeighEquiv);
