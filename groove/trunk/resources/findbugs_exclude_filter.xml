@@ -107,5 +107,12 @@
        <Bug pattern="USM_USELESS_SUBCLASS_METHOD" />
     </Match>
 
+    <!-- Remove warning on asymmetric equals method. -->
+    <Match>
+       <Class name="groove.abstraction.lts.ShapeTransition" />
+       <Method name="equals" />
+       <Bug pattern="EQ_OVERRIDING_EQUALS_NOT_SYMMETRIC" />
+    </Match>
+
 
 </FindBugsFilter>

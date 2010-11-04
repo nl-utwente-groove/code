@@ -72,6 +72,7 @@ public final class ShapeStateGenerator implements RuleEventApplier {
     @Override
     public GraphTransition apply(GraphState source, RuleEvent event,
             Location targetLocation) {
+        assert source instanceof ShapeState;
         GraphTransition result = null;
 
         Shape host = (Shape) source.getGraph();
