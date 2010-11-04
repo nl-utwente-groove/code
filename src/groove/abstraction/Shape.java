@@ -1273,15 +1273,29 @@ public final class Shape extends DefaultGraph {
         this.cleanEdgeSigSet();
 
         for (EdgeSignature origEs : this.getEdgeSignatures(origEc)) {
-            EdgeSignature newEs =
-                new EdgeSignature(origEs.getNode(), origEs.getLabel(), remEc);
+            ShapeNode origNode = origEs.getNode();
+            Label label = origEs.getLabel();
+            EdgeSignature remEs = new EdgeSignature(origNode, label, remEc);
+            EdgeSignature singEs = new EdgeSignature(origNode, label, singEc);
+
             Multiplicity outMult = this.outEdgeMultMap.remove(origEs);
             if (outMult != null) {
-                this.outEdgeMultMap.put(newEs, outMult);
+                if (this.isNonFrozenEdgeFromSigInvolved(remEs, true)) {
+                    this.outEdgeMultMap.put(remEs, outMult);
+                }
+                if (this.isNonFrozenEdgeFromSigInvolved(singEs, true)) {
+                    this.outEdgeMultMap.put(singEs, outMult);
+                }
             }
+
             Multiplicity inMult = this.inEdgeMultMap.remove(origEs);
             if (inMult != null) {
-                this.inEdgeMultMap.put(newEs, inMult);
+                if (this.isNonFrozenEdgeFromSigInvolved(remEs, false)) {
+                    this.inEdgeMultMap.put(remEs, inMult);
+                }
+                if (this.isNonFrozenEdgeFromSigInvolved(singEs, false)) {
+                    this.inEdgeMultMap.put(singEs, inMult);
+                }
             }
         }
 
