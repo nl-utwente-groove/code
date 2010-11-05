@@ -448,7 +448,6 @@ public final class Shape extends DefaultGraph {
             prevGraphNeighEquiv = (GraphNeighEquiv) currGraphNeighEquiv.clone();
             currGraphNeighEquiv.refineEquivRelation();
         }
-        // At this point variable prevGraphNeighEquiv is no longer null.
         this.createShapeNodes(currGraphNeighEquiv, fromShape);
         this.createShapeNodesEquivRel(prevGraphNeighEquiv);
         this.createShapeEdges(currGraphNeighEquiv.getEdgesEquivRel());
@@ -458,9 +457,40 @@ public final class Shape extends DefaultGraph {
         } else {
             this.createEdgeMultMaps(currGraphNeighEquiv);
         }
-
         this.checkShapeInvariant();
     }
+
+    /*private void buildShape(boolean fromShape) {
+        // First we create the equivalence relation for the nodes in the graph.
+        GraphNeighEquiv prevGraphNeighEquiv = null;
+        GraphNeighEquiv currGraphNeighEquiv;
+        if (fromShape) {
+            currGraphNeighEquiv = new ShapeNeighEquiv(this.graph);
+        } else {
+            currGraphNeighEquiv = new GraphNeighEquiv(this.graph);
+        }
+        GraphNeighEquiv lastDifferentEquiv = currGraphNeighEquiv;
+        // This loop is guaranteed to be executed at least once, because
+        // we start at radius 0 and the abstraction radius is at least 1.
+        while (currGraphNeighEquiv.getRadius() < Parameters.getAbsRadius()) {
+            prevGraphNeighEquiv = (GraphNeighEquiv) currGraphNeighEquiv.clone();
+            currGraphNeighEquiv.refineEquivRelation();
+            if (!prevGraphNeighEquiv.isEquivalent(currGraphNeighEquiv)) {
+                lastDifferentEquiv = prevGraphNeighEquiv;
+            }
+        }
+        this.createShapeNodes(currGraphNeighEquiv, fromShape);
+        this.createShapeNodesEquivRel(lastDifferentEquiv);
+        this.createShapeEdges(currGraphNeighEquiv.getEdgesEquivRel());
+        if (fromShape) {
+            assert currGraphNeighEquiv instanceof ShapeNeighEquiv;
+            this.createEdgeMultMaps((ShapeNeighEquiv) currGraphNeighEquiv);
+        } else {
+            this.createEdgeMultMaps(currGraphNeighEquiv);
+        }
+
+        this.checkShapeInvariant();
+    }*/
 
     /**
      * Creates the nodes of this shape based on the equivalence relation given. 
