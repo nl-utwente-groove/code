@@ -41,12 +41,14 @@ public final class ShapeGenerator {
 
     private GraphGrammar grammar;
     private AGTS gts;
+    private ShapeStateGenerator sgen;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    private ShapeGenerator() {
+    /** Basic constructor. */
+    public ShapeGenerator() {
         Multiplicity.initMultStore();
     }
 
@@ -66,7 +68,7 @@ public final class ShapeGenerator {
         }
     }
 
-    private void exploreGrammar() {
+    private void exploreGrammar(boolean fromMain) {
         this.gts = new AGTS(this.grammar);
 
         // EDUARDO: Replace this code with the new exploration classes.
@@ -74,24 +76,40 @@ public final class ShapeGenerator {
         Scenario scenario =
             ScenarioFactory.getScenario(strategy, new NoStateAcceptor(), "", "");
         scenario.prepare(this.gts);
-        ShapeStateGenerator sgen = new ShapeStateGenerator(this.gts);
-        strategy.setMatchApplier(sgen);
+        this.sgen = new ShapeStateGenerator(this.gts);
+        strategy.setMatchApplier(this.sgen);
         scenario.play();
-        System.out.println("States: " + sgen.getStateCount());
-        System.out.println("Transitions: " + sgen.getTransitionCount());
+        if (fromMain) {
+            System.out.println("States: " + this.sgen.getStateCount());
+            System.out.println("Transitions: " + this.sgen.getTransitionCount());
+        }
         if (scenario.isInterrupted()) {
             new Exception().printStackTrace();
         }
     }
 
-    private void generate(String grammarFile, String startGraph) {
+    /** Generates the state space for the given grammar and start graph. */
+    public void generate(String grammarFile, String startGraph, boolean fromMain) {
         loadGrammar(grammarFile, startGraph);
-        exploreGrammar();
+        exploreGrammar(fromMain);
     }
 
-    /** Main method */
-    public static void main(String args[]) {
+    /** Basic getter method. */
+    public int getStateCount() {
+        return this.sgen.getStateCount();
+    }
 
+    /** Basic getter method. */
+    public int getTransitionCount() {
+        return this.sgen.getTransitionCount();
+    }
+
+    // ------------------------------------------------------------------------
+    // Main method.
+    // ------------------------------------------------------------------------
+
+    /** Command line method. */
+    public static void main(String args[]) {
         String usage =
             "Usage : ShapeGenerator <grammar> <startGraph> "
                 + "-n <node_mult_bound> -m <edge_mult_bound -i <abs_radius>";
@@ -112,6 +130,6 @@ public final class ShapeGenerator {
         Parameters.setAbsRadius(absRadius);
 
         ShapeGenerator generator = new ShapeGenerator();
-        generator.generate(grammarFile, startGraph);
+        generator.generate(grammarFile, startGraph, true);
     }
 }
