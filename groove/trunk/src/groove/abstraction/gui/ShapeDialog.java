@@ -85,7 +85,7 @@ public class ShapeDialog {
             this.frame.getContentPane().add(this.jgraph, BorderLayout.NORTH);
 
             String columnNames[] = {"EquivRel", "OutMult", "InMult"};
-            Object data[][] = new Object[5][3];
+            Object data[][] = new Object[8][3];
             int i = 0;
             int j = 0;
             for (EquivClass<ShapeNode> ec : this.shape.getEquivRelation()) {

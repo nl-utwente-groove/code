@@ -39,7 +39,7 @@ public final class ShapeStateGenerator implements RuleEventApplier {
     // ------------------------------------------------------------------------
 
     /** Debug flag. If set to true, text will be printed in stdout. */
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     /** Debug flag. If set to true, the shapes will be shown in a dialog. */
     private static final boolean USE_GUI = false;
 

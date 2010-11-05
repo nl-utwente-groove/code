@@ -34,6 +34,7 @@ public class AllAbstractionTests {
         suite.addTest(new TestSuite(TestShape.class));
         suite.addTest(new TestSuite(TestPreMatch.class));
         suite.addTest(new TestSuite(TestMaterialisation.class));
+        suite.addTest(new TestSuite(TestShapeGenerator.class));
         // $JUnit-END$
         return suite;
     }

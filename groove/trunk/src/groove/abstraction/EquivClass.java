@@ -76,4 +76,9 @@ public final class EquivClass<T> extends HashSet<T> {
         return prime * sum;
     }
 
+    /** Returns true if the equivalence class has a single element. */
+    public boolean isSingleton() {
+        return this.size() == 1;
+    }
+
 }

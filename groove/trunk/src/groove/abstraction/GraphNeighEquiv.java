@@ -320,4 +320,16 @@ public class GraphNeighEquiv extends EquivRelation<Node> {
         return er;
     }
 
+    /** Returns true if all equivalence classes are singletons. */
+    public boolean isDiscrete() {
+        boolean result = true;
+        for (EquivClass<Node> ec : this) {
+            if (!ec.isSingleton()) {
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
+
 }
