@@ -16,16 +16,24 @@
  */
 package groove.abstraction;
 
+import groove.abstraction.gui.ShapeDialog;
 import groove.graph.Edge;
+import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.DefaultApplication;
+import groove.trans.GraphGrammar;
+import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.SPOEvent;
+import groove.view.FormatException;
+import groove.view.StoredGrammarView;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -62,7 +70,7 @@ public final class Materialisation implements Cloneable {
      * Debug flag. If set to true each materialisation object will store the
      * sequence of operations performed.
      */
-    private static final boolean LOG = false;
+    private static final boolean LOG = true;
 
     // ------------------------------------------------------------------------
     // Object fields
@@ -1417,7 +1425,7 @@ public final class Materialisation implements Cloneable {
     }*/
 
     /** Test method. */
-    /*public static void test2() {
+    public static void test2() {
         final String DIRECTORY = "junit/samples/abs-test.gps/";
 
         File file = new File(DIRECTORY);
@@ -1448,7 +1456,7 @@ public final class Materialisation implements Cloneable {
         } catch (FormatException e) {
             e.printStackTrace();
         }
-    }*/
+    }
 
     /** Test method. */
     /*public static void test3() {
@@ -1485,9 +1493,9 @@ public final class Materialisation implements Cloneable {
     }*/
 
     /** Test method. */
-    /*public static void main(String args[]) {
+    public static void main(String args[]) {
         Multiplicity.initMultStore();
         test2();
-    }*/
+    }
 
 }

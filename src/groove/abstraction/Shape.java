@@ -434,20 +434,28 @@ public final class Shape extends DefaultGraph {
      * Builds a shape from a concrete graph or a shape.  
      */
     private void buildShape(boolean fromShape) {
-        // First we create the equivalence relation for the nodes in the graph.
-        GraphNeighEquiv prevGraphNeighEquiv = null;
-        GraphNeighEquiv currGraphNeighEquiv;
+        int radius = Parameters.getAbsRadius();
+        // The iterations on the equivalence relation computation.
+        GraphNeighEquiv er[] = new GraphNeighEquiv[radius + 1];
+        // Create the level 0 equivalence relation.
         if (fromShape) {
-            currGraphNeighEquiv = new ShapeNeighEquiv(this.graph);
+            er[0] = new ShapeNeighEquiv(this.graph);
         } else {
-            currGraphNeighEquiv = new GraphNeighEquiv(this.graph);
+            er[0] = new GraphNeighEquiv(this.graph);
         }
-        // This loop is guaranteed to be executed at least once, because
-        // we start at radius 0 and the abstraction radius is at least 1.
-        while (currGraphNeighEquiv.getRadius() < Parameters.getAbsRadius()) {
-            prevGraphNeighEquiv = (GraphNeighEquiv) currGraphNeighEquiv.clone();
-            currGraphNeighEquiv.refineEquivRelation();
+        // Compute all equivalence relations up to the abstraction radius.
+        for (int i = 1; i <= radius; i++) {
+            int j = i - 1;
+            assert er[j].getRadius() == j;
+            er[i] = (GraphNeighEquiv) er[j].clone();
+            er[i].refineEquivRelation();
         }
+        // Find the adequate relations in the array such that the current
+        // equivalence relation is coarser or equal to the previous one.
+        GraphNeighEquiv currGraphNeighEquiv = er[radius];
+        GraphNeighEquiv prevGraphNeighEquiv = er[radius - 1];
+
+        // Now build the shape.
         this.createShapeNodes(currGraphNeighEquiv, fromShape);
         this.createShapeNodesEquivRel(prevGraphNeighEquiv);
         this.createShapeEdges(currGraphNeighEquiv.getEdgesEquivRel());
@@ -459,38 +467,6 @@ public final class Shape extends DefaultGraph {
         }
         this.checkShapeInvariant();
     }
-
-    /*private void buildShape(boolean fromShape) {
-        // First we create the equivalence relation for the nodes in the graph.
-        GraphNeighEquiv prevGraphNeighEquiv = null;
-        GraphNeighEquiv currGraphNeighEquiv;
-        if (fromShape) {
-            currGraphNeighEquiv = new ShapeNeighEquiv(this.graph);
-        } else {
-            currGraphNeighEquiv = new GraphNeighEquiv(this.graph);
-        }
-        GraphNeighEquiv lastDifferentEquiv = currGraphNeighEquiv;
-        // This loop is guaranteed to be executed at least once, because
-        // we start at radius 0 and the abstraction radius is at least 1.
-        while (currGraphNeighEquiv.getRadius() < Parameters.getAbsRadius()) {
-            prevGraphNeighEquiv = (GraphNeighEquiv) currGraphNeighEquiv.clone();
-            currGraphNeighEquiv.refineEquivRelation();
-            if (!prevGraphNeighEquiv.isEquivalent(currGraphNeighEquiv)) {
-                lastDifferentEquiv = prevGraphNeighEquiv;
-            }
-        }
-        this.createShapeNodes(currGraphNeighEquiv, fromShape);
-        this.createShapeNodesEquivRel(lastDifferentEquiv);
-        this.createShapeEdges(currGraphNeighEquiv.getEdgesEquivRel());
-        if (fromShape) {
-            assert currGraphNeighEquiv instanceof ShapeNeighEquiv;
-            this.createEdgeMultMaps((ShapeNeighEquiv) currGraphNeighEquiv);
-        } else {
-            this.createEdgeMultMaps(currGraphNeighEquiv);
-        }
-
-        this.checkShapeInvariant();
-    }*/
 
     /**
      * Creates the nodes of this shape based on the equivalence relation given. 
@@ -567,19 +543,11 @@ public final class Shape extends DefaultGraph {
      * Creates the edge multiplicity maps from a graph neighbourhood relation.
      */
     private void createEdgeMultMaps(GraphNeighEquiv currGraphNeighEquiv) {
-        // For all nodes in the graph.
-        for (Node node : this.graph.nodeSet()) {
-            ShapeNode nodeS = this.getShapeNode(node);
-            // For all binary labels.
-            for (Edge edge : this.graph.edgeSet(node)) {
-                if (Util.isUnary(edge)) {
-                    // EZ says: I don't like this jump, but if I don't use it,
-                    // I will have one extra indentation level, which makes
-                    // the code look like crap...
-                    continue;
-                } // else, we have a binary edge.
-
-                Label label = edge.label();
+        // For all binary labels.
+        for (Label label : Util.binaryLabelSet(this.graph)) {
+            // For all nodes in the graph.
+            for (Node node : this.graph.nodeSet()) {
+                ShapeNode nodeS = this.getShapeNode(node);
                 // For all equivalence classes in the shape.
                 for (EquivClass<ShapeNode> ecS : this.equivRel) {
                     Set<Node> nodesG = this.getReverseNodeMap(ecS);
@@ -596,10 +564,10 @@ public final class Shape extends DefaultGraph {
                     Multiplicity inMult = Multiplicity.getEdgeSetMult(inInter);
 
                     if (outMult.isPositive()) {
-                        this.setEdgeOutMult(es, outMult);
+                        this.outEdgeMultMap.put(es, outMult);
                     } // else don't store multiplicity zero.
                     if (inMult.isPositive()) {
-                        this.setEdgeInMult(es, inMult);
+                        this.inEdgeMultMap.put(es, inMult);
                     } // else don't store multiplicity zero.
                 }
             }
@@ -614,25 +582,18 @@ public final class Shape extends DefaultGraph {
     private void createEdgeMultMaps(ShapeNeighEquiv currGraphNeighEquiv) {
         // Original shape (S).
         Shape origShape = (Shape) this.graph;
-        // For all the nodes in the new shape (T).
-        for (ShapeNode nodeT : this.nodeSet()) {
-            // First get a node from S that is part of the equivalence class
-            // that corresponds to nodeT. We may take any node from such a
-            // class because all nodes of the class have the same multiplicity
-            // sum. This was checked when the neighbourhood equivalence
-            // relation was built.
-            ShapeNode nodeS = this.getReverseNodeMap(nodeT).iterator().next();
+        // For all binary labels.
+        for (Label label : Util.binaryLabelSet(origShape)) {
+            // For all the nodes in the new shape (T).
+            for (ShapeNode nodeT : this.nodeSet()) {
+                // First get a node from S that is part of the equivalence class
+                // that corresponds to nodeT. We may take any node from such a
+                // class because all nodes of the class have the same multiplicity
+                // sum. This was checked when the neighbourhood equivalence
+                // relation was built.
+                ShapeNode nodeS =
+                    this.getReverseNodeMap(nodeT).iterator().next();
 
-            // For all binary labels.
-            for (ShapeEdge edge : this.edgeSet(nodeT)) {
-                if (Util.isUnary(edge)) {
-                    // EZ says: I don't like this jump, but if I don't use it,
-                    // I will have one extra indentation level, which makes
-                    // the code look like crap...
-                    continue;
-                } // else, we have a binary edge.
-
-                Label label = edge.label();
                 // For all equivalence classes in the new shape (T).
                 for (EquivClass<ShapeNode> ecT : this.equivRel) {
                     // Compute the set of equivalence classes from the original
@@ -656,10 +617,10 @@ public final class Shape extends DefaultGraph {
                     EdgeSignature es = this.getEdgeSignature(nodeT, label, ecT);
 
                     if (outMult.isPositive()) {
-                        this.setEdgeOutMult(es, outMult);
+                        this.outEdgeMultMap.put(es, outMult);
                     } // else don't store multiplicity zero.
                     if (inMult.isPositive()) {
-                        this.setEdgeInMult(es, inMult);
+                        this.inEdgeMultMap.put(es, inMult);
                     } // else don't store multiplicity zero.
                 }
             }
