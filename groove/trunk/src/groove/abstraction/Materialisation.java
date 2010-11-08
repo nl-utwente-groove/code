@@ -488,19 +488,23 @@ public final class Materialisation implements Cloneable {
                 ShapeEdge newEdgeS =
                     this.shape.getShapeEdge(srcS, origEdgeS.label(), tgtS);
                 if (newEdgeS != null) {
-                    EdgeSignature outEs =
-                        this.shape.getEdgeOutSignature(newEdgeS);
-                    EdgeSignature inEs =
-                        this.shape.getEdgeInSignature(newEdgeS);
-                    if (this.shape.isOutEdgeSigConcrete(outEs)
-                        && this.shape.isOutEdgeSigUnique(outEs)
-                        && this.shape.isInEdgeSigConcrete(inEs)
-                        && this.shape.isInEdgeSigUnique(inEs)) {
+                    if (Util.isUnary(newEdgeS)) {
                         this.match.putEdge(edgeR, newEdgeS);
-                        edgesToFreeze.add(newEdgeS);
-                    } // else, we have an edge that needs to be materialised.
-                      // Wait for the MaterialiseEdge operation to take care
-                      // of this edge.
+                    } else {
+                        EdgeSignature outEs =
+                            this.shape.getEdgeOutSignature(newEdgeS);
+                        EdgeSignature inEs =
+                            this.shape.getEdgeInSignature(newEdgeS);
+                        if (this.shape.isOutEdgeSigConcrete(outEs)
+                            && this.shape.isOutEdgeSigUnique(outEs)
+                            && this.shape.isInEdgeSigConcrete(inEs)
+                            && this.shape.isInEdgeSigUnique(inEs)) {
+                            this.match.putEdge(edgeR, newEdgeS);
+                            edgesToFreeze.add(newEdgeS);
+                        } // else, we have an edge that needs to be materialised.
+                          // Wait for the MaterialiseEdge operation to take care
+                          // of this edge.
+                    }
                 }
             }
         }
