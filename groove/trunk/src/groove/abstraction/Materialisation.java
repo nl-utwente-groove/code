@@ -1148,33 +1148,9 @@ public final class Materialisation implements Cloneable {
         void perform() { // PullNode
             this.mat.logOp(this.toString());
 
-            // Look in the shaping morphism to get all the nodes that were
-            // materialised from the original node.
-            Set<ShapeNode> origNodes =
-                this.mat.shape.getReverseNodeMap(this.pulledNode);
             // Materialise the node and get the new multiplicity set back.
             Set<Multiplicity> mults =
                 this.mat.shape.materialiseNode(this.pulledNode, this.mult, 1);
-            // Look in the shaping morphism to get the new node that was
-            // materialised from the original node.
-            Set<ShapeNode> newNodes =
-                this.mat.shape.getReverseNodeMap(this.pulledNode);
-            // Remove the original nodes from the set of new nodes.
-            newNodes.removeAll(origNodes);
-            assert newNodes.size() == 1;
-            ShapeNode newNode = newNodes.iterator().next();
-            Label label = this.pullingEdge.label();
-            // Find the new pulled edge.
-            ShapeEdge pulledEdge;
-            if (this.pullingEdge.source().equals(this.pulledNode)) {
-                pulledEdge =
-                    this.mat.shape.getShapeEdge(newNode, label,
-                        this.pullingEdge.target());
-            } else {
-                pulledEdge =
-                    this.mat.shape.getShapeEdge(this.pullingEdge.source(),
-                        label, newNode);
-            }
 
             // Create the new materialisation objects.
             for (Multiplicity mult : mults) {
@@ -1187,13 +1163,8 @@ public final class Materialisation implements Cloneable {
                     // Yes, we do need to clone.
                     newMat = this.mat.clone();
                 }
-
                 // Update the multiplicity of the original node.
                 newMat.shape.setNodeMult(this.pulledNode, mult);
-                // Simplify the shape, when possible, to avoid some
-                // non-determinism.
-                newMat.shape.removeImpossibleEdges(pulledEdge);
-
                 // Add this new materialisation to the result set of this
                 // operation.
                 this.result.add(newMat);
@@ -1357,7 +1328,7 @@ public final class Materialisation implements Cloneable {
     // ------------------------------------------------------------------------
 
     /** Test method. */
-    /*public static void test0() {
+    public static void test0() {
         final String DIRECTORY = "junit/samples/abs-test.gps/";
 
         File file = new File(DIRECTORY);
@@ -1388,10 +1359,10 @@ public final class Materialisation implements Cloneable {
         } catch (FormatException e) {
             e.printStackTrace();
         }
-    }*/
+    }
 
     /** Test method. */
-    /*public static void test1() {
+    public static void test1() {
         final String DIRECTORY = "junit/samples/abs-test.gps/";
 
         File file = new File(DIRECTORY);
@@ -1422,7 +1393,7 @@ public final class Materialisation implements Cloneable {
         } catch (FormatException e) {
             e.printStackTrace();
         }
-    }*/
+    }
 
     /** Test method. */
     public static void test2() {
@@ -1459,7 +1430,7 @@ public final class Materialisation implements Cloneable {
     }
 
     /** Test method. */
-    /*public static void test3() {
+    public static void test3() {
         final String DIRECTORY = "junit/samples/abs-test.gps/";
 
         File file = new File(DIRECTORY);
@@ -1490,12 +1461,12 @@ public final class Materialisation implements Cloneable {
         } catch (FormatException e) {
             e.printStackTrace();
         }
-    }*/
+    }
 
     /** Test method. */
     public static void main(String args[]) {
         Multiplicity.initMultStore();
-        test2();
+        test0();
     }
 
 }

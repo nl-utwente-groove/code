@@ -1377,40 +1377,6 @@ public final class Shape extends DefaultGraph {
     }
 
     /**
-     * Performs a minor simplification on the shape by removing edges that
-     * cannot exist once the given edge is considered to be present.
-     * This method looks at outgoing and incoming edge signatures that have
-     * the same equivalence class. This means that the source and target of
-     * all edges are in the same equivalence class. Only edge signatures with
-     * multiplicity one are considered. If these conditions are not met, this
-     * means that we need to resort to other materialisation operations to
-     * check the validity of a certain configuration. If the conditions are met,
-     * the given edge is frozen, since it is certainly concrete.
-     */
-    public void removeImpossibleEdges(ShapeEdge edgeToKeep) {
-        assert this.edgeSet().contains(edgeToKeep);
-
-        EdgeSignature outEs = this.getEdgeOutSignature(edgeToKeep);
-        EdgeSignature inEs = this.getEdgeInSignature(edgeToKeep);
-
-        if (outEs.getEquivClass().equals(inEs.getEquivClass())
-            && this.isOutEdgeSigConcrete(outEs)
-            && this.isInEdgeSigConcrete(inEs)) {
-            for (ShapeEdge edge : this.getEdgesFrom(outEs, true)) {
-                if (!edge.equals(edgeToKeep) && !this.isFrozen(edge)) {
-                    this.removeEdge(edge);
-                }
-            }
-            for (ShapeEdge edge : this.getEdgesFrom(inEs, false)) {
-                if (!edge.equals(edgeToKeep) && !this.isFrozen(edge)) {
-                    this.removeEdge(edge);
-                }
-            }
-            this.freezeEdge(edgeToKeep);
-        }
-    }
-
-    /**
      * Thaws the frozen edges of the shape. This is the last step of the
      * materialisation phase. The frozen edges are set to be normal edges
      * again and the edge multiplicity maps are properly updated.
