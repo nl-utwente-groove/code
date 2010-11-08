@@ -159,7 +159,7 @@ public class GCLParser extends Parser {
                 result.append(c);
             }
         }
-        // System.out.printf("From %s to %s%n", text, result);
+        System.out.printf("From %s to %s%n", text, result);
         return new CommonTree(new CommonToken(IDENTIFIER, result.toString()));
     }
 
