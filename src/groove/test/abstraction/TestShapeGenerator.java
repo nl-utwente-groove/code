@@ -33,24 +33,24 @@ public class TestShapeGenerator extends TestCase {
 
         Parameters.setEdgeMultBound(1);
         Parameters.setAbsRadius(1);
-        // EDUARDO: FIX THIS RESULTS!!!
         Parameters.setNodeMultBound(1);
-        generator = new ShapeGenerator();
-        generator.generate(GRAMMAR, START_GRAPH, false);
-        assertTrue(generator.getStateCount() == 6
-            && generator.getTransitionCount() == 12);
 
-        Parameters.setNodeMultBound(2);
-        generator = new ShapeGenerator();
-        generator.generate(GRAMMAR, START_GRAPH, false);
-        assertTrue(generator.getStateCount() == 7
-            && generator.getTransitionCount() == 14);
-
-        Parameters.setNodeMultBound(3);
         generator = new ShapeGenerator();
         generator.generate(GRAMMAR, START_GRAPH, false);
         assertTrue(generator.getStateCount() == 8
             && generator.getTransitionCount() == 16);
+
+        Parameters.setNodeMultBound(2);
+        generator = new ShapeGenerator();
+        generator.generate(GRAMMAR, START_GRAPH, false);
+        assertTrue(generator.getStateCount() == 11
+            && generator.getTransitionCount() == 22);
+
+        Parameters.setNodeMultBound(3);
+        generator = new ShapeGenerator();
+        generator.generate(GRAMMAR, START_GRAPH, false);
+        assertTrue(generator.getStateCount() == 14
+            && generator.getTransitionCount() == 28);
 
     }
 
