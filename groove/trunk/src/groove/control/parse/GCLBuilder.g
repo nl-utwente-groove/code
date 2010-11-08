@@ -8,6 +8,7 @@ options {
 @header {
 package groove.control.parse;
 import groove.control.*;
+import groove.util.ExprParser;
 import groove.util.Pair;
 import groove.trans.Rule;
 import groove.graph.GraphInfo;
@@ -311,7 +312,7 @@ parameter
   })
   | ^(PARAM STRING_TYPE str=IDENTIFIER {
   		debug("Adding string parameter: "+str.getText());
-  		parameters.add(new Pair<String,Integer>("\""+str.getText()+"\"", Rule.PARAMETER_INPUT));
+  		parameters.add(new Pair<String,Integer>(ExprParser.toQuoted(str.getText(),'"'), Rule.PARAMETER_INPUT));
   	})
   | ^(PARAM INT_TYPE in=IDENTIFIER {
   		debug("Adding integer parameter: "+in.getText());
