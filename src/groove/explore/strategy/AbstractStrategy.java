@@ -227,7 +227,7 @@ public abstract class AbstractStrategy implements Strategy {
     /**
      * Match applier for the underlying GTS.
      */
-    private RuleEventApplier applier;
+    protected RuleEventApplier applier;
     /** The graph transition system explored by the strategy. */
     private GTS gts;
     /** The state where the strategy starts exploring. */

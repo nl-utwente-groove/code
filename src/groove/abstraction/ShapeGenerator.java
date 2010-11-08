@@ -18,10 +18,9 @@ package groove.abstraction;
 
 import groove.abstraction.lts.AGTS;
 import groove.abstraction.lts.ShapeStateGenerator;
-import groove.explore.Scenario;
-import groove.explore.ScenarioFactory;
+import groove.explore.result.Acceptor;
 import groove.explore.result.NoStateAcceptor;
-import groove.explore.strategy.BranchingStrategy;
+import groove.explore.result.Result;
 import groove.trans.GraphGrammar;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -71,19 +70,28 @@ public final class ShapeGenerator {
     private void exploreGrammar(boolean fromMain) {
         this.gts = new AGTS(this.grammar);
 
-        // EDUARDO: Replace this code with the new exploration classes.
-        BranchingStrategy strategy = new BranchingStrategy();
-        Scenario scenario =
-            ScenarioFactory.getScenario(strategy, new NoStateAcceptor(), "", "");
-        scenario.prepare(this.gts);
-        this.sgen = new ShapeStateGenerator(this.gts);
-        strategy.setMatchApplier(this.sgen);
-        scenario.play();
+        ShapeBFSStrategy strategy = new ShapeBFSStrategy();
+        Acceptor acceptor = new NoStateAcceptor();
+        acceptor.setResult(new Result(0));
+        strategy.prepare(this.gts);
+        this.sgen = (ShapeStateGenerator) strategy.getMatchApplier();
+
+        // EDUARDO: How integrate this with the Exploration class?
+        // initialize profiling and prepare graph listener
+        strategy.addGTSListener(acceptor);
+        boolean interrupted = false;
+        // start working until done or nothing to do
+        while (!interrupted && !acceptor.getResult().done() && strategy.next()) {
+            interrupted = Thread.currentThread().isInterrupted();
+        }
+        // remove graph listener and stop profiling       
+        strategy.removeGTSListener(acceptor);
+
         if (fromMain) {
             System.out.println("States: " + this.sgen.getStateCount());
             System.out.println("Transitions: " + this.sgen.getTransitionCount());
         }
-        if (scenario.isInterrupted()) {
+        if (interrupted) {
             new Exception().printStackTrace();
         }
     }
