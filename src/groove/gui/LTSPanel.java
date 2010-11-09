@@ -120,13 +120,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
      */
     public synchronized void setTransitionUpdate(GraphTransition transition) {
         getJModel().setActive(transition.source(), transition);
-        if (getSimulator().isAbstractSimulation()) {
-            // getJGraph().scrollTo(getJModel().getActiveState());
-            conditionalScrollTo(getJModel().getActiveState());
-        } else {
-            // getJGraph().scrollTo(getJModel().getActiveTransition());
-            conditionalScrollTo(getJModel().getActiveTransition());
-        }
+        conditionalScrollTo(getJModel().getActiveTransition());
     }
 
     /**

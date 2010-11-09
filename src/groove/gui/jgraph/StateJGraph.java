@@ -60,10 +60,8 @@ public class StateJGraph extends JGraph {
     protected void fillPopupMenu(JPopupMenu result) {
         addSeparatorUnlessFirst(result);
         result.add(this.simulator.getApplyTransitionAction());
-        if (!this.simulator.isAbstractSimulation()) {
-            result.addSeparator();
-            result.add(this.simulator.getEditGraphAction());
-        }
+        result.addSeparator();
+        result.add(this.simulator.getEditGraphAction());
         super.fillPopupMenu(result);
     }
 
