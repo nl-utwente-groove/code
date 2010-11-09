@@ -17,10 +17,8 @@
 package groove.abstraction;
 
 import groove.abstraction.lts.AGTS;
-import groove.abstraction.lts.ShapeStateGenerator;
-import groove.explore.result.Acceptor;
-import groove.explore.result.NoStateAcceptor;
-import groove.explore.result.Result;
+import groove.explore.Exploration;
+import groove.explore.encode.Serialized;
 import groove.trans.GraphGrammar;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -40,7 +38,6 @@ public final class ShapeGenerator {
 
     private GraphGrammar grammar;
     private AGTS gts;
-    private ShapeStateGenerator sgen;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -70,29 +67,21 @@ public final class ShapeGenerator {
     private void exploreGrammar(boolean fromMain) {
         this.gts = new AGTS(this.grammar);
 
-        ShapeBFSStrategy strategy = new ShapeBFSStrategy();
-        Acceptor acceptor = new NoStateAcceptor();
-        acceptor.setResult(new Result(0));
-        strategy.prepare(this.gts);
-        this.sgen = (ShapeStateGenerator) strategy.getMatchApplier();
-
-        // EDUARDO: How integrate this with the Exploration class?
-        // initialize profiling and prepare graph listener
-        strategy.addGTSListener(acceptor);
-        boolean interrupted = false;
-        // start working until done or nothing to do
-        while (!interrupted && !acceptor.getResult().done() && strategy.next()) {
-            interrupted = Thread.currentThread().isInterrupted();
+        Exploration exploration =
+            new Exploration(new Serialized("shapebfs"), new Serialized("none"),
+                0);
+        try {
+            exploration.play(this.gts, null);
+        } catch (FormatException e) {
+            e.printStackTrace();
         }
-        // remove graph listener and stop profiling       
-        strategy.removeGTSListener(acceptor);
 
-        if (fromMain) {
-            System.out.println("States: " + this.sgen.getStateCount());
-            System.out.println("Transitions: " + this.sgen.getTransitionCount());
-        }
-        if (interrupted) {
+        if (exploration.isInterrupted()) {
             new Exception().printStackTrace();
+        }
+        if (fromMain) {
+            System.out.println("States: " + this.getStateCount());
+            System.out.println("Transitions: " + this.getTransitionCount());
         }
     }
 
@@ -104,12 +93,12 @@ public final class ShapeGenerator {
 
     /** Basic getter method. */
     public int getStateCount() {
-        return this.sgen.getStateCount();
+        return this.gts.nodeCount();
     }
 
     /** Basic getter method. */
     public int getTransitionCount() {
-        return this.sgen.getTransitionCount();
+        return this.gts.edgeCount();
     }
 
     // ------------------------------------------------------------------------
