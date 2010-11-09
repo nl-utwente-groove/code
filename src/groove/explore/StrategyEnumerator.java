@@ -16,14 +16,15 @@
  */
 package groove.explore;
 
+import groove.abstraction.ShapeBFSStrategy;
 import groove.explore.encode.EncodedEdgeMap;
 import groove.explore.encode.EncodedEnabledRule;
 import groove.explore.encode.EncodedInt;
 import groove.explore.encode.EncodedRuleMode;
-import groove.explore.encode.TemplateList;
 import groove.explore.encode.Template.Template0;
 import groove.explore.encode.Template.Template1;
 import groove.explore.encode.Template.Template2;
+import groove.explore.encode.TemplateList;
 import groove.explore.prettyparse.PIdentifier;
 import groove.explore.prettyparse.PLiteral;
 import groove.explore.prettyparse.PNumber;
@@ -58,12 +59,12 @@ import java.util.Map;
  */
 public class StrategyEnumerator extends TemplateList<Strategy> {
 
-    private static final String STRATEGY_TOOLTIP =
-        "<HTML>" + "The exploration strategy determines at each state:<BR>"
-            + "<B>1.</B> Which of the applicable transitions will be taken; "
-            + "and<BR>"
-            + "<B>2.</B> In which order the reached states will be explored."
-            + "</HTML>";
+    private static final String STRATEGY_TOOLTIP = "<HTML>"
+        + "The exploration strategy determines at each state:<BR>"
+        + "<B>1.</B> Which of the applicable transitions will be taken; "
+        + "and<BR>"
+        + "<B>2.</B> In which order the reached states will be explored."
+        + "</HTML>";
 
     /**
      * Enumerates the available strategies one by one. A strategy is defined
@@ -184,6 +185,16 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
                 ConditionalBFSStrategy strategy = new ConditionalBFSStrategy();
                 strategy.setExploreCondition(condition);
                 return strategy;
+            }
+        });
+
+        addTemplate(new Template0<Strategy>("shapebfs",
+            "Shape Breadth-First Exploration",
+            "This strategy is used for abstract state space exploration.") {
+
+            @Override
+            public Strategy create(GTS gts) {
+                return new ShapeBFSStrategy();
             }
         });
     }
