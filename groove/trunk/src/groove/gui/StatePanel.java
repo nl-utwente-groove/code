@@ -246,11 +246,9 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     public synchronized void applyTransitionUpdate(GraphTransition transition) {
         GraphState newState = transition.target();
         GraphJModel newModel = getStateJModel(newState, false);
-        if (!getSimulator().isAbstractSimulation()) {
-            GraphState oldState = transition.source();
-            Morphism morphism = transition.getMorphism();
-            copyLayout(getStateJModel(oldState, true), newModel, morphism);
-        }
+        GraphState oldState = transition.source();
+        Morphism morphism = transition.getMorphism();
+        copyLayout(getStateJModel(oldState, true), newModel, morphism);
         // set the graph model to the new state
         setJModel(newModel);
         refreshStatus();
@@ -366,7 +364,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         GraphJModel result = createStateJModel(state);
         result.setName(state.toString());
         // try to find layout information for the model
-        if (!getSimulator().isAbstractSimulation() && copyLayout) {
+        if (copyLayout) {
             if (state instanceof GraphNextState) {
                 GraphState oldState = ((GraphNextState) state).source();
                 Morphism morphism = ((GraphNextState) state).getMorphism();

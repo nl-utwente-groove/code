@@ -40,11 +40,8 @@ import groove.explore.DefaultExplorationValidator;
 import groove.explore.Exploration;
 import groove.explore.ModelCheckingScenario;
 import groove.explore.Scenario;
-import groove.explore.ScenarioFactory;
-import groove.explore.result.Acceptor;
 import groove.explore.strategy.Boundary;
 import groove.explore.strategy.BoundedModelCheckingStrategy;
-import groove.explore.strategy.BranchingStrategy;
 import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExplorationStatistics;
 import groove.explore.util.ExploreCache;
@@ -446,8 +443,6 @@ public class Simulator {
     private boolean setCurrentRule(RuleView rule) {
         boolean result = this.getCurrentRule() != rule;
         this.currentRuleName = rule.getRuleName();
-        // this.currentRuleSet.clear();
-        // this.currentRuleSet.add(rule);
         return result;
     }
 
@@ -1081,44 +1076,6 @@ public class Simulator {
     }
 
     /**
-     * Run a abstract exploration.
-     */
-    public void doRunAbstrExploration() {
-        GraphJModel ltsJModel = getLtsPanel().getJModel();
-        synchronized (ltsJModel) {
-            // unhook the lts' jmodel from the lts, for efficiency's sake
-            getGTS().removeGraphListener(ltsJModel);
-            // disable rule application for the time being
-            boolean applyEnabled = getApplyTransitionAction().isEnabled();
-            getApplyTransitionAction().setEnabled(false);
-            // EDUARDO: Quick hack to get abstract exploration working.
-            // This should be merged with the current way of doing exploration,
-            // i.e., by using the Exploration class...
-            Scenario scenario =
-                ScenarioFactory.getScenario(new BranchingStrategy(),
-                    new Acceptor(), "Explores the full state space.",
-                    "Full exploration (branching, aliasing)");
-            scenario.prepare(getGTS());
-            // create a thread to do the work in the background
-            Thread generateThread = new LaunchThread(scenario);
-            // go!
-            generateThread.start();
-            // collect the result states
-            getGTS().setResult(scenario.getResult());
-            // get the lts' jmodel back on line and re-synchronize its state
-            ltsJModel.reload();
-            // re-enable rule application
-            getApplyTransitionAction().setEnabled(applyEnabled);
-            // reset lts display visibility
-            setGraphPanel(getLtsPanel());
-        }
-        LTSJGraph ltsJGraph = getLtsPanel().getJGraph();
-        if (ltsJGraph.getLayouter() != null) {
-            ltsJGraph.getLayouter().start(false);
-        }
-    }
-
-    /**
      * Attempts to save a control program to a file. Failure to do so will be
      * reported in an error dialog. The return value indicates if the attempt
      * was successful.
@@ -1249,11 +1206,7 @@ public class Simulator {
         boolean grammarCorrect = grammarErrors.isEmpty();
         setErrors(grammarErrors);
         if (grammarCorrect && confirmBehaviourOption(START_SIMULATION_OPTION)) {
-            if (isAbstractSimulation()) {
-                startAbstrSimulation();
-            } else {
-                startSimulation();
-            }
+            startSimulation();
         }
         this.history.updateLoadGrammar();
     }
@@ -1284,20 +1237,11 @@ public class Simulator {
             GTS gts = new GTS(getGrammarView().toGrammar());
             gts.getRecord().setRandomAccess(true);
             setGTS(gts);
-            // getGenerator().explore(getCurrentState());
             fireStartSimulation(getGTS());
             refresh();
         } catch (FormatException exc) {
             showErrorDialog("Error while starting simulation", exc);
         }
-    }
-
-    /**
-     * A variant of the {@link #startSimulation()} method for starting an
-     * abstract simulation.
-     */
-    public synchronized void startAbstrSimulation() {
-        // EDUARDO: Disabled for now...
     }
 
     /**
@@ -1309,9 +1253,6 @@ public class Simulator {
      * @see #fireSetState(GraphState)
      */
     public synchronized void setState(GraphState state) {
-        // if (setCurrentState(state)) {
-        // getGenerator().explore(state);
-        // }
         setCurrentState(state);
         fireSetState(state);
         refreshActions();
@@ -1357,14 +1298,7 @@ public class Simulator {
                 setCurrentEvent(transition.getEvent());
             }
             fireSetTransition(getCurrentTransition());
-            // } else {
-            // assert match != null : "The match and the transition cannot be
-            // both null.";
-            // RuleNameLabel ruleName = match.getRule().getName();
-            // setCurrentRule(getCurrentGrammar().getRule(ruleName));
-            // setCurrentMatch(match);
         }
-        // fireSetTransition(getCurrentTransition());
         refreshActions();
     }
 
@@ -1381,7 +1315,6 @@ public class Simulator {
         setCurrentTransition(null);
         setCurrentEvent(event);
         fireSetMatch(event.getMatch(getCurrentState().getGraph()));
-        // fireSetTransition(getCurrentTransition());
         refreshActions();
     }
 
@@ -1440,7 +1373,6 @@ public class Simulator {
             this.frame = new JFrame(APPLICATION_NAME);
             // small icon doesn't look nice due to shadow
             this.frame.setIconImage(Groove.GROOVE_ICON_16x16.getImage());
-            // frame.setSize(500,300);
             this.frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
             // register doQuit() for the Command-Q shortcut on MacOS 
@@ -1480,11 +1412,8 @@ public class Simulator {
             JSplitPane contentPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
             contentPane.setTopComponent(splitPane);
             contentPane.setResizeWeight(0.8);
-            contentPane.setDividerSize(0);//, getErrorPanel());
+            contentPane.setDividerSize(0);
             this.frame.setContentPane(contentPane);
-            //            contentPane.setLayout(new BorderLayout());
-            //            contentPane.add(splitPane);
-            //            contentPane.add(getErrorPanel(), BorderLayout.SOUTH);
         }
         return this.frame;
     }
@@ -2181,12 +2110,6 @@ public class Simulator {
         result.add(getExplorationDialogAction());
         result.add(getExplorationStatsDialogAction());
 
-        // IOVKA change to activate abstract simulation
-        // EDUARDO says: Uncommented to test abstraction.
-        /*result.addSeparator();
-        result.add(new JMenuItem(getStartAbstrSimulationAction()));
-        result.add(new JMenuItem(getAbstrExplorationAction()));*/
-
         return result;
     }
 
@@ -2376,7 +2299,6 @@ public class Simulator {
         if (!this.updating) {
             this.updating = true;
             for (SimulationListener listener : this.listeners) {
-                // System.out.println("startsimulationupdate: " + listener);
                 listener.startSimulationUpdate(gts);
             }
             this.updating = false;
@@ -2739,11 +2661,6 @@ public class Simulator {
             this.options.getItem(PREVIEW_ON_CLOSE_OPTION).setSelected(true);
         }
         return this.options;
-    }
-
-    /** Returns true if the current simulation is abstract. */
-    public boolean isAbstractSimulation() {
-        return false;
     }
 
     /**
@@ -3135,12 +3052,6 @@ public class Simulator {
         return this.applyTransitionAction;
     }
 
-    /*
-     * private ChooseCustomScenarioAction getChooseCustomScenarioAction() { if
-     * (this.chooseScenarioAction == null) { this.chooseScenarioAction = new
-     * ChooseCustomScenarioAction(); } return this.chooseScenarioAction; }
-     */
-
     /**
      * Action for applying the current derivation to the current state.
      * @see Simulator#applyMatch()
@@ -3154,12 +3065,10 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent evt) {
-            // applyTransition();
             applyMatch();
         }
 
         public void refresh() {
-            // setEnabled(getCurrentTransition() != null);
             setEnabled(getCurrentEvent() != null);
         }
     }
@@ -3283,8 +3192,6 @@ public class Simulator {
                     new ArrayList<RuleView>(getCurrentRuleSet());
                 RuleName savedRule = null;
                 for (RuleView rule : rules) {
-                    // AspectGraph oldRuleGraph =
-                    // getCurrentRule().getAspectGraph();
                     AspectGraph oldRuleGraph = rule.getView();
                     newRuleName =
                         askNewRuleName("Select new rule name", rule.getName(),
@@ -5052,80 +4959,6 @@ public class Simulator {
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(false)) {
                 startSimulation();
-            }
-        }
-
-        public void refresh() {
-            boolean enabled =
-                getGrammarView() != null
-                    && getGrammarView().getErrors().isEmpty();
-            setEnabled(enabled);
-        }
-    }
-
-    /**
-     * A variant of {@link #getStartSimulationAction()} for abstract simulation.
-     */
-    public Action getStartAbstrSimulationAction() {
-        // lazily create the action
-        if (this.startAbstrSimulationAction == null) {
-            this.startAbstrSimulationAction = new StartAbstrSimulationAction();
-        }
-        return this.startAbstrSimulationAction;
-    }
-
-    /**
-     * A variant of {@link #getDefaultExplorationAction()} for abstract exploration.
-     */
-    public Action getAbstrExplorationAction() {
-        // lazily create the action
-        if (this.abstrExplorationAction == null) {
-            this.abstrExplorationAction = new AbstrExplorationAction();
-        }
-        return this.abstrExplorationAction;
-    }
-
-    /** The action to start a new abstract simulation. */
-    private StartAbstrSimulationAction startAbstrSimulationAction;
-    /** The action to start a new abstract exploration. */
-    private AbstrExplorationAction abstrExplorationAction;
-
-    /**
-     * A variant of {@link Simulator.StartSimulationAction} for abstract
-     * simulation.
-     */
-    private class StartAbstrSimulationAction extends RefreshableAction {
-        /** Constructs an instance of the action. */
-        StartAbstrSimulationAction() {
-            super(Options.START_ABSTR_SIMULATION_ACTION_NAME, null);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (confirmAbandon(false)) {
-                startAbstrSimulation();
-            }
-        }
-
-        public void refresh() {
-            boolean enabled =
-                getGrammarView() != null
-                    && getGrammarView().getErrors().isEmpty();
-            setEnabled(enabled);
-        }
-    }
-
-    /**
-     * A variant of ExplorationAction for abstract simulation.
-     */
-    private class AbstrExplorationAction extends RefreshableAction {
-        /** Constructs an instance of the action. */
-        AbstrExplorationAction() {
-            super("Run Abstract Exploration", null);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (confirmAbandon(false)) {
-                doRunAbstrExploration();
             }
         }
 
