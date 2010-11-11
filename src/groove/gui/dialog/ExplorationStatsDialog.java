@@ -103,7 +103,7 @@ public class ExplorationStatsDialog extends JDialog implements ActionListener {
 
         // Pane to create the scroll bars.
         JScrollPane scrollPane = new JScrollPane();
-        scrollPane.setPreferredSize(new Dimension(700, 700));
+        scrollPane.setPreferredSize(new Dimension(700, 500));
         scrollPane.setBorder(BorderFactory.createTitledBorder(null,
             STATS_HEADER_TEXT, TitledBorder.DEFAULT_JUSTIFICATION,
             TitledBorder.DEFAULT_POSITION));
