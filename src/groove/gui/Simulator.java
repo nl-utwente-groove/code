@@ -36,10 +36,12 @@ import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import groove.control.ControlView;
 import groove.control.Location;
+import groove.explore.AcceptorEnumerator;
 import groove.explore.DefaultExplorationValidator;
 import groove.explore.Exploration;
 import groove.explore.ModelCheckingScenario;
 import groove.explore.Scenario;
+import groove.explore.StrategyEnumerator;
 import groove.explore.strategy.Boundary;
 import groove.explore.strategy.BoundedModelCheckingStrategy;
 import groove.explore.strategy.ExploreStateStrategy;
@@ -3737,7 +3739,8 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent evt) {
-            new ExplorationDialog(Simulator.this, getFrame());
+            new ExplorationDialog(StrategyEnumerator.MASK_CONCRETE,
+                AcceptorEnumerator.MASK_CONCRETE, Simulator.this, getFrame());
         }
 
         public void refresh() {

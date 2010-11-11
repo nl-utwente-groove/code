@@ -26,7 +26,6 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -48,26 +47,28 @@ import javax.swing.event.ListSelectionListener;
  * <!=========================================================================>
  * @author Maarten de Mol
  */
-public class TemplateList<A> implements EncodedType<A,Serialized> {
+public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
 
     /** The list of templates. */
-    final LinkedList<Template<A>> templates;
+    private final ArrayList<Template<A>> templates;
     /** String identifying the type. */
-    final String typeIdentifier;
+    private final String typeIdentifier;
     /** The tool tip string. */
-    final String typeToolTip;
+    private final String typeToolTip;
     /** List of listeners connected to this list */
-    LinkedList<TemplateListListener> listeners;
+    private ArrayList<TemplateListListener> listeners;
+    /** Mask for the subset of templates that are available in the editor. */
+    private int mask = 0; // 0 behaves as 'use everything'
 
     /**
      * Constructor. Initializes an identifier and tool-tip for the type A.
      * Creates an empty list of held templates.
      */
     public TemplateList(String typeIdentifier, String typeToolTip) {
-        this.templates = new LinkedList<Template<A>>();
+        this.templates = new ArrayList<Template<A>>(15);
         this.typeIdentifier = typeIdentifier;
         this.typeToolTip = typeToolTip;
-        this.listeners = new LinkedList<TemplateListListener>();
+        this.listeners = new ArrayList<TemplateListListener>();
     }
 
     /**
@@ -78,12 +79,26 @@ public class TemplateList<A> implements EncodedType<A,Serialized> {
     }
 
     /**
+     * Setter for the mask.
+     */
+    public void setMask(int mask) {
+        this.mask = mask;
+    }
+
+    /**
      * Add a template. The keyword of the template is assumed to be unique
      * with respect to the already stored templates.
      */
-    public void addTemplate(Template<A> template) {
+    public void addTemplate(int mask, Template<A> template) {
+        template.setMask(mask);
         this.templates.add(template);
     }
+
+    /**
+     * Add a template with a default mask. This method must be implemented by
+     * the subclass, in which the masks must also be defined.
+     */
+    public abstract void addTemplate(Template<A> template);
 
     /**
      * Adds a listener, which will be invoked each time the selected
@@ -197,10 +212,12 @@ public class TemplateList<A> implements EncodedType<A,Serialized> {
             this.templateKeywords = new ArrayList<String>(nrTemplates);
             this.templateNames = new ArrayList<String>(nrTemplates);
             for (Template<A> template : TemplateList.this.templates) {
-                this.templateKeywords.add(template.getKeyword());
-                this.templateNames.add(template.getName());
-                this.editors.put(template.getKeyword(),
-                    template.createEditor(simulator));
+                if ((template.getMask() & TemplateList.this.mask) == TemplateList.this.mask) {
+                    this.templateKeywords.add(template.getKeyword());
+                    this.templateNames.add(template.getName());
+                    this.editors.put(template.getKeyword(),
+                        template.createEditor(simulator));
+                }
             }
         }
 

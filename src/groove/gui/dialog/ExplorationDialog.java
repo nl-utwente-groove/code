@@ -104,10 +104,13 @@ public class ExplorationDialog extends JDialog implements ActionListener,
 
     /**
      * Create the dialog.
+     * @param strategyMask - mask for determining the strategies to be displayed
+     * @param acceptorMask - mask for determining the acceptors to be displayed
      * @param simulator - reference to the simulator
      * @param owner - reference to the parent GUI component
      */
-    public ExplorationDialog(Simulator simulator, JFrame owner) {
+    public ExplorationDialog(int strategyMask, int acceptorMask,
+            Simulator simulator, JFrame owner) {
 
         // Open a modal dialog, which cannot be resized or closed.
         super(owner, Options.EXPLORATION_DIALOG_ACTION_NAME, true);
@@ -147,6 +150,7 @@ public class ExplorationDialog extends JDialog implements ActionListener,
 
         // Create the strategy editor.
         StrategyEnumerator strategyEnumerator = new StrategyEnumerator();
+        strategyEnumerator.setMask(strategyMask);
         strategyEnumerator.addListener(this);
         this.strategyEditor = strategyEnumerator.createEditor(simulator);
         Serialized defaultStrategy =
@@ -154,6 +158,7 @@ public class ExplorationDialog extends JDialog implements ActionListener,
 
         // Create the acceptor editor.
         AcceptorEnumerator acceptorEnumerator = new AcceptorEnumerator();
+        acceptorEnumerator.setMask(acceptorMask);
         acceptorEnumerator.addListener(this);
         this.acceptorEditor = acceptorEnumerator.createEditor(simulator);
         Serialized defaultAcceptor =
