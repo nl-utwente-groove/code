@@ -21,6 +21,7 @@ import groove.explore.encode.EncodedEdgeMap;
 import groove.explore.encode.EncodedEnabledRule;
 import groove.explore.encode.EncodedInt;
 import groove.explore.encode.EncodedRuleMode;
+import groove.explore.encode.Template;
 import groove.explore.encode.Template.Template0;
 import groove.explore.encode.Template.Template1;
 import groove.explore.encode.Template.Template2;
@@ -58,6 +59,13 @@ import java.util.Map;
  * @author Maarten de Mol
  */
 public class StrategyEnumerator extends TemplateList<Strategy> {
+
+    /** Mask for strategies that are only valid for the concrete case. */
+    public final static int MASK_CONCRETE = 1;
+    /** Mask for strategies that are only valid for the abstract case. */
+    public final static int MASK_ABSTRACT = 2;
+    /** Mask for strategies that are always valid. */
+    public final static int MASK_ALL = MASK_CONCRETE | MASK_ABSTRACT;
 
     private static final String STRATEGY_TOOLTIP = "<HTML>"
         + "The exploration strategy determines at each state:<BR>"
@@ -188,7 +196,7 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
             }
         });
 
-        addTemplate(new Template0<Strategy>("shapebfs",
+        addTemplate(MASK_ABSTRACT, new Template0<Strategy>("shapebfs",
             "Shape Breadth-First Exploration",
             "This strategy is used for abstract state space exploration.") {
 
@@ -197,5 +205,14 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
                 return new ShapeBFSStrategy();
             }
         });
+    }
+
+    /**
+     * Default addition of strategies. Marks the strategy for use in the
+     * concrete case only.
+     */
+    @Override
+    public void addTemplate(Template<Strategy> template) {
+        addTemplate(MASK_CONCRETE, template);
     }
 }
