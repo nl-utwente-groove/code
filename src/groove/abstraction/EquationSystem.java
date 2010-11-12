@@ -301,7 +301,7 @@ public abstract class EquationSystem {
      * to update the indices for the variables in the set constraints. Every
      * time that we modify such an index, all the equations need to be computed
      * again, and we reset all equation indices.
-     * The method always keeps the invariant: j >= i, for both j's and i's.
+     * The method always keeps the invariant: j >= i, for all j's and i's.
      * The j indices are the working indices.
      * The i indices store the last element that was modified. Every time that
      * i changes, all iterators from i+1 to the maximum value are reset.

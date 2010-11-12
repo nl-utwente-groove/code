@@ -375,6 +375,12 @@ public final class Materialisation implements Cloneable {
         return complyToNodeMult && complyToEquivClass && complyToEdgeMult;
     }
 
+    /**
+     * Creates the initial operations to be performed in the shape. Note that
+     * after the execution of an operation, new ones may be created so the
+     * result of this method may not be the entire list of operations that
+     * will be performed.
+     */
     private void planTasks() {
         NodeEdgeMap originalMap = this.preMatch.getElementMap();
         boolean isMatNodeOpEmpty = true;
@@ -1139,14 +1145,6 @@ public final class Materialisation implements Cloneable {
          * This operation is very similar to MaterialiseNode with the exception
          * that here only one node is materialised in the shape. Node that, also
          * here, all adjacent edges are duplicated.
-         * The newly created node also produces a pulled edge. When possible,
-         * this pulled edge is frozen to ensure that it remains in the shape.
-         * However, there cases where it is not possible at this point to freeze
-         * the pulled edge. We leave to the SingulariseNode operation to decide
-         * on the valid configurations that contain the pulled edge. This may
-         * seem strange but actually leads to less non-determinism in the end,
-         * because otherwise we would have to perform another MaterialiseEdge
-         * operation on the pulled edge.
          */
         @Override
         void perform() { // PullNode
