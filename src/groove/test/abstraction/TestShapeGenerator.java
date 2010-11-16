@@ -54,4 +54,19 @@ public class TestShapeGenerator extends TestCase {
 
     }
 
+    public void testShapeGenerator1() {
+        final String GRAMMAR = "junit/samples/abs-circ-buf.gps";
+        final String START_GRAPH = "start";
+        ShapeGenerator generator;
+
+        Parameters.setEdgeMultBound(1);
+        Parameters.setAbsRadius(1);
+        Parameters.setNodeMultBound(1);
+
+        generator = new ShapeGenerator();
+        generator.generate(GRAMMAR, START_GRAPH, false);
+        assertTrue(generator.getStateCount() == 73
+            && generator.getTransitionCount() == 207);
+    }
+
 }
