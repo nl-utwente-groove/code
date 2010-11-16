@@ -260,11 +260,19 @@ public final class NodeSingEqSystem extends EquationSystem {
                             Multiplicity eOMult =
                                 this.shape.getEdgeSigOutMult(nOEs);
                             Multiplicity outMult = nOMult.multiply(eOMult);
-                            if (nO.equals(this.node)) {
+                            /*if (nO.equals(this.node)) {
                                 singConstr.addToOutSum(outMult);
                             } else if (this.shape.isNonFrozenEdgeFromSigInvolved(
                                 nOEs, true)) {
                                 remConstr.addToOutSum(outMult);
+                            }*/
+                            if (this.shape.isNonFrozenEdgeFromSigInvolved(nOEs,
+                                true)) {
+                                if (nO.equals(this.node)) {
+                                    singConstr.addToOutSum(outMult);
+                                } else {
+                                    remConstr.addToOutSum(outMult);
+                                }
                             }
                         }
                     }
@@ -291,11 +299,19 @@ public final class NodeSingEqSystem extends EquationSystem {
                             Multiplicity eIMult =
                                 this.shape.getEdgeSigInMult(nIEs);
                             Multiplicity inMult = nIMult.multiply(eIMult);
-                            if (nI.equals(this.node)) {
+                            /*if (nI.equals(this.node)) {
                                 singConstr.addToInSum(inMult);
                             } else if (this.shape.isNonFrozenEdgeFromSigInvolved(
                                 nIEs, false)) {
                                 remConstr.addToInSum(inMult);
+                            }*/
+                            if (this.shape.isNonFrozenEdgeFromSigInvolved(nIEs,
+                                false)) {
+                                if (nI.equals(this.node)) {
+                                    singConstr.addToInSum(inMult);
+                                } else {
+                                    remConstr.addToInSum(inMult);
+                                }
                             }
                         }
                     }
