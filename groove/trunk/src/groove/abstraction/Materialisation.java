@@ -553,25 +553,9 @@ public final class Materialisation implements Cloneable {
                                 this.shape.getEdgeSignature(srcS, label, tgtEc);
                             Multiplicity mult =
                                 this.shape.getEdgeSigOutMult(outEs);
-                            PullNode newPullNode =
-                                new PullNode(this, tgtS, mult);
-                            // Add the operation.
-                            if (pullNodeOps.add(newPullNode)) {
-                                // We have already an operation, check the
-                                // multiplicity and replace when needed.
-                                PullNode oldPullNode = null;
-                                for (PullNode pullNode : pullNodeOps) {
-                                    if (pullNode.equals(newPullNode)
-                                        && !newPullNode.mult.isAtMost(pullNode.mult)) {
-                                        oldPullNode = pullNode;
-                                        break;
-                                    }
-                                }
-                                if (oldPullNode != null) {
-                                    pullNodeOps.remove(oldPullNode);
-                                    pullNodeOps.add(newPullNode);
-                                }
-                            }
+                            PullNode pullNode =
+                                new PullNode(this, edgeS, tgtS, mult);
+                            pullNodeOps.add(pullNode);
                         }
                     }
                 }
@@ -599,25 +583,9 @@ public final class Materialisation implements Cloneable {
                                 this.shape.getEdgeSignature(tgtS, label, srcEc);
                             Multiplicity mult =
                                 this.shape.getEdgeSigInMult(inEs);
-                            PullNode newPullNode =
-                                new PullNode(this, srcS, mult);
-                            // Add the operation.
-                            if (pullNodeOps.add(newPullNode)) {
-                                // We have already an operation, check the
-                                // multiplicity and replace when needed.
-                                PullNode oldPullNode = null;
-                                for (PullNode pullNode : pullNodeOps) {
-                                    if (pullNode.equals(newPullNode)
-                                        && !newPullNode.mult.isAtMost(pullNode.mult)) {
-                                        oldPullNode = pullNode;
-                                        break;
-                                    }
-                                }
-                                if (oldPullNode != null) {
-                                    pullNodeOps.remove(oldPullNode);
-                                    pullNodeOps.add(newPullNode);
-                                }
-                            }
+                            PullNode pullNode =
+                                new PullNode(this, edgeS, srcS, mult);
+                            pullNodeOps.add(pullNode);
                         }
                     }
                 }
@@ -1096,15 +1064,18 @@ public final class Materialisation implements Cloneable {
      */
     private static final class PullNode extends MatOp {
 
+        /** The edge that is pulling a new node from the collector node. */
+        private final ShapeEdge pullingEdge;
         /** The collector node that is being pulled by the edge. */
         private final ShapeNode pulledNode;
         /** The multiplicity for the new node that will be created. */
         private final Multiplicity mult;
 
         /** Default constructor. */
-        private PullNode(Materialisation mat, ShapeNode pulledNode,
-                Multiplicity mult) {
+        private PullNode(Materialisation mat, ShapeEdge pullingEdge,
+                ShapeNode pulledNode, Multiplicity mult) {
             super(mat);
+            this.pullingEdge = pullingEdge;
             this.pulledNode = pulledNode;
             this.mult = mult;
         }
@@ -1113,6 +1084,7 @@ public final class Materialisation implements Cloneable {
         private PullNode(PullNode pullNode) {
             super();
             this.setMat(pullNode.mat);
+            this.pullingEdge = pullNode.pullingEdge;
             this.pulledNode = pullNode.pulledNode;
             this.mult = pullNode.mult;
         }
@@ -1124,7 +1096,8 @@ public final class Materialisation implements Cloneable {
 
         @Override
         public String toString() {
-            return "PullNode: " + this.pulledNode + "(" + this.mult + ")";
+            return "PullNode: " + this.pulledNode + "(" + this.mult + "), "
+                + this.pullingEdge;
         }
 
         /**
@@ -1140,7 +1113,10 @@ public final class Materialisation implements Cloneable {
                 result = false;
             } else {
                 PullNode other = (PullNode) o;
-                result = this.pulledNode.equals(other.pulledNode);
+                result =
+                    this.pullingEdge.equals(other.pullingEdge)
+                        && this.pulledNode.equals(other.pulledNode)
+                        && this.mult.equals(other.mult);
             }
             // Check for consistency between equals and hashCode.
             assert (!result || this.hashCode() == o.hashCode());
@@ -1149,7 +1125,12 @@ public final class Materialisation implements Cloneable {
 
         @Override
         public int hashCode() {
-            return this.pulledNode.hashCode();
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + this.pullingEdge.hashCode();
+            result = prime * result + this.pulledNode.hashCode();
+            result = prime * result + this.mult.hashCode();
+            return result;
         }
 
         @Override
