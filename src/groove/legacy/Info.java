@@ -61,6 +61,10 @@ package groove.legacy;
  * <li> DefaultArchiveSystem does not create a marshaller internally, but
  *      instead explicitly creates a JaxbGxlIO instance for reading the .gxl
  *      and explicitly calls 'readLayout' to add the layout to it.
+ *      Reason to do it differently here: in a .zip file, you cannot derive
+ *      the location of the .gl file out of the location of the .gxl file.
+ *      And, the unmarshaller only operates on the .gxl file (as an input
+ *      stream).
  * </ul>
  * Conclusion: none yet. I dont know how to implement the ideas above, because
  * DefaultArchiveSystem behaves differently than DefaultFileSystemStore (and
