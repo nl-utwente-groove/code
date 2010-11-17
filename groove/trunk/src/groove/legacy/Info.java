@@ -64,7 +64,8 @@ package groove.legacy;
  *      Reason to do it differently here: in a .zip file, you cannot derive
  *      the location of the .gl file out of the location of the .gxl file.
  *      And, the unmarshaller only operates on the .gxl file (as an input
- *      stream).
+ *      stream). It can therefore not be overloaded to work both for the layout
+ *      and the non-layout case.
  * </ul>
  * Conclusion: none yet. I dont know how to implement the ideas above, because
  * DefaultArchiveSystem behaves differently than DefaultFileSystemStore (and
