@@ -313,6 +313,26 @@ public class Converter {
         return result;
     }
 
+    /**
+     * Strips the font tags from the HTML line.
+     * @param htmlLine the line to be striped
+     * @return 1 if the line was bold, 2 if the line was italic, 3 if the line
+     *         was both bold and italic, and 0 otherwise.
+     */
+    public static int removeFontTags(StringBuilder htmlLine) {
+        String originalLine = htmlLine.toString();
+        int bold = 0;
+        int italic = 0;
+        if (!STRONG_TAG.off(htmlLine).equals(originalLine)) {
+            bold = 1;
+            originalLine = htmlLine.toString();
+        }
+        if (!ITALIC_TAG.off(htmlLine).equals(originalLine)) {
+            italic = 2;
+        }
+        return bold + italic;
+    }
+
     /** HTML greater than symbol. */
     // The readable codes do not work on the Mac in some situations. Replaced
     // them with the numeric codes - this fixes it. -- Maarten
@@ -350,8 +370,8 @@ public class Converter {
     /** Name of the font strikethrough tag (<code>s</code>). */
     static public final String STRIKETHROUGH_TAG_NAME = "s";
     /** Font strikethrough tag. */
-    static public final HTMLTag STRIKETHROUGH_TAG =
-        new HTMLTag(STRIKETHROUGH_TAG_NAME);
+    static public final HTMLTag STRIKETHROUGH_TAG = new HTMLTag(
+        STRIKETHROUGH_TAG_NAME);
     /** Name of the italic font tag (<code>i</code>). */
     static public final String ITALIC_TAG_NAME = "i";
     /** Italic font tag. */

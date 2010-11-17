@@ -53,7 +53,6 @@ import org.jgraph.util.Bezier;
 /**
  * Class to perform the conversion from Groove graphs to Tikz format. 
  * @author Eduardo Zambon
- * @version $Revision$
  */
 public final class GraphToTikz {
 
@@ -146,7 +145,7 @@ public final class GraphToTikz {
                 result.append(EMPTY_NODE_LAB);
             } else {
                 result.append(BEGIN_NODE_LAB);
-                for (StringBuilder line : node.getLines()) {
+                for (StringBuilder line : lines) {
                     result.append(convertHtmlToTikz(line));
                 }
                 // Remove the last \\, if it exists
@@ -842,25 +841,40 @@ public final class GraphToTikz {
 
         int color = Converter.removeColorTags(htmlLine);
         StringBuilder line = escapeSpecialChars(htmlLine);
+        int font = Converter.removeFontTags(line);
         String aux = "";
         int i = line.indexOf(Converter.HTML_EXISTS);
         if (i > -1) {
             result.append(line.substring(0, i));
-            result.append(EXISTS_STR);
+            String sub = removeAllTags(line, Converter.SUB_TAG).substring(7);
+            if ("".equals(sub)) {
+                result.append(EXISTS_STR + "$");
+            } else {
+                result.append(EXISTS_STR + "_\\mathsf{" + sub + "}$");
+            }
         } else if (line.indexOf(Converter.HTML_FORALL) > -1) {
             if (line.indexOf(Converter.SUPER_TAG.tagBegin) > -1) {
                 result.append(FORALLX_STR);
             } else {
                 result.append(FORALL_STR);
             }
-        } else if (line.indexOf(Converter.ITALIC_TAG.tagBegin) > -1) {
-            aux = encloseItalicStyle(removeAllTags(line, Converter.ITALIC_TAG));
-        } else if (line.indexOf(Converter.STRONG_TAG.tagBegin) > -1) {
-            aux =
-                enclose(removeAllTags(line, Converter.STRONG_TAG), BOLD_STYLE,
-                    "}");
         } else {
             aux = line.toString();
+        }
+
+        switch (font) {
+        case 0:
+            // nothing to do.
+            break;
+        case 1:
+            aux = encloseBoldStyle(aux);
+            break;
+        case 2:
+            aux = encloseItalicStyle(aux);
+            break;
+        case 3:
+            aux = encloseBoldStyle(encloseItalicStyle(aux));
+            break;
         }
 
         switch (color) {
@@ -1020,6 +1034,10 @@ public final class GraphToTikz {
         return enclose(unescapeSquareBrack(string), ITALIC_STYLE, "}");
     }
 
+    private static String encloseBoldStyle(String string) {
+        return enclose(unescapeSquareBrack(string), BOLD_STYLE, "}");
+    }
+
     /**
      * Produces a string with the proper Tikz styles of a given node.
      * @param node the node to be converted.
@@ -1049,8 +1067,17 @@ public final class GraphToTikz {
         // a state graph or a type graph.
         boolean isRule = Groove.isRuleRole(role);
         boolean isGraph = Groove.isGraphRole(role);
+        boolean isType = Groove.isTypeRole(role);
         ArrayList<String> styles = new ArrayList<String>();
         Collection<String> allLabels = node.getPlainLabels();
+
+        boolean isAbstract = false;
+        for (String label : allLabels) {
+            if (label.contains(ABS_COL)) {
+                isAbstract = true;
+                break;
+            }
+        }
 
         if (isRule && allLabels.contains(DEL_COL)) {
             // Eraser node
@@ -1064,13 +1091,13 @@ public final class GraphToTikz {
         } else if ((isRule || isGraph) && allLabels.contains(REM_COL)) {
             // Remark node
             styles.add(REMARK_NODE_STYLE);
+        } else if (isType && isAbstract) {
+            // Abstract type node
+            styles.add(ABS_NODE_STYLE);
+        } else if (isGrayedOut) {
+            styles.add(THIN_NODE_STYLE);
         } else {
-            // Reader node
-            if (isGrayedOut) {
-                styles.add(THIN_NODE_STYLE);
-            } else {
-                styles.add(BASIC_NODE_STYLE);
-            }
+            styles.add(BASIC_NODE_STYLE);
         }
 
         if (node.isValueNode()) {
@@ -1212,6 +1239,10 @@ public final class GraphToTikz {
             if (isType && edge.getPlainLabels().contains(SUB)) {
                 styles.add(INHERITANCE_EDGE_STYLE);
                 styles.add(INHERITANCE_LABEL_STYLE);
+            } else if (isType
+                && edge.getPlainLabels().iterator().next().contains(ABS_COL)) {
+                styles.add(ABS_EDGE_STYLE);
+                styles.add(ABS_LABEL_STYLE);
             } else {
                 styles.add(BASIC_EDGE_STYLE);
                 styles.add(BASIC_LABEL_STYLE);
@@ -1303,6 +1334,7 @@ public final class GraphToTikz {
     }
 
     // Labels
+    private static final String ABS_COL = "abs:";
     private static final String DEL_COL = "del:";
     private static final String DEL = "del";
     private static final String EXISTS = "exists";
@@ -1328,7 +1360,7 @@ public final class GraphToTikz {
     private static final String BEGIN_NODE_LAB = " {\\ml{";
     private static final String END_NODE_LAB = "}};\n";
     private static final String EMPTY_NODE_LAB = "{};\n";
-    private static final String EXISTS_STR = "$\\exists$";
+    private static final String EXISTS_STR = "$\\exists";
     private static final String FORALL_STR = "$\\forall$";
     private static final String FORALLX_STR = "$\\forall^{>0}$";
     private static final String ITALIC_STYLE = "\\textit{";
@@ -1358,6 +1390,9 @@ public final class GraphToTikz {
     private static final String THIN_NODE_STYLE = "thinnode";
     private static final String THIN_EDGE_STYLE = "thinedge";
     private static final String THIN_LABEL_STYLE = "thinlab";
+    private static final String ABS_NODE_STYLE = "absnode";
+    private static final String ABS_EDGE_STYLE = "absedge";
+    private static final String ABS_LABEL_STYLE = "abslab";
     private static final String ATTRIBUTE_NODE_STYLE = "attr";
     private static final String PRODUCT_NODE_STYLE = "prod";
     private static final String QUANTIFIER_NODE_STYLE = "quantnode";
