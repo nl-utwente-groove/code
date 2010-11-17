@@ -104,7 +104,12 @@ public class ModelHandler {
                 this.r.load(in, null);
             } else {
                 this.r = this.rs.createResource(URI.createURI(modelLoc));
-                this.r.load(new FileInputStream(modelLoc), null);
+                FileInputStream in = new FileInputStream(modelLoc);
+                try {
+                    this.r.load(in, null);
+                } finally {
+                    in.close();
+                }
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -402,7 +407,12 @@ public class ModelHandler {
      */
     public void saveModel(Resource r, String filePath) {
         try {
-            r.save(new FileOutputStream(filePath), Collections.EMPTY_MAP);
+            FileOutputStream out = new FileOutputStream(filePath);
+            try {
+                r.save(out, Collections.EMPTY_MAP);
+            } finally {
+                out.close();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

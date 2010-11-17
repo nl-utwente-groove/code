@@ -124,20 +124,20 @@ public class DefaultRuleView implements RuleView {
     }
 
     public int getPriority() {
-        return GraphProperties.getPriority(this.graph);
+        return GraphProperties.getPriority(getView());
     }
 
     /** Convenience method */
     public String getTransitionLabel() {
-        return GraphProperties.getTransitionLabel(this.graph);
+        return GraphProperties.getTransitionLabel(getView());
     }
 
     public boolean isEnabled() {
-        return GraphProperties.isEnabled(this.graph);
+        return GraphProperties.isEnabled(getView());
     }
 
     public boolean isConfluent() {
-        return GraphProperties.isConfluent(this.graph);
+        return GraphProperties.isConfluent(getView());
     }
 
     public int compareTo(RuleView o) {
@@ -180,7 +180,7 @@ public class DefaultRuleView implements RuleView {
     }
 
     @Override
-    public AspectGraph getView() {
+    final public AspectGraph getView() {
         return this.graph;
     }
 
@@ -272,7 +272,7 @@ public class DefaultRuleView implements RuleView {
         // only do something if there is something to be done
         if (this.attributeFactory == null) {
             this.attributeFactory =
-                new AttributeElementFactory(this.graph, getSystemProperties());
+                new AttributeElementFactory(getView(), getSystemProperties());
             this.ruleErrors = new ArrayList<FormatError>();
             if (this.viewErrors != null) {
                 this.ruleErrors.addAll(this.viewErrors);
@@ -432,6 +432,7 @@ public class DefaultRuleView implements RuleView {
      * The name of the rule represented by this rule graph.
      */
     private final RuleName name;
+
     /** The view graph representation of the rule. */
     private final AspectGraph graph;
     /**
@@ -671,7 +672,7 @@ public class DefaultRuleView implements RuleView {
             Map<LevelIndex,Set<LevelIndex>> metaNodeTree =
                 new HashMap<LevelIndex,Set<LevelIndex>>();
             metaNodeTree.put(this.topLevelIndex, createChildren());
-            for (AspectNode node : DefaultRuleView.this.graph.nodeSet()) {
+            for (AspectNode node : getView().nodeSet()) {
                 if (NestingAspect.isMetaElement(node)) {
                     LevelIndex nodeLevel = getIndex(node);
                     metaNodeTree.put(nodeLevel, createChildren());
@@ -680,8 +681,7 @@ public class DefaultRuleView implements RuleView {
                     // by the correctness of the aspect graph we know that
                     // there is at most one outgoing edge, which is a parent
                     // edge and points to the parent level node
-                    Set<AspectEdge> outEdges =
-                        DefaultRuleView.this.graph.outEdgeSet(node);
+                    Set<AspectEdge> outEdges = getView().outEdgeSet(node);
                     if (outEdges.isEmpty()) {
                         if (NestingAspect.isForall(node)) {
                             parentLevel = this.topLevelIndex;
@@ -776,7 +776,7 @@ public class DefaultRuleView implements RuleView {
             this.viewToRuleMap.clear();
             Set<FormatError> errors = new TreeSet<FormatError>();
             // add nodes to nesting data structures
-            for (AspectNode node : DefaultRuleView.this.graph.nodeSet()) {
+            for (AspectNode node : getView().nodeSet()) {
                 if (RuleAspect.inRule(node)) {
                     try {
                         Level level = getLevel(node);
@@ -787,7 +787,7 @@ public class DefaultRuleView implements RuleView {
                 }
             }
             // add edges to nesting data structures
-            for (AspectEdge edge : DefaultRuleView.this.graph.edgeSet()) {
+            for (AspectEdge edge : getView().edgeSet()) {
                 if (RuleAspect.inRule(edge)) {
                     try {
                         Level level = getLevel(edge);
@@ -858,7 +858,7 @@ public class DefaultRuleView implements RuleView {
          */
         private AspectNode getLevelNode(AspectNode node) {
             AspectEdge levelEdge = null;
-            for (AspectEdge edge : DefaultRuleView.this.graph.outEdgeSet(node)) {
+            for (AspectEdge edge : getView().outEdgeSet(node)) {
                 if (NestingAspect.isLevelEdge(edge)) {
                     levelEdge = edge;
                     break;
@@ -1951,7 +1951,7 @@ public class DefaultRuleView implements RuleView {
             // set of all parameter numbers, to check duplicates
             Set<Integer> parNumbers = new HashSet<Integer>();
             // add nodes to nesting data structures
-            for (AspectNode node : DefaultRuleView.this.graph.nodeSet()) {
+            for (AspectNode node : getView().nodeSet()) {
                 // check if the node is a parameter
                 Integer nr = ParameterAspect.getParNumber(node);
                 if (nr != null) {

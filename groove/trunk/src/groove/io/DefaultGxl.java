@@ -77,7 +77,12 @@ public class DefaultGxl extends AbstractXml {
         if (parent != null && !parent.exists()) {
             parent.mkdirs();
         }
-        io.saveGraph(graph, new FileOutputStream(file));
+        FileOutputStream out = new FileOutputStream(file);
+        try {
+            io.saveGraph(graph, out);
+        } finally {
+            out.close();
+        }
     }
 
     /**

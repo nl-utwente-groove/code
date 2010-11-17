@@ -1118,6 +1118,7 @@ public class LTLBenchmarker extends CommandLineTool {
                     for (int i = 1; i < gcList.size() - 2; i++) {
                         getLogWriter().println(gcList.get(i));
                     }
+                    gcLog.close();
                 } catch (FileNotFoundException exc) {
                     System.err.println("Error while opening GC log");
                 } catch (IOException exc) {
@@ -1350,9 +1351,11 @@ public class LTLBenchmarker extends CommandLineTool {
         try {
             FileWriter logFileWriter = new FileWriter(logFileName, true);
             BufferedWriter writer = new BufferedWriter(logFileWriter);
-
-            writer.write(message);
-            writer.close();
+            try {
+                writer.write(message);
+            } finally {
+                writer.close();
+            }
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }

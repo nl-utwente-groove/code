@@ -17,7 +17,6 @@
 
 package groove.verify;
 
-import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphTransition;
 import groove.lts.State;
@@ -272,13 +271,16 @@ public class CTLStarFormula {
 
         @Override
         public String toString() {
-            String operandsString = this.operandList.get(0).toString();
+            StringBuilder result =
+                new StringBuilder(this.operandList.get(0).toString());
             for (int i = 1; i < this.operandList.size(); i++) {
-                operandsString =
-                    operandsString + " " + getOperator() + " ("
-                        + this.operandList.get(i) + ")";
+                result.append(" ");
+                result.append(getOperator());
+                result.append(" (");
+                result.append(this.operandList.get(i));
+                result.append(")");
             }
-            return operandsString;
+            return result.toString();
         }
 
         /**
@@ -883,8 +885,8 @@ public class CTLStarFormula {
             gts.edgeSet().iterator();
         while (transitionIter.hasNext()) {
             GraphTransition nextTransition = transitionIter.next();
-            Node target = nextTransition.target();
-            if (target instanceof State && ((State) target).equals(state)) {
+            State target = nextTransition.target();
+            if (target.equals(state)) {
                 State predecessorState = nextTransition.source();
                 result.add(predecessorState);
             }

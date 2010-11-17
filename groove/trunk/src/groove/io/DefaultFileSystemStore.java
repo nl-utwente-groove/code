@@ -819,8 +819,11 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         if (propertiesFile.exists()) {
             Properties grammarProperties = new Properties();
             InputStream s = new FileInputStream(propertiesFile);
-            grammarProperties.load(s);
-            s.close();
+            try {
+                grammarProperties.load(s);
+            } finally {
+                s.close();
+            }
             properties.putAll(grammarProperties);
         }
         return properties;
@@ -837,8 +840,11 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     private void saveControl(String name, String program) throws IOException {
         File controlFile = createControlFile(name);
         Writer writer = new FileWriter(controlFile);
-        writer.write(program);
-        writer.close();
+        try {
+            writer.write(program);
+        } finally {
+            writer.close();
+        }
     }
 
     private void saveProperties() throws IOException {
@@ -846,8 +852,11 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             new File(this.file,
                 PROPERTIES_FILTER.addExtension(Groove.PROPERTY_NAME));
         Writer propertiesWriter = new FileWriter(propertiesFile);
-        this.properties.store(propertiesWriter, null);
-        propertiesWriter.close();
+        try {
+            this.properties.store(propertiesWriter, null);
+        } finally {
+            propertiesWriter.close();
+        }
     }
 
     private void saveProperties(SystemProperties properties) throws IOException {
@@ -855,8 +864,11 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             new File(this.file,
                 PROPERTIES_FILTER.addExtension(Groove.PROPERTY_NAME));
         Writer propertiesWriter = new FileWriter(propertiesFile);
-        properties.store(propertiesWriter, null);
-        propertiesWriter.close();
+        try {
+            properties.store(propertiesWriter, null);
+        } finally {
+            propertiesWriter.close();
+        }
     }
 
     /**

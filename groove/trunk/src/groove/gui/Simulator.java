@@ -2921,7 +2921,7 @@ public class Simulator {
                 // (this is necessary if the doAction was actually very fast)
                 while (!this.cancelDialog.isVisible()) {
                     try {
-                        wait(10);
+                        this.cancelDialog.wait(10);
                     } catch (InterruptedException e) {
                         // do nothing
                     }
