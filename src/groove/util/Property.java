@@ -259,16 +259,18 @@ abstract public class Property<S> {
 
         /** enumType has to be an enumeration type. */
         private static String getDescription(Class<?> enumType) {
-            String result = "";
+            StringBuilder result = new StringBuilder();
             Field[] fields = enumType.getFields();
             if (fields.length == 0) {
                 return " Error : no value possible.";
             }
-            result += fields[0].getName();
             for (int i = 1; i < fields.length; i++) {
-                result += " or " + fields[i].getName();
+                if (i != 0) {
+                    result.append(" or ");
+                }
+                result.append(fields[i].getName());
             }
-            return result;
+            return result.toString();
         }
     }
 

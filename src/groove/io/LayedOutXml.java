@@ -78,8 +78,13 @@ public class LayedOutXml extends AbstractXml {
         // deleteVariants(file);
         if (GraphInfo.hasLayoutMap(graph)) {
             this.marshaller.marshalGraph(graph, file);
-            LayoutIO.getInstance().writeLayout(GraphInfo.getLayoutMap(graph),
-                new FileOutputStream(toLayoutFile(file)));
+            FileOutputStream out = new FileOutputStream(toLayoutFile(file));
+            try {
+                LayoutIO.getInstance().writeLayout(
+                    GraphInfo.getLayoutMap(graph), out);
+            } finally {
+                out.close();
+            }
         } else {
             // first marshal the graph
             this.marshaller.marshalGraph(graph, file);
