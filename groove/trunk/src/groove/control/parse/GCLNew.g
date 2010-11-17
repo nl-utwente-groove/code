@@ -30,32 +30,32 @@ import java.util.LinkedList;
 
 }
 
-
 @members {
-    private List<String> errors = new LinkedList<String>();
+    /** Lexer for the GCL language. */
+    private static GCLNewLexer lexer = new GCLNewLexer(null);
+    /** Helper class to convert AST trees to namespace. */
+    private GCLHelper helper;
+    
     public void displayRecognitionError(String[] tokenNames,
                                         RecognitionException e) {
         String hdr = getErrorHeader(e);
         String msg = getErrorMessage(e, tokenNames);
-        errors.add(hdr + " " + msg);
+        helper.addError(hdr + " " + msg);
     }
+    
     public List<String> getErrors() {
-        return errors;
+        return helper.getErrors();
     }
 
-	CommonTree concat(CommonTree seq) {
-        String result;
-        List children = seq.getChildren();
-        if (children == null) {
-            result = seq.getText();
-        } else {
-            StringBuilder builder = new StringBuilder();
-            for (Object token: seq.getChildren()) {
-                builder.append(((CommonTree) token).getText());
-            }
-            result = builder.toString();
-        }
-        return new CommonTree(new CommonToken(ID, result));
+    /**
+     * Runs the lexer and parser on a given input character stream,
+     * with a (presumably empty) namespace.
+     * @return the resulting syntax tree
+     */
+    public Tree run(CharStream input, NamespaceNew namespace) throws RecognitionException {
+        this.helper = new GCLHelper(this, namespace);
+        lexer.setCharStream(input);
+        return (Tree) program().getTree();
     }
 }
 
@@ -121,11 +121,13 @@ expr_atom
 
 call
 	: rule_name (LPAR arg_list? RPAR)?
-	  -> ^(CALL { concat($rule_name.tree) } arg_list?)
+	  -> ^(CALL rule_name arg_list?)
 	;
 
+/** Returns a flattened rule name. */
 rule_name
-  : ID (DOT ID)*
+  : ids+=ID (DOT ids+=ID)*
+    -> { helper.toRuleName($ids) }
   ;
 
 var_decl
@@ -154,16 +156,10 @@ arg
 literal
 	: TRUE -> ^(BOOL_TYPE TRUE)
 	| FALSE -> ^(BOOL_TYPE FALSE)
-	| STRING -> ^(STRING_TYPE { toUnquoted($STRING.text) } )
-	| integer -> ^(INT_TYPE { concat($integer.tree) } )
-	| real -> ^(REAL_TYPE { concat($real.tree) } )
+	| STRING_LIT -> ^(STRING_TYPE { helper.toUnquoted($STRING_LIT.text) } )
+	| INT_LIT -> ^(INT_TYPE INT_LIT)
+	| REAL_LIT -> ^(REAL_TYPE REAL_LIT)
 	;
-
-real
-	: MINUS? NUMBER? DOT NUMBER?;
-	
-integer
-	: MINUS? NUMBER;
 
 // LEXER rules
 
@@ -188,6 +184,46 @@ INT_TYPE    : 'int';
 REAL_TYPE   : 'real';
 OUT	        :	'out';
 
+INT_LIT
+  : IntegerNumber 
+  ;
+
+fragment
+IntegerNumber
+  : '0' 
+  | '1'..'9' ('0'..'9')*     
+  ;
+
+REAL_LIT
+  : NonIntegerNumber
+  ;
+
+fragment
+NonIntegerNumber
+    :   ('0' .. '9')+ '.' ('0' .. '9')*
+    |   '.' ( '0' .. '9' )+
+    ;
+
+STRING_LIT
+  : QUOTE 
+    ( EscapeSequence
+    | ~( BSLASH | QUOTE | CR | NL  )        
+    )* 
+    QUOTE 
+  ;
+
+fragment
+EscapeSequence 
+  : BSLASH
+    ( QUOTE
+      BSLASH 
+    )          
+  ;    
+
+ID  : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*;
+
+CR        : '\r';
+NL        : '\n';
 AND       : '&' ;
 DOT       : '.' ;
 NOT       : '!' ;
@@ -205,12 +241,6 @@ LPAR      : '(' ;
 RPAR      : ')' ;
 LCURLY    : '{' ;
 RCURLY    : '}' ;
-
-ID 	: ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*;
-
-NUMBER : ('0'..'9')+;
-
-STRING : QUOTE (~(QUOTE|BSLASH) | BSLASH(QUOTE|BSLASH))* QUOTE ;
 
 ML_COMMENT : '/*' ( options {greedy=false;} : . )* '*/' { $channel=HIDDEN; };
 SL_COMMENT : '//' ( options {greedy=false;} : . )* '\n' { $channel=HIDDEN; };
