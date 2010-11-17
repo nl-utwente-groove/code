@@ -1236,13 +1236,21 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         JComponent previewContent = new JPanel(false);
         previewContent.setLayout(new BorderLayout());
         previewContent.add(jGraphPane);
-        // if (!previewModel.getProperties().isEmpty()) {
-        // getModel().setProperties(new
-        // GraphProperties(dialog.getEditedProperties()));
         PropertiesDialog propertiesDialog = createPropertiesDialog(true);
         previewContent.add(propertiesDialog.createTablePane(),
             BorderLayout.NORTH);
-        // }
+
+        // Snap to grid.
+        JToggleButton button = getSnapToGridButton(jGraph);
+        boolean selected = this.snapToGridButton.isSelected();
+        button.setSelected(selected);
+        jGraph.setGridEnabled(selected);
+        jGraph.setGridVisible(selected);
+        JPanel snapPane = new JPanel();
+        snapPane.add(button);
+        snapPane.add(new JLabel("Snap to grid"));
+        previewContent.add(snapPane, BorderLayout.SOUTH);
+
         if (partial) {
             JLabel errorLabel =
                 new JLabel(String.format(
@@ -1552,6 +1560,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             this.snapToGridButton.setText(null);
         }
         return this.snapToGridButton;
+    }
+
+    JToggleButton getSnapToGridButton(JGraph jgraph) {
+        JToggleButton button = new JToggleButton(new SnapToGridAction(jgraph));
+        button.setText(null);
+        return button;
     }
 
     /** Button for snap to grid. */
@@ -2183,7 +2197,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** Returns the snap to grid action, lazily creating it first. */
     Action getSnapToGridAction() {
         if (this.snapToGridAction == null) {
-            this.snapToGridAction = new SnapToGridAction();
+            this.snapToGridAction = new SnapToGridAction(this.jgraph);
         }
         return this.snapToGridAction;
     }
@@ -2195,9 +2209,13 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * Action to preview the current type graph.
      */
     private class SnapToGridAction extends ToolbarAction {
+
+        private JGraph jgraph;
+
         /** Constructs an instance of the action. */
-        protected SnapToGridAction() {
+        protected SnapToGridAction(JGraph jgraph) {
             super(Options.SNAP_TO_GRID_NAME, null, Groove.GRID_ICON);
+            this.jgraph = jgraph;
         }
 
         @Override
@@ -2210,8 +2228,14 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             } else {
                 toggle = !button.isSelected();
             }
-            Editor.this.jgraph.setGridEnabled(toggle);
-            Editor.this.jgraph.setGridVisible(toggle);
+            this.jgraph.setGridEnabled(toggle);
+            this.jgraph.setGridVisible(toggle);
+            if (this.jgraph != Editor.this.jgraph) {
+                // We got a click in the preview window, update the editor
+                // jGraph as well.
+                Editor.this.jgraph.setGridEnabled(toggle);
+                Editor.this.jgraph.setGridVisible(toggle);
+            }
             button.setSelected(toggle);
         }
     }
