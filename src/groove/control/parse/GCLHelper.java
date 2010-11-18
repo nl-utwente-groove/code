@@ -53,25 +53,28 @@ public class GCLHelper {
         return new CommonTree(new CommonToken(GCLNewParser.ID, result));
     }
 
-    /** Strips the outer (double) quotes and unescapes all characters in a string.
-     * Returns a new {@link CommonTree} with {@link GCLNewParser#ID} root token
-     * and the stripped string as text.
+    /** 
+     * Attempts to add a function declaration with a given name.
+     * Checks for overlap with the previously declared functions and rules.
+     * @return {@code true} if no rule or function with the name of this one was
+     * already declared; {@code false} otherwise
      */
-    CommonTree toUnquoted(String text) {
-        StringBuffer result = new StringBuffer();
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            if (c == '\\') {
-                i++;
-                c = text.charAt(i);
-                result.append(c);
-            } else if (c != '"') {
-                result.append(c);
-            }
+    boolean declareFunction(Tree functionTree) {
+        boolean result = false;
+        assert functionTree.getType() == GCLNewParser.FUNCTION
+            && functionTree.getChildCount() == 2;
+        String name = functionTree.getChild(0).getText();
+        if (this.namespace.hasRule(name)) {
+            emitErrorMessage(functionTree,
+                "Duplicate name: Rule %s already defined", name);
+        } else if (this.namespace.hasFunction(name)) {
+            emitErrorMessage(functionTree,
+                "Duplicate name: Function %s already defined", name);
+        } else {
+            this.namespace.addFunction(name);
+            result = true;
         }
-        // System.out.printf("From \%s to \%s\%n", text, result);
-        return new CommonTree(new CommonToken(GCLNewParser.ID,
-            result.toString()));
+        return result;
     }
 
     private void emitErrorMessage(Tree marker, String message, Object... args) {

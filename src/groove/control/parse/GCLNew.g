@@ -12,7 +12,8 @@ tokens {
 	FUNCTIONS;
 	FUNCTION;
 	CALL;
-	DO_WHILE;
+  DO_WHILE;
+  DO_UNTIL;
 	VAR;
 	ARG;
 }
@@ -21,6 +22,27 @@ tokens {
 package groove.control.parse;
 import groove.control.*;
 import java.util.LinkedList;
+}
+
+@lexer::members{
+    /** Strips the outer (double) quotes and unescapes all characters in a string.
+     * Returns a new {@link CommonTree} with {@link GCLNewParser#ID} root token
+     * and the stripped string as text.
+     */
+    private String toUnquoted(String text) {
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == '\\') {
+                i++;
+                c = text.charAt(i);
+                result.append(c);
+            } else if (c != '"') {
+                result.append(c);
+            }
+        }
+        return result.toString();
+    }
 }
 
 @header {
@@ -71,24 +93,28 @@ block
 
 function
   : FUNCTION^ ID LPAR! RPAR! block
+    { helper.declareFunction($FUNCTION.tree); }
   ;
 
 stat
 	: block
-	| ALAP stat -> ^(ALAP stat)
+	| ALAP^ stat
 	| WHILE^ LPAR! cond RPAR! stat
 	| UNTIL^ LPAR! cond RPAR! stat
-	| DO stat WHILE LPAR cond RPAR -> ^(BLOCK stat ^(WHILE cond stat))
+	| DO stat 
+	  ( WHILE LPAR cond RPAR -> ^(BLOCK stat ^(WHILE cond stat))
+	  | UNTIL LPAR cond RPAR -> ^(BLOCK stat ^(UNTIL cond stat))
+	  )
   | IF^ LPAR! cond RPAR! stat ( (ELSE) => ELSE! stat )?
   | TRY^ stat ( (ELSE) => ELSE! stat )?
-  | CHOICE^ stat ((CH_OR) => CH_OR! stat)+
+  | CHOICE^ stat ( (OR) => OR! stat)+
 	| expr SEMI!
 	| var_decl SEMI!
   ;
 
 cond
 	: cond_atom 
-	  ( (OR cond_atom)+ -> ^(CHOICE cond_atom cond_atom+)
+	  ( (BAR cond_atom)+ -> ^(CHOICE cond_atom cond_atom+)
 	  | -> cond_atom
 	  )
 	;
@@ -98,7 +124,7 @@ cond_atom
 
 expr	
 	: expr2
-	  ( (OR expr2)+ -> ^(CHOICE expr2 expr2+)
+	  ( (BAR expr2)+ -> ^(CHOICE expr2 expr2+)
 	  | -> expr2
 	  )
 	;
@@ -135,11 +161,11 @@ var_decl
 	;
 
 var_type
-	: NODE_TYPE
-	| BOOL_TYPE
-	| STRING_TYPE
-	| INT_TYPE
-	| REAL_TYPE
+	: NODE
+	| BOOL
+	| STRING
+	| INT
+	| REAL
 	;
 	
 arg_list
@@ -154,35 +180,35 @@ arg
 	;
 
 literal
-	: TRUE -> ^(BOOL_TYPE TRUE)
-	| FALSE -> ^(BOOL_TYPE FALSE)
-	| STRING_LIT -> ^(STRING_TYPE { helper.toUnquoted($STRING_LIT.text) } )
-	| INT_LIT -> ^(INT_TYPE INT_LIT)
-	| REAL_LIT -> ^(REAL_TYPE REAL_LIT)
+	: TRUE -> ^(BOOL TRUE)
+	| FALSE -> ^(BOOL FALSE)
+	| STRING_LIT -> ^(STRING STRING_LIT)
+	| INT_LIT -> ^(INT INT_LIT)
+	| REAL_LIT -> ^(REAL REAL_LIT)
 	;
 
 // LEXER rules
 
-ALAP        :	'alap';
-WHILE       :	'while';
-DO          :	'do';
-UNTIL       :	'until';
-IF          :	'if';
-ELSE        :	'else';
-CHOICE      :	'choice';
-CH_OR       :	'or';
-TRY         :	'try';
-FUNCTION    :	'function';
-TRUE        :	'true';
-FALSE       :	'false';
-OTHER       : 'other';
-ANY		      : 'any';
-NODE_TYPE   : 'node';
-BOOL_TYPE   : 'bool';
-STRING_TYPE : 'string';
-INT_TYPE    : 'int';
-REAL_TYPE   : 'real';
-OUT	        :	'out';
+ALAP     :	'alap';
+WHILE    :	'while';
+DO       :	'do';
+UNTIL    :	'until';
+IF       :	'if';
+ELSE     :	'else';
+CHOICE   :	'choice';
+OR       :	'or';
+TRY      :	'try';
+FUNCTION :	'function';
+TRUE     :	'true';
+FALSE    :	'false';
+OTHER    : 'other';
+ANY		   : 'any';
+NODE     : 'node';
+BOOL     : 'bool';
+STRING   : 'string';
+INT      : 'int';
+REAL     : 'real';
+OUT	     :	'out';
 
 INT_LIT
   : IntegerNumber 
@@ -205,6 +231,7 @@ NonIntegerNumber
     ;
 
 STRING_LIT
+@after{ setText(toUnquoted($text)); }
   : QUOTE 
     ( EscapeSequence
     | ~( BSLASH | QUOTE | CR | NL  )        
@@ -224,10 +251,10 @@ ID  : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*;
 
 CR        : '\r';
 NL        : '\n';
-AND       : '&' ;
+AMP       : '&' ;
 DOT       : '.' ;
 NOT       : '!' ;
-OR        : '|' ;
+BAR       : '|' ;
 SHARP     : '#' ;
 PLUS      : '+' ;
 STAR     	: '*' ;
