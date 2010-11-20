@@ -22,17 +22,17 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Keeps track of variables declared and initialised in a given scope.
+ * The type parameter is generic.
  * @author Olaf Keijsers
  * @version $Revision $
- * 
- * Class Scope, keeps track of variables declared and initialized in a given scope
  */
-public class Scope {
+public class GenericScope<T> {
     /**
      * Creates a new Scope with empty declared and initialized sets
      */
-    public Scope() {
-        this.declared = new HashMap<String,String>();
+    public GenericScope() {
+        this.declared = new HashMap<String,T>();
         this.initialized = new HashSet<String>();
     }
 
@@ -40,7 +40,7 @@ public class Scope {
      * Declares a variable in this Scope
      * @param var the variable to declare
      */
-    public void declare(String var, String type) {
+    public void declare(String var, T type) {
         this.declared.put(var, type);
     }
 
@@ -75,11 +75,11 @@ public class Scope {
      * @param var the name of the variable to look up
      * @return the type of var
      */
-    public String getType(String var) {
+    public T getType(String var) {
         return this.declared.get(var);
     }
 
-    private Map<String,String> declared;
+    private Map<String,T> declared;
     private Set<String> initialized;
 
 }

@@ -94,15 +94,15 @@ public class CtrlState implements Node {
      * Returns the set of rule names of outgoing transitions, or
      * {@code null} if there is an outgoing omega transition. 
      */
-    public Set<String> getInit() {
-        Set<String> result = new HashSet<String>();
+    public Set<CtrlCall> getInit() {
+        Set<CtrlCall> result = new HashSet<CtrlCall>();
         for (CtrlTransition trans : getTransitions()) {
             CtrlCall call = trans.label().getCall();
             if (call.isOmega()) {
                 result = null;
                 break;
             } else {
-                result.add(call.getRuleName());
+                result.add(call);
             }
         }
         return result;
@@ -140,7 +140,8 @@ public class CtrlState implements Node {
      * @throws FormatException if the rule or one of the failures do not 
      * exist in the given rule system
      */
-    public CtrlState instantiate(Map<CtrlState,CtrlState> stateMap) throws FormatException {
+    public CtrlState instantiate(Map<CtrlState,CtrlState> stateMap)
+        throws FormatException {
         CtrlState result = stateMap.get(this);
         if (result == null) {
             result = new CtrlState(getNumber());

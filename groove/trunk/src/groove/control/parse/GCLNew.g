@@ -77,6 +77,7 @@ import java.util.LinkedList;
     public Tree run(CharStream input, NamespaceNew namespace) throws RecognitionException {
         this.helper = new GCLHelper(this, namespace);
         lexer.setCharStream(input);
+        setTreeAdaptor(new MyTreeAdaptor());
         return (Tree) program().getTree();
     }
 }
@@ -180,11 +181,11 @@ arg
 	;
 
 literal
-	: TRUE -> ^(BOOL TRUE)
-	| FALSE -> ^(BOOL FALSE)
-	| STRING_LIT -> ^(STRING STRING_LIT)
-	| INT_LIT -> ^(INT INT_LIT)
-	| REAL_LIT -> ^(REAL REAL_LIT)
+	: TRUE
+	| FALSE
+	| STRING_LIT
+	| INT_LIT
+	| REAL_LIT
 	;
 
 // LEXER rules
@@ -231,7 +232,7 @@ NonIntegerNumber
     ;
 
 STRING_LIT
-@after{ setText(toUnquoted($text)); }
+// @after{ setText(toUnquoted($text)); }
   : QUOTE 
     ( EscapeSequence
     | ~( BSLASH | QUOTE | CR | NL  )        
