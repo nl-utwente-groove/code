@@ -80,6 +80,15 @@ public class GraphCache extends GraphShapeCache {
         return this.nodeCounter;
     }
 
+    /** 
+     * Tests if a certificate strategy of the right strength has been instantiated.
+     * @param strong the desired strength of the certifier
+     */
+    protected boolean hasCertifier(boolean strong) {
+        return this.certificateStrategy != null
+            && this.certificateStrategy.getStrength() == strong;
+    }
+
     /**
      * Returns a certificate strategy for the current state of this graph. If no
      * strategy is currently cached, it is created by calling
@@ -87,9 +96,11 @@ public class GraphCache extends GraphShapeCache {
      * {@link AbstractGraph#getCertificateFactory()}. If the underlying graph is
      * fixed (see {@link Graph#isFixed()}, the strategy is cached.
      */
-    protected CertificateStrategy getCertificateStrategy(boolean strong) {
-        CertificateStrategy result = this.certificateStrategy;
-        if (result == null || result.getStrength() != strong) {
+    protected CertificateStrategy getCertifier(boolean strong) {
+        CertificateStrategy result;
+        if (hasCertifier(strong)) {
+            result = this.certificateStrategy;
+        } else {
             result =
                 AbstractGraph.getCertificateFactory().newInstance(getGraph(),
                     strong);

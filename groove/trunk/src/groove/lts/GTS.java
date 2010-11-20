@@ -20,6 +20,7 @@ import groove.control.ControlState;
 import groove.control.Location;
 import groove.explore.result.Result;
 import groove.graph.AbstractGraphShape;
+import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphShapeCache;
 import groove.graph.GraphShapeListener;
@@ -27,9 +28,9 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ValueNode;
 import groove.graph.iso.CertificateStrategy;
+import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
-import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.trans.SystemRecord;
@@ -477,8 +478,10 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
                 Graph two = otherStateKey.getGraph();
                 if (this.collapse == COLLAPSE_EQUAL) {
                     // check for graph equality
-                    return one.nodeSet().equals(two.nodeSet())
-                        && one.edgeSet().equals(two.edgeSet());
+                    Set<?> oneNodeSet = new HashSet<Node>(one.nodeSet());
+                    Set<?> oneEdgeSet = new HashSet<Edge>(one.edgeSet());
+                    return oneNodeSet.equals(two.nodeSet())
+                        && oneEdgeSet.equals(two.edgeSet());
                 } else {
                     // check for graph isomorphism
                     if (this.checker.areIsomorphic(one, two)) {
@@ -490,8 +493,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
                                 ((ControlState) stateKey.getLocation()).getInitializedVariables();
                             if (variables.size() > 0) {
                                 NodeEdgeMap isomorphism =
-                                    ((DefaultIsoChecker) this.checker).getIsomorphism(
-                                        one, two);
+                                    (this.checker).getIsomorphism(one, two);
                                 if (isomorphism != null) {
                                     Node[] parametersOne =
                                         stateKey.getParameters();
@@ -546,7 +548,8 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
                     result =
                         graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
                 } else {
-                    certifier = stateKey.getGraph().getCertifier(true);
+                    certifier =
+                        this.checker.getCertifier(stateKey.getGraph(), true);
                     Object certificate = certifier.getGraphCertificate();
                     result = certificate.hashCode();
                 }
@@ -554,7 +557,8 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
                 result += control == null ? 0 : control.hashCode();
                 if (stateKey.getParameters() != null) {
                     if (certifier == null) {
-                        certifier = stateKey.getGraph().getCertifier(true);
+                        certifier =
+                            this.checker.getCertifier(stateKey.getGraph(), true);
                     }
                     for (Node n : stateKey.getParameters()) {
                         if (n != null) {
@@ -578,7 +582,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         }
 
         /** The isomorphism checker of the state set. */
-        private final IsoChecker checker;
+        private final DefaultIsoChecker checker;
         /** The value of the collapse property. */
         private final int collapse;
 

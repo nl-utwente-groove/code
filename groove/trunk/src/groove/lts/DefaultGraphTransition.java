@@ -20,12 +20,15 @@ import groove.control.ControlState;
 import groove.control.ControlTransition;
 import groove.graph.AbstractEdge;
 import groove.graph.AbstractGraphShape;
+import groove.graph.DefaultMorphism;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.NodeEdgeMap;
 import groove.graph.NodeSetEdgeSetGraph;
+import groove.graph.iso.DefaultIsoChecker;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
@@ -165,14 +168,22 @@ public class DefaultGraphTransition extends
         if (isSymmetry()) {
             Graph derivedTarget = new NodeSetEdgeSetGraph(appl.getTarget());
             Graph realTarget = new NodeSetEdgeSetGraph(target().getGraph());
-            Morphism iso = derivedTarget.getIsomorphismTo(realTarget);
-            assert iso != null : "Can't reconstruct derivation from graph transition "
+            final NodeEdgeMap map =
+                DefaultIsoChecker.getInstance(true).getIsomorphism(
+                    derivedTarget, realTarget);
+            assert map != null : "Can't reconstruct derivation from graph transition "
                 + this
                 + ": \n"
                 + AbstractGraphShape.toString(derivedTarget)
                 + " and \n"
                 + AbstractGraphShape.toString(realTarget)
                 + " \nnot isomorphic";
+            Morphism iso = new DefaultMorphism(derivedTarget, realTarget) {
+                @Override
+                protected NodeEdgeMap createElementMap() {
+                    return map;
+                }
+            };
             return appl.getMorphism().then(iso);
         } else {
             return appl.getMorphism();

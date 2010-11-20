@@ -177,7 +177,14 @@ public class MatchApplier implements RuleEventApplier {
 
     /** Computes the nodes created by applying a given event to a given graph. */
     private Node[] getCreatedNodes(RuleEvent event, Graph graph) {
-        return event.getCreatedNodes(graph.nodeSet()).toArray(EMPTY_NODE_ARRAY);
+        // optimise to avoid reconstructing the node set if there
+        // are no node creators in the rule
+        if (event.getRule().hasCreators()) {
+            return event.getCreatedNodes(graph.nodeSet()).toArray(
+                EMPTY_NODE_ARRAY);
+        } else {
+            return EMPTY_NODE_ARRAY;
+        }
     }
 
     /** The underlying GTS. */

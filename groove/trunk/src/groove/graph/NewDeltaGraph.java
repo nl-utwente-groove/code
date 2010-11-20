@@ -301,6 +301,11 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
     }
 
     @Override
+    public boolean hasCertifier(boolean strong) {
+        return this.certifier != null && this.certifier.get() != null;
+    }
+
+    @Override
     public CertificateStrategy getCertifier(boolean strong) {
         CertificateStrategy result =
             this.certifier == null ? null : this.certifier.get();
@@ -435,8 +440,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
                 Map<Label,DefaultEdgeSet> arityLabelEdgeMap = this.labelEdgeMap;
                 DefaultEdgeSet edgeSet = arityLabelEdgeMap.get(label);
                 if (edgeSet == null) {
-                    arityLabelEdgeMap.put(label, edgeSet =
-                        createEdgeSet(edgeSet));
+                    arityLabelEdgeMap.put(label, edgeSet = createEdgeSet(null));
                 }
                 edgeSet.add((DefaultEdge) elem);
             }

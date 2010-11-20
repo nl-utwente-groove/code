@@ -103,21 +103,14 @@ final public class SPOEvent extends
         // we don't use getAnchorImage() because the events are often
         // just created to look up a stored event; then we shouldn't spend too
         // much time on this one
-        Element[] anchors = getRule().anchor();
-        NodeEdgeMap anchorMap = getAnchorMap();
+        Element[] anchorImage = getAnchorImage();
         int MAX_HASHED_ANCHOR_COUNT = 10;
         int hashedAnchorCount =
-            Math.min(anchors.length, MAX_HASHED_ANCHOR_COUNT);
+            Math.min(anchorImage.length, MAX_HASHED_ANCHOR_COUNT);
         for (int i = 0; i < hashedAnchorCount; i++) {
-            Element anchor = anchors[i];
-            if (anchor instanceof Node) {
-                Node anchorNode = anchorMap.getNode((Node) anchor);
-                // this can happen if we're looking for a creator node
-                if (anchorNode != null) {
-                    result += anchorMap.getNode((Node) anchor).hashCode() << i;
-                }
-            } else {
-                result += anchorMap.getEdge((Edge) anchor).hashCode() << i;
+            Element elem = anchorImage[i];
+            if (elem != null) {
+                result += elem.hashCode() << i;
             }
         }
         return result;
@@ -474,8 +467,7 @@ final public class SPOEvent extends
 
     /**
      * Collects the set of created edges of which at least one incident nodes is
-     * also created, i.e., the images of the LHS creator edges between existing
-     * nodes, into a given set. Callback method from
+     * also created, into a given set. Callback method from
      * {@link #getComplexCreatedEdges(Iterator)}. TODO the parameter erasedNodes
      * is a hack, this should be solved by setting the coAnchorMap correctly
      * @param erasedNodes set of erased nodes; if not <code>null</code>, check

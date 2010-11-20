@@ -63,20 +63,13 @@ public class DefaultIsoChecker implements IsoChecker {
 
     public synchronized boolean areIsomorphic(Graph dom, Graph cod) {
         boolean result;
-        // pre-calculate the node counts to take the time for
-        // constructing the graph out of the isomorphism check time
-        int domNodeCount = dom.nodeCount();
-        int codNodeCount = cod.nodeCount();
-        areIsoReporter.start();
-        if (domNodeCount != codNodeCount || dom.edgeCount() != cod.edgeCount()) {
-            distinctSizeCount++;
-            result = false;
-        } else if (areGraphEqual(dom, cod)) {
+        if (areGraphEqual(dom, cod)) {
             equalGraphsCount++;
             result = true;
         } else {
-            CertificateStrategy domCertifier = dom.getCertifier(isStrong());
-            CertificateStrategy codCertifier = cod.getCertifier(isStrong());
+            areIsoReporter.start();
+            CertificateStrategy domCertifier = getCertifier(dom, true);
+            CertificateStrategy codCertifier = getCertifier(cod, true);
             result = areIsomorphic(domCertifier, codCertifier);
             if (ISO_ASSERT) {
                 assert checkBisimulator(dom, cod, result);
@@ -106,12 +99,16 @@ public class DefaultIsoChecker implements IsoChecker {
                     }
                 }
             }
+            areIsoReporter.stop();
         }
-        areIsoReporter.stop();
         totalCheckCount++;
         return result;
     }
 
+    /**
+     * Tests if two unequal graphs, given by their respective
+     * certificate strategies, are isomorphism.
+     */
     private boolean areIsomorphic(CertificateStrategy domCertifier,
             CertificateStrategy codCertifier) {
         boolean result;
@@ -160,15 +157,6 @@ public class DefaultIsoChecker implements IsoChecker {
         return result;
     }
 
-    /**
-     * Tries to construct an isomorphism between the two given graphs, and
-     * reports if this succeeds.
-     */
-    public synchronized boolean hasIsomorphism(Graph dom, Graph cod) {
-        return hasIsomorphism(dom.getCertifier(isStrong()),
-            cod.getCertifier(isStrong()));
-    }
-
     private boolean hasIsomorphism(CertificateStrategy domCertifier,
             CertificateStrategy codCertifier) {
         boolean result =
@@ -185,8 +173,8 @@ public class DefaultIsoChecker implements IsoChecker {
      * @param cod the second graph to be compared
      */
     public synchronized NodeEdgeMap getIsomorphism(Graph dom, Graph cod) {
-        return getIsomorphism(dom.getCertifier(isStrong()),
-            cod.getCertifier(isStrong()), null);
+        return getIsomorphism(getCertifier(dom, true), getCertifier(cod, true),
+            null);
     }
 
     /**
@@ -200,8 +188,8 @@ public class DefaultIsoChecker implements IsoChecker {
      */
     public synchronized NodeEdgeMap getIsomorphism(Graph dom, Graph cod,
             IsoCheckerState state) {
-        return getIsomorphism(dom.getCertifier(isStrong()),
-            cod.getCertifier(isStrong()), state);
+        return getIsomorphism(getCertifier(dom, true), getCertifier(cod, true),
+            state);
     }
 
     private NodeEdgeMap getIsomorphism(CertificateStrategy domCertifier,
@@ -254,11 +242,9 @@ public class DefaultIsoChecker implements IsoChecker {
     @SuppressWarnings("unchecked")
     private NodeEdgeMap computeIsomorphism(CertificateStrategy domCertifier,
             CertificateStrategy codCertifier, IsoCheckerState state) {
-        Graph dom = domCertifier.getGraph();
-        Graph cod = codCertifier.getGraph();
         // make sure the graphs are of the same size
-        if (dom.nodeCount() != cod.nodeCount()
-            || dom.edgeCount() != cod.edgeCount()) {
+        if (domCertifier.getNodeCertificates().length != codCertifier.getNodeCertificates().length
+            || domCertifier.getEdgeCertificates().length != codCertifier.getEdgeCertificates().length) {
             return null;
         }
         NodeEdgeMap result;
@@ -397,7 +383,7 @@ public class DefaultIsoChecker implements IsoChecker {
             if (ISO_PRINT) {
                 System.err.printf("Succeeded%n");
             }
-            assert checkIsomorphism(dom, cod, result) : String.format(
+            assert checkIsomorphism(domCertifier.getGraph(), result) : String.format(
                 "Erronous result using plan %s", plan);
             // Store the variables in the state.
             if (state != null) {
@@ -767,20 +753,57 @@ public class DefaultIsoChecker implements IsoChecker {
      */
     private boolean areGraphEqual(Graph dom, Graph cod) {
         equalsTestReporter.start();
-        // boolean result = ((DeltaGraph)
-        // dom).equalNodeEdgeSets((DeltaGraph)cod);
-        Set<?> domEdgeSet = dom.edgeSet();
-        Set<?> codEdgeSet = cod.edgeSet();
-        boolean result = domEdgeSet.equals(codEdgeSet);
-        // assert result == (dom.edgeCount() == 0 && dom.nodeCount() ==
-        // cod.nodeCount()) || dom.nodeEdgeMap().equals(cod.nodeEdgeMap()):
-        // "TreeStoreSet.equals wrongly gives "+result+"
-        // on\n"+dom.nodeSet()+"\n"+cod.nodeSet()+"\n"+dom.edgeSet()+"\n"+cod.edgeSet();
+        // test if the node counts of domain and codomain coincide
+        CertificateStrategy domCertifier = getCertifier(dom, false);
+        CertificateStrategy codCertifier = getCertifier(cod, false);
+        int domNodeCount =
+            domCertifier == null ? dom.nodeCount()
+                    : domCertifier.getNodeCertificates().length;
+        int codNodeCount =
+            codCertifier == null ? cod.nodeCount()
+                    : codCertifier.getNodeCertificates().length;
+        boolean result = domNodeCount == codNodeCount;
+        if (result) {
+            // test if the edge sets of domain and codomain coincide
+            Set<?> domEdgeSet, codEdgeSet;
+            if (domCertifier == null || codCertifier == null) {
+                // copy the edge set of the codomain to avoid sharing problems
+                codEdgeSet = new HashSet<Edge>(cod.edgeSet());
+                domEdgeSet = dom.edgeSet();
+            } else {
+                codEdgeSet = codCertifier.getCertificateMap().keySet();
+                domEdgeSet = domCertifier.getCertificateMap().keySet();
+            }
+            result = domEdgeSet.equals(codEdgeSet);
+        }
         equalsTestReporter.stop();
         return result;
     }
 
-    private boolean checkIsomorphism(Graph dom, Graph cod, NodeEdgeMap map) {
+    /** 
+     * Retrieve or construct a certifier for a give graph.
+     * A parameter controls whether a certifier is always returned, or only
+     * if one is already constructed.
+     * @param graph the graph for which the certifier is requested
+     * @param always if {@code true}, the certifier should always be 
+     * constructed; otherwise, it is only retrieved from the graph if the graph
+     * has already stored a certifier.
+     */
+    public CertificateStrategy getCertifier(Graph graph, boolean always) {
+        CertificateStrategy result = null;
+        if (graph instanceof AbstractGraph) {
+            if (always || ((AbstractGraph<?>) graph).hasCertifier(isStrong())) {
+                result = ((AbstractGraph<?>) graph).getCertifier(isStrong());
+            }
+        } else if (always) {
+            result =
+                AbstractGraph.getCertificateFactory().newInstance(graph,
+                    isStrong());
+        }
+        return result;
+    }
+
+    private boolean checkIsomorphism(Graph dom, NodeEdgeMap map) {
         for (Edge edge : dom.edgeSet()) {
             if (edge.source() != edge.target()
                 && !map.edgeMap().containsKey(edge)) {
@@ -1016,9 +1039,9 @@ public class DefaultIsoChecker implements IsoChecker {
     private static void testIso(String name) {
         try {
             Graph graph1 = Groove.loadGraph(name);
+            DefaultIsoChecker checker = new DefaultIsoChecker(true);
             System.out.printf("Graph certificate: %s%n",
-                graph1.getCertifier(true).getGraphCertificate());
-            IsoChecker checker = new DefaultIsoChecker(true);
+                checker.getCertifier(graph1, true).getGraphCertificate());
             for (int i = 0; i < 1000; i++) {
                 Graph graph2 = new NodeSetEdgeSetGraph();
                 NodeEdgeMap nodeMap = new NodeEdgeHashMap();

@@ -17,7 +17,6 @@
 package groove.graph;
 
 import groove.graph.iso.CertificateStrategy;
-import groove.graph.iso.DefaultIsoChecker;
 import groove.util.Dispenser;
 import groove.util.Pair;
 import groove.view.FormatException;
@@ -38,25 +37,6 @@ import java.util.Set;
  */
 public abstract class AbstractGraph<C extends GraphCache> extends
         AbstractGraphShape<C> implements InternalGraph {
-
-    public Morphism getIsomorphismTo(final Graph to) {
-        Morphism result;
-        final NodeEdgeMap map =
-            DefaultIsoChecker.getInstance(true).getIsomorphism(
-                AbstractGraph.this, to);
-        if (map != null) {
-            result = new DefaultMorphism(this, to) {
-                @Override
-                protected NodeEdgeMap createElementMap() {
-                    return map;
-                }
-            };
-        } else {
-            result = null;
-        }
-        return result;
-    }
-
     /**
      * Factory method for nodes of this graph.
      * @return the freshly created node
@@ -289,8 +269,23 @@ public abstract class AbstractGraph<C extends GraphCache> extends
         return endCount == 2;
     }
 
+    /**
+     * Tests if the certificate strategy (of the correct strength) is currently instantiated.
+     * @param strong the strength of the required certifier
+     * @see CertificateStrategy#getStrength()
+     */
+    public boolean hasCertifier(boolean strong) {
+        return !isCacheCleared() && getCache().hasCertifier(strong);
+    }
+
+    /**
+     * Returns the certificate strategy object used for this graph. The
+     * certificate strategy is used to decide isomorphism between graphs.
+     * @param strong if <code>true</code>, a strong certifier is returned.
+     * @see CertificateStrategy#getStrength()
+     */
     public CertificateStrategy getCertifier(boolean strong) {
-        return getCache().getCertificateStrategy(strong);
+        return getCache().getCertifier(strong);
     }
 
     /**

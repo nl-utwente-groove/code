@@ -70,7 +70,7 @@ abstract public class ClosingStrategy extends AbstractStrategy {
         // the graph data structures. On the whole, this seems wise, to
         // avoid excessive garbage collection.
         // TODO switched off again due to observed problems
-        gts.getRecord().setCopyGraphs(true);
+        // gts.getRecord().setCopyGraphs(true);
         getGTS().addGraphListener(this.exploreListener);
         this.newStates.clear();
         this.virtualEvents = null;
