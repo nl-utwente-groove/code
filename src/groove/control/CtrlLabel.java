@@ -17,67 +17,41 @@
 package groove.control;
 
 import groove.graph.AbstractLabel;
-import groove.trans.Rule;
-import groove.trans.RuleSystem;
-import groove.util.Groove;
-import groove.view.FormatError;
-import groove.view.FormatException;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * A control label wraps a control call and a guard, consisting of a 
- * set of failure rules.
- * A label is <i>virtual</i> if the call and guard are only specified by
- * name, and <i>actual</i> if the rules are instantiated.
+ * set of failure calls.
  * @author Arend Rensink
  * @version $Revision $
  */
 public class CtrlLabel extends AbstractLabel {
     /** 
-     * Constructs a virtual control label with an omega call and a
-     * given set of guard names.
+     * Constructs a virtual control label from a call and
+     * a guard.
      */
-    public CtrlLabel(Collection<String> guardNames) {
-        this.call = CtrlCall.OMEGA;
-        this.guard = null;
-        this.guardNames = new LinkedHashSet<String>(guardNames);
-    }
-
-    /** 
-     * Constructs a virtual control label from a rule name,
-     * a set of call arguments, and a set of guard names.
-     */
-    public CtrlLabel(String ruleName, List<CtrlPar> args,
-            Collection<String> guardNames) {
-        this.call = new CtrlCall(ruleName, args);
-        this.guard = null;
-        this.guardNames = new LinkedHashSet<String>(guardNames);
-    }
-
-    /** 
-     * Constructs an actual control label from a given rule call
-     * and guard.
-     */
-    private CtrlLabel(CtrlCall call, Collection<Rule> guard) {
+    public CtrlLabel(CtrlCall call, Collection<CtrlCall> guard) {
         this.call = call;
-        this.guard = new LinkedHashSet<Rule>(guard);
-        this.guardNames = new LinkedHashSet<String>();
-        for (Rule guardRule : guard) {
-            this.guardNames.add(guardRule.getName().text());
+        for (CtrlCall guardCall : guard) {
+            this.guardMap.put(guardCall.getName(), guardCall);
         }
     }
 
     @Override
     public String text() {
         StringBuilder result = new StringBuilder();
-        if (!this.guardNames.isEmpty()) {
-            result.append(Groove.toString(this.guardNames.toArray(), "[", "]",
-                ","));
+        if (!this.guardMap.isEmpty()) {
+            result.append('[');
+            for (String callName : this.guardMap.keySet()) {
+                if (result.length() == 1) {
+                    result.append(',');
+                }
+                result.append(callName);
+            }
+            result.append(']');
         }
         result.append(getCall().toString());
         return result.toString();
@@ -91,51 +65,22 @@ public class CtrlLabel extends AbstractLabel {
     /** The rule call wrapped in this control label. */
     private final CtrlCall call;
 
-    /** Returns the set of failure rules names wrapped into this label. */
-    public final Set<String> getGuardNames() {
-        return this.guardNames;
-    }
-
-    /** Guard of this label, consisting of a list of failure rules. */
-    private final Set<String> guardNames;
-
     /** Returns the set of failure rules wrapped into this label. */
-    public final Set<Rule> getGuard() {
-        return this.guard;
+    public final Collection<CtrlCall> getGuard() {
+        return this.guardMap.values();
+    }
+
+    /** Indicates if the guard contains a call with a given (rule or function) call. */
+    public final boolean hasGuardCall(String name) {
+        return this.guardMap.containsKey(name);
+    }
+
+    /** Returns the guarded call for a given (rule or function) name, if any. */
+    public final CtrlCall getGuardCall(String name) {
+        return this.guardMap.get(name);
     }
 
     /** Guard of this label, consisting of a list of failure rules. */
-    private final Set<Rule> guard;
-
-    /** 
-     * Returns an actual label based on this (virtual) label and a given rule 
-     * system.
-     * @throws FormatException if this call's rule name or one of the guard 
-     * names does not occur in the rule system,
-     * or the arguments of this call are not compatible with the rule parameters.  
-     */
-    public CtrlLabel instantiate(RuleSystem grammar) throws FormatException {
-        List<FormatError> errors = new ArrayList<FormatError>();
-        Collection<Rule> guard = new LinkedHashSet<Rule>();
-        for (String guardName : getGuardNames()) {
-            Rule guardRule = grammar.getRule(guardName);
-            if (guardRule == null) {
-                errors.add(new FormatError(
-                    "Failure rule '%s' does not occur in grammar", guardName));
-            } else {
-                guard.add(guardRule);
-            }
-        }
-        CtrlCall call = null;
-        try {
-            call = getCall().instantiate(grammar);
-        } catch (FormatException exc) {
-            errors.addAll(exc.getErrors());
-        }
-        if (errors.isEmpty()) {
-            return new CtrlLabel(call, guard);
-        } else {
-            throw new FormatException(errors);
-        }
-    }
+    private final Map<String,CtrlCall> guardMap =
+        new LinkedHashMap<String,CtrlCall>();
 }

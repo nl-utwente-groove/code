@@ -16,12 +16,13 @@
  */
 package groove.control.parse;
 
+import groove.control.CtrlType;
 
 /**
- * Instantiated symbol table, with strings as types.
+ * Instantiated symbol table, with {@link CtrlType}s as types.
  * @author Olaf Keijsers
  * @version $Revision $
  */
-public class SymbolTable extends GenericSymbolTable<String> {
+public class NewSymbolTable extends GenericSymbolTable<CtrlType> {
     // empty
 }

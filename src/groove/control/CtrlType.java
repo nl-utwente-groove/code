@@ -29,11 +29,6 @@ import java.util.Map;
  * @version $Revision $
  */
 public class CtrlType {
-    /** Constructs a node type. */
-    private CtrlType() {
-        this.signature = null;
-    }
-
     /** Constructs a control data type from a given data signature. */
     private CtrlType(String signature) {
         this.signature = signature;
@@ -85,8 +80,25 @@ public class CtrlType {
         return result;
     }
 
+    /**
+     * Returns a control type instance for a given type name.
+     * @param name the name of the control type; either {@value #NODE_TYPE_NAME} or a data type name.
+     */
+    public static CtrlType createType(String name) {
+        CtrlType result;
+        if (NODE_TYPE_NAME.equals(name)) {
+            result = createNodeType();
+        } else {
+            result = createDataType(name);
+        }
+        return result;
+    }
+
+    /** The name of the node type. */
+    static public final String NODE_TYPE_NAME = "node";
     /** The singleton node type. */
-    private static final CtrlType nodeTypeInstance = new CtrlType();
+    private static final CtrlType nodeTypeInstance = new CtrlType(
+        NODE_TYPE_NAME);
     /** Static mapping from data signatures to data types. */
     private static final Map<String,CtrlType> dataTypeMap =
         new HashMap<String,CtrlType>();

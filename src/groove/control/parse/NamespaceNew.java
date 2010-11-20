@@ -16,13 +16,15 @@
  */
 package groove.control.parse;
 
-import groove.trans.Rule;
-import groove.trans.RuleName;
+import groove.control.CtrlPar;
+import groove.control.CtrlType;
+import groove.control.CtrlVar;
 import groove.trans.SPORule;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -50,34 +52,45 @@ public class NamespaceNew {
      * Tests if there is a rule with a given name.
      */
     public boolean hasRule(String name) {
-        return this.ruleNames.contains(name);
+        return this.sigMap.containsKey(name);
     }
 
     /**
      * Returns the rule associated with a given rule name
      */
     public SPORule getRule(String name) {
-        debug("trying to get rule: " + name + ", currently "
-            + this.ruleMap.size() + " rules known");
         return this.ruleMap.get(name);
     }
 
-    /** Initialises the rule names of this name space from a given grammar view. */
-    public void setRuleNames(Set<RuleName> ruleNames) {
-        for (RuleName rule : ruleNames) {
-            this.ruleNames.add(rule.text());
-        }
+    /**
+     * Returns the signature associated with a given rule name
+     */
+    public List<CtrlPar> getSig(String name) {
+        return this.sigMap.get(name);
     }
 
     /**
-     * Sets the rules so that the control program may know about them
-     * @param rules a collection of the rules used in this grammar
+     * Adds a rule to the name space.
      */
-    public void setRules(Collection<Rule> rules) {
-        for (Rule r : rules) {
-            debug(" == adding rule: " + r.getName().toString());
-            this.ruleMap.put(r.getName().toString(), (SPORule) r);
+    public boolean addRule(SPORule rule) {
+        List<CtrlPar> sig = new ArrayList<CtrlPar>();
+        for (int i = 0; i < rule.getNumberOfParameters(); i++) {
+            String parName = "par" + i;
+            CtrlType parType =
+                CtrlType.createDataType(rule.getAttributeParameterType(i));
+            CtrlVar var = new CtrlVar(parName, parType);
+            CtrlPar par;
+            boolean inOnly = !rule.isOutputParameter(i);
+            boolean outOnly = !rule.isInputParameter(i);
+            if (!inOnly && !outOnly) {
+                par = new CtrlPar.Var(var);
+            } else {
+                par = new CtrlPar.Var(var, inOnly);
+            }
+            sig.add(par);
         }
+        List<CtrlPar> oldSig = this.sigMap.put(rule.getName().text(), sig);
+        return oldSig == null;
     }
 
     /**
@@ -97,9 +110,9 @@ public class NamespaceNew {
     }
 
     /**
-     * Marks a variable as initialized.
+     * Marks a variable as initialised.
      */
-    public boolean initializeVariable(String name) {
+    public boolean initialiseVariable(String name) {
         if (hasVariable(name)) {
             this.variables.put(name, true);
             return true;
@@ -116,9 +129,9 @@ public class NamespaceNew {
     }
 
     /**
-     * Tests if the variable with the given name is initialized.
+     * Tests if the variable with the given name is initialised.
      */
-    public boolean isInitialized(String name) {
+    public boolean isInitialised(String name) {
         if (hasVariable(name)) {
             return this.variables.get(name);
         } else {
@@ -126,24 +139,12 @@ public class NamespaceNew {
         }
     }
 
-    /**
-     * Returns the set of rule names associated with this name space. Only
-     * returns a value different from <code>null</code> if the rule names have
-     * been initialised using {@link #setRuleNames(Set)}.
-     */
-    public Set<String> getRuleNames() {
-        return this.ruleNames;
-    }
-
-    private void debug(String msg) {
-        if (this.usesVariables()) {
-            //System.err.println("Variables debug (NameSpace): "+msg);
-        }
-    }
-
-    private final Set<String> ruleNames = new HashSet<String>();
+    /** Mapping from declared rules names to the rules. */
     private final HashMap<String,SPORule> ruleMap =
         new HashMap<String,SPORule>();
+    /** Mapping from declared rule names to their signatures. */
+    private final HashMap<String,List<CtrlPar>> sigMap =
+        new HashMap<String,List<CtrlPar>>();
 
     /** Set of declared functions. */
     private final Set<String> functions = new HashSet<String>();

@@ -18,21 +18,15 @@ package groove.control;
 
 import groove.graph.AbstractGraphShape;
 import groove.graph.GraphCache;
-import groove.trans.RuleSystem;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
-import groove.view.FormatError;
-import groove.view.FormatException;
 
 import java.util.AbstractSet;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * This class implements a control automaton graph.
@@ -163,45 +157,6 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
     private CtrlTransition createTransition(CtrlState source, CtrlLabel label,
             CtrlState target) {
         return new CtrlTransition(source, label, target);
-    }
-
-    /** 
-     * Returns a copy of this control automaton in which all 
-     * rule names have been instantiated with actual rules.
-     * @param rules the rule system from which the actual rules are
-     * taken
-     * @throws FormatException if the rule system is not compatible with the
-     * rule calls in this automaton
-     */
-    public CtrlAut instantiate(RuleSystem rules) throws FormatException {
-        Set<FormatError> errors = new TreeSet<FormatError>();
-        Map<CtrlState,CtrlState> oldToNewStateMap =
-            new HashMap<CtrlState,CtrlState>();
-        CtrlState newStart = getStart().instantiate(oldToNewStateMap);
-        CtrlState newFinal = getFinal().instantiate(oldToNewStateMap);
-        CtrlAut result = new CtrlAut(newStart, newFinal);
-        for (CtrlState oldState : nodeSet()) {
-            try {
-                result.addState(oldState.instantiate(oldToNewStateMap));
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
-            }
-        }
-        if (!errors.isEmpty()) {
-            throw new FormatException(errors);
-        }
-        for (CtrlTransition oldTrans : edgeSet()) {
-            try {
-                result.addTransition(oldTrans.instantiate(oldToNewStateMap,
-                    rules));
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
-            }
-        }
-        if (!errors.isEmpty()) {
-            throw new FormatException(errors);
-        }
-        return result;
     }
 
     /** The set of states of this control automaton. */
