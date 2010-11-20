@@ -16,7 +16,6 @@
  */
 package groove.graph;
 
-import groove.graph.iso.CertificateStrategy;
 import groove.view.FormatException;
 
 import java.util.Collection;
@@ -30,26 +29,6 @@ import java.util.Collection;
  * @version $Revision$ $Date: 2008-01-30 09:32:52 $
  */
 public interface Graph extends GraphShape, DeltaTarget {
-
-    /**
-     * Returns an isomorphism from this graph to another, if one exists.
-     * @param to the graph to which this one is to be isomorphically matched
-     * @return a total and surjective <tt>InjectiveMorphism</tt> from this
-     *         graph to <tt>to</tt>; <tt>null</tt> if none exists
-     */
-    Morphism getIsomorphismTo(Graph to);
-
-    /**
-     * Returns the certificate strategy object used for this graph. The
-     * certificate strategy is used to decide isomorphism between graphs.
-     * @param strong if <code>true</code>, a strong certifier is returned.
-     * @see CertificateStrategy#getStrength()
-     */
-    public CertificateStrategy getCertifier(boolean strong);
-
-    // --------------------------------- Object overrides
-    // ----------------------------
-
     /**
      * Makes a copy of this Graph with cloned (not aliased) node and edge sets
      * but aliased nodes and edges.

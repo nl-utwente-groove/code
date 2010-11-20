@@ -347,7 +347,7 @@ public class ProductGTS implements LTS {
             int result;
             if (isCheckIsomorphism()) {
                 result =
-                    stateKey.getGraph().getCertifier(true).getGraphCertificate().hashCode();
+                    this.checker.getCertifier(stateKey.getGraph(), true).getGraphCertificate().hashCode();
             } else {
                 Graph graph = stateKey.getGraph();
                 result =
@@ -359,7 +359,8 @@ public class ProductGTS implements LTS {
         }
 
         /** The isomorphism checker of the state set. */
-        private final IsoChecker checker = DefaultIsoChecker.getInstance(true);
+        private final DefaultIsoChecker checker =
+            DefaultIsoChecker.getInstance(true);
     }
 
     public Set<? extends Transition> edgeSet() {

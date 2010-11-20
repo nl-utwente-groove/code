@@ -25,10 +25,8 @@ import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphShape;
 import groove.graph.Label;
-import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
-import groove.graph.iso.IsoChecker;
 import groove.graph.iso.PartitionMap;
 import groove.io.DefaultGxl;
 import groove.io.ExtensionFilter;
@@ -90,6 +88,8 @@ public class GraphTest extends TestCase {
     public Graph[] matchDom = new Graph[MATCH_DOM_COUNT];
     public Graph matchCod;
     public Graph[] isoGraph = new Graph[ISO_GRAPH_COUNT];
+
+    public DefaultIsoChecker checker = DefaultIsoChecker.getInstance(true);
 
     /**
      * Constructor for GraphTest, with specific graph factory
@@ -162,77 +162,16 @@ public class GraphTest extends TestCase {
         return new File(GraphTestDir, gxlFilter.addExtension(fileName));
     }
 
-    //
-    // final public void testGetMatchesTo() {
-    // Collection<? extends Morphism> matches =
-    // matchDom[0].getMatchesTo(matchCod);
-    // assertEquals(4, matches.size());
-    // Iterator<? extends Morphism> matchIter = matches.iterator();
-    // while (matchIter.hasNext()) {
-    // Object match = matchIter.next();
-    // assertTrue(match instanceof Morphism);
-    // Morphism matchAsMorphism = (Morphism) match;
-    // assertTrue(matchAsMorphism.isTotal());
-    // }
-    // matches = matchDom[1].getMatchesTo(matchCod);
-    // assertEquals(2, matches.size());
-    // matches = matchDom[2].getMatchesTo(matchCod);
-    // assertEquals(2, matches.size());
-    // matches = matchDom[3].getMatchesTo(matchCod);
-    // assertEquals(1, matches.size());
-    // }
-    //
-    // final public void testGetInjectiveMatchesTo() {
-    // Collection<? extends Morphism> matches =
-    // matchDom[0].getInjectiveMatchesTo(matchCod);
-    // assertEquals(1, matches.size());
-    // Iterator<? extends Morphism> matchIter = matches.iterator();
-    // while (matchIter.hasNext()) {
-    // Object match = matchIter.next();
-    // assertTrue(match instanceof InjectiveMorphism);
-    // Morphism matchAsMorphism = (Morphism) match;
-    // assertTrue(matchAsMorphism.isTotal());
-    // }
-    // matches = matchDom[1].getInjectiveMatchesTo(matchCod);
-    // assertEquals(1, matches.size());
-    // matches = matchDom[2].getInjectiveMatchesTo(matchCod);
-    // assertEquals(1, matches.size());
-    // matches = matchDom[3].getInjectiveMatchesTo(matchCod);
-    // assertEquals(1, matches.size());
-    // matches = matchDom[1].getInjectiveMatchesTo(matchDom[3]);
-    // assertEquals(0, matches.size());
-    // }
-
-    final public void testGetIsomorphismTo() {
-        Morphism iso = this.matchDom[0].getIsomorphismTo(this.isoGraph[0]);
-        assertNotNull(iso);
-        assertTrue(iso.isTotal());
-        assertTrue(iso.isSurjective());
-        for (int i = 0; i < ISO_GRAPH_COUNT; i++) {
-            for (int j = 0; j < ISO_GRAPH_COUNT; j++) {
-                iso = this.isoGraph[i].getIsomorphismTo(this.isoGraph[j]);
-                if (i == j) {
-                    assertNotNull(iso);
-                    assertTrue(iso.isTotal());
-                    assertTrue(iso.isSurjective());
-                } else {
-                    assertNull(iso);
-                }
-            }
-        }
-    }
-
     final public void testIsoHashCode() {
-        IsoChecker checker = DefaultIsoChecker.getInstance(true);
         Object[] codes = new Object[MATCH_DOM_COUNT];
         for (int i = 0; i < codes.length; i++) {
             codes[i] =
-                this.matchDom[i].getCertifier(true).getGraphCertificate();
+                this.checker.getCertifier(this.matchDom[i], true).getGraphCertificate();
         }
         for (int i = 0; i < codes.length; i++) {
             for (int j = 0; j < codes.length; j++) {
                 if (!codes[i].equals(codes[j])) {
-                    assertFalse(checker.areIsomorphic(this.matchDom[i],
+                    assertFalse(this.checker.areIsomorphic(this.matchDom[i],
                         this.matchDom[j]));
                 }
             }
@@ -240,12 +179,12 @@ public class GraphTest extends TestCase {
         codes = new Object[ISO_GRAPH_COUNT];
         for (int i = 0; i < codes.length; i++) {
             codes[i] =
-                this.isoGraph[i].getCertifier(true).getGraphCertificate();
+                this.checker.getCertifier(this.isoGraph[i], true).getGraphCertificate();
         }
         for (int i = 0; i < codes.length; i++) {
             for (int j = 0; j < codes.length; j++) {
                 if (!codes[i].equals(codes[j])) {
-                    assertFalse(checker.areIsomorphic(this.isoGraph[i],
+                    assertFalse(this.checker.areIsomorphic(this.isoGraph[i],
                         this.isoGraph[j]));
                 }
             }
@@ -255,25 +194,25 @@ public class GraphTest extends TestCase {
     final public void testGetPartitionMap() {
         // iso-0
         PartitionMap partitionMap =
-            this.isoGraph[0].getCertifier(true).getNodePartitionMap();
+            this.checker.getCertifier(this.isoGraph[0], true).getNodePartitionMap();
         int elementCount =
             this.isoGraph[0].nodeCount() + this.isoGraph[0].edgeCount();
         assertEquals(elementCount, partitionMap.size());
         // iso-1
         partitionMap =
-            this.isoGraph[1].getCertifier(true).getNodePartitionMap();
+            this.checker.getCertifier(this.isoGraph[1], true).getNodePartitionMap();
         elementCount =
             this.isoGraph[1].nodeCount() + this.isoGraph[1].edgeCount();
         assertEquals(elementCount - 2, partitionMap.size());
         // iso-2
         partitionMap =
-            this.isoGraph[2].getCertifier(true).getNodePartitionMap();
+            this.checker.getCertifier(this.isoGraph[2], true).getNodePartitionMap();
         elementCount =
             this.isoGraph[2].nodeCount() + this.isoGraph[2].edgeCount();
         assertEquals(elementCount, partitionMap.size());
         // iso-3
         partitionMap =
-            this.isoGraph[3].getCertifier(true).getNodePartitionMap();
+            this.checker.getCertifier(this.isoGraph[3], true).getNodePartitionMap();
         elementCount =
             this.isoGraph[3].nodeCount() + this.isoGraph[3].edgeCount();
         assertTrue((elementCount - 5) >= partitionMap.size());
