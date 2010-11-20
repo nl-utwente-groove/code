@@ -17,6 +17,7 @@
 package groove.match;
 
 import groove.graph.DefaultEdge;
+import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.graph.Label;
@@ -758,15 +759,17 @@ public class GraphSearchPlanFactory {
          *        may be <code>null</code>
          */
         FrequencyComparator(List<String> rare, List<String> common) {
-            this.priorities = new HashMap<String,Integer>();
+            this.priorities = new HashMap<Label,Integer>();
             if (rare != null) {
                 for (int i = 0; i < rare.size(); i++) {
-                    this.priorities.put(rare.get(i), rare.size() - i);
+                    Label label = DefaultLabel.createTypedLabel(rare.get(i));
+                    this.priorities.put(label, rare.size() - i);
                 }
             }
             if (common != null) {
                 for (int i = 0; i < common.size(); i++) {
-                    this.priorities.put(common.get(i), i - common.size());
+                    Label label = DefaultLabel.createTypedLabel(common.get(i));
+                    this.priorities.put(label, i - common.size());
                 }
             }
         }
@@ -779,10 +782,9 @@ public class GraphSearchPlanFactory {
         public int compare(SearchItem first, SearchItem second) {
             if (first instanceof Edge2SearchItem
                 && second instanceof Edge2SearchItem) {
-                String firstLabel =
-                    ((Edge2SearchItem) first).getEdge().label().text();
-                String secondLabel =
-                    ((Edge2SearchItem) second).getEdge().label().text();
+                Label firstLabel = ((Edge2SearchItem) first).getEdge().label();
+                Label secondLabel =
+                    ((Edge2SearchItem) second).getEdge().label();
                 // compare edge priorities
                 return getEdgePriority(firstLabel)
                     - getEdgePriority(secondLabel);
@@ -794,7 +796,7 @@ public class GraphSearchPlanFactory {
         /**
          * Returns the priority of an edge, judged by its label.
          */
-        private int getEdgePriority(String edgeLabel) {
+        private int getEdgePriority(Label edgeLabel) {
             Integer result = this.priorities.get(edgeLabel);
             if (result == null) {
                 return 0;
@@ -807,7 +809,7 @@ public class GraphSearchPlanFactory {
          * The priorities assigned to labels, on the basis of the list of labels
          * passed in at construction time.
          */
-        private final Map<String,Integer> priorities;
+        private final Map<Label,Integer> priorities;
     }
 
     /**
