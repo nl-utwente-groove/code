@@ -41,8 +41,15 @@ public class CtrlFactory {
      * Closes a given control automaton under the <i>as long as possible</i>
      * operator.
      */
-    public void buildAlap(CtrlAut aut) {
-        buildLoop(aut, aut.getStart().getInit());
+    public CtrlAut buildAlap(CtrlAut aut) {
+        return buildLoop(aut, aut.getStart().getInit());
+    }
+
+    /** 
+     * Closes a given control automaton under arbitrary repetition
+     */
+    public CtrlAut buildStar(CtrlAut aut) {
+        return buildLoop(aut, Collections.<CtrlCall>emptySet());
     }
 
     /** Factory method for a single function call. */
@@ -75,9 +82,9 @@ public class CtrlFactory {
      * @param second the condition of the loop; modified in the course 
      * of the construction
      */
-    public void buildDoUntil(CtrlAut first, CtrlAut second) {
+    public CtrlAut buildDoUntil(CtrlAut first, CtrlAut second) {
         buildUntilDo(second, first);
-        buildSeq(first, second);
+        return buildSeq(first, second);
     }
 
     /**
@@ -88,19 +95,19 @@ public class CtrlFactory {
      * @param second the condition of the loop; modified in the course 
      * of the construction
      */
-    public void buildDoWhile(CtrlAut first, CtrlAut second) {
+    public CtrlAut buildDoWhile(CtrlAut first, CtrlAut second) {
         buildWhileDo(second, first);
-        buildSeq(first, second);
+        return buildSeq(first, second);
     }
 
     /** 
      * Builds an <i>if-then-else</i> construct out of three automata,
      * by modifying the first of the three.
      */
-    public void buildIfThenElse(CtrlAut first, CtrlAut second, CtrlAut third) {
+    public CtrlAut buildIfThenElse(CtrlAut first, CtrlAut second, CtrlAut third) {
         Set<CtrlCall> guard = first.getStart().getInit();
         buildSeq(first, second);
-        buildOr(first, third, guard);
+        return buildOr(first, third, guard);
     }
 
     /**
@@ -112,7 +119,7 @@ public class CtrlFactory {
      * @param second the called automaton
      * @throws FormatException if one of the calls is not compatible with the function declaration 
      */
-    public void buildInvoke(CtrlAut first, String name, CtrlAut second)
+    public CtrlAut buildInvoke(CtrlAut first, String name, CtrlAut second)
         throws FormatException {
         Set<FormatError> errors = new TreeSet<FormatError>();
         // copy the transition set to avoid concurrent modification exceptions
@@ -148,6 +155,7 @@ public class CtrlFactory {
         if (!errors.isEmpty()) {
             throw new FormatException(errors);
         }
+        return first;
     }
 
     /**
@@ -324,7 +332,7 @@ public class CtrlFactory {
      * @param first the automaton to be executed first; contains the result upon return
      * @param second the automaton to be executed second
      */
-    public void buildSeq(CtrlAut first, CtrlAut second) {
+    public CtrlAut buildSeq(CtrlAut first, CtrlAut second) {
         Map<CtrlState,CtrlState> secondToFirstMap = copyStates(second, first);
         // remove omega-transitions from first
         Set<CtrlTransition> firstOmega = removeOmegas(first);
@@ -345,11 +353,12 @@ public class CtrlFactory {
                 first.addTransition(sourceImage, label, targetImage);
             }
         }
+        return first;
     }
 
     /** Adds a second control automaton as alternative to a given one. */
-    public void buildOr(CtrlAut first, CtrlAut second) {
-        buildOr(first, second, EMPTY_GUARD);
+    public CtrlAut buildOr(CtrlAut first, CtrlAut second) {
+        return buildOr(first, second, EMPTY_GUARD);
     }
 
     /** Factory method for immediate, unconditional success. */
@@ -364,8 +373,8 @@ public class CtrlFactory {
      * Adds a second control automaton as <i>else</i> parameter in
      * a <i>try</i> construct with the first automaton as try block.
      */
-    public void buildTryElse(CtrlAut first, CtrlAut second) {
-        buildOr(first, second, first.getStart().getInit());
+    public CtrlAut buildTryElse(CtrlAut first, CtrlAut second) {
+        return buildOr(first, second, first.getStart().getInit());
     }
 
     /**
@@ -374,7 +383,7 @@ public class CtrlFactory {
      * @param first the condition automaton; contains the result upon return
      * @param second the until body automaton
      */
-    public void buildUntilDo(CtrlAut first, CtrlAut second) {
+    public CtrlAut buildUntilDo(CtrlAut first, CtrlAut second) {
         // get the automaton guard before the omegas are removed
         Set<CtrlCall> autGuard = first.getStart().getInit();
         if (autGuard != null) {
@@ -388,6 +397,7 @@ public class CtrlFactory {
                 first.addTransition(omega);
             }
         }
+        return first;
     }
 
     /**
@@ -397,12 +407,12 @@ public class CtrlFactory {
      * @param first the condition automaton; contains the result upon return
      * @param second the while body automaton
      */
-    public void buildWhileDo(CtrlAut first, CtrlAut second) {
+    public CtrlAut buildWhileDo(CtrlAut first, CtrlAut second) {
         // get the automaton guard before the omegas are removed
         Set<CtrlCall> autGuard = first.getStart().getInit();
         // sequentially compose first and second
         buildSeq(first, second);
-        buildLoop(first, autGuard);
+        return buildLoop(first, autGuard);
     }
 
     /** 
@@ -424,9 +434,9 @@ public class CtrlFactory {
      * predefined guard.
      * The result is constructed by modifying the parameter.
      */
-    private void buildLoop(CtrlAut aut, Set<CtrlCall> guard) {
+    private CtrlAut buildLoop(CtrlAut aut, Set<CtrlCall> guard) {
         Set<CtrlTransition> omegas = removeOmegas(aut);
-        // copy transitions from second to first
+        // loop back from final to post-initial states
         for (CtrlTransition omega : omegas) {
             // create cycles for all original omega transitions
             for (CtrlTransition init : aut.getStart().getTransitions()) {
@@ -440,6 +450,7 @@ public class CtrlFactory {
                 aut.addTransition(omega.source(), newLabel, aut.getFinal());
             }
         }
+        return aut;
     }
 
     /** 
@@ -447,11 +458,12 @@ public class CtrlFactory {
      * under a given guard. The guard may be {@code null}, meaning that
      * the second automaton is unreachable.
      */
-    private void buildOr(CtrlAut first, CtrlAut second,
+    private CtrlAut buildOr(CtrlAut first, CtrlAut second,
             Collection<CtrlCall> guard) {
         // if the guard is degenerate, the second automaton is unreachable
         if (guard == null) {
-            Map<CtrlState,CtrlState> secondToFirstMap = copyStates(second, first);
+            Map<CtrlState,CtrlState> secondToFirstMap =
+                copyStates(second, first);
             // copy transitions from second to first
             for (CtrlTransition trans : second.edgeSet()) {
                 CtrlState sourceImage = secondToFirstMap.get(trans.source());
@@ -467,6 +479,7 @@ public class CtrlFactory {
                 }
             }
         }
+        return first;
     }
 
     /** 

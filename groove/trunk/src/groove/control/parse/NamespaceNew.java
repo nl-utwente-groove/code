@@ -89,7 +89,9 @@ public class NamespaceNew {
             }
             sig.add(par);
         }
-        List<CtrlPar> oldSig = this.sigMap.put(rule.getName().text(), sig);
+        String ruleName = rule.getName().text();
+        this.ruleMap.put(ruleName, rule);
+        List<CtrlPar> oldSig = this.sigMap.put(ruleName, sig);
         return oldSig == null;
     }
 
