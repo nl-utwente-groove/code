@@ -53,19 +53,33 @@ public class CtrlFactory {
     }
 
     /** Factory method for a single function call. */
-    public CtrlAut buildFunctionCall(Map<String,CtrlVar> context, String name,
-            List<CtrlPar> args) {
+    public CtrlAut buildFunctionCall(String name, List<CtrlPar> args) {
         return buildCall(new CtrlCall(name, args));
     }
 
     /** Factory method for a single rule call. */
-    public CtrlAut buildRuleCall(Map<String,CtrlVar> context, SPORule rule,
-            List<CtrlPar> args) {
+    public CtrlAut buildRuleCall(SPORule rule, List<CtrlPar> args) {
         return buildCall(new CtrlCall(rule, args));
     }
 
+    /** Returns an automaton that represents a choice of rule calls. */
+    public CtrlAut buildCallChoice(Set<SPORule> rules) {
+        CtrlAut result = null;
+        for (SPORule rule : rules) {
+            CtrlCall call =
+                new CtrlCall(rule, Collections.<CtrlPar>emptyList());
+            CtrlAut callAut = buildCall(call);
+            if (result == null) {
+                result = callAut;
+            } else {
+                result = buildOr(result, callAut);
+            }
+        }
+        return result;
+    }
+
     /** Factory method for a transition with a given label. */
-    private CtrlAut buildCall(CtrlCall call) {
+    public CtrlAut buildCall(CtrlCall call) {
         CtrlAut result = new CtrlAut();
         CtrlState middle = result.addState();
         // convert the call arguments using the context
