@@ -49,8 +49,8 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
      * The start state and final state are automatically initialised.
      */
     public CtrlAut() {
-        this.startState = createState();
-        this.finalState = createState();
+        this.startState = addState();
+        this.finalState = addState();
     }
 
     /**
@@ -142,6 +142,7 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
         int stateNr = this.maxStateNr + 1;
         boolean fresh = false;
         while (!fresh) {
+            fresh = true;
             for (CtrlState state : nodeSet()) {
                 if (stateNr == state.getNumber()) {
                     fresh = false;
@@ -150,6 +151,7 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
                 }
             }
         }
+        this.maxStateNr = stateNr;
         return new CtrlState(stateNr);
     }
 
@@ -189,7 +191,7 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
     private List<CtrlPar.Var> pars;
 
     /** Upper bound of the range of known consecutive state numbers. */
-    private int maxStateNr;
+    private int maxStateNr = -1;
 
     /** 
      * Offers a modifiable view on the transitions stored in the states 

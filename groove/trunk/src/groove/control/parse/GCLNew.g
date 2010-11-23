@@ -74,11 +74,12 @@ import java.util.LinkedList;
      * with a (presumably empty) namespace.
      * @return the resulting syntax tree
      */
-    public Tree run(CharStream input, NamespaceNew namespace) throws RecognitionException {
+    public MyTree run(CharStream input, NamespaceNew namespace) throws RecognitionException {
         this.helper = new GCLHelper(this, namespace);
         lexer.setCharStream(input);
+        setTokenStream(new CommonTokenStream(lexer));
         setTreeAdaptor(new MyTreeAdaptor());
-        return (Tree) program().getTree();
+        return (MyTree) program().getTree();
     }
 }
 

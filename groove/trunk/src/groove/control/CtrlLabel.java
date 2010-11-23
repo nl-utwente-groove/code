@@ -17,6 +17,7 @@
 package groove.control;
 
 import groove.graph.AbstractLabel;
+import groove.util.Groove;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -44,14 +45,7 @@ public class CtrlLabel extends AbstractLabel {
     public String text() {
         StringBuilder result = new StringBuilder();
         if (!this.guardMap.isEmpty()) {
-            result.append('[');
-            for (String callName : this.guardMap.keySet()) {
-                if (result.length() == 1) {
-                    result.append(',');
-                }
-                result.append(callName);
-            }
-            result.append(']');
+            result.append(Groove.toString(this.guardMap.keySet().toArray()));
         }
         result.append(getCall().toString());
         return result.toString();

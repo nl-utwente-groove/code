@@ -16,10 +16,8 @@
  */
 package groove.control;
 
-import groove.algebra.Algebra;
 import groove.algebra.AlgebraRegister;
 import groove.graph.algebra.ValueNode;
-import groove.trans.RuleSystem;
 
 /**
  * Class representing a control parameter. 
@@ -61,15 +59,6 @@ public abstract class CtrlPar {
      * the type derived from the variable or constant otherwise.
      */
     public abstract CtrlType getType();
-
-    /**
-     * Instantiates this (virtual) control parameter by providing  
-     * appropriate value nodes for constants.
-     * @param grammar the rule system specifying the appropriate
-     * data algebra
-     * @return an instantiated control parameter
-     */
-    public abstract CtrlPar instantiate(RuleSystem grammar);
 
     /** String representation of a don't care parameter. */
     public static final String DONT_CARE = "_";
@@ -133,11 +122,6 @@ public abstract class CtrlPar {
             int result = isInOnly() ? 0 : isOutOnly() ? 1 : 2;
             result += getVar().hashCode();
             return result;
-        }
-
-        @Override
-        public CtrlPar instantiate(RuleSystem grammar) {
-            return this;
         }
 
         @Override
@@ -258,19 +242,6 @@ public abstract class CtrlPar {
         }
 
         @Override
-        public CtrlPar instantiate(RuleSystem grammar) {
-            // find the algebra of this constant
-            AlgebraRegister register =
-                AlgebraRegister.getInstance(grammar.getProperties().getAlgebraFamily());
-            Algebra<?> algebra =
-                register.getImplementation(getType().getSignature());
-            // find the appropriate constant value itself
-            Object constant = algebra.getValue(getConstRepr());
-            // construct the control argument with the corresponding value node
-            return new Const(ValueNode.createValueNode(algebra, constant));
-        }
-
-        @Override
         public boolean isDontCare() {
             return false;
         }
@@ -315,11 +286,6 @@ public abstract class CtrlPar {
         @Override
         public int hashCode() {
             return Wild.class.hashCode();
-        }
-
-        @Override
-        public CtrlPar instantiate(RuleSystem grammar) {
-            return this;
         }
 
         @Override

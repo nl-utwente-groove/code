@@ -63,7 +63,7 @@ public class CtrlFactory {
     }
 
     /** Returns an automaton that represents a choice of rule calls. */
-    public CtrlAut buildCallChoice(Set<SPORule> rules) {
+    public CtrlAut buildCallChoice(Collection<SPORule> rules) {
         CtrlAut result = null;
         for (SPORule rule : rules) {
             CtrlCall call =
@@ -121,6 +121,9 @@ public class CtrlFactory {
     public CtrlAut buildIfThenElse(CtrlAut first, CtrlAut second, CtrlAut third) {
         Set<CtrlCall> guard = first.getStart().getInit();
         buildSeq(first, second);
+        if (third == null) {
+            third = buildTrue();
+        }
         return buildOr(first, third, guard);
     }
 
@@ -388,6 +391,9 @@ public class CtrlFactory {
      * a <i>try</i> construct with the first automaton as try block.
      */
     public CtrlAut buildTryElse(CtrlAut first, CtrlAut second) {
+        if (second == null) {
+            second = buildTrue();
+        }
         return buildOr(first, second, first.getStart().getInit());
     }
 
@@ -475,7 +481,7 @@ public class CtrlFactory {
     private CtrlAut buildOr(CtrlAut first, CtrlAut second,
             Collection<CtrlCall> guard) {
         // if the guard is degenerate, the second automaton is unreachable
-        if (guard == null) {
+        if (guard != null) {
             Map<CtrlState,CtrlState> secondToFirstMap =
                 copyStates(second, first);
             // copy transitions from second to first

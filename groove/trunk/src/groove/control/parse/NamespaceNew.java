@@ -22,6 +22,7 @@ import groove.control.CtrlVar;
 import groove.trans.SPORule;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -39,8 +40,12 @@ public class NamespaceNew {
      * Adds a function name to the set of declared functions.
      * @return {@code true} if the function name is new.
      */
-    public boolean addFunction(String name) {
-        return this.functions.add(name);
+    public boolean addFunction(String name, List<CtrlPar.Var> sig) {
+        boolean result = this.functions.add(name);
+        if (result) {
+            this.sigMap.put(name, sig);
+        }
+        return result;
     }
 
     /** Checks if a given function has been declared. */
@@ -52,20 +57,37 @@ public class NamespaceNew {
      * Tests if there is a rule with a given name.
      */
     public boolean hasRule(String name) {
-        return this.sigMap.containsKey(name);
+        return this.ruleMap.containsKey(name);
     }
 
     /**
      * Returns the rule associated with a given rule name
      */
-    public SPORule getRule(String name) {
-        return this.ruleMap.get(name);
+    public SPORule useRule(String name) {
+        SPORule result = this.ruleMap.get(name);
+        this.usedRules.add(result);
+        return result;
+    }
+
+    /**
+     * Returns the set of all known rules.
+     */
+    public Collection<SPORule> getAllRules() {
+        return this.ruleMap.values();
+    }
+
+    /** Returns the set of all used rules,
+     * i.e., all rules for which {@link NamespaceNew#useRule(String)}
+     * has been invoked.
+     */
+    public Set<SPORule> getUsedRules() {
+        return this.usedRules;
     }
 
     /**
      * Returns the signature associated with a given rule name
      */
-    public List<CtrlPar> getSig(String name) {
+    public List<CtrlPar.Var> getSig(String name) {
         return this.sigMap.get(name);
     }
 
@@ -73,15 +95,18 @@ public class NamespaceNew {
      * Adds a rule to the name space.
      */
     public boolean addRule(SPORule rule) {
-        List<CtrlPar> sig = new ArrayList<CtrlPar>();
+        List<CtrlPar.Var> sig = new ArrayList<CtrlPar.Var>();
         for (int i = 0; i < rule.getNumberOfParameters(); i++) {
             String parName = "par" + i;
-            CtrlType parType =
-                CtrlType.createDataType(rule.getAttributeParameterType(i));
+            String parTypeName = rule.getAttributeParameterType(i + 1);
+            if (parTypeName == null) {
+                parTypeName = CtrlType.NODE_TYPE_NAME;
+            }
+            CtrlType parType = CtrlType.createType(parTypeName);
             CtrlVar var = new CtrlVar(parName, parType);
-            CtrlPar par;
-            boolean inOnly = !rule.isOutputParameter(i);
-            boolean outOnly = !rule.isInputParameter(i);
+            CtrlPar.Var par;
+            boolean inOnly = !rule.isOutputParameter(i + 1);
+            boolean outOnly = !rule.isInputParameter(i + 1);
             if (!inOnly && !outOnly) {
                 par = new CtrlPar.Var(var);
             } else {
@@ -91,66 +116,19 @@ public class NamespaceNew {
         }
         String ruleName = rule.getName().text();
         this.ruleMap.put(ruleName, rule);
-        List<CtrlPar> oldSig = this.sigMap.put(ruleName, sig);
+        List<CtrlPar.Var> oldSig = this.sigMap.put(ruleName, sig);
         return oldSig == null;
-    }
-
-    /**
-     * Returns whether this program uses variables.
-     * @return true if variables are being used, false if not
-     */
-    public boolean usesVariables() {
-        return !this.variables.isEmpty();
-    }
-
-    /** 
-     * Adds a variable name from the control program to the list of 
-     * variable names. 
-     */
-    public void addVariable(String name) {
-        this.variables.put(name, false);
-    }
-
-    /**
-     * Marks a variable as initialised.
-     */
-    public boolean initialiseVariable(String name) {
-        if (hasVariable(name)) {
-            this.variables.put(name, true);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Tests if there is a variable with a given name 
-     */
-    public boolean hasVariable(String name) {
-        return this.variables.containsKey(name);
-    }
-
-    /**
-     * Tests if the variable with the given name is initialised.
-     */
-    public boolean isInitialised(String name) {
-        if (hasVariable(name)) {
-            return this.variables.get(name);
-        } else {
-            return false;
-        }
     }
 
     /** Mapping from declared rules names to the rules. */
     private final HashMap<String,SPORule> ruleMap =
         new HashMap<String,SPORule>();
     /** Mapping from declared rule names to their signatures. */
-    private final HashMap<String,List<CtrlPar>> sigMap =
-        new HashMap<String,List<CtrlPar>>();
+    private final HashMap<String,List<CtrlPar.Var>> sigMap =
+        new HashMap<String,List<CtrlPar.Var>>();
 
     /** Set of declared functions. */
     private final Set<String> functions = new HashSet<String>();
-
-    private final HashMap<String,Boolean> variables =
-        new HashMap<String,Boolean>();
+    /** Set of used rules. */
+    private final Set<SPORule> usedRules = new HashSet<SPORule>();
 }
