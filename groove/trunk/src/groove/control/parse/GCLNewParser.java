@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNew.g 2010-11-22 18:12:26
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNew.g 2010-11-22 21:58:33
 
 package groove.control.parse;
 import groove.control.*;
@@ -195,7 +195,7 @@ public class GCLNewParser extends Parser {
 
 
             // AST REWRITE
-            // elements: stat, function
+            // elements: function, stat
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -706,7 +706,7 @@ public class GCLNewParser extends Parser {
 
 
                             // AST REWRITE
-                            // elements: stat, WHILE, cond, stat
+                            // elements: stat, stat, WHILE, cond
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -765,7 +765,7 @@ public class GCLNewParser extends Parser {
 
 
                             // AST REWRITE
-                            // elements: stat, stat, UNTIL, cond
+                            // elements: UNTIL, stat, cond, stat
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -1589,7 +1589,7 @@ public class GCLNewParser extends Parser {
 
 
                             // AST REWRITE
-                            // elements: STAR, e
+                            // elements: e, STAR
                             // token labels: 
                             // rule labels: retval, e
                             // token list labels: 
@@ -1938,7 +1938,7 @@ public class GCLNewParser extends Parser {
 
 
             // AST REWRITE
-            // elements: arg_list, rule_name
+            // elements: rule_name, arg_list
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -2449,7 +2449,7 @@ public class GCLNewParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: OUT, ID
+                    // elements: ID, OUT
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
