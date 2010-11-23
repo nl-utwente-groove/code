@@ -2,4 +2,4 @@ alap {
   choice { a; b; }
   or c;
 }
-a;
+d;

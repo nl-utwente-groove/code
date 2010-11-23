@@ -470,6 +470,10 @@ public class CtrlFactory {
                 aut.addTransition(omega.source(), newLabel, aut.getFinal());
             }
         }
+        if (guard != null) {
+            CtrlLabel newLabel = createLabel(CtrlCall.OMEGA, guard);
+            aut.addTransition(aut.getStart(), newLabel, aut.getFinal());
+        }
         return aut;
     }
 

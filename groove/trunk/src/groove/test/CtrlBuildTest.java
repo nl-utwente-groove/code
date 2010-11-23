@@ -65,7 +65,7 @@ public class CtrlBuildTest extends TestCase {
         try {
             CtrlAut result = build("while");
             assertEquals(result.nodeCount(), 6);
-            assertEquals(result.edgeCount(), 8);
+            assertEquals(result.edgeCount(), 9);
         } catch (FormatException e) {
             assertTrue(false);
             e.printStackTrace();
@@ -75,8 +75,8 @@ public class CtrlBuildTest extends TestCase {
     public void testUntil() {
         try {
             CtrlAut result = build("until");
-            assertEquals(result.nodeCount(), 5);
-            assertEquals(result.edgeCount(), 4);
+            assertEquals(result.nodeCount(), 6);
+            assertEquals(result.edgeCount(), 9);
         } catch (FormatException e) {
             assertTrue(false);
             e.printStackTrace();
@@ -98,7 +98,7 @@ public class CtrlBuildTest extends TestCase {
         try {
             CtrlAut result = build("ifThen");
             assertEquals(result.nodeCount(), 5);
-            assertEquals(result.edgeCount(), 4);
+            assertEquals(result.edgeCount(), 6);
         } catch (FormatException e) {
             assertTrue(false);
             e.printStackTrace();
@@ -108,8 +108,8 @@ public class CtrlBuildTest extends TestCase {
     public void testIfThenSeq() {
         try {
             CtrlAut result = build("ifThenSeq");
-            assertEquals(result.nodeCount(), 5);
-            assertEquals(result.edgeCount(), 4);
+            assertEquals(result.nodeCount(), 6);
+            assertEquals(result.edgeCount(), 7);
         } catch (FormatException e) {
             assertTrue(false);
             e.printStackTrace();
@@ -119,8 +119,8 @@ public class CtrlBuildTest extends TestCase {
     public void testIfThenElse() {
         try {
             CtrlAut result = build("ifThenElse");
-            assertEquals(result.nodeCount(), 5);
-            assertEquals(result.edgeCount(), 4);
+            assertEquals(result.nodeCount(), 6);
+            assertEquals(result.edgeCount(), 7);
         } catch (FormatException e) {
             assertTrue(false);
             e.printStackTrace();
@@ -131,7 +131,7 @@ public class CtrlBuildTest extends TestCase {
         try {
             CtrlAut result = build("try");
             assertEquals(result.nodeCount(), 5);
-            assertEquals(result.edgeCount(), 4);
+            assertEquals(result.edgeCount(), 5);
         } catch (FormatException e) {
             assertTrue(false);
             e.printStackTrace();
@@ -141,8 +141,8 @@ public class CtrlBuildTest extends TestCase {
     public void testTryElse() {
         try {
             CtrlAut result = build("tryElse");
-            assertEquals(result.nodeCount(), 5);
-            assertEquals(result.edgeCount(), 4);
+            assertEquals(result.nodeCount(), 6);
+            assertEquals(result.edgeCount(), 6);
         } catch (FormatException e) {
             assertTrue(false);
             e.printStackTrace();
@@ -152,8 +152,8 @@ public class CtrlBuildTest extends TestCase {
     public void testAlap() {
         try {
             CtrlAut result = build("alap");
-            assertEquals(result.nodeCount(), 5);
-            assertEquals(result.edgeCount(), 4);
+            assertEquals(result.nodeCount(), 6);
+            assertEquals(result.edgeCount(), 11);
         } catch (FormatException e) {
             assertTrue(false);
             e.printStackTrace();
@@ -163,11 +163,11 @@ public class CtrlBuildTest extends TestCase {
     public void testStar() {
         try {
             CtrlAut result = build("star");
-            assertEquals(result.nodeCount(), 5);
-            assertEquals(result.edgeCount(), 4);
+            assertEquals(result.nodeCount(), 4);
+            assertEquals(result.edgeCount(), 9);
         } catch (FormatException e) {
+            System.out.println(e.getMessage());
             assertTrue(false);
-            e.printStackTrace();
         }
     }
 
