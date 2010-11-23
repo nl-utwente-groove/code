@@ -581,7 +581,7 @@ public class JAttr {
     /**
      * Border used for nesting elements.
      */
-    static private final Border NESTED_BORDER = createNodeBorder(
+    static public final Border NESTED_BORDER = createNodeBorder(
         new StrokedLineBorder(DEFAULT_CELL_COLOR, createStroke(
             DEFAULT_LINE_WIDTH, NESTED_DASH)), false);
     /**
