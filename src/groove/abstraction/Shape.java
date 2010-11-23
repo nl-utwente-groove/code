@@ -629,7 +629,7 @@ public final class Shape extends DefaultGraph {
     }
 
     /** Clears the edge signature set of spurious signatures. */
-    private void cleanEdgeSigSet() {
+    public void cleanEdgeSigSet() {
         this.edgeSigSet.clear();
         this.edgeSigSet.addAll(this.outEdgeMultMap.keySet());
         this.edgeSigSet.addAll(this.inEdgeMultMap.keySet());
