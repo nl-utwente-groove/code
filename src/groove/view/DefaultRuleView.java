@@ -1977,7 +1977,7 @@ public class DefaultRuleView implements RuleView {
                                 "Attribute parameter '%d' must be typed", nr,
                                 node);
                         }
-                        this.attributeParameterTypes.put(nr, av.toString());
+                        this.attributeParameterTypes.put(nr, av.getName());
                     } else {
                         this.attributeParameterTypes.put(nr, "node");
                     }

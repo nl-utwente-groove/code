@@ -38,12 +38,12 @@ import java.util.HashMap;
      * with a (presumably empty) namespace.
      * @return the resulting syntax tree
      */
-    public Tree run(MyTree tree, NamespaceNew namespace) throws RecognitionException {
+    public MyTree run(MyTree tree, NamespaceNew namespace) throws RecognitionException {
         this.helper = new GCLHelper(this, namespace);
         MyTreeAdaptor treeAdaptor = new MyTreeAdaptor();
         setTreeAdaptor(treeAdaptor);
         setTreeNodeStream(treeAdaptor.createTreeNodeStream(tree));
-        return (Tree) program().getTree();
+        return (MyTree) program().getTree();
     }
 }
 
@@ -83,8 +83,8 @@ stat
   ;
 
 rule
+@after{ helper.checkCall($tree); }
   : ^(CALL ID arg*) 
-    { helper.checkCall($CALL.tree); }
   ;
 
 var_decl

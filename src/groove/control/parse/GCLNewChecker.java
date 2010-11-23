@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNewChecker.g 2010-11-22 21:58:35
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNewChecker.g 2010-11-23 15:09:21
 
 package groove.control.parse;
 import groove.control.*;
@@ -123,12 +123,12 @@ public class GCLNewChecker extends TreeParser {
          * with a (presumably empty) namespace.
          * @return the resulting syntax tree
          */
-        public Tree run(MyTree tree, NamespaceNew namespace) throws RecognitionException {
+        public MyTree run(MyTree tree, NamespaceNew namespace) throws RecognitionException {
             this.helper = new GCLHelper(this, namespace);
             MyTreeAdaptor treeAdaptor = new MyTreeAdaptor();
             setTreeAdaptor(treeAdaptor);
             setTreeNodeStream(treeAdaptor.createTreeNodeStream(tree));
-            return (Tree) program().getTree();
+            return (MyTree) program().getTree();
         }
 
 
@@ -1076,24 +1076,24 @@ public class GCLNewChecker extends TreeParser {
         MyTree ID38_tree=null;
 
         try {
-            // GCLNewChecker.g:86:3: ( ^( CALL ID ( arg )* ) )
-            // GCLNewChecker.g:86:5: ^( CALL ID ( arg )* )
+            // GCLNewChecker.g:87:3: ( ^( CALL ID ( arg )* ) )
+            // GCLNewChecker.g:87:5: ^( CALL ID ( arg )* )
             {
             _last = (MyTree)input.LT(1);
             {
             MyTree _save_last_1 = _last;
             MyTree _first_1 = null;
             _last = (MyTree)input.LT(1);
-            CALL37=(MyTree)match(input,CALL,FOLLOW_CALL_in_rule295); 
+            CALL37=(MyTree)match(input,CALL,FOLLOW_CALL_in_rule299); 
 
 
             if ( _first_0==null ) _first_0 = CALL37;
             match(input, Token.DOWN, null); 
             _last = (MyTree)input.LT(1);
-            ID38=(MyTree)match(input,ID,FOLLOW_ID_in_rule297); 
+            ID38=(MyTree)match(input,ID,FOLLOW_ID_in_rule301); 
              
             if ( _first_1==null ) _first_1 = ID38;
-            // GCLNewChecker.g:86:15: ( arg )*
+            // GCLNewChecker.g:87:15: ( arg )*
             loop7:
             do {
                 int alt7=2;
@@ -1106,10 +1106,10 @@ public class GCLNewChecker extends TreeParser {
 
                 switch (alt7) {
             	case 1 :
-            	    // GCLNewChecker.g:86:15: arg
+            	    // GCLNewChecker.g:87:15: arg
             	    {
             	    _last = (MyTree)input.LT(1);
-            	    pushFollow(FOLLOW_arg_in_rule299);
+            	    pushFollow(FOLLOW_arg_in_rule303);
             	    arg39=arg();
 
             	    state._fsp--;
@@ -1132,13 +1132,13 @@ public class GCLNewChecker extends TreeParser {
             match(input, Token.UP, null); _last = _save_last_1;
             }
 
-             helper.checkCall(CALL37_tree); 
 
             retval.tree = (MyTree)_first_0;
             if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
                 retval.tree = (MyTree)adaptor.getParent(retval.tree);
             }
 
+             helper.checkCall(((MyTree)retval.tree)); 
         }
         catch (RecognitionException re) {
             reportError(re);
@@ -1183,13 +1183,13 @@ public class GCLNewChecker extends TreeParser {
             MyTree _save_last_1 = _last;
             MyTree _first_1 = null;
             _last = (MyTree)input.LT(1);
-            VAR40=(MyTree)match(input,VAR,FOLLOW_VAR_in_var_decl322); 
+            VAR40=(MyTree)match(input,VAR,FOLLOW_VAR_in_var_decl320); 
 
 
             if ( _first_0==null ) _first_0 = VAR40;
             match(input, Token.DOWN, null); 
             _last = (MyTree)input.LT(1);
-            pushFollow(FOLLOW_type_in_var_decl324);
+            pushFollow(FOLLOW_type_in_var_decl322);
             type41=type();
 
             state._fsp--;
@@ -1213,7 +1213,7 @@ public class GCLNewChecker extends TreeParser {
             	    // GCLNewChecker.g:92:9: ID
             	    {
             	    _last = (MyTree)input.LT(1);
-            	    ID42=(MyTree)match(input,ID,FOLLOW_ID_in_var_decl334); 
+            	    ID42=(MyTree)match(input,ID,FOLLOW_ID_in_var_decl332); 
             	     
             	    if ( _first_1==null ) _first_1 = ID42;
             	     helper.declareVar(ID42_tree, (type41!=null?((MyTree)type41.tree):null)); 
@@ -1346,7 +1346,7 @@ public class GCLNewChecker extends TreeParser {
             MyTree _save_last_1 = _last;
             MyTree _first_1 = null;
             _last = (MyTree)input.LT(1);
-            ARG44=(MyTree)match(input,ARG,FOLLOW_ARG_in_arg409); 
+            ARG44=(MyTree)match(input,ARG,FOLLOW_ARG_in_arg407); 
 
 
             if ( _first_0==null ) _first_0 = ARG44;
@@ -1397,7 +1397,7 @@ public class GCLNewChecker extends TreeParser {
                             // GCLNewChecker.g:105:9: OUT
                             {
                             _last = (MyTree)input.LT(1);
-                            OUT45=(MyTree)match(input,OUT,FOLLOW_OUT_in_arg420); 
+                            OUT45=(MyTree)match(input,OUT,FOLLOW_OUT_in_arg418); 
                              
                             if ( _first_1==null ) _first_1 = OUT45;
 
@@ -1410,7 +1410,7 @@ public class GCLNewChecker extends TreeParser {
                     }
 
                     _last = (MyTree)input.LT(1);
-                    ID46=(MyTree)match(input,ID,FOLLOW_ID_in_arg423); 
+                    ID46=(MyTree)match(input,ID,FOLLOW_ID_in_arg421); 
                      
                     if ( _first_1==null ) _first_1 = ID46;
                      helper.checkVarArg(ARG44_tree); 
@@ -1424,7 +1424,7 @@ public class GCLNewChecker extends TreeParser {
                     // GCLNewChecker.g:106:9: DONT_CARE
                     {
                     _last = (MyTree)input.LT(1);
-                    DONT_CARE47=(MyTree)match(input,DONT_CARE,FOLLOW_DONT_CARE_in_arg435); 
+                    DONT_CARE47=(MyTree)match(input,DONT_CARE,FOLLOW_DONT_CARE_in_arg433); 
                      
                     if ( _first_1==null ) _first_1 = DONT_CARE47;
                      helper.checkDontCareArg(ARG44_tree); 
@@ -1438,7 +1438,7 @@ public class GCLNewChecker extends TreeParser {
                     // GCLNewChecker.g:107:9: literal
                     {
                     _last = (MyTree)input.LT(1);
-                    pushFollow(FOLLOW_literal_in_arg447);
+                    pushFollow(FOLLOW_literal_in_arg445);
                     literal48=literal();
 
                     state._fsp--;
@@ -1571,18 +1571,18 @@ public class GCLNewChecker extends TreeParser {
     public static final BitSet FOLLOW_ANY_in_stat269 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_OTHER_in_stat275 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_TRUE_in_stat281 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_CALL_in_rule295 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_ID_in_rule297 = new BitSet(new long[]{0x0000000000001008L});
-    public static final BitSet FOLLOW_arg_in_rule299 = new BitSet(new long[]{0x0000000000001008L});
-    public static final BitSet FOLLOW_VAR_in_var_decl322 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_type_in_var_decl324 = new BitSet(new long[]{0x0000000000008000L});
-    public static final BitSet FOLLOW_ID_in_var_decl334 = new BitSet(new long[]{0x0000000000008008L});
+    public static final BitSet FOLLOW_CALL_in_rule299 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_ID_in_rule301 = new BitSet(new long[]{0x0000000000001008L});
+    public static final BitSet FOLLOW_arg_in_rule303 = new BitSet(new long[]{0x0000000000001008L});
+    public static final BitSet FOLLOW_VAR_in_var_decl320 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_type_in_var_decl322 = new BitSet(new long[]{0x0000000000008000L});
+    public static final BitSet FOLLOW_ID_in_var_decl332 = new BitSet(new long[]{0x0000000000008008L});
     public static final BitSet FOLLOW_set_in_type0 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ARG_in_arg409 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_OUT_in_arg420 = new BitSet(new long[]{0x0000000000008000L});
-    public static final BitSet FOLLOW_ID_in_arg423 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_DONT_CARE_in_arg435 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_literal_in_arg447 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_ARG_in_arg407 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_OUT_in_arg418 = new BitSet(new long[]{0x0000000000008000L});
+    public static final BitSet FOLLOW_ID_in_arg421 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_DONT_CARE_in_arg433 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_literal_in_arg445 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_set_in_literal0 = new BitSet(new long[]{0x0000000000000002L});
 
 }

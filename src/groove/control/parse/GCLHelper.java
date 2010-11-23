@@ -23,8 +23,10 @@ import groove.control.CtrlVar;
 import groove.util.Groove;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.Stack;
 
 import org.antlr.runtime.BaseRecognizer;
 import org.antlr.runtime.CommonToken;
@@ -54,6 +56,40 @@ public class GCLHelper {
         this.symbolTable.closeScope();
     }
 
+    /**
+     * Declares a new branch in the program. This checkpoints the set of
+     * initialised variables.
+     */
+    @SuppressWarnings("unchecked")
+    void branchStart() {
+        this.initVarScopes.push(new Set[] {new HashSet<String>(this.initVars),
+            null});
+    }
+
+    /**
+     * Switches to the next option in the top level branch of the program.
+     */
+    void branchNext() {
+        Set<String>[] topInitVarScope = this.initVarScopes.peek();
+        if (topInitVarScope[1] == null) {
+            topInitVarScope[1] = new HashSet<String>(this.initVars);
+        } else {
+            topInitVarScope[1].retainAll(this.initVars);
+        }
+        this.initVars = new HashSet<String>(topInitVarScope[0]);
+    }
+
+    /**
+     * Ends the top level branch of the program. Sets the initialised variables
+     * to those initialised in every option.
+     */
+    void branchEnd() {
+        Set<String>[] topInitVarScope = this.initVarScopes.pop();
+        if (topInitVarScope[1] != null) {
+            this.initVars.retainAll(topInitVarScope[1]);
+        }
+    }
+
     /** Creates a new tree with a {@link GCLNewParser#ID} token at the root,
      * of which the text is the concatenation of the children of the given tree.
      */
@@ -64,10 +100,10 @@ public class GCLHelper {
             if (builder.length() > 0) {
                 builder.append('.');
             }
-            builder.append(((CommonTree) token).getText());
+            builder.append(((CommonToken) token).getText());
         }
         result = builder.toString();
-        return new CommonTree(new CommonToken(GCLNewParser.ID, result));
+        return new MyTree(new CommonToken(GCLNewParser.ID, result));
     }
 
     /** 
@@ -88,7 +124,7 @@ public class GCLHelper {
             emitErrorMessage(functionTree,
                 "Duplicate name: Function %s already defined", name);
         } else {
-            this.namespace.addFunction(name);
+            this.namespace.addFunction(name, new ArrayList<CtrlPar.Var>());
             result = true;
         }
         return result;
@@ -136,9 +172,11 @@ public class GCLHelper {
         } else {
             result = new CtrlVar(name, type);
             nameTree.setCtrlVar(result);
-            if (!this.symbolTable.isInitialized(name)) {
+            if (checkInit && !this.initVars.contains(name)) {
                 emitErrorMessage(nameTree,
                     "Variable %s may not have been initialised", name);
+            } else {
+                this.initVars.add(name);
             }
         }
         return result;
@@ -149,8 +187,8 @@ public class GCLHelper {
         int childCount = argTree.getChildCount();
         assert argTree.getType() == GCLNewChecker.ARG && childCount > 0
             && childCount <= 2;
-        CtrlVar var =
-            checkVar(argTree.getChild(childCount - 1), childCount == 1);
+        boolean isOutArg = childCount == 2;
+        CtrlVar var = checkVar(argTree.getChild(childCount - 1), !isOutArg);
         if (var != null) {
             result = new CtrlPar.Var(var);
             argTree.setCtrlPar(result);
@@ -178,60 +216,53 @@ public class GCLHelper {
         assert callTree.getType() == GCLChecker.CALL
             && callTree.getChildCount() >= 1;
         CtrlCall result = null;
-        List<CtrlPar> args = new ArrayList<CtrlPar>();
-        boolean argsOK = true;
-        for (int i = 1; i < callTree.getChildCount(); i++) {
-            CtrlPar arg = callTree.getChild(i).getCtrlPar();
-            if (arg == null) {
-                argsOK = false;
-                break;
-            } else {
+        // if any of the arguments is null, an error was detected
+        // and reported earlier; we silently fail
+        testArgs: {
+            List<CtrlPar> args = new ArrayList<CtrlPar>();
+            for (int i = 1; i < callTree.getChildCount(); i++) {
+                CtrlPar arg = callTree.getChild(i).getCtrlPar();
+                if (arg == null) {
+                    break testArgs;
+                }
                 args.add(arg);
             }
-        }
-        if (argsOK) {
             String name = callTree.getChild(0).getText();
-            if (this.namespace.hasFunction(name)) {
-                result = checkFunctionCall(callTree, name, args);
-            } else if (this.namespace.hasRule(name)) {
-                result = checkRuleCall(callTree, name, args);
-            } else {
+            List<CtrlPar.Var> sig = this.namespace.getSig(name);
+            if (sig == null) {
                 emitErrorMessage(callTree, "No function or rule %s defined",
                     name);
+            } else if (checkCall(callTree, name, sig, args)) {
+                // create the (rule or function) call
+                if (this.namespace.hasRule(name)) {
+                    result = new CtrlCall(this.namespace.useRule(name), args);
+                } else {
+                    result = new CtrlCall(name, args);
+                }
+                callTree.setCtrlCall(result);
             }
         }
         return result;
     }
 
-    private CtrlCall checkFunctionCall(MyTree callTree, String name,
-            List<CtrlPar> args) {
-        CtrlCall result = null;
-        if (args.size() == 0) {
-            result = new CtrlCall(name, Collections.<CtrlPar>emptyList());
-        } else {
-            String callSig = Groove.toString(args.toArray(), "(", ")", ",");
-            emitErrorMessage(callTree,
-                "Function %s() not applicable for arguments %s", name, callSig);
+    /** 
+     * Tests if a call with a given argument list is compatible with
+     * the declared signature.
+     */
+    private boolean checkCall(MyTree callTree, String name,
+            List<CtrlPar.Var> sig, List<CtrlPar> args) {
+        boolean result = args.size() == sig.size();
+        for (int i = 0; result && i < args.size(); i++) {
+            result = sig.get(i).compatibleWith(args.get(i));
         }
-        return result;
-    }
-
-    private CtrlCall checkRuleCall(MyTree callTree, String name,
-            List<CtrlPar> args) {
-        CtrlCall result = null;
-        List<CtrlPar> pars = this.namespace.getSig(name);
-        boolean callOK = args.size() == pars.size();
-        for (int i = 0; callOK && i < args.size(); i++) {
-            callOK = args.get(i).equals(pars.get(i));
-        }
-        if (callOK) {
-            result = new CtrlCall(this.namespace.getRule(name), args);
-            callTree.setCtrlCall(result);
-        } else {
-            String message = "Rule %s%s not applicable for arguments %s";
+        if (!result) {
+            String message = "%s %s%s not applicable for arguments %s";
+            String ruleOrFunction =
+                this.namespace.hasRule(name) ? "Rule" : "Function";
             String callSig = Groove.toString(args.toArray(), "(", ")", ",");
             String ruleSig = Groove.toString(args.toArray(), "(", ")", ",");
-            emitErrorMessage(callTree, message, name, ruleSig, callSig);
+            emitErrorMessage(callTree, message, ruleOrFunction, name, ruleSig,
+                callSig);
         }
         return result;
     }
@@ -263,4 +294,14 @@ public class GCLHelper {
     private final List<String> errors = new ArrayList<String>();
     /** The symbol table holding the local variable declarations. */
     private final NewSymbolTable symbolTable = new NewSymbolTable();
+    /** Set of currently initialised variables. */
+    private Set<String> initVars = new HashSet<String>();
+    /**
+     * Stack of checkpointed initialised variables. Each stack record consists
+     * of two sets of variables. The first element is the set of variables
+     * initialised at the start of the branch, the second is the set of
+     * variables initialised in each case of the branch.
+     */
+    private final Stack<Set<String>[]> initVarScopes =
+        new Stack<Set<String>[]>();
 }

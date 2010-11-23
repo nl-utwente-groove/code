@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNew.g 2010-11-22 21:58:34
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNew.g 2010-11-23 15:09:18
 
 package groove.control.parse;
 import groove.control.*;
@@ -108,8 +108,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = ALAP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:193:10: ( 'alap' )
-            // GCLNew.g:193:12: 'alap'
+            // GCLNew.g:194:10: ( 'alap' )
+            // GCLNew.g:194:12: 'alap'
             {
             match("alap"); 
 
@@ -129,8 +129,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = WHILE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:194:10: ( 'while' )
-            // GCLNew.g:194:12: 'while'
+            // GCLNew.g:195:10: ( 'while' )
+            // GCLNew.g:195:12: 'while'
             {
             match("while"); 
 
@@ -150,8 +150,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = DO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:195:10: ( 'do' )
-            // GCLNew.g:195:12: 'do'
+            // GCLNew.g:196:10: ( 'do' )
+            // GCLNew.g:196:12: 'do'
             {
             match("do"); 
 
@@ -171,8 +171,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = UNTIL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:196:10: ( 'until' )
-            // GCLNew.g:196:12: 'until'
+            // GCLNew.g:197:10: ( 'until' )
+            // GCLNew.g:197:12: 'until'
             {
             match("until"); 
 
@@ -192,8 +192,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = IF;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:197:10: ( 'if' )
-            // GCLNew.g:197:12: 'if'
+            // GCLNew.g:198:10: ( 'if' )
+            // GCLNew.g:198:12: 'if'
             {
             match("if"); 
 
@@ -213,8 +213,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = ELSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:198:10: ( 'else' )
-            // GCLNew.g:198:12: 'else'
+            // GCLNew.g:199:10: ( 'else' )
+            // GCLNew.g:199:12: 'else'
             {
             match("else"); 
 
@@ -234,8 +234,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = CHOICE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:199:10: ( 'choice' )
-            // GCLNew.g:199:12: 'choice'
+            // GCLNew.g:200:10: ( 'choice' )
+            // GCLNew.g:200:12: 'choice'
             {
             match("choice"); 
 
@@ -255,8 +255,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = OR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:200:10: ( 'or' )
-            // GCLNew.g:200:12: 'or'
+            // GCLNew.g:201:10: ( 'or' )
+            // GCLNew.g:201:12: 'or'
             {
             match("or"); 
 
@@ -276,8 +276,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = TRY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:201:10: ( 'try' )
-            // GCLNew.g:201:12: 'try'
+            // GCLNew.g:202:10: ( 'try' )
+            // GCLNew.g:202:12: 'try'
             {
             match("try"); 
 
@@ -297,8 +297,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = FUNCTION;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:202:10: ( 'function' )
-            // GCLNew.g:202:12: 'function'
+            // GCLNew.g:203:10: ( 'function' )
+            // GCLNew.g:203:12: 'function'
             {
             match("function"); 
 
@@ -318,8 +318,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = TRUE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:203:10: ( 'true' )
-            // GCLNew.g:203:12: 'true'
+            // GCLNew.g:204:10: ( 'true' )
+            // GCLNew.g:204:12: 'true'
             {
             match("true"); 
 
@@ -339,8 +339,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = FALSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:204:10: ( 'false' )
-            // GCLNew.g:204:12: 'false'
+            // GCLNew.g:205:10: ( 'false' )
+            // GCLNew.g:205:12: 'false'
             {
             match("false"); 
 
@@ -360,8 +360,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = OTHER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:205:10: ( 'other' )
-            // GCLNew.g:205:12: 'other'
+            // GCLNew.g:206:10: ( 'other' )
+            // GCLNew.g:206:12: 'other'
             {
             match("other"); 
 
@@ -381,8 +381,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = ANY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:206:9: ( 'any' )
-            // GCLNew.g:206:11: 'any'
+            // GCLNew.g:207:9: ( 'any' )
+            // GCLNew.g:207:11: 'any'
             {
             match("any"); 
 
@@ -402,8 +402,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = NODE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:207:10: ( 'node' )
-            // GCLNew.g:207:12: 'node'
+            // GCLNew.g:208:10: ( 'node' )
+            // GCLNew.g:208:12: 'node'
             {
             match("node"); 
 
@@ -423,8 +423,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = BOOL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:208:10: ( 'bool' )
-            // GCLNew.g:208:12: 'bool'
+            // GCLNew.g:209:10: ( 'bool' )
+            // GCLNew.g:209:12: 'bool'
             {
             match("bool"); 
 
@@ -444,8 +444,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:209:10: ( 'string' )
-            // GCLNew.g:209:12: 'string'
+            // GCLNew.g:210:10: ( 'string' )
+            // GCLNew.g:210:12: 'string'
             {
             match("string"); 
 
@@ -465,8 +465,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = INT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:210:10: ( 'int' )
-            // GCLNew.g:210:12: 'int'
+            // GCLNew.g:211:10: ( 'int' )
+            // GCLNew.g:211:12: 'int'
             {
             match("int"); 
 
@@ -486,8 +486,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = REAL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:211:10: ( 'real' )
-            // GCLNew.g:211:12: 'real'
+            // GCLNew.g:212:10: ( 'real' )
+            // GCLNew.g:212:12: 'real'
             {
             match("real"); 
 
@@ -507,8 +507,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = OUT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:212:10: ( 'out' )
-            // GCLNew.g:212:12: 'out'
+            // GCLNew.g:213:10: ( 'out' )
+            // GCLNew.g:213:12: 'out'
             {
             match("out"); 
 
@@ -528,8 +528,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = INT_LIT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:215:3: ( IntegerNumber )
-            // GCLNew.g:215:5: IntegerNumber
+            // GCLNew.g:216:3: ( IntegerNumber )
+            // GCLNew.g:216:5: IntegerNumber
             {
             mIntegerNumber(); 
 
@@ -546,7 +546,7 @@ public class GCLNewLexer extends Lexer {
     // $ANTLR start "IntegerNumber"
     public final void mIntegerNumber() throws RecognitionException {
         try {
-            // GCLNew.g:220:3: ( '0' | '1' .. '9' ( '0' .. '9' )* )
+            // GCLNew.g:221:3: ( '0' | '1' .. '9' ( '0' .. '9' )* )
             int alt2=2;
             int LA2_0 = input.LA(1);
 
@@ -564,17 +564,17 @@ public class GCLNewLexer extends Lexer {
             }
             switch (alt2) {
                 case 1 :
-                    // GCLNew.g:220:5: '0'
+                    // GCLNew.g:221:5: '0'
                     {
                     match('0'); 
 
                     }
                     break;
                 case 2 :
-                    // GCLNew.g:221:5: '1' .. '9' ( '0' .. '9' )*
+                    // GCLNew.g:222:5: '1' .. '9' ( '0' .. '9' )*
                     {
                     matchRange('1','9'); 
-                    // GCLNew.g:221:14: ( '0' .. '9' )*
+                    // GCLNew.g:222:14: ( '0' .. '9' )*
                     loop1:
                     do {
                         int alt1=2;
@@ -587,7 +587,7 @@ public class GCLNewLexer extends Lexer {
 
                         switch (alt1) {
                     	case 1 :
-                    	    // GCLNew.g:221:15: '0' .. '9'
+                    	    // GCLNew.g:222:15: '0' .. '9'
                     	    {
                     	    matchRange('0','9'); 
 
@@ -615,8 +615,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = REAL_LIT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:225:3: ( NonIntegerNumber )
-            // GCLNew.g:225:5: NonIntegerNumber
+            // GCLNew.g:226:3: ( NonIntegerNumber )
+            // GCLNew.g:226:5: NonIntegerNumber
             {
             mNonIntegerNumber(); 
 
@@ -633,7 +633,7 @@ public class GCLNewLexer extends Lexer {
     // $ANTLR start "NonIntegerNumber"
     public final void mNonIntegerNumber() throws RecognitionException {
         try {
-            // GCLNew.g:230:5: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* | '.' ( '0' .. '9' )+ )
+            // GCLNew.g:231:5: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* | '.' ( '0' .. '9' )+ )
             int alt6=2;
             int LA6_0 = input.LA(1);
 
@@ -651,9 +651,9 @@ public class GCLNewLexer extends Lexer {
             }
             switch (alt6) {
                 case 1 :
-                    // GCLNew.g:230:9: ( '0' .. '9' )+ '.' ( '0' .. '9' )*
+                    // GCLNew.g:231:9: ( '0' .. '9' )+ '.' ( '0' .. '9' )*
                     {
-                    // GCLNew.g:230:9: ( '0' .. '9' )+
+                    // GCLNew.g:231:9: ( '0' .. '9' )+
                     int cnt3=0;
                     loop3:
                     do {
@@ -667,7 +667,7 @@ public class GCLNewLexer extends Lexer {
 
                         switch (alt3) {
                     	case 1 :
-                    	    // GCLNew.g:230:10: '0' .. '9'
+                    	    // GCLNew.g:231:10: '0' .. '9'
                     	    {
                     	    matchRange('0','9'); 
 
@@ -684,7 +684,7 @@ public class GCLNewLexer extends Lexer {
                     } while (true);
 
                     match('.'); 
-                    // GCLNew.g:230:27: ( '0' .. '9' )*
+                    // GCLNew.g:231:27: ( '0' .. '9' )*
                     loop4:
                     do {
                         int alt4=2;
@@ -697,7 +697,7 @@ public class GCLNewLexer extends Lexer {
 
                         switch (alt4) {
                     	case 1 :
-                    	    // GCLNew.g:230:28: '0' .. '9'
+                    	    // GCLNew.g:231:28: '0' .. '9'
                     	    {
                     	    matchRange('0','9'); 
 
@@ -713,10 +713,10 @@ public class GCLNewLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // GCLNew.g:231:9: '.' ( '0' .. '9' )+
+                    // GCLNew.g:232:9: '.' ( '0' .. '9' )+
                     {
                     match('.'); 
-                    // GCLNew.g:231:13: ( '0' .. '9' )+
+                    // GCLNew.g:232:13: ( '0' .. '9' )+
                     int cnt5=0;
                     loop5:
                     do {
@@ -730,7 +730,7 @@ public class GCLNewLexer extends Lexer {
 
                         switch (alt5) {
                     	case 1 :
-                    	    // GCLNew.g:231:15: '0' .. '9'
+                    	    // GCLNew.g:232:15: '0' .. '9'
                     	    {
                     	    matchRange('0','9'); 
 
@@ -762,11 +762,11 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = STRING_LIT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:236:3: ( QUOTE ( EscapeSequence | ~ ( BSLASH | QUOTE | CR | NL ) )* QUOTE )
-            // GCLNew.g:236:5: QUOTE ( EscapeSequence | ~ ( BSLASH | QUOTE | CR | NL ) )* QUOTE
+            // GCLNew.g:237:3: ( QUOTE ( EscapeSequence | ~ ( BSLASH | QUOTE | CR | NL ) )* QUOTE )
+            // GCLNew.g:237:5: QUOTE ( EscapeSequence | ~ ( BSLASH | QUOTE | CR | NL ) )* QUOTE
             {
             mQUOTE(); 
-            // GCLNew.g:237:5: ( EscapeSequence | ~ ( BSLASH | QUOTE | CR | NL ) )*
+            // GCLNew.g:238:5: ( EscapeSequence | ~ ( BSLASH | QUOTE | CR | NL ) )*
             loop7:
             do {
                 int alt7=3;
@@ -782,14 +782,14 @@ public class GCLNewLexer extends Lexer {
 
                 switch (alt7) {
             	case 1 :
-            	    // GCLNew.g:237:7: EscapeSequence
+            	    // GCLNew.g:238:7: EscapeSequence
             	    {
             	    mEscapeSequence(); 
 
             	    }
             	    break;
             	case 2 :
-            	    // GCLNew.g:238:7: ~ ( BSLASH | QUOTE | CR | NL )
+            	    // GCLNew.g:239:7: ~ ( BSLASH | QUOTE | CR | NL )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -824,12 +824,12 @@ public class GCLNewLexer extends Lexer {
     // $ANTLR start "EscapeSequence"
     public final void mEscapeSequence() throws RecognitionException {
         try {
-            // GCLNew.g:245:3: ( BSLASH ( QUOTE BSLASH ) )
-            // GCLNew.g:245:5: BSLASH ( QUOTE BSLASH )
+            // GCLNew.g:246:3: ( BSLASH ( QUOTE BSLASH ) )
+            // GCLNew.g:246:5: BSLASH ( QUOTE BSLASH )
             {
             mBSLASH(); 
-            // GCLNew.g:246:5: ( QUOTE BSLASH )
-            // GCLNew.g:246:7: QUOTE BSLASH
+            // GCLNew.g:247:5: ( QUOTE BSLASH )
+            // GCLNew.g:247:7: QUOTE BSLASH
             {
             mQUOTE(); 
             mBSLASH(); 
@@ -850,8 +850,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:251:5: ( ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )* )
-            // GCLNew.g:251:7: ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )*
+            // GCLNew.g:252:5: ( ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )* )
+            // GCLNew.g:252:7: ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )*
             {
             if ( (input.LA(1)>='A' && input.LA(1)<='Z')||(input.LA(1)>='a' && input.LA(1)<='z') ) {
                 input.consume();
@@ -862,7 +862,7 @@ public class GCLNewLexer extends Lexer {
                 recover(mse);
                 throw mse;}
 
-            // GCLNew.g:251:27: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )*
+            // GCLNew.g:252:27: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )*
             loop8:
             do {
                 int alt8=2;
@@ -911,8 +911,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = CR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:253:11: ( '\\r' )
-            // GCLNew.g:253:13: '\\r'
+            // GCLNew.g:254:11: ( '\\r' )
+            // GCLNew.g:254:13: '\\r'
             {
             match('\r'); 
 
@@ -931,8 +931,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = NL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:254:11: ( '\\n' )
-            // GCLNew.g:254:13: '\\n'
+            // GCLNew.g:255:11: ( '\\n' )
+            // GCLNew.g:255:13: '\\n'
             {
             match('\n'); 
 
@@ -951,8 +951,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = AMP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:255:11: ( '&' )
-            // GCLNew.g:255:13: '&'
+            // GCLNew.g:256:11: ( '&' )
+            // GCLNew.g:256:13: '&'
             {
             match('&'); 
 
@@ -971,8 +971,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = DOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:256:11: ( '.' )
-            // GCLNew.g:256:13: '.'
+            // GCLNew.g:257:11: ( '.' )
+            // GCLNew.g:257:13: '.'
             {
             match('.'); 
 
@@ -991,8 +991,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = NOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:257:11: ( '!' )
-            // GCLNew.g:257:13: '!'
+            // GCLNew.g:258:11: ( '!' )
+            // GCLNew.g:258:13: '!'
             {
             match('!'); 
 
@@ -1011,8 +1011,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = BAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:258:11: ( '|' )
-            // GCLNew.g:258:13: '|'
+            // GCLNew.g:259:11: ( '|' )
+            // GCLNew.g:259:13: '|'
             {
             match('|'); 
 
@@ -1031,8 +1031,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = SHARP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:259:11: ( '#' )
-            // GCLNew.g:259:13: '#'
+            // GCLNew.g:260:11: ( '#' )
+            // GCLNew.g:260:13: '#'
             {
             match('#'); 
 
@@ -1051,8 +1051,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = PLUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:260:11: ( '+' )
-            // GCLNew.g:260:13: '+'
+            // GCLNew.g:261:11: ( '+' )
+            // GCLNew.g:261:13: '+'
             {
             match('+'); 
 
@@ -1071,8 +1071,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = STAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:261:11: ( '*' )
-            // GCLNew.g:261:13: '*'
+            // GCLNew.g:262:11: ( '*' )
+            // GCLNew.g:262:13: '*'
             {
             match('*'); 
 
@@ -1091,8 +1091,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = DONT_CARE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:262:11: ( '_' )
-            // GCLNew.g:262:13: '_'
+            // GCLNew.g:263:11: ( '_' )
+            // GCLNew.g:263:13: '_'
             {
             match('_'); 
 
@@ -1111,8 +1111,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = MINUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:263:11: ( '-' )
-            // GCLNew.g:263:13: '-'
+            // GCLNew.g:264:11: ( '-' )
+            // GCLNew.g:264:13: '-'
             {
             match('-'); 
 
@@ -1131,8 +1131,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = QUOTE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:264:11: ( '\"' )
-            // GCLNew.g:264:13: '\"'
+            // GCLNew.g:265:11: ( '\"' )
+            // GCLNew.g:265:13: '\"'
             {
             match('\"'); 
 
@@ -1151,8 +1151,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = BSLASH;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:265:11: ( '\\\\' )
-            // GCLNew.g:265:13: '\\\\'
+            // GCLNew.g:266:11: ( '\\\\' )
+            // GCLNew.g:266:13: '\\\\'
             {
             match('\\'); 
 
@@ -1171,8 +1171,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = COMMA;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:266:11: ( ',' )
-            // GCLNew.g:266:13: ','
+            // GCLNew.g:267:11: ( ',' )
+            // GCLNew.g:267:13: ','
             {
             match(','); 
 
@@ -1191,8 +1191,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = SEMI;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:267:11: ( ';' )
-            // GCLNew.g:267:13: ';'
+            // GCLNew.g:268:11: ( ';' )
+            // GCLNew.g:268:13: ';'
             {
             match(';'); 
 
@@ -1211,8 +1211,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = LPAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:268:11: ( '(' )
-            // GCLNew.g:268:13: '('
+            // GCLNew.g:269:11: ( '(' )
+            // GCLNew.g:269:13: '('
             {
             match('('); 
 
@@ -1231,8 +1231,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = RPAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:269:11: ( ')' )
-            // GCLNew.g:269:13: ')'
+            // GCLNew.g:270:11: ( ')' )
+            // GCLNew.g:270:13: ')'
             {
             match(')'); 
 
@@ -1251,8 +1251,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = LCURLY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:270:11: ( '{' )
-            // GCLNew.g:270:13: '{'
+            // GCLNew.g:271:11: ( '{' )
+            // GCLNew.g:271:13: '{'
             {
             match('{'); 
 
@@ -1271,8 +1271,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = RCURLY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:271:11: ( '}' )
-            // GCLNew.g:271:13: '}'
+            // GCLNew.g:272:11: ( '}' )
+            // GCLNew.g:272:13: '}'
             {
             match('}'); 
 
@@ -1291,12 +1291,12 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:273:12: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // GCLNew.g:273:14: '/*' ( options {greedy=false; } : . )* '*/'
+            // GCLNew.g:274:12: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // GCLNew.g:274:14: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // GCLNew.g:273:19: ( options {greedy=false; } : . )*
+            // GCLNew.g:274:19: ( options {greedy=false; } : . )*
             loop9:
             do {
                 int alt9=2;
@@ -1321,7 +1321,7 @@ public class GCLNewLexer extends Lexer {
 
                 switch (alt9) {
             	case 1 :
-            	    // GCLNew.g:273:47: .
+            	    // GCLNew.g:274:47: .
             	    {
             	    matchAny(); 
 
@@ -1352,12 +1352,12 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:274:12: ( '//' ( options {greedy=false; } : . )* '\\n' )
-            // GCLNew.g:274:14: '//' ( options {greedy=false; } : . )* '\\n'
+            // GCLNew.g:275:12: ( '//' ( options {greedy=false; } : . )* '\\n' )
+            // GCLNew.g:275:14: '//' ( options {greedy=false; } : . )* '\\n'
             {
             match("//"); 
 
-            // GCLNew.g:274:19: ( options {greedy=false; } : . )*
+            // GCLNew.g:275:19: ( options {greedy=false; } : . )*
             loop10:
             do {
                 int alt10=2;
@@ -1373,7 +1373,7 @@ public class GCLNewLexer extends Lexer {
 
                 switch (alt10) {
             	case 1 :
-            	    // GCLNew.g:274:47: .
+            	    // GCLNew.g:275:47: .
             	    {
             	    matchAny(); 
 
@@ -1403,10 +1403,10 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:276:5: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // GCLNew.g:276:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // GCLNew.g:277:5: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // GCLNew.g:277:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // GCLNew.g:276:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // GCLNew.g:277:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt11=0;
             loop11:
             do {

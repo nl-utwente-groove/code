@@ -12,32 +12,31 @@ package groove.control.parse;
 import groove.control.*;
 import groove.trans.SPORule;
 import java.util.Set;
+import java.util.HashSet;
 }
 
 @members{
     /** Builder for control automata. */
     private CtrlFactory builder;
-    /** Set of all rules (needed for building the ANY automaton). */
-    private Set<SPORule> allRules;
-    /** Set of non-invoked rules (needed for building the OTHER automaton). */
-    private Set<SPORule> uncontrolledRules;
+    /** Namespace used for building the automaton. */
+    private NamespaceNew namespace;
 
     /**
      * Runs the builder on a given, checked syntax tree.
      */
-    public Tree run(MyTree tree, Set<SPORule> allRules, Set<SPORule> uncontrolledRules) throws RecognitionException {
+    public CtrlAut run(MyTree tree, NamespaceNew namespace) throws RecognitionException {
         this.builder = new CtrlFactory();
-        this.uncontrolledRules = uncontrolledRules;
-        this.allRules = allRules;
+        this.namespace = namespace;
         MyTreeAdaptor treeAdaptor = new MyTreeAdaptor();
         setTreeAdaptor(treeAdaptor);
         setTreeNodeStream(treeAdaptor.createTreeNodeStream(tree));
-        return (Tree) program().getTree();
+        return program().aut;
     }
 }
 
-program 
-  :  ^(PROGRAM functions block) 
+program returns [ CtrlAut aut ]
+  : ^(PROGRAM functions block)
+    { $aut = $block.aut; }
   ;
 
 functions
@@ -65,7 +64,7 @@ stat returns [ CtrlAut aut ]
     { $aut = builder.buildAlap($s.aut); }
   | ^(WHILE c=stat s=stat)
     { $aut = builder.buildWhileDo($c.aut, $s.aut); }
-  | ^(UNTIL stat stat)
+  | ^(UNTIL c=stat s=stat)
     { $aut = builder.buildUntilDo($c.aut, $s.aut); }
   | ^(TRY s1=stat (s2=stat)?)
     { $aut = builder.buildTryElse($s1.aut, $s2.aut); }
@@ -83,9 +82,12 @@ stat returns [ CtrlAut aut ]
   | rule
     { $aut = builder.buildCall($rule.tree.getCtrlCall()); }
   | ANY
-    { $aut = builder.buildCallChoice(allRules); }
+    { $aut = builder.buildCallChoice(namespace.getAllRules()); }
   | OTHER
-    { $aut = builder.buildCallChoice(uncontrolledRules); }
+    { Set<SPORule> unusedRules = new HashSet<SPORule>(namespace.getAllRules());
+      unusedRules.removeAll(namespace.getUsedRules()); 
+      $aut = builder.buildCallChoice(unusedRules); 
+    }
   | TRUE
     { $aut = builder.buildTrue(); }
   ;

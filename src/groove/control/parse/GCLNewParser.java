@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNew.g 2010-11-22 21:58:33
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNew.g 2010-11-23 15:09:17
 
 package groove.control.parse;
 import groove.control.*;
@@ -124,11 +124,12 @@ public class GCLNewParser extends Parser {
          * with a (presumably empty) namespace.
          * @return the resulting syntax tree
          */
-        public Tree run(CharStream input, NamespaceNew namespace) throws RecognitionException {
+        public MyTree run(CharStream input, NamespaceNew namespace) throws RecognitionException {
             this.helper = new GCLHelper(this, namespace);
             lexer.setCharStream(input);
+            setTokenStream(new CommonTokenStream(lexer));
             setTreeAdaptor(new MyTreeAdaptor());
-            return (Tree) program().getTree();
+            return (MyTree) program().getTree();
         }
 
 
@@ -138,7 +139,7 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "program"
-    // GCLNew.g:87:1: program : ( function | stat )* -> ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) ) ;
+    // GCLNew.g:88:1: program : ( function | stat )* -> ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) ) ;
     public final GCLNewParser.program_return program() throws RecognitionException {
         GCLNewParser.program_return retval = new GCLNewParser.program_return();
         retval.start = input.LT(1);
@@ -153,17 +154,17 @@ public class GCLNewParser extends Parser {
         RewriteRuleSubtreeStream stream_stat=new RewriteRuleSubtreeStream(adaptor,"rule stat");
         RewriteRuleSubtreeStream stream_function=new RewriteRuleSubtreeStream(adaptor,"rule function");
         try {
-            // GCLNew.g:88:3: ( ( function | stat )* -> ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) ) )
-            // GCLNew.g:88:5: ( function | stat )*
+            // GCLNew.g:89:3: ( ( function | stat )* -> ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) ) )
+            // GCLNew.g:89:5: ( function | stat )*
             {
-            // GCLNew.g:88:5: ( function | stat )*
+            // GCLNew.g:89:5: ( function | stat )*
             loop1:
             do {
                 int alt1=3;
                 alt1 = dfa1.predict(input);
                 switch (alt1) {
             	case 1 :
-            	    // GCLNew.g:88:6: function
+            	    // GCLNew.g:89:6: function
             	    {
             	    pushFollow(FOLLOW_function_in_program112);
             	    function1=function();
@@ -175,7 +176,7 @@ public class GCLNewParser extends Parser {
             	    }
             	    break;
             	case 2 :
-            	    // GCLNew.g:88:15: stat
+            	    // GCLNew.g:89:15: stat
             	    {
             	    pushFollow(FOLLOW_stat_in_program114);
             	    stat2=stat();
@@ -206,19 +207,19 @@ public class GCLNewParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (CommonTree)adaptor.nil();
-            // 89:5: -> ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) )
+            // 90:5: -> ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) )
             {
-                // GCLNew.g:89:8: ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) )
+                // GCLNew.g:90:8: ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) )
                 {
                 CommonTree root_1 = (CommonTree)adaptor.nil();
                 root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(PROGRAM, "PROGRAM"), root_1);
 
-                // GCLNew.g:89:18: ^( FUNCTIONS ( function )* )
+                // GCLNew.g:90:18: ^( FUNCTIONS ( function )* )
                 {
                 CommonTree root_2 = (CommonTree)adaptor.nil();
                 root_2 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(FUNCTIONS, "FUNCTIONS"), root_2);
 
-                // GCLNew.g:89:30: ( function )*
+                // GCLNew.g:90:30: ( function )*
                 while ( stream_function.hasNext() ) {
                     adaptor.addChild(root_2, stream_function.nextTree());
 
@@ -227,12 +228,12 @@ public class GCLNewParser extends Parser {
 
                 adaptor.addChild(root_1, root_2);
                 }
-                // GCLNew.g:89:41: ^( BLOCK ( stat )* )
+                // GCLNew.g:90:41: ^( BLOCK ( stat )* )
                 {
                 CommonTree root_2 = (CommonTree)adaptor.nil();
                 root_2 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(BLOCK, "BLOCK"), root_2);
 
-                // GCLNew.g:89:49: ( stat )*
+                // GCLNew.g:90:49: ( stat )*
                 while ( stream_stat.hasNext() ) {
                     adaptor.addChild(root_2, stream_stat.nextTree());
 
@@ -276,7 +277,7 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "block"
-    // GCLNew.g:92:1: block : LCURLY ( stat )* RCURLY -> ^( BLOCK ( stat )* ) ;
+    // GCLNew.g:93:1: block : LCURLY ( stat )* RCURLY -> ^( BLOCK ( stat )* ) ;
     public final GCLNewParser.block_return block() throws RecognitionException {
         GCLNewParser.block_return retval = new GCLNewParser.block_return();
         retval.start = input.LT(1);
@@ -294,20 +295,20 @@ public class GCLNewParser extends Parser {
         RewriteRuleTokenStream stream_RCURLY=new RewriteRuleTokenStream(adaptor,"token RCURLY");
         RewriteRuleSubtreeStream stream_stat=new RewriteRuleSubtreeStream(adaptor,"rule stat");
         try {
-            // GCLNew.g:93:2: ( LCURLY ( stat )* RCURLY -> ^( BLOCK ( stat )* ) )
-            // GCLNew.g:93:4: LCURLY ( stat )* RCURLY
+            // GCLNew.g:94:2: ( LCURLY ( stat )* RCURLY -> ^( BLOCK ( stat )* ) )
+            // GCLNew.g:94:4: LCURLY ( stat )* RCURLY
             {
             LCURLY3=(Token)match(input,LCURLY,FOLLOW_LCURLY_in_block152); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_LCURLY.add(LCURLY3);
 
-            // GCLNew.g:93:11: ( stat )*
+            // GCLNew.g:94:11: ( stat )*
             loop2:
             do {
                 int alt2=2;
                 alt2 = dfa2.predict(input);
                 switch (alt2) {
             	case 1 :
-            	    // GCLNew.g:93:11: stat
+            	    // GCLNew.g:94:11: stat
             	    {
             	    pushFollow(FOLLOW_stat_in_block154);
             	    stat4=stat();
@@ -341,14 +342,14 @@ public class GCLNewParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (CommonTree)adaptor.nil();
-            // 93:24: -> ^( BLOCK ( stat )* )
+            // 94:24: -> ^( BLOCK ( stat )* )
             {
-                // GCLNew.g:93:27: ^( BLOCK ( stat )* )
+                // GCLNew.g:94:27: ^( BLOCK ( stat )* )
                 {
                 CommonTree root_1 = (CommonTree)adaptor.nil();
                 root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(BLOCK, "BLOCK"), root_1);
 
-                // GCLNew.g:93:35: ( stat )*
+                // GCLNew.g:94:35: ( stat )*
                 while ( stream_stat.hasNext() ) {
                     adaptor.addChild(root_1, stream_stat.nextTree());
 
@@ -389,7 +390,7 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "function"
-    // GCLNew.g:95:1: function : FUNCTION ID LPAR RPAR block ;
+    // GCLNew.g:96:1: function : FUNCTION ID LPAR RPAR block ;
     public final GCLNewParser.function_return function() throws RecognitionException {
         GCLNewParser.function_return retval = new GCLNewParser.function_return();
         retval.start = input.LT(1);
@@ -409,8 +410,8 @@ public class GCLNewParser extends Parser {
         CommonTree RPAR9_tree=null;
 
         try {
-            // GCLNew.g:96:3: ( FUNCTION ID LPAR RPAR block )
-            // GCLNew.g:96:5: FUNCTION ID LPAR RPAR block
+            // GCLNew.g:97:3: ( FUNCTION ID LPAR RPAR block )
+            // GCLNew.g:97:5: FUNCTION ID LPAR RPAR block
             {
             root_0 = (CommonTree)adaptor.nil();
 
@@ -464,7 +465,7 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "stat"
-    // GCLNew.g:100:1: stat : ( block | ALAP stat | WHILE LPAR cond RPAR stat | UNTIL LPAR cond RPAR stat | DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) ) | IF LPAR cond RPAR stat ( ( ELSE )=> ELSE stat )? | TRY stat ( ( ELSE )=> ELSE stat )? | CHOICE stat ( ( OR )=> OR stat )+ | expr SEMI | var_decl SEMI );
+    // GCLNew.g:101:1: stat : ( block | ALAP stat | WHILE LPAR cond RPAR stat | UNTIL LPAR cond RPAR stat | DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) ) | IF LPAR cond RPAR stat ( ( ELSE )=> ELSE stat )? | TRY stat ( ( ELSE )=> ELSE stat )? | CHOICE stat ( ( OR )=> OR stat )+ | expr SEMI | var_decl SEMI );
     public final GCLNewParser.stat_return stat() throws RecognitionException {
         GCLNewParser.stat_return retval = new GCLNewParser.stat_return();
         retval.start = input.LT(1);
@@ -564,12 +565,12 @@ public class GCLNewParser extends Parser {
         RewriteRuleSubtreeStream stream_cond=new RewriteRuleSubtreeStream(adaptor,"rule cond");
         RewriteRuleSubtreeStream stream_stat=new RewriteRuleSubtreeStream(adaptor,"rule stat");
         try {
-            // GCLNew.g:101:2: ( block | ALAP stat | WHILE LPAR cond RPAR stat | UNTIL LPAR cond RPAR stat | DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) ) | IF LPAR cond RPAR stat ( ( ELSE )=> ELSE stat )? | TRY stat ( ( ELSE )=> ELSE stat )? | CHOICE stat ( ( OR )=> OR stat )+ | expr SEMI | var_decl SEMI )
+            // GCLNew.g:102:2: ( block | ALAP stat | WHILE LPAR cond RPAR stat | UNTIL LPAR cond RPAR stat | DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) ) | IF LPAR cond RPAR stat ( ( ELSE )=> ELSE stat )? | TRY stat ( ( ELSE )=> ELSE stat )? | CHOICE stat ( ( OR )=> OR stat )+ | expr SEMI | var_decl SEMI )
             int alt7=10;
             alt7 = dfa7.predict(input);
             switch (alt7) {
                 case 1 :
-                    // GCLNew.g:101:4: block
+                    // GCLNew.g:102:4: block
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -583,7 +584,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // GCLNew.g:102:4: ALAP stat
+                    // GCLNew.g:103:4: ALAP stat
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -602,7 +603,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 3 :
-                    // GCLNew.g:103:4: WHILE LPAR cond RPAR stat
+                    // GCLNew.g:104:4: WHILE LPAR cond RPAR stat
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -629,7 +630,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 4 :
-                    // GCLNew.g:104:4: UNTIL LPAR cond RPAR stat
+                    // GCLNew.g:105:4: UNTIL LPAR cond RPAR stat
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -656,7 +657,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 5 :
-                    // GCLNew.g:105:4: DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) )
+                    // GCLNew.g:106:4: DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) )
                     {
                     DO24=(Token)match(input,DO,FOLLOW_DO_in_stat250); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_DO.add(DO24);
@@ -667,7 +668,7 @@ public class GCLNewParser extends Parser {
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) stream_stat.add(stat25.getTree());
-                    // GCLNew.g:106:4: ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) )
+                    // GCLNew.g:107:4: ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) )
                     int alt3=2;
                     int LA3_0 = input.LA(1);
 
@@ -686,7 +687,7 @@ public class GCLNewParser extends Parser {
                     }
                     switch (alt3) {
                         case 1 :
-                            // GCLNew.g:106:6: WHILE LPAR cond RPAR
+                            // GCLNew.g:107:6: WHILE LPAR cond RPAR
                             {
                             WHILE26=(Token)match(input,WHILE,FOLLOW_WHILE_in_stat260); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_WHILE.add(WHILE26);
@@ -706,7 +707,7 @@ public class GCLNewParser extends Parser {
 
 
                             // AST REWRITE
-                            // elements: stat, stat, WHILE, cond
+                            // elements: WHILE, stat, stat, cond
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -717,15 +718,15 @@ public class GCLNewParser extends Parser {
                             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                             root_0 = (CommonTree)adaptor.nil();
-                            // 106:27: -> ^( BLOCK stat ^( WHILE cond stat ) )
+                            // 107:27: -> ^( BLOCK stat ^( WHILE cond stat ) )
                             {
-                                // GCLNew.g:106:30: ^( BLOCK stat ^( WHILE cond stat ) )
+                                // GCLNew.g:107:30: ^( BLOCK stat ^( WHILE cond stat ) )
                                 {
                                 CommonTree root_1 = (CommonTree)adaptor.nil();
                                 root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(BLOCK, "BLOCK"), root_1);
 
                                 adaptor.addChild(root_1, stream_stat.nextTree());
-                                // GCLNew.g:106:43: ^( WHILE cond stat )
+                                // GCLNew.g:107:43: ^( WHILE cond stat )
                                 {
                                 CommonTree root_2 = (CommonTree)adaptor.nil();
                                 root_2 = (CommonTree)adaptor.becomeRoot(stream_WHILE.nextNode(), root_2);
@@ -745,7 +746,7 @@ public class GCLNewParser extends Parser {
                             }
                             break;
                         case 2 :
-                            // GCLNew.g:107:6: UNTIL LPAR cond RPAR
+                            // GCLNew.g:108:6: UNTIL LPAR cond RPAR
                             {
                             UNTIL30=(Token)match(input,UNTIL,FOLLOW_UNTIL_in_stat289); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_UNTIL.add(UNTIL30);
@@ -765,7 +766,7 @@ public class GCLNewParser extends Parser {
 
 
                             // AST REWRITE
-                            // elements: UNTIL, stat, cond, stat
+                            // elements: UNTIL, stat, stat, cond
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -776,15 +777,15 @@ public class GCLNewParser extends Parser {
                             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                             root_0 = (CommonTree)adaptor.nil();
-                            // 107:27: -> ^( BLOCK stat ^( UNTIL cond stat ) )
+                            // 108:27: -> ^( BLOCK stat ^( UNTIL cond stat ) )
                             {
-                                // GCLNew.g:107:30: ^( BLOCK stat ^( UNTIL cond stat ) )
+                                // GCLNew.g:108:30: ^( BLOCK stat ^( UNTIL cond stat ) )
                                 {
                                 CommonTree root_1 = (CommonTree)adaptor.nil();
                                 root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(BLOCK, "BLOCK"), root_1);
 
                                 adaptor.addChild(root_1, stream_stat.nextTree());
-                                // GCLNew.g:107:43: ^( UNTIL cond stat )
+                                // GCLNew.g:108:43: ^( UNTIL cond stat )
                                 {
                                 CommonTree root_2 = (CommonTree)adaptor.nil();
                                 root_2 = (CommonTree)adaptor.becomeRoot(stream_UNTIL.nextNode(), root_2);
@@ -810,7 +811,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 6 :
-                    // GCLNew.g:109:5: IF LPAR cond RPAR stat ( ( ELSE )=> ELSE stat )?
+                    // GCLNew.g:110:5: IF LPAR cond RPAR stat ( ( ELSE )=> ELSE stat )?
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -833,12 +834,12 @@ public class GCLNewParser extends Parser {
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) adaptor.addChild(root_0, stat38.getTree());
-                    // GCLNew.g:109:31: ( ( ELSE )=> ELSE stat )?
+                    // GCLNew.g:110:31: ( ( ELSE )=> ELSE stat )?
                     int alt4=2;
                     alt4 = dfa4.predict(input);
                     switch (alt4) {
                         case 1 :
-                            // GCLNew.g:109:33: ( ELSE )=> ELSE stat
+                            // GCLNew.g:110:33: ( ELSE )=> ELSE stat
                             {
                             ELSE39=(Token)match(input,ELSE,FOLLOW_ELSE_in_stat343); if (state.failed) return retval;
                             pushFollow(FOLLOW_stat_in_stat346);
@@ -857,7 +858,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 7 :
-                    // GCLNew.g:110:5: TRY stat ( ( ELSE )=> ELSE stat )?
+                    // GCLNew.g:111:5: TRY stat ( ( ELSE )=> ELSE stat )?
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -872,12 +873,12 @@ public class GCLNewParser extends Parser {
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) adaptor.addChild(root_0, stat42.getTree());
-                    // GCLNew.g:110:15: ( ( ELSE )=> ELSE stat )?
+                    // GCLNew.g:111:15: ( ( ELSE )=> ELSE stat )?
                     int alt5=2;
                     alt5 = dfa5.predict(input);
                     switch (alt5) {
                         case 1 :
-                            // GCLNew.g:110:17: ( ELSE )=> ELSE stat
+                            // GCLNew.g:111:17: ( ELSE )=> ELSE stat
                             {
                             ELSE43=(Token)match(input,ELSE,FOLLOW_ELSE_in_stat368); if (state.failed) return retval;
                             pushFollow(FOLLOW_stat_in_stat371);
@@ -896,7 +897,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 8 :
-                    // GCLNew.g:111:5: CHOICE stat ( ( OR )=> OR stat )+
+                    // GCLNew.g:112:5: CHOICE stat ( ( OR )=> OR stat )+
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -911,7 +912,7 @@ public class GCLNewParser extends Parser {
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) adaptor.addChild(root_0, stat46.getTree());
-                    // GCLNew.g:111:18: ( ( OR )=> OR stat )+
+                    // GCLNew.g:112:18: ( ( OR )=> OR stat )+
                     int cnt6=0;
                     loop6:
                     do {
@@ -919,7 +920,7 @@ public class GCLNewParser extends Parser {
                         alt6 = dfa6.predict(input);
                         switch (alt6) {
                     	case 1 :
-                    	    // GCLNew.g:111:20: ( OR )=> OR stat
+                    	    // GCLNew.g:112:20: ( OR )=> OR stat
                     	    {
                     	    OR47=(Token)match(input,OR,FOLLOW_OR_in_stat393); if (state.failed) return retval;
                     	    pushFollow(FOLLOW_stat_in_stat396);
@@ -946,7 +947,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 9 :
-                    // GCLNew.g:112:4: expr SEMI
+                    // GCLNew.g:113:4: expr SEMI
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -961,7 +962,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 10 :
-                    // GCLNew.g:113:4: var_decl SEMI
+                    // GCLNew.g:114:4: var_decl SEMI
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1003,7 +1004,7 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "cond"
-    // GCLNew.g:116:1: cond : cond_atom ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom ) ;
+    // GCLNew.g:117:1: cond : cond_atom ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom ) ;
     public final GCLNewParser.cond_return cond() throws RecognitionException {
         GCLNewParser.cond_return retval = new GCLNewParser.cond_return();
         retval.start = input.LT(1);
@@ -1020,8 +1021,8 @@ public class GCLNewParser extends Parser {
         RewriteRuleTokenStream stream_BAR=new RewriteRuleTokenStream(adaptor,"token BAR");
         RewriteRuleSubtreeStream stream_cond_atom=new RewriteRuleSubtreeStream(adaptor,"rule cond_atom");
         try {
-            // GCLNew.g:117:2: ( cond_atom ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom ) )
-            // GCLNew.g:117:4: cond_atom ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom )
+            // GCLNew.g:118:2: ( cond_atom ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom ) )
+            // GCLNew.g:118:4: cond_atom ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom )
             {
             pushFollow(FOLLOW_cond_atom_in_cond426);
             cond_atom53=cond_atom();
@@ -1029,7 +1030,7 @@ public class GCLNewParser extends Parser {
             state._fsp--;
             if (state.failed) return retval;
             if ( state.backtracking==0 ) stream_cond_atom.add(cond_atom53.getTree());
-            // GCLNew.g:118:4: ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom )
+            // GCLNew.g:119:4: ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom )
             int alt9=2;
             int LA9_0 = input.LA(1);
 
@@ -1048,9 +1049,9 @@ public class GCLNewParser extends Parser {
             }
             switch (alt9) {
                 case 1 :
-                    // GCLNew.g:118:6: ( BAR cond_atom )+
+                    // GCLNew.g:119:6: ( BAR cond_atom )+
                     {
-                    // GCLNew.g:118:6: ( BAR cond_atom )+
+                    // GCLNew.g:119:6: ( BAR cond_atom )+
                     int cnt8=0;
                     loop8:
                     do {
@@ -1064,7 +1065,7 @@ public class GCLNewParser extends Parser {
 
                         switch (alt8) {
                     	case 1 :
-                    	    // GCLNew.g:118:7: BAR cond_atom
+                    	    // GCLNew.g:119:7: BAR cond_atom
                     	    {
                     	    BAR54=(Token)match(input,BAR,FOLLOW_BAR_in_cond435); if (state.failed) return retval; 
                     	    if ( state.backtracking==0 ) stream_BAR.add(BAR54);
@@ -1103,9 +1104,9 @@ public class GCLNewParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 118:23: -> ^( CHOICE cond_atom ( cond_atom )+ )
+                    // 119:23: -> ^( CHOICE cond_atom ( cond_atom )+ )
                     {
-                        // GCLNew.g:118:26: ^( CHOICE cond_atom ( cond_atom )+ )
+                        // GCLNew.g:119:26: ^( CHOICE cond_atom ( cond_atom )+ )
                         {
                         CommonTree root_1 = (CommonTree)adaptor.nil();
                         root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(CHOICE, "CHOICE"), root_1);
@@ -1129,7 +1130,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // GCLNew.g:119:6: 
+                    // GCLNew.g:120:6: 
                     {
 
                     // AST REWRITE
@@ -1144,7 +1145,7 @@ public class GCLNewParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 119:6: -> cond_atom
+                    // 120:6: -> cond_atom
                     {
                         adaptor.addChild(root_0, stream_cond_atom.nextTree());
 
@@ -1185,7 +1186,7 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "cond_atom"
-    // GCLNew.g:123:1: cond_atom : ( TRUE | call );
+    // GCLNew.g:124:1: cond_atom : ( TRUE | call );
     public final GCLNewParser.cond_atom_return cond_atom() throws RecognitionException {
         GCLNewParser.cond_atom_return retval = new GCLNewParser.cond_atom_return();
         retval.start = input.LT(1);
@@ -1199,7 +1200,7 @@ public class GCLNewParser extends Parser {
         CommonTree TRUE56_tree=null;
 
         try {
-            // GCLNew.g:124:2: ( TRUE | call )
+            // GCLNew.g:125:2: ( TRUE | call )
             int alt10=2;
             int LA10_0 = input.LA(1);
 
@@ -1218,7 +1219,7 @@ public class GCLNewParser extends Parser {
             }
             switch (alt10) {
                 case 1 :
-                    // GCLNew.g:124:4: TRUE
+                    // GCLNew.g:125:4: TRUE
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1231,7 +1232,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // GCLNew.g:124:11: call
+                    // GCLNew.g:125:11: call
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1272,7 +1273,7 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "expr"
-    // GCLNew.g:126:1: expr : expr2 ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 ) ;
+    // GCLNew.g:127:1: expr : expr2 ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 ) ;
     public final GCLNewParser.expr_return expr() throws RecognitionException {
         GCLNewParser.expr_return retval = new GCLNewParser.expr_return();
         retval.start = input.LT(1);
@@ -1289,8 +1290,8 @@ public class GCLNewParser extends Parser {
         RewriteRuleTokenStream stream_BAR=new RewriteRuleTokenStream(adaptor,"token BAR");
         RewriteRuleSubtreeStream stream_expr2=new RewriteRuleSubtreeStream(adaptor,"rule expr2");
         try {
-            // GCLNew.g:127:2: ( expr2 ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 ) )
-            // GCLNew.g:127:4: expr2 ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 )
+            // GCLNew.g:128:2: ( expr2 ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 ) )
+            // GCLNew.g:128:4: expr2 ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 )
             {
             pushFollow(FOLLOW_expr2_in_expr490);
             expr258=expr2();
@@ -1298,7 +1299,7 @@ public class GCLNewParser extends Parser {
             state._fsp--;
             if (state.failed) return retval;
             if ( state.backtracking==0 ) stream_expr2.add(expr258.getTree());
-            // GCLNew.g:128:4: ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 )
+            // GCLNew.g:129:4: ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 )
             int alt12=2;
             int LA12_0 = input.LA(1);
 
@@ -1317,9 +1318,9 @@ public class GCLNewParser extends Parser {
             }
             switch (alt12) {
                 case 1 :
-                    // GCLNew.g:128:6: ( BAR expr2 )+
+                    // GCLNew.g:129:6: ( BAR expr2 )+
                     {
-                    // GCLNew.g:128:6: ( BAR expr2 )+
+                    // GCLNew.g:129:6: ( BAR expr2 )+
                     int cnt11=0;
                     loop11:
                     do {
@@ -1333,7 +1334,7 @@ public class GCLNewParser extends Parser {
 
                         switch (alt11) {
                     	case 1 :
-                    	    // GCLNew.g:128:7: BAR expr2
+                    	    // GCLNew.g:129:7: BAR expr2
                     	    {
                     	    BAR59=(Token)match(input,BAR,FOLLOW_BAR_in_expr498); if (state.failed) return retval; 
                     	    if ( state.backtracking==0 ) stream_BAR.add(BAR59);
@@ -1372,9 +1373,9 @@ public class GCLNewParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 128:19: -> ^( CHOICE expr2 ( expr2 )+ )
+                    // 129:19: -> ^( CHOICE expr2 ( expr2 )+ )
                     {
-                        // GCLNew.g:128:22: ^( CHOICE expr2 ( expr2 )+ )
+                        // GCLNew.g:129:22: ^( CHOICE expr2 ( expr2 )+ )
                         {
                         CommonTree root_1 = (CommonTree)adaptor.nil();
                         root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(CHOICE, "CHOICE"), root_1);
@@ -1398,7 +1399,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // GCLNew.g:129:6: 
+                    // GCLNew.g:130:6: 
                     {
 
                     // AST REWRITE
@@ -1413,7 +1414,7 @@ public class GCLNewParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 129:6: -> expr2
+                    // 130:6: -> expr2
                     {
                         adaptor.addChild(root_0, stream_expr2.nextTree());
 
@@ -1454,7 +1455,7 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "expr2"
-    // GCLNew.g:133:1: expr2 : (e= expr_atom ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | STAR -> ^( STAR $e) | -> $e) | SHARP expr_atom -> ^( ALAP expr_atom ) );
+    // GCLNew.g:134:1: expr2 : (e= expr_atom ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | STAR -> ^( STAR $e) | -> $e) | SHARP expr_atom -> ^( ALAP expr_atom ) );
     public final GCLNewParser.expr2_return expr2() throws RecognitionException {
         GCLNewParser.expr2_return retval = new GCLNewParser.expr2_return();
         retval.start = input.LT(1);
@@ -1477,7 +1478,7 @@ public class GCLNewParser extends Parser {
         RewriteRuleTokenStream stream_SHARP=new RewriteRuleTokenStream(adaptor,"token SHARP");
         RewriteRuleSubtreeStream stream_expr_atom=new RewriteRuleSubtreeStream(adaptor,"rule expr_atom");
         try {
-            // GCLNew.g:134:3: (e= expr_atom ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | STAR -> ^( STAR $e) | -> $e) | SHARP expr_atom -> ^( ALAP expr_atom ) )
+            // GCLNew.g:135:3: (e= expr_atom ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | STAR -> ^( STAR $e) | -> $e) | SHARP expr_atom -> ^( ALAP expr_atom ) )
             int alt14=2;
             int LA14_0 = input.LA(1);
 
@@ -1496,7 +1497,7 @@ public class GCLNewParser extends Parser {
             }
             switch (alt14) {
                 case 1 :
-                    // GCLNew.g:134:5: e= expr_atom ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | STAR -> ^( STAR $e) | -> $e)
+                    // GCLNew.g:135:5: e= expr_atom ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | STAR -> ^( STAR $e) | -> $e)
                     {
                     pushFollow(FOLLOW_expr_atom_in_expr2541);
                     e=expr_atom();
@@ -1504,7 +1505,7 @@ public class GCLNewParser extends Parser {
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) stream_expr_atom.add(e.getTree());
-                    // GCLNew.g:135:5: ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | STAR -> ^( STAR $e) | -> $e)
+                    // GCLNew.g:136:5: ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | STAR -> ^( STAR $e) | -> $e)
                     int alt13=3;
                     switch ( input.LA(1) ) {
                     case PLUS:
@@ -1534,7 +1535,7 @@ public class GCLNewParser extends Parser {
 
                     switch (alt13) {
                         case 1 :
-                            // GCLNew.g:135:7: PLUS
+                            // GCLNew.g:136:7: PLUS
                             {
                             PLUS61=(Token)match(input,PLUS,FOLLOW_PLUS_in_expr2549); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_PLUS.add(PLUS61);
@@ -1554,15 +1555,15 @@ public class GCLNewParser extends Parser {
                             RewriteRuleSubtreeStream stream_e=new RewriteRuleSubtreeStream(adaptor,"rule e",e!=null?e.tree:null);
 
                             root_0 = (CommonTree)adaptor.nil();
-                            // 135:12: -> ^( BLOCK $e ^( STAR $e) )
+                            // 136:12: -> ^( BLOCK $e ^( STAR $e) )
                             {
-                                // GCLNew.g:135:15: ^( BLOCK $e ^( STAR $e) )
+                                // GCLNew.g:136:15: ^( BLOCK $e ^( STAR $e) )
                                 {
                                 CommonTree root_1 = (CommonTree)adaptor.nil();
                                 root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(BLOCK, "BLOCK"), root_1);
 
                                 adaptor.addChild(root_1, stream_e.nextTree());
-                                // GCLNew.g:135:26: ^( STAR $e)
+                                // GCLNew.g:136:26: ^( STAR $e)
                                 {
                                 CommonTree root_2 = (CommonTree)adaptor.nil();
                                 root_2 = (CommonTree)adaptor.becomeRoot(stream_STAR.nextNode(), root_2);
@@ -1581,7 +1582,7 @@ public class GCLNewParser extends Parser {
                             }
                             break;
                         case 2 :
-                            // GCLNew.g:136:7: STAR
+                            // GCLNew.g:137:7: STAR
                             {
                             STAR62=(Token)match(input,STAR,FOLLOW_STAR_in_expr2573); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_STAR.add(STAR62);
@@ -1589,7 +1590,7 @@ public class GCLNewParser extends Parser {
 
 
                             // AST REWRITE
-                            // elements: e, STAR
+                            // elements: STAR, e
                             // token labels: 
                             // rule labels: retval, e
                             // token list labels: 
@@ -1601,9 +1602,9 @@ public class GCLNewParser extends Parser {
                             RewriteRuleSubtreeStream stream_e=new RewriteRuleSubtreeStream(adaptor,"rule e",e!=null?e.tree:null);
 
                             root_0 = (CommonTree)adaptor.nil();
-                            // 136:12: -> ^( STAR $e)
+                            // 137:12: -> ^( STAR $e)
                             {
-                                // GCLNew.g:136:15: ^( STAR $e)
+                                // GCLNew.g:137:15: ^( STAR $e)
                                 {
                                 CommonTree root_1 = (CommonTree)adaptor.nil();
                                 root_1 = (CommonTree)adaptor.becomeRoot(stream_STAR.nextNode(), root_1);
@@ -1619,7 +1620,7 @@ public class GCLNewParser extends Parser {
                             }
                             break;
                         case 3 :
-                            // GCLNew.g:137:7: 
+                            // GCLNew.g:138:7: 
                             {
 
                             // AST REWRITE
@@ -1635,7 +1636,7 @@ public class GCLNewParser extends Parser {
                             RewriteRuleSubtreeStream stream_e=new RewriteRuleSubtreeStream(adaptor,"rule e",e!=null?e.tree:null);
 
                             root_0 = (CommonTree)adaptor.nil();
-                            // 137:7: -> $e
+                            // 138:7: -> $e
                             {
                                 adaptor.addChild(root_0, stream_e.nextTree());
 
@@ -1651,7 +1652,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // GCLNew.g:139:5: SHARP expr_atom
+                    // GCLNew.g:140:5: SHARP expr_atom
                     {
                     SHARP63=(Token)match(input,SHARP,FOLLOW_SHARP_in_expr2605); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_SHARP.add(SHARP63);
@@ -1676,9 +1677,9 @@ public class GCLNewParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 139:21: -> ^( ALAP expr_atom )
+                    // 140:21: -> ^( ALAP expr_atom )
                     {
-                        // GCLNew.g:139:24: ^( ALAP expr_atom )
+                        // GCLNew.g:140:24: ^( ALAP expr_atom )
                         {
                         CommonTree root_1 = (CommonTree)adaptor.nil();
                         root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(ALAP, "ALAP"), root_1);
@@ -1721,7 +1722,7 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "expr_atom"
-    // GCLNew.g:142:1: expr_atom : ( ANY | OTHER | LPAR expr RPAR | call );
+    // GCLNew.g:143:1: expr_atom : ( ANY | OTHER | LPAR expr RPAR | call );
     public final GCLNewParser.expr_atom_return expr_atom() throws RecognitionException {
         GCLNewParser.expr_atom_return retval = new GCLNewParser.expr_atom_return();
         retval.start = input.LT(1);
@@ -1743,7 +1744,7 @@ public class GCLNewParser extends Parser {
         CommonTree RPAR69_tree=null;
 
         try {
-            // GCLNew.g:143:2: ( ANY | OTHER | LPAR expr RPAR | call )
+            // GCLNew.g:144:2: ( ANY | OTHER | LPAR expr RPAR | call )
             int alt15=4;
             switch ( input.LA(1) ) {
             case ANY:
@@ -1776,7 +1777,7 @@ public class GCLNewParser extends Parser {
 
             switch (alt15) {
                 case 1 :
-                    // GCLNew.g:143:4: ANY
+                    // GCLNew.g:144:4: ANY
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1789,7 +1790,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // GCLNew.g:144:4: OTHER
+                    // GCLNew.g:145:4: OTHER
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1802,7 +1803,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 3 :
-                    // GCLNew.g:145:4: LPAR expr RPAR
+                    // GCLNew.g:146:4: LPAR expr RPAR
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1818,7 +1819,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 4 :
-                    // GCLNew.g:146:4: call
+                    // GCLNew.g:147:4: call
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -1859,7 +1860,7 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "call"
-    // GCLNew.g:149:1: call : rule_name ( LPAR ( arg_list )? RPAR )? -> ^( CALL rule_name ( arg_list )? ) ;
+    // GCLNew.g:150:1: call : rule_name ( LPAR ( arg_list )? RPAR )? -> ^( CALL rule_name ( arg_list )? ) ;
     public final GCLNewParser.call_return call() throws RecognitionException {
         GCLNewParser.call_return retval = new GCLNewParser.call_return();
         retval.start = input.LT(1);
@@ -1880,8 +1881,8 @@ public class GCLNewParser extends Parser {
         RewriteRuleSubtreeStream stream_arg_list=new RewriteRuleSubtreeStream(adaptor,"rule arg_list");
         RewriteRuleSubtreeStream stream_rule_name=new RewriteRuleSubtreeStream(adaptor,"rule rule_name");
         try {
-            // GCLNew.g:150:2: ( rule_name ( LPAR ( arg_list )? RPAR )? -> ^( CALL rule_name ( arg_list )? ) )
-            // GCLNew.g:150:4: rule_name ( LPAR ( arg_list )? RPAR )?
+            // GCLNew.g:151:2: ( rule_name ( LPAR ( arg_list )? RPAR )? -> ^( CALL rule_name ( arg_list )? ) )
+            // GCLNew.g:151:4: rule_name ( LPAR ( arg_list )? RPAR )?
             {
             pushFollow(FOLLOW_rule_name_in_call660);
             rule_name71=rule_name();
@@ -1889,7 +1890,7 @@ public class GCLNewParser extends Parser {
             state._fsp--;
             if (state.failed) return retval;
             if ( state.backtracking==0 ) stream_rule_name.add(rule_name71.getTree());
-            // GCLNew.g:150:14: ( LPAR ( arg_list )? RPAR )?
+            // GCLNew.g:151:14: ( LPAR ( arg_list )? RPAR )?
             int alt17=2;
             int LA17_0 = input.LA(1);
 
@@ -1898,12 +1899,12 @@ public class GCLNewParser extends Parser {
             }
             switch (alt17) {
                 case 1 :
-                    // GCLNew.g:150:15: LPAR ( arg_list )? RPAR
+                    // GCLNew.g:151:15: LPAR ( arg_list )? RPAR
                     {
                     LPAR72=(Token)match(input,LPAR,FOLLOW_LPAR_in_call663); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_LPAR.add(LPAR72);
 
-                    // GCLNew.g:150:20: ( arg_list )?
+                    // GCLNew.g:151:20: ( arg_list )?
                     int alt16=2;
                     int LA16_0 = input.LA(1);
 
@@ -1912,7 +1913,7 @@ public class GCLNewParser extends Parser {
                     }
                     switch (alt16) {
                         case 1 :
-                            // GCLNew.g:150:20: arg_list
+                            // GCLNew.g:151:20: arg_list
                             {
                             pushFollow(FOLLOW_arg_list_in_call665);
                             arg_list73=arg_list();
@@ -1949,15 +1950,15 @@ public class GCLNewParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (CommonTree)adaptor.nil();
-            // 151:4: -> ^( CALL rule_name ( arg_list )? )
+            // 152:4: -> ^( CALL rule_name ( arg_list )? )
             {
-                // GCLNew.g:151:7: ^( CALL rule_name ( arg_list )? )
+                // GCLNew.g:152:7: ^( CALL rule_name ( arg_list )? )
                 {
                 CommonTree root_1 = (CommonTree)adaptor.nil();
                 root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(CALL, "CALL"), root_1);
 
                 adaptor.addChild(root_1, stream_rule_name.nextTree());
-                // GCLNew.g:151:24: ( arg_list )?
+                // GCLNew.g:152:24: ( arg_list )?
                 if ( stream_arg_list.hasNext() ) {
                     adaptor.addChild(root_1, stream_arg_list.nextTree());
 
@@ -1998,7 +1999,7 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "rule_name"
-    // GCLNew.g:154:1: rule_name : ids+= ID ( DOT ids+= ID )* ->;
+    // GCLNew.g:155:1: rule_name : ids+= ID ( DOT ids+= ID )* ->;
     public final GCLNewParser.rule_name_return rule_name() throws RecognitionException {
         GCLNewParser.rule_name_return retval = new GCLNewParser.rule_name_return();
         retval.start = input.LT(1);
@@ -2015,8 +2016,8 @@ public class GCLNewParser extends Parser {
         RewriteRuleTokenStream stream_DOT=new RewriteRuleTokenStream(adaptor,"token DOT");
 
         try {
-            // GCLNew.g:156:3: (ids+= ID ( DOT ids+= ID )* ->)
-            // GCLNew.g:156:5: ids+= ID ( DOT ids+= ID )*
+            // GCLNew.g:157:3: (ids+= ID ( DOT ids+= ID )* ->)
+            // GCLNew.g:157:5: ids+= ID ( DOT ids+= ID )*
             {
             ids=(Token)match(input,ID,FOLLOW_ID_in_rule_name700); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_ID.add(ids);
@@ -2024,7 +2025,7 @@ public class GCLNewParser extends Parser {
             if (list_ids==null) list_ids=new ArrayList();
             list_ids.add(ids);
 
-            // GCLNew.g:156:13: ( DOT ids+= ID )*
+            // GCLNew.g:157:13: ( DOT ids+= ID )*
             loop18:
             do {
                 int alt18=2;
@@ -2037,7 +2038,7 @@ public class GCLNewParser extends Parser {
 
                 switch (alt18) {
             	case 1 :
-            	    // GCLNew.g:156:14: DOT ids+= ID
+            	    // GCLNew.g:157:14: DOT ids+= ID
             	    {
             	    DOT75=(Token)match(input,DOT,FOLLOW_DOT_in_rule_name703); if (state.failed) return retval; 
             	    if ( state.backtracking==0 ) stream_DOT.add(DOT75);
@@ -2071,7 +2072,7 @@ public class GCLNewParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (CommonTree)adaptor.nil();
-            // 157:5: ->
+            // 158:5: ->
             {
                 adaptor.addChild(root_0,  helper.toRuleName(list_ids) );
 
@@ -2106,7 +2107,7 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "var_decl"
-    // GCLNew.g:160:1: var_decl : var_type ID ( COMMA ID )* -> ^( VAR var_type ( ID )+ ) ;
+    // GCLNew.g:161:1: var_decl : var_type ID ( COMMA ID )* -> ^( VAR var_type ( ID )+ ) ;
     public final GCLNewParser.var_decl_return var_decl() throws RecognitionException {
         GCLNewParser.var_decl_return retval = new GCLNewParser.var_decl_return();
         retval.start = input.LT(1);
@@ -2126,8 +2127,8 @@ public class GCLNewParser extends Parser {
         RewriteRuleTokenStream stream_COMMA=new RewriteRuleTokenStream(adaptor,"token COMMA");
         RewriteRuleSubtreeStream stream_var_type=new RewriteRuleSubtreeStream(adaptor,"rule var_type");
         try {
-            // GCLNew.g:161:2: ( var_type ID ( COMMA ID )* -> ^( VAR var_type ( ID )+ ) )
-            // GCLNew.g:161:4: var_type ID ( COMMA ID )*
+            // GCLNew.g:162:2: ( var_type ID ( COMMA ID )* -> ^( VAR var_type ( ID )+ ) )
+            // GCLNew.g:162:4: var_type ID ( COMMA ID )*
             {
             pushFollow(FOLLOW_var_type_in_var_decl729);
             var_type76=var_type();
@@ -2138,7 +2139,7 @@ public class GCLNewParser extends Parser {
             ID77=(Token)match(input,ID,FOLLOW_ID_in_var_decl731); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_ID.add(ID77);
 
-            // GCLNew.g:161:16: ( COMMA ID )*
+            // GCLNew.g:162:16: ( COMMA ID )*
             loop19:
             do {
                 int alt19=2;
@@ -2151,7 +2152,7 @@ public class GCLNewParser extends Parser {
 
                 switch (alt19) {
             	case 1 :
-            	    // GCLNew.g:161:17: COMMA ID
+            	    // GCLNew.g:162:17: COMMA ID
             	    {
             	    COMMA78=(Token)match(input,COMMA,FOLLOW_COMMA_in_var_decl734); if (state.failed) return retval; 
             	    if ( state.backtracking==0 ) stream_COMMA.add(COMMA78);
@@ -2182,9 +2183,9 @@ public class GCLNewParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (CommonTree)adaptor.nil();
-            // 161:28: -> ^( VAR var_type ( ID )+ )
+            // 162:28: -> ^( VAR var_type ( ID )+ )
             {
-                // GCLNew.g:161:31: ^( VAR var_type ( ID )+ )
+                // GCLNew.g:162:31: ^( VAR var_type ( ID )+ )
                 {
                 CommonTree root_1 = (CommonTree)adaptor.nil();
                 root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(VAR, "VAR"), root_1);
@@ -2233,7 +2234,7 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "var_type"
-    // GCLNew.g:164:1: var_type : ( NODE | BOOL | STRING | INT | REAL );
+    // GCLNew.g:165:1: var_type : ( NODE | BOOL | STRING | INT | REAL );
     public final GCLNewParser.var_type_return var_type() throws RecognitionException {
         GCLNewParser.var_type_return retval = new GCLNewParser.var_type_return();
         retval.start = input.LT(1);
@@ -2245,7 +2246,7 @@ public class GCLNewParser extends Parser {
         CommonTree set80_tree=null;
 
         try {
-            // GCLNew.g:165:2: ( NODE | BOOL | STRING | INT | REAL )
+            // GCLNew.g:166:2: ( NODE | BOOL | STRING | INT | REAL )
             // GCLNew.g:
             {
             root_0 = (CommonTree)adaptor.nil();
@@ -2291,7 +2292,7 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "arg_list"
-    // GCLNew.g:172:1: arg_list : arg ( COMMA arg )* ;
+    // GCLNew.g:173:1: arg_list : arg ( COMMA arg )* ;
     public final GCLNewParser.arg_list_return arg_list() throws RecognitionException {
         GCLNewParser.arg_list_return retval = new GCLNewParser.arg_list_return();
         retval.start = input.LT(1);
@@ -2307,8 +2308,8 @@ public class GCLNewParser extends Parser {
         CommonTree COMMA82_tree=null;
 
         try {
-            // GCLNew.g:173:2: ( arg ( COMMA arg )* )
-            // GCLNew.g:173:4: arg ( COMMA arg )*
+            // GCLNew.g:174:2: ( arg ( COMMA arg )* )
+            // GCLNew.g:174:4: arg ( COMMA arg )*
             {
             root_0 = (CommonTree)adaptor.nil();
 
@@ -2318,7 +2319,7 @@ public class GCLNewParser extends Parser {
             state._fsp--;
             if (state.failed) return retval;
             if ( state.backtracking==0 ) adaptor.addChild(root_0, arg81.getTree());
-            // GCLNew.g:173:8: ( COMMA arg )*
+            // GCLNew.g:174:8: ( COMMA arg )*
             loop20:
             do {
                 int alt20=2;
@@ -2331,7 +2332,7 @@ public class GCLNewParser extends Parser {
 
                 switch (alt20) {
             	case 1 :
-            	    // GCLNew.g:173:9: COMMA arg
+            	    // GCLNew.g:174:9: COMMA arg
             	    {
             	    COMMA82=(Token)match(input,COMMA,FOLLOW_COMMA_in_arg_list795); if (state.failed) return retval;
             	    pushFollow(FOLLOW_arg_in_arg_list798);
@@ -2378,7 +2379,7 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "arg"
-    // GCLNew.g:176:1: arg : ( OUT ID -> ^( ARG OUT ID ) | ID -> ^( ARG ID ) | DONT_CARE -> ^( ARG DONT_CARE ) | literal -> ^( ARG literal ) );
+    // GCLNew.g:177:1: arg : ( OUT ID -> ^( ARG OUT ID ) | ID -> ^( ARG ID ) | DONT_CARE -> ^( ARG DONT_CARE ) | literal -> ^( ARG literal ) );
     public final GCLNewParser.arg_return arg() throws RecognitionException {
         GCLNewParser.arg_return retval = new GCLNewParser.arg_return();
         retval.start = input.LT(1);
@@ -2401,7 +2402,7 @@ public class GCLNewParser extends Parser {
         RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
         RewriteRuleSubtreeStream stream_literal=new RewriteRuleSubtreeStream(adaptor,"rule literal");
         try {
-            // GCLNew.g:177:2: ( OUT ID -> ^( ARG OUT ID ) | ID -> ^( ARG ID ) | DONT_CARE -> ^( ARG DONT_CARE ) | literal -> ^( ARG literal ) )
+            // GCLNew.g:178:2: ( OUT ID -> ^( ARG OUT ID ) | ID -> ^( ARG ID ) | DONT_CARE -> ^( ARG DONT_CARE ) | literal -> ^( ARG literal ) )
             int alt21=4;
             switch ( input.LA(1) ) {
             case OUT:
@@ -2438,7 +2439,7 @@ public class GCLNewParser extends Parser {
 
             switch (alt21) {
                 case 1 :
-                    // GCLNew.g:177:4: OUT ID
+                    // GCLNew.g:178:4: OUT ID
                     {
                     OUT84=(Token)match(input,OUT,FOLLOW_OUT_in_arg811); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_OUT.add(OUT84);
@@ -2460,9 +2461,9 @@ public class GCLNewParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 177:11: -> ^( ARG OUT ID )
+                    // 178:11: -> ^( ARG OUT ID )
                     {
-                        // GCLNew.g:177:14: ^( ARG OUT ID )
+                        // GCLNew.g:178:14: ^( ARG OUT ID )
                         {
                         CommonTree root_1 = (CommonTree)adaptor.nil();
                         root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(ARG, "ARG"), root_1);
@@ -2479,7 +2480,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // GCLNew.g:178:4: ID
+                    // GCLNew.g:179:4: ID
                     {
                     ID86=(Token)match(input,ID,FOLLOW_ID_in_arg828); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_ID.add(ID86);
@@ -2498,9 +2499,9 @@ public class GCLNewParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 178:7: -> ^( ARG ID )
+                    // 179:7: -> ^( ARG ID )
                     {
-                        // GCLNew.g:178:10: ^( ARG ID )
+                        // GCLNew.g:179:10: ^( ARG ID )
                         {
                         CommonTree root_1 = (CommonTree)adaptor.nil();
                         root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(ARG, "ARG"), root_1);
@@ -2516,7 +2517,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 3 :
-                    // GCLNew.g:179:4: DONT_CARE
+                    // GCLNew.g:180:4: DONT_CARE
                     {
                     DONT_CARE87=(Token)match(input,DONT_CARE,FOLLOW_DONT_CARE_in_arg841); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_DONT_CARE.add(DONT_CARE87);
@@ -2535,9 +2536,9 @@ public class GCLNewParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 179:14: -> ^( ARG DONT_CARE )
+                    // 180:14: -> ^( ARG DONT_CARE )
                     {
-                        // GCLNew.g:179:17: ^( ARG DONT_CARE )
+                        // GCLNew.g:180:17: ^( ARG DONT_CARE )
                         {
                         CommonTree root_1 = (CommonTree)adaptor.nil();
                         root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(ARG, "ARG"), root_1);
@@ -2553,7 +2554,7 @@ public class GCLNewParser extends Parser {
                     }
                     break;
                 case 4 :
-                    // GCLNew.g:180:4: literal
+                    // GCLNew.g:181:4: literal
                     {
                     pushFollow(FOLLOW_literal_in_arg854);
                     literal88=literal();
@@ -2575,9 +2576,9 @@ public class GCLNewParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 180:12: -> ^( ARG literal )
+                    // 181:12: -> ^( ARG literal )
                     {
-                        // GCLNew.g:180:15: ^( ARG literal )
+                        // GCLNew.g:181:15: ^( ARG literal )
                         {
                         CommonTree root_1 = (CommonTree)adaptor.nil();
                         root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(ARG, "ARG"), root_1);
@@ -2620,7 +2621,7 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "literal"
-    // GCLNew.g:183:1: literal : ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT );
+    // GCLNew.g:184:1: literal : ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT );
     public final GCLNewParser.literal_return literal() throws RecognitionException {
         GCLNewParser.literal_return retval = new GCLNewParser.literal_return();
         retval.start = input.LT(1);
@@ -2632,7 +2633,7 @@ public class GCLNewParser extends Parser {
         CommonTree set89_tree=null;
 
         try {
-            // GCLNew.g:184:2: ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT )
+            // GCLNew.g:185:2: ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT )
             // GCLNew.g:
             {
             root_0 = (CommonTree)adaptor.nil();
@@ -2674,8 +2675,8 @@ public class GCLNewParser extends Parser {
 
     // $ANTLR start synpred1_GCLNew
     public final void synpred1_GCLNew_fragment() throws RecognitionException {   
-        // GCLNew.g:109:33: ( ELSE )
-        // GCLNew.g:109:34: ELSE
+        // GCLNew.g:110:33: ( ELSE )
+        // GCLNew.g:110:34: ELSE
         {
         match(input,ELSE,FOLLOW_ELSE_in_synpred1_GCLNew338); if (state.failed) return ;
 
@@ -2685,8 +2686,8 @@ public class GCLNewParser extends Parser {
 
     // $ANTLR start synpred2_GCLNew
     public final void synpred2_GCLNew_fragment() throws RecognitionException {   
-        // GCLNew.g:110:17: ( ELSE )
-        // GCLNew.g:110:18: ELSE
+        // GCLNew.g:111:17: ( ELSE )
+        // GCLNew.g:111:18: ELSE
         {
         match(input,ELSE,FOLLOW_ELSE_in_synpred2_GCLNew363); if (state.failed) return ;
 
@@ -2696,8 +2697,8 @@ public class GCLNewParser extends Parser {
 
     // $ANTLR start synpred3_GCLNew
     public final void synpred3_GCLNew_fragment() throws RecognitionException {   
-        // GCLNew.g:111:20: ( OR )
-        // GCLNew.g:111:21: OR
+        // GCLNew.g:112:20: ( OR )
+        // GCLNew.g:112:21: OR
         {
         match(input,OR,FOLLOW_OR_in_synpred3_GCLNew388); if (state.failed) return ;
 
@@ -2820,7 +2821,7 @@ public class GCLNewParser extends Parser {
             this.transition = DFA1_transition;
         }
         public String getDescription() {
-            return "()* loopback of 88:5: ( function | stat )*";
+            return "()* loopback of 89:5: ( function | stat )*";
         }
     }
     static final String DFA2_eotS =
@@ -2885,7 +2886,7 @@ public class GCLNewParser extends Parser {
             this.transition = DFA2_transition;
         }
         public String getDescription() {
-            return "()* loopback of 93:11: ( stat )*";
+            return "()* loopback of 94:11: ( stat )*";
         }
     }
     static final String DFA7_eotS =
@@ -2949,7 +2950,7 @@ public class GCLNewParser extends Parser {
             this.transition = DFA7_transition;
         }
         public String getDescription() {
-            return "100:1: stat : ( block | ALAP stat | WHILE LPAR cond RPAR stat | UNTIL LPAR cond RPAR stat | DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) ) | IF LPAR cond RPAR stat ( ( ELSE )=> ELSE stat )? | TRY stat ( ( ELSE )=> ELSE stat )? | CHOICE stat ( ( OR )=> OR stat )+ | expr SEMI | var_decl SEMI );";
+            return "101:1: stat : ( block | ALAP stat | WHILE LPAR cond RPAR stat | UNTIL LPAR cond RPAR stat | DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) ) | IF LPAR cond RPAR stat ( ( ELSE )=> ELSE stat )? | TRY stat ( ( ELSE )=> ELSE stat )? | CHOICE stat ( ( OR )=> OR stat )+ | expr SEMI | var_decl SEMI );";
         }
     }
     static final String DFA4_eotS =
@@ -3033,7 +3034,7 @@ public class GCLNewParser extends Parser {
             this.transition = DFA4_transition;
         }
         public String getDescription() {
-            return "109:31: ( ( ELSE )=> ELSE stat )?";
+            return "110:31: ( ( ELSE )=> ELSE stat )?";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             TokenStream input = (TokenStream)_input;
@@ -3143,7 +3144,7 @@ public class GCLNewParser extends Parser {
             this.transition = DFA5_transition;
         }
         public String getDescription() {
-            return "110:15: ( ( ELSE )=> ELSE stat )?";
+            return "111:15: ( ( ELSE )=> ELSE stat )?";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             TokenStream input = (TokenStream)_input;
@@ -3252,7 +3253,7 @@ public class GCLNewParser extends Parser {
             this.transition = DFA6_transition;
         }
         public String getDescription() {
-            return "()+ loopback of 111:18: ( ( OR )=> OR stat )+";
+            return "()+ loopback of 112:18: ( ( OR )=> OR stat )+";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             TokenStream input = (TokenStream)_input;
