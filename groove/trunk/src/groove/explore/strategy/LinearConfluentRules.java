@@ -58,7 +58,7 @@ public class LinearConfluentRules extends AbstractStrategy {
         if (getAtState() == null) {
             return false;
         }
-        ExploreCache cache = getCache(true, false);
+        ExploreCache cache = getCache(true);
         ConfluentMatchSetCollector collector =
             new ConfluentMatchSetCollector(getAtState(), cache, getRecord(),
                 null);

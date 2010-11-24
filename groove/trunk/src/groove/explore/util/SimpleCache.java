@@ -31,36 +31,28 @@ public class SimpleCache implements ExploreCache {
     /**
      * Creates a simple cache over a set of rules.
      */
-    public SimpleCache(Collection<Rule> rules, boolean isRandomized) {
+    public SimpleCache(Collection<Rule> rules) {
         this.last = null;
         this.rules = rules;
-        if (isRandomized) {
-            this.internalIterator = new RandomizedIterator<Rule>(rules);
-        } else {
-            this.internalIterator = rules.iterator();
-        }
+        this.internalIterator = rules.iterator();
     }
 
     public void updateExplored(Rule rule) {
-        if (this.internalIterator instanceof RandomizedIterator<?>) {
-            ((RandomizedIterator<Rule>) this.internalIterator).removeFromIterator(rule);
-        } else {
-            // we can advance the iterator to rule, if that rule was not
-            // returned before
-            // this however requires the additional field rules, which otherwise
-            // is not needed
-            Iterator<Rule> it = this.rules.iterator();
-            boolean met = false;
-            while (it.hasNext() && (last() != null) && !met) {
-                if (it.next().equals(rule)) {
-                    met = true;
-                }
+        // we can advance the iterator to rule, if that rule was not
+        // returned before
+        // this however requires the additional field rules, which otherwise
+        // is not needed
+        Iterator<Rule> it = this.rules.iterator();
+        boolean met = false;
+        while (it.hasNext() && (last() != null) && !met) {
+            if (it.next().equals(rule)) {
+                met = true;
             }
-            if (!met) {
-                while (this.internalIterator.hasNext()
-                    && !this.internalIterator.next().equals(rule)) {
-                    // empty
-                }
+        }
+        if (!met) {
+            while (this.internalIterator.hasNext()
+                && !this.internalIterator.next().equals(rule)) {
+                // empty
             }
         }
     }

@@ -143,13 +143,9 @@ public abstract class AbstractStrategy implements Strategy {
      *        not returned by the iterator. If <code>true</code>, the cache
      *        will explore again all rules that are not explicitly stated as
      *        fully explored.
-     * @param isRandomized If <code>true</code>, the cache iterates over the
-     *        rules in a random order.
      */
-    protected ExploreCache getCache(boolean ruleInterrupted,
-            boolean isRandomized) {
-        return getGTS().getRecord().createCache(getAtState(), ruleInterrupted,
-            isRandomized);
+    protected ExploreCache getCache(boolean ruleInterrupted) {
+        return getGTS().getRecord().createCache(getAtState(), ruleInterrupted);
     }
 
     /**

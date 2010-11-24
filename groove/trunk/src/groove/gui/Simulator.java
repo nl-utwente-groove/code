@@ -1329,8 +1329,7 @@ public class Simulator {
     public synchronized void applyMatch() {
         if (getCurrentEvent() != null) {
             ExploreCache cache =
-                getGTS().getRecord().createCache(getCurrentState(), false,
-                    false);
+                getGTS().getRecord().createCache(getCurrentState(), false);
             Location targetLocation =
                 cache.getTarget(getCurrentEvent().getRule());
             GraphTransition result =

@@ -57,7 +57,7 @@ public class LinearStrategy extends AbstractStrategy {
             getGTS().removeGraphListener(this.collector);
             return false;
         }
-        ExploreCache cache = getCache(true, false);
+        ExploreCache cache = getCache(true);
         RuleEvent event = getMatch(cache);
         if (event != null) {
             getMatchApplier().apply(getAtState(), event,

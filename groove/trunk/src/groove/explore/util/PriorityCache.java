@@ -17,15 +17,14 @@ import java.util.SortedMap;
 public class PriorityCache implements ExploreCache {
 
     /** Initializer */
-    public PriorityCache(SortedMap<Integer,Set<Rule>> rules,
-            boolean isRandomized) {
+    public PriorityCache(SortedMap<Integer,Set<Rule>> rules) {
         this.rules = rules;
         if (!rules.isEmpty()) {
             setPriority(rules.keySet().iterator().next());
         } else {
             setPriority(-1);
         }
-        this.ruleIterator = createRuleIterator(isRandomized);
+        this.ruleIterator = createRuleIterator();
     }
 
     /**
@@ -37,8 +36,7 @@ public class PriorityCache implements ExploreCache {
     public void assureNext() {
         while (this.ruleIterator != null && !this.ruleIterator.hasNext()) {
             decrementPriority();
-            this.ruleIterator =
-                createRuleIterator(this.ruleIterator instanceof RandomizedIterator<?>);
+            this.ruleIterator = createRuleIterator();
         }
     }
 
@@ -52,7 +50,7 @@ public class PriorityCache implements ExploreCache {
      * rules or -1. Returns an iterator over the set of rules of that priority,
      * or null if -1 was reached for the current priority value.
      */
-    private Iterator<Rule> createRuleIterator(boolean isRandomized) {
+    private Iterator<Rule> createRuleIterator() {
         if (isLastPriority()) {
             return null;
         }
@@ -64,11 +62,7 @@ public class PriorityCache implements ExploreCache {
         if (getPriority() < 0) {
             return null;
         } else {
-            if (isRandomized) {
-                return new RandomizedIterator<Rule>(currRuleSet);
-            } else {
-                return currRuleSet.iterator();
-            }
+            return currRuleSet.iterator();
         }
     }
 
@@ -86,22 +80,18 @@ public class PriorityCache implements ExploreCache {
      */
     public void updateExplored(Rule rule) {
         if (rule.getPriority() == getPriority()) {
-            if (this.ruleIterator instanceof RandomizedIterator<?>) {
-                ((RandomizedIterator<Rule>) this.ruleIterator).removeFromIterator(rule);
-            } else {
-                // one can advance the iterator if rule was not yet returned
-                Iterator<Rule> it = this.rules.get(getPriority()).iterator();
-                boolean met = false;
-                while (it.hasNext() && (last() != null) && !met) {
-                    if (it.next().equals(last())) {
-                        met = true;
-                    }
+            // one can advance the iterator if rule was not yet returned
+            Iterator<Rule> it = this.rules.get(getPriority()).iterator();
+            boolean met = false;
+            while (it.hasNext() && (last() != null) && !met) {
+                if (it.next().equals(last())) {
+                    met = true;
                 }
-                if (!met) {
-                    while (this.ruleIterator.hasNext()
-                        && !(this.ruleIterator.next()).equals(rule)) {
-                        // empty
-                    }
+            }
+            if (!met) {
+                while (this.ruleIterator.hasNext()
+                    && !(this.ruleIterator.next()).equals(rule)) {
+                    // empty
                 }
             }
         }
@@ -120,8 +110,7 @@ public class PriorityCache implements ExploreCache {
             + ") matches.";
         if (getPriority() > p) {
             setPriority(p);
-            this.ruleIterator =
-                createRuleIterator(this.ruleIterator instanceof RandomizedIterator<?>);
+            this.ruleIterator = createRuleIterator();
             assureNext();
         }
         setLastPriority();

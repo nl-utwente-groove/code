@@ -37,7 +37,7 @@ public class ShapeBFSStrategy extends AbstractStrategy {
         if (this.getAtState() == null) {
             return false;
         }
-        ExploreCache cache = this.getCache(false, false);
+        ExploreCache cache = this.getCache(false);
         for (RuleEvent match : this.createMatchCollector(cache).getMatchSet()) {
             this.applyEvent(match, cache);
         }

@@ -209,18 +209,14 @@ public class SystemRecord implements NodeFactory {
      * constructed cache is fresh in the sense that next is not called on it
      * yet.
      * @param state start state for the exploration
-     * @param isRandomized When <code>true</code>, the explore cache will
-     *        return rules in random order. considers that a rule can be
-     *        partially but not fully explored. When <code>false</code>, the
-     *        result iterator is positioned on the first unexplored rule.
      * @return An appropriate fresh explore cache, depending on the type of
      *         grammar.
      */
-    public ExploreCache freshCache(GraphState state, boolean isRandomized) {
+    public ExploreCache freshCache(GraphState state) {
         ExploreCache result;
         if (this.ruleSystem.hasMultiplePriorities()) {
             result =
-                new PriorityCache(this.ruleSystem.getRuleMap(), isRandomized);
+                new PriorityCache(this.ruleSystem.getRuleMap());
         } else if (state.getLocation() != null) {
             if (false) {
                 //result =
@@ -228,11 +224,10 @@ public class SystemRecord implements NodeFactory {
                 //    state, isRandomized);
             } else {
                 result =
-                    new ControlStateCache(state.getLocation(), state,
-                        isRandomized);
+                    new ControlStateCache(state.getLocation(), state);
             }
         } else {
-            result = new SimpleCache(this.ruleSystem.getRules(), isRandomized);
+            result = new SimpleCache(this.ruleSystem.getRules());
         }
         return result;
     }
@@ -244,14 +239,11 @@ public class SystemRecord implements NodeFactory {
      * information on rules that match in this state.
      * @param state the exploration state.
      * @param isRuleInterrupted Indicates whether a rule may be interrupted.
-     * @param isRandomized Indicates whether rules should be given in a random
-     *        order TODO for the moment, isRandomized is not taken into account
-     *        for location caches
      * @return An appropriate explore cache, depending on the type of grammar.
      */
     public ExploreCache createCache(GraphState state,
-            boolean isRuleInterrupted, boolean isRandomized) {
-        ExploreCache result = freshCache(state, isRandomized);
+            boolean isRuleInterrupted) {
+        ExploreCache result = freshCache(state);
         // Increment the iterator with the transitions already explored
         // for this state
         Iterator<GraphTransition> succIter = state.getTransitionIter();
