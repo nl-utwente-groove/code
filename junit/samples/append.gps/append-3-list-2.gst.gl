@@ -1,0 +1,20 @@
+# Layout information
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n119 236 121 17 21 
+n n116 319 123 17 21 
+n n123 66 267 51 36 
+n n117 84 177 33 21 
+n n115 146 363 17 21 
+n n124 180 176 17 17 
+n n118 279 177 17 17 
+n n110 185 55 17 21 
+n n121 71 77 51 36 
+n n111 180 270 51 36 
+e n123 n124 "this" 276 2 92 284 189 185 11
+e n111 n117 "caller" 207 4 206 287 98 186 11
