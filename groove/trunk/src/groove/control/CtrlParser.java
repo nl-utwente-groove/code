@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.antlr.runtime.ANTLRFileStream;
+import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.RecognitionException;
 
@@ -39,17 +40,25 @@ import org.antlr.runtime.RecognitionException;
  */
 public class CtrlParser {
     /**
+     * Returns the control automaton for a given control program (given as string) and grammar. 
+     */
+    public CtrlAut runString(String program, GraphGrammar grammar)
+        throws FormatException {
+        return runStream(new ANTLRStringStream(program), grammar);
+    }
+
+    /**
      * Returns the control automaton for a given control program (given as filename) and grammar. 
      */
-    public CtrlAut run(String inputFileName, GraphGrammar grammar)
+    public CtrlAut runFile(String inputFileName, GraphGrammar grammar)
         throws FormatException, IOException {
-        return run(new ANTLRFileStream(inputFileName), grammar);
+        return runStream(new ANTLRFileStream(inputFileName), grammar);
     }
 
     /**
      * Returns the control automaton for a given control program (given as input stream) and grammar. 
      */
-    public CtrlAut run(CharStream inputStream, GraphGrammar grammar)
+    public CtrlAut runStream(CharStream inputStream, GraphGrammar grammar)
         throws FormatException {
         try {
             NamespaceNew namespace = new NamespaceNew();
@@ -57,29 +66,23 @@ public class CtrlParser {
                 namespace.addRule((SPORule) rule);
             }
             MyTree tree = this.parser.run(inputStream, namespace);
-
-            boolean DEBUG = true;
-
-            List<String> errors = this.parser.getErrors();
-            if (!errors.isEmpty()) {
-                throw new FormatException(errors);
-            }
-            tree = this.checker.run(tree, namespace);
-
-            errors = this.checker.getErrors();
-            if (errors.size() != 0) {
-                errors.add(0, "Encountered checker errors in control program");
-                throw new FormatException(errors);
-            }
-
             if (DEBUG) {
                 System.out.printf("Parse tree: %s%n", tree.toStringTree());
                 //                ASTFrame frame = new ASTFrame("checker result", tree);
                 //                frame.setSize(500, 1000);
                 //                frame.setVisible(true);
             }
-
-            return this.builder.run(tree, namespace);
+            List<String> errors = this.parser.getErrors();
+            if (!errors.isEmpty()) {
+                throw new FormatException(errors);
+            }
+            tree = this.checker.run(tree, namespace);
+            errors = this.checker.getErrors();
+            if (!errors.isEmpty()) {
+                throw new FormatException(errors);
+            }
+            CtrlAut result = this.builder.run(tree, namespace);
+            return CtrlFactory.getInstance().minimise(result);
         } catch (RecognitionException re) {
             throw new FormatException(re.getMessage());
         }
@@ -100,7 +103,7 @@ public class CtrlParser {
             for (int i = 1; i < args.length; i++) {
                 String filename = args[1];
                 System.out.printf("Control automaton for %s:%n%s", filename,
-                    instance.run(filename, grammar));
+                    instance.runFile(filename, grammar));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -115,4 +118,6 @@ public class CtrlParser {
     }
 
     private static final CtrlParser instance = new CtrlParser();
+    private static final boolean DEBUG = false;
+
 }

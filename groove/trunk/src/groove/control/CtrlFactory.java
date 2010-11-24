@@ -16,15 +16,17 @@
  */
 package groove.control;
 
-import groove.trans.SPORule;
+import groove.control.parse.NamespaceNew;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -52,40 +54,32 @@ public class CtrlFactory {
         return buildLoop(aut, Collections.<CtrlCall>emptySet());
     }
 
-    /** Factory method for a single function call. */
-    public CtrlAut buildFunctionCall(String name, List<CtrlPar> args) {
-        return buildCall(new CtrlCall(name, args));
-    }
-
-    /** Factory method for a single rule call. */
-    public CtrlAut buildRuleCall(SPORule rule, List<CtrlPar> args) {
-        return buildCall(new CtrlCall(rule, args));
-    }
-
-    /** Returns an automaton that represents a choice of rule calls. */
-    public CtrlAut buildCallChoice(Collection<SPORule> rules) {
-        CtrlAut result = null;
-        for (SPORule rule : rules) {
-            CtrlCall call =
-                new CtrlCall(rule, Collections.<CtrlPar>emptyList());
-            CtrlAut callAut = buildCall(call);
-            if (result == null) {
-                result = callAut;
-            } else {
-                result = buildOr(result, callAut);
-            }
+    /** Factory method for a rule or function call. */
+    public CtrlAut buildCall(CtrlCall call, NamespaceNew namespace) {
+        if (call.isRule() || call.isOmega()) {
+            return buildRuleCall(call);
+        } else {
+            return buildFunctionCall(call, namespace);
         }
-        return result;
     }
 
-    /** Factory method for a transition with a given label. */
-    public CtrlAut buildCall(CtrlCall call) {
+    /** Factory method for a rule call. */
+    private CtrlAut buildRuleCall(CtrlCall call) {
         CtrlAut result = new CtrlAut();
         CtrlState middle = result.addState();
         // convert the call arguments using the context
         result.addTransition(result.getStart(), createLabel(call), middle);
         result.addTransition(middle, createOmegaLabel(), result.getFinal());
         return result;
+    }
+
+    /** Factory method for a function call. */
+    private CtrlAut buildFunctionCall(CtrlCall call, NamespaceNew namespace) {
+        String name = call.getFunction();
+        CtrlAut result = namespace.getFunctionBody(name);
+        List<CtrlPar.Var> sig = namespace.getSig(name);
+        assert sig.isEmpty() : "Function parameters not yet implemented";
+        return result.copy();
     }
 
     /**
@@ -125,6 +119,36 @@ public class CtrlFactory {
             third = buildTrue();
         }
         return buildOr(first, third, guard);
+    }
+
+    /** Builds an automation for an {@code any}-call. */
+    public CtrlAut buildAny(NamespaceNew namespace) {
+        return buildGroupCall(namespace.getAllRules(), namespace);
+    }
+
+    /** Builds an automation for an {@code other}-call. */
+    public CtrlAut buildOther(NamespaceNew namespace) {
+        Set<String> unusedRules = new HashSet<String>(namespace.getAllRules());
+        unusedRules.removeAll(namespace.getUsedRules());
+        return buildGroupCall(unusedRules, namespace);
+    }
+
+    /** Builds an automation for a choice between a set of rules. */
+    private CtrlAut buildGroupCall(Set<String> ruleNames, NamespaceNew namespace) {
+        CtrlAut result = null;
+        for (String ruleName : ruleNames) {
+            CtrlAut callAut =
+                buildCall(new CtrlCall(namespace.getRule(ruleName), null), null);
+            if (result == null) {
+                result = callAut;
+            } else {
+                result = buildOr(result, callAut);
+            }
+        }
+        if (result == null) {
+            result = buildTrue();
+        }
+        return result;
     }
 
     /**
@@ -445,8 +469,135 @@ public class CtrlFactory {
      * @param aut the automaton to be minimised
      * @throws FormatException if the automaton is not deterministic
      */
-    public void minimise(CtrlAut aut) throws FormatException {
-        // TODO to be provided
+    public CtrlAut minimise(CtrlAut aut) throws FormatException {
+        CtrlAut result = new CtrlAut();
+        Set<Set<CtrlState>> equivalence = computeEquivalence(aut);
+        Map<CtrlState,Set<CtrlState>> partition =
+            computePartition(aut, equivalence);
+        Map<Set<CtrlState>,CtrlState> stateMap =
+            new HashMap<Set<CtrlState>,CtrlState>();
+        for (Set<CtrlState> cell : partition.values()) {
+            CtrlState image;
+            if (!stateMap.containsKey(cell)) {
+                if (cell.contains(aut.getStart())) {
+                    image = result.getStart();
+                    assert !cell.contains(aut.getFinal());
+                } else if (cell.contains(aut.getFinal())) {
+                    image = result.getFinal();
+                } else {
+                    image = result.addState();
+                }
+                stateMap.put(cell, image);
+            }
+        }
+        for (CtrlTransition trans : aut.edgeSet()) {
+            CtrlState newSource = stateMap.get(partition.get(trans.source()));
+            CtrlState newTarget = stateMap.get(partition.get(trans.target()));
+            result.addTransition(newSource, trans.label(), newTarget);
+        }
+        return result;
+    }
+
+    /** Computes the equivalence relation of a the states of a given control automaton. */
+    private Set<Set<CtrlState>> computeEquivalence(CtrlAut aut)
+        throws FormatException {
+        Set<Set<CtrlState>> result = new HashSet<Set<CtrlState>>();
+        // declare and initialise the dependencies 
+        // for each state pair, this records the previous state pairs
+        // that are distinct if this state pair is distinct.
+        Map<Set<CtrlState>,Set<Set<CtrlState>>> depMap =
+            new HashMap<Set<CtrlState>,Set<Set<CtrlState>>>();
+        for (CtrlState i : aut.nodeSet()) {
+            for (CtrlState j : aut.nodeSet()) {
+                if (i.getNumber() < j.getNumber()) {
+                    Set<CtrlState> ijPair =
+                        new HashSet<CtrlState>(Arrays.asList(i, j));
+                    Set<Set<CtrlState>> depSet = new HashSet<Set<CtrlState>>();
+                    depSet.add(ijPair);
+                    depMap.put(ijPair, depSet);
+                    // states are equivalent until proven otherwise
+                    result.add(ijPair);
+                }
+            }
+        }
+        for (CtrlState i : aut.nodeSet()) {
+            for (CtrlState j : aut.nodeSet()) {
+                if (i.getNumber() < j.getNumber()) {
+                    Set<CtrlState> ijPair =
+                        new HashSet<CtrlState>(Arrays.asList(i, j));
+                    Set<Set<CtrlState>> depSet = depMap.remove(ijPair);
+                    assert depSet != null;
+                    Map<CtrlLabel,CtrlState> iOut = getOutTransitions(i);
+                    Map<CtrlLabel,CtrlState> jOut = getOutTransitions(j);
+                    boolean distinct = !iOut.keySet().equals(jOut.keySet());
+                    if (!distinct) {
+                        for (Map.Entry<CtrlLabel,CtrlState> iOutEntry : iOut.entrySet()) {
+                            CtrlState iOutTarget = iOutEntry.getValue();
+                            CtrlState jOutTarget = jOut.get(iOutEntry.getKey());
+                            if (iOutTarget != jOutTarget) {
+                                Set<CtrlState> ijTargetPair =
+                                    new HashSet<CtrlState>(Arrays.asList(
+                                        iOutTarget, jOutTarget));
+                                Set<Set<CtrlState>> ijTargetDep =
+                                    depMap.get(ijTargetPair);
+                                if (ijTargetDep == null) {
+                                    distinct = true;
+                                    break;
+                                } else {
+                                    ijTargetDep.addAll(depSet);
+                                }
+                            }
+                        }
+                    }
+                    if (distinct) {
+                        result.removeAll(depSet);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private Map<CtrlLabel,CtrlState> getOutTransitions(CtrlState s)
+        throws FormatException {
+        Map<CtrlLabel,CtrlState> result = new HashMap<CtrlLabel,CtrlState>();
+        for (CtrlTransition outTrans : s.getTransitions()) {
+            CtrlLabel label = outTrans.label();
+            CtrlState oldState = result.put(label, outTrans.target());
+            if (oldState != null) {
+                throw new FormatException(
+                    "State %s has multiple outgoing labels %s", s, label);
+            }
+        }
+        return result;
+    }
+
+    private Map<CtrlState,Set<CtrlState>> computePartition(CtrlAut aut,
+            Set<Set<CtrlState>> equivalence) {
+        Map<CtrlState,Set<CtrlState>> result =
+            new HashMap<CtrlState,Set<CtrlState>>();
+        // initially the partition is discrete
+        for (CtrlState state : aut.nodeSet()) {
+            Set<CtrlState> cell = new HashSet<CtrlState>();
+            cell.add(state);
+            result.put(state, cell);
+        }
+        for (Set<CtrlState> equiv : equivalence) {
+            assert equiv.size() == 2;
+            Iterator<CtrlState> distIter = equiv.iterator();
+            CtrlState s1 = distIter.next();
+            CtrlState s2 = distIter.next();
+            Set<CtrlState> s1Cell = result.get(s1);
+            Set<CtrlState> s2Cell = result.get(s2);
+            // merge the cells if they are not already the same
+            if (s1Cell != s2Cell) {
+                s1Cell.addAll(s2Cell);
+                for (CtrlState s2Sib : s2Cell) {
+                    result.put(s2Sib, s1Cell);
+                }
+            }
+        }
+        return result;
     }
 
     /** 

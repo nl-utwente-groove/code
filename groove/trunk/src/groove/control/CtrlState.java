@@ -20,13 +20,11 @@ import groove.control.parse.Counter;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
-import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -154,26 +152,4 @@ public class CtrlState implements Node {
 
     /** The collection of bound variables of this control state. */
     private Collection<CtrlVar> boundVars = new ArrayList<CtrlVar>();
-
-    /**
-     * Returns an instantiation of this (virtual) control state using a given 
-     * rule system.
-     * The instantiated state has as yet no outgoing transitions.
-     * The instantiation is recorded in a state map passed as a parameter.
-     * @param stateMap mapping from virtual to instantiated states
-     * @return the image of this state in {@code stateMap}, or a fresh 
-     * instantiated control state if there is no image
-     * @throws FormatException if the rule or one of the failures do not 
-     * exist in the given rule system
-     */
-    public CtrlState instantiate(Map<CtrlState,CtrlState> stateMap)
-        throws FormatException {
-        CtrlState result = stateMap.get(this);
-        if (result == null) {
-            result = new CtrlState(getNumber());
-            stateMap.put(this, result);
-            result.setBoundVars(getBoundVars());
-        }
-        return result;
-    }
 }

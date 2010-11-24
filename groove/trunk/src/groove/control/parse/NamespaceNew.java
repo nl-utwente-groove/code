@@ -16,16 +16,17 @@
  */
 package groove.control.parse;
 
+import groove.control.CtrlAut;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.trans.SPORule;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -54,6 +55,25 @@ public class NamespaceNew {
     }
 
     /**
+     * Adds a function body to the namespace.
+     * The function name should have been defined already. 
+     */
+    public void addFunctionBody(String name, CtrlAut body) {
+        assert hasFunction(name) : String.format("Unknown function %s", name);
+        this.functionMap.put(name, body);
+    }
+
+    /**
+     * Adds a function body to the namespace.
+     * The function body should have been inserted before. 
+     */
+    public CtrlAut getFunctionBody(String name) {
+        CtrlAut result = this.functionMap.get(name);
+        assert result != null : String.format("Unknown function %s", name);
+        return result;
+    }
+
+    /**
      * Tests if there is a rule with a given name.
      */
     public boolean hasRule(String name) {
@@ -61,26 +81,33 @@ public class NamespaceNew {
     }
 
     /**
+     * Returns the rule with a given name.
+     */
+    public SPORule getRule(String name) {
+        return this.ruleMap.get(name);
+    }
+
+    /**
      * Returns the rule associated with a given rule name
      */
     public SPORule useRule(String name) {
         SPORule result = this.ruleMap.get(name);
-        this.usedRules.add(result);
+        this.usedRules.add(name);
         return result;
     }
 
     /**
      * Returns the set of all known rules.
      */
-    public Collection<SPORule> getAllRules() {
-        return this.ruleMap.values();
+    public Set<String> getAllRules() {
+        return this.ruleMap.keySet();
     }
 
     /** Returns the set of all used rules,
      * i.e., all rules for which {@link NamespaceNew#useRule(String)}
      * has been invoked.
      */
-    public Set<SPORule> getUsedRules() {
+    public Set<String> getUsedRules() {
         return this.usedRules;
     }
 
@@ -121,14 +148,16 @@ public class NamespaceNew {
     }
 
     /** Mapping from declared rules names to the rules. */
-    private final HashMap<String,SPORule> ruleMap =
-        new HashMap<String,SPORule>();
+    private final Map<String,SPORule> ruleMap = new HashMap<String,SPORule>();
     /** Mapping from declared rule names to their signatures. */
-    private final HashMap<String,List<CtrlPar.Var>> sigMap =
+    private final Map<String,List<CtrlPar.Var>> sigMap =
         new HashMap<String,List<CtrlPar.Var>>();
 
     /** Set of declared functions. */
     private final Set<String> functions = new HashSet<String>();
+    /** Mapping from function names to their declared bodies. */
+    private final Map<String,CtrlAut> functionMap =
+        new HashMap<String,CtrlAut>();
     /** Set of used rules. */
-    private final Set<SPORule> usedRules = new HashSet<SPORule>();
+    private final Set<String> usedRules = new HashSet<String>();
 }
