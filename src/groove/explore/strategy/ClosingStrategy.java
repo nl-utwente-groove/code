@@ -44,7 +44,7 @@ abstract public class ClosingStrategy extends AbstractStrategy {
             getGTS().removeGraphListener(this.exploreListener);
             return false;
         }
-        ExploreCache cache = getCache(false, false);
+        ExploreCache cache = getCache(false);
         Collection<RuleEvent> matchSet =
             createMatchCollector(cache).getMatchSet();
         Iterator<RuleEvent> matchIter = matchSet.iterator();

@@ -40,7 +40,7 @@ public class ExploreStateStrategy extends AbstractStrategy {
             return false;
         }
         // rule might have been interrupted
-        ExploreCache cache = getCache(true, false);
+        ExploreCache cache = getCache(true);
         for (RuleEvent match : createMatchCollector(cache).getMatchSet()) {
             applyEvent(match, cache);
         }

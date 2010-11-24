@@ -36,24 +36,18 @@ public class ControlStateCache implements ExploreCache {
      * @param location the location this ControlStateCache will operate on
      * @param state the GraphState this ControlStateCache will operate on
      */
-    public ControlStateCache(Location location, GraphState state,
-            boolean isRandomized) {
+    public ControlStateCache(Location location, GraphState state) {
         this.location = location;
         this.failed = new HashSet<Rule>();
         this.matched = new HashSet<Rule>();
 
-        this.iterator = createIterator(this.location, isRandomized);
+        this.iterator = createIterator(this.location);
     }
 
-    private Iterator<Rule> createIterator(Location location,
-            boolean isRandomized) {
+    private Iterator<Rule> createIterator(Location location) {
         Set<Rule> enabledRules =
             location.getEnabledRules(this.matched, this.failed);
-        if (isRandomized) {
-            return new RandomizedIterator<Rule>(enabledRules);
-        } else {
-            return enabledRules.iterator();
-        }
+        return enabledRules.iterator();
     }
 
     @Override
@@ -94,9 +88,7 @@ public class ControlStateCache implements ExploreCache {
         } else if (this.iterator.hasNext()) {
             return true;
         } else {
-            this.iterator =
-                createIterator(this.location,
-                    this.iterator instanceof RandomizedIterator<?>);
+            this.iterator = createIterator(this.location);
             if (this.iterator.hasNext()) {
                 return true;
             } else {
@@ -113,9 +105,7 @@ public class ControlStateCache implements ExploreCache {
             return null;
         }
         if (!this.iterator.hasNext()) {
-            this.iterator =
-                createIterator(this.location,
-                    this.iterator instanceof RandomizedIterator<?>);
+            this.iterator = createIterator(this.location);
         }
         if (!this.iterator.hasNext()) {
             this.iterator = null;

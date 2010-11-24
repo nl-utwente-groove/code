@@ -352,7 +352,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                 SystemRecord record = getCurrentGTS().getRecord();
                 Collection<RuleEvent> matches =
                     new MatchSetCollector(state,
-                        record.freshCache(state, false), record).getMatchSet();
+                        record.freshCache(state), record).getMatchSet();
                 refreshMatchesOpen(matches);
             }
         }
