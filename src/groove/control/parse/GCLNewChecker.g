@@ -55,7 +55,11 @@ functions
   : ^(FUNCTIONS function*);
 
 function
-  : ^(FUNCTION ID block)
+  : ^( FUNCTION ID
+       { helper.startFunction($ID); } 
+       block
+       { helper.endFunction(); } 
+     )
   ;
   
 block returns [ CtrlAut aut ]
@@ -70,41 +74,83 @@ stat
   : block
   | var_decl
   | ^(ALAP stat)
-  | ^(WHILE stat stat)
-  | ^(UNTIL stat stat)
-  | ^(TRY stat stat?)
-  | ^(IF stat stat stat?)
-  | ^(CHOICE stat stat*)
-  | ^(STAR stat)
+  | ^( WHILE
+       stat
+       { helper.startBranch(); }
+       stat
+       { helper.endBranch(); }
+     )
+  | ^( UNTIL
+       stat
+       { helper.startBranch(); }
+       stat
+       { helper.endBranch(); }
+     )
+  | ^( TRY
+       { helper.startBranch(); }
+       stat
+       ( { helper.nextBranch(); }
+         stat
+       )?
+       { helper.endBranch(); }
+     )
+  | ^( IF 
+       stat 
+       { helper.startBranch(); }
+       stat 
+       ( { helper.nextBranch(); }
+         stat
+       )?
+       { helper.endBranch(); }
+     )
+  | ^( CHOICE
+       { helper.startBranch(); }
+       stat 
+       ( { helper.nextBranch(); }
+         stat
+       )*
+       )
+       { helper.endBranch(); }
+  | ^( STAR
+       { helper.startBranch(); }
+       stat
+       { helper.endBranch(); }
+     )
   | rule
   | ANY
+    { helper.checkAny($ANY); }
   | OTHER
+    { helper.checkOther($OTHER); }
   | TRUE
   ;
 
 rule
 @after{ helper.checkCall($tree); }
-  : ^(CALL ID arg*) 
+  : ^(CALL ID (^(ARGS arg*))?)
   ;
 
 var_decl
 	: ^( VAR type
+	     //{ helper.checkType($type.tree); }
 	     ( ID 
-         { helper.declareVar($ID.tree, $type.tree); }
+         { helper.declareVar($ID, $type.tree); }
 	     )+
 	   )
 	;
 
 type
-@after{ helper.checkType($tree); }
-  : NODE | BOOL | STRING | INT | REAL
+  : NODE   { helper.checkType($NODE); }
+  | BOOL   { helper.checkType($BOOL); }
+  | STRING { helper.checkType($STRING); }
+  | INT    { helper.checkType($INT); }
+  | REAL   { helper.checkType($REAL); }
   ;
   
 arg
 	: ^( ARG 
-	     ( OUT? ID { helper.checkVarArg($ARG.tree); }
-	     | DONT_CARE { helper.checkDontCareArg($ARG.tree); }
-	     | literal { helper.checkConstArg($ARG.tree); }
+	     ( OUT? ID { helper.checkVarArg($ARG); }
+	     | DONT_CARE { helper.checkDontCareArg($ARG); }
+	     | literal { helper.checkConstArg($ARG); }
 	     )
 	   )
 	;

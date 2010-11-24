@@ -20,7 +20,6 @@ import groove.control.CtrlCall;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
-import groove.util.Groove;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -42,7 +41,6 @@ import org.antlr.runtime.tree.Tree;
 public class GCLHelper {
     /** Constructs a helper object for a given parser and namespace. */
     public GCLHelper(BaseRecognizer recogniser, NamespaceNew namespace) {
-        this.recogniser = recogniser;
         this.namespace = namespace;
     }
 
@@ -61,7 +59,7 @@ public class GCLHelper {
      * initialised variables.
      */
     @SuppressWarnings("unchecked")
-    void branchStart() {
+    void startBranch() {
         this.initVarScopes.push(new Set[] {new HashSet<String>(this.initVars),
             null});
     }
@@ -69,7 +67,7 @@ public class GCLHelper {
     /**
      * Switches to the next option in the top level branch of the program.
      */
-    void branchNext() {
+    void nextBranch() {
         Set<String>[] topInitVarScope = this.initVarScopes.peek();
         if (topInitVarScope[1] == null) {
             topInitVarScope[1] = new HashSet<String>(this.initVars);
@@ -83,8 +81,9 @@ public class GCLHelper {
      * Ends the top level branch of the program. Sets the initialised variables
      * to those initialised in every option.
      */
-    void branchEnd() {
+    void endBranch() {
         Set<String>[] topInitVarScope = this.initVarScopes.pop();
+        this.initVars = topInitVarScope[0];
         if (topInitVarScope[1] != null) {
             this.initVars.retainAll(topInitVarScope[1]);
         }
@@ -130,9 +129,29 @@ public class GCLHelper {
         return result;
     }
 
+    /** Sets the current function name to a given value. */
+    void startFunction(MyTree nameTree) {
+        assert this.currentFunction == null;
+        this.currentFunction = nameTree.getText();
+    }
+
+    /** Sets the current function name to {@code null}. */
+    void endFunction() {
+        assert this.currentFunction != null;
+        this.currentFunction = null;
+    }
+
+    /** Prefixes a given name with the current function name, if any. */
+    private String toLocalName(String name) {
+        return this.currentFunction == null ? name : this.currentFunction + "."
+            + name;
+    }
+
+    private String currentFunction;
+
     boolean declareVar(Tree nameTree, MyTree typeTree) {
         boolean result = true;
-        String name = nameTree.getText();
+        String name = toLocalName(nameTree.getText());
         if (!this.symbolTable.declareSymbol(name, typeTree.getCtrlType())) {
             emitErrorMessage(nameTree, "Duplicate local variable name %s", name);
             result = false;
@@ -165,7 +184,7 @@ public class GCLHelper {
      */
     CtrlVar checkVar(MyTree nameTree, boolean checkInit) {
         CtrlVar result = null;
-        String name = nameTree.getText();
+        String name = toLocalName(nameTree.getText());
         CtrlType type = this.symbolTable.getType(name);
         if (type == null) {
             emitErrorMessage(nameTree, "Local variable %s not declared", name);
@@ -190,7 +209,7 @@ public class GCLHelper {
         boolean isOutArg = childCount == 2;
         CtrlVar var = checkVar(argTree.getChild(childCount - 1), !isOutArg);
         if (var != null) {
-            result = new CtrlPar.Var(var);
+            result = new CtrlPar.Var(var, !isOutArg);
             argTree.setCtrlPar(result);
         }
         return result;
@@ -213,26 +232,27 @@ public class GCLHelper {
     }
 
     CtrlCall checkCall(MyTree callTree) {
-        assert callTree.getType() == GCLChecker.CALL
-            && callTree.getChildCount() >= 1;
+        int childCount = callTree.getChildCount();
+        assert callTree.getType() == GCLChecker.CALL && childCount >= 1;
         CtrlCall result = null;
-        // if any of the arguments is null, an error was detected
-        // and reported earlier; we silently fail
         testArgs: {
-            List<CtrlPar> args = new ArrayList<CtrlPar>();
-            for (int i = 1; i < callTree.getChildCount(); i++) {
-                CtrlPar arg = callTree.getChild(i).getCtrlPar();
-                if (arg == null) {
-                    break testArgs;
-                }
-                args.add(arg);
-            }
             String name = callTree.getChild(0).getText();
-            List<CtrlPar.Var> sig = this.namespace.getSig(name);
-            if (sig == null) {
-                emitErrorMessage(callTree, "No function or rule %s defined",
-                    name);
-            } else if (checkCall(callTree, name, sig, args)) {
+            // get the arguments
+            List<CtrlPar> args = null;
+            if (childCount == 2) {
+                args = new ArrayList<CtrlPar>();
+                MyTree argsTree = callTree.getChild(1);
+                for (int i = 0; i < argsTree.getChildCount(); i++) {
+                    CtrlPar arg = argsTree.getChild(i).getCtrlPar();
+                    // if any of the arguments is null, an error was detected
+                    // and reported earlier; we silently fail
+                    if (arg == null) {
+                        break testArgs;
+                    }
+                    args.add(arg);
+                }
+            }
+            if (checkCall(callTree, name, args)) {
                 // create the (rule or function) call
                 if (this.namespace.hasRule(name)) {
                     result = new CtrlCall(this.namespace.useRule(name), args);
@@ -245,33 +265,83 @@ public class GCLHelper {
         return result;
     }
 
+    void checkAny(MyTree anyTree) {
+        checkGroupCall(anyTree, this.namespace.getAllRules());
+    }
+
+    void checkOther(MyTree otherTree) {
+        Set<String> unusedRules =
+            new HashSet<String>(this.namespace.getAllRules());
+        unusedRules.removeAll(this.namespace.getUsedRules());
+        checkGroupCall(otherTree, unusedRules);
+    }
+
+    private void checkGroupCall(MyTree callTree, Set<String> rules) {
+        for (String ruleName : rules) {
+            checkCall(callTree, ruleName, null);
+        }
+    }
+
     /** 
      * Tests if a call with a given argument list is compatible with
      * the declared signature.
      */
-    private boolean checkCall(MyTree callTree, String name,
-            List<CtrlPar.Var> sig, List<CtrlPar> args) {
-        boolean result = args.size() == sig.size();
-        for (int i = 0; result && i < args.size(); i++) {
-            result = sig.get(i).compatibleWith(args.get(i));
-        }
+    private boolean checkCall(MyTree callTree, String name, List<CtrlPar> args) {
+        List<CtrlPar.Var> sig = this.namespace.getSig(name);
+        boolean isRule = this.namespace.hasRule(name);
+        String ruleOrFunction = isRule ? "Rule" : "Function";
+        boolean result = sig != null;
         if (!result) {
-            String message = "%s %s%s not applicable for arguments %s";
-            String ruleOrFunction =
-                this.namespace.hasRule(name) ? "Rule" : "Function";
-            String callSig = Groove.toString(args.toArray(), "(", ")", ",");
-            String ruleSig = Groove.toString(args.toArray(), "(", ")", ",");
-            emitErrorMessage(callTree, message, ruleOrFunction, name, ruleSig,
-                callSig);
+            emitErrorMessage(callTree, "No function or rule %s defined", name);
+        } else if (args == null) {
+            result = isRule;
+            for (int i = 0; result && i < sig.size(); i++) {
+                result = sig.get(i).compatibleWith(new CtrlPar.Wild());
+            }
+            if (!result) {
+                String message = "%s %s%s not applicable without arguments";
+                String ruleSig = toTypeString(sig);
+                emitErrorMessage(callTree, message, ruleOrFunction, name,
+                    ruleSig);
+            }
+        } else {
+            result = args.size() == sig.size();
+            for (int i = 0; result && i < args.size(); i++) {
+                result = sig.get(i).compatibleWith(args.get(i));
+            }
+            if (!result) {
+                String message = "%s %s%s not applicable for arguments %s";
+                String callSig = toTypeString(args);
+                String ruleSig = toTypeString(sig);
+                emitErrorMessage(callTree, message, ruleOrFunction, name,
+                    ruleSig, callSig);
+            }
         }
         return result;
+    }
+
+    String toTypeString(List<? extends CtrlPar> sig) {
+        StringBuilder result = new StringBuilder();
+        result.append('(');
+        for (CtrlPar par : sig) {
+            if (result.length() > 1) {
+                result.append(',');
+            }
+            if (par.isOutOnly()) {
+                result.append(CtrlPar.OUT_PREFIX);
+                result.append(' ');
+            }
+            result.append(par.getType());
+        }
+        result.append(')');
+        return result.toString();
     }
 
     private void emitErrorMessage(Tree marker, String message, Object... args) {
         message =
             String.format("line %d:%d %s", marker.getLine(),
                 marker.getCharPositionInLine(), String.format(message, args));
-        this.recogniser.emitErrorMessage(message);
+        //        this.recogniser.emitErrorMessage(message);
         addError(message);
     }
 
@@ -287,7 +357,6 @@ public class GCLHelper {
         return this.errors;
     }
 
-    private final BaseRecognizer recogniser;
     /** Namespace to enter the declared functions. */
     private final NamespaceNew namespace;
     /** Flag indicating that errors were found during the current run. */

@@ -15,7 +15,8 @@ tokens {
   DO_WHILE;
   DO_UNTIL;
 	VAR;
-	ARG;
+  ARG;
+  ARGS;
 }
 
 @lexer::header {
@@ -24,32 +25,10 @@ import groove.control.*;
 import java.util.LinkedList;
 }
 
-@lexer::members{
-    /** Strips the outer (double) quotes and unescapes all characters in a string.
-     * Returns a new {@link CommonTree} with {@link GCLNewParser#ID} root token
-     * and the stripped string as text.
-     */
-    private String toUnquoted(String text) {
-        StringBuffer result = new StringBuffer();
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            if (c == '\\') {
-                i++;
-                c = text.charAt(i);
-                result.append(c);
-            } else if (c != '"') {
-                result.append(c);
-            }
-        }
-        return result.toString();
-    }
-}
-
 @header {
 package groove.control.parse;
 import groove.control.*;
 import java.util.LinkedList;
-
 }
 
 @members {
@@ -148,7 +127,7 @@ expr_atom
 	; 
 
 call
-	: rule_name (LPAR arg_list? RPAR)?
+	: rule_name arg_list?
 	  -> ^(CALL rule_name arg_list?)
 	;
 
@@ -171,7 +150,8 @@ var_type
 	;
 	
 arg_list
-	: arg (COMMA! arg)*
+	: LPAR (arg (COMMA arg)*)? RPAR
+	  -> ^(ARGS arg*)
 	;
 
 arg

@@ -44,6 +44,7 @@ functions
 
 function
   : ^(FUNCTION ID block)
+    { namespace.addFunctionBody($ID.text, $block.aut); }
   ;
   
 block returns [ CtrlAut aut ]
@@ -80,20 +81,18 @@ stat returns [ CtrlAut aut ]
   | ^(STAR s=stat)
     { $aut = builder.buildStar($s.aut); }
   | rule
-    { $aut = builder.buildCall($rule.tree.getCtrlCall()); }
+    { $aut = builder.buildCall($rule.tree.getCtrlCall(), namespace); }
   | ANY
-    { $aut = builder.buildCallChoice(namespace.getAllRules()); }
+    { $aut = builder.buildAny(namespace); }
   | OTHER
-    { Set<SPORule> unusedRules = new HashSet<SPORule>(namespace.getAllRules());
-      unusedRules.removeAll(namespace.getUsedRules()); 
-      $aut = builder.buildCallChoice(unusedRules); 
+    { $aut = builder.buildOther(namespace); 
     }
   | TRUE
     { $aut = builder.buildTrue(); }
   ;
 
 rule
-  : ^(CALL ID arg*) 
+  : ^(CALL ID (^(ARGS arg*))?)
   ;
 
 var_decl

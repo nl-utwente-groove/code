@@ -23,9 +23,11 @@ import groove.util.TransformIterator;
 
 import java.util.AbstractSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -51,17 +53,6 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
     public CtrlAut() {
         this.startState = addState();
         this.finalState = addState();
-    }
-
-    /**
-     * Constructs a new control automaton, with a given
-     * start and final state.
-     */
-    public CtrlAut(CtrlState startState, CtrlState finalState) {
-        addState(startState);
-        addState(finalState);
-        this.startState = startState;
-        this.finalState = finalState;
     }
 
     /** Adds a control transition to this automaton. */
@@ -159,6 +150,31 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
     private CtrlTransition createTransition(CtrlState source, CtrlLabel label,
             CtrlState target) {
         return new CtrlTransition(source, label, target);
+    }
+
+    /** Constructs a copy of this automaton. */
+    public CtrlAut copy() {
+        CtrlAut result = new CtrlAut();
+        Map<CtrlState,CtrlState> stateMap = new HashMap<CtrlState,CtrlState>();
+        stateMap.put(getStart(), result.getStart());
+        stateMap.put(getFinal(), result.getFinal());
+        for (CtrlState state : nodeSet()) {
+            CtrlState image;
+            if (state.equals(getStart())) {
+                image = result.getStart();
+            } else if (state.equals(getFinal())) {
+                image = result.getFinal();
+            } else {
+                image = result.addState();
+            }
+            image.setBoundVars(state.getBoundVars());
+            stateMap.put(state, image);
+        }
+        for (CtrlTransition trans : edgeSet()) {
+            result.addTransition(stateMap.get(trans.source()), trans.label(),
+                stateMap.get(trans.target()));
+        }
+        return result;
     }
 
     /** The set of states of this control automaton. */

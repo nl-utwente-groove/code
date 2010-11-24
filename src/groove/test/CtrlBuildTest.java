@@ -50,139 +50,138 @@ public class CtrlBuildTest extends TestCase {
         }
     }
 
-    public void testSimpleRuleCall() {
-        try {
-            CtrlAut result = build("simpleRuleCall");
-            assertEquals(result.nodeCount(), 3);
-            assertEquals(result.edgeCount(), 2);
-        } catch (FormatException e) {
-            assertTrue(false);
-            e.printStackTrace();
-        }
+    /** Test for initialisation errors. */
+    public void testInitErrors() {
+        buildWrong("node x; if (a) bNode(out x); bNode(x);");
+        buildWrong("node x; bNode(x);");
     }
 
-    public void testWhile() {
-        try {
-            CtrlAut result = build("while");
-            assertEquals(result.nodeCount(), 6);
-            assertEquals(result.edgeCount(), 9);
-        } catch (FormatException e) {
-            assertTrue(false);
-            e.printStackTrace();
-        }
+    /** Test for typing errors. */
+    public void testTypeErrors() {
+        buildWrong("bInt(\"string\");");
+        buildWrong("node x; bInt(out x);");
+        buildWrong("a(_);");
     }
 
-    public void testUntil() {
-        try {
-            CtrlAut result = build("until");
-            assertEquals(result.nodeCount(), 6);
-            assertEquals(result.edgeCount(), 9);
-        } catch (FormatException e) {
-            assertTrue(false);
-            e.printStackTrace();
-        }
+    /** Test for in/output parameter errors. */
+    public void testDirErrors() {
+        buildWrong("node x; bNode(out x); oNode(x);");
+        buildWrong("int x; iInt(out x);");
+        buildWrong("oNode(_)");
     }
 
+    /** Tests building various loop structures. */
+    public void testLoops() {
+        buildCorrect("while (a|b) { c; d; }", 4, 5);
+        buildCorrect("until (a|b) { c; d; }", 4, 5);
+        buildCorrect("alap { choice { a; b; } or c; } d;", 4, 5);
+        buildCorrect("(a|b)*;", 2, 3);
+    }
+
+    /** Sequences of rule calls. */
     public void testSeq() {
-        try {
-            CtrlAut result = build("seq");
-            assertEquals(result.nodeCount(), 5);
-            assertEquals(result.edgeCount(), 4);
-        } catch (FormatException e) {
-            assertTrue(false);
-            e.printStackTrace();
-        }
+        buildCorrect("a;", 3, 2);
+        buildCorrect("a; b; a;", 5, 4);
+        buildCorrect("bNode(_); bNode-oNode(_,_);", 4, 3);
+        buildCorrect("node x; bNode(out x); bNode-oNode(x, out x);", 4, 3);
     }
 
-    public void testIfThen() {
-        try {
-            CtrlAut result = build("ifThen");
-            assertEquals(result.nodeCount(), 5);
-            assertEquals(result.edgeCount(), 6);
-        } catch (FormatException e) {
-            assertTrue(false);
-            e.printStackTrace();
-        }
+    /** Tests building if statements. */
+    public void testIf() {
+        buildCorrect("if (a|b) c;", 4, 5);
+        buildCorrect("if (a|b) c; d;", 5, 6);
+        buildCorrect("if (a|b) c; else d;", 4, 5);
     }
 
-    public void testIfThenSeq() {
-        try {
-            CtrlAut result = build("ifThenSeq");
-            assertEquals(result.nodeCount(), 6);
-            assertEquals(result.edgeCount(), 7);
-        } catch (FormatException e) {
-            assertTrue(false);
-            e.printStackTrace();
-        }
-    }
-
-    public void testIfThenElse() {
-        try {
-            CtrlAut result = build("ifThenElse");
-            assertEquals(result.nodeCount(), 6);
-            assertEquals(result.edgeCount(), 7);
-        } catch (FormatException e) {
-            assertTrue(false);
-            e.printStackTrace();
-        }
-    }
-
+    /** Tests building try statements. */
     public void testTry() {
+        buildCorrect("try { a;b; } d;", 5, 5);
+        buildCorrect("try { a; b; } else { c; } d;", 5, 5);
+    }
+
+    /** Tests the {@code any} and {@code other} statements. */
+    public void testAnyOther() {
+        buildWrong("any;");
+        buildCorrect(
+            "node x; bNode(out x); iNode(x); iInt(3); iString-oNode(\"a\",_); other;",
+            7, 13);
+    }
+
+    /** Tests function calls. */
+    public void testFunctions() {
+        buildCorrect("f(); function f() { a; }", 3, 2);
+        buildCorrect("f(); f(); function f() { choice a; or {b;c;} }", 6, 7);
+        buildCorrect("f(); function f() { node x; bNode(out x); }", 3, 2);
+    }
+
+    /** Builds a control automaton that should contain an error. */
+    private void buildWrong(String program) {
+        buildWrong(program, false);
+    }
+
+    /** Builds a control automaton that should contain an error. */
+    private void buildWrong(String name, boolean file) {
         try {
-            CtrlAut result = build("try");
-            assertEquals(result.nodeCount(), 5);
-            assertEquals(result.edgeCount(), 5);
-        } catch (FormatException e) {
+            CtrlAut aut;
+            if (file) {
+                aut = buildFile(name);
+            } else {
+                aut = buildString(name);
+            }
+            System.err.printf("%s builds without errors: %n%s%n", name,
+                aut.toString());
             assertTrue(false);
-            e.printStackTrace();
+        } catch (FormatException e) {
+            if (DEBUG) {
+                System.out.println(e.getMessage());
+            }
         }
     }
 
-    public void testTryElse() {
-        try {
-            CtrlAut result = build("tryElse");
-            assertEquals(result.nodeCount(), 6);
-            assertEquals(result.edgeCount(), 6);
-        } catch (FormatException e) {
-            assertTrue(false);
-            e.printStackTrace();
-        }
+    private void buildCorrect(String name, int nodeCount, int edgeCount) {
+        buildCorrect(name, false, nodeCount, edgeCount);
     }
 
-    public void testAlap() {
+    private void buildCorrect(String name, boolean file, int nodeCount,
+            int edgeCount) {
         try {
-            CtrlAut result = build("alap");
-            assertEquals(result.nodeCount(), 6);
-            assertEquals(result.edgeCount(), 11);
+            CtrlAut result = file ? buildFile(name) : buildString(name);
+            assertEquals(nodeCount, result.nodeCount());
+            assertEquals(edgeCount, result.edgeCount());
         } catch (FormatException e) {
-            assertTrue(false);
-            e.printStackTrace();
-        }
-    }
-
-    public void testStar() {
-        try {
-            CtrlAut result = build("star");
-            assertEquals(result.nodeCount(), 4);
-            assertEquals(result.edgeCount(), 9);
-        } catch (FormatException e) {
-            System.out.println(e.getMessage());
+            System.err.printf("Errors in %s:%n%s%n", name, e.getMessage());
             assertTrue(false);
         }
     }
 
-    private CtrlAut build(String filename) throws FormatException {
+    /** Builds a control automaton from a file with a given name. */
+    private CtrlAut buildFile(String filename) throws FormatException {
         CtrlAut result = null;
         try {
             result =
-                this.parser.run(
+                this.parser.runFile(
                     CONTROL_FILTER.addExtension(CONTROL_DIR + filename),
                     this.testGrammar);
-            System.out.printf("Control automaton for %s:%n%s%n", filename,
-                result);
+            if (DEBUG) {
+                System.out.printf("Control automaton for %s:%n%s%n", filename,
+                    result);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
         return result;
     }
+
+    /** Builds a control automaton from a given program. */
+    private CtrlAut buildString(String program) throws FormatException {
+        CtrlAut result = null;
+        result = this.parser.runString(program, this.testGrammar);
+        if (DEBUG) {
+            System.out.printf("Control automaton for \'%s\':%n%s%n", program,
+                result);
+        }
+        return result;
+    }
+
+    static private final boolean DEBUG = true;
 }

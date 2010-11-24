@@ -19,7 +19,6 @@ package groove.control;
 import groove.trans.Rule;
 import groove.util.Groove;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,7 +32,7 @@ public class CtrlCall {
     private CtrlCall() {
         this.rule = null;
         this.function = null;
-        this.args = Collections.emptyList();
+        this.args = null;
     }
 
     /**
@@ -70,7 +69,11 @@ public class CtrlCall {
             } else {
                 result = other.isOmega();
             }
-            result |= getArgs().equals(other.getArgs());
+            if (getArgs() == null) {
+                result &= other.getArgs() == null;
+            } else {
+                result &= getArgs().equals(other.getArgs());
+            }
         }
         return result;
     }
@@ -83,13 +86,19 @@ public class CtrlCall {
         } else if (isRule()) {
             result = getRule().hashCode();
         }
-        result ^= getArgs().hashCode();
+        if (getArgs() != null) {
+            result ^= getArgs().hashCode();
+        }
         return result;
     }
 
     @Override
     public String toString() {
-        return getName() + Groove.toString(getArgs().toArray(), "(", ")", ",");
+        String result = getName();
+        if (getArgs() != null) {
+            result += Groove.toString(getArgs().toArray(), "(", ")", ",");
+        }
+        return result;
     }
 
     /**
@@ -132,7 +141,7 @@ public class CtrlCall {
      * @param args the arguments of the new call
      */
     public CtrlCall copy(List<CtrlPar> args) {
-        assert args.size() == getArgs().size();
+        assert args == null || args.size() == getArgs().size();
         CtrlCall result;
         if (isFunction()) {
             result = new CtrlCall(getFunction(), args);
@@ -147,7 +156,8 @@ public class CtrlCall {
 
     /** 
      * Returns the arguments of the call.
-     * @return the list of arguments; or {@code null} if this is an omega call.
+     * @return the list of arguments; or {@code null} if this is an omega call
+     * or a parameterless call.
      * @see #OMEGA
      */
     public final List<CtrlPar> getArgs() {
