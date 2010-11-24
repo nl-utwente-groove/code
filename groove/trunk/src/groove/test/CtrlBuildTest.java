@@ -183,5 +183,5 @@ public class CtrlBuildTest extends TestCase {
         return result;
     }
 
-    static private final boolean DEBUG = true;
+    static private final boolean DEBUG = false;
 }
