@@ -217,7 +217,7 @@ public class GCLHelper {
 
     CtrlPar checkDontCareArg(MyTree argTree) {
         assert argTree.getType() == GCLNewChecker.ARG
-            && argTree.getChildCount() == 0;
+            && argTree.getChildCount() == 1;
         CtrlPar result = new CtrlPar.Wild();
         argTree.setCtrlPar(result);
         return result;
