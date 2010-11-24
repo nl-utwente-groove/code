@@ -21,12 +21,10 @@ import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -457,147 +455,6 @@ public class CtrlFactory {
         // sequentially compose first and second
         buildSeq(first, second);
         return buildLoop(first, autGuard);
-    }
-
-    /** 
-     * Minimises a given automaton, and tests it for determinism.
-     * Also reduces the bound variables in the states to those used
-     * in later outgoing transitions.
-     * The resulting automaton may fail to satisfy the assumption that
-     * the start state has no incoming transitions, and hence it should no
-     * longer be used in constructions.
-     * @param aut the automaton to be minimised
-     * @throws FormatException if the automaton is not deterministic
-     */
-    public CtrlAut minimise(CtrlAut aut) throws FormatException {
-        CtrlAut result = new CtrlAut();
-        Set<Set<CtrlState>> equivalence = computeEquivalence(aut);
-        Map<CtrlState,Set<CtrlState>> partition =
-            computePartition(aut, equivalence);
-        Map<Set<CtrlState>,CtrlState> stateMap =
-            new HashMap<Set<CtrlState>,CtrlState>();
-        for (Set<CtrlState> cell : partition.values()) {
-            CtrlState image;
-            if (!stateMap.containsKey(cell)) {
-                if (cell.contains(aut.getStart())) {
-                    image = result.getStart();
-                    assert !cell.contains(aut.getFinal());
-                } else if (cell.contains(aut.getFinal())) {
-                    image = result.getFinal();
-                } else {
-                    image = result.addState();
-                }
-                stateMap.put(cell, image);
-            }
-        }
-        for (CtrlTransition trans : aut.edgeSet()) {
-            CtrlState newSource = stateMap.get(partition.get(trans.source()));
-            CtrlState newTarget = stateMap.get(partition.get(trans.target()));
-            result.addTransition(newSource, trans.label(), newTarget);
-        }
-        return result;
-    }
-
-    /** Computes the equivalence relation of a the states of a given control automaton. */
-    private Set<Set<CtrlState>> computeEquivalence(CtrlAut aut)
-        throws FormatException {
-        Set<Set<CtrlState>> result = new HashSet<Set<CtrlState>>();
-        // declare and initialise the dependencies 
-        // for each state pair, this records the previous state pairs
-        // that are distinct if this state pair is distinct.
-        Map<Set<CtrlState>,Set<Set<CtrlState>>> depMap =
-            new HashMap<Set<CtrlState>,Set<Set<CtrlState>>>();
-        for (CtrlState i : aut.nodeSet()) {
-            for (CtrlState j : aut.nodeSet()) {
-                if (i.getNumber() < j.getNumber()) {
-                    Set<CtrlState> ijPair =
-                        new HashSet<CtrlState>(Arrays.asList(i, j));
-                    Set<Set<CtrlState>> depSet = new HashSet<Set<CtrlState>>();
-                    depSet.add(ijPair);
-                    depMap.put(ijPair, depSet);
-                    // states are equivalent until proven otherwise
-                    result.add(ijPair);
-                }
-            }
-        }
-        for (CtrlState i : aut.nodeSet()) {
-            for (CtrlState j : aut.nodeSet()) {
-                if (i.getNumber() < j.getNumber()) {
-                    Set<CtrlState> ijPair =
-                        new HashSet<CtrlState>(Arrays.asList(i, j));
-                    Set<Set<CtrlState>> depSet = depMap.remove(ijPair);
-                    assert depSet != null;
-                    Map<CtrlLabel,CtrlState> iOut = getOutTransitions(i);
-                    Map<CtrlLabel,CtrlState> jOut = getOutTransitions(j);
-                    boolean distinct = !iOut.keySet().equals(jOut.keySet());
-                    if (!distinct) {
-                        for (Map.Entry<CtrlLabel,CtrlState> iOutEntry : iOut.entrySet()) {
-                            CtrlState iOutTarget = iOutEntry.getValue();
-                            CtrlState jOutTarget = jOut.get(iOutEntry.getKey());
-                            if (iOutTarget != jOutTarget) {
-                                Set<CtrlState> ijTargetPair =
-                                    new HashSet<CtrlState>(Arrays.asList(
-                                        iOutTarget, jOutTarget));
-                                Set<Set<CtrlState>> ijTargetDep =
-                                    depMap.get(ijTargetPair);
-                                if (ijTargetDep == null) {
-                                    distinct = true;
-                                    break;
-                                } else {
-                                    ijTargetDep.addAll(depSet);
-                                }
-                            }
-                        }
-                    }
-                    if (distinct) {
-                        result.removeAll(depSet);
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    private Map<CtrlLabel,CtrlState> getOutTransitions(CtrlState s)
-        throws FormatException {
-        Map<CtrlLabel,CtrlState> result = new HashMap<CtrlLabel,CtrlState>();
-        for (CtrlTransition outTrans : s.getTransitions()) {
-            CtrlLabel label = outTrans.label();
-            CtrlState oldState = result.put(label, outTrans.target());
-            if (oldState != null) {
-                throw new FormatException(
-                    "State %s has multiple outgoing labels %s", s, label);
-            }
-        }
-        return result;
-    }
-
-    private Map<CtrlState,Set<CtrlState>> computePartition(CtrlAut aut,
-            Set<Set<CtrlState>> equivalence) {
-        Map<CtrlState,Set<CtrlState>> result =
-            new HashMap<CtrlState,Set<CtrlState>>();
-        // initially the partition is discrete
-        for (CtrlState state : aut.nodeSet()) {
-            Set<CtrlState> cell = new HashSet<CtrlState>();
-            cell.add(state);
-            result.put(state, cell);
-        }
-        for (Set<CtrlState> equiv : equivalence) {
-            assert equiv.size() == 2;
-            Iterator<CtrlState> distIter = equiv.iterator();
-            CtrlState s1 = distIter.next();
-            CtrlState s2 = distIter.next();
-            Set<CtrlState> s1Cell = result.get(s1);
-            Set<CtrlState> s2Cell = result.get(s2);
-            // merge the cells if they are not already the same
-            if (s1Cell != s2Cell) {
-                s1Cell.addAll(s2Cell);
-                for (CtrlState s2Sib : s2Cell) {
-                    result.put(s2Sib, s1Cell);
-                }
-            }
-        }
-        return result;
     }
 
     /** 

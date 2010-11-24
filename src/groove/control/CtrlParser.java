@@ -81,8 +81,7 @@ public class CtrlParser {
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
             }
-            CtrlAut result = this.builder.run(tree, namespace);
-            return CtrlFactory.getInstance().minimise(result);
+            return this.builder.run(tree, namespace).normalise();
         } catch (RecognitionException re) {
             throw new FormatException(re.getMessage());
         }
