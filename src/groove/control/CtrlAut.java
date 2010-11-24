@@ -25,10 +25,10 @@ import groove.view.FormatException;
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -119,10 +119,11 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
         for (CtrlState state : new TreeSet<CtrlState>(nodeSet())) {
             result.append(String.format("State %s, variables %s%n", state,
                 state.getBoundVars()));
-            for (CtrlTransition trans : new TreeSet<CtrlTransition>(
-                state.getTransitions())) {
-                result.append("  " + trans + "\n");
-            }
+            result.append(state.getSchedule().toString());
+            //            for (CtrlTransition trans : new TreeSet<CtrlTransition>(
+            //                state.getTransitions())) {
+            //                result.append("  " + trans + "\n");
+            //            }
         }
         return result.toString();
     }
@@ -348,7 +349,6 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
         Map<CtrlState,Set<CtrlTransition>> inMap =
             new HashMap<CtrlState,Set<CtrlTransition>>();
         for (CtrlState state : nodeSet()) {
-            state.setBoundVars(new HashSet<CtrlVar>());
             inMap.put(state, new HashSet<CtrlTransition>());
         }
         for (CtrlTransition trans : edgeSet()) {
@@ -359,7 +359,8 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
         while (!queue.isEmpty()) {
             CtrlTransition next = queue.poll();
             CtrlState source = next.source();
-            Collection<CtrlVar> sourceVars = source.getBoundVars();
+            Set<CtrlVar> sourceVars =
+                new LinkedHashSet<CtrlVar>(source.getBoundVars());
             boolean modified = false;
             for (CtrlVar targetVar : next.target().getBoundVars()) {
                 if (!next.getOutVars().contains(targetVar)) {
@@ -367,6 +368,7 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
                 }
             }
             if (modified) {
+                source.setBoundVars(sourceVars);
                 queue.addAll(inMap.get(source));
             }
         }

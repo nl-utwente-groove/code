@@ -16,11 +16,13 @@
  */
 package groove.control;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /** Sequence of control transitions to be tried out from a control state. */
 public class CtrlSchedule {
@@ -42,7 +44,7 @@ public class CtrlSchedule {
         }
         CtrlTransition myTrans = null;
         int myCount = Integer.MAX_VALUE;
-        for (CtrlTransition trans : transitions) {
+        for (CtrlTransition trans : new TreeSet<CtrlTransition>(transitions)) {
             CtrlCall call = trans.label().getCall();
             int count = guardCount.containsKey(call) ? guardCount.get(call) : 0;
             if (failedCalls.containsAll(trans.label().getGuard())
@@ -59,16 +61,21 @@ public class CtrlSchedule {
             Set<CtrlTransition> remainder =
                 new LinkedHashSet<CtrlTransition>(transitions);
             remainder.remove(myTrans);
-            this.successChild = new CtrlSchedule(remainder, failedCalls);
+            this.success = new CtrlSchedule(remainder, failedCalls);
             if (myCount == 0) {
-                this.failureChild = this.successChild;
+                this.failure = this.success;
             } else {
                 Set<CtrlCall> newFailedCalls =
                     new HashSet<CtrlCall>(failedCalls);
                 newFailedCalls.add(myTrans.label().getCall());
-                this.failureChild = new CtrlSchedule(remainder, newFailedCalls);
+                this.failure = new CtrlSchedule(remainder, newFailedCalls);
             }
         }
+    }
+
+    /** Indicates if this node signals the end of the schedule. */
+    public boolean isFinished() {
+        return this.trans == null;
     }
 
     /** Returns the currently scheduled transition.
@@ -80,7 +87,7 @@ public class CtrlSchedule {
 
     /** Returns the next node of the schedule, given success or failure of the transition of this node. */
     public CtrlSchedule next(boolean success) {
-        return success ? this.successChild : this.failureChild;
+        return success ? this.success : this.failure;
     }
 
     @Override
@@ -90,19 +97,35 @@ public class CtrlSchedule {
 
     private String toString(int depth, String prefix) {
         StringBuilder result = new StringBuilder();
-        for (int i = 0; i < depth; i++) {
+        for (int i = 0; i <= depth; i++) {
             result.append("  ");
         }
         result.append(prefix);
         if (this.trans == null) {
-            result.append("Finished\n");
+            result.append("No transitions\n");
         } else {
-            result.append(String.format("Call %s%n", this.trans));
-            if (this.successChild == this.failureChild) {
-                result.append(this.successChild.toString(depth, "Next: "));
+            result.append("Call ");
+            result.append(this.trans);
+            if (this.trans.getInVarBinding().length > 0) {
+                result.append(", in-parameter binding: ");
+                result.append(Arrays.toString(this.trans.getInVarBinding()));
+            }
+            if (this.trans.getTargetVarBinding().length > 0) {
+                result.append(", target variable binding: ");
+                result.append(Arrays.toString(this.trans.getTargetVarBinding()));
+            }
+            result.append("\n");
+            if (this.success == this.failure) {
+                if (!this.success.isFinished()) {
+                    result.append(this.success.toString(depth + 1, ""));
+                }
             } else {
-                result.append(this.successChild.toString(depth + 1, "Success: "));
-                result.append(this.failureChild.toString(depth + 1, "Failure: "));
+                if (!this.success.isFinished()) {
+                    result.append(this.success.toString(depth + 1, "Success: "));
+                }
+                if (!this.failure.isFinished()) {
+                    result.append(this.failure.toString(depth + 1, "Failure: "));
+                }
             }
         }
         return result.toString();
@@ -111,7 +134,7 @@ public class CtrlSchedule {
     /** The transition at this node of the schedule. */
     private CtrlTransition trans;
     /** Next schedule node in case {@link #trans} succeeds. */
-    private CtrlSchedule successChild;
+    private CtrlSchedule success;
     /** Next schedule node in case {@link #trans} fails. */
-    private CtrlSchedule failureChild;
+    private CtrlSchedule failure;
 }

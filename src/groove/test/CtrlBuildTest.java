@@ -17,7 +17,10 @@
 package groove.test;
 
 import groove.control.CtrlAut;
+import groove.control.CtrlCall;
 import groove.control.CtrlParser;
+import groove.control.CtrlSchedule;
+import groove.control.CtrlTransition;
 import groove.io.ExtensionFilter;
 import groove.trans.GraphGrammar;
 import groove.util.Groove;
@@ -104,7 +107,7 @@ public class CtrlBuildTest extends TestCase {
         buildWrong("any;");
         buildCorrect(
             "node x; bNode(out x); iNode(x); iInt(3); iString-oNode(\"a\",_); other;",
-            7, 13);
+            7, 15);
     }
 
     /** Tests function calls. */
@@ -112,6 +115,78 @@ public class CtrlBuildTest extends TestCase {
         buildCorrect("f(); function f() { a; }", 3, 2);
         buildCorrect("f(); f(); function f() { choice a; or {b;c;} }", 6, 7);
         buildCorrect("f(); function f() { node x; bNode(out x); }", 3, 2);
+    }
+
+    /** Tests the variable binding. */
+    public void testVarBinding() {
+        CtrlAut aut =
+            buildCorrect(
+                "node x; bNode(out x); node y; bNode-oNode(x, out y); bNode-bNode(x,y);",
+                5, 4);
+        CtrlTransition first =
+            aut.getStart().getTransitions().iterator().next();
+        CtrlTransition second =
+            first.target().getTransitions().iterator().next();
+        CtrlTransition third =
+            second.target().getTransitions().iterator().next();
+        CtrlTransition fourth =
+            third.target().getTransitions().iterator().next();
+        assertEquals(1, first.target().getBoundVars().size());
+        assertEquals(2, second.target().getBoundVars().size());
+        assertEquals(0, third.target().getBoundVars().size());
+        assertEquals(0, fourth.target().getBoundVars().size());
+        int[] targetVarBinding = second.getTargetVarBinding();
+        assertEquals(2, targetVarBinding.length);
+        assertEquals(0, targetVarBinding[0]);
+        assertEquals(2, targetVarBinding[1]);
+        int[] inVarBinding = second.getInVarBinding();
+        assertEquals(1, inVarBinding.length);
+        assertEquals(0, inVarBinding[0]);
+    }
+
+    /** Tests the transition scheduling. */
+    public void testSchedule() {
+        CtrlAut aut =
+            buildCorrect(
+                "choice { try a; } or { if (e|c) c; else d; } or { b;b;}", 5, 9);
+        CtrlSchedule s0 = aut.getStart().getSchedule();
+        getName(s0).equals("b");
+        CtrlSchedule s1 = s0.next(false);
+        getName(s1).equals("a");
+        assertTrue(s1 == s0.next(true));
+        CtrlSchedule s1f = s1.next(false);
+        getName(s1f).equals(CtrlCall.OMEGA_NAME);
+        CtrlSchedule s1ff = s1f.next(false);
+        getName(s1ff).equals("c");
+        assertTrue(s1ff == s1f.next(true));
+        CtrlSchedule s1fff = s1ff.next(false);
+        getName(s1fff).equals("e");
+        CtrlSchedule s1ffff = s1fff.next(false);
+        getName(s1ffff).equals("d");
+        assertTrue(s1fff.next(true).isFinished());
+        assertTrue(s1ffff.next(false).isFinished());
+        assertTrue(s1ffff.next(true).isFinished());
+        CtrlSchedule s1fft = s1ff.next(true);
+        getName(s1fft).equals("e");
+        assertTrue(s1fft.next(false).isFinished());
+        assertTrue(s1fft.next(true).isFinished());
+        CtrlSchedule s1t = s1.next(true);
+        getName(s1t).equals("c");
+        CtrlSchedule s1tf = s1t.next(false);
+        getName(s1tf).equals("e");
+        assertTrue(s1tf.next(true).isFinished());
+        CtrlSchedule s1tff = s1tf.next(false);
+        getName(s1tff).equals("d");
+        assertTrue(s1tff.next(false).isFinished());
+        assertTrue(s1tff.next(true).isFinished());
+        CtrlSchedule s1tt = s1t.next(true);
+        getName(s1tt).equals("e");
+        assertTrue(s1tt.next(false).isFinished());
+        assertTrue(s1tt.next(true).isFinished());
+    }
+
+    private String getName(CtrlSchedule s) {
+        return s.getTransition().label().getCall().getName();
     }
 
     /** Builds a control automaton that should contain an error. */
@@ -138,20 +213,22 @@ public class CtrlBuildTest extends TestCase {
         }
     }
 
-    private void buildCorrect(String name, int nodeCount, int edgeCount) {
-        buildCorrect(name, false, nodeCount, edgeCount);
+    private CtrlAut buildCorrect(String name, int nodeCount, int edgeCount) {
+        return buildCorrect(name, false, nodeCount, edgeCount);
     }
 
-    private void buildCorrect(String name, boolean file, int nodeCount,
+    private CtrlAut buildCorrect(String name, boolean file, int nodeCount,
             int edgeCount) {
+        CtrlAut result = null;
         try {
-            CtrlAut result = file ? buildFile(name) : buildString(name);
+            result = file ? buildFile(name) : buildString(name);
             assertEquals(nodeCount, result.nodeCount());
             assertEquals(edgeCount, result.edgeCount());
         } catch (FormatException e) {
             System.err.printf("Errors in %s:%n%s%n", name, e.getMessage());
             assertTrue(false);
         }
+        return result;
     }
 
     /** Builds a control automaton from a file with a given name. */

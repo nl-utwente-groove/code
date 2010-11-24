@@ -23,8 +23,9 @@ import groove.graph.Node;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -139,7 +140,7 @@ public class CtrlState implements Node {
     /**
      * Returns the set of bound variables in this state.
      */
-    public Collection<CtrlVar> getBoundVars() {
+    public List<CtrlVar> getBoundVars() {
         return this.boundVars;
     }
 
@@ -147,9 +148,25 @@ public class CtrlState implements Node {
      * Sets the bound variables of this state to the elements of a given collection.
      */
     public void setBoundVars(Collection<CtrlVar> variables) {
-        this.boundVars = new LinkedHashSet<CtrlVar>(variables);
+        this.boundVars.clear();
+        this.boundVars.addAll(variables);
     }
 
     /** The collection of bound variables of this control state. */
-    private Collection<CtrlVar> boundVars = new ArrayList<CtrlVar>();
+    private List<CtrlVar> boundVars = new ArrayList<CtrlVar>();
+
+    /** Lazily creates and returns the schedule for trying the outgoing transitions of this state. */
+    public CtrlSchedule getSchedule() {
+        CtrlSchedule result = this.schedule;
+        if (result == null) {
+            this.schedule =
+                result =
+                    new CtrlSchedule(getTransitions(),
+                        Collections.<CtrlCall>emptySet());
+        }
+        return result;
+    }
+
+    /** The schedule for trying the outgoing transitions of this state. */
+    private CtrlSchedule schedule;
 }
