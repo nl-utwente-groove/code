@@ -43,6 +43,7 @@ public class AllTests {
         suite.addTest(new TestSuite(ControlTest.class));
         suite.addTest(new TestSuite(ControlVariablesTest.class));
         suite.addTest(new TestSuite(ControlAttributeParametersTest.class));
+        suite.addTest(new TestSuite(CtrlBuildTest.class));
         suite.addTest(new TestSuite(LabelStoreTest.class));
         // $JUnit-END$
         return suite;
