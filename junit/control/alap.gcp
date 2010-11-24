@@ -1,5 +1,0 @@
-alap {
-  choice { a; b; }
-  or c;
-}
-d;
