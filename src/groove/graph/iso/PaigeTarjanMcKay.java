@@ -676,7 +676,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
      */
     static private final boolean SPLIT_ONE_AT_A_TIME = false;
     /** Debug flag to switch the use of duplicate breaking on and off. */
-    static private final boolean BREAK_DUPLICATES = true;
+    static private final boolean BREAK_DUPLICATES = false;
     /**
      * Array to record the number of iterations done in computing certificates.
      */
