@@ -161,16 +161,14 @@ public class CtrlState implements Node {
 
     /** Lazily creates and returns the schedule for trying the outgoing transitions of this state. */
     public CtrlSchedule getSchedule() {
-        CtrlSchedule result = this.schedule;
         if (this.schedule == null) {
-            assert this.scheduleMap == null && this.disabledMap == null;
-            this.scheduleMap = new HashMap<Set<CtrlCall>,CtrlSchedule>();
+            assert this.disabledMap == null;
             this.disabledMap = computeDisabledMap();
             this.schedule =
                 computeSchedule(new TreeSet<CtrlTransition>(getTransitions()),
                     Collections.<CtrlCall>emptySet());
         }
-        return result;
+        return this.schedule;
     }
 
     /** Computes a map from control calls to transitions disabled by those calls. */
@@ -192,53 +190,57 @@ public class CtrlState implements Node {
 
     private CtrlSchedule computeSchedule(Set<CtrlTransition> transSet,
             Set<CtrlCall> triedCalls) {
-        CtrlSchedule result = this.scheduleMap.get(triedCalls);
-        if (result == null) {
-            result = new CtrlSchedule();
-            // look for the untried call with the least disablings
-            CtrlTransition trans = null;
-            Set<CtrlTransition> disablings = null;
-            for (CtrlTransition tryTrans : transSet) {
-                Set<CtrlTransition> tryDisablings;
-                if (this.disabledMap.containsKey(tryTrans)) {
-                    tryDisablings =
-                        new HashSet<CtrlTransition>(
-                            this.disabledMap.get(tryTrans));
-                    tryDisablings.retainAll(transSet);
-                } else {
-                    tryDisablings = Collections.emptySet();
-                }
-                if (trans == null || tryDisablings.size() < disablings.size()) {
-                    trans = tryTrans;
-                    disablings = tryDisablings;
-                }
-                if (disablings.size() == 0) {
-                    // we're not going to find a smaller anyway
-                    break;
-                }
+        // look for the untried call with the least disablings
+        CtrlTransition trans = null;
+        Set<CtrlTransition> disablings = null;
+        for (CtrlTransition tryTrans : transSet) {
+            Set<CtrlCall> guard =
+                new HashSet<CtrlCall>(tryTrans.label().getGuard());
+            guard.removeAll(triedCalls);
+            if (!guard.isEmpty()) {
+                continue;
             }
-            result.setTransition(trans);
-            if (trans != null) {
-                Set<CtrlCall> newTriedCalls = new HashSet<CtrlCall>(triedCalls);
-                newTriedCalls.add(trans.label().getCall());
-                Set<CtrlTransition> remainder =
-                    new LinkedHashSet<CtrlTransition>(transSet);
-                remainder.remove(trans);
-                CtrlSchedule success = computeSchedule(remainder, triedCalls);
+            CtrlCall tryCall = tryTrans.label().getCall();
+            Set<CtrlTransition> tryDisablings;
+            if (this.disabledMap.containsKey(tryCall)) {
+                tryDisablings =
+                    new HashSet<CtrlTransition>(this.disabledMap.get(tryCall));
+                tryDisablings.retainAll(transSet);
+            } else {
+                tryDisablings = Collections.emptySet();
+            }
+            if (trans == null || tryDisablings.size() < disablings.size()) {
+                trans = tryTrans;
+                disablings = tryDisablings;
+            }
+            if (disablings.size() == 0) {
+                // we're not going to find a smaller anyway
+                break;
+            }
+        }
+        CtrlSchedule result = new CtrlSchedule(trans, triedCalls);
+        if (trans != null) {
+            Set<CtrlCall> newTriedCalls = new HashSet<CtrlCall>(triedCalls);
+            newTriedCalls.add(trans.label().getCall());
+            Set<CtrlTransition> remainder =
+                new LinkedHashSet<CtrlTransition>(transSet);
+            remainder.remove(trans);
+            CtrlSchedule failure = computeSchedule(remainder, newTriedCalls);
+            CtrlSchedule success;
+            if (disablings.isEmpty()) {
+                success = failure;
+            } else {
                 remainder = new LinkedHashSet<CtrlTransition>(remainder);
                 remainder.removeAll(disablings);
-                CtrlSchedule failure = computeSchedule(remainder, triedCalls);
-                result.setNext(success, failure);
+                success = computeSchedule(remainder, newTriedCalls);
             }
-            this.scheduleMap.put(triedCalls, result);
+            result.setNext(success, failure);
         }
         return result;
     }
 
     /** The schedule for trying the outgoing transitions of this state. */
     private CtrlSchedule schedule;
-    /** Map from sets of tried calls to corresponding schedules. */
-    private Map<Set<CtrlCall>,CtrlSchedule> scheduleMap;
     /** Map from calls to transitions disabled by their success. */
     private Map<CtrlCall,Set<CtrlTransition>> disabledMap;
 }
