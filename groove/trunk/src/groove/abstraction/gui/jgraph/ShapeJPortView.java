@@ -75,29 +75,25 @@ public class ShapeJPortView extends PortView {
     public Point2D getLocation(EdgeView edge, Point2D nearest) {
         CellView vertex = getParentView();
         Rectangle2D r = vertex.getBounds();
-        Point2D pos = null;
-        if (nearest == null) {
-            Point2D offset = GraphConstants.getOffset(this.allAttributes);
-            double x = offset.getX();
-            double y = offset.getY();
-            // Absolute Offset
-            boolean isAbsoluteX =
-                GraphConstants.isAbsoluteX(this.allAttributes);
-            boolean isAbsoluteY =
-                GraphConstants.isAbsoluteY(this.allAttributes);
-            if (!isAbsoluteX) {
-                x = x * (r.getWidth() - 1) / GraphConstants.PERMILLE;
+        Point2D pos = this.getPortPosition(r);
+        if (edge != null) {
+            ShapeJEdge jEdge = (ShapeJEdge) edge.getCell();
+            if (jEdge.isMain() && nearest != null) {
+                pos = vertex.getPerimeterPoint(edge, null, nearest);
+                Point2D newOffset = this.computeNewOffset(r, pos);
+                GraphConstants.setOffset(this.allAttributes, newOffset);
             }
-            if (!isAbsoluteY) {
-                y = y * (r.getHeight() - 1) / GraphConstants.PERMILLE;
-            }
-            pos = new Point2D.Double(r.getX() + x, r.getY() + y);
-        } else {
-            pos = vertex.getPerimeterPoint(edge, null, nearest);
         }
-        Point2D newOffset = this.computeNewOffset(r, pos);
-        GraphConstants.setOffset(this.allAttributes, newOffset);
         return pos;
+    }
+
+    private Point2D getPortPosition(Rectangle2D r) {
+        Point2D offset = GraphConstants.getOffset(this.allAttributes);
+        double x = offset.getX();
+        double y = offset.getY();
+        x = x * (r.getWidth() - 1) / GraphConstants.PERMILLE;
+        y = y * (r.getHeight() - 1) / GraphConstants.PERMILLE;
+        return new Point2D.Double(r.getX() + x, r.getY() + y);
     }
 
     private Point2D computeNewOffset(Rectangle2D r, Point2D pos) {

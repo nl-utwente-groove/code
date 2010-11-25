@@ -30,18 +30,35 @@ import org.jgraph.graph.Port;
  */
 public class ShapeJEdge extends DefaultEdge {
 
+    private boolean main;
+
     /**
      * EDUARDO: Comment this...
      */
     public ShapeJEdge(Shape shape, ShapeEdge edge, Port source, Port target) {
         super(edge.label().text());
         assert source instanceof ShapeJPort && target instanceof ShapeJPort;
+        this.main = false;
         this.setSource(source);
         this.setTarget(target);
 
         AttributeMap attrMap = this.getAttributes();
         GraphConstants.setLineEnd(attrMap, GraphConstants.ARROW_CLASSIC);
         GraphConstants.setEndFill(attrMap, true);
+    }
+
+    /**
+     * EDUARDO: Comment this...
+     */
+    public void setMain(boolean main) {
+        this.main = main;
+    }
+
+    /**
+     * EDUARDO: Comment this...
+     */
+    public boolean isMain() {
+        return this.main;
     }
 
 }

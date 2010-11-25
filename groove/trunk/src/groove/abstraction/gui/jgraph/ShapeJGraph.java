@@ -26,10 +26,13 @@ import groove.abstraction.Util;
 import groove.graph.Edge;
 import groove.gui.jgraph.JAttr;
 
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.jgraph.JGraph;
 import org.jgraph.graph.AttributeMap;
@@ -84,7 +87,7 @@ public class ShapeJGraph extends JGraph {
         this.createNodes();
         this.createEdgeSigPorts();
         this.createEdges();
-        //createEdgeMults(jgraph, shape);
+        this.createEdgeMults();
         this.createEquivClasses();
     }
 
@@ -129,6 +132,23 @@ public class ShapeJGraph extends JGraph {
         this.getGraphLayoutCache().insert(edges.toArray());
     }
 
+    private void createEdgeMults() {
+        String labels[] = new String[2];
+        Point2D[] labelPositions =
+            {new Point2D.Double(GraphConstants.PERMILLE * 95 / 100, -10),
+                new Point2D.Double(GraphConstants.PERMILLE * 5 / 100, -10)};
+
+        for (ShapeEdge edgeS : this.getMainEdges()) {
+            ShapeJEdge jEdge = this.edgeMap.get(edgeS);
+            jEdge.setMain(true);
+            labels[0] = this.shape.getEdgeOutMult(edgeS).toString();
+            labels[1] = this.shape.getEdgeInMult(edgeS).toString();
+            AttributeMap attrMap = jEdge.getAttributes();
+            GraphConstants.setExtraLabelPositions(attrMap, labelPositions);
+            GraphConstants.setExtraLabels(attrMap, labels);
+        }
+    }
+
     private void createEquivClasses() {
         ParentMap parentMap = new ParentMap();
         EquivRelation<ShapeNode> er = this.shape.getEquivRelation();
@@ -165,6 +185,25 @@ public class ShapeJGraph extends JGraph {
         layout.run(facade);
         Map<?,?> nested = facade.createNestedMap(true, true);
         this.getGraphLayoutCache().edit(nested);
+    }
+
+    private Set<ShapeEdge> getMainEdges() {
+        Set<ShapeEdge> result = new HashSet<ShapeEdge>();
+        for (EdgeSignature outEs : this.outEsMap.keySet()) {
+            Set<ShapeEdge> edges = this.shape.getEdgesFrom(outEs, true);
+            if (this.shape.isOutEdgeSigUnique(outEs)) {
+                result.add(edges.iterator().next());
+            } else {
+                for (ShapeEdge edge : edges) {
+                    if (!edge.isLoop()) {
+                        result.add(edge);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 
 }

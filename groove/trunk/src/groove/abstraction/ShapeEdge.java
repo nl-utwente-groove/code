@@ -77,4 +77,8 @@ public final class ShapeEdge extends DefaultEdge {
         return (ShapeNode) super.target();
     }
 
+    public boolean isLoop() {
+        return this.source().equals(this.target());
+    }
+
 }
