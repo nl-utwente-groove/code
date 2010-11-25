@@ -281,7 +281,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 
     private void initializeParameterTypes() {
         for (int param = 1; param <= getVisibleParCount(); param++) {
-            int result = PARAMETER_DOES_NOT_EXIST;
+            int result;
 
             // if it's in creatorParameters, it may only be an output node
             if (param > this.inPars.size()) {

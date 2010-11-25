@@ -26,6 +26,11 @@ import java.util.TreeSet;
 
 /** Sequence of control transitions to be tried out from a control state. */
 public class CtrlSchedule {
+    /** Constructs an initially empty schedule. */
+    public CtrlSchedule() {
+        // empty
+    }
+
     /** Constructs a schedule from a set of transitions to be scheduled, plus a set of
      * rule calls that have been tried and failed.
      * @param transitions the transitions that have to be scheduled
@@ -83,6 +88,20 @@ public class CtrlSchedule {
       */
     public CtrlTransition getTransition() {
         return this.trans;
+    }
+
+    /** Sets the currently scheduled transition.
+     * @param trans the scheduled transition' may be {@code null} if this is the end of the schedule.
+      */
+    public void setTransition(CtrlTransition trans) {
+        assert this.trans == null;
+        this.trans = trans;
+    }
+
+    /** Sets the success and failure schedules. */
+    public void setNext(CtrlSchedule success, CtrlSchedule failure) {
+        this.success = success;
+        this.failure = failure;
     }
 
     /** Returns the next node of the schedule, given success or failure of the transition of this node. */
