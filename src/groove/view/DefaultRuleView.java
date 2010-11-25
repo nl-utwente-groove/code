@@ -18,6 +18,9 @@
 package groove.view;
 
 import static groove.view.aspect.AttributeAspect.getAttributeValue;
+import groove.control.CtrlPar;
+import groove.control.CtrlType;
+import groove.control.CtrlVar;
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultLabel;
@@ -65,6 +68,7 @@ import groove.view.aspect.ParameterAspect;
 import groove.view.aspect.RuleAspect;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -345,6 +349,8 @@ public class DefaultRuleView implements RuleView {
                 rule.setSpecifiedParameterTypes(parameters.getSpecifiedParameterTypes());
                 rule.setAttributeParameterTypes(parameters.getAttributeParameterTypes());
                 rule.setRequiredInputs(parameters.getRequiredInputs());
+                rule.setSignature(parameters.getSignature(),
+                    parameters.getParNodeMap(), parameters.getHiddenPars());
                 rule.setFixed();
 
                 if (TO_RULE_DEBUG) {
@@ -1939,6 +1945,22 @@ public class DefaultRuleView implements RuleView {
             return this.requiredInputs;
         }
 
+        /** Returns the rule signature. */
+        public List<CtrlPar.Var> getSignature() throws FormatException {
+            if (this.sig == null) {
+                initialise();
+            }
+            return this.sig;
+        }
+
+        /** Returns a mapping from rule parameters to (LHS or RHS) nodes. */
+        public Map<CtrlPar.Var,Node> getParNodeMap() throws FormatException {
+            if (this.parNodeMap == null) {
+                initialise();
+            }
+            return this.parNodeMap;
+        }
+
         /** Initialises the internal data structures. */
         private void initialise() throws FormatException {
             Set<FormatError> errors = new TreeSet<FormatError>();
@@ -1949,68 +1971,18 @@ public class DefaultRuleView implements RuleView {
             this.requiredInputs = new HashSet<Node>();
             this.hiddenPars = new HashSet<Node>();
             // set of all parameter numbers, to check duplicates
-            Set<Integer> parNumbers = new HashSet<Integer>();
+            Map<Integer,CtrlPar.Var> parMap =
+                new HashMap<Integer,CtrlPar.Var>();
+            this.parNodeMap = new HashMap<CtrlPar.Var,Node>();
+            int parCount = 0;
             // add nodes to nesting data structures
             for (AspectNode node : getView().nodeSet()) {
                 // check if the node is a parameter
                 Integer nr = ParameterAspect.getParNumber(node);
                 if (nr != null) {
-                    Level level = DefaultRuleView.this.levelTree.getLevel(node);
-                    // check if the user specified a parameter type in the rule editor
-                    int parType = ParameterAspect.getParameterType(node);
-                    this.specifiedParameterTypes.put(nr, parType);
-                    boolean hasControl =
-                        getSystemProperties() != null
-                            && getSystemProperties().isUseControl();
-                    if (parType == Rule.PARAMETER_INPUT) {
-                        this.requiredInputs.add(level.getLhsMap().getNode(node));
-                        if (!hasControl) {
-                            throw new FormatException(
-                                "Parameter '%d' is a required input, but no control is in use",
-                                nr);
-                        }
-                    }
-                    AspectValue av = AttributeAspect.getAttributeValue(node);
-                    if (av != null) {
-                        if (AttributeAspect.VALUE.equals(av) && hasControl) {
-                            throw new FormatException(
-                                "Attribute parameter '%d' must be typed", nr,
-                                node);
-                        }
-                        this.attributeParameterTypes.put(nr, av.getName());
-                    } else {
-                        this.attributeParameterTypes.put(nr, "node");
-                    }
+                    parCount = Math.max(parCount, nr);
                     try {
-                        if (nr != 0 && !parNumbers.add(nr)) {
-                            throw new FormatException(
-                                "Parameter '%d' occurs more than once", nr,
-                                node);
-                        }
-                        if (!level.getIndex().isTopLevel()) {
-                            throw new FormatException(
-                                "Rule parameter '%d' only allowed on top existential level",
-                                nr, node);
-                        }
-                        if (RuleAspect.inLHS(node)) {
-                            Node nodeImage = level.getLhsMap().getNode(node);
-                            if (nr.equals(0)) {
-                                this.hiddenPars.add(nodeImage);
-                            } else {
-                                inParMap.put(nr, nodeImage);
-                            }
-                        } else if (RuleAspect.inRHS(node)) {
-                            if (nr.equals(0)) {
-                                throw new FormatException(
-                                    "Anonymous parameters should only occur on the left hand side",
-                                    node);
-                            }
-                            Node nodeImage = level.getRhsMap().getNode(node);
-                            outParMap.put(nr, nodeImage);
-                        } else {
-                            throw new FormatException(
-                                "Parameter '%d' may not occur in NAC", nr, node);
-                        }
+                        processNode(inParMap, outParMap, parMap, node, nr);
                     } catch (FormatException exc) {
                         errors.addAll(exc.getErrors());
                     }
@@ -2019,16 +1991,21 @@ public class DefaultRuleView implements RuleView {
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
             }
+            // construct the signature
             // test if parameters form a consecutive sequence
             Set<Integer> missingPars = new TreeSet<Integer>();
-            for (int nr = 1; nr <= inParMap.size() + outParMap.size(); nr++) {
-                if (!parNumbers.contains(nr)) {
-                    missingPars.add(nr);
-                }
+            for (int i = 1; i <= parCount; i++) {
+                missingPars.add(i);
             }
+            missingPars.removeAll(parMap.keySet());
             if (!missingPars.isEmpty()) {
                 throw new FormatException("Parameters %s missing", missingPars);
             }
+            CtrlPar.Var[] sigArray = new CtrlPar.Var[parCount];
+            for (Map.Entry<Integer,CtrlPar.Var> parEntry : parMap.entrySet()) {
+                sigArray[parEntry.getKey() - 1] = parEntry.getValue();
+            }
+            this.sig = Arrays.asList(sigArray);
             // test if LHS parameters come before RHS parameters
             if (!outParMap.isEmpty() && outParMap.firstKey() <= inParMap.size()) {
                 throw new FormatException(
@@ -2038,12 +2015,99 @@ public class DefaultRuleView implements RuleView {
             this.outPars = new ArrayList<Node>(outParMap.values());
         }
 
+        private void processNode(SortedMap<Integer,Node> inParMap,
+                SortedMap<Integer,Node> outParMap,
+                Map<Integer,CtrlPar.Var> parMap, AspectNode node, Integer nr)
+            throws FormatException {
+            // check if the user specified a parameter type in the rule editor
+            int parDir = ParameterAspect.getParameterType(node);
+            Level level = DefaultRuleView.this.levelTree.getLevel(node);
+            if (!level.getIndex().isTopLevel()) {
+                throw new FormatException(
+                    "Parameter '%d' only allowed on top existential level", nr,
+                    node);
+            }
+            if (nr == 0) {
+                if (parDir != Rule.PARAMETER_BOTH) {
+                    throw new FormatException(
+                        "Anchor node cannot be input or output", node);
+                }
+                if (!RuleAspect.inLHS(node)) {
+                    throw new FormatException("Anchor node must be in LHS",
+                        node);
+                }
+                Node nodeImage = level.getLhsMap().getNode(node);
+                this.hiddenPars.add(nodeImage);
+            } else {
+                this.specifiedParameterTypes.put(nr, parDir);
+                boolean hasControl =
+                    getSystemProperties() != null
+                        && getSystemProperties().isUseControl();
+                CtrlType varType;
+                AspectValue av = AttributeAspect.getAttributeValue(node);
+                if (av == null) {
+                    this.attributeParameterTypes.put(nr, "node");
+                    varType = CtrlType.createNodeType();
+                } else if (AttributeAspect.VALUE.equals(av)) {
+                    throw new FormatException(
+                        "Untyped attribute cannot be used as parameter", node);
+                } else if (AttributeAspect.PRODUCT.equals(av)) {
+                    throw new FormatException(
+                        "Product node cannot be used as parameter", node);
+                } else {
+                    this.attributeParameterTypes.put(nr, av.getName());
+                    varType = CtrlType.createDataType(av.getName());
+                }
+                CtrlVar var = new CtrlVar("arg" + nr, varType);
+                boolean inOnly = parDir == Rule.PARAMETER_INPUT;
+                boolean outOnly = parDir == Rule.PARAMETER_OUTPUT;
+                Node nodeImage;
+                if (RuleAspect.inLHS(node)) {
+                    nodeImage = level.getLhsMap().getNode(node);
+                    inParMap.put(nr, nodeImage);
+                } else if (RuleAspect.inRHS(node)) {
+                    if (inOnly) {
+                        throw new FormatException(
+                            "Creator node cannot be used as input parameter",
+                            node);
+                    }
+                    outOnly = true;
+                    nodeImage = level.getRhsMap().getNode(node);
+                    outParMap.put(nr, nodeImage);
+                } else {
+                    throw new FormatException(
+                        "Parameter '%d' may not occur in NAC", nr, node);
+                }
+                CtrlPar.Var par =
+                    inOnly || outOnly ? new CtrlPar.Var(var, inOnly)
+                            : new CtrlPar.Var(var);
+                CtrlPar.Var oldPar = parMap.put(nr, par);
+                if (oldPar != null) {
+                    throw new FormatException(
+                        "Parameter '%d' occurs more than once", nr, node);
+                }
+                this.parNodeMap.put(par, nodeImage);
+                if (parDir == Rule.PARAMETER_INPUT) {
+                    this.requiredInputs.add(level.getLhsMap().getNode(node));
+                    if (!hasControl) {
+                        throw new FormatException(
+                            "Parameter '%d' is a required input, but no control is in use",
+                            nr, node);
+                    }
+                }
+            }
+        }
+
         /** The list of input parameters, in increasing parameter number. */
         private List<Node> inPars;
         /** The list of output parameters, in increasing parameter number. */
         private List<Node> outPars;
         /** Set of all rule parameter nodes */
         private Set<Node> hiddenPars;
+        /** Signature of the rule. */
+        private List<CtrlPar.Var> sig;
+        /** Mapping from rule parameters to (LHS or RHS) nodes. */
+        private Map<CtrlPar.Var,Node> parNodeMap;
         /** Map of parameters with their specification (in, out or both) */
         private Map<Integer,Integer> specifiedParameterTypes;
         /** Map of parameters to attribute types (-1 if no attribute) */

@@ -18,11 +18,8 @@ package groove.control.parse;
 
 import groove.control.CtrlAut;
 import groove.control.CtrlPar;
-import groove.control.CtrlType;
-import groove.control.CtrlVar;
 import groove.trans.SPORule;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -122,28 +119,10 @@ public class NamespaceNew {
      * Adds a rule to the name space.
      */
     public boolean addRule(SPORule rule) {
-        List<CtrlPar.Var> sig = new ArrayList<CtrlPar.Var>();
-        for (int i = 0; i < rule.getNumberOfParameters(); i++) {
-            String parName = "par" + i;
-            String parTypeName = rule.getAttributeParameterType(i + 1);
-            if (parTypeName == null) {
-                parTypeName = CtrlType.NODE_TYPE_NAME;
-            }
-            CtrlType parType = CtrlType.createType(parTypeName);
-            CtrlVar var = new CtrlVar(parName, parType);
-            CtrlPar.Var par;
-            boolean inOnly = !rule.isOutputParameter(i + 1);
-            boolean outOnly = !rule.isInputParameter(i + 1);
-            if (!inOnly && !outOnly) {
-                par = new CtrlPar.Var(var);
-            } else {
-                par = new CtrlPar.Var(var, inOnly);
-            }
-            sig.add(par);
-        }
         String ruleName = rule.getName().text();
         this.ruleMap.put(ruleName, rule);
-        List<CtrlPar.Var> oldSig = this.sigMap.put(ruleName, sig);
+        List<CtrlPar.Var> oldSig =
+            this.sigMap.put(ruleName, rule.getSignature());
         return oldSig == null;
     }
 
