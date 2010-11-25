@@ -16,6 +16,9 @@
  */
 package groove.trans;
 
+import groove.control.CtrlPar;
+import groove.control.CtrlType;
+import groove.control.CtrlVar;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -229,6 +232,48 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
             }
         }
         return this.directSubRules;
+    }
+
+    /**
+     * Sets the parameters of this rule. The rule can have numbered and hidden
+     * parameters. Numbered parameters are divided into input (LHS) and output
+     * (RHS-only) parameters, and are visible on the transition label.
+     * @param sig the signature of the rule, i.e., the list of (visible) parameters
+     * @param sigNodeMap mapping from the parameters in the signature to (LHS or RHS) nodes
+     * @param hiddenPars the set of hidden (i.e., unnumbered) parameter nodes
+     */
+    public void setSignature(List<CtrlPar.Var> sig,
+            Map<CtrlPar.Var,Node> sigNodeMap, Set<Node> hiddenPars) {
+        this.sig = sig;
+        this.sigNodeMap = sigNodeMap;
+        this.hiddenPars = hiddenPars;
+        List<CtrlPar.Var> derivedSig = new ArrayList<CtrlPar.Var>();
+        for (int i = 0; i < getNumberOfParameters(); i++) {
+            String parName = "arg" + (i + 1);
+            String parTypeName = getAttributeParameterType(i + 1);
+            if (parTypeName == null) {
+                parTypeName = CtrlType.NODE_TYPE_NAME;
+            }
+            CtrlType parType = CtrlType.createType(parTypeName);
+            CtrlVar var = new CtrlVar(parName, parType);
+            CtrlPar.Var par;
+            boolean inOnly = !isOutputParameter(i + 1);
+            boolean outOnly = !isInputParameter(i + 1);
+            if (!inOnly && !outOnly) {
+                par = new CtrlPar.Var(var);
+            } else {
+                par = new CtrlPar.Var(var, inOnly);
+            }
+            derivedSig.add(par);
+        }
+        assert derivedSig.equals(sig) : String.format(
+            "Declared signature %s differs from derived signature %s", sig,
+            derivedSig);
+    }
+
+    /** Returns the signature of the rule. */
+    public List<CtrlPar.Var> getSignature() {
+        return this.sig;
     }
 
     /**
@@ -1468,6 +1513,10 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * List of numbered creator-parameters
      */
     private List<Node> outPars;
+    /** The signature of the rule. */
+    private List<CtrlPar.Var> sig;
+    /** Mapping from parameters in the signature to nodes of the rule. */
+    private Map<CtrlPar.Var,Node> sigNodeMap;
     /**
      * Set of anonymous (unnumbered) parameters.
      */
@@ -1512,7 +1561,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     private static AnchorFactory<SPORule> anchorFactory =
         MinimalAnchorFactory.getInstance();
     /** Debug flag for the constructor. */
-    private static final boolean PRINT = false;
+    private static final boolean PRINT = true;
 
     private final Map<Integer,Integer> parameterTypes =
         new HashMap<Integer,Integer>();
