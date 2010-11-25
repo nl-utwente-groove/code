@@ -24,9 +24,13 @@ import groove.graph.Node;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * A state in a control automaton.
@@ -158,15 +162,83 @@ public class CtrlState implements Node {
     /** Lazily creates and returns the schedule for trying the outgoing transitions of this state. */
     public CtrlSchedule getSchedule() {
         CtrlSchedule result = this.schedule;
-        if (result == null) {
+        if (this.schedule == null) {
+            assert this.scheduleMap == null && this.disabledMap == null;
+            this.scheduleMap = new HashMap<Set<CtrlCall>,CtrlSchedule>();
+            this.disabledMap = computeDisabledMap();
             this.schedule =
-                result =
-                    new CtrlSchedule(getTransitions(),
-                        Collections.<CtrlCall>emptySet());
+                computeSchedule(new TreeSet<CtrlTransition>(getTransitions()),
+                    Collections.<CtrlCall>emptySet());
+        }
+        return result;
+    }
+
+    /** Computes a map from control calls to transitions disabled by those calls. */
+    private Map<CtrlCall,Set<CtrlTransition>> computeDisabledMap() {
+        // look for the transition that appears in the fewest guards
+        Map<CtrlCall,Set<CtrlTransition>> result =
+            new HashMap<CtrlCall,Set<CtrlTransition>>();
+        for (CtrlTransition trans : getTransitions()) {
+            for (CtrlCall call : trans.label().getGuard()) {
+                Set<CtrlTransition> disablings = result.get(call);
+                if (disablings == null) {
+                    result.put(call, disablings = new HashSet<CtrlTransition>());
+                }
+                disablings.add(trans);
+            }
+        }
+        return result;
+    }
+
+    private CtrlSchedule computeSchedule(Set<CtrlTransition> transSet,
+            Set<CtrlCall> triedCalls) {
+        CtrlSchedule result = this.scheduleMap.get(triedCalls);
+        if (result == null) {
+            result = new CtrlSchedule();
+            // look for the untried call with the least disablings
+            CtrlTransition trans = null;
+            Set<CtrlTransition> disablings = null;
+            for (CtrlTransition tryTrans : transSet) {
+                Set<CtrlTransition> tryDisablings;
+                if (this.disabledMap.containsKey(tryTrans)) {
+                    tryDisablings =
+                        new HashSet<CtrlTransition>(
+                            this.disabledMap.get(tryTrans));
+                    tryDisablings.retainAll(transSet);
+                } else {
+                    tryDisablings = Collections.emptySet();
+                }
+                if (trans == null || tryDisablings.size() < disablings.size()) {
+                    trans = tryTrans;
+                    disablings = tryDisablings;
+                }
+                if (disablings.size() == 0) {
+                    // we're not going to find a smaller anyway
+                    break;
+                }
+            }
+            result.setTransition(trans);
+            if (trans != null) {
+                Set<CtrlCall> newTriedCalls = new HashSet<CtrlCall>(triedCalls);
+                newTriedCalls.add(trans.label().getCall());
+                Set<CtrlTransition> remainder =
+                    new LinkedHashSet<CtrlTransition>(transSet);
+                remainder.remove(trans);
+                CtrlSchedule success = computeSchedule(remainder, triedCalls);
+                remainder = new LinkedHashSet<CtrlTransition>(remainder);
+                remainder.removeAll(disablings);
+                CtrlSchedule failure = computeSchedule(remainder, triedCalls);
+                result.setNext(success, failure);
+            }
+            this.scheduleMap.put(triedCalls, result);
         }
         return result;
     }
 
     /** The schedule for trying the outgoing transitions of this state. */
     private CtrlSchedule schedule;
+    /** Map from sets of tried calls to corresponding schedules. */
+    private Map<Set<CtrlCall>,CtrlSchedule> scheduleMap;
+    /** Map from calls to transitions disabled by their success. */
+    private Map<CtrlCall,Set<CtrlTransition>> disabledMap;
 }
