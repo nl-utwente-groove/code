@@ -17,65 +17,14 @@
 package groove.control;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 /** Sequence of control transitions to be tried out from a control state. */
 public class CtrlSchedule {
     /** Constructs an initially empty schedule. */
-    public CtrlSchedule() {
-        // empty
-    }
-
-    /** Constructs a schedule from a set of transitions to be scheduled, plus a set of
-     * rule calls that have been tried and failed.
-     * @param transitions the transitions that have to be scheduled
-     * @param failedCalls the calls that have been tried and failed
-     */
-    public CtrlSchedule(Set<CtrlTransition> transitions,
-            Set<CtrlCall> failedCalls) {
-        // look for the transition that appears in the fewest guards
-        Map<CtrlCall,Integer> guardCount = new HashMap<CtrlCall,Integer>();
-        for (CtrlTransition trans : transitions) {
-            for (CtrlCall call : trans.label().getGuard()) {
-                int count =
-                    guardCount.containsKey(call) ? guardCount.get(call) + 1 : 1;
-                guardCount.put(call, count);
-            }
-        }
-        CtrlTransition myTrans = null;
-        int myCount = Integer.MAX_VALUE;
-        for (CtrlTransition trans : new TreeSet<CtrlTransition>(transitions)) {
-            CtrlCall call = trans.label().getCall();
-            int count = guardCount.containsKey(call) ? guardCount.get(call) : 0;
-            if (failedCalls.containsAll(trans.label().getGuard())
-                && count < myCount) {
-                myTrans = trans;
-                myCount = count;
-                if (myCount == 0) {
-                    break;
-                }
-            }
-        }
-        if (myTrans != null) {
-            this.trans = myTrans;
-            Set<CtrlTransition> remainder =
-                new LinkedHashSet<CtrlTransition>(transitions);
-            remainder.remove(myTrans);
-            this.success = new CtrlSchedule(remainder, failedCalls);
-            if (myCount == 0) {
-                this.failure = this.success;
-            } else {
-                Set<CtrlCall> newFailedCalls =
-                    new HashSet<CtrlCall>(failedCalls);
-                newFailedCalls.add(myTrans.label().getCall());
-                this.failure = new CtrlSchedule(remainder, newFailedCalls);
-            }
-        }
+    public CtrlSchedule(CtrlTransition trans, Set<CtrlCall> triedCalls) {
+        this.trans = trans;
+        this.triedCalls = trans == null ? triedCalls : null;
     }
 
     /** Indicates if this node signals the end of the schedule. */
@@ -90,12 +39,13 @@ public class CtrlSchedule {
         return this.trans;
     }
 
-    /** Sets the currently scheduled transition.
-     * @param trans the scheduled transition' may be {@code null} if this is the end of the schedule.
-      */
-    public void setTransition(CtrlTransition trans) {
-        assert this.trans == null;
-        this.trans = trans;
+    /** Returns the set of control calls that has been tried at this point
+     * of the schedule, provided the schedule is finished
+     * @return a set of tried control calls, or {@code null} if {@link #isFinished()} 
+     * yields {@code false}.
+     */
+    public Set<CtrlCall> triedCalls() {
+        return this.triedCalls;
     }
 
     /** Sets the success and failure schedules. */
@@ -151,7 +101,11 @@ public class CtrlSchedule {
     }
 
     /** The transition at this node of the schedule. */
-    private CtrlTransition trans;
+    private final CtrlTransition trans;
+    /** The set of calls that have been tried when this point of the schedule is reached.
+     * Only filled in if {@link #isFinished()} is satisfied.
+     */
+    private final Set<CtrlCall> triedCalls;
     /** Next schedule node in case {@link #trans} succeeds. */
     private CtrlSchedule success;
     /** Next schedule node in case {@link #trans} fails. */
