@@ -18,6 +18,7 @@ package groove.lts;
 
 import groove.control.ControlState;
 import groove.control.ControlTransition;
+import groove.control.CtrlPar;
 import groove.control.Location;
 import groove.graph.DefaultMorphism;
 import groove.graph.Element;
@@ -36,6 +37,7 @@ import groove.util.TransformSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -423,11 +425,12 @@ abstract public class AbstractGraphState extends
         if (ct.hasInputParameters()) {
             SPORule rule = (SPORule) ct.getRule();
             String[] inArgs = ct.getInputParameters();
+            List<CtrlPar.Var> ruleSig = rule.getSignature();
             result = new DefaultMorphism(rule.getTarget(), this.getGraph());
             for (int i = 0; i < inArgs.length; i++) {
                 String arg = inArgs[i];
                 if (arg != null && !arg.equals("_")) {
-                    Node src = (rule).getParameter(i + 1);
+                    Node src = ruleSig.get(i).getRuleNode();
                     int idx =
                         ((ControlState) this.location).getVariablePosition(arg);
                     Node tgt =

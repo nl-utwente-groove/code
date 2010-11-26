@@ -345,7 +345,7 @@ public class DefaultRuleView implements RuleView {
             Parameters parameters = new Parameters();
             try {
                 rule.setSignature(parameters.getSignature(),
-                    parameters.getParNodeMap(), parameters.getHiddenPars());
+                    parameters.getHiddenPars());
                 rule.setFixed();
 
                 if (TO_RULE_DEBUG) {
@@ -1889,55 +1889,12 @@ public class DefaultRuleView implements RuleView {
 
     /** Class that can extract parameter information from the view graph. */
     private class Parameters {
-        /** Lazily creates and returns the rule's input parameters. */
-        public List<Node> getInPars() throws FormatException {
-            if (this.inPars == null) {
-                initialise();
-            }
-            return this.inPars;
-        }
-
-        /** Lazily creates and returns the rule's output parameters. */
-        public List<Node> getOutPars() throws FormatException {
-            if (this.outPars == null) {
-                initialise();
-            }
-            return this.outPars;
-        }
-
         /** Lazily creates and returns the rule's hidden parameters. */
         public Set<Node> getHiddenPars() throws FormatException {
             if (this.hiddenPars == null) {
                 initialise();
             }
             return this.hiddenPars;
-        }
-
-        /**
-         * Returns a map of the parameter numbers with their specified types
-         * (in, out or both) corresponding to the constants set in Rule.
-         * @return a map of the parameter numbers with their specified types
-         */
-        public Map<Integer,Integer> getSpecifiedParameterTypes() {
-            return this.specifiedParameterTypes;
-        }
-
-        /**
-         * Returns a map of the parameter numbers with their attribute types.
-         * @return a map of the parameter numbers with their attribute types
-         */
-        public Map<Integer,String> getAttributeParameterTypes() {
-            return this.attributeParameterTypes;
-        }
-
-        /**
-         * Returns the set of nodes that are required as input parameters from 
-         * the control program.
-         * @return the set of nodes that are required as input parameters from 
-         * the control program
-         */
-        public Set<Node> getRequiredInputs() {
-            return this.requiredInputs;
         }
 
         /** Returns the rule signature. */
@@ -1948,27 +1905,15 @@ public class DefaultRuleView implements RuleView {
             return this.sig;
         }
 
-        /** Returns a mapping from rule parameters to (LHS or RHS) nodes. */
-        public Map<CtrlPar.Var,Node> getParNodeMap() throws FormatException {
-            if (this.parNodeMap == null) {
-                initialise();
-            }
-            return this.parNodeMap;
-        }
-
         /** Initialises the internal data structures. */
         private void initialise() throws FormatException {
             Set<FormatError> errors = new TreeSet<FormatError>();
             SortedMap<Integer,Node> inParMap = new TreeMap<Integer,Node>();
             SortedMap<Integer,Node> outParMap = new TreeMap<Integer,Node>();
-            this.specifiedParameterTypes = new TreeMap<Integer,Integer>();
-            this.attributeParameterTypes = new TreeMap<Integer,String>();
-            this.requiredInputs = new HashSet<Node>();
             this.hiddenPars = new HashSet<Node>();
-            // set of all parameter numbers, to check duplicates
+            // Mapping from parameter position to parameter
             Map<Integer,CtrlPar.Var> parMap =
                 new HashMap<Integer,CtrlPar.Var>();
-            this.parNodeMap = new HashMap<CtrlPar.Var,Node>();
             int parCount = 0;
             // add nodes to nesting data structures
             for (AspectNode node : getView().nodeSet()) {
@@ -2006,8 +1951,6 @@ public class DefaultRuleView implements RuleView {
                 throw new FormatException(
                     "Non-creator parameters should come before creator-parameters");
             }
-            this.inPars = new ArrayList<Node>(inParMap.values());
-            this.outPars = new ArrayList<Node>(outParMap.values());
         }
 
         private void processNode(SortedMap<Integer,Node> inParMap,
@@ -2034,14 +1977,12 @@ public class DefaultRuleView implements RuleView {
                 Node nodeImage = level.getLhsMap().getNode(node);
                 this.hiddenPars.add(nodeImage);
             } else {
-                this.specifiedParameterTypes.put(nr, parDir);
                 boolean hasControl =
                     getSystemProperties() != null
                         && getSystemProperties().isUseControl();
                 CtrlType varType;
                 AspectValue av = AttributeAspect.getAttributeValue(node);
                 if (av == null) {
-                    this.attributeParameterTypes.put(nr, "node");
                     varType = CtrlType.createNodeType();
                 } else if (AttributeAspect.VALUE.equals(av)) {
                     throw new FormatException(
@@ -2050,11 +1991,15 @@ public class DefaultRuleView implements RuleView {
                     throw new FormatException(
                         "Product node cannot be used as parameter", node);
                 } else {
-                    this.attributeParameterTypes.put(nr, av.getName());
                     varType = CtrlType.createDataType(av.getName());
                 }
                 CtrlVar var = new CtrlVar("arg" + nr, varType);
                 boolean inOnly = parDir == Rule.PARAMETER_INPUT;
+                if (inOnly && !hasControl) {
+                    throw new FormatException(
+                        "Parameter '%d' is a required input, but no control is in use",
+                        nr, node);
+                }
                 boolean outOnly = parDir == Rule.PARAMETER_OUTPUT;
                 Node nodeImage;
                 if (RuleAspect.inLHS(node)) {
@@ -2076,37 +2021,18 @@ public class DefaultRuleView implements RuleView {
                 CtrlPar.Var par =
                     inOnly || outOnly ? new CtrlPar.Var(var, inOnly)
                             : new CtrlPar.Var(var);
+                par.setRuleNode(nodeImage);
                 CtrlPar.Var oldPar = parMap.put(nr, par);
                 if (oldPar != null) {
                     throw new FormatException(
                         "Parameter '%d' occurs more than once", nr, node);
                 }
-                this.parNodeMap.put(par, nodeImage);
-                if (parDir == Rule.PARAMETER_INPUT) {
-                    this.requiredInputs.add(level.getLhsMap().getNode(node));
-                    if (!hasControl) {
-                        throw new FormatException(
-                            "Parameter '%d' is a required input, but no control is in use",
-                            nr, node);
-                    }
-                }
             }
         }
 
-        /** The list of input parameters, in increasing parameter number. */
-        private List<Node> inPars;
-        /** The list of output parameters, in increasing parameter number. */
-        private List<Node> outPars;
         /** Set of all rule parameter nodes */
         private Set<Node> hiddenPars;
         /** Signature of the rule. */
         private List<CtrlPar.Var> sig;
-        /** Mapping from rule parameters to (LHS or RHS) nodes. */
-        private Map<CtrlPar.Var,Node> parNodeMap;
-        /** Map of parameters with their specification (in, out or both) */
-        private Map<Integer,Integer> specifiedParameterTypes;
-        /** Map of parameters to attribute types (-1 if no attribute) */
-        private Map<Integer,String> attributeParameterTypes;
-        private Set<Node> requiredInputs;
     }
 }

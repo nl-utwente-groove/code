@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -59,10 +58,9 @@ public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
                 anchors.addAll(hiddenPars);
             }
             List<CtrlPar.Var> ruleSig = rule.getSignature();
-            Map<CtrlPar.Var,Node> parNodeMap = rule.getParNodeMap();
             for (CtrlPar.Var rulePar : ruleSig) {
                 if (!rulePar.isOutOnly()) {
-                    anchors.add(parNodeMap.get(rulePar));
+                    anchors.add(rulePar.getRuleNode());
                 }
             }
         }

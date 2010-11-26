@@ -17,6 +17,7 @@
 package groove.control;
 
 import groove.algebra.AlgebraRegister;
+import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 
 /**
@@ -169,6 +170,19 @@ public abstract class CtrlPar {
             }
         }
 
+        /** Returns the (possibly {@code null} rule node in this parameter. */
+        public Node getRuleNode() {
+            return this.ruleNode;
+        }
+
+        /** 
+         * Sets the rule node of this paramater.
+         */
+        public void setRuleNode(Node ruleNode) {
+            this.ruleNode = ruleNode;
+        }
+
+        private Node ruleNode;
         /** The control variable wrapped in this variable parameter. */
         private final CtrlVar var;
         /** Flag indicating if this is an input-only parameter. */
