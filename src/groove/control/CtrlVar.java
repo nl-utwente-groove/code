@@ -21,7 +21,7 @@ package groove.control;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CtrlVar {
+public class CtrlVar implements Comparable<CtrlVar> {
     /** Constructs a control variable with a given (non-{@code null}) name and type. */
     public CtrlVar(String name, CtrlType type) {
         super();
@@ -59,6 +59,11 @@ public class CtrlVar {
     @Override
     public String toString() {
         return this.name;
+    }
+
+    @Override
+    public int compareTo(CtrlVar o) {
+        return getName().compareTo(o.getName());
     }
 
     /** Returns the name of this control variable. */

@@ -16,6 +16,7 @@
  */
 package groove.trans;
 
+import groove.control.CtrlPar;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
@@ -145,17 +146,17 @@ final public class SPOEvent extends
     public String getParameterString() {
         StringBuilder result = new StringBuilder();
         result.append('(');
-        List<Node> map = getRule().getInPars();
-        if (map != null) {
-            for (int i = 0; i < map.size(); i++) {
-                Node node = getAnchorMap().getNode(map.get(i));
+        Map<CtrlPar.Var,Node> parNodeMap = getRule().getParNodeMap();
+        for (CtrlPar.Var par : getRule().getSignature()) {
+            if (!par.isOutOnly()) {
+                if (result.length() > 1) {
+                    result.append(',');
+                }
+                Node node = getAnchorMap().getNode(parNodeMap.get(par));
                 if (node != null && node instanceof ValueNode) {
                     result.append(((ValueNode) node).getSymbol());
                 } else {
                     result.append(node);
-                }
-                if (i < map.size() - 1) {
-                    result.append(',');
                 }
             }
         }

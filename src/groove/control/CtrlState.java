@@ -149,11 +149,19 @@ public class CtrlState implements Node {
     }
 
     /**
+     * Adds bound variables to this state.
+     */
+    public void addBoundVars(Collection<CtrlVar> variables) {
+        this.boundVars.addAll(variables);
+        Collections.sort(this.boundVars);
+    }
+
+    /**
      * Sets the bound variables of this state to the elements of a given collection.
      */
     public void setBoundVars(Collection<CtrlVar> variables) {
         this.boundVars.clear();
-        this.boundVars.addAll(variables);
+        this.boundVars.addAll(new TreeSet<CtrlVar>(variables));
     }
 
     /** The collection of bound variables of this control state. */

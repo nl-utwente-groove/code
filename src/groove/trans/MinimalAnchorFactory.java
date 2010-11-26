@@ -16,6 +16,7 @@
  */
 package groove.trans;
 
+import groove.control.CtrlPar;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
@@ -26,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -56,9 +58,12 @@ public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
             if (hiddenPars != null) {
                 anchors.addAll(hiddenPars);
             }
-            List<Node> inPars = rule.getInPars();
-            if (inPars != null) {
-                anchors.addAll(rule.getInPars());
+            List<CtrlPar.Var> ruleSig = rule.getSignature();
+            Map<CtrlPar.Var,Node> parNodeMap = rule.getParNodeMap();
+            for (CtrlPar.Var rulePar : ruleSig) {
+                if (!rulePar.isOutOnly()) {
+                    anchors.add(parNodeMap.get(rulePar));
+                }
             }
         }
         // set of endpoints that we will remove again

@@ -344,11 +344,6 @@ public class DefaultRuleView implements RuleView {
             rule.setTransitionLabel(getTransitionLabel());
             Parameters parameters = new Parameters();
             try {
-                rule.setParameters(parameters.getInPars(),
-                    parameters.getOutPars(), parameters.getHiddenPars());
-                rule.setSpecifiedParameterTypes(parameters.getSpecifiedParameterTypes());
-                rule.setAttributeParameterTypes(parameters.getAttributeParameterTypes());
-                rule.setRequiredInputs(parameters.getRequiredInputs());
                 rule.setSignature(parameters.getSignature(),
                     parameters.getParNodeMap(), parameters.getHiddenPars());
                 rule.setFixed();

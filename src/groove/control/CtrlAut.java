@@ -353,7 +353,7 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
         }
         for (CtrlTransition trans : edgeSet()) {
             inMap.get(trans.target()).add(trans);
-            trans.source().getBoundVars().addAll(trans.getInVars());
+            trans.source().addBoundVars(trans.getInVars());
         }
         Queue<CtrlTransition> queue = new LinkedList<CtrlTransition>(edgeSet());
         while (!queue.isEmpty()) {
