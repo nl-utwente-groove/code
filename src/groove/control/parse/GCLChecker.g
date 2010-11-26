@@ -115,7 +115,7 @@ rule
 		if (!namespace.hasRule($r.text) && !namespace.hasProc($r.text)) {
 			errors.add("No such rule: "+$r.text+" on line "+$r.line);
 		} else if (numParameters != 0 && numParameters != currentSig.size()) {
-			errors.add("The number of parameters used in this call of "+currentRule.getName().toString()+" ("+numParameters+") does not match the number of parameters defined in the rule ("+currentRule.getNumberOfParameters()+") on line "+$IDENTIFIER.line);
+			errors.add("The number of parameters used in this call of "+currentRule.getName().toString()+" ("+numParameters+") does not match the number of parameters defined in the rule ("+currentSig.size()+") on line "+$IDENTIFIER.line);
 		}
 		if (numParameters == 0 && currentRule != null && currentRule.hasRequiredInputs()) {
 			errors.add("The rule "+currentRule.getName().toString()+" has required input parameters on line "+$IDENTIFIER.line);
@@ -140,6 +140,7 @@ param
 @init{
   numParameters++;
   CtrlPar.Var currentPar = currentSig.get(numParameters-1);
+  String currentParType = currentPar.getType().toString();
 }
 	: ^(PARAM IDENTIFIER {
 			if (st.isDeclared($IDENTIFIER.text)) {
@@ -177,8 +178,8 @@ param
 				if (currentOutputParameters.contains($IDENTIFIER.text)) {
 					errors.add("You can not use the same parameter as output more than once per call: "+$IDENTIFIER.text+" on line "+$IDENTIFIER.line);			
 				}
-				if (currentRule != null && !currentPar.getType().toString().equals(st.getType($IDENTIFIER.text))) {
-					errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and variable "+$IDENTIFIER.text+" ("+currentRule.getAttributeParameterType(numParameters)+" is not "+st.getType($IDENTIFIER.text)+")");
+				if (currentRule != null && !currentParType.equals(st.getType($IDENTIFIER.text))) {
+					errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and variable "+$IDENTIFIER.text+" ("+currentParType+" is not "+st.getType($IDENTIFIER.text)+")");
 				}
 				if (currentRule != null && currentPar.isInOnly()) {
 					errors.add("Parameter "+numParameters+" of rule "+currentRule.getName().toString()+" must be an input parameter.");
@@ -193,17 +194,17 @@ param
 	})
 	| ^(PARAM BOOL_TYPE bool=(TRUE|FALSE) {
 		if (currentRule != null && !currentPar.getType().toString().equals("bool")) {
-			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and '"+bool.getText()+"' on line "+bool.getLine()+" ("+currentRule.getAttributeParameterType(numParameters)+" is not bool)");
+			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and '"+bool.getText()+"' on line "+bool.getLine()+" ("+currentParType+" is not bool)");
 		}
 	})
 	| ^(PARAM STRING_TYPE str=IDENTIFIER {
 		if (currentRule != null && !currentPar.getType().toString().equals("string")) {
-			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and "+str.getText()+" on line "+str.getLine()+" ("+currentRule.getAttributeParameterType(numParameters)+" is not string)");
+			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and "+str.getText()+" on line "+str.getLine()+" ("+currentParType+" is not string)");
 		}
 	})
 	| ^(PARAM INT_TYPE in=IDENTIFIER {
 		if (currentRule != null && !currentPar.getType().toString().equals("int")) {
-			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and '"+in.getText()+"' on line "+in.getLine()+" ("+currentRule.getAttributeParameterType(numParameters)+" is not int)");
+			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and '"+in.getText()+"' on line "+in.getLine()+" ("+currentParType+" is not int)");
 		}
 	})
 	| ^(PARAM REAL_TYPE r=IDENTIFIER {
@@ -211,7 +212,7 @@ param
 			errors.add("'.' is not a valid real value on line "+r.getLine());
 		}
 		if (currentRule != null && !currentPar.getType().toString().equals("real")) {
-			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and '"+r.getText()+"' on line "+r.getLine()+" ("+currentRule.getAttributeParameterType(numParameters)+" is not real)");
+			errors.add("Type mismatch between parameter "+numParameters+" of "+currentRule.getName().toString()+" and '"+r.getText()+"' on line "+r.getLine()+" ("+currentParType+" is not real)");
 		}
 	})
 	;

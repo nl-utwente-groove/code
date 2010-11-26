@@ -16,6 +16,7 @@ package groove.lts;
 
 import groove.control.ControlState;
 import groove.control.ControlTransition;
+import groove.control.CtrlPar;
 import groove.control.Location;
 import groove.graph.DeltaApplier;
 import groove.graph.Graph;
@@ -28,6 +29,8 @@ import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.SPORule;
+
+import java.util.List;
 
 /**
  * 
@@ -88,6 +91,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
             RuleMatch match = getMatch();
             String[] output = transition.getOutputParameters();
             SPORule rule = (SPORule) getEvent().getRule();
+            List<CtrlPar.Var> ruleSig = rule.getSignature();
             for (int i = 0; i < output.length; i++) {
                 if (output[i] != null && !output[i].equals("_")) {
                     int creator = -1;
@@ -99,7 +103,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
                     } else {
                         Node sourceValue =
                             match.getElementMap().getNode(
-                                rule.getParameter(i + 1));
+                                ruleSig.get(i).getRuleNode());
                         targetValue = nodeMap.getNode(sourceValue);
                     }
                     this.setParameter(position, targetValue);

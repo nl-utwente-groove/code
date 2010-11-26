@@ -239,26 +239,20 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * parameters. Numbered parameters are divided into input (LHS) and output
      * (RHS-only) parameters, and are visible on the transition label.
      * @param sig the signature of the rule, i.e., the list of (visible) parameters
-     * @param sigNodeMap mapping from the parameters in the signature to (LHS or RHS) nodes
      * @param hiddenPars the set of hidden (i.e., unnumbered) parameter nodes
      */
-    public void setSignature(List<CtrlPar.Var> sig,
-            Map<CtrlPar.Var,Node> sigNodeMap, Set<Node> hiddenPars) {
+    public void setSignature(List<CtrlPar.Var> sig, Set<Node> hiddenPars) {
         this.sig = sig;
-        this.parNodeMap = sigNodeMap;
         this.hiddenPars = hiddenPars;
         List<CtrlPar.Var> derivedSig = new ArrayList<CtrlPar.Var>();
-        for (int i = 0; i < getNumberOfParameters(); i++) {
+        for (int i = 0; i < sig.size(); i++) {
             String parName = "arg" + (i + 1);
-            String parTypeName = getAttributeParameterType(i + 1);
-            if (parTypeName == null) {
-                parTypeName = CtrlType.NODE_TYPE_NAME;
-            }
+            String parTypeName = sig.get(i).getType().toString();
             CtrlType parType = CtrlType.createType(parTypeName);
             CtrlVar var = new CtrlVar(parName, parType);
             CtrlPar.Var par;
-            boolean inOnly = !isOutputParameter(i + 1);
-            boolean outOnly = !isInputParameter(i + 1);
+            boolean inOnly = sig.get(i).isInOnly();
+            boolean outOnly = sig.get(i).isOutOnly();
             if (!inOnly && !outOnly) {
                 par = new CtrlPar.Var(var);
             } else {
@@ -279,47 +273,6 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         return this.sig;
     }
 
-    /** Returns the mapping from parameters to (LHS and RHS) nodes. */
-    public Map<CtrlPar.Var,Node> getParNodeMap() {
-        return this.parNodeMap;
-    }
-
-    /**
-     * Gets the type of the parameter specified
-     * @param parameter the parameter number
-     * @return a String describing the type
-     */
-    public String getAttributeParameterType(int parameter) {
-        return this.sig.get(parameter - 1).getType().toString();
-    }
-
-    /**
-     * Returns the Node from this rule which is associated with the given
-     * parameter number
-     * @param param the number of the parameter to find
-     * @return the Node from this Rule that corresponds to param
-     */
-    public Node getParameter(int param) {
-        return this.parNodeMap.get(this.sig.get(param - 1));
-    }
-
-    /**
-     * Returns the total number of parameters for this rule.
-     * @return the total number of parameters for this rule
-     */
-    public int getNumberOfParameters() {
-        return this.sig.size();
-    }
-
-    /**
-     * Returns whether a numbered parameter can be used as an output parameter
-     * @param param the number of the parameter under inquiry
-     * @return true if this parameter can be used as output parameter, false otherwise
-     */
-    public boolean isOutputParameter(int param) {
-        return !this.sig.get(param - 1).isInOnly();
-    }
-
     /**
      * Returns whether a numbered parameter is a creator parameter
      * @param param the number of the parameter under inquiry
@@ -327,32 +280,13 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * parameter is a creator parameter, -1 otherwise
      */
     public int isCreatorParameter(int param) {
-        Node paramNode = this.getParameter(param);
+        Node paramNode = getSignature().get(param - 1).getRuleNode();
         for (int i = 0; i < this.creatorNodes.length; i++) {
             if (this.creatorNodes[i] == paramNode) {
                 return i;
             }
         }
         return -1;
-    }
-
-    /**
-     * Returns whether a numbered parameter can be used as an input parameter
-     * @param param the number of the parameter under inquiry
-     * @return true if this parameter can be used as input parameter
-     */
-    public boolean isInputParameter(int param) {
-        return !this.sig.get(param - 1).isOutOnly();
-    }
-
-    /**
-     * Returns whether the given parameter number is a required input parameter.
-     * Parameters are required if they are on an isolated attribute node.
-     * @param param the number of the parameter under inquiry
-     * @return true if this is a required input parameter, false otherwise
-     */
-    public boolean isRequiredInput(int param) {
-        return this.sig.get(param - 1).isInOnly();
     }
 
     /**
@@ -401,7 +335,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         }
         for (CtrlPar.Var par : getSignature()) {
             if (par.isInOnly()) {
-                anchorNodes.add(getParNodeMap().get(par));
+                anchorNodes.add(par.getRuleNode());
             }
         }
         return getMatcherFactory().createMatcher(this, anchorNodes,
@@ -1228,9 +1162,10 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         while (it.hasNext()) {
             Node node = it.next();
             boolean resolved = false;
-            for (int i = 1; i <= getNumberOfParameters(); i++) {
-                if (getParameter(i) == node && !isOutputParameter(i)) {
+            for (CtrlPar.Var par : getSignature()) {
+                if (par.getRuleNode() == node && !par.isOutOnly()) {
                     resolved = true;
+                    break;
                 }
             }
             if (resolved) {
@@ -1374,20 +1309,12 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 
     /** The signature of the rule. */
     private List<CtrlPar.Var> sig;
-    /** Mapping from parameters in the signature to nodes of the rule. */
-    private Map<CtrlPar.Var,Node> parNodeMap;
     /**
      * Set of anonymous (unnumbered) parameters.
      */
     private Set<Node> hiddenPars;
     /** The matcher for events of this rule. */
     private MatchStrategy<VarNodeEdgeMap> eventMatcher;
-
-    //
-    // /**
-    // * Implementation of ParameterAspect stuff
-    // */
-    // private Map<Integer,Node> parameterNodeMap;
 
     /** Returns the current anchor factory for all rules. */
     public static AnchorFactory<SPORule> getAnchorFactory() {
@@ -1408,10 +1335,6 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     static public long getMatchingTime() {
         return SearchPlanStrategy.searchFindReporter.getTotalTime();
-    }
-
-    private void debug(String msg) {
-        // System.err.println("Variable debug (SPORule): "+msg);
     }
 
     /**
