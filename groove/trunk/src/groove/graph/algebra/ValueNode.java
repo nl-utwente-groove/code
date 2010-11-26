@@ -105,6 +105,14 @@ public class ValueNode extends VariableNode {
         return result;
     }
 
+    /** Creates a value node for a given string representation of a value.
+     * Chooses a value from the default algebras.
+     */
+    static public ValueNode createValueNode(String value) {
+        Algebra<?> alg = AlgebraRegister.getInstance().getAlgebra(value);
+        return createValueNode(alg, alg.getValue(value));
+    }
+
     /** Internal store of previously generated value nodes. */
     static private final Map<String,Map<Object,ValueNode>> valueNodeStore =
         new HashMap<String,Map<Object,ValueNode>>();

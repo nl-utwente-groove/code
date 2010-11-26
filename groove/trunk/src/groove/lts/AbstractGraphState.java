@@ -16,8 +16,6 @@
  */
 package groove.lts;
 
-import groove.algebra.Algebra;
-import groove.algebra.AlgebraRegister;
 import groove.control.ControlState;
 import groove.control.ControlTransition;
 import groove.control.Location;
@@ -421,41 +419,30 @@ abstract public class AbstractGraphState extends
      * Match given certain parameters
      */
     public Morphism getPartialMorphism(ControlTransition ct) {
-        Morphism m = null;
+        Morphism result = null;
         if (ct.hasInputParameters()) {
             SPORule rule = (SPORule) ct.getRule();
-            String[] input = ct.getInputParameters();
-            m = new DefaultMorphism(rule.getTarget(), this.getGraph());
-            for (int i = 0; i < input.length; i++) {
-                if (input[i] != null && !input[i].equals("_")) {
+            String[] inArgs = ct.getInputParameters();
+            result = new DefaultMorphism(rule.getTarget(), this.getGraph());
+            for (int i = 0; i < inArgs.length; i++) {
+                String arg = inArgs[i];
+                if (arg != null && !arg.equals("_")) {
                     Node src = (rule).getParameter(i + 1);
-                    Node tgt;
-                    if (rule.getAttributeParameterType(i + 1).equals("node")) {
-                        tgt =
-                            this.parameters[((ControlState) this.location).getVariablePosition(input[i])];
-                    } else {
-                        int idx =
-                            ((ControlState) this.location).getVariablePosition(input[i]);
-                        if (idx != -1) {
-                            tgt = this.parameters[idx];
-                        } else {
-                            Algebra<?> alg =
-                                AlgebraRegister.getInstance().getAlgebra(
-                                    input[i]);
-                            tgt =
-                                ValueNode.createValueNode(alg,
-                                    alg.getValue(input[i]));
-                        }
-                    }
+                    int idx =
+                        ((ControlState) this.location).getVariablePosition(arg);
+                    Node tgt =
+                        idx < 0 ? ValueNode.createValueNode(arg)
+                                : this.parameters[idx];
                     if (tgt == null) {
                         // we're trying to match a node that has been deleted!
-                        return null;
+                        result = null;
+                        break;
                     }
-                    m.putNode(src, tgt);
+                    result.putNode(src, tgt);
                 }
             }
         }
-        return m;
+        return result;
     }
 
     /** The internally stored (optional) control location. */
