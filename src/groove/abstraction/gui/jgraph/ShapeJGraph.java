@@ -26,6 +26,8 @@ import groove.abstraction.Util;
 import groove.graph.Edge;
 import groove.gui.jgraph.JAttr;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -73,6 +75,8 @@ public class ShapeJGraph extends JGraph {
         this.setConnectable(false);
         this.setDisconnectable(false);
         this.setDisconnectOnMove(false);
+
+        this.addMouseListener(new MyMouseListener());
 
         this.shape = model.getShape();
         this.nodeMap = new HashMap<ShapeNode,ShapeJVertex>();
@@ -204,6 +208,19 @@ public class ShapeJGraph extends JGraph {
         }
 
         return result;
+    }
+
+    private class MyMouseListener extends MouseAdapter {
+
+        /** Empty constructor wit the correct visibility. */
+        MyMouseListener() {
+            // empty
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent evt) {
+            ShapeJGraph.this.refresh();
+        }
     }
 
 }
