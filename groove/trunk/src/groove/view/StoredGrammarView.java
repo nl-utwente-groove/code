@@ -16,7 +16,6 @@
  */
 package groove.view;
 
-import groove.control.ControlAutomaton;
 import groove.control.ControlView;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
@@ -372,8 +371,8 @@ public class StoredGrammarView implements GrammarView, Observer {
                     "Rule priorities and control programs are incompatible, please disable either."));
             } else {
                 try {
-                    ControlAutomaton ca = controlView.toAutomaton(result);
-                    result.setControl(ca);
+                    result.setControl(controlView.toAutomaton(result));
+                    result.setCtrlAut(controlView.toCtrlAut(result));
                 } catch (FormatException exc) {
                     for (FormatError error : exc.getErrors()) {
                         errors.add(new FormatError(

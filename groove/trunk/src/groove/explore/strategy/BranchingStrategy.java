@@ -38,7 +38,7 @@ public class BranchingStrategy extends AbstractStrategy {
         }
         ExploreCache cache = getCache(false);
         for (RuleEvent match : createMatchCollector(cache).getMatchSet()) {
-            applyEvent(match, cache);
+            applyEvent(match);
         }
         setClosed(getAtState());
         updateAtState();

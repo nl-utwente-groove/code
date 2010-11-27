@@ -19,7 +19,7 @@ package groove.lts;
 import groove.control.ControlState;
 import groove.control.ControlTransition;
 import groove.control.CtrlPar;
-import groove.control.Location;
+import groove.control.CtrlSchedule;
 import groove.graph.DefaultMorphism;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -54,7 +54,7 @@ abstract public class AbstractGraphState extends
      * @param location the control location; may be <code>null</code>.
      */
     public AbstractGraphState(CacheReference<StateCache> reference,
-            Location location) {
+            ControlState location) {
         super(reference);
         if (location != null) {
             this.setLocation(location);
@@ -72,17 +72,25 @@ abstract public class AbstractGraphState extends
 
     abstract public Graph getGraph();
 
-    public Location getLocation() {
+    public ControlState getLocation() {
         return this.location;
     }
 
-    public void setLocation(Location l) {
-        this.location = l;
-        if (this.parameters == null && l != null
-            && ((ControlState) l).getInitializedVariables().size() > 0) {
+    public void setLocation(ControlState ctrlState) {
+        this.location = ctrlState;
+        if (this.parameters == null && ctrlState != null
+            && ctrlState.getInitializedVariables().size() > 0) {
             this.parameters =
-                new Node[((ControlState) l).getInitializedVariables().size()];
+                new Node[ctrlState.getInitializedVariables().size()];
         }
+    }
+
+    public final CtrlSchedule getSchedule() {
+        return this.schedule;
+    }
+
+    public final void setSchedule(CtrlSchedule schedule) {
+        this.schedule = schedule;
     }
 
     /*
@@ -431,8 +439,7 @@ abstract public class AbstractGraphState extends
                 String arg = inArgs[i];
                 if (arg != null && !arg.equals("_")) {
                     Node src = ruleSig.get(i).getRuleNode();
-                    int idx =
-                        ((ControlState) this.location).getVariablePosition(arg);
+                    int idx = (this.location).getVariablePosition(arg);
                     Node tgt =
                         idx < 0 ? ValueNode.createValueNode(arg)
                                 : this.parameters[idx];
@@ -448,8 +455,11 @@ abstract public class AbstractGraphState extends
         return result;
     }
 
+    /** The control schedule, recording up to which rule this state has been explored. */
+    private CtrlSchedule schedule;
+
     /** The internally stored (optional) control location. */
-    private Location location;
+    private ControlState location;
 
     /** Global constant empty stub array. */
     private GraphTransitionStub[] transitionStubs = EMPTY_TRANSITION_STUBS;

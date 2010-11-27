@@ -16,7 +16,7 @@
  */
 package groove.explore.strategy;
 
-import groove.control.Location;
+import groove.control.ControlState;
 import groove.explore.result.Acceptor;
 import groove.explore.util.ExploreCache;
 import groove.explore.util.MatchApplier;
@@ -174,9 +174,24 @@ public abstract class AbstractStrategy implements Strategy {
      * Applies a given rule event to the current state, and returns
      * the resulting transition.
      */
-    protected GraphTransition applyEvent(RuleEvent event, ExploreCache cache) {
-        Location targetLocation = cache.getTarget(event.getRule());
-        return getMatchApplier().apply(getAtState(), event, targetLocation);
+    protected GraphTransition applyEvent(RuleEvent event) {
+        return getMatchApplier().apply(getAtState(), event,
+            getTargetLocation(event));
+    }
+
+    /** 
+     * Returns the target location of the control transition corresponding
+     * to a given rule, if any.
+     */
+    protected ControlState getTargetLocation(RuleEvent event) {
+        ControlState result;
+        ControlState sourceLoc = getAtState().getLocation();
+        if (sourceLoc == null) {
+            result = null;
+        } else {
+            result = sourceLoc.getTransition(event.getRule()).target();
+        }
+        return result;
     }
 
     /**

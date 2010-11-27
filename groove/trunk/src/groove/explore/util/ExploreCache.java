@@ -1,6 +1,5 @@
 package groove.explore.util;
 
-import groove.control.Location;
 import groove.trans.Rule;
 
 /**
@@ -31,10 +30,4 @@ public interface ExploreCache extends ResumableIterator<Rule> {
      * @param rule A rule that has a match.
      */
     public void updateMatches(Rule rule);
-
-    /**
-     * The target location when a rule is applied.
-     * @return The target location when a rule is applied.
-     */
-    public Location getTarget(Rule rule);
 }

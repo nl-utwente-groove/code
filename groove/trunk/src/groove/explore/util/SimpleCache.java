@@ -16,7 +16,6 @@
  */
 package groove.explore.util;
 
-import groove.control.Location;
 import groove.trans.Rule;
 
 import java.util.Collection;
@@ -72,10 +71,6 @@ public class SimpleCache implements ExploreCache {
 
     public void remove() {
         this.internalIterator.remove();
-    }
-
-    public Location getTarget(Rule rule) {
-        return null;
     }
 
     public Rule last() {

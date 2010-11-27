@@ -20,7 +20,6 @@ import groove.control.ControlAutomaton;
 import groove.control.ControlShape;
 import groove.control.ControlState;
 import groove.control.ControlTransition;
-import groove.control.Location;
 import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.graph.Node;
@@ -47,7 +46,7 @@ public class ControlJModel extends GraphJModel {
      * @invariant activeState == null || ltsJModel.graph().contains(activeState)
      */
 
-    private Location activeLocation;
+    private ControlState activeLocation;
 
     /**
      * The currently active transition of the LTS. The source node of
@@ -90,7 +89,7 @@ public class ControlJModel extends GraphJModel {
      * state is active (which should occur only if no grammar is loaded and
      * hence the LTS is empty).
      */
-    public Location getActiveLocation() {
+    public ControlState getActiveLocation() {
         return this.activeLocation;
     }
 
@@ -126,8 +125,8 @@ public class ControlJModel extends GraphJModel {
      * @param location the new active location
      * @return the old active location
      */
-    public Location setActiveLocation(Location location) {
-        Location result = this.activeLocation;
+    public ControlState setActiveLocation(ControlState location) {
+        ControlState result = this.activeLocation;
         this.activeLocation = location;
         Set<JCell> changedCells = new HashSet<JCell>();
         refresh(changedCells);

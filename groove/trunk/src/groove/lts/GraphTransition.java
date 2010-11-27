@@ -16,6 +16,7 @@
  */
 package groove.lts;
 
+import groove.control.CtrlTransition;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.trans.RuleEvent;
@@ -32,6 +33,9 @@ public interface GraphTransition extends Transition {
 
     /** Overrides the method to specialise the result type. */
     GraphState target();
+
+    /** Returns the (possibly {@code null} control transition associated with this transition. */
+    CtrlTransition getCtrlTransition();
 
     /**
      * Returns the transformation event of this transition.

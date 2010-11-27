@@ -191,7 +191,7 @@ public class CtrlBuildTest extends TestCase {
     }
 
     private String getName(CtrlSchedule s) {
-        return s.getTransition().label().getCall().getName();
+        return s.getTransition().getCall().getName();
     }
 
     /** Builds a control automaton that should contain an error. */

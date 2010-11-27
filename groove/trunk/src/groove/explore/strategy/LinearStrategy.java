@@ -60,8 +60,7 @@ public class LinearStrategy extends AbstractStrategy {
         ExploreCache cache = getCache(true);
         RuleEvent event = getMatch(cache);
         if (event != null) {
-            getMatchApplier().apply(getAtState(), event,
-                cache.getTarget(event.getRule()));
+            applyEvent(event);
             if (closeExit()) {
                 setClosed(getAtState());
             }
