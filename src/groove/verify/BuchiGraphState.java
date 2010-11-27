@@ -16,7 +16,8 @@
  */
 package groove.verify;
 
-import groove.control.Location;
+import groove.control.ControlState;
+import groove.control.CtrlState;
 import groove.graph.Graph;
 import groove.lts.AbstractGraphState;
 import groove.lts.GraphState;
@@ -106,8 +107,13 @@ public class BuchiGraphState extends AbstractGraphState {
      * @return the location; may be <code>null</code>.
      */
     @Override
-    public Location getLocation() {
+    public ControlState getLocation() {
         return this.state.getLocation();
+    }
+
+    @Override
+    public CtrlState getCtrlState() {
+        return this.state.getCtrlState();
     }
 
     /**
@@ -122,7 +128,7 @@ public class BuchiGraphState extends AbstractGraphState {
      * @param location the new location
      */
     @Override
-    public void setLocation(Location location) {
+    public void setLocation(ControlState location) {
         this.state.setLocation(location);
     }
 

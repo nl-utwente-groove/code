@@ -18,6 +18,8 @@ package groove.lts;
 
 import groove.control.ControlState;
 import groove.control.ControlTransition;
+import groove.control.CtrlState;
+import groove.control.CtrlTransition;
 import groove.graph.AbstractEdge;
 import groove.graph.AbstractGraphShape;
 import groove.graph.DefaultMorphism;
@@ -51,18 +53,20 @@ public class DefaultGraphTransition extends
         this.event = event;
         this.addedNodes = addedNodes;
         this.symmetry = symmetry;
+        CtrlState sourceCtrl = source.getCtrlState();
+        this.ctrlTrans =
+            sourceCtrl == null ? null
+                    : sourceCtrl.getTransition(event.getRule());
     }
 
     /**
+     * @param event the rule event
      * @param source the source state
-     * @param label the label of the transition
      * @param target the target state
      */
-    public DefaultGraphTransition(GraphState source, Label label,
+    public DefaultGraphTransition(RuleEvent event, GraphState source,
             GraphState target) {
-        super(source, label, target);
-        this.symmetry = false;
-        this.addedNodes = null;
+        this(event, null, source, target, false);
     }
 
     public RuleEvent getEvent() {
@@ -274,6 +278,13 @@ public class DefaultGraphTransition extends
 
     /** The total number of anchor images created. */
     static private int anchorImageCount = 0;
+
+    /** Returns the (possibly {@code null} underlying control transition. */
+    public CtrlTransition getCtrlTransition() {
+        return this.ctrlTrans;
+    }
+
+    private final CtrlTransition ctrlTrans;
 
     /**
      * Returns the ControlTransition with which this transition is associated

@@ -68,7 +68,7 @@ public class SystemRecord implements NodeFactory {
     public SystemRecord(final GraphGrammar grammar, boolean considerRules)
         throws IllegalStateException {
         grammar.testFixed(true);
-        this.ruleSystem = grammar;
+        this.grammar = grammar;
         this.checkIso = grammar.getProperties().isCheckIsomorphism();
         this.nodeCounter = new DefaultDispenser();
         int lastUsed = computeHighestNodeNr(grammar.getStartGraph());
@@ -103,8 +103,8 @@ public class SystemRecord implements NodeFactory {
     }
 
     /** Returns the stored rule system on which the derivations are based. */
-    public RuleSystem getRuleSystem() {
-        return this.ruleSystem;
+    public GraphGrammar getGrammar() {
+        return this.grammar;
     }
 
     /**
@@ -199,7 +199,7 @@ public class SystemRecord implements NodeFactory {
      */
     protected RuleDependencies getDependencies() {
         if (this.dependencies == null) {
-            this.dependencies = new RuleDependencies(this.ruleSystem);
+            this.dependencies = new RuleDependencies(this.grammar);
         }
         return this.dependencies;
     }
@@ -214,20 +214,18 @@ public class SystemRecord implements NodeFactory {
      */
     public ExploreCache freshCache(GraphState state) {
         ExploreCache result;
-        if (this.ruleSystem.hasMultiplePriorities()) {
-            result =
-                new PriorityCache(this.ruleSystem.getRuleMap());
+        if (this.grammar.hasMultiplePriorities()) {
+            result = new PriorityCache(this.grammar.getRuleMap());
         } else if (state.getLocation() != null) {
             if (false) {
                 //result =
                 //  new LocationCache((ControlLocation) state.getLocation(),
                 //    state, isRandomized);
             } else {
-                result =
-                    new ControlStateCache(state.getLocation(), state);
+                result = new ControlStateCache(state.getLocation(), state);
             }
         } else {
-            result = new SimpleCache(this.ruleSystem.getRules());
+            result = new SimpleCache(this.grammar.getRules());
         }
         return result;
     }
@@ -241,8 +239,7 @@ public class SystemRecord implements NodeFactory {
      * @param isRuleInterrupted Indicates whether a rule may be interrupted.
      * @return An appropriate explore cache, depending on the type of grammar.
      */
-    public ExploreCache createCache(GraphState state,
-            boolean isRuleInterrupted) {
+    public ExploreCache createCache(GraphState state, boolean isRuleInterrupted) {
         ExploreCache result = freshCache(state);
         // Increment the iterator with the transitions already explored
         // for this state
@@ -268,7 +265,7 @@ public class SystemRecord implements NodeFactory {
     /**
      * The associated rule system.
      */
-    private final RuleSystem ruleSystem;
+    private final GraphGrammar grammar;
     /**
      * Identity map for events that have been encountered during exploration.
      * Events are stored only if {@link #isReuseEvents()} is set.

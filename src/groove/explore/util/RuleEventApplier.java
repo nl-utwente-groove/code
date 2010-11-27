@@ -16,7 +16,7 @@
  */
 package groove.explore.util;
 
-import groove.control.Location;
+import groove.control.ControlState;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -41,6 +41,6 @@ public interface RuleEventApplier {
      * @return the added (new) transition
      */
     public GraphTransition apply(GraphState source, RuleEvent event,
-            Location targetLocation);
+            ControlState targetLocation);
 
 }

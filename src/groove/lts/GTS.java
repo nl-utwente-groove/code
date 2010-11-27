@@ -17,7 +17,6 @@
 package groove.lts;
 
 import groove.control.ControlState;
-import groove.control.Location;
 import groove.explore.result.Result;
 import groove.graph.AbstractGraphShape;
 import groove.graph.Edge;
@@ -86,7 +85,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 
     /**
      * Callback factory method to create and initialise the start graph of the
-     * GTS, on the basis of a given graph. Creation is done using
+     * GTS, on the basis of a given (non-{@code null}) graph. Creation is done using
      * {@link #createStartState(Graph)}.
      */
     protected GraphState computeStartState(Graph startGraph) {
@@ -97,7 +96,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 
     /**
      * Callback factory method to create the start graph of the GTS, on the
-     * basis of a given graph.
+     * basis of a given (non-{@code null}) graph.
      */
     protected GraphState createStartState(Graph startGraph) {
         // initialise the start state with a control location if necessary
@@ -487,10 +486,10 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
                     if (this.checker.areIsomorphic(one, two)) {
                         // if variables are involved we need to make sure they 
                         // map to isomorphic nodes
-                        ControlState cs = (ControlState) stateKey.getLocation();
+                        ControlState cs = stateKey.getLocation();
                         if (cs != null) {
                             List<String> variables =
-                                ((ControlState) stateKey.getLocation()).getInitializedVariables();
+                                (stateKey.getLocation()).getInitializedVariables();
                             if (variables.size() > 0) {
                                 NodeEdgeMap isomorphism =
                                     (this.checker).getIsomorphism(one, two);
@@ -527,7 +526,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
          */
         protected boolean isDistinctLocations(GraphState stateKey,
                 GraphState otherStateKey) {
-            Location control = stateKey.getLocation();
+            ControlState control = stateKey.getLocation();
             return control != null
                 && !control.equals(otherStateKey.getLocation());
         }

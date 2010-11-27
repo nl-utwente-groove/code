@@ -67,7 +67,7 @@ public class LinearConfluentRules extends AbstractStrategy {
         collector.collectMatchSet(matches);
         Iterator<RuleEvent> matchesIter = matches.iterator();
         while (matchesIter.hasNext()) {
-            applyEvent(matchesIter.next(), cache);
+            applyEvent(matchesIter.next());
         }
         setClosed(getAtState());
         updateAtState();

@@ -34,8 +34,8 @@ import static groove.gui.Options.SHOW_VERTEX_LABELS_OPTION;
 import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
+import groove.control.ControlState;
 import groove.control.ControlView;
-import groove.control.Location;
 import groove.explore.AcceptorEnumerator;
 import groove.explore.DefaultExplorationValidator;
 import groove.explore.Exploration;
@@ -46,7 +46,6 @@ import groove.explore.strategy.Boundary;
 import groove.explore.strategy.BoundedModelCheckingStrategy;
 import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExplorationStatistics;
-import groove.explore.util.ExploreCache;
 import groove.explore.util.MatchApplier;
 import groove.explore.util.RuleEventApplier;
 import groove.graph.Element;
@@ -1328,13 +1327,17 @@ public class Simulator {
      */
     public synchronized void applyMatch() {
         if (getCurrentEvent() != null) {
-            ExploreCache cache =
-                getGTS().getRecord().createCache(getCurrentState(), false);
-            Location targetLocation =
-                cache.getTarget(getCurrentEvent().getRule());
+            ControlState sourceLoc = getCurrentState().getLocation();
+            ControlState targetLoc;
+            if (sourceLoc == null) {
+                targetLoc = null;
+            } else {
+                targetLoc =
+                    sourceLoc.getTransition(getCurrentEvent().getRule()).target();
+            }
             GraphTransition result =
                 getEventApplier().apply(getCurrentState(), getCurrentEvent(),
-                    targetLocation);
+                    targetLoc);
             if (result != null) {
                 setCurrentState(result.target());
                 fireApplyTransition(result);

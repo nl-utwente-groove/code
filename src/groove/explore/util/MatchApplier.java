@@ -17,7 +17,6 @@
 package groove.explore.util;
 
 import groove.control.ControlState;
-import groove.control.Location;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.lts.AbstractGraphState;
@@ -59,13 +58,13 @@ public class MatchApplier implements RuleEventApplier {
      * @return the added (new) transition
      */
     public GraphTransition apply(GraphState source, RuleEvent event,
-            Location targetLocation) {
+            ControlState targetLocation) {
         addTransitionReporter.start();
         GraphTransition transition = null;
-        Location sourceLocation = source.getLocation();
+        ControlState sourceLocation = source.getLocation();
         if (sourceLocation == targetLocation
             && !event.getRule().isModifying()
-            && (sourceLocation == null || !((ControlState) sourceLocation).getTransition(
+            && (sourceLocation == null || !sourceLocation.getTransition(
                 event.getRule()).hasOutputParameters())) {
             transition = createTransition(event, source, source, false);
         } else if (targetLocation == null && event instanceof VirtualEvent<?>) {
@@ -112,7 +111,7 @@ public class MatchApplier implements RuleEventApplier {
      * state.
      */
     private GraphNextState createState(RuleEvent event, GraphState source,
-            Location target) {
+            ControlState target) {
         Node[] addedNodes;
         if (event instanceof VirtualEvent.GraphState) {
             VirtualEvent.GraphState virtual = (VirtualEvent.GraphState) event;

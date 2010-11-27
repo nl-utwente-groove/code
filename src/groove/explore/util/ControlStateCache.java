@@ -18,7 +18,6 @@ package groove.explore.util;
 
 import groove.control.ControlState;
 import groove.control.ControlTransition;
-import groove.control.Location;
 import groove.lts.GraphState;
 import groove.trans.Rule;
 
@@ -36,7 +35,7 @@ public class ControlStateCache implements ExploreCache {
      * @param location the location this ControlStateCache will operate on
      * @param state the GraphState this ControlStateCache will operate on
      */
-    public ControlStateCache(Location location, GraphState state) {
+    public ControlStateCache(ControlState location, GraphState state) {
         this.location = location;
         this.failed = new HashSet<Rule>();
         this.matched = new HashSet<Rule>();
@@ -44,15 +43,10 @@ public class ControlStateCache implements ExploreCache {
         this.iterator = createIterator(this.location);
     }
 
-    private Iterator<Rule> createIterator(Location location) {
+    private Iterator<Rule> createIterator(ControlState location) {
         Set<Rule> enabledRules =
             location.getEnabledRules(this.matched, this.failed);
         return enabledRules.iterator();
-    }
-
-    @Override
-    public Location getTarget(Rule rule) {
-        return this.getTransition(rule).target();
     }
 
     /**
@@ -61,7 +55,7 @@ public class ControlStateCache implements ExploreCache {
      * @return a ControlTransition which can be traversed by applying rule
      */
     public ControlTransition getTransition(Rule rule) {
-        return ((ControlState) this.location).getTransition(rule);
+        return (this.location).getTransition(rule);
     }
 
     @Override
@@ -131,7 +125,7 @@ public class ControlStateCache implements ExploreCache {
     /** The current rule iterator. */
     private Iterator<Rule> iterator;
     /** Control location on which this cache works. */
-    private final Location location;
+    private final ControlState location;
     /** Most recently returned rule. */
     private Rule last;
 }

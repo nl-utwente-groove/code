@@ -17,6 +17,7 @@
 package groove.trans;
 
 import groove.control.ControlAutomaton;
+import groove.control.CtrlAut;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.view.FormatError;
@@ -110,6 +111,25 @@ public class GraphGrammar extends RuleSystem {
      * @throws IllegalStateException if the grammar is already fixed
      * @see #isFixed()
      */
+    public void setCtrlAut(CtrlAut aut) {
+        testFixed(false);
+        this.ctrlAut = aut;
+    }
+
+    /**
+     * Returns the control automaton of this grammar, or <code>null</code> if
+     * there is none.
+     */
+    public CtrlAut getCtrlAut() {
+        return this.ctrlAut;
+    }
+
+    /**
+     * Sets a control automaton for this grammar. This is only allowed if the
+     * grammar is not yet fixed, as indicated by {@link #isFixed()}.
+     * @throws IllegalStateException if the grammar is already fixed
+     * @see #isFixed()
+     */
     public void setControl(ControlAutomaton control) {
         testFixed(false);
         this.control = control;
@@ -177,4 +197,9 @@ public class GraphGrammar extends RuleSystem {
      * none.
      */
     private ControlAutomaton control;
+    /**
+     * The control automaton of this grammar; <code>null</code> if there is
+     * none.
+     */
+    private CtrlAut ctrlAut;
 }

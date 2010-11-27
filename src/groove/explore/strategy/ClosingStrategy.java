@@ -52,9 +52,7 @@ abstract public class ClosingStrategy extends AbstractStrategy {
             new ArrayList<VirtualEvent.GraphState>(matchSet.size());
         while (matchIter.hasNext()) {
             RuleEvent nextEvent = matchIter.next();
-            GraphTransition trans =
-                getMatchApplier().apply(getAtState(), nextEvent,
-                    cache.getTarget(nextEvent.getRule()));
+            GraphTransition trans = applyEvent(nextEvent);
             outTransitions.add(new VirtualEvent.GraphState(trans));
         }
         addToPool(outTransitions);

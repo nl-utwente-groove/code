@@ -36,7 +36,7 @@ import java.util.Set;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class ControlState implements Node, Location {
+public class ControlState implements Node {
 
     /**
      * Create a ControlState. A ControlState needs to know the ControlShape it
@@ -305,10 +305,9 @@ public class ControlState implements Node, Location {
      * TODO: return a Map<Rule,Parameter> or something, ensure that the caller
      * of this method knows that there are input parameters to be processed.
      * 
-     * Since we know which variables are initialized we can ensure we're only
+     * Since we know which variables are initialised we can ensure we're only
      * returning parameters which can actually be used.
      */
-    @Override
     public Set<Rule> getEnabledRules(Set<Rule> matched, Set<Rule> failed) {
         Set<Rule> ret = new HashSet<Rule>();
         // add all the rules that are enabled by default:
@@ -329,7 +328,6 @@ public class ControlState implements Node, Location {
         return ret;
     }
 
-    @Override
     public String getName() {
         return this.toString();
     }
@@ -353,7 +351,6 @@ public class ControlState implements Node, Location {
         return ret;
     }
 
-    @Override
     public boolean isSuccess(Set<Rule> rules) {
         // TODO: update this to include the parameters
         if (this.isSuccess()) {

@@ -35,8 +35,7 @@ public final class ShapeTransition extends DefaultGraphTransition {
 
     /** Default constructor, delegates to super class. */
     public ShapeTransition(ShapeState source, RuleEvent event, ShapeState target) {
-        super(source, event.getLabel(), target);
-        this.event = event;
+        super(event, source, target);
     }
 
     // ------------------------------------------------------------------------

@@ -19,7 +19,7 @@ package groove.abstraction.lts;
 import groove.abstraction.Shape;
 import groove.abstraction.Transform;
 import groove.abstraction.gui.ShapeDialog;
-import groove.control.Location;
+import groove.control.ControlState;
 import groove.explore.util.RuleEventApplier;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -71,7 +71,7 @@ public final class ShapeStateGenerator implements RuleEventApplier {
 
     @Override
     public GraphTransition apply(GraphState source, RuleEvent event,
-            Location targetLocation) {
+            ControlState targetLocation) {
         assert source instanceof ShapeState;
         GraphTransition result = null;
 

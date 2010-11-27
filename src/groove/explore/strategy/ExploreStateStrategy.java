@@ -42,7 +42,7 @@ public class ExploreStateStrategy extends AbstractStrategy {
         // rule might have been interrupted
         ExploreCache cache = getCache(true);
         for (RuleEvent match : createMatchCollector(cache).getMatchSet()) {
-            applyEvent(match, cache);
+            applyEvent(match);
         }
         // the current state has been fully explored
         // therefore we can close it

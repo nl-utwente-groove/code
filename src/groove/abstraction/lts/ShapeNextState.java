@@ -17,6 +17,7 @@
 package groove.abstraction.lts;
 
 import groove.abstraction.Shape;
+import groove.control.CtrlTransition;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
@@ -211,4 +212,8 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
         return this.transition.isEquivalent(other);
     }
 
+    @Override
+    public CtrlTransition getCtrlTransition() {
+        return null;
+    }
 }

@@ -20,6 +20,7 @@ import groove.control.parse.Counter;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
+import groove.trans.Rule;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -104,19 +105,24 @@ public class CtrlState implements Node {
      * Add an outgoing transition to this control state.
      */
     public boolean addTransition(CtrlTransition transition) {
-        return this.outTransitions.add(transition);
+        return this.outTransitions.put(transition.getRule(), transition) == null;
     }
 
     /**
      * Removes an outgoing transition from this control state.
      */
     public boolean removeTransition(CtrlTransition transition) {
-        return this.outTransitions.remove(transition);
+        return this.outTransitions.remove(transition.getRule()) != null;
+    }
+
+    /** Returns the outgoing control transition for a given rule, if any. */
+    public CtrlTransition getTransition(Rule rule) {
+        return this.outTransitions.get(rule);
     }
 
     /** Returns the outgoing control transitions of this control state. */
-    public Set<CtrlTransition> getTransitions() {
-        return this.outTransitions;
+    public Collection<CtrlTransition> getTransitions() {
+        return this.outTransitions.values();
     }
 
     /** 
@@ -126,7 +132,7 @@ public class CtrlState implements Node {
     public Set<CtrlCall> getInit() {
         Set<CtrlCall> result = new HashSet<CtrlCall>();
         for (CtrlTransition trans : getTransitions()) {
-            CtrlCall call = trans.label().getCall();
+            CtrlCall call = trans.getCall();
             if (call.isOmega()) {
                 result = null;
                 break;
@@ -137,9 +143,9 @@ public class CtrlState implements Node {
         return result;
     }
 
-    /** Set of outgoing transitions. */
-    private final Set<CtrlTransition> outTransitions =
-        new HashSet<CtrlTransition>();
+    /** Mapping from rules to outgoing transitions. */
+    private final Map<Rule,CtrlTransition> outTransitions =
+        new HashMap<Rule,CtrlTransition>();
 
     /**
      * Returns the set of bound variables in this state.
@@ -173,8 +179,10 @@ public class CtrlState implements Node {
             assert this.disabledMap == null;
             this.disabledMap = computeDisabledMap();
             this.schedule =
-                computeSchedule(new TreeSet<CtrlTransition>(getTransitions()),
+                getSchedule(new TreeSet<CtrlTransition>(getTransitions()),
                     Collections.<CtrlCall>emptySet());
+            // discard the map to save space
+            this.scheduleMap = null;
         }
         return this.schedule;
     }
@@ -196,6 +204,25 @@ public class CtrlState implements Node {
         return result;
     }
 
+    private CtrlSchedule getSchedule(Set<CtrlTransition> transSet,
+            Set<CtrlCall> triedCalls) {
+        if (this.scheduleMap == null) {
+            this.scheduleMap =
+                new HashMap<Set<CtrlTransition>,Map<Set<CtrlCall>,CtrlSchedule>>();
+        }
+        Map<Set<CtrlCall>,CtrlSchedule> auxMap = this.scheduleMap.get(transSet);
+        if (auxMap == null) {
+            this.scheduleMap.put(transSet, auxMap =
+                new HashMap<Set<CtrlCall>,CtrlSchedule>());
+        }
+        CtrlSchedule result = auxMap.get(triedCalls);
+        if (result == null) {
+            auxMap.put(triedCalls,
+                result = computeSchedule(transSet, triedCalls));
+        }
+        return result;
+    }
+
     private CtrlSchedule computeSchedule(Set<CtrlTransition> transSet,
             Set<CtrlCall> triedCalls) {
         // look for the untried call with the least disablings
@@ -208,7 +235,7 @@ public class CtrlState implements Node {
             if (!guard.isEmpty()) {
                 continue;
             }
-            CtrlCall tryCall = tryTrans.label().getCall();
+            CtrlCall tryCall = tryTrans.getCall();
             Set<CtrlTransition> tryDisablings;
             if (this.disabledMap.containsKey(tryCall)) {
                 tryDisablings =
@@ -229,18 +256,18 @@ public class CtrlState implements Node {
         CtrlSchedule result = new CtrlSchedule(trans, triedCalls);
         if (trans != null) {
             Set<CtrlCall> newTriedCalls = new HashSet<CtrlCall>(triedCalls);
-            newTriedCalls.add(trans.label().getCall());
+            newTriedCalls.add(trans.getCall());
             Set<CtrlTransition> remainder =
                 new LinkedHashSet<CtrlTransition>(transSet);
             remainder.remove(trans);
-            CtrlSchedule failure = computeSchedule(remainder, newTriedCalls);
+            CtrlSchedule failure = getSchedule(remainder, newTriedCalls);
             CtrlSchedule success;
             if (disablings.isEmpty()) {
                 success = failure;
             } else {
                 remainder = new LinkedHashSet<CtrlTransition>(remainder);
                 remainder.removeAll(disablings);
-                success = computeSchedule(remainder, newTriedCalls);
+                success = getSchedule(remainder, newTriedCalls);
             }
             result.setNext(success, failure);
         }
@@ -251,4 +278,6 @@ public class CtrlState implements Node {
     private CtrlSchedule schedule;
     /** Map from calls to transitions disabled by their success. */
     private Map<CtrlCall,Set<CtrlTransition>> disabledMap;
+    /** Map storing the computed intermediate schedules, to enable sharing. */
+    private Map<Set<CtrlTransition>,Map<Set<CtrlCall>,CtrlSchedule>> scheduleMap;
 }

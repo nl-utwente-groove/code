@@ -64,7 +64,7 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
     /** Adds a control transition to this automaton. */
     boolean addTransition(CtrlTransition edge) {
         boolean result = this.transitions.add(edge);
-        if (result && edge.label().getCall().isOmega()) {
+        if (result && edge.getCall().isOmega()) {
             this.omegaTransitions.add(edge);
         }
         return result;
@@ -424,8 +424,9 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
         @Override
         public boolean contains(Object o) {
             if (o instanceof CtrlTransition) {
-                return ((CtrlTransition) o).source().getTransitions().contains(
-                    o);
+                CtrlTransition trans = (CtrlTransition) o;
+                return trans.equals(trans.source().getTransition(
+                    trans.getRule()));
             } else {
                 return false;
             }

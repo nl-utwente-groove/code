@@ -1,6 +1,5 @@
 package groove.explore.util;
 
-import groove.control.Location;
 import groove.trans.Rule;
 
 import java.util.Iterator;
@@ -134,10 +133,6 @@ public class PriorityCache implements ExploreCache {
 
     public void remove() {
         throw new UnsupportedOperationException();
-    }
-
-    public Location getTarget(Rule rule) {
-        return null;
     }
 
     public Rule last() {

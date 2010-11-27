@@ -17,7 +17,8 @@ package groove.lts;
 import groove.control.ControlState;
 import groove.control.ControlTransition;
 import groove.control.CtrlPar;
-import groove.control.Location;
+import groove.control.CtrlState;
+import groove.control.CtrlTransition;
 import groove.graph.DeltaApplier;
 import groove.graph.Graph;
 import groove.graph.Label;
@@ -44,10 +45,14 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * rule application, and a given control location.
      */
     public DefaultGraphNextState(AbstractGraphState source, RuleEvent event,
-            Node[] addedNodes, Location control) {
+            Node[] addedNodes, ControlState control) {
         super(source.getCacheReference(), control);
         this.source = source;
         this.event = event;
+        CtrlState sourceCtrl = source.getCtrlState();
+        this.ctrlTrans =
+            sourceCtrl == null ? null
+                    : sourceCtrl.getTransition(event.getRule());
         this.addedNodes = addedNodes;
         if (source.getLocation() != null) {
             initializeVariables();
@@ -369,20 +374,6 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     }
 
     /**
-     * The rule of the incoming transition with which this state was created.
-     */
-    private final AbstractGraphState source;
-    /**
-     * The rule event of the incoming transition with which this state was
-     * created.
-     */
-    private final RuleEvent event;
-    /**
-     * The identities of the nodes added with respect to the source state.
-     */
-    private final Node[] addedNodes;
-
-    /**
      * Returns the ControlTransition with which this transition is associated
      * @return the ControlTransition with which this transition is associated, 
      * or null if no control is present
@@ -409,4 +400,28 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         }
         return retval;
     }
+
+    public CtrlState getCtrlState() {
+        return this.ctrlTrans == null ? null : this.ctrlTrans.target();
+    }
+
+    public CtrlTransition getCtrlTransition() {
+        return this.ctrlTrans;
+    }
+
+    private final CtrlTransition ctrlTrans;
+
+    /**
+     * The rule of the incoming transition with which this state was created.
+     */
+    private final AbstractGraphState source;
+    /**
+     * The rule event of the incoming transition with which this state was
+     * created.
+     */
+    private final RuleEvent event;
+    /**
+     * The identities of the nodes added with respect to the source state.
+     */
+    private final Node[] addedNodes;
 }

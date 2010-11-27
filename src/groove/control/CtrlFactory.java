@@ -211,7 +211,7 @@ public class CtrlFactory {
     private void buildReplace(CtrlAut first, CtrlTransition callTrans,
             CtrlAut second) throws FormatException {
         first.removeTransition(callTrans);
-        CtrlCall call = callTrans.label().getCall();
+        CtrlCall call = callTrans.getCall();
         String name = call.getFunction();
         assert name != null : String.format("%s is not a function call", call);
         // check compatibility of the arguments with the function parameters.
