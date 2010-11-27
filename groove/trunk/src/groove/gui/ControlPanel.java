@@ -18,9 +18,11 @@ package groove.gui;
 
 import groove.control.ControlAutomaton;
 import groove.control.ControlView;
+import groove.control.CtrlAut;
 import groove.control.parse.GCLTokenMaker;
 import groove.gui.jgraph.ControlJGraph;
 import groove.gui.jgraph.ControlJModel;
+import groove.gui.jgraph.CtrlJGraph;
 import groove.io.SystemStore;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -112,6 +114,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         result.add(getNameField());
         result.addSeparator();
         result.add(createButton(getPreviewAction()));
+        result.add(createButton(getCtrlPreviewAction()));
         result.add(createButton(getDisableAction()));
         result.add(createButton(getEnableAction()));
         return result;
@@ -849,8 +852,9 @@ public class ControlPanel extends JPanel implements SimulationListener {
                         getSimulator().getOptions()),
                         ControlPanel.this.simulator);
 
-                AutomatonPanel autPanel =
-                    new AutomatonPanel(ControlPanel.this.simulator, cjg);
+                JGraphPanel<?> autPanel =
+                    new JGraphPanel<ControlJGraph>(cjg, true, false,
+                        ControlPanel.this.simulator.getOptions());
 
                 JDialog jf =
                     new JDialog(getSimulator().getFrame(), "Control Automaton");
@@ -879,6 +883,85 @@ public class ControlPanel extends JPanel implements SimulationListener {
             this.renameAction = new RenameAction();
         }
         return this.renameAction;
+    }
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link NewAction}.
+     */
+    private CtrlPreviewAction getCtrlPreviewAction() {
+        if (this.ctrlPreviewAction == null) {
+            this.ctrlPreviewAction = new CtrlPreviewAction();
+        }
+        return this.ctrlPreviewAction;
+    }
+
+    /** Singular instance of the CtrlPreviewAction. */
+    private CtrlPreviewAction ctrlPreviewAction;
+
+    /**
+     * Creates a dialog showing the control automaton.
+     */
+    private class CtrlPreviewAction extends RefreshableAction {
+        public CtrlPreviewAction() {
+            super(Options.PREVIEW_CONTROL_ACTION_NAME, Groove.GRAPH_MODE_ICON);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (stopEditing(true)) {
+                assert getSimulator().getGrammarView().getErrors().size() == 0 : "View Button should be disabled if grammar has errors.";
+                try {
+                    getJGraph().setModel(getCtrlAut());
+                    getDialog().setVisible(true);
+                } catch (FormatException exc) {
+                    getSimulator().showErrorDialog(
+                        String.format("Error in control program '%s'",
+                            getSelectedControl()), exc);
+                }
+            }
+        }
+
+        @Override
+        public void refresh() {
+            setEnabled(isControlSelected());
+        }
+
+        private CtrlJGraph getJGraph() throws FormatException {
+            if (this.jGraph == null) {
+                this.jGraph = new CtrlJGraph(getCtrlAut(), getSimulator());
+                this.jGraph.getLayouter().start(true);
+            }
+            return this.jGraph;
+        }
+
+        private CtrlJGraph jGraph;
+
+        private JDialog getDialog() throws FormatException {
+            JDialog result = this.dialog;
+            if (result == null) {
+                JGraphPanel<?> autPanel =
+                    new JGraphPanel<CtrlJGraph>(getJGraph(), true, false,
+                        getSimulator().getOptions());
+                result =
+                    this.dialog =
+                        new JDialog(getSimulator().getFrame(),
+                            "Control Automaton");
+                result.add(autPanel);
+                result.setSize(600, 700);
+                Point p = getSimulator().getFrame().getLocation();
+                result.setLocation(new Point(p.x + 50, p.y + 50));
+                result.setVisible(true);
+            }
+            return result;
+        }
+
+        private JDialog dialog;
+
+        /** Convenience method to obtain the currently selected control automaton. */
+        private CtrlAut getCtrlAut() throws FormatException {
+            return getGrammarView().getControlView(getSelectedControl()).toCtrlAut(
+                getGrammarView().toGrammar());
+        }
     }
 
     /** Singular instance of the RenameAction. */
@@ -956,25 +1039,6 @@ public class ControlPanel extends JPanel implements SimulationListener {
         @Override
         public void refresh() {
             setEnabled(isEditing());
-        }
-    }
-
-    private static class AutomatonPanel extends JGraphPanel<ControlJGraph> {
-        /**
-         * The constructor of this panel creates a panel with the Control
-         * Automaton of the current grammar.
-         */
-        public AutomatonPanel(Simulator simulator, ControlJGraph graph) {
-            super(graph, true, false, simulator.getOptions());
-            this.getJGraph().setConnectable(false);
-            this.getJGraph().setDisconnectable(false);
-            this.getJGraph().setEnabled(true);
-            getJGraph().setToolTipEnabled(true);
-        }
-
-        @Override
-        public ControlJModel getJModel() {
-            return (ControlJModel) super.getJModel();
         }
     }
 

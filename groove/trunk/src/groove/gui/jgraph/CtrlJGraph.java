@@ -16,6 +16,7 @@
  */
 package groove.gui.jgraph;
 
+import groove.control.CtrlAut;
 import groove.gui.Exporter;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
@@ -31,30 +32,36 @@ import java.util.Collections;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class ControlJGraph extends JGraph {
+public class CtrlJGraph extends JGraph {
 
     /**
      * Creates a ControlJGraph given a ControlJModel
      * @param simulator the simulator that is the context of this jgraph; may be
      *        <code>null</code>.
      */
-    public ControlJGraph(ControlJModel model, Simulator simulator) {
-        super(model, true);
+    public CtrlJGraph(CtrlAut aut, Simulator simulator) {
+        super(new CtrlJModel(aut, simulator.getOptions()), true);
+        this.simulator = simulator;
+        this.exporter = simulator.getExporter();
+        getGraphLayoutCache().setSelectsAllInsertedCells(false);
+        this.setLayoutMenu.selectLayoutAction(createInitialLayouter().newInstance(
+            (this)));
         setConnectable(false);
         setDisconnectable(false);
         setEnabled(true);
         setToolTipEnabled(true);
-
-        this.exporter =
-            simulator == null ? super.getExporter() : simulator.getExporter();
-        getGraphLayoutCache().setSelectsAllInsertedCells(false);
-        this.setLayoutMenu.selectLayoutAction(createInitialLayouter().newInstance(
-            (this)));
     }
 
     @Override
-    public ControlJModel getModel() {
-        return (ControlJModel) super.getModel();
+    public CtrlJModel getModel() {
+        return (CtrlJModel) super.getModel();
+    }
+
+    /** Creates a new model based on a given control automaton. */
+    public void setModel(CtrlAut aut) {
+        if (getModel().getGraph() != aut) {
+            setModel(new CtrlJModel(aut, this.simulator.getOptions()));
+        }
     }
 
     /**
@@ -87,8 +94,10 @@ public class ControlJGraph extends JGraph {
 
     /** The context of this jgraph; possibly <code>null</code>. */
     private final Exporter exporter;
+    /** The underlying simulator. */
+    private final Simulator simulator;
 
-    class MyForestLayouter extends groove.gui.layout.ForestLayouter {
+    private class MyForestLayouter extends groove.gui.layout.ForestLayouter {
         /**
          * Creates a prototype layouter
          */
@@ -99,7 +108,7 @@ public class ControlJGraph extends JGraph {
         /**
          * Creates a new instance, for a given {@link JGraph}.
          */
-        public MyForestLayouter(String name, JGraph jgraph) {
+        public MyForestLayouter(String name, CtrlJGraph jgraph) {
             super(name, jgraph);
         }
 
@@ -118,7 +127,7 @@ public class ControlJGraph extends JGraph {
          */
         @Override
         public Layouter newInstance(JGraph jGraph) {
-            return new MyForestLayouter(this.name, jGraph);
+            return new MyForestLayouter(this.name, (CtrlJGraph) jGraph);
         }
     }
 }

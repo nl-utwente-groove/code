@@ -216,7 +216,7 @@ STRING_LIT
 // @after{ setText(toUnquoted($text)); }
   : QUOTE 
     ( EscapeSequence
-    | ~( BSLASH | QUOTE | CR | NL  )        
+    | ~( BSLASH | QUOTE | '\r' | '\n'  )        
     )* 
     QUOTE 
   ;
@@ -231,8 +231,6 @@ EscapeSequence
 
 ID  : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*;
 
-CR        : '\r';
-NL        : '\n';
 AMP       : '&' ;
 DOT       : '.' ;
 NOT       : '!' ;

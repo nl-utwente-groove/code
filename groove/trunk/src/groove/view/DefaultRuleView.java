@@ -79,9 +79,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
@@ -1908,8 +1906,6 @@ public class DefaultRuleView implements RuleView {
         /** Initialises the internal data structures. */
         private void initialise() throws FormatException {
             Set<FormatError> errors = new TreeSet<FormatError>();
-            SortedMap<Integer,Node> inParMap = new TreeMap<Integer,Node>();
-            SortedMap<Integer,Node> outParMap = new TreeMap<Integer,Node>();
             this.hiddenPars = new HashSet<Node>();
             // Mapping from parameter position to parameter
             Map<Integer,CtrlPar.Var> parMap =
@@ -1922,7 +1918,7 @@ public class DefaultRuleView implements RuleView {
                 if (nr != null) {
                     parCount = Math.max(parCount, nr);
                     try {
-                        processNode(inParMap, outParMap, parMap, node, nr);
+                        processNode(parMap, node, nr);
                     } catch (FormatException exc) {
                         errors.addAll(exc.getErrors());
                     }
@@ -1946,25 +1942,17 @@ public class DefaultRuleView implements RuleView {
                 sigArray[parEntry.getKey() - 1] = parEntry.getValue();
             }
             this.sig = Arrays.asList(sigArray);
-            // test if LHS parameters come before RHS parameters
-            if (!outParMap.isEmpty() && outParMap.firstKey() <= inParMap.size()) {
-                throw new FormatException(
-                    "Non-creator parameters should come before creator-parameters");
-            }
         }
 
-        private void processNode(SortedMap<Integer,Node> inParMap,
-                SortedMap<Integer,Node> outParMap,
-                Map<Integer,CtrlPar.Var> parMap, AspectNode node, Integer nr)
-            throws FormatException {
-            // check if the user specified a parameter type in the rule editor
-            int parDir = ParameterAspect.getParameterType(node);
+        private void processNode(Map<Integer,CtrlPar.Var> parMap,
+                AspectNode node, Integer nr) throws FormatException {
             Level level = DefaultRuleView.this.levelTree.getLevel(node);
             if (!level.getIndex().isTopLevel()) {
                 throw new FormatException(
                     "Parameter '%d' only allowed on top existential level", nr,
                     node);
             }
+            int parDir = ParameterAspect.getParameterType(node);
             if (nr == 0) {
                 if (parDir != Rule.PARAMETER_BOTH) {
                     throw new FormatException(
@@ -1995,16 +1983,15 @@ public class DefaultRuleView implements RuleView {
                 }
                 CtrlVar var = new CtrlVar("arg" + nr, varType);
                 boolean inOnly = parDir == Rule.PARAMETER_INPUT;
+                boolean outOnly = parDir == Rule.PARAMETER_OUTPUT;
                 if (inOnly && !hasControl) {
                     throw new FormatException(
                         "Parameter '%d' is a required input, but no control is in use",
                         nr, node);
                 }
-                boolean outOnly = parDir == Rule.PARAMETER_OUTPUT;
                 Node nodeImage;
                 if (RuleAspect.inLHS(node)) {
                     nodeImage = level.getLhsMap().getNode(node);
-                    inParMap.put(nr, nodeImage);
                 } else if (RuleAspect.inRHS(node)) {
                     if (inOnly) {
                         throw new FormatException(
@@ -2013,7 +2000,6 @@ public class DefaultRuleView implements RuleView {
                     }
                     outOnly = true;
                     nodeImage = level.getRhsMap().getNode(node);
-                    outParMap.put(nr, nodeImage);
                 } else {
                     throw new FormatException(
                         "Parameter '%d' may not occur in NAC", nr, node);
@@ -2025,7 +2011,8 @@ public class DefaultRuleView implements RuleView {
                 CtrlPar.Var oldPar = parMap.put(nr, par);
                 if (oldPar != null) {
                     throw new FormatException(
-                        "Parameter '%d' occurs more than once", nr, node);
+                        "Parameter '%d' defined more than once", nr, node,
+                        oldPar.getRuleNode());
                 }
             }
         }

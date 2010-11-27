@@ -204,5 +204,5 @@ public class CtrlCall {
      */
     public static final CtrlCall OMEGA = new CtrlCall();
     /** Name of the omega-call. */
-    public static final String OMEGA_NAME = "\u03A4";
+    public static final String OMEGA_NAME = "\u03A9";
 }
