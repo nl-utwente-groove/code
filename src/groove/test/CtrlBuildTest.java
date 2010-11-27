@@ -53,6 +53,11 @@ public class CtrlBuildTest extends TestCase {
         }
     }
 
+    /** Regression test for error found in old control program. */
+    public void testRegression() {
+        buildCorrect("alap {\n alap { a| b;\n } c;\n}\n", 3, 7);
+    }
+
     /** Test for initialisation errors. */
     public void testInitErrors() {
         buildWrong("node x; if (a) bNode(out x); bNode(x);");

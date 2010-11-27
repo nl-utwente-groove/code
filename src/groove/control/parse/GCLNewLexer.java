@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNew.g 2010-11-23 23:22:44
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNew.g 2010-11-27 08:57:29
 
 package groove.control.parse;
 import groove.control.*;
@@ -20,14 +20,14 @@ public class GCLNewLexer extends Lexer {
     public static final int FUNCTIONS=6;
     public static final int IntegerNumber=49;
     public static final int STRING_LIT=46;
-    public static final int AMP=56;
+    public static final int AMP=54;
     public static final int DO=22;
-    public static final int NOT=57;
+    public static final int NOT=55;
     public static final int ALAP=19;
     public static final int ID=16;
     public static final int EOF=-1;
     public static final int IF=23;
-    public static final int ML_COMMENT=59;
+    public static final int ML_COMMENT=57;
     public static final int QUOTE=51;
     public static final int LPAR=17;
     public static final int ARG=12;
@@ -37,7 +37,6 @@ public class GCLNewLexer extends Lexer {
     public static final int ARGS=13;
     public static final int PLUS=31;
     public static final int VAR=11;
-    public static final int NL=55;
     public static final int DOT=36;
     public static final int CHOICE=26;
     public static final int SHARP=33;
@@ -47,25 +46,24 @@ public class GCLNewLexer extends Lexer {
     public static final int BOOL=39;
     public static final int LCURLY=14;
     public static final int INT=41;
-    public static final int MINUS=58;
+    public static final int MINUS=56;
     public static final int SEMI=28;
     public static final int TRUE=30;
     public static final int TRY=25;
-    public static final int REAL=42;
     public static final int DONT_CARE=44;
+    public static final int REAL=42;
     public static final int ANY=34;
-    public static final int WS=61;
+    public static final int WS=59;
     public static final int OUT=43;
     public static final int UNTIL=21;
     public static final int BLOCK=5;
     public static final int OR=27;
     public static final int RCURLY=15;
-    public static final int SL_COMMENT=60;
+    public static final int SL_COMMENT=58;
     public static final int PROGRAM=4;
     public static final int RPAR=18;
     public static final int CALL=8;
     public static final int FALSE=45;
-    public static final int CR=54;
     public static final int EscapeSequence=52;
     public static final int BSLASH=53;
     public static final int BAR=29;
@@ -743,11 +741,11 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = STRING_LIT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:217:3: ( QUOTE ( EscapeSequence | ~ ( BSLASH | QUOTE | CR | NL ) )* QUOTE )
-            // GCLNew.g:217:5: QUOTE ( EscapeSequence | ~ ( BSLASH | QUOTE | CR | NL ) )* QUOTE
+            // GCLNew.g:217:3: ( QUOTE ( EscapeSequence | ~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE )
+            // GCLNew.g:217:5: QUOTE ( EscapeSequence | ~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE
             {
             mQUOTE(); 
-            // GCLNew.g:218:5: ( EscapeSequence | ~ ( BSLASH | QUOTE | CR | NL ) )*
+            // GCLNew.g:218:5: ( EscapeSequence | ~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )*
             loop7:
             do {
                 int alt7=3;
@@ -770,7 +768,7 @@ public class GCLNewLexer extends Lexer {
             	    }
             	    break;
             	case 2 :
-            	    // GCLNew.g:219:7: ~ ( BSLASH | QUOTE | CR | NL )
+            	    // GCLNew.g:219:7: ~ ( BSLASH | QUOTE | '\\r' | '\\n' )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -887,53 +885,13 @@ public class GCLNewLexer extends Lexer {
     }
     // $ANTLR end "ID"
 
-    // $ANTLR start "CR"
-    public final void mCR() throws RecognitionException {
-        try {
-            int _type = CR;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:234:11: ( '\\r' )
-            // GCLNew.g:234:13: '\\r'
-            {
-            match('\r'); 
-
-            }
-
-            state.type = _type;
-            state.channel = _channel;
-        }
-        finally {
-        }
-    }
-    // $ANTLR end "CR"
-
-    // $ANTLR start "NL"
-    public final void mNL() throws RecognitionException {
-        try {
-            int _type = NL;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:235:11: ( '\\n' )
-            // GCLNew.g:235:13: '\\n'
-            {
-            match('\n'); 
-
-            }
-
-            state.type = _type;
-            state.channel = _channel;
-        }
-        finally {
-        }
-    }
-    // $ANTLR end "NL"
-
     // $ANTLR start "AMP"
     public final void mAMP() throws RecognitionException {
         try {
             int _type = AMP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:236:11: ( '&' )
-            // GCLNew.g:236:13: '&'
+            // GCLNew.g:234:11: ( '&' )
+            // GCLNew.g:234:13: '&'
             {
             match('&'); 
 
@@ -952,8 +910,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = DOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:237:11: ( '.' )
-            // GCLNew.g:237:13: '.'
+            // GCLNew.g:235:11: ( '.' )
+            // GCLNew.g:235:13: '.'
             {
             match('.'); 
 
@@ -972,8 +930,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = NOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:238:11: ( '!' )
-            // GCLNew.g:238:13: '!'
+            // GCLNew.g:236:11: ( '!' )
+            // GCLNew.g:236:13: '!'
             {
             match('!'); 
 
@@ -992,8 +950,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = BAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:239:11: ( '|' )
-            // GCLNew.g:239:13: '|'
+            // GCLNew.g:237:11: ( '|' )
+            // GCLNew.g:237:13: '|'
             {
             match('|'); 
 
@@ -1012,8 +970,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = SHARP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:240:11: ( '#' )
-            // GCLNew.g:240:13: '#'
+            // GCLNew.g:238:11: ( '#' )
+            // GCLNew.g:238:13: '#'
             {
             match('#'); 
 
@@ -1032,8 +990,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = PLUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:241:11: ( '+' )
-            // GCLNew.g:241:13: '+'
+            // GCLNew.g:239:11: ( '+' )
+            // GCLNew.g:239:13: '+'
             {
             match('+'); 
 
@@ -1052,8 +1010,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = STAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:242:11: ( '*' )
-            // GCLNew.g:242:13: '*'
+            // GCLNew.g:240:11: ( '*' )
+            // GCLNew.g:240:13: '*'
             {
             match('*'); 
 
@@ -1072,8 +1030,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = DONT_CARE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:243:11: ( '_' )
-            // GCLNew.g:243:13: '_'
+            // GCLNew.g:241:11: ( '_' )
+            // GCLNew.g:241:13: '_'
             {
             match('_'); 
 
@@ -1092,8 +1050,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = MINUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:244:11: ( '-' )
-            // GCLNew.g:244:13: '-'
+            // GCLNew.g:242:11: ( '-' )
+            // GCLNew.g:242:13: '-'
             {
             match('-'); 
 
@@ -1112,8 +1070,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = QUOTE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:245:11: ( '\"' )
-            // GCLNew.g:245:13: '\"'
+            // GCLNew.g:243:11: ( '\"' )
+            // GCLNew.g:243:13: '\"'
             {
             match('\"'); 
 
@@ -1132,8 +1090,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = BSLASH;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:246:11: ( '\\\\' )
-            // GCLNew.g:246:13: '\\\\'
+            // GCLNew.g:244:11: ( '\\\\' )
+            // GCLNew.g:244:13: '\\\\'
             {
             match('\\'); 
 
@@ -1152,8 +1110,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = COMMA;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:247:11: ( ',' )
-            // GCLNew.g:247:13: ','
+            // GCLNew.g:245:11: ( ',' )
+            // GCLNew.g:245:13: ','
             {
             match(','); 
 
@@ -1172,8 +1130,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = SEMI;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:248:11: ( ';' )
-            // GCLNew.g:248:13: ';'
+            // GCLNew.g:246:11: ( ';' )
+            // GCLNew.g:246:13: ';'
             {
             match(';'); 
 
@@ -1192,8 +1150,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = LPAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:249:11: ( '(' )
-            // GCLNew.g:249:13: '('
+            // GCLNew.g:247:11: ( '(' )
+            // GCLNew.g:247:13: '('
             {
             match('('); 
 
@@ -1212,8 +1170,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = RPAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:250:11: ( ')' )
-            // GCLNew.g:250:13: ')'
+            // GCLNew.g:248:11: ( ')' )
+            // GCLNew.g:248:13: ')'
             {
             match(')'); 
 
@@ -1232,8 +1190,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = LCURLY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:251:11: ( '{' )
-            // GCLNew.g:251:13: '{'
+            // GCLNew.g:249:11: ( '{' )
+            // GCLNew.g:249:13: '{'
             {
             match('{'); 
 
@@ -1252,8 +1210,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = RCURLY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:252:11: ( '}' )
-            // GCLNew.g:252:13: '}'
+            // GCLNew.g:250:11: ( '}' )
+            // GCLNew.g:250:13: '}'
             {
             match('}'); 
 
@@ -1272,12 +1230,12 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:254:12: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // GCLNew.g:254:14: '/*' ( options {greedy=false; } : . )* '*/'
+            // GCLNew.g:252:12: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // GCLNew.g:252:14: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // GCLNew.g:254:19: ( options {greedy=false; } : . )*
+            // GCLNew.g:252:19: ( options {greedy=false; } : . )*
             loop9:
             do {
                 int alt9=2;
@@ -1302,7 +1260,7 @@ public class GCLNewLexer extends Lexer {
 
                 switch (alt9) {
             	case 1 :
-            	    // GCLNew.g:254:47: .
+            	    // GCLNew.g:252:47: .
             	    {
             	    matchAny(); 
 
@@ -1333,12 +1291,12 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:255:12: ( '//' ( options {greedy=false; } : . )* '\\n' )
-            // GCLNew.g:255:14: '//' ( options {greedy=false; } : . )* '\\n'
+            // GCLNew.g:253:12: ( '//' ( options {greedy=false; } : . )* '\\n' )
+            // GCLNew.g:253:14: '//' ( options {greedy=false; } : . )* '\\n'
             {
             match("//"); 
 
-            // GCLNew.g:255:19: ( options {greedy=false; } : . )*
+            // GCLNew.g:253:19: ( options {greedy=false; } : . )*
             loop10:
             do {
                 int alt10=2;
@@ -1354,7 +1312,7 @@ public class GCLNewLexer extends Lexer {
 
                 switch (alt10) {
             	case 1 :
-            	    // GCLNew.g:255:47: .
+            	    // GCLNew.g:253:47: .
             	    {
             	    matchAny(); 
 
@@ -1384,10 +1342,10 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:257:5: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // GCLNew.g:257:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // GCLNew.g:255:5: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // GCLNew.g:255:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // GCLNew.g:257:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // GCLNew.g:255:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt11=0;
             loop11:
             do {
@@ -1438,8 +1396,8 @@ public class GCLNewLexer extends Lexer {
     // $ANTLR end "WS"
 
     public void mTokens() throws RecognitionException {
-        // GCLNew.g:1:8: ( ALAP | WHILE | DO | UNTIL | IF | ELSE | CHOICE | OR | TRY | FUNCTION | TRUE | FALSE | OTHER | ANY | NODE | BOOL | STRING | INT | REAL | OUT | INT_LIT | REAL_LIT | STRING_LIT | ID | CR | NL | AMP | DOT | NOT | BAR | SHARP | PLUS | STAR | DONT_CARE | MINUS | QUOTE | BSLASH | COMMA | SEMI | LPAR | RPAR | LCURLY | RCURLY | ML_COMMENT | SL_COMMENT | WS )
-        int alt12=46;
+        // GCLNew.g:1:8: ( ALAP | WHILE | DO | UNTIL | IF | ELSE | CHOICE | OR | TRY | FUNCTION | TRUE | FALSE | OTHER | ANY | NODE | BOOL | STRING | INT | REAL | OUT | INT_LIT | REAL_LIT | STRING_LIT | ID | AMP | DOT | NOT | BAR | SHARP | PLUS | STAR | DONT_CARE | MINUS | QUOTE | BSLASH | COMMA | SEMI | LPAR | RPAR | LCURLY | RCURLY | ML_COMMENT | SL_COMMENT | WS )
+        int alt12=44;
         alt12 = dfa12.predict(input);
         switch (alt12) {
             case 1 :
@@ -1611,154 +1569,140 @@ public class GCLNewLexer extends Lexer {
                 }
                 break;
             case 25 :
-                // GCLNew.g:1:143: CR
-                {
-                mCR(); 
-
-                }
-                break;
-            case 26 :
-                // GCLNew.g:1:146: NL
-                {
-                mNL(); 
-
-                }
-                break;
-            case 27 :
-                // GCLNew.g:1:149: AMP
+                // GCLNew.g:1:143: AMP
                 {
                 mAMP(); 
 
                 }
                 break;
-            case 28 :
-                // GCLNew.g:1:153: DOT
+            case 26 :
+                // GCLNew.g:1:147: DOT
                 {
                 mDOT(); 
 
                 }
                 break;
-            case 29 :
-                // GCLNew.g:1:157: NOT
+            case 27 :
+                // GCLNew.g:1:151: NOT
                 {
                 mNOT(); 
 
                 }
                 break;
-            case 30 :
-                // GCLNew.g:1:161: BAR
+            case 28 :
+                // GCLNew.g:1:155: BAR
                 {
                 mBAR(); 
 
                 }
                 break;
-            case 31 :
-                // GCLNew.g:1:165: SHARP
+            case 29 :
+                // GCLNew.g:1:159: SHARP
                 {
                 mSHARP(); 
 
                 }
                 break;
-            case 32 :
-                // GCLNew.g:1:171: PLUS
+            case 30 :
+                // GCLNew.g:1:165: PLUS
                 {
                 mPLUS(); 
 
                 }
                 break;
-            case 33 :
-                // GCLNew.g:1:176: STAR
+            case 31 :
+                // GCLNew.g:1:170: STAR
                 {
                 mSTAR(); 
 
                 }
                 break;
-            case 34 :
-                // GCLNew.g:1:181: DONT_CARE
+            case 32 :
+                // GCLNew.g:1:175: DONT_CARE
                 {
                 mDONT_CARE(); 
 
                 }
                 break;
-            case 35 :
-                // GCLNew.g:1:191: MINUS
+            case 33 :
+                // GCLNew.g:1:185: MINUS
                 {
                 mMINUS(); 
 
                 }
                 break;
-            case 36 :
-                // GCLNew.g:1:197: QUOTE
+            case 34 :
+                // GCLNew.g:1:191: QUOTE
                 {
                 mQUOTE(); 
 
                 }
                 break;
-            case 37 :
-                // GCLNew.g:1:203: BSLASH
+            case 35 :
+                // GCLNew.g:1:197: BSLASH
                 {
                 mBSLASH(); 
 
                 }
                 break;
-            case 38 :
-                // GCLNew.g:1:210: COMMA
+            case 36 :
+                // GCLNew.g:1:204: COMMA
                 {
                 mCOMMA(); 
 
                 }
                 break;
-            case 39 :
-                // GCLNew.g:1:216: SEMI
+            case 37 :
+                // GCLNew.g:1:210: SEMI
                 {
                 mSEMI(); 
 
                 }
                 break;
-            case 40 :
-                // GCLNew.g:1:221: LPAR
+            case 38 :
+                // GCLNew.g:1:215: LPAR
                 {
                 mLPAR(); 
 
                 }
                 break;
-            case 41 :
-                // GCLNew.g:1:226: RPAR
+            case 39 :
+                // GCLNew.g:1:220: RPAR
                 {
                 mRPAR(); 
 
                 }
                 break;
-            case 42 :
-                // GCLNew.g:1:231: LCURLY
+            case 40 :
+                // GCLNew.g:1:225: LCURLY
                 {
                 mLCURLY(); 
 
                 }
                 break;
-            case 43 :
-                // GCLNew.g:1:238: RCURLY
+            case 41 :
+                // GCLNew.g:1:232: RCURLY
                 {
                 mRCURLY(); 
 
                 }
                 break;
-            case 44 :
-                // GCLNew.g:1:245: ML_COMMENT
+            case 42 :
+                // GCLNew.g:1:239: ML_COMMENT
                 {
                 mML_COMMENT(); 
 
                 }
                 break;
-            case 45 :
-                // GCLNew.g:1:256: SL_COMMENT
+            case 43 :
+                // GCLNew.g:1:250: SL_COMMENT
                 {
                 mSL_COMMENT(); 
 
                 }
                 break;
-            case 46 :
-                // GCLNew.g:1:267: WS
+            case 44 :
+                // GCLNew.g:1:261: WS
                 {
                 mWS(); 
 
@@ -1772,74 +1716,70 @@ public class GCLNewLexer extends Lexer {
 
     protected DFA12 dfa12 = new DFA12(this);
     static final String DFA12_eotS =
-        "\1\uffff\16\23\2\73\1\75\1\76\1\uffff\1\100\1\101\21\uffff\3\23"+
-        "\1\107\1\23\1\111\3\23\1\115\11\23\2\uffff\1\73\7\uffff\1\23\1\131"+
-        "\1\23\1\uffff\1\23\1\uffff\1\134\2\23\1\uffff\1\23\1\140\1\141\7"+
-        "\23\1\151\1\uffff\2\23\1\uffff\1\154\2\23\2\uffff\1\157\2\23\1\162"+
-        "\1\163\1\23\1\165\1\uffff\1\166\1\167\1\uffff\1\23\1\171\1\uffff"+
-        "\1\23\1\173\2\uffff\1\23\3\uffff\1\175\1\uffff\1\23\1\uffff\1\177"+
-        "\1\uffff\1\23\1\uffff\1\u0081\1\uffff";
+        "\1\uffff\16\23\2\70\1\73\1\74\22\uffff\3\23\1\103\1\23\1\105\3"+
+        "\23\1\111\11\23\2\uffff\1\70\5\uffff\1\23\1\125\1\23\1\uffff\1\23"+
+        "\1\uffff\1\130\2\23\1\uffff\1\23\1\134\1\135\7\23\1\145\1\uffff"+
+        "\2\23\1\uffff\1\150\2\23\2\uffff\1\153\2\23\1\156\1\157\1\23\1\161"+
+        "\1\uffff\1\162\1\163\1\uffff\1\23\1\165\1\uffff\1\23\1\167\2\uffff"+
+        "\1\23\3\uffff\1\171\1\uffff\1\23\1\uffff\1\173\1\uffff\1\23\1\uffff"+
+        "\1\175\1\uffff";
     static final String DFA12_eofS =
-        "\u0082\uffff";
+        "\176\uffff";
     static final String DFA12_minS =
         "\1\11\1\154\1\150\1\157\1\156\1\146\1\154\1\150\2\162\1\141\2\157"+
-        "\1\164\1\145\2\56\1\60\1\0\1\uffff\2\11\17\uffff\1\52\1\uffff\1"+
-        "\141\1\171\1\151\1\55\1\164\1\55\1\164\1\163\1\157\1\55\1\150\1"+
-        "\164\1\165\1\156\1\154\1\144\1\157\1\162\1\141\2\uffff\1\56\7\uffff"+
-        "\1\160\1\55\1\154\1\uffff\1\151\1\uffff\1\55\1\145\1\151\1\uffff"+
-        "\1\145\2\55\1\145\1\143\1\163\1\145\1\154\1\151\1\154\1\55\1\uffff"+
-        "\1\145\1\154\1\uffff\1\55\1\143\1\162\2\uffff\1\55\1\164\1\145\2"+
-        "\55\1\156\1\55\1\uffff\2\55\1\uffff\1\145\1\55\1\uffff\1\151\1\55"+
-        "\2\uffff\1\147\3\uffff\1\55\1\uffff\1\157\1\uffff\1\55\1\uffff\1"+
-        "\156\1\uffff\1\55\1\uffff";
+        "\1\164\1\145\2\56\1\60\1\0\20\uffff\1\52\1\uffff\1\141\1\171\1\151"+
+        "\1\55\1\164\1\55\1\164\1\163\1\157\1\55\1\150\1\164\1\165\1\156"+
+        "\1\154\1\144\1\157\1\162\1\141\2\uffff\1\56\5\uffff\1\160\1\55\1"+
+        "\154\1\uffff\1\151\1\uffff\1\55\1\145\1\151\1\uffff\1\145\2\55\1"+
+        "\145\1\143\1\163\1\145\1\154\1\151\1\154\1\55\1\uffff\1\145\1\154"+
+        "\1\uffff\1\55\1\143\1\162\2\uffff\1\55\1\164\1\145\2\55\1\156\1"+
+        "\55\1\uffff\2\55\1\uffff\1\145\1\55\1\uffff\1\151\1\55\2\uffff\1"+
+        "\147\3\uffff\1\55\1\uffff\1\157\1\uffff\1\55\1\uffff\1\156\1\uffff"+
+        "\1\55\1\uffff";
     static final String DFA12_maxS =
         "\1\175\1\156\1\150\1\157\2\156\1\154\1\150\1\165\1\162\1\165\2"+
-        "\157\1\164\1\145\3\71\1\uffff\1\uffff\2\40\17\uffff\1\57\1\uffff"+
-        "\1\141\1\171\1\151\1\172\1\164\1\172\1\164\1\163\1\157\1\172\1\150"+
-        "\1\164\1\171\1\156\1\154\1\144\1\157\1\162\1\141\2\uffff\1\71\7"+
-        "\uffff\1\160\1\172\1\154\1\uffff\1\151\1\uffff\1\172\1\145\1\151"+
-        "\1\uffff\1\145\2\172\1\145\1\143\1\163\1\145\1\154\1\151\1\154\1"+
-        "\172\1\uffff\1\145\1\154\1\uffff\1\172\1\143\1\162\2\uffff\1\172"+
-        "\1\164\1\145\2\172\1\156\1\172\1\uffff\2\172\1\uffff\1\145\1\172"+
-        "\1\uffff\1\151\1\172\2\uffff\1\147\3\uffff\1\172\1\uffff\1\157\1"+
-        "\uffff\1\172\1\uffff\1\156\1\uffff\1\172\1\uffff";
+        "\157\1\164\1\145\3\71\1\uffff\20\uffff\1\57\1\uffff\1\141\1\171"+
+        "\1\151\1\172\1\164\1\172\1\164\1\163\1\157\1\172\1\150\1\164\1\171"+
+        "\1\156\1\154\1\144\1\157\1\162\1\141\2\uffff\1\71\5\uffff\1\160"+
+        "\1\172\1\154\1\uffff\1\151\1\uffff\1\172\1\145\1\151\1\uffff\1\145"+
+        "\2\172\1\145\1\143\1\163\1\145\1\154\1\151\1\154\1\172\1\uffff\1"+
+        "\145\1\154\1\uffff\1\172\1\143\1\162\2\uffff\1\172\1\164\1\145\2"+
+        "\172\1\156\1\172\1\uffff\2\172\1\uffff\1\145\1\172\1\uffff\1\151"+
+        "\1\172\2\uffff\1\147\3\uffff\1\172\1\uffff\1\157\1\uffff\1\172\1"+
+        "\uffff\1\156\1\uffff\1\172\1\uffff";
     static final String DFA12_acceptS =
-        "\23\uffff\1\30\2\uffff\1\33\1\35\1\36\1\37\1\40\1\41\1\42\1\43"+
-        "\1\45\1\46\1\47\1\50\1\51\1\52\1\53\1\uffff\1\56\23\uffff\1\26\1"+
-        "\25\1\uffff\1\34\1\44\1\27\1\31\1\32\1\54\1\55\3\uffff\1\3\1\uffff"+
-        "\1\5\3\uffff\1\10\13\uffff\1\16\2\uffff\1\22\3\uffff\1\24\1\11\7"+
-        "\uffff\1\1\2\uffff\1\6\2\uffff\1\13\2\uffff\1\17\1\20\1\uffff\1"+
-        "\23\1\2\1\4\1\uffff\1\15\1\uffff\1\14\1\uffff\1\7\1\uffff\1\21\1"+
-        "\uffff\1\12";
+        "\23\uffff\1\30\1\31\1\33\1\34\1\35\1\36\1\37\1\40\1\41\1\43\1\44"+
+        "\1\45\1\46\1\47\1\50\1\51\1\uffff\1\54\23\uffff\1\25\1\26\1\uffff"+
+        "\1\32\1\42\1\27\1\52\1\53\3\uffff\1\3\1\uffff\1\5\3\uffff\1\10\13"+
+        "\uffff\1\16\2\uffff\1\22\3\uffff\1\24\1\11\7\uffff\1\1\2\uffff\1"+
+        "\6\2\uffff\1\13\2\uffff\1\17\1\20\1\uffff\1\23\1\2\1\4\1\uffff\1"+
+        "\15\1\uffff\1\14\1\uffff\1\7\1\uffff\1\21\1\uffff\1\12";
     static final String DFA12_specialS =
-        "\22\uffff\1\0\157\uffff}>";
+        "\22\uffff\1\0\153\uffff}>";
     static final String[] DFA12_transitionS = {
-            "\1\46\1\25\2\uffff\1\24\22\uffff\1\46\1\27\1\22\1\31\2\uffff"+
-            "\1\26\1\uffff\1\41\1\42\1\33\1\32\1\37\1\35\1\21\1\45\1\17\11"+
-            "\20\1\uffff\1\40\5\uffff\32\23\1\uffff\1\36\2\uffff\1\34\1\uffff"+
+            "\2\44\2\uffff\1\44\22\uffff\1\44\1\25\1\22\1\27\2\uffff\1\24"+
+            "\1\uffff\1\37\1\40\1\31\1\30\1\35\1\33\1\21\1\43\1\17\11\20"+
+            "\1\uffff\1\36\5\uffff\32\23\1\uffff\1\34\2\uffff\1\32\1\uffff"+
             "\1\1\1\14\1\7\1\3\1\6\1\12\2\23\1\5\4\23\1\13\1\10\2\23\1\16"+
-            "\1\15\1\11\1\4\1\23\1\2\3\23\1\43\1\30\1\44",
-            "\1\47\1\uffff\1\50",
+            "\1\15\1\11\1\4\1\23\1\2\3\23\1\41\1\26\1\42",
+            "\1\45\1\uffff\1\46",
+            "\1\47",
+            "\1\50",
             "\1\51",
-            "\1\52",
-            "\1\53",
-            "\1\54\7\uffff\1\55",
-            "\1\56",
-            "\1\57",
-            "\1\60\1\uffff\1\61\1\62",
-            "\1\63",
-            "\1\65\23\uffff\1\64",
+            "\1\52\7\uffff\1\53",
+            "\1\54",
+            "\1\55",
+            "\1\56\1\uffff\1\57\1\60",
+            "\1\61",
+            "\1\63\23\uffff\1\62",
+            "\1\64",
+            "\1\65",
             "\1\66",
             "\1\67",
-            "\1\70",
-            "\1\71",
-            "\1\72\1\uffff\12\72",
-            "\1\72\1\uffff\12\74",
-            "\12\72",
-            "\12\77\1\uffff\2\77\1\uffff\ufff2\77",
-            "",
-            "\2\46\2\uffff\1\46\22\uffff\1\46",
-            "\2\46\2\uffff\1\46\22\uffff\1\46",
+            "\1\71\1\uffff\12\71",
+            "\1\71\1\uffff\12\72",
+            "\12\71",
+            "\12\75\1\uffff\2\75\1\uffff\ufff2\75",
             "",
             "",
             "",
@@ -1855,115 +1795,114 @@ public class GCLNewLexer extends Lexer {
             "",
             "",
             "",
-            "\1\102\4\uffff\1\103",
             "",
-            "\1\104",
-            "\1\105",
-            "\1\106",
+            "\1\76\4\uffff\1\77",
+            "",
+            "\1\100",
+            "\1\101",
+            "\1\102",
             "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
             "\23",
+            "\1\104",
+            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
+            "\23",
+            "\1\106",
+            "\1\107",
             "\1\110",
             "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
             "\23",
             "\1\112",
             "\1\113",
-            "\1\114",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
-            "\23",
+            "\1\115\3\uffff\1\114",
             "\1\116",
             "\1\117",
-            "\1\121\3\uffff\1\120",
+            "\1\120",
+            "\1\121",
             "\1\122",
             "\1\123",
+            "",
+            "",
+            "\1\71\1\uffff\12\72",
+            "",
+            "",
+            "",
+            "",
+            "",
             "\1\124",
-            "\1\125",
-            "\1\126",
-            "\1\127",
-            "",
-            "",
-            "\1\72\1\uffff\12\74",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "\1\130",
             "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
             "\23",
+            "\1\126",
+            "",
+            "\1\127",
+            "",
+            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
+            "\23",
+            "\1\131",
             "\1\132",
             "",
             "\1\133",
-            "",
             "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
             "\23",
-            "\1\135",
+            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
+            "\23",
             "\1\136",
-            "",
             "\1\137",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
-            "\23",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
-            "\23",
+            "\1\140",
+            "\1\141",
             "\1\142",
             "\1\143",
             "\1\144",
-            "\1\145",
+            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
+            "\23",
+            "",
             "\1\146",
             "\1\147",
-            "\1\150",
+            "",
             "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
             "\23",
-            "",
+            "\1\151",
             "\1\152",
-            "\1\153",
+            "",
             "",
             "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
             "\23",
+            "\1\154",
             "\1\155",
-            "\1\156",
-            "",
-            "",
+            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
+            "\23",
             "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
             "\23",
             "\1\160",
-            "\1\161",
+            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
+            "\23",
+            "",
             "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
             "\23",
             "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
             "\23",
+            "",
             "\1\164",
             "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
             "\23",
             "",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
-            "\23",
+            "\1\166",
             "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
             "\23",
             "",
+            "",
             "\1\170",
+            "",
+            "",
+            "",
             "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
             "\23",
             "",
             "\1\172",
+            "",
             "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
             "\23",
-            "",
             "",
             "\1\174",
-            "",
-            "",
-            "",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
-            "\23",
-            "",
-            "\1\176",
-            "",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
-            "\23",
-            "",
-            "\1\u0080",
             "",
             "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32"+
             "\23",
@@ -2000,7 +1939,7 @@ public class GCLNewLexer extends Lexer {
             this.transition = DFA12_transition;
         }
         public String getDescription() {
-            return "1:1: Tokens : ( ALAP | WHILE | DO | UNTIL | IF | ELSE | CHOICE | OR | TRY | FUNCTION | TRUE | FALSE | OTHER | ANY | NODE | BOOL | STRING | INT | REAL | OUT | INT_LIT | REAL_LIT | STRING_LIT | ID | CR | NL | AMP | DOT | NOT | BAR | SHARP | PLUS | STAR | DONT_CARE | MINUS | QUOTE | BSLASH | COMMA | SEMI | LPAR | RPAR | LCURLY | RCURLY | ML_COMMENT | SL_COMMENT | WS );";
+            return "1:1: Tokens : ( ALAP | WHILE | DO | UNTIL | IF | ELSE | CHOICE | OR | TRY | FUNCTION | TRUE | FALSE | OTHER | ANY | NODE | BOOL | STRING | INT | REAL | OUT | INT_LIT | REAL_LIT | STRING_LIT | ID | AMP | DOT | NOT | BAR | SHARP | PLUS | STAR | DONT_CARE | MINUS | QUOTE | BSLASH | COMMA | SEMI | LPAR | RPAR | LCURLY | RCURLY | ML_COMMENT | SL_COMMENT | WS );";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             IntStream input = _input;
@@ -2010,9 +1949,9 @@ public class GCLNewLexer extends Lexer {
                         int LA12_18 = input.LA(1);
 
                         s = -1;
-                        if ( ((LA12_18>='\u0000' && LA12_18<='\t')||(LA12_18>='\u000B' && LA12_18<='\f')||(LA12_18>='\u000E' && LA12_18<='\uFFFF')) ) {s = 63;}
+                        if ( ((LA12_18>='\u0000' && LA12_18<='\t')||(LA12_18>='\u000B' && LA12_18<='\f')||(LA12_18>='\u000E' && LA12_18<='\uFFFF')) ) {s = 61;}
 
-                        else s = 62;
+                        else s = 60;
 
                         if ( s>=0 ) return s;
                         break;

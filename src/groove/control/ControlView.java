@@ -44,17 +44,12 @@ import org.antlr.runtime.tree.CommonTreeNodeStream;
 public class ControlView {
     /**
      * Constructs a control view from a given control program.
-     * @param control the control program; non-null
-     * @param controlName the name of the control program
+     * @param program the control program; non-null
+     * @param name the name of the control program
      */
-    public ControlView(String control, String controlName) {
-        this.controlName = controlName;
-        this.controlProgram = control;
-    }
-
-    /** Returns the textual control program. */
-    public String getProgram() {
-        return this.controlProgram;
+    public ControlView(String program, String name) {
+        this.name = name;
+        this.program = program;
     }
 
     /**
@@ -70,7 +65,7 @@ public class ControlView {
      */
     private ControlAutomaton computeAutomaton(GraphGrammar grammar)
         throws FormatException {
-        if (this.controlProgram == null) {
+        if (this.program == null) {
             throw new FormatException("Error in control: no program available");
         }
         AutomatonBuilder builder = new AutomatonBuilder();
@@ -179,18 +174,44 @@ public class ControlView {
     }
 
     /**
+     * Returns the control automaton for a given grammar. 
+     */
+    public CtrlAut toCtrlAut(GraphGrammar grammar) throws FormatException {
+        if (this.program == null) {
+            throw new FormatException("Error in control: no program available");
+        }
+        // use the stored result if that was for the same grammar
+        if (grammar != this.lastGrammar) {
+            this.lastAut = this.parser.runString(this.program, grammar);
+            this.lastGrammar = grammar;
+        }
+        return this.lastAut;
+    }
+
+    /**
      * Returns a unique identifier for the location, set by the
      * LocationAutomatonBuilder
      * @return name
      */
     public String getName() {
-        return this.controlName;
+        return this.name;
+    }
+
+    /** Returns the textual control program. */
+    public String getProgram() {
+        return this.program;
     }
 
     /** The control program loaded at construction time. */
-    private final String controlProgram;
+    private final String program;
     /** The name of the control program, set at construction time. */
-    private final String controlName;
+    private final String name;
+    /** The grammar of the most recently computed control automaton. */
+    private GraphGrammar lastGrammar;
+    /** The most recently computed control automaton. */
+    private CtrlAut lastAut;
+    /** The control parser. */
+    private final CtrlParser parser = CtrlParser.getInstance();
 
     /**
      * Saves the program to the given OutputStream.

@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNew.g 2010-11-23 23:22:44
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNew.g 2010-11-27 08:57:28
 
 package groove.control.parse;
 import groove.control.*;
@@ -16,7 +16,7 @@ import org.antlr.runtime.tree.*;
 
 public class GCLNewParser extends Parser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "DO_WHILE", "DO_UNTIL", "VAR", "ARG", "ARGS", "LCURLY", "RCURLY", "ID", "LPAR", "RPAR", "ALAP", "WHILE", "UNTIL", "DO", "IF", "ELSE", "TRY", "CHOICE", "OR", "SEMI", "BAR", "TRUE", "PLUS", "STAR", "SHARP", "ANY", "OTHER", "DOT", "COMMA", "NODE", "BOOL", "STRING", "INT", "REAL", "OUT", "DONT_CARE", "FALSE", "STRING_LIT", "INT_LIT", "REAL_LIT", "IntegerNumber", "NonIntegerNumber", "QUOTE", "EscapeSequence", "BSLASH", "CR", "NL", "AMP", "NOT", "MINUS", "ML_COMMENT", "SL_COMMENT", "WS"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "DO_WHILE", "DO_UNTIL", "VAR", "ARG", "ARGS", "LCURLY", "RCURLY", "ID", "LPAR", "RPAR", "ALAP", "WHILE", "UNTIL", "DO", "IF", "ELSE", "TRY", "CHOICE", "OR", "SEMI", "BAR", "TRUE", "PLUS", "STAR", "SHARP", "ANY", "OTHER", "DOT", "COMMA", "NODE", "BOOL", "STRING", "INT", "REAL", "OUT", "DONT_CARE", "FALSE", "STRING_LIT", "INT_LIT", "REAL_LIT", "IntegerNumber", "NonIntegerNumber", "QUOTE", "EscapeSequence", "BSLASH", "AMP", "NOT", "MINUS", "ML_COMMENT", "SL_COMMENT", "WS"
     };
     public static final int REAL_LIT=48;
     public static final int FUNCTION=7;
@@ -26,15 +26,15 @@ public class GCLNewParser extends Parser {
     public static final int FUNCTIONS=6;
     public static final int WHILE=20;
     public static final int IntegerNumber=49;
-    public static final int AMP=56;
+    public static final int AMP=54;
     public static final int STRING_LIT=46;
     public static final int DO=22;
-    public static final int NOT=57;
+    public static final int NOT=55;
     public static final int ALAP=19;
     public static final int ID=16;
     public static final int EOF=-1;
     public static final int IF=23;
-    public static final int ML_COMMENT=59;
+    public static final int ML_COMMENT=57;
     public static final int QUOTE=51;
     public static final int LPAR=17;
     public static final int ARG=12;
@@ -44,7 +44,6 @@ public class GCLNewParser extends Parser {
     public static final int ARGS=13;
     public static final int PLUS=31;
     public static final int VAR=11;
-    public static final int NL=55;
     public static final int DOT=36;
     public static final int CHOICE=26;
     public static final int SHARP=33;
@@ -54,24 +53,23 @@ public class GCLNewParser extends Parser {
     public static final int BOOL=39;
     public static final int LCURLY=14;
     public static final int INT=41;
-    public static final int MINUS=58;
+    public static final int MINUS=56;
     public static final int SEMI=28;
     public static final int TRUE=30;
     public static final int TRY=25;
     public static final int DONT_CARE=44;
     public static final int REAL=42;
-    public static final int WS=61;
+    public static final int WS=59;
     public static final int ANY=34;
     public static final int OUT=43;
     public static final int UNTIL=21;
     public static final int BLOCK=5;
-    public static final int SL_COMMENT=60;
+    public static final int SL_COMMENT=58;
     public static final int RCURLY=15;
     public static final int OR=27;
     public static final int RPAR=18;
     public static final int PROGRAM=4;
     public static final int CALL=8;
-    public static final int CR=54;
     public static final int FALSE=45;
     public static final int BSLASH=53;
     public static final int EscapeSequence=52;
@@ -196,7 +194,7 @@ public class GCLNewParser extends Parser {
 
 
             // AST REWRITE
-            // elements: stat, function
+            // elements: function, stat
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -707,7 +705,7 @@ public class GCLNewParser extends Parser {
 
 
                             // AST REWRITE
-                            // elements: stat, cond, WHILE, stat
+                            // elements: stat, WHILE, stat, cond
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -766,7 +764,7 @@ public class GCLNewParser extends Parser {
 
 
                             // AST REWRITE
-                            // elements: UNTIL, stat, cond, stat
+                            // elements: stat, UNTIL, stat, cond
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -1590,7 +1588,7 @@ public class GCLNewParser extends Parser {
 
 
                             // AST REWRITE
-                            // elements: STAR, e
+                            // elements: e, STAR
                             // token labels: 
                             // rule labels: retval, e
                             // token list labels: 
@@ -2484,7 +2482,7 @@ public class GCLNewParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: ID, OUT
+                    // elements: OUT, ID
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
