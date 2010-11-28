@@ -139,8 +139,12 @@ var_declaration
 param
 @init{
   numParameters++;
-  CtrlPar.Var currentPar = currentSig.get(numParameters-1);
-  String currentParType = currentPar.getType().toString();
+  CtrlPar.Var currentPar = null;
+  String currentParType = null;
+  if (numParameters <= currentSig.size()) {
+    currentPar = currentSig.get(numParameters-1);
+    currentParType = currentPar.getType().toString();
+  }
 }
 	: ^(PARAM IDENTIFIER {
 			if (st.isDeclared($IDENTIFIER.text)) {

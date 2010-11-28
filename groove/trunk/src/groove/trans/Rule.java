@@ -17,6 +17,7 @@
  */
 package groove.trans;
 
+import groove.control.CtrlPar;
 import groove.graph.Graph;
 import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
@@ -27,6 +28,7 @@ import groove.rel.VarNodeEdgeMap;
 
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Interface of a production rule. The rule essentially consists of a left hand
@@ -95,6 +97,9 @@ public interface Rule extends Comparable<Rule>, Condition {
     /** Indicates if the rule has node mergers. */
     public boolean hasMergers();
 
+    /** Returns the signature of this rule. */
+    public List<CtrlPar.Var> getSignature();
+
     /**
      * Returns an iterator over the matches for a given host graph, given a
      * matching of the root context.
@@ -156,4 +161,6 @@ public interface Rule extends Comparable<Rule>, Condition {
     public static final int PARAMETER_DONT_CARE = 0;
     /** Non-existent flag */
     public static final int PARAMETER_DOES_NOT_EXIST = -1;
+    /** Name of the omega rule (which models termination). */
+    public static final String OMEGA_NAME = "\u03A9";
 }

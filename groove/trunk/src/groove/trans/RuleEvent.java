@@ -17,6 +17,7 @@
 package groove.trans;
 
 import groove.graph.Edge;
+import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.MergeMap;
@@ -43,14 +44,34 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub {
     public Rule getRule();
 
     /**
-     * Returns a label that uniquely identifies this event.
+     * Returns a label that uniquely identifies this event, with respect to
+     *  given array of added nodes (which are the images of the creator nodes).
+     * @param addedNodes the added nodes; if {@code null}, the creator
+     * node images will be shown as don't care values
      */
-    public Label getLabel();
+    public Label getLabel(Node[] addedNodes);
+
+    /**
+     * Constructs an argument array for this event, with respect to
+     *  given array of added nodes (which are the images of the creator nodes).
+     * @param addedNodes the added nodes; if {@code null}, the creator
+     * node images will be set to {@code null}
+     */
+    public Node[] getArguments(Node[] addedNodes);
 
     /**
      * Returns a string representation of the anchor image.
      */
     public String getAnchorImageString();
+
+    /** 
+     * Returns the anchor image at a given position.
+     * This always refers to the anchor of the top level existential event. 
+     */
+    public Element getAnchorImage(int i);
+
+    /** Returns the size of the anchor. */
+    public int getAnchorSize();
 
     /** Returns the set of nodes erased by the event. */
     public Set<Node> getErasedNodes();

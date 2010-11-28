@@ -17,10 +17,7 @@
 package groove.control;
 
 import groove.control.parse.ASTFrame;
-import groove.control.parse.AutomatonBuilder;
 import groove.control.parse.Counter;
-import groove.control.parse.GCLBuilder;
-import groove.control.parse.GCLChecker;
 import groove.control.parse.GCLDeterminismChecker;
 import groove.control.parse.GCLLexer;
 import groove.control.parse.GCLParser;
@@ -55,6 +52,7 @@ public class ControlView {
     /**
      * Returns the control automaton for a given grammar. 
      */
+    @Deprecated
     public ControlAutomaton toAutomaton(GraphGrammar grammar)
         throws FormatException {
         return computeAutomaton(grammar);
@@ -63,12 +61,14 @@ public class ControlView {
     /**
      * load the program currently in controlProgram
      */
+    @Deprecated
     private ControlAutomaton computeAutomaton(GraphGrammar grammar)
         throws FormatException {
         if (this.program == null) {
             throw new FormatException("Error in control: no program available");
         }
-        AutomatonBuilder builder = new AutomatonBuilder();
+        groove.control.parse.AutomatonBuilder builder =
+            new groove.control.parse.AutomatonBuilder();
         builder.setRuleNames(grammar.getRuleNames());
         builder.setRules(grammar.getRules());
 
@@ -98,9 +98,11 @@ public class ControlView {
             CommonTreeNodeStream nodes = new CommonTreeNodeStream(r.getTree());
 
             // checker will store and remove functions
-            GCLChecker checker = new GCLChecker(nodes);
+            groove.control.parse.GCLChecker checker =
+                new groove.control.parse.GCLChecker(nodes);
             checker.setNamespace(builder);
-            GCLChecker.program_return c_r = checker.program();
+            groove.control.parse.GCLChecker.program_return c_r =
+                checker.program();
 
             errors = checker.getErrors();
             if (errors.size() != 0) {
@@ -142,7 +144,8 @@ public class ControlView {
 
             nodes = new CommonTreeNodeStream(dc_r.getTree());
 
-            GCLBuilder gclb = new GCLBuilder(nodes);
+            groove.control.parse.GCLBuilder gclb =
+                new groove.control.parse.GCLBuilder(nodes);
             gclb.setBuilder(builder);
             gclb.setName(getName());
             // reset the counter for unique controlstate numbers to 0

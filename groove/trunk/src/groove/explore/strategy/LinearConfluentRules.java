@@ -19,6 +19,7 @@ package groove.explore.strategy;
 
 import groove.explore.util.ConfluentMatchSetCollector;
 import groove.explore.util.ExploreCache;
+import groove.explore.util.MatchSetCollector;
 import groove.lts.GraphState;
 import groove.trans.RuleEvent;
 
@@ -59,9 +60,7 @@ public class LinearConfluentRules extends AbstractStrategy {
             return false;
         }
         ExploreCache cache = getCache(true);
-        ConfluentMatchSetCollector collector =
-            new ConfluentMatchSetCollector(getAtState(), cache, getRecord(),
-                null);
+        MatchSetCollector collector = createMatchCollector(cache);
         // collect all matches
         List<RuleEvent> matches = new ArrayList<RuleEvent>();
         collector.collectMatchSet(matches);
@@ -72,5 +71,14 @@ public class LinearConfluentRules extends AbstractStrategy {
         setClosed(getAtState());
         updateAtState();
         return true;
+    }
+
+    /**
+     * Returns a {@link ConfluentMatchSetCollector}.
+     */
+    @Override
+    protected MatchSetCollector createMatchCollector(ExploreCache cache) {
+        return new ConfluentMatchSetCollector(getAtState(), cache, getRecord(),
+            null);
     }
 }

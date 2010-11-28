@@ -1990,8 +1990,10 @@ public class DefaultRuleView implements RuleView {
                         nr, node);
                 }
                 Node nodeImage;
+                boolean creator;
                 if (RuleAspect.inLHS(node)) {
                     nodeImage = level.getLhsMap().getNode(node);
+                    creator = false;
                 } else if (RuleAspect.inRHS(node)) {
                     if (inOnly) {
                         throw new FormatException(
@@ -2000,6 +2002,7 @@ public class DefaultRuleView implements RuleView {
                     }
                     outOnly = true;
                     nodeImage = level.getRhsMap().getNode(node);
+                    creator = true;
                 } else {
                     throw new FormatException(
                         "Parameter '%d' may not occur in NAC", nr, node);
@@ -2007,7 +2010,7 @@ public class DefaultRuleView implements RuleView {
                 CtrlPar.Var par =
                     inOnly || outOnly ? new CtrlPar.Var(var, inOnly)
                             : new CtrlPar.Var(var);
-                par.setRuleNode(nodeImage);
+                par.setRuleNode(nodeImage, creator);
                 CtrlPar.Var oldPar = parMap.put(nr, par);
                 if (oldPar != null) {
                     throw new FormatException(

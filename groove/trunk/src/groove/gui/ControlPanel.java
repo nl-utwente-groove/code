@@ -16,12 +16,9 @@
  */
 package groove.gui;
 
-import groove.control.ControlAutomaton;
 import groove.control.ControlView;
 import groove.control.CtrlAut;
 import groove.control.parse.GCLTokenMaker;
-import groove.gui.jgraph.ControlJGraph;
-import groove.gui.jgraph.ControlJModel;
 import groove.gui.jgraph.CtrlJGraph;
 import groove.io.SystemStore;
 import groove.lts.GTS;
@@ -827,6 +824,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
     /**
      * Creates a dialog showing the control automaton.
      */
+    @Deprecated
     private class PreviewAction extends RefreshableAction {
         public PreviewAction() {
             super(Options.PREVIEW_CONTROL_ACTION_NAME, Groove.GRAPH_MODE_ICON);
@@ -834,9 +832,9 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
         public void actionPerformed(ActionEvent e) {
             if (stopEditing(true)) {
-                assert getSimulator().getGrammarView().getErrors().size() == 0 : "View Button should be disabled if grammar has errors.";
+                assert getSimulator().getGrammarView().getErrors().isEmpty() : "View Button should be disabled if grammar has errors.";
 
-                ControlAutomaton caut;
+                groove.control.ControlAutomaton caut;
                 try {
                     caut =
                         getGrammarView().getControlView(getSelectedControl()).toAutomaton(
@@ -847,14 +845,15 @@ public class ControlPanel extends JPanel implements SimulationListener {
                             getSelectedControl()), exc);
                     return;
                 }
-                ControlJGraph cjg =
-                    new ControlJGraph(new ControlJModel(caut,
-                        getSimulator().getOptions()),
+                groove.gui.jgraph.ControlJGraph cjg =
+                    new groove.gui.jgraph.ControlJGraph(
+                        new groove.gui.jgraph.ControlJModel(caut,
+                            getSimulator().getOptions()),
                         ControlPanel.this.simulator);
 
                 JGraphPanel<?> autPanel =
-                    new JGraphPanel<ControlJGraph>(cjg, true, false,
-                        ControlPanel.this.simulator.getOptions());
+                    new JGraphPanel<groove.gui.jgraph.ControlJGraph>(cjg, true,
+                        false, ControlPanel.this.simulator.getOptions());
 
                 JDialog jf =
                     new JDialog(getSimulator().getFrame(), "Control Automaton");
@@ -870,19 +869,9 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
         @Override
         public void refresh() {
-            setEnabled(isControlSelected());
+            setEnabled(isControlSelected()
+                && getSimulator().getGrammarView().getErrors().isEmpty());
         }
-    }
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link RenameAction}.
-     */
-    private RenameAction getRenameAction() {
-        if (this.renameAction == null) {
-            this.renameAction = new RenameAction();
-        }
-        return this.renameAction;
     }
 
     /**
@@ -909,7 +898,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
         public void actionPerformed(ActionEvent e) {
             if (stopEditing(true)) {
-                assert getSimulator().getGrammarView().getErrors().size() == 0 : "View Button should be disabled if grammar has errors.";
+                assert getSimulator().getGrammarView().getErrors().isEmpty() : "View Button should be disabled if grammar has errors.";
                 try {
                     getJGraph().setModel(getCtrlAut());
                     getDialog().setVisible(true);
@@ -923,7 +912,8 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
         @Override
         public void refresh() {
-            setEnabled(isControlSelected());
+            setEnabled(isControlSelected()
+                && getSimulator().getGrammarView().getErrors().isEmpty());
         }
 
         private CtrlJGraph getJGraph() throws FormatException {
@@ -962,6 +952,17 @@ public class ControlPanel extends JPanel implements SimulationListener {
             return getGrammarView().getControlView(getSelectedControl()).toCtrlAut(
                 getGrammarView().toGrammar());
         }
+    }
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link RenameAction}.
+     */
+    private RenameAction getRenameAction() {
+        if (this.renameAction == null) {
+            this.renameAction = new RenameAction();
+        }
+        return this.renameAction;
     }
 
     /** Singular instance of the RenameAction. */

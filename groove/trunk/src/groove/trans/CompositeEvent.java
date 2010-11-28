@@ -17,6 +17,7 @@
 package groove.trans;
 
 import groove.graph.Edge;
+import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.MergeMap;
 import groove.graph.Node;
@@ -64,6 +65,16 @@ public class CompositeEvent extends
             }
         }
         return false;
+    }
+
+    @Override
+    public Element getAnchorImage(int i) {
+        return this.eventArray[0].getAnchorImage(i);
+    }
+
+    @Override
+    public int getAnchorSize() {
+        return this.eventArray[0].getAnchorSize();
     }
 
     public String getAnchorImageString() {
@@ -247,7 +258,11 @@ public class CompositeEvent extends
     @Override
     public String toString() {
         return this.eventArray[0].toString();
-        // return Arrays.toString(eventArray);
+    }
+
+    @Override
+    public Node[] getArguments(Node[] addedNodes) {
+        return this.eventArray[0].getArguments(addedNodes);
     }
 
     @Override

@@ -22,14 +22,21 @@ import java.util.Set;
 /** Sequence of control transitions to be tried out from a control state. */
 public class CtrlSchedule {
     /** Constructs an initially empty schedule. */
-    public CtrlSchedule(CtrlTransition trans, Set<CtrlCall> triedCalls) {
+    public CtrlSchedule(CtrlTransition trans, Set<CtrlCall> triedCalls,
+            boolean success) {
         this.trans = trans;
         this.triedCalls = trans == null ? triedCalls : null;
+        this.success = success;
     }
 
     /** Indicates if this node signals the end of the schedule. */
     public boolean isFinished() {
         return this.trans == null;
+    }
+
+    /** Indicates if this schedule represents a success state. */
+    public boolean isSuccess() {
+        return this.success;
     }
 
     /** Returns the currently scheduled transition.
@@ -50,13 +57,13 @@ public class CtrlSchedule {
 
     /** Sets the success and failure schedules. */
     public void setNext(CtrlSchedule success, CtrlSchedule failure) {
-        this.success = success;
-        this.failure = failure;
+        this.succNext = success;
+        this.failNext = failure;
     }
 
     /** Returns the next node of the schedule, given success or failure of the transition of this node. */
     public CtrlSchedule next(boolean success) {
-        return success ? this.success : this.failure;
+        return success ? this.succNext : this.failNext;
     }
 
     @Override
@@ -67,7 +74,7 @@ public class CtrlSchedule {
     private String toString(int depth, String prefix) {
         StringBuilder result = new StringBuilder();
         for (int i = 0; i <= depth; i++) {
-            result.append("  ");
+            result.append("    ");
         }
         result.append(prefix);
         if (this.trans == null) {
@@ -75,25 +82,28 @@ public class CtrlSchedule {
         } else {
             result.append("Call ");
             result.append(this.trans);
-            if (this.trans.getInVarBinding().length > 0) {
-                result.append(", in-parameter binding: ");
-                result.append(Arrays.toString(this.trans.getInVarBinding()));
+            if (this.trans.getParBinding().length > 0) {
+                result.append(", parameter binding: ");
+                result.append(Arrays.toString(this.trans.getParBinding()));
             }
             if (this.trans.getTargetVarBinding().length > 0) {
                 result.append(", target variable binding: ");
                 result.append(Arrays.toString(this.trans.getTargetVarBinding()));
             }
+            if (isSuccess()) {
+                result.append("; success");
+            }
             result.append("\n");
-            if (this.success == this.failure) {
-                if (!this.success.isFinished()) {
-                    result.append(this.success.toString(depth + 1, ""));
+            if (this.succNext == this.failNext) {
+                if (!this.succNext.isFinished()) {
+                    result.append(this.succNext.toString(depth + 1, ""));
                 }
             } else {
-                if (!this.success.isFinished()) {
-                    result.append(this.success.toString(depth + 1, "Success: "));
+                if (!this.failNext.isFinished()) {
+                    result.append(this.failNext.toString(depth + 1, "Failed:  "));
                 }
-                if (!this.failure.isFinished()) {
-                    result.append(this.failure.toString(depth + 1, "Failure: "));
+                if (!this.succNext.isFinished()) {
+                    result.append(this.succNext.toString(depth + 1, "Applied: "));
                 }
             }
         }
@@ -107,7 +117,9 @@ public class CtrlSchedule {
      */
     private final Set<CtrlCall> triedCalls;
     /** Next schedule node in case {@link #trans} succeeds. */
-    private CtrlSchedule success;
+    private CtrlSchedule succNext;
     /** Next schedule node in case {@link #trans} fails. */
-    private CtrlSchedule failure;
+    private CtrlSchedule failNext;
+    /** Flag indicating if this schedule represents a success state. */
+    private final boolean success;
 }

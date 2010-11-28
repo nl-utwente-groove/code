@@ -17,7 +17,6 @@
 package groove.test;
 
 import groove.control.CtrlAut;
-import groove.control.CtrlCall;
 import groove.control.CtrlParser;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlTransition;
@@ -53,9 +52,17 @@ public class CtrlBuildTest extends TestCase {
         }
     }
 
-    /** Regression test for error found in old control program. */
+    /** Regression test for errors found in old control programs. */
     public void testRegression() {
         buildCorrect("alap {\n alap { a| b;\n } c;\n}\n", 3, 7);
+        CtrlAut aut =
+            buildCorrect(
+                "node x,y; bNode(out x); bNode; bNode(out y); try bNode(x); else bNode-bNode(x,y);",
+                6, 6);
+        CtrlTransition t1 = aut.getStart().getTransitions().iterator().next();
+        CtrlTransition t2 = t1.target().getTransitions().iterator().next();
+        CtrlTransition t3 = t2.target().getTransitions().iterator().next();
+        assertEquals(2, t3.target().getBoundVars().size());
     }
 
     /** Test for initialisation errors. */
@@ -120,6 +127,9 @@ public class CtrlBuildTest extends TestCase {
         buildCorrect("f(); function f() { a; }", 3, 2);
         buildCorrect("f(); f(); function f() { choice a; or {b;c;} }", 6, 7);
         buildCorrect("f(); function f() { node x; bNode(out x); }", 3, 2);
+        buildWrong("function f() { g(); } function g() { f(); }");
+        buildCorrect("function f() { a | g(); } function g() { b; c; } f(); ",
+            4, 4);
     }
 
     /** Tests the variable binding. */
@@ -144,9 +154,10 @@ public class CtrlBuildTest extends TestCase {
         assertEquals(2, targetVarBinding.length);
         assertEquals(0, targetVarBinding[0]);
         assertEquals(2, targetVarBinding[1]);
-        int[] inVarBinding = second.getInVarBinding();
-        assertEquals(1, inVarBinding.length);
-        assertEquals(0, inVarBinding[0]);
+        int[] parBinding = second.getParBinding();
+        assertEquals(2, parBinding.length);
+        assertEquals(0, parBinding[0]);
+        assertEquals(1, parBinding[1]);
     }
 
     /** Tests the transition scheduling. */
@@ -155,39 +166,40 @@ public class CtrlBuildTest extends TestCase {
             buildCorrect(
                 "choice { try a; } or { if (e|c) c; else d; } or { b;b;}", 5, 9);
         CtrlSchedule s0 = aut.getStart().getSchedule();
-        getName(s0).equals("b");
+        assertEquals("b", getName(s0));
         CtrlSchedule s1 = s0.next(false);
-        getName(s1).equals("a");
+        assertEquals("a", getName(s1));
         assertTrue(s1 == s0.next(true));
         CtrlSchedule s1f = s1.next(false);
-        getName(s1f).equals(CtrlCall.OMEGA_NAME);
+        assertEquals("c", getName(s1f));
+        assertTrue(s1f.isSuccess());
         CtrlSchedule s1ff = s1f.next(false);
-        getName(s1ff).equals("c");
-        assertTrue(s1ff == s1f.next(true));
+        assertEquals("e", getName(s1ff));
+        assertTrue(s1ff.isSuccess());
         CtrlSchedule s1fff = s1ff.next(false);
-        getName(s1fff).equals("e");
-        CtrlSchedule s1ffff = s1fff.next(false);
-        getName(s1ffff).equals("d");
-        assertTrue(s1fff.next(true).isFinished());
-        assertTrue(s1ffff.next(false).isFinished());
-        assertTrue(s1ffff.next(true).isFinished());
-        CtrlSchedule s1fft = s1ff.next(true);
-        getName(s1fft).equals("e");
-        assertTrue(s1fft.next(false).isFinished());
-        assertTrue(s1fft.next(true).isFinished());
+        assertEquals("d", getName(s1fff));
+        assertTrue(s1fff.isSuccess());
+        assertSame(s1fff.next(false), s1fff.next(true));
+        assertTrue(s1fff.next(false).isFinished());
+        CtrlSchedule s1ft = s1f.next(true);
+        assertEquals("e", getName(s1ft));
+        assertTrue(s1ft.isSuccess());
+        assertSame(s1ft.next(false), s1ft.next(true));
+        assertTrue(s1ft.next(false).isFinished());
         CtrlSchedule s1t = s1.next(true);
-        getName(s1t).equals("c");
+        assertEquals("c", getName(s1t));
         CtrlSchedule s1tf = s1t.next(false);
-        getName(s1tf).equals("e");
-        assertTrue(s1tf.next(true).isFinished());
+        assertEquals("e", getName(s1tf));
         CtrlSchedule s1tff = s1tf.next(false);
-        getName(s1tff).equals("d");
+        assertEquals("d", getName(s1tff));
+        assertSame(s1tff.next(false), s1tff.next(true));
         assertTrue(s1tff.next(false).isFinished());
-        assertTrue(s1tff.next(true).isFinished());
+        assertFalse(s1tff.next(false).isSuccess());
         CtrlSchedule s1tt = s1t.next(true);
-        getName(s1tt).equals("e");
-        assertTrue(s1tt.next(false).isFinished());
+        assertEquals("e", getName(s1tt));
+        assertSame(s1tt.next(false), s1tt.next(true));
         assertTrue(s1tt.next(true).isFinished());
+        assertFalse(s1tt.next(false).isSuccess());
     }
 
     private String getName(CtrlSchedule s) {

@@ -27,6 +27,7 @@ import java.util.Set;
  * visible as an edge.
  * @author Tom Staijen
  */
+@Deprecated
 public interface ControlShape {
 
     /**

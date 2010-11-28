@@ -7,16 +7,16 @@ options {
 }
 
 tokens {
-	PROGRAM;
+  ARG;
+  ARGS;
 	BLOCK;
-	FUNCTIONS;
-	FUNCTION;
 	CALL;
   DO_WHILE;
   DO_UNTIL;
+	FUNCTION;
+	FUNCTIONS;
+	PROGRAM;
 	VAR;
-  ARG;
-  ARGS;
 }
 
 @lexer::header {
@@ -113,7 +113,7 @@ expr
 expr2
   : e=expr_atom
     ( PLUS -> ^(BLOCK $e ^(STAR $e))
-    | STAR -> ^(STAR $e)
+    | ASTERISK -> ^(STAR $e)
     | -> $e
     )
   | SHARP expr_atom -> ^(ALAP expr_atom)
@@ -171,26 +171,27 @@ literal
 
 // LEXER rules
 
-ALAP     :	'alap';
-WHILE    :	'while';
-DO       :	'do';
-UNTIL    :	'until';
-IF       :	'if';
-ELSE     :	'else';
-CHOICE   :	'choice';
-OR       :	'or';
-TRY      :	'try';
-FUNCTION :	'function';
-TRUE     :	'true';
-FALSE    :	'false';
-OTHER    : 'other';
+ALAP     : 'alap';
 ANY		   : 'any';
-NODE     : 'node';
 BOOL     : 'bool';
-STRING   : 'string';
+CHOICE   : 'choice';
+DO       : 'do';
+ELSE     : 'else';
+FALSE    : 'false';
+FUNCTION : 'function';
+IF       : 'if';
 INT      : 'int';
+NODE     : 'node';
+OR       : 'or';
+OTHER    : 'other';
+OUT	     : 'out';
 REAL     : 'real';
-OUT	     :	'out';
+STAR     : 'string';
+STRING   : 'star';
+TRY      : 'try';
+TRUE     : 'true';
+UNTIL    : 'until';
+WHILE    : 'while';
 
 INT_LIT
   : IntegerNumber 
@@ -237,7 +238,7 @@ NOT       : '!' ;
 BAR       : '|' ;
 SHARP     : '#' ;
 PLUS      : '+' ;
-STAR     	: '*' ;
+ASTERISK  : '*' ;
 DONT_CARE	: '_' ;
 MINUS     : '-' ;
 QUOTE     : '"' ;

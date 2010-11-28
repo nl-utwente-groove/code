@@ -40,7 +40,6 @@ public class AllTests {
         suite.addTest(new TestSuite(ModelCheckingTest.class));
         suite.addTest(new TestSuite(TreeSetTest.class));
         suite.addTest(new TestSuite(IOTest.class));
-        suite.addTest(new TestSuite(ControlTest.class));
         suite.addTest(new TestSuite(ControlVariablesTest.class));
         suite.addTest(new TestSuite(ControlAttributeParametersTest.class));
         suite.addTest(new TestSuite(CtrlBuildTest.class));

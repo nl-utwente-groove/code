@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-import groove.control.ControlAutomaton;
 import groove.control.CtrlAut;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
@@ -125,25 +124,6 @@ public class GraphGrammar extends RuleSystem {
     }
 
     /**
-     * Sets a control automaton for this grammar. This is only allowed if the
-     * grammar is not yet fixed, as indicated by {@link #isFixed()}.
-     * @throws IllegalStateException if the grammar is already fixed
-     * @see #isFixed()
-     */
-    public void setControl(ControlAutomaton control) {
-        testFixed(false);
-        this.control = control;
-    }
-
-    /**
-     * Returns the control automaton of this grammar, or <code>null</code> if
-     * there is none.
-     */
-    public ControlAutomaton getControl() {
-        return this.control;
-    }
-
-    /**
      * Fixes the start graph, in addition to calling the <code>super</code>
      * method.
      */
@@ -192,11 +172,6 @@ public class GraphGrammar extends RuleSystem {
      * The start graph of this graph grammar.
      */
     private Graph startGraph;
-    /**
-     * The control automaton of this grammar; <code>null</code> if there is
-     * none.
-     */
-    private ControlAutomaton control;
     /**
      * The control automaton of this grammar; <code>null</code> if there is
      * none.

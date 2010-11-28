@@ -44,6 +44,7 @@ import org.antlr.runtime.tree.CommonTreeNodeStream;
  *          Tests the creation of a control automaton from a given control file
  *          and grammar (args[0] and args[1] from main() respectively).
  */
+@Deprecated
 public class ControlTest {
     /**
      * Creates and a ControlTest object and displays the generated control

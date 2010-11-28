@@ -54,7 +54,7 @@ public class CtrlFactory {
 
     /** Factory method for a rule or function call. */
     public CtrlAut buildCall(CtrlCall call, NamespaceNew namespace) {
-        if (call.isRule() || call.isOmega()) {
+        if (call.isRule()) {
             return buildRuleCall(call);
         } else {
             return buildFunctionCall(call, namespace);

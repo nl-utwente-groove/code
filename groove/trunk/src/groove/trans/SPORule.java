@@ -19,6 +19,8 @@ package groove.trans;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
+import groove.graph.AbstractGraph;
+import groove.graph.DefaultMorphism;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -271,6 +273,43 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
             this.sig = Collections.emptyList();
         }
         return this.sig;
+    }
+
+    /** Returns, for a given index in the signature,
+     * the corresponding index in the anchor 
+     * or in the created nodes (if the parameter is a creator).
+     * The latter are offset by the length of the anchor.
+     */
+    public int getParBinding(int i) {
+        if (this.parBinding == null) {
+            this.parBinding = computeParBinding();
+        }
+        return this.parBinding[i];
+    }
+
+    private int[] computeParBinding() {
+        int[] result = new int[this.sig.size()];
+        int anchorSize = anchor().length;
+        for (int i = 0; i < this.sig.size(); i++) {
+            CtrlPar.Var par = this.sig.get(i);
+            int binding;
+            Node ruleNode = par.getRuleNode();
+            if (par.isCreator()) {
+                // look up the node in the creator nodes
+                binding =
+                    Arrays.asList(getCreatorNodes()).indexOf(ruleNode)
+                        + anchorSize;
+                assert binding >= anchorSize;
+            } else {
+                // look up the node in the anchor
+                binding = Arrays.asList(anchor()).indexOf(ruleNode);
+                assert binding >= 0 : String.format(
+                    "Node %s not in anchors %s", ruleNode,
+                    Arrays.toString(anchor()));
+            }
+            result[i] = binding;
+        }
+        return result;
     }
 
     /**
@@ -1174,6 +1213,11 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         }
     }
 
+    @Override
+    public GraphProperties getRuleProperties() {
+        return this.ruleProperties;
+    }
+
     /**
      * The parent rule of this rule; may be <code>null</code>, if this is a
      * top-level rule.
@@ -1309,6 +1353,12 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 
     /** The signature of the rule. */
     private List<CtrlPar.Var> sig;
+    /** 
+     * List of indices for the parameters, pointing either to the
+     * anchor position or to the position in the created nodes list.
+     * The latter are offset by the length of the anchor.
+     */
+    private int[] parBinding;
     /**
      * Set of anonymous (unnumbered) parameters.
      */
@@ -1337,6 +1387,23 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         return SearchPlanStrategy.searchFindReporter.getTotalTime();
     }
 
+    /** Special rule that models termination. */
+    public static final SPORule OMEGA_RULE;
+    static {
+        Graph emptyGraph = AbstractGraph.EMPTY_GRAPH;
+        Morphism emptyMorph = new DefaultMorphism(emptyGraph, emptyGraph);
+        GraphProperties ruleProperties = new GraphProperties();
+        SystemProperties systemProperties = new SystemProperties();
+        OMEGA_RULE =
+            new SPORule(emptyMorph, new RuleName(OMEGA_NAME), ruleProperties,
+                systemProperties);
+        try {
+            OMEGA_RULE.setFixed();
+        } catch (FormatException e) {
+            assert false;
+        }
+    }
+
     /**
      * The factory used for creating rule anchors.
      */
@@ -1345,8 +1412,4 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /** Debug flag for the constructor. */
     private static final boolean PRINT = false;
 
-    @Override
-    public GraphProperties getRuleProperties() {
-        return this.ruleProperties;
-    }
 }

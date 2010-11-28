@@ -14,9 +14,6 @@
  */
 package groove.lts;
 
-import groove.control.ControlState;
-import groove.control.ControlTransition;
-import groove.control.CtrlPar;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.graph.DeltaApplier;
@@ -31,8 +28,6 @@ import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.SPORule;
 
-import java.util.List;
-
 /**
  * 
  * @author Arend
@@ -45,76 +40,22 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * rule application, and a given control location.
      */
     public DefaultGraphNextState(AbstractGraphState source, RuleEvent event,
-            Node[] addedNodes, ControlState control) {
-        super(source.getCacheReference(), control);
+            Node[] addedNodes) {
+        super(source.getCacheReference());
         this.source = source;
         this.event = event;
-        CtrlState sourceCtrl = source.getCtrlState();
-        this.ctrlTrans =
-            sourceCtrl == null ? null
-                    : sourceCtrl.getTransition(event.getRule());
         this.addedNodes = addedNodes;
-        if (source.getLocation() != null) {
-            initializeVariables();
+        CtrlState sourceCtrl = source.getCtrlState();
+        if (sourceCtrl == null) {
+            this.ctrlTrans = null;
+            this.boundNodes = null;
+        } else {
+            this.ctrlTrans = sourceCtrl.getTransition(event.getRule());
+            this.boundNodes = computeBoundNodes();
         }
-    }
-
-    /**
-     * Initializes the variables for this state based on the previous state and
-     * the transition taken to get here.
-     */
-    private void initializeVariables() {
-        MergeMap nodeMap = this.event.getMergeMap();
-        ControlTransition transition = this.getControlTransition();
-
-        if (this.getLocation() == null) {
-            this.setLocation(transition.target());
-        }
-
-        AbstractGraphState src = this.source;
-        // if src has parameters, we need to apply the morphism to them
-        if (src.hasParameters()) {
-            Node[] parameters = src.getParameters();
-            for (int i = 0; i < parameters.length; i++) {
-                Node targetNode = nodeMap.getNode(parameters[i]);
-                // the node could be deleted by this rule
-                if (targetNode != null
-                    && transition.target().isInitialized(
-                        transition.source().getVariableName(i))) {
-                    // we need to find the position this variable has in the current state
-                    String name =
-                        ((ControlState) src.getLocation()).getVariableName(i);
-                    int newPosition =
-                        ((ControlState) this.getLocation()).getVariablePosition(name);
-                    this.setParameter(newPosition, targetNode);
-                }
-            }
-        }
-
-        // if transition has output parameters, we need to apply them
-        if (transition.hasOutputParameters()) {
-            RuleMatch match = getMatch();
-            String[] output = transition.getOutputParameters();
-            SPORule rule = (SPORule) getEvent().getRule();
-            List<CtrlPar.Var> ruleSig = rule.getSignature();
-            for (int i = 0; i < output.length; i++) {
-                if (output[i] != null && !output[i].equals("_")) {
-                    int creator = -1;
-                    int position =
-                        ((ControlState) this.getLocation()).getVariablePosition(output[i]);
-                    Node targetValue;
-                    if ((creator = rule.isCreatorParameter(i + 1)) != -1) {
-                        targetValue = this.addedNodes[creator];
-                    } else {
-                        Node sourceValue =
-                            match.getElementMap().getNode(
-                                ruleSig.get(i).getRuleNode());
-                        targetValue = nodeMap.getNode(sourceValue);
-                    }
-                    this.setParameter(position, targetValue);
-                }
-            }
-        }
+        //        if (source.getLocation() != null) {
+        //            initializeVariables();
+        //        }
     }
 
     public RuleEvent getEvent() {
@@ -123,6 +64,48 @@ public class DefaultGraphNextState extends AbstractGraphState implements
 
     public Node[] getAddedNodes() {
         return this.addedNodes;
+    }
+
+    @Override
+    public Node[] getBoundNodes() {
+        if (this.boundNodes == null) {
+            this.boundNodes = computeBoundNodes();
+        }
+        return this.boundNodes;
+    }
+
+    private Node[] computeBoundNodes() {
+        Node[] result;
+        if (getCtrlState() == null) {
+            result = EMPTY_NODE_LIST;
+        } else {
+            int valueCount = getCtrlState().getBoundVars().size();
+            result = new Node[valueCount];
+            Node[] parentValues = this.source.getBoundNodes();
+            int[] varBinding = getCtrlTransition().getTargetVarBinding();
+            SPORule rule = ((SPORule) getEvent().getRule());
+            int anchorSize = getEvent().getAnchorSize();
+            MergeMap mergeMap = getEvent().getMergeMap();
+            for (int i = 0; i < valueCount; i++) {
+                int fromI = varBinding[i];
+                Node value;
+                if (fromI >= parentValues.length) {
+                    int binding =
+                        rule.getParBinding(fromI - parentValues.length);
+                    if (binding < anchorSize) {
+                        value =
+                            mergeMap.getNode((Node) getEvent().getAnchorImage(
+                                binding));
+                    } else {
+                        value = getAddedNodes()[binding - anchorSize];
+                    }
+                } else {
+                    value = mergeMap.getNode(parentValues[fromI]);
+                }
+                result[i] = value;
+            }
+        }
+        return result;
     }
 
     /**
@@ -163,7 +146,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * This implementation returns the rule name.
      */
     public Label label() {
-        return getEvent().getLabel();
+        return getEvent().getLabel(this.addedNodes);
     }
 
     /**
@@ -373,34 +356,6 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         }
     }
 
-    /**
-     * Returns the ControlTransition with which this transition is associated
-     * @return the ControlTransition with which this transition is associated, 
-     * or null if no control is present
-     */
-    public ControlTransition getControlTransition() {
-        if (this.source.getLocation() != null) {
-            return ((ControlState) this.source.getLocation()).getTransition(this.event.getRule());
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Returns whether this transition is a self transition (graph does not change,
-     * ControlLocation does not change, no output parameters)
-     * @return whether this transition is a self transition
-     */
-    public boolean isSelfTransition() {
-        boolean retval = !this.event.getRule().isModifying();
-        if (retval && this.source.getLocation() != null) {
-            retval &=
-                this.source.getLocation() == this.getControlTransition().target();
-            retval &= this.getControlTransition().hasOutputParameters();
-        }
-        return retval;
-    }
-
     public CtrlState getCtrlState() {
         return this.ctrlTrans == null ? null : this.ctrlTrans.target();
     }
@@ -409,8 +364,11 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         return this.ctrlTrans;
     }
 
+    /** The underlying control transition, if any. */
     private final CtrlTransition ctrlTrans;
 
+    /** Keeps track of bound variables */
+    private Node[] boundNodes;
     /**
      * The rule of the incoming transition with which this state was created.
      */

@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNew.g 2010-11-27 08:57:28
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNew.g 2010-11-28 11:13:35
 
 package groove.control.parse;
 import groove.control.*;
@@ -16,34 +16,35 @@ import org.antlr.runtime.tree.*;
 
 public class GCLNewParser extends Parser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "DO_WHILE", "DO_UNTIL", "VAR", "ARG", "ARGS", "LCURLY", "RCURLY", "ID", "LPAR", "RPAR", "ALAP", "WHILE", "UNTIL", "DO", "IF", "ELSE", "TRY", "CHOICE", "OR", "SEMI", "BAR", "TRUE", "PLUS", "STAR", "SHARP", "ANY", "OTHER", "DOT", "COMMA", "NODE", "BOOL", "STRING", "INT", "REAL", "OUT", "DONT_CARE", "FALSE", "STRING_LIT", "INT_LIT", "REAL_LIT", "IntegerNumber", "NonIntegerNumber", "QUOTE", "EscapeSequence", "BSLASH", "AMP", "NOT", "MINUS", "ML_COMMENT", "SL_COMMENT", "WS"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "ARG", "ARGS", "BLOCK", "CALL", "DO_WHILE", "DO_UNTIL", "FUNCTION", "FUNCTIONS", "PROGRAM", "VAR", "LCURLY", "RCURLY", "ID", "LPAR", "RPAR", "ALAP", "WHILE", "UNTIL", "DO", "IF", "ELSE", "TRY", "CHOICE", "OR", "SEMI", "BAR", "TRUE", "PLUS", "ASTERISK", "SHARP", "ANY", "OTHER", "DOT", "COMMA", "NODE", "BOOL", "STRING", "INT", "REAL", "OUT", "DONT_CARE", "FALSE", "STRING_LIT", "INT_LIT", "REAL_LIT", "STAR", "IntegerNumber", "NonIntegerNumber", "QUOTE", "EscapeSequence", "BSLASH", "AMP", "NOT", "MINUS", "ML_COMMENT", "SL_COMMENT", "WS"
     };
     public static final int REAL_LIT=48;
-    public static final int FUNCTION=7;
-    public static final int DO_UNTIL=10;
-    public static final int STAR=32;
+    public static final int FUNCTION=10;
+    public static final int DO_UNTIL=9;
+    public static final int STAR=49;
     public static final int INT_LIT=47;
-    public static final int FUNCTIONS=6;
+    public static final int FUNCTIONS=11;
     public static final int WHILE=20;
-    public static final int IntegerNumber=49;
-    public static final int AMP=54;
+    public static final int IntegerNumber=50;
+    public static final int AMP=55;
     public static final int STRING_LIT=46;
     public static final int DO=22;
-    public static final int NOT=55;
+    public static final int NOT=56;
     public static final int ALAP=19;
     public static final int ID=16;
     public static final int EOF=-1;
+    public static final int ASTERISK=32;
     public static final int IF=23;
-    public static final int ML_COMMENT=57;
-    public static final int QUOTE=51;
+    public static final int ML_COMMENT=58;
+    public static final int QUOTE=52;
     public static final int LPAR=17;
-    public static final int ARG=12;
+    public static final int ARG=4;
     public static final int COMMA=37;
-    public static final int NonIntegerNumber=50;
-    public static final int DO_WHILE=9;
-    public static final int ARGS=13;
+    public static final int NonIntegerNumber=51;
+    public static final int DO_WHILE=8;
+    public static final int ARGS=5;
     public static final int PLUS=31;
-    public static final int VAR=11;
+    public static final int VAR=13;
     public static final int DOT=36;
     public static final int CHOICE=26;
     public static final int SHARP=33;
@@ -53,26 +54,26 @@ public class GCLNewParser extends Parser {
     public static final int BOOL=39;
     public static final int LCURLY=14;
     public static final int INT=41;
-    public static final int MINUS=56;
+    public static final int MINUS=57;
     public static final int SEMI=28;
     public static final int TRUE=30;
     public static final int TRY=25;
     public static final int DONT_CARE=44;
     public static final int REAL=42;
-    public static final int WS=59;
+    public static final int WS=60;
     public static final int ANY=34;
     public static final int OUT=43;
     public static final int UNTIL=21;
-    public static final int BLOCK=5;
-    public static final int SL_COMMENT=58;
+    public static final int BLOCK=6;
+    public static final int SL_COMMENT=59;
     public static final int RCURLY=15;
     public static final int OR=27;
     public static final int RPAR=18;
-    public static final int PROGRAM=4;
-    public static final int CALL=8;
+    public static final int PROGRAM=12;
+    public static final int CALL=7;
     public static final int FALSE=45;
-    public static final int BSLASH=53;
-    public static final int EscapeSequence=52;
+    public static final int BSLASH=54;
+    public static final int EscapeSequence=53;
     public static final int BAR=29;
     public static final int STRING=40;
 
@@ -705,7 +706,7 @@ public class GCLNewParser extends Parser {
 
 
                             // AST REWRITE
-                            // elements: stat, WHILE, stat, cond
+                            // elements: WHILE, stat, cond, stat
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -764,7 +765,7 @@ public class GCLNewParser extends Parser {
 
 
                             // AST REWRITE
-                            // elements: stat, UNTIL, stat, cond
+                            // elements: cond, UNTIL, stat, stat
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -1453,7 +1454,7 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "expr2"
-    // GCLNew.g:113:1: expr2 : (e= expr_atom ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | STAR -> ^( STAR $e) | -> $e) | SHARP expr_atom -> ^( ALAP expr_atom ) );
+    // GCLNew.g:113:1: expr2 : (e= expr_atom ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | ASTERISK -> ^( STAR $e) | -> $e) | SHARP expr_atom -> ^( ALAP expr_atom ) );
     public final GCLNewParser.expr2_return expr2() throws RecognitionException {
         GCLNewParser.expr2_return retval = new GCLNewParser.expr2_return();
         retval.start = input.LT(1);
@@ -1461,7 +1462,7 @@ public class GCLNewParser extends Parser {
         CommonTree root_0 = null;
 
         Token PLUS61=null;
-        Token STAR62=null;
+        Token ASTERISK62=null;
         Token SHARP63=null;
         GCLNewParser.expr_atom_return e = null;
 
@@ -1469,14 +1470,14 @@ public class GCLNewParser extends Parser {
 
 
         CommonTree PLUS61_tree=null;
-        CommonTree STAR62_tree=null;
+        CommonTree ASTERISK62_tree=null;
         CommonTree SHARP63_tree=null;
         RewriteRuleTokenStream stream_PLUS=new RewriteRuleTokenStream(adaptor,"token PLUS");
-        RewriteRuleTokenStream stream_STAR=new RewriteRuleTokenStream(adaptor,"token STAR");
         RewriteRuleTokenStream stream_SHARP=new RewriteRuleTokenStream(adaptor,"token SHARP");
+        RewriteRuleTokenStream stream_ASTERISK=new RewriteRuleTokenStream(adaptor,"token ASTERISK");
         RewriteRuleSubtreeStream stream_expr_atom=new RewriteRuleSubtreeStream(adaptor,"rule expr_atom");
         try {
-            // GCLNew.g:114:3: (e= expr_atom ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | STAR -> ^( STAR $e) | -> $e) | SHARP expr_atom -> ^( ALAP expr_atom ) )
+            // GCLNew.g:114:3: (e= expr_atom ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | ASTERISK -> ^( STAR $e) | -> $e) | SHARP expr_atom -> ^( ALAP expr_atom ) )
             int alt14=2;
             int LA14_0 = input.LA(1);
 
@@ -1495,7 +1496,7 @@ public class GCLNewParser extends Parser {
             }
             switch (alt14) {
                 case 1 :
-                    // GCLNew.g:114:5: e= expr_atom ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | STAR -> ^( STAR $e) | -> $e)
+                    // GCLNew.g:114:5: e= expr_atom ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | ASTERISK -> ^( STAR $e) | -> $e)
                     {
                     pushFollow(FOLLOW_expr_atom_in_expr2539);
                     e=expr_atom();
@@ -1503,7 +1504,7 @@ public class GCLNewParser extends Parser {
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) stream_expr_atom.add(e.getTree());
-                    // GCLNew.g:115:5: ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | STAR -> ^( STAR $e) | -> $e)
+                    // GCLNew.g:115:5: ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | ASTERISK -> ^( STAR $e) | -> $e)
                     int alt13=3;
                     switch ( input.LA(1) ) {
                     case PLUS:
@@ -1511,7 +1512,7 @@ public class GCLNewParser extends Parser {
                         alt13=1;
                         }
                         break;
-                    case STAR:
+                    case ASTERISK:
                         {
                         alt13=2;
                         }
@@ -1564,7 +1565,7 @@ public class GCLNewParser extends Parser {
                                 // GCLNew.g:115:26: ^( STAR $e)
                                 {
                                 CommonTree root_2 = (CommonTree)adaptor.nil();
-                                root_2 = (CommonTree)adaptor.becomeRoot(stream_STAR.nextNode(), root_2);
+                                root_2 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(STAR, "STAR"), root_2);
 
                                 adaptor.addChild(root_2, stream_e.nextTree());
 
@@ -1580,15 +1581,15 @@ public class GCLNewParser extends Parser {
                             }
                             break;
                         case 2 :
-                            // GCLNew.g:116:7: STAR
+                            // GCLNew.g:116:7: ASTERISK
                             {
-                            STAR62=(Token)match(input,STAR,FOLLOW_STAR_in_expr2571); if (state.failed) return retval; 
-                            if ( state.backtracking==0 ) stream_STAR.add(STAR62);
+                            ASTERISK62=(Token)match(input,ASTERISK,FOLLOW_ASTERISK_in_expr2571); if (state.failed) return retval; 
+                            if ( state.backtracking==0 ) stream_ASTERISK.add(ASTERISK62);
 
 
 
                             // AST REWRITE
-                            // elements: e, STAR
+                            // elements: e
                             // token labels: 
                             // rule labels: retval, e
                             // token list labels: 
@@ -1600,12 +1601,12 @@ public class GCLNewParser extends Parser {
                             RewriteRuleSubtreeStream stream_e=new RewriteRuleSubtreeStream(adaptor,"rule e",e!=null?e.tree:null);
 
                             root_0 = (CommonTree)adaptor.nil();
-                            // 116:12: -> ^( STAR $e)
+                            // 116:16: -> ^( STAR $e)
                             {
-                                // GCLNew.g:116:15: ^( STAR $e)
+                                // GCLNew.g:116:19: ^( STAR $e)
                                 {
                                 CommonTree root_1 = (CommonTree)adaptor.nil();
-                                root_1 = (CommonTree)adaptor.becomeRoot(stream_STAR.nextNode(), root_1);
+                                root_1 = (CommonTree)adaptor.becomeRoot((CommonTree)adaptor.create(STAR, "STAR"), root_1);
 
                                 adaptor.addChild(root_1, stream_e.nextTree());
 
@@ -1908,7 +1909,7 @@ public class GCLNewParser extends Parser {
 
 
             // AST REWRITE
-            // elements: arg_list, rule_name
+            // elements: rule_name, arg_list
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -2141,7 +2142,7 @@ public class GCLNewParser extends Parser {
 
 
             // AST REWRITE
-            // elements: ID, var_type
+            // elements: var_type, ID
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -2482,7 +2483,7 @@ public class GCLNewParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: OUT, ID
+                    // elements: ID, OUT
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -2795,7 +2796,7 @@ public class GCLNewParser extends Parser {
     static final String DFA1_eofS =
         "\1\1\20\uffff";
     static final String DFA1_minS =
-        "\1\7\20\uffff";
+        "\1\12\20\uffff";
     static final String DFA1_maxS =
         "\1\52\20\uffff";
     static final String DFA1_acceptS =
@@ -2803,7 +2804,7 @@ public class GCLNewParser extends Parser {
     static final String DFA1_specialS =
         "\21\uffff}>";
     static final String[] DFA1_transitionS = {
-            "\1\2\6\uffff\1\3\1\uffff\2\3\1\uffff\5\3\1\uffff\2\3\6\uffff"+
+            "\1\2\3\uffff\1\3\1\uffff\2\3\1\uffff\5\3\1\uffff\2\3\6\uffff"+
             "\3\3\2\uffff\5\3",
             "",
             "",
@@ -2990,7 +2991,7 @@ public class GCLNewParser extends Parser {
     static final String DFA4_eofS =
         "\1\2\42\uffff";
     static final String DFA4_minS =
-        "\1\7\1\0\41\uffff";
+        "\1\12\1\0\41\uffff";
     static final String DFA4_maxS =
         "\1\52\1\0\41\uffff";
     static final String DFA4_acceptS =
@@ -2998,7 +2999,7 @@ public class GCLNewParser extends Parser {
     static final String DFA4_specialS =
         "\1\uffff\1\0\41\uffff}>";
     static final String[] DFA4_transitionS = {
-            "\1\2\6\uffff\4\2\1\uffff\5\2\1\1\3\2\5\uffff\3\2\2\uffff\5"+
+            "\1\2\3\uffff\4\2\1\uffff\5\2\1\1\3\2\5\uffff\3\2\2\uffff\5"+
             "\2",
             "\1\uffff",
             "",
@@ -3100,7 +3101,7 @@ public class GCLNewParser extends Parser {
     static final String DFA5_eofS =
         "\1\2\42\uffff";
     static final String DFA5_minS =
-        "\1\7\1\0\41\uffff";
+        "\1\12\1\0\41\uffff";
     static final String DFA5_maxS =
         "\1\52\1\0\41\uffff";
     static final String DFA5_acceptS =
@@ -3108,7 +3109,7 @@ public class GCLNewParser extends Parser {
     static final String DFA5_specialS =
         "\1\uffff\1\0\41\uffff}>";
     static final String[] DFA5_transitionS = {
-            "\1\2\6\uffff\4\2\1\uffff\5\2\1\1\3\2\5\uffff\3\2\2\uffff\5"+
+            "\1\2\3\uffff\4\2\1\uffff\5\2\1\1\3\2\5\uffff\3\2\2\uffff\5"+
             "\2",
             "\1\uffff",
             "",
@@ -3210,7 +3211,7 @@ public class GCLNewParser extends Parser {
     static final String DFA6_eofS =
         "\1\1\42\uffff";
     static final String DFA6_minS =
-        "\1\7\22\uffff\1\0\17\uffff";
+        "\1\12\22\uffff\1\0\17\uffff";
     static final String DFA6_maxS =
         "\1\52\22\uffff\1\0\17\uffff";
     static final String DFA6_acceptS =
@@ -3218,7 +3219,7 @@ public class GCLNewParser extends Parser {
     static final String DFA6_specialS =
         "\23\uffff\1\0\17\uffff}>";
     static final String[] DFA6_transitionS = {
-            "\1\1\6\uffff\4\1\1\uffff\10\1\1\23\5\uffff\3\1\2\uffff\5\1",
+            "\1\1\3\uffff\4\1\1\uffff\10\1\1\23\5\uffff\3\1\2\uffff\5\1",
             "",
             "",
             "",
@@ -3316,10 +3317,10 @@ public class GCLNewParser extends Parser {
     }
  
 
-    public static final BitSet FOLLOW_function_in_program110 = new BitSet(new long[]{0x000007CE06FB4082L});
-    public static final BitSet FOLLOW_stat_in_program112 = new BitSet(new long[]{0x000007CE06FB4082L});
-    public static final BitSet FOLLOW_LCURLY_in_block150 = new BitSet(new long[]{0x000007CE06FBC080L});
-    public static final BitSet FOLLOW_stat_in_block152 = new BitSet(new long[]{0x000007CE06FBC080L});
+    public static final BitSet FOLLOW_function_in_program110 = new BitSet(new long[]{0x000007CE06FB4402L});
+    public static final BitSet FOLLOW_stat_in_program112 = new BitSet(new long[]{0x000007CE06FB4402L});
+    public static final BitSet FOLLOW_LCURLY_in_block150 = new BitSet(new long[]{0x000007CE06FBC400L});
+    public static final BitSet FOLLOW_stat_in_block152 = new BitSet(new long[]{0x000007CE06FBC400L});
     public static final BitSet FOLLOW_RCURLY_in_block155 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_FUNCTION_in_function174 = new BitSet(new long[]{0x0000000000010000L});
     public static final BitSet FOLLOW_ID_in_function177 = new BitSet(new long[]{0x0000000000020000L});
@@ -3327,19 +3328,19 @@ public class GCLNewParser extends Parser {
     public static final BitSet FOLLOW_RPAR_in_function182 = new BitSet(new long[]{0x0000000000004000L});
     public static final BitSet FOLLOW_block_in_function185 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_block_in_stat203 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ALAP_in_stat208 = new BitSet(new long[]{0x000007CE06FB4080L});
+    public static final BitSet FOLLOW_ALAP_in_stat208 = new BitSet(new long[]{0x000007CE06FB4400L});
     public static final BitSet FOLLOW_stat_in_stat211 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_WHILE_in_stat216 = new BitSet(new long[]{0x0000000000020000L});
     public static final BitSet FOLLOW_LPAR_in_stat219 = new BitSet(new long[]{0x0000000C40030000L});
     public static final BitSet FOLLOW_cond_in_stat222 = new BitSet(new long[]{0x0000000000040000L});
-    public static final BitSet FOLLOW_RPAR_in_stat224 = new BitSet(new long[]{0x000007CE06FB4080L});
+    public static final BitSet FOLLOW_RPAR_in_stat224 = new BitSet(new long[]{0x000007CE06FB4400L});
     public static final BitSet FOLLOW_stat_in_stat227 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_UNTIL_in_stat232 = new BitSet(new long[]{0x0000000000020000L});
     public static final BitSet FOLLOW_LPAR_in_stat235 = new BitSet(new long[]{0x0000000C40030000L});
     public static final BitSet FOLLOW_cond_in_stat238 = new BitSet(new long[]{0x0000000000040000L});
-    public static final BitSet FOLLOW_RPAR_in_stat240 = new BitSet(new long[]{0x000007CE06FB4080L});
+    public static final BitSet FOLLOW_RPAR_in_stat240 = new BitSet(new long[]{0x000007CE06FB4400L});
     public static final BitSet FOLLOW_stat_in_stat243 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_DO_in_stat248 = new BitSet(new long[]{0x000007CE06FB4080L});
+    public static final BitSet FOLLOW_DO_in_stat248 = new BitSet(new long[]{0x000007CE06FB4400L});
     public static final BitSet FOLLOW_stat_in_stat250 = new BitSet(new long[]{0x0000000000300000L});
     public static final BitSet FOLLOW_WHILE_in_stat258 = new BitSet(new long[]{0x0000000000020000L});
     public static final BitSet FOLLOW_LPAR_in_stat260 = new BitSet(new long[]{0x0000000C40030000L});
@@ -3352,17 +3353,17 @@ public class GCLNewParser extends Parser {
     public static final BitSet FOLLOW_IF_in_stat320 = new BitSet(new long[]{0x0000000000020000L});
     public static final BitSet FOLLOW_LPAR_in_stat323 = new BitSet(new long[]{0x0000000C40030000L});
     public static final BitSet FOLLOW_cond_in_stat326 = new BitSet(new long[]{0x0000000000040000L});
-    public static final BitSet FOLLOW_RPAR_in_stat328 = new BitSet(new long[]{0x000007CE07FB4080L});
+    public static final BitSet FOLLOW_RPAR_in_stat328 = new BitSet(new long[]{0x000007CE07FB4400L});
     public static final BitSet FOLLOW_stat_in_stat331 = new BitSet(new long[]{0x0000000001000002L});
-    public static final BitSet FOLLOW_ELSE_in_stat341 = new BitSet(new long[]{0x000007CE06FB4080L});
+    public static final BitSet FOLLOW_ELSE_in_stat341 = new BitSet(new long[]{0x000007CE06FB4400L});
     public static final BitSet FOLLOW_stat_in_stat344 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TRY_in_stat353 = new BitSet(new long[]{0x000007CE07FB4080L});
+    public static final BitSet FOLLOW_TRY_in_stat353 = new BitSet(new long[]{0x000007CE07FB4400L});
     public static final BitSet FOLLOW_stat_in_stat356 = new BitSet(new long[]{0x0000000001000002L});
-    public static final BitSet FOLLOW_ELSE_in_stat366 = new BitSet(new long[]{0x000007CE06FB4080L});
+    public static final BitSet FOLLOW_ELSE_in_stat366 = new BitSet(new long[]{0x000007CE06FB4400L});
     public static final BitSet FOLLOW_stat_in_stat369 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_CHOICE_in_stat378 = new BitSet(new long[]{0x000007CE0EFB4080L});
+    public static final BitSet FOLLOW_CHOICE_in_stat378 = new BitSet(new long[]{0x000007CE0EFB4400L});
     public static final BitSet FOLLOW_stat_in_stat381 = new BitSet(new long[]{0x0000000008000000L});
-    public static final BitSet FOLLOW_OR_in_stat391 = new BitSet(new long[]{0x000007CE0EFB4080L});
+    public static final BitSet FOLLOW_OR_in_stat391 = new BitSet(new long[]{0x000007CE0EFB4400L});
     public static final BitSet FOLLOW_stat_in_stat394 = new BitSet(new long[]{0x0000000008000002L});
     public static final BitSet FOLLOW_expr_in_stat401 = new BitSet(new long[]{0x0000000010000000L});
     public static final BitSet FOLLOW_SEMI_in_stat403 = new BitSet(new long[]{0x0000000000000002L});
@@ -3378,7 +3379,7 @@ public class GCLNewParser extends Parser {
     public static final BitSet FOLLOW_expr2_in_expr498 = new BitSet(new long[]{0x0000000020000002L});
     public static final BitSet FOLLOW_expr_atom_in_expr2539 = new BitSet(new long[]{0x0000000180000002L});
     public static final BitSet FOLLOW_PLUS_in_expr2547 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_STAR_in_expr2571 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ASTERISK_in_expr2571 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_SHARP_in_expr2603 = new BitSet(new long[]{0x0000000C00030000L});
     public static final BitSet FOLLOW_expr_atom_in_expr2605 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_ANY_in_expr_atom625 = new BitSet(new long[]{0x0000000000000002L});

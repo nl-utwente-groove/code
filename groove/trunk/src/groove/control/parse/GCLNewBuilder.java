@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNewBuilder.g 2010-11-23 23:22:44
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNewBuilder.g 2010-11-28 11:13:36
 
 package groove.control.parse;
 import groove.control.*;
@@ -15,35 +15,35 @@ import java.util.ArrayList;
 
 public class GCLNewBuilder extends TreeParser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION", "CALL", "DO_WHILE", "DO_UNTIL", "VAR", "ARG", "ARGS", "LCURLY", "RCURLY", "ID", "LPAR", "RPAR", "ALAP", "WHILE", "UNTIL", "DO", "IF", "ELSE", "TRY", "CHOICE", "OR", "SEMI", "BAR", "TRUE", "PLUS", "STAR", "SHARP", "ANY", "OTHER", "DOT", "COMMA", "NODE", "BOOL", "STRING", "INT", "REAL", "OUT", "DONT_CARE", "FALSE", "STRING_LIT", "INT_LIT", "REAL_LIT", "IntegerNumber", "NonIntegerNumber", "QUOTE", "EscapeSequence", "BSLASH", "CR", "NL", "AMP", "NOT", "MINUS", "ML_COMMENT", "SL_COMMENT", "WS"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "ARG", "ARGS", "BLOCK", "CALL", "DO_WHILE", "DO_UNTIL", "FUNCTION", "FUNCTIONS", "PROGRAM", "VAR", "LCURLY", "RCURLY", "ID", "LPAR", "RPAR", "ALAP", "WHILE", "UNTIL", "DO", "IF", "ELSE", "TRY", "CHOICE", "OR", "SEMI", "BAR", "TRUE", "PLUS", "ASTERISK", "SHARP", "ANY", "OTHER", "DOT", "COMMA", "NODE", "BOOL", "STRING", "INT", "REAL", "OUT", "DONT_CARE", "FALSE", "STRING_LIT", "INT_LIT", "REAL_LIT", "STAR", "IntegerNumber", "NonIntegerNumber", "QUOTE", "EscapeSequence", "BSLASH", "AMP", "NOT", "MINUS", "ML_COMMENT", "SL_COMMENT", "WS"
     };
     public static final int REAL_LIT=48;
-    public static final int FUNCTION=7;
-    public static final int DO_UNTIL=10;
-    public static final int STAR=32;
+    public static final int FUNCTION=10;
+    public static final int DO_UNTIL=9;
+    public static final int STAR=49;
     public static final int INT_LIT=47;
     public static final int WHILE=20;
-    public static final int FUNCTIONS=6;
-    public static final int IntegerNumber=49;
+    public static final int FUNCTIONS=11;
+    public static final int IntegerNumber=50;
     public static final int STRING_LIT=46;
-    public static final int AMP=56;
+    public static final int AMP=55;
     public static final int DO=22;
-    public static final int NOT=57;
+    public static final int NOT=56;
     public static final int ALAP=19;
     public static final int ID=16;
     public static final int EOF=-1;
+    public static final int ASTERISK=32;
     public static final int IF=23;
-    public static final int ML_COMMENT=59;
-    public static final int QUOTE=51;
+    public static final int ML_COMMENT=58;
+    public static final int QUOTE=52;
     public static final int LPAR=17;
-    public static final int ARG=12;
+    public static final int ARG=4;
     public static final int COMMA=37;
-    public static final int NonIntegerNumber=50;
-    public static final int DO_WHILE=9;
-    public static final int ARGS=13;
+    public static final int NonIntegerNumber=51;
+    public static final int DO_WHILE=8;
+    public static final int ARGS=5;
     public static final int PLUS=31;
-    public static final int VAR=11;
-    public static final int NL=55;
+    public static final int VAR=13;
     public static final int DOT=36;
     public static final int CHOICE=26;
     public static final int SHARP=33;
@@ -53,27 +53,26 @@ public class GCLNewBuilder extends TreeParser {
     public static final int BOOL=39;
     public static final int LCURLY=14;
     public static final int INT=41;
-    public static final int MINUS=58;
+    public static final int MINUS=57;
     public static final int SEMI=28;
     public static final int TRUE=30;
     public static final int TRY=25;
     public static final int REAL=42;
     public static final int DONT_CARE=44;
     public static final int ANY=34;
-    public static final int WS=61;
+    public static final int WS=60;
     public static final int OUT=43;
     public static final int UNTIL=21;
-    public static final int BLOCK=5;
+    public static final int BLOCK=6;
     public static final int OR=27;
     public static final int RCURLY=15;
-    public static final int SL_COMMENT=60;
-    public static final int PROGRAM=4;
+    public static final int SL_COMMENT=59;
+    public static final int PROGRAM=12;
     public static final int RPAR=18;
-    public static final int CALL=8;
+    public static final int CALL=7;
     public static final int FALSE=45;
-    public static final int CR=54;
-    public static final int EscapeSequence=52;
-    public static final int BSLASH=53;
+    public static final int EscapeSequence=53;
+    public static final int BSLASH=54;
     public static final int BAR=29;
     public static final int STRING=40;
 
@@ -408,7 +407,7 @@ public class GCLNewBuilder extends TreeParser {
                     int alt2=2;
                     int LA2_0 = input.LA(1);
 
-                    if ( (LA2_0==BLOCK||LA2_0==CALL||LA2_0==VAR||(LA2_0>=ALAP && LA2_0<=UNTIL)||LA2_0==IF||(LA2_0>=TRY && LA2_0<=CHOICE)||LA2_0==TRUE||LA2_0==STAR||(LA2_0>=ANY && LA2_0<=OTHER)) ) {
+                    if ( ((LA2_0>=BLOCK && LA2_0<=CALL)||LA2_0==VAR||(LA2_0>=ALAP && LA2_0<=UNTIL)||LA2_0==IF||(LA2_0>=TRY && LA2_0<=CHOICE)||LA2_0==TRUE||(LA2_0>=ANY && LA2_0<=OTHER)||LA2_0==STAR) ) {
                         alt2=1;
                     }
 
@@ -763,7 +762,7 @@ public class GCLNewBuilder extends TreeParser {
                     int alt3=2;
                     int LA3_0 = input.LA(1);
 
-                    if ( (LA3_0==BLOCK||LA3_0==CALL||LA3_0==VAR||(LA3_0>=ALAP && LA3_0<=UNTIL)||LA3_0==IF||(LA3_0>=TRY && LA3_0<=CHOICE)||LA3_0==TRUE||LA3_0==STAR||(LA3_0>=ANY && LA3_0<=OTHER)) ) {
+                    if ( ((LA3_0>=BLOCK && LA3_0<=CALL)||LA3_0==VAR||(LA3_0>=ALAP && LA3_0<=UNTIL)||LA3_0==IF||(LA3_0>=TRY && LA3_0<=CHOICE)||LA3_0==TRUE||(LA3_0>=ANY && LA3_0<=OTHER)||LA3_0==STAR) ) {
                         alt3=1;
                     }
                     switch (alt3) {
@@ -831,7 +830,7 @@ public class GCLNewBuilder extends TreeParser {
                     int alt4=2;
                     int LA4_0 = input.LA(1);
 
-                    if ( (LA4_0==BLOCK||LA4_0==CALL||LA4_0==VAR||(LA4_0>=ALAP && LA4_0<=UNTIL)||LA4_0==IF||(LA4_0>=TRY && LA4_0<=CHOICE)||LA4_0==TRUE||LA4_0==STAR||(LA4_0>=ANY && LA4_0<=OTHER)) ) {
+                    if ( ((LA4_0>=BLOCK && LA4_0<=CALL)||LA4_0==VAR||(LA4_0>=ALAP && LA4_0<=UNTIL)||LA4_0==IF||(LA4_0>=TRY && LA4_0<=CHOICE)||LA4_0==TRUE||(LA4_0>=ANY && LA4_0<=OTHER)||LA4_0==STAR) ) {
                         alt4=1;
                     }
                     switch (alt4) {
@@ -894,7 +893,7 @@ public class GCLNewBuilder extends TreeParser {
                         int alt5=2;
                         int LA5_0 = input.LA(1);
 
-                        if ( (LA5_0==BLOCK||LA5_0==CALL||LA5_0==VAR||(LA5_0>=ALAP && LA5_0<=UNTIL)||LA5_0==IF||(LA5_0>=TRY && LA5_0<=CHOICE)||LA5_0==TRUE||LA5_0==STAR||(LA5_0>=ANY && LA5_0<=OTHER)) ) {
+                        if ( ((LA5_0>=BLOCK && LA5_0<=CALL)||LA5_0==VAR||(LA5_0>=ALAP && LA5_0<=UNTIL)||LA5_0==IF||(LA5_0>=TRY && LA5_0<=CHOICE)||LA5_0==TRUE||(LA5_0>=ANY && LA5_0<=OTHER)||LA5_0==STAR) ) {
                             alt5=1;
                         }
 
@@ -1557,35 +1556,35 @@ public class GCLNewBuilder extends TreeParser {
  
 
     public static final BitSet FOLLOW_PROGRAM_in_program59 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_functions_in_program61 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_functions_in_program61 = new BitSet(new long[]{0x0000000000000040L});
     public static final BitSet FOLLOW_block_in_program63 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_FUNCTIONS_in_functions84 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_function_in_functions86 = new BitSet(new long[]{0x0000000000000088L});
+    public static final BitSet FOLLOW_function_in_functions86 = new BitSet(new long[]{0x0000000000000408L});
     public static final BitSet FOLLOW_FUNCTION_in_function99 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_ID_in_function101 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_ID_in_function101 = new BitSet(new long[]{0x0000000000000040L});
     public static final BitSet FOLLOW_block_in_function103 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_BLOCK_in_block131 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_stat_in_block151 = new BitSet(new long[]{0x0000000D46B80928L});
+    public static final BitSet FOLLOW_stat_in_block151 = new BitSet(new long[]{0x0002000C46B820C8L});
     public static final BitSet FOLLOW_block_in_stat196 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_var_decl_in_stat208 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_ALAP_in_stat221 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_stat_in_stat225 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_WHILE_in_stat239 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_stat_in_stat243 = new BitSet(new long[]{0x0000000D46B80928L});
+    public static final BitSet FOLLOW_stat_in_stat243 = new BitSet(new long[]{0x0002000C46B820C8L});
     public static final BitSet FOLLOW_stat_in_stat247 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_UNTIL_in_stat261 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_stat_in_stat265 = new BitSet(new long[]{0x0000000D46B80928L});
+    public static final BitSet FOLLOW_stat_in_stat265 = new BitSet(new long[]{0x0002000C46B820C8L});
     public static final BitSet FOLLOW_stat_in_stat269 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_TRY_in_stat283 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_stat_in_stat287 = new BitSet(new long[]{0x0000000D46B80928L});
+    public static final BitSet FOLLOW_stat_in_stat287 = new BitSet(new long[]{0x0002000C46B820C8L});
     public static final BitSet FOLLOW_stat_in_stat292 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_IF_in_stat308 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_stat_in_stat312 = new BitSet(new long[]{0x0000000D46B80928L});
-    public static final BitSet FOLLOW_stat_in_stat316 = new BitSet(new long[]{0x0000000D46B80928L});
+    public static final BitSet FOLLOW_stat_in_stat312 = new BitSet(new long[]{0x0002000C46B820C8L});
+    public static final BitSet FOLLOW_stat_in_stat316 = new BitSet(new long[]{0x0002000C46B820C8L});
     public static final BitSet FOLLOW_stat_in_stat321 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_CHOICE_in_stat338 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_stat_in_stat350 = new BitSet(new long[]{0x0000000D46B80928L});
-    public static final BitSet FOLLOW_stat_in_stat372 = new BitSet(new long[]{0x0000000D46B80928L});
+    public static final BitSet FOLLOW_stat_in_stat350 = new BitSet(new long[]{0x0002000C46B820C8L});
+    public static final BitSet FOLLOW_stat_in_stat372 = new BitSet(new long[]{0x0002000C46B820C8L});
     public static final BitSet FOLLOW_STAR_in_stat407 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_stat_in_stat411 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_rule_in_stat424 = new BitSet(new long[]{0x0000000000000002L});
@@ -1593,9 +1592,9 @@ public class GCLNewBuilder extends TreeParser {
     public static final BitSet FOLLOW_OTHER_in_stat448 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_TRUE_in_stat460 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_CALL_in_rule480 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_ID_in_rule482 = new BitSet(new long[]{0x0000000000002008L});
+    public static final BitSet FOLLOW_ID_in_rule482 = new BitSet(new long[]{0x0000000000000028L});
     public static final BitSet FOLLOW_ARGS_in_rule486 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_arg_in_rule488 = new BitSet(new long[]{0x0000000000001008L});
+    public static final BitSet FOLLOW_arg_in_rule488 = new BitSet(new long[]{0x0000000000000018L});
     public static final BitSet FOLLOW_VAR_in_var_decl507 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_type_in_var_decl509 = new BitSet(new long[]{0x0000000000010000L});
     public static final BitSet FOLLOW_ID_in_var_decl511 = new BitSet(new long[]{0x0000000000010008L});

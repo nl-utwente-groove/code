@@ -371,7 +371,6 @@ public class StoredGrammarView implements GrammarView, Observer {
                     "Rule priorities and control programs are incompatible, please disable either."));
             } else {
                 try {
-                    result.setControl(controlView.toAutomaton(result));
                     result.setCtrlAut(controlView.toCtrlAut(result));
                 } catch (FormatException exc) {
                     for (FormatError error : exc.getErrors()) {

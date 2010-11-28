@@ -16,7 +16,6 @@
  */
 package groove.test;
 
-import groove.control.ControlAutomaton;
 import groove.explore.GeneratorScenarioFactory;
 import groove.explore.Scenario;
 import groove.explore.strategy.BFSStrategy;
@@ -39,11 +38,11 @@ public class ControlVariablesTest extends TestCase {
         // a; a; a;
         explore("variablesTest1", 4, 3, 4, 6);
 
-        // a; a(out var1); a; a(out var2); a;
-        explore("variablesTest2", 6, 5, 14, 20);
+        // a; a(out var1); a|e(var1); a(out var2); a|b(var1,var2);
+        explore("variablesTest2", 6, 5, 11, 26);
 
         // a(out var1); a; a(out var2); try { b(var1, var2); } else { a(var1); }
-        explore("variablesTest3", 5, 5, 13, 14);
+        explore("variablesTest3", 5, 5, 10, 14);
 
         // addNode(out var1); deleteNode(var1);
         explore("variablesTest4", 3, 2, 3, 2);
@@ -52,11 +51,11 @@ public class ControlVariablesTest extends TestCase {
         // to show that the last rule will not match because var1 has been deleted
         explore("variablesTest5", 3, 2, 3, 2);
 
-        // b(out var1, out var2); b(var2, out var3);
-        explore("variablesTest6", 3, 2, 13, 20);
+        // b(out var1, out var2); b(var2, out var3, c(var1, var2, var3);
+        explore("variablesTest6", 3, 2, 14, 20);
 
-        // addNode; merge(out par1, out par2)*;
-        explore("mergeTest", 2, 1, 11, 19);
+        // addNode; merge(out par1, out par2)*; b(par1, par2);
+        explore("mergeTest", 2, 1, 9, 17);
     }
 
     private void explore(String control, int controlStates,
@@ -66,8 +65,6 @@ public class ControlVariablesTest extends TestCase {
             SystemProperties sp = sgv.getProperties();
             sp.setControlName(control);
             sp.setUseControl(true);
-            ControlAutomaton ca =
-                sgv.getControlView().toAutomaton(sgv.toGrammar());
             GTS lts = new GTS(sgv.toGrammar());
 
             Scenario scenario =
@@ -81,6 +78,7 @@ public class ControlVariablesTest extends TestCase {
             assertEquals(expectedEdges, lts.edgeCount());
         } catch (Exception e) {
             e.printStackTrace();
+            assertTrue(false);
         }
     }
 }

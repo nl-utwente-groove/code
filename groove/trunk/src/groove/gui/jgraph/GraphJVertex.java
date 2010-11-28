@@ -18,7 +18,7 @@ package groove.gui.jgraph;
 
 import static groove.util.Converter.ITALIC_TAG;
 import groove.algebra.Algebra;
-import groove.control.ControlState;
+import groove.control.CtrlState;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Label;
@@ -175,11 +175,11 @@ public class GraphJVertex extends JVertex implements GraphJCell {
             // REMOVE: this is a temp edit until tooltips work
             // to show control location in LTS states
             if (getActualNode() instanceof GraphState) {
-                if (((GraphState) getActualNode()).getLocation() != null) {
-                    ControlState l =
-                        ((GraphState) getActualNode()).getLocation();
+                CtrlState ctrlState =
+                    ((GraphState) getActualNode()).getCtrlState();
+                if (ctrlState != null) {
                     result.add(new StringBuilder("ctrl: "
-                        + Converter.toHtml(l.getName())));
+                        + Converter.toHtml(ctrlState.toString())));
                 }
             }
         }

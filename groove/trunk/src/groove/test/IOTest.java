@@ -49,8 +49,8 @@ public class IOTest extends TestCase {
 
     /** test loading a directory grammar directly */
     public void testLoadDefault() {
-        int nodecount = 10;
-        int edgecount = 11;
+        int nodecount = 11;
+        int edgecount = 12;
         try {
             testControl(Groove.loadGrammar(DIRECTORY), DEF_START, DEF_CONTROL,
                 nodecount, edgecount);
@@ -78,8 +78,8 @@ public class IOTest extends TestCase {
     }
 
     public void testLoadAltStart() {
-        int nodecount = 11;
-        int edgecount = 13;
+        int nodecount = 12;
+        int edgecount = 14;
         try {
             testControl(Groove.loadGrammar(DIRECTORY, ALT_START), ALT_START,
                 DEF_CONTROL, nodecount, edgecount);
@@ -89,8 +89,8 @@ public class IOTest extends TestCase {
     }
 
     public void testLoadAltBoth() {
-        int nodecount = 12;
-        int edgecount = 15;
+        int nodecount = 13;
+        int edgecount = 16;
         try {
             URL dir = Groove.toURL(new File(DIRECTORY));
             StoredGrammarView grammarView =

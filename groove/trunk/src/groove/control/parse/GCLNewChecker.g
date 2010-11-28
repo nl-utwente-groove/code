@@ -52,7 +52,9 @@ program
   ;
 
 functions
-  : ^(FUNCTIONS function*);
+  : ^(FUNCTIONS function*)
+    { helper.reorderFunctions($FUNCTIONS); }
+  ;
 
 function
   : ^( FUNCTION ID

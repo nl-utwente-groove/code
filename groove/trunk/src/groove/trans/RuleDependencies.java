@@ -16,6 +16,8 @@
  */
 package groove.trans;
 
+import groove.control.CtrlPar;
+import groove.control.CtrlType;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
@@ -81,6 +83,10 @@ public class RuleDependencies {
                     + data.consumedLabelsMap.get(rule));
                 System.out.println("Produced labels: "
                     + data.producedLabelsMap.get(rule));
+                System.out.println("Input types:  "
+                    + data.inParameterMap.get(rule));
+                System.out.println("Output types: "
+                    + data.outParameterMap.get(rule));
                 Collection<RuleName> enablerNames = new ArrayList<RuleName>();
                 for (Rule depRule : data.getEnablers(rule)) {
                     enablerNames.add(depRule.getName());
@@ -248,6 +254,28 @@ public class RuleDependencies {
     }
 
     /**
+     * Constructs and returns a mapping from rules to the sets of labels
+     * produced by those rules.
+     */
+    Map<Rule,Set<CtrlType>> getOutParameterMap() {
+        if (!this.rules.isEmpty() && this.outParameterMap.isEmpty()) {
+            collectCharacteristics();
+        }
+        return Collections.unmodifiableMap(this.outParameterMap);
+    }
+
+    /**
+     * Constructs and returns a mapping from rules to the sets of labels
+     * produced by those rules.
+     */
+    Map<Rule,Set<CtrlType>> getInParameterMap() {
+        if (!this.rules.isEmpty() && this.inParameterMap.isEmpty()) {
+            collectCharacteristics();
+        }
+        return Collections.unmodifiableMap(this.inParameterMap);
+    }
+
+    /**
      * Collect the characteristics of the rules in the grammar into relevant
      * maps.
      */
@@ -259,8 +287,13 @@ public class RuleDependencies {
             Set<Label> producedLabelsSet = new HashSet<Label>();
             this.producedLabelsMap.put(rule,
                 Collections.unmodifiableSet(producedLabelsSet));
+            Set<CtrlType> inParSet = new HashSet<CtrlType>();
+            this.inParameterMap.put(rule, Collections.unmodifiableSet(inParSet));
+            Set<CtrlType> outParSet = new HashSet<CtrlType>();
+            this.outParameterMap.put(rule,
+                Collections.unmodifiableSet(outParSet));
             collectRuleCharacteristics(rule, consumedLabelsSet,
-                producedLabelsSet);
+                producedLabelsSet, inParSet, outParSet);
             Set<Label> positiveLabelSet = new HashSet<Label>();
             this.positiveLabelsMap.put(rule,
                 Collections.unmodifiableSet(positiveLabelSet));
@@ -278,6 +311,7 @@ public class RuleDependencies {
         for (Rule rule : this.rules) {
             Set<Label> positives = this.positiveLabelsMap.get(rule);
             Set<Label> negatives = this.negativeLabelsMap.get(rule);
+            Set<CtrlType> inPars = this.inParameterMap.get(rule);
             for (Rule depRule : this.rules) {
                 // a positive dependency exists if the other rule produces
                 // labels
@@ -328,6 +362,15 @@ public class RuleDependencies {
                     || depConsumes.removeAll(positives)) {
                     addDisabling(depRule, rule);
                 }
+                // a positive and negative dependency exists if the other
+                // rule has output parameters of a type of which this rule 
+                // has input parameters.
+                Set<CtrlType> depOutTypes =
+                    new HashSet<CtrlType>(this.outParameterMap.get(depRule));
+                if (depOutTypes.removeAll(inPars)) {
+                    addEnabling(depRule, rule);
+                    addDisabling(depRule, rule);
+                }
             }
         }
     }
@@ -339,7 +382,7 @@ public class RuleDependencies {
      * method also tests for the production of isolated nodes.
      */
     void collectRuleCharacteristics(Rule rule, Set<Label> consumed,
-            Set<Label> produced) {
+            Set<Label> produced, Set<CtrlType> inPars, Set<CtrlType> outPars) {
         Graph lhs = rule.lhs();
         Graph rhs = rule.rhs();
         Morphism ruleMorphism = rule.getMorphism();
@@ -382,13 +425,22 @@ public class RuleDependencies {
                 produced.add(ANY_NODE);
             }
         }
+        for (CtrlPar.Var par : rule.getSignature()) {
+            CtrlType parType = par.getType();
+            if (!par.isInOnly()) {
+                outPars.add(parType);
+            }
+            if (!par.isOutOnly()) {
+                inPars.add(parType);
+            }
+        }
         // now investigate the negative conjunct, taking care to swap positive
         // and negative
         for (Condition negCond : rule.getSubConditions()) {
             for (Condition subRule : negCond.getSubConditions()) {
                 if (subRule instanceof Rule) {
                     collectRuleCharacteristics((Rule) subRule, consumed,
-                        produced);
+                        produced, inPars, outPars);
                 }
             }
         }
@@ -650,4 +702,10 @@ public class RuleDependencies {
     /** Mapping from rules to the sets of labels produced by those rules. */
     private final Map<Rule,Set<Label>> producedLabelsMap =
         new HashMap<Rule,Set<Label>>();
+    /** Mapping from rules to the sets of labels produced by those rules. */
+    private final Map<Rule,Set<CtrlType>> inParameterMap =
+        new HashMap<Rule,Set<CtrlType>>();
+    /** Mapping from rules to the sets of labels produced by those rules. */
+    private final Map<Rule,Set<CtrlType>> outParameterMap =
+        new HashMap<Rule,Set<CtrlType>>();
 }

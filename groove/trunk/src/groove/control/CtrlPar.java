@@ -176,13 +176,23 @@ public abstract class CtrlPar {
         }
 
         /** 
-         * Sets the rule node of this paramater.
+         * Sets the rule node of this parameter.
+         * Also indicates if it is a creator node.
          */
-        public void setRuleNode(Node ruleNode) {
+        public void setRuleNode(Node ruleNode, boolean creator) {
             this.ruleNode = ruleNode;
+            this.creator = creator;
         }
 
+        /** Indicates if this is a rule parameter corresponding to a creator node. */
+        public final boolean isCreator() {
+            return this.creator;
+        }
+
+        /** Associated node if this is a rule parameter. */
         private Node ruleNode;
+        /** Flag indicating if this is a rule parameter referring to a creator node. */
+        private boolean creator;
         /** The control variable wrapped in this variable parameter. */
         private final CtrlVar var;
         /** Flag indicating if this is an input-only parameter. */
@@ -205,8 +215,8 @@ public abstract class CtrlPar {
          */
         public Const(String repr) {
             this.repr = repr;
-            this.node = null;
-            assert AlgebraRegister.getSignatureName(repr) != null;
+            this.node = ValueNode.createValueNode(repr);
+            assert this.node != null;
             this.type =
                 CtrlType.createDataType(AlgebraRegister.getSignatureName(repr));
         }

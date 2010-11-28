@@ -52,18 +52,20 @@ public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
     public Element[] newAnchors(SPORule rule) {
         Set<Element> anchors =
             new LinkedHashSet<Element>(Arrays.asList(rule.getEraserNodes()));
+        Set<Node> parameters = new LinkedHashSet<Node>();
         if (rule.isTop()) {
             Set<Node> hiddenPars = rule.getHiddenPars();
             if (hiddenPars != null) {
-                anchors.addAll(hiddenPars);
+                parameters.addAll(hiddenPars);
             }
             List<CtrlPar.Var> ruleSig = rule.getSignature();
             for (CtrlPar.Var rulePar : ruleSig) {
-                if (!rulePar.isOutOnly()) {
-                    anchors.add(rulePar.getRuleNode());
+                if (!rulePar.isCreator()) {
+                    parameters.add(rulePar.getRuleNode());
                 }
             }
         }
+        anchors.addAll(parameters);
         // set of endpoints that we will remove again
         Set<Node> removableEnds = new HashSet<Node>();
         for (Edge lhsVarEdge : rule.getSimpleVarEdges()) {
@@ -92,6 +94,8 @@ public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
                 anchorIter.remove();
             }
         }
+        // parameter anchors should never be removed
+        removableEnds.removeAll(parameters);
         anchors.removeAll(removableEnds);
         return anchors.toArray(new Element[anchors.size()]);
     }

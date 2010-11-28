@@ -16,18 +16,10 @@
  */
 package groove.lts;
 
-import groove.control.ControlState;
-import groove.control.ControlTransition;
-import groove.control.CtrlPar;
-import groove.control.CtrlSchedule;
-import groove.graph.DefaultMorphism;
 import groove.graph.Element;
 import groove.graph.Graph;
-import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.graph.algebra.ValueNode;
 import groove.trans.RuleEvent;
-import groove.trans.SPORule;
 import groove.trans.SystemRecord;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
@@ -37,7 +29,6 @@ import groove.util.TransformSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -51,47 +42,13 @@ abstract public class AbstractGraphState extends
         AbstractCacheHolder<StateCache> implements GraphState {
     /**
      * Constructs a an abstract graph state, with a given control location.
-     * @param location the control location; may be <code>null</code>.
      */
-    public AbstractGraphState(CacheReference<StateCache> reference,
-            ControlState location) {
+    public AbstractGraphState(CacheReference<StateCache> reference) {
         super(reference);
-        if (location != null) {
-            this.setLocation(location);
-        }
         stateCount++;
     }
 
-    /**
-     * Constructs a an abstract graph state, with <code>null</code> control
-     * location.
-     */
-    public AbstractGraphState(CacheReference<StateCache> reference) {
-        this(reference, null);
-    }
-
     abstract public Graph getGraph();
-
-    public ControlState getLocation() {
-        return this.location;
-    }
-
-    public void setLocation(ControlState ctrlState) {
-        this.location = ctrlState;
-        if (this.parameters == null && ctrlState != null
-            && ctrlState.getInitializedVariables().size() > 0) {
-            this.parameters =
-                new Node[ctrlState.getInitializedVariables().size()];
-        }
-    }
-
-    public final CtrlSchedule getSchedule() {
-        return this.schedule;
-    }
-
-    public final void setSchedule(CtrlSchedule schedule) {
-        this.schedule = schedule;
-    }
 
     /*
      * (non-Javadoc)
@@ -324,13 +281,17 @@ abstract public class AbstractGraphState extends
      */
     @Override
     public String toString() {
+        StringBuilder result = new StringBuilder();
+        result.append("s");
         if (hasNumber()) {
-            return "s"
-                + getNumber()
-                + (this.hasParameters() ? Arrays.toString(this.parameters) : "");
+            result.append(getNumber());
         } else {
-            return "s??";
+            result.append("??");
         }
+        if (getBoundNodes().length > 0) {
+            result.append(Arrays.toString(getBoundNodes()));
+        }
+        return result.toString();
     }
 
     /**
@@ -397,69 +358,12 @@ abstract public class AbstractGraphState extends
     }
 
     /**
-     * Whether this state has parameters with a value
-     * @return true if this state has parameters, false if not
-     */
-    public boolean hasParameters() {
-        return this.parameters != null && this.parameters.length > 0;
-    }
-
-    /**
      * Returns the map of parameters to nodes for this state
      * @return a Map<String,Node> of parameters
      */
-    public Node[] getParameters() {
-        return this.parameters;
+    public Node[] getBoundNodes() {
+        return EMPTY_NODE_LIST;
     }
-
-    /**
-     * Sets the parameter at position index to the given parameter
-     * @param index the parameter index to change
-     * @param parameter the parameter to set it to
-     */
-    public void setParameter(int index, Node parameter) {
-        this.parameters[index] = parameter;
-    }
-
-    /**
-     * Returns a partial Morphism for this state, based on the given 
-     * ControlTransition's input parameters
-     * @param ct the ControlTransition to base the Morphism on
-     * @return a partial Morphism which can be used in determining whether rules
-     * Match given certain parameters
-     */
-    public Morphism getPartialMorphism(ControlTransition ct) {
-        Morphism result = null;
-        if (ct.hasInputParameters()) {
-            SPORule rule = (SPORule) ct.getRule();
-            String[] inArgs = ct.getInputParameters();
-            List<CtrlPar.Var> ruleSig = rule.getSignature();
-            result = new DefaultMorphism(rule.getTarget(), this.getGraph());
-            for (int i = 0; i < inArgs.length; i++) {
-                String arg = inArgs[i];
-                if (arg != null && !arg.equals("_")) {
-                    Node src = ruleSig.get(i).getRuleNode();
-                    int idx = (this.location).getVariablePosition(arg);
-                    Node tgt =
-                        idx < 0 ? ValueNode.createValueNode(arg)
-                                : this.parameters[idx];
-                    if (tgt == null) {
-                        // we're trying to match a node that has been deleted!
-                        result = null;
-                        break;
-                    }
-                    result.putNode(src, tgt);
-                }
-            }
-        }
-        return result;
-    }
-
-    /** The control schedule, recording up to which rule this state has been explored. */
-    private CtrlSchedule schedule;
-
-    /** The internally stored (optional) control location. */
-    private ControlState location;
 
     /** Global constant empty stub array. */
     private GraphTransitionStub[] transitionStubs = EMPTY_TRANSITION_STUBS;
@@ -493,7 +397,5 @@ abstract public class AbstractGraphState extends
     /** Constant empty array of out transition, shared for memory efficiency. */
     private static final GraphTransitionStub[] EMPTY_TRANSITION_STUBS =
         new GraphTransitionStub[0];
-
-    /** Keeps track of bound variables */
-    private Node[] parameters;
+    static final Node[] EMPTY_NODE_LIST = new Node[0];
 }

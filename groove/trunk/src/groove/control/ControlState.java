@@ -36,6 +36,7 @@ import java.util.Set;
  * @author Tom Staijen
  * @version $Revision $
  */
+@Deprecated
 public class ControlState implements Node {
 
     /**

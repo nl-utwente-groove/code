@@ -16,9 +16,13 @@
  */
 package groove.explore.util;
 
-import groove.control.ControlTransition;
-import groove.graph.Morphism;
-import groove.lts.AbstractGraphState;
+import groove.control.CtrlPar;
+import groove.control.CtrlSchedule;
+import groove.control.CtrlState;
+import groove.control.CtrlTransition;
+import groove.graph.Node;
+import groove.graph.NodeEdgeHashMap;
+import groove.graph.NodeEdgeMap;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.trans.Rule;
@@ -32,6 +36,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -63,6 +68,9 @@ public class MatchSetCollector {
             this.enabledRules = record.getEnabledRules(lastRule);
             this.disabledRules = record.getDisabledRules(lastRule);
         }
+        if (state.getCtrlState() != null) {
+            this.schedule = state.getCtrlState().getSchedule();
+        }
     }
 
     /**
@@ -93,7 +101,7 @@ public class MatchSetCollector {
                     result = this.record.getEvent(matchIter.next());
                 } else {
                     // no luck; try the next rule
-                    currentRule = nextRule();
+                    currentRule = nextRule(false);
                 }
             } else {
                 result = virtualEvents.iterator().next();
@@ -120,11 +128,7 @@ public class MatchSetCollector {
         Rule currentRule = firstRule();
         while (currentRule != null) {
             boolean hasMatches = collectEvents(currentRule, result);
-            if (hasMatches) {
-                this.cache.updateMatches(currentRule);
-            }
-            this.cache.updateExplored(currentRule);
-            currentRule = nextRule();
+            currentRule = nextRule(hasMatches);
         }
     }
 
@@ -137,24 +141,41 @@ public class MatchSetCollector {
      */
     protected boolean collectEvents(Rule rule, Collection<RuleEvent> result) {
         boolean hasMatched = collectVirtualEvents(rule, result);
+        CtrlState ctrlState = this.state.getCtrlState();
         // AREND: I added here a check so that new matches are also added when the cache is a location cache
         // because the parent state may (regardless enabledRules) have no matches in the parent due to control.
         if (this.enabledRules == null || this.enabledRules.contains(rule)
-            || !hasMatched && this.cache instanceof ControlStateCache) {
+            || ctrlState != null) {
             // if this rule used parameters in the control expression, we need
             // to construct a partial morphism out of them
-            Morphism m = null;
+            NodeEdgeMap m = null;
             boolean morphismError = false;
-            if (this.cache instanceof ControlStateCache) {
-                ControlTransition ct =
-                    ((ControlStateCache) this.cache).getTransition(rule);
-                if (ct.hasInputParameters()) {
-                    m =
-                        ((AbstractGraphState) this.state).getPartialMorphism(ct);
-                    if (m == null) {
-                        // this typically occurs if we're trying to match a Node that 
-                        // has been removed
-                        morphismError = true;
+            if (ctrlState != null) {
+                CtrlTransition ctrlTrans = ctrlState.getTransition(rule);
+                List<CtrlPar> args = ctrlTrans.getCall().getArgs();
+                if (args != null && args.size() > 0) {
+                    int[] parBinding = ctrlTrans.getParBinding();
+                    List<CtrlPar.Var> ruleSig = rule.getSignature();
+                    Node[] boundNodes = this.state.getBoundNodes();
+                    m = new NodeEdgeHashMap();
+                    for (int i = 0; i < args.size(); i++) {
+                        CtrlPar arg = args.get(i);
+                        Node image = null;
+                        if (arg instanceof CtrlPar.Const) {
+                            image = ((CtrlPar.Const) arg).getConstNode();
+                            assert image != null : String.format(
+                                "Constant argument %s not initialised properly",
+                                arg);
+                        } else if (arg.isInOnly()) {
+                            image = boundNodes[parBinding[i]];
+                            if (image == null) {
+                                morphismError = true;
+                                break;
+                            }
+                        } else {
+                            continue;
+                        }
+                        m.putNode(ruleSig.get(i).getRuleNode(), image);
                     }
                 }
             }
@@ -187,7 +208,7 @@ public class MatchSetCollector {
     }
 
     /** Returns the virtual events for a given rule. */
-    protected Collection<RuleEvent> getVirtualEvents(Rule rule) {
+    private Collection<RuleEvent> getVirtualEvents(Rule rule) {
         // Create the virtual event map if it is not yet there.
         if (this.virtualEventMap == null && this.virtualEventSet != null) {
             this.virtualEventMap = computeVirtualEventMap();
@@ -209,8 +230,7 @@ public class MatchSetCollector {
         if (this.virtualEventSet != null) {
             for (VirtualEvent.GraphState virtual : this.virtualEventSet) {
                 Rule rule = virtual.getRule();
-                if (!this.disabledRules.contains(rule)
-                    || virtual.hasMatch(this.state.getGraph())) {
+                if (isStillValid(virtual)) {
                     Collection<RuleEvent> matches = result.get(rule);
                     if (matches == null) {
                         matches = new ArrayList<RuleEvent>();
@@ -225,15 +245,45 @@ public class MatchSetCollector {
     }
 
     /**
+     * Tests if a virtual event is still valid in this state.
+     */
+    private boolean isStillValid(VirtualEvent.GraphState virtual) {
+        Rule rule = virtual.getRule();
+        boolean result = !this.disabledRules.contains(rule);
+        if (!result) {
+            assert this.state instanceof GraphNextState;
+            // check if the underlying control transition is the same
+            CtrlTransition virtualCtrlTrans = virtual.getInnerCtrlTransition();
+            CtrlTransition myCtrlTransition = null;
+            CtrlState myCtrlState = this.state.getCtrlState();
+            if (myCtrlState != null) {
+                myCtrlTransition = myCtrlState.getTransition(rule);
+            }
+            result =
+                virtualCtrlTrans == myCtrlTransition
+                    && virtual.hasMatch(this.state.getGraph());
+        }
+        return result;
+    }
+
+    /**
      * Returns either the last (previously returned) rule from the
      * {@link ExploreCache}, or the first new rule if there is no last.
      */
     protected Rule firstRule() {
-        Rule result = this.cache.last();
-        if (result == null && this.cache.hasNext()) {
-            // this means that the cache was freshly created and has never been
-            // incremented before
-            result = this.cache.next();
+        Rule result;
+        CtrlSchedule schedule = this.schedule;
+        if (schedule == null) {
+            result = this.cache.last();
+            if (result == null && this.cache.hasNext()) {
+                // this means that the cache was freshly created and has never been
+                // incremented before
+                result = this.cache.next();
+            }
+        } else if (schedule.isFinished()) {
+            result = null;
+        } else {
+            result = schedule.getTransition().getRule();
         }
         return result;
     }
@@ -241,13 +291,32 @@ public class MatchSetCollector {
     /**
      * Increments the rule iterator, and returns the next rule.
      */
-    protected Rule nextRule() {
-        this.cache.updateExplored(this.cache.last());
-        return this.cache.hasNext() ? this.cache.next() : null;
+    protected Rule nextRule(boolean matchFound) {
+        Rule result;
+        CtrlSchedule schedule = this.schedule;
+        if (schedule == null) {
+            if (matchFound) {
+                this.cache.updateMatches(this.cache.last());
+            }
+            this.cache.updateExplored(this.cache.last());
+            result = this.cache.hasNext() ? this.cache.next() : null;
+        } else if (schedule.isFinished()) {
+            result = null;
+        } else {
+            this.schedule = schedule = schedule.next(matchFound);
+            if (schedule.isFinished()) {
+                result = null;
+            } else {
+                result = schedule.getTransition().getRule();
+            }
+        }
+        return result;
     }
 
     /** The host graph we are working on. */
     protected final GraphState state;
+    /** The schedule of rules to try out. */
+    private CtrlSchedule schedule;
     /** Matches cache. */
     protected final ExploreCache cache;
     /** The system record is set at construction. */

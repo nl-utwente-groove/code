@@ -90,17 +90,16 @@ public class ConfluentMatchSetCollector extends MatchSetCollector {
         Rule currentRule = firstRule();
         boolean usedConfluentRule = false;
         while (currentRule != null) {
+            boolean hasMatches = false;
             if (!(currentRule.isConfluent() && usedConfluentRule)) {
-                boolean hasMatches = collectEvents(currentRule, result);
+                hasMatches = collectEvents(currentRule, result);
                 if (hasMatches) {
-                    this.cache.updateMatches(currentRule);
                     if (currentRule.isConfluent()) {
                         usedConfluentRule = true;
                     }
                 }
             }
-            this.cache.updateExplored(currentRule);
-            currentRule = nextRule();
+            currentRule = nextRule(hasMatches);
         }
     }
 

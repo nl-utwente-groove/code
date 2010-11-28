@@ -29,6 +29,7 @@ import java.util.Set;
  * @author Olaf Keijsers
  * @version $Revision $
  */
+@Deprecated
 public class ControlStateCache implements ExploreCache {
     /**
      * Creates a new ControlStateCache

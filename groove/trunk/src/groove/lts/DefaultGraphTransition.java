@@ -16,8 +16,6 @@
  */
 package groove.lts;
 
-import groove.control.ControlState;
-import groove.control.ControlTransition;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.graph.AbstractEdge;
@@ -49,7 +47,7 @@ public class DefaultGraphTransition extends
      */
     public DefaultGraphTransition(RuleEvent event, Node[] addedNodes,
             GraphState source, GraphState target, boolean symmetry) {
-        super(source, event.getLabel(), target);
+        super(source, event.getLabel(addedNodes), target);
         this.event = event;
         this.addedNodes = addedNodes;
         this.symmetry = symmetry;
@@ -256,11 +254,18 @@ public class DefaultGraphTransition extends
         }
     }
 
+    /** Returns the (possibly {@code null} underlying control transition. */
+    public CtrlTransition getCtrlTransition() {
+        return this.ctrlTrans;
+    }
+
+    private final CtrlTransition ctrlTrans;
+
     /**
      * The underlying rule of this transition.
      * @invariant <tt>rule != null</tt>
      */
-    protected RuleEvent event;
+    private RuleEvent event;
     /** The array of added nodes of this transition. */
     private final Node[] addedNodes;
     /**
@@ -279,38 +284,5 @@ public class DefaultGraphTransition extends
     /** The total number of anchor images created. */
     static private int anchorImageCount = 0;
 
-    /** Returns the (possibly {@code null} underlying control transition. */
-    public CtrlTransition getCtrlTransition() {
-        return this.ctrlTrans;
-    }
-
-    private final CtrlTransition ctrlTrans;
-
-    /**
-     * Returns the ControlTransition with which this transition is associated
-     * @return the ControlTransition with which this transition is associated, 
-     * or null if no control is present
-     */
-    public ControlTransition getControlTransition() {
-        if (this.source.getLocation() != null) {
-            return ((ControlState) this.source.getLocation()).getTransition(this.event.getRule());
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Returns whether this transition is a self transition (graph does not change,
-     * ControlLocation does not change, no output parameters)
-     * @return whether this transition is a self transition
-     */
-    public boolean isSelfTransition() {
-        boolean retval = !this.event.getRule().isModifying();
-        if (retval && this.source.getLocation() != null) {
-            retval &=
-                this.source.getLocation() == this.getControlTransition().target();
-            retval &= this.getControlTransition().hasOutputParameters();
-        }
-        return retval;
-    }
+    static private final Node[] EMPTY_ARGUMENTS = new Node[0];
 }

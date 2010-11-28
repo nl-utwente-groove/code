@@ -1,7 +1,6 @@
 /* $Id$ */
 package groove.trans;
 
-import groove.explore.util.ControlStateCache;
 import groove.explore.util.ExploreCache;
 import groove.explore.util.PriorityCache;
 import groove.explore.util.SimpleCache;
@@ -216,14 +215,6 @@ public class SystemRecord implements NodeFactory {
         ExploreCache result;
         if (this.grammar.hasMultiplePriorities()) {
             result = new PriorityCache(this.grammar.getRuleMap());
-        } else if (state.getLocation() != null) {
-            if (false) {
-                //result =
-                //  new LocationCache((ControlLocation) state.getLocation(),
-                //    state, isRandomized);
-            } else {
-                result = new ControlStateCache(state.getLocation(), state);
-            }
         } else {
             result = new SimpleCache(this.grammar.getRules());
         }

@@ -31,6 +31,7 @@ import java.util.Collections;
  * @author Tom Staijen
  * @version $Revision $
  */
+@Deprecated
 public class ControlJGraph extends JGraph {
 
     /**

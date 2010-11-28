@@ -39,6 +39,7 @@ import org.jgraph.graph.AttributeMap;
  * @author Tom Staijen
  * @version $Revision $
  */
+@Deprecated
 public class ControlJModel extends GraphJModel {
 
     /**
