@@ -28,6 +28,7 @@ import java.util.Set;
  * 
  * @author Tom Staijen
  */
+@Deprecated
 public class ControlAutomaton extends AbstractGraphShape<GraphCache> implements
         ControlShape {
     /** the top-level ControlShape * */

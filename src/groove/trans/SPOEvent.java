@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-import groove.control.CtrlPar;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
@@ -131,36 +130,34 @@ final public class SPOEvent extends
                 ((SPOEvent) other).getAnchorImage());
     }
 
-    @Override
-    public String toString() {
-        StringBuffer result = new StringBuffer(getRule().getTransitionLabel());
-        if (getRule().getSystemProperties().isUseParameters()) {
-            result.append(getParameterString());
-        }
-        return result.toString();
-    }
-
     /**
-     * Returns the string of actual parameter values of this event.
+     * Constructs an argument array for this event, with respect to
+     *  given array of added nodes (which are the images of the creator nodes).
+     * @param addedNodes the added nodes; if {@code null}, the creator
+     * node images will be set to {@code null}
      */
-    public String getParameterString() {
-        StringBuilder result = new StringBuilder();
-        result.append('(');
-        for (CtrlPar.Var par : getRule().getSignature()) {
-            if (!par.isOutOnly()) {
-                if (result.length() > 1) {
-                    result.append(',');
-                }
-                Node node = getAnchorMap().getNode(par.getRuleNode());
-                if (node != null && node instanceof ValueNode) {
-                    result.append(((ValueNode) node).getSymbol());
+    public Node[] getArguments(Node[] addedNodes) {
+        Node[] result;
+        int size = getRule().getSignature().size();
+        if (size == 0) {
+            result = EMPTY_NODE_ARRAY;
+        } else {
+            result = new Node[size];
+            Element[] anchorImage = getAnchorImage();
+            for (int i = 0; i < size; i++) {
+                int binding = getRule().getParBinding(i);
+                Node argument;
+                if (binding < anchorImage.length) {
+                    argument = (Node) anchorImage[binding];
+                } else if (addedNodes == null) {
+                    argument = null;
                 } else {
-                    result.append(node);
+                    argument = addedNodes[binding - anchorImage.length];
                 }
+                result[i] = argument;
             }
         }
-        result.append(')');
-        return result.toString();
+        return result;
     }
 
     /**
@@ -248,6 +245,16 @@ final public class SPOEvent extends
             }
         }
         return correct;
+    }
+
+    @Override
+    public Element getAnchorImage(int i) {
+        return getAnchorImage()[i];
+    }
+
+    @Override
+    public int getAnchorSize() {
+        return getAnchorImage().length;
     }
 
     /**
@@ -561,7 +568,7 @@ final public class SPOEvent extends
         Set<Node> result;
         int coanchorSize = getRule().getCreatorNodes().length;
         if (coanchorSize == 0) {
-            result = EMPTY_COANCHOR_IMAGE;
+            result = EMPTY_NODE_SET;
         } else {
             result = new LinkedHashSet<Node>(coanchorSize);
             collectCreatedNodes(currentNodes, result);
@@ -713,9 +720,8 @@ final public class SPOEvent extends
     /** Global empty set of nodes. */
     static private final Set<Node> EMPTY_NODE_SET =
         Collections.<Node>emptySet();
-    /** Global empty list of nodes. */
-    static private final Set<Node> EMPTY_COANCHOR_IMAGE =
-        Collections.emptySet();
+    /** Global empty set of nodes. */
+    static private final Node[] EMPTY_NODE_ARRAY = new Node[0];
     /** Template reference to create empty caches. */
     static private final CacheReference<SPOEventCache> reference =
         CacheReference.<SPOEventCache>newInstance(false);

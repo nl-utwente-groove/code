@@ -16,15 +16,14 @@
  */
 package groove.util;
 
-import groove.control.ControlShape;
-import groove.control.ControlTransition;
+import groove.control.CtrlTransition;
 import groove.graph.Edge;
 import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.gui.Options;
-import groove.gui.jgraph.ControlJModel;
-import groove.gui.jgraph.ControlJModel.TransitionJEdge;
+import groove.gui.jgraph.CtrlJModel;
+import groove.gui.jgraph.CtrlJModel.TransitionJEdge;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
@@ -1051,9 +1050,9 @@ public final class GraphToTikz {
             boolean showBackground, boolean isEmphasized, boolean isGrayedOut,
             String role) {
 
-        if (node instanceof ControlJModel.StateJVertex) {
+        if (node instanceof CtrlJModel.StateJVertex) {
             // Node from control automaton.
-            return convertControlNodeStyles((ControlJModel.StateJVertex) node,
+            return convertControlNodeStyles((CtrlJModel.StateJVertex) node,
                 showBackground, isEmphasized, isGrayedOut);
         }
 
@@ -1135,14 +1134,14 @@ public final class GraphToTikz {
      * @return a string with all the Tikz styles to be used.
      */
     private static String convertControlNodeStyles(
-            ControlJModel.StateJVertex node, boolean showBackground,
+            CtrlJModel.StateJVertex node, boolean showBackground,
             boolean isEmphasized, boolean isGrayedOut) {
 
         ArrayList<String> styles = new ArrayList<String>();
 
         if (node.isStart()) {
             styles.add(CONTROL_START_NODE_STYLE);
-        } else if (node.getNode().isSuccess()) {
+        } else if (node.isFinal()) {
             styles.add(CONTROL_SUCCESS_NODE_STYLE);
         } else {
             styles.add(CONTROL_NODE_STYLE);
@@ -1295,12 +1294,8 @@ public final class GraphToTikz {
 
         ArrayList<String> styles = new ArrayList<String>();
 
-        ControlTransition t = edge.getTransition();
-        if (t instanceof ControlShape) {
-            styles.add(CONTROL_SHAPE_EDGE_STYLE);
-        } else if (t.isLambda()) {
-            styles.add(CONTROL_LAMBDA_EDGE_STYLE);
-        } else if (t.hasFailures()) {
+        CtrlTransition t = edge.getEdge();
+        if (!t.label().getGuard().isEmpty()) {
             styles.add(CONTROL_FAILURE_EDGE_STYLE);
         } else {
             styles.add(CONTROL_EDGE_STYLE);
@@ -1402,7 +1397,6 @@ public final class GraphToTikz {
     private static final String CONTROL_SUCCESS_NODE_STYLE = "csuccess";
     private static final String CONTROL_EDGE_STYLE = "cedge";
     private static final String CONTROL_SHAPE_EDGE_STYLE = "cshape";
-    private static final String CONTROL_LAMBDA_EDGE_STYLE = "clambda";
     private static final String CONTROL_FAILURE_EDGE_STYLE = "cfailure";
     private static final String UNDIRECTED_EDGE_STYLE = "-";
     private static final String INHERITANCE_EDGE_STYLE = "subedge";

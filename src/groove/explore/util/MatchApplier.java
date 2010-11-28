@@ -16,7 +16,8 @@
  */
 package groove.explore.util;
 
-import groove.control.ControlState;
+import groove.control.CtrlState;
+import groove.control.CtrlTransition;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.lts.AbstractGraphState;
@@ -27,6 +28,7 @@ import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.GraphTransitionStub;
+import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.VirtualEvent;
 import groove.util.Reporter;
@@ -57,17 +59,20 @@ public class MatchApplier implements RuleEventApplier {
      * rule event. The event is assumed not to have been explored yet.
      * @return the added (new) transition
      */
-    public GraphTransition apply(GraphState source, RuleEvent event,
-            ControlState targetLocation) {
+    public GraphTransition apply(GraphState source, RuleEvent event) {
         addTransitionReporter.start();
         GraphTransition transition = null;
-        ControlState sourceLocation = source.getLocation();
-        if (sourceLocation == targetLocation
-            && !event.getRule().isModifying()
-            && (sourceLocation == null || !sourceLocation.getTransition(
-                event.getRule()).hasOutputParameters())) {
+        Rule rule = event.getRule();
+        CtrlState sourceCtrl = source.getCtrlState();
+        if (sourceCtrl != null) {
+            CtrlTransition ctrlTrans = sourceCtrl.getTransition(rule);
+            if (sourceCtrl == ctrlTrans.target() && !rule.isModifying()
+                && !ctrlTrans.hasOutVars()) {
+                transition = createTransition(event, source, source, false);
+            }
+        } else if (!rule.isModifying()) {
             transition = createTransition(event, source, source, false);
-        } else if (targetLocation == null && event instanceof VirtualEvent<?>) {
+        } else if (event instanceof VirtualEvent.GraphState) {
             // try to find the target state by walking around three previously
             // generated sides of a confluent diamond
             // the parent state is the source of source
@@ -90,7 +95,7 @@ public class MatchApplier implements RuleEventApplier {
         }
         if (transition == null) {
             GraphNextState freshTarget =
-                createState(event, source, targetLocation);
+                createState(event, source);
             addStateReporter.start();
             GraphState isoTarget = getGTS().addState(freshTarget);
             addStateReporter.stop();
@@ -110,8 +115,7 @@ public class MatchApplier implements RuleEventApplier {
      * Creates a fresh graph state, based on a given rule application and source
      * state.
      */
-    private GraphNextState createState(RuleEvent event, GraphState source,
-            ControlState target) {
+    private GraphNextState createState(RuleEvent event, GraphState source) {
         Node[] addedNodes;
         if (event instanceof VirtualEvent.GraphState) {
             VirtualEvent.GraphState virtual = (VirtualEvent.GraphState) event;
@@ -122,7 +126,7 @@ public class MatchApplier implements RuleEventApplier {
         }
 
         return new DefaultGraphNextState((AbstractGraphState) source, event,
-            addedNodes, target);
+            addedNodes);
     }
 
     /**

@@ -37,7 +37,7 @@ public class ControlAttributeParametersTest extends TestCase {
     static private final String DIRECTORY = "junit/samples/attributes.gps";
 
     public void testAttributes() {
-        explore("control", 9, 8, 54, 67);
+        explore("control", 9, 8, 30, 40);
     }
 
     private void explore(String control, int controlStates,

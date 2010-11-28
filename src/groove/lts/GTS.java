@@ -16,7 +16,7 @@
  */
 package groove.lts;
 
-import groove.control.ControlState;
+import groove.control.CtrlState;
 import groove.explore.result.Result;
 import groove.graph.AbstractGraphShape;
 import groove.graph.Edge;
@@ -44,7 +44,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -99,13 +98,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * basis of a given (non-{@code null}) graph.
      */
     protected GraphState createStartState(Graph startGraph) {
-        // initialise the start state with a control location if necessary
-        if (this.ruleSystem.getControl() != null) {
-            return new StartGraphState(getRecord(), startGraph,
-                this.ruleSystem.getControl().getStart());
-        } else {
-            return new StartGraphState(getRecord(), startGraph);
-        }
+        return new StartGraphState(getRecord(), startGraph);
     }
 
     /** This implementation specialises the return type to {@link GraphState}. */
@@ -217,7 +210,6 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      */
     public void setClosed(State state) {
         GraphState graphState = (GraphState) state;
-
         if (graphState.setClosed()) {
             if (determineIsFinal(graphState)) {
                 setFinal(graphState);
@@ -237,7 +229,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * - without location, and then no outgoing transitions
      */
     private boolean determineIsFinal(GraphState state) {
-        if (state.getLocation() == null) {
+        if (state.getCtrlState() == null) {
             // only states without applications of modifying rules are final
             for (GraphTransition trans : state.getTransitionSet()) {
                 if (trans.getEvent().getRule().isModifying()) {
@@ -250,7 +242,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
             for (GraphTransition trans : state.getTransitionSet()) {
                 rulesFound.add(trans.getEvent().getRule());
             }
-            return state.getLocation().isSuccess(rulesFound);
+            return state.getCtrlState().isSuccess(rulesFound);
         }
     }
 
@@ -465,70 +457,53 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
          * @see GraphState#getLocation()
          */
         @Override
-        protected boolean areEqual(GraphState stateKey, GraphState otherStateKey) {
+        protected boolean areEqual(GraphState myState, GraphState otherState) {
             if (this.collapse == COLLAPSE_NONE) {
-                return stateKey == otherStateKey;
-            } else {
-                // distinct control locations means distinct states
-                if (isDistinctLocations(stateKey, otherStateKey)) {
+                return myState == otherState;
+            }
+            if (myState.getCtrlState() != otherState.getCtrlState()) {
+                return false;
+            }
+            Graph myGraph = myState.getGraph();
+            Graph otherGraph = otherState.getGraph();
+            if (this.collapse == COLLAPSE_EQUAL) {
+                // check for graph equality
+                Set<?> myNodeSet = new HashSet<Node>(myGraph.nodeSet());
+                Set<?> myEdgeSet = new HashSet<Edge>(myGraph.edgeSet());
+                return myNodeSet.equals(otherGraph.nodeSet())
+                    && myEdgeSet.equals(otherGraph.edgeSet());
+            }
+            Node[] myBoundNodes = myState.getBoundNodes();
+            Node[] otherBoundNodes = otherState.getBoundNodes();
+            int myBoundNodeSize = myBoundNodes.length;
+            DefaultIsoChecker.IsoCheckerState isoCheckerState =
+                myBoundNodeSize == 0 ? null
+                        : new DefaultIsoChecker.IsoCheckerState();
+            // try to find an isomorphism that maps the bound nodes correctly.
+            do {
+                NodeEdgeMap iso =
+                    this.checker.getIsomorphism(myGraph, otherGraph,
+                        isoCheckerState);
+                if (iso == null) {
                     return false;
                 }
-                Graph one = stateKey.getGraph();
-                Graph two = otherStateKey.getGraph();
-                if (this.collapse == COLLAPSE_EQUAL) {
-                    // check for graph equality
-                    Set<?> oneNodeSet = new HashSet<Node>(one.nodeSet());
-                    Set<?> oneEdgeSet = new HashSet<Edge>(one.edgeSet());
-                    return oneNodeSet.equals(two.nodeSet())
-                        && oneEdgeSet.equals(two.edgeSet());
-                } else {
-                    // check for graph isomorphism
-                    if (this.checker.areIsomorphic(one, two)) {
-                        // if variables are involved we need to make sure they 
-                        // map to isomorphic nodes
-                        ControlState cs = stateKey.getLocation();
-                        if (cs != null) {
-                            List<String> variables =
-                                (stateKey.getLocation()).getInitializedVariables();
-                            if (variables.size() > 0) {
-                                NodeEdgeMap isomorphism =
-                                    (this.checker).getIsomorphism(one, two);
-                                if (isomorphism != null) {
-                                    Node[] parametersOne =
-                                        stateKey.getParameters();
-                                    Node[] parametersTwo =
-                                        otherStateKey.getParameters();
-                                    if (parametersOne != null
-                                        && parametersTwo != null) {
-                                        for (int i = 0; i < parametersOne.length; i++) {
-                                            if (parametersOne[i] != parametersTwo[i]) {
-                                                return false;
-                                            }
-                                        }
-                                    } else {
-                                        return false;
-                                    }
-                                }
-                            }
-
-                        }
-                        return true;
-                    } else {
-                        return false;
+                if (myBoundNodeSize == 0) {
+                    return true;
+                }
+                for (int i = 0; iso != null && i < myBoundNodeSize; i++) {
+                    Node myBoundNode = myBoundNodes[i];
+                    Node otherBoundNode = otherBoundNodes[i];
+                    if ((myBoundNode == null) != (otherBoundNode == null)) {
+                        iso = null;
+                    }
+                    if (!iso.getNode(myBoundNodes[i]).equals(otherBoundNodes[i])) {
+                        iso = null;
                     }
                 }
-            }
-        }
-
-        /**
-         * Callback method to test if two graph states have different associated
-         * locations.
-         */
-        protected boolean isDistinctLocations(GraphState stateKey,
-                GraphState otherStateKey) {
-            ControlState control = stateKey.getLocation();
-            return control != null
-                && !control.equals(otherStateKey.getLocation());
+                if (iso != null) {
+                    return true;
+                }
+            } while (true);
         }
 
         /**
@@ -540,40 +515,42 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
             int result;
             if (this.collapse == COLLAPSE_NONE) {
                 result = System.identityHashCode(stateKey);
-            } else {
-                CertificateStrategy certifier = null;
-                if (this.collapse == COLLAPSE_EQUAL) {
-                    Graph graph = stateKey.getGraph();
-                    result =
-                        graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
-                } else {
-                    certifier =
-                        this.checker.getCertifier(stateKey.getGraph(), true);
-                    Object certificate = certifier.getGraphCertificate();
-                    result = certificate.hashCode();
-                }
-                Object control = stateKey.getLocation();
-                result += control == null ? 0 : control.hashCode();
-                if (stateKey.getParameters() != null) {
-                    if (certifier == null) {
-                        certifier =
-                            this.checker.getCertifier(stateKey.getGraph(), true);
+            } else if (this.collapse == COLLAPSE_EQUAL) {
+                Graph graph = stateKey.getGraph();
+                result =
+                    graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
+                CtrlState ctrlState = stateKey.getCtrlState();
+                if (ctrlState != null) {
+                    result += ctrlState.hashCode();
+                    for (Node node : stateKey.getBoundNodes()) {
+                        result += node == null ? 31 : node.hashCode();
+                        // shift left to ensure the parameters' order matters
+                        result = result << 1 | (result < 0 ? 1 : 0);
                     }
-                    for (Node n : stateKey.getParameters()) {
-                        if (n != null) {
-                            int hashCode;
-                            // value nodes may be no longer in the graph
-                            if (n instanceof ValueNode) {
-                                hashCode = n.hashCode();
-                            } else {
-                                Certificate<?> parCert =
-                                    certifier.getCertificateMap().get(n);
-                                hashCode = parCert.hashCode();
-                            }
-                            result += hashCode;
-                            // shift left to ensure the parameters' order matters
-                            result = result << 1 | (result < 0 ? 1 : 0);
+                }
+            } else {
+                CertificateStrategy certifier =
+                    this.checker.getCertifier(stateKey.getGraph(), true);
+                Object certificate = certifier.getGraphCertificate();
+                result = certificate.hashCode();
+                CtrlState ctrlState = stateKey.getCtrlState();
+                if (ctrlState != null) {
+                    result += ctrlState.hashCode();
+                    for (Node node : stateKey.getBoundNodes()) {
+                        int hashCode;
+                        // value nodes may be no longer in the graph
+                        if (node == null) {
+                            hashCode = 31;
+                        } else if (node instanceof ValueNode) {
+                            hashCode = node.hashCode();
+                        } else {
+                            Certificate<?> parCert =
+                                certifier.getCertificateMap().get(node);
+                            hashCode = parCert.hashCode();
                         }
+                        result += hashCode;
+                        // shift left to ensure the parameters' order matters
+                        result = result << 1 | (result < 0 ? 1 : 0);
                     }
                 }
             }

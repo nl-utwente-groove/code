@@ -17,7 +17,6 @@
 package groove.abstraction.lts;
 
 import groove.abstraction.Shape;
-import groove.control.ControlState;
 import groove.control.CtrlState;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -194,11 +193,6 @@ public class ShapeState extends AbstractGraphState {
 
     @Override
     public boolean containsTransition(GraphTransition transition) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setLocation(ControlState ctrlState) {
         throw new UnsupportedOperationException();
     }
 

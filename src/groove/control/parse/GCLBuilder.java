@@ -2,9 +2,6 @@
 
 package groove.control.parse;
 
-import groove.control.ControlAutomaton;
-import groove.control.ControlState;
-import groove.control.ControlTransition;
 import groove.graph.GraphInfo;
 import groove.trans.Rule;
 import groove.util.ExprParser;
@@ -27,6 +24,7 @@ import org.antlr.runtime.tree.TreeNodeStream;
 import org.antlr.runtime.tree.TreeParser;
 
 @SuppressWarnings("all")
+@Deprecated
 public class GCLBuilder extends TreeParser {
     public static final String[] tokenNames = new String[] {"<invalid>",
         "<EOR>", "<DOWN>", "<UP>", "PROGRAM", "BLOCK", "FUNCTIONS", "FUNCTION",
@@ -140,15 +138,16 @@ public class GCLBuilder extends TreeParser {
         }
     }
 
-    ControlTransition currentTransition;
+    groove.control.ControlTransition currentTransition;
 
     // $ANTLR start "program"
     // GCLBuilder.g:55:1: program returns [ControlAutomaton aut=null] : ^( PROGRAM functions block ) ;
-    public final ControlAutomaton program() throws RecognitionException {
-        ControlAutomaton aut = null;
+    public final groove.control.ControlAutomaton program()
+        throws RecognitionException {
+        groove.control.ControlAutomaton aut = null;
 
-        ControlState start;
-        ControlState end;
+        groove.control.ControlState start;
+        groove.control.ControlState end;
         try {
             // GCLBuilder.g:57:3: ( ^( PROGRAM functions block ) )
             // GCLBuilder.g:57:5: ^( PROGRAM functions block )
@@ -269,13 +268,13 @@ public class GCLBuilder extends TreeParser {
     // GCLBuilder.g:74:1: block : ^( BLOCK ( statement )* ) ;
     public final void block() throws RecognitionException {
 
-        ControlState start = this.builder.getStart();
-        ControlState end = this.builder.getEnd();
+        groove.control.ControlState start = this.builder.getStart();
+        groove.control.ControlState end = this.builder.getEnd();
         boolean empty = true;
         boolean first = true;
-        ControlState newState = this.builder.newState();
+        groove.control.ControlState newState = this.builder.newState();
         this.builder.restore(start, newState);
-        ControlState tmpStart = start;
+        groove.control.ControlState tmpStart = start;
 
         try {
             // GCLBuilder.g:83:3: ( ^( BLOCK ( statement )* ) )
@@ -349,10 +348,10 @@ public class GCLBuilder extends TreeParser {
     // GCLBuilder.g:102:1: statement : ( ^( ALAP block ) | ^( WHILE condition block ) | ^( UNTIL condition block ) | ^( DO block condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( block )? ) | ^( CHOICE ( block )+ ) | expression | var_declaration );
     public final void statement() throws RecognitionException {
 
-        ControlState start = this.builder.getStart();
-        ControlState end = this.builder.getEnd();
-        ControlState newState;
-        ControlTransition fail;
+        groove.control.ControlState start = this.builder.getStart();
+        groove.control.ControlState end = this.builder.getEnd();
+        groove.control.ControlState newState;
+        groove.control.ControlTransition fail;
 
         try {
             // GCLBuilder.g:108:3: ( ^( ALAP block ) | ^( WHILE condition block ) | ^( UNTIL condition block ) | ^( DO block condition ) | ^( TRY block ( block )? ) | ^( IF condition block ( block )? ) | ^( CHOICE ( block )+ ) | expression | var_declaration )
@@ -740,10 +739,10 @@ public class GCLBuilder extends TreeParser {
     public final void expression() throws RecognitionException {
         CommonTree IDENTIFIER1 = null;
 
-        ControlState start = this.builder.getStart();
-        ControlState end = this.builder.getEnd();
-        ControlState newState;
-        ControlTransition fail;
+        groove.control.ControlState start = this.builder.getStart();
+        groove.control.ControlState end = this.builder.getEnd();
+        groove.control.ControlState newState;
+        groove.control.ControlTransition fail;
         this.parameters.clear();
 
         try {
@@ -926,7 +925,7 @@ public class GCLBuilder extends TreeParser {
                     proc(this.builder.getProc((IDENTIFIER1 != null
                             ? IDENTIFIER1.getText() : null)));
                 } else {
-                    ControlTransition ct =
+                    groove.control.ControlTransition ct =
                         this.builder.addTransition((IDENTIFIER1 != null
                                 ? IDENTIFIER1.getText() : null));
                     for (Pair<String,Integer> parameter : this.parameters) {

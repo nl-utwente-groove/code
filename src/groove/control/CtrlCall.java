@@ -16,9 +16,10 @@
  */
 package groove.control;
 
-import groove.trans.Rule;
+import groove.trans.SPORule;
 import groove.util.Groove;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -51,7 +52,7 @@ public class CtrlCall {
      * @param rule the rule to be called; non-{@code null}
      * @param args list of arguments for the call; non-{@code null}
      */
-    public CtrlCall(Rule rule, List<CtrlPar> args) {
+    public CtrlCall(SPORule rule, List<CtrlPar> args) {
         this.args = args;
         this.rule = rule;
         this.function = null;
@@ -66,8 +67,6 @@ public class CtrlCall {
                 result = getRule().equals(other.getRule());
             } else if (isFunction()) {
                 result = getFunction().equals(other.getFunction());
-            } else {
-                result = other.isOmega();
             }
             if (getArgs() == null) {
                 result &= other.getArgs() == null;
@@ -127,11 +126,9 @@ public class CtrlCall {
     public String getName() {
         if (isFunction()) {
             return getFunction();
-        } else if (isRule()) {
-            return getRule().getName().text();
         } else {
-            assert isOmega();
-            return OMEGA_NAME;
+            assert isRule();
+            return getRule().getName().text();
         }
     }
 
@@ -145,11 +142,11 @@ public class CtrlCall {
         CtrlCall result;
         if (isFunction()) {
             result = new CtrlCall(getFunction(), args);
-        } else if (isRule()) {
-            result = new CtrlCall(getRule(), args);
-        } else {
-            assert isOmega();
+        } else if (isOmega()) {
             result = this;
+        } else {
+            assert isRule();
+            result = new CtrlCall(getRule(), args);
         }
         return result;
     }
@@ -175,7 +172,7 @@ public class CtrlCall {
      * function call or an omega call.
      * @see #isOmega()
      */
-    public final Rule getRule() {
+    public final SPORule getRule() {
         return this.rule;
     }
 
@@ -183,7 +180,7 @@ public class CtrlCall {
      * The rule being called. 
      * May be {@code null} if this is a function or omega call.
      */
-    private final Rule rule;
+    private final SPORule rule;
 
     /** 
      * Returns the name of the function being called.
@@ -202,7 +199,6 @@ public class CtrlCall {
      * A special call, indicating that the control program is successful.
      * Can be seen as a call to a rule that always matches and makes no changes.
      */
-    public static final CtrlCall OMEGA = new CtrlCall();
-    /** Name of the omega-call. */
-    public static final String OMEGA_NAME = "\u03A9";
+    public static final CtrlCall OMEGA = new CtrlCall(SPORule.OMEGA_RULE,
+        Collections.<CtrlPar>emptyList());
 }

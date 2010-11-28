@@ -1,7 +1,6 @@
 /* $Id: StartGraphState.java,v 1.7 2008-01-30 09:32:19 iovka Exp $ */
 package groove.lts;
 
-import groove.control.ControlState;
 import groove.control.CtrlAut;
 import groove.control.CtrlState;
 import groove.graph.Graph;
@@ -14,19 +13,10 @@ import groove.trans.SystemRecord;
  */
 public class StartGraphState extends AbstractGraphState {
     /**
-     * Creates a start state based on a given system record and start graph,
-     * with <code>null</code> control location.
+     * Creates a start state based on a given system record and start graph
      */
     public StartGraphState(SystemRecord record, Graph graph) {
-        this(record, graph, null);
-    }
-
-    /**
-     * Creates a start state based on a given system record, start graph and
-     * control location.
-     */
-    public StartGraphState(SystemRecord record, Graph graph, ControlState control) {
-        super(StateReference.newInstance(record), control);
+        super(StateReference.newInstance(record));
         setFrozenGraph(getCache().computeFrozenGraph(graph));
         this.graph = getCache().getGraph();
         CtrlAut ctrlAut = record.getGrammar().getCtrlAut();

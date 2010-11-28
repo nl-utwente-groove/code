@@ -16,7 +16,6 @@
  */
 package groove.verify;
 
-import groove.control.ControlState;
 import groove.control.CtrlState;
 import groove.graph.Graph;
 import groove.lts.AbstractGraphState;
@@ -100,17 +99,6 @@ public class BuchiGraphState extends AbstractGraphState {
         return this.state.getGraph();
     }
 
-    /**
-     * Returns the location of this state. Together with the graph, the location
-     * completely determines the state. For flexibility, the type of the
-     * location is undetermined.
-     * @return the location; may be <code>null</code>.
-     */
-    @Override
-    public ControlState getLocation() {
-        return this.state.getLocation();
-    }
-
     @Override
     public CtrlState getCtrlState() {
         return this.state.getCtrlState();
@@ -121,15 +109,6 @@ public class BuchiGraphState extends AbstractGraphState {
      */
     public BuchiLocation getBuchiLocation() {
         return this.buchiLocation;
-    }
-
-    /**
-     * Sets the location field of the wrapped graph-state
-     * @param location the new location
-     */
-    @Override
-    public void setLocation(ControlState location) {
-        this.state.setLocation(location);
     }
 
     /**

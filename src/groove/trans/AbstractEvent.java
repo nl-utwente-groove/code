@@ -49,20 +49,38 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
         return this.reuse;
     }
 
-    public Label getLabel() {
+    public Label getLabel(Node[] addedNodes) {
         boolean brackets =
             this.getRule().getSystemProperties().isShowTransitionBrackets();
         //String text = this.getRule().getTransitionLabel();
-        String text = toString();
+        String text = getLabelText(addedNodes);
         if (brackets) {
             text = BEGIN_CHAR + text + END_CHAR;
         }
         return new WrapperLabel<String>(text);
     }
 
-    // public Label getLabel() {
-    // return new WrapperLabel<RuleEvent>(this);
-    // }
+    private String getLabelText(Node[] addedNodes) {
+        StringBuilder result = new StringBuilder();
+        result.append(getRule().getTransitionLabel());
+        if (getRule().getSystemProperties().isUseParameters()) {
+            result.append('(');
+            boolean first = true;
+            for (Node arg : getArguments(addedNodes)) {
+                if (!first) {
+                    result.append(',');
+                }
+                first = false;
+                if (arg == null) {
+                    result.append('_');
+                } else {
+                    result.append(arg);
+                }
+            }
+            result.append(')');
+        }
+        return result.toString();
+    }
 
     public R getRule() {
         return this.rule;
@@ -90,6 +108,11 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
 
     /** Computes and returns the set of erased nodes. */
     abstract Set<Node> computeErasedNodes();
+
+    @Override
+    public String toString() {
+        return getLabelText(null);
+    }
 
     /**
      * The hash code is based on that of the rule and an initial fragment of the

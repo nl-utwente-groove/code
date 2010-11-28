@@ -158,8 +158,10 @@ public class CtrlState implements Node {
      * Adds bound variables to this state.
      */
     public void addBoundVars(Collection<CtrlVar> variables) {
-        this.boundVars.addAll(variables);
-        Collections.sort(this.boundVars);
+        Set<CtrlVar> newVars = new TreeSet<CtrlVar>(variables);
+        newVars.addAll(this.boundVars);
+        this.boundVars.clear();
+        this.boundVars.addAll(newVars);
     }
 
     /**
@@ -185,6 +187,23 @@ public class CtrlState implements Node {
             this.scheduleMap = null;
         }
         return this.schedule;
+    }
+
+    /** 
+     * HACK HACK HACK
+     * Goes through the schedule, on the basis of the assumption that the
+     * given set of rules are the only ones that have a match, and reports if 
+     * there is a successful schedule along the way.
+     */
+    public boolean isSuccess(Set<Rule> matchedRules) {
+        CtrlSchedule schedule = getSchedule();
+        boolean result = schedule.isSuccess();
+        while (!schedule.isFinished() && !result) {
+            Rule rule = schedule.getTransition().getRule();
+            result = schedule.isSuccess();
+            schedule = schedule.next(matchedRules.contains(rule));
+        }
+        return result;
     }
 
     /** Computes a map from control calls to transitions disabled by those calls. */
@@ -228,11 +247,17 @@ public class CtrlState implements Node {
         // look for the untried call with the least disablings
         CtrlTransition trans = null;
         Set<CtrlTransition> disablings = null;
+        // boolean indicating that the omega rule guards have all been satisfied
+        boolean success = false;
         for (CtrlTransition tryTrans : transSet) {
             Set<CtrlCall> guard =
                 new HashSet<CtrlCall>(tryTrans.label().getGuard());
             guard.removeAll(triedCalls);
             if (!guard.isEmpty()) {
+                continue;
+            }
+            if (tryTrans.getCall().isOmega()) {
+                success = true;
                 continue;
             }
             CtrlCall tryCall = tryTrans.getCall();
@@ -253,23 +278,23 @@ public class CtrlState implements Node {
                 break;
             }
         }
-        CtrlSchedule result = new CtrlSchedule(trans, triedCalls);
+        CtrlSchedule result = new CtrlSchedule(trans, triedCalls, success);
         if (trans != null) {
             Set<CtrlCall> newTriedCalls = new HashSet<CtrlCall>(triedCalls);
             newTriedCalls.add(trans.getCall());
             Set<CtrlTransition> remainder =
                 new LinkedHashSet<CtrlTransition>(transSet);
             remainder.remove(trans);
-            CtrlSchedule failure = getSchedule(remainder, newTriedCalls);
-            CtrlSchedule success;
+            CtrlSchedule failNext = getSchedule(remainder, newTriedCalls);
+            CtrlSchedule succNext;
             if (disablings.isEmpty()) {
-                success = failure;
+                succNext = failNext;
             } else {
                 remainder = new LinkedHashSet<CtrlTransition>(remainder);
                 remainder.removeAll(disablings);
-                success = getSchedule(remainder, newTriedCalls);
+                succNext = getSchedule(remainder, newTriedCalls);
             }
-            result.setNext(success, failure);
+            result.setNext(succNext, failNext);
         }
         return result;
     }

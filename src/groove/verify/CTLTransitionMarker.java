@@ -37,11 +37,6 @@ import java.util.Iterator;
  */
 public class CTLTransitionMarker extends CTLMatchingMarker {
     @Override
-    public void mark(Marking marking, TemporalFormula expr, GTS gts) {
-        super.mark(marking, expr, gts);
-    }
-
-    @Override
     public void markAtom(Marking marking, TemporalFormula property, GTS gts) {
         boolean specialAtom = markSpecialAtom(marking, property, gts);
         if (!specialAtom) {
@@ -57,7 +52,7 @@ public class CTLTransitionMarker extends CTLMatchingMarker {
                     nextState.getTransitionIter();
                 while (!satisfies && transitionIter.hasNext()) {
                     Label ruleName =
-                        transitionIter.next().getEvent().getLabel();
+                        transitionIter.next().getEvent().getRule().getName();
                     if (ruleName.text().equals(name)) {
                         satisfies = true;
                         property.getCounterExamples().add(nextState);

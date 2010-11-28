@@ -16,7 +16,9 @@
  */
 package groove.trans;
 
+import groove.control.CtrlTransition;
 import groove.graph.Edge;
+import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.MergeMap;
@@ -71,6 +73,22 @@ public class VirtualEvent<C> implements RuleEvent {
      * Delegated to the wrapped event.
      * @see #getInnerEvent()
      */
+    public Element getAnchorImage(int i) {
+        return this.innerEvent.getAnchorImage(i);
+    }
+
+    /**
+     * Delegated to the wrapped event.
+     * @see #getInnerEvent()
+     */
+    public int getAnchorSize() {
+        return this.innerEvent.getAnchorSize();
+    }
+
+    /**
+     * Delegated to the wrapped event.
+     * @see #getInnerEvent()
+     */
     public String getAnchorImageString() {
         return this.innerEvent.getAnchorImageString();
     }
@@ -104,8 +122,16 @@ public class VirtualEvent<C> implements RuleEvent {
      * Delegated to the wrapped event.
      * @see #getInnerEvent()
      */
-    public Label getLabel() {
-        return this.innerEvent.getLabel();
+    public Label getLabel(Node[] addedNodes) {
+        return this.innerEvent.getLabel(addedNodes);
+    }
+
+    /**
+     * Delegated to the wrapped event.
+     * @see #getInnerEvent()
+     */
+    public Node[] getArguments(Node[] addedNodes) {
+        return this.innerEvent.getArguments(addedNodes);
     }
 
     /**
@@ -217,16 +243,10 @@ public class VirtualEvent<C> implements RuleEvent {
     public static class GraphState extends VirtualEvent<groove.lts.GraphState> {
         /** Constructs a virtual event from a given graph transition. */
         public GraphState(GraphTransition inner) {
-            this(inner.getEvent(), inner.target(), inner.getAddedNodes(),
-                inner.isSymmetry());
-        }
-
-        /** Invokes super constructor. */
-        public GraphState(RuleEvent event, groove.lts.GraphState innerTarget,
-                Node[] innerAddedNodes, boolean symmetry) {
-            super(event, innerTarget);
-            this.innerAddedNodes = innerAddedNodes;
-            this.symmetry = symmetry;
+            super(inner.getEvent(), inner.target());
+            this.innerAddedNodes = inner.getAddedNodes();
+            this.innerSymmetry = inner.isSymmetry();
+            this.innerCtrlTrans = inner.getCtrlTransition();
         }
 
         /**
@@ -234,6 +254,13 @@ public class VirtualEvent<C> implements RuleEvent {
          */
         public final Node[] getInnerAddedNodes() {
             return this.innerAddedNodes;
+        }
+
+        /**
+         * Returns the control transition of the inner graph transition.
+         */
+        public final CtrlTransition getInnerCtrlTransition() {
+            return this.innerCtrlTrans;
         }
 
         /**
@@ -245,10 +272,11 @@ public class VirtualEvent<C> implements RuleEvent {
          *         event.
          */
         public boolean isConfluent(RuleEvent event) {
-            return !(this.symmetry || conflicts(event));
+            return !(this.innerSymmetry || conflicts(event));
         }
 
         private final Node[] innerAddedNodes;
-        private final boolean symmetry;
+        private final CtrlTransition innerCtrlTrans;
+        private final boolean innerSymmetry;
     }
 }

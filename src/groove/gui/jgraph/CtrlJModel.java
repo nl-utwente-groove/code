@@ -139,7 +139,8 @@ public class CtrlJModel extends GraphJModel {
 
     @Override
     protected TransitionJEdge createJEdge(Edge edge) {
-        return new TransitionJEdge(this, edge);
+        assert edge instanceof CtrlTransition;
+        return new TransitionJEdge(this, (CtrlTransition) edge);
     }
 
     /**
@@ -198,13 +199,18 @@ public class CtrlJModel extends GraphJModel {
      * @author Tom Staijen
      * @version $Revision $
      */
-    private static class TransitionJEdge extends GraphJEdge {
+    public class TransitionJEdge extends GraphJEdge {
         /**
          * Creates a new instance from a given edge (required to be a
          * {@link GraphTransition}).
          */
-        TransitionJEdge(CtrlJModel jModel, Edge edge) {
+        TransitionJEdge(CtrlJModel jModel, CtrlTransition edge) {
             super(jModel, edge);
+        }
+
+        @Override
+        public CtrlTransition getEdge() {
+            return (CtrlTransition) super.getEdge();
         }
 
         @Override
@@ -240,7 +246,7 @@ public class CtrlJModel extends GraphJModel {
      * @author Tom Staijen
      * @version $Revision $
      */
-    static private class StateJVertex extends GraphJVertex {
+    static public class StateJVertex extends GraphJVertex {
         /**
          * Creates a new instance for a given node (required to be a
          * {@link CtrlState}) in an LTS model.
@@ -262,6 +268,18 @@ public class CtrlJModel extends GraphJModel {
                 result.add(sb);
             }
             return result;
+        }
+
+        /** Indicates if this jVertex represents the start state of the control automaton. */
+        public boolean isStart() {
+            return ((CtrlJModel) getGraphJModel()).getGraph().getStart().equals(
+                getNode());
+        }
+
+        /** Indicates if this jVertex represents the start state of the control automaton. */
+        public boolean isFinal() {
+            return ((CtrlJModel) getGraphJModel()).getGraph().getFinal().equals(
+                getNode());
         }
     }
 }

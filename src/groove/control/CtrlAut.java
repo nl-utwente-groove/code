@@ -346,6 +346,7 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
      * input parameters of their outgoing transitions.
      */
     private void setBoundVars() {
+        // compute the map of incoming transitions
         Map<CtrlState,Set<CtrlTransition>> inMap =
             new HashMap<CtrlState,Set<CtrlTransition>>();
         for (CtrlState state : nodeSet()) {
@@ -364,7 +365,7 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
             boolean modified = false;
             for (CtrlVar targetVar : next.target().getBoundVars()) {
                 if (!next.getOutVars().contains(targetVar)) {
-                    modified = sourceVars.add(targetVar);
+                    modified |= sourceVars.add(targetVar);
                 }
             }
             if (modified) {

@@ -22,8 +22,11 @@ import groove.control.CtrlType;
 import groove.control.CtrlVar;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
@@ -141,6 +144,43 @@ public class GCLHelper {
         this.currentFunction = null;
     }
 
+    /** Reorders the functions according to their dependencies. */
+    void reorderFunctions(MyTree functionsTree) {
+        assert functionsTree.getType() == GCLNewChecker.FUNCTIONS;
+        int functionsCount = functionsTree.getChildCount();
+        Map<String,MyTree> functionMap = new HashMap<String,MyTree>();
+        for (int i = 0; i < functionsCount; i++) {
+            MyTree function = functionsTree.getChild(i);
+            functionMap.put(function.getChild(0).getText(), function);
+        }
+        Set<String> resolved = new LinkedHashSet<String>();
+        for (int i = 0; i < functionsCount; i++) {
+            String next = null;
+            // look for the first function name of which all dependencies have been resolved
+            for (String from : functionMap.keySet()) {
+                Set<String> to = this.dependencyMap.get(from);
+                if (!resolved.contains(from)
+                    && (to == null || resolved.containsAll(to))) {
+                    next = from;
+                    break;
+                }
+            }
+            if (next == null) {
+                emitErrorMessage(functionsTree,
+                    "Circular dependencies in function calls");
+                break;
+            }
+            resolved.add(next);
+        }
+        if (resolved.size() == functionsCount) {
+            int i = 0;
+            for (String name : resolved) {
+                functionsTree.setChild(i, functionMap.get(name));
+                i++;
+            }
+        }
+    }
+
     /** Prefixes a given name with the current function name, if any. */
     private String toLocalName(String name) {
         return this.currentFunction == null ? name : this.currentFunction + "."
@@ -233,7 +273,7 @@ public class GCLHelper {
 
     CtrlCall checkCall(MyTree callTree) {
         int childCount = callTree.getChildCount();
-        assert callTree.getType() == GCLChecker.CALL && childCount >= 1;
+        assert callTree.getType() == GCLNewChecker.CALL && childCount >= 1;
         CtrlCall result = null;
         testArgs: {
             String name = callTree.getChild(0).getText();
@@ -257,7 +297,11 @@ public class GCLHelper {
                 if (this.namespace.hasRule(name)) {
                     result = new CtrlCall(this.namespace.useRule(name), args);
                 } else {
+                    // it's a function call
                     result = new CtrlCall(name, args);
+                    if (this.currentFunction != null) {
+                        addDependency(this.currentFunction, name);
+                    }
                 }
                 callTree.setCtrlCall(result);
             }
@@ -357,12 +401,22 @@ public class GCLHelper {
         return this.errors;
     }
 
+    private void addDependency(String from, String to) {
+        Set<String> dependencies = this.dependencyMap.get(from);
+        if (dependencies == null) {
+            this.dependencyMap.put(from, dependencies = new HashSet<String>());
+        }
+        dependencies.add(to);
+    }
+
     /** Namespace to enter the declared functions. */
     private final NamespaceNew namespace;
     /** Flag indicating that errors were found during the current run. */
     private final List<String> errors = new ArrayList<String>();
     /** The symbol table holding the local variable declarations. */
     private final NewSymbolTable symbolTable = new NewSymbolTable();
+    private final Map<String,Set<String>> dependencyMap =
+        new HashMap<String,Set<String>>();
     /** Set of currently initialised variables. */
     private Set<String> initVars = new HashSet<String>();
     /**

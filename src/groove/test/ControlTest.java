@@ -36,6 +36,7 @@ import junit.framework.TestCase;
  * @author Olaf Keijsers
  * @version $Revision $
  */
+@Deprecated
 @SuppressWarnings("all")
 public class ControlTest extends TestCase {
     static private final String DIRECTORY = "junit/samples/control2.gps";

@@ -16,8 +16,6 @@
  */
 package groove.lts;
 
-import groove.control.ControlState;
-import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.graph.Graph;
 import groove.graph.Node;
@@ -40,28 +38,6 @@ public interface GraphState extends State {
 
     /** Returns the (possibly {@code null}) control state associated with this state. */
     public CtrlState getCtrlState();
-
-    /**
-     * Returns the location of this state. Together with the graph, the location
-     * completely determines the state. For flexibility, the type of the
-     * location is undetermined.
-     * @return the location; may be <code>null</code>.
-     */
-    public ControlState getLocation();
-
-    /**
-     * Sets the location field of this graphstate
-     */
-    public void setLocation(ControlState ctrlState);
-
-    /**
-     * Returns the current control schedule of this state.
-     * This reflects the degree to which the state has been explored.
-     */
-    public CtrlSchedule getSchedule();
-
-    /** Sets or advances the control schedule of this state. */
-    public void setSchedule(CtrlSchedule schedule);
 
     /**
      * Retrieves an outgoing transition with a given event, if it exists. Yields
@@ -119,9 +95,7 @@ public interface GraphState extends State {
     public boolean setClosed();
 
     /**
-     * Returns a Map<String,Node> of bound parameters for this GraphState with 
-     * their associated Nodes.
-     * @return a Map of parameters bound to Nodes, may be null
+     * Returns a list of values of the bound variables.
      */
-    public Node[] getParameters();
+    public Node[] getBoundNodes();
 }

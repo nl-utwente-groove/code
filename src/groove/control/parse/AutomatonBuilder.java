@@ -42,6 +42,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
+@Deprecated
 public class AutomatonBuilder extends Namespace {
 
     /** label used to identify delta in init result. */

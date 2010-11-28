@@ -321,8 +321,7 @@ public class ProductGTS implements LTS {
         @Override
         protected boolean areEqual(BuchiGraphState stateKey,
                 BuchiGraphState otherStateKey) {
-            if ((stateKey.getLocation() == null || stateKey.getLocation().equals(
-                otherStateKey.getLocation()))
+            if ((stateKey.getCtrlState() == otherStateKey.getCtrlState())
                 && (stateKey.getBuchiLocation() == null || stateKey.getBuchiLocation().equals(
                     otherStateKey.getBuchiLocation()))) {
                 Graph one = stateKey.getGraph();
