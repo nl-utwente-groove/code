@@ -217,8 +217,8 @@ public class Groove {
     /** Icon for GPS folders. */
     public static final ImageIcon GPS_FOLDER_ICON = new ImageIcon(
         getResource("gps.gif"));
-    /** Graph editing mode icon. */
-    public static final ImageIcon GRAPH_MODE_ICON = new ImageIcon(
+    /** Control automaton preview icon. */
+    public static final ImageIcon CONTROL_MODE_ICON = new ImageIcon(
         getResource("graph-mode.gif"));
     /** Icon for Control Panel. */
     public static final ImageIcon CONTROL_FRAME_ICON = new ImageIcon(
@@ -238,6 +238,9 @@ public class Groove {
     /** Icon for graph with emphasised match. */
     public static final ImageIcon GRAPH_MATCH_ICON = new ImageIcon(
         getResource("graph-match.gif"));
+    /** Graph editing mode icon. */
+    public static final ImageIcon GRAPH_MODE_ICON = new ImageIcon(
+        getResource("graph-mode.gif"));
     /** Icon for snap to grid action. */
     public static final ImageIcon GRID_ICON = new ImageIcon(
         getResource("grid.gif"));
