@@ -24,7 +24,7 @@ import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
-import groove.graph.iso.PaigeTarjanMcKay;
+import groove.graph.iso.PartitionRefiner;
 import groove.lts.AbstractGraphState;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
@@ -242,9 +242,9 @@ public class ExplorationStatistics {
         println("\t\tEqual graphs:\t\t" + equalGraphCount);
         println("\t\tEqual certificates:\t" + equalCertsCount);
         println("\t\tEqual simulation:\t" + equalSimCount);
-        println("\t\tIterations:\t\t\t" + PaigeTarjanMcKay.getIterateCount());
+        println("\t\tIterations:\t\t\t" + PartitionRefiner.getIterateCount());
         println("\t\tSymmetry breaking:\t"
-            + PaigeTarjanMcKay.getSymmetryBreakCount());
+            + PartitionRefiner.getSymmetryBreakCount());
     }
 
     /** Reports on the graph data. */

@@ -78,7 +78,11 @@ public class CtrlSchedule {
         }
         result.append(prefix);
         if (this.trans == null) {
-            result.append("No transitions\n");
+            result.append("No transitions");
+            if (isSuccess()) {
+                result.append("; success");
+            }
+            result.append("\n");
         } else {
             result.append("Call ");
             result.append(this.trans);
@@ -95,14 +99,14 @@ public class CtrlSchedule {
             }
             result.append("\n");
             if (this.succNext == this.failNext) {
-                if (!this.succNext.isFinished()) {
+                if (!this.succNext.isFinished() || this.succNext.isSuccess()) {
                     result.append(this.succNext.toString(depth + 1, ""));
                 }
             } else {
-                if (!this.failNext.isFinished()) {
+                if (!this.failNext.isFinished() || this.failNext.isSuccess()) {
                     result.append(this.failNext.toString(depth + 1, "Failed:  "));
                 }
-                if (!this.succNext.isFinished()) {
+                if (!this.succNext.isFinished() || this.succNext.isSuccess()) {
                     result.append(this.succNext.toString(depth + 1, "Applied: "));
                 }
             }

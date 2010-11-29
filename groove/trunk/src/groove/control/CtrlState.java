@@ -200,8 +200,8 @@ public class CtrlState implements Node {
         boolean result = schedule.isSuccess();
         while (!schedule.isFinished() && !result) {
             Rule rule = schedule.getTransition().getRule();
-            result = schedule.isSuccess();
             schedule = schedule.next(matchedRules.contains(rule));
+            result = schedule.isSuccess();
         }
         return result;
     }

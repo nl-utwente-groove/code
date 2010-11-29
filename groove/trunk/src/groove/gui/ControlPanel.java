@@ -24,6 +24,7 @@ import groove.io.SystemStore;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.trans.GraphGrammar;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
@@ -900,10 +901,12 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
         public void actionPerformed(ActionEvent e) {
             if (stopEditing(true)) {
-                assert getSimulator().getGrammarView().getErrors().isEmpty() : "View Button should be disabled if grammar has errors.";
                 try {
-                    getJGraph().setModel(getCtrlAut());
-                    getDialog().setVisible(true);
+                    CtrlAut aut = getCtrlAut();
+                    if (aut != null) {
+                        getJGraph().setModel(aut);
+                        getDialog().setVisible(true);
+                    }
                 } catch (FormatException exc) {
                     getSimulator().showErrorDialog(
                         String.format("Error in control program '%s'",
@@ -914,8 +917,11 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
         @Override
         public void refresh() {
-            setEnabled(isControlSelected()
-                && getSimulator().getGrammarView().getErrors().isEmpty());
+            try {
+                setEnabled(getCtrlAut() != null);
+            } catch (FormatException e) {
+                setEnabled(false);
+            }
         }
 
         private CtrlJGraph getJGraph() throws FormatException {
@@ -951,8 +957,18 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
         /** Convenience method to obtain the currently selected control automaton. */
         private CtrlAut getCtrlAut() throws FormatException {
-            return getGrammarView().getControlView(getSelectedControl()).toCtrlAut(
-                getGrammarView().toGrammar());
+            CtrlAut result = null;
+            StoredGrammarView grammarView = getGrammarView();
+            if (grammarView != null) {
+                GraphGrammar grammar = grammarView.toGrammar();
+                ControlView controlView =
+                    grammarView.getControlView(getSelectedControl());
+                result =
+                    controlView == null
+                            ? grammar.getCtrlAut()
+                            : controlView.toCtrlAut(getGrammarView().toGrammar());
+            }
+            return result;
         }
     }
 
