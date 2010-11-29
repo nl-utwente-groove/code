@@ -19,7 +19,6 @@ package groove.control;
 import groove.trans.SPORule;
 import groove.util.Groove;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -63,7 +62,9 @@ public class CtrlCall {
         boolean result = obj == this;
         if (!result && obj instanceof CtrlCall) {
             CtrlCall other = (CtrlCall) obj;
-            if (isRule()) {
+            if (isOmega()) {
+                result = other == this;
+            } else if (isRule()) {
                 result = getRule().equals(other.getRule());
             } else if (isFunction()) {
                 result = getFunction().equals(other.getFunction());
@@ -82,6 +83,8 @@ public class CtrlCall {
         int result = 0;
         if (isFunction()) {
             result = getFunction().hashCode();
+        } else if (isOmega()) {
+            result = super.hashCode();
         } else if (isRule()) {
             result = getRule().hashCode();
         }
@@ -126,6 +129,8 @@ public class CtrlCall {
     public String getName() {
         if (isFunction()) {
             return getFunction();
+        } else if (isOmega()) {
+            return OMEGA_NAME;
         } else {
             assert isRule();
             return getRule().getName().text();
@@ -199,6 +204,8 @@ public class CtrlCall {
      * A special call, indicating that the control program is successful.
      * Can be seen as a call to a rule that always matches and makes no changes.
      */
-    public static final CtrlCall OMEGA = new CtrlCall(SPORule.OMEGA_RULE,
-        Collections.<CtrlPar>emptyList());
+    public static final CtrlCall OMEGA = new CtrlCall();
+
+    /** Name of the omega rule (which models termination). */
+    public static final String OMEGA_NAME = "\u03A9";
 }

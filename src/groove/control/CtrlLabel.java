@@ -20,8 +20,9 @@ import groove.graph.AbstractLabel;
 import groove.util.Groove;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * A control label wraps a control call and a guard, consisting of a 
@@ -31,7 +32,14 @@ import java.util.Map;
  */
 public class CtrlLabel extends AbstractLabel {
     /** 
-     * Constructs a virtual control label from a call and
+     * Constructs a control label from a call, with an empty guard.
+     */
+    public CtrlLabel(CtrlCall call) {
+        this(call, Collections.<CtrlCall>emptyList());
+    }
+
+    /** 
+     * Constructs a control label from a call and
      * a guard.
      */
     public CtrlLabel(CtrlCall call, Collection<CtrlCall> guard) {
@@ -76,5 +84,5 @@ public class CtrlLabel extends AbstractLabel {
 
     /** Guard of this label, consisting of a list of failure rules. */
     private final Map<String,CtrlCall> guardMap =
-        new LinkedHashMap<String,CtrlCall>();
+        new TreeMap<String,CtrlCall>();
 }

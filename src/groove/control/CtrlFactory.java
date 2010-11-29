@@ -17,6 +17,9 @@
 package groove.control;
 
 import groove.control.parse.NamespaceNew;
+import groove.trans.Rule;
+import groove.trans.RuleSystem;
+import groove.trans.SPORule;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
@@ -54,6 +57,7 @@ public class CtrlFactory {
 
     /** Factory method for a rule or function call. */
     public CtrlAut buildCall(CtrlCall call, NamespaceNew namespace) {
+        assert !call.isOmega();
         if (call.isRule()) {
             return buildRuleCall(call);
         } else {
@@ -572,6 +576,32 @@ public class CtrlFactory {
     /** Factory method for omega control labels, with an empty guard. */
     private CtrlLabel createOmegaLabel() {
         return createLabel(CtrlCall.OMEGA);
+    }
+
+    /** Builds the default control automaton for a set of rules. */
+    public CtrlAut buildDefault(RuleSystem rules) {
+        CtrlAut result = new CtrlAut();
+        CtrlState start = result.getStart();
+        CtrlState end = result.getFinal();
+        Map<Integer,Set<Rule>> ruleMap = rules.getRuleMap();
+        Set<CtrlCall> modGuard = new LinkedHashSet<CtrlCall>();
+        Set<CtrlCall> allGuard = new LinkedHashSet<CtrlCall>();
+        for (Map.Entry<Integer,Set<Rule>> ruleEntry : ruleMap.entrySet()) {
+            Set<CtrlCall> newAllGuard = new LinkedHashSet<CtrlCall>(allGuard);
+            for (Rule rule : ruleEntry.getValue()) {
+                CtrlCall ruleCall = new CtrlCall((SPORule) rule, null);
+                result.addTransition(start, createLabel(ruleCall, allGuard),
+                    start);
+                newAllGuard.add(ruleCall);
+                if (rule.isModifying()) {
+                    modGuard.add(ruleCall);
+                }
+            }
+            modGuard.addAll(allGuard);
+            allGuard = newAllGuard;
+        }
+        result.addTransition(start, createLabel(CtrlCall.OMEGA, modGuard), end);
+        return result;
     }
 
     /** Returns the singleton instance of this factory class. */

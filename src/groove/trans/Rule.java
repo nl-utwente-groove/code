@@ -161,6 +161,4 @@ public interface Rule extends Comparable<Rule>, Condition {
     public static final int PARAMETER_DONT_CARE = 0;
     /** Non-existent flag */
     public static final int PARAMETER_DOES_NOT_EXIST = -1;
-    /** Name of the omega rule (which models termination). */
-    public static final String OMEGA_NAME = "\u03A9";
 }
