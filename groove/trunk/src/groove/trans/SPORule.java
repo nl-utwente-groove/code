@@ -19,8 +19,6 @@ package groove.trans;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
-import groove.graph.AbstractGraph;
-import groove.graph.DefaultMorphism;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -1387,22 +1385,23 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         return SearchPlanStrategy.searchFindReporter.getTotalTime();
     }
 
-    /** Special rule that models termination. */
-    public static final SPORule OMEGA_RULE;
-    static {
-        Graph emptyGraph = AbstractGraph.EMPTY_GRAPH;
-        Morphism emptyMorph = new DefaultMorphism(emptyGraph, emptyGraph);
-        GraphProperties ruleProperties = new GraphProperties();
-        SystemProperties systemProperties = new SystemProperties();
-        OMEGA_RULE =
-            new SPORule(emptyMorph, new RuleName(OMEGA_NAME), ruleProperties,
-                systemProperties);
-        try {
-            OMEGA_RULE.setFixed();
-        } catch (FormatException e) {
-            assert false;
-        }
-    }
+    //
+    //    /** Special rule that models termination. */
+    //    public static final SPORule OMEGA_RULE;
+    //    static {
+    //        Graph emptyGraph = AbstractGraph.EMPTY_GRAPH;
+    //        Morphism emptyMorph = new DefaultMorphism(emptyGraph, emptyGraph);
+    //        GraphProperties ruleProperties = new GraphProperties();
+    //        SystemProperties systemProperties = new SystemProperties();
+    //        OMEGA_RULE =
+    //            new SPORule(emptyMorph, new RuleName(OMEGA_NAME), ruleProperties,
+    //                systemProperties);
+    //        try {
+    //            OMEGA_RULE.setFixed();
+    //        } catch (FormatException e) {
+    //            assert false;
+    //        }
+    //    }
 
     /**
      * The factory used for creating rule anchors.

@@ -17,15 +17,22 @@
 package groove.test;
 
 import groove.control.CtrlAut;
+import groove.control.CtrlCall;
+import groove.control.CtrlFactory;
+import groove.control.CtrlLabel;
 import groove.control.CtrlParser;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlTransition;
 import groove.io.ExtensionFilter;
 import groove.trans.GraphGrammar;
+import groove.trans.SPORule;
 import groove.util.Groove;
 import groove.view.FormatException;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -51,6 +58,16 @@ public class CtrlBuildTest extends TestCase {
             System.exit(1);
         }
     }
+    private GraphGrammar prioGrammar;
+    {
+        try {
+            this.prioGrammar =
+                Groove.loadGrammar(GRAMMAR_DIR + "emptypriorules").toGrammar();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
 
     /** Regression test for errors found in old control programs. */
     public void testRegression() {
@@ -63,6 +80,56 @@ public class CtrlBuildTest extends TestCase {
         CtrlTransition t2 = t1.target().getTransitions().iterator().next();
         CtrlTransition t3 = t2.target().getTransitions().iterator().next();
         assertEquals(2, t3.target().getBoundVars().size());
+    }
+
+    /** Tests the default automaton construction. */
+    public void testDefaultAut() {
+        CtrlAut aut = CtrlFactory.getInstance().buildDefault(this.prioGrammar);
+        assertEquals(2, aut.nodeCount());
+        assertEquals(7, aut.edgeCount());
+        SPORule m3 = (SPORule) this.prioGrammar.getRule("m3");
+        SPORule m2 = (SPORule) this.prioGrammar.getRule("m2");
+        SPORule m1 = (SPORule) this.prioGrammar.getRule("m1");
+        SPORule c3 = (SPORule) this.prioGrammar.getRule("c3");
+        SPORule c2 = (SPORule) this.prioGrammar.getRule("c2");
+        SPORule c1 = (SPORule) this.prioGrammar.getRule("c1");
+        CtrlCall callM3 = new CtrlCall(m3, null);
+        CtrlCall callM2 = new CtrlCall(m2, null);
+        CtrlCall callM1 = new CtrlCall(m1, null);
+        CtrlCall callC3 = new CtrlCall(c3, null);
+        CtrlCall callC2 = new CtrlCall(c2, null);
+        CtrlCall callC1 = new CtrlCall(c1, null);
+        CtrlCall omega = CtrlCall.OMEGA;
+        Set<CtrlCall> level2AllGuard = new HashSet<CtrlCall>();
+        level2AllGuard.add(callM3);
+        level2AllGuard.add(callC3);
+        Set<CtrlCall> level1AllGuard = new HashSet<CtrlCall>(level2AllGuard);
+        level1AllGuard.add(callM2);
+        level1AllGuard.add(callC2);
+        Set<CtrlCall> omegaGuard = new HashSet<CtrlCall>(level1AllGuard);
+        omegaGuard.add(callM1);
+        Set<CtrlLabel> expectedSelfLabels =
+            new HashSet<CtrlLabel>(Arrays.asList(new CtrlLabel[] {
+                new CtrlLabel(callM3), new CtrlLabel(callC3),
+                new CtrlLabel(callM2, level2AllGuard),
+                new CtrlLabel(callC2, level2AllGuard),
+                new CtrlLabel(callM1, level1AllGuard),
+                new CtrlLabel(callC1, level1AllGuard),}));
+        Set<CtrlLabel> expectedOmegaLabels =
+            new HashSet<CtrlLabel>(
+                Arrays.asList(new CtrlLabel[] {new CtrlLabel(omega, omegaGuard)}));
+        Set<CtrlLabel> actualSelfLabels = new HashSet<CtrlLabel>();
+        Set<CtrlLabel> actualOmegaLabels = new HashSet<CtrlLabel>();
+        for (CtrlTransition trans : aut.getStart().getTransitions()) {
+            if (trans.target() == aut.getStart()) {
+                actualSelfLabels.add(trans.label());
+            } else {
+                assertSame(trans.target(), aut.getFinal());
+                actualOmegaLabels.add(trans.label());
+            }
+        }
+        assertEquals(expectedSelfLabels, actualSelfLabels);
+        assertEquals(expectedOmegaLabels, actualOmegaLabels);
     }
 
     /** Test for initialisation errors. */
