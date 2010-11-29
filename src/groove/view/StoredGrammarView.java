@@ -17,6 +17,7 @@
 package groove.view;
 
 import groove.control.ControlView;
+import groove.control.CtrlFactory;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.LabelStore;
@@ -380,6 +381,8 @@ public class StoredGrammarView implements GrammarView, Observer {
                     }
                 }
             }
+        } else {
+            result.setCtrlAut(CtrlFactory.getInstance().buildDefault(result));
         }
         // set properties
         result.setProperties(getProperties());
