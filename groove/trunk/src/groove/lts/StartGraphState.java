@@ -2,7 +2,6 @@
 package groove.lts;
 
 import groove.control.CtrlAut;
-import groove.control.CtrlState;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.trans.SystemRecord;
@@ -20,9 +19,9 @@ public class StartGraphState extends AbstractGraphState {
         setFrozenGraph(getCache().computeFrozenGraph(graph));
         this.graph = getCache().getGraph();
         CtrlAut ctrlAut = record.getGrammar().getCtrlAut();
-        this.ctrlState =
-            ctrlAut == null ? null
-                    : record.getGrammar().getCtrlAut().getStart();
+        if (ctrlAut != null) {
+            setCtrlState(ctrlAut.getStart());
+        }
         GraphInfo.transfer(graph, this.graph, null);
     }
 
@@ -39,13 +38,6 @@ public class StartGraphState extends AbstractGraphState {
         // empty
     }
 
-    @Override
-    public CtrlState getCtrlState() {
-        return this.ctrlState;
-    }
-
     /** The stored graph. */
     private Graph graph;
-    /** The (possibly {@code null} control state. */
-    private final CtrlState ctrlState;
 }

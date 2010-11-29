@@ -31,7 +31,6 @@ import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.trans.GraphGrammar;
-import groove.trans.Rule;
 import groove.trans.SystemRecord;
 import groove.util.CollectionView;
 import groove.util.FilterIterator;
@@ -206,13 +205,14 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * listeners. Also determines the final status of the state. Only call this
      * after all outgoing transitions of the state have been generated!
      * @param state the state to be removed from the set of open states
+     * @param complete indicates whether all outgoing transitions of the state have
+     * been explored. If {@code true}, determine the final status of the state
      * @require <tt>state instanceof GraphState</tt>
      */
-    public void setClosed(State state) {
-        GraphState graphState = (GraphState) state;
-        if (graphState.setClosed()) {
-            if (determineIsFinal(graphState)) {
-                setFinal(graphState);
+    public void setClosed(GraphState state, boolean complete) {
+        if (state.setClosed(complete)) {
+            if (determineIsFinal(state)) {
+                setFinal(state);
             }
             incClosedCount();
             notifyLTSListenersOfClose(state);
@@ -229,7 +229,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * - without location, and then no outgoing transitions
      */
     private boolean determineIsFinal(GraphState state) {
-        if (state.getCtrlState() == null) {
+        if (state.getSchedule() == null) {
             // only states without applications of modifying rules are final
             for (GraphTransition trans : state.getTransitionSet()) {
                 if (trans.getEvent().getRule().isModifying()) {
@@ -238,11 +238,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
             }
             return true;
         } else {
-            Set<Rule> rulesFound = new HashSet<Rule>();
-            for (GraphTransition trans : state.getTransitionSet()) {
-                rulesFound.add(trans.getEvent().getRule());
-            }
-            return state.getCtrlState().isSuccess(rulesFound);
+            return state.getSchedule().isSuccess();
         }
     }
 

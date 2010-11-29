@@ -597,7 +597,6 @@ public class CtrlFactory {
                     modGuard.add(ruleCall);
                 }
             }
-            modGuard.addAll(allGuard);
             allGuard = newAllGuard;
         }
         result.addTransition(start, createLabel(CtrlCall.OMEGA, modGuard), end);

@@ -45,17 +45,15 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         this.source = source;
         this.event = event;
         this.addedNodes = addedNodes;
-        CtrlState sourceCtrl = source.getCtrlState();
-        if (sourceCtrl == null) {
-            this.ctrlTrans = null;
+        CtrlState sourceCtrlState = source.getCtrlState();
+        if (sourceCtrlState == null) {
             this.boundNodes = null;
         } else {
-            this.ctrlTrans = sourceCtrl.getTransition(event.getRule());
-            this.boundNodes = computeBoundNodes();
+            CtrlTransition ctrlTrans =
+                sourceCtrlState.getTransition(event.getRule());
+            setCtrlState(ctrlTrans.target());
+            this.boundNodes = computeBoundNodes(ctrlTrans);
         }
-        //        if (source.getLocation() != null) {
-        //            initializeVariables();
-        //        }
     }
 
     public RuleEvent getEvent() {
@@ -68,13 +66,10 @@ public class DefaultGraphNextState extends AbstractGraphState implements
 
     @Override
     public Node[] getBoundNodes() {
-        if (this.boundNodes == null) {
-            this.boundNodes = computeBoundNodes();
-        }
         return this.boundNodes;
     }
 
-    private Node[] computeBoundNodes() {
+    private Node[] computeBoundNodes(CtrlTransition ctrlTrans) {
         Node[] result;
         if (getCtrlState() == null) {
             result = EMPTY_NODE_LIST;
@@ -82,7 +77,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
             int valueCount = getCtrlState().getBoundVars().size();
             result = new Node[valueCount];
             Node[] parentValues = this.source.getBoundNodes();
-            int[] varBinding = getCtrlTransition().getTargetVarBinding();
+            int[] varBinding = ctrlTrans.getTargetVarBinding();
             SPORule rule = ((SPORule) getEvent().getRule());
             int anchorSize = getEvent().getAnchorSize();
             MergeMap mergeMap = getEvent().getMergeMap();
@@ -356,16 +351,11 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         }
     }
 
-    public CtrlState getCtrlState() {
-        return this.ctrlTrans == null ? null : this.ctrlTrans.target();
-    }
-
     public CtrlTransition getCtrlTransition() {
-        return this.ctrlTrans;
+        CtrlState sourceCtrlState = source().getCtrlState();
+        return sourceCtrlState == null ? null
+                : sourceCtrlState.getTransition(getEvent().getRule());
     }
-
-    /** The underlying control transition, if any. */
-    private final CtrlTransition ctrlTrans;
 
     /** Keeps track of bound variables */
     private Node[] boundNodes;

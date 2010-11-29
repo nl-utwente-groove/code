@@ -68,9 +68,6 @@ public class MatchSetCollector {
             this.enabledRules = record.getEnabledRules(lastRule);
             this.disabledRules = record.getDisabledRules(lastRule);
         }
-        if (state.getCtrlState() != null) {
-            this.schedule = state.getCtrlState().getSchedule();
-        }
     }
 
     /**
@@ -254,13 +251,11 @@ public class MatchSetCollector {
             assert this.state instanceof GraphNextState;
             // check if the underlying control transition is the same
             CtrlTransition virtualCtrlTrans = virtual.getInnerCtrlTransition();
-            CtrlTransition myCtrlTransition = null;
             CtrlState myCtrlState = this.state.getCtrlState();
-            if (myCtrlState != null) {
-                myCtrlTransition = myCtrlState.getTransition(rule);
-            }
+            CtrlTransition myCtrlTrans =
+                myCtrlState == null ? null : myCtrlState.getTransition(rule);
             result =
-                virtualCtrlTrans == myCtrlTransition
+                virtualCtrlTrans == myCtrlTrans
                     && virtual.hasMatch(this.state.getGraph());
         }
         return result;
@@ -272,18 +267,23 @@ public class MatchSetCollector {
      */
     protected Rule firstRule() {
         Rule result;
-        CtrlSchedule schedule = this.schedule;
-        if (schedule == null) {
+        CtrlState ctrlState = this.state.getCtrlState();
+        if (ctrlState == null) {
             result = this.cache.last();
             if (result == null && this.cache.hasNext()) {
                 // this means that the cache was freshly created and has never been
                 // incremented before
                 result = this.cache.next();
             }
-        } else if (schedule.isFinished()) {
-            result = null;
         } else {
-            result = schedule.getTransition().getRule();
+            // refresh the schedule in the control state
+            CtrlSchedule schedule = ctrlState.getSchedule();
+            this.state.setSchedule(schedule);
+            if (schedule.isFinished()) {
+                result = null;
+            } else {
+                result = schedule.getTransition().getRule();
+            }
         }
         return result;
     }
@@ -293,7 +293,7 @@ public class MatchSetCollector {
      */
     protected Rule nextRule(boolean matchFound) {
         Rule result;
-        CtrlSchedule schedule = this.schedule;
+        CtrlSchedule schedule = this.state.getSchedule();
         if (schedule == null) {
             if (matchFound) {
                 this.cache.updateMatches(this.cache.last());
@@ -303,7 +303,7 @@ public class MatchSetCollector {
         } else if (schedule.isFinished()) {
             result = null;
         } else {
-            this.schedule = schedule = schedule.next(matchFound);
+            this.state.setSchedule(schedule = schedule.next(matchFound));
             if (schedule.isFinished()) {
                 result = null;
             } else {
@@ -315,8 +315,6 @@ public class MatchSetCollector {
 
     /** The host graph we are working on. */
     protected final GraphState state;
-    /** The schedule of rules to try out. */
-    private CtrlSchedule schedule;
     /** Matches cache. */
     protected final ExploreCache cache;
     /** The system record is set at construction. */

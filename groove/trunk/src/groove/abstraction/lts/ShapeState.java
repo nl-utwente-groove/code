@@ -98,7 +98,7 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    public boolean setClosed() {
+    public boolean setClosed(boolean finished) {
         boolean result = !this.closed;
         this.closed = true;
         return result;

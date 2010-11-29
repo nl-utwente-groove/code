@@ -22,8 +22,9 @@ import java.util.Set;
 /** Sequence of control transitions to be tried out from a control state. */
 public class CtrlSchedule {
     /** Constructs an initially empty schedule. */
-    public CtrlSchedule(CtrlTransition trans, Set<CtrlCall> triedCalls,
-            boolean success) {
+    public CtrlSchedule(CtrlState state, CtrlTransition trans,
+            Set<CtrlCall> triedCalls, boolean success) {
+        this.state = state;
         this.trans = trans;
         this.triedCalls = trans == null ? triedCalls : null;
         this.success = success;
@@ -44,6 +45,11 @@ public class CtrlSchedule {
       */
     public CtrlTransition getTransition() {
         return this.trans;
+    }
+
+    /** Returns the control state to which this schedule belongs. */
+    public final CtrlState getState() {
+        return this.state;
     }
 
     /** Returns the set of control calls that has been tried at this point
@@ -114,6 +120,8 @@ public class CtrlSchedule {
         return result.toString();
     }
 
+    /** The control state to which this schedule belongs. */
+    private final CtrlState state;
     /** The transition at this node of the schedule. */
     private final CtrlTransition trans;
     /** The set of calls that have been tried when this point of the schedule is reached.

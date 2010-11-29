@@ -81,9 +81,13 @@ public abstract class AbstractStrategy implements Strategy {
         return this.atState;
     }
 
-    /** Closes a given state. */
-    protected void setClosed(GraphState state) {
-        getGTS().setClosed(state);
+    /** 
+     * Closes a given state. 
+     * @param complete  indicates whether all outgoing transitions of the state have
+     * been explored.
+     */
+    protected void setClosed(GraphState state, boolean complete) {
+        getGTS().setClosed(state, complete);
     }
 
     /**

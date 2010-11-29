@@ -40,7 +40,7 @@ public class BranchingStrategy extends AbstractStrategy {
         for (RuleEvent match : createMatchCollector(cache).getMatchSet()) {
             applyEvent(match);
         }
-        setClosed(getAtState());
+        setClosed(getAtState(), true);
         updateAtState();
         return true;
     }

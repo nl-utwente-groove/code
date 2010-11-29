@@ -106,8 +106,10 @@ public class CtrlBuildTest extends TestCase {
         Set<CtrlCall> level1AllGuard = new HashSet<CtrlCall>(level2AllGuard);
         level1AllGuard.add(callM2);
         level1AllGuard.add(callC2);
-        Set<CtrlCall> omegaGuard = new HashSet<CtrlCall>(level1AllGuard);
+        Set<CtrlCall> omegaGuard = new HashSet<CtrlCall>();
         omegaGuard.add(callM1);
+        omegaGuard.add(callM2);
+        omegaGuard.add(callM3);
         Set<CtrlLabel> expectedSelfLabels =
             new HashSet<CtrlLabel>(Arrays.asList(new CtrlLabel[] {
                 new CtrlLabel(callM3), new CtrlLabel(callC3),
