@@ -68,7 +68,7 @@ public class LinearConfluentRules extends AbstractStrategy {
         while (matchesIter.hasNext()) {
             applyEvent(matchesIter.next());
         }
-        setClosed(getAtState());
+        setClosed(getAtState(), true);
         updateAtState();
         return true;
     }

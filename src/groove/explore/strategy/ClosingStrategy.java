@@ -56,7 +56,7 @@ abstract public class ClosingStrategy extends AbstractStrategy {
             outTransitions.add(new VirtualEvent.GraphState(trans));
         }
         addToPool(outTransitions);
-        setClosed(getAtState());
+        setClosed(getAtState(), true);
         updateAtState();
         return true;
     }

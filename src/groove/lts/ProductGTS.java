@@ -126,7 +126,7 @@ public class ProductGTS implements LTS {
      * @param state the state to be closed.
      */
     public void setClosed(BuchiGraphState state) {
-        if (state.setClosed()) {
+        if (state.setClosed(true)) {
             // openStates.remove(state);
             this.closedCount++;
             this.openStateCount--;

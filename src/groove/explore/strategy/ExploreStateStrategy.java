@@ -46,7 +46,7 @@ public class ExploreStateStrategy extends AbstractStrategy {
         }
         // the current state has been fully explored
         // therefore we can close it
-        setClosed(startState());
+        setClosed(startState(), true);
         return false;
     }
 

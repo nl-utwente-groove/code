@@ -278,7 +278,8 @@ public class CtrlState implements Node {
                 break;
             }
         }
-        CtrlSchedule result = new CtrlSchedule(trans, triedCalls, success);
+        CtrlSchedule result =
+            new CtrlSchedule(this, trans, triedCalls, success);
         if (trans != null) {
             Set<CtrlCall> newTriedCalls = new HashSet<CtrlCall>(triedCalls);
             newTriedCalls.add(trans.getCall());

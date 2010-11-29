@@ -62,10 +62,10 @@ public class LinearStrategy extends AbstractStrategy {
         if (event != null) {
             applyEvent(event);
             if (closeExit()) {
-                setClosed(getAtState());
+                setClosed(getAtState(), false);
             }
         } else {
-            setClosed(getAtState());
+            setClosed(getAtState(), true);
         }
         updateAtState();
         return true;

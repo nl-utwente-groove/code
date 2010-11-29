@@ -16,6 +16,8 @@
  */
 package groove.lts;
 
+import groove.control.CtrlSchedule;
+import groove.control.CtrlState;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Node;
@@ -224,11 +226,16 @@ abstract public class AbstractGraphState extends
         return isCacheCollectable();
     }
 
-    public boolean setClosed() {
+    public boolean setClosed(boolean complete) {
         if (!isClosed()) {
             setStoredTransitionStubs(getCachedTransitionStubs());
             setCacheCollectable();
             updateClosed();
+            // reset the schedule to the beginning if the state was not 
+            // completely explored
+            if (!complete && getCtrlState() != null) {
+                setSchedule(getCtrlState().getSchedule());
+            }
             return true;
         } else {
             return false;
@@ -364,6 +371,33 @@ abstract public class AbstractGraphState extends
     public Node[] getBoundNodes() {
         return EMPTY_NODE_LIST;
     }
+
+    /** 
+     * Sets the control schedule.
+     * This should occur at initialisation.
+     */
+    final void setCtrlState(CtrlState ctrlState) {
+        if (ctrlState != null) {
+            this.schedule = ctrlState.getSchedule();
+        }
+    }
+
+    public CtrlState getCtrlState() {
+        return this.schedule == null ? null : this.schedule.getState();
+    }
+
+    @Override
+    public void setSchedule(CtrlSchedule schedule) {
+        assert schedule.getState() == getCtrlState();
+        this.schedule = schedule;
+    }
+
+    public final CtrlSchedule getSchedule() {
+        return this.schedule;
+    }
+
+    /** The underlying control state, if any. */
+    private CtrlSchedule schedule;
 
     /** Global constant empty stub array. */
     private GraphTransitionStub[] transitionStubs = EMPTY_TRANSITION_STUBS;

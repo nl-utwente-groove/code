@@ -16,6 +16,7 @@
  */
 package groove.lts;
 
+import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.graph.Graph;
 import groove.graph.Node;
@@ -38,6 +39,12 @@ public interface GraphState extends State {
 
     /** Returns the (possibly {@code null}) control state associated with this state. */
     public CtrlState getCtrlState();
+
+    /** Returns the (possibly {@code null}) control schedule associated with this state. */
+    public CtrlSchedule getSchedule();
+
+    /** Sets a new control schedule for this state. */
+    public void setSchedule(CtrlSchedule schedule);
 
     /**
      * Retrieves an outgoing transition with a given event, if it exists. Yields
@@ -86,13 +93,14 @@ public interface GraphState extends State {
      * Closes this state. This announces that no more outgoing transitions will
      * be generated. The return value indicates if the state was already closed.
      * Preferably, this method is invoked by the GTS, see
-     * {@link GTS#setClosed(State)}
+     * {@link GTS#setClosed(State, boolean)}
      * @ensure <tt>isClosed()</tt>
+     * @param finished indicates that all transitions for this state have been added.
      * @return <code>true</code> if the state was closed as a result of this
      *         call; <code>false</code> if it was already closed
      * @see #isClosed()
      */
-    public boolean setClosed();
+    public boolean setClosed(boolean finished);
 
     /**
      * Returns a list of values of the bound variables.
