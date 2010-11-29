@@ -110,7 +110,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         result.add(new JLabel("Name: "));
         result.add(getNameField());
         result.addSeparator();
-        result.add(createButton(getPreviewAction()));
+        // result.add(createButton(getPreviewAction()));
         result.add(createButton(getCtrlPreviewAction()));
         result.add(createButton(getDisableAction()));
         result.add(createButton(getEnableAction()));
@@ -811,6 +811,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
      * Lazily creates and returns the singleton instance of the
      * {@link NewAction}.
      */
+    @Deprecated
     private PreviewAction getPreviewAction() {
         if (this.previewAction == null) {
             this.previewAction = new PreviewAction();
@@ -819,6 +820,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
     }
 
     /** Singular instance of the PreviewAction. */
+    @Deprecated
     private PreviewAction previewAction;
 
     /**
@@ -893,7 +895,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
      */
     private class CtrlPreviewAction extends RefreshableAction {
         public CtrlPreviewAction() {
-            super(Options.PREVIEW_CONTROL_ACTION_NAME, Groove.GRAPH_MODE_ICON);
+            super(Options.PREVIEW_CONTROL_ACTION_NAME, Groove.CONTROL_MODE_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {
