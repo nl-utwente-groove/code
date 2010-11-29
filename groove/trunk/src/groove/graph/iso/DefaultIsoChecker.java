@@ -178,10 +178,11 @@ public class DefaultIsoChecker implements IsoChecker {
     }
 
     /**
-     * Tries to construct an isomorphism between the two given graphs. The
+     * Tries to construct the next isomorphism between the two given graphs. The
      * result is a bijective mapping from the nodes and edges of the source
      * graph to those of the target graph, or <code>null</code> if no such
-     * mapping could be found.
+     * mapping could be found. A third parameter stores the state of the isomorphism search;
+     * each successive call (with the same state object) returns the next isomorphism.
      * @param dom the first graph to be compared
      * @param cod the second graph to be compared
      * @param state the state for the iso checker
@@ -1152,7 +1153,7 @@ public class DefaultIsoChecker implements IsoChecker {
     // circularities in class initialisation
     /** Certificate factory for testing purposes. */
     static private final CertificateStrategy certificateFactory =
-        new PaigeTarjanMcKay(null);
+        new PartitionRefiner(null);
 
     private class IsoSearchPair implements Comparable<IsoSearchPair> {
         /** Constructs an instance from given data. */
@@ -1231,13 +1232,19 @@ public class DefaultIsoChecker implements IsoChecker {
      * isomorphisms between two graphs.
      */
     public static class IsoCheckerState {
-
+        /** The search plan for the isomorphism. */
         List<IsoSearchItem> plan = null;
+        /** Set of images used in the isomorphism so far. */
         Set<Node> usedNodeImages = null;
+        /** Records of the search for isomorphism. */
         Iterator<Edge>[] records = null;
+        /** Array of source nodes in the order of the search plan. */
         Node[] sourceImages = null;
+        /** Array of target nodes in the order of the search plan. */
         Node[] targetImages = null;
+        /** Result of the search. */
         NodeEdgeMap result = null;
+        /** Position in the search plan. */
         int i = 0;
 
         /** Returns true if the plan size is zero. */
