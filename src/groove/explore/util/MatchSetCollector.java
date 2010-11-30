@@ -33,9 +33,7 @@ import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.SystemRecord;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -64,12 +62,12 @@ public class MatchSetCollector {
             parent = ((GraphNextState) state).source();
         }
         if (parent != null && parent.isClosed()) {
-            this.parentOuts = parent.getTransitionSet();
+            this.parentOutMap = parent.getTransitionMap();
             Rule lastRule = ((GraphNextState) state).getEvent().getRule();
             this.enabledRules = record.getEnabledRules(lastRule);
             this.disabledRules = record.getDisabledRules(lastRule);
         } else {
-            this.parentOuts = null;
+            this.parentOutMap = null;
         }
     }
 
@@ -80,7 +78,15 @@ public class MatchSetCollector {
         while (result == null && currentRule != null) {
             // first try to find a virtual event
             Collection<GraphTransition> parentOuts = getParentOuts(currentRule);
-            if (parentOuts == null) {
+            if (parentOuts != null) {
+                for (GraphTransition parentOut : parentOuts) {
+                    if (isStillValid(parentOut)) {
+                        result = parentOut;
+                        break;
+                    }
+                }
+            }
+            if (result == null) {
                 // if this fails, try to find a match
                 Iterator<RuleMatch> matchIter =
                     currentRule.getMatchIter(this.state.getGraph(), null);
@@ -91,8 +97,6 @@ public class MatchSetCollector {
                     // no luck; try the next rule
                     currentRule = nextRule(false);
                 }
-            } else {
-                result = parentOuts.iterator().next();
             }
         }
         return result;
@@ -158,10 +162,13 @@ public class MatchSetCollector {
         if (this.enabledRules == null || this.enabledRules.contains(rule)) {
             return true;
         }
+        // since enabledRules != null, it is now certain that this is a NextState
         GraphNextState state = (GraphNextState) this.state;
         if (state.getCtrlTransition().isModifying()) {
             return true;
         }
+        // there may be new matches only if the rule was untried in
+        // the parent state
         return !state.source().getSchedule().getTriedRules().contains(rule);
     }
 
@@ -205,51 +212,22 @@ public class MatchSetCollector {
      * @return <code>true</code> if any virtual events were found
      */
     private boolean addParentOuts(Rule rule, Collection<MatchResult> result) {
-        // add the parent's out-transitions for this rule (if any)
+        boolean hasMatches = false;
         Collection<GraphTransition> parentOuts = getParentOuts(rule);
-        if (parentOuts == null) {
-            return false;
-        } else {
-            result.addAll(parentOuts);
-            return true;
-        }
-    }
-
-    /** Returns the virtual events for a given rule. */
-    private Collection<GraphTransition> getParentOuts(Rule rule) {
-        // Create the virtual event map if it is not yet there.
-        if (this.parentOutMap == null && this.parentOuts != null) {
-            this.parentOutMap = computeParentOutMap();
-        }
-        if (this.parentOutMap == null) {
-            return null;
-        } else {
-            return this.parentOutMap.get(rule);
-        }
-    }
-
-    /**
-     * Computes a map with all matches from the previous state that still match
-     * in the current state.
-     */
-    private Map<Rule,Collection<GraphTransition>> computeParentOutMap() {
-        Map<Rule,Collection<GraphTransition>> result =
-            new HashMap<Rule,Collection<GraphTransition>>();
-        if (this.parentOuts != null) {
-            for (GraphTransition parentOut : this.parentOuts) {
-                Rule rule = parentOut.getEvent().getRule();
+        if (parentOuts != null) {
+            for (GraphTransition parentOut : parentOuts) {
                 if (isStillValid(parentOut)) {
-                    Collection<GraphTransition> matches = result.get(rule);
-                    if (matches == null) {
-                        matches = new ArrayList<GraphTransition>();
-                        result.put(rule, matches);
-                    }
-                    matches.add(parentOut);
-                    parentOutReuse++;
+                    result.add(parentOut);
+                    hasMatches = true;
                 }
             }
         }
-        return result;
+        return hasMatches;
+    }
+
+    /** Returns the parent's out-transitions for a given rule (if any). */
+    public Collection<GraphTransition> getParentOuts(Rule rule) {
+        return this.parentOutMap == null ? null : this.parentOutMap.get(rule);
     }
 
     /**
@@ -273,8 +251,7 @@ public class MatchSetCollector {
     }
 
     /**
-     * Returns either the last (previously returned) rule from the
-     * {@link ExploreCache}, or the first new rule if there is no last.
+     * Returns the first rule of the state's control schedule.
      */
     protected Rule firstRule() {
         Rule result;
@@ -313,8 +290,10 @@ public class MatchSetCollector {
     private final CtrlState ctrlState;
     /** The system record is set at construction. */
     protected final SystemRecord record;
-    private final Collection<GraphTransition> parentOuts;
-    private Map<Rule,Collection<GraphTransition>> parentOutMap;
+    /** Possibly {@code null} mapping from rules to sets of outgoing
+     * transitions for the parent of this state.
+     */
+    private final Map<Rule,Collection<GraphTransition>> parentOutMap;
     /** The rules that may be enabled. */
     private Set<Rule> enabledRules;
     /** The rules that may be disabled. */

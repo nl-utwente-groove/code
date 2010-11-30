@@ -25,11 +25,14 @@ import groove.graph.Graph;
 import groove.graph.NewDeltaGraph;
 import groove.graph.Node;
 import groove.trans.DefaultApplication;
+import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.TreeHashSet;
 
-import java.util.IdentityHashMap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -57,10 +60,7 @@ class StateCache {
     boolean addTransitionStub(GraphTransitionStub stub) {
         boolean result = getStubSet().add(stub);
         if (result && this.transitionMap != null) {
-            GraphState oldState =
-                this.transitionMap.put(stub.getEvent(this.state),
-                    stub.getTarget(this.state));
-            assert oldState == null;
+            addTransition(stub, this.transitionMap);
         }
         return result;
     }
@@ -202,44 +202,6 @@ class StateCache {
         return this.freezeGraphs && freezeCount > FREEZE_BOUND;
     }
 
-    //
-    //    /**
-    //     * Computes a number expressing the urgency of freezing the underlying
-    //     * graph. The current measure is based on the number of steps from the
-    //     * previous frozen graph.
-    //     * @return the freeze count of the underlying state
-    //     */
-    //    private int getFreezeCount() {
-    //        if (this.state instanceof DefaultGraphNextState) {
-    //            return getFreezeCount((DefaultGraphNextState) this.state);
-    //        } else {
-    //            return 0;
-    //        }
-    //    }
-    //
-    //    /**
-    //     * Computes a number expressing the urgency of freezing the graph of a given
-    //     * state. The current measure is based on the number of steps from the
-    //     * previous frozen graph, following the chain of parents from the given
-    //     * state.
-    //     * @return the freeze count of a given state
-    //     */
-    //    private int getFreezeCount(DefaultGraphNextState state) {
-    //        // determine the freeze count of the state's parent state
-    //        int parentCount;
-    //        AbstractGraphState parent = state.source();
-    //        parentCount = 1;
-    //        while (parent instanceof DefaultGraphNextState && parent.getFrozenGraph() != null) {
-    //            if (parent.isCacheCleared()) {
-    //                parent = ((DefaultGraphNextState) parent).source();
-    //                parentCount++;
-    //            } else {
-    //                parentCount += parent.getCache().getFreezeCount();
-    //            }
-    //        }
-    //        return parentCount;
-    //    }
-
     /**
      * Computes a frozen graph representation from a given graph. The frozen
      * graph representation consists of all nodes and edges of the graph in a
@@ -263,7 +225,7 @@ class StateCache {
      * Lazily creates and returns a mapping from the events to the target states
      * of the currently stored outgoing transitions of this state.
      */
-    Map<RuleEvent,GraphState> getTransitionMap() {
+    Map<Rule,Collection<GraphTransition>> getTransitionMap() {
         if (this.transitionMap == null) {
             this.transitionMap = computeTransitionMap();
         }
@@ -274,17 +236,27 @@ class StateCache {
      * Computes a mapping from the events to the target states of the currently
      * stored outgoing transitions of this state.
      */
-    private Map<RuleEvent,GraphState> computeTransitionMap() {
-        Map<RuleEvent,GraphState> result = createTransitionMap();
+    private Map<Rule,Collection<GraphTransition>> computeTransitionMap() {
+        Map<Rule,Collection<GraphTransition>> result =
+            new HashMap<Rule,Collection<GraphTransition>>();
         for (GraphTransitionStub stub : getStubSet()) {
-            result.put(stub.getEvent(this.state), stub.getTarget(this.state));
+            addTransition(stub, result);
         }
         return result;
     }
 
-    /** Callback factory method to create the transition map object. */
-    private Map<RuleEvent,GraphState> createTransitionMap() {
-        return new IdentityHashMap<RuleEvent,GraphState>();
+    /** Adds a single transition to a given rule-to-transition map. */
+    private void addTransition(GraphTransitionStub stub,
+            Map<Rule,Collection<GraphTransition>> result) {
+        RuleEvent event = stub.getEvent(this.state);
+        Rule rule = event.getRule();
+        Collection<GraphTransition> ruleTrans = result.get(rule);
+        if (ruleTrans == null) {
+            result.put(rule, ruleTrans = new ArrayList<GraphTransition>());
+        }
+        boolean fresh = ruleTrans.add(stub.toTransition(this.state));
+        assert fresh : String.format("Transition %s added twice",
+            stub.toTransition(this.state));
     }
 
     /**
@@ -353,7 +325,7 @@ class StateCache {
     /** The delta with respect to the state's parent. */
     private DeltaApplier delta;
     /** Cached map from events to target transitions. */
-    private Map<RuleEvent,GraphState> transitionMap;
+    private Map<Rule,Collection<GraphTransition>> transitionMap;
     /** Cached graph for this state. */
     private Graph graph;
     /**

@@ -211,7 +211,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      */
     public void setClosed(GraphState state, boolean complete) {
         if (state.setClosed(complete)) {
-            if (determineIsFinal(state)) {
+            if (state.getSchedule().isSuccess()) {
                 setFinal(state);
             }
             incClosedCount();
@@ -222,24 +222,6 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     /** Increases the count of closed states by one. */
     protected void incClosedCount() {
         this.closedCount++;
-    }
-
-    /** a state is final if
-     * - with location, and then the location is a success state
-     * - without location, and then no outgoing transitions
-     */
-    private boolean determineIsFinal(GraphState state) {
-        if (state.getSchedule() == null) {
-            // only states without applications of modifying rules are final
-            for (GraphTransition trans : state.getTransitionSet()) {
-                if (trans.getEvent().getRule().isModifying()) {
-                    return false;
-                }
-            }
-            return true;
-        } else {
-            return state.getSchedule().isSuccess();
-        }
     }
 
     /** Returns the number of not fully explored states. */
