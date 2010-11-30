@@ -16,22 +16,11 @@
  */
 package groove.control;
 
-import groove.control.parse.ASTFrame;
-import groove.control.parse.Counter;
-import groove.control.parse.GCLDeterminismChecker;
-import groove.control.parse.GCLLexer;
-import groove.control.parse.GCLParser;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.List;
-
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.tree.CommonTreeNodeStream;
 
 /**
  * Bridge between control programs (which are just strings) and control
@@ -47,133 +36,6 @@ public class ControlView {
     public ControlView(String program, String name) {
         this.name = name;
         this.program = program;
-    }
-
-    /**
-     * Returns the control automaton for a given grammar. 
-     */
-    @Deprecated
-    public ControlAutomaton toAutomaton(GraphGrammar grammar)
-        throws FormatException {
-        return computeAutomaton(grammar);
-    }
-
-    /**
-     * load the program currently in controlProgram
-     */
-    @Deprecated
-    private ControlAutomaton computeAutomaton(GraphGrammar grammar)
-        throws FormatException {
-        if (this.program == null) {
-            throw new FormatException("Error in control: no program available");
-        }
-        groove.control.parse.AutomatonBuilder builder =
-            new groove.control.parse.AutomatonBuilder();
-        builder.setRuleNames(grammar.getRuleNames());
-        builder.setRules(grammar.getRules());
-
-        try {
-            ANTLRStringStream stream = new ANTLRStringStream(getProgram());
-            stream.name = getName();
-            GCLLexer lexer = new GCLLexer(stream);
-            GCLParser parser = new GCLParser(new CommonTokenStream(lexer));
-            GCLParser.program_return r = parser.program();
-
-            boolean DEBUG = false;
-
-            if (DEBUG) {
-                ASTFrame frame =
-                    new ASTFrame("parser result",
-                        (org.antlr.runtime.tree.CommonTree) r.getTree());
-                frame.setSize(500, 1000);
-                frame.setVisible(true);
-            }
-
-            List<String> errors = lexer.getErrors();
-            errors.addAll(parser.getErrors());
-            if (!errors.isEmpty()) {
-                throw new FormatException(errors);
-            }
-            // fetch the resulting tree
-            CommonTreeNodeStream nodes = new CommonTreeNodeStream(r.getTree());
-
-            // checker will store and remove functions
-            groove.control.parse.GCLChecker checker =
-                new groove.control.parse.GCLChecker(nodes);
-            checker.setNamespace(builder);
-            groove.control.parse.GCLChecker.program_return c_r =
-                checker.program();
-
-            errors = checker.getErrors();
-            if (errors.size() != 0) {
-                errors.add(0, "Encountered checker errors in control program");
-                throw new FormatException(errors);
-            }
-
-            if (DEBUG) {
-                ASTFrame frame =
-                    new ASTFrame("checker result",
-                        (org.antlr.runtime.tree.CommonTree) c_r.getTree());
-                frame.setSize(500, 1000);
-                frame.setVisible(true);
-            }
-
-            // fetch checker tree (since it was edited)
-            nodes = new CommonTreeNodeStream(c_r.getTree());
-
-            GCLDeterminismChecker determinismChecker =
-                new GCLDeterminismChecker(nodes);
-            determinismChecker.setNamespace(builder);
-            GCLDeterminismChecker.program_return dc_r =
-                determinismChecker.program();
-
-            errors = determinismChecker.getErrors();
-            if (errors.size() != 0) {
-                errors.add(0,
-                    "Encountered determinism checker errors in control program");
-                throw new FormatException(errors);
-            }
-
-            if (DEBUG) {
-                ASTFrame frame =
-                    new ASTFrame("determinism checker result",
-                        (org.antlr.runtime.tree.CommonTree) dc_r.getTree());
-                frame.setSize(500, 1000);
-                frame.setVisible(true);
-            }
-
-            nodes = new CommonTreeNodeStream(dc_r.getTree());
-
-            groove.control.parse.GCLBuilder gclb =
-                new groove.control.parse.GCLBuilder(nodes);
-            gclb.setBuilder(builder);
-            gclb.setName(getName());
-            // reset the counter for unique controlstate numbers to 0
-            Counter.reset();
-            ControlAutomaton aut = gclb.program();
-            builder.optimize();
-            builder.finalize(grammar);
-            //
-            // groove.gui.Simulator sim = new groove.gui.Simulator();
-            // ControlJGraph cjg = new ControlJGraph(new ControlJModel(aut,
-            // sim.getOptions()));
-            // groove.gui.JGraphPanel autPanel = new groove.gui.JGraphPanel(cjg,
-            // true, sim.getOptions());
-            //
-            // JDialog jf = new JDialog(sim.getFrame(), "Control Automaton");
-            // jf.add(autPanel);
-            // jf.setSize(600, 700);
-            // Point p = sim.getFrame().getLocation();
-            // jf.setLocation(new Point(p.x + 50, p.y + 50));
-            // System.err.println("showing panel");
-            // jf.setVisible(true);
-            //            
-            // cjg.getLayouter().start(true);
-
-            return aut;
-        } catch (RecognitionException re) {
-            throw new FormatException(re.getMessage());
-        }
     }
 
     /**
