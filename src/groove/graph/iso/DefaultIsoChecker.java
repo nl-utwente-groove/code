@@ -62,26 +62,36 @@ public class DefaultIsoChecker implements IsoChecker {
     }
 
     public synchronized boolean areIsomorphic(Graph dom, Graph cod) {
+        return areIsomorphic(dom, cod, null, null);
+    }
+
+    /** Tests if two graphs, together with corresponding lists of nodes, are isomorphic. */
+    public synchronized boolean areIsomorphic(Graph dom, Graph cod,
+            Node[] domNodes, Node[] codNodes) {
         boolean result;
-        if (areGraphEqual(dom, cod)) {
+        if ((domNodes == null) != (codNodes == null)
+            || (domNodes != null && domNodes.length != codNodes.length)) {
+            result = false;
+        } else if (areGraphEqual(dom, cod, domNodes, codNodes)) {
             equalGraphsCount++;
             result = true;
         } else {
             areIsoReporter.start();
             CertificateStrategy domCertifier = getCertifier(dom, true);
             CertificateStrategy codCertifier = getCertifier(cod, true);
-            result = areIsomorphic(domCertifier, codCertifier);
+            result =
+                areIsomorphic(domCertifier, codCertifier, domNodes, codNodes);
             if (ISO_ASSERT) {
                 assert checkBisimulator(dom, cod, result);
                 assert result == hasIsomorphism(new Bisimulator(dom),
-                    new Bisimulator(cod));
+                    new Bisimulator(cod), domNodes, codNodes);
             }
             if (TEST_FALSE_NEGATIVES && result) {
                 CertificateStrategy altDomCert =
                     certificateFactory.newInstance(dom, this.strong);
                 CertificateStrategy altCodCert =
                     certificateFactory.newInstance(cod, this.strong);
-                if (!areIsomorphic(altDomCert, altCodCert)) {
+                if (!areIsomorphic(altDomCert, altCodCert, domNodes, codNodes)) {
                     System.err.printf(
                         "Certifier '%s' gives a false negative on%n%s%n%s%n",
                         altDomCert.getClass(), dom, cod);
@@ -106,11 +116,63 @@ public class DefaultIsoChecker implements IsoChecker {
     }
 
     /**
+     * This method wraps a node and edge set equality test on two graphs, under
+     * the assumption that the node and edge counts are already known to
+     * coincide. Optional arrays of nodes are also tested for equality; these may be 
+     * (simultaneously {@code null} but are otherwise guaranteed to be of
+     * the same length
+     * @param domNodes list of nodes (from the domain) to compare 
+     * in addition to the graphs themselves
+     * @param codNodes list of nodes (from the codomain) to compare 
+     * in addition to the graphs themselves
+     */
+    private boolean areGraphEqual(Graph dom, Graph cod, Node[] domNodes,
+            Node[] codNodes) {
+        equalsTestReporter.start();
+        // test if the node counts of domain and codomain coincide
+        boolean result =
+            (domNodes == null || Arrays.equals(domNodes, codNodes));
+        if (result) {
+            CertificateStrategy domCertifier = getCertifier(dom, false);
+            CertificateStrategy codCertifier = getCertifier(cod, false);
+            int domNodeCount =
+                domCertifier == null ? dom.nodeCount()
+                        : domCertifier.getNodeCertificates().length;
+            int codNodeCount =
+                codCertifier == null ? cod.nodeCount()
+                        : codCertifier.getNodeCertificates().length;
+            result = domNodeCount == codNodeCount;
+            if (result) {
+                // test if the edge sets of domain and codomain coincide
+                Set<?> domEdgeSet, codEdgeSet;
+                if (domCertifier == null || codCertifier == null) {
+                    // copy the edge set of the codomain to avoid sharing problems
+                    codEdgeSet = new HashSet<Edge>(cod.edgeSet());
+                    domEdgeSet = dom.edgeSet();
+                } else {
+                    codEdgeSet = codCertifier.getCertificateMap().keySet();
+                    domEdgeSet = domCertifier.getCertificateMap().keySet();
+                }
+                result = domEdgeSet.equals(codEdgeSet);
+            }
+        }
+        equalsTestReporter.stop();
+        return result;
+    }
+
+    /**
      * Tests if two unequal graphs, given by their respective
-     * certificate strategies, are isomorphism.
+     * certificate strategies, are isomorphic. Optional arrays of nodes are 
+     * also tested for isomorphism; these may be 
+     * (simultaneously {@code null} but are otherwise guaranteed to be of
+     * the same length
+     * @param domNodes list of nodes (from the domain) to compare 
+     * in addition to the graphs themselves
+     * @param codNodes list of nodes (from the codomain) to compare 
+     * in addition to the graphs themselves
      */
     private boolean areIsomorphic(CertificateStrategy domCertifier,
-            CertificateStrategy codCertifier) {
+            CertificateStrategy codCertifier, Node[] domNodes, Node[] codNodes) {
         boolean result;
         if (!domCertifier.getGraphCertificate().equals(
             codCertifier.getGraphCertificate())) {
@@ -122,7 +184,8 @@ public class DefaultIsoChecker implements IsoChecker {
         } else if (hasDiscreteCerts(codCertifier)) {
             isoCertCheckReporter.start();
             if (hasDiscreteCerts(domCertifier)) {
-                result = areCertEqual(domCertifier, codCertifier);
+                result =
+                    areCertEqual(domCertifier, codCertifier, domNodes, codNodes);
             } else {
                 if (ISO_PRINT) {
                     System.err.println("Codomain has discrete partition but domain has not");
@@ -139,7 +202,9 @@ public class DefaultIsoChecker implements IsoChecker {
         } else {
             isoSimCheckReporter.start();
             if (getNodePartitionCount(domCertifier) == getNodePartitionCount(codCertifier)) {
-                result = hasIsomorphism(domCertifier, codCertifier);
+                result =
+                    hasIsomorphism(domCertifier, codCertifier, domNodes,
+                        codNodes);
             } else {
                 if (ISO_PRINT) {
                     System.err.println("Unequal node partition counts");
@@ -157,10 +222,77 @@ public class DefaultIsoChecker implements IsoChecker {
         return result;
     }
 
+    /**
+     * Tests if an isomorphism can be constructed on the basis of distinct
+     * certificates. It is assumed that <code>hasDistinctCerts(dom)</code>
+     * holds.
+     * @param dom the first graph to be tested
+     * @param cod the second graph to be tested
+     * @param domNodes list of nodes (from the domain) to compare 
+     * in addition to the graphs themselves
+     * @param codNodes list of nodes (from the codomain) to compare 
+     * in addition to the graphs themselves
+     */
+    private boolean areCertEqual(CertificateStrategy dom,
+            CertificateStrategy cod, Node[] domNodes, Node[] codNodes) {
+        boolean result;
+        areIsoReporter.stop();
+        isoCertCheckReporter.stop();
+        // the certificates uniquely identify the dom elements;
+        // it suffices to test if this gives rise to a consistent one-to-one
+        // node map
+        // Certificate<Node>[] nodeCerts = dom.getNodeCertificates();
+        Certificate<Edge>[] edgeCerts = dom.getEdgeCertificates();
+        PartitionMap<Edge> codPartitionMap = cod.getEdgePartitionMap();
+        areIsoReporter.restart();
+        isoCertCheckReporter.restart();
+        result = true;
+        // map to store dom-to-cod node mapping
+        Map<Node,Node> nodeMap = new HashMap<Node,Node>();
+        int edgeCount = edgeCerts.length;
+        for (int i = 0; result && i < edgeCount && edgeCerts[i] != null; i++) {
+            Certificate<Edge> domEdgeCert = edgeCerts[i];
+            SmallCollection<Edge> image = codPartitionMap.get(domEdgeCert);
+            result = image != null && image.isSingleton();
+            if (result) {
+                Edge edgeKey = domEdgeCert.getElement();
+                Edge edgeImage = image.getSingleton();
+                result =
+                    checkNodeMap(nodeMap, edgeKey.source(), edgeImage.source())
+                        && checkNodeMap(nodeMap, edgeKey.target(),
+                            edgeImage.target());
+            }
+        }
+        if (result && domNodes != null) {
+            // now test correspondence of the node arrays
+            for (int i = 0; result && i < domNodes.length; i++) {
+                result = nodeMap.get(domNodes[i]).equals(codNodes[i]);
+            }
+        }
+        if (ISO_PRINT) {
+            if (!result) {
+                System.err.printf("Graphs have distinct but unequal certificates%n");
+            }
+        }
+        return result;
+    }
+
     private boolean hasIsomorphism(CertificateStrategy domCertifier,
-            CertificateStrategy codCertifier) {
-        boolean result =
-            computeIsomorphism(domCertifier, codCertifier, null) != null;
+            CertificateStrategy codCertifier, Node[] domNodes, Node[] codNodes) {
+        boolean result;
+        IsoCheckerState state = new IsoCheckerState();
+        // repeatedly look for the next isomorphism until one is found
+        // that also maps the domain and codomain nodes correctly
+        do {
+            NodeEdgeMap iso =
+                computeIsomorphism(domCertifier, codCertifier, state);
+            result = iso != null;
+            if (result && domNodes != null) {
+                for (int i = 0; result && i < domNodes.length; i++) {
+                    result = iso.getNode(domNodes[i]).equals(codNodes[i]);
+                }
+            }
+        } while (!result);
         return result;
     }
 
@@ -667,7 +799,7 @@ public class DefaultIsoChecker implements IsoChecker {
     /**
      * Tests if the elements of a graph have all different certificates. If this
      * holds, then
-     * {@link #areCertEqual(CertificateStrategy, CertificateStrategy)} can be
+     * {@link #areCertEqual(CertificateStrategy, CertificateStrategy, Node[], Node[])} can be
      * called to check for isomorphism.
      * @param certifier the graph to be tested
      * @return <code>true</code> if <code>graph</code> has distinct
@@ -686,51 +818,6 @@ public class DefaultIsoChecker implements IsoChecker {
     }
 
     /**
-     * Tests if an isomorphism can be constructed on the basis of distinct
-     * certificates. It is assumed that <code>hasDistinctCerts(dom)</code>
-     * holds.
-     * @param dom the first graph to be tested
-     * @param cod the second graph to be tested
-     */
-    private boolean areCertEqual(CertificateStrategy dom,
-            CertificateStrategy cod) {
-        boolean result;
-        areIsoReporter.stop();
-        isoCertCheckReporter.stop();
-        // the certificates uniquely identify the dom elements;
-        // it suffices to test if this gives rise to a consistent one-to-one
-        // node map
-        // Certificate<Node>[] nodeCerts = dom.getNodeCertificates();
-        Certificate<Edge>[] edgeCerts = dom.getEdgeCertificates();
-        PartitionMap<Edge> codPartitionMap = cod.getEdgePartitionMap();
-        areIsoReporter.restart();
-        isoCertCheckReporter.restart();
-        result = true;
-        // map to store dom-to-cod node mapping
-        Map<Node,Node> nodeMap = new HashMap<Node,Node>();
-        int edgeCount = edgeCerts.length;
-        for (int i = 0; result && i < edgeCount && edgeCerts[i] != null; i++) {
-            Certificate<Edge> domEdgeCert = edgeCerts[i];
-            SmallCollection<Edge> image = codPartitionMap.get(domEdgeCert);
-            result = image != null && image.isSingleton();
-            if (result) {
-                Edge edgeKey = domEdgeCert.getElement();
-                Edge edgeImage = image.getSingleton();
-                result =
-                    checkNodeMap(nodeMap, edgeKey.source(), edgeImage.source())
-                        && checkNodeMap(nodeMap, edgeKey.target(),
-                            edgeImage.target());
-            }
-        }
-        if (ISO_PRINT) {
-            if (!result) {
-                System.err.printf("Graphs have distinct but unequal certificates%n");
-            }
-        }
-        return result;
-    }
-
-    /**
      * Tests if a given node map contains an entry consisting of a certain
      * key and image. Adds the entry if the key is not in the map.
      * @return {@code true} if the key is new or the image equals the
@@ -744,40 +831,6 @@ public class DefaultIsoChecker implements IsoChecker {
         } else {
             result = oldImage.equals(image);
         }
-        return result;
-    }
-
-    /**
-     * This method wraps a node and edge set equality test on two graphs, under
-     * the assumption that the node and edge counts are already known to
-     * coincide.
-     */
-    private boolean areGraphEqual(Graph dom, Graph cod) {
-        equalsTestReporter.start();
-        // test if the node counts of domain and codomain coincide
-        CertificateStrategy domCertifier = getCertifier(dom, false);
-        CertificateStrategy codCertifier = getCertifier(cod, false);
-        int domNodeCount =
-            domCertifier == null ? dom.nodeCount()
-                    : domCertifier.getNodeCertificates().length;
-        int codNodeCount =
-            codCertifier == null ? cod.nodeCount()
-                    : codCertifier.getNodeCertificates().length;
-        boolean result = domNodeCount == codNodeCount;
-        if (result) {
-            // test if the edge sets of domain and codomain coincide
-            Set<?> domEdgeSet, codEdgeSet;
-            if (domCertifier == null || codCertifier == null) {
-                // copy the edge set of the codomain to avoid sharing problems
-                codEdgeSet = new HashSet<Edge>(cod.edgeSet());
-                domEdgeSet = dom.edgeSet();
-            } else {
-                codEdgeSet = codCertifier.getCertificateMap().keySet();
-                domEdgeSet = domCertifier.getCertificateMap().keySet();
-            }
-            result = domEdgeSet.equals(codEdgeSet);
-        }
-        equalsTestReporter.stop();
         return result;
     }
 
@@ -1138,14 +1191,14 @@ public class DefaultIsoChecker implements IsoChecker {
         reporter.register("areIsomorphic(Graph,Graph)");
     /**
      * Handle for profiling
-     * {@link #areCertEqual(CertificateStrategy, CertificateStrategy)}.
+     * {@link #areCertEqual(CertificateStrategy, CertificateStrategy, Node[], Node[])}.
      */
     static final Reporter isoCertCheckReporter =
         reporter.register("Isomorphism by certificates");
     /** Handle for profiling isomorphism by simulation. */
     static final Reporter isoSimCheckReporter =
         reporter.register("Isomorphism by simulation");
-    /** Handle for profiling {@link #areGraphEqual(Graph, Graph)}. */
+    /** Handle for profiling {@link #areGraphEqual(Graph, Graph, Node[], Node[])}. */
     static final Reporter equalsTestReporter =
         reporter.register("Equality test");
 

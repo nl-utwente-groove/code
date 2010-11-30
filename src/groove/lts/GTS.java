@@ -24,7 +24,6 @@ import groove.graph.Graph;
 import groove.graph.GraphShapeCache;
 import groove.graph.GraphShapeListener;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ValueNode;
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.CertificateStrategy.Certificate;
@@ -39,6 +38,7 @@ import groove.util.TransformIterator;
 import groove.util.TreeHashSet;
 
 import java.util.AbstractSet;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -450,7 +450,6 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         /**
          * First compares the control locations, then calls
          * {@link IsoChecker#areIsomorphic(Graph, Graph)}.
-         * @see GraphState#getLocation()
          */
         @Override
         protected boolean areEqual(GraphState myState, GraphState otherState) {
@@ -460,46 +459,23 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
             if (myState.getCtrlState() != otherState.getCtrlState()) {
                 return false;
             }
+            Node[] myBoundNodes = myState.getBoundNodes();
+            Node[] otherBoundNodes = otherState.getBoundNodes();
             Graph myGraph = myState.getGraph();
             Graph otherGraph = otherState.getGraph();
             if (this.collapse == COLLAPSE_EQUAL) {
+                // check for equality of the bound nodes
+                if (!Arrays.equals(myBoundNodes, otherBoundNodes)) {
+                    return false;
+                }
                 // check for graph equality
                 Set<?> myNodeSet = new HashSet<Node>(myGraph.nodeSet());
                 Set<?> myEdgeSet = new HashSet<Edge>(myGraph.edgeSet());
                 return myNodeSet.equals(otherGraph.nodeSet())
                     && myEdgeSet.equals(otherGraph.edgeSet());
             }
-            Node[] myBoundNodes = myState.getBoundNodes();
-            Node[] otherBoundNodes = otherState.getBoundNodes();
-            int myBoundNodeSize = myBoundNodes.length;
-            DefaultIsoChecker.IsoCheckerState isoCheckerState =
-                myBoundNodeSize == 0 ? null
-                        : new DefaultIsoChecker.IsoCheckerState();
-            // try to find an isomorphism that maps the bound nodes correctly.
-            do {
-                NodeEdgeMap iso =
-                    this.checker.getIsomorphism(myGraph, otherGraph,
-                        isoCheckerState);
-                if (iso == null) {
-                    return false;
-                }
-                if (myBoundNodeSize == 0) {
-                    return true;
-                }
-                for (int i = 0; iso != null && i < myBoundNodeSize; i++) {
-                    Node myBoundNode = myBoundNodes[i];
-                    Node otherBoundNode = otherBoundNodes[i];
-                    if ((myBoundNode == null) != (otherBoundNode == null)) {
-                        iso = null;
-                    }
-                    if (!iso.getNode(myBoundNodes[i]).equals(otherBoundNodes[i])) {
-                        iso = null;
-                    }
-                }
-                if (iso != null) {
-                    return true;
-                }
-            } while (true);
+            return this.checker.areIsomorphic(myGraph, otherGraph,
+                myBoundNodes, otherBoundNodes);
         }
 
         /**
