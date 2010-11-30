@@ -24,12 +24,16 @@ import groove.lts.AbstractGraphState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.GraphTransitionStub;
+import groove.trans.Rule;
 import groove.trans.RuleEvent;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -46,8 +50,11 @@ public class ShapeState extends AbstractGraphState {
     private final Shape shape;
     private boolean closed;
     /** The outgoing transitions from this state. */
-    protected final HashSet<GraphTransition> transitions =
+    protected final Set<GraphTransition> transitions =
         new HashSet<GraphTransition>();
+    /** The outgoing transitions from this state. */
+    protected final Map<Rule,Collection<GraphTransition>> transitionMap =
+        new HashMap<Rule,Collection<GraphTransition>>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -91,9 +98,21 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
+    public Map<Rule,Collection<GraphTransition>> getTransitionMap() {
+        return Collections.unmodifiableMap(this.transitionMap);
+    }
+
+    @Override
     public boolean addTransition(GraphTransition transition) {
         assert transition instanceof ShapeTransition
             || transition instanceof ShapeNextState : "Invalid transition type.";
+        Rule rule = transition.getEvent().getRule();
+        Collection<GraphTransition> ruleTrans = this.transitionMap.get(rule);
+        if (ruleTrans == null) {
+            this.transitionMap.put(rule, ruleTrans =
+                new ArrayList<GraphTransition>());
+        }
+        ruleTrans.add(transition);
         return this.transitions.add(transition);
     }
 

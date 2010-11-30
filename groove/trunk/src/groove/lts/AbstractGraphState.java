@@ -21,6 +21,7 @@ import groove.control.CtrlState;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Node;
+import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.AbstractCacheHolder;
@@ -31,6 +32,7 @@ import groove.util.TransformSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -99,7 +101,10 @@ abstract public class AbstractGraphState extends
                     transition.getAddedNodes(), transition.target()));
     }
 
-    // ----------------------- commands -----------------------------
+    @Override
+    public Map<Rule,Collection<GraphTransition>> getTransitionMap() {
+        return getCache().getTransitionMap();
+    }
 
     /**
      * Add an outgoing transition to this state, if it is not yet there. Returns

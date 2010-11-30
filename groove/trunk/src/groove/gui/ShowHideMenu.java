@@ -33,7 +33,6 @@ import groove.gui.jgraph.LTSJGraph;
 import groove.io.GrooveFileChooser;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.rel.RegExpr;
 import groove.rel.RelationCalculator;
 import groove.rel.SupportedNodeRelation;
@@ -568,9 +567,11 @@ public class ShowHideMenu extends JMenu {
         protected LabelAction(JGraph jgraph, int showMode, Label label)
             throws IllegalArgumentException {
             super(jgraph, showMode, "");
-            putValue(NAME, label.text().length() == 0
-                    ? Options.EMPTY_LABEL_TEXT
-                    : Converter.HTML_TAG.on(DefaultLabel.toHtmlString(label)));
+            putValue(
+                NAME,
+                label.text().length() == 0
+                        ? Options.EMPTY_LABEL_TEXT
+                        : Converter.HTML_TAG.on(DefaultLabel.toHtmlString(label)));
             this.label = label;
         }
 
@@ -737,8 +738,8 @@ public class ShowHideMenu extends JMenu {
          */
         private Relation currentRelation;
 
-        private static StringDialog exprDialog =
-            new StringDialog("Regular Expression: ");
+        private static StringDialog exprDialog = new StringDialog(
+            "Regular Expression: ");
     }
 
     /**
@@ -854,21 +855,9 @@ public class ShowHideMenu extends JMenu {
             LTSJGraph jGraph = (LTSJGraph) this.jgraph;
             GraphState state = (GraphState) jGraph.getModel().getActiveState();
             this.trace = new ArrayList<JCell>();
-            while (state != null) {
-                // Add the state to the trace
+            while (state instanceof GraphNextState) {
                 this.trace.add(jGraph.getModel().getJCell(state));
-                if (state instanceof GraphNextState) {
-                    GraphNextState target = (GraphNextState) state;
-                    GraphState source = target.source();
-                    for (GraphTransition trans : source.getTransitionSet()) {
-                        if (trans.target().equals(target)) {
-                            this.trace.add(jGraph.getModel().getJCell(trans));
-                        }
-                    }
-                    state = source;
-                } else { // We reached the start state
-                    state = null;
-                }
+                state = ((GraphNextState) state).source();
             }
             super.actionPerformed(evt);
         }

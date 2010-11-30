@@ -56,9 +56,9 @@ public class LinearStrategy extends AbstractStrategy {
         if (getAtState() == null) {
             return false;
         }
-        MatchResult event = getMatch();
-        if (event != null) {
-            applyEvent(event);
+        MatchResult match = getMatch();
+        if (match != null) {
+            getMatchApplier().apply(getAtState(), match);
             if (closeExit()) {
                 setClosed(getAtState(), false);
             }
@@ -94,8 +94,26 @@ public class LinearStrategy extends AbstractStrategy {
         gts.addGraphListener(this.collector);
     }
 
+    /** Return the current value of the "close on exit" setting */
+    public boolean closeExit() {
+        return this.closeExit;
+    }
+
+    /**
+     * Enable closeExit, to close states immediately after a transition has been generated.
+     * This can save memory when using linear strategies.
+     */
+    public void enableCloseExit() {
+        this.closeExit = true;
+    }
+
     /** Collects states newly added to the GTS. */
     private final NewStateCollector collector = new NewStateCollector();
+    /** 
+     * Option to close states immediately after a transition has been generated.
+     * Used to save memory by closing states ASAP.
+     */
+    private boolean closeExit = false;
 
     /**
      * Registers the first new state added to the GTS it listens to. Such an

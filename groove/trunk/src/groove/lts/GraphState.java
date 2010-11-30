@@ -20,10 +20,12 @@ import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.graph.Graph;
 import groove.graph.Node;
+import groove.trans.Rule;
 import groove.trans.RuleEvent;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -63,6 +65,12 @@ public interface GraphState extends State {
      * transitions starting in this state.
      */
     public Set<GraphTransition> getTransitionSet();
+
+    /**
+     * Returns an unmodifiable map from rules to the 
+     * currently generated outgoing transitions.
+     */
+    public Map<Rule,Collection<GraphTransition>> getTransitionMap();
 
     /**
      * Returns (a copy of) the set of next states reachable from this state,

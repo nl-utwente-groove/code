@@ -19,17 +19,11 @@ package groove.explore.strategy;
 import groove.explore.result.Acceptor;
 import groove.explore.util.MatchApplier;
 import groove.explore.util.MatchSetCollector;
-import groove.explore.util.RandomChooserInSequence;
 import groove.explore.util.RuleEventApplier;
 import groove.lts.GTS;
-import groove.lts.GraphNextState;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
-import groove.lts.StartGraphState;
 import groove.trans.SystemRecord;
-
-import java.util.Iterator;
 
 /**
  * A partial (abstract) implementation of a strategy.
@@ -53,7 +47,7 @@ public abstract class AbstractStrategy implements Strategy {
             return false;
         }
         for (MatchResult next : createMatchCollector().getMatchSet()) {
-            applyEvent(next);
+            getMatchApplier().apply(getAtState(), next);
         }
         setClosed(getAtState(), true);
         return updateAtState();
@@ -76,6 +70,14 @@ public abstract class AbstractStrategy implements Strategy {
     }
 
     /**
+     * Returns the state that will be explored next. If <code>null</code>,
+     * there is nothing left to explore. Is updated by {@link #updateAtState()}.
+     */
+    protected GraphState getAtState() {
+        return this.atState;
+    }
+
+    /**
      * Sets atState to the next state to be explored, or <code>null</code> if
      * there are no more states to be explored. This is the place where
      * satisfaction of the condition is to be tested. This method should be the
@@ -85,14 +87,6 @@ public abstract class AbstractStrategy implements Strategy {
      */
     protected abstract boolean updateAtState();
 
-    /**
-     * Returns the state that will be explored next. If <code>null</code>,
-     * there is nothing left to explore. Is updated by {@link #updateAtState()}.
-     */
-    protected GraphState getAtState() {
-        return this.atState;
-    }
-
     /** 
      * Closes a given state. 
      * @param complete  indicates whether all outgoing transitions of the state have
@@ -100,54 +94,6 @@ public abstract class AbstractStrategy implements Strategy {
      */
     protected void setClosed(GraphState state, boolean complete) {
         getGTS().setClosed(state, complete);
-    }
-
-    /**
-     * The parent of a given state, or null if this is the start state. May be
-     * used by the backtracking strategies and for alias matching
-     * @param state state for which the parent will be returned
-     */
-    protected final GraphState parentOf(GraphState state) {
-        if (state instanceof StartGraphState) {
-            return null;
-        } else {
-            return ((GraphNextState) state).source();
-        }
-    }
-
-    /**
-     * Returns a random open successor of a state, if any. Returns null
-     * otherwise. Is considered as successor only a state that is a successor in
-     * the spanning tree.
-     */
-    protected final GraphState getRandomOpenSuccessor(GraphState state) {
-        Iterator<? extends GraphState> sucIter = state.getNextStateIter();
-        RandomChooserInSequence<GraphState> chooser =
-            new RandomChooserInSequence<GraphState>();
-        while (sucIter.hasNext()) {
-            GraphState s = sucIter.next();
-            if (getGTS().getOpenStates().contains(s)
-                && s instanceof GraphNextState
-                && ((GraphNextState) s).source().equals(state)) {
-                chooser.show(s);
-            }
-        }
-        return chooser.pickRandom();
-    }
-
-    /**
-     * Returns the first open successor of a state, if any. Returns null
-     * otherwise.
-     */
-    protected final GraphState getFirstOpenSuccessor(GraphState state) {
-        Iterator<? extends GraphState> sucIter = state.getNextStateIter();
-        while (sucIter.hasNext()) {
-            GraphState s = sucIter.next();
-            if (getGTS().getOpenStates().contains(s)) {
-                return s;
-            }
-        }
-        return null;
     }
 
     /**
@@ -164,19 +110,16 @@ public abstract class AbstractStrategy implements Strategy {
     }
 
     /** Returns the match applier of this strategy. */
-    protected RuleEventApplier getMatchApplier() {
+    protected final RuleEventApplier getMatchApplier() {
         if (this.applier == null) {
-            this.applier = new MatchApplier(this.gts);
+            this.applier = createMatchApplier();
         }
         return this.applier;
     }
 
-    /**
-     * Applies a given rule event to the current state, and returns
-     * the resulting transition.
-     */
-    protected GraphTransition applyEvent(MatchResult result) {
-        return getMatchApplier().apply(getAtState(), result);
+    /** Callback factory method for the match applier. */
+    protected RuleEventApplier createMatchApplier() {
+        return new MatchApplier(this.gts);
     }
 
     /** Default implementation; does nothing. */
@@ -189,19 +132,6 @@ public abstract class AbstractStrategy implements Strategy {
         getGTS().removeGraphListener(listener);
     }
 
-    /** Return the current value of the "close on exit" setting */
-    public boolean closeExit() {
-        return this.closeExit;
-    }
-
-    /**
-     * Enable closeExit, to close states when a strategy changes its atState.
-     * This can save memory when using linear strategies.
-     */
-    public void enableCloseExit() {
-        this.closeExit = true;
-    }
-
     /** Convenience method to retrieve the GTS' system record. */
     protected SystemRecord getRecord() {
         return getGTS().getRecord();
@@ -210,7 +140,7 @@ public abstract class AbstractStrategy implements Strategy {
     /**
      * Match applier for the underlying GTS.
      */
-    protected RuleEventApplier applier;
+    private RuleEventApplier applier;
     /** The graph transition system explored by the strategy. */
     private GTS gts;
     /** The state where the strategy starts exploring. */
@@ -222,10 +152,4 @@ public abstract class AbstractStrategy implements Strategy {
      * is true.
      */
     protected boolean aliasing = true;
-
-    /** 
-     * Option to close states after a transition has been added from them.
-     * Can be used by linear strategies to save memory by closing states ASAP.
-     */
-    protected boolean closeExit = false;
 }

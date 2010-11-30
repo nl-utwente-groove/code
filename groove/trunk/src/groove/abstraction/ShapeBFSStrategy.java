@@ -28,11 +28,7 @@ import groove.explore.util.RuleEventApplier;
 public class ShapeBFSStrategy extends NextOpenStrategy {
     /** Returns the match applier of this strategy. */
     @Override
-    protected RuleEventApplier getMatchApplier() {
-        assert this.getGTS() instanceof AGTS;
-        if (this.applier == null) {
-            this.applier = new ShapeStateGenerator((AGTS) this.getGTS());
-        }
-        return this.applier;
+    protected RuleEventApplier createMatchApplier() {
+        return new ShapeStateGenerator((AGTS) this.getGTS());
     }
 }
