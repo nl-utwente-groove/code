@@ -17,7 +17,6 @@
 package groove.explore.util;
 
 import groove.control.CtrlState;
-import groove.control.CtrlTransition;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.lts.AbstractGraphState;
@@ -64,33 +63,32 @@ public class MatchApplier implements RuleEventApplier {
         GraphTransition transition = null;
         Rule rule = match.getEvent().getRule();
         CtrlState sourceCtrl = source.getCtrlState();
-        if (sourceCtrl != null) {
-            CtrlTransition ctrlTrans = sourceCtrl.getTransition(rule);
-            if (sourceCtrl == ctrlTrans.target() && !rule.isModifying()
-                && !ctrlTrans.hasOutVars()) {
+        if (sourceCtrl == null || !sourceCtrl.getTransition(rule).isModifying()) {
+            if (!rule.isModifying()) {
                 transition = createTransition(match, source, source, false);
-            }
-        } else if (!rule.isModifying()) {
-            transition = createTransition(match, source, source, false);
-        } else if (match instanceof GraphTransition) {
-            // try to find the target state by walking around three previously
-            // generated sides of a confluent diamond
-            // the parent state is the source of source
-            // the sibling is the child reached by the virtual event
-            assert source instanceof GraphNextState;
-            GraphTransition parentTrans = (GraphTransition) match;
-            RuleEvent sourceEvent = ((GraphNextState) source).getEvent();
-            if (!parentTrans.isSymmetry()
-                && !parentTrans.getEvent().conflicts(sourceEvent)) {
-                GraphState sibling = parentTrans.target();
-                GraphTransitionStub siblingOut =
-                    sibling.getOutStub(sourceEvent);
-                if (siblingOut != null) {
-                    transition =
-                        createTransition(match, source,
-                            siblingOut.getTarget(sibling),
-                            siblingOut.isSymmetry());
-                    confluentDiamondCount++;
+            } else if (match instanceof GraphTransition) {
+                // try to find the target state by walking around three previously
+                // generated sides of a confluent diamond
+                // the parent state is the source of source
+                // the sibling is the child reached by the virtual event
+                assert source instanceof GraphNextState;
+                GraphTransition parentTrans = (GraphTransition) match;
+                boolean parentModifiesCtrl =
+                    sourceCtrl != null
+                        && parentTrans.getCtrlTransition().isModifying();
+                RuleEvent sourceEvent = ((GraphNextState) source).getEvent();
+                if (!parentModifiesCtrl && !parentTrans.isSymmetry()
+                    && !parentTrans.getEvent().conflicts(sourceEvent)) {
+                    GraphState sibling = parentTrans.target();
+                    GraphTransitionStub siblingOut =
+                        sibling.getOutStub(sourceEvent);
+                    if (siblingOut != null) {
+                        transition =
+                            createTransition(match, source,
+                                siblingOut.getTarget(sibling),
+                                siblingOut.isSymmetry());
+                        confluentDiamondCount++;
+                    }
                 }
             }
         }
