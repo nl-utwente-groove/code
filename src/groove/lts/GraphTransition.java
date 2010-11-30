@@ -19,7 +19,6 @@ package groove.lts;
 import groove.control.CtrlTransition;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 
 /**
@@ -27,7 +26,7 @@ import groove.trans.RuleMatch;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface GraphTransition extends Transition {
+public interface GraphTransition extends Transition, MatchResult {
     /** Overrides the method to specialise the result type. */
     GraphState source();
 
@@ -36,11 +35,6 @@ public interface GraphTransition extends Transition {
 
     /** Returns the (possibly {@code null} control transition associated with this transition. */
     CtrlTransition getCtrlTransition();
-
-    /**
-     * Returns the transformation event of this transition.
-     */
-    public RuleEvent getEvent();
 
     /**
      * Returns the nodes added by this transition, in coanchor order.

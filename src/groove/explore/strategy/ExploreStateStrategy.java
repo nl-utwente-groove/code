@@ -17,7 +17,7 @@
 package groove.explore.strategy;
 
 import groove.explore.util.ExploreCache;
-import groove.trans.RuleEvent;
+import groove.lts.MatchResult;
 
 /**
  * Explores all outgoing transitions of a given state.
@@ -41,7 +41,7 @@ public class ExploreStateStrategy extends AbstractStrategy {
         }
         // rule might have been interrupted
         ExploreCache cache = getCache(true);
-        for (RuleEvent match : createMatchCollector(cache).getMatchSet()) {
+        for (MatchResult match : createMatchCollector(cache).getMatchSet()) {
             applyEvent(match);
         }
         // the current state has been fully explored

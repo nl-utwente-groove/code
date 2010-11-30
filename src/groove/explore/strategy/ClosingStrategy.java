@@ -17,20 +17,14 @@
 package groove.explore.strategy;
 
 import groove.explore.util.ExploreCache;
-import groove.explore.util.MatchSetCollector;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.lts.LTSAdapter;
-import groove.trans.RuleEvent;
-import groove.trans.VirtualEvent;
-import groove.util.Pair;
+import groove.lts.MatchResult;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 
 /**
  * Strategy that closes every state it explores, and adds the newly generated
@@ -45,17 +39,11 @@ abstract public class ClosingStrategy extends AbstractStrategy {
             return false;
         }
         ExploreCache cache = getCache(false);
-        Collection<RuleEvent> matchSet =
+        Collection<MatchResult> matchSet =
             createMatchCollector(cache).getMatchSet();
-        Iterator<RuleEvent> matchIter = matchSet.iterator();
-        Collection<VirtualEvent.GraphState> outTransitions =
-            new ArrayList<VirtualEvent.GraphState>(matchSet.size());
-        while (matchIter.hasNext()) {
-            RuleEvent nextEvent = matchIter.next();
-            GraphTransition trans = applyEvent(nextEvent);
-            outTransitions.add(new VirtualEvent.GraphState(trans));
+        for (MatchResult next : matchSet) {
+            applyEvent(next);
         }
-        addToPool(outTransitions);
         setClosed(getAtState(), true);
         updateAtState();
         return true;
@@ -67,56 +55,25 @@ abstract public class ClosingStrategy extends AbstractStrategy {
         // for the closing strategy, there is no problem in aliasing
         // the graph data structures. On the whole, this seems wise, to
         // avoid excessive garbage collection.
-        // TODO switched off again due to observed problems
         // gts.getRecord().setCopyGraphs(true);
         getGTS().addGraphListener(this.exploreListener);
-        this.newStates.clear();
-        this.virtualEvents = null;
         clearPool();
     }
 
     @Override
     protected void updateAtState() {
-        PoolElement next = getFromPool();
-        this.atState = next == null ? null : next.first();
-        this.virtualEvents = next == null ? null : next.second();
-    }
-
-    /**
-     * Adds the newly generated states to the pool of states to be explored.
-     * @param newVirtualEvents the virtual events generated for the current
-     *        state
-     */
-    private void addToPool(Collection<VirtualEvent.GraphState> newVirtualEvents) {
-        for (GraphState newState : this.newStates) {
-            putInPool(new PoolElement(newState, newVirtualEvents));
-        }
-        this.newStates.clear();
+        this.atState = getFromPool();
     }
 
     /** Callback method to add a pool element to the pool. */
-    abstract protected void putInPool(PoolElement element);
+    abstract protected void putInPool(GraphState element);
 
     /** Returns the next element from the pool of explorable states. */
-    abstract protected PoolElement getFromPool();
+    abstract protected GraphState getFromPool();
 
     /** Clears the pool, in order to prepare the strategy for reuse. */
     abstract protected void clearPool();
 
-    /**
-     * This collector takes the virtual events for the current state into
-     * account.
-     */
-    @Override
-    protected MatchSetCollector createMatchCollector(ExploreCache cache) {
-        return new MatchSetCollector(getAtState(), cache, getRecord(),
-            this.virtualEvents);
-    }
-
-    /** Internal store of newly generated states. */
-    final Collection<GraphState> newStates = new ArrayList<GraphState>();
-    /** Parent transitions of the currently explored state. */
-    private Collection<VirtualEvent.GraphState> virtualEvents;
     /** Listener to keep track of states added to the GTS. */
     private final ExploreListener exploreListener = new ExploreListener();
 
@@ -124,17 +81,7 @@ abstract public class ClosingStrategy extends AbstractStrategy {
     private class ExploreListener extends LTSAdapter {
         @Override
         public void addUpdate(GraphShape graph, Node node) {
-            ClosingStrategy.this.newStates.add((GraphState) node);
-        }
-    }
-
-    /** Element type of the pool of explorable elements. */
-    protected static class PoolElement extends
-            Pair<GraphState,Collection<VirtualEvent.GraphState>> {
-        /** Constructs a pool element from a given state and virtual event set. */
-        public PoolElement(GraphState state,
-                Collection<groove.trans.VirtualEvent.GraphState> virtualEvents) {
-            super(state, virtualEvents);
+            putInPool((GraphState) node);
         }
     }
 }

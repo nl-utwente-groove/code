@@ -18,7 +18,7 @@ package groove.explore.strategy;
 
 import groove.explore.util.ExploreCache;
 import groove.lts.GraphState;
-import groove.trans.RuleEvent;
+import groove.lts.MatchResult;
 
 import java.util.Iterator;
 
@@ -37,7 +37,7 @@ public class BranchingStrategy extends AbstractStrategy {
             return false;
         }
         ExploreCache cache = getCache(false);
-        for (RuleEvent match : createMatchCollector(cache).getMatchSet()) {
+        for (MatchResult match : createMatchCollector(cache).getMatchSet()) {
             applyEvent(match);
         }
         setClosed(getAtState(), true);

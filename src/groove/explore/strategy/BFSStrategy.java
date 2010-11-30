@@ -16,6 +16,8 @@
  */
 package groove.explore.strategy;
 
+import groove.lts.GraphState;
+
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -25,12 +27,12 @@ import java.util.Queue;
  */
 public class BFSStrategy extends ClosingStrategy {
     @Override
-    protected PoolElement getFromPool() {
+    protected GraphState getFromPool() {
         return this.stateQueue.poll();
     }
 
     @Override
-    protected void putInPool(PoolElement element) {
+    protected void putInPool(GraphState element) {
         this.stateQueue.offer(element);
     }
 
@@ -43,5 +45,5 @@ public class BFSStrategy extends ClosingStrategy {
      * Queue of states to be explored. The set of outgoing transitions of the
      * parent state is included with each state.
      */
-    private final Queue<PoolElement> stateQueue = new LinkedList<PoolElement>();
+    private final Queue<GraphState> stateQueue = new LinkedList<GraphState>();
 }

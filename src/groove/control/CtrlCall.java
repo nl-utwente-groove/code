@@ -19,7 +19,9 @@ package groove.control;
 import groove.trans.SPORule;
 import groove.util.Groove;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Encapsulates a call of a rule or function from a control automaton.
@@ -155,6 +157,64 @@ public class CtrlCall {
         }
         return result;
     }
+
+    /** Tests if this control call modifies the input arguments of another. */
+    public boolean modifies(CtrlCall other) {
+        boolean result = false;
+        if (!(getArgs() == null || getArgs().isEmpty()
+            || other.getArgs() == null || other.getArgs().isEmpty())) {
+            Map<CtrlVar,Integer> otherInVars = other.getInVars();
+            for (CtrlVar outVar : getOutVars().keySet()) {
+                if (otherInVars.containsKey(outVar)) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    /** Returns the mapping of output variables to argument positions of this call. */
+    public Map<CtrlVar,Integer> getOutVars() {
+        if (this.outVars == null) {
+            initVars();
+        }
+        return this.outVars;
+    }
+
+    /** Returns the mapping of input variables to argument positions of this call. */
+    public Map<CtrlVar,Integer> getInVars() {
+        if (this.inVars == null) {
+            initVars();
+        }
+        return this.inVars;
+    }
+
+    /** Initialises the input and output variables of this call. */
+    private void initVars() {
+        Map<CtrlVar,Integer> outVars = new HashMap<CtrlVar,Integer>();
+        Map<CtrlVar,Integer> inVars = new HashMap<CtrlVar,Integer>();
+        if (getArgs() != null && !getArgs().isEmpty()) {
+            int size = getArgs().size();
+            for (int i = 0; i < size; i++) {
+                CtrlPar arg = getArgs().get(i);
+                if (arg instanceof CtrlPar.Var) {
+                    CtrlVar var = ((CtrlPar.Var) arg).getVar();
+                    if (arg.isInOnly()) {
+                        inVars.put(var, i);
+                    } else {
+                        assert arg.isOutOnly();
+                        outVars.put(var, i);
+                    }
+                }
+            }
+        }
+        this.outVars = outVars;
+        this.inVars = inVars;
+    }
+
+    private Map<CtrlVar,Integer> inVars;
+    private Map<CtrlVar,Integer> outVars;
 
     /** 
      * Returns the arguments of the call.

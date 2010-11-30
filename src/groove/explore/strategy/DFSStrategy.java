@@ -16,6 +16,8 @@
  */
 package groove.explore.strategy;
 
+import groove.lts.GraphState;
+
 import java.util.Stack;
 
 /**
@@ -31,7 +33,7 @@ import java.util.Stack;
  */
 public class DFSStrategy extends ClosingStrategy {
     @Override
-    protected PoolElement getFromPool() {
+    protected GraphState getFromPool() {
         if (this.stack.isEmpty()) {
             return null;
         } else {
@@ -40,7 +42,7 @@ public class DFSStrategy extends ClosingStrategy {
     }
 
     @Override
-    protected void putInPool(PoolElement element) {
+    protected void putInPool(GraphState element) {
         this.stack.push(element);
     }
 
@@ -49,5 +51,5 @@ public class DFSStrategy extends ClosingStrategy {
         this.stack.clear();
     }
 
-    private final Stack<PoolElement> stack = new Stack<PoolElement>();
+    private final Stack<GraphState> stack = new Stack<GraphState>();
 }

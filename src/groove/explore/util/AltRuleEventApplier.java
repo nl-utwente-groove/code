@@ -28,7 +28,7 @@ import groove.lts.MatchResult;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface RuleEventApplier {
+public interface AltRuleEventApplier {
     /**
      * Returns the underlying GTS.
      */
@@ -39,6 +39,6 @@ public interface RuleEventApplier {
      * rule event. The event is assumed not to have been explored yet.
      * @return the added (new) transition
      */
-    public GraphTransition apply(GraphState source, MatchResult match);
+    public GraphTransition apply(GraphState source, MatchResult event);
 
 }

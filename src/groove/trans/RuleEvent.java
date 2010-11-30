@@ -23,6 +23,7 @@ import groove.graph.Label;
 import groove.graph.MergeMap;
 import groove.graph.Node;
 import groove.lts.GraphTransitionStub;
+import groove.lts.MatchResult;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -37,7 +38,8 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-03-03 21:27:40 $
  */
-public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub {
+public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
+        MatchResult {
     /**
      * Returns the rule for which this is an application.
      */

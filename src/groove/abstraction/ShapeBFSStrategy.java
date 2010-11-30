@@ -22,7 +22,7 @@ import groove.explore.strategy.AbstractStrategy;
 import groove.explore.util.ExploreCache;
 import groove.explore.util.RuleEventApplier;
 import groove.lts.GraphState;
-import groove.trans.RuleEvent;
+import groove.lts.MatchResult;
 
 import java.util.Iterator;
 
@@ -38,7 +38,7 @@ public class ShapeBFSStrategy extends AbstractStrategy {
             return false;
         }
         ExploreCache cache = this.getCache(false);
-        for (RuleEvent match : this.createMatchCollector(cache).getMatchSet()) {
+        for (MatchResult match : this.createMatchCollector(cache).getMatchSet()) {
             this.applyEvent(match);
         }
         this.setClosed(this.getAtState(), true);

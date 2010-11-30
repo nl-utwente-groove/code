@@ -22,7 +22,7 @@ import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.trans.RuleEvent;
+import groove.lts.MatchResult;
 
 /**
  * Explores a single path until reaching a final state or a loop. In case of
@@ -58,7 +58,7 @@ public class LinearStrategy extends AbstractStrategy {
             return false;
         }
         ExploreCache cache = getCache(true);
-        RuleEvent event = getMatch(cache);
+        MatchResult event = getMatch(cache);
         if (event != null) {
             applyEvent(event);
             if (closeExit()) {
@@ -72,7 +72,7 @@ public class LinearStrategy extends AbstractStrategy {
     }
 
     /** Callback method to return the single next match. */
-    protected RuleEvent getMatch(ExploreCache cache) {
+    protected MatchResult getMatch(ExploreCache cache) {
         return createMatchCollector(cache).getMatch();
     }
 

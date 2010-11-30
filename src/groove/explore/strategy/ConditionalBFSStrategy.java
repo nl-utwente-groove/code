@@ -17,6 +17,7 @@
 package groove.explore.strategy;
 
 import groove.explore.result.ExploreCondition;
+import groove.lts.GraphState;
 
 /**
  * Breadth first exploration, by exploring only non explored states.
@@ -26,9 +27,9 @@ import groove.explore.result.ExploreCondition;
 public class ConditionalBFSStrategy extends BFSStrategy implements
         ConditionalStrategy {
     @Override
-    protected PoolElement getFromPool() {
-        PoolElement result = super.getFromPool();
-        while (result != null && !getExplCond().isSatisfied(result.first())) {
+    protected GraphState getFromPool() {
+        GraphState result = super.getFromPool();
+        while (result != null && !getExplCond().isSatisfied(result)) {
             result = super.getFromPool();
         }
         return result;
