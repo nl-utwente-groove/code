@@ -58,6 +58,7 @@ public class MatchSetCollector {
     public MatchSetCollector(GraphState state, ExploreCache cache,
             SystemRecord record) {
         this.state = state;
+        this.ctrlState = state.getCtrlState();
         this.cache = cache;
         this.record = record;
         GraphState parent = null;
@@ -129,18 +130,16 @@ public class MatchSetCollector {
      *         added to <code>result</code>
      */
     protected boolean collectEvents(Rule rule, Collection<MatchResult> result) {
-        boolean hasMatched = collectVirtualEvents(rule, result);
-        CtrlState ctrlState = this.state.getCtrlState();
+        boolean hasMatched = addParentOuts(rule, result);
         // AREND: I added here a check so that new matches are also added when the cache is a location cache
         // because the parent state may (regardless enabledRules) have no matches in the parent due to control.
-        if (this.enabledRules == null || this.enabledRules.contains(rule)
-            || ctrlState != null) {
+        if (hasNewMatches(rule)) {
             // if this rule used parameters in the control expression, we need
             // to construct a partial morphism out of them
             boolean bindingCorrect = true;
             NodeEdgeMap boundMap = null;
-            if (ctrlState != null) {
-                CtrlTransition ctrlTrans = ctrlState.getTransition(rule);
+            if (this.ctrlState != null) {
+                CtrlTransition ctrlTrans = this.ctrlState.getTransition(rule);
                 List<CtrlPar> args = ctrlTrans.getCall().getArgs();
                 if (args != null && args.size() > 0) {
                     boundMap = new NodeEdgeHashMap();
@@ -159,6 +158,20 @@ public class MatchSetCollector {
             }
         }
         return hasMatched;
+    }
+
+    private boolean hasNewMatches(Rule rule) {
+        if (this.enabledRules == null || this.enabledRules.contains(rule)) {
+            return true;
+        }
+        if (this.ctrlState == null) {
+            return false;
+        }
+        GraphNextState state = (GraphNextState) this.state;
+        if (state.getCtrlTransition().isModifying()) {
+            return true;
+        }
+        return !state.source().getSchedule().getTriedRules().contains(rule);
     }
 
     /** Extracts the morphism from rule nodes to input graph nodes
@@ -197,17 +210,16 @@ public class MatchSetCollector {
     }
 
     /**
-     * Adds the virtual events for a given rule into an existing set.
+     * Adds the parent's out-transitions for a given rule into an existing set.
      * @return <code>true</code> if any virtual events were found
      */
-    private boolean collectVirtualEvents(Rule rule,
-            Collection<MatchResult> result) {
-        // add the virtual events for this rule if any
-        Collection<GraphTransition> virtualEvents = getParentOuts(rule);
-        if (virtualEvents == null) {
+    private boolean addParentOuts(Rule rule, Collection<MatchResult> result) {
+        // add the parent's out-transitions for this rule (if any)
+        Collection<GraphTransition> parentOuts = getParentOuts(rule);
+        if (parentOuts == null) {
             return false;
         } else {
-            result.addAll(virtualEvents);
+            result.addAll(parentOuts);
             return true;
         }
     }
@@ -250,7 +262,7 @@ public class MatchSetCollector {
     }
 
     /**
-     * Tests if a virtual event is still valid in this state.
+     * Tests if a parent out-transition is still valid in this state.
      */
     private boolean isStillValid(GraphTransition parentTrans) {
         Rule rule = parentTrans.getEvent().getRule();
@@ -323,6 +335,8 @@ public class MatchSetCollector {
 
     /** The host graph we are working on. */
     protected final GraphState state;
+    /** The control state of the graph state, if any. */
+    private final CtrlState ctrlState;
     /** Matches cache. */
     protected final ExploreCache cache;
     /** The system record is set at construction. */

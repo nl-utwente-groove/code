@@ -16,7 +16,10 @@
  */
 package groove.control;
 
+import groove.trans.Rule;
+
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 /** Sequence of control transitions to be tried out from a control state. */
@@ -26,7 +29,14 @@ public class CtrlSchedule {
             Set<CtrlCall> triedCalls, boolean success) {
         this.state = state;
         this.trans = trans;
-        this.triedCalls = trans == null ? triedCalls : null;
+        if (trans != null) {
+            this.triedRules = null;
+        } else {
+            this.triedRules = new HashSet<Rule>();
+            for (CtrlCall call : triedCalls) {
+                this.triedRules.add(call.getRule());
+            }
+        }
         this.success = success;
     }
 
@@ -57,8 +67,8 @@ public class CtrlSchedule {
      * @return a set of tried control calls, or {@code null} if {@link #isFinished()} 
      * yields {@code false}.
      */
-    public Set<CtrlCall> triedCalls() {
-        return this.triedCalls;
+    public Set<Rule> getTriedRules() {
+        return this.triedRules;
     }
 
     /** Sets the success and failure schedules. */
@@ -127,7 +137,7 @@ public class CtrlSchedule {
     /** The set of calls that have been tried when this point of the schedule is reached.
      * Only filled in if {@link #isFinished()} is satisfied.
      */
-    private final Set<CtrlCall> triedCalls;
+    private final Set<Rule> triedRules;
     /** Next schedule node in case {@link #trans} succeeds. */
     private CtrlSchedule succNext;
     /** Next schedule node in case {@link #trans} fails. */
