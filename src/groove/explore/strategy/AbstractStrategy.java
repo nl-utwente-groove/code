@@ -17,7 +17,6 @@
 package groove.explore.strategy;
 
 import groove.explore.result.Acceptor;
-import groove.explore.util.ExploreCache;
 import groove.explore.util.MatchApplier;
 import groove.explore.util.MatchSetCollector;
 import groove.explore.util.RandomChooserInSequence;
@@ -49,6 +48,17 @@ public abstract class AbstractStrategy implements Strategy {
             this.startState = state == null ? gts.startState() : state;
     }
 
+    public boolean next() {
+        if (getAtState() == null) {
+            return false;
+        }
+        for (MatchResult next : createMatchCollector().getMatchSet()) {
+            applyEvent(next);
+        }
+        setClosed(getAtState(), true);
+        return updateAtState();
+    }
+
     /**
      * The graph transition system explored by the strategy.
      * @return The graph transition system explored by the strategy.
@@ -70,14 +80,16 @@ public abstract class AbstractStrategy implements Strategy {
      * there are no more states to be explored. This is the place where
      * satisfaction of the condition is to be tested. This method should be the
      * only one who updates atState.
+     * @return {@code true} if there are more states to be explored, {@code false}
+     * otherwise.
      */
-    protected abstract void updateAtState();
+    protected abstract boolean updateAtState();
 
     /**
      * Returns the state that will be explored next. If <code>null</code>,
      * there is nothing left to explore. Is updated by {@link #updateAtState()}.
      */
-    protected final GraphState getAtState() {
+    protected GraphState getAtState() {
         return this.atState;
     }
 
@@ -139,25 +151,11 @@ public abstract class AbstractStrategy implements Strategy {
     }
 
     /**
-     * Gives a cache for atState.
-     * @param ruleInterrupted If <code>false</code>, the cache considers that
-     *        if there is a match for some rule <code>r</code>, then all
-     *        matches have been found. Therefore, the rule <code>r</code> is
-     *        not returned by the iterator. If <code>true</code>, the cache
-     *        will explore again all rules that are not explicitly stated as
-     *        fully explored.
-     */
-    protected ExploreCache getCache(boolean ruleInterrupted) {
-        return getGTS().getRecord().createCache(getAtState(), ruleInterrupted);
-    }
-
-    /**
      * Returns a fresh match collector for this strategy, based on the current
      * state and related information.
-     * @param cache the rule cache for the collector
      */
-    protected MatchSetCollector createMatchCollector(ExploreCache cache) {
-        return new MatchSetCollector(getAtState(), cache, getRecord());
+    protected MatchSetCollector createMatchCollector() {
+        return new MatchSetCollector(getAtState(), getRecord());
     }
 
     /** Sets the match applier of this strategy. */
@@ -179,19 +177,6 @@ public abstract class AbstractStrategy implements Strategy {
      */
     protected GraphTransition applyEvent(MatchResult result) {
         return getMatchApplier().apply(getAtState(), result);
-    }
-
-    /**
-     * Method for exploring a single state locally. The state will be closed
-     * afterwards.
-     * @param state the state to be fully explored locally
-     */
-    public void exploreState(GraphState state) {
-        Strategy explore = new ExploreStateStrategy();
-        if (getGTS().isOpen(state)) {
-            explore.prepare(getGTS(), state);
-            explore.next();
-        }
     }
 
     /** Default implementation; does nothing. */

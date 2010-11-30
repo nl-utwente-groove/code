@@ -353,6 +353,19 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
     }
 
     /**
+     * Method for exploring a single state locally. The state will be closed
+     * afterwards.
+     * @param state the state to be fully explored locally
+     */
+    public void exploreState(GraphState state) {
+        Strategy explore = new ExploreStateStrategy();
+        if (getGTS().isOpen(state)) {
+            explore.prepare(getGTS(), state);
+            explore.next();
+        }
+    }
+
+    /**
      * Adds a product transition to the product gts. If the current state is
      * already explored we do not have to add anything. In that case, we return
      * the corresponding transition.

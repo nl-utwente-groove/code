@@ -16,7 +16,6 @@
  */
 package groove.explore.strategy;
 
-import groove.explore.util.ExploreCache;
 import groove.explore.util.MatchSetCollector;
 import groove.lts.MatchResult;
 
@@ -51,8 +50,8 @@ public class RandomLinearStrategy extends LinearStrategy {
 
     /** This implementation returns a random element from the set of all matches. */
     @Override
-    protected MatchResult getMatch(ExploreCache cache) {
-        MatchSetCollector collector = createMatchCollector(cache);
+    protected MatchResult getMatch() {
+        MatchSetCollector collector = createMatchCollector();
         // collect all matches
         List<MatchResult> matches = new ArrayList<MatchResult>();
         collector.collectMatchSet(matches);

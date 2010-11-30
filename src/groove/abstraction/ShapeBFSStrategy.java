@@ -18,44 +18,14 @@ package groove.abstraction;
 
 import groove.abstraction.lts.AGTS;
 import groove.abstraction.lts.ShapeStateGenerator;
-import groove.explore.strategy.AbstractStrategy;
-import groove.explore.util.ExploreCache;
+import groove.explore.strategy.NextOpenStrategy;
 import groove.explore.util.RuleEventApplier;
-import groove.lts.GraphState;
-import groove.lts.MatchResult;
-
-import java.util.Iterator;
 
 /**
  * Breadth-first search exploration strategy for abstract state spaces.
  * @author Eduardo Zambon
  */
-public class ShapeBFSStrategy extends AbstractStrategy {
-
-    /** A step of this strategy completely explores one state. */
-    public boolean next() {
-        if (this.getAtState() == null) {
-            return false;
-        }
-        ExploreCache cache = this.getCache(false);
-        for (MatchResult match : this.createMatchCollector(cache).getMatchSet()) {
-            this.applyEvent(match);
-        }
-        this.setClosed(this.getAtState(), true);
-        this.updateAtState();
-        return true;
-    }
-
-    @Override
-    protected void updateAtState() {
-        Iterator<GraphState> stateIter = this.getGTS().getOpenStateIter();
-        if (stateIter.hasNext()) {
-            this.atState = stateIter.next();
-        } else {
-            this.atState = null;
-        }
-    }
-
+public class ShapeBFSStrategy extends NextOpenStrategy {
     /** Returns the match applier of this strategy. */
     @Override
     protected RuleEventApplier getMatchApplier() {
@@ -65,5 +35,4 @@ public class ShapeBFSStrategy extends AbstractStrategy {
         }
         return this.applier;
     }
-
 }

@@ -16,7 +16,6 @@
  */
 package groove.explore.strategy;
 
-import groove.explore.util.ExploreCache;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
 import groove.graph.Node;
@@ -52,13 +51,12 @@ public class LinearStrategy extends AbstractStrategy {
         }
     }
 
+    @Override
     public boolean next() {
-        if (this.atState == null) {
-            getGTS().removeGraphListener(this.collector);
+        if (getAtState() == null) {
             return false;
         }
-        ExploreCache cache = getCache(true);
-        MatchResult event = getMatch(cache);
+        MatchResult event = getMatch();
         if (event != null) {
             applyEvent(event);
             if (closeExit()) {
@@ -67,19 +65,22 @@ public class LinearStrategy extends AbstractStrategy {
         } else {
             setClosed(getAtState(), true);
         }
-        updateAtState();
-        return true;
+        return updateAtState();
     }
 
     /** Callback method to return the single next match. */
-    protected MatchResult getMatch(ExploreCache cache) {
-        return createMatchCollector(cache).getMatch();
+    protected MatchResult getMatch() {
+        return createMatchCollector().getMatch();
     }
 
     @Override
-    protected void updateAtState() {
-        this.atState = this.collector.getNewState();
+    protected boolean updateAtState() {
+        boolean result = (this.atState = this.collector.getNewState()) != null;
         this.collector.reset();
+        if (!result) {
+            getGTS().removeGraphListener(this.collector);
+        }
+        return result;
     }
 
     @Override
