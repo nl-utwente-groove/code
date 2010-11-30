@@ -27,7 +27,6 @@ import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
-import groove.lts.MatchResultSet;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
@@ -37,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,7 +47,29 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class MatchSetCollector {
+public class AltMatchSetCollector {
+    /**
+     * Constructs a match collector for a given (start) state.
+     * @param state the state for which matches are to be collected
+     * @param cache object to decide on applicable rules
+     * @param record factory to turn {@link RuleMatch}es in to
+     *        {@link RuleEvent}s.
+     * @param parentTransitions outgoing transitions from the parent state;
+     * may be {@code null}
+     */
+    public AltMatchSetCollector(GraphState state, ExploreCache cache,
+            SystemRecord record, Collection<GraphTransition> parentTransitions) {
+        this.state = state;
+        this.cache = cache;
+        this.record = record;
+        this.parentOuts = parentTransitions;
+        if (parentTransitions != null) {
+            Rule lastRule = ((GraphNextState) state).getEvent().getRule();
+            this.enabledRules = record.getEnabledRules(lastRule);
+            this.disabledRules = record.getDisabledRules(lastRule);
+        }
+    }
+
     /**
      * Constructs a match collector for a given (start) state.
      * @param state the state for which matches are to be collected
@@ -55,23 +77,9 @@ public class MatchSetCollector {
      * @param record factory to turn {@link RuleMatch}es in to
      *        {@link RuleEvent}s.
      */
-    public MatchSetCollector(GraphState state, ExploreCache cache,
+    public AltMatchSetCollector(GraphState state, ExploreCache cache,
             SystemRecord record) {
-        this.state = state;
-        this.cache = cache;
-        this.record = record;
-        GraphState parent = null;
-        if (state instanceof GraphNextState) {
-            parent = ((GraphNextState) state).source();
-        }
-        if (parent != null && parent.isClosed()) {
-            this.parentOuts = parent.getTransitionSet();
-            Rule lastRule = ((GraphNextState) state).getEvent().getRule();
-            this.enabledRules = record.getEnabledRules(lastRule);
-            this.disabledRules = record.getDisabledRules(lastRule);
-        } else {
-            this.parentOuts = null;
-        }
+        this(state, cache, record, null);
     }
 
     /** Returns a single match for the state passed in through the constructor. */
@@ -104,7 +112,7 @@ public class MatchSetCollector {
      * constructor.
      */
     public Collection<MatchResult> getMatchSet() {
-        Set<MatchResult> result = new MatchResultSet();
+        Set<MatchResult> result = new LinkedHashSet<MatchResult>();
         collectMatchSet(result);
         return result;
     }
@@ -252,19 +260,19 @@ public class MatchSetCollector {
     /**
      * Tests if a virtual event is still valid in this state.
      */
-    private boolean isStillValid(GraphTransition parentTrans) {
-        Rule rule = parentTrans.getEvent().getRule();
+    private boolean isStillValid(GraphTransition parentOut) {
+        Rule rule = parentOut.getEvent().getRule();
         boolean result = !this.disabledRules.contains(rule);
         if (!result) {
             assert this.state instanceof GraphNextState;
             // check if the underlying control transition is the same
-            CtrlTransition virtualCtrlTrans = parentTrans.getCtrlTransition();
+            CtrlTransition virtualCtrlTrans = parentOut.getCtrlTransition();
             CtrlState myCtrlState = this.state.getCtrlState();
             CtrlTransition myCtrlTrans =
                 myCtrlState == null ? null : myCtrlState.getTransition(rule);
             result =
                 virtualCtrlTrans == myCtrlTrans
-                    && parentTrans.getEvent().hasMatch(this.state.getGraph());
+                    && parentOut.getEvent().hasMatch(this.state.getGraph());
         }
         return result;
     }

@@ -22,6 +22,7 @@ import groove.abstraction.gui.ShapeDialog;
 import groove.explore.util.RuleEventApplier;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.MatchResult;
 import groove.trans.RuleEvent;
 
 import java.util.Set;
@@ -69,10 +70,10 @@ public final class ShapeStateGenerator implements RuleEventApplier {
     }
 
     @Override
-    public GraphTransition apply(GraphState source, RuleEvent event) {
+    public GraphTransition apply(GraphState source, MatchResult match) {
         assert source instanceof ShapeState;
         GraphTransition result = null;
-
+        RuleEvent event = match.getEvent();
         Shape host = (Shape) source.getGraph();
         Set<Shape> targets = Transform.transform(host, event);
 
@@ -89,7 +90,7 @@ public final class ShapeStateGenerator implements RuleEventApplier {
             } else {
                 // The state was added as a next-state.
                 trans = newState;
-                this.println("New state: " + source + "--" + event + "-->"
+                this.println("New state: " + source + "--" + match + "-->"
                     + newState);
                 if (USE_GUI) {
                     new ShapeDialog((Shape) newState.getGraph(),

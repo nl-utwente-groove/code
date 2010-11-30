@@ -26,8 +26,8 @@ import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.MatchResult;
 import groove.lts.StartGraphState;
-import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 
 import java.util.Iterator;
@@ -177,8 +177,8 @@ public abstract class AbstractStrategy implements Strategy {
      * Applies a given rule event to the current state, and returns
      * the resulting transition.
      */
-    protected GraphTransition applyEvent(RuleEvent event) {
-        return getMatchApplier().apply(getAtState(), event);
+    protected GraphTransition applyEvent(MatchResult result) {
+        return getMatchApplier().apply(getAtState(), result);
     }
 
     /**

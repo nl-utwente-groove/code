@@ -501,7 +501,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     /** The type view composed from the individual elements. */
     private TypeViewList composedTypeView;
 
-    static private boolean ALWAYS_CONTROL = true;
+    static private boolean ALWAYS_CONTROL = false;
 
     /**
      * Creates an instance based on a store located at a given URL.

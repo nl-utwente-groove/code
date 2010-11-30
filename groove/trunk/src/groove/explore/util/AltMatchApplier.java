@@ -39,11 +39,11 @@ import groove.util.Reporter;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class MatchApplier implements RuleEventApplier {
+public class AltMatchApplier implements AltRuleEventApplier {
     /**
      * Creates an applier for a given graph transition system.
      */
-    public MatchApplier(GTS gts) {
+    public AltMatchApplier(GTS gts) {
         this.gts = gts;
     }
 
@@ -224,7 +224,7 @@ public class MatchApplier implements RuleEventApplier {
 
     /** Reporter for profiling information. */
     static private final Reporter reporter =
-        Reporter.register(MatchApplier.class);
+        Reporter.register(AltMatchApplier.class);
     /** Profiling aid for adding states. */
     static public final Reporter addStateReporter =
         reporter.register("addState");

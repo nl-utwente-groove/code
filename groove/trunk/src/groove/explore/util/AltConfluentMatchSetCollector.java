@@ -17,6 +17,7 @@
 package groove.explore.util;
 
 import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
@@ -34,7 +35,7 @@ import java.util.Iterator;
  * super class.
  * @author Eduardo Zambon
  */
-public class ConfluentMatchSetCollector extends MatchSetCollector {
+public class AltConfluentMatchSetCollector extends AltMatchSetCollector {
 
     /**
      * Constructs a match collector for a given (start) state.
@@ -42,10 +43,11 @@ public class ConfluentMatchSetCollector extends MatchSetCollector {
      * @param cache object to decide on applicable rules
      * @param record factory to turn {@link RuleMatch}es in to
      *        {@link RuleEvent}s.
+     * @param virtualEventSet outgoing transitions from the parent state
      */
-    public ConfluentMatchSetCollector(GraphState state, ExploreCache cache,
-            SystemRecord record) {
-        super(state, cache, record);
+    public AltConfluentMatchSetCollector(GraphState state, ExploreCache cache,
+            SystemRecord record, Collection<GraphTransition> virtualEventSet) {
+        super(state, cache, record, virtualEventSet);
     }
 
     /**

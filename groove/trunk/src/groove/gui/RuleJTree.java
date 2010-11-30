@@ -23,6 +23,7 @@ import groove.graph.Label;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.MatchResult;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
@@ -350,9 +351,9 @@ public class RuleJTree extends JTree implements SimulationListener {
                     getCurrentState()));
             } else {
                 SystemRecord record = getCurrentGTS().getRecord();
-                Collection<RuleEvent> matches =
-                    new MatchSetCollector(state,
-                        record.freshCache(state), record).getMatchSet();
+                Collection<? extends MatchResult> matches =
+                    new MatchSetCollector(state, record.freshCache(state),
+                        record).getMatchSet();
                 refreshMatchesOpen(matches);
             }
         }
@@ -376,7 +377,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Refreshes the match nodes, based on a given derivation edge set.
      * @param matches the set of derivation edges used to create match nodes
      */
-    private void refreshMatchesOpen(Collection<RuleEvent> matches) {
+    private void refreshMatchesOpen(Collection<? extends MatchResult> matches) {
         // remove current matches
         for (MatchTreeNode matchNode : this.matchNodeMap.values()) {
             this.ruleDirectory.removeNodeFromParent(matchNode);
@@ -397,19 +398,26 @@ public class RuleJTree extends JTree implements SimulationListener {
         }
         // recollect the derivations so that they are ordered according to the
         // rule events
-        SortedSet<RuleEvent> orderedEvents = new TreeSet<RuleEvent>();
+        SortedSet<MatchResult> orderedEvents =
+            new TreeSet<MatchResult>(new Comparator<MatchResult>() {
+                @Override
+                public int compare(MatchResult o1, MatchResult o2) {
+                    return o1.getEvent().compareTo(o2.getEvent());
+                }
+
+            });
         orderedEvents.addAll(matches);
         // insert new matches
-        for (RuleEvent event : orderedEvents) {
-            Label ruleName = event.getRule().getName();
+        for (MatchResult match : orderedEvents) {
+            Label ruleName = match.getEvent().getRule().getName();
             RuleTreeNode ruleNode = this.ruleNodeMap.get(ruleName);
             assert ruleNode != null : String.format(
                 "Rule %s has no image in map %s", ruleName, this.ruleNodeMap);
             int nrOfMatches = ruleNode.getChildCount();
-            MatchTreeNode matchNode = new MatchTreeNode(nrOfMatches + 1, event);
+            MatchTreeNode matchNode = new MatchTreeNode(nrOfMatches + 1, match);
             this.ruleDirectory.insertNodeInto(matchNode, ruleNode, nrOfMatches);
             expandPath(new TreePath(ruleNode.getPath()));
-            this.matchNodeMap.put(event, matchNode);
+            this.matchNodeMap.put(match, matchNode);
         }
 
         for (GraphTransition trans : getCurrentGTS().outEdgeSet(
@@ -603,8 +611,8 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Mapping from RuleMatches in the current LTS to match nodes in the rule
      * directory
      */
-    protected final Map<RuleEvent,MatchTreeNode> matchNodeMap =
-        new HashMap<RuleEvent,MatchTreeNode>();
+    protected final Map<MatchResult,MatchTreeNode> matchNodeMap =
+        new HashMap<MatchResult,MatchTreeNode>();
 
     /**
      * Mapping from RuleMatches to transitions in the current LTS, for fast
@@ -911,7 +919,7 @@ public class RuleJTree extends JTree implements SimulationListener {
          * Creates a new match node on the basis of a given number and the
          * RuleMatch. The node cannot have children.
          */
-        public MatchTreeNode(int nr, RuleEvent event) {
+        public MatchTreeNode(int nr, MatchResult event) {
             super(event, false);
             this.nr = nr;
         }
