@@ -51,15 +51,13 @@ public class MatchSetCollector {
     /**
      * Constructs a match collector for a given (start) state.
      * @param state the state for which matches are to be collected
-     * @param cache object to decide on applicable rules
      * @param record factory to turn {@link RuleMatch}es in to
      *        {@link RuleEvent}s.
      */
-    public MatchSetCollector(GraphState state, ExploreCache cache,
-            SystemRecord record) {
+    public MatchSetCollector(GraphState state, SystemRecord record) {
         this.state = state;
         this.ctrlState = state.getCtrlState();
-        this.cache = cache;
+        assert this.ctrlState != null;
         this.record = record;
         GraphState parent = null;
         if (state instanceof GraphNextState) {
@@ -131,21 +129,17 @@ public class MatchSetCollector {
      */
     protected boolean collectEvents(Rule rule, Collection<MatchResult> result) {
         boolean hasMatched = addParentOuts(rule, result);
-        // AREND: I added here a check so that new matches are also added when the cache is a location cache
-        // because the parent state may (regardless enabledRules) have no matches in the parent due to control.
         if (hasNewMatches(rule)) {
             // if this rule used parameters in the control expression, we need
             // to construct a partial morphism out of them
             boolean bindingCorrect = true;
             NodeEdgeMap boundMap = null;
-            if (this.ctrlState != null) {
-                CtrlTransition ctrlTrans = this.ctrlState.getTransition(rule);
-                List<CtrlPar> args = ctrlTrans.getCall().getArgs();
-                if (args != null && args.size() > 0) {
-                    boundMap = new NodeEdgeHashMap();
-                    bindingCorrect =
-                        extractBinding(rule, ctrlTrans, args, boundMap);
-                }
+            CtrlTransition ctrlTrans = this.ctrlState.getTransition(rule);
+            List<CtrlPar> args = ctrlTrans.getCall().getArgs();
+            if (args != null && args.size() > 0) {
+                boundMap = new NodeEdgeHashMap();
+                bindingCorrect =
+                    extractBinding(rule, ctrlTrans, args, boundMap);
             }
             if (bindingCorrect) {
                 // the rule was possibly enabled afresh, so we have to add the fresh
@@ -163,9 +157,6 @@ public class MatchSetCollector {
     private boolean hasNewMatches(Rule rule) {
         if (this.enabledRules == null || this.enabledRules.contains(rule)) {
             return true;
-        }
-        if (this.ctrlState == null) {
-            return false;
         }
         GraphNextState state = (GraphNextState) this.state;
         if (state.getCtrlTransition().isModifying()) {
@@ -287,23 +278,12 @@ public class MatchSetCollector {
      */
     protected Rule firstRule() {
         Rule result;
-        CtrlState ctrlState = this.state.getCtrlState();
-        if (ctrlState == null) {
-            result = this.cache.last();
-            if (result == null && this.cache.hasNext()) {
-                // this means that the cache was freshly created and has never been
-                // incremented before
-                result = this.cache.next();
-            }
+        CtrlSchedule schedule = this.ctrlState.getSchedule();
+        this.state.setSchedule(schedule);
+        if (schedule.isFinished()) {
+            result = null;
         } else {
-            // refresh the schedule in the control state
-            CtrlSchedule schedule = ctrlState.getSchedule();
-            this.state.setSchedule(schedule);
-            if (schedule.isFinished()) {
-                result = null;
-            } else {
-                result = schedule.getTransition().getRule();
-            }
+            result = schedule.getTransition().getRule();
         }
         return result;
     }
@@ -314,13 +294,7 @@ public class MatchSetCollector {
     protected Rule nextRule(boolean matchFound) {
         Rule result;
         CtrlSchedule schedule = this.state.getSchedule();
-        if (schedule == null) {
-            if (matchFound) {
-                this.cache.updateMatches(this.cache.last());
-            }
-            this.cache.updateExplored(this.cache.last());
-            result = this.cache.hasNext() ? this.cache.next() : null;
-        } else if (schedule.isFinished()) {
+        if (schedule.isFinished()) {
             result = null;
         } else {
             this.state.setSchedule(schedule = schedule.next(matchFound));
@@ -337,8 +311,6 @@ public class MatchSetCollector {
     protected final GraphState state;
     /** The control state of the graph state, if any. */
     private final CtrlState ctrlState;
-    /** Matches cache. */
-    protected final ExploreCache cache;
     /** The system record is set at construction. */
     protected final SystemRecord record;
     private final Collection<GraphTransition> parentOuts;

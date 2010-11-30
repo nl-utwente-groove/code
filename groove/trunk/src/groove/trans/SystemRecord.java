@@ -1,22 +1,16 @@
 /* $Id$ */
 package groove.trans;
 
-import groove.explore.util.ExploreCache;
-import groove.explore.util.PriorityCache;
-import groove.explore.util.SimpleCache;
 import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.NodeFactory;
-import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.DefaultDispenser;
 import groove.util.TreeHashSet;
 
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -201,48 +195,6 @@ public class SystemRecord implements NodeFactory {
             this.dependencies = new RuleDependencies(this.grammar);
         }
         return this.dependencies;
-    }
-
-    /**
-     * Constructs an appropriate fresh explore cache for the graph grammar. The
-     * constructed cache is fresh in the sense that next is not called on it
-     * yet.
-     * @param state start state for the exploration
-     * @return An appropriate fresh explore cache, depending on the type of
-     *         grammar.
-     */
-    public ExploreCache freshCache(GraphState state) {
-        ExploreCache result;
-        if (this.grammar.hasMultiplePriorities()) {
-            result = new PriorityCache(this.grammar.getRuleMap());
-        } else {
-            result = new SimpleCache(this.grammar.getRules());
-        }
-        return result;
-    }
-
-    /**
-     * Constructs an appropriate explore cache for the graph grammar. The
-     * explore cache returned depends on the presence of rule priorities and the
-     * presence of control program. It is incremented whenever the state gives
-     * information on rules that match in this state.
-     * @param state the exploration state.
-     * @param isRuleInterrupted Indicates whether a rule may be interrupted.
-     * @return An appropriate explore cache, depending on the type of grammar.
-     */
-    public ExploreCache createCache(GraphState state, boolean isRuleInterrupted) {
-        ExploreCache result = freshCache(state);
-        // Increment the iterator with the transitions already explored
-        // for this state
-        Iterator<GraphTransition> succIter = state.getTransitionIter();
-        while (succIter.hasNext()) {
-            Rule r = succIter.next().getEvent().getRule();
-            result.updateMatches(r);
-            if (!isRuleInterrupted) {
-                result.updateExplored(r);
-            }
-        }
-        return result;
     }
 
     /**

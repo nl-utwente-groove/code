@@ -50,6 +50,7 @@ public class BoundedNestedDFSStrategy extends
     /**
      * The next step makes atomic the full exploration of a state.
      */
+    @Override
     public boolean next() {
         if (getAtBuchiState() == null) {
             while (getAtBuchiState() == null
@@ -141,8 +142,7 @@ public class BoundedNestedDFSStrategy extends
             getAtBuchiState().setExplored();
         }
 
-        updateAtState();
-        return true;
+        return updateAtState();
     }
 
     /**
@@ -176,7 +176,7 @@ public class BoundedNestedDFSStrategy extends
     }
 
     @Override
-    protected void updateAtState() {
+    protected boolean updateAtState() {
         Iterator<ProductTransition> outTransitionIter =
             getAtBuchiState().outTransitionIter();
         if (outTransitionIter.hasNext()) {
@@ -197,7 +197,7 @@ public class BoundedNestedDFSStrategy extends
                         if (!getBoundary().crossingBoundary(outTransition, true)) {
                             setAtBuchiState(newState);
                             setLastTransition(outTransition);
-                            return;
+                            return true;
                         } else {
                             processBoundaryCrossingTransition(outTransition);
                         }
@@ -223,6 +223,7 @@ public class BoundedNestedDFSStrategy extends
 
         // backtracking
         backtrack();
+        return getAtBuchiState() != null;
     }
 
     /**

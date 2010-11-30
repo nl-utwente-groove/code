@@ -16,15 +16,11 @@
  */
 package groove.explore.strategy;
 
-import groove.explore.util.ExploreCache;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.LTSAdapter;
-import groove.lts.MatchResult;
-
-import java.util.Collection;
 
 /**
  * Strategy that closes every state it explores, and adds the newly generated
@@ -33,22 +29,6 @@ import java.util.Collection;
  * e.g., breadth-first or depth-first.
  */
 abstract public class ClosingStrategy extends AbstractStrategy {
-    public boolean next() {
-        if (getAtState() == null) {
-            getGTS().removeGraphListener(this.exploreListener);
-            return false;
-        }
-        ExploreCache cache = getCache(false);
-        Collection<MatchResult> matchSet =
-            createMatchCollector(cache).getMatchSet();
-        for (MatchResult next : matchSet) {
-            applyEvent(next);
-        }
-        setClosed(getAtState(), true);
-        updateAtState();
-        return true;
-    }
-
     @Override
     public void prepare(GTS gts, GraphState startState) {
         super.prepare(gts, startState);
@@ -61,8 +41,12 @@ abstract public class ClosingStrategy extends AbstractStrategy {
     }
 
     @Override
-    protected void updateAtState() {
-        this.atState = getFromPool();
+    protected boolean updateAtState() {
+        boolean result = (this.atState = getFromPool()) != null;
+        if (!result) {
+            getGTS().removeGraphListener(this.exploreListener);
+        }
+        return result;
     }
 
     /** Callback method to add a pool element to the pool. */

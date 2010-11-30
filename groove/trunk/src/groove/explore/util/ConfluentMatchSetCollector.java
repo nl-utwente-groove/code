@@ -39,13 +39,11 @@ public class ConfluentMatchSetCollector extends MatchSetCollector {
     /**
      * Constructs a match collector for a given (start) state.
      * @param state the state for which matches are to be collected
-     * @param cache object to decide on applicable rules
      * @param record factory to turn {@link RuleMatch}es in to
      *        {@link RuleEvent}s.
      */
-    public ConfluentMatchSetCollector(GraphState state, ExploreCache cache,
-            SystemRecord record) {
-        super(state, cache, record);
+    public ConfluentMatchSetCollector(GraphState state, SystemRecord record) {
+        super(state, record);
     }
 
     /**

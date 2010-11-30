@@ -18,14 +18,7 @@
 package groove.explore.strategy;
 
 import groove.explore.util.ConfluentMatchSetCollector;
-import groove.explore.util.ExploreCache;
 import groove.explore.util.MatchSetCollector;
-import groove.lts.GraphState;
-import groove.lts.MatchResult;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * At each step, either fully explores an open state if the rule to be applied
@@ -33,51 +26,12 @@ import java.util.List;
  * performs a linear exploration.
  * @author Eduardo Zambon
  */
-public class LinearConfluentRules extends AbstractStrategy {
-
-    /**
-     * Selects an open state of the GTS as the current state to be explored. 
-     */
-    @Override
-    protected void updateAtState() {
-        Iterator<GraphState> stateIter = getGTS().getOpenStateIter();
-        if (stateIter.hasNext()) {
-            this.atState = stateIter.next();
-        } else {
-            this.atState = null;
-        }
-    }
-
-    /**
-     * A step of this strategy explores one state. All possible matches of
-     * non-confluent rules and an arbitrary match of confluent rules are
-     * explored.
-     * @return <code>true</code> if a state was successfully explored and
-     *         <code>false</code> otherwise.  
-     */
-    public boolean next() {
-        if (getAtState() == null) {
-            return false;
-        }
-        ExploreCache cache = getCache(true);
-        MatchSetCollector collector = createMatchCollector(cache);
-        // collect all matches
-        List<MatchResult> matches = new ArrayList<MatchResult>();
-        collector.collectMatchSet(matches);
-        Iterator<MatchResult> matchesIter = matches.iterator();
-        while (matchesIter.hasNext()) {
-            applyEvent(matchesIter.next());
-        }
-        setClosed(getAtState(), true);
-        updateAtState();
-        return true;
-    }
-
+public class LinearConfluentRules extends NextOpenStrategy {
     /**
      * Returns a {@link ConfluentMatchSetCollector}.
      */
     @Override
-    protected MatchSetCollector createMatchCollector(ExploreCache cache) {
-        return new ConfluentMatchSetCollector(getAtState(), cache, getRecord());
+    protected MatchSetCollector createMatchCollector() {
+        return new ConfluentMatchSetCollector(getAtState(), getRecord());
     }
 }

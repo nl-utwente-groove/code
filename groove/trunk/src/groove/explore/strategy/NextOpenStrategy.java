@@ -16,9 +16,7 @@
  */
 package groove.explore.strategy;
 
-import groove.explore.util.ExploreCache;
 import groove.lts.GraphState;
-import groove.lts.MatchResult;
 
 import java.util.Iterator;
 
@@ -28,30 +26,17 @@ import java.util.Iterator;
  * @author Staijen
  * 
  */
-public class BranchingStrategy extends AbstractStrategy {
-    /**
-     * A step of this strategy completely explores one state.
-     */
-    public boolean next() {
-        if (getAtState() == null) {
-            return false;
-        }
-        ExploreCache cache = getCache(false);
-        for (MatchResult match : createMatchCollector(cache).getMatchSet()) {
-            applyEvent(match);
-        }
-        setClosed(getAtState(), true);
-        updateAtState();
-        return true;
-    }
-
+public class NextOpenStrategy extends AbstractStrategy {
     @Override
-    protected void updateAtState() {
+    protected boolean updateAtState() {
+        boolean result;
         Iterator<GraphState> stateIter = getGTS().getOpenStateIter();
-        if (stateIter.hasNext()) {
+        result = stateIter.hasNext();
+        if (result) {
             this.atState = stateIter.next();
         } else {
             this.atState = null;
         }
+        return result;
     }
 }

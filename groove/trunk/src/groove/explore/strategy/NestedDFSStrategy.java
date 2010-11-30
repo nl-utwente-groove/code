@@ -38,9 +38,9 @@ public class NestedDFSStrategy extends AbstractModelCheckingStrategy {
     /**
      * The next step makes atomic the full exploration of a state.
      */
+    @Override
     public boolean next() {
         if (getAtBuchiState() == null) {
-            getProductGTS().removeListener(this.collector);
             return false;
         }
 
@@ -91,18 +91,18 @@ public class NestedDFSStrategy extends AbstractModelCheckingStrategy {
             // will never yield a counter-example
         }
 
-        updateAtState();
-        return true;
+        return updateAtState();
     }
 
     @Override
-    protected void updateAtState() {
+    protected boolean updateAtState() {
+        boolean result;
         if (this.collector.pickRandomNewState() != null) {
             GraphState newState = this.collector.pickRandomNewState();
             assert (newState instanceof BuchiGraphState) : "Expected a Buchi graph-state instead of a "
                 + newState.getClass();
             this.atBuchiState = (BuchiGraphState) newState;
-            return;
+            result = (this.atBuchiState != null);
         } else {
             BuchiGraphState s = null;
 
@@ -129,16 +129,21 @@ public class NestedDFSStrategy extends AbstractModelCheckingStrategy {
             if (parent == null) {
                 // the start state is reached and does not have open successors
                 this.atBuchiState = null;
-                return;
-            }
-            if (s != null) { // the current state has an open successor (is
+                result = false;
+            } else if (s != null) { // the current state has an open successor (is
                 // not really backtracking, a sibling state is
                 // fully explored)
                 this.atBuchiState = s;
+                result = true;
+            } else {
+                // else, atState is open, so we continue exploring it
+                result = true;
             }
-            // else, atState is open, so we continue exploring it
         }
-
+        if (!result) {
+            getProductGTS().removeListener(this.collector);
+        }
+        return result;
     }
 
     /**
