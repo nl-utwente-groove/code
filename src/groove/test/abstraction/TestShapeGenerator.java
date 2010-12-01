@@ -16,16 +16,19 @@
  */
 package groove.test.abstraction;
 
+import static org.junit.Assert.assertTrue;
 import groove.abstraction.Parameters;
 import groove.abstraction.ShapeGenerator;
-import junit.framework.TestCase;
+
+import org.junit.Test;
 
 /**
  * @author Eduardo Zambon
  */
 @SuppressWarnings("all")
-public class TestShapeGenerator extends TestCase {
+public class TestShapeGenerator {
 
+    @Test
     public void testShapeGenerator0() {
         final String GRAMMAR = "junit/samples/abs-single-link-list.gps";
         final String START_GRAPH = "start";
@@ -54,6 +57,7 @@ public class TestShapeGenerator extends TestCase {
 
     }
 
+    @Test
     public void testShapeGenerator1() {
         final String GRAMMAR = "junit/samples/abs-circ-buf.gps";
         final String START_GRAPH = "start";

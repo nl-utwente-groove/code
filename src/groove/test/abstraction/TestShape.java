@@ -16,6 +16,8 @@
  */
 package groove.test.abstraction;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import groove.abstraction.Materialisation;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.Parameters;
@@ -37,25 +39,25 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
-import junit.framework.TestCase;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * @author Eduardo Zambon
- * @version $Revision $
  */
 @SuppressWarnings("all")
-public class TestShape extends TestCase {
+public class TestShape {
 
     static private final String DIRECTORY = "junit/samples/abs-test.gps/";
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @BeforeClass
+    public static void setUp() {
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
         Multiplicity.initMultStore();
     }
 
+    @Test
     public void testShapeBuild0() {
         File file = new File(DIRECTORY + "shape-build-test-0.gst");
         try {
@@ -74,6 +76,7 @@ public class TestShape extends TestCase {
         }
     }
 
+    @Test
     public void testShapeBuild1() {
         File file = new File(DIRECTORY + "shape-build-test-1.gst");
         try {
@@ -86,6 +89,7 @@ public class TestShape extends TestCase {
         }
     }
 
+    @Test
     public void testShapeBuild2() {
         File file = new File(DIRECTORY + "shape-build-test-2.gst");
         try {
@@ -126,6 +130,7 @@ public class TestShape extends TestCase {
         }
     }
 
+    @Test
     public void testShapeBuild3() {
         File file = new File(DIRECTORY + "shape-build-test-5.gst");
         try {
@@ -165,6 +170,7 @@ public class TestShape extends TestCase {
         }
     }
 
+    @Test
     public void testShapeBuild4() {
         File file = new File(DIRECTORY + "shape-build-test-8.gst");
         try {
@@ -181,6 +187,7 @@ public class TestShape extends TestCase {
         }
     }
 
+    @Test
     public void testShapeIso() {
         File file = new File(DIRECTORY);
         try {

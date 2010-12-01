@@ -16,6 +16,8 @@
  */
 package groove.test.abstraction;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.Parameters;
 import groove.graph.DefaultEdge;
@@ -27,28 +29,24 @@ import groove.graph.Node;
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * @author Eduardo Zambon
- * @version $Revision $
  */
 @SuppressWarnings("all")
-public class TestMultiplicity extends TestCase {
+public class TestMultiplicity {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        Multiplicity.initMultStore();
-    }
-
+    @Test
     public void testEqualsObject() {
+        Multiplicity.initMultStore();
         assertTrue(Multiplicity.OMEGA.equals(Multiplicity.OMEGA));
         assertFalse(Multiplicity.OMEGA.equals(Multiplicity.getMultOf(0)));
         assertFalse(Multiplicity.OMEGA.equals(Multiplicity.getMultOf(1)));
         assertTrue(Multiplicity.getMultOf(1).equals(Multiplicity.getMultOf(1)));
     }
 
+    @Test
     public void testGetNodeSetMult() {
         Parameters.setNodeMultBound(2);
         Multiplicity.initMultStore();
@@ -65,6 +63,7 @@ public class TestMultiplicity extends TestCase {
         assertTrue(Multiplicity.OMEGA.equals(Multiplicity.getNodeSetMult(nodes)));
     }
 
+    @Test
     public void testGetEdgeSetMult() {
         Parameters.setEdgeMultBound(2);
         Multiplicity.initMultStore();
@@ -84,6 +83,7 @@ public class TestMultiplicity extends TestCase {
         assertTrue(Multiplicity.OMEGA.equals(Multiplicity.getEdgeSetMult(edges)));
     }
 
+    @Test
     public void testCompare() {
         Parameters.setNodeMultBound(2);
         Multiplicity.initMultStore();
@@ -103,6 +103,7 @@ public class TestMultiplicity extends TestCase {
         assertTrue(two.compare(omega) == -1 && omega.compare(two) == 1);
     }
 
+    @Test
     public void testIsPositive() {
         Parameters.setNodeMultBound(1);
         Multiplicity.initMultStore();
@@ -114,6 +115,7 @@ public class TestMultiplicity extends TestCase {
         assertTrue(omega.isPositive());
     }
 
+    @Test
     public void testIsAtMost() {
         Parameters.setNodeMultBound(2);
         Multiplicity.initMultStore();
@@ -139,6 +141,7 @@ public class TestMultiplicity extends TestCase {
         assertTrue(omega.isAtMost(omega));
     }
 
+    @Test
     public void testAdd() {
         Parameters.setNodeMultBound(2);
         Multiplicity.initMultStore();
@@ -160,6 +163,7 @@ public class TestMultiplicity extends TestCase {
         assertTrue(omega.add(one, 2).equals(omega));
     }
 
+    @Test
     public void testSub() {
         Parameters.setNodeMultBound(3);
         Multiplicity.initMultStore();
@@ -192,6 +196,7 @@ public class TestMultiplicity extends TestCase {
         assertTrue(result.size() == 3);
     }
 
+    @Test
     public void testMultiply() {
         Parameters.setEdgeMultBound(2);
         Multiplicity.initMultStore();
@@ -213,6 +218,7 @@ public class TestMultiplicity extends TestCase {
         assertTrue(omega.multiply(omega).equals(omega));
     }
 
+    @Test
     public void testOverlap() {
         Parameters.setEdgeMultBound(1);
         Multiplicity.initMultStore();

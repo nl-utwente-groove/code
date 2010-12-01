@@ -16,6 +16,7 @@
  */
 package groove.test.abstraction;
 
+import static org.junit.Assert.assertTrue;
 import groove.abstraction.Materialisation;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.PreMatch;
@@ -32,23 +33,23 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
-import junit.framework.TestCase;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * @author Eduardo Zambon
- * @version $Revision $
  */
 @SuppressWarnings("all")
-public class TestMaterialisation extends TestCase {
+public class TestMaterialisation {
 
     static private final String DIRECTORY = "junit/samples/abs-test.gps/";
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @BeforeClass
+    public static void setUp() {
         Multiplicity.initMultStore();
     }
 
+    @Test
     public void testMaterialisation0() {
         File file = new File(DIRECTORY);
         try {
@@ -78,6 +79,7 @@ public class TestMaterialisation extends TestCase {
         }
     }
 
+    @Test
     public void testMaterialisation1() {
         File file = new File(DIRECTORY);
         try {
@@ -107,6 +109,7 @@ public class TestMaterialisation extends TestCase {
         }
     }
 
+    @Test
     public void testMaterialisation2() {
         File file = new File(DIRECTORY);
         try {
@@ -136,6 +139,7 @@ public class TestMaterialisation extends TestCase {
         }
     }
 
+    @Test
     public void testRuleApplicationAndShapeNormalisation() {
         File file = new File(DIRECTORY);
         try {
