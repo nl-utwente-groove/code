@@ -17,6 +17,7 @@
 package groove.abstraction.lts;
 
 import groove.abstraction.Shape;
+import groove.control.CtrlCall;
 import groove.control.CtrlState;
 import groove.graph.Element;
 import groove.lts.AbstractGraphState;
@@ -52,8 +53,8 @@ public class ShapeState extends AbstractGraphState {
     protected final Set<GraphTransition> transitions =
         new HashSet<GraphTransition>();
     /** The outgoing transitions from this state. */
-    protected final Map<Rule,Collection<GraphTransition>> transitionMap =
-        new HashMap<Rule,Collection<GraphTransition>>();
+    protected final Map<CtrlCall,Collection<GraphTransition>> transitionMap =
+        new HashMap<CtrlCall,Collection<GraphTransition>>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -97,7 +98,7 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    public Map<Rule,Collection<GraphTransition>> getTransitionMap() {
+    public Map<CtrlCall,Collection<GraphTransition>> getTransitionMap() {
         return Collections.unmodifiableMap(this.transitionMap);
     }
 
@@ -108,8 +109,8 @@ public class ShapeState extends AbstractGraphState {
         Rule rule = transition.getEvent().getRule();
         Collection<GraphTransition> ruleTrans = this.transitionMap.get(rule);
         if (ruleTrans == null) {
-            this.transitionMap.put(rule, ruleTrans =
-                new ArrayList<GraphTransition>());
+            this.transitionMap.put(transition.getCtrlTransition().getCall(),
+                ruleTrans = new ArrayList<GraphTransition>());
         }
         ruleTrans.add(transition);
         return this.transitions.add(transition);

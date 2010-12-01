@@ -16,6 +16,7 @@
  */
 package groove.explore.util;
 
+import groove.control.CtrlTransition;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.trans.Rule;
@@ -24,7 +25,6 @@ import groove.trans.RuleMatch;
 import groove.trans.SystemRecord;
 
 import java.util.Collection;
-import java.util.Iterator;
 
 /**
  * Algorithm to create a mapping from enabled rules to collections of events for
@@ -49,28 +49,26 @@ public class ConfluentMatchSetCollector extends MatchSetCollector {
     /**
      * Adds the matching events for a given rule into an existing set.
      * If the rule is confluent only one arbitrary match is added.
-     * @param rule the rule to be matched
+     * @param call the rule to be matched
      * @param result the set to which the resulting events are to be added
      * @return <code>true</code> if any events for <code>rule</code> were
      *         added to <code>result</code>
      */
     @Override
-    protected boolean collectEvents(Rule rule, Collection<MatchResult> result) {
+    protected boolean collectEvents(CtrlTransition call,
+            Collection<MatchResult> result) {
         boolean eventAdded;
+        Rule rule = call.getRule();
         if (rule.isConfluent()) {
-            Iterator<RuleMatch> iterator =
-                rule.getMatchIter(this.state.getGraph(), null);
-            if (iterator.hasNext()) {
-                // Get an arbitrary match
-                RuleMatch match = iterator.next();
-                result.add(this.record.getEvent(match));
-                eventAdded = true;
-            } else { // No matches, the result collection is returned empty.
-                eventAdded = false;
+            // find a single match for this call
+            MatchResult match = getMatch(call);
+            eventAdded = match != null;
+            if (eventAdded) {
+                result.add(match);
             }
         } else { // Rule is not confluent.
             // Use method from super class.
-            eventAdded = super.collectEvents(rule, result);
+            eventAdded = super.collectEvents(call, result);
         }
         return eventAdded;
     }
@@ -83,19 +81,19 @@ public class ConfluentMatchSetCollector extends MatchSetCollector {
      */
     @Override
     public void collectMatchSet(Collection<MatchResult> result) {
-        Rule currentRule = firstRule();
+        CtrlTransition ctrlTrans = firstCall();
         boolean usedConfluentRule = false;
-        while (currentRule != null) {
+        while (ctrlTrans != null) {
             boolean hasMatches = false;
-            if (!(currentRule.isConfluent() && usedConfluentRule)) {
-                hasMatches = collectEvents(currentRule, result);
+            if (!(ctrlTrans.getRule().isConfluent() && usedConfluentRule)) {
+                hasMatches = collectEvents(ctrlTrans, result);
                 if (hasMatches) {
-                    if (currentRule.isConfluent()) {
+                    if (ctrlTrans.getRule().isConfluent()) {
                         usedConfluentRule = true;
                     }
                 }
             }
-            currentRule = nextRule(hasMatches);
+            ctrlTrans = nextCall(hasMatches);
         }
     }
 

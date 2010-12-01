@@ -16,6 +16,7 @@
  */
 package groove.explore.util;
 
+import groove.control.CtrlCall;
 import groove.control.CtrlPar;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
@@ -74,30 +75,38 @@ public class MatchSetCollector {
     /** Returns a single match for the state passed in through the constructor. */
     public MatchResult getMatch() {
         MatchResult result = null;
-        Rule currentRule = firstRule();
-        while (result == null && currentRule != null) {
-            // first try to find a virtual event
-            Collection<GraphTransition> parentOuts = getParentOuts(currentRule);
+        findResult: for (CtrlTransition ctrlTrans = firstCall(); result == null
+            && ctrlTrans != null; ctrlTrans = nextCall(false)) {
+            // first try to find a parent transition
+            Collection<GraphTransition> parentOuts = getParentOuts(ctrlTrans);
             if (parentOuts != null) {
                 for (GraphTransition parentOut : parentOuts) {
                     if (isStillValid(parentOut)) {
                         result = parentOut;
-                        break;
+                        break findResult;
                     }
                 }
             }
-            if (result == null) {
-                // if this fails, try to find a match
-                Iterator<RuleMatch> matchIter =
-                    currentRule.getMatchIter(this.state.getGraph(), null);
-                if (matchIter.hasNext()) {
-                    // convert the match to an event
-                    result = this.record.getEvent(matchIter.next());
-                } else {
-                    // no luck; try the next rule
-                    currentRule = nextRule(false);
-                }
-            }
+            // if this fails, try to find a match
+            // taking the variable binding into account
+            result = getMatch(ctrlTrans);
+        }
+        return result;
+    }
+
+    /** Returns a match result for a given control transition. */
+    protected MatchResult getMatch(CtrlTransition ctrlTrans) {
+        NodeEdgeMap boundMap = extractBinding(ctrlTrans);
+        MatchResult result = null;
+        Iterator<RuleMatch> matchIter = null;
+        if (boundMap != null) {
+            matchIter =
+                ctrlTrans.getRule().getMatchIter(this.state.getGraph(),
+                    boundMap);
+        }
+        if (matchIter != null && matchIter.hasNext()) {
+            // convert the match to an event
+            result = this.record.getEvent(matchIter.next());
         }
         return result;
     }
@@ -117,39 +126,37 @@ public class MatchSetCollector {
      * constructor into a collection passed in as a parameter.
      */
     public void collectMatchSet(Collection<MatchResult> result) {
-        Rule currentRule = firstRule();
-        while (currentRule != null) {
-            boolean hasMatches = collectEvents(currentRule, result);
-            currentRule = nextRule(hasMatches);
+        CtrlTransition ctrlTrans = firstCall();
+        while (ctrlTrans != null) {
+            boolean hasMatches = collectEvents(ctrlTrans, result);
+            ctrlTrans = nextCall(hasMatches);
         }
     }
 
     /**
      * Adds the matching events for a given rule into an existing set.
-     * @param rule the rule to be matched
+     * @param ctrlTrans the rule to be matched
      * @param result the set to which the resulting events are to be added
      * @return <code>true</code> if any events for <code>rule</code> were
      *         added to <code>result</code>
      */
-    protected boolean collectEvents(Rule rule, Collection<MatchResult> result) {
-        boolean hasMatched = addParentOuts(rule, result);
-        if (hasNewMatches(rule)) {
-            // if this rule used parameters in the control expression, we need
-            // to construct a partial morphism out of them
-            boolean bindingCorrect = true;
-            NodeEdgeMap boundMap = null;
-            CtrlTransition ctrlTrans = this.ctrlState.getTransition(rule);
-            List<CtrlPar> args = ctrlTrans.getCall().getArgs();
-            if (args != null && args.size() > 0) {
-                boundMap = new NodeEdgeHashMap();
-                bindingCorrect =
-                    extractBinding(rule, ctrlTrans, args, boundMap);
-            }
-            if (bindingCorrect) {
-                // the rule was possibly enabled afresh, so we have to add the fresh
-                // matches
-                for (RuleMatch match : rule.getMatches(this.state.getGraph(),
-                    boundMap)) {
+    protected boolean collectEvents(CtrlTransition ctrlTrans,
+            Collection<MatchResult> result) {
+        boolean isEnabled = isEnabled(ctrlTrans.getCall());
+        // there are two reasons to want to use the parent matches: to
+        // save matching time, or to find confluent diamonds. The first
+        // is only relevant if the rule is not (re)enabled, the second
+        // only if the parent match target is already closed
+        boolean hasMatched = addParentOuts(ctrlTrans, isEnabled, result);
+        if (isEnabled) {
+            // the rule was possibly enabled afresh, so we have to add the fresh
+            // matches
+            NodeEdgeMap boundMap = extractBinding(ctrlTrans);
+            if (boundMap != null) {
+                Iterable<RuleMatch> matches =
+                    ctrlTrans.getRule().getMatches(this.state.getGraph(),
+                        boundMap);
+                for (RuleMatch match : matches) {
                     result.add(this.record.getEvent(match));
                     hasMatched = true;
                 }
@@ -158,8 +165,8 @@ public class MatchSetCollector {
         return hasMatched;
     }
 
-    private boolean hasNewMatches(Rule rule) {
-        if (this.enabledRules == null || this.enabledRules.contains(rule)) {
+    private boolean isEnabled(CtrlCall call) {
+        if (this.enabledRules == null || this.enabledRules.contains(call)) {
             return true;
         }
         // since enabledRules != null, it is now certain that this is a NextState
@@ -169,56 +176,62 @@ public class MatchSetCollector {
         }
         // there may be new matches only if the rule was untried in
         // the parent state
-        return !state.source().getSchedule().getTriedRules().contains(rule);
+        return !state.source().getSchedule().getTriedRules().contains(call);
     }
 
     /** Extracts the morphism from rule nodes to input graph nodes
      * corresponding to the transition's input parameters.
-     * @param result collects the resulting binding
-     * @return if {@code false}, the binding cannot be constructed and
+     * @return if {@code null}, the binding cannot be constructed and
      * so the rule cannot match
      */
-    private boolean extractBinding(Rule rule, CtrlTransition ctrlTrans,
-            List<CtrlPar> args, NodeEdgeMap result) {
-        boolean success = true;
-        int[] parBinding = ctrlTrans.getParBinding();
-        List<CtrlPar.Var> ruleSig = rule.getSignature();
-        Node[] boundNodes = this.state.getBoundNodes();
-        for (int i = 0; i < args.size(); i++) {
-            CtrlPar arg = args.get(i);
-            Node image = null;
-            if (arg instanceof CtrlPar.Const) {
-                image = ((CtrlPar.Const) arg).getConstNode();
-                assert image != null : String.format(
-                    "Constant argument %s not initialised properly", arg);
-            } else if (arg.isInOnly()) {
-                image = boundNodes[parBinding[i]];
-                // test if the bound node is not deleted by a previous rule
-                if (image == null) {
-                    success = false;
-                    break;
+    private NodeEdgeMap extractBinding(CtrlTransition ctrlTrans) {
+        NodeEdgeMap result = new NodeEdgeHashMap();
+        List<CtrlPar> args = ctrlTrans.getCall().getArgs();
+        if (args != null && args.size() > 0) {
+            int[] parBinding = ctrlTrans.getParBinding();
+            List<CtrlPar.Var> ruleSig = ctrlTrans.getRule().getSignature();
+            Node[] boundNodes = this.state.getBoundNodes();
+            for (int i = 0; i < args.size(); i++) {
+                CtrlPar arg = args.get(i);
+                Node image = null;
+                if (arg instanceof CtrlPar.Const) {
+                    image = ((CtrlPar.Const) arg).getConstNode();
+                    assert image != null : String.format(
+                        "Constant argument %s not initialised properly", arg);
+                } else if (arg.isInOnly()) {
+                    image = boundNodes[parBinding[i]];
+                    // test if the bound node is not deleted by a previous rule
+                    if (image == null) {
+                        result = null;
+                        break;
+                    }
+                } else {
+                    // non-input arguments are ignored
+                    continue;
                 }
-            } else {
-                // non-input arguments are ignored
-                continue;
+                result.putNode(ruleSig.get(i).getRuleNode(), image);
             }
-            result.putNode(ruleSig.get(i).getRuleNode(), image);
         }
-        return success;
+        return result;
     }
 
     /**
      * Adds the parent's out-transitions for a given rule into an existing set.
-     * @return <code>true</code> if any virtual events were found
+     * @param closedOnly if {@code true}, only the out transitions to
+     *  closed states should be added
+     * @return <code>true</code> if any out-transitions were found
      */
-    private boolean addParentOuts(Rule rule, Collection<MatchResult> result) {
+    private boolean addParentOuts(CtrlTransition call, boolean closedOnly,
+            Collection<MatchResult> result) {
         boolean hasMatches = false;
-        Collection<GraphTransition> parentOuts = getParentOuts(rule);
+        Collection<GraphTransition> parentOuts = getParentOuts(call);
         if (parentOuts != null) {
             for (GraphTransition parentOut : parentOuts) {
                 if (isStillValid(parentOut)) {
+                    //                    && (!closedOnly || parentOut.target().isClosed())) {
                     result.add(parentOut);
                     hasMatches = true;
+                    parentOutReuse++;
                 }
             }
         }
@@ -226,26 +239,30 @@ public class MatchSetCollector {
     }
 
     /** Returns the parent's out-transitions for a given rule (if any). */
-    public Collection<GraphTransition> getParentOuts(Rule rule) {
-        return this.parentOutMap == null ? null : this.parentOutMap.get(rule);
+    private Collection<GraphTransition> getParentOuts(CtrlTransition ctrlTrans) {
+        Collection<GraphTransition> result = null;
+        if (this.parentOutMap != null) {
+            result = this.parentOutMap.get(ctrlTrans.getCall());
+        }
+        return result;
     }
 
     /**
      * Tests if a parent out-transition is still valid in this state.
      */
-    private boolean isStillValid(GraphTransition parentTrans) {
-        Rule rule = parentTrans.getEvent().getRule();
+    private boolean isStillValid(GraphTransition parentOut) {
+        Rule rule = parentOut.getEvent().getRule();
         boolean result = !this.disabledRules.contains(rule);
         if (!result) {
             assert this.state instanceof GraphNextState;
             // check if the underlying control transition is the same
-            CtrlTransition virtualCtrlTrans = parentTrans.getCtrlTransition();
+            CtrlTransition parentCtrlTrans = parentOut.getCtrlTransition();
             CtrlState myCtrlState = this.state.getCtrlState();
             CtrlTransition myCtrlTrans =
                 myCtrlState == null ? null : myCtrlState.getTransition(rule);
             result =
-                virtualCtrlTrans == myCtrlTrans
-                    && parentTrans.getEvent().hasMatch(this.state.getGraph());
+                parentCtrlTrans == myCtrlTrans
+                    && parentOut.getEvent().hasMatch(this.state.getGraph());
         }
         return result;
     }
@@ -253,14 +270,14 @@ public class MatchSetCollector {
     /**
      * Returns the first rule of the state's control schedule.
      */
-    protected Rule firstRule() {
-        Rule result;
+    protected CtrlTransition firstCall() {
+        CtrlTransition result;
         CtrlSchedule schedule = this.ctrlState.getSchedule();
         this.state.setSchedule(schedule);
         if (schedule.isFinished()) {
             result = null;
         } else {
-            result = schedule.getTransition().getRule();
+            result = schedule.getTransition();
         }
         return result;
     }
@@ -268,8 +285,8 @@ public class MatchSetCollector {
     /**
      * Increments the rule iterator, and returns the next rule.
      */
-    protected Rule nextRule(boolean matchFound) {
-        Rule result;
+    protected CtrlTransition nextCall(boolean matchFound) {
+        CtrlTransition result;
         CtrlSchedule schedule = this.state.getSchedule();
         if (schedule.isFinished()) {
             result = null;
@@ -278,7 +295,7 @@ public class MatchSetCollector {
             if (schedule.isFinished()) {
                 result = null;
             } else {
-                result = schedule.getTransition().getRule();
+                result = schedule.getTransition();
             }
         }
         return result;
@@ -293,7 +310,7 @@ public class MatchSetCollector {
     /** Possibly {@code null} mapping from rules to sets of outgoing
      * transitions for the parent of this state.
      */
-    private final Map<Rule,Collection<GraphTransition>> parentOutMap;
+    private final Map<CtrlCall,Collection<GraphTransition>> parentOutMap;
     /** The rules that may be enabled. */
     private Set<Rule> enabledRules;
     /** The rules that may be disabled. */

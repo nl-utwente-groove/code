@@ -32,7 +32,9 @@ import groove.rel.Automaton;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.util.Groove;
+import groove.view.FormatException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -116,7 +118,9 @@ public class RuleDependencies {
                 System.out.println("No dependency:  " + allRuleNames);
                 System.out.println();
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
             e.printStackTrace();
         }
     }
@@ -311,7 +315,7 @@ public class RuleDependencies {
         for (Rule rule : this.rules) {
             Set<Label> positives = this.positiveLabelsMap.get(rule);
             Set<Label> negatives = this.negativeLabelsMap.get(rule);
-            Set<CtrlType> inPars = this.inParameterMap.get(rule);
+            //            Set<CtrlType> inPars = this.inParameterMap.get(rule);
             for (Rule depRule : this.rules) {
                 // a positive dependency exists if the other rule produces
                 // labels
@@ -365,12 +369,14 @@ public class RuleDependencies {
                 // a positive and negative dependency exists if the other
                 // rule has output parameters of a type of which this rule 
                 // has input parameters.
-                Set<CtrlType> depOutTypes =
-                    new HashSet<CtrlType>(this.outParameterMap.get(depRule));
-                if (depOutTypes.removeAll(inPars)) {
-                    addEnabling(depRule, rule);
-                    addDisabling(depRule, rule);
-                }
+                // switched off again as this is taken care of by 
+                // a more careful analysis of the actual rule calls
+                //                Set<CtrlType> depOutTypes =
+                //                    new HashSet<CtrlType>(this.outParameterMap.get(depRule));
+                //                if (depOutTypes.removeAll(inPars)) {
+                //                    addEnabling(depRule, rule);
+                //                    addDisabling(depRule, rule);
+                //                }
             }
         }
     }
