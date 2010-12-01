@@ -19,7 +19,6 @@ package groove.abstraction.lts;
 import groove.abstraction.Shape;
 import groove.control.CtrlState;
 import groove.graph.Element;
-import groove.graph.Graph;
 import groove.lts.AbstractGraphState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -78,7 +77,7 @@ public class ShapeState extends AbstractGraphState {
     // ------------------------------------------------------------------------
 
     @Override
-    public Graph getGraph() {
+    public Shape getGraph() {
         return this.shape;
     }
 

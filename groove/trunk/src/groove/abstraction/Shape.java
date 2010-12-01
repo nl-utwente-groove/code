@@ -29,6 +29,8 @@ import groove.graph.iso.DefaultIsoChecker.IsoCheckerState;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
+import groove.trans.SPOEvent;
+import groove.trans.SPORule;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -908,6 +910,18 @@ public final class Shape extends DefaultGraph {
     /** Returns all pre-matches of the given rule into the shape. */
     public Set<RuleMatch> getPreMatches(Rule rule) {
         return PreMatch.getPreMatches(this, rule);
+    }
+
+    /** Returns all pre-matches of the given rule into the shape as events. */
+    public Set<RuleEvent> getPreMatchEvents(Rule rule) {
+        Set<RuleEvent> events = new HashSet<RuleEvent>();
+        for (RuleMatch match : this.getPreMatches(rule)) {
+            SPOEvent event =
+                new SPOEvent((SPORule) rule, match.getElementMap(),
+                    ShapeNodeFactory.FACTORY, false);
+            events.add(event);
+        }
+        return events;
     }
 
     /**

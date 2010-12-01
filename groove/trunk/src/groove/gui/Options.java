@@ -326,6 +326,13 @@ public class Options implements Cloneable {
      * Start simulation action name
      */
     public static final String START_SIMULATION_ACTION_NAME = "Clear LTS";
+
+    /** To abstract mode action name */
+    public static final String TOGGLE_TO_ABS_ACTION_NAME =
+        "Enter Abstraction Mode";
+    /** To concrete mode action name */
+    public static final String TOGGLE_TO_CONC_ACTION_NAME =
+        "Return to Concrete Mode";
     /**
      * Save action name
      */
@@ -518,6 +525,9 @@ public class Options implements Cloneable {
     /** Run keystroke */
     public static final KeyStroke START_SIMULATION_KEY =
         KeyStroke.getKeyStroke("F11");
+    /** Toggle exploration keystroke */
+    public static final KeyStroke TOGGLE_EXP_MODE_KEY =
+        KeyStroke.getKeyStroke("control B");
     /** Undo keystroke */
     public static final KeyStroke UNDO_KEY =
         KeyStroke.getKeyStroke("control Z");

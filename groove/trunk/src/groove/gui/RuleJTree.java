@@ -130,6 +130,18 @@ public class RuleJTree extends JTree implements SimulationListener {
         });
     }
 
+    /** Clears all maps of the tree. */
+    private void clearAllMaps() {
+        this.ruleNodeMap.clear();
+        this.clearMatchMaps();
+    }
+
+    /** Clears the match maps of the tree. */
+    protected void clearMatchMaps() {
+        this.matchNodeMap.clear();
+        this.matchTransitionMap.clear();
+    }
+
     /**
      * Fills the rule directory with rule nodes, based on a given rule system.
      * Sets the current LTS to the grammar's LTS.
@@ -137,9 +149,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
         this.displayedGrammar = grammar;
         if (grammar == null) {
-            this.ruleNodeMap.clear();
-            this.matchNodeMap.clear();
-            this.matchTransitionMap.clear();
+            this.clearAllMaps();
             this.topDirectoryNode.removeAllChildren();
             this.ruleDirectory.reload();
         } else {
@@ -158,9 +168,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         setShowAnchorsOptionListener();
         Map<RuleName,DirectoryTreeNode> dirNodeMap =
             new HashMap<RuleName,DirectoryTreeNode>();
-        this.ruleNodeMap.clear();
-        this.matchNodeMap.clear();
-        this.matchTransitionMap.clear();
+        this.clearAllMaps();
         this.topDirectoryNode.removeAllChildren();
         DefaultMutableTreeNode topNode = this.topDirectoryNode;
         Map<Integer,Set<RuleView>> priorityMap = getPriorityMap(grammar);
@@ -339,7 +347,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Refreshes the selection in the tree, based on the current state of the
      * Simulator.
      */
-    private void refresh() {
+    protected void refresh() {
         boolean oldListenToSelectionChanges = this.listenToSelectionChanges;
         this.listenToSelectionChanges = false;
         GraphState state = getCurrentState();
@@ -382,8 +390,7 @@ public class RuleJTree extends JTree implements SimulationListener {
             this.ruleDirectory.removeNodeFromParent(matchNode);
         }
         // clean up current match node map
-        this.matchNodeMap.clear();
-        this.matchTransitionMap.clear();
+        this.clearMatchMaps();
         // expand all rule nodes and subsequently collapse all directory nodes
         for (DefaultMutableTreeNode nextNode : this.ruleNodeMap.values()) {
             if (!(nextNode instanceof DirectoryTreeNode)) {
@@ -435,8 +442,7 @@ public class RuleJTree extends JTree implements SimulationListener {
             this.ruleDirectory.removeNodeFromParent(matchNode);
         }
         // clean up current match node map
-        this.matchNodeMap.clear();
-        this.matchTransitionMap.clear();
+        this.clearMatchMaps();
 
         // expand all rule nodes and subsequently collapse all directory nodes
         for (DefaultMutableTreeNode nextNode : this.ruleNodeMap.values()) {
@@ -474,7 +480,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     }
 
     /** Convenience method to retrieve the current GTS from the simulator. */
-    private GTS getCurrentGTS() {
+    protected GTS getCurrentGTS() {
         return getSimulator().getGTS();
     }
 
@@ -498,7 +504,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Convenience method to retrieve the currently selected state from the
      * simulator.
      */
-    private GraphState getCurrentState() {
+    protected GraphState getCurrentState() {
         return getSimulator().getCurrentState();
     }
 
@@ -516,7 +522,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * @param state the new value of the displayed state
      * @return <code>true</code> if the new value differs from the old
      */
-    private boolean setDisplayedState(GraphState state) {
+    protected boolean setDisplayedState(GraphState state) {
         boolean result = state != this.displayedState;
         this.displayedState = state;
         return result;
@@ -579,7 +585,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     protected final DefaultMutableTreeNode topDirectoryNode;
 
     /** Returns the associated simulator. */
-    private final Simulator getSimulator() {
+    protected final Simulator getSimulator() {
         return this.simulator;
     }
 
@@ -624,7 +630,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Switch to determine whether changes in the tree selection model should
      * trigger any actions right now.
      */
-    private transient boolean listenToSelectionChanges;
+    protected transient boolean listenToSelectionChanges;
 
     /**
      * The background colour of this component when it is enabled.
@@ -635,7 +641,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     /** The currently displayed state. */
     private GraphState displayedState;
     /** The currently displayed grammar. */
-    private GrammarView displayedGrammar;
+    protected GrammarView displayedGrammar;
 
     /**
      * Transforms a given rule name into the string that shows this rule is
@@ -648,7 +654,8 @@ public class RuleJTree extends JTree implements SimulationListener {
         return "(" + name + ")";
     }
 
-    static private final Color TREE_ENABLED_COLOR = Color.WHITE;
+    /** The background colour of the tree when enabled. */
+    public static final Color TREE_ENABLED_COLOR = Color.WHITE;
     /** The background colour of a selected cell if the list does not have focus. */
     static private final Color SELECTION_NON_FOCUS_COLOR = Color.LIGHT_GRAY;
 
@@ -804,7 +811,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     /**
      * Rule nodes (= level 1 nodes) of the directory
      */
-    private static class RuleTreeNode extends DefaultMutableTreeNode {
+    public static class RuleTreeNode extends DefaultMutableTreeNode {
         /**
          * Creates a new rule node based on a given rule name. The node can have
          * children.
