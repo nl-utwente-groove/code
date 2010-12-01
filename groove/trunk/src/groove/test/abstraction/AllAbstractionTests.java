@@ -16,26 +16,16 @@
  */
 package groove.test.abstraction;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 /**
  * @author Eduardo Zambon
- * @version $Revision $
  */
-@SuppressWarnings("all")
+@RunWith(Suite.class)
+@Suite.SuiteClasses({TestMultiplicity.class, TestGraphNeighEquiv.class,
+    TestShape.class, TestPreMatch.class, TestMaterialisation.class,
+    TestShapeGenerator.class})
 public class AllAbstractionTests {
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite("Test for groove.test.abstraction");
-        // $JUnit-BEGIN$
-        suite.addTest(new TestSuite(TestMultiplicity.class));
-        suite.addTest(new TestSuite(TestGraphNeighEquiv.class));
-        suite.addTest(new TestSuite(TestShape.class));
-        suite.addTest(new TestSuite(TestPreMatch.class));
-        suite.addTest(new TestSuite(TestMaterialisation.class));
-        suite.addTest(new TestSuite(TestShapeGenerator.class));
-        // $JUnit-END$
-        return suite;
-    }
+    // Empty by design.
 }

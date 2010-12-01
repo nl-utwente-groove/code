@@ -16,6 +16,8 @@
  */
 package groove.test.abstraction;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import groove.abstraction.GraphNeighEquiv;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.Parameters;
@@ -27,25 +29,25 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
-import junit.framework.TestCase;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * @author Eduardo Zambon
- * @version $Revision $
  */
 @SuppressWarnings("all")
-public class TestGraphNeighEquiv extends TestCase {
+public class TestGraphNeighEquiv {
 
     static private final String DIRECTORY = "junit/samples/abs-test.gps/";
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @BeforeClass
+    public static void setUp() {
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
         Multiplicity.initMultStore();
     }
 
+    @Test
     public void testLevelZeroEquiv() {
         File file = new File(DIRECTORY + "equiv-test-0.gst");
         try {
@@ -72,6 +74,7 @@ public class TestGraphNeighEquiv extends TestCase {
         }
     }
 
+    @Test
     public void testLevelOneEquiv() {
         File file = new File(DIRECTORY + "equiv-test-1.gst");
         try {
@@ -87,6 +90,7 @@ public class TestGraphNeighEquiv extends TestCase {
         }
     }
 
+    @Test
     public void testLevelTwoEquiv() {
         File file = new File(DIRECTORY + "equiv-test-2.gst");
         try {

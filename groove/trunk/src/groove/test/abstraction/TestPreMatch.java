@@ -16,6 +16,7 @@
  */
 package groove.test.abstraction;
 
+import static org.junit.Assert.assertTrue;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.Parameters;
 import groove.abstraction.PreMatch;
@@ -31,24 +32,25 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
-import junit.framework.TestCase;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * @author Eduardo Zambon
- * @version $Revision $
  */
 @SuppressWarnings("all")
-public class TestPreMatch extends TestCase {
+public class TestPreMatch {
 
     static private final String DIRECTORY = "junit/samples/abs-test.gps/";
 
-    protected void setUp() throws Exception {
-        super.setUp();
+    @BeforeClass
+    public static void setUp() {
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
         Multiplicity.initMultStore();
     }
 
+    @Test
     public void testPreMatch0() {
         Parameters.setNodeMultBound(3);
         Parameters.setEdgeMultBound(1);
@@ -69,6 +71,7 @@ public class TestPreMatch extends TestCase {
         }
     }
 
+    @Test
     public void testPreMatch1() {
         Parameters.setNodeMultBound(3);
         Parameters.setEdgeMultBound(1);
@@ -89,6 +92,7 @@ public class TestPreMatch extends TestCase {
         }
     }
 
+    @Test
     public void testPreMatch2() {
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
@@ -112,6 +116,7 @@ public class TestPreMatch extends TestCase {
         }
     }
 
+    @Test
     public void testPreMatch3() {
         File file = new File(DIRECTORY);
         try {
