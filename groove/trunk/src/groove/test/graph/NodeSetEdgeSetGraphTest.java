@@ -16,6 +16,7 @@
  */
 package groove.test.graph;
 
+import groove.graph.GraphFactory;
 import groove.graph.NodeSetEdgeSetGraph;
 
 /**
@@ -23,9 +24,10 @@ import groove.graph.NodeSetEdgeSetGraph;
  * @author Arend Rensink
  * @version $Revision$
  */
-@SuppressWarnings("all")
 public class NodeSetEdgeSetGraphTest extends GraphTest {
-    public NodeSetEdgeSetGraphTest(String name) {
-        super(name, new NodeSetEdgeSetGraph());
+
+    @Override
+    GraphFactory getFactory() {
+        return GraphFactory.getInstance(new NodeSetEdgeSetGraph());
     }
 }

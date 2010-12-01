@@ -29,12 +29,9 @@ import java.io.File;
  */
 @SuppressWarnings("all")
 public class DeltaGraphTest extends GraphTest {
-    public DeltaGraphTest(String name) {
-        super(name);
-    }
 
     @Override
-    protected Graph loadGraph(File file) throws Exception {
+    protected Graph loadGraph(File file) {
         AbstractGraph basis = (AbstractGraph) super.loadGraph(file);
         basis.setFixed();
         return new DeltaGraph(basis);

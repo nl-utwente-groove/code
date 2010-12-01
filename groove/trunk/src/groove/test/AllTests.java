@@ -16,35 +16,24 @@
  */
 package groove.test;
 
-import groove.test.verify.ModelCheckingTest;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import groove.test.abstraction.AllAbstractionTests;
+import groove.test.control.AllControlTests;
+import groove.test.graph.AllGraphTests;
+import groove.test.verify.AllVerifyTests;
+
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 /**
- * 
  * @author Arend Rensink
  * @version $Revision$
  */
-@SuppressWarnings("all")
+@RunWith(Suite.class)
+@Suite.SuiteClasses({AllAbstractionTests.class, AllControlTests.class,
+    AllGraphTests.class, AllVerifyTests.class, AutomatonTest.class,
+    BinaryEdgeTest.class, ExplorationTest.class, HashBagTest.class,
+    IOTest.class, LabelStoreTest.class, MorphismTest.class, NACTest.class,
+    TreeHashSetTest.class})
 public class AllTests {
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite("Test for groove.test");
-        // $JUnit-BEGIN$
-        suite.addTest(new TestSuite(BinaryEdgeTest.class));
-        suite.addTest(new TestSuite(GraphCreationTest.class));
-        suite.addTest(new TestSuite(MorphismTest.class));
-        suite.addTest(new TestSuite(NACTest.class));
-        suite.addTest(new TestSuite(HashBagTest.class));
-        suite.addTest(new TestSuite(ExplorationTest.class));
-        suite.addTest(new TestSuite(ModelCheckingTest.class));
-        suite.addTest(new TestSuite(TreeSetTest.class));
-        suite.addTest(new TestSuite(IOTest.class));
-        suite.addTest(new TestSuite(ControlVariablesTest.class));
-        suite.addTest(new TestSuite(ControlAttributeParametersTest.class));
-        suite.addTest(new TestSuite(CtrlBuildTest.class));
-        suite.addTest(new TestSuite(LabelStoreTest.class));
-        // $JUnit-END$
-        return suite;
-    }
+    // Empty by design.
 }

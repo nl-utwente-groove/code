@@ -16,6 +16,11 @@
  */
 package groove.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.graph.LabelStore;
@@ -25,15 +30,20 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * @author Arend
+ * @author Arend Rensink
  * @version $Revision $
  */
-public class LabelStoreTest extends TestCase {
-    @Override
-    protected void setUp() throws Exception {
+public class LabelStoreTest {
+
+    /**
+     * Initialisation.
+     */
+    @Before
+    public void setUp() {
         this.store1 = new LabelStore();
         this.store1.addSubtype(this.typeA, this.typeB);
         this.store1.addSubtype(this.typeB, this.typeC);
@@ -45,6 +55,7 @@ public class LabelStoreTest extends TestCase {
      * Test method for
      * {@link groove.graph.LabelStore#add(groove.graph.LabelStore)}.
      */
+    @Test
     public void testAdd() {
         Set<Label> labels1 = new HashSet<Label>(this.store1.getLabels());
         Set<Label> subtypesC =
@@ -62,6 +73,7 @@ public class LabelStoreTest extends TestCase {
      * Test method for
      * {@link groove.graph.LabelStore#addLabel(groove.graph.Label)}.
      */
+    @Test
     public void testAddLabel() {
         assertFalse(this.store1.getLabels().contains(this.a));
         assertNull(this.store1.getDirectSubtypes(this.a));
@@ -83,6 +95,7 @@ public class LabelStoreTest extends TestCase {
     /**
      * Test method for {@link groove.graph.LabelStore#addLabels(java.util.Set)}.
      */
+    @Test
     public void testAddLabels() {
         Set<Label> labelSet = new HashSet<Label>();
         labelSet.add(this.a);
@@ -99,6 +112,7 @@ public class LabelStoreTest extends TestCase {
      * {@link groove.graph.LabelStore#addSubtype(groove.graph.Label, groove.graph.Label)}
      * .
      */
+    @Test
     public void testAddSubtype() {
         this.store2.addSubtype(this.typeA, this.typeB);
         assertTrue(this.store2.getLabels().contains(this.typeA));
@@ -123,6 +137,7 @@ public class LabelStoreTest extends TestCase {
      * {@link groove.graph.LabelStore#removeSubtype(groove.graph.Label, groove.graph.Label)}
      * .
      */
+    @Test
     public void testRemoveSubtype() {
         this.store2.addSubtype(this.typeA, this.typeB);
         this.store2.addSubtype(this.typeB, this.typeC);
@@ -140,6 +155,7 @@ public class LabelStoreTest extends TestCase {
      * Test method for
      * {@link groove.graph.LabelStore#getSupertypes(groove.graph.Label)}.
      */
+    @Test
     public void testGetSupertypes() {
         Set<Label> supertypesA = new HashSet<Label>();
         supertypesA.add(this.typeA);
@@ -163,6 +179,7 @@ public class LabelStoreTest extends TestCase {
      * Test method for
      * {@link groove.graph.LabelStore#getDirectSupertypes(groove.graph.Label)}.
      */
+    @Test
     public void testGetDirectSupertypes() {
         Set<Label> supertypesA = new HashSet<Label>();
         assertEquals(this.store1.getDirectSupertypes(this.typeA), supertypesA);
@@ -180,6 +197,7 @@ public class LabelStoreTest extends TestCase {
     /**
      * Test method for {@link groove.graph.LabelStore#equals(java.lang.Object)}.
      */
+    @Test
     public void testEqualsObject() {
         this.store2 = this.store1.clone();
         assertEquals(this.store1, this.store2);
@@ -198,6 +216,7 @@ public class LabelStoreTest extends TestCase {
     /**
      * Test method for {@link groove.graph.LabelStore#toDirectSubtypeString()}.
      */
+    @Test
     public void testToDirectSubtypeString() {
         assertEquals(this.store1.toDirectSubtypeString(), "A > B, D; B > C");
         assertEquals(this.store2.toDirectSubtypeString(), "");
@@ -207,6 +226,7 @@ public class LabelStoreTest extends TestCase {
      * Test method for
      * {@link groove.graph.LabelStore#addDirectSubtypes(java.lang.String)}.
      */
+    @Test
     public void testAddDirectSubtypes() {
         LabelStore store1Clone = this.store1.clone();
         try {
@@ -239,6 +259,7 @@ public class LabelStoreTest extends TestCase {
     /**
      * Test method for {@link groove.graph.LabelStore#clone()}.
      */
+    @Test
     public void testClone() {
         assertEquals(this.store2.clone().getLabels(), Collections.emptySet());
     }
@@ -248,6 +269,7 @@ public class LabelStoreTest extends TestCase {
      * {@link groove.graph.LabelStore#parseDirectSubtypeString(java.lang.String)}
      * .
      */
+    @Test
     public void testParseDirectSubtypeString() {
         correctDirectSubtypeString("A > B; A>C;B> C,D;  B >D,E");
         correctDirectSubtypeString("A > C;");

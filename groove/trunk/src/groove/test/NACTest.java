@@ -16,6 +16,8 @@
  */
 package groove.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultMorphism;
@@ -40,7 +42,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * This test suite tests Embargoes. It uses one basic production:
@@ -63,10 +66,7 @@ import junit.framework.TestCase;
  * @version $Revision$
  */
 @SuppressWarnings("all")
-public class NACTest extends TestCase {
-    public NACTest(String name) {
-        super(name);
-    }
+public class NACTest {
 
     protected static final int NR_NACS = 4;
     protected static final int NR_GRAPHS = 3;
@@ -80,8 +80,8 @@ public class NACTest extends TestCase {
     protected Edge[][] e = new Edge[2 + NR_NACS + NR_GRAPHS][];
 
     /** The setup is as in the paper */
-    @Override
-    protected void setUp() {
+    @Before
+    public void setUp() {
         Graph protREGraph = GraphFactory.getInstance().newGraph();
         int[] lhsSrc = {0};
         String[] lhsLab = {"a"};
@@ -107,10 +107,7 @@ public class NACTest extends TestCase {
         this.NACs[0] =
             new MergeEmbargo(lhs, this.n[0][0], this.n[0][1], null,
                 SystemProperties.getInstance());
-        // String[] NAC1Lab = {"c"};
-        // NACs[1] = new Embargo(lhs, n[0][1],labelArray(NAC1Lab));
-        // String[] NAC2Lab = {"c","a"};
-        // NACs[2] = new Embargo(lhs, n[0][1],labelArray(NAC2Lab));
+
         this.NACs[3] =
             new EdgeEmbargo(lhs, DefaultEdge.createEdge(this.n[0][1], "c",
                 this.n[0][0]), SystemProperties.getInstance(), null);
@@ -154,6 +151,7 @@ public class NACTest extends TestCase {
         return res;
     }
 
+    @Test
     public void testRule() {
         try {
             this.rule.setFixed();
@@ -177,6 +175,7 @@ public class NACTest extends TestCase {
         derivIter = derivSet.iterator();
     }
 
+    @Test
     public void testNAC0() {
         this.rule.addSubCondition(this.NACs[0]);
         try {
@@ -196,32 +195,7 @@ public class NACTest extends TestCase {
         assertEquals(2, derivSet.size());
     }
 
-    /*
-     * public void testNAC1() { rule.add(NACs[1]);
-     * 
-     * Collection derivSet = rule.getApplicationsTo(g[0]); assertEquals(0,
-     * derivSet.size());
-     * 
-     * derivSet = rule.getApplicationsTo(g[1]); assertEquals(0,
-     * derivSet.size());
-     * 
-     * derivSet = rule.getApplicationsTo(g[2]); assertEquals(1,
-     * derivSet.size()); Iterator derivIter = derivSet.iterator(); Derivation
-     * deriv = (Derivation) derivIter.next();
-     * equalsG2Deriv1((DefaultTransformation) deriv.transformation()); }
-     * 
-     * public void testNAC2() { rule.add(NACs[2]);
-     * 
-     * Collection derivSet = rule.getApplicationsTo(g[0]); assertEquals(0,
-     * derivSet.size());
-     * 
-     * derivSet = rule.getApplicationsTo(g[1]); assertEquals(1,
-     * derivSet.size());
-     * 
-     * derivSet = rule.getApplicationsTo(g[2]); assertEquals(2,
-     * derivSet.size()); }
-     */
-
+    @Test
     public void testNAC3() {
         this.rule.addSubCondition(this.NACs[3]);
         try {
@@ -241,6 +215,7 @@ public class NACTest extends TestCase {
         assertEquals(2, derivSet.size());
     }
 
+    @Test
     public void testNAC03() {
         this.rule.addSubCondition(this.NACs[0]);
         this.rule.addSubCondition(this.NACs[3]);
@@ -279,7 +254,5 @@ public class NACTest extends TestCase {
             derivMorph.cod().outEdgeSet(derivMorph.getNode(this.n[g_index][1]));
         assertEquals(2, targetOutEdgeSet.size());
         assertTrue(targetOutEdgeSet.contains(image));
-        // assertEquals(2,targetOutEdgeSet.withLabel(new
-        // DefaultLabel("b")).size());
     }
 }

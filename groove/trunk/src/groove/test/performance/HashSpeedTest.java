@@ -14,7 +14,7 @@
 /*
  * $Id: HashSpeedTest.java,v 1.3 2008-01-30 09:33:07 iovka Exp $
  */
-package groove.test;
+package groove.test.performance;
 
 import groove.util.Reporter;
 
@@ -37,7 +37,7 @@ import java.util.Set;
  * the entry set.
  * </ul>
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 2265 $
  */
 @SuppressWarnings("all")
 public class HashSpeedTest {

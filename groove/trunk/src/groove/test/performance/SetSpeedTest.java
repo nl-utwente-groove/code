@@ -14,7 +14,7 @@
 /**
  * 
  */
-package groove.test;
+package groove.test.performance;
 
 import groove.util.Reporter;
 import groove.util.TreeHashSet;
@@ -27,7 +27,7 @@ import java.util.Set;
  * Class to test the various implementations of {@link groove.util.IntSet}
  * regarding speed.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 2734 $
  */
 @Deprecated
 @SuppressWarnings("all")

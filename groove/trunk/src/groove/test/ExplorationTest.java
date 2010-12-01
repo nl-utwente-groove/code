@@ -17,6 +17,8 @@
 
 package groove.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import groove.explore.Exploration;
 import groove.explore.StrategyEnumerator;
 import groove.explore.encode.Serialized;
@@ -29,49 +31,21 @@ import groove.view.FormatException;
 import groove.view.GrammarView;
 import groove.view.StoredGrammarView;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * System test class, which explores a number of graph production systems and
  * tests if this gives rise to the expected numbers of states and transitions.
- * The test cases are listed in a separate file, named in
- * {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
  * @version $Revision$
  */
-public class ExplorationTest extends TestCase {
+public class ExplorationTest {
     /** Location of the samples. */
     static public final String INPUT_DIR = "junit/samples";
-    /**
-     * Name of a text file to be found in the same package as this class.
-     */
-    static public final String TEST_CASES_NAME = "groove/test/testcases.txt";
-
-    /** The test command. */
-    static public final String TEST_COMMAND = "test";
-
-    /** Position of the command on a test case line. */
-    static public final int COMMAND_INDEX = 0;
-    /** Position of the grammar name on a test case line. */
-    static public final int GRAMMAR_INDEX = 1;
-    /** Position of the start state name on a test case line. */
-    static public final int START_STATE_INDEX = 2;
-    /** Position of the strategy indicator on a test case line. */
-    static public final int STRATEGY_INDEX = 3;
-    /** Position of the expected node count on a test case line. */
-    static public final int NODE_COUNT_INDEX = 4;
-    /** Position of the expected edge count on a test case line. */
-    static public final int EDGE_COUNT_INDEX = 5;
-    /** Position of the expected open-state count on a test case line. */
-    static public final int OPEN_COUNT_INDEX = 6;
 
     /**
      * Record to store the data of a single test case.
@@ -109,6 +83,7 @@ public class ExplorationTest extends TestCase {
     }
 
     /** Tests the append sample. */
+    @Test
     public void testAppend() {
         testExploration("append.gps", "append-2-list-5", null, 145, 256);
         testExploration("append.gps", "append-2-list-5", "bfs", 145, 256);
@@ -120,28 +95,33 @@ public class ExplorationTest extends TestCase {
     }
 
     /** Tests the ferryman sample. */
+    @Test
     public void testFerryman() {
         testExploration("ferryman.gps", "start", "bfs", 114, 198);
         testExploration("ferryman.gps", "start", "crule:eat", 40, 51);
     }
 
     /** Tests the mergers sample. */
+    @Test
     public void testMergers() {
         testExploration("mergers.gps", 66, 143);
     }
 
     /** Tests the regexpr sample. */
+    @Test
     public void testRegExpr() {
         testExploration("regexpr.gps", 16, 48);
     }
 
     /** Tests the lose-nodes sample. */
+    @Test
     public void testLooseNodes() {
         testExploration("loose-nodes.gps", 104, 468);
         testExploration("loose-nodes.gps", "start", "linear", 10, 9);
     }
 
     /** Tests the priorities sample. */
+    @Test
     public void testPriorities() {
         testExploration("priorities.gps", "start", "bfs", 13, 34);
         testExploration("priorities.gps", "start", "dfs", 13, 34);
@@ -149,21 +129,25 @@ public class ExplorationTest extends TestCase {
     }
 
     /** Tests the variables sample. */
+    @Test
     public void testVariables() {
         testExploration("variables.gps", "start-smaller", "bfs", 61, 176);
     }
 
     /** Tests the counting sample. */
+    @Test
     public void testCounting() {
         testExploration("counting.gps", 10, 9);
     }
 
     /** Tests the attributes sample. */
+    @Test
     public void testAttributes() {
         testExploration("attributed-graphs.gps", 6, 16);
     }
 
     /** Tests the attributes sample. */
+    @Test
     public void testSierpinsky() {
         GTS lts = testExploration("sierpinsky.gps", "start7", "linear", 8, 7);
         assertEquals(1, lts.getFinalStates().size());
@@ -173,48 +157,40 @@ public class ExplorationTest extends TestCase {
     }
 
     /** Tests the petri net sample. */
+    @Test
     public void testPetrinet() {
         testExploration("petrinet.gps", 6, 9);
     }
 
     /** Tests the wildcards sample. */
+    @Test
     public void testWildcards() {
         testExploration("wildcards.gps", 8, 12);
     }
 
     /** tests the subtyping functionality. */
+    @Test
     public void testInheritance() {
         testExploration("inheritance.gps", 756, 5374);
     }
 
     /** Tests various parameters settable through the system properties. */
+    @Test
     public void testSystemProperties() {
         StoredGrammarView gg = loadGrammar("simple.gps", null);
         testExploration(gg, null, 41, 300, 0);
         // test check creator edges property
         StoredGrammarView ggCopy =
             loadGrammar("simpleCheckCreatorEdges.gps", null);
-        // SystemProperties newProperties = ggCopy.getProperties().clone();
-        // newProperties.setCheckCreatorEdges(true);
-        // ggCopy.getStore().putProperties(newProperties);
         testExploration(ggCopy, null, 41, 188, 0);
         // test dangling edges property
         ggCopy = loadGrammar("simpleCheckDanglingEdges.gps", null);
-        // newProperties = ggCopy.getProperties().clone();
-        // newProperties.setCheckDangling(true);
-        // ggCopy.getStore().putProperties(newProperties);
         testExploration(ggCopy, null, 41, 230, 0);
         // test injectivity property
         ggCopy = loadGrammar("simpleInjective.gps", null);
-        // newProperties = ggCopy.getProperties().clone();
-        // newProperties.setInjective(true);
-        // ggCopy.getStore().putProperties(newProperties);
         testExploration(ggCopy, null, 13, 64, 0);
         // test check-isomorphism property
         ggCopy = loadGrammar("simpleNoIsomorphism.gps", null);
-        // newProperties = ggCopy.getProperties().clone();
-        // newProperties.setCheckIsomorphism(false);
-        // ggCopy.getStore().putProperties(newProperties);
         testExploration(ggCopy, null, 73, 536, 0);
         // test rhs-is-nac property
         gg = loadGrammar("rhs-is-nac.gps", null);
@@ -222,60 +198,10 @@ public class ExplorationTest extends TestCase {
     }
 
     /** Tests the wildcards sample. */
+    @Test
     public void testInjective() {
         testExploration("injective-nac.gps", 2, 1);
         testExploration("injective-forall.gps", 8, 12);
-    }
-
-    /**
-     * Reads and executes the test cases specified in a given named file. The
-     * format is described in {@link #testExplorations(BufferedReader)}. Calls
-     * <tt>testExploration(new BufferedReader(new FileReader(filename)))</tt>.
-     */
-    protected void testExplorations(String filename) {
-        try {
-            BufferedReader testCasesReader =
-                new BufferedReader(new FileReader(filename));
-            testExplorations(testCasesReader);
-        } catch (IOException exc) {
-            fail("Can't find test cases file: " + exc);
-        }
-    }
-
-    /**
-     * Reads and executes the test cases in a given input stream. The format is
-     * described in {@link #testExplorations(BufferedReader)}. Calls
-     * <tt>testExploration(new BufferedReader(new InputStreamReader(testCasesStream)))</tt>
-     * .
-     */
-    protected void testExplorations(InputStream testCasesStream) {
-        BufferedReader testCasesReader =
-            new BufferedReader(new InputStreamReader(testCasesStream));
-        testExplorations(testCasesReader);
-    }
-
-    /**
-     * Reads and executes the test cases in a given reader. Each line describes
-     * a test case, as while space-separated fields
-     * <ul>
-     * <li>The test command {@link #TEST_COMMAND}
-     * <li>Name of the production system, to be found in the same package as the
-     * text file
-     * <li>Name of the start state, to be found in the production system
-     * <li>Exploration strategy
-     * <li>Expected number of states
-     * <li>Expected number of transitions; not tested if < 0
-     * <li>(Optional) expected number of open states after exploration; not
-     * tested if < 0. (Used for bounded exploration strategies)
-     * </ul>
-     * Lines not starting with {@link #TEST_COMMAND} are ignored.
-     */
-    protected void testExplorations(BufferedReader testCasesReader) {
-        TestCaseRecord testCase = readNextRecord(testCasesReader);
-        while (testCase != null) {
-            testExploration(testCase);
-            testCase = readNextRecord(testCasesReader);
-        }
     }
 
     /**
@@ -412,40 +338,6 @@ public class ExplorationTest extends TestCase {
             int edgeCount) {
         return testExploration(grammarName, Groove.DEFAULT_START_GRAPH_NAME,
             nodeCount, edgeCount);
-    }
-
-    /**
-     * Returns the test case record corresponding to the test command line on
-     * the input. Returns <tt>null</tt> if no more test command lines are found.
-     * @param testCaseFile the input file
-     * @return test record for the next test, or <tt>null</tt> if no more test
-     *         is found.
-     */
-    private TestCaseRecord readNextRecord(BufferedReader testCaseFile) {
-        TestCaseRecord result = null;
-        try {
-            String nextLine = testCaseFile.readLine();
-            while (nextLine != null && result == null) {
-                String[] args = nextLine.split("\\s+");
-                if (args[COMMAND_INDEX].equals(TEST_COMMAND)) {
-                    int nodeCount = Integer.parseInt(args[NODE_COUNT_INDEX]);
-                    int edgeCount = Integer.parseInt(args[EDGE_COUNT_INDEX]);
-                    int openCount = -1;
-                    if (args.length >= OPEN_COUNT_INDEX) {
-                        openCount = Integer.parseInt(args[OPEN_COUNT_INDEX]);
-                    }
-                    result =
-                        new TestCaseRecord(args[GRAMMAR_INDEX],
-                            args[START_STATE_INDEX], args[STRATEGY_INDEX],
-                            nodeCount, edgeCount, openCount);
-                }
-            }
-        } catch (IOException exc) {
-            fail("Error reading test case file: " + exc);
-        } catch (NumberFormatException exc) {
-            fail("Number format in parameter: " + exc);
-        }
-        return result;
     }
 
     private StoredGrammarView loadGrammar(String grammarName,

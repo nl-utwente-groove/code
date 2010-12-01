@@ -14,8 +14,10 @@
  *
  * $Id$
  */
-package groove.test;
+package groove.test.control;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import groove.explore.Exploration;
 import groove.lts.GTS;
 import groove.trans.SystemProperties;
@@ -25,7 +27,7 @@ import groove.view.StoredGrammarView;
 
 import java.io.IOException;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * Tests the attribute parameter part of the control language.
@@ -33,9 +35,10 @@ import junit.framework.TestCase;
  * @version $Revision $
  */
 @SuppressWarnings("all")
-public class ControlAttributeParametersTest extends TestCase {
+public class ControlAttributeParametersTest {
     static private final String DIRECTORY = "junit/samples/attributes.gps";
 
+    @Test
     public void testAttributes() {
         explore("control", 9, 8, 30, 40);
     }

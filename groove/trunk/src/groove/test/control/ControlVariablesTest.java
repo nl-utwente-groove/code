@@ -14,8 +14,11 @@
  *
  * $Id$
  */
-package groove.test;
+package groove.test.control;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import groove.explore.GeneratorScenarioFactory;
 import groove.explore.Scenario;
 import groove.explore.strategy.BFSStrategy;
@@ -23,7 +26,8 @@ import groove.lts.GTS;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.StoredGrammarView;
-import junit.framework.TestCase;
+
+import org.junit.Test;
 
 /**
  * Tests the variables extension to the control language
@@ -31,9 +35,10 @@ import junit.framework.TestCase;
  * @version $Revision $
  */
 @SuppressWarnings("all")
-public class ControlVariablesTest extends TestCase {
+public class ControlVariablesTest {
     static private final String DIRECTORY = "junit/samples/control2.gps";
 
+    @Test
     public void testVariables() {
         // a; a; a;
         explore("variablesTest1", 4, 3, 4, 6);

@@ -16,26 +16,16 @@
  */
 package groove.test.graph;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 /**
- * 
  * @author Arend Rensink
  * @version $Revision$
  */
+@RunWith(Suite.class)
+@Suite.SuiteClasses({DefaultGraphTest.class, DeltaGraphTest.class,
+    GraphCreationTest.class, NodeSetEdgeSetGraphTest.class})
 public class AllGraphTests {
-
-    /** suite method for running the test as a JUnit test */
-    public static Test suite() {
-        TestSuite suite = new TestSuite("Test for groove.graph");
-        // $JUnit-BEGIN$
-
-        // all kinds of graphs
-        suite.addTest(new TestSuite(DeltaGraphTest.class));
-        suite.addTest(new TestSuite(DefaultGraphTest.class));
-        suite.addTest(new TestSuite(NodeSetEdgeSetGraphTest.class));
-        // $JUnit-END$
-        return suite;
-    }
+    // Empty by design.
 }

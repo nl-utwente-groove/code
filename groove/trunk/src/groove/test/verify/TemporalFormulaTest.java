@@ -17,26 +17,25 @@
 
 package groove.test.verify;
 
+import static org.junit.Assert.assertEquals;
 import groove.verify.CTLFormula;
 import groove.verify.CTLStarFormula;
 import groove.verify.LTLFormula;
 import groove.verify.TemporalFormula;
 import groove.view.FormatException;
-import junit.framework.TestCase;
+
+import org.junit.Test;
 
 /**
  * Tests the CTLStarFormula class.
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class TemporalFormulaTest extends TestCase {
-    @Override
-    protected void setUp() throws Exception {
-        //
-    }
+public class TemporalFormulaTest {
 
     /** test the creation of ctl formulae */
-    public void testCTLFormulaCreation() {
+    @Test
+    public void testFormulaCreation() {
         try {
             TemporalFormula formula;
 
@@ -51,9 +50,9 @@ public class TemporalFormulaTest extends TestCase {
             formula = CTLStarFormula.parseFormula("EX(empty)");
             assertEquals("E(X(empty))", formula.toString());
             formula = CTLStarFormula.parseFormula("A(non-empty U empty)");
-            assertEquals("A(non-empty U empty)", formula.toString());
+            assertEquals("A(non-empty U (empty))", formula.toString());
             formula = CTLStarFormula.parseFormula("E(non-empty U empty)");
-            assertEquals("E(non-empty U empty)", formula.toString());
+            assertEquals("E(non-empty U (empty))", formula.toString());
             formula = CTLStarFormula.parseFormula("AF(empty)");
             assertEquals("A(F(empty))", formula.toString());
             formula = CTLStarFormula.parseFormula("EF(empty)");
@@ -74,12 +73,6 @@ public class TemporalFormulaTest extends TestCase {
             formula = CTLFormula.parseFormula("EG(AF(empty))");
             formula = CTLFormula.parseFormula("EX(AX(empty | full))");
             formula = CTLFormula.parseFormula("A(get U (empty | full))");
-
-            // HARMEN: make sure that the following formula cannot
-            // be parsed as a ctl formula
-            // i.e. in CTL, every temporal operator should be
-            // bounded by a path quantifier
-            formula = CTLFormula.parseFormula("G(empty)");
 
             // LTL formulae
             formula = LTLFormula.parseFormula("G(empty | full)");
