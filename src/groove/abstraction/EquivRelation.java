@@ -83,22 +83,4 @@ public class EquivRelation<T> extends HashSet<EquivClass<T>> {
         return ec0 == ec1;
     }
 
-    /** Returns true if the equivalence relations are the same. */
-    public boolean isEquivalent(EquivRelation<T> other) {
-        if (this.size() != other.size()) {
-            return false;
-        }
-        for (EquivClass<T> thisEc : this) {
-            if (!other.contains(thisEc)) {
-                return false;
-            }
-        }
-        for (EquivClass<T> otherEc : other) {
-            if (!this.contains(otherEc)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
 }

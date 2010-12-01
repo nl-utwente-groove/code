@@ -41,13 +41,4 @@ public final class CountingSet<T> extends HashMap<T,Integer> {
         this.put(key, Integer.valueOf(i));
     }
 
-    /** Returns the count associated with given key. */
-    public int getCount(T key) {
-        Integer count = this.get(key);
-        if (count == null) {
-            return Integer.valueOf(0);
-        } else {
-            return count.intValue();
-        }
-    }
 }

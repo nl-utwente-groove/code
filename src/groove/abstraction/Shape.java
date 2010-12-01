@@ -29,8 +29,6 @@ import groove.graph.iso.DefaultIsoChecker.IsoCheckerState;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
-import groove.trans.SPOEvent;
-import groove.trans.SPORule;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -763,22 +761,6 @@ public final class Shape extends DefaultGraph {
     }
 
     /**
-     * Returns the set of edges in the shaping relation that maps to the
-     * given edges.
-     * It is an error to call this method if this.graph is not a Shape. 
-     */
-    public Set<ShapeEdge> getReverseEdgeMap(ShapeEdge edgeS) {
-        assert this.graph instanceof Shape : "Invalid method call.";
-        Set<ShapeEdge> edgesG = new HashSet<ShapeEdge>();
-        for (Entry<Edge,ShapeEdge> entry : this.edgeShaping.entrySet()) {
-            if (edgeS.equals(entry.getValue())) {
-                edgesG.add((ShapeEdge) entry.getKey());
-            }
-        }
-        return edgesG;
-    }
-
-    /**
      * Returns the equivalence class in the shaping relation that maps to values
      * occurring in the given equivalence class.
      * It is an error to call this method if this.graph is not a Shape. 
@@ -910,18 +892,6 @@ public final class Shape extends DefaultGraph {
     /** Returns all pre-matches of the given rule into the shape. */
     public Set<RuleMatch> getPreMatches(Rule rule) {
         return PreMatch.getPreMatches(this, rule);
-    }
-
-    /** Returns all pre-matches of the given rule into the shape as events. */
-    public Set<RuleEvent> getPreMatchEvents(Rule rule) {
-        Set<RuleEvent> events = new HashSet<RuleEvent>();
-        for (RuleMatch match : this.getPreMatches(rule)) {
-            SPOEvent event =
-                new SPOEvent((SPORule) rule, match.getElementMap(),
-                    ShapeNodeFactory.FACTORY, false);
-            events.add(event);
-        }
-        return events;
     }
 
     /**

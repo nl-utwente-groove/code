@@ -207,11 +207,6 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
         return this.transition;
     }
 
-    /** Delegates the comparison to the stored transition. */
-    public boolean isEquivalent(ShapeTransition other) {
-        return this.transition.isEquivalent(other);
-    }
-
     @Override
     public CtrlTransition getCtrlTransition() {
         return null;
