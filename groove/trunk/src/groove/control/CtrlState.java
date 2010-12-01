@@ -16,7 +16,6 @@
  */
 package groove.control;
 
-import groove.control.parse.Counter;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
@@ -42,18 +41,21 @@ import java.util.TreeSet;
  */
 public class CtrlState implements Node {
     /**
-     * Creates a control state with a fresh number.
-     */
-    public CtrlState() {
-        this(Counter.inc());
-    }
-
-    /**
      * Creates a control state with a given number.
+     * @param aut the automaton for which this state is created
      */
-    public CtrlState(int nr) {
+    public CtrlState(CtrlAut aut, int nr) {
+        this.aut = aut;
         this.stateNumber = nr;
     }
+
+    /** Returns the control automaton to which this state belongs. */
+    public CtrlAut getAut() {
+        return this.aut;
+    }
+
+    /** The control automaton to which this state belongs. */
+    private final CtrlAut aut;
 
     @Override
     public int hashCode() {

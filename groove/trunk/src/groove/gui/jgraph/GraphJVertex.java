@@ -177,7 +177,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
             if (getActualNode() instanceof GraphState) {
                 CtrlState ctrlState =
                     ((GraphState) getActualNode()).getCtrlState();
-                if (ctrlState != null) {
+                if (ctrlState.getAut().getProgram() != null) {
                     result.add(new StringBuilder("ctrl: "
                         + Converter.toHtml(ctrlState.toString())));
                 }
