@@ -381,7 +381,7 @@ abstract public class AbstractGraphState extends
      * Sets the control schedule.
      * This should occur at initialisation.
      */
-    final void setCtrlState(CtrlState ctrlState) {
+    protected final void setCtrlState(CtrlState ctrlState) {
         if (ctrlState != null) {
             this.schedule = ctrlState.getSchedule();
         }
