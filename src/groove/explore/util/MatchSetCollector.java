@@ -16,6 +16,7 @@
  */
 package groove.explore.util;
 
+import groove.abstraction.lts.ShapeState;
 import groove.control.CtrlCall;
 import groove.control.CtrlPar;
 import groove.control.CtrlSchedule;
@@ -62,7 +63,8 @@ public class MatchSetCollector {
         if (state instanceof GraphNextState) {
             parent = ((GraphNextState) state).source();
         }
-        if (parent != null && parent.isClosed()) {
+        if (parent != null && parent.isClosed()
+            && !(this.state instanceof ShapeState)) {
             this.parentOutMap = parent.getTransitionMap();
             Rule lastRule = ((GraphNextState) state).getEvent().getRule();
             this.enabledRules = record.getEnabledRules(lastRule);
@@ -143,11 +145,11 @@ public class MatchSetCollector {
     protected boolean collectEvents(CtrlTransition ctrlTrans,
             Collection<MatchResult> result) {
         boolean isEnabled = isEnabled(ctrlTrans.getCall());
-        // there are two reasons to want to use the parent matches: to
-        // save matching time, or to find confluent diamonds. The first
-        // is only relevant if the rule is not (re)enabled, the second
-        // only if the parent match target is already closed
-        boolean hasMatched = addParentOuts(ctrlTrans, isEnabled, result);
+        // there are three reasons to want to use the parent matches: to
+        // save matching time, to reuse added nodes, and to find confluent 
+        // diamonds. The first is only relevant if the rule is not (re)enabled,
+        // the third only if the parent match target is already closed
+        boolean hasMatched = addParentOuts(ctrlTrans, result);
         if (isEnabled) {
             // the rule was possibly enabled afresh, so we have to add the fresh
             // matches
@@ -157,7 +159,8 @@ public class MatchSetCollector {
                     ctrlTrans.getRule().getMatches(this.state.getGraph(),
                         boundMap);
                 for (RuleMatch match : matches) {
-                    result.add(this.record.getEvent(match));
+                    RuleEvent event = this.record.getEvent(match);
+                    result.add(event);
                     hasMatched = true;
                 }
             }
@@ -217,18 +220,15 @@ public class MatchSetCollector {
 
     /**
      * Adds the parent's out-transitions for a given rule into an existing set.
-     * @param closedOnly if {@code true}, only the out transitions to
-     *  closed states should be added
      * @return <code>true</code> if any out-transitions were found
      */
-    private boolean addParentOuts(CtrlTransition call, boolean closedOnly,
+    private boolean addParentOuts(CtrlTransition call,
             Collection<MatchResult> result) {
         boolean hasMatches = false;
         Collection<GraphTransition> parentOuts = getParentOuts(call);
         if (parentOuts != null) {
             for (GraphTransition parentOut : parentOuts) {
                 if (isStillValid(parentOut)) {
-                    //                    && (!closedOnly || parentOut.target().isClosed())) {
                     result.add(parentOut);
                     hasMatches = true;
                     parentOutReuse++;
