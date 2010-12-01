@@ -16,6 +16,7 @@
  */
 package groove.lts;
 
+import groove.control.CtrlCall;
 import groove.graph.DeltaApplier;
 import groove.graph.DeltaGraphFactory;
 import groove.graph.Edge;
@@ -25,7 +26,6 @@ import groove.graph.Graph;
 import groove.graph.NewDeltaGraph;
 import groove.graph.Node;
 import groove.trans.DefaultApplication;
-import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.TreeHashSet;
@@ -225,7 +225,7 @@ class StateCache {
      * Lazily creates and returns a mapping from the events to the target states
      * of the currently stored outgoing transitions of this state.
      */
-    Map<Rule,Collection<GraphTransition>> getTransitionMap() {
+    Map<CtrlCall,Collection<GraphTransition>> getTransitionMap() {
         if (this.transitionMap == null) {
             this.transitionMap = computeTransitionMap();
         }
@@ -236,9 +236,9 @@ class StateCache {
      * Computes a mapping from the events to the target states of the currently
      * stored outgoing transitions of this state.
      */
-    private Map<Rule,Collection<GraphTransition>> computeTransitionMap() {
-        Map<Rule,Collection<GraphTransition>> result =
-            new HashMap<Rule,Collection<GraphTransition>>();
+    private Map<CtrlCall,Collection<GraphTransition>> computeTransitionMap() {
+        Map<CtrlCall,Collection<GraphTransition>> result =
+            new HashMap<CtrlCall,Collection<GraphTransition>>();
         for (GraphTransitionStub stub : getStubSet()) {
             addTransition(stub, result);
         }
@@ -247,12 +247,12 @@ class StateCache {
 
     /** Adds a single transition to a given rule-to-transition map. */
     private void addTransition(GraphTransitionStub stub,
-            Map<Rule,Collection<GraphTransition>> result) {
-        RuleEvent event = stub.getEvent(this.state);
-        Rule rule = event.getRule();
-        Collection<GraphTransition> ruleTrans = result.get(rule);
+            Map<CtrlCall,Collection<GraphTransition>> result) {
+        GraphTransition trans = stub.toTransition(this.state);
+        CtrlCall call = trans.getCtrlTransition().getCall();
+        Collection<GraphTransition> ruleTrans = result.get(call);
         if (ruleTrans == null) {
-            result.put(rule, ruleTrans = new ArrayList<GraphTransition>());
+            result.put(call, ruleTrans = new ArrayList<GraphTransition>());
         }
         boolean fresh = ruleTrans.add(stub.toTransition(this.state));
         assert fresh : String.format("Transition %s added twice",
@@ -325,7 +325,7 @@ class StateCache {
     /** The delta with respect to the state's parent. */
     private DeltaApplier delta;
     /** Cached map from events to target transitions. */
-    private Map<Rule,Collection<GraphTransition>> transitionMap;
+    private Map<CtrlCall,Collection<GraphTransition>> transitionMap;
     /** Cached graph for this state. */
     private Graph graph;
     /**
