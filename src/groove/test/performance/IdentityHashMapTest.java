@@ -11,24 +11,28 @@
 // "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
-package groove.test;
+package groove.test.performance;
+
+import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * Shows up some erroneous behaviour in {@link java.util.IdentityHashMap}. The
  * <code>IdentityHashMap#keySet().iterator().remove()</code> method does not
  * work correctly. Bug report submitted to http://bugs.sun.com/bugdatabase.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 1482 $
  */
 @SuppressWarnings("all")
-public class IdentityHashMapTest extends TestCase {
+public class IdentityHashMapTest {
+
+    @Test
     public void testIdentityHashMap() {
         for (int i = 0; i < 100000; i++) {
             Map<Integer,String> test = new IdentityHashMap<Integer,String>();

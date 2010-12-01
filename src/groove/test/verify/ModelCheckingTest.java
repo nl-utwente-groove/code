@@ -17,6 +17,7 @@
 
 package groove.test.verify;
 
+import static org.junit.Assert.assertEquals;
 import groove.lts.GTS;
 import groove.util.Generator;
 import groove.verify.CTLFormula;
@@ -27,23 +28,20 @@ import groove.view.FormatException;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * Tests the CTLStarFormula class.
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class ModelCheckingTest extends TestCase {
-    @Override
-    protected void setUp() throws Exception {
-        //
-    }
+public class ModelCheckingTest {
 
     /**
      * Tests whether the circular buffer fulfills certain properties and whether
      * the number of counter examples is correct for other properties.
      */
+    @Test
     public void testCircularBuffer() {
         try {
             List<String> list = new ArrayList<String>();
@@ -75,7 +73,7 @@ public class ModelCheckingTest extends TestCase {
             modelChecker = new CTLModelChecker(gts, property);
             modelChecker.verify();
             assertEquals(0, property.getCounterExamples().size());
-            
+
             // not a single state satisfies the following property
             property = CTLFormula.parseFormula("AG(put)");
             modelChecker = new CTLModelChecker(gts, property);

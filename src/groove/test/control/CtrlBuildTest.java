@@ -14,8 +14,12 @@
  *
  * $Id$
  */
-package groove.test;
+package groove.test.control;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import groove.control.CtrlAut;
 import groove.control.CtrlCall;
 import groove.control.CtrlFactory;
@@ -34,14 +38,14 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * Tests the revised control automaton building.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CtrlBuildTest extends TestCase {
+public class CtrlBuildTest {
     private static final String GRAMMAR_DIR = "junit/samples/";
     private static final String CONTROL_DIR = "junit/control/";
     private static final ExtensionFilter CONTROL_FILTER =
@@ -70,6 +74,7 @@ public class CtrlBuildTest extends TestCase {
     }
 
     /** Regression test for errors found in old control programs. */
+    @Test
     public void testRegression() {
         buildCorrect("alap {\n alap { a| b;\n } c;\n}\n", 3, 7);
         CtrlAut aut =
@@ -83,6 +88,7 @@ public class CtrlBuildTest extends TestCase {
     }
 
     /** Tests the default automaton construction. */
+    @Test
     public void testDefaultAut() {
         CtrlAut aut = CtrlFactory.getInstance().buildDefault(this.prioGrammar);
         assertEquals(2, aut.nodeCount());
@@ -135,12 +141,14 @@ public class CtrlBuildTest extends TestCase {
     }
 
     /** Test for initialisation errors. */
+    @Test
     public void testInitErrors() {
         buildWrong("node x; if (a) bNode(out x); bNode(x);");
         buildWrong("node x; bNode(x);");
     }
 
     /** Test for typing errors. */
+    @Test
     public void testTypeErrors() {
         buildWrong("bInt(\"string\");");
         buildWrong("node x; bInt(out x);");
@@ -148,6 +156,7 @@ public class CtrlBuildTest extends TestCase {
     }
 
     /** Test for in/output parameter errors. */
+    @Test
     public void testDirErrors() {
         buildWrong("node x; bNode(out x); oNode(x);");
         buildWrong("int x; iInt(out x);");
@@ -155,6 +164,7 @@ public class CtrlBuildTest extends TestCase {
     }
 
     /** Tests building various loop structures. */
+    @Test
     public void testLoops() {
         buildCorrect("while (a|b) { c; d; }", 4, 5);
         buildCorrect("until (a|b) { c; d; }", 4, 5);
@@ -163,6 +173,7 @@ public class CtrlBuildTest extends TestCase {
     }
 
     /** Sequences of rule calls. */
+    @Test
     public void testSeq() {
         buildCorrect("a;", 3, 2);
         buildCorrect("a; b; a;", 5, 4);
@@ -171,6 +182,7 @@ public class CtrlBuildTest extends TestCase {
     }
 
     /** Tests building if statements. */
+    @Test
     public void testIf() {
         buildCorrect("if (a|b) c;", 4, 5);
         buildCorrect("if (a|b) c; d;", 5, 6);
@@ -178,12 +190,14 @@ public class CtrlBuildTest extends TestCase {
     }
 
     /** Tests building try statements. */
+    @Test
     public void testTry() {
         buildCorrect("try { a;b; } d;", 5, 5);
         buildCorrect("try { a; b; } else { c; } d;", 5, 5);
     }
 
     /** Tests the {@code any} and {@code other} statements. */
+    @Test
     public void testAnyOther() {
         buildWrong("any;");
         buildCorrect(
@@ -192,6 +206,7 @@ public class CtrlBuildTest extends TestCase {
     }
 
     /** Tests function calls. */
+    @Test
     public void testFunctions() {
         buildCorrect("f(); function f() { a; }", 3, 2);
         buildCorrect("f(); f(); function f() { choice a; or {b;c;} }", 6, 7);
@@ -202,6 +217,7 @@ public class CtrlBuildTest extends TestCase {
     }
 
     /** Tests the variable binding. */
+    @Test
     public void testVarBinding() {
         CtrlAut aut =
             buildCorrect(
@@ -230,6 +246,7 @@ public class CtrlBuildTest extends TestCase {
     }
 
     /** Tests the transition scheduling. */
+    @Test
     public void testSchedule() {
         CtrlAut aut =
             buildCorrect(
@@ -346,5 +363,5 @@ public class CtrlBuildTest extends TestCase {
         return result;
     }
 
-    static private final boolean DEBUG = true;
+    static private final boolean DEBUG = false;
 }

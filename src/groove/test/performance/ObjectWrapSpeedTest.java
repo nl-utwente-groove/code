@@ -14,7 +14,7 @@
  * 
  * $Id: ObjectWrapSpeedTest.java,v 1.2 2008-01-30 09:33:07 iovka Exp $
  */
-package groove.test;
+package groove.test.performance;
 
 import groove.util.Reporter;
 
@@ -24,7 +24,7 @@ import java.util.Collections;
 /**
  * Class to test the overhead of wrapping an object up.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 2694 $
  */
 public class ObjectWrapSpeedTest {
     /** Constructs a version of the test. */

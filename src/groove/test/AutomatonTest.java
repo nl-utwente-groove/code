@@ -16,6 +16,10 @@
  */
 package groove.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.GraphFactory;
@@ -36,6 +40,7 @@ import groove.util.ExprParser;
 import groove.view.FormatException;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,7 +51,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.TestCase;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Tests the available {@link Automaton} interface.
@@ -54,150 +60,158 @@ import junit.framework.TestCase;
  * @version $Revision$
  */
 @SuppressWarnings("all")
-public class AutomatonTest extends TestCase {
+public class AutomatonTest {
     /** Directory with test files (relative to the project) */
     static public final String GRAPH_TEST_DIR = "junit/graphs";
 
-    AutomatonCalculator calculator = new AutomatonCalculator();
+    static final AutomatonCalculator calculator = new AutomatonCalculator();
 
-    List<String> wordEmpty, wordA, wordB, wordAA, wordAB, wordBB, wordBA,
-            wordABC, wordAAA, wordAAABCAAA;
+    static List<String> wordEmpty, wordA, wordB, wordAA, wordAB, wordBB,
+            wordBA, wordABC, wordAAA, wordAAABCAAA;
     /**
      * Graph loader used in this test case.
      */
-    Xml loader = new DefaultGxl(GraphFactory.getInstance());
-    String testGraphName = "regexpr-test-graph";
-    GraphShape testGraph;
+    static final Xml loader = new DefaultGxl(GraphFactory.getInstance());
+    static final String testGraphName = "regexpr-test-graph";
+    static GraphShape testGraph;
 
-    Node nList, nC1, nC2, nC3, nC4, nI0, nI1, nI2, nI3;
-    Set<Node> nC12, nC34;
-    NodeRelation reflexive;
+    static Node nList, nC1, nC2, nC3, nC4, nI0, nI1, nI2, nI3;
+    static Set<Node> nC12, nC34;
+    static NodeRelation reflexive;
 
-    @Override
-    protected void setUp() throws Exception {
-        this.wordEmpty = new ArrayList<String>();
-        this.wordA = Arrays.asList(new String[] {"A"});
-        this.wordB = Arrays.asList(new String[] {"B"});
-        this.wordAA = Arrays.asList(new String[] {"A", "A"});
-        this.wordAB = Arrays.asList(new String[] {"A", "B"});
-        this.wordBB = Arrays.asList(new String[] {"B", "B"});
-        this.wordBA = Arrays.asList(new String[] {"B", "A"});
-        this.wordAAA = Arrays.asList(new String[] {"A", "A", "A"});
-        this.wordABC = Arrays.asList(new String[] {"A", "B", "C"});
-        this.wordAAABCAAA =
+    @BeforeClass
+    public static void setUp() {
+        wordEmpty = new ArrayList<String>();
+        wordA = Arrays.asList(new String[] {"A"});
+        wordB = Arrays.asList(new String[] {"B"});
+        wordAA = Arrays.asList(new String[] {"A", "A"});
+        wordAB = Arrays.asList(new String[] {"A", "B"});
+        wordBB = Arrays.asList(new String[] {"B", "B"});
+        wordBA = Arrays.asList(new String[] {"B", "A"});
+        wordAAA = Arrays.asList(new String[] {"A", "A", "A"});
+        wordABC = Arrays.asList(new String[] {"A", "B", "C"});
+        wordAAABCAAA =
             Arrays.asList(new String[] {"A", "A", "A", "B", "C", "A", "A", "A"});
-        this.testGraph =
-            this.loader.unmarshalGraph(new File(GRAPH_TEST_DIR + "/"
-                + this.testGraphName + ".gxl"));
-        this.nList = getNode("List");
-        this.nC1 = getNode("n1");
-        this.nC2 = getNode("n2");
-        this.nC3 = getNode("n3");
-        this.nC4 = getNode("n4");
-        this.nI0 = getNode("0");
-        this.nI1 = getNode("1");
-        this.nI2 = getNode("2");
-        this.nI3 = getNode("3");
-        this.nC12 = new HashSet<Node>();
-        this.nC12.add(this.nC1);
-        this.nC12.add(this.nC2);
-        this.nC34 = new HashSet<Node>();
-        this.nC34.add(this.nC3);
-        this.nC34.add(this.nC4);
-        this.reflexive = new SetNodeRelation(this.testGraph);
-        this.reflexive.addRelated(this.nList, this.nList);
-        this.reflexive.addRelated(this.nC1, this.nC1);
-        this.reflexive.addRelated(this.nC2, this.nC2);
-        this.reflexive.addRelated(this.nC3, this.nC3);
-        this.reflexive.addRelated(this.nC4, this.nC4);
-        this.reflexive.addRelated(this.nI0, this.nI0);
-        this.reflexive.addRelated(this.nI1, this.nI1);
-        this.reflexive.addRelated(this.nI2, this.nI2);
-        this.reflexive.addRelated(this.nI3, this.nI3);
+        try {
+            testGraph =
+                loader.unmarshalGraph(new File(GRAPH_TEST_DIR + "/"
+                    + testGraphName + ".gxl"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        nList = getNode("List");
+        nC1 = getNode("n1");
+        nC2 = getNode("n2");
+        nC3 = getNode("n3");
+        nC4 = getNode("n4");
+        nI0 = getNode("0");
+        nI1 = getNode("1");
+        nI2 = getNode("2");
+        nI3 = getNode("3");
+        nC12 = new HashSet<Node>();
+        nC12.add(nC1);
+        nC12.add(nC2);
+        nC34 = new HashSet<Node>();
+        nC34.add(nC3);
+        nC34.add(nC4);
+        reflexive = new SetNodeRelation(testGraph);
+        reflexive.addRelated(nList, nList);
+        reflexive.addRelated(nC1, nC1);
+        reflexive.addRelated(nC2, nC2);
+        reflexive.addRelated(nC3, nC3);
+        reflexive.addRelated(nC4, nC4);
+        reflexive.addRelated(nI0, nI0);
+        reflexive.addRelated(nI1, nI1);
+        reflexive.addRelated(nI2, nI2);
+        reflexive.addRelated(nI3, nI3);
     }
 
+    @Test
     public void testEmptyAccepts() {
         try {
             Automaton aut = createAutomaton("=");
-            assertTrue(aut.accepts(this.wordEmpty));
-            assertFalse(aut.accepts(this.wordA));
+            assertTrue(aut.accepts(wordEmpty));
+            assertFalse(aut.accepts(wordA));
             aut = createAutomaton("D*");
-            assertTrue(aut.accepts(this.wordEmpty));
-            assertFalse(aut.accepts(this.wordA));
+            assertTrue(aut.accepts(wordEmpty));
+            assertFalse(aut.accepts(wordA));
             aut = createAutomaton("D+");
         } catch (FormatException exc) {
             fail("Regular expression parse error: " + exc.getMessage());
         }
     }
 
+    @Test
     public void testAtomAccepts() {
         try {
             Automaton aut = createAutomaton("A");
-            assertTrue(aut.accepts(this.wordA));
-            assertFalse(aut.accepts(this.wordB));
-            assertFalse(aut.accepts(this.wordEmpty));
-            assertFalse(aut.accepts(this.wordAA));
-            assertFalse(aut.accepts(this.wordAB));
-            assertFalse(aut.accepts(this.wordBA));
+            assertTrue(aut.accepts(wordA));
+            assertFalse(aut.accepts(wordB));
+            assertFalse(aut.accepts(wordEmpty));
+            assertFalse(aut.accepts(wordAA));
+            assertFalse(aut.accepts(wordAB));
+            assertFalse(aut.accepts(wordBA));
         } catch (FormatException exc) {
             fail("Regular expression parse error: " + exc.getMessage());
         }
     }
 
+    @Test
     public void testWildcardAccepts() {
         try {
             Automaton aut = createAutomaton("?");
-            assertTrue(aut.accepts(this.wordA));
-            assertTrue(aut.accepts(this.wordB));
-            assertFalse(aut.accepts(this.wordEmpty));
-            assertFalse(aut.accepts(this.wordAA));
-            assertFalse(aut.accepts(this.wordAB));
-            assertFalse(aut.accepts(this.wordBA));
+            assertTrue(aut.accepts(wordA));
+            assertTrue(aut.accepts(wordB));
+            assertFalse(aut.accepts(wordEmpty));
+            assertFalse(aut.accepts(wordAA));
+            assertFalse(aut.accepts(wordAB));
+            assertFalse(aut.accepts(wordBA));
         } catch (FormatException exc) {
             fail("Regular expression parse error: " + exc.getMessage());
         }
     }
 
+    @Test
     public void testSeqAccepts() {
         try {
             Automaton aut = createAutomaton("A.B");
-            assertFalse(aut.accepts(this.wordA));
-            assertFalse(aut.accepts(this.wordB));
-            assertFalse(aut.accepts(this.wordEmpty));
-            assertFalse(aut.accepts(this.wordAA));
-            assertTrue(aut.accepts(this.wordAB));
-            assertFalse(aut.accepts(this.wordBA));
+            assertFalse(aut.accepts(wordA));
+            assertFalse(aut.accepts(wordB));
+            assertFalse(aut.accepts(wordEmpty));
+            assertFalse(aut.accepts(wordAA));
+            assertTrue(aut.accepts(wordAB));
+            assertFalse(aut.accepts(wordBA));
             aut = createAutomaton("A.=");
-            assertTrue(aut.accepts(this.wordA));
-            assertFalse(aut.accepts(this.wordB));
-            assertFalse(aut.accepts(this.wordEmpty));
-            assertFalse(aut.accepts(this.wordAA));
-            assertFalse(aut.accepts(this.wordAB));
+            assertTrue(aut.accepts(wordA));
+            assertFalse(aut.accepts(wordB));
+            assertFalse(aut.accepts(wordEmpty));
+            assertFalse(aut.accepts(wordAA));
+            assertFalse(aut.accepts(wordAB));
             aut = createAutomaton("=.B");
-            assertFalse(aut.accepts(this.wordA));
-            assertTrue(aut.accepts(this.wordB));
-            assertFalse(aut.accepts(this.wordEmpty));
-            assertFalse(aut.accepts(this.wordAA));
-            assertFalse(aut.accepts(this.wordAB));
+            assertFalse(aut.accepts(wordA));
+            assertTrue(aut.accepts(wordB));
+            assertFalse(aut.accepts(wordEmpty));
+            assertFalse(aut.accepts(wordAA));
+            assertFalse(aut.accepts(wordAB));
             aut = createAutomaton("A.(=|B)");
-            assertTrue(aut.accepts(this.wordA));
-            assertFalse(aut.accepts(this.wordB));
-            assertFalse(aut.accepts(this.wordEmpty));
-            assertFalse(aut.accepts(this.wordAA));
-            assertTrue(aut.accepts(this.wordAB));
-            assertFalse(aut.accepts(this.wordBA));
+            assertTrue(aut.accepts(wordA));
+            assertFalse(aut.accepts(wordB));
+            assertFalse(aut.accepts(wordEmpty));
+            assertFalse(aut.accepts(wordAA));
+            assertTrue(aut.accepts(wordAB));
+            assertFalse(aut.accepts(wordBA));
             aut = createAutomaton("(=|A).(=|B)");
-            assertTrue(aut.accepts(this.wordA));
-            assertTrue(aut.accepts(this.wordB));
-            assertTrue(aut.accepts(this.wordEmpty));
-            assertFalse(aut.accepts(this.wordAA));
-            assertTrue(aut.accepts(this.wordAB));
-            assertFalse(aut.accepts(this.wordBA));
+            assertTrue(aut.accepts(wordA));
+            assertTrue(aut.accepts(wordB));
+            assertTrue(aut.accepts(wordEmpty));
+            assertFalse(aut.accepts(wordAA));
+            assertTrue(aut.accepts(wordAB));
+            assertFalse(aut.accepts(wordBA));
             aut = createAutomaton("A.B.C");
-            assertFalse(aut.accepts(this.wordA));
-            assertFalse(aut.accepts(this.wordB));
+            assertFalse(aut.accepts(wordA));
+            assertFalse(aut.accepts(wordB));
             assertFalse(aut.accepts(createWord("C")));
-            assertFalse(aut.accepts(this.wordEmpty));
+            assertFalse(aut.accepts(wordEmpty));
             assertFalse(aut.accepts(createWord("A B")));
             assertFalse(aut.accepts(createWord("A C")));
             assertFalse(aut.accepts(createWord("B C")));
@@ -206,19 +220,19 @@ public class AutomatonTest extends TestCase {
             assertFalse(aut.accepts(createWord("A B B")));
             assertFalse(aut.accepts(createWord("A B C D")));
             aut = createAutomaton("A.=.C");
-            assertFalse(aut.accepts(this.wordA));
+            assertFalse(aut.accepts(wordA));
             assertFalse(aut.accepts(createWord("C")));
-            assertFalse(aut.accepts(this.wordEmpty));
+            assertFalse(aut.accepts(wordEmpty));
             assertFalse(aut.accepts(createWord("A B")));
             assertTrue(aut.accepts(createWord("A C")));
             assertFalse(aut.accepts(createWord("B C")));
             assertFalse(aut.accepts(createWord("A B C")));
             assertFalse(aut.accepts(createWord("A C B")));
             aut = createAutomaton("A.(A|B).(B|C)");
-            assertFalse(aut.accepts(this.wordA));
-            assertFalse(aut.accepts(this.wordB));
+            assertFalse(aut.accepts(wordA));
+            assertFalse(aut.accepts(wordB));
             assertFalse(aut.accepts(createWord("C")));
-            assertFalse(aut.accepts(this.wordEmpty));
+            assertFalse(aut.accepts(wordEmpty));
             assertFalse(aut.accepts(createWord("A B")));
             assertFalse(aut.accepts(createWord("A C")));
             assertFalse(aut.accepts(createWord("B C")));
@@ -230,9 +244,9 @@ public class AutomatonTest extends TestCase {
             assertFalse(aut.accepts(createWord("A C B")));
             assertFalse(aut.accepts(createWord("A B C D")));
             aut = createAutomaton("A*.B");
-            assertFalse(aut.accepts(this.wordEmpty));
-            assertFalse(aut.accepts(this.wordA));
-            assertTrue(aut.accepts(this.wordB));
+            assertFalse(aut.accepts(wordEmpty));
+            assertFalse(aut.accepts(wordA));
+            assertTrue(aut.accepts(wordB));
             assertTrue(aut.accepts(createWord("A B")));
             assertFalse(aut.accepts(createWord("A C")));
             assertFalse(aut.accepts(createWord("A A")));
@@ -245,9 +259,9 @@ public class AutomatonTest extends TestCase {
             assertTrue(aut.accepts(createWord("A A A A B")));
             assertFalse(aut.accepts(createWord("A A A A C")));
             aut = createAutomaton("A.B*");
-            assertFalse(aut.accepts(this.wordEmpty));
-            assertTrue(aut.accepts(this.wordA));
-            assertFalse(aut.accepts(this.wordB));
+            assertFalse(aut.accepts(wordEmpty));
+            assertTrue(aut.accepts(wordA));
+            assertFalse(aut.accepts(wordB));
             assertTrue(aut.accepts(createWord("A B")));
             assertFalse(aut.accepts(createWord("A C")));
             assertFalse(aut.accepts(createWord("A A")));
@@ -264,105 +278,107 @@ public class AutomatonTest extends TestCase {
         }
     }
 
+    @Test
     public void testChoiceAccepts() {
         try {
             Automaton aut = createAutomaton("A|B");
-            assertTrue(aut.accepts(this.wordA));
-            assertTrue(aut.accepts(this.wordB));
+            assertTrue(aut.accepts(wordA));
+            assertTrue(aut.accepts(wordB));
             assertFalse(aut.accepts(createWord("C")));
-            assertFalse(aut.accepts(this.wordEmpty));
-            assertFalse(aut.accepts(this.wordAA));
-            assertFalse(aut.accepts(this.wordAB));
+            assertFalse(aut.accepts(wordEmpty));
+            assertFalse(aut.accepts(wordAA));
+            assertFalse(aut.accepts(wordAB));
             aut = createAutomaton("A|=");
-            assertTrue(aut.accepts(this.wordA));
-            assertFalse(aut.accepts(this.wordB));
-            assertTrue(aut.accepts(this.wordEmpty));
-            assertFalse(aut.accepts(this.wordAA));
-            assertFalse(aut.accepts(this.wordAB));
+            assertTrue(aut.accepts(wordA));
+            assertFalse(aut.accepts(wordB));
+            assertTrue(aut.accepts(wordEmpty));
+            assertFalse(aut.accepts(wordAA));
+            assertFalse(aut.accepts(wordAB));
             aut = createAutomaton("=|A");
-            assertTrue(aut.accepts(this.wordA));
-            assertFalse(aut.accepts(this.wordB));
-            assertTrue(aut.accepts(this.wordEmpty));
-            assertFalse(aut.accepts(this.wordAA));
-            assertFalse(aut.accepts(this.wordAB));
+            assertTrue(aut.accepts(wordA));
+            assertFalse(aut.accepts(wordB));
+            assertTrue(aut.accepts(wordEmpty));
+            assertFalse(aut.accepts(wordAA));
+            assertFalse(aut.accepts(wordAB));
             aut = createAutomaton("A|B|C");
-            assertTrue(aut.accepts(this.wordA));
-            assertTrue(aut.accepts(this.wordB));
+            assertTrue(aut.accepts(wordA));
+            assertTrue(aut.accepts(wordB));
             assertTrue(aut.accepts(createWord("C")));
-            assertFalse(aut.accepts(this.wordEmpty));
-            assertFalse(aut.accepts(this.wordAA));
-            assertFalse(aut.accepts(this.wordAB));
+            assertFalse(aut.accepts(wordEmpty));
+            assertFalse(aut.accepts(wordAA));
+            assertFalse(aut.accepts(wordAB));
             aut = createAutomaton("A.B|C");
-            assertFalse(aut.accepts(this.wordA));
-            assertFalse(aut.accepts(this.wordB));
+            assertFalse(aut.accepts(wordA));
+            assertFalse(aut.accepts(wordB));
             assertTrue(aut.accepts(createWord("C")));
-            assertFalse(aut.accepts(this.wordEmpty));
-            assertFalse(aut.accepts(this.wordAA));
-            assertTrue(aut.accepts(this.wordAB));
+            assertFalse(aut.accepts(wordEmpty));
+            assertFalse(aut.accepts(wordAA));
+            assertTrue(aut.accepts(wordAB));
             assertFalse(aut.accepts(createWord("A B C")));
             assertFalse(aut.accepts(createWord("A C")));
             aut = createAutomaton("C|A.B");
-            assertFalse(aut.accepts(this.wordA));
-            assertFalse(aut.accepts(this.wordB));
+            assertFalse(aut.accepts(wordA));
+            assertFalse(aut.accepts(wordB));
             assertTrue(aut.accepts(createWord("C")));
-            assertFalse(aut.accepts(this.wordEmpty));
-            assertFalse(aut.accepts(this.wordAA));
-            assertTrue(aut.accepts(this.wordAB));
+            assertFalse(aut.accepts(wordEmpty));
+            assertFalse(aut.accepts(wordAA));
+            assertTrue(aut.accepts(wordAB));
             assertFalse(aut.accepts(createWord("A B C")));
             assertFalse(aut.accepts(createWord("A C")));
             aut = createAutomaton("A|B*");
-            assertTrue(aut.accepts(this.wordA));
-            assertTrue(aut.accepts(this.wordB));
+            assertTrue(aut.accepts(wordA));
+            assertTrue(aut.accepts(wordB));
             assertFalse(aut.accepts(createWord("C")));
-            assertTrue(aut.accepts(this.wordEmpty));
-            assertFalse(aut.accepts(this.wordAA));
-            assertFalse(aut.accepts(this.wordAB));
-            assertTrue(aut.accepts(this.wordBB));
-            assertFalse(aut.accepts(this.wordBA));
+            assertTrue(aut.accepts(wordEmpty));
+            assertFalse(aut.accepts(wordAA));
+            assertFalse(aut.accepts(wordAB));
+            assertTrue(aut.accepts(wordBB));
+            assertFalse(aut.accepts(wordBA));
             assertTrue(aut.accepts(createWord("B B B")));
         } catch (FormatException exc) {
             fail("Regular expression parse error: " + exc.getMessage());
         }
     }
 
+    @Test
     public void testPlusAccepts() {
         try {
             Automaton aut = createAutomaton("A+");
-            assertFalse(aut.accepts(this.wordEmpty));
-            assertTrue(aut.accepts(this.wordA));
-            assertFalse(aut.accepts(this.wordB));
-            assertTrue(aut.accepts(this.wordAA));
-            assertFalse(aut.accepts(this.wordAB));
-            assertFalse(aut.accepts(this.wordBA));
+            assertFalse(aut.accepts(wordEmpty));
+            assertTrue(aut.accepts(wordA));
+            assertFalse(aut.accepts(wordB));
+            assertTrue(aut.accepts(wordAA));
+            assertFalse(aut.accepts(wordAB));
+            assertFalse(aut.accepts(wordBA));
             assertTrue(aut.accepts(createWord("A A A A")));
             aut = createAutomaton("(A|B)+");
-            assertFalse(aut.accepts(this.wordEmpty));
-            assertTrue(aut.accepts(this.wordA));
-            assertTrue(aut.accepts(this.wordB));
-            assertTrue(aut.accepts(this.wordAA));
-            assertTrue(aut.accepts(this.wordAB));
-            assertTrue(aut.accepts(this.wordBA));
+            assertFalse(aut.accepts(wordEmpty));
+            assertTrue(aut.accepts(wordA));
+            assertTrue(aut.accepts(wordB));
+            assertTrue(aut.accepts(wordAA));
+            assertTrue(aut.accepts(wordAB));
+            assertTrue(aut.accepts(wordBA));
             assertFalse(aut.accepts(createWord("A C")));
             assertFalse(aut.accepts(createWord("C B")));
             assertTrue(aut.accepts(createWord("A A A A")));
             assertTrue(aut.accepts(createWord("A B A B B")));
             assertFalse(aut.accepts(createWord("A B C B B")));
             aut = createAutomaton("(A|=)+");
-            assertTrue(aut.accepts(this.wordEmpty));
-            assertTrue(aut.accepts(this.wordA));
-            assertFalse(aut.accepts(this.wordB));
-            assertTrue(aut.accepts(this.wordAA));
-            assertFalse(aut.accepts(this.wordAB));
-            assertFalse(aut.accepts(this.wordBA));
+            assertTrue(aut.accepts(wordEmpty));
+            assertTrue(aut.accepts(wordA));
+            assertFalse(aut.accepts(wordB));
+            assertTrue(aut.accepts(wordAA));
+            assertFalse(aut.accepts(wordAB));
+            assertFalse(aut.accepts(wordBA));
             assertTrue(aut.accepts(createWord("A A A A")));
             aut = createAutomaton("(A|B.B)+");
-            assertFalse(aut.accepts(this.wordEmpty));
-            assertTrue(aut.accepts(this.wordA));
-            assertFalse(aut.accepts(this.wordB));
-            assertTrue(aut.accepts(this.wordAA));
-            assertFalse(aut.accepts(this.wordAB));
-            assertFalse(aut.accepts(this.wordBA));
-            assertTrue(aut.accepts(this.wordBB));
+            assertFalse(aut.accepts(wordEmpty));
+            assertTrue(aut.accepts(wordA));
+            assertFalse(aut.accepts(wordB));
+            assertTrue(aut.accepts(wordAA));
+            assertFalse(aut.accepts(wordAB));
+            assertFalse(aut.accepts(wordBA));
+            assertTrue(aut.accepts(wordBB));
             assertFalse(aut.accepts(createWord("B C")));
             assertTrue(aut.accepts(createWord("A B B")));
             assertFalse(aut.accepts(createWord("A B B B")));
@@ -378,201 +394,155 @@ public class AutomatonTest extends TestCase {
         }
     }
 
+    @Test
     public void testStarAccepts() {
         try {
             // these are just the plus tests for the empty word
             Automaton aut = createAutomaton("A*");
-            assertTrue(aut.accepts(this.wordEmpty));
+            assertTrue(aut.accepts(wordEmpty));
             aut = createAutomaton("(A|B)*");
-            assertTrue(aut.accepts(this.wordEmpty));
-            assertTrue(aut.accepts(this.wordAB));
-            assertTrue(aut.accepts(this.wordBB));
-            assertFalse(aut.accepts(this.wordABC));
+            assertTrue(aut.accepts(wordEmpty));
+            assertTrue(aut.accepts(wordAB));
+            assertTrue(aut.accepts(wordBB));
+            assertFalse(aut.accepts(wordABC));
             aut = createAutomaton("(A|=)*");
-            assertTrue(aut.accepts(this.wordEmpty));
+            assertTrue(aut.accepts(wordEmpty));
             aut = createAutomaton("(A|B.B)*");
-            assertTrue(aut.accepts(this.wordEmpty));
-            assertTrue(aut.accepts(this.wordBB));
-            assertTrue(aut.accepts(this.wordAA));
-            assertFalse(aut.accepts(this.wordAB));
+            assertTrue(aut.accepts(wordEmpty));
+            assertTrue(aut.accepts(wordBB));
+            assertTrue(aut.accepts(wordAA));
+            assertFalse(aut.accepts(wordAB));
         } catch (FormatException exc) {
             fail("Regular expression parse error: " + exc.getMessage());
         }
     }
 
+    @Test
     public void testInvAccepts() {
         try {
             Automaton aut = createAutomaton("-A");
-            assertFalse(aut.accepts(this.wordA));
-            // assertTrue(aut.accepts(wordA));
-            assertFalse(aut.accepts(this.wordB));
-            assertFalse(aut.accepts(this.wordEmpty));
-            assertFalse(aut.accepts(this.wordAA));
-            assertFalse(aut.accepts(this.wordAB));
-            assertFalse(aut.accepts(this.wordBA));
-            // aut = createAutomaton("-(A.B)");
-            // assertFalse(aut.accepts(wordA));
-            // assertFalse(aut.accepts(wordB));
-            // assertFalse(aut.accepts(wordEmpty));
-            // assertFalse(aut.accepts(wordAA));
-            // assertFalse(aut.accepts(wordAB));
-            // assertTrue(aut.accepts(wordBA));
-            // aut = createAutomaton("-(A.B.C)");
-            // assertFalse(aut.accepts(wordA));
-            // assertFalse(aut.accepts(wordB));
-            // assertFalse(aut.accepts(createWord("C")));
-            // assertFalse(aut.accepts(wordEmpty));
-            // assertFalse(aut.accepts(createWord("A B")));
-            // assertFalse(aut.accepts(createWord("A C")));
-            // assertFalse(aut.accepts(createWord("B C")));
-            // assertFalse(aut.accepts(createWord("A B C")));
-            // assertTrue(aut.accepts(createWord("C B A")));
-            // assertFalse(aut.accepts(createWord("B C A")));
-            // assertFalse(aut.accepts(createWord("A B B")));
-            // assertFalse(aut.accepts(createWord("A B C D")));
-            // aut = createAutomaton("-((A|B.C)+)");
-            // assertFalse(aut.accepts(wordEmpty));
-            // assertTrue(aut.accepts(wordA));
-            // assertFalse(aut.accepts(wordB));
-            // assertTrue(aut.accepts(wordAA));
-            // assertFalse(aut.accepts(createWord("B C")));
-            // assertTrue(aut.accepts(createWord("C B")));
-            // assertFalse(aut.accepts(createWord("A B C")));
-            // assertTrue(aut.accepts(createWord("A C B")));
-            // assertFalse(aut.accepts(createWord("A B B B")));
-            // assertFalse(aut.accepts(createWord("B C A")));
-            // assertTrue(aut.accepts(createWord("C B A")));
-            // assertFalse(aut.accepts(createWord("B A B")));
-            // assertFalse(aut.accepts(createWord("B B C")));
-            // assertTrue(aut.accepts(createWord("A C B A")));
-            // assertTrue(aut.accepts(createWord("A A A C B A")));
-            // assertFalse(aut.accepts(createWord("A B A C B A")));
-            // assertFalse(aut.accepts(createWord("A A C B B")));
+            assertFalse(aut.accepts(wordA));
+            assertFalse(aut.accepts(wordB));
+            assertFalse(aut.accepts(wordEmpty));
+            assertFalse(aut.accepts(wordAA));
+            assertFalse(aut.accepts(wordAB));
+            assertFalse(aut.accepts(wordBA));
         } catch (FormatException exc) {
             fail("Regular expression parse error: " + exc.getMessage());
         }
     }
 
+    @Test
     public void testStarMatch() {
         try {
             Automaton aut = createAutomaton("next*");
-            NodeRelation result = new SetNodeRelation(this.testGraph);
-            result.addRelated(this.nC1, this.nC2);
-            result.addRelated(this.nC1, this.nC3);
-            result.addRelated(this.nC1, this.nC4);
-            result.addRelated(this.nC2, this.nC3);
-            result.addRelated(this.nC2, this.nC4);
-            result.addRelated(this.nC3, this.nC4);
-            result.addRelated(this.reflexive.getAllRelated());
-            assertEquals(result, aut.getMatches(this.testGraph, null, null));
-            result = new SetNodeRelation(this.testGraph);
-            result.addRelated(this.nC1, this.nC4);
-            result.addRelated(this.nC2, this.nC4);
-            result.addRelated(this.nC3, this.nC4);
-            result.addSelfRelated(this.nC4);
-            assertEquals(
-                result,
-                aut.getMatches(this.testGraph, null,
-                    Collections.singleton(this.nC4)));
-            result = new SetNodeRelation(this.testGraph);
-            result.addRelated(this.nC2, this.nC2);
-            result.addRelated(this.nC2, this.nC3);
-            result.addRelated(this.nC2, this.nC4);
-            assertEquals(result, aut.getMatches(this.testGraph,
-                Collections.singleton(this.nC2), null));
+            NodeRelation result = new SetNodeRelation(testGraph);
+            result.addRelated(nC1, nC2);
+            result.addRelated(nC1, nC3);
+            result.addRelated(nC1, nC4);
+            result.addRelated(nC2, nC3);
+            result.addRelated(nC2, nC4);
+            result.addRelated(nC3, nC4);
+            result.addRelated(reflexive.getAllRelated());
+            assertEquals(result, aut.getMatches(testGraph, null, null));
+            result = new SetNodeRelation(testGraph);
+            result.addRelated(nC1, nC4);
+            result.addRelated(nC2, nC4);
+            result.addRelated(nC3, nC4);
+            result.addSelfRelated(nC4);
+            assertEquals(result,
+                aut.getMatches(testGraph, null, Collections.singleton(nC4)));
+            result = new SetNodeRelation(testGraph);
+            result.addRelated(nC2, nC2);
+            result.addRelated(nC2, nC3);
+            result.addRelated(nC2, nC4);
+            assertEquals(result,
+                aut.getMatches(testGraph, Collections.singleton(nC2), null));
         } catch (FormatException exc) {
             fail("Regular expression parse error: " + exc.getMessage());
         }
     }
 
+    @Test
     public void testPlusMatch() {
         try {
             Automaton aut = createAutomaton("next+");
-            NodeRelation result = new SetNodeRelation(this.testGraph);
-            result.addRelated(this.nC1, this.nC3);
-            result.addRelated(this.nC1, this.nC4);
-            result.addRelated(this.nC2, this.nC3);
-            result.addRelated(this.nC2, this.nC4);
+            NodeRelation result = new SetNodeRelation(testGraph);
+            result.addRelated(nC1, nC3);
+            result.addRelated(nC1, nC4);
+            result.addRelated(nC2, nC3);
+            result.addRelated(nC2, nC4);
+            assertEquals(result, aut.getMatches(testGraph, nC12, nC34));
+            result.addRelated(nC1, nC2);
+            assertEquals(result, aut.getMatches(testGraph, nC12, null));
+            result = new SetNodeRelation(testGraph);
+            result.addRelated(nC1, nC3);
+            result.addRelated(nC2, nC3);
             assertEquals(result,
-                aut.getMatches(this.testGraph, this.nC12, this.nC34));
-            result.addRelated(this.nC1, this.nC2);
-            assertEquals(result,
-                aut.getMatches(this.testGraph, this.nC12, null));
-            result = new SetNodeRelation(this.testGraph);
-            result.addRelated(this.nC1, this.nC3);
-            result.addRelated(this.nC2, this.nC3);
-            assertEquals(
-                result,
-                aut.getMatches(this.testGraph, null,
-                    Collections.singleton(this.nC3)));
+                aut.getMatches(testGraph, null, Collections.singleton(nC3)));
             aut = createAutomaton("?.2");
-            result = new SetNodeRelation(this.testGraph);
-            result.addRelated(this.nI2, this.nI2);
-            result.addRelated(this.nI3, this.nI2);
-            result.addRelated(this.nC2, this.nI2);
+            result = new SetNodeRelation(testGraph);
+            result.addRelated(nI2, nI2);
+            result.addRelated(nI3, nI2);
+            result.addRelated(nC2, nI2);
         } catch (FormatException exc) {
             fail("Regular expression parse error: " + exc.getMessage());
         }
     }
 
+    @Test
     public void testWildcardMatch() {
         try {
             Automaton aut = createAutomaton("?.3");
-            NodeRelation result = new SetNodeRelation(this.testGraph);
-            result.addRelated(this.nI3, this.nI3);
-            result.addRelated(this.nC3, this.nI3);
-            result.addRelated(this.nC4, this.nI3);
-            assertEquals(result, aut.getMatches(this.testGraph, null, null));
-            assertEquals(
-                result,
-                aut.getMatches(this.testGraph, null,
-                    Collections.singleton(this.nI3)));
-            result = new SetNodeRelation(this.testGraph);
-            assertEquals(
-                result,
-                aut.getMatches(this.testGraph, null,
-                    Collections.singleton(this.nI2)));
+            NodeRelation result = new SetNodeRelation(testGraph);
+            result.addRelated(nI3, nI3);
+            result.addRelated(nC3, nI3);
+            result.addRelated(nC4, nI3);
+            assertEquals(result, aut.getMatches(testGraph, null, null));
+            assertEquals(result,
+                aut.getMatches(testGraph, null, Collections.singleton(nI3)));
+            result = new SetNodeRelation(testGraph);
+            assertEquals(result,
+                aut.getMatches(testGraph, null, Collections.singleton(nI2)));
         } catch (FormatException exc) {
             fail("Regular expression parse error: " + exc.getMessage());
         }
     }
 
+    @Test
     public void testWildcardIdMatch() {
         try {
             VarAutomaton aut = (VarAutomaton) createAutomaton("?x.3");
-            NodeRelation result = new SetNodeRelation(this.testGraph);
-            addRelated(result, this.nI3, new String[] {"x", "3"}, this.nI3);
-            addRelated(result, this.nC3, new String[] {"x", "val"}, this.nI3);
-            addRelated(result, this.nC4, new String[] {"x", "val"}, this.nI3);
-            assertEquals(result,
-                aut.getMatches(this.testGraph, null, null, null));
-            result = new SetNodeRelation(this.testGraph);
-            addRelated(result, this.nC3, new String[] {"x", "val"}, this.nI3);
-            addRelated(result, this.nC4, new String[] {"x", "val"}, this.nI3);
-            assertEquals(result, aut.getMatches(this.testGraph, null, null,
+            NodeRelation result = new SetNodeRelation(testGraph);
+            addRelated(result, nI3, new String[] {"x", "3"}, nI3);
+            addRelated(result, nC3, new String[] {"x", "val"}, nI3);
+            addRelated(result, nC4, new String[] {"x", "val"}, nI3);
+            assertEquals(result, aut.getMatches(testGraph, null, null, null));
+            result = new SetNodeRelation(testGraph);
+            addRelated(result, nC3, new String[] {"x", "val"}, nI3);
+            addRelated(result, nC4, new String[] {"x", "val"}, nI3);
+            assertEquals(result, aut.getMatches(testGraph, null, null,
                 Collections.singletonMap(new LabelVar("x", Label.BINARY),
                     (Label) DefaultLabel.createLabel("val"))));
             aut = (VarAutomaton) createAutomaton("?x.?x.3");
-            result = new SetNodeRelation(this.testGraph);
-            addRelated(result, this.nI3, new String[] {"x", "3"}, this.nI3);
-            assertEquals(result,
-                aut.getMatches(this.testGraph, null, null, null));
+            result = new SetNodeRelation(testGraph);
+            addRelated(result, nI3, new String[] {"x", "3"}, nI3);
+            assertEquals(result, aut.getMatches(testGraph, null, null, null));
             aut = (VarAutomaton) createAutomaton("(List.?x.?y)+.?x");
-            result = new SetNodeRelation(this.testGraph);
-            addRelated(result, this.nList, new String[] {"x", "first", "y",
-                "in"}, this.nC1);
-            addRelated(result, this.nList,
-                new String[] {"x", "last", "y", "in"}, this.nC4);
-            addRelated(result, this.nList, new String[] {"x", "List", "y",
-                "List"}, this.nList);
-            assertEquals(result,
-                aut.getMatches(this.testGraph, null, null, null));
-            result = new SetNodeRelation(this.testGraph);
-            addRelated(result, this.nList, new String[] {"x", "first", "y",
-                "in"}, this.nC1);
-            addRelated(result, this.nList,
-                new String[] {"x", "last", "y", "in"}, this.nC4);
-            assertEquals(result, aut.getMatches(this.testGraph, null, null,
+            result = new SetNodeRelation(testGraph);
+            addRelated(result, nList, new String[] {"x", "first", "y", "in"},
+                nC1);
+            addRelated(result, nList, new String[] {"x", "last", "y", "in"},
+                nC4);
+            addRelated(result, nList, new String[] {"x", "List", "y", "List"},
+                nList);
+            assertEquals(result, aut.getMatches(testGraph, null, null, null));
+            result = new SetNodeRelation(testGraph);
+            addRelated(result, nList, new String[] {"x", "first", "y", "in"},
+                nC1);
+            addRelated(result, nList, new String[] {"x", "last", "y", "in"},
+                nC4);
+            assertEquals(result, aut.getMatches(testGraph, null, null,
                 Collections.singletonMap(new LabelVar("y", Label.BINARY),
                     (Label) DefaultLabel.createLabel("in"))));
         } catch (FormatException exc) {
@@ -580,27 +550,27 @@ public class AutomatonTest extends TestCase {
         }
     }
 
+    @Test
     public void testInvMatch() {
         try {
             Automaton aut = createAutomaton("-(?.3)");
-            NodeRelation result = new SetNodeRelation(this.testGraph);
-            result.addRelated(this.nI3, this.nI3);
-            result.addRelated(this.nI3, this.nC3);
-            result.addRelated(this.nI3, this.nC4);
-            assertEquals(result, aut.getMatches(this.testGraph, null, null));
-            assertEquals(result, aut.getMatches(this.testGraph,
-                Collections.singleton(this.nI3), null));
-            result = new SetNodeRelation(this.testGraph);
-            assertEquals(result, aut.getMatches(this.testGraph,
-                Collections.singleton(this.nI2), null));
-            aut = createAutomaton("val.-val");
-            result = new SetNodeRelation(this.testGraph);
-            result.addRelated(this.nC3, this.nC3);
-            result.addRelated(this.nC4, this.nC4);
-            result.addRelated(this.nC3, this.nC4);
-            result.addRelated(this.nC4, this.nC3);
+            NodeRelation result = new SetNodeRelation(testGraph);
+            result.addRelated(nI3, nI3);
+            result.addRelated(nI3, nC3);
+            result.addRelated(nI3, nC4);
+            assertEquals(result, aut.getMatches(testGraph, null, null));
             assertEquals(result,
-                aut.getMatches(this.testGraph, null, this.nC34));
+                aut.getMatches(testGraph, Collections.singleton(nI3), null));
+            result = new SetNodeRelation(testGraph);
+            assertEquals(result,
+                aut.getMatches(testGraph, Collections.singleton(nI2), null));
+            aut = createAutomaton("val.-val");
+            result = new SetNodeRelation(testGraph);
+            result.addRelated(nC3, nC3);
+            result.addRelated(nC4, nC4);
+            result.addRelated(nC3, nC4);
+            result.addRelated(nC4, nC3);
+            assertEquals(result, aut.getMatches(testGraph, null, nC34));
         } catch (FormatException exc) {
             fail("Regular expression parse error: " + exc.getMessage());
         }
@@ -610,19 +580,19 @@ public class AutomatonTest extends TestCase {
      * Constructs an automaton from a regular expression.
      */
     protected Automaton createAutomaton(String regExpr) throws FormatException {
-        return this.calculator.compute(RegExpr.parse(regExpr));
+        return calculator.compute(RegExpr.parse(regExpr));
     }
 
     /**
-     * Construcs a word (as a list of strings) from a space-separated string.
+     * Constructs a word (as a list of strings) from a space-separated string.
      */
     protected List<String> createWord(String text) throws FormatException {
         return Arrays.asList(ExprParser.splitExpr(text, " "));
     }
 
-    protected Node getNode(String selfLabel) {
+    protected static Node getNode(String selfLabel) {
         Collection<? extends Edge> edgeSet =
-            this.testGraph.labelEdgeSet(DefaultLabel.createLabel(selfLabel));
+            testGraph.labelEdgeSet(DefaultLabel.createLabel(selfLabel));
         if (edgeSet == null || edgeSet.isEmpty()) {
             return null;
         } else {

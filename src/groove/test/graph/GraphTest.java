@@ -16,6 +16,10 @@
  */
 package groove.test.graph;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
@@ -34,6 +38,7 @@ import groove.io.Xml;
 import groove.util.Groove;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,15 +48,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * 
  * @author Arend Rensink
  * @version $Revision$
  */
 @SuppressWarnings("all")
-public class GraphTest extends TestCase {
+public class GraphTest {
     static public final String MATCH_DOM_NAME = "match-dom-";
     static public final String MATCH_COD_NAME = "match-cod";
     static public final String ISO_GRAPH_NAME = "iso-";
@@ -91,46 +96,24 @@ public class GraphTest extends TestCase {
 
     public DefaultIsoChecker checker = DefaultIsoChecker.getInstance(true);
 
-    /**
-     * Constructor for GraphTest, with specific graph factory
-     * @param arg0 JUnit parameter
-     * @param factory the graph factory according to which the graphs to be
-     *        tested are built
-     */
-    public GraphTest(String arg0, GraphFactory factory) {
-        super(arg0);
-        // this.graphFactory = factory;
+    private void setMarshaller(GraphFactory factory) {
         this.xml = new DefaultGxl(factory);
     }
 
-    /**
-     * Constructor for GraphTest, with specific graph factory
-     * @param arg0 JUnit parameter
-     * @param factoryGraph the graph to be used in the factory according to
-     *        which the graphs to be tested are built
-     */
-    public GraphTest(String arg0, Graph factoryGraph) {
-        this(arg0, GraphFactory.getInstance(factoryGraph));
-    }
-
-    /**
-     * Constructor for GraphTest, with default graph factory
-     * @param arg0 JUnit parameter
-     */
-    public GraphTest(String arg0) {
-        this(arg0, GraphFactory.getInstance());
+    GraphFactory getFactory() {
+        return GraphFactory.getInstance();
     }
 
     /*
      * @see TestCase#setUp()
      */
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() {
+        this.setMarshaller(this.getFactory());
         for (int i = 0; i < this.matchDom.length; i++) {
             this.matchDom[i] = loadGraph(testFile(MATCH_DOM_NAME + i));
         }
-        this.matchCod = this.xml.unmarshalGraph(testFile(MATCH_COD_NAME));
+        this.matchCod = loadGraph(testFile(MATCH_COD_NAME));
         for (int i = 0; i < this.isoGraph.length; i++) {
             this.isoGraph[i] = loadGraph(testFile(ISO_GRAPH_NAME + i));
         }
@@ -154,14 +137,21 @@ public class GraphTest extends TestCase {
         this.bTarget = this.bEdge.target();
     }
 
-    protected Graph loadGraph(File file) throws Exception {
-        return this.xml.unmarshalGraph(file);
+    protected Graph loadGraph(File file) {
+        Graph result = null;
+        try {
+            result = this.xml.unmarshalGraph(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     private File testFile(String fileName) {
         return new File(GraphTestDir, gxlFilter.addExtension(fileName));
     }
 
+    @Test
     final public void testIsoHashCode() {
         Object[] codes = new Object[MATCH_DOM_COUNT];
         for (int i = 0; i < codes.length; i++) {
@@ -191,6 +181,7 @@ public class GraphTest extends TestCase {
         }
     }
 
+    @Test
     final public void testGetPartitionMap() {
         // iso-0
         PartitionMap partitionMap =
@@ -218,6 +209,7 @@ public class GraphTest extends TestCase {
         assertTrue((elementCount - 5) >= partitionMap.size());
     }
 
+    @Test
     final public void testNewGraph() {
         Graph newGraph = this.matchDom[0].newGraph();
         assertEquals(0, newGraph.nodeCount());
@@ -228,6 +220,7 @@ public class GraphTest extends TestCase {
     /*
      * Test for Node addNode()
      */
+    @Test
     final public void testAddNode() {
         int oldNodeCount = this.matchDom[0].nodeCount();
         int oldEdgeCount = this.matchDom[0].edgeCount();
@@ -241,6 +234,7 @@ public class GraphTest extends TestCase {
     /*
      * Test for BinaryEdge addEdge(Node, Label, Node)
      */
+    @Test
     final public void testAddEdgeNodeLabelNode() {
         int oldNodeCount = this.matchDom[0].nodeCount();
         int oldEdgeCount = this.matchDom[0].edgeCount();
@@ -260,6 +254,7 @@ public class GraphTest extends TestCase {
             this.cLabel, this.aTarget)));
     }
 
+    @Test
     final public void testNodeSet() {
         Collection nodeSet = this.matchDom[0].nodeSet();
         assertEquals(3, nodeSet.size());
@@ -271,10 +266,12 @@ public class GraphTest extends TestCase {
         }
     }
 
+    @Test
     final public void testNodeCount() {
         assertEquals(3, this.matchDom[0].nodeCount());
     }
 
+    @Test
     final public void testEdgeSet() {
         Collection edgeSet = this.matchDom[0].edgeSet();
         assertEquals(2, edgeSet.size());
@@ -287,10 +284,12 @@ public class GraphTest extends TestCase {
         }
     }
 
+    @Test
     final public void testEdgeCount() {
         assertEquals(2, this.matchDom[0].edgeCount());
     }
 
+    @Test
     final public void testOutEdgeSet() {
         Set<Edge> abEdgeSet = new HashSet<Edge>();
         abEdgeSet.add(this.aEdge);
@@ -314,31 +313,7 @@ public class GraphTest extends TestCase {
         assertEquals(bOutEdges, this.graph.outEdgeSet(this.bTarget));
     }
 
-    //
-    // final public void testOutEdgeMap() {
-    // Set abEdgeSet = new HashSet();
-    // abEdgeSet.add(aEdge);
-    // abEdgeSet.add(bEdge);
-    // Map outEdgeMap = new HashMap();
-    // outEdgeMap.put(source, abEdgeSet);
-    // // outEdgeMap.put(aTarget, new HashSet());
-    // // outEdgeMap.put(bTarget, new HashSet());
-    // assertEquals(outEdgeMap, graph.outEdgeMap());
-    // // the map should be unmodifiable
-    // try {
-    // graph.outEdgeMap().put(aTarget, aEdge);
-    // fail("Adding to outgoing edge set should not have been allowed");
-    // } catch (UnsupportedOperationException exc) {
-    // // proceed
-    // }
-    // // if we add an edge to the graph, that should be visible
-    // Edge cEdge = graph.addEdge(bTarget, cLabel, aTarget);
-    // Set cEdgeSet = new HashSet();
-    // cEdgeSet.add(cEdge);
-    // outEdgeMap.put(bTarget, cEdgeSet);
-    // assertEquals(outEdgeMap, graph.outEdgeMap());
-    // }
-
+    @Test
     final public void testLabelEdgeSet() {
         Set<Edge> aEdgeSet = new HashSet<Edge>();
         aEdgeSet.add(this.aEdge);
@@ -355,29 +330,7 @@ public class GraphTest extends TestCase {
         assertEquals(cEdgeSet, this.graph.labelEdgeSet(this.cLabel));
     }
 
-    //
-    // final public void testLabelEdgeMap() {
-    // // prepare the expected map
-    // Set<Edge> aEdgeSet = new HashSet<Edge>();
-    // aEdgeSet.add(aEdge);
-    // Set<Edge> bEdgeSet = new HashSet<Edge>();
-    // bEdgeSet.add(bEdge);
-    // Map<Label,Set<Edge>> labelEdgeMap = new HashMap<Label,Set<Edge>>();
-    // labelEdgeMap.put(aLabel, aEdgeSet);
-    // labelEdgeMap.put(bLabel, bEdgeSet);
-    // // now test it
-    // assertEquals(new HashMap<Label,Set<Edge>>(), graph.labelEdgeMap(1));
-    // assertEquals(labelEdgeMap, graph.labelEdgeMap(2));
-    // // if we add an edge to the graph, that should be visible
-    // Edge anotherAEdge = graph.addEdge(bTarget, aLabel, source);
-    // aEdgeSet.add(anotherAEdge);
-    // Edge cEdge = graph.addEdge(bTarget, cLabel, aTarget);
-    // Set<Edge> cEdgeSet = new HashSet<Edge>();
-    // cEdgeSet.add(cEdge);
-    // labelEdgeMap.put(cLabel, cEdgeSet);
-    // assertEquals(cEdgeSet, graph.labelEdgeSet(2, cLabel));
-    // }
-
+    @Test
     final public void testSize() {
         assertEquals(5, this.graph.size());
         this.graph.addEdge(this.aTarget, this.cLabel, this.bTarget);
@@ -386,6 +339,7 @@ public class GraphTest extends TestCase {
         assertEquals(3, this.graph.size());
     }
 
+    @Test
     final public void testIsEmpty() {
         assertFalse(this.graph.isEmpty());
         this.graph.removeNodeSet(new HashSet<Node>(this.graph.nodeSet()));
@@ -393,6 +347,7 @@ public class GraphTest extends TestCase {
         assertTrue(this.graph.newGraph().isEmpty());
     }
 
+    @Test
     final public void testIsFixed() {
         assertFalse(this.graph.isFixed());
         this.graph.setFixed();
@@ -400,6 +355,7 @@ public class GraphTest extends TestCase {
         assertFalse(this.graph.newGraph().isFixed());
     }
 
+    @Test
     final public void testContainsElement() {
         assertTrue(this.graph.containsElement(this.source));
         assertTrue(this.graph.containsElement(this.aEdge));
@@ -410,6 +366,7 @@ public class GraphTest extends TestCase {
             this.source, this.aLabel, this.aTarget)));
     }
 
+    @Test
     final public void testContainsElementSet() {
         Set<Element> elementSet = new HashSet<Element>();
         assertTrue(this.graph.containsElementSet(elementSet));
@@ -428,6 +385,7 @@ public class GraphTest extends TestCase {
     /*
      * Test for boolean addNode(Node)
      */
+    @Test
     final public void testAddNodeNode() {
         assertFalse(this.graph.addNode(this.source));
         Node newNode = DefaultNode.createNode();
@@ -438,6 +396,7 @@ public class GraphTest extends TestCase {
     /*
      * Test for boolean addEdge(Edge)
      */
+    @Test
     final public void testAddEdgeEdge() {
         assertFalse(this.graph.addEdge(this.aEdge));
         assertFalse(this.graph.addEdge(DefaultEdge.createEdge(this.source,
@@ -452,6 +411,7 @@ public class GraphTest extends TestCase {
         assertTrue(this.graph.containsElement(newNode));
     }
 
+    @Test
     final public void testAddNodeSet() {
         Set<Node> nodeSet = new HashSet<Node>();
         assertFalse(this.graph.addNodeSet(nodeSet));
@@ -463,6 +423,7 @@ public class GraphTest extends TestCase {
         assertTrue(this.graph.containsElement(newNode));
     }
 
+    @Test
     final public void testAddEdgeSet() {
         Set<Edge> edgeSet = new HashSet<Edge>();
         assertFalse(this.graph.addEdgeSet(edgeSet));
@@ -479,6 +440,7 @@ public class GraphTest extends TestCase {
         assertTrue(this.graph.containsElement(newNode));
     }
 
+    @Test
     final public void testRemoveNode() {
         Node newNode = DefaultNode.createNode();
         assertFalse(this.graph.removeNode(newNode));
@@ -490,6 +452,7 @@ public class GraphTest extends TestCase {
         assertFalse(this.graph.removeNode(this.source));
     }
 
+    @Test
     final public void testRemoveEdge() {
         Edge newEdge =
             DefaultEdge.createEdge(this.source, this.bLabel, this.aTarget);
@@ -504,6 +467,7 @@ public class GraphTest extends TestCase {
             this.bLabel, this.bTarget)));
     }
 
+    @Test
     final public void testRemoveNodeSet() {
         Set<Node> nodeSet = new HashSet<Node>();
         assertFalse(this.graph.removeNodeSet(nodeSet));
@@ -519,6 +483,7 @@ public class GraphTest extends TestCase {
         assertFalse(this.graph.containsElement(this.aEdge));
     }
 
+    @Test
     final public void testRemoveEdgeSet() {
         Set<Edge> edgeSet = new HashSet<Edge>();
         assertFalse(this.graph.removeEdgeSet(edgeSet));
@@ -536,6 +501,7 @@ public class GraphTest extends TestCase {
         assertFalse(this.graph.removeEdgeSet(edgeSet));
     }
 
+    @Test
     final public void testSetFixed() {
         this.graph.setFixed();
         assertTrue(this.graph.isFixed());
@@ -543,6 +509,7 @@ public class GraphTest extends TestCase {
         // so there is little else to do here
     }
 
+    @Test
     final public void testAddGraphListenerAdd() {
         Graph graph1 = this.matchCod;
         GraphListener listener = new GraphListener();
@@ -598,6 +565,7 @@ public class GraphTest extends TestCase {
         assertEquals(addedGraphElements, listener.added.get(this.graph));
     }
 
+    @Test
     final public void testAddGraphListenerRemove() {
         GraphListener listener = new GraphListener();
         listener.addGraph(this.graph);
@@ -644,6 +612,7 @@ public class GraphTest extends TestCase {
         assertEquals(removedGraphElements, listener.removed.get(this.graph));
     }
 
+    @Test
     final public void testRemoveGraphListener() {
         GraphListener listener = new GraphListener();
         this.graph.addGraphListener(listener);
@@ -704,5 +673,5 @@ public class GraphTest extends TestCase {
         Set<Graph> listeningTo = this.added.keySet();
     }
 
-    private final Xml<Graph> xml;
+    private Xml<Graph> xml;
 }

@@ -14,7 +14,7 @@
 /*
  * $Id: GraphCreationTest.java,v 1.5 2008-01-30 09:33:06 iovka Exp $
  */
-package groove.test;
+package groove.test.graph;
 
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
@@ -32,7 +32,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 /**
- * @version $Revision$
+ * @version $Revision: 2754 $
  */
 @SuppressWarnings("all")
 public class GraphCreationTest extends TestCase {

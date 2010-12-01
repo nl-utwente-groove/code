@@ -16,6 +16,7 @@
  */
 package groove.test;
 
+import static org.junit.Assert.assertEquals;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultMorphism;
@@ -23,16 +24,15 @@ import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import junit.framework.TestCase;
+
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @version $Revision$ $Date: 2008-01-30 09:33:08 $
  */
 @SuppressWarnings("all")
-public class MorphismTest extends TestCase {
-    public MorphismTest(String name) {
-        super(name);
-    }
+public class MorphismTest {
 
     protected static final int NR_GRAPHS = 3;
     protected static final int[] NR_NODES = {4, 4, 4};
@@ -46,8 +46,8 @@ public class MorphismTest extends TestCase {
     protected Morphism m2To0NonInPart;
 
     /** The setup is depicted in test-graphs.fig */
-    @Override
-    protected void setUp() {
+    @Before
+    public void setUp() {
         this.g = new DefaultGraph[NR_GRAPHS];
         this.n = new Node[NR_GRAPHS][];
         this.e = new Edge[NR_GRAPHS][];
@@ -114,6 +114,7 @@ public class MorphismTest extends TestCase {
         this.m1To2InPart.putEdge(this.e[1][2], this.e[2][1]);
     }
 
+    @Test
     public void testSetup() {
         assertEquals(this.e[1][2], this.m2To1InTot.getEdge(this.e[2][1]));
         assertEquals(null, this.m2To1InTot.getEdge(this.e[2][4]));
@@ -128,6 +129,7 @@ public class MorphismTest extends TestCase {
         assertEquals(this.e[2][1], this.m1To2InPart.getEdge(this.e[1][2]));
     }
 
+    @Test
     public void testAfter() {
         Morphism m2To2InPart = this.m1To2InPart.after(this.m2To1InTot);
         assertEquals(null, m2To2InPart.getNode(this.n[2][0]));
@@ -141,16 +143,5 @@ public class MorphismTest extends TestCase {
         assertEquals(this.n[0][0], m2To0InTot.getNode(this.n[2][2]));
         assertEquals(this.n[0][1], m2To0InTot.getNode(this.n[2][3]));
     }
-    //
-    // public void testInverse() {
-    // InjectiveMorphism m1To2InTot = m2To1InTot.inverse();
-    // for (int i = 0; i < NR_NODES[1]; i++)
-    // assertEquals(m1To2InTot.getNode(n[1][i]),
-    // m2To1InTot.getInverseElement(n[1][i]));
-    //
-    // InjectiveMorphism m2To1InPart = m1To2InPart.inverse();
-    // for (int i = 0; i < NR_NODES[2]; i++)
-    // assertEquals(m2To1InPart.getNode(n[2][i]),
-    // m1To2InPart.getInverseElement(n[2][i]));
-    // }
+
 }

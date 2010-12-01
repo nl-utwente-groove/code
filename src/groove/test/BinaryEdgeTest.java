@@ -16,6 +16,8 @@
  */
 package groove.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
@@ -25,58 +27,57 @@ import groove.graph.Node;
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.TestCase;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * @version $Revision$ $Date: 2008-01-30 09:33:03 $
  */
 @SuppressWarnings("all")
-public class BinaryEdgeTest extends TestCase {
-    protected Node n1, n2;
-    protected Edge e;
+public class BinaryEdgeTest {
+    static Node n1, n2;
+    static Edge e;
 
-    public BinaryEdgeTest(String name) {
-        super(name);
+    @BeforeClass
+    public static void setUp() {
+        n1 = DefaultNode.createNode();
+        n2 = DefaultNode.createNode();
+        e = DefaultEdge.createEdge(n1, "a", n2);
     }
 
-    @Override
-    protected void setUp() {
-        this.n1 = DefaultNode.createNode();
-        this.n2 = DefaultNode.createNode();
-        this.e = DefaultEdge.createEdge(this.n1, "a", this.n2);
-    }
-
+    @Test
     public void testQueries() {
-        assertEquals(this.n1, this.e.source());
-        assertEquals(DefaultLabel.createLabel(new String("a")), this.e.label());
-        assertEquals(this.n2, this.e.target());
+        assertEquals(n1, e.source());
+        assertEquals(DefaultLabel.createLabel(new String("a")), e.label());
+        assertEquals(n2, e.target());
     }
 
+    @Test
     public void testCreateAndCompare() {
-        Edge e2 = DefaultEdge.createEdge(this.n1, "a", this.n2);
+        Edge e2 = DefaultEdge.createEdge(n1, "a", n2);
 
-        assertEquals(this.e, e2);
-        assertEquals(e2, this.e);
+        assertEquals(e, e2);
+        assertEquals(e2, e);
 
-        assertTrue(!this.e.equals(DefaultEdge.createEdge(this.n1, "a", this.n1)));
-        assertTrue(!this.e.equals(DefaultEdge.createEdge(this.n1, "b", this.n2)));
-        assertTrue(!this.e.equals(DefaultEdge.createEdge(this.n2, "a", this.n2)));
+        assertTrue(!e.equals(DefaultEdge.createEdge(n1, "a", n1)));
+        assertTrue(!e.equals(DefaultEdge.createEdge(n1, "b", n2)));
+        assertTrue(!e.equals(DefaultEdge.createEdge(n2, "a", n2)));
     }
 
+    @Test
     public void testCopyAndCompare() {
-        Edge e2 =
-            DefaultEdge.createEdge(this.e.source(), this.e.label(),
-                this.e.target());
+        Edge e2 = DefaultEdge.createEdge(e.source(), e.label(), e.target());
 
-        assertEquals(this.e, e2);
-        assertEquals(e2, this.e);
+        assertEquals(e, e2);
+        assertEquals(e2, e);
     }
 
+    @Test
     public void testHashSetEquals() {
-        Edge e2 = DefaultEdge.createEdge(this.n1, "a", this.n2);
+        Edge e2 = DefaultEdge.createEdge(n1, "a", n2);
 
         Set<Edge> s1 = new HashSet<Edge>();
-        s1.add(this.e);
+        s1.add(e);
         assertTrue(s1.contains(e2));
 
         Set<Edge> s2 = new HashSet<Edge>();

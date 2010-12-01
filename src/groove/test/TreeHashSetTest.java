@@ -16,6 +16,10 @@
  */
 package groove.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import groove.util.TreeHashSet;
 
 import java.util.Arrays;
@@ -23,15 +27,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * 
  * @author Arend Rensink
  * @version $Revision$
  */
 @SuppressWarnings("all")
-public class TreeHashSetTest extends TestCase {
+public class TreeHashSetTest {
     static final int INT_LIST_COUNT = 1000;
     final Integer[] intList1 = new Integer[INT_LIST_COUNT];
     final Integer[] intList2 = new Integer[INT_LIST_COUNT];
@@ -48,8 +52,8 @@ public class TreeHashSetTest extends TestCase {
 
     TreeHashSet<Object> defaultSet, identitySet, hashcodeSet;
 
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() {
         this.defaultSet = new TreeHashSet<Object>();
         this.identitySet =
             new TreeHashSet<Object>(TreeHashSet.IDENTITY_EQUATOR);
@@ -57,6 +61,7 @@ public class TreeHashSetTest extends TestCase {
             new TreeHashSet<Object>(TreeHashSet.HASHCODE_EQUATOR);
     }
 
+    @Test
     public void testClone() {
         testClone(this.defaultSet);
         testClone(this.identitySet);
@@ -81,6 +86,7 @@ public class TreeHashSetTest extends TestCase {
     /*
      * Test method for 'groove.util.TreeStoreSet.size()'
      */
+    @Test
     public void testSize() {
         // default equator
         fill(this.defaultSet, this.intList1);
@@ -108,6 +114,7 @@ public class TreeHashSetTest extends TestCase {
     /*
      * Test method for 'groove.util.TreeStoreSet.clear()'
      */
+    @Test
     public void testClear() {
         fill(this.defaultSet, this.intList1);
         this.defaultSet.clear();
@@ -117,6 +124,7 @@ public class TreeHashSetTest extends TestCase {
     /*
      * Test method for 'groove.util.TreeStoreSet.iterator()'
      */
+    @Test
     public void testIterator() {
         Set<Object> testSet = new HashSet<Object>();
         for (int i = 0; i < INT_LIST_COUNT; i++) {
@@ -135,6 +143,7 @@ public class TreeHashSetTest extends TestCase {
     /*
      * Test method for 'groove.util.TreeStoreSet.iterator()'
      */
+    @Test
     public void testSortedIterator() {
         for (int i = INT_LIST_COUNT - 1; i >= 0; i--) {
             this.defaultSet.add(this.intList1[i]);
@@ -153,6 +162,7 @@ public class TreeHashSetTest extends TestCase {
     /*
      * Test method for 'groove.util.TreeStoreSet.add(Object)'
      */
+    @Test
     public void testAddObject() {
         for (int i = 0; i < INT_LIST_COUNT; i++) {
             // default equator
@@ -171,6 +181,7 @@ public class TreeHashSetTest extends TestCase {
         }
     }
 
+    @Test
     public void testRemoveObject() {
         int i = 0;
         int size = INT_LIST_COUNT / 2;
@@ -229,6 +240,7 @@ public class TreeHashSetTest extends TestCase {
     /*
      * Test method for 'groove.util.TreeStoreSet.contains(Object)'
      */
+    @Test
     public void testContainsObject() {
         for (int i = 0; i < INT_LIST_COUNT; i++) {
             // default equator
@@ -255,6 +267,7 @@ public class TreeHashSetTest extends TestCase {
     /*
      * Test method for 'java.util.AbstractSet.equals(Object)'
      */
+    @Test
     public void testEquals() {
         TreeHashSet<Object> clone = new TreeHashSet<Object>();
         fill(this.defaultSet, this.intList1);

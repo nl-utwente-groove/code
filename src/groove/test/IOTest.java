@@ -16,6 +16,9 @@
  */
 package groove.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import groove.explore.Exploration;
 import groove.lts.GTS;
 import groove.trans.GraphGrammar;
@@ -28,14 +31,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * @author Tom Staijen
- * @version $Revision $
  */
 @SuppressWarnings("all")
-public class IOTest extends TestCase {
+public class IOTest {
 
     static private final String DIRECTORY = "junit/samples/control.gps";
     static private final String JAR_FILE = "junit/samples.jar";
@@ -48,6 +50,7 @@ public class IOTest extends TestCase {
     static private final String ALT_CONTROL = "control2";
 
     /** test loading a directory grammar directly */
+    @Test
     public void testLoadDefault() {
         int nodecount = 11;
         int edgecount = 12;
@@ -77,6 +80,7 @@ public class IOTest extends TestCase {
         }
     }
 
+    @Test
     public void testLoadAltStart() {
         int nodecount = 12;
         int edgecount = 14;
@@ -88,6 +92,7 @@ public class IOTest extends TestCase {
         }
     }
 
+    @Test
     public void testLoadAltBoth() {
         int nodecount = 13;
         int edgecount = 16;
