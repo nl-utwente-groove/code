@@ -386,7 +386,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * The start state of this LTS.
      * @invariant <tt>nodeSet().contains(startState)</tt>
      */
-    private GraphState startState;
+    protected GraphState startState;
 
     /**
      * The rule system generating this LTS.

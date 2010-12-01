@@ -34,6 +34,10 @@ import static groove.gui.Options.SHOW_VERTEX_LABELS_OPTION;
 import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
+import groove.abstraction.Multiplicity;
+import groove.abstraction.gui.ShapeJTree;
+import groove.abstraction.gui.ShapeStatePanel;
+import groove.abstraction.lts.AGTS;
 import groove.control.ControlView;
 import groove.explore.AcceptorEnumerator;
 import groove.explore.DefaultExplorationValidator;
@@ -495,6 +499,15 @@ public class Simulator {
             }
         }
         return result;
+    }
+
+    /** Returns true if the Simulator is in abstraction mode. */
+    private boolean isAbstractionMode() {
+        return this.isAbstractionMode;
+    }
+
+    private void setAbstractionMode(boolean value) {
+        this.isAbstractionMode = value;
     }
 
     /**
@@ -1234,7 +1247,12 @@ public class Simulator {
      */
     public synchronized void startSimulation() {
         try {
-            GTS gts = new GTS(getGrammarView().toGrammar());
+            GTS gts;
+            if (this.isAbstractionMode()) {
+                gts = new AGTS(getGrammarView().toGrammar());
+            } else {
+                gts = new GTS(getGrammarView().toGrammar());
+            }
             gts.getRecord().setRandomAccess(true);
             setGTS(gts);
             fireStartSimulation(getGTS());
@@ -1470,6 +1488,8 @@ public class Simulator {
         ruleJTreePanel.setMinimumSize(new Dimension(RULE_TREE_MINIMUM_WIDTH,
             RULE_TREE_MINIMUM_HEIGHT));
 
+        this.ruleTreePanel = ruleJTreePanel;
+
         JPanel result = new JPanel(new BorderLayout(), false);
         result.add(labelPaneTop, BorderLayout.NORTH);
         result.add(ruleJTreePanel, BorderLayout.CENTER);
@@ -1614,7 +1634,11 @@ public class Simulator {
     public StatePanel getStatePanel() {
         if (this.statePanel == null) {
             // panel for state display
-            this.statePanel = new StatePanel(this);
+            if (this.isAbstractionMode()) {
+                this.statePanel = new ShapeStatePanel(this);
+            } else {
+                this.statePanel = new StatePanel(this);
+            }
             this.statePanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
         return this.statePanel;
@@ -1707,7 +1731,11 @@ public class Simulator {
      */
     RuleJTree getRuleTree() {
         if (this.ruleJTree == null) {
-            this.ruleJTree = new RuleJTree(this);
+            if (this.isAbstractionMode()) {
+                this.ruleJTree = new ShapeJTree(this);
+            } else {
+                this.ruleJTree = new RuleJTree(this);
+            }
         }
         return this.ruleJTree;
     }
@@ -2093,16 +2121,17 @@ public class Simulator {
 
         result.addSeparator();
 
-        result.add(new JMenuItem(getStartSimulationAction()));
-        result.add(new JMenuItem(getApplyTransitionAction()));
-        result.add(new JMenuItem(getGotoStartStateAction()));
+        result.add(new JMenuItem(this.getStartSimulationAction()));
+        result.add(new JMenuItem(this.getToggleExplorationStateAction()));
+        result.add(new JMenuItem(this.getApplyTransitionAction()));
+        result.add(new JMenuItem(this.getGotoStartStateAction()));
 
         result.addSeparator();
 
         this.defaultExplorationMenuItem =
-            result.add(getDefaultExplorationAction());
-        result.add(getExplorationDialogAction());
-        result.add(getExplorationStatsDialogAction());
+            result.add(this.getDefaultExplorationAction());
+        result.add(this.getExplorationDialogAction());
+        result.add(this.getExplorationStatsDialogAction());
 
         return result;
     }
@@ -2718,6 +2747,9 @@ public class Simulator {
     /** Flag to indicate that one of the simulation events is underway. */
     private boolean updating;
 
+    /** Flag to indicate that the Simulator is in abstraction mode. */
+    private boolean isAbstractionMode = false;
+
     /**
      * A mapping from extension filters (recognizing the file formats from the
      * names) to the corresponding grammar loaders.
@@ -2798,6 +2830,9 @@ public class Simulator {
 
     /** Production rule directory. */
     private RuleJTree ruleJTree;
+
+    /** Panel with the ruleJTree plus toolbar. */
+    private JScrollPane ruleTreePanel;
 
     /** Production system graph list */
     private StateJList stateJList;
@@ -4954,6 +4989,57 @@ public class Simulator {
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(false)) {
                 startSimulation();
+            }
+        }
+
+        public void refresh() {
+            boolean enabled =
+                getGrammarView() != null
+                    && getGrammarView().getErrors().isEmpty();
+            setEnabled(enabled);
+        }
+    }
+
+    /**
+     * Lazily creates and returns an instance of
+     * {@link Simulator.ToggleExplorationStateAction}.
+     */
+    public Action getToggleExplorationStateAction() {
+        if (this.toggleExplorationStateAction == null) {
+            this.toggleExplorationStateAction =
+                new ToggleExplorationStateAction();
+        }
+        return this.toggleExplorationStateAction;
+    }
+
+    /** The action to toggle between concrete and abstract exploration. */
+    private ToggleExplorationStateAction toggleExplorationStateAction;
+
+    private class ToggleExplorationStateAction extends RefreshableAction {
+        /** Constructs an instance of the action. */
+        ToggleExplorationStateAction() {
+            super(Options.TOGGLE_TO_ABS_ACTION_NAME, null);
+            putValue(Action.ACCELERATOR_KEY, Options.TOGGLE_EXP_MODE_KEY);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            Simulator simulator = Simulator.this;
+            if (simulator.isAbstractionMode()) {
+                simulator.setAbstractionMode(false);
+                this.putValue(Action.NAME, Options.TOGGLE_TO_ABS_ACTION_NAME);
+                simulator.startSimulation();
+            } else {
+                simulator.setAbstractionMode(true);
+                this.putValue(Action.NAME, Options.TOGGLE_TO_CONC_ACTION_NAME);
+                Multiplicity.initMultStore();
+                simulator.removeSimulationListener(simulator.getRuleTree());
+                simulator.removeSimulationListener(simulator.getStatePanel());
+                simulator.ruleJTree = null;
+                simulator.ruleTreePanel.setViewportView(simulator.getRuleTree());
+                simulator.statePanel = null;
+                simulator.getGraphViewsPanel().setComponentAt(0,
+                    simulator.getStatePanel());
+                simulator.startSimulation();
             }
         }
 

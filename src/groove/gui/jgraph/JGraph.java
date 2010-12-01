@@ -75,10 +75,10 @@ import javax.swing.KeyStroke;
 import javax.swing.ToolTipManager;
 
 import org.jgraph.event.GraphModelEvent;
+import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.event.GraphModelListener;
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
-import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.CellView;

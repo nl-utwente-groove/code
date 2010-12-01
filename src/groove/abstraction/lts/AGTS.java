@@ -70,8 +70,12 @@ public final class AGTS extends GTS {
     }
 
     @Override
-    public ShapeState startState() {
-        return (ShapeState) super.startState();
+    public GraphState startState() {
+        if (this.startState == null) {
+            this.startState = createStartState(getGrammar().getStartGraph());
+            addState(this.startState);
+        }
+        return this.startState;
     }
 
     @Override
