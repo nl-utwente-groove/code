@@ -63,7 +63,7 @@ public class MatchApplier implements RuleEventApplier {
         GraphTransition transition = null;
         Rule rule = match.getEvent().getRule();
         CtrlState sourceCtrl = source.getCtrlState();
-        if (sourceCtrl == null || !sourceCtrl.getTransition(rule).isModifying()) {
+        if (!sourceCtrl.getTransition(rule).isModifying()) {
             if (!rule.isModifying()) {
                 transition = createTransition(match, source, source, false);
             } else if (match instanceof GraphTransition) {
@@ -74,8 +74,7 @@ public class MatchApplier implements RuleEventApplier {
                 assert source instanceof GraphNextState;
                 GraphTransition parentTrans = (GraphTransition) match;
                 boolean parentModifiesCtrl =
-                    sourceCtrl != null
-                        && parentTrans.getCtrlTransition().isModifying();
+                    parentTrans.getCtrlTransition().isModifying();
                 RuleEvent sourceEvent = ((GraphNextState) source).getEvent();
                 if (!parentModifiesCtrl && !parentTrans.isSymmetry()
                     && !parentTrans.getEvent().conflicts(sourceEvent)) {
@@ -117,9 +116,9 @@ public class MatchApplier implements RuleEventApplier {
         Node[] addedNodes;
         RuleEvent event;
         if (match instanceof GraphTransition) {
-            GraphTransition virtual = (GraphTransition) match;
-            event = virtual.getEvent();
-            addedNodes = getCreatedNodes(virtual, source);
+            GraphTransition parentOut = (GraphTransition) match;
+            event = parentOut.getEvent();
+            addedNodes = getCreatedNodes(parentOut, source);
         } else {
             assert match instanceof RuleEvent;
             event = (RuleEvent) match;
@@ -140,9 +139,9 @@ public class MatchApplier implements RuleEventApplier {
         Node[] addedNodes;
         RuleEvent event;
         if (match instanceof GraphTransition) {
-            GraphTransition parentTrans = (GraphTransition) match;
-            event = parentTrans.getEvent();
-            addedNodes = getCreatedNodes(parentTrans, source);
+            GraphTransition parentOut = (GraphTransition) match;
+            event = parentOut.getEvent();
+            addedNodes = getCreatedNodes(parentOut, source);
         } else {
             assert match instanceof RuleEvent;
             event = (RuleEvent) match;
