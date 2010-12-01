@@ -176,14 +176,6 @@ public final class Util {
         return intersection(outEdges, inEdges);
     }
 
-    /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
-    public static Set<Edge> getIntersectEdges(Graph graph, Set<Node> srcs,
-            Set<Node> tgts, Label label) {
-        Set<Edge> outEdges = getOutEdges(graph, srcs, label);
-        Set<Edge> inEdges = getInEdges(graph, tgts, label);
-        return intersection(outEdges, inEdges);
-    }
-
     /** Returns the intersection of two given sets. */
     public static <T> Set<T> intersection(Set<T> s0, Set<T> s2) {
         Set<T> result = new HashSet<T>(Math.min(s0.size(), s2.size()));
