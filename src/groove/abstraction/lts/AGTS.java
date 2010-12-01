@@ -97,7 +97,8 @@ public final class AGTS extends GTS {
     @Override
     protected ShapeState createStartState(Graph startGraph) {
         Shape shape = new Shape(startGraph);
-        ShapeState result = new ShapeState(shape);
+        ShapeState result =
+            new ShapeState(shape, getGrammar().getCtrlAut().getStart());
         return result;
     }
 

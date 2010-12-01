@@ -63,11 +63,13 @@ public class ShapeState extends AbstractGraphState {
     /**
      * Constructs an state with the given shape and with an empty set of
      * transitions.
+     * @param ctrlState TODO
      */
-    public ShapeState(Shape shape) {
+    public ShapeState(Shape shape, CtrlState ctrlState) {
         // We don't have a cache reference, so just pass null to the
         // super constructor.
         super(null);
+        setCtrlState(ctrlState);
         this.shape = shape;
         this.closed = false;
         this.nr = -1;
@@ -213,10 +215,5 @@ public class ShapeState extends AbstractGraphState {
     @Override
     public boolean containsTransition(GraphTransition transition) {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public CtrlState getCtrlState() {
-        return null;
     }
 }

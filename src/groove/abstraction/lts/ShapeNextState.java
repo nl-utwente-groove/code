@@ -48,7 +48,8 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
 
     /** Default constructor, delegates to super class. */
     public ShapeNextState(Shape shape, ShapeState source, RuleEvent event) {
-        super(shape);
+        super(shape,
+            source.getCtrlState().getTransition(event.getRule()).target());
         this.transition = new ShapeTransition(source, event, this);
     }
 
