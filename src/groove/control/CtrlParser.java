@@ -44,7 +44,9 @@ public class CtrlParser {
      */
     public CtrlAut runString(String program, GraphGrammar grammar)
         throws FormatException {
-        return runStream(new ANTLRStringStream(program), grammar);
+        CtrlAut result = runStream(new ANTLRStringStream(program), grammar);
+        result.setProgram(program);
+        return result;
     }
 
     /**

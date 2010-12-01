@@ -164,7 +164,7 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
             }
         }
         this.maxStateNr = stateNr;
-        return new CtrlState(stateNr);
+        return new CtrlState(this, stateNr);
     }
 
     /** Factory method for control transitions. */
@@ -406,6 +406,19 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
 
     /** Upper bound of the range of known consecutive state numbers. */
     private int maxStateNr = -1;
+
+    /** Returns the control program of this automaton (if any). */
+    public String getProgram() {
+        return this.program;
+    }
+
+    /** Sets the control program of this automaton. */
+    public void setProgram(String program) {
+        this.program = program;
+    }
+
+    /** The control program of this automaton (if any). */
+    private String program;
 
     /** 
      * Offers a modifiable view on the transitions stored in the states 
