@@ -210,6 +210,6 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
 
     @Override
     public CtrlTransition getCtrlTransition() {
-        return null;
+        return this.transition.getCtrlTransition();
     }
 }
