@@ -316,7 +316,6 @@ public class ProductGTS implements LTS {
         /**
          * First compares the control locations, then calls
          * {@link IsoChecker#areIsomorphic(Graph, Graph)}.
-         * @see GraphState#getLocation()
          */
         @Override
         protected boolean areEqual(BuchiGraphState stateKey,

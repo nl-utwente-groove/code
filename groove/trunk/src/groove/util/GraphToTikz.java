@@ -1396,7 +1396,6 @@ public final class GraphToTikz {
     private static final String CONTROL_START_NODE_STYLE = "cstart";
     private static final String CONTROL_SUCCESS_NODE_STYLE = "csuccess";
     private static final String CONTROL_EDGE_STYLE = "cedge";
-    private static final String CONTROL_SHAPE_EDGE_STYLE = "cshape";
     private static final String CONTROL_FAILURE_EDGE_STYLE = "cfailure";
     private static final String UNDIRECTED_EDGE_STYLE = "-";
     private static final String INHERITANCE_EDGE_STYLE = "subedge";

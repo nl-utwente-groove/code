@@ -93,7 +93,7 @@ public final class ShapeStateGenerator implements RuleEventApplier {
                 this.println("New state: " + source + "--" + match + "-->"
                     + newState);
                 if (USE_GUI) {
-                    new ShapeDialog((Shape) newState.getGraph(),
+                    new ShapeDialog(newState.getGraph(),
                         Integer.toString(newState.getNumber()));
                 }
                 this.states++;

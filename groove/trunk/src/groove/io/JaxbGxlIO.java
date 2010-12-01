@@ -519,6 +519,7 @@ public class JaxbGxlIO implements GxlIO {
     /** Attribute name for node and edge identities. */
     static private final String LABEL_ATTR_NAME = "label";
     /** Attribute name for layout information. */
+    @SuppressWarnings("unused")
     static private final String LAYOUT_ATTR_NAME = "layout";
     /** Subtype label. */
     static private final String ABSTRACT_PREFIX = TypeAspect.ABS.getPrefix();
