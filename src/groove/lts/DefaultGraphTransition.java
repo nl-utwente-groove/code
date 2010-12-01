@@ -284,5 +284,4 @@ public class DefaultGraphTransition extends
     /** The total number of anchor images created. */
     static private int anchorImageCount = 0;
 
-    static private final Node[] EMPTY_ARGUMENTS = new Node[0];
 }

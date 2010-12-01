@@ -97,6 +97,7 @@ public class ShapeJTree extends RuleJTree {
          * Creates a new pre-match node on the basis of a given number and the
          * RuleMatch.
          */
+        @SuppressWarnings("unused")
         public PrematchTreeNode(int nr, RuleEvent event) {
             super(event, true);
             this.nr = nr;
