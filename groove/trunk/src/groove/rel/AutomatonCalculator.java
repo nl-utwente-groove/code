@@ -49,7 +49,6 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
      */
     public AutomatonCalculator() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
     /**

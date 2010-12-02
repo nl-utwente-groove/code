@@ -63,7 +63,6 @@ public class ShapeState extends AbstractGraphState {
     /**
      * Constructs an state with the given shape and with an empty set of
      * transitions.
-     * @param ctrlState TODO
      */
     public ShapeState(Shape shape, CtrlState ctrlState) {
         // We don't have a cache reference, so just pass null to the
