@@ -35,8 +35,6 @@ import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import groove.abstraction.Multiplicity;
-import groove.abstraction.gui.ShapeJTree;
-import groove.abstraction.gui.ShapeStatePanel;
 import groove.abstraction.lts.AGTS;
 import groove.control.ControlView;
 import groove.explore.AcceptorEnumerator;
@@ -1634,11 +1632,7 @@ public class Simulator {
     public StatePanel getStatePanel() {
         if (this.statePanel == null) {
             // panel for state display
-            if (this.isAbstractionMode()) {
-                this.statePanel = new ShapeStatePanel(this);
-            } else {
-                this.statePanel = new StatePanel(this);
-            }
+            this.statePanel = new StatePanel(this);
             this.statePanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
         return this.statePanel;
@@ -1731,11 +1725,7 @@ public class Simulator {
      */
     RuleJTree getRuleTree() {
         if (this.ruleJTree == null) {
-            if (this.isAbstractionMode()) {
-                this.ruleJTree = new ShapeJTree(this);
-            } else {
-                this.ruleJTree = new RuleJTree(this);
-            }
+            this.ruleJTree = new RuleJTree(this);
         }
         return this.ruleJTree;
     }
@@ -2122,7 +2112,8 @@ public class Simulator {
         result.addSeparator();
 
         result.add(new JMenuItem(this.getStartSimulationAction()));
-        result.add(new JMenuItem(this.getToggleExplorationStateAction()));
+        // EDUARDO: Uncomment to enable abstraction.
+        // result.add(new JMenuItem(this.getToggleExplorationStateAction()));
         result.add(new JMenuItem(this.getApplyTransitionAction()));
         result.add(new JMenuItem(this.getGotoStartStateAction()));
 

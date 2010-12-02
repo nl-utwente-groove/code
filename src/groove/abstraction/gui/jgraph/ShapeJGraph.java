@@ -53,7 +53,7 @@ import com.jgraph.layout.organic.JGraphFastOrganicLayout;
  */
 public class ShapeJGraph extends JGraph {
 
-    private final Shape shape;
+    private Shape shape;
     private final HashMap<ShapeNode,ShapeJVertex> nodeMap;
     private final HashMap<ShapeEdge,ShapeJEdge> edgeMap;
     private final HashMap<EdgeSignature,ShapeJPort> outEsMap;
@@ -62,13 +62,8 @@ public class ShapeJGraph extends JGraph {
     /**
      * EDUARDO: Comment this...
      */
-    public ShapeJGraph(ShapeJModel model) {
-        super(model);
-
-        GraphLayoutCache view =
-            new GraphLayoutCache(model, new ShapeJCellViewFactory());
-        view.setAutoSizeOnValueChange(true);
-        this.setGraphLayoutCache(view);
+    public ShapeJGraph() {
+        super();
 
         this.setPortsVisible(true);
         this.setEditable(false);
@@ -78,11 +73,29 @@ public class ShapeJGraph extends JGraph {
 
         this.addMouseListener(new MyMouseListener());
 
-        this.shape = model.getShape();
         this.nodeMap = new HashMap<ShapeNode,ShapeJVertex>();
         this.edgeMap = new HashMap<ShapeEdge,ShapeJEdge>();
         this.outEsMap = new HashMap<EdgeSignature,ShapeJPort>();
         this.inEsMap = new HashMap<EdgeSignature,ShapeJPort>();
+    }
+
+    /**
+     * EDUARDO: Comment this...
+     */
+    public void setJModel(ShapeJModel model) {
+        super.setModel(model);
+
+        GraphLayoutCache view =
+            new GraphLayoutCache(model, new ShapeJCellViewFactory());
+        view.setAutoSizeOnValueChange(true);
+        this.setGraphLayoutCache(view);
+
+        this.shape = model.getShape();
+
+        this.nodeMap.clear();
+        this.edgeMap.clear();
+        this.outEsMap.clear();
+        this.inEsMap.clear();
 
         this.createElements();
     }
