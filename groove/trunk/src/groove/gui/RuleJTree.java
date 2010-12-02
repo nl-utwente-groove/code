@@ -360,7 +360,8 @@ public class RuleJTree extends JTree implements SimulationListener {
             } else {
                 SystemRecord record = getCurrentGTS().getRecord();
                 Collection<? extends MatchResult> matches =
-                    new MatchSetCollector(state, record).getMatchSet();
+                    new MatchSetCollector(state, record,
+                        getCurrentGTS().checkDiamonds()).getMatchSet();
                 refreshMatchesOpen(matches);
             }
         }

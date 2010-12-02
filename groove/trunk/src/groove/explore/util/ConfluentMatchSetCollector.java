@@ -42,8 +42,9 @@ public class ConfluentMatchSetCollector extends MatchSetCollector {
      * @param record factory to turn {@link RuleMatch}es in to
      *        {@link RuleEvent}s.
      */
-    public ConfluentMatchSetCollector(GraphState state, SystemRecord record) {
-        super(state, record);
+    public ConfluentMatchSetCollector(GraphState state, SystemRecord record,
+            boolean checkDiamonds) {
+        super(state, record, checkDiamonds);
     }
 
     /**

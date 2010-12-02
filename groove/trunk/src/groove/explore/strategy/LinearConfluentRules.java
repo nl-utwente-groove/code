@@ -32,6 +32,7 @@ public class LinearConfluentRules extends NextOpenStrategy {
      */
     @Override
     protected MatchSetCollector createMatchCollector() {
-        return new ConfluentMatchSetCollector(getAtState(), getRecord());
+        return new ConfluentMatchSetCollector(getAtState(), getRecord(),
+            getGTS().checkDiamonds());
     }
 }

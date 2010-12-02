@@ -101,7 +101,8 @@ public abstract class AbstractStrategy implements Strategy {
      * state and related information.
      */
     protected MatchSetCollector createMatchCollector() {
-        return new MatchSetCollector(getAtState(), getRecord());
+        return new MatchSetCollector(getAtState(), getRecord(),
+            getGTS().checkDiamonds());
     }
 
     /** Sets the match applier of this strategy. */

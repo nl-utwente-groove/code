@@ -359,8 +359,7 @@ public class BoundedNestedDFSStrategy extends
     }
 
     /**
-     * Returns a random buchi transition from a given state. AREND: check if
-     * this comment is correct :)
+     * Returns a random buchi transition from a given state.
      */
     protected ProductTransition getRandomOpenBuchiTransition(
             BuchiGraphState state) {
