@@ -81,7 +81,7 @@ public class RegExprLabel extends AbstractLabel {
     /**
      * Returns the regular automaton for this label. 
      * @param labelStore alphabet of the automaton,
-     * used to match node type labels properly
+     * used to match node type labels properly; non-{@code null}
      */
     public Automaton getAutomaton(LabelStore labelStore) {
         if (this.automaton == null

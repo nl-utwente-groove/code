@@ -184,29 +184,33 @@ public class GraphTest {
     @Test
     final public void testGetPartitionMap() {
         // iso-0
-        PartitionMap partitionMap =
+        PartitionMap nodePartitionMap =
             this.checker.getCertifier(this.isoGraph[0], true).getNodePartitionMap();
-        int elementCount =
-            this.isoGraph[0].nodeCount() + this.isoGraph[0].edgeCount();
-        assertEquals(elementCount, partitionMap.size());
+        assertEquals(this.isoGraph[0].nodeCount(), nodePartitionMap.size());
+        PartitionMap edgePartitionMap =
+            this.checker.getCertifier(this.isoGraph[0], true).getEdgePartitionMap();
+        assertEquals(this.isoGraph[0].edgeCount(), edgePartitionMap.size());
         // iso-1
-        partitionMap =
+        nodePartitionMap =
             this.checker.getCertifier(this.isoGraph[1], true).getNodePartitionMap();
-        elementCount =
-            this.isoGraph[1].nodeCount() + this.isoGraph[1].edgeCount();
-        assertEquals(elementCount - 2, partitionMap.size());
+        assertEquals(this.isoGraph[1].nodeCount() - 1, nodePartitionMap.size());
+        edgePartitionMap =
+            this.checker.getCertifier(this.isoGraph[1], true).getEdgePartitionMap();
+        assertEquals(this.isoGraph[1].edgeCount() - 1, edgePartitionMap.size());
         // iso-2
-        partitionMap =
+        nodePartitionMap =
             this.checker.getCertifier(this.isoGraph[2], true).getNodePartitionMap();
-        elementCount =
-            this.isoGraph[2].nodeCount() + this.isoGraph[2].edgeCount();
-        assertEquals(elementCount, partitionMap.size());
+        assertEquals(this.isoGraph[2].nodeCount(), nodePartitionMap.size());
+        edgePartitionMap =
+            this.checker.getCertifier(this.isoGraph[2], true).getEdgePartitionMap();
+        assertEquals(this.isoGraph[2].edgeCount(), edgePartitionMap.size());
         // iso-3
-        partitionMap =
+        nodePartitionMap =
             this.checker.getCertifier(this.isoGraph[3], true).getNodePartitionMap();
-        elementCount =
-            this.isoGraph[3].nodeCount() + this.isoGraph[3].edgeCount();
-        assertTrue((elementCount - 5) >= partitionMap.size());
+        assertEquals(this.isoGraph[3].nodeCount() - 2, nodePartitionMap.size());
+        edgePartitionMap =
+            this.checker.getCertifier(this.isoGraph[3], true).getEdgePartitionMap();
+        assertEquals(this.isoGraph[3].edgeCount() - 3, edgePartitionMap.size());
     }
 
     @Test
