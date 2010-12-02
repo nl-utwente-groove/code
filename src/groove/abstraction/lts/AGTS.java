@@ -102,6 +102,11 @@ public final class AGTS extends GTS {
         return result;
     }
 
+    @Override
+    public boolean checkDiamonds() {
+        return false;
+    }
+
     // ------------------------------------------------------------------------
     // Inner classes
     // ------------------------------------------------------------------------

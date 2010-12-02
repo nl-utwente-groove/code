@@ -16,7 +16,6 @@
  */
 package groove.explore.util;
 
-import groove.abstraction.lts.ShapeState;
 import groove.control.CtrlCall;
 import groove.control.CtrlPar;
 import groove.control.CtrlSchedule;
@@ -54,17 +53,18 @@ public class MatchSetCollector {
      * @param record factory to turn {@link RuleMatch}es in to
      *        {@link RuleEvent}s.
      */
-    public MatchSetCollector(GraphState state, SystemRecord record) {
+    public MatchSetCollector(GraphState state, SystemRecord record,
+            boolean checkDiamonds) {
         this.state = state;
         this.ctrlState = state.getCtrlState();
         assert this.ctrlState != null;
         this.record = record;
+        this.checkDiamonds = checkDiamonds;
         GraphState parent = null;
         if (state instanceof GraphNextState) {
             parent = ((GraphNextState) state).source();
         }
-        if (parent != null && parent.isClosed()
-            && !(this.state instanceof ShapeState)) {
+        if (parent != null && parent.isClosed() && this.checkDiamonds()) {
             this.parentOutMap = parent.getTransitionMap();
             Rule lastRule = ((GraphNextState) state).getEvent().getRule();
             this.enabledRules = record.getEnabledRules(lastRule);
@@ -180,6 +180,10 @@ public class MatchSetCollector {
         // there may be new matches only if the rule was untried in
         // the parent state
         return !state.source().getSchedule().getTriedRules().contains(call);
+    }
+
+    private boolean checkDiamonds() {
+        return this.checkDiamonds;
     }
 
     /** Extracts the morphism from rule nodes to input graph nodes
@@ -323,4 +327,7 @@ public class MatchSetCollector {
 
     /** Counter for the number of reused parent events. */
     private static int parentOutReuse;
+
+    /** Flag to indicate if confluent diamonds should be considered. */
+    private final boolean checkDiamonds;
 }

@@ -383,6 +383,14 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     }
 
     /**
+     * Indicates if the match collector should check for confluent diamonds
+     * in this GTS.
+     */
+    public boolean checkDiamonds() {
+        return true;
+    }
+
+    /**
      * The start state of this LTS.
      * @invariant <tt>nodeSet().contains(startState)</tt>
      */
