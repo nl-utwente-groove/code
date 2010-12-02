@@ -25,6 +25,7 @@ import groove.graph.Edge;
 import groove.graph.GraphFactory;
 import groove.graph.GraphShape;
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.io.DefaultGxl;
 import groove.io.Xml;
@@ -99,6 +100,11 @@ public class AutomatonTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        LabelStore testStore = new LabelStore();
+        for (Edge testEdge : testGraph.edgeSet()) {
+            testStore.addLabel(testEdge.label());
+        }
+        calculator.setLabelStore(testStore);
         nList = getNode("List");
         nC1 = getNode("n1");
         nC2 = getNode("n2");
@@ -580,7 +586,8 @@ public class AutomatonTest {
      * Constructs an automaton from a regular expression.
      */
     protected Automaton createAutomaton(String regExpr) throws FormatException {
-        return calculator.compute(RegExpr.parse(regExpr));
+        RegExpr parsedRegExpr = RegExpr.parse(regExpr);
+        return calculator.compute(parsedRegExpr);
     }
 
     /**

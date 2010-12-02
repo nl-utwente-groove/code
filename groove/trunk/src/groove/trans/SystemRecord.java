@@ -1,6 +1,7 @@
 /* $Id$ */
 package groove.trans;
 
+import groove.abstraction.ShapeNode;
 import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.Node;
@@ -157,7 +158,8 @@ public class SystemRecord implements NodeFactory {
     private int computeHighestNodeNr(Graph graph) {
         int result = 0;
         for (Node node : graph.nodeSet()) {
-            if (node.getClass() == DefaultNode.class) {
+            if (node.getClass() == DefaultNode.class
+                || node.getClass() == ShapeNode.class) {
                 result = Math.max(result, node.getNumber());
             }
         }

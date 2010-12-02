@@ -45,6 +45,8 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
     /**
      * Creates an automaton with a given start and end node, which does not
      * accept the empty word.
+     * The label store indicates which labels to expect (which is used
+     * to predict the matching of wildcards).
      */
     public MatrixAutomaton(Node startNode, Node endNode, LabelStore labelStore) {
         addNode(startNode);
@@ -52,6 +54,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
         addNode(endNode);
         this.end = endNode;
         this.labelStore = labelStore;
+        assert labelStore != null;
     }
 
     public Node getStartNode() {
@@ -865,8 +868,8 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
      */
     private class MatchingAlgorithm {
         /** Dummy object used in matching. */
-        final MatchingComputation MATCH_DUMMY =
-            new MatchingComputation(0, null, null);
+        final MatchingComputation MATCH_DUMMY = new MatchingComputation(0,
+            null, null);
 
         /**
          * Wraps a single computation of the enclosing {@link MatchingAlgorithm}

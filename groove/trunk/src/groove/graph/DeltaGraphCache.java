@@ -230,11 +230,11 @@ public class DeltaGraphCache extends GraphCache {
         // otherwise, we can use the cache delta
         DeltaApplier delta = getCacheDelta();
         @SuppressWarnings({"rawtypes", "unchecked"})
-        final Map<Label,Set<Edge>> basisMaps = (Map) basis.getLabelEdgeMap();
-        final Map<Label,Set<Edge>> result = new HashMap<Label,Set<Edge>>();
+        final Map<Label,Set<Edge>> basisMap = (Map) basis.getLabelEdgeMap();
+        final Map<Label,Set<Edge>> result = new HashMap<Label,Set<Edge>>(basisMap);
         DeltaTarget target = new DeltaTarget() {
             public boolean addEdge(Edge elem) {
-                return addToLabelEdgeMap(result, elem, basisMaps);
+                return addToLabelEdgeMap(result, elem, basisMap);
             }
 
             public boolean addNode(Node elem) {
@@ -243,7 +243,7 @@ public class DeltaGraphCache extends GraphCache {
             }
 
             public boolean removeEdge(Edge elem) {
-                return removeFromLabelEdgeMap(result, elem, basisMaps);
+                return removeFromLabelEdgeMap(result, elem, basisMap);
             }
 
             public boolean removeNode(Node elem) {
