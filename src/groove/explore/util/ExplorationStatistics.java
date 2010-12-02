@@ -380,13 +380,6 @@ public class ExplorationStatistics {
         }
     }
 
-    /** Prints the statistics report to stdout and returns it. */
-    public String printReport() {
-        String report = this.getReport();
-        System.out.print(report);
-        return report;
-    }
-
     /** Returns the statistics report string. */
     public String getReport() {
         this.report();
