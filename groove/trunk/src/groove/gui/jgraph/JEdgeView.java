@@ -131,8 +131,8 @@ public class JEdgeView extends EdgeView {
     public List<Object> addPointBetween() {
         this.jModel.addLayoutable(getCell());
         List<Object> points = new LinkedList<Object>(getViewPoints());
-        points.add(1, createPointBetween(toPoint(points.get(0)),
-            toPoint(points.get(1))));
+        points.add(1,
+            createPointBetween(toPoint(points.get(0)), toPoint(points.get(1))));
         return points;
     }
 
@@ -296,8 +296,8 @@ public class JEdgeView extends EdgeView {
             }
             points.add(1, createPointPerpendicular(startPoint, endPoint, true));
             if (!isManhattan) {
-                points.add(1, createPointPerpendicular(startPoint, endPoint,
-                    false));
+                points.add(1,
+                    createPointPerpendicular(startPoint, endPoint, false));
                 setLineStyle(getPreferredLinestyle());
             }
             GraphConstants.setPoints(getCell().getAttributes(), points);
@@ -325,8 +325,10 @@ public class JEdgeView extends EdgeView {
             List<Object> points = getViewPoints();
             assert points.size() > 1 : String.format(
                 "JEdge %s has only points %s", getCell(), points);
-            points.add(1, createPointBetween(toPoint(points.get(0)),
-                toPoint(points.get(1))));
+            points.add(
+                1,
+                createPointBetween(toPoint(points.get(0)),
+                    toPoint(points.get(1))));
             GraphConstants.setPoints(getCell().getAttributes(), points);
             setLineStyle(getPreferredLinestyle());
         }
@@ -509,7 +511,7 @@ public class JEdgeView extends EdgeView {
                 CellView view, boolean sel, boolean focus, boolean preview) {
 
             assert view instanceof JEdgeView : String.format(
-                "This renderer is only meant for %s", JVertexView.class);
+                "This renderer is only meant for %s", JEdgeView.class);
 
             JEdgeView theView = (JEdgeView) view;
             AttributeMap secondMap =
