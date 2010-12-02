@@ -50,7 +50,6 @@ public class NASABuchiGraph extends AbstractBuchiGraph {
     @Override
     public boolean isEnabled(BuchiTransition transition,
             Set<String> applicableRules) {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -96,8 +95,7 @@ public class NASABuchiGraph extends AbstractBuchiGraph {
     private class Visitor implements IVisitor {
         private BuchiGraph graph;
 
-        public Visitor(BuchiGraph graph)
-        {
+        public Visitor(BuchiGraph graph) {
             this.graph = graph;
         }
 

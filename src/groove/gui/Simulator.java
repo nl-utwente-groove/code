@@ -268,7 +268,7 @@ public class Simulator {
         if (System.getProperty("os.name").startsWith("Windows")
             || System.getProperty("os.name").startsWith("Linux")
             || System.getProperty("os.name").startsWith("FreeBSD")) {
-            // TODO change here to enable ltl model checking
+            // TODO change here to enable LTL model checking
             System.setProperty(GrooveModules.GROOVE_MODULE_LTL_VERIFICATION,
                 GrooveModules.GROOVE_MODULE_ENABLED);
         } else {

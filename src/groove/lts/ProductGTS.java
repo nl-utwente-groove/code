@@ -362,17 +362,14 @@ public class ProductGTS implements LTS {
     }
 
     public Set<? extends Transition> edgeSet() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     public Collection<? extends State> getFinalStates() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     public boolean hasFinalStates() {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -393,12 +390,11 @@ public class ProductGTS implements LTS {
      */
     @Deprecated
     public State startState() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     public void addGraphListener(GraphShapeListener listener) {
-        // TODO Auto-generated method stub
+        // Empty.
     }
 
     public boolean containsElement(Element elem) {
@@ -435,7 +431,6 @@ public class ProductGTS implements LTS {
     }
 
     public boolean containsElementSet(Collection<? extends Element> elements) {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -444,28 +439,23 @@ public class ProductGTS implements LTS {
     }
 
     public Set<? extends Edge> edgeSet(Node node) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Deprecated
     public Set<? extends Edge> edgeSet(Node node, int i) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     public GraphInfo getInfo() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     public boolean isEmpty() {
-        // TODO Auto-generated method stub
         return false;
     }
 
     public boolean isFixed() {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -479,35 +469,30 @@ public class ProductGTS implements LTS {
     }
 
     public int nodeCount() {
-        // TODO Auto-generated method stub
         return this.stateSet.size();
     }
 
     public Set<? extends GraphTransition> inEdgeSet(Node node) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     public Set<? extends GraphTransition> outEdgeSet(Node node) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     public void removeGraphListener(GraphShapeListener listener) {
-        // TODO Auto-generated method stub
+        // Empty.
     }
 
     public void setFixed() {
-        // TODO Auto-generated method stub
+        // Empty.
     }
 
     public GraphInfo setInfo(GraphInfo info) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     public int size() {
-        // TODO Auto-generated method stub
         return 0;
     }
 }

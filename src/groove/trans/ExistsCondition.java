@@ -71,8 +71,8 @@ public class ExistsCondition extends PositiveCondition<ExistsMatch> {
     /**
      * Returns a match on the basis of a mapping of this condition's target to a
      * given graph. The mapping is checked for matches of the sub-conditions; if
-     * this fails, the method returns <code>null</code>. TODO this is not
-     * correct if a sub-condition has more than one match
+     * this fails, the method returns <code>null</code>.
+     * TODO this is not correct if a sub-condition has more than one match
      * @param host the graph that is being matched
      * @param matchMap the mapping, which should go from the elements of
      *        {@link #getTarget()} into <code>host</code>

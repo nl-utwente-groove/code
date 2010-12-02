@@ -27,8 +27,7 @@ public class ASTtoTreeModelAdapter implements TreeModel {
      * @see javax.swing.tree.TreeModel#addTreeModelListener(javax.swing.event.TreeModelListener)
      */
     public void addTreeModelListener(TreeModelListener l) {
-        // TODO Auto-generated method stub
-
+        // Empty.
     }
 
     /*
@@ -95,8 +94,7 @@ public class ASTtoTreeModelAdapter implements TreeModel {
      * @see javax.swing.tree.TreeModel#removeTreeModelListener(javax.swing.event.TreeModelListener)
      */
     public void removeTreeModelListener(TreeModelListener l) {
-        // TODO Auto-generated method stub
-
+        // Empty.
     }
 
     /*
@@ -106,8 +104,7 @@ public class ASTtoTreeModelAdapter implements TreeModel {
      *      java.lang.Object)
      */
     public void valueForPathChanged(TreePath path, Object newValue) {
-        // TODO Auto-generated method stub
-
+        // Empty.
     }
 
 }
