@@ -16,26 +16,20 @@
  */
 package groove.abstraction.gui;
 
-import groove.abstraction.EdgeSignature;
-import groove.abstraction.EquivClass;
-import groove.abstraction.Multiplicity;
 import groove.abstraction.Shape;
-import groove.abstraction.ShapeNode;
+import groove.abstraction.gui.jgraph.ShapeJGraph;
+import groove.abstraction.gui.jgraph.ShapeJModel;
 import groove.gui.Options;
-import groove.gui.jgraph.JGraph;
 import groove.util.Groove;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Map.Entry;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
 
 /**
  * Class for debugging abstraction.
@@ -51,7 +45,8 @@ public class ShapeDialog {
         options.setValue(Options.SHOW_VERTEX_LABELS_OPTION, 0);
     }
 
-    private final JGraph jgraph;
+    private final ShapeJModel jModel;
+    private final ShapeJGraph jGraph;
     JFrame frame;
     Shape shape;
     String title;
@@ -63,16 +58,15 @@ public class ShapeDialog {
 
     /** Creates and shows a shape in a pop-up window. */
     public ShapeDialog(Shape shape, Options options, String windowTitle) {
-        this.jgraph = null;
-        /*this.jgraph =
-            new JGraph(ShapeJModel.getInstance(shape, options), false);*/
-        this.jgraph.setPreferredSize(new Dimension(600, 450));
+        this.jModel = new ShapeJModel(shape);
+        this.jGraph = new ShapeJGraph(this.jModel);
+        this.jGraph.setPreferredSize(new Dimension(600, 450));
         this.title = windowTitle;
         this.shape = shape;
 
-        this.jgraph.getLayouter().start(false);
+        this.jGraph.runLayout();
 
-        this.jgraph.setEnabled(true);
+        this.jGraph.setEnabled(true);
         getFrame().pack();
         getFrame().setVisible(true);
     }
@@ -83,32 +77,7 @@ public class ShapeDialog {
             this.frame.setIconImage(Groove.GROOVE_ICON_16x16.getImage());
 
             this.frame.getContentPane().setLayout(new BorderLayout());
-            this.frame.getContentPane().add(this.jgraph, BorderLayout.NORTH);
-
-            String columnNames[] = {"EquivRel", "OutMult", "InMult"};
-            Object data[][] = new Object[8][3];
-            int i = 0;
-            int j = 0;
-            for (EquivClass<ShapeNode> ec : this.shape.getEquivRelation()) {
-                data[i][j] = ec.toString();
-                i++;
-            }
-            i = 0;
-            j = 1;
-            for (Entry<EdgeSignature,Multiplicity> entry : this.shape.getOutEdgeMultMap().entrySet()) {
-                data[i][j] = entry.toString();
-                i++;
-            }
-            i = 0;
-            j = 2;
-            for (Entry<EdgeSignature,Multiplicity> entry : this.shape.getInEdgeMultMap().entrySet()) {
-                data[i][j] = entry.toString();
-                i++;
-            }
-
-            JTable table = new JTable(data, columnNames);
-            JScrollPane scrollPane = new JScrollPane(table);
-            this.frame.getContentPane().add(scrollPane, BorderLayout.CENTER);
+            this.frame.getContentPane().add(this.jGraph, BorderLayout.NORTH);
 
             JButton closeButton = new JButton("Close", null);
             closeButton.addActionListener(new ActionListener() {
