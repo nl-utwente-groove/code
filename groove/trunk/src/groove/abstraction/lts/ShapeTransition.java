@@ -85,16 +85,4 @@ public final class ShapeTransition extends DefaultGraphTransition {
         throw new UnsupportedOperationException();
     }
 
-    // ------------------------------------------------------------------------
-    // Other methods
-    // ------------------------------------------------------------------------
-
-    /**
-     * @param other the other transition to be compared.
-     * @return true if both transitions are equivalent.
-     */
-    public boolean isEquivalent(ShapeTransition other) {
-        return source() == other.source() && getEvent() == other.getEvent();
-    }
-
 }
