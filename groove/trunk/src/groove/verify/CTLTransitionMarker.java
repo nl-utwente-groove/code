@@ -16,10 +16,10 @@
  */
 package groove.verify;
 
-import groove.graph.Label;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.trans.RuleName;
 
 import java.util.Iterator;
 
@@ -51,9 +51,9 @@ public class CTLTransitionMarker extends CTLMatchingMarker {
                 Iterator<GraphTransition> transitionIter =
                     nextState.getTransitionIter();
                 while (!satisfies && transitionIter.hasNext()) {
-                    Label ruleName =
+                    RuleName ruleName =
                         transitionIter.next().getEvent().getRule().getName();
-                    if (ruleName.text().equals(name)) {
+                    if (ruleName.toString().equals(name)) {
                         satisfies = true;
                         property.getCounterExamples().add(nextState);
                     }

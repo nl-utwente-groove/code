@@ -572,7 +572,7 @@ public class Simulator {
     boolean doAddRule(RuleName ruleName, AspectGraph ruleAsGraph) {
         boolean result = false;
         try {
-            GraphInfo.setName(ruleAsGraph, ruleName.text());
+            GraphInfo.setName(ruleAsGraph, ruleName.toString());
             getGrammarStore().putRule(ruleAsGraph);
             ruleAsGraph.invalidateView();
             updateGrammar();
@@ -3503,7 +3503,7 @@ public class Simulator {
                     // of grammar updates.
                     RuleName ruleName = ruleViews[i].getRuleName();
                     getGrammarStore().deleteRule(ruleName);
-                    GraphInfo.setName(ruleGraphs[i], ruleName.text());
+                    GraphInfo.setName(ruleGraphs[i], ruleName.toString());
                     try {
                         getGrammarStore().putRule(ruleGraphs[i]);
                         ruleGraphs[i].invalidateView();
@@ -4417,7 +4417,7 @@ public class Simulator {
                                 askNewRuleName(null, NEW_RULE_NAME, true);
                             if (ruleName != null) {
                                 AspectGraph newRule = getAspectGraph();
-                                GraphInfo.setName(newRule, ruleName.text());
+                                GraphInfo.setName(newRule, ruleName.toString());
                                 if (doAddRule(ruleName, getAspectGraph())) {
                                     setRule(ruleName);
                                 }
@@ -4779,9 +4779,9 @@ public class Simulator {
                     AspectGraph ruleGraph = rule.getView();
                     newRuleName =
                         askNewRuleName("Select new rule name",
-                            oldRuleName.text(), true);
+                            oldRuleName.toString(), true);
                     if (newRuleName != null) {
-                        doRenameRule(ruleGraph, newRuleName.text());
+                        doRenameRule(ruleGraph, newRuleName.toString());
                     }
                 }
                 if (newRuleName != null) {

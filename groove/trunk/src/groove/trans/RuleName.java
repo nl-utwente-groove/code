@@ -20,11 +20,9 @@
  */
 package groove.trans;
 
-import groove.graph.WrapperLabel;
+import groove.util.Groove;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.Arrays;
 
 /**
  * Representation of a structured rule name. A structured rule name is a rule
@@ -36,12 +34,7 @@ import java.util.StringTokenizer;
  * @author Angela Lozano and Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:37 $
  */
-public class RuleName extends WrapperLabel<String> {
-    /**
-     * Character to separate constituent tokens.
-     */
-    static public final char SEPARATOR = '.';
-
+public class RuleName implements Comparable<RuleName> {
     /**
      * Creates a new structured rule name, on the basis of a given
      * <tt>String</tt>. <tt>SEPARATOR</tt> characters appearing in the proposed
@@ -51,7 +44,9 @@ public class RuleName extends WrapperLabel<String> {
      * @require <tt>name != null</tt>
      */
     public RuleName(String name) {
-        super(name);
+        this.tokens = new String[] {name};
+        this.parent = null;
+        this.text = name;
     }
 
     /**
@@ -64,7 +59,58 @@ public class RuleName extends WrapperLabel<String> {
      * @require <tt>child != null</tt>
      */
     public RuleName(RuleName parent, String child) {
-        this(parent == null ? child : parent.text() + SEPARATOR + child);
+        int parentSize = parent == null ? 0 : parent.size();
+        this.tokens = new String[parentSize + 1];
+        if (parent != null) {
+            System.arraycopy(parent.tokens, 0, this.tokens, 0, parentSize);
+        }
+        this.tokens[this.tokens.length - 1] = child;
+        this.parent = parent;
+        this.text = Groove.toString(this.tokens, "", "", SEPARATOR, SEPARATOR);
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + Arrays.hashCode(this.tokens);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        RuleName other = (RuleName) obj;
+        if (!Arrays.equals(this.tokens, other.tokens)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return this.text;
+    }
+
+    @Override
+    public int compareTo(RuleName o) {
+        int result = 0;
+        int minSize = Math.max(size(), o.size());
+        for (int i = 0; result == 0 && i < minSize; i++) {
+            result = get(i).compareTo(o.get(i));
+        }
+        if (result == 0) {
+            result = size() - o.size();
+        }
+        return result;
     }
 
     /**
@@ -85,7 +131,7 @@ public class RuleName extends WrapperLabel<String> {
      * @ensure <tt>return == size()>1</tt>
      */
     public boolean hasParent() {
-        return text().indexOf(SEPARATOR) >= 0;
+        return this.parent != null;
     }
 
     /**
@@ -103,8 +149,7 @@ public class RuleName extends WrapperLabel<String> {
      * @ensure <tt>return == get(size()-1)</tt>
      */
     public String child() {
-        String name = text();
-        return name.substring(name.lastIndexOf(SEPARATOR) + 1);
+        return tokens()[size() - 1];
     }
 
     /**
@@ -115,29 +160,24 @@ public class RuleName extends WrapperLabel<String> {
      * @ensure <tt>return == null</tt> iff <tt>size() == 1</tt>
      */
     public RuleName parent() {
-        String name = text();
-        int dot = name.lastIndexOf(SEPARATOR);
-        if (dot < 0) {
-            return null;
-        } else {
-            return new RuleName(name.substring(0, dot));
-        }
+        return this.parent;
     }
 
     /**
      * Returns the tokens in this structured rule name as an array of strings.
      */
     public String[] tokens() {
-        List<String> result = new ArrayList<String>();
-        StringTokenizer tokenizer = new StringTokenizer(text(), "" + SEPARATOR);
-        while (tokenizer.hasMoreTokens()) {
-            result.add(tokenizer.nextToken());
-        }
-        return result.toArray(new String[result.size()]);
+        return this.tokens;
     }
 
-    @Override
-    protected String convertToText(String name) {
-        return name;
-    }
+    /** The parent rule name (may be {@code null}). */
+    private final RuleName parent;
+    /** The tokens of which this rule name consists. */
+    private final String[] tokens;
+    /** The text returned by {@link #toString()}. */
+    private final String text;
+    /**
+     * Character to separate constituent tokens.
+     */
+    static public final String SEPARATOR = ".";
 }

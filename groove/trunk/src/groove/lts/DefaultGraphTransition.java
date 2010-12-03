@@ -47,7 +47,7 @@ public class DefaultGraphTransition extends
      */
     public DefaultGraphTransition(RuleEvent event, Node[] addedNodes,
             GraphState source, GraphState target, boolean symmetry) {
-        super(source, event.getLabel(addedNodes), target);
+        super(source, new DerivationLabel(event, addedNodes), target);
         this.event = event;
         this.addedNodes = addedNodes;
         this.symmetry = symmetry;

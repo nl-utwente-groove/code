@@ -122,7 +122,7 @@ public class DefaultRuleView implements RuleView {
 
     /** Convenience method for <code>getNameLabel().text()</code>. */
     public String getName() {
-        return getRuleName() == null ? null : getRuleName().text();
+        return getRuleName() == null ? null : getRuleName().toString();
     }
 
     public int getPriority() {

@@ -182,7 +182,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
                 "Find rule application", false);
         addScenarioHandler(scenario);
         */
-        
+
         // IOVKA items related to model-checking are in the MCMMenu class
 
     }
@@ -263,7 +263,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
                         new IsRuleApplicableCondition();
                     explCond.setCondition(gts.getGrammar().getRule(name));
                     ((ConditionalScenario<Rule>) scenario).setCondition(
-                        explCond, name.text());
+                        explCond, name.toString());
                     generateAction.putValue(Action.NAME, scenario.getName());
                     generateAction.setEnabled(true);
                 }

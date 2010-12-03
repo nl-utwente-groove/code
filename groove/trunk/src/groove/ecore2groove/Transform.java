@@ -214,7 +214,7 @@ public class Transform {
         // and old ones need to go
         Set<RuleName> rulesToDelete = new HashSet<RuleName>();
         for (RuleName ruleName : grammar.getRules().keySet()) {
-            if (ruleName.text().startsWith("constraint")) {
+            if (ruleName.toString().startsWith("constraint")) {
                 rulesToDelete.add(ruleName);
             }
         }

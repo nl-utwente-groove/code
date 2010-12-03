@@ -141,7 +141,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * This implementation returns the rule name.
      */
     public Label label() {
-        return getEvent().getLabel(this.addedNodes);
+        return new DerivationLabel(getEvent(), this.addedNodes);
     }
 
     /**

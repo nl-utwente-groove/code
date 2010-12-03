@@ -225,7 +225,7 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements
         } else {
             List<String> result = new ArrayList<String>();
             for (SPORule subRule : rule.getSubRules(true)) {
-                result.add(subRule.getName().text()
+                result.add(subRule.getName().toString()
                     + Groove.toString(subRule.anchor(), "(", ")", ","));
             }
             return Groove.toString(result.toArray());

@@ -276,8 +276,8 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
             result = Collections.<M>emptySet().iterator();
         } else {
             result =
-                computeMatchIter(host, getMatcher().getMatchIter(host,
-                    anchorMap));
+                computeMatchIter(host,
+                    getMatcher().getMatchIter(host, anchorMap));
         }
         return result;
     }

@@ -17,7 +17,6 @@
 
 package groove.verify;
 
-import groove.graph.Label;
 import groove.lts.GTS;
 import groove.lts.State;
 import groove.trans.Condition;
@@ -164,7 +163,7 @@ public abstract class TemporalFormula {
      *         the first found invalid atom.
      */
     static public String validAtoms(TemporalFormula property,
-            Set<? extends Label> atoms) {
+            Set<RuleName> atoms) {
         if (property.getOperands().size() > 0) {
             for (TemporalFormula operand : property.getOperands()) {
                 String invalidAtom = validAtoms(operand, atoms);
@@ -175,8 +174,8 @@ public abstract class TemporalFormula {
         } else {
             assert (property instanceof Atom && property.getOperands().size() == 0) : "An atom should have 0 operands.";
             boolean validAtom = false;
-            for (Label nameLabel : atoms) {
-                String ruleName = ((RuleName) nameLabel).text();
+            for (RuleName nameLabel : atoms) {
+                String ruleName = nameLabel.toString();
                 if (property.toString().equals(ruleName)
                     || (property.toString().startsWith(ruleName + "(") && property.toString().endsWith(
                         ")"))

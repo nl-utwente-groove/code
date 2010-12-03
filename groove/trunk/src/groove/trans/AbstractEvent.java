@@ -19,10 +19,8 @@ package groove.trans;
 import groove.graph.DefaultEdgeSet;
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeSet;
-import groove.graph.WrapperLabel;
 import groove.lts.DefaultGraphTransition;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -53,17 +51,6 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
 
     boolean isReuse() {
         return this.reuse;
-    }
-
-    public Label getLabel(Node[] addedNodes) {
-        boolean brackets =
-            this.getRule().getSystemProperties().isShowTransitionBrackets();
-        //String text = this.getRule().getTransitionLabel();
-        String text = getLabelText(addedNodes);
-        if (brackets) {
-            text = BEGIN_CHAR + text + END_CHAR;
-        }
-        return new WrapperLabel<String>(text);
     }
 
     private String getLabelText(Node[] addedNodes) {

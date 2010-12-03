@@ -405,7 +405,7 @@ public class CTLModelChecker extends CommandLineTool {
         // therefore may not be represented in the graph transition system
         while (ruleIter.hasNext()) {
             Rule nextRule = ruleIter.next();
-            result.add(nextRule.getName().text());
+            result.add(nextRule.getName().toString());
         }
         return result;
     }
