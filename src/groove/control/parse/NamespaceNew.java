@@ -119,7 +119,7 @@ public class NamespaceNew {
      * Adds a rule to the name space.
      */
     public boolean addRule(SPORule rule) {
-        String ruleName = rule.getName().text();
+        String ruleName = rule.getName().toString();
         this.ruleMap.put(ruleName, rule);
         List<CtrlPar.Var> oldSig =
             this.sigMap.put(ruleName, rule.getSignature());

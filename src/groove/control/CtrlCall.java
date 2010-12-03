@@ -135,7 +135,7 @@ public class CtrlCall {
             return OMEGA_NAME;
         } else {
             assert isRule();
-            return getRule().getName().text();
+            return getRule().getName().toString();
         }
     }
 

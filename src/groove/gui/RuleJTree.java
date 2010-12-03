@@ -19,7 +19,6 @@ package groove.gui;
 import groove.explore.util.MatchSetCollector;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
-import groove.graph.Label;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -416,7 +415,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         orderedEvents.addAll(matches);
         // insert new matches
         for (MatchResult match : orderedEvents) {
-            Label ruleName = match.getEvent().getRule().getName();
+            RuleName ruleName = match.getEvent().getRule().getName();
             RuleTreeNode ruleNode = this.ruleNodeMap.get(ruleName);
             assert ruleNode != null : String.format(
                 "Rule %s has no image in map %s", ruleName, this.ruleNodeMap);
@@ -467,7 +466,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         orderedDerivations.addAll(derivations);
         // insert new matches
         for (GraphTransition edge : orderedDerivations) {
-            Label ruleName = edge.getEvent().getRule().getName();
+            RuleName ruleName = edge.getEvent().getRule().getName();
             RuleTreeNode ruleNode = this.ruleNodeMap.get(ruleName);
             assert ruleNode != null : String.format(
                 "Rule %s has no image in map %s", ruleName, this.ruleNodeMap);

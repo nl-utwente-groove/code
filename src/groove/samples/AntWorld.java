@@ -96,8 +96,7 @@ public class AntWorld {
             public void addUpdate(GraphShape graph, Edge edge) {
                 this.counter++;
                 GraphTransition trans = (GraphTransition) edge;
-                if (trans.getEvent().getRule().getName().getContent().equals(
-                    "end_turn")) {
+                if (trans.getEvent().getRule().getName().equals("end_turn")) {
                     System.out.print("\n" + trans.getEvent());
                 } else if (this.counter % 10 == 0) {
                     System.out.print(".");

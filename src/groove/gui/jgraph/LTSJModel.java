@@ -28,8 +28,8 @@ import static groove.gui.jgraph.JAttr.LTS_START_NODE_ATTR;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.WrapperLabel;
 import groove.gui.Options;
+import groove.lts.DerivationLabel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -377,11 +377,8 @@ public class LTSJModel extends GraphJModel {
         public Label getLabel(Edge edge) {
             assert edge instanceof GraphTransition : "Edge set contains "
                 + edge;
-            return isShowAnchors()
-                    ? new WrapperLabel<String>(
-                        ((GraphTransition) edge).getEvent().getRule().getName().text()
-                            + ((GraphTransition) edge).getEvent().getAnchorImageString())
-                    : super.getLabel(edge);
+            return isShowAnchors() ? new DerivationLabel(
+                ((GraphTransition) edge).getEvent()) : super.getLabel(edge);
         }
     }
 
@@ -494,16 +491,13 @@ public class LTSJModel extends GraphJModel {
         public Label getLabel(Edge edge) {
             assert edge instanceof GraphTransition : "Edge set contains "
                 + edge;
-            return isShowAnchors()
-                    ? new WrapperLabel<String>(
-                        ((GraphTransition) edge).getEvent().getRule().getName().text()
-                            + ((GraphTransition) edge).getEvent().getAnchorImageString())
-                    : super.getLabel(edge);
+            return isShowAnchors() ? new DerivationLabel(
+                ((GraphTransition) edge).getEvent()) : super.getLabel(edge);
         }
 
         @Override
         public StringBuilder getLine(Edge edge) {
-            return Converter.toHtml(new StringBuilder(getLabel(edge).text()));
+            return Converter.toHtml(new StringBuilder(edge.label().text()));
         }
     }
 }

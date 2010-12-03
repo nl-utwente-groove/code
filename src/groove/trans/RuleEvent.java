@@ -19,7 +19,6 @@ package groove.trans;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
-import groove.graph.Label;
 import groove.graph.MergeMap;
 import groove.graph.Node;
 import groove.lts.GraphTransitionStub;
@@ -44,14 +43,6 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
      * Returns the rule for which this is an application.
      */
     public Rule getRule();
-
-    /**
-     * Returns a label that uniquely identifies this event, with respect to
-     *  given array of added nodes (which are the images of the creator nodes).
-     * @param addedNodes the added nodes; if {@code null}, the creator
-     * node images will be shown as don't care values
-     */
-    public Label getLabel(Node[] addedNodes);
 
     /**
      * Constructs an argument array for this event, with respect to

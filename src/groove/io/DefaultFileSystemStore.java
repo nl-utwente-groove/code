@@ -905,7 +905,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                      * the rule graph
                      */
                     GraphInfo.setRole(plainGraph, Groove.RULE_ROLE);
-                    GraphInfo.setName(plainGraph, ruleName.text());
+                    GraphInfo.setName(plainGraph, ruleName.toString());
                     AspectGraph ruleGraph = AspectGraph.newInstance(plainGraph);
                     /* Store the rule graph */
                     AspectGraph oldRule = this.ruleMap.put(ruleName, ruleGraph);
