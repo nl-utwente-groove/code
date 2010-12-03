@@ -79,7 +79,7 @@ public class SupportedSetNodeRelation extends AbstractNodeRelation implements
             for (Map.Entry<Edge,Collection<Element>> otherSupportEntry : ((SupportedNodeRelation) other).getSupportMap().entrySet()) {
                 Edge otherRel = otherSupportEntry.getKey();
                 if (otherRel.source().equals(rel.target())) {
-                    RelationEdge<Node> newRel =
+                    RelationEdge newRel =
                         createRelated(rel.source(), otherRel.target());
                     addToSupport(newRel, supportEntry.getValue());
                     addToSupport(newRel, otherSupportEntry.getValue());
@@ -99,7 +99,7 @@ public class SupportedSetNodeRelation extends AbstractNodeRelation implements
             for (Map.Entry<Edge,Collection<Element>> otherSupportEntry : oldSupportEntrySet.entrySet()) {
                 Edge otherRel = otherSupportEntry.getKey();
                 if (otherRel.source().equals(rel.target())) {
-                    RelationEdge<Node> newRel =
+                    RelationEdge newRel =
                         createRelated(rel.source(), otherRel.target());
                     result |= addToSupport(newRel, supportEntry.getValue());
                     result |=

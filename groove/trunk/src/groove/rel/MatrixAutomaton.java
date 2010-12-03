@@ -41,7 +41,7 @@ import java.util.Set;
  * An implementation of regular automata that also keeps track of the valuation
  * of the variables.
  */
-public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
+public class MatrixAutomaton extends DefaultGraph implements Automaton {
     /**
      * Creates an automaton with a given start and end node, which does not
      * accept the empty word.
@@ -1449,7 +1449,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             boolean res = false;
             for (Map<LabelVar,Label> valuation : valuations) {
                 // Label label = new ValuationLabel(valuation);
-                ValuationEdge edge;
+                RelationEdge edge;
                 switch (this.direction) {
                 case FORWARD:
                     edge = createValuationEdge(startImage, endImage, valuation);
@@ -1465,9 +1465,9 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
         /**
          * Callback factory method for a {@link ValuationEdge}.
          */
-        protected ValuationEdge createValuationEdge(Node source, Node target,
+        protected RelationEdge createValuationEdge(Node source, Node target,
                 Map<LabelVar,Label> valuation) {
-            return new ValuationEdge(source, target, valuation);
+            return new RelationEdge(source, target, valuation);
         }
 
         /** Cleans the array of auxiliary results. */

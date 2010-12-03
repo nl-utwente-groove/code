@@ -34,9 +34,8 @@ import groove.rel.AutomatonCalculator;
 import groove.rel.LabelVar;
 import groove.rel.NodeRelation;
 import groove.rel.RegExpr;
+import groove.rel.RelationEdge;
 import groove.rel.SetNodeRelation;
-import groove.rel.ValuationEdge;
-import groove.rel.VarAutomaton;
 import groove.util.ExprParser;
 import groove.view.FormatException;
 
@@ -518,7 +517,7 @@ public class AutomatonTest {
     @Test
     public void testWildcardIdMatch() {
         try {
-            VarAutomaton aut = (VarAutomaton) createAutomaton("?x.3");
+            Automaton aut = createAutomaton("?x.3");
             NodeRelation result = new SetNodeRelation(testGraph);
             addRelated(result, nI3, new String[] {"x", "3"}, nI3);
             addRelated(result, nC3, new String[] {"x", "val"}, nI3);
@@ -530,11 +529,11 @@ public class AutomatonTest {
             assertEquals(result, aut.getMatches(testGraph, null, null,
                 Collections.singletonMap(new LabelVar("x", Label.BINARY),
                     (Label) DefaultLabel.createLabel("val"))));
-            aut = (VarAutomaton) createAutomaton("?x.?x.3");
+            aut = createAutomaton("?x.?x.3");
             result = new SetNodeRelation(testGraph);
             addRelated(result, nI3, new String[] {"x", "3"}, nI3);
             assertEquals(result, aut.getMatches(testGraph, null, null, null));
-            aut = (VarAutomaton) createAutomaton("(List.?x.?y)+.?x");
+            aut = createAutomaton("(List.?x.?y)+.?x");
             result = new SetNodeRelation(testGraph);
             addRelated(result, nList, new String[] {"x", "first", "y", "in"},
                 nC1);
@@ -614,11 +613,11 @@ public class AutomatonTest {
             idMap.put(new LabelVar(ids[i], Label.BINARY),
                 DefaultLabel.createLabel(ids[i + 1]));
         }
-        result.addRelated(new ValuationEdge(key, image, idMap));
+        result.addRelated(new RelationEdge(key, image, idMap));
     }
 
     protected void addRelated(NodeRelation result, Node key,
             Map<LabelVar,Label> idMap, Node image) {
-        result.addRelated(new ValuationEdge(key, image, idMap));
+        result.addRelated(new RelationEdge(key, image, idMap));
     }
 }

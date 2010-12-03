@@ -22,6 +22,8 @@ import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
 
+import java.util.Map;
+
 /**
  * An edge class that corresponds to a relation between nodes, rather than a
  * real edge of a graph. The label indicates the relation type; two edges are
@@ -29,57 +31,41 @@ import groove.graph.Node;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RelationEdge<V> extends AbstractEdge<Node,Label,Node> {
-    /** Yields a string description of a {@link RelationType} value. */
-    public static String typeToString(RelationType type) {
-        return "[" + type.getText() + "]";
-    }
-
+public class RelationEdge extends AbstractEdge<Node,Label,Node> {
     /**
      * Constructs a relation edge of a given type, with associated value
      * <code>null</code>.
      * @param source source node of the edge
-     * @param type type of the relation edge
      * @param target target node of the edge
      */
-    public RelationEdge(Node source, RelationType type, Node target) {
-        this(source, type, target, null);
+    public RelationEdge(Node source, Node target) {
+        this(source, target, null);
     }
 
     /**
      * Constructs a relation edge of a given type, with a given associated
      * value.
      * @param source source node of the edge
-     * @param type type of the relation edge
      * @param target target node of the edge
      * @param value associated value
      */
-    public RelationEdge(Node source, RelationType type, Node target, V value) {
-        super(source, DefaultLabel.createLabel(typeToString(type)), target);
+    public RelationEdge(Node source, Node target, Map<LabelVar,Label> value) {
+        super(source, DefaultLabel.createLabel("match"), target);
         this.value = value;
-        this.type = type;
     }
 
     /**
      * Returns the value associated with this edge. May be <code>null</code>.
      */
-    public V getValue() {
+    public Map<LabelVar,Label> getValue() {
         return this.value;
-    }
-
-    /**
-     * Returns the type of relation of this edge.
-     */
-    public RelationType getType() {
-        return this.type;
     }
 
     /** Includes the hash code for the type and the value. */
     @Override
     protected int computeHashCode() {
         return super.computeHashCode()
-            + (this.value == null ? 0 : this.value.hashCode())
-            + this.type.hashCode();
+            + (this.value == null ? 0 : this.value.hashCode());
     }
 
     /**
@@ -89,7 +75,7 @@ public class RelationEdge<V> extends AbstractEdge<Node,Label,Node> {
     @Override
     public boolean equals(Object obj) {
         return isTypeEqual(obj) && isEndEqual((Edge) obj)
-            && isLabelEqual((Edge) obj) && isValueEqual((RelationEdge<?>) obj);
+            && isLabelEqual((Edge) obj) && isValueEqual((RelationEdge) obj);
     }
 
     /**
@@ -97,23 +83,17 @@ public class RelationEdge<V> extends AbstractEdge<Node,Label,Node> {
      */
     @Override
     protected boolean isTypeEqual(Object obj) {
-        return obj instanceof RelationEdge<?>;
+        return obj instanceof RelationEdge;
     }
 
     /** Callback method for testing equality of type and value. */
-    protected boolean isValueEqual(RelationEdge<?> other) {
-        return this.type.equals(other.getType())
-            && (this.value == null ? other.value == null
-                    : this.value.equals(other.getValue()));
+    protected boolean isValueEqual(RelationEdge other) {
+        return this.value == null ? other.value == null
+                : this.value.equals(other.getValue());
     }
 
     /**
      * The type of relation of this edge.
      */
-    private final V value;
-
-    /**
-     * The type of relation of this edge.
-     */
-    private final RelationType type;
+    private final Map<LabelVar,Label> value;
 }

@@ -237,4 +237,42 @@ public interface Graph extends GraphShape, DeltaTarget {
      *         <tt>old.containsElement(n,l,from)</tt> and
      */
     boolean mergeNodes(Node from, Node to);
+
+    /**
+     * More efficient addition of edges; for package use only. Avoids both the
+     * class cast and especially the recursive addition of edge ends. Make sure
+     * you satisfy the precondition, or an inconsistent graph may ensue!
+     * @require <tt>edge instanceof Edge && containsAll(edge.ends())</tt>
+     * @see #addEdge(Edge)
+     */
+    boolean addEdgeWithoutCheck(Edge edge);
+
+    /**
+     * More efficient addition of sets of edges; for package use only. Avoids
+     * the recursive addition of parts. Make sure you satisfy the precondition,
+     * or an inconsistent graph may ensue!
+     * @require <tt>edge: 2^Edge && containsAll(edge.ends())</tt>
+     * @see #addEdgeSet(Collection)
+     */
+    boolean addEdgeSetWithoutCheck(Collection<? extends Edge> edgeSet);
+
+    /**
+     * More efficient removal of nodes; for package use only. Avoids both the
+     * class cast and especially the recursive removal of incident edges. Make
+     * sure you satisfy the precondition, or an inconsistent graph may ensue!
+     * @require <tt>node instanceof Node</tt> and the graph contains no
+     *          incident edges.
+     * @see #removeNode(Node)
+     */
+    boolean removeNodeWithoutCheck(Node node);
+
+    /**
+     * More efficient removal of sets of nodes; for package use only. Avoids the
+     * recursive removal of incident edges. Make sure you satisfy the
+     * precondition, or an inconsistent graph may ensue!
+     * @require <tt>nodeSet: 2^Node</tt> and the graph contains no incident
+     *          edges.
+     * @see #removeNodeSet(Collection)
+     */
+    boolean removeNodeSetWithoutCheck(Collection<Node> nodeSet);
 }

@@ -60,7 +60,7 @@ public class SetNodeRelation extends AbstractNodeRelation {
         for (Edge oldRel : this.relatedSet) {
             for (Edge otherRel : ((SetNodeRelation) other).getRelatedSet()) {
                 if (otherRel.source().equals(oldRel.target())) {
-                    RelationEdge<Node> newRel =
+                    RelationEdge newRel =
                         createRelated(oldRel.source(), otherRel.target());
                     this.relatedSet.add(newRel);
                 }
@@ -76,7 +76,7 @@ public class SetNodeRelation extends AbstractNodeRelation {
         for (Edge oldRel : oldRelatedSet) {
             for (Edge otherRel : oldRelatedSet) {
                 if (otherRel.source().equals(oldRel.target())) {
-                    RelationEdge<Node> newRel =
+                    RelationEdge newRel =
                         createRelated(oldRel.source(), otherRel.target());
                     result |= this.relatedSet.add(newRel);
                 }
