@@ -102,19 +102,6 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
 
     /**
      * This implementation returns a set view on the incident edge set,
-     * selecting just those edges of which <tt>end(i).equals(node)</tt>.
-     */
-    @Deprecated
-    public Set<? extends Edge> edgeSet(final Node node, final int i) {
-        if (i == Edge.SOURCE_INDEX) {
-            return outEdgeSet(node);
-        } else {
-            return inEdgeSet(node);
-        }
-    }
-
-    /**
-     * This implementation returns a set view on the incident edge set,
      * selecting just those edges of which the source equals {@code node}.
      */
     public Set<? extends Edge> outEdgeSet(final Node node) {
@@ -155,11 +142,6 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
         } else {
             return Collections.emptySet();
         }
-    }
-
-    @Deprecated
-    public Set<? extends Edge> labelEdgeSet(int arity, Label label) {
-        return labelEdgeSet(label);
     }
 
     /**

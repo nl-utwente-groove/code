@@ -101,61 +101,8 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
-    @Deprecated
-    public Node end(int i) {
-        switch (i) {
-        case SOURCE_INDEX:
-            return source();
-        case TARGET_INDEX:
-            return target();
-        default:
-            throw new IllegalArgumentException("Illegal end index number " + i
-                + " for " + this);
-        }
-    }
-
-    @Deprecated
-    @Override
-    public int endCount() {
-        return 2;
-    }
-
-    @Deprecated
-    @Override
-    public int endIndex(Node node) {
-        if (source().equals(node)) {
-            return 0;
-        }
-        if (target().equals(node)) {
-            return 1;
-        }
-        return -1;
-    }
-
-    @Deprecated
-    @Override
-    public Node[] ends() {
-        Node[] result = new Node[2];
-        result[0] = source();
-        result[1] = target();
-        return result;
-    }
-
-    @Deprecated
-    @Override
-    public boolean hasEnd(Node node) {
-        return source().equals(node) || target().equals(node);
-    }
-
-    @Override
     public Label label() {
         return this.transition.label();
-    }
-
-    @Deprecated
-    @Override
-    public Node opposite() {
-        return target();
     }
 
     @Override

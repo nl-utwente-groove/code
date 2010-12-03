@@ -88,16 +88,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
      * Specialises the return type.
      */
     @Override
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public Set<AspectEdge> edgeSet(Node node, int end) {
-        return (Set<AspectEdge>) super.edgeSet(node, end);
-    }
-
-    /**
-     * Specialises the return type.
-     */
-    @Override
     @SuppressWarnings("unchecked")
     public Set<AspectEdge> inEdgeSet(Node node) {
         return (Set<AspectEdge>) super.inEdgeSet(node);

@@ -159,57 +159,6 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         return this;
     }
 
-    @Deprecated
-    public Node opposite() {
-        return target();
-    }
-
-    /**
-     * Returns <code>getBasis()</code> or <code>this</code>, depending on
-     * the index.
-     */
-    @Deprecated
-    public AbstractGraphState end(int i) {
-        switch (i) {
-        case SOURCE_INDEX:
-            return source();
-        case TARGET_INDEX:
-            return target();
-        default:
-            throw new IllegalArgumentException("End index " + i + " not valid");
-        }
-    }
-
-    /**
-     * @return {@link #END_COUNT}.
-     */
-    @Deprecated
-    public int endCount() {
-        return END_COUNT;
-    }
-
-    @Deprecated
-    public int endIndex(Node node) {
-        if (source().equals(node)) {
-            return SOURCE_INDEX;
-        } else if (target().equals(node)) {
-            return TARGET_INDEX;
-        } else {
-            throw new IllegalArgumentException("Node " + node
-                + " is not an end state of this transition");
-        }
-    }
-
-    @Deprecated
-    public Node[] ends() {
-        return new Node[] {source(), target()};
-    }
-
-    @Deprecated
-    public boolean hasEnd(Node node) {
-        return source().equals(node) || target().equals(node);
-    }
-
     public RuleEvent getEvent(GraphState source) {
         if (source == source()) {
             return getEvent();

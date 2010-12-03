@@ -354,67 +354,6 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
     }
 
     /**
-     * Mark each state of the given state-space according the exists
-     * finally-operator.
-     * 
-     * @param marking the current marking.
-     * @param property the CTL-expression in question.
-     * @param gts the state space as a graph transition system.
-     */
-    @Deprecated
-    public void markExistsFinally(Marking marking, TemporalFormula property,
-            GTS gts) {
-        // EF(phi) <==> E(true U phi)
-        throw new UnsupportedOperationException(
-            "This method should never be called. The EF(phi) construction should have been rewritten to a E(true U phi) construction.");
-        // List<TemporalFormula> operandList = new ArrayList<TemporalFormula>();
-        // operandList.add(new True());
-        // operandList.add(property.getOperands().get(0).getOperands().get(0));
-        // TemporalFormula newExpr = new Exists(new Until(operandList));
-        // newExpr.mark(this, marking, gts);
-    }
-
-    /**
-     * Mark each state of the given state-space according the exists
-     * globally-operator.
-     * 
-     * @param marking the current marking.
-     * @param property the CTL-expression in question.
-     * @param gts the state space as a graph transition system.
-     */
-    @Deprecated
-    public void markExistsGlobally(Marking marking, TemporalFormula property,
-            GTS gts) {
-        // EG(phi) <==> !(AF(!phi))
-        throw new UnsupportedOperationException(
-            "This method should never be called. The EG(phi) construction should have been rewritten to a !(AF(!phi)) construction.");
-        // TemporalFormula operand =
-        // property.getOperands().get(0).getOperands().get(0);
-        // TemporalFormula newExpr = new Neg(new All(new Finally(new
-        // Neg(operand))));
-        // newExpr.mark(this, marking, gts);
-    }
-
-    /**
-     * Mark each state of the given state-space according the all next-operator.
-     * 
-     * @param marking the current marking.
-     * @param property the CTL-expression in question.
-     * @param gts the state space as a graph transition system.
-     */
-    @Deprecated
-    public void markAllNext(Marking marking, TemporalFormula property, GTS gts) {
-        // AX(phi) <==> !EX(!phi)
-        throw new UnsupportedOperationException(
-            "This method should never be called. The AX(phi) construction should have been rewritten to a !(EX(!phi)) construction.");
-        // TemporalFormula operand =
-        // property.getOperands().get(0).getOperands().get(0);
-        // TemporalFormula newExpr = new Neg(new Exists(new Next(new
-        // Neg(operand))));
-        // newExpr.mark(this, marking, gts);
-    }
-
-    /**
      * Mark each state of the given state-space according the all
      * until-operator.
      * 
@@ -469,48 +408,6 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
                 property.getCounterExamples().add(nextState);
             }
         }
-    }
-
-    /**
-     * Mark each state of the given state-space according the all
-     * finally-operator.
-     * 
-     * @param marking the current marking.
-     * @param property the CTL-expression in question.
-     * @param gts the state space as a graph transition system.
-     */
-    @Deprecated
-    public void markAllFinally(Marking marking, TemporalFormula property,
-            GTS gts) {
-        // AF(phi) <==> A(true U phi)
-        throw new UnsupportedOperationException(
-            "This method should never be called. The AF(phi) construction should have been rewritten to a A(true U phi) construction.");
-        // List<TemporalFormula> operandList = new ArrayList<TemporalFormula>();
-        // operandList.add(new True());
-        // operandList.add(property.getOperands().get(0).getOperands().get(0));
-        // TemporalFormula newExpr = new All(new Until(operandList));
-        // newExpr.mark(this, marking, gts);
-    }
-
-    /**
-     * Mark each state of the given state-space according the all
-     * globally-operator.
-     * 
-     * @param marking the current marking.
-     * @param property the CTL-expression in question.
-     * @param gts the state space as a graph transition system.
-     */
-    @Deprecated
-    public void markAllGlobally(Marking marking, TemporalFormula property,
-            GTS gts) {
-        throw new UnsupportedOperationException(
-            "This method should never be called. The AG(phi) construction should have been rewritten to a !(EF(!phi)) construction.");
-        // // AG(phi) <==> !(EF(!phi))
-        // TemporalFormula operand =
-        // property.getOperands().get(0).getOperands().get(0);
-        // TemporalFormula newExpr = new Neg(new Exists(new Finally(new
-        // Neg(operand))));
-        // newExpr.mark(this, marking, gts);
     }
 
     /**

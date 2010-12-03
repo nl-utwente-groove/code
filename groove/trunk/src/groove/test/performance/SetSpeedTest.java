@@ -29,7 +29,6 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision: 2734 $
  */
-@Deprecated
 @SuppressWarnings("all")
 public class SetSpeedTest {
     static private final int SMALL_SAMPLE_SIZE = 100;

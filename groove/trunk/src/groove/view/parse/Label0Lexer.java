@@ -11,7 +11,6 @@ import org.antlr.runtime.MismatchedSetException;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.RecognizerSharedState;
 
-@Deprecated
 @SuppressWarnings("all")
 public class Label0Lexer extends Lexer {
     public static final int DOLLAR = 49;

@@ -32,60 +32,7 @@ public abstract class AbstractEdge<N extends Node,L extends Label,TN extends Nod
         this.target = target;
     }
 
-    @Deprecated
-    final public Node[] ends() {
-        return new Node[] {this.source, this.target};
-    }
-
-    @Override
-    @Deprecated
-    final public Node end(int i) {
-        switch (i) {
-        case SOURCE_INDEX:
-            return this.source;
-        case TARGET_INDEX:
-            return this.target;
-        default:
-            throw new IllegalArgumentException("Illegal end index number " + i
-                + " for " + this);
-        }
-    }
-
-    @Override
-    @Deprecated
-    final public int endIndex(Node node) {
-        if (this.source.equals(node)) {
-            return SOURCE_INDEX;
-        } else if (this.target.equals(node)) {
-            return TARGET_INDEX;
-        } else {
-            return -1;
-        }
-    }
-
-    /**
-     * This implementation tests if <tt>other</tt> equals <tt>source</tt> or
-     * <tt>target</tt>.
-     */
-    @Override
-    @Deprecated
-    final public boolean hasEnd(Node other) {
-        return this.source.equals(other) || this.target.equals(other);
-    }
-
-    @Override
-    @Deprecated
-    final public int endCount() {
-        return END_COUNT;
-    }
-
     public TN target() {
-        return this.target;
-    }
-
-    @Deprecated
-    @Override
-    public TN opposite() {
         return this.target;
     }
 
@@ -262,37 +209,6 @@ public abstract class AbstractEdge<N extends Node,L extends Label,TN extends Nod
     /** The pre-computed hash code. */
     private int hashCode;
 
-    /**
-     * Sets the maximal number of ends of any edge currently in the system. This
-     * only has effect if the new number exceeds the previous maximum.
-     * @param endCount the new maximum end count
-     * @ensure if <tt>getMaxEndCount() &gtr;= endCount</tt>
-     * @see #getMaxEndCount()
-     * @deprecated no longer relevant since all edges are binary
-     */
-    @Deprecated
-    static public void setMaxEndCount(int endCount) {
-        maxEndCount = Math.max(maxEndCount, endCount);
-    }
-
-    /**
-     * Returns the maximal number of ends of any edge currently in the system.
-     * Note that this may be dynamically increased by any concrete edge class.
-     * @return the maximum number of ends of any edge
-     * @ensure <tt>result &gtr;= 1</tt>
-     * @deprecated no longer relevant since all edges are binary
-     */
-    @Deprecated
-    static public int getMaxEndCount() {
-        return maxEndCount;
-    }
-
-    /**
-     * The maximal number of ends of any edge currently in the system. Note that
-     * this may be dynamically updated by any concrete edge class.
-     * @invariant <tt>maxEndCount &gtr;= 1</tt>
-     */
-    static private int maxEndCount;
     // constants for hash code computation
     static private final int SOURCE_SHIFT = 1;
     static private final int TARGET_SHIFT = 2;

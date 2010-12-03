@@ -166,12 +166,6 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
     }
 
     @Override
-    @Deprecated
-    public Set<DefaultEdge> labelEdgeSet(int arity, Label label) {
-        return labelEdgeSet(label);
-    }
-
-    @Override
     protected Map<Label,? extends Set<? extends Edge>> getLabelEdgeMap() {
         if (this.labelEdgeMap == null) {
             initData();

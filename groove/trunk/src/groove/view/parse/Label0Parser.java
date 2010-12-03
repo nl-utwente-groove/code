@@ -26,7 +26,6 @@ import org.antlr.runtime.tree.RewriteRuleSubtreeStream;
 import org.antlr.runtime.tree.RewriteRuleTokenStream;
 import org.antlr.runtime.tree.TreeAdaptor;
 
-@Deprecated
 @SuppressWarnings("all")
 public class Label0Parser extends Parser {
     public static final String[] tokenNames = new String[] {"<invalid>",

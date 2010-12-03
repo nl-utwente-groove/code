@@ -442,11 +442,6 @@ public class ProductGTS implements LTS {
         return null;
     }
 
-    @Deprecated
-    public Set<? extends Edge> edgeSet(Node node, int i) {
-        return null;
-    }
-
     public GraphInfo getInfo() {
         return null;
     }
@@ -461,11 +456,6 @@ public class ProductGTS implements LTS {
 
     public Set<? extends Edge> labelEdgeSet(Label label) {
         return null;
-    }
-
-    @Deprecated
-    public Set<? extends Edge> labelEdgeSet(int arity, Label label) {
-        return labelEdgeSet(label);
     }
 
     public int nodeCount() {
