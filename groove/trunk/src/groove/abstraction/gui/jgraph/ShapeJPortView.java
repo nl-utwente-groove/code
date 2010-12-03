@@ -121,6 +121,7 @@ public class ShapeJPortView extends PortView {
 
         @Override
         public void paint(Graphics g) {
+            assert g instanceof Graphics2D;
             g.setColor(Color.BLACK);
             ((Graphics2D) g).fill(this.view.getShape());
         }
