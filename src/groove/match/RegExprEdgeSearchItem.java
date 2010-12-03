@@ -11,8 +11,7 @@ import groove.rel.LabelVar;
 import groove.rel.NodeRelation;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
-import groove.rel.ValuationEdge;
-import groove.rel.VarAutomaton;
+import groove.rel.RelationEdge;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -170,15 +169,9 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
                     this.search.getNode(RegExprEdgeSearchItem.this.targetIx);
             }
             Set<Node> imageTargetSet = Collections.singleton(targetFind);
-            if (RegExprEdgeSearchItem.this.labelAutomaton instanceof VarAutomaton) {
-                result =
-                    ((VarAutomaton) RegExprEdgeSearchItem.this.labelAutomaton).getMatches(
-                        this.host, imageSourceSet, imageTargetSet, valuation);
-            } else {
-                result =
-                    RegExprEdgeSearchItem.this.labelAutomaton.getMatches(
-                        this.host, imageSourceSet, imageTargetSet);
-            }
+            result =
+                RegExprEdgeSearchItem.this.labelAutomaton.getMatches(this.host,
+                    imageSourceSet, imageTargetSet);
             return result;
         }
 
@@ -216,23 +209,9 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
                 this.targetFind == null ? null
                         : Collections.singleton(this.targetFind);
             NodeRelation matches;
-            if (RegExprEdgeSearchItem.this.labelAutomaton instanceof VarAutomaton) {
-                Map<LabelVar,Label> valuation = new HashMap<LabelVar,Label>();
-                for (LabelVar var : RegExprEdgeSearchItem.this.allVars) {
-                    if (!this.freshVars.contains(var)) {
-                        valuation.put(
-                            var,
-                            this.search.getVar(RegExprEdgeSearchItem.this.varIxMap.get(var)));
-                    }
-                }
-                matches =
-                    ((VarAutomaton) RegExprEdgeSearchItem.this.labelAutomaton).getMatches(
-                        this.host, imageSourceSet, imageTargetSet, valuation);
-            } else {
-                matches =
-                    RegExprEdgeSearchItem.this.labelAutomaton.getMatches(
-                        this.host, imageSourceSet, imageTargetSet);
-            }
+            matches =
+                RegExprEdgeSearchItem.this.labelAutomaton.getMatches(this.host,
+                    imageSourceSet, imageTargetSet);
             initImages(matches.getAllRelated(), false, false, false, false);
         }
 
@@ -241,7 +220,7 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
             boolean result = super.setImage(image);
             if (result && !this.freshVars.isEmpty()) {
                 Map<LabelVar,Label> valuation =
-                    ((ValuationEdge) image).getValue();
+                    ((RelationEdge) image).getValue();
                 for (LabelVar var : this.freshVars) {
                     this.search.putVar(
                         RegExprEdgeSearchItem.this.varIxMap.get(var),

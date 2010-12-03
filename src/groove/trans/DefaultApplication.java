@@ -22,7 +22,6 @@ import groove.graph.DeltaTarget;
 import groove.graph.Edge;
 import groove.graph.FilteredDeltaTarget;
 import groove.graph.Graph;
-import groove.graph.InternalGraph;
 import groove.graph.MergeMap;
 import groove.graph.Morphism;
 import groove.graph.Node;
@@ -505,8 +504,8 @@ public class DefaultApplication implements RuleApplication, Derivation {
     /**
      * Adds an edge to a delta target, if the edge is not <code>null</code>
      * and not already in the source graph. Optimises by trying to call
-     * {@link InternalGraph#addEdgeWithoutCheck(Edge)} if the target is an
-     * {@link InternalGraph}.
+     * {@link Graph#addEdgeWithoutCheck(Edge)} if the target is an
+     * {@link Graph}.
      */
     protected void addEdge(DeltaTarget target, Edge edge) {
         Node targetNode = edge.target();
@@ -524,8 +523,8 @@ public class DefaultApplication implements RuleApplication, Derivation {
                 this.removedValueNodes.remove(targetNode);
             }
         }
-        if (target instanceof InternalGraph) {
-            ((InternalGraph) target).addEdgeWithoutCheck(edge);
+        if (target instanceof Graph) {
+            ((Graph) target).addEdgeWithoutCheck(edge);
         } else {
             // apparently the target wasn't an InternalGraph
             // so we can't do efficient edge addition
@@ -535,12 +534,12 @@ public class DefaultApplication implements RuleApplication, Derivation {
 
     /**
      * Removes a node from a delta target. Optimises by trying to call
-     * {@link InternalGraph#removeNodeWithoutCheck(Node)} if the target is an
-     * {@link InternalGraph}.
+     * {@link Graph#removeNodeWithoutCheck(Node)} if the target is an
+     * {@link Graph}.
      */
     private void removeNode(DeltaTarget target, Node node) {
-        if (target instanceof InternalGraph) {
-            ((InternalGraph) target).removeNodeWithoutCheck(node);
+        if (target instanceof Graph) {
+            ((Graph) target).removeNodeWithoutCheck(node);
         } else {
             // apparently the target wasn't an InternalGraph
             // so we can't do efficient edge removal
@@ -550,12 +549,12 @@ public class DefaultApplication implements RuleApplication, Derivation {
 
     /**
      * Removes a set of nodes from a delta target. Optimizes by trying to call
-     * {@link InternalGraph#removeNodeWithoutCheck(Node)} if the target is an
-     * {@link InternalGraph}.
+     * {@link Graph#removeNodeWithoutCheck(Node)} if the target is an
+     * {@link Graph}.
      */
     private void removeNodeSet(DeltaTarget target, Collection<Node> nodeSet) {
-        if (target instanceof InternalGraph) {
-            ((InternalGraph) target).removeNodeSetWithoutCheck(nodeSet);
+        if (target instanceof Graph) {
+            ((Graph) target).removeNodeSetWithoutCheck(nodeSet);
         } else {
             // apparently the target wasn't an InternalGraph
             // so we can't do efficient edge removal

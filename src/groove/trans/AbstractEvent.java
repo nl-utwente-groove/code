@@ -270,10 +270,6 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
     private int identityHashCode;
     /** Constant empty node array. */
     private static final Node[] EMPTY_NODE_ARRAY = new Node[0];
-    /** The obligatory first character of a rule name. */
-    private static final char BEGIN_CHAR = '<';
-    /** The obligatory last character of a rule name. */
-    private static final char END_CHAR = '>';
 
     /** Cache holding the anchor map. */
     abstract protected class AbstractEventCache {

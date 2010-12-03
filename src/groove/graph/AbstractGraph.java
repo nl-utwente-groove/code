@@ -36,7 +36,7 @@ import java.util.Set;
  * @version $Revision$
  */
 public abstract class AbstractGraph<C extends GraphCache> extends
-        AbstractGraphShape<C> implements InternalGraph {
+        AbstractGraphShape<C> implements Graph {
     /**
      * Factory method for nodes of this graph.
      * @return the freshly created node

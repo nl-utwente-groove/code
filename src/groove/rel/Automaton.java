@@ -23,6 +23,7 @@ import groove.graph.LabelStore;
 import groove.graph.Node;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -70,4 +71,23 @@ public interface Automaton extends Graph {
      */
     NodeRelation getMatches(GraphShape graph, Set<? extends Node> startImages,
             Set<? extends Node> endImages);
+
+    /**
+     * Returns a relation consisting of pairs of nodes of a given graph between
+     * which there is a path matching this automaton. If this automaton has
+     * variables, the pairs are edges with {@link VarNodeEdgeMap} labels giving
+     * a valuation of the variables.
+     * @param graph the graph in which the paths are sought
+     * @param startImages set of nodes in <code>graph</code> from which the
+     *        matching paths should start; if <code>null</code>, there is no
+     *        constraint
+     * @param endImages set of nodes in <code>graph</code> at which the
+     *        matching paths should end; if <code>null</code>, there is no
+     *        constraint
+     * @param valuation mapping from variables to edge labels that should be
+     *        adhered to in the matching; if <code>null</code>, there is no
+     *        constraint
+     */
+    NodeRelation getMatches(GraphShape graph, Set<? extends Node> startImages,
+            Set<? extends Node> endImages, Map<LabelVar,Label> valuation);
 }

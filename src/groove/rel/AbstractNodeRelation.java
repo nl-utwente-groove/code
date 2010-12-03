@@ -188,8 +188,8 @@ public abstract class AbstractNodeRelation implements NodeRelation {
      * @param post the post-image of the new related object
      * @return a new related object base on <tt>pre</tt> and <tt>post</tt>
      */
-    protected RelationEdge<Node> createRelated(Node pre, Node post) {
-        return new RelationEdge<Node>(pre, RelationType.VALUATION, post);
+    protected RelationEdge createRelated(Node pre, Node post) {
+        return new RelationEdge(pre, post);
     }
 
     /**
