@@ -230,20 +230,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends
     }
 
     /**
-     * Callback method that indicates if the graph supports edges with the
-     * indicated number of edges. This implementation only returns
-     * <code>true</code> if <code>endCount</code> equals <code>2</code>,
-     * meaning that the graph only supports binary edges.
-     * @param endCount the number for which to check wether its valid
-     * @return <tt>true</tt> if <code>endCount</code> equals 2,
-     *         <tt>false</tt> otherwise
-     * @see #addEdge(Node[], Label)
-     */
-    protected boolean isValidEndCount(int endCount) {
-        return endCount == 2;
-    }
-
-    /**
      * Tests if the certificate strategy (of the correct strength) is currently instantiated.
      * @param strong the strength of the required certifier
      * @see CertificateStrategy#getStrength()
