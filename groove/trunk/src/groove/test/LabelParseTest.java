@@ -14,10 +14,14 @@
  * 
  * $Id$
  */
-package groove.view.parse;
+package groove.test;
 
+import static org.junit.Assert.assertTrue;
 import groove.control.parse.ASTFrame;
 import groove.view.FormatException;
+import groove.view.parse.Label0Checker;
+import groove.view.parse.Label0Lexer;
+import groove.view.parse.Label0Parser;
 
 import java.util.List;
 
@@ -27,19 +31,72 @@ import org.antlr.runtime.Lexer;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.CommonTreeNodeStream;
+import org.junit.Test;
 
 /**
  * @author Arend Rensink
  * @version $Revision $
  */
-@SuppressWarnings("all")
 public class LabelParseTest {
-    public LabelParseTest(boolean isGraph) {
-        super();
-        this.isGraph = isGraph;
+    /**
+     * Tests some graph labels
+     */
+    @Test
+    public void testGraph() {
+        this.isGraph = true;
+        testCorrect("int:0");
+        testCorrect("real:1.");
+        testCorrect("real:.2");
+        testCorrect("string:\"te\\\"xt\"");
+        testCorrect("bool:true");
+        testCorrect("pp{'");
+        testCorrect(":\\:pp{'");
     }
 
-    protected void test(String label) {
+    /**
+     * Tests some rule labels
+     */
+    @Test
+    public void testRule() {
+        this.isGraph = false;
+        testWrong("forall=x:new=y:label");
+        testCorrect("prod:");
+        testCorrect("arg:5");
+        testCorrect("par=$2:");
+        testCorrect("par:");
+        testWrong("!{!label}");
+        testCorrect("del:?[a,b,c]");
+        testCorrect("not:!((a.b)|-?x[^b])+.=");
+        testCorrect("not:{!((a.b)|-?x[^b])+.=}");
+    }
+
+    private void testCorrect(String label) {
+        try {
+            test(label);
+        } catch (Exception e) {
+            if (PARSE_DEBUG) {
+                e.printStackTrace();
+            }
+            assertTrue(false);
+        }
+    }
+
+    private void testWrong(String label) {
+        try {
+            test(label);
+            assertTrue(false);
+        } catch (Exception e) {
+            // this is the expected outcome
+        }
+    }
+
+    private void test(String label) throws Exception {
+        Lexer lexer = new Label0Lexer(new ANTLRStringStream(label));
+        CommonTree parsedLabel = parse(lexer);
+        check(parsedLabel);
+    }
+
+    private void testAndReport(String label) {
         try {
             Lexer lexer = new Label0Lexer(new ANTLRStringStream(label));
             System.out.println(new CommonTokenStream(lexer));
@@ -64,7 +121,7 @@ public class LabelParseTest {
         }
     }
 
-    protected CommonTree parse(Lexer lexer) throws RecognitionException,
+    private CommonTree parse(Lexer lexer) throws RecognitionException,
         FormatException {
         Label0Parser parser = new Label0Parser(new CommonTokenStream(lexer));
         parser.setIsGraph(this.isGraph);
@@ -77,7 +134,7 @@ public class LabelParseTest {
         return labelReturn;
     }
 
-    protected CommonTree check(CommonTree labelReturn)
+    private CommonTree check(CommonTree labelReturn)
         throws RecognitionException, FormatException {
         // fetch the resulting tree
         CommonTreeNodeStream nodes = new CommonTreeNodeStream(labelReturn);
@@ -92,43 +149,21 @@ public class LabelParseTest {
         return (CommonTree) c_r.getTree();
     }
 
-    private final boolean isGraph;
+    private boolean isGraph;
 
     /**
      * Runs the test, displaying a label parse tree
      * @param args args[0] should be the label to be parsed
      */
     public static void main(String[] args) {
-        if (args.length > 0) {
-            boolean isGraph = Boolean.parseBoolean(args[0]);
-            LabelParseTest tester = new LabelParseTest(isGraph);
-            for (int i = 1; i < args.length; i++) {
-                tester.test(args[i]);
-            }
-        } else {
-            LabelParseTest tester = new LabelParseTest(true);
-            tester.test("int:0");
-            tester.test("real:1.");
-            tester.test("real:.2");
-            tester.test("string:\"te\\\"xt\"");
-            tester.test("bool:true");
-            tester.test("pp{'");
-            tester.test(":\\:pp{'");
-            tester = new LabelParseTest(false);
-            tester.test("forall=x:new=y:label");
-            tester.test("prod:");
-            tester.test("arg:5");
-            tester.test("par=$2:");
-            tester.test("par:");
-            tester.test("!{!label}");
-            tester.test("del:?[a,b,c]");
-            tester.test("not:!((a.b)|-?x[^b])+.=");
-            tester.test("not:{!((a.b)|-?x[^b])+.=}");
+        boolean isGraph = Boolean.parseBoolean(args[0]);
+        LabelParseTest tester = new LabelParseTest();
+        tester.isGraph = isGraph;
+        for (int i = 1; i < args.length; i++) {
+            tester.testAndReport(args[i]);
         }
     }
 
     private static final boolean PARSE_DEBUG = false;
     private static final boolean CHECK_DEBUG = false;
-
-    private static final int VERSION = 0;
 }
