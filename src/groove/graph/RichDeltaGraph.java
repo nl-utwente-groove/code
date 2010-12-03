@@ -177,16 +177,6 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements
     }
 
     @Override
-    @Deprecated
-    public Set<? extends Edge> edgeSet(Node node, int i) {
-        if (i == Edge.SOURCE_INDEX) {
-            return outEdgeSet(node);
-        } else {
-            return inEdgeSet(node);
-        }
-    }
-
-    @Override
     public Set<? extends Edge> outEdgeSet(Node node) {
         initData();
         return this.outEdgeMap.getCell(node);

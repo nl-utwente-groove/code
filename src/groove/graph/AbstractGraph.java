@@ -62,22 +62,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends
     }
 
     /**
-     * Factory method for edges of this graph. This implementation delegates to
-     * {@link #createEdge(Node, Label, Node)} if <code>ends.length == 2</code>
-     * and throws a {@link IllegalArgumentException} otherwise.
-     * @param ends the endpoints of the new edge
-     * @param label the label of the new edge
-     * @return the freshly created Edge
-     * @throws IllegalArgumentException if the number of edges is not supported
-     *         by this graph.
-     * @deprecated use {@link #createEdge(Node, Label, Node)} instead
-     */
-    @Deprecated
-    public Edge createEdge(Node[] ends, Label label) {
-        return createEdge(ends[0], label, ends[1]);
-    }
-
-    /**
      * Factory method for binary edges of this graph. This implementation
      * returns a {@link DefaultEdge}.
      * @param source the source node of the new edge
@@ -118,16 +102,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends
         Edge result = createEdge(source, label, target);
         addEdge(result);
         return result;
-    }
-
-    /**
-     * Creates its result using {@link #createEdge(Node[], Label)}.
-     */
-    @Deprecated
-    public Edge addEdge(Node[] ends, Label label) {
-        Edge newEdge = createEdge(ends, label);
-        addEdge(newEdge);
-        return newEdge;
     }
 
     public boolean addNodeSet(Collection<? extends Node> nodeSet) {

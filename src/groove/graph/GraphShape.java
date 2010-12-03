@@ -68,25 +68,8 @@ public interface GraphShape extends java.io.Serializable, Fixable {
      * @param node the node of which the incident edges are required
      * @require node != null
      * @ensure result == { edge \in E | \exists i: edge.end(i).equals(node) }
-     * @see #edgeSet(Node, int)
      */
     Set<? extends Edge> edgeSet(Node node);
-
-    /**
-     * Returns the set of incident edges of a given node of this graph, for a
-     * given end position in the edge. Although the return type is a
-     * <tt>Collection</tt> to allow efficient implementation, it is guaranteed
-     * to contain distinct elements.
-     * @param node the node of which the incident edges are required
-     * @param i the position within the edges at which the node should occur
-     * @require node != null
-     * @ensure result == { edge \in E | edge.end(i).equals(node) }
-     * @see #edgeSet(Node)
-     * @see #outEdgeSet(Node)
-     * @deprecated use {@link #inEdgeSet(Node)} or {@link #outEdgeSet(Node)}
-     */
-    @Deprecated
-    Set<? extends Edge> edgeSet(Node node, int i);
 
     /**
      * Returns the set of incoming edges of a given node of this graph.
@@ -108,22 +91,6 @@ public interface GraphShape extends java.io.Serializable, Fixable {
      * @param label the label of the required edges
      */
     Set<? extends Edge> labelEdgeSet(Label label);
-
-    /**
-     * Returns the set of all edges in this graph with a given label and arity.
-     * Convenience method for
-     * <tt>(Collection) labelEdgeMap(arity).get(label)</tt> Although the return
-     * type is a <tt>Collection</tt> to allow efficient implementation, it is
-     * guaranteed to contain distinct elements.
-     * @param label the label of the required edges
-     * @param arity the number of endpoints of the required edges
-     * @require <tt>label != null</tt> and
-     *          <tt>1 <= arity <= AbstractEdge.getMaxEndCount()</tt>
-     * @ensure <tt>result == labelEdgeMap(arity).get(Label).get(arity)</tt>
-     * @deprecated Use {@link #labelEdgeSet(Label)} instead
-     */
-    @Deprecated
-    Set<? extends Edge> labelEdgeSet(int arity, Label label);
 
     /**
      * Returns the total number of elements (nodes plus edges) in this graph.

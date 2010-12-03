@@ -75,22 +75,6 @@ public interface Graph extends GraphShape, DeltaTarget {
     Edge addEdge(Node source, Label label, Node target);
 
     /**
-     * Adds an edge to the graph, between given nodes and with a given label,
-     * and returns the edge. Also adds the end nodes if these are not yet in the
-     * graph. If an edge with these properties already exists, the method
-     * returns the existing edge.
-     * @param ends the ends of the new edge
-     * @param label the label of the new edge
-     * @return an edge between <code>ends</code> labelled <tt>label</tt>
-     * @see Graph#addEdge(Edge)
-     * @throws IllegalArgumentException if the graph implementation does not
-     *         support edges with the required arity <code>ends.length</code>.
-     * @deprecated use {@link #addEdge(Node, Label, Node)} instead
-     */
-    @Deprecated
-    Edge addEdge(Node[] ends, Label label);
-
-    /**
      * Adds a node to this graph. This is allowed only if the graph is not
      * fixed. If the node is already in the graph then the method has no effect.
      * All {@link GraphListener}s are notified if the node is actually added.

@@ -20,7 +20,6 @@ import org.antlr.runtime.tree.TreeNodeStream;
 import org.antlr.runtime.tree.TreeParser;
 import org.antlr.runtime.tree.TreeRuleReturnScope;
 
-@Deprecated
 @SuppressWarnings("all")
 public class Label0Checker extends TreeParser {
     public static final String[] tokenNames = new String[] {"<invalid>",

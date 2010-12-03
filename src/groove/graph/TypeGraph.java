@@ -149,14 +149,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
         return this.abstractTypes.contains(elem);
     }
 
-    /** Adds the label as well as the edge. */
-    @Override
-    @Deprecated
-    public Edge addEdge(Node[] ends, Label label) {
-        this.labelStore.addLabel(label);
-        return super.addEdge(ends, label);
-    }
-
     /** Adds the labels as well as the edges. */
     @Override
     public boolean addEdgeSetWithoutCheck(Collection<? extends Edge> edgeSet) {
@@ -252,8 +244,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                     if (algebra != null) {
                         String signature =
                             AlgebraRegister.getSignatureName(algebra);
-                        nodeTypeMap.put(node, DefaultLabel.createLabel(
-                            signature, Label.NODE_TYPE));
+                        nodeTypeMap.put(
+                            node,
+                            DefaultLabel.createLabel(signature, Label.NODE_TYPE));
                     }
                 } else if (node instanceof ProductNode) {
                     untypedNodes.remove(node);
