@@ -23,6 +23,10 @@ import groove.explore.util.RuleEventApplier;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
+import groove.match.SearchEngineFactory;
+import groove.trans.AbstractCondition;
+import groove.trans.Rule;
+import groove.trans.SPORule;
 import groove.trans.SystemRecord;
 
 /**
@@ -40,6 +44,9 @@ public abstract class AbstractStrategy implements Strategy {
         this.applier = null;
         this.atState =
             this.startState = state == null ? gts.startState() : state;
+        resetRulesMatchers();
+        SearchEngineFactory.getInstance().setCurrentEngineType(
+            SearchEngineFactory.getInstance().getDefaultEngineType());
     }
 
     public boolean next() {
@@ -59,6 +66,18 @@ public abstract class AbstractStrategy implements Strategy {
      */
     protected GTS getGTS() {
         return this.gts;
+    }
+
+    /**
+     * Iterates through all the rules in the GTS's grammar and calls
+     * their {#link {@link AbstractCondition#resetMatcher()} method. 
+     */
+    protected void resetRulesMatchers() {
+        for (Rule r : getGTS().getGrammar().getRules()) {
+            if (r instanceof AbstractCondition<?>) {
+                ((SPORule) r).resetMatcher();
+            }
+        }
     }
 
     /**

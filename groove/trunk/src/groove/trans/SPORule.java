@@ -361,6 +361,12 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         return this.eventMatcher;
     }
 
+    @Override
+    public void resetMatcher() {
+        this.eventMatcher = null;
+        super.resetMatcher();
+    }
+
     /** This implementation sets the anchor graph elements to relevant. */
     @Override
     MatchStrategy<VarNodeEdgeMap> createMatcher() {

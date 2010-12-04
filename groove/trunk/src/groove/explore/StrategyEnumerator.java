@@ -22,10 +22,10 @@ import groove.explore.encode.EncodedEnabledRule;
 import groove.explore.encode.EncodedInt;
 import groove.explore.encode.EncodedRuleMode;
 import groove.explore.encode.Template;
+import groove.explore.encode.TemplateList;
 import groove.explore.encode.Template.Template0;
 import groove.explore.encode.Template.Template1;
 import groove.explore.encode.Template.Template2;
-import groove.explore.encode.TemplateList;
 import groove.explore.prettyparse.PIdentifier;
 import groove.explore.prettyparse.PLiteral;
 import groove.explore.prettyparse.PNumber;
@@ -42,6 +42,9 @@ import groove.explore.strategy.DFSStrategy;
 import groove.explore.strategy.LinearConfluentRules;
 import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
+import groove.explore.strategy.ReteLinearStrategy;
+import groove.explore.strategy.ReteRandomLinearStrategy;
+import groove.explore.strategy.ReteStrategy;
 import groove.explore.strategy.Strategy;
 import groove.graph.Label;
 import groove.lts.GTS;
@@ -67,12 +70,12 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
     /** Mask for strategies that are always valid. */
     public final static int MASK_ALL = MASK_CONCRETE | MASK_ABSTRACT;
 
-    private static final String STRATEGY_TOOLTIP = "<HTML>"
-        + "The exploration strategy determines at each state:<BR>"
-        + "<B>1.</B> Which of the applicable transitions will be taken; "
-        + "and<BR>"
-        + "<B>2.</B> In which order the reached states will be explored."
-        + "</HTML>";
+    private static final String STRATEGY_TOOLTIP =
+        "<HTML>" + "The exploration strategy determines at each state:<BR>"
+            + "<B>1.</B> Which of the applicable transitions will be taken; "
+            + "and<BR>"
+            + "<B>2.</B> In which order the reached states will be explored."
+            + "</HTML>";
 
     /**
      * Enumerates the available strategies one by one. A strategy is defined
@@ -80,6 +83,41 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
      */
     public StrategyEnumerator() {
         super("exploration strategy", STRATEGY_TOOLTIP);
+
+        addTemplate(new Template0<Strategy>(
+            "rete",
+            "Rete Strategy (DFS based)",
+            "This strategy finds all possible transitions from the Rete network,  "
+                + "and continues in a depth-first fashion using virtual events when possible. Rete updates are applied accumulatively") {
+
+            @Override
+            public Strategy create(GTS gts) {
+                return new ReteStrategy();
+            }
+        });
+
+        addTemplate(new Template0<Strategy>("retelinear",
+            "Rete Linear Exploration",
+            "This strategy chooses one transition from each open state. "
+                + "The transition of choice will be the same within one "
+                + "incarnation of Groove.") {
+
+            @Override
+            public Strategy create(GTS gts) {
+                return new ReteLinearStrategy();
+            }
+        });
+
+        addTemplate(new Template0<Strategy>("reterandom",
+            "Rete Random Linear Exploration",
+            "This strategy chooses one transition from each open state. "
+                + "The transition is chosen randomly.") {
+
+            @Override
+            public Strategy create(GTS gts) {
+                return new ReteRandomLinearStrategy();
+            }
+        });
 
         addTemplate(new Template0<Strategy>("bfs", "Breadth-First Exploration",
             "This strategy first generates all possible transitions from each "
