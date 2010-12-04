@@ -28,8 +28,8 @@ import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.VariableNode;
-import groove.match.ConditionSearchPlanFactory;
 import groove.match.MatchStrategy;
+import groove.match.SearchEngine;
 import groove.rel.LabelVar;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
@@ -367,6 +367,26 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     }
 
     /**
+     * Forces the condition and all of its sub-conditions to re-acquire 
+     * a new instance of it's cached matcher object from the matching 
+     * search engine. 
+     * 
+     * This method had to be added to enable exploration strategies
+     * to lock down to a specific matching engine and in turn enable them
+     * to tell all rules and (sub)conditions in the GTS to use the matcher 
+     * that corresponds with the locked-down engine.
+     * 
+     */
+    public void resetMatcher() {
+        this.matchStrategy = null;
+        if (this.subConditions != null) {
+            for (AbstractCondition<?> c : this.getSubConditions()) {
+                c.resetMatcher();
+            }
+        }
+    }
+
+    /**
      * Returns the precomputed matching order for the elements of the target
      * pattern. First creates the order using {@link #createMatcher()} if that
      * has not been done.
@@ -391,8 +411,10 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     }
 
     /** Returns a matcher factory, tuned to the injectivity of this condition. */
-    ConditionSearchPlanFactory getMatcherFactory() {
-        return groove.match.ConditionSearchPlanFactory.getInstance(getSystemProperties().isInjective());
+    SearchEngine<? extends MatchStrategy<VarNodeEdgeMap>> getMatcherFactory() {
+        //return groove.match.ConditionSearchPlanFactory.getInstance();
+        return groove.match.SearchEngineFactory.getInstance().getEngine(
+            getSystemProperties().isInjective());
     }
 
     /**

@@ -88,6 +88,7 @@ public class ExplorationTest {
         testExploration("append.gps", "append-2-list-5", null, 145, 256);
         testExploration("append.gps", "append-2-list-5", "bfs", 145, 256);
         testExploration("append.gps", "append-2-list-5", "dfs", 145, 256);
+        testExploration("append.gps", "append-2-list-5", "rete", 145, 256);
         testExploration("append.gps", "append-2-list-5", "cnbound:20", 62, 88,
             13);
         testExploration("append.gps", "append-2-list-5", "cebound:append>6",
@@ -160,6 +161,7 @@ public class ExplorationTest {
     @Test
     public void testPetrinet() {
         testExploration("petrinet.gps", 6, 9);
+        testExploration("petrinet.gps", "start", "rete", 6, 9);
     }
 
     /** Tests the wildcards sample. */
