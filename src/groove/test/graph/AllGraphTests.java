@@ -24,8 +24,8 @@ import org.junit.runners.Suite;
  * @version $Revision$
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({DefaultGraphTest.class, DeltaGraphTest.class,
-    GraphCreationTest.class, NodeSetEdgeSetGraphTest.class})
+@Suite.SuiteClasses({DefaultGraphTest.class, GraphCreationTest.class,
+    NodeSetEdgeSetGraphTest.class})
 public class AllGraphTests {
     // Empty by design.
 }

@@ -27,7 +27,6 @@ import groove.explore.strategy.OptimizedBoundedNestedDFSPocketStrategy;
 import groove.explore.strategy.OptimizedBoundedNestedDFSStrategy;
 import groove.explore.util.MatchApplier;
 import groove.explore.util.MatchSetCollector;
-import groove.graph.DeltaGraph;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
 import groove.graph.Node;
@@ -1079,7 +1078,6 @@ public class LTLBenchmarker extends CommandLineTool {
             // }
             // the following is to make sure that the graph reference queue gets
             // flushed
-            new DeltaGraph().nodeSet();
             System.runFinalization();
             System.gc();
             long usedMemory = runTime.totalMemory() - runTime.freeMemory();

@@ -80,14 +80,14 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
      */
     @Override
     public Graph clone() {
-        return new DeltaGraph(this);
+        return new DefaultGraph(this);
     }
 
     /**
      * Since the result should be modifiable, returns a {@link DeltaGraph}.
      */
-    public DeltaGraph newGraph() {
-        return new DeltaGraph();
+    public DefaultGraph newGraph() {
+        return new DefaultGraph();
     }
 
     public NewDeltaGraph newGraph(NewDeltaGraph graph, DeltaApplier applier) {

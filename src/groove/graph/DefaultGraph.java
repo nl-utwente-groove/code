@@ -56,11 +56,20 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
      * @ensure result.equals(graph)
      */
     protected DefaultGraph(DefaultGraph graph) {
-        this();
         for (Map.Entry<Node,Set<Edge>> edgeEntry : graph.edgeMap.entrySet()) {
             this.edgeMap.put(edgeEntry.getKey(),
                 new HashSet<Edge>(edgeEntry.getValue()));
         }
+    }
+
+    /**
+     * Constructs a clone of a given Graph.
+     * @param graph the DefaultGraph to be cloned
+     * @require graph != null
+     * @ensure result.equals(graph)
+     */
+    protected DefaultGraph(Graph graph) {
+        addEdgeSet(graph.edgeSet());
     }
 
     @Override
