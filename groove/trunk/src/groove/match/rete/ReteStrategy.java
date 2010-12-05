@@ -50,8 +50,6 @@ public class ReteStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     @Override
     public synchronized Iterator<VarNodeEdgeMap> getMatchIter(GraphShape host,
             NodeEdgeMap anchorMap) {
-        //TODO ARASH: remove this debug println
-        System.out.println("rete");
         Iterator<VarNodeEdgeMap> result =
             (new ArrayList<VarNodeEdgeMap>()).iterator();
         assert this.owner.getNetwork() != null;

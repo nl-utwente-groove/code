@@ -772,7 +772,7 @@ public class ReteNetwork {
         public static ReteStaticMapping combine(ReteStaticMapping oneMap,
                 ReteStaticMapping otherMap, SubgraphCheckerNode suc) {
             assert oneMap.getNNode().getSuccessors().contains(suc)
-                && otherMap.getNNode().getAntecedents().contains(suc);
+                && otherMap.getNNode().getSuccessors().contains(suc);
             ReteStaticMapping left =
                 suc.getAntecedents().get(0).equals(oneMap.getNNode()) ? oneMap
                         : otherMap;
