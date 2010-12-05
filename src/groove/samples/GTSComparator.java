@@ -95,7 +95,7 @@ public class GTSComparator {
             @Override
             public void addUpdate(GraphShape graph, Node node) {
                 GraphState state = (GraphState) node;
-                if (!result1.containsElement(state)) {
+                if (!result1.containsNode(state)) {
                     throw new IllegalStateException();
                 } else {
                     relation.put(state, result1.getStateSet().put(state));
@@ -105,7 +105,7 @@ public class GTSComparator {
             @Override
             public void addUpdate(GraphShape graph, Edge edge) {
                 GraphTransition trans = (GraphTransition) edge;
-                if (!result1.containsElement(trans)) {
+                if (!result1.containsEdge(trans)) {
                     throw new IllegalStateException();
                 } else {
                     //                    relation.put(trans, result1.getStateSet().put(trans));

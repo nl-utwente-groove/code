@@ -235,7 +235,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
 
         /** Tests if the (uniquely determined) edge image can be used. */
         private boolean isImageCorrect(Edge image) {
-            return this.host.containsElement(image);
+            return this.host.containsEdge(image);
         }
 
         /**

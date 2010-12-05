@@ -109,15 +109,15 @@ public class GraphCreationTest extends TestCase {
         Set<Edge> edgeSet = new HashSet<Edge>(this.g.edgeSet());
 
         for (int i = 0; i < NR_EDGES; i++) {
-            assertTrue(this.g.containsElement(this.e[i]));
+            assertTrue(this.g.containsEdge(this.e[i]));
             this.g.removeEdge(this.e[i]);
-            assertTrue(!this.g.containsElement(this.e[i]));
+            assertTrue(!this.g.containsEdge(this.e[i]));
         }
 
         for (int i = 0; i < NR_NODES_TOTAL; i++) {
-            assertTrue(this.g.containsElement(this.n[i]));
+            assertTrue(this.g.containsNode(this.n[i]));
             this.g.removeNode(this.n[i]);
-            assertTrue(!this.g.containsElement(this.n[i]));
+            assertTrue(!this.g.containsNode(this.n[i]));
             this.g.addNode(this.n[i]);
         }
 

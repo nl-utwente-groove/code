@@ -170,7 +170,7 @@ public class MatchApplier implements RuleEventApplier {
             boolean conflict = false;
             for (int i = 0; !conflict && i < result.length; i++) {
                 conflict = result[i] == sourceAddedNodes[i];
-                assert conflict || !host.containsElement(result[i]);
+                assert conflict || !host.containsNode(result[i]);
             }
             if (conflict) {
                 // the nodes coincide, so delegate the method

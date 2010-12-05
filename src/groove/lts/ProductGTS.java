@@ -397,6 +397,20 @@ public class ProductGTS implements LTS {
         // Empty.
     }
 
+    @Override
+    public boolean containsNode(Node elem) {
+        assert elem instanceof BuchiGraphState;
+        return containsState((BuchiGraphState) elem);
+    }
+
+    @Override
+    public boolean containsEdge(Edge elem) {
+        assert elem instanceof ProductTransition;
+        return containsTransition((ProductTransition) elem);
+    }
+
+    @Override
+    @Deprecated
     public boolean containsElement(Element elem) {
         if (elem instanceof BuchiGraphState) {
             return containsState((BuchiGraphState) elem);
@@ -430,6 +444,7 @@ public class ProductGTS implements LTS {
             && source.outTransitions().contains(transition);
     }
 
+    @Deprecated
     public boolean containsElementSet(Collection<? extends Element> elements) {
         return false;
     }
