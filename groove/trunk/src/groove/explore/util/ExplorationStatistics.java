@@ -18,7 +18,6 @@ package groove.explore.util;
 
 import groove.explore.DefaultScenario;
 import groove.graph.AbstractGraphShape;
-import groove.graph.DeltaGraph;
 import groove.graph.Edge;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
@@ -360,7 +359,6 @@ public class ExplorationStatistics {
             }
             // The following is to make sure that the graph reference queue gets
             // flushed.
-            new DeltaGraph().nodeSet();
             System.runFinalization();
             System.gc();
             long usedMemory = runTime.totalMemory() - runTime.freeMemory();
