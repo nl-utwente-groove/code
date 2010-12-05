@@ -913,20 +913,11 @@ public class RuleJTree extends JTree implements SimulationListener {
      */
     private class MatchTreeNode extends DefaultMutableTreeNode {
         /**
-         * Creates a new match node on the basis of a given number and
-         * derivation edge. The node cannot have children.
-         */
-        public MatchTreeNode(int nr, GraphTransition trans) {
-            super(trans.getEvent(), false);
-            this.nr = nr;
-        }
-
-        /**
          * Creates a new match node on the basis of a given number and the
          * RuleMatch. The node cannot have children.
          */
-        public MatchTreeNode(int nr, MatchResult event) {
-            super(event, false);
+        public MatchTreeNode(int nr, MatchResult result) {
+            super(result.getEvent(), false);
             this.nr = nr;
         }
 
