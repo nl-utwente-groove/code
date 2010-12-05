@@ -23,8 +23,6 @@ import groove.util.TreeHashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 /**
  * @author Arash Jalali
  * @version $Revision $
@@ -42,13 +40,19 @@ public class ProductionNode extends ConditionChecker {
 
     @Override
     public boolean addSuccessor(ReteNetworkNode nnode) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
-    public boolean equals(ProductionNode node) {
+    @Override
+    public boolean equals(Object node) {
         return (this == node)
             || ((node != null) && (node instanceof ProductionNode) && this.getProductionRule().equals(
-                node.getProductionRule()));
+                ((ProductionNode) node).getProductionRule()));
+    }
+
+    @Override
+    public int hashCode() {
+        return getProductionRule().hashCode();
     }
 
     public Rule getProductionRule() {

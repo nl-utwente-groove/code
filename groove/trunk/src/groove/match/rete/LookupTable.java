@@ -49,8 +49,6 @@ public class LookupTable {
     }
 
     /**
-     * 
-     * @param e
      * @return the index with a match's array of match units if <code>e</code>
      * is defined in the lookup table, -1 if it's not.
      */
@@ -64,8 +62,6 @@ public class LookupTable {
     }
 
     /**
-     * 
-     * @param n
      * @return if <code>n</code> is defined  an array of <code>int</code> with size of 2,
      * with element at index 0 pointing to the cell in a match's units array, 
      * and the second specifying if the the node is in the source of in the target(0=source, 
@@ -79,5 +75,4 @@ public class LookupTable {
     public HashMap<Element,int[]> getTable() {
         return this.table;
     }
-
 }
