@@ -76,7 +76,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
     }
 
     /**
-     * Since the result should be modifiable, returns a {@link DeltaGraph}.
+     * Since the result should be modifiable, returns a {@link DefaultGraph}.
      */
     @Override
     public Graph clone() {
@@ -84,7 +84,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
     }
 
     /**
-     * Since the result should be modifiable, returns a {@link DeltaGraph}.
+     * Since the result should be modifiable, returns a {@link DefaultGraph}.
      */
     public DefaultGraph newGraph() {
         return new DefaultGraph();
@@ -159,14 +159,90 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
     }
 
     @Override
+    public Set<? extends Edge> inEdgeSet(Node node) {
+        DefaultEdgeSet result = getInEdgeMap().get(node);
+        return (ALIAS_SETS || this.copyData) && result != null ? result
+                : createEdgeSet(result);
+    }
+
+    /** Returns a mapping from labels to sets of edges. */
+    private Map<Node,DefaultEdgeSet> getInEdgeMap() {
+        if (this.nodeInEdgeMap == null) {
+            initData();
+            if (this.nodeInEdgeMap == null) {
+                this.nodeInEdgeMap = computeInEdgeMap();
+            }
+        }
+        return this.nodeInEdgeMap;
+    }
+
+    /**
+     * Computes the node-to-incoming-edgeset map from the node and edge sets. This
+     * method is only used if the map could not be obtained from the basis.
+     */
+    private Map<Node,DefaultEdgeSet> computeInEdgeMap() {
+        Map<Node,DefaultEdgeSet> result =
+            new LinkedHashMap<Node,DefaultEdgeSet>();
+        for (Map.Entry<Node,DefaultEdgeSet> nodeEdgeEntry : this.nodeEdgeMap.entrySet()) {
+            Node key = nodeEdgeEntry.getKey();
+            DefaultEdgeSet inEdges = createEdgeSet(null);
+            for (DefaultEdge edge : nodeEdgeEntry.getValue()) {
+                if (edge.target().equals(key)) {
+                    inEdges.add(edge);
+                }
+            }
+            result.put(key, inEdges);
+        }
+        return result;
+    }
+
+    @Override
+    public Set<? extends Edge> outEdgeSet(Node node) {
+        DefaultEdgeSet result = getOutEdgeMap().get(node);
+        return (ALIAS_SETS || this.copyData) && result != null ? result
+                : createEdgeSet(result);
+    }
+
+    /** Returns a mapping from nodes to sets of outgoing edges. */
+    private Map<Node,DefaultEdgeSet> getOutEdgeMap() {
+        if (this.nodeOutEdgeMap == null) {
+            initData();
+            if (this.nodeOutEdgeMap == null) {
+                this.nodeOutEdgeMap = computeOutEdgeMap();
+            }
+        }
+        return this.nodeOutEdgeMap;
+    }
+
+    /**
+     * Computes the node-to-incoming-edgeset map from the node and edge sets. This
+     * method is only used if the map could not be obtained from the basis.
+     */
+    private Map<Node,DefaultEdgeSet> computeOutEdgeMap() {
+        Map<Node,DefaultEdgeSet> result =
+            new LinkedHashMap<Node,DefaultEdgeSet>();
+        for (Map.Entry<Node,DefaultEdgeSet> nodeEdgeEntry : this.nodeEdgeMap.entrySet()) {
+            Node key = nodeEdgeEntry.getKey();
+            DefaultEdgeSet inEdges = createEdgeSet(null);
+            for (DefaultEdge edge : nodeEdgeEntry.getValue()) {
+                if (edge.source().equals(key)) {
+                    inEdges.add(edge);
+                }
+            }
+            result.put(key, inEdges);
+        }
+        return result;
+    }
+
+    @Override
     public Set<DefaultEdge> labelEdgeSet(Label label) {
         DefaultEdgeSet result = (DefaultEdgeSet) getLabelEdgeMap().get(label);
         return (ALIAS_SETS || this.copyData) && result != null ? result
                 : createEdgeSet(result);
     }
 
-    @Override
-    protected Map<Label,? extends Set<? extends Edge>> getLabelEdgeMap() {
+    /** Returns a mapping from labels to sets of edges. */
+    private Map<Label,? extends Set<? extends Edge>> getLabelEdgeMap() {
         if (this.labelEdgeMap == null) {
             initData();
             if (this.labelEdgeMap == null) {
@@ -194,21 +270,18 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
     }
 
     @Override
-    public Map<Node,DefaultEdgeSet> nodeEdgeMap() {
-        if (this.nodeEdgeMap == null) {
-            initData();
-            // if (nodeEdgeMap == null) {
-            // nodeEdgeMap = computeNodeEdgeMap();
-            // }
-        }
-        return this.nodeEdgeMap;
-    }
-
-    @Override
     public Set<? extends Edge> edgeSet(Node node) {
-        DefaultEdgeSet result = nodeEdgeMap().get(node);
+        DefaultEdgeSet result = getNodeEdgeMap().get(node);
         return (ALIAS_SETS || this.copyData) && result != null ? result
                 : createEdgeSet(result);
+    }
+
+    /** Returns the mapping from nodes to sets of incident edges. */
+    private Map<Node,DefaultEdgeSet> getNodeEdgeMap() {
+        if (this.nodeEdgeMap == null) {
+            initData();
+        }
+        return this.nodeEdgeMap;
     }
 
     /**
@@ -318,10 +391,12 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
 
     /** The (initially null) edge set of this graph. */
     DefaultEdgeSet edgeSet;
-    // /** The (initially null) node set of this graph. */
-    // private NodeSet nodeSet;
     /** The map from nodes to sets of incident edges. */
     Map<Node,DefaultEdgeSet> nodeEdgeMap;
+    /** The map from nodes to sets of incoming edges. */
+    Map<Node,DefaultEdgeSet> nodeInEdgeMap;
+    /** The map from nodes to sets of outgoing edges. */
+    Map<Node,DefaultEdgeSet> nodeOutEdgeMap;
     /** Mapping from labels to sets of edges with that label. */
     Map<Label,DefaultEdgeSet> labelEdgeMap;
     /** The certificate strategy of this graph, set on demand. */
@@ -366,7 +441,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
      * @author Arend Rensink
      * @version $Revision $
      */
-    static abstract private class DataTarget implements DeltaTarget {
+    abstract private class DataTarget implements DeltaTarget {
         /** Empty constructor with correct visibility. */
         DataTarget() {
             // empty
@@ -381,15 +456,156 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
         void install(NewDeltaGraph child) {
             child.edgeSet = this.edgeSet;
             child.nodeEdgeMap = this.nodeEdgeMap;
+            child.nodeInEdgeMap = this.nodeInEdgeMap;
+            child.nodeOutEdgeMap = this.nodeOutEdgeMap;
             child.labelEdgeMap = this.labelEdgeMap;
             child.delta = null;
             child.basis = null;
+        }
+
+        /** Adds the node to the node set and the node-edge map. */
+        @Override
+        public boolean addNode(Node node) {
+            Set<DefaultEdge> edges = addKeyToMap(this.nodeEdgeMap, node);
+            assert edges == null;
+            addKeyToMap(this.nodeInEdgeMap, node);
+            addKeyToMap(this.nodeOutEdgeMap, node);
+            return true;
+        }
+
+        /** Removes the node from the node set and the node-edge map. */
+        @Override
+        public boolean removeNode(Node elem) {
+            Set<DefaultEdge> edges = removeKeyFromMap(this.nodeEdgeMap, elem);
+            assert edges.isEmpty();
+            removeKeyFromMap(this.nodeOutEdgeMap, elem);
+            removeKeyFromMap(this.nodeInEdgeMap, elem);
+            return true;
+        }
+
+        /**
+         * Adds an edge to all maps stored in this target,
+         * if they are not {@code null}.
+         * A second parameter determines if the set sets
+         * in the map should be copied upon modification.
+         */
+        final boolean addEdge(Edge elem, boolean refreshSource,
+                boolean refreshTarget, boolean refreshLabel) {
+            boolean result = this.edgeSet.add((DefaultEdge) elem);
+            assert result;
+            // adapt node-edge map
+            Node source = elem.source();
+            Node target = elem.target();
+            addToMap(this.nodeEdgeMap, source, elem, refreshSource);
+            if (source != target) {
+                addToMap(this.nodeEdgeMap, target, elem, refreshTarget);
+            }
+            // adapt label-edge map
+            addToMap(this.nodeOutEdgeMap, source, elem, refreshSource);
+            addToMap(this.nodeInEdgeMap, target, elem, refreshTarget);
+            addToMap(this.labelEdgeMap, elem.label(), elem, refreshLabel);
+            return result;
+        }
+
+        /**
+         * Removes an edge from all maps stored in this target,
+         * if they are not {@code null}.
+         * A second parameter determines if the set sets
+         * in the map should be copied upon modification.
+         */
+        final boolean removeEdge(Edge elem, boolean refreshSource,
+                boolean refreshTarget, boolean refreshLabel) {
+            boolean result = this.edgeSet.remove(elem);
+            assert result;
+            // adapt node-edge map
+            Node source = elem.source();
+            Node target = elem.target();
+            removeEdgeFromMap(this.nodeEdgeMap, source, elem, refreshSource);
+            if (source != target) {
+                removeEdgeFromMap(this.nodeEdgeMap, target, elem, refreshTarget);
+            }
+            removeEdgeFromMap(this.nodeOutEdgeMap, source, elem, refreshSource);
+            removeEdgeFromMap(this.nodeInEdgeMap, target, elem, refreshTarget);
+            removeEdgeFromMap(this.labelEdgeMap, elem.label(), elem,
+                refreshLabel);
+            return result;
+        }
+
+        /**
+         * Adds a key to a given key-to-edgeset mapping.
+         * @param <T> the type of the key
+         * @param map the mapping to be modified; may be {@code null}
+         * @param key the key to be inserted
+         * @return the previous edgeset for the key, if the map was not {@code null}
+         */
+        private <T> DefaultEdgeSet addKeyToMap(Map<T,DefaultEdgeSet> map, T key) {
+            DefaultEdgeSet result = null;
+            if (map != null) {
+                result = map.put(key, result = createEdgeSet(null));
+            }
+            return result;
+        }
+
+        /** Adds an edge to the image of a given key, in a key-to-edgeset mapping.
+         * @param <T> the type of the key
+         * @param map the mapping to be modified; may be {@code null}
+         * @param key the key to be inserted
+         * @param edge the edge to be inserted in the key's image; may be {@code null}
+         * if only the key should be added
+         * @param refresh flag indicating if a new edge set should be created
+         * @return the edgeset for the key, if the map was not {@code null}
+         */
+        private <T> DefaultEdgeSet addToMap(Map<T,DefaultEdgeSet> map, T key,
+                Edge edge, boolean refresh) {
+            DefaultEdgeSet result = null;
+            if (map != null) {
+                result = map.get(key);
+                if (refresh) {
+                    map.put(key, result = createEdgeSet(result));
+                } else if (result == null) {
+                    map.put(key, result = createEdgeSet(null));
+                }
+                result.add((DefaultEdge) edge);
+            }
+            return result;
+        }
+
+        /** Removes an edge from a given mapping,
+         * if the mapping is not {@code null}. 
+         */
+        private <T> DefaultEdgeSet removeEdgeFromMap(Map<T,DefaultEdgeSet> map,
+                T key, Edge edge, boolean refresh) {
+            DefaultEdgeSet result = null;
+            if (map != null) {
+                result = map.get(key);
+                if (refresh) {
+                    map.put(key, result = createEdgeSet(result));
+                }
+                result.remove(edge);
+            }
+            return result;
+        }
+
+        /** Removes either a key from a given mapping,
+         * if the mapping is not {@code null}. 
+         */
+        private <T> DefaultEdgeSet removeKeyFromMap(Map<T,DefaultEdgeSet> map,
+                T key) {
+            DefaultEdgeSet result = null;
+            if (map != null) {
+                result = map.remove(key);
+            }
+            return result;
         }
 
         /** Edge set to be filled by this target. */
         DefaultEdgeSet edgeSet;
         /** Node/edge map to be filled by this target. */
         Map<Node,DefaultEdgeSet> nodeEdgeMap;
+        /** Node/incoming edge map to be filled by this target. */
+        Map<Node,DefaultEdgeSet> nodeInEdgeMap;
+        /** Node/outgoing edge map to be filled by this target. */
+        Map<Node,DefaultEdgeSet> nodeOutEdgeMap;
         /** Label/edge map to be filled by this target. */
         Map<Label,DefaultEdgeSet> labelEdgeMap;
     }
@@ -402,6 +618,8 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
             // only construct a node set if the node-edge map is not there. */
             this.edgeSet = graph.edgeSet;
             this.nodeEdgeMap = graph.nodeEdgeMap;
+            this.nodeInEdgeMap = graph.nodeInEdgeMap;
+            this.nodeOutEdgeMap = graph.nodeOutEdgeMap;
             this.labelEdgeMap = graph.labelEdgeMap;
         }
 
@@ -410,43 +628,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
          * the label-edge maps (if it is set).
          */
         public boolean addEdge(Edge elem) {
-            boolean result = this.edgeSet.add((DefaultEdge) elem);
-            assert result;
-            // adapt node-edge map
-            DefaultEdgeSet outEdgeSet = this.nodeEdgeMap.get(elem.source());
-            if (outEdgeSet == null) {
-                this.nodeEdgeMap.put(elem.source(), outEdgeSet =
-                    createEdgeSet(null));
-            }
-            outEdgeSet.add((DefaultEdge) elem);
-            Node target = elem.target();
-            if (elem.source() != target) {
-                DefaultEdgeSet inEdgeSet = this.nodeEdgeMap.get(target);
-                if (inEdgeSet == null) {
-                    this.nodeEdgeMap.put(target, inEdgeSet =
-                        createEdgeSet(null));
-                }
-                inEdgeSet.add((DefaultEdge) elem);
-            }
-            // adapt label-edge map
-            if (this.labelEdgeMap != null) {
-                Label label = elem.label();
-                Map<Label,DefaultEdgeSet> arityLabelEdgeMap = this.labelEdgeMap;
-                DefaultEdgeSet edgeSet = arityLabelEdgeMap.get(label);
-                if (edgeSet == null) {
-                    arityLabelEdgeMap.put(label, edgeSet = createEdgeSet(null));
-                }
-                edgeSet.add((DefaultEdge) elem);
-            }
-            return result;
-        }
-
-        /** Adds the node to the node set and the node-edge map. */
-        public boolean addNode(Node elem) {
-            Set<DefaultEdge> edges =
-                this.nodeEdgeMap.put(elem, createEdgeSet(null));
-            assert edges == null;
-            return true;
+            return super.addEdge(elem, false, false, false);
         }
 
         /**
@@ -454,27 +636,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
          * and the label-edge maps (if it is set).
          */
         public boolean removeEdge(Edge elem) {
-            boolean result = this.edgeSet.remove(elem);
-            assert result;
-            // adapt node-edge map
-            this.nodeEdgeMap.get(elem.source()).remove(elem);
-            Node target = elem.target();
-            if (elem.source() != target) {
-                this.nodeEdgeMap.get(target).remove(elem);
-            }
-            // adapt label-edge map
-            if (this.labelEdgeMap != null) {
-                Label label = elem.label();
-                this.labelEdgeMap.get(label).remove(elem);
-            }
-            return result;
-        }
-
-        /** Removes the node from the node set and the node-edge map. */
-        public boolean removeNode(Node elem) {
-            Set<DefaultEdge> edges = this.nodeEdgeMap.remove(elem);
-            assert edges.isEmpty();
-            return true;
+            return super.removeEdge(elem, false, false, false);
         }
 
         @Override
@@ -482,6 +644,8 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
             NewDeltaGraph graph = NewDeltaGraph.this;
             graph.edgeSet = null;
             graph.nodeEdgeMap = null;
+            graph.nodeInEdgeMap = null;
+            graph.nodeOutEdgeMap = null;
             graph.labelEdgeMap = null;
             if (graph.delta == null) {
                 graph.basis = child;
@@ -507,101 +671,48 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements
             } else {
                 this.freshLabelKeys = null;
             }
+            if (graph.nodeInEdgeMap != null) {
+                this.nodeInEdgeMap =
+                    new LinkedHashMap<Node,DefaultEdgeSet>(graph.nodeInEdgeMap);
+            }
+            if (graph.nodeOutEdgeMap != null) {
+                this.nodeOutEdgeMap =
+                    new LinkedHashMap<Node,DefaultEdgeSet>(graph.nodeOutEdgeMap);
+            }
         }
 
         /**
          * Adds the edge to the edge set, the node-edge map (if it is set), and
          * the label-edge maps (if it is set).
          */
+        @Override
         public boolean addEdge(Edge elem) {
-            assert elem instanceof DefaultEdge;
-            boolean result = this.edgeSet.add((DefaultEdge) elem);
-            assert result;
-            // adapt node-edge map
             Node source = elem.source();
             Node target = elem.target();
-            DefaultEdgeSet outEdgeSet = this.nodeEdgeMap.get(source);
-            if (this.freshNodeKeys.add(source)) {
-                this.nodeEdgeMap.put(source, outEdgeSet =
-                    createEdgeSet(outEdgeSet));
-            }
-            outEdgeSet.add((DefaultEdge) elem);
-            if (source != target) {
-                DefaultEdgeSet inEdgeSet = this.nodeEdgeMap.get(target);
-                if (this.freshNodeKeys.add(target)) {
-                    this.nodeEdgeMap.put(target, inEdgeSet =
-                        createEdgeSet(inEdgeSet));
-                }
-                inEdgeSet.add((DefaultEdge) elem);
-            }
-            // adapt label-edge map
-            if (this.labelEdgeMap != null) {
-                Label label = elem.label();
-                DefaultEdgeSet edgeSet = this.labelEdgeMap.get(label);
-                if (this.freshLabelKeys.add(label)) {
-                    this.labelEdgeMap.put(label, edgeSet =
-                        createEdgeSet(edgeSet));
-                }
-                edgeSet.add((DefaultEdge) elem);
-            }
-            return result;
-        }
-
-        /** Adds the node to the node set and the node-edge map. */
-        public boolean addNode(Node elem) {
-            DefaultEdgeSet edges =
-                this.nodeEdgeMap.put(elem, createEdgeSet(null));
-            assert edges == null : String.format(
-                "Node %s already has incident edges %s", elem, edges);
-            this.freshNodeKeys.add(elem);
-            return true;
+            boolean refreshSource = this.freshNodeKeys.add(source);
+            boolean refreshTarget =
+                source != target && this.freshNodeKeys.add(target);
+            boolean refreshLabel =
+                this.freshLabelKeys != null
+                    && this.freshLabelKeys.add(elem.label());
+            return super.addEdge(elem, refreshSource, refreshTarget,
+                refreshLabel);
         }
 
         /**
          * Removes the edge from the edge set, the node-edge map (if it is set),
          * and the label-edge maps (if it is set).
          */
+        @Override
         public boolean removeEdge(Edge elem) {
-            boolean result = this.edgeSet.remove(elem);
-            assert result;
-            // adapt node-edge map
             Node source = elem.source();
             Node target = elem.target();
-            DefaultEdgeSet outEdgeSet = this.nodeEdgeMap.get(source);
-            if (this.freshNodeKeys.add(source)) {
-                this.nodeEdgeMap.put(source, outEdgeSet =
-                    createEdgeSet(outEdgeSet));
-            }
-            outEdgeSet.remove(elem);
-            if (source != target) {
-                DefaultEdgeSet inEdgeSet = this.nodeEdgeMap.get(target);
-                if (this.freshNodeKeys.add(target)) {
-                    this.nodeEdgeMap.put(target, inEdgeSet =
-                        createEdgeSet(inEdgeSet));
-                }
-                inEdgeSet.remove(elem);
-            }
-            // adapt label-edge map
-            if (this.labelEdgeMap != null) {
-                Label label = elem.label();
-                Map<Label,DefaultEdgeSet> labelEdgeMap = this.labelEdgeMap;
-                DefaultEdgeSet labelEdgeSet = labelEdgeMap.get(label);
-                if (this.freshLabelKeys.add(label)) {
-                    labelEdgeMap.put(label, labelEdgeSet =
-                        createEdgeSet(labelEdgeSet));
-                }
-                labelEdgeSet.remove(elem);
-            }
-            return result;
-        }
-
-        /** Removes the node from the node set and the node-edge map. */
-        public boolean removeNode(Node elem) {
-            DefaultEdgeSet edges = this.nodeEdgeMap.remove(elem);
-            assert edges.isEmpty() : String.format(
-                "Removed node %s still has incident edges %s", elem, edges);
-            this.freshNodeKeys.remove(elem);
-            return true;
+            boolean refreshSource = this.freshNodeKeys.add(source);
+            boolean refreshTarget =
+                source != target && this.freshNodeKeys.add(target);
+            boolean refreshLabel = this.freshLabelKeys.add(elem.label());
+            return super.removeEdge(elem, refreshSource, refreshTarget,
+                refreshLabel);
         }
 
         /** Auxiliary set to determine the nodes changed w.r.t. the basis. */

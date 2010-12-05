@@ -16,6 +16,7 @@
  */
 package groove.io;
 
+import groove.graph.DefaultGraph;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.Node;
@@ -48,7 +49,7 @@ public class Aut extends AbstractXml {
     @Override
     protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(URL url)
         throws IOException {
-        Graph resultGraph = getGraphFactory().newGraph();
+        Graph resultGraph = createGraph();
         InputStream in = url.openStream();
         Map<String,Node> resultMap = Converter.autToGraph(in, resultGraph);
         in.close();
@@ -59,5 +60,10 @@ public class Aut extends AbstractXml {
         PrintWriter out = new PrintWriter(file);
         Converter.graphToAut(graph, out);
         out.close();
+    }
+
+    /** Callback factory method to create the underlying graph. */
+    private Graph createGraph() {
+        return new DefaultGraph();
     }
 }
