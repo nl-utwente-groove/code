@@ -20,14 +20,12 @@ package groove.graph;
 import groove.rel.RelationEdge;
 import groove.util.AbstractCacheHolder;
 import groove.util.Groove;
-import groove.util.SetView;
 
 import java.lang.ref.Reference;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -109,7 +107,7 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
      * and looks up the required set in the image for <tt>node</tt>.
      */
     public Set<? extends Edge> edgeSet(Node node) {
-        Set<? extends Edge> result = nodeEdgeMap().get(node);
+        Set<? extends Edge> result = getCache().getNodeEdgeMap().get(node);
         if (result == null) {
             return Collections.emptySet();
         } else {
@@ -118,55 +116,38 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
     }
 
     /**
-     * This implementation returns a set view on the incident edge set,
-     * selecting just those edges of which the source equals {@code node}.
+     * This implementation retrieves the node-to-out-edges mapping from the cache,
+     * and looks up the required set in the image for <tt>node</tt>.
      */
     public Set<? extends Edge> outEdgeSet(final Node node) {
-        return new SetView<Edge>(edgeSet(node)) {
-            @Override
-            public boolean approves(Object obj) {
-                return obj instanceof Edge
-                    && ((Edge) obj).source().equals(node);
-            }
-        };
+        Set<? extends Edge> result = getCache().getNodeOutEdgeMap().get(node);
+        if (result == null) {
+            return Collections.emptySet();
+        } else {
+            return Collections.unmodifiableSet(result);
+        }
     }
 
     /**
-     * This implementation returns a set view on the incident edge set,
-     * selecting just those edges of which the target equals {@code node}.
+     * This implementation retrieves the node-to-in-edges mapping from the cache,
+     * and looks up the required set in the image for <tt>node</tt>.
      */
     public Set<? extends Edge> inEdgeSet(final Node node) {
-        return new SetView<Edge>(edgeSet(node)) {
-            @Override
-            public boolean approves(Object obj) {
-                return obj instanceof Edge
-                    && ((Edge) obj).target().equals(node);
-            }
-        };
-    }
-
-    /**
-     * Returns a mapping from nodes to sets of edges of this graph.
-     */
-    protected Map<Node,? extends Set<? extends Edge>> nodeEdgeMap() {
-        return Collections.unmodifiableMap(getCache().getNodeEdgeMap());
+        Set<? extends Edge> result = getCache().getNodeInEdgeMap().get(node);
+        if (result == null) {
+            return Collections.emptySet();
+        } else {
+            return Collections.unmodifiableSet(result);
+        }
     }
 
     public Set<? extends Edge> labelEdgeSet(Label label) {
-        Set<? extends Edge> result = getLabelEdgeMap().get(label);
+        Set<? extends Edge> result = getCache().getLabelEdgeMap().get(label);
         if (result != null) {
             return Collections.unmodifiableSet(result);
         } else {
             return Collections.emptySet();
         }
-    }
-
-    /**
-     * Returns the array of label-to-edge maps from the graph cache.
-     * @return the array of label-to-edge maps from the graph cache
-     */
-    protected Map<Label,? extends Set<? extends Edge>> getLabelEdgeMap() {
-        return getCache().getLabelEdgeMap();
     }
 
     public GraphInfo getInfo() {

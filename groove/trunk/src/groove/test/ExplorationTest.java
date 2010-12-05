@@ -85,9 +85,9 @@ public class ExplorationTest {
     /** Tests the append sample. */
     @Test
     public void testAppend() {
-        testExploration("append.gps", "append-2-list-5", null, 145, 256);
         testExploration("append.gps", "append-2-list-5", "bfs", 145, 256);
         testExploration("append.gps", "append-2-list-5", "dfs", 145, 256);
+        testExploration("append.gps", "append-2-list-5", null, 145, 256);
         testExploration("append.gps", "append-2-list-5", "rete", 145, 256);
         testExploration("append.gps", "append-2-list-5", "cnbound:20", 62, 88,
             13);

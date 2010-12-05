@@ -16,8 +16,6 @@
  */
 package groove.graph;
 
-import groove.view.FormatException;
-
 import java.util.Collection;
 
 /**
@@ -40,18 +38,6 @@ public interface Graph extends GraphShape, DeltaTarget {
      * Factory method: returns a fresh, empty graph.
      */
     Graph newGraph();
-
-    /**
-     * Factory method: return a fresh graph from the given graph. Throws a
-     * {@link FormatException} if there is a compatibility problem.
-     * @param graph the current graph
-     * @return the new graph
-     * @throws FormatException if there is a compatibility problem.
-     */
-    Graph newGraph(Graph graph) throws FormatException;
-
-    // ------------------------- Commands: Factory methods
-    // ---------------------------
 
     /**
      * Generates a fresh node and adds it to this graph.

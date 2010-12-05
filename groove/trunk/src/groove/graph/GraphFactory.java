@@ -16,7 +16,6 @@
  */
 package groove.graph;
 
-import groove.view.FormatException;
 
 /**
  * Abstract Factory interface for graph-related classes. Objects implementing
@@ -61,18 +60,6 @@ public abstract class GraphFactory {
             }
 
             @Override
-            public Graph newGraph(Graph graph) {
-                Graph result = null;
-                try {
-                    result = prototypeGraph.newGraph(graph);
-                } catch (FormatException gfe) {
-                    result = prototypeGraph.newGraph();
-                    gfe.printStackTrace();
-                }
-                return result;
-            }
-
-            @Override
             public Morphism newMorphism(Graph dom, Graph cod) {
                 return prototypeMorphism.createMorphism(dom, cod);
             }
@@ -93,9 +80,6 @@ public abstract class GraphFactory {
      * Creates a new, empty <tt>Graph</tt> instance.
      */
     public abstract Graph newGraph();
-
-    /** Creates a new graph as a copy of an existing one. */
-    public abstract Graph newGraph(Graph graph);
 
     /**
      * Creates a new, empty <tt>Morphism</tt> between two given <tt>Graph</tt>
