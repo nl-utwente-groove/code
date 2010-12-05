@@ -25,7 +25,7 @@ import groove.util.SetView;
 import java.lang.ref.Reference;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -55,11 +55,27 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
     }
 
     /**
+     * Defers the containment question to {@link #nodeSet()}
+     */
+    public boolean containsNode(Node elem) {
+        return nodeSet().contains(elem);
+    }
+
+    /**
+     * Defers the containment question to {@link #edgeSet()}
+     */
+    public boolean containsEdge(Edge elem) {
+        return edgeSet().contains(elem);
+    }
+
+    /**
      * Implements the method by distinguishing between nodes and edges, and
      * deferring the containment question to <tt>nodeSet()</tt> respectively
      * <tt>edgeSet()</tt>
      */
+    @Deprecated
     public boolean containsElement(Element elem) {
+        assert !(elem instanceof RelationEdge);
         if (elem instanceof Node) {
             return nodeSet().contains(elem);
         } else if (elem instanceof RelationEdge) {
@@ -70,6 +86,7 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
         }
     }
 
+    @Deprecated
     public boolean containsElementSet(Collection<? extends Element> elements) {
         boolean result = true;
         Iterator<? extends Element> elemIter = elements.iterator();
@@ -177,20 +194,12 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
 
     public void setFixed() {
         if (!isFixed()) {
-            registerFixed();
+            setCacheCollectable();
             this.listeners = null;
             if (GATHER_STATISTICS) {
                 modifiableGraphCount--;
             }
         }
-    }
-
-    /**
-     * Callback method to register that the graph should be set to fixed. Called
-     * from {@link #setFixed()} if the graph is actually currently not fixed.
-     */
-    protected void registerFixed() {
-        setCacheCollectable();
     }
 
     @Override
@@ -218,24 +227,24 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
         if (isFixed()) {
             return Collections.<GraphShapeListener>emptySet().iterator();
         } else {
-            return this.listeners.keySet().iterator();
+            return this.listeners.iterator();
         }
     }
 
     /**
      * Adds a graph listener to this graph.
      */
-    public synchronized void addGraphListener(GraphShapeListener listener) {
+    public void addGraphListener(GraphShapeListener listener) {
         if (this.listeners != null) {
-            this.listeners.put(listener, null);
+            this.listeners.add(listener);
         }
     }
 
     /**
      * Removes a graph listener from this graph.
      */
-    public synchronized void removeGraphListener(GraphShapeListener listener) {
-        if (!isFixed()) {
+    public void removeGraphListener(GraphShapeListener listener) {
+        if (this.listeners != null) {
             this.listeners.remove(listener);
         }
     }
@@ -305,8 +314,13 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
      * Set of {@link GraphListener} s to be identified of changes in this graph.
      * Set to <tt>null</tt> when the graph is fixed.
      */
-    protected Map<GraphShapeListener,Object> listeners =
-        new HashMap<GraphShapeListener,Object>();
+    private Set<GraphShapeListener> listeners =
+        new HashSet<GraphShapeListener>();
+
+    /**
+     * Map in which varies kinds of data can be stored.
+     */
+    private GraphInfo graphInfo;
 
     /**
      * Returns the number of graphs created and never fixed.
@@ -330,10 +344,6 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
         return "Nodes: " + graph.nodeSet() + "; Edges: " + graph.edgeSet();
     }
 
-    /**
-     * Map in which varies kinds of data can be stored.
-     */
-    private GraphInfo graphInfo;
     /**
      * Private copy of the static variable to allow compiler optimization.
      */

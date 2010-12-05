@@ -64,6 +64,18 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
     }
 
     @Override
+    public boolean containsNode(Node node) {
+        return this.edgeMap.containsKey(node);
+    }
+
+    @Override
+    public boolean containsEdge(Edge edge) {
+        Set<Edge> edgeSet = this.edgeMap.get(edge.source());
+        return edgeSet != null && edgeSet.contains(edge);
+    }
+
+    @Override
+    @Deprecated
     public boolean containsElement(Element elem) {
         if (elem instanceof Node) {
             return this.edgeMap.containsKey(elem);
@@ -88,8 +100,7 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
     }
 
     public Set<? extends Node> nodeSet() {
-        Set<Node> result = this.unmodifiableNodeSet;
-        return result;
+        return Collections.unmodifiableSet(this.edgeMap.keySet());
     }
 
     @Override
@@ -206,13 +217,4 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
      * @invariant <tt>edgeMap: Node -> 2^Edge</tt>
      */
     private final Map<Node,Set<Edge>> edgeMap = new HashMap<Node,Set<Edge>>();
-    /**
-     * Alias of the set of nodes in this Graph.
-     */
-    private final Set<Node> nodeSet = this.edgeMap.keySet();
-    /**
-     * An unmodifieable, shared view on the node set of this graph.
-     */
-    private final Set<Node> unmodifiableNodeSet =
-        Collections.unmodifiableSet(this.nodeSet);
 }

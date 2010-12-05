@@ -236,7 +236,7 @@ class Edge2SearchItem extends AbstractSearchItem {
 
         /** Tests if the (uniquely determined) edge image can be used. */
         boolean isImageCorrect(Edge image) {
-            return this.host.containsElement(image);
+            return this.host.containsEdge(image);
         }
 
         /**

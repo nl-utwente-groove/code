@@ -1562,7 +1562,7 @@ public class DefaultRuleView implements RuleView {
                     // test if the type is deleted
                     // note that (in case of nested levels) the type edge
                     // may actually fail to exist in the lhs
-                    if (this.lhs.containsElement(lhsEdge)
+                    if (this.lhs.containsEdge(lhsEdge)
                         && !this.ruleMorph.containsKey(lhsEdge)) {
                         if (!lhsTyping.isSharp(lhsNode)) {
                             errors.add(new FormatError(

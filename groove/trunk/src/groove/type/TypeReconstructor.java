@@ -199,9 +199,9 @@ public class TypeReconstructor {
     }
 
     private Node getNodeType(Node node) {
-        if (this.typeGraph.containsElement(node)) {
+        if (this.typeGraph.containsNode(node)) {
             return node;
-        } else if (this.typeGraph.containsElement(this.nodeTypes.getNode(node))) {
+        } else if (this.typeGraph.containsNode(this.nodeTypes.getNode(node))) {
             return this.nodeTypes.getNode(node);
         } else {
             // System.err.println("Node not found! " +

@@ -572,7 +572,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
             if (o instanceof GraphTransition) {
                 GraphTransition transition = (GraphTransition) o;
                 GraphState source = transition.source();
-                return (containsElement(source) && source.containsTransition(transition));
+                return (containsNode(source) && source.containsTransition(transition));
             } else {
                 return false;
             }

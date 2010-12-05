@@ -229,10 +229,10 @@ public class GraphTest {
         int oldNodeCount = this.matchDom[0].nodeCount();
         int oldEdgeCount = this.matchDom[0].edgeCount();
         Node newNode = this.matchDom[0].addNode();
-        this.matchDom[0].containsElement(newNode);
+        this.matchDom[0].containsNode(newNode);
         assertEquals(oldNodeCount + 1, this.matchDom[0].nodeCount());
         assertEquals(oldEdgeCount, this.matchDom[0].edgeCount());
-        assertTrue(this.graph.containsElement(this.graph.addNode()));
+        assertTrue(this.graph.containsNode(this.graph.addNode()));
     }
 
     /*
@@ -251,10 +251,10 @@ public class GraphTest {
         newEdge.source().equals(sourceNode);
         newEdge.target().equals(targetNode);
         newEdge.label().equals(label);
-        this.matchDom[0].containsElement(newEdge);
+        this.matchDom[0].containsEdge(newEdge);
         assertEquals(oldNodeCount, this.matchDom[0].nodeCount());
         assertEquals(oldEdgeCount + 1, this.matchDom[0].edgeCount());
-        assertTrue(this.graph.containsElement(this.graph.addEdge(this.aTarget,
+        assertTrue(this.graph.containsEdge(this.graph.addEdge(this.aTarget,
             this.cLabel, this.aTarget)));
     }
 
@@ -361,29 +361,13 @@ public class GraphTest {
 
     @Test
     final public void testContainsElement() {
-        assertTrue(this.graph.containsElement(this.source));
-        assertTrue(this.graph.containsElement(this.aEdge));
-        assertFalse(this.graph.containsElement(DefaultNode.createNode()));
-        assertFalse(this.graph.containsElement(DefaultEdge.createEdge(
+        assertTrue(this.graph.containsNode(this.source));
+        assertTrue(this.graph.containsEdge(this.aEdge));
+        assertFalse(this.graph.containsNode(DefaultNode.createNode()));
+        assertFalse(this.graph.containsEdge(DefaultEdge.createEdge(
             this.aTarget, this.cLabel, this.aTarget)));
-        assertTrue(this.graph.containsElement(DefaultEdge.createEdge(
-            this.source, this.aLabel, this.aTarget)));
-    }
-
-    @Test
-    final public void testContainsElementSet() {
-        Set<Element> elementSet = new HashSet<Element>();
-        assertTrue(this.graph.containsElementSet(elementSet));
-        elementSet.add(this.source);
-        assertTrue(this.graph.containsElementSet(elementSet));
-        elementSet.add(this.aEdge);
-        assertTrue(this.graph.containsElementSet(elementSet));
-        elementSet.add(DefaultEdge.createEdge(this.source, this.bLabel,
-            this.bTarget));
-        assertTrue(this.graph.containsElementSet(elementSet));
-        elementSet.add(DefaultEdge.createEdge(this.aTarget, this.cLabel,
-            this.bTarget));
-        assertFalse(this.graph.containsElementSet(elementSet));
+        assertTrue(this.graph.containsEdge(DefaultEdge.createEdge(this.source,
+            this.aLabel, this.aTarget)));
     }
 
     /*
@@ -394,7 +378,7 @@ public class GraphTest {
         assertFalse(this.graph.addNode(this.source));
         Node newNode = DefaultNode.createNode();
         assertTrue(this.graph.addNode(newNode));
-        assertTrue(this.graph.containsElement(newNode));
+        assertTrue(this.graph.containsNode(newNode));
     }
 
     /*
@@ -408,11 +392,11 @@ public class GraphTest {
         Edge newEdge =
             DefaultEdge.createEdge(this.aTarget, this.cLabel, this.bTarget);
         assertTrue(this.graph.addEdge(newEdge));
-        assertTrue(this.graph.containsElement(newEdge));
+        assertTrue(this.graph.containsEdge(newEdge));
         Node newNode = DefaultNode.createNode();
         newEdge = DefaultEdge.createEdge(this.bTarget, this.cLabel, newNode);
         assertTrue(this.graph.addEdge(newEdge));
-        assertTrue(this.graph.containsElement(newNode));
+        assertTrue(this.graph.containsNode(newNode));
     }
 
     @Test
@@ -424,7 +408,7 @@ public class GraphTest {
         Node newNode = DefaultNode.createNode();
         nodeSet.add(newNode);
         assertTrue(this.graph.addNodeSet(nodeSet));
-        assertTrue(this.graph.containsElement(newNode));
+        assertTrue(this.graph.containsNode(newNode));
     }
 
     @Test
@@ -441,7 +425,7 @@ public class GraphTest {
             DefaultEdge.createEdge(this.bTarget, this.cLabel, newNode);
         edgeSet.add(newEdge);
         assertTrue(this.graph.addEdgeSet(edgeSet));
-        assertTrue(this.graph.containsElement(newNode));
+        assertTrue(this.graph.containsNode(newNode));
     }
 
     @Test
@@ -451,8 +435,8 @@ public class GraphTest {
         this.graph.addNode(newNode);
         assertTrue(this.graph.removeNode(newNode));
         assertTrue(this.graph.removeNode(this.source));
-        assertFalse(this.graph.containsElement(this.source));
-        assertFalse(this.graph.containsElement(this.aEdge));
+        assertFalse(this.graph.containsNode(this.source));
+        assertFalse(this.graph.containsEdge(this.aEdge));
         assertFalse(this.graph.removeNode(this.source));
     }
 
@@ -464,8 +448,8 @@ public class GraphTest {
         this.graph.addEdge(newEdge);
         assertTrue(this.graph.removeEdge(newEdge));
         assertTrue(this.graph.removeEdge(this.aEdge));
-        assertTrue(this.graph.containsElement(this.source));
-        assertFalse(this.graph.containsElement(this.aEdge));
+        assertTrue(this.graph.containsNode(this.source));
+        assertFalse(this.graph.containsEdge(this.aEdge));
         assertFalse(this.graph.removeEdge(this.aEdge));
         assertTrue(this.graph.removeEdge(DefaultEdge.createEdge(this.source,
             this.bLabel, this.bTarget)));
@@ -480,11 +464,11 @@ public class GraphTest {
         assertFalse(this.graph.removeNodeSet(nodeSet));
         this.graph.addNode(newNode);
         assertTrue(this.graph.removeNodeSet(nodeSet));
-        assertFalse(this.graph.containsElement(newNode));
+        assertFalse(this.graph.containsNode(newNode));
         nodeSet.add(this.source);
         assertTrue(this.graph.removeNodeSet(nodeSet));
-        assertFalse(this.graph.containsElement(this.source));
-        assertFalse(this.graph.containsElement(this.aEdge));
+        assertFalse(this.graph.containsNode(this.source));
+        assertFalse(this.graph.containsEdge(this.aEdge));
     }
 
     @Test
@@ -500,8 +484,8 @@ public class GraphTest {
             this.bTarget));
         edgeSet.add(this.aEdge);
         assertTrue(this.graph.removeEdgeSet(edgeSet));
-        assertFalse(this.graph.containsElement(this.bEdge));
-        assertFalse(this.graph.containsElement(this.aEdge));
+        assertFalse(this.graph.containsEdge(this.bEdge));
+        assertFalse(this.graph.containsEdge(this.aEdge));
         assertFalse(this.graph.removeEdgeSet(edgeSet));
     }
 

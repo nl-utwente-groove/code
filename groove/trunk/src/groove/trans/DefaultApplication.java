@@ -165,7 +165,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
         Set<Edge> sourceEdges = new HashSet<Edge>(this.source.edgeSet());
         for (Node node : sourceNodes) {
             Node nodeImage = mergeMap.getNode(node);
-            if (nodeImage != null && getTarget().containsElement(nodeImage)) {
+            if (nodeImage != null && getTarget().containsNode(nodeImage)) {
                 result.putNode(node, nodeImage);
             }
         }
@@ -173,7 +173,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
         for (Edge edge : sourceEdges) {
             if (!erasedEdges.contains(edge)) {
                 Edge edgeImage = mergeMap.mapEdge(edge);
-                if (edgeImage != null && getTarget().containsElement(edgeImage)) {
+                if (edgeImage != null && getTarget().containsEdge(edgeImage)) {
                     result.putEdge(edge, edgeImage);
                 }
             }
@@ -334,7 +334,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
                     // already
                     // in the target, so we do not have to add it
                     if (image != null
-                        && (erasedEdges.contains(image) || !this.source.containsElement(image))) {
+                        && (erasedEdges.contains(image) || !this.source.containsEdge(image))) {
                         // maybe we added the edge already, due to another
                         // merged node
                         if (addedEdges.add(image)) {
@@ -386,7 +386,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
         // first add the (pre-computed) simple creator edge images
         for (Edge image : getEvent().getSimpleCreatedEdges()) {
             // only add if not already in the source or just erased
-            if (!this.source.containsElement(image)
+            if (!this.source.containsEdge(image)
                 || getErasedEdges().contains(image)) {
                 addEdge(target, image);
             }
@@ -510,7 +510,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
     protected void addEdge(DeltaTarget target, Edge edge) {
         Node targetNode = edge.target();
         if (targetNode instanceof ValueNode
-            && (!this.source.containsElement(targetNode) && !getAddedValueNodes().contains(
+            && (!this.source.containsNode(targetNode) && !getAddedValueNodes().contains(
                 targetNode)) || this.removedValueNodes != null
             && this.removedValueNodes.contains(targetNode)) {
             target.addNode(targetNode);

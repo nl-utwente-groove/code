@@ -115,10 +115,24 @@ public interface GraphShape extends java.io.Serializable, Fixable {
     boolean isFixed();
 
     /**
+     * Tests whether this graph contains a given node.
+     * @param node the node of which the presence is tested.
+     */
+    boolean containsNode(Node node);
+
+    /**
+     * Tests whether this graph contains a given edge.
+     * @param edge the edge of which the presence is tested.
+     */
+    boolean containsEdge(Edge edge);
+
+    /**
      * Tests whether this graph contains a given element.
      * @param elem the graph element of which the presence is tested.
      * @ensure <tt>result == (elem \in nodeSet() \cup edgeSet())</tt>
+     * @deprecated use {@link #containsNode(Node)} or {@link #containsEdge(Edge)}
      */
+    @Deprecated
     boolean containsElement(Element elem);
 
     /**
@@ -127,6 +141,7 @@ public interface GraphShape extends java.io.Serializable, Fixable {
      * @require <tt>elements: 2^Element</tt>
      * @ensure <tt>result == (elements \subseteq nodeSet() \cup edgeSet())</tt>
      */
+    @Deprecated
     boolean containsElementSet(Collection<? extends Element> elements);
 
     // -------------------- Commands -----------------

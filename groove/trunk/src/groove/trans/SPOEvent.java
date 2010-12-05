@@ -232,7 +232,7 @@ final public class SPOEvent extends
         boolean correct = true;
         Iterator<Edge> edgeImageIter = anchorMap.edgeMap().values().iterator();
         while (correct && edgeImageIter.hasNext()) {
-            correct = host.containsElement(edgeImageIter.next());
+            correct = host.containsEdge(edgeImageIter.next());
         }
         if (correct) {
             Iterator<Node> nodeImageIter =
@@ -241,7 +241,7 @@ final public class SPOEvent extends
                 Node nodeImage = nodeImageIter.next();
                 correct =
                     nodeImage instanceof ValueNode
-                        || host.containsElement(nodeImage);
+                        || host.containsNode(nodeImage);
             }
         }
         return correct;
