@@ -19,7 +19,6 @@ package groove.match.rete;
 import groove.graph.Edge;
 import groove.graph.Node;
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * A checker node which is the result of amalgamating the
@@ -58,19 +57,19 @@ public class CompositeConditionChecker extends ConditionChecker {
     @Override
     public void receive(DisconnectedSubgraphChecker antecedent,
             ReteMatch match, Action action) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void receive(EdgeCheckerNode antecedent, int repeatIndex, Edge mu,
             Action action) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void receive(NodeCheckerNode antecedent, int repeatIndex, Node node,
             Action action) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     public void matchDeminoRemovedFromConflictSet(ReteMatch m) {

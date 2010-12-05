@@ -19,7 +19,6 @@ package groove.match.rete;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * @author Arash Jalali
@@ -93,6 +92,6 @@ public class RootNode extends ReteNetworkNode {
     @Override
     public Element[] getPattern() {
         // this method is not supposed to be called
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 }
