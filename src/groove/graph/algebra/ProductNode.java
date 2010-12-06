@@ -16,7 +16,8 @@
  */
 package groove.graph.algebra;
 
-import groove.graph.DefaultNode;
+import groove.graph.AbstractNode;
+import groove.trans.RuleNode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,7 +31,7 @@ import java.util.List;
  * @author Harmen Kastenberg
  * @version $Revision 1.0$ $Date: 2008-02-12 15:15:32 $
  */
-public class ProductNode extends DefaultNode {
+public class ProductNode extends AbstractNode implements RuleNode {
     /**
      * Returns a fresh product node with a given node number and arity. The
      * arguments are initially set to <code>null</code>.
@@ -48,16 +49,7 @@ public class ProductNode extends DefaultNode {
 
     /**
      * This class does not guarantee unique representatives for the same number,
-     * so we need to override {@link #hashCode()} and {@link #equals(Object)}.
-     */
-    @Override
-    protected int computeHashCode() {
-        return getNumber() ^ getClass().hashCode();
-    }
-
-    /**
-     * This class does not guarantee unique representatives for the same number,
-     * so we need to override {@link #hashCode()} and {@link #equals(Object)}.
+     * so we need to override {@link #equals(Object)}.
      */
     @Override
     public boolean equals(Object obj) {
@@ -98,8 +90,8 @@ public class ProductNode extends DefaultNode {
     }
 
     @Override
-    public String toString() {
-        return "p" + getNumber();
+    public String getToStringPrefix() {
+        return "p";
     }
 
     /**

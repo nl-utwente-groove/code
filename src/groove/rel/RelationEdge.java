@@ -31,7 +31,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RelationEdge extends AbstractEdge<Node,Label,Node> {
+public final class RelationEdge extends AbstractEdge<Node,Label,Node> {
     /**
      * Constructs a relation edge of a given type, with associated value
      * <code>null</code>.
@@ -78,9 +78,6 @@ public class RelationEdge extends AbstractEdge<Node,Label,Node> {
             && isLabelEqual((Edge) obj) && isValueEqual((RelationEdge) obj);
     }
 
-    /**
-     * Tests for instance of {@link RelationType}
-     */
     @Override
     protected boolean isTypeEqual(Object obj) {
         return obj instanceof RelationEdge;
