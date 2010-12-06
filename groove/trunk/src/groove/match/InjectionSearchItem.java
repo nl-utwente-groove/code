@@ -16,8 +16,8 @@
  */
 package groove.match;
 
-import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
+import groove.trans.RuleNode;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -36,10 +36,10 @@ public class InjectionSearchItem extends AbstractSearchItem {
      * @param node1 the first node that should be matched injectively
      * @param node2 the second node that should be matched injectively
      */
-    public InjectionSearchItem(Node node1, Node node2) {
+    public InjectionSearchItem(RuleNode node1, RuleNode node2) {
         this.node1 = node1;
         this.node2 = node2;
-        this.neededNodes = new HashSet<Node>();
+        this.neededNodes = new HashSet<RuleNode>();
         this.neededNodes.add(node1);
         this.neededNodes.add(node2);
     }
@@ -50,13 +50,13 @@ public class InjectionSearchItem extends AbstractSearchItem {
      * in a given set have been matched injectively.
      * @param nodes the nodes that should be matched injectively
      */
-    public InjectionSearchItem(Collection<? extends Node> nodes) {
+    public InjectionSearchItem(Collection<RuleNode> nodes) {
         assert nodes.size() == 2 : String.format(
             "Injection %s should have size 2", nodes);
-        Iterator<? extends Node> nodeIter = nodes.iterator();
+        Iterator<RuleNode> nodeIter = nodes.iterator();
         this.node1 = nodeIter.next();
         this.node2 = nodeIter.next();
-        this.neededNodes = new HashSet<Node>(nodes);
+        this.neededNodes = new HashSet<RuleNode>(nodes);
     }
 
     public InjectionRecord getRecord(Search matcher) {
@@ -68,7 +68,7 @@ public class InjectionSearchItem extends AbstractSearchItem {
      * injectivity.
      */
     @Override
-    public Collection<Node> needsNodes() {
+    public Collection<RuleNode> needsNodes() {
         return this.neededNodes;
     }
 
@@ -95,13 +95,13 @@ public class InjectionSearchItem extends AbstractSearchItem {
     /**
      * First node which may not be merged.
      */
-    final Node node1;
+    final RuleNode node1;
     /**
      * Second node which may not be merged.
      */
-    final Node node2;
+    final RuleNode node2;
     /** Collection consisting of <code>node1</code> and <code>node2</code>. */
-    private final Collection<Node> neededNodes;
+    private final Collection<RuleNode> neededNodes;
     /** Node index (in the result) of {@link #node1}. */
     int node1Ix;
     /** Node index (in the result) of {@link #node2}. */

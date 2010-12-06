@@ -17,15 +17,15 @@
 package groove.match;
 
 import groove.graph.Edge;
-import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
-import groove.rel.VarNodeEdgeHashMap;
-import groove.rel.VarNodeEdgeMap;
+import groove.rel.RuleToStateHashMap;
+import groove.rel.RuleToStateMap;
 import groove.rel.VarSupport;
 import groove.trans.AbstractCondition;
 import groove.trans.Condition;
+import groove.trans.RuleGraphMap;
+import groove.trans.RuleNode;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -54,7 +54,7 @@ class ConditionSearchItem extends AbstractSearchItem {
     }
 
     @Override
-    public Collection<Node> needsNodes() {
+    public Collection<RuleNode> needsNodes() {
         return this.neededNodes;
     }
 
@@ -69,8 +69,8 @@ class ConditionSearchItem extends AbstractSearchItem {
     }
 
     public void activate(SearchPlanStrategy strategy) {
-        this.nodeIxMap = new HashMap<Node,Integer>();
-        for (Node node : this.neededNodes) {
+        this.nodeIxMap = new HashMap<RuleNode,Integer>();
+        for (RuleNode node : this.neededNodes) {
             this.nodeIxMap.put(node, strategy.getNodeIx(node));
         }
         this.varIxMap = new HashMap<LabelVar,Integer>();
@@ -93,13 +93,13 @@ class ConditionSearchItem extends AbstractSearchItem {
     /** The graph condition that should be matched by this search item. */
     final Condition condition;
     /** The root map of the graph condition. */
-    private final NodeEdgeMap rootMap;
+    private final RuleGraphMap rootMap;
     /** The source nodes of the root map. */
-    private final Set<Node> neededNodes;
+    private final Set<RuleNode> neededNodes;
     /** The variables occurring in edges of the root map. */
     private final Set<LabelVar> neededVars;
     /** Mapping from the needed nodes to indices in the matcher. */
-    Map<Node,Integer> nodeIxMap;
+    Map<RuleNode,Integer> nodeIxMap;
     /** Mapping from the needed nodes to indices in the matcher. */
     Map<LabelVar,Integer> varIxMap;
 
@@ -114,8 +114,8 @@ class ConditionSearchItem extends AbstractSearchItem {
 
         @Override
         boolean set() {
-            VarNodeEdgeMap contextMap = new VarNodeEdgeHashMap();
-            for (Map.Entry<Node,Integer> nodeIxEntry : ConditionSearchItem.this.nodeIxMap.entrySet()) {
+            RuleToStateMap contextMap = new RuleToStateHashMap();
+            for (Map.Entry<RuleNode,Integer> nodeIxEntry : ConditionSearchItem.this.nodeIxMap.entrySet()) {
                 contextMap.putNode(nodeIxEntry.getKey(),
                     this.search.getNode(nodeIxEntry.getValue()));
             }

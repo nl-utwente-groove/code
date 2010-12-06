@@ -18,7 +18,7 @@ package groove.trans;
 
 import groove.graph.Edge;
 import groove.graph.Node;
-import groove.rel.VarNodeEdgeMap;
+import groove.rel.RuleToStateMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,7 +33,7 @@ import java.util.Set;
  */
 public class CompositeMatch implements Match, Cloneable {
     /** Constructs a match wrapping a given element map. */
-    public CompositeMatch(VarNodeEdgeMap elementMap) {
+    public CompositeMatch(RuleToStateMap elementMap) {
         this.elementMap = elementMap;
         this.subMatches = new java.util.LinkedHashSet<Match>();
     }
@@ -44,7 +44,7 @@ public class CompositeMatch implements Match, Cloneable {
     }
 
     /** Returns the element map constituting the match. */
-    public VarNodeEdgeMap getElementMap() {
+    public RuleToStateMap getElementMap() {
         return this.elementMap;
     }
 
@@ -149,5 +149,5 @@ public class CompositeMatch implements Match, Cloneable {
     /** The (pre-computed) hash code of this match. */
     private int hashCode;
     /** The map constituting the match. */
-    private final VarNodeEdgeMap elementMap;
+    private final RuleToStateMap elementMap;
 }

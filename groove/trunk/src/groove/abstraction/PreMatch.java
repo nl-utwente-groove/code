@@ -21,10 +21,12 @@ import groove.graph.Graph;
 import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
+import groove.rel.RuleToStateMap;
 import groove.trans.Rule;
+import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
+import groove.trans.RuleNode;
 
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -92,7 +94,7 @@ public final class PreMatch {
         assert host instanceof Shape : "Cannot use abstract methods on non-abstract graphs.";
 
         Shape shape = (Shape) host;
-        NodeEdgeMap map = match.getElementMap();
+        RuleToStateMap map = match.getElementMap();
 
         // Since we have non-injective matching of the LHS of the rule
         // we need to check if the multiplicities are respected. 
@@ -103,7 +105,7 @@ public final class PreMatch {
         for (Node node : map.nodeMap().values()) {
             ShapeNode nodeS = (ShapeNode) node;
             Multiplicity nSMult = shape.getNodeMult(nodeS);
-            Set<Node> nodesG = Util.getReverseNodeMap(map, nodeS);
+            Set<RuleNode> nodesG = Util.getReverseNodeMap(map, nodeS);
             if (!Multiplicity.getNodeSetMult(nodesG).isAtMost(nSMult)) {
                 // Violation of node multiplicity.
                 complyToNodeMult = false;
@@ -153,17 +155,18 @@ public final class PreMatch {
             // For all binary labels.
             outerLoop: for (Label label : Util.binaryLabelSet(shape)) {
                 // For all nodes of the LHS.
-                for (Entry<Node,Node> entry : map.nodeMap().entrySet()) {
-                    Node v = entry.getKey();
+                for (Entry<RuleNode,Node> entry : map.nodeMap().entrySet()) {
+                    RuleNode v = entry.getKey();
                     ShapeNode pV = (ShapeNode) entry.getValue();
 
                     // For all outgoing edges from the image of v. Item 2'.
                     for (Edge edge : Util.getOutEdges(shape, pV, label)) {
                         ShapeEdge e = (ShapeEdge) edge;
                         ShapeNode w = e.target();
-                        Set<Node> pInvW = Util.getReverseNodeMap(map, w);
-                        Set<Edge> vInterPInvW =
-                            Util.getIntersectEdges(lhs, v, pInvW, label);
+                        Set<RuleNode> pInvW = Util.getReverseNodeMap(map, w);
+                        Set<RuleEdge> vInterPInvW =
+                            Util.<RuleNode,RuleEdge>getIntersectEdges(lhs, v,
+                                pInvW, label);
                         Multiplicity leftMult =
                             Multiplicity.getEdgeSetMult(vInterPInvW);
 
@@ -182,8 +185,8 @@ public final class PreMatch {
                     for (Edge edge : Util.getInEdges(shape, pV, label)) {
                         ShapeEdge e = (ShapeEdge) edge;
                         ShapeNode w = e.source();
-                        Set<Node> pInvW = Util.getReverseNodeMap(map, w);
-                        Set<Edge> pInvWInterV =
+                        Set<RuleNode> pInvW = Util.getReverseNodeMap(map, w);
+                        Set<RuleEdge> pInvWInterV =
                             Util.getIntersectEdges(lhs, pInvW, v, label);
                         Multiplicity leftMult =
                             Multiplicity.getEdgeSetMult(pInvWInterV);

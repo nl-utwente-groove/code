@@ -17,8 +17,8 @@
 package groove.trans;
 
 import groove.control.CtrlAut;
+import groove.graph.DefaultGraph;
 import groove.graph.Graph;
-import groove.graph.GraphFactory;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
@@ -51,8 +51,7 @@ public class GraphGrammar extends RuleSystem {
 
     /**
      * Constructs a graph grammar on ths basis of a given production system and
-     * name. The initial graph is set to empty (created using
-     * {@link GraphFactory}).
+     * name. The initial graph is set to empty.
      * @param ruleSystem the underlying production system
      * @require <tt>ruleSystem != null</tt>
      * @ensure ruleSystem().equals(ruleSystem), gts().nodeSet().size() == 1,
@@ -79,7 +78,7 @@ public class GraphGrammar extends RuleSystem {
      */
     public Graph getStartGraph() {
         if (this.startGraph == null) {
-            setStartGraph(GraphFactory.getInstance().newGraph());
+            setStartGraph(createGraph());
         }
         return this.startGraph;
     }
@@ -166,6 +165,11 @@ public class GraphGrammar extends RuleSystem {
     public String toString() {
         return "Rule system:\n    " + super.toString() + "\nStart graph:\n    "
             + getStartGraph().toString();
+    }
+
+    /** Callback factory method to create the start graph. */
+    private Graph createGraph() {
+        return new DefaultGraph();
     }
 
     /**

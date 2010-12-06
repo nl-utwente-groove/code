@@ -18,13 +18,10 @@
 package groove.trans;
 
 import groove.control.CtrlPar;
-import groove.graph.Graph;
 import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
-import groove.graph.Morphism;
-import groove.graph.NodeEdgeMap;
 import groove.match.MatchStrategy;
-import groove.rel.VarNodeEdgeMap;
+import groove.rel.RuleToStateMap;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -62,20 +59,20 @@ public interface Rule extends Comparable<Rule>, Condition {
      * Returns the left hand side of this Rule.
      * @ensure <tt>result == morphism().source()</tt>
      */
-    public Graph lhs();
+    public RuleGraph lhs();
 
     /**
      * Returns the right hand side of this Rule.
      * @ensure <tt>result == morphism().cod()</tt>
      */
-    public Graph rhs();
+    public RuleGraph rhs();
 
     /**
      * Returns the rule morphism, which is the partial morphism from LHS to RHS.
      * @see #lhs()
      * @see #rhs()
      */
-    public Morphism getMorphism();
+    public RuleGraphMap getMorphism();
 
     /**
      * Indicates if application of this rule actually changes the host graph. If
@@ -111,7 +108,7 @@ public interface Rule extends Comparable<Rule>, Condition {
      *         <code>contextMap</code> is not compatible with the root map
      */
     public Iterator<RuleMatch> getMatchIter(GraphShape host,
-            NodeEdgeMap contextMap);
+            RuleToStateMap contextMap);
 
     /**
      * Returns the collection of all matches for a given host graph, given a
@@ -124,13 +121,13 @@ public interface Rule extends Comparable<Rule>, Condition {
      *         <code>contextMap</code> is not compatible with the root map
      */
     public Iterable<RuleMatch> getMatches(GraphShape host,
-            NodeEdgeMap contextMap);
+            RuleToStateMap contextMap);
 
     /**
      * Lazily creates and returns a matcher for rule events of this rule. The
      * matcher will try to extend anchor maps to full matches.
      */
-    public MatchStrategy<VarNodeEdgeMap> getEventMatcher();
+    public MatchStrategy<RuleToStateMap> getEventMatcher();
 
     /**
      * The lowest rule priority, which is also the default value if no explicit

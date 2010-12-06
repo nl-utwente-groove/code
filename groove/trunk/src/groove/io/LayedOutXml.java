@@ -18,7 +18,6 @@ package groove.io;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.graph.Node;
 import groove.gui.layout.LayoutMap;
@@ -43,34 +42,11 @@ public class LayedOutXml extends AbstractXml {
     /**
      * Constructs an xml (un)marshaller, based on {@link DefaultGxl}, also able
      * to deal with layout information. The graphs constructed by
-     * {@link #unmarshalGraph(File)} are as directed by the graph factory,
-     * except that layout information is also taken into account.
-     */
-    public LayedOutXml(GraphFactory factory) {
-        this(new DefaultGxl(factory));
-    }
-
-    /**
-     * Constructs an xml (un)marshaller, based on {@link DefaultGxl}, also able
-     * to deal with layout information. The graphs constructed by
      * {@link #unmarshalGraph(File)} are as directed by the default graph
      * factory, except that layout information is also taken into account.
      */
     public LayedOutXml() {
-        this(new DefaultGxl());
-    }
-
-    /**
-     * Wraps a given xml (un)marshaller so as to deal with layout information.
-     * The graphs constructed by {@link #unmarshalGraph(File)} are as directed
-     * by the given graph factory, except that layout information is also taken
-     * into account.
-     */
-    LayedOutXml(AbstractXml innerXml) {
-        super(innerXml.getGraphFactory());
-        this.marshaller = innerXml;
-        // graphXml.setGraphFactory(GraphFactory.newInstance(new
-        // DefaultGraph()));
+        this.marshaller = new DefaultGxl();
     }
 
     /** First marshals the graph; then the layout map if there is one. */

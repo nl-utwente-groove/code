@@ -23,7 +23,7 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.match.rete.ReteSearchEngine;
-import groove.rel.VarNodeEdgeMap;
+import groove.rel.RuleToStateMap;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.view.StoredGrammarView;
@@ -87,9 +87,9 @@ public class SearchEngineFactory {
      * @param ignoreNeg
      * @return an 
      */
-    public SearchEngine<? extends AbstractMatchStrategy<VarNodeEdgeMap>> getEngine(
+    public SearchEngine<? extends AbstractMatchStrategy<RuleToStateMap>> getEngine(
             boolean injective, boolean ignoreNeg) {
-        SearchEngine<? extends AbstractMatchStrategy<VarNodeEdgeMap>> result =
+        SearchEngine<? extends AbstractMatchStrategy<RuleToStateMap>> result =
             null;
         switch (this.getCurrentEngineType()) {
         case SEARCH_PLAN:
@@ -102,7 +102,7 @@ public class SearchEngineFactory {
 
     }
 
-    public SearchEngine<? extends AbstractMatchStrategy<VarNodeEdgeMap>> getEngine(
+    public SearchEngine<? extends AbstractMatchStrategy<RuleToStateMap>> getEngine(
             boolean injective) {
         return this.getEngine(injective, false);
     }

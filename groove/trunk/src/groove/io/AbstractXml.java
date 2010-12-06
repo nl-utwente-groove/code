@@ -17,7 +17,6 @@
 package groove.io;
 
 import groove.graph.Graph;
-import groove.graph.GraphFactory;
 import groove.graph.Node;
 import groove.util.Groove;
 import groove.util.Pair;
@@ -36,10 +35,6 @@ import java.util.Map;
  * @version $Revision$
  */
 public abstract class AbstractXml implements Xml<Graph> {
-    AbstractXml(GraphFactory graphFactory) {
-        this.graphFactory = graphFactory;
-    }
-
     public Graph unmarshalGraph(URL url) throws IOException {
         return unmarshalGraphMap(url).first();
     }
@@ -74,21 +69,4 @@ public abstract class AbstractXml implements Xml<Graph> {
      */
     abstract protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(URL url)
         throws IOException;
-
-    /**
-     * Changes the graph factory used for unmarshalling.
-     */
-    protected final void setGraphFactory(GraphFactory factory) {
-        this.graphFactory = factory;
-    }
-
-    /**
-     * Returns the graph factory used for unmarshalling.
-     */
-    protected final GraphFactory getGraphFactory() {
-        return this.graphFactory;
-    }
-
-    /** The graph factory for this marshaller. */
-    private GraphFactory graphFactory;
 }

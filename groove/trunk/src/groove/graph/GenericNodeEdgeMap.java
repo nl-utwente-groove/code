@@ -103,4 +103,10 @@ public interface GenericNodeEdgeMap<NS,NT,ES,ET> {
      * Removes an edge key-value pair from this map.
      */
     public abstract ET removeEdge(ES key);
+
+    /**
+     * Tests whether all keys are mapped to different elements.
+     */
+    public boolean isInjective();
+
 }

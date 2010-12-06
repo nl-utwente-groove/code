@@ -27,8 +27,8 @@ import groove.graph.NodeFactory;
 import groove.graph.algebra.ValueNode;
 import groove.rel.LabelVar;
 import groove.rel.RegExprLabel;
-import groove.rel.VarNodeEdgeHashMap;
-import groove.rel.VarNodeEdgeMap;
+import groove.rel.RuleToStateHashMap;
+import groove.rel.RuleToStateMap;
 import groove.util.CacheReference;
 import groove.util.Groove;
 
@@ -61,7 +61,7 @@ final public class SPOEvent extends
      * @param reuse if <code>true</code>, the event should store diverse data
      *        structures to optimise for reuse
      */
-    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap,
+    public SPOEvent(SPORule rule, RuleToStateMap anchorMap,
             NodeFactory nodeFactory, boolean reuse) {
         super(reference, rule, reuse);
         rule.testFixed(true);
@@ -73,7 +73,7 @@ final public class SPOEvent extends
      * Returns a map from the rule anchors to elements of the host graph. #see
      * {@link SPORule#anchor()}
      */
-    public VarNodeEdgeMap getAnchorMap() {
+    public RuleToStateMap getAnchorMap() {
         return getCache().getAnchorMap();
     }
 
@@ -90,7 +90,7 @@ final public class SPOEvent extends
      * Constructs a map from the reader nodes of the RHS that are endpoints of
      * creator edges, to the target graph nodes.
      */
-    public VarNodeEdgeMap getCoanchorMap() {
+    public RuleToStateMap getCoanchorMap() {
         return getCache().getCoanchorMap();
     }
 
@@ -166,7 +166,7 @@ final public class SPOEvent extends
     public RuleMatch getMatch(Graph host) {
         RuleMatch result = null;
         if (isCorrectFor(host)) {
-            Iterator<VarNodeEdgeMap> eventMatchMapIter =
+            Iterator<RuleToStateMap> eventMatchMapIter =
                 getRule().getEventMatcher().getMatchIter(host, getAnchorMap());
             Iterator<RuleMatch> matchIter =
                 getRule().computeMatchIter(host, eventMatchMapIter);
@@ -185,7 +185,7 @@ final public class SPOEvent extends
      */
     public boolean hasMatch(Graph host) {
         if (isCorrectFor(host)) {
-            Iterator<VarNodeEdgeMap> eventMatchMapIter =
+            Iterator<RuleToStateMap> eventMatchMapIter =
                 getRule().getEventMatcher().getMatchIter(host, getAnchorMap());
             return getRule().computeMatchIter(host, eventMatchMapIter).hasNext();
         } else {
@@ -228,7 +228,7 @@ final public class SPOEvent extends
      *         <code>host</code>
      */
     private boolean isCorrectFor(Graph host) {
-        VarNodeEdgeMap anchorMap = getAnchorMap();
+        RuleToStateMap anchorMap = getAnchorMap();
         boolean correct = true;
         Iterator<Edge> edgeImageIter = anchorMap.edgeMap().values().iterator();
         while (correct && edgeImageIter.hasNext()) {
@@ -268,15 +268,15 @@ final public class SPOEvent extends
      * Callback method to lazily compute the set of source elements that form
      * the anchor image.
      */
-    private Element[] computeAnchorImage(VarNodeEdgeMap anchorMap) {
+    private Element[] computeAnchorImage(RuleToStateMap anchorMap) {
         Element[] anchor = getRule().anchor();
         int anchorSize = anchor.length;
         Element[] result = new Element[anchor.length];
         for (int i = 0; i < anchorSize; i++) {
-            if (anchor[i] instanceof Node) {
-                result[i] = anchorMap.getNode((Node) anchor[i]);
+            if (anchor[i] instanceof RuleNode) {
+                result[i] = anchorMap.getNode((RuleNode) anchor[i]);
             } else {
-                result[i] = anchorMap.getEdge((Edge) anchor[i]);
+                result[i] = anchorMap.getEdge((RuleEdge) anchor[i]);
             }
             assert result[i] != null : String.format(
                 "No image for %s in anchor map %s", anchor[i], anchorMap);
@@ -339,7 +339,7 @@ final public class SPOEvent extends
      */
     private Set<Element> getAnchorImageSet() {
         if (this.anchorImageSet == null) {
-            NodeEdgeMap anchorMap = getAnchorMap();
+            RuleToStateMap anchorMap = getAnchorMap();
             this.anchorImageSet =
                 new HashSet<Element>(anchorMap.nodeMap().values());
             this.anchorImageSet.addAll(anchorMap.edgeMap().values());
@@ -382,9 +382,9 @@ final public class SPOEvent extends
      * {@link #computeErasedNodes()}.
      */
     void collectErasedNodes(Set<Node> result) {
-        NodeEdgeMap anchorMap = getAnchorMap();
+        RuleToStateMap anchorMap = getAnchorMap();
         // register the node erasures
-        for (Node node : getRule().getEraserNodes()) {
+        for (RuleNode node : getRule().getEraserNodes()) {
             result.add(anchorMap.getNode(node));
         }
     }
@@ -417,9 +417,9 @@ final public class SPOEvent extends
      * {@link #computeSimpleErasedEdges()}.
      */
     void collectSimpleErasedEdges(Set<Edge> result) {
-        VarNodeEdgeMap anchorMap = getAnchorMap();
-        Edge[] eraserEdges = getRule().getEraserEdges();
-        for (Edge edge : eraserEdges) {
+        RuleToStateMap anchorMap = getAnchorMap();
+        RuleEdge[] eraserEdges = getRule().getEraserEdges();
+        for (RuleEdge edge : eraserEdges) {
             Edge edgeImage = anchorMap.getEdge(edge);
             assert edgeImage != null : "Image of " + edge
                 + " cannot be deduced from " + anchorMap;
@@ -454,8 +454,8 @@ final public class SPOEvent extends
      *        if created edges have incident nodes in this set
      */
     void collectSimpleCreatedEdges(Set<Node> erasedNodes, Set<Edge> result) {
-        VarNodeEdgeMap coAnchorMap = getCoanchorMap();
-        for (Edge edge : getRule().getSimpleCreatorEdges()) {
+        RuleToStateMap coAnchorMap = getCoanchorMap();
+        for (RuleEdge edge : getRule().getSimpleCreatorEdges()) {
             Edge edgeImage = coAnchorMap.mapEdge(edge);
             if (edgeImage != null) {
                 if (erasedNodes == null
@@ -485,23 +485,23 @@ final public class SPOEvent extends
     void collectComplexCreatedEdges(Set<Node> erasedNodes,
             Iterator<Node> createdNodes, Map<Node,Node> coRootImages,
             Set<Edge> result) {
-        VarNodeEdgeMap coanchorMap = getCoanchorMap().clone();
+        RuleToStateMap coanchorMap = getCoanchorMap().clone();
         boolean hasSubRules = getRule().hasSubRules();
         // add creator node images
-        for (Node creatorNode : getRule().getCreatorNodes()) {
+        for (RuleNode creatorNode : getRule().getCreatorNodes()) {
             Node createdNode = createdNodes.next();
             coanchorMap.putNode(creatorNode, createdNode);
             if (hasSubRules) {
                 coRootImages.put(creatorNode, createdNode);
             }
         }
-        for (Map.Entry<Node,Node> coRootEntry : getRule().getCoRootMap().nodeMap().entrySet()) {
-            Node coanchor = coRootEntry.getValue();
+        for (Map.Entry<RuleNode,RuleNode> coRootEntry : getRule().getCoRootMap().nodeMap().entrySet()) {
+            RuleNode coanchor = coRootEntry.getValue();
             // do something if the coanchor is a creator edge end for which we
             // do
             // not have an image
             if (getRule().getCreatorGraph().nodeSet().contains(coanchor)
-                && !coanchorMap.containsKey(coanchor)) {
+                && !coanchorMap.containsNodeKey(coanchor)) {
                 Node coanchorImage = coRootImages.get(coRootEntry.getKey());
                 assert coanchorImage != null : String.format(
                     "Event '%s': Coroot image map %s does not contain image for coanchor root '%s'",
@@ -510,7 +510,7 @@ final public class SPOEvent extends
             }
         }
         // now compute and add the complex creator edge images
-        for (Edge edge : getRule().getComplexCreatorEdges()) {
+        for (RuleEdge edge : getRule().getComplexCreatorEdges()) {
             Edge image = coanchorMap.mapEdge(edge);
             // only add if the image exists
             if (image != null) {
@@ -732,7 +732,7 @@ final public class SPOEvent extends
         /**
          * @return Returns the anchorMap.
          */
-        public final VarNodeEdgeMap getAnchorMap() {
+        public final RuleToStateMap getAnchorMap() {
             if (this.anchorMap == null) {
                 this.anchorMap = computeAnchorMap();
             }
@@ -744,17 +744,17 @@ final public class SPOEvent extends
          * map. The resulting map contains images for the anchor and eraser
          * edges and any variables on them.
          */
-        private VarNodeEdgeMap computeAnchorMap() {
+        private RuleToStateMap computeAnchorMap() {
             Element[] anchor = getRule().anchor();
             Element[] anchorImage = getAnchorImage();
-            VarNodeEdgeMap result = createVarMap();
+            RuleToStateMap result = createVarMap();
             for (int i = 0; i < anchor.length; i++) {
                 Element key = anchor[i];
                 Element image = anchorImage[i];
-                if (key instanceof Edge) {
+                if (key instanceof RuleEdge) {
                     // store the endpoints and the variable valuations for the
                     // edges
-                    Edge edgeKey = (Edge) key;
+                    RuleEdge edgeKey = (RuleEdge) key;
                     Edge edgeImage = (Edge) image;
                     result.putNode(edgeKey.source(), edgeImage.source());
                     result.putNode(edgeKey.target(), edgeImage.target());
@@ -764,11 +764,11 @@ final public class SPOEvent extends
                     }
                     result.putEdge(edgeKey, edgeImage);
                 } else {
-                    result.putNode((Node) key, (Node) image);
+                    result.putNode((RuleNode) key, (Node) image);
                 }
             }
             // add the eraser edges
-            for (Edge eraserEdge : getRule().getEraserNonAnchorEdges()) {
+            for (RuleEdge eraserEdge : getRule().getEraserNonAnchorEdges()) {
                 Edge eraserImage = result.mapEdge(eraserEdge);
                 assert eraserImage != null : String.format(
                     "Eraser edge %s has no image in anchor map %s", eraserEdge,
@@ -782,7 +782,7 @@ final public class SPOEvent extends
          * Constructs a map from the reader nodes of the RHS that are endpoints
          * of creator edges, to the target graph nodes.
          */
-        public final VarNodeEdgeMap getCoanchorMap() {
+        public final RuleToStateMap getCoanchorMap() {
             if (this.coanchorMap == null) {
                 this.coanchorMap = computeCoanchorMap();
             }
@@ -793,16 +793,16 @@ final public class SPOEvent extends
          * Constructs a map from the reader nodes of the RHS that are endpoints
          * of creator edges, to the target graph nodes.
          */
-        private VarNodeEdgeMap computeCoanchorMap() {
-            final VarNodeEdgeMap result = createVarMap();
-            VarNodeEdgeMap anchorMap = getAnchorMap();
+        private RuleToStateMap computeCoanchorMap() {
+            final RuleToStateMap result = createVarMap();
+            RuleToStateMap anchorMap = getAnchorMap();
             NodeEdgeMap mergeMap =
                 getRule().hasMergers() ? getMergeMap() : null;
             Set<Node> erasedNodes = this.getErasedNodes();
             // add coanchor mappings for creator edge ends that are themselves
             // not creators
-            for (Map.Entry<Node,Node> creatorEntry : getRule().getCreatorMap().nodeMap().entrySet()) {
-                Node creatorKey = creatorEntry.getKey();
+            for (Map.Entry<RuleNode,RuleNode> creatorEntry : getRule().getCreatorMap().nodeMap().entrySet()) {
+                RuleNode creatorKey = creatorEntry.getKey();
                 Node creatorValue = creatorEntry.getValue();
                 if (!(creatorValue instanceof ValueNode)) {
                     creatorValue = anchorMap.getNode(creatorEntry.getValue());
@@ -851,9 +851,9 @@ final public class SPOEvent extends
          * {@link MergeMap} to improve performance.
          */
         private MergeMap computeMergeMap() {
-            VarNodeEdgeMap anchorMap = getAnchorMap();
+            RuleToStateMap anchorMap = getAnchorMap();
             MergeMap mergeMap = createMergeMap();
-            for (Map.Entry<Node,Node> ruleMergeEntry : getRule().getMergeMap().entrySet()) {
+            for (Map.Entry<RuleNode,RuleNode> ruleMergeEntry : getRule().getMergeMap().entrySet()) {
                 Node mergeKey = anchorMap.getNode(ruleMergeEntry.getKey());
                 Node mergeImage = anchorMap.getNode(ruleMergeEntry.getValue());
                 mergeMap.putNode(mergeKey, mergeImage);
@@ -898,20 +898,20 @@ final public class SPOEvent extends
         /**
          * Callback factory method to create the map object for
          * {@link #computeCoanchorMap()}.
-         * @return a fresh instance of {@link VarNodeEdgeHashMap}
+         * @return a fresh instance of {@link RuleToStateHashMap}
          */
-        private VarNodeEdgeMap createVarMap() {
-            return new VarNodeEdgeHashMap();
+        private RuleToStateMap createVarMap() {
+            return new RuleToStateHashMap();
         }
 
         /**
          * Matching from the rule's lhs to the source graph.
          */
-        private VarNodeEdgeMap anchorMap;
+        private RuleToStateMap anchorMap;
         /**
          * Matching from the rule's rhs to the target graph.
          */
-        private VarNodeEdgeMap coanchorMap;
+        private RuleToStateMap coanchorMap;
         /**
          * Minimal mapping from the source graph to target graph to reconstruct
          * the underlying morphism. The merge map is constructed in the course

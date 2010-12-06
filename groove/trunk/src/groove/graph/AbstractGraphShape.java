@@ -56,6 +56,7 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
      * Defers the containment question to {@link #nodeSet()}
      */
     public boolean containsNode(Node elem) {
+        assert isTypeCorrect(elem);
         return nodeSet().contains(elem);
     }
 
@@ -63,6 +64,7 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
      * Defers the containment question to {@link #edgeSet()}
      */
     public boolean containsEdge(Edge elem) {
+        assert isTypeCorrect(elem);
         return edgeSet().contains(elem);
     }
 
@@ -107,6 +109,7 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
      * and looks up the required set in the image for <tt>node</tt>.
      */
     public Set<? extends Edge> edgeSet(Node node) {
+        assert isTypeCorrect(node);
         Set<? extends Edge> result = getCache().getNodeEdgeMap().get(node);
         if (result == null) {
             return Collections.emptySet();
@@ -120,6 +123,7 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
      * and looks up the required set in the image for <tt>node</tt>.
      */
     public Set<? extends Edge> outEdgeSet(final Node node) {
+        assert isTypeCorrect(node);
         Set<? extends Edge> result = getCache().getNodeOutEdgeMap().get(node);
         if (result == null) {
             return Collections.emptySet();
@@ -133,6 +137,7 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
      * and looks up the required set in the image for <tt>node</tt>.
      */
     public Set<? extends Edge> inEdgeSet(final Node node) {
+        assert isTypeCorrect(node);
         Set<? extends Edge> result = getCache().getNodeInEdgeMap().get(node);
         if (result == null) {
             return Collections.emptySet();
@@ -289,6 +294,20 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
     @SuppressWarnings("unchecked")
     protected C createCache() {
         return (C) new GraphShapeCache(this);
+    }
+
+    /** 
+     * Tests if a node is of the correct type to be included in this graph.
+     */
+    protected boolean isTypeCorrect(Node node) {
+        return true;
+    }
+
+    /** 
+     * Tests if an edge is of the correct type to be included in this graph.
+     */
+    protected boolean isTypeCorrect(Edge edge) {
+        return true;
     }
 
     /**

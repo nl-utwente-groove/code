@@ -22,13 +22,13 @@ import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.graph.Node;
-import groove.graph.NodeEdgeHashMap;
-import groove.graph.NodeEdgeMap;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.lts.MatchResultSet;
+import groove.rel.RuleToStateHashMap;
+import groove.rel.RuleToStateMap;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
@@ -98,7 +98,7 @@ public class MatchSetCollector {
 
     /** Returns a match result for a given control transition. */
     protected MatchResult getMatch(CtrlTransition ctrlTrans) {
-        NodeEdgeMap boundMap = extractBinding(ctrlTrans);
+        RuleToStateMap boundMap = extractBinding(ctrlTrans);
         MatchResult result = null;
         Iterator<RuleMatch> matchIter = null;
         if (boundMap != null) {
@@ -153,7 +153,7 @@ public class MatchSetCollector {
         if (isEnabled) {
             // the rule was possibly enabled afresh, so we have to add the fresh
             // matches
-            NodeEdgeMap boundMap = extractBinding(ctrlTrans);
+            RuleToStateMap boundMap = extractBinding(ctrlTrans);
             if (boundMap != null) {
                 Iterable<RuleMatch> matches =
                     ctrlTrans.getRule().getMatches(this.state.getGraph(),
@@ -191,8 +191,8 @@ public class MatchSetCollector {
      * @return if {@code null}, the binding cannot be constructed and
      * so the rule cannot match
      */
-    private NodeEdgeMap extractBinding(CtrlTransition ctrlTrans) {
-        NodeEdgeMap result = new NodeEdgeHashMap();
+    private RuleToStateMap extractBinding(CtrlTransition ctrlTrans) {
+        RuleToStateMap result = new RuleToStateHashMap();
         List<CtrlPar> args = ctrlTrans.getCall().getArgs();
         if (args != null && args.size() > 0) {
             int[] parBinding = ctrlTrans.getParBinding();

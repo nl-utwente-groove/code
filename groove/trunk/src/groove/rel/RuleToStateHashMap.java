@@ -16,40 +16,42 @@
  */
 package groove.rel;
 
+import groove.graph.DefaultEdge;
 import groove.graph.Edge;
 import groove.graph.GenericNodeEdgeMap;
+import groove.graph.GraphHashMap;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.NodeEdgeHashMap;
-import groove.graph.NodeEdgeMap;
+import groove.trans.RuleEdge;
+import groove.trans.RuleNode;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Implementation of the {@link VarNodeEdgeMap} interface where the variable
- * mapping part is given by a separater instance variable.
+ * Implementation of the {@link RuleToStateMap} interface where the variable
+ * mapping part is given by a separate instance variable.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class VarNodeEdgeHashMap extends NodeEdgeHashMap implements
-        VarNodeEdgeMap {
+public class RuleToStateHashMap extends
+        GraphHashMap<RuleNode,Node,RuleEdge,Edge> implements
+        RuleToStateMap {
     /**
      * Creates an empty map with an empty valuation.
      */
-    public VarNodeEdgeHashMap() {
+    public RuleToStateHashMap() {
         this.valuation = createValuation();
     }
 
     /**
      * Creates a map filled from a given map.
      */
-    public VarNodeEdgeHashMap(NodeEdgeMap map) {
-        super(map);
+    public RuleToStateHashMap(RuleToStateMap map) {
+        nodeMap().putAll(map.nodeMap());
+        edgeMap().putAll(map.edgeMap());
         this.valuation = createValuation();
-        if (map instanceof VarNodeEdgeMap) {
-            this.valuation.putAll(((VarNodeEdgeMap) map).getValuation());
-        }
+        this.valuation.putAll(map.getValuation());
     }
 
     /**
@@ -97,19 +99,19 @@ public class VarNodeEdgeHashMap extends NodeEdgeHashMap implements
      * Also copies the other's valuation, if any.
      */
     @Override
-    public void putAll(GenericNodeEdgeMap<Node,Node,Edge,Edge> other) {
+    public void putAll(GenericNodeEdgeMap<RuleNode,Node,RuleEdge,Edge> other) {
         super.putAll(other);
-        if (other instanceof VarNodeEdgeMap) {
-            putAllVar(((VarNodeEdgeMap) other).getValuation());
+        if (other instanceof RuleToStateMap) {
+            putAllVar(((RuleToStateMap) other).getValuation());
         }
     }
 
     /**
-     * This implementation returns a {@link VarNodeEdgeHashMap}.}
+     * This implementation returns a {@link RuleToStateHashMap}.}
      */
     @Override
-    public VarNodeEdgeMap clone() {
-        return new VarNodeEdgeHashMap(this);
+    public RuleToStateMap clone() {
+        return new RuleToStateHashMap(this);
     }
 
     @Override
@@ -120,8 +122,8 @@ public class VarNodeEdgeHashMap extends NodeEdgeHashMap implements
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof VarNodeEdgeMap && super.equals(obj)
-            && this.valuation.equals(((VarNodeEdgeMap) obj).getValuation());
+        return obj instanceof RuleToStateMap && super.equals(obj)
+            && this.valuation.equals(((RuleToStateMap) obj).getValuation());
     }
 
     @Override
@@ -132,6 +134,15 @@ public class VarNodeEdgeHashMap extends NodeEdgeHashMap implements
     @Override
     public String toString() {
         return super.toString() + " Valuation: " + this.valuation;
+    }
+
+    /**
+     * Callback method to create a binary edge image.
+     */
+    @Override
+    protected Edge createEdge(Node source, Label label,
+            Node target) {
+        return DefaultEdge.createEdge(source, label, target);
     }
 
     /**

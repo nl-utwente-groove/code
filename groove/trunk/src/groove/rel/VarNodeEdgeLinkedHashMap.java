@@ -19,7 +19,8 @@ package groove.rel;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
+import groove.trans.RuleEdge;
+import groove.trans.RuleNode;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -30,19 +31,12 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class VarNodeEdgeLinkedHashMap extends VarNodeEdgeHashMap {
+public class VarNodeEdgeLinkedHashMap extends RuleToStateHashMap {
     /**
      * Constructs an empty map.
      */
     public VarNodeEdgeLinkedHashMap() {
         // empty constructor
-    }
-
-    /**
-     * Constructs a clone of a given map.
-     */
-    public VarNodeEdgeLinkedHashMap(NodeEdgeMap map) {
-        super(map);
     }
 
     @Override
@@ -51,12 +45,12 @@ public class VarNodeEdgeLinkedHashMap extends VarNodeEdgeHashMap {
     }
 
     @Override
-    protected Map<Edge,Edge> createEdgeMap() {
-        return new LinkedHashMap<Edge,Edge>();
+    protected Map<RuleEdge,Edge> createEdgeMap() {
+        return new LinkedHashMap<RuleEdge,Edge>();
     }
 
     @Override
-    protected Map<Node,Node> createNodeMap() {
-        return new LinkedHashMap<Node,Node>();
+    protected Map<RuleNode,Node> createNodeMap() {
+        return new LinkedHashMap<RuleNode,Node>();
     }
 }

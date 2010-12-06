@@ -75,7 +75,7 @@ public interface Automaton extends Graph {
     /**
      * Returns a relation consisting of pairs of nodes of a given graph between
      * which there is a path matching this automaton. If this automaton has
-     * variables, the pairs are edges with {@link VarNodeEdgeMap} labels giving
+     * variables, the pairs are edges with {@link RuleToStateMap} labels giving
      * a valuation of the variables.
      * @param graph the graph in which the paths are sought
      * @param startImages set of nodes in <code>graph</code> from which the

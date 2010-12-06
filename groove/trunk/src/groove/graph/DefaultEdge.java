@@ -27,7 +27,6 @@ import groove.util.TreeHashSet;
  * @version $Revision$ $Date: 2008-02-12 15:15:31 $
  */
 public class DefaultEdge extends AbstractEdge<Node,Label,Node> {
-
     /**
      * Constructs a new edge on the basis of a given source, label and target.
      * @param source source node of the new edge

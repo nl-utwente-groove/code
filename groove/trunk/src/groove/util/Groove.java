@@ -31,8 +31,9 @@ import groove.io.DefaultGxl;
 import groove.io.ExtensionFilter;
 import groove.io.Xml;
 import groove.match.GraphSearchPlanFactory;
-import groove.rel.VarNodeEdgeMap;
+import groove.rel.RuleToStateMap;
 import groove.trans.GraphGrammar;
+import groove.trans.RuleGraph;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
@@ -700,9 +701,9 @@ public class Groove {
      * @param source the graph to be embedded
      * @param target the graph into which it is to be embedded
      * @return an iterator over maps from the source to the target graph.
-     * @see #getEmbeddings(GraphShape, GraphShape, LabelStore, boolean)
+     * @see #getEmbeddings(RuleGraph, GraphShape, LabelStore, boolean)
      */
-    static public Iterator<VarNodeEdgeMap> getEmbeddings(GraphShape source,
+    static public Iterator<RuleToStateMap> getEmbeddings(RuleGraph source,
             GraphShape target) {
         return getEmbeddings(source, target, null);
     }
@@ -716,9 +717,9 @@ public class Groove {
      * @param labelStore subtype relation; if <code>null</code>, no subtyping
      *        exists
      * @return an iterator over maps from the source to the target graph.
-     * @see #getEmbeddings(GraphShape, GraphShape, LabelStore, boolean)
+     * @see #getEmbeddings(RuleGraph, GraphShape, LabelStore, boolean)
      */
-    static public Iterator<VarNodeEdgeMap> getEmbeddings(GraphShape source,
+    static public Iterator<RuleToStateMap> getEmbeddings(RuleGraph source,
             GraphShape target, LabelStore labelStore) {
         return getEmbeddings(source, target, labelStore, false);
     }
@@ -733,7 +734,7 @@ public class Groove {
      *        injective
      * @return an iterator over maps from the source to the target graph.
      */
-    static public Iterator<VarNodeEdgeMap> getEmbeddings(GraphShape source,
+    static public Iterator<RuleToStateMap> getEmbeddings(RuleGraph source,
             GraphShape target, boolean injective) {
         return getEmbeddings(source, target, null, injective);
     }
@@ -751,7 +752,7 @@ public class Groove {
      *        injective
      * @return an iterator over maps from the source to the target graph.
      */
-    static public Iterator<VarNodeEdgeMap> getEmbeddings(GraphShape source,
+    static public Iterator<RuleToStateMap> getEmbeddings(RuleGraph source,
             GraphShape target, LabelStore labelStore, boolean injective) {
         return GraphSearchPlanFactory.getInstance(injective, false).createMatcher(
             source, null, null, labelStore).getMatchIter(target, null);

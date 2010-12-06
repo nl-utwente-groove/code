@@ -22,7 +22,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
-import groove.graph.GraphFactory;
 import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.LabelStore;
@@ -71,7 +70,7 @@ public class AutomatonTest {
     /**
      * Graph loader used in this test case.
      */
-    static final Xml loader = new DefaultGxl(GraphFactory.getInstance());
+    static final Xml loader = new DefaultGxl();
     static final String testGraphName = "regexpr-test-graph";
     static GraphShape testGraph;
 

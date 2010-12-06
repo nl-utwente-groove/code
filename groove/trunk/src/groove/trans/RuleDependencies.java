@@ -18,15 +18,12 @@ package groove.trans;
 
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
-import groove.graph.DefaultEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.LabelStore;
-import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.graph.TypeGraph;
 import groove.rel.Automaton;
 import groove.rel.RegExpr;
@@ -391,13 +388,13 @@ public class RuleDependencies {
             Set<Label> produced, Set<CtrlType> inPars, Set<CtrlType> outPars) {
         Graph lhs = rule.lhs();
         Graph rhs = rule.rhs();
-        Morphism ruleMorphism = rule.getMorphism();
+        RuleGraphMap ruleMorphism = rule.getMorphism();
         // test if a node is consumed (and there is no dangling edge check)
         Iterator<? extends Node> lhsNodeIter = lhs.nodeSet().iterator();
         while (lhsNodeIter.hasNext() && !consumed.contains(ALL_LABEL)
             && !this.properties.isCheckDangling()) {
             Node lhsNode = lhsNodeIter.next();
-            if (!ruleMorphism.containsKey(lhsNode)) {
+            if (!ruleMorphism.containsNodeKey(lhsNode)) {
                 consumed.addAll(getIncidentLabels(lhs, lhsNode));
             }
         }
@@ -405,7 +402,7 @@ public class RuleDependencies {
         Iterator<? extends Edge> lhsEdgeIter = lhs.edgeSet().iterator();
         while (lhsEdgeIter.hasNext() && !consumed.contains(ALL_LABEL)) {
             Edge lhsEdge = lhsEdgeIter.next();
-            if (!ruleMorphism.containsKey(lhsEdge)) {
+            if (!ruleMorphism.containsEdgeKey(lhsEdge)) {
                 // the only regular expressions allowed on erasers are wildcards
                 consumed.addAll(getMatchedLabels(lhsEdge.label()));
             }
@@ -454,17 +451,18 @@ public class RuleDependencies {
 
     void collectConditionCharacteristics(Condition cond, Set<Label> positive,
             Set<Label> negative) {
-        NodeEdgeMap pattern = cond.getRootMap();
-        Graph target = cond.getTarget();
+        RuleGraphMap pattern = cond.getRootMap();
+        RuleGraph target = cond.getTarget();
         // collected the isolated fresh nodes
-        Set<Node> isolatedNodes = new HashSet<Node>(target.nodeSet());
+        Set<RuleNode> isolatedNodes = new HashSet<RuleNode>(target.nodeSet());
         isolatedNodes.removeAll(pattern.nodeMap().values());
         // iterate over the edges that are new in the target
-        Set<Edge> freshTargetEdges = new HashSet<Edge>(target.edgeSet());
+        Set<RuleEdge> freshTargetEdges =
+            new HashSet<RuleEdge>(target.edgeSet());
         freshTargetEdges.removeAll(pattern.edgeMap().values());
-        for (Edge edge : freshTargetEdges) {
+        for (RuleEdge edge : freshTargetEdges) {
             // don't look at attribute-related edges
-            if (edge instanceof DefaultEdge) {
+            if (edge.getClass().equals(RuleEdge.class)) {
                 Label label = edge.label();
                 // flag indicating that the edge always tests positively
                 // for the presence of connecting structure

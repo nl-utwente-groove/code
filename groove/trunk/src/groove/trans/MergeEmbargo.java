@@ -16,9 +16,7 @@
  */
 package groove.trans;
 
-import groove.graph.Graph;
 import groove.graph.LabelStore;
-import groove.graph.Node;
 
 /**
  * A specialised NAC that enforces an injectivity constraint. Merge embargoes
@@ -38,12 +36,12 @@ public class MergeEmbargo extends NotCondition {
      * @require <tt>source.contains(node1) && source.contains(node2)</tt>
      * @ensure <tt>node1().equals(node1) && node2().equals(node2)</tt>
      */
-    public MergeEmbargo(Graph source, Node node1, Node node2,
+    public MergeEmbargo(RuleGraph source, RuleNode node1, RuleNode node2,
             LabelStore labelStore, SystemProperties properties) {
         super(source.newGraph(), properties, labelStore);
         this.node1 = node1;
         this.node2 = node2;
-        Node codNode = getTarget().addNode();
+        RuleNode codNode = getTarget().addNode();
         getRootMap().putNode(node1, codNode);
         getRootMap().putNode(node2, codNode);
     }
@@ -52,7 +50,7 @@ public class MergeEmbargo extends NotCondition {
      * Returns the first of the nodes whose merging this embargo forbids.
      * @ensure <tt>result != null</tt>
      */
-    public Node node1() {
+    public RuleNode node1() {
         return this.node1;
     }
 
@@ -60,7 +58,7 @@ public class MergeEmbargo extends NotCondition {
      * Returns the second of the nodes whose merging this embargo forbids.
      * @ensure <tt>result != null</tt>
      */
-    public Node node2() {
+    public RuleNode node2() {
         return this.node2;
     }
 
@@ -69,12 +67,12 @@ public class MergeEmbargo extends NotCondition {
      * @see #node1()
      * @see #node2()
      */
-    public Node[] getNodes() {
-        return new Node[] {this.node1, this.node2};
+    public RuleNode[] getNodes() {
+        return new RuleNode[] {this.node1, this.node2};
     }
 
     /** First node whose merging this embargo forbids. */
-    private final Node node1;
+    private final RuleNode node1;
     /** Second node whose merging this embargo forbids. */
-    private final Node node2;
+    private final RuleNode node2;
 }

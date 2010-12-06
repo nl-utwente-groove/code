@@ -16,11 +16,11 @@
  */
 package groove.match;
 
-import groove.graph.Edge;
-import groove.graph.GraphShape;
 import groove.graph.LabelStore;
-import groove.graph.Node;
 import groove.trans.Condition;
+import groove.trans.RuleEdge;
+import groove.trans.RuleGraph;
+import groove.trans.RuleNode;
 
 import java.util.Collection;
 
@@ -65,18 +65,18 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
 
     @Override
     public SearchPlanStrategy createMatcher(Condition condition,
-            Collection<? extends Node> anchorNodes,
-            Collection<? extends Edge> anchorEdges,
-            Collection<? extends Node> relevantNodes) {
+            Collection<RuleNode> anchorNodes,
+            Collection<RuleEdge> anchorEdges,
+            Collection<RuleNode> relevantNodes) {
         return ConditionSearchPlanFactory.getInstance(
             condition.getSystemProperties().isInjective()).createMatcher(
             condition, anchorNodes, anchorEdges, relevantNodes);
     }
 
     @Override
-    public SearchPlanStrategy createMatcher(GraphShape graph,
-            Collection<? extends Node> anchorNodes,
-            Collection<? extends Edge> anchorEdges, LabelStore labelStore) {
+    public SearchPlanStrategy createMatcher(RuleGraph graph,
+            Collection<RuleNode> anchorNodes,
+            Collection<RuleEdge> anchorEdges, LabelStore labelStore) {
         return GraphSearchPlanFactory.getInstance(this.isInjective(),
             this.isIgnoreNeg()).createMatcher(graph, anchorNodes, anchorEdges,
             labelStore);

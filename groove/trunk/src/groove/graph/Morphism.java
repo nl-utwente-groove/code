@@ -86,11 +86,6 @@ public interface Morphism extends NodeEdgeMap, GraphListener {
     public boolean isSurjective();
 
     /**
-     * Tests whether all nodes in dom() are mapped to different elements.
-     */
-    public boolean isInjective();
-
-    /**
      * Tests whether all nodes and edges in dom() are in the domain of this
      * morphism.
      */
@@ -127,25 +122,6 @@ public interface Morphism extends NodeEdgeMap, GraphListener {
 
     // ------------------------------------ MAP QUERIES
     // -------------------------------
-
-    /**
-     * Tests whether a given graph element is in the domain of the mapping.
-     * @param key the element for which is tested
-     * @return <tt>true</tt> if <tt>key</tt> in the domain of this mapping
-     * @require <tt>key != null</tt>
-     * @ensure <tt>result == (get(key) != null)</tt>
-     */
-    boolean containsKey(Element key);
-
-    /**
-     * Tests whether a given graph element is in the range of the mapping.
-     * @param value the element for which is tested
-     * @return <tt>true</tt> if <tt>value</tt> in the range of this mapping
-     * @require <tt>value != null</tt>
-     * @ensure <tt>result</tt> iff <tt>get(key).equals(value))</tt> for some
-     *         <tt>key</tt>
-     */
-    boolean containsValue(Element value);
 
     /**
      * Returns the value associated by this mapping to a given graph node.

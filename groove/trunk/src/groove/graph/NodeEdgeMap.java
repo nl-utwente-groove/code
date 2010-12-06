@@ -24,37 +24,6 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface NodeEdgeMap extends GenericNodeEdgeMap<Node,Node,Edge,Edge> { // extends
-                                                                                // Map<Element,Element>
-                                                                                // {
-    /**
-     * Tests if a given element occurs as a key in the node or edge map.
-     * @param elem the element tested for
-     * @return <code>true</code> if <code>elem</code> occurs as a key
-     */
-    boolean containsKey(Element elem);
-
-    /**
-     * Tests if a given element occurs as a value in the node or edge map.
-     * @param elem the element tested for
-     * @return <code>true</code> if <code>elem</code> occurs as a value
-     */
-    boolean containsValue(Element elem);
-
-    /** Returns the image of a label under this map. */
-    Label getLabel(Label label);
-
-    /**
-     * Returns the image of an edge under this map, creating the image if
-     * necessary. An image is created if the map does not contain an image but
-     * does contain images for the end nodes and label. The exact type of the
-     * created edge depends on the map instance.
-     */
-    Edge mapEdge(Edge key);
-
-    /**
-     * A public clone method returning a {@link NodeEdgeMap}.
-     * @return a copy of this object
-     */
-    NodeEdgeMap clone();
+public interface NodeEdgeMap extends GraphMap<Node,Node,Edge,Edge> {
+    public NodeEdgeMap clone();
 }

@@ -49,10 +49,10 @@ import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExplorationStatistics;
 import groove.explore.util.MatchApplier;
 import groove.explore.util.RuleEventApplier;
+import groove.graph.DefaultGraph;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphAdapter;
-import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.graph.GraphListener;
 import groove.graph.GraphProperties;
@@ -292,7 +292,7 @@ public class Simulator {
     }
 
     /** Returns the type graph associated with the grammar, if any. */
-    private TypeViewList getTypeView() {
+    TypeViewList getTypeView() {
         return getGrammarView() == null ? null
                 : getGrammarView().getTypeViewList();
     }
@@ -4370,7 +4370,8 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            Graph newGraph = GraphFactory.getInstance().newGraph();
+            Graph newGraph = new DefaultGraph();
+            ;
             GraphInfo.setGraphRole(newGraph);
             handleEditGraph(newGraph, true);
         }
@@ -4406,7 +4407,8 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(false)) {
-                Graph newRule = GraphFactory.getInstance().newGraph();
+                Graph newRule = new DefaultGraph();
+                ;
                 GraphInfo.setRuleRole(newRule);
                 EditorDialog dialog =
                     new EditorDialog(getFrame(), getOptions(), newRule,

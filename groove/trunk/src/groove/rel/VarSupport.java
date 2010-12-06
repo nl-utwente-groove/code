@@ -18,8 +18,9 @@
 package groove.rel;
 
 import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.GraphShape;
+import groove.trans.RuleEdge;
+import groove.trans.RuleGraph;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -79,7 +80,7 @@ public class VarSupport {
      * the variables bound by the edges.
      * @see #getBoundVars(Edge)
      */
-    static public Set<LabelVar> getBoundVars(Graph graph) {
+    static public Set<LabelVar> getBoundVars(RuleGraph graph) {
         Set<LabelVar> result = new HashSet<LabelVar>();
         for (Edge edge : graph.edgeSet()) {
             result.addAll(getBoundVars(edge));
@@ -91,9 +92,9 @@ public class VarSupport {
      * Returns the set of variable-containing edges occurring in a given graph. An
      * edge is variable-containing if {@link #getAllVars(Edge)} is non-empty.
      */
-    static public Set<Edge> getVarEdges(Graph graph) {
-        Set<Edge> result = new HashSet<Edge>();
-        for (Edge edge : graph.edgeSet()) {
+    static public Set<RuleEdge> getVarEdges(RuleGraph graph) {
+        Set<RuleEdge> result = new HashSet<RuleEdge>();
+        for (RuleEdge edge : graph.edgeSet()) {
             if (!getAllVars(edge).isEmpty()) {
                 result.add(edge);
             }
@@ -104,9 +105,9 @@ public class VarSupport {
     /**
      * Returns a map from bound variables in a graph to edges that bind them.
      */
-    static public Map<LabelVar,Edge> getVarBinders(Graph graph) {
-        Map<LabelVar,Edge> result = new HashMap<LabelVar,Edge>();
-        for (Edge binder : graph.edgeSet()) {
+    static public Map<LabelVar,RuleEdge> getVarBinders(RuleGraph graph) {
+        Map<LabelVar,RuleEdge> result = new HashMap<LabelVar,RuleEdge>();
+        for (RuleEdge binder : graph.edgeSet()) {
             for (LabelVar boundVar : getBoundVars(binder)) {
                 result.put(boundVar, binder);
             }
@@ -117,9 +118,9 @@ public class VarSupport {
     /**
      * Returns the set of named wildcard edges occurring in a given graph.
      */
-    static public Set<Edge> getSimpleVarEdges(Graph graph) {
-        Set<Edge> result = new HashSet<Edge>();
-        for (Edge edge : graph.edgeSet()) {
+    static public Set<RuleEdge> getSimpleVarEdges(RuleGraph graph) {
+        Set<RuleEdge> result = new HashSet<RuleEdge>();
+        for (RuleEdge edge : graph.edgeSet()) {
             if (RegExprLabel.getWildcardId(edge.label()) != null) {
                 result.add(edge);
             }
@@ -131,9 +132,9 @@ public class VarSupport {
      * Returns a map from variables in a graph to edges that have them as a
      * named wildcard.
      */
-    static public Map<LabelVar,Edge> getSimpleVarBinders(Graph graph) {
-        Map<LabelVar,Edge> result = new HashMap<LabelVar,Edge>();
-        for (Edge binder : graph.edgeSet()) {
+    static public Map<LabelVar,RuleEdge> getSimpleVarBinders(RuleGraph graph) {
+        Map<LabelVar,RuleEdge> result = new HashMap<LabelVar,RuleEdge>();
+        for (RuleEdge binder : graph.edgeSet()) {
             LabelVar id = RegExprLabel.getWildcardId(binder.label());
             if (id != null) {
                 result.put(id, binder);

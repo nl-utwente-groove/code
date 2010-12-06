@@ -18,7 +18,6 @@ package groove.io;
 
 import groove.graph.DefaultGraph;
 import groove.graph.Graph;
-import groove.graph.GraphFactory;
 import groove.graph.Node;
 import groove.util.Converter;
 import groove.util.Pair;
@@ -36,16 +35,6 @@ import java.util.Map;
  * @version $Revision $
  */
 public class Aut extends AbstractXml {
-    /** Constructs a new loader with the default graph factory. */
-    public Aut() {
-        this(GraphFactory.getInstance());
-    }
-
-    /** Constructs a new loader with a given graph factory. */
-    public Aut(GraphFactory graphFactory) {
-        super(graphFactory);
-    }
-
     @Override
     protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(URL url)
         throws IOException {

@@ -25,7 +25,6 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.gui.jgraph.ReteJModel;
 import groove.io.AspectGxl;
 import groove.io.LayedOutXml;
@@ -36,7 +35,10 @@ import groove.trans.Condition;
 import groove.trans.GraphGrammar;
 import groove.trans.NotCondition;
 import groove.trans.Rule;
+import groove.trans.RuleEdge;
+import groove.trans.RuleGraphMap;
 import groove.trans.RuleName;
+import groove.trans.RuleNode;
 import groove.util.TreeHashSet;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
@@ -395,7 +397,7 @@ public class ReteNetwork {
         return result;
     }
 
-    private Node translate(NodeEdgeMap translationMap, Node node) {
+    private Node translate(RuleGraphMap translationMap, RuleNode node) {
         Node result = node;
         if (translationMap != null) {
             result = translationMap.getNode(node);
@@ -406,7 +408,7 @@ public class ReteNetwork {
         return result;
     }
 
-    private Edge translate(NodeEdgeMap translationMap, Edge edge) {
+    private Edge translate(RuleGraphMap translationMap, RuleEdge edge) {
         Edge result = edge;
         if (translationMap != null) {
             Node n1 = translate(translationMap, edge.source());
@@ -415,8 +417,9 @@ public class ReteNetwork {
 
             if (!edge.source().equals(n1) || !edge.target().equals(n2)) {
                 result =
-                    (edge instanceof DefaultEdge) ? DefaultEdge.createEdge(n1,
-                        l, n2) : DefaultEdge.createEdge(n1, l, n1);
+                    (edge.getClass().equals(RuleEdge.class))
+                            ? DefaultEdge.createEdge(n1, l, n2)
+                            : DefaultEdge.createEdge(n1, l, n1);
             }
         }
         return result;
@@ -514,7 +517,7 @@ public class ReteNetwork {
     }
 
     private ReteStaticMapping duplicateAndTranslateMapping(
-            ReteStaticMapping source, NodeEdgeMap translationMap) {
+            ReteStaticMapping source, RuleGraphMap translationMap) {
         ReteStaticMapping result = null;
         if (source != null) {
             Element[] oldElements = source.getElements();
@@ -522,10 +525,10 @@ public class ReteNetwork {
             for (int i = 0; i < newElements.length; i++) {
                 if (oldElements[i] instanceof Edge) {
                     newElements[i] =
-                        translate(translationMap, (Edge) oldElements[i]);
+                        translate(translationMap, (RuleEdge) oldElements[i]);
                 } else {
                     newElements[i] =
-                        translate(translationMap, (Node) oldElements[i]);
+                        translate(translationMap, (RuleNode) oldElements[i]);
                 }
             }
             result = new ReteStaticMapping(source.getNNode(), newElements);
@@ -553,7 +556,7 @@ public class ReteNetwork {
             throw new RuntimeException(
                 "The current RETE implementation does not support rules with edge labels of type "
                     + e.label().getClass().toString());
-        } else if (!(e instanceof DefaultEdge)) {
+        } else if (!(e instanceof RuleEdge)) {
             throw new RuntimeException(
                 "The current RETE implementation does not support rules with edges of type "
                     + e.getClass().toString());

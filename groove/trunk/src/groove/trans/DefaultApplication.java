@@ -25,9 +25,8 @@ import groove.graph.Graph;
 import groove.graph.MergeMap;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ValueNode;
-import groove.rel.VarNodeEdgeMap;
+import groove.rel.RuleToStateMap;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -158,7 +157,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
      */
     private Morphism computeMorphism() {
         Morphism result = createMorphism();
-        NodeEdgeMap mergeMap = getMergeMap();
+        MergeMap mergeMap = getMergeMap();
         // copy the source node and edge set, to avoid modification exceptions
         // in case graph aliasing was used
         Set<Node> sourceNodes = new HashSet<Node>(this.source.nodeSet());
@@ -612,7 +611,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
     /**
      * Matching from the rule's lhs to the source graph.
      */
-    private VarNodeEdgeMap anchorMap;
+    private RuleToStateMap anchorMap;
     /**
      * The event from which we get the rule and anchor image.
      */
@@ -621,7 +620,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * Mapping from selected RHS elements to target graph. The comatch is
      * constructed in the course of rule application.
      */
-    protected VarNodeEdgeMap coAnchorMap;
+    protected RuleToStateMap coAnchorMap;
     /**
      * The target graph of this derivation, created lazily in
      * {@link #computeTarget()}.

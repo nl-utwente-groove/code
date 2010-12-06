@@ -17,8 +17,8 @@
 package groove.control;
 
 import groove.algebra.AlgebraRegister;
-import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
+import groove.trans.RuleNode;
 
 /**
  * Class representing a control parameter. 
@@ -171,7 +171,7 @@ public abstract class CtrlPar {
         }
 
         /** Returns the (possibly {@code null} rule node in this parameter. */
-        public Node getRuleNode() {
+        public RuleNode getRuleNode() {
             return this.ruleNode;
         }
 
@@ -179,7 +179,7 @@ public abstract class CtrlPar {
          * Sets the rule node of this parameter.
          * Also indicates if it is a creator node.
          */
-        public void setRuleNode(Node ruleNode, boolean creator) {
+        public void setRuleNode(RuleNode ruleNode, boolean creator) {
             this.ruleNode = ruleNode;
             this.creator = creator;
         }
@@ -190,7 +190,7 @@ public abstract class CtrlPar {
         }
 
         /** Associated node if this is a rule parameter. */
-        private Node ruleNode;
+        private RuleNode ruleNode;
         /** Flag indicating if this is a rule parameter referring to a creator node. */
         private boolean creator;
         /** The control variable wrapped in this variable parameter. */

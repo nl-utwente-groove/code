@@ -17,7 +17,6 @@
 package groove.io;
 
 import groove.graph.Graph;
-import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
@@ -42,22 +41,6 @@ import java.util.Map;
  * @version $Revision$
  */
 public class DefaultGxl extends AbstractXml {
-    /**
-     * Constructs a Gxl transformer with a given graph factory for the graphs
-     * constructed by unmarshalling.
-     */
-    public DefaultGxl(GraphFactory graphFactory) {
-        super(graphFactory);
-    }
-
-    /**
-     * Constructs a Gxl transformer with a default graph factory.
-     * @see GraphFactory#getInstance()
-     */
-    public DefaultGxl() {
-        this(GraphFactory.getInstance());
-    }
-
     /**
      * Delete the given file
      */

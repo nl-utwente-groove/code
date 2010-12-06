@@ -6,7 +6,7 @@ import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.NodeFactory;
-import groove.rel.VarNodeEdgeMap;
+import groove.rel.RuleToStateMap;
 import groove.util.DefaultDispenser;
 import groove.util.TreeHashSet;
 
@@ -146,7 +146,7 @@ public class SystemRecord implements NodeFactory {
      * @param rule the rule of the composite event
      * @param elementMap the element map for the simple event
      */
-    public SPOEvent createSimpleEvent(SPORule rule, VarNodeEdgeMap elementMap) {
+    public SPOEvent createSimpleEvent(SPORule rule, RuleToStateMap elementMap) {
         return (SPOEvent) normaliseEvent(new SPOEvent(rule, elementMap, this,
             isReuseEvents()));
     }

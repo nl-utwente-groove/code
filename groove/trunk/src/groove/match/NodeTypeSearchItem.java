@@ -22,6 +22,8 @@ import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
+import groove.trans.RuleEdge;
+import groove.trans.RuleNode;
 import groove.util.NestedIterator;
 
 import java.util.Arrays;
@@ -42,13 +44,13 @@ class NodeTypeSearchItem extends AbstractSearchItem {
      * @param edge the edge to be matched
      * @param labelStore label store containing the subtypes of the node type
      */
-    public NodeTypeSearchItem(Edge edge, LabelStore labelStore) {
+    public NodeTypeSearchItem(RuleEdge edge, LabelStore labelStore) {
         this.edge = edge;
         this.source = edge.source();
         this.label = edge.label();
         assert this.label.isNodeType() : String.format(
             "Label '%s' is not a node type", this.label);
-        this.boundNodes = new HashSet<Node>(Arrays.asList(edge.source()));
+        this.boundNodes = new HashSet<RuleNode>(Arrays.asList(edge.source()));
         Set<Label> labelStoreSubtypes = labelStore.getSubtypes(this.label);
         this.subtypes =
             labelStoreSubtypes == null ? null : new HashSet<Label>(
@@ -61,7 +63,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
      * Returns the end nodes of the edge.
      */
     @Override
-    public Collection<? extends Node> bindsNodes() {
+    public Collection<RuleNode> bindsNodes() {
         return this.boundNodes;
     }
 
@@ -165,15 +167,15 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     /**
      * The (node type) edge for which this search item is to find an image.
      */
-    final Edge edge;
+    final RuleEdge edge;
     /**
      * The source end of {@link #edge}, separately stored for efficiency.
      */
-    final Node source;
+    final RuleNode source;
     /** The label of {@link #edge}, separately stored for efficiency. */
     final Label label;
     /** The set of end nodes of this edge. */
-    private final Set<Node> boundNodes;
+    private final Set<RuleNode> boundNodes;
 
     /** The index of the edge in the search. */
     int edgeIx;

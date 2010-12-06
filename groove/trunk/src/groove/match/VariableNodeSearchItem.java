@@ -16,9 +16,9 @@
  */
 package groove.match;
 
-import groove.graph.Node;
 import groove.graph.algebra.VariableNode;
 import groove.match.SearchPlanStrategy.Search;
+import groove.trans.RuleNode;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -36,7 +36,7 @@ class VariableNodeSearchItem extends AbstractSearchItem {
      */
     public VariableNodeSearchItem(VariableNode node) {
         this.node = node;
-        this.boundNodes = Collections.<Node>singleton(node);
+        this.boundNodes = Collections.<RuleNode>singleton(node);
     }
 
     public VariableNodeRecord getRecord(SearchPlanStrategy.Search matcher) {
@@ -59,7 +59,7 @@ class VariableNodeSearchItem extends AbstractSearchItem {
      * @see #getNode()
      */
     @Override
-    public Collection<? extends Node> bindsNodes() {
+    public Collection<RuleNode> bindsNodes() {
         return this.boundNodes;
     }
 
@@ -78,7 +78,7 @@ class VariableNodeSearchItem extends AbstractSearchItem {
     }
 
     /** Singleton set consisting of <code>node</code>. */
-    private final Collection<Node> boundNodes;
+    private final Collection<RuleNode> boundNodes;
     /** The (constant) variable node to be matched. */
     final VariableNode node;
     /** The index of the value node (in the result. */

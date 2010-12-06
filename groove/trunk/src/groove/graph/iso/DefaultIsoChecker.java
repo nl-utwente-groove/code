@@ -339,7 +339,7 @@ public class DefaultIsoChecker implements IsoChecker {
             Certificate<Node>[] nodeCerts = domCertifier.getNodeCertificates();
             for (Certificate<Node> nodeCert : nodeCerts) {
                 Node node = nodeCert.getElement();
-                if (!result.containsKey(node)) {
+                if (!result.containsNodeKey(node)) {
                     // this is an isolated node
                     SmallCollection<Node> nodeImages =
                         codPartitionMap.get(nodeCert);

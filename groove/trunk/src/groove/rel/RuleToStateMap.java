@@ -16,14 +16,19 @@
  */
 package groove.rel;
 
-import groove.graph.NodeEdgeMap;
+import groove.graph.Edge;
+import groove.graph.GraphMap;
+import groove.graph.Node;
+import groove.trans.RuleEdge;
+import groove.trans.RuleNode;
 
 /**
  * Meet of two interfaces
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface VarNodeEdgeMap extends NodeEdgeMap, VarMap {
+public interface RuleToStateMap extends
+        GraphMap<RuleNode,Node,RuleEdge,Edge>, VarMap {
     // Combines two interfaces without adding functionality
-    VarNodeEdgeMap clone();
+    RuleToStateMap clone();
 }

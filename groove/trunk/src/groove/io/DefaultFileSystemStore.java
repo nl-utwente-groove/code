@@ -17,7 +17,6 @@ t * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
 package groove.io;
 
 import groove.graph.Graph;
-import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.gui.Options;
@@ -94,8 +93,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         }
         this.file = file;
         this.name = GRAMMAR_FILTER.stripExtension(this.file.getName());
-        this.marshaller =
-            createGraphMarshaller(GraphFactory.getInstance(), true);
+        this.marshaller = createGraphMarshaller(true);
         if (create) {
             this.createVersionProperties();
         }
@@ -710,12 +708,11 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     /** Callback factory method for creating a graph marshaller. */
-    private Xml<Graph> createGraphMarshaller(GraphFactory graphFactory,
-            boolean layouted) {
+    private Xml<Graph> createGraphMarshaller(boolean layouted) {
         if (layouted) {
-            return new LayedOutXml(graphFactory);
+            return new LayedOutXml();
         } else {
-            return new DefaultGxl(graphFactory);
+            return new DefaultGxl();
         }
     }
 

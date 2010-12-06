@@ -20,9 +20,9 @@ package groove.match;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphShape;
-import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
+import groove.trans.RuleNode;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -38,7 +38,7 @@ abstract class AbstractSearchItem implements SearchItem {
     /**
      * This implementation returns the empty set.
      */
-    public Collection<? extends Node> bindsNodes() {
+    public Collection<RuleNode> bindsNodes() {
         return Collections.emptySet();
     }
 
@@ -59,7 +59,7 @@ abstract class AbstractSearchItem implements SearchItem {
     /**
      * This implementation returns the empty set.
      */
-    public Collection<Node> needsNodes() {
+    public Collection<RuleNode> needsNodes() {
         return Collections.emptySet();
     }
 

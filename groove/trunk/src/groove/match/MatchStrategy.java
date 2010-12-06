@@ -19,7 +19,7 @@ package groove.match;
 
 import groove.graph.Graph;
 import groove.graph.GraphShape;
-import groove.graph.NodeEdgeMap;
+import groove.rel.RuleToStateMap;
 import groove.util.Property;
 
 import java.util.Collection;
@@ -46,7 +46,7 @@ public interface MatchStrategy<Result> {
      *         that augment <code>preMatch</code> and fulfill the requirements
      *         to be total matches
      */
-    public Collection<Result> getMatchSet(Graph host, NodeEdgeMap anchorMap);
+    public Collection<Result> getMatchSet(Graph host, RuleToStateMap anchorMap);
 
     /**
      * Returns an iterator over all matches to a given graph that extend a given
@@ -61,7 +61,7 @@ public interface MatchStrategy<Result> {
      *         <code>host</code> that augment <code>preMatch</code> and
      *         fulfill the requirements to be total matches
      */
-    public Iterator<Result> getMatchIter(GraphShape host, NodeEdgeMap anchorMap);
+    public Iterator<Result> getMatchIter(GraphShape host, RuleToStateMap anchorMap);
 
     /**
      * Returns the collection of all matches to a given graph that extend a
@@ -75,7 +75,7 @@ public interface MatchStrategy<Result> {
      *         that augment <code>preMatch</code> and fulfill the requirements
      *         to be total matches
      */
-    public Iterable<Result> getMatches(Graph host, NodeEdgeMap anchorMap);
+    public Iterable<Result> getMatches(Graph host, RuleToStateMap anchorMap);
 
     /**
      * Sets a filter for this strategy. A filter is a property that is required

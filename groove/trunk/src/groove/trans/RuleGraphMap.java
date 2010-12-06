@@ -14,25 +14,28 @@
  * 
  * $Id: NodeEdgeHashMap.java,v 1.5 2008-01-30 09:32:52 iovka Exp $
  */
-package groove.graph;
+package groove.trans;
+
+import groove.graph.GraphHashMap;
+import groove.graph.Label;
 
 /**
  * Default implementation of a generic node-edge-map. The implementation is
  * based on two internally stored hash maps, for the nodes and edges. Labels are
  * not translated.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 2754 $
  */
-public class NodeEdgeHashMap extends GraphHashMap<Node,Node,Edge,Edge>
-        implements NodeEdgeMap {
+public class RuleGraphMap extends
+        GraphHashMap<RuleNode,RuleNode,RuleEdge,RuleEdge> {
     /** Constructs a copy of another node-edge-map. */
-    public NodeEdgeHashMap(NodeEdgeMap other) {
+    public RuleGraphMap(RuleGraphMap other) {
         nodeMap().putAll(other.nodeMap());
         edgeMap().putAll(other.edgeMap());
     }
 
     /** Constructs an initially empty node-edge-map. */
-    public NodeEdgeHashMap() {
+    public RuleGraphMap() {
         // empty constructor
     }
 
@@ -40,13 +43,12 @@ public class NodeEdgeHashMap extends GraphHashMap<Node,Node,Edge,Edge>
      * Callback method to create a binary edge image.
      */
     @Override
-    protected Edge createEdge(Node source, Label label,
-            Node target) {
-        return DefaultEdge.createEdge(source, label, target);
+    protected RuleEdge createEdge(RuleNode source, Label label, RuleNode target) {
+        return new RuleEdge(source, label, target);
     }
 
     @Override
-    public NodeEdgeMap clone() {
-        return new NodeEdgeHashMap(this);
+    public RuleGraphMap clone() {
+        return new RuleGraphMap(this);
     }
 }

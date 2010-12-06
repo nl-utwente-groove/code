@@ -18,6 +18,7 @@ package groove.match;
 
 import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
+import groove.trans.RuleNode;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -29,7 +30,7 @@ import java.util.Collections;
  */
 class NodeSearchItem extends AbstractSearchItem {
     /** Constructs a new search item, for a given node. */
-    public NodeSearchItem(Node node) {
+    public NodeSearchItem(RuleNode node) {
         this.node = node;
         this.boundNodes = Collections.singleton(node);
     }
@@ -47,7 +48,7 @@ class NodeSearchItem extends AbstractSearchItem {
      * Returns a singleton set consisting of the single node in this item.
      */
     @Override
-    public Collection<? extends Node> bindsNodes() {
+    public Collection<RuleNode> bindsNodes() {
         return this.boundNodes;
     }
 
@@ -79,13 +80,13 @@ class NodeSearchItem extends AbstractSearchItem {
     /**
      * The edge for which this search item is to find an image.
      */
-    private final Node node;
+    private final RuleNode node;
     /** Flag indicating if the node is pre-matched. */
     private boolean nodeMatched;
     /** The index of {@link #node} in the result. */
     int nodeIx;
     /** Singleton set consisting only of <code>node</code>. */
-    private final Collection<Node> boundNodes;
+    private final Collection<RuleNode> boundNodes;
 
     /**
      * Node search record. The record keeps an iterator over the remaining

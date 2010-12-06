@@ -17,13 +17,10 @@
 package groove.trans;
 
 import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.Node;
-import groove.graph.NodeEdgeHashMap;
-import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
@@ -31,8 +28,8 @@ import groove.graph.algebra.VariableNode;
 import groove.match.MatchStrategy;
 import groove.match.SearchEngine;
 import groove.rel.LabelVar;
-import groove.rel.VarNodeEdgeHashMap;
-import groove.rel.VarNodeEdgeMap;
+import groove.rel.RuleToStateHashMap;
+import groove.rel.RuleToStateMap;
 import groove.rel.VarSupport;
 import groove.view.FormatException;
 
@@ -60,11 +57,11 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * @param labelStore label store specifying the subtype relation
      * @param properties properties for matching the condition
      */
-    protected AbstractCondition(RuleName name, Graph target,
-            NodeEdgeMap rootMap, LabelStore labelStore,
+    protected AbstractCondition(RuleName name, RuleGraph target,
+            RuleGraphMap rootMap, LabelStore labelStore,
             SystemProperties properties) {
         this.ground = (rootMap == null);
-        this.rootMap = this.ground ? new NodeEdgeHashMap() : rootMap;
+        this.rootMap = this.ground ? new RuleGraphMap() : rootMap;
         this.target = target;
         this.systemProperties = properties;
         if (labelStore == null && properties != null) {
@@ -95,7 +92,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
         return this.labelStore;
     }
 
-    public NodeEdgeMap getRootMap() {
+    public RuleGraphMap getRootMap() {
         return this.rootMap;
     }
 
@@ -112,7 +109,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     /**
      * Returns the target set at construction time.
      */
-    public Graph getTarget() {
+    public RuleGraph getTarget() {
         return this.target;
     }
 
@@ -244,10 +241,10 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 
     /**
      * Returns an iterable wrapping a call to
-     * {@link #getMatchIter(GraphShape, NodeEdgeMap)}.
+     * {@link #getMatchIter(GraphShape, RuleToStateMap)}.
      */
     public Iterable<M> getMatches(final GraphShape host,
-            final NodeEdgeMap contextMap) {
+            final RuleToStateMap contextMap) {
         return new Iterable<M>() {
             public Iterator<M> iterator() {
                 return getMatchIter(host, contextMap);
@@ -256,17 +253,17 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     }
 
     final public Iterator<M> getMatchIter(GraphShape host,
-            NodeEdgeMap contextMap) {
+            RuleToStateMap contextMap) {
         Iterator<M> result = null;
         testFixed(true);
         // lift the pattern match to a pre-match of this condition's target
-        final VarNodeEdgeMap anchorMap;
+        final RuleToStateMap anchorMap;
         if (contextMap == null) {
             testGround();
             anchorMap = EMPTY_ANCHOR_MAP;
         } else {
             if (isGround()) {
-                anchorMap = new VarNodeEdgeHashMap(contextMap);
+                anchorMap = new RuleToStateHashMap(contextMap);
             } else {
                 anchorMap = createAnchorMap(contextMap);
             }
@@ -287,7 +284,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * of match maps for this condition.
      */
     abstract Iterator<M> computeMatchIter(GraphShape host,
-            Iterator<VarNodeEdgeMap> matchMaps);
+            Iterator<RuleToStateMap> matchMaps);
 
     /**
      * Factors given matching of the condition context through this condition's
@@ -297,9 +294,9 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      *         a sub-map of <code>contextMap</code>; or <code>null</code> if
      *         there is no such mapping.
      */
-    final VarNodeEdgeMap createAnchorMap(NodeEdgeMap contextMap) {
-        VarNodeEdgeMap result = new VarNodeEdgeHashMap();
-        for (Map.Entry<Node,Node> entry : getRootMap().nodeMap().entrySet()) {
+    final RuleToStateMap createAnchorMap(RuleToStateMap contextMap) {
+        RuleToStateMap result = new RuleToStateHashMap();
+        for (Map.Entry<RuleNode,RuleNode> entry : getRootMap().nodeMap().entrySet()) {
             if (!isAnchorable(entry.getKey())) {
                 continue;
             }
@@ -307,7 +304,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
             assert image != null : String.format(
                 "Context map %s in condition '%s' does not contain image for root %s",
                 contextMap, getName(), entry.getKey());
-            Node key = entry.getValue();
+            RuleNode key = entry.getValue();
             // result already contains an image for nodeKey
             // if it is not the same as the one we want to insert now,
             // stop the whole thing; otherwise we're fine
@@ -316,7 +313,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
                 return null;
             }
         }
-        for (Map.Entry<Edge,Edge> entry : getRootMap().edgeMap().entrySet()) {
+        for (Map.Entry<RuleEdge,RuleEdge> entry : getRootMap().edgeMap().entrySet()) {
             if (!isAnchorable(entry.getKey())) {
                 continue;
             }
@@ -324,7 +321,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
             assert image != null : String.format(
                 "Context map %s does not contain image for root %s",
                 contextMap, entry.getKey());
-            Edge key = entry.getValue();
+            RuleEdge key = entry.getValue();
             // result already contains an image for nodeKey
             // if it is not the same as the one we want to insert now,
             // stop the whole thing; otherwise we're fine
@@ -333,17 +330,13 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
                 return null;
             }
         }
-        if (contextMap instanceof VarNodeEdgeMap) {
-            for (LabelVar var : getRootVars()) {
-                Label image = ((VarNodeEdgeMap) contextMap).getVar(var);
-                if (image == null) {
-                    return null;
-                } else {
-                    result.putVar(var, image);
-                }
+        for (LabelVar var : getRootVars()) {
+            Label image = contextMap.getVar(var);
+            if (image == null) {
+                return null;
+            } else {
+                result.putVar(var, image);
             }
-        } else if (!getRootVars().isEmpty()) {
-            return null;
         }
         return result;
     }
@@ -353,7 +346,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * matched to an actual host graph node. This fails to hold for
      * {@link ProductNode}s that are not {@link VariableNode}s.
      */
-    boolean isAnchorable(Node node) {
+    boolean isAnchorable(RuleNode node) {
         return !(node instanceof ProductNode) || node instanceof VariableNode;
     }
 
@@ -393,7 +386,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * 
      * @see #createMatcher()
      */
-    final public MatchStrategy<VarNodeEdgeMap> getMatcher() {
+    final public MatchStrategy<RuleToStateMap> getMatcher() {
         if (this.matchStrategy == null) {
             this.matchStrategy = createMatcher();
         }
@@ -405,13 +398,13 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * the first invocation of {@link #getMatcher()}. This implementation
      * retrieves its value from {@link #getMatcherFactory()}.
      */
-    MatchStrategy<VarNodeEdgeMap> createMatcher() {
+    MatchStrategy<RuleToStateMap> createMatcher() {
         testFixed(true);
         return getMatcherFactory().createMatcher(this);
     }
 
     /** Returns a matcher factory, tuned to the injectivity of this condition. */
-    SearchEngine<? extends MatchStrategy<VarNodeEdgeMap>> getMatcherFactory() {
+    SearchEngine<? extends MatchStrategy<RuleToStateMap>> getMatcherFactory() {
         //return groove.match.ConditionSearchPlanFactory.getInstance();
         return groove.match.SearchEngineFactory.getInstance().getEngine(
             getSystemProperties().isInjective());
@@ -479,7 +472,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * <code>null</code>; set by {@link #getMatcher()} upon its first
      * invocation.
      */
-    private MatchStrategy<VarNodeEdgeMap> matchStrategy;
+    private MatchStrategy<RuleToStateMap> matchStrategy;
 
     /** The collection of sub-conditions of this condition. */
     private Collection<AbstractCondition<?>> subConditions;
@@ -494,13 +487,13 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * The pattern map of this condition, i.e., the element map from the context
      * graph to the target graph.
      */
-    private final NodeEdgeMap rootMap;
+    private final RuleGraphMap rootMap;
 
     /** Set of all variables occurring in root elements. */
     private Set<LabelVar> rootVars;
 
     /** The target graph of this morphism. */
-    private final Graph target;
+    private final RuleGraph target;
 
     /**
      * Factory instance for creating the correct simulation.
@@ -509,5 +502,5 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     /** Subtyping relation, derived from the SystemProperties. */
     private final LabelStore labelStore;
     /** Constant empty anchor map. */
-    static final VarNodeEdgeMap EMPTY_ANCHOR_MAP = new VarNodeEdgeHashMap();
+    static final RuleToStateMap EMPTY_ANCHOR_MAP = new RuleToStateHashMap();
 }
