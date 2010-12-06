@@ -16,7 +16,6 @@
  */
 package groove.abstraction;
 
-import groove.graph.DefaultNode;
 import groove.graph.Node;
 import groove.graph.NodeFactory;
 
@@ -49,7 +48,7 @@ public final class ShapeNodeFactory implements NodeFactory {
     /** Returns a new ShapeNode object. */
     @Override
     public Node newNode() {
-        return DefaultNode.createNode(ShapeNode.CONS);
+        return ShapeNode.createNode();
     }
 
 }

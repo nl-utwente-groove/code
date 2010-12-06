@@ -210,13 +210,13 @@ public final class Shape extends DefaultGraph {
 
     @Override
     public ShapeNode createNode() {
-        return (ShapeNode) super.createNode(ShapeNode.CONS);
+        return ShapeNode.createNode();
     }
 
     @Override
     public ShapeEdge createEdge(Node source, Label label, Node target) {
-        return (ShapeEdge) super.createEdge(source, label, target,
-            ShapeEdge.CONS);
+        return ShapeEdge.createEdge((ShapeNode) source, label,
+            (ShapeNode) target);
     }
 
     @Override

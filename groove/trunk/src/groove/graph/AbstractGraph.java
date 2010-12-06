@@ -45,15 +45,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends
     }
 
     /**
-     * Factory method for nodes of this graph.
-     * @param constructor an object that specializes the constructor.
-     * @return the freshly created node
-     */
-    public Node createNode(DefaultNode constructor) {
-        return DefaultNode.createNode(constructor);
-    }
-
-    /**
      * Returns the node counter used to number nodes distinctly.
      */
     final protected Dispenser getNodeCounter() {
@@ -72,25 +63,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends
         assert isTypeCorrect(source);
         assert isTypeCorrect(target);
         Edge result = DefaultEdge.createEdge(source, label, target);
-        assert isTypeCorrect(result);
-        return result;
-    }
-
-    /**
-     * Factory method for binary edges of this graph. This implementation
-     * returns a sub type of {@link DefaultEdge}, determined by the constructor.
-     * @param source the source node of the new edge
-     * @param label the label of the new edge
-     * @param target the target node of the new edge
-     * @param constructor an object that specializes the constructor.
-     * @return the freshly binary created edge
-     */
-    public Edge createEdge(Node source, Label label, Node target,
-            DefaultEdge constructor) {
-        assert isTypeCorrect(source);
-        assert isTypeCorrect(target);
-        Edge result =
-            DefaultEdge.createEdge(source, label, target, constructor);
         assert isTypeCorrect(result);
         return result;
     }

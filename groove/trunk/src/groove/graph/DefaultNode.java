@@ -16,8 +16,8 @@
  */
 package groove.graph;
 
+import groove.trans.HostNode;
 import groove.trans.RuleNode;
-import groove.util.Dispenser;
 
 /**
  * Default implementation of a graph node. Default nodes have numbers, but node
@@ -25,7 +25,8 @@ import groove.util.Dispenser;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class DefaultNode extends AbstractNode implements RuleNode {
+public class DefaultNode extends AbstractNode implements RuleNode, HostNode,
+        Node.Factory<DefaultNode> {
     /**
      * Constructs a fresh node, with an explicitly given number. Note that node
      * equality is determined by identity, but it is assumed that never two
@@ -54,113 +55,27 @@ public class DefaultNode extends AbstractNode implements RuleNode {
         return "n";
     }
 
-    /**
-     * Factory method to create a default node with a certain number. The idea
-     * is to create canonical representatives, so node equality is object
-     * equality. For negative numbers, the node is not stored.
-     * @param cons is an object that defines the constructor. Subclasses of
-     *             <code>DefaultNode</code> may override the method
-     *             {@link #newNode(int)} so that the factory creates nodes with
-     *             a more specialized type. See, e.g., <code>ShapeNode</code>.
-     */
-    static public DefaultNode createNode(int nr, DefaultNode cons) {
-        DefaultNode result;
-        if (nr >= 0) {
-            if (nr >= nodes.length) {
-                int newSize =
-                    Math.max((int) (nodes.length * GROWTH_FACTOR), nr + 1);
-                DefaultNode[] newNodes = new DefaultNode[newSize];
-                System.arraycopy(nodes, 0, newNodes, 0, nodes.length);
-                nodes = newNodes;
-            }
-            result = nodes[nr];
-            if (result == null) {
-                result = nodes[nr] = cons.newNode(nr);
-                nextNodeNr = Math.max(nextNodeNr, nr);
-                nodeCount++;
-            }
-        } else {
-            result = cons.newNode(nr);
-        }
-        return result;
-    }
-
     /** Default method that uses the DefaultNode constructor. */
     static public DefaultNode createNode(int nr) {
-        return createNode(nr, CONS);
-    }
-
-    /**
-     * Factory method to create a default node with a number obtained from a
-     * dispenser. Convenience method for
-     * <code>createNode(dispenser.getNumber())</code>.
-     */
-    static public DefaultNode createNode(Dispenser dispenser) {
-        return createNode(dispenser.getNumber());
+        return defaultStore.createNode(nr);
     }
 
     /** Returns the node with the first currently unused node number. */
     static public DefaultNode createNode() {
-        return createNode(nextNodeNr());
+        return defaultStore.createNode();
     }
 
-    /** Returns the node with the first currently unused node number. */
-    static public DefaultNode createNode(DefaultNode constructor) {
-        return createNode(nextNodeNr(), constructor);
+    public static int getHighestNodeNr() {
+        return defaultStore.size();
     }
 
-    /**
-     * Returns the total number of nodes created.
-     * @return the {@link #nodeCount}-value
-     */
-    static public int getNodeCount() {
-        return nodeCount;
+    public static int getNodeCount() {
+        return defaultStore.getNodeCount();
     }
 
-    /**
-     * Returns the maximum node number created.
-     */
-    static public int getHighestNodeNr() {
-        return nextNodeNr;
-    }
-
-    /**
-     * Returns the next free node number, according to the static counter.
-     * @return the next node-number
-     */
-    static private int nextNodeNr() {
-        while (nextNodeNr < nodes.length && nodes[nextNodeNr] != null) {
-            nextNodeNr++;
-        }
-        return nextNodeNr;
-    }
-
-    /**
-     * The total number of nodes in the {@link #nodes} array.
-     */
-    static private int nodeCount;
-
-    /**
-     * First (potentially) fresh node number available.
-     */
-    static private int nextNodeNr;
-
-    /** Initial capacity of the nodes array. */
-    static private final int INIT_CAPACITY = 100;
-    /** Growth factor of the nodes array. */
-    static private final float GROWTH_FACTOR = 2.0f;
-    /**
-     * Array of canonical nodes, such that <code>nodes[i] == 0</code> or
-     * <code>nodes[i].getNumber() == i</code> for all <code>i</code>.
-     */
-    static private DefaultNode[] nodes = new DefaultNode[INIT_CAPACITY];
-
-    /**
-     * Value indicating an invalid node number.
-     */
-    public static final int NO_NODE_NUMBER = -1;
-
-    /** Used only as a reference for the constructor */
-    public static final DefaultNode CONS = new DefaultNode(NO_NODE_NUMBER);
-
+    /** Used only as a prototype for the store. */
+    private static final DefaultNode PROTOTYPE = new DefaultNode(0);
+    /** Store and factory of canonical default nodes. */
+    static private NodeStore<DefaultNode> defaultStore =
+        new NodeStore<DefaultNode>(PROTOTYPE);
 }

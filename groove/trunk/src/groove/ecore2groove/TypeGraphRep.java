@@ -149,7 +149,7 @@ public class TypeGraphRep {
             EList<EClass> superTypes = aClass.getESuperTypes();
 
             for (EClass superType : superTypes) {
-                DefaultEdge edge =
+                Edge edge =
                     DefaultEdge.createEdge(this.eClassToNodeMap.get(aClass),
                         "sub:", this.eClassToNodeMap.get(superType));
                 this.tg.addEdge(edge);
@@ -190,8 +190,7 @@ public class TypeGraphRep {
             String labelText = GraphLabels.getLabel(literal);
             EEnum aEnum = literal.getEEnum();
             Node source = this.eEnumToNodeMap.get(aEnum);
-            DefaultEdge edge =
-                DefaultEdge.createEdge(source, labelText, source);
+            Edge edge = DefaultEdge.createEdge(source, labelText, source);
             this.tg.addEdge(edge);
 
             // Add map of literal to the edge representing it

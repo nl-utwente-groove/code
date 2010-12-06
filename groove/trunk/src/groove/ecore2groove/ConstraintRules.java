@@ -20,6 +20,7 @@ import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
+import groove.graph.Edge;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -1331,8 +1332,7 @@ public class ConstraintRules {
         DefaultNode node = addEnumNode(constraintRule, eEnum);
         for (EEnumLiteral eEnumLiteral : eEnum.getELiterals()) {
             String labelText = GraphLabels.getLabel(eEnumLiteral);
-            DefaultEdge edge =
-                DefaultEdge.createEdge(node, "not:" + labelText, node);
+            Edge edge = DefaultEdge.createEdge(node, "not:" + labelText, node);
             constraintRule.addEdge(edge);
         }
 
@@ -1373,7 +1373,7 @@ public class ConstraintRules {
 
             String regExprStr = "path:" + regExpr.toString();
 
-            DefaultEdge edge = DefaultEdge.createEdge(node, regExprStr, node);
+            Edge edge = DefaultEdge.createEdge(node, regExprStr, node);
             constraintRule.addEdge(edge);
 
             GraphInfo.setRuleRole(constraintRule);
@@ -1399,8 +1399,7 @@ public class ConstraintRules {
             if (eClass.isSuperTypeOf(otherClass) && !eClass.equals(otherClass)) {
                 String subClassLabel =
                     "not:" + GraphLabels.getLabel(otherClass);
-                DefaultEdge edge =
-                    DefaultEdge.createEdge(node, subClassLabel, node);
+                Edge edge = DefaultEdge.createEdge(node, subClassLabel, node);
                 constraintRule.addEdge(edge);
             }
         }
@@ -1417,7 +1416,7 @@ public class ConstraintRules {
      */
     private DefaultNode addClassNode(DefaultGraph constraintRule, EClass eClass) {
         DefaultNode node = DefaultNode.createNode();
-        DefaultEdge edge =
+        Edge edge =
             DefaultEdge.createEdge(node, GraphLabels.getLabel(eClass), node);
 
         constraintRule.addNode(node);
@@ -1434,7 +1433,7 @@ public class ConstraintRules {
      */
     private DefaultNode addEnumNode(DefaultGraph constraintRule, EEnum eEnum) {
         DefaultNode node = DefaultNode.createNode();
-        DefaultEdge edge =
+        Edge edge =
             DefaultEdge.createEdge(node, GraphLabels.getLabel(eEnum), node);
 
         constraintRule.addNode(node);

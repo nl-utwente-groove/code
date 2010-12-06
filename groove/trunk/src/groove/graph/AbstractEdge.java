@@ -84,18 +84,10 @@ public abstract class AbstractEdge<SN extends Node,L extends Label,TN extends No
     }
 
     /**
-     * Slightly more efficient implementation returning the same value as the
-     * super method.
+     * Deterministically computes the hash code out of the
+     * source, label and target.
      */
     protected int computeHashCode() {
-        return edgeHashCode();
-    }
-
-    /**
-     * Slightly more efficient implementation returning the same value as the
-     * super method.
-     */
-    protected int edgeHashCode() {
         int labelCode = label().hashCode();
         int sourceCode = 3 * this.source.hashCode();
         int targetCode = (labelCode + 2) * this.target.hashCode();

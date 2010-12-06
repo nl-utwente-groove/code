@@ -248,7 +248,7 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
      * identity dispenser.
      */
     private Node createNode() {
-        return DefaultNode.createNode(this.nodeDispenser);
+        return DefaultNode.createNode(this.nodeDispenser.getNumber());
     }
 
     /** 

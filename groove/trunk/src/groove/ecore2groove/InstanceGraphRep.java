@@ -20,6 +20,7 @@ import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
+import groove.graph.Edge;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -81,7 +82,7 @@ public class InstanceGraphRep {
             DefaultNode node = DefaultNode.createNode();
             DefaultLabel label = DefaultLabel.createLabel(labelText);
             DefaultLabel rootLabel = DefaultLabel.createLabel("flag:root");
-            DefaultEdge edge = DefaultEdge.createEdge(node, label, node);
+            Edge edge = DefaultEdge.createEdge(node, label, node);
             this.ig.addNode(node);
             this.ig.addEdge(edge);
 
@@ -133,7 +134,7 @@ public class InstanceGraphRep {
                                     if (ordered && previous != null) {
                                         DefaultLabel label =
                                             DefaultLabel.createLabel("next");
-                                        DefaultEdge edge =
+                                        Edge edge =
                                             DefaultEdge.createEdge(previous,
                                                 label, last);
                                         this.ig.addEdge(edge);
@@ -176,7 +177,7 @@ public class InstanceGraphRep {
                                 if (ordered && previous != null) {
                                     DefaultLabel label =
                                         DefaultLabel.createLabel("next");
-                                    DefaultEdge edge =
+                                    Edge edge =
                                         DefaultEdge.createEdge(previous, label,
                                             last);
                                     this.ig.addEdge(edge);
@@ -227,9 +228,9 @@ public class InstanceGraphRep {
                             this.iReferenceToNodeMap.get(Triple.create(target,
                                 oppositeRef, opposite));
                         DefaultNode node2 = nodeStack2.pop();
-                        DefaultEdge opp1Edge =
+                        Edge opp1Edge =
                             DefaultEdge.createEdge(node1, "opposite", node2);
-                        DefaultEdge opp2Edge =
+                        Edge opp2Edge =
                             DefaultEdge.createEdge(node2, "opposite", node1);
                         this.ig.addEdge(opp1Edge);
                         this.ig.addEdge(opp2Edge);
@@ -250,9 +251,9 @@ public class InstanceGraphRep {
                         this.iReferenceToNodeMap.get(Triple.create(target,
                             oppositeRef, opposite));
                     DefaultNode node2 = nodeStack2.pop();
-                    DefaultEdge opp1Edge =
+                    Edge opp1Edge =
                         DefaultEdge.createEdge(node1, "opposite", node2);
-                    DefaultEdge opp2Edge =
+                    Edge opp2Edge =
                         DefaultEdge.createEdge(node2, "opposite", node1);
                     this.ig.addEdge(opp1Edge);
                     this.ig.addEdge(opp2Edge);
@@ -280,28 +281,28 @@ public class InstanceGraphRep {
 
         // Create and add a node to represent the EAttribute itself
         DefaultNode attributeNode = DefaultNode.createNode();
-        DefaultEdge attributeEdge =
+        Edge attributeEdge =
             DefaultEdge.createEdge(attributeNode, attributeLabel, attributeNode);
         this.ig.addNode(attributeNode);
         this.ig.addEdge(attributeEdge);
 
         // Create and add an edge from the container EClass to the EAttribute
         DefaultNode sourceNode = this.iClassToNodeMap.get(source);
-        DefaultEdge sourceEdge =
+        Edge sourceEdge =
             DefaultEdge.createEdge(sourceNode, feature.getName(), attributeNode);
         this.ig.addEdge(sourceEdge);
 
         if (!datatypeLabel.isEmpty()) {
             // Create and add a node to represent that datatype value
             DefaultNode datatypeNode = DefaultNode.createNode();
-            DefaultEdge datatypeEdge =
+            Edge datatypeEdge =
                 DefaultEdge.createEdge(datatypeNode, datatypeLabel,
                     datatypeNode);
             this.ig.addNode(datatypeNode);
             this.ig.addEdge(datatypeEdge);
 
             // Create and add a val edge to the value
-            DefaultEdge targetEdge =
+            Edge targetEdge =
                 DefaultEdge.createEdge(attributeNode, "val", datatypeNode);
             this.ig.addEdge(targetEdge);
 
@@ -309,7 +310,7 @@ public class InstanceGraphRep {
             // added as well
             if (attributeType.eClass().getName().equals("EEnum")) {
                 String flagLabel = "flag:" + target.toString();
-                DefaultEdge flagEdge =
+                Edge flagEdge =
                     DefaultEdge.createEdge(datatypeNode, flagLabel,
                         datatypeNode);
                 this.ig.addEdge(flagEdge);
@@ -337,7 +338,7 @@ public class InstanceGraphRep {
         // Create node to represent the reference and add it to ig
         DefaultNode node = DefaultNode.createNode();
         DefaultLabel label = DefaultLabel.createLabel(labelText);
-        DefaultEdge edge = DefaultEdge.createEdge(node, label, node);
+        Edge edge = DefaultEdge.createEdge(node, label, node);
         this.ig.addNode(node);
         this.ig.addEdge(edge);
 
@@ -351,15 +352,13 @@ public class InstanceGraphRep {
         // EReference node
         DefaultLabel sourceLabel = DefaultLabel.createLabel(feature.getName());
         Node sourceNode = this.iClassToNodeMap.get(source);
-        DefaultEdge sourceEdge =
-            DefaultEdge.createEdge(sourceNode, sourceLabel, node);
+        Edge sourceEdge = DefaultEdge.createEdge(sourceNode, sourceLabel, node);
         this.ig.addEdge(sourceEdge);
 
         // Create and add an edge from the EReference node to the target of the
         // EReference
         Node targetNode = this.iClassToNodeMap.get(target);
-        DefaultEdge targetEdge =
-            DefaultEdge.createEdge(node, "val", targetNode);
+        Edge targetEdge = DefaultEdge.createEdge(node, "val", targetNode);
         this.ig.addEdge(targetEdge);
 
         // Either add the node to the set of nodes that represent the
