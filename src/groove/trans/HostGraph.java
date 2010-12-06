@@ -16,33 +16,49 @@
  */
 package groove.trans;
 
-import groove.graph.AbstractEdge;
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultLabel;
-import groove.graph.Label;
-import groove.graph.algebra.ArgumentEdge;
-import groove.graph.algebra.OperatorEdge;
+import groove.graph.DefaultGraph;
+import groove.graph.DefaultNode;
+
+import java.util.Set;
 
 /**
- * Supertype of all edges that may appear in a {@link RuleGraph}.
- * These are {@link DefaultEdge}s, {@link ArgumentEdge}s and
- * {@link OperatorEdge}s.
+ * Class representing graphs under transformation.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RuleEdge extends AbstractEdge<RuleNode,Label,RuleNode> {
+public class HostGraph extends DefaultGraph {
     /**
-     * Constructs a fresh rule edge
+     * Constructs an empty host graph.
      */
-    public RuleEdge(RuleNode source, Label label, RuleNode target) {
-        super(source, label, target);
+    public HostGraph() {
+        // empty
     }
 
     /**
-     * Constructs a fresh rule edge with a default label constructed from a given
-     * string.
+     * Copies an existing host graph.
      */
-    public RuleEdge(RuleNode source, String label, RuleNode target) {
-        this(source, DefaultLabel.createLabel(label), target);
+    public HostGraph(HostGraph graph) {
+        super(graph);
+    }
+
+    @Override
+    public HostGraph clone() {
+        return new HostGraph(this);
+    }
+
+    @Override
+    public HostGraph newGraph() {
+        return new HostGraph();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<HostNode> nodeSet() {
+        return (Set<HostNode>) super.nodeSet();
+    }
+
+    @Override
+    public HostNode createNode() {
+        return DefaultNode.createNode();
     }
 }

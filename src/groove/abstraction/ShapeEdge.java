@@ -17,6 +17,7 @@
 package groove.abstraction;
 
 import groove.graph.DefaultEdge;
+import groove.graph.EdgeStore;
 import groove.graph.Label;
 import groove.graph.Node;
 
@@ -28,29 +29,9 @@ import groove.graph.Node;
  * @author Eduardo Zambon
  */
 public final class ShapeEdge extends DefaultEdge {
-
-    // ------------------------------------------------------------------------
-    // Static Fields
-    // ------------------------------------------------------------------------
-
-    /** Used only as a reference for the constructor. */
-    public static final ShapeEdge CONS = new ShapeEdge();
-
-    // ------------------------------------------------------------------------
-    // Constructors
-    // ------------------------------------------------------------------------
-
     /** Default constructor. */
     private ShapeEdge(Node source, Label label, Node target, int nr) {
         super(source, label, target, nr);
-    }
-
-    /** 
-     * This is just a factory constructor so we can have a reference for an
-     * object of this class.
-     */
-    private ShapeEdge() {
-        super();
     }
 
     // ------------------------------------------------------------------------
@@ -59,7 +40,7 @@ public final class ShapeEdge extends DefaultEdge {
 
     /** Factory constructor. */
     @Override
-    public DefaultEdge newEdge(Node source, Label label, Node target, int nr) {
+    public ShapeEdge newEdge(Node source, Label label, Node target, int nr) {
         assert source instanceof ShapeNode : "Invalid source node";
         assert target instanceof ShapeNode : "Invalid target node";
         return new ShapeEdge(source, label, target, nr);
@@ -82,4 +63,39 @@ public final class ShapeEdge extends DefaultEdge {
         return this.source().equals(this.target());
     }
 
+    /**
+     * Creates a shape edge from a given source node, label and target node.
+     * To save space, a set of standard instances is kept internally, and
+     * consulted to return the same object whenever an edge is requested with
+     * the same end nodes and label text.
+     * @param source the source node of the new edge; should not be
+     *        <code>null</code>
+     * @param label for the new edge; should not be <code>null</code>
+     * @param target the target node of the new edge; should not be
+     *        <code>null</code>
+     * @return an edge based on <code>source</code>, <code>label</code> and
+     *         <code>target</code>
+     * @see #createEdge(Node, String, Node)
+     */
+    static public ShapeEdge createEdge(ShapeNode source, Label label,
+            ShapeNode target) {
+        return store.createEdge(source, label, target);
+    }
+
+    // ------------------------------------------------------------------------
+    // Static Fields
+    // ------------------------------------------------------------------------
+
+    /** Used only as a reference for the constructor. */
+    private static final ShapeEdge PROTOTYPE = new ShapeEdge(null, null, null,
+        0);
+    /** The static edge store. */
+    private static final EdgeStore<ShapeNode,ShapeEdge> store =
+        new EdgeStore<ShapeNode,ShapeEdge>(new Factory<ShapeNode,ShapeEdge>() {
+            @Override
+            public ShapeEdge newEdge(ShapeNode source, Label label,
+                    ShapeNode target, int nr) {
+                return PROTOTYPE.newEdge(source, label, target, nr);
+            }
+        });
 }

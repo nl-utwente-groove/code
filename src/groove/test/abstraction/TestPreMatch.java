@@ -16,6 +16,7 @@
  */
 package groove.test.abstraction;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.Parameters;
@@ -105,10 +106,10 @@ public class TestPreMatch {
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-match-1");
             Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            assertTrue(preMatches.size() == 3);
+            assertEquals(3, preMatches.size());
             rule = grammar.getRule("test-match-2");
             preMatches = PreMatch.getPreMatches(shape, rule);
-            assertTrue(preMatches.size() == 4);
+            assertEquals(4, preMatches.size());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (FormatException e) {
@@ -126,7 +127,7 @@ public class TestPreMatch {
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-match-3");
             Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            assertTrue(preMatches.size() == 16);
+            assertEquals(16, preMatches.size());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (FormatException e) {

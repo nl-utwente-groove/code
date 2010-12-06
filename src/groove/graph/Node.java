@@ -29,4 +29,15 @@ public interface Node extends Element {
      * This means that different implementations can reuse the same range of numbers.
      */
     int getNumber();
+
+    /** 
+     * Interface for factories of {@link Node} specialisations.
+     * In practice, node classes will be their own factories.
+     */
+    interface Factory<N extends Node> {
+        /** 
+         * Creates a new node of the specified type, with a given number.
+         */
+        N newNode(int nr);
+    }
 }

@@ -18,15 +18,14 @@ package groove.trans;
 
 import groove.graph.DefaultNode;
 import groove.graph.Node;
-import groove.graph.algebra.ProductNode;
+import groove.graph.algebra.ValueNode;
 
 /**
- * Supertype of all nodes that can occur in a {@link RuleGraph}.
- * These are {@link DefaultNode}s and {@link ProductNode}s (or
- * subclasses of the latter).
+ * Supertype of all nodes that can occur in a {@link HostGraph}.
+ * These are {@link DefaultNode}s and {@link ValueNode}s.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface RuleNode extends Node {
+public interface HostNode extends Node {
     // no additional functionality
 }

@@ -93,7 +93,7 @@ public class SystemRecord implements NodeFactory {
      *         call
      */
     public Node newNode() {
-        return DefaultNode.createNode(this.nodeCounter);
+        return DefaultNode.createNode(this.nodeCounter.getNumber());
     }
 
     /** Returns the stored rule system on which the derivations are based. */

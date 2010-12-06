@@ -16,7 +16,7 @@
  */
 package groove.test.abstraction;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import groove.abstraction.Parameters;
 import groove.abstraction.ShapeGenerator;
 
@@ -40,20 +40,20 @@ public class TestShapeGenerator {
 
         generator = new ShapeGenerator();
         generator.generate(GRAMMAR, START_GRAPH, false);
-        assertTrue(generator.getStateCount() == 8
-            && generator.getTransitionCount() == 16);
+        assertEquals(8, generator.getStateCount());
+        assertEquals(16, generator.getTransitionCount());
 
         Parameters.setNodeMultBound(2);
         generator = new ShapeGenerator();
         generator.generate(GRAMMAR, START_GRAPH, false);
-        assertTrue(generator.getStateCount() == 11
-            && generator.getTransitionCount() == 22);
+        assertEquals(11, generator.getStateCount());
+        assertEquals(22, generator.getTransitionCount());
 
         Parameters.setNodeMultBound(3);
         generator = new ShapeGenerator();
         generator.generate(GRAMMAR, START_GRAPH, false);
-        assertTrue(generator.getStateCount() == 14
-            && generator.getTransitionCount() == 28);
+        assertEquals(14, generator.getStateCount());
+        assertEquals(28, generator.getTransitionCount());
 
     }
 
@@ -69,8 +69,8 @@ public class TestShapeGenerator {
 
         generator = new ShapeGenerator();
         generator.generate(GRAMMAR, START_GRAPH, false);
-        assertTrue(generator.getStateCount() == 73
-            && generator.getTransitionCount() == 207);
+        assertEquals(73, generator.getStateCount());
+        assertEquals(207, generator.getTransitionCount());
     }
 
 }
