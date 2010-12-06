@@ -150,11 +150,6 @@ public abstract class AbstractMorphism extends
         return edgeValues.size() == cod().edgeCount();
     }
 
-    public boolean isInjective() {
-        Set<Node> nodeValues = new HashSet<Node>(nodeMap().values());
-        return nodeMap().size() == nodeValues.size();
-    }
-
     public boolean isFixed() {
         return this.fixed;
     }

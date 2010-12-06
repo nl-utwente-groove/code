@@ -864,7 +864,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
 
     /**
      * Class to encapsulate the algorithm used to compute the result of
-     * {@link VarAutomaton#getMatches(GraphShape, Set, Set, Map)}.
+     * {@link Automaton#getMatches(GraphShape, Set, Set, Map)}.
      */
     private class MatchingAlgorithm {
         /** Dummy object used in matching. */
@@ -1452,10 +1452,10 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
                 RelationEdge edge;
                 switch (this.direction) {
                 case FORWARD:
-                    edge = createValuationEdge(startImage, endImage, valuation);
+                    edge = createRelationEdge(startImage, endImage, valuation);
                     break;
                 default:
-                    edge = createValuationEdge(endImage, startImage, valuation);
+                    edge = createRelationEdge(endImage, startImage, valuation);
                 }
                 res |= this.result.addRelated(edge);
             }
@@ -1463,9 +1463,9 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
         }
 
         /**
-         * Callback factory method for a {@link ValuationEdge}.
+         * Callback factory method for a {@link RelationEdge}.
          */
-        protected RelationEdge createValuationEdge(Node source, Node target,
+        RelationEdge createRelationEdge(Node source, Node target,
                 Map<LabelVar,Label> valuation) {
             return new RelationEdge(source, target, valuation);
         }
