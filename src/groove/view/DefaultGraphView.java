@@ -17,17 +17,16 @@
 package groove.view;
 
 import static groove.view.aspect.AttributeAspect.getAttributeValue;
+import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
+import groove.graph.GenericNodeEdgeHashMap;
 import groove.graph.Graph;
-import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.NodeEdgeHashMap;
-import groove.graph.NodeEdgeMap;
 import groove.graph.TypeGraph;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ValueNode;
@@ -95,7 +94,7 @@ public class DefaultGraphView implements GraphView {
     }
 
     @Override
-    public NodeEdgeMap getMap() {
+    public ViewToStateMap getMap() {
         initialise();
         return this.viewToModelMap;
     }
@@ -131,7 +130,7 @@ public class DefaultGraphView implements GraphView {
         // first test if there is something to be done
         if (this.errors == null) {
             this.labelSet = new HashSet<Label>();
-            Pair<Graph,NodeEdgeMap> modelPlusMap = computeModel(this.view);
+            Pair<Graph,ViewToStateMap> modelPlusMap = computeModel(this.view);
             this.model = modelPlusMap.first();
             this.viewToModelMap = modelPlusMap.second();
             this.errors = GraphInfo.getErrors(this.model);
@@ -159,11 +158,11 @@ public class DefaultGraphView implements GraphView {
      * Computes a fresh model from a given aspect graph, together with a mapping
      * from the aspect graph's node to the (fresh) graph nodes.
      */
-    private Pair<Graph,NodeEdgeMap> computeModel(AspectGraph view) {
+    private Pair<Graph,ViewToStateMap> computeModel(AspectGraph view) {
         Set<FormatError> errors = new TreeSet<FormatError>(view.getErrors());
-        Graph model = getGraphFactory().newGraph();
+        Graph model = createGraph();
         // we need to record the view-to-model element map for layout transfer
-        NodeEdgeMap elementMap = new NodeEdgeHashMap();
+        ViewToStateMap elementMap = new ViewToStateMap();
         // copy the nodes from view to model
         for (AspectNode viewNode : view.nodeSet()) {
             try {
@@ -181,10 +180,11 @@ public class DefaultGraphView implements GraphView {
             }
         }
         // remove isolated variable nodes from the result graph
-        Iterator<Map.Entry<Node,Node>> viewToModelIter =
+        Iterator<Map.Entry<AspectNode,Node>> viewToModelIter =
             elementMap.nodeMap().entrySet().iterator();
         while (viewToModelIter.hasNext()) {
-            Map.Entry<Node,Node> viewToModelEntry = viewToModelIter.next();
+            Map.Entry<AspectNode,Node> viewToModelEntry =
+                viewToModelIter.next();
             Node modelNode = viewToModelEntry.getValue();
             if (modelNode instanceof ValueNode
                 && model.edgeSet(modelNode).isEmpty()) {
@@ -197,7 +197,8 @@ public class DefaultGraphView implements GraphView {
         if (this.type != null) {
             Collection<FormatError> typeErrors;
             try {
-                TypeGraph.Typing typing = this.type.checkTyping(model);
+                TypeGraph.Typing<Node,Edge> typing =
+                    this.type.checkTyping(model);
                 typeErrors = new TreeSet<FormatError>();
                 for (Element elem : typing.getAbstractElements()) {
                     if (elem instanceof Node) {
@@ -217,10 +218,10 @@ public class DefaultGraphView implements GraphView {
                 // compute inverse element map
                 Map<Element,Element> inverseMap =
                     new HashMap<Element,Element>();
-                for (Map.Entry<Node,Node> nodeEntry : elementMap.nodeMap().entrySet()) {
+                for (Map.Entry<AspectNode,Node> nodeEntry : elementMap.nodeMap().entrySet()) {
                     inverseMap.put(nodeEntry.getValue(), nodeEntry.getKey());
                 }
-                for (Map.Entry<Edge,Edge> edgeEntry : elementMap.edgeMap().entrySet()) {
+                for (Map.Entry<AspectEdge,Edge> edgeEntry : elementMap.edgeMap().entrySet()) {
                     inverseMap.put(edgeEntry.getValue(), edgeEntry.getKey());
                 }
                 for (FormatError error : typeErrors) {
@@ -232,7 +233,7 @@ public class DefaultGraphView implements GraphView {
         GraphInfo.transfer(view, model, elementMap);
         GraphInfo.setErrors(model, errors);
         model.setFixed();
-        return new Pair<Graph,NodeEdgeMap>(model, elementMap);
+        return new Pair<Graph,ViewToStateMap>(model, elementMap);
     }
 
     /**
@@ -240,7 +241,7 @@ public class DefaultGraphView implements GraphView {
      * element map.
      * @throws FormatException if the presence of the node signifies an error
      */
-    private void processViewNode(Graph model, NodeEdgeMap elementMap,
+    private void processViewNode(Graph model, ViewToStateMap elementMap,
             AspectNode viewNode) throws FormatException {
         FormatError error = null;
         boolean nodeInModel = true;
@@ -285,7 +286,7 @@ public class DefaultGraphView implements GraphView {
      * map and subtypes.
      * @throws FormatException if the presence of the edge signifies an error
      */
-    private void processViewEdge(Graph model, NodeEdgeMap elementMap,
+    private void processViewEdge(Graph model, ViewToStateMap elementMap,
             AspectEdge viewEdge) throws FormatException {
         if (AttributeAspect.isConstant(viewEdge)
             || viewEdge.getModelLabel() == null) {
@@ -354,8 +355,8 @@ public class DefaultGraphView implements GraphView {
     /**
      * Returns the graph factory used to construct the model.
      */
-    private GraphFactory getGraphFactory() {
-        return graphFactory;
+    private Graph createGraph() {
+        return new DefaultGraph();
     }
 
     /** The name of the view. */
@@ -369,13 +370,18 @@ public class DefaultGraphView implements GraphView {
      */
     private List<FormatError> errors;
     /** Map from view to model nodes. */
-    private NodeEdgeMap viewToModelMap;
+    private ViewToStateMap viewToModelMap;
     /** Set of labels occurring in this graph. */
     private Set<Label> labelSet;
     /** The attribute element factory for this view. */
     private AttributeElementFactory attributeFactory;
     /** Optional type graph for this aspect graph. */
     private TypeGraph type;
-    /** The graph factory used by this view, to construct the model. */
-    private static final GraphFactory graphFactory = GraphFactory.getInstance();
+
+    /** Mapping from aspect graph to type graph. */
+    public static class ViewToStateMap extends
+            GenericNodeEdgeHashMap<AspectNode,Node,AspectEdge,Edge> implements
+            ViewToModelMap<Node,Edge> {
+        // no added functionality
+    }
 }

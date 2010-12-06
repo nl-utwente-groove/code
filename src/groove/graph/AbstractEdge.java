@@ -21,12 +21,12 @@ package groove.graph;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class AbstractEdge<N extends Node,L extends Label,TN extends Node>
+public abstract class AbstractEdge<SN extends Node,L extends Label,TN extends Node>
         implements Edge {
     /**
      * Creates an edge with a given source node and label.
      */
-    protected AbstractEdge(N source, L label, TN target) {
+    protected AbstractEdge(SN source, L label, TN target) {
         this.source = source;
         this.label = label;
         this.target = target;
@@ -50,7 +50,7 @@ public abstract class AbstractEdge<N extends Node,L extends Label,TN extends Nod
         return label().text();
     }
 
-    public N source() {
+    public SN source() {
         return this.source;
     }
 
@@ -63,7 +63,7 @@ public abstract class AbstractEdge<N extends Node,L extends Label,TN extends Nod
      * <code>this</code>.
      */
     @Override
-    public AbstractEdge<N,L,TN> clone() {
+    public AbstractEdge<SN,L,TN> clone() {
         return this;
     }
 
@@ -198,7 +198,7 @@ public abstract class AbstractEdge<N extends Node,L extends Label,TN extends Nod
     /**
      * The source node of this edge.
      */
-    protected final N source;
+    protected final SN source;
     /**
      * The label of this edge.
      * @invariant label != null

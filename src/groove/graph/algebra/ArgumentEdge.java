@@ -16,8 +16,8 @@
  */
 package groove.graph.algebra;
 
-import groove.graph.AbstractEdge;
 import groove.graph.DefaultLabel;
+import groove.trans.RuleEdge;
 import groove.util.Groove;
 
 /**
@@ -28,13 +28,22 @@ import groove.util.Groove;
  * @author Harmen Kastenberg
  * @version $Revision 1.0$ $Date: 2008-03-13 14:43:00 $
  */
-public class ArgumentEdge extends
-        AbstractEdge<ProductNode,DefaultLabel,VariableNode> {
+public class ArgumentEdge extends RuleEdge {
     /** Constructs a fresh edge. */
     public ArgumentEdge(ProductNode source, int number, VariableNode target) {
         super(source, DefaultLabel.createLabel("" + Groove.LC_PI + number),
             target);
         this.number = number;
+    }
+
+    @Override
+    public VariableNode target() {
+        return (VariableNode) super.target();
+    }
+
+    @Override
+    public ProductNode source() {
+        return (ProductNode) super.source();
     }
 
     /** Returns the argument number of this edge. */

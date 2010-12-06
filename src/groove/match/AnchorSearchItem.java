@@ -25,6 +25,8 @@ import groove.graph.algebra.VariableNode;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
 import groove.rel.VarSupport;
+import groove.trans.RuleEdge;
+import groove.trans.RuleNode;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,10 +49,9 @@ class AnchorSearchItem extends AbstractSearchItem {
      * @param nodes the set of pre-matched nodes; not <code>null</code>
      * @param edges the set of pre-matched edges; not <code>null</code>
      */
-    AnchorSearchItem(Collection<? extends Node> nodes,
-            Collection<? extends Edge> edges) {
-        this.nodes = new HashSet<Node>(nodes);
-        this.edges = new HashSet<Edge>(edges);
+    AnchorSearchItem(Collection<RuleNode> nodes, Collection<RuleEdge> edges) {
+        this.nodes = new HashSet<RuleNode>(nodes);
+        this.edges = new HashSet<RuleEdge>(edges);
         this.vars = new HashSet<LabelVar>();
         for (Edge edge : edges) {
             this.vars.addAll(VarSupport.getAllVars(edge));
@@ -65,7 +66,7 @@ class AnchorSearchItem extends AbstractSearchItem {
 
     /** This implementation returns the set of pre-matched nodes. */
     @Override
-    public Collection<? extends Node> bindsNodes() {
+    public Collection<RuleNode> bindsNodes() {
         return this.nodes;
     }
 
@@ -85,7 +86,7 @@ class AnchorSearchItem extends AbstractSearchItem {
 
     public void activate(SearchPlanStrategy strategy) {
         this.nodeIxMap = new HashMap<Node,Integer>();
-        for (Node node : this.nodes) {
+        for (RuleNode node : this.nodes) {
             assert !strategy.isNodeFound(node) : String.format(
                 "Node %s is not fresh", node);
             if (isAnchorable(node)) {
@@ -93,7 +94,7 @@ class AnchorSearchItem extends AbstractSearchItem {
             }
         }
         this.edgeIxMap = new HashMap<Edge,Integer>();
-        for (Edge edge : this.edges) {
+        for (RuleEdge edge : this.edges) {
             assert !strategy.isEdgeFound(edge) : String.format(
                 "Edge %s is not fresh", edge);
             if (isAnchorable(edge)) {
@@ -164,9 +165,9 @@ class AnchorSearchItem extends AbstractSearchItem {
     }
 
     /** The set of pre-matched nodes. */
-    private final Set<Node> nodes;
+    private final Set<RuleNode> nodes;
     /** The set of pre-matched edges. */
-    private final Set<Edge> edges;
+    private final Set<RuleEdge> edges;
     /** The set of pre-matched variables. */
     private final Set<LabelVar> vars;
     /**

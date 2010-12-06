@@ -21,20 +21,15 @@ import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.Graph;
 import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
 import groove.graph.LabelStore;
-import groove.graph.Morphism;
-import groove.graph.Node;
-import groove.graph.NodeEdgeHashMap;
-import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.VariableNode;
 import groove.match.MatchStrategy;
 import groove.match.SearchPlanStrategy;
 import groove.rel.LabelVar;
 import groove.rel.RegExprLabel;
-import groove.rel.VarNodeEdgeMap;
+import groove.rel.RuleToStateMap;
 import groove.rel.VarSupport;
 import groove.util.Groove;
 import groove.util.NestedIterator;
@@ -61,17 +56,18 @@ import java.util.TreeSet;
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
-     * @param morph the morphism on which this production is to be based
      * @param name the name of the new rule
+     * @param lhs the left hand side graph of the rule
+     * @param rhs the right hand side graph of the rule
+     * @param morphism the mapping from the LHS to the RHS
      * @param ruleProperties the rule properties
      * @param systemProperties the global grammar properties
      */
-    public SPORule(Morphism morph, RuleName name,
-            GraphProperties ruleProperties, SystemProperties systemProperties) {
-        super(name, morph.dom(), null, null, systemProperties);
-        this.morphism = morph;
-        this.ruleProperties = ruleProperties;
-        this.coRootMap = new NodeEdgeHashMap();
+    public SPORule(RuleName name, RuleGraph lhs, RuleGraph rhs,
+            RuleGraphMap morphism, GraphProperties ruleProperties,
+            SystemProperties systemProperties) {
+        this(name, lhs, rhs, morphism, null, null, null, ruleProperties,
+            systemProperties);
     }
 
     /**
@@ -79,7 +75,9 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * information should be completed lated by a call to
      * {@link #setParent(SPORule, int[])}.
      * @param name the name of the new rule
-     * @param morph the morphism on which this production is to be based
+     * @param lhs the left hand side graph of the rule
+     * @param rhs the right hand side graph of the rule
+     * @param morphism the mapping from the LHS to the RHS
      * @param rootMap pattern map leading into the LHS
      * @param coRootMap map of creator nodes in the parent rule to creator nodes
      *        of this rule
@@ -87,12 +85,15 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @param ruleProperties the rule properties
      * @param systemProperties the global grammar properties
      */
-    public SPORule(RuleName name, Morphism morph, NodeEdgeMap rootMap,
-            NodeEdgeMap coRootMap, LabelStore labelStore,
+    public SPORule(RuleName name, RuleGraph lhs, RuleGraph rhs,
+            RuleGraphMap morphism, RuleGraphMap rootMap,
+            RuleGraphMap coRootMap, LabelStore labelStore,
             GraphProperties ruleProperties, SystemProperties systemProperties) {
-        super(name, morph.dom(), rootMap, labelStore, systemProperties);
-        this.coRootMap = coRootMap == null ? new NodeEdgeHashMap() : coRootMap;
-        this.morphism = morph;
+        super(name, lhs, rootMap, labelStore, systemProperties);
+        this.coRootMap = coRootMap == null ? new RuleGraphMap() : coRootMap;
+        this.lhs = lhs;
+        this.rhs = rhs;
+        this.morphism = morphism;
         this.ruleProperties = ruleProperties;
         assert coRootMap == null
             || rhs().nodeSet().containsAll(coRootMap.nodeMap().values()) : String.format(
@@ -241,7 +242,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @param sig the signature of the rule, i.e., the list of (visible) parameters
      * @param hiddenPars the set of hidden (i.e., unnumbered) parameter nodes
      */
-    public void setSignature(List<CtrlPar.Var> sig, Set<Node> hiddenPars) {
+    public void setSignature(List<CtrlPar.Var> sig, Set<RuleNode> hiddenPars) {
         this.sig = sig;
         this.hiddenPars = hiddenPars;
         List<CtrlPar.Var> derivedSig = new ArrayList<CtrlPar.Var>();
@@ -291,7 +292,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         for (int i = 0; i < this.sig.size(); i++) {
             CtrlPar.Var par = this.sig.get(i);
             int binding;
-            Node ruleNode = par.getRuleNode();
+            RuleNode ruleNode = par.getRuleNode();
             if (par.isCreator()) {
                 // look up the node in the creator nodes
                 binding =
@@ -317,7 +318,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * parameter is a creator parameter, -1 otherwise
      */
     public int isCreatorParameter(int param) {
-        Node paramNode = getSignature().get(param - 1).getRuleNode();
+        RuleNode paramNode = getSignature().get(param - 1).getRuleNode();
         for (int i = 0; i < this.creatorNodes.length; i++) {
             if (this.creatorNodes[i] == paramNode) {
                 return i;
@@ -346,12 +347,12 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Returns the set of hidden (i.e., unnumbered) parameter nodes of this
      * rule.
      */
-    public Set<Node> getHiddenPars() {
+    public Set<RuleNode> getHiddenPars() {
         return this.hiddenPars;
     }
 
     /** Creates the search plan using the rule's search plan factory. */
-    public MatchStrategy<VarNodeEdgeMap> getEventMatcher() {
+    public MatchStrategy<RuleToStateMap> getEventMatcher() {
         if (this.eventMatcher == null) {
             this.eventMatcher =
                 getMatcherFactory().createMatcher(this,
@@ -369,12 +370,14 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 
     /** This implementation sets the anchor graph elements to relevant. */
     @Override
-    MatchStrategy<VarNodeEdgeMap> createMatcher() {
-        Set<Node> anchorNodes = new HashSet<Node>();
-        Set<Edge> anchorEdges = new HashSet<Edge>();
+    MatchStrategy<RuleToStateMap> createMatcher() {
+        Set<RuleNode> anchorNodes = new HashSet<RuleNode>();
+        Set<RuleEdge> anchorEdges = new HashSet<RuleEdge>();
         if (getRootMap() != null) {
             anchorNodes.addAll(getRootMap().nodeMap().values());
-            anchorEdges.addAll(getRootMap().edgeMap().values());
+            for (Edge edge : getRootMap().edgeMap().values()) {
+                anchorEdges.add((RuleEdge) edge);
+            }
         }
         for (CtrlPar.Var par : getSignature()) {
             if (par.isInOnly()) {
@@ -387,14 +390,14 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 
     @Override
     public Iterator<RuleMatch> computeMatchIter(final GraphShape host,
-            Iterator<VarNodeEdgeMap> matchMapIter) {
+            Iterator<RuleToStateMap> matchMapIter) {
         Iterator<RuleMatch> result = null;
         result =
             new NestedIterator<RuleMatch>(
-                new TransformIterator<VarNodeEdgeMap,Iterator<RuleMatch>>(
+                new TransformIterator<RuleToStateMap,Iterator<RuleMatch>>(
                     matchMapIter) {
                     @Override
-                    public Iterator<RuleMatch> toOuter(VarNodeEdgeMap matchMap) {
+                    public Iterator<RuleMatch> toOuter(RuleToStateMap matchMap) {
                         if (isValidMatchMap(host, matchMap)) {
                             return addSubMatches(host, createMatch(matchMap)).iterator();
                         } else {
@@ -411,7 +414,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     Collection<RuleMatch> addSubMatches(GraphShape host, RuleMatch simpleMatch) {
         Collection<RuleMatch> result = Collections.singleton(simpleMatch);
-        VarNodeEdgeMap matchMap = simpleMatch.getElementMap();
+        RuleToStateMap matchMap = simpleMatch.getElementMap();
         for (AbstractCondition<?> condition : getComplexSubConditions()) {
             Iterable<? extends Match> subMatches =
                 condition.getMatches(host, matchMap);
@@ -433,7 +436,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @return a match constructed on the basis of <code>map</code>
      */
     @Override
-    protected RuleMatch createMatch(VarNodeEdgeMap matchMap) {
+    protected RuleMatch createMatch(RuleToStateMap matchMap) {
         return new RuleMatch(this, matchMap);
     }
 
@@ -446,7 +449,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @return <code>true</code> if <code>matchMap</code> satisfies the
      *         constraints imposed by the rule (if any).
      */
-    boolean isValidMatchMap(GraphShape host, VarNodeEdgeMap matchMap) {
+    boolean isValidMatchMap(GraphShape host, RuleToStateMap matchMap) {
         boolean result = true;
         if (SystemProperties.isCheckDangling(getSystemProperties())) {
             result = satisfiesDangling(host, matchMap);
@@ -458,13 +461,13 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Tests if a given (proposed) match into a host graph leaves dangling
      * edges.
      */
-    private boolean satisfiesDangling(GraphShape host, VarNodeEdgeMap match) {
+    private boolean satisfiesDangling(GraphShape host, RuleToStateMap match) {
         boolean result = true;
-        for (Node eraserNode : getEraserNodes()) {
-            Node erasedNode = match.getNode(eraserNode);
+        for (RuleNode eraserNode : getEraserNodes()) {
+            RuleNode erasedNode = (RuleNode) match.getNode(eraserNode);
             Set<Edge> danglingEdges =
                 new HashSet<Edge>(host.edgeSet(erasedNode));
-            for (Edge eraserEdge : lhs().edgeSet(eraserNode)) {
+            for (RuleEdge eraserEdge : lhs().edgeSet(eraserNode)) {
                 boolean removed =
                     danglingEdges.remove(match.getEdge(eraserEdge));
                 assert removed : String.format(
@@ -479,21 +482,15 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         return result;
     }
 
-    public Graph lhs() {
-        if (this.lhs == null) {
-            this.lhs = getMorphism().dom();
-        }
+    public RuleGraph lhs() {
         return this.lhs;
     }
 
-    public Graph rhs() {
-        if (this.rhs == null) {
-            this.rhs = getMorphism().cod();
-        }
+    public RuleGraph rhs() {
         return this.rhs;
     }
 
-    public Morphism getMorphism() {
+    public RuleGraphMap getMorphism() {
         return this.morphism;
     }
 
@@ -545,7 +542,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
                 getName(), Groove.toString(Groove.toArray(getLevel())),
                 Groove.toString(anchor())));
         res.append(String.format("LHS: %s%nRHS: %s%nMorphism: %s", lhs(),
-            rhs(), getMorphism().elementMap()));
+            rhs(), getMorphism()));
         if (!getRootMap().isEmpty()) {
             res.append(String.format("%nRoot map: %s", getRootMap()));
         }
@@ -623,7 +620,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     }
 
     /** Returns an array of nodes isolated in the left hand side. */
-    final public Node[] getIsolatedNodes() {
+    final public RuleNode[] getIsolatedNodes() {
         if (this.isolatedNodes == null) {
             this.isolatedNodes = computeIsolatedNodes();
         }
@@ -631,16 +628,16 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     }
 
     /** Computes the array of nodes isolated in the left hand side. */
-    private Node[] computeIsolatedNodes() {
+    private RuleNode[] computeIsolatedNodes() {
         testFixed(true);
-        Set<Node> result = new HashSet<Node>();
-        for (Node node : lhs().nodeSet()) {
+        Set<RuleNode> result = new HashSet<RuleNode>();
+        for (RuleNode node : lhs().nodeSet()) {
             if (lhs().edgeSet(node).isEmpty()) {
                 result.add(node);
             }
         }
         result.removeAll(getRootMap().nodeMap().values());
-        return result.toArray(new Node[result.size()]);
+        return result.toArray(new RuleNode[result.size()]);
     }
 
     /**
@@ -762,7 +759,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     }
 
     /** Returns the eraser (i.e., LHS-only) edges. */
-    final Edge[] getEraserEdges() {
+    final RuleEdge[] getEraserEdges() {
         if (this.eraserEdges == null) {
             this.eraserEdges = computeEraserEdges();
         }
@@ -772,19 +769,19 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * Computes the eraser (i.e., LHS-only) edges.
      */
-    private Edge[] computeEraserEdges() {
+    private RuleEdge[] computeEraserEdges() {
         testFixed(true);
-        Set<Edge> eraserEdgeSet = new HashSet<Edge>(lhs().edgeSet());
+        Set<RuleEdge> eraserEdgeSet = new HashSet<RuleEdge>(lhs().edgeSet());
         eraserEdgeSet.removeAll(getMorphism().edgeMap().keySet());
         // also remove the incident edges of the lhs-only nodes
-        for (Node eraserNode : getEraserNodes()) {
+        for (RuleNode eraserNode : getEraserNodes()) {
             eraserEdgeSet.removeAll(lhs().edgeSet(eraserNode));
         }
-        return eraserEdgeSet.toArray(new Edge[eraserEdgeSet.size()]);
+        return eraserEdgeSet.toArray(new RuleEdge[eraserEdgeSet.size()]);
     }
 
     /** Returns the eraser edges that are not themselves anchors. */
-    final Edge[] getEraserNonAnchorEdges() {
+    final RuleEdge[] getEraserNonAnchorEdges() {
         if (this.eraserNonAnchorEdges == null) {
             this.eraserNonAnchorEdges = computeEraserNonAnchorEdges();
         }
@@ -794,17 +791,17 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * Computes the array of creator edges that are not themselves anchors.
      */
-    private Edge[] computeEraserNonAnchorEdges() {
-        Set<Edge> eraserNonAnchorEdgeSet =
-            new HashSet<Edge>(Arrays.asList(getEraserEdges()));
+    private RuleEdge[] computeEraserNonAnchorEdges() {
+        Set<RuleEdge> eraserNonAnchorEdgeSet =
+            new HashSet<RuleEdge>(Arrays.asList(getEraserEdges()));
         eraserNonAnchorEdgeSet.removeAll(Arrays.asList(anchor()));
-        return eraserNonAnchorEdgeSet.toArray(new Edge[eraserNonAnchorEdgeSet.size()]);
+        return eraserNonAnchorEdgeSet.toArray(new RuleEdge[eraserNonAnchorEdgeSet.size()]);
     }
 
     /**
      * Returns the LHS nodes that are not mapped to the RHS.
      */
-    final Node[] getEraserNodes() {
+    final RuleNode[] getEraserNodes() {
         if (this.eraserNodes == null) {
             this.eraserNodes = computeEraserNodes();
         }
@@ -814,19 +811,19 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * Computes the eraser (i.e., lhs-only) nodes.
      */
-    private Node[] computeEraserNodes() {
+    private RuleNode[] computeEraserNodes() {
         //testFixed(true);
-        Set<Node> eraserNodeSet = new HashSet<Node>(lhs().nodeSet());
+        Set<RuleNode> eraserNodeSet = new HashSet<RuleNode>(lhs().nodeSet());
         eraserNodeSet.removeAll(getMorphism().nodeMap().keySet());
         // eraserNodeSet.removeAll(getCoRootMap().nodeMap().values());
-        return eraserNodeSet.toArray(new Node[eraserNodeSet.size()]);
+        return eraserNodeSet.toArray(new RuleNode[eraserNodeSet.size()]);
     }
 
     /**
      * Returns an array of LHS nodes that are endpoints of eraser edges, creator
      * edges or mergers, either in this rule or one of its sub-rules.
      */
-    final Set<Node> getModifierEnds() {
+    final Set<RuleNode> getModifierEnds() {
         if (this.modifierEnds == null) {
             this.modifierEnds = computeModifierEnds();
         }
@@ -837,23 +834,23 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Computes the array of LHS nodes that are endpoints of eraser edges,
      * creator edges or mergers, either in this rule or one of its sub-rules.
      */
-    private Set<Node> computeModifierEnds() {
-        Set<Node> result = new HashSet<Node>();
+    private Set<RuleNode> computeModifierEnds() {
+        Set<RuleNode> result = new HashSet<RuleNode>();
         // add the end nodes of creator edges
-        Set<? extends Node> creatorNodes = getCreatorGraph().nodeSet();
-        for (Map.Entry<Node,Node> ruleMorphNodeEntry : getMorphism().nodeMap().entrySet()) {
+        Set<RuleNode> creatorNodes = getCreatorGraph().nodeSet();
+        for (Map.Entry<RuleNode,RuleNode> ruleMorphNodeEntry : getMorphism().nodeMap().entrySet()) {
             if (creatorNodes.contains(ruleMorphNodeEntry.getValue())) {
                 result.add(ruleMorphNodeEntry.getKey());
             }
         }
         // add the end nodes of eraser edges
-        for (Edge eraserEdge : getEraserEdges()) {
-            Node end = eraserEdge.source();
-            if (getMorphism().containsKey(end)) {
+        for (RuleEdge eraserEdge : getEraserEdges()) {
+            RuleNode end = eraserEdge.source();
+            if (getMorphism().containsNodeKey(end)) {
                 result.add(end);
             }
             end = eraserEdge.target();
-            if (getMorphism().containsKey(end)) {
+            if (getMorphism().containsNodeKey(end)) {
                 result.add(end);
             }
         }
@@ -861,25 +858,26 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         result.addAll(getMergeMap().keySet());
         // add inverse images of subrule modifier ends
         for (AbstractCondition<?> condition : getSubConditions()) {
-            Set<Node> childResult = new HashSet<Node>();
+            Set<RuleNode> childResult = new HashSet<RuleNode>();
             for (AbstractCondition<?> subCondition : condition.getSubConditions()) {
                 if (subCondition instanceof SPORule) {
                     // translate anchor nodes from grandchild to child
-                    Set<Node> grandchildResult =
+                    Set<RuleNode> grandchildResult =
                         ((SPORule) subCondition).getModifierEnds();
-                    Map<Node,Node> grandchildRootMap =
+                    Map<RuleNode,RuleNode> grandchildRootMap =
                         subCondition.getRootMap().nodeMap();
-                    for (Map.Entry<Node,Node> rootEntry : grandchildRootMap.entrySet()) {
+                    for (Map.Entry<RuleNode,RuleNode> rootEntry : grandchildRootMap.entrySet()) {
                         if (grandchildResult.contains(rootEntry.getValue())) {
                             childResult.add(rootEntry.getKey());
                         }
                     }
                     // check coroot map for mergers
-                    Set<Node> mergers = new HashSet<Node>();
-                    Map<Node,Node> inverseCoroots = new HashMap<Node,Node>();
-                    for (Map.Entry<Node,Node> coRootEntry : ((SPORule) subCondition).getCoRootMap().nodeMap().entrySet()) {
-                        Node coRootSource = coRootEntry.getKey();
-                        Node coRootTarget = coRootEntry.getValue();
+                    Set<RuleNode> mergers = new HashSet<RuleNode>();
+                    Map<RuleNode,RuleNode> inverseCoroots =
+                        new HashMap<RuleNode,RuleNode>();
+                    for (Map.Entry<RuleNode,RuleNode> coRootEntry : ((SPORule) subCondition).getCoRootMap().nodeMap().entrySet()) {
+                        RuleNode coRootSource = coRootEntry.getKey();
+                        RuleNode coRootTarget = coRootEntry.getValue();
                         if (inverseCoroots.containsKey(coRootTarget)) {
                             mergers.add(coRootSource);
                             mergers.add(inverseCoroots.get(coRootTarget));
@@ -888,15 +886,16 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
                         }
                     }
                     // translate mergers to LHS
-                    for (Map.Entry<Node,Node> lhsToRhsEntry : getMorphism().nodeMap().entrySet()) {
+                    for (Map.Entry<RuleNode,RuleNode> lhsToRhsEntry : getMorphism().nodeMap().entrySet()) {
                         if (mergers.contains(lhsToRhsEntry.getValue())) {
                             result.add(lhsToRhsEntry.getKey());
                         }
                     }
                 }
             }
-            Map<Node,Node> childRootMap = condition.getRootMap().nodeMap();
-            for (Map.Entry<Node,Node> rootEntry : childRootMap.entrySet()) {
+            Map<RuleNode,RuleNode> childRootMap =
+                condition.getRootMap().nodeMap();
+            for (Map.Entry<RuleNode,RuleNode> rootEntry : childRootMap.entrySet()) {
                 if (childResult.contains(rootEntry.getValue())) {
                     result.add(rootEntry.getKey());
                 }
@@ -908,14 +907,14 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         return result;
     }
 
-    NodeEdgeMap getCoRootMap() {
+    RuleGraphMap getCoRootMap() {
         return this.coRootMap;
     }
 
     /**
      * Returns the creator edges between reader nodes.
      */
-    final Edge[] getSimpleCreatorEdges() {
+    final RuleEdge[] getSimpleCreatorEdges() {
         if (this.simpleCreatorEdges == null) {
             this.simpleCreatorEdges = computeSimpleCreatorEdges();
         }
@@ -925,24 +924,24 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * Computes the creator edges between reader nodes.
      */
-    private Edge[] computeSimpleCreatorEdges() {
-        List<Edge> result = new ArrayList<Edge>();
-        Set<Node> nonCreatorNodes = getCreatorMap().nodeMap().keySet();
+    private RuleEdge[] computeSimpleCreatorEdges() {
+        List<RuleEdge> result = new ArrayList<RuleEdge>();
+        Set<RuleNode> nonCreatorNodes = getCreatorMap().nodeMap().keySet();
         // iterate over all creator edges
-        for (Edge edge : getCreatorEdges()) {
+        for (RuleEdge edge : getCreatorEdges()) {
             // determine if this edge is simple
             if (nonCreatorNodes.contains(edge.source())
                 && nonCreatorNodes.contains(edge.target())) {
                 result.add(edge);
             }
         }
-        return result.toArray(new Edge[result.size()]);
+        return result.toArray(new RuleEdge[result.size()]);
     }
 
     /**
      * Returns the creator edges that have at least one creator end.
      */
-    public final Set<Edge> getComplexCreatorEdges() {
+    public final Set<RuleEdge> getComplexCreatorEdges() {
         if (this.complexCreatorEdges == null) {
             this.complexCreatorEdges = computeComplexCreatorEdges();
         }
@@ -952,8 +951,9 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * Computes the creator edges that have at least one creator end.
      */
-    private Set<Edge> computeComplexCreatorEdges() {
-        Set<Edge> result = new HashSet<Edge>(Arrays.asList(getCreatorEdges()));
+    private Set<RuleEdge> computeComplexCreatorEdges() {
+        Set<RuleEdge> result =
+            new HashSet<RuleEdge>(Arrays.asList(getCreatorEdges()));
         result.removeAll(Arrays.asList(getSimpleCreatorEdges()));
         return result;
     }
@@ -961,7 +961,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * Returns the RHS edges that are not images of an LHS edge.
      */
-    final Edge[] getCreatorEdges() {
+    final RuleEdge[] getCreatorEdges() {
         if (this.creatorEdges == null) {
             this.creatorEdges = computeCreatorEdges();
         }
@@ -971,17 +971,17 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * Computes the creator (i.e., RHS-only) edges.
      */
-    private Edge[] computeCreatorEdges() {
-        Set<Edge> result = new HashSet<Edge>(rhs().edgeSet());
+    private RuleEdge[] computeCreatorEdges() {
+        Set<RuleEdge> result = new HashSet<RuleEdge>(rhs().edgeSet());
         result.removeAll(getMorphism().edgeMap().values());
         result.removeAll(getCoRootMap().edgeMap().values());
-        return result.toArray(new Edge[result.size()]);
+        return result.toArray(new RuleEdge[result.size()]);
     }
 
     /**
      * Returns the RHS nodes that are not images of an LHS node.
      */
-    final public Node[] getCreatorNodes() {
+    final public RuleNode[] getCreatorNodes() {
         if (this.creatorNodes == null) {
             this.creatorNodes = computeCreatorNodes();
         }
@@ -991,11 +991,11 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * Computes the creator (i.e., RHS-only) nodes.
      */
-    private Node[] computeCreatorNodes() {
-        Set<Node> result = new HashSet<Node>(rhs().nodeSet());
+    private RuleNode[] computeCreatorNodes() {
+        Set<RuleNode> result = new HashSet<RuleNode>(rhs().nodeSet());
         result.removeAll(getMorphism().nodeMap().values());
         result.removeAll(getCoRootMap().nodeMap().values());
-        return result.toArray(new Node[result.size()]);
+        return result.toArray(new RuleNode[result.size()]);
     }
 
     /**
@@ -1015,7 +1015,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     private LabelVar[] computeCreatorVars() {
         Set<LabelVar> creatorVarSet = new HashSet<LabelVar>();
         for (int i = 0; i < getCreatorEdges().length; i++) {
-            Edge creatorEdge = getCreatorEdges()[i];
+            RuleEdge creatorEdge = getCreatorEdges()[i];
             LabelVar creatorVar =
                 RegExprLabel.getWildcardId(creatorEdge.label());
             if (creatorVar != null) {
@@ -1029,7 +1029,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Returns a sub-graph of the RHS consisting of the creator nodes and the
      * creator edges with their endpoints.
      */
-    final Graph getCreatorGraph() {
+    final RuleGraph getCreatorGraph() {
         if (this.creatorGraph == null) {
             this.creatorGraph = computeCreatorGraph();
         }
@@ -1040,8 +1040,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Computes a creator graph, consisting of the creator nodes together with
      * the creator edges and their endpoints.
      */
-    private Graph computeCreatorGraph() {
-        Graph result = rhs().newGraph();
+    private RuleGraph computeCreatorGraph() {
+        RuleGraph result = rhs().newGraph();
         result.addNodeSet(Arrays.asList(getCreatorNodes()));
         result.addEdgeSet(Arrays.asList(getCreatorEdges()));
         return result;
@@ -1052,7 +1052,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * {@link #getCreatorGraph()}) that are not themselves creator nodes but are
      * the ends of creator edges, to the corresponding nodes of the LHS.
      */
-    final NodeEdgeMap getCreatorMap() {
+    final RuleGraphMap getCreatorMap() {
         if (this.creatorMap == null) {
             this.creatorMap = computeCreatorMap();
         }
@@ -1064,11 +1064,11 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * of creator edges that are not themselves creator nodes to one of their
      * pre-images.
      */
-    private NodeEdgeMap computeCreatorMap() {
+    private RuleGraphMap computeCreatorMap() {
         // construct rhsOnlyMap
-        NodeEdgeMap result = new NodeEdgeHashMap();
-        Set<? extends Node> creatorNodes = getCreatorGraph().nodeSet();
-        for (Map.Entry<Node,Node> nodeEntry : getMorphism().nodeMap().entrySet()) {
+        RuleGraphMap result = new RuleGraphMap();
+        Set<? extends RuleNode> creatorNodes = getCreatorGraph().nodeSet();
+        for (Map.Entry<RuleNode,RuleNode> nodeEntry : getMorphism().nodeMap().entrySet()) {
             if (creatorNodes.contains(nodeEntry.getValue())) {
                 result.putNode(nodeEntry.getValue(), nodeEntry.getKey());
             }
@@ -1080,7 +1080,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Returns a map from LHS nodes that are merged to those LHS nodes they are
      * merged with.
      */
-    final Map<Node,Node> getMergeMap() {
+    final Map<RuleNode,RuleNode> getMergeMap() {
         if (this.mergeMap == null) {
             this.mergeMap = computeMergeMap();
         }
@@ -1091,12 +1091,12 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Computes the merge map, which maps each LHS node that is merged with
      * others to the LHS node it is merged with.
      */
-    private Map<Node,Node> computeMergeMap() {
+    private Map<RuleNode,RuleNode> computeMergeMap() {
         testFixed(true);
-        Map<Node,Node> result = new HashMap<Node,Node>();
-        Map<Node,Node> rhsToLhsMap = new HashMap<Node,Node>();
-        for (Map.Entry<Node,Node> nodeEntry : getMorphism().elementMap().nodeMap().entrySet()) {
-            Node mergeTarget = rhsToLhsMap.get(nodeEntry.getValue());
+        Map<RuleNode,RuleNode> result = new HashMap<RuleNode,RuleNode>();
+        Map<RuleNode,RuleNode> rhsToLhsMap = new HashMap<RuleNode,RuleNode>();
+        for (Map.Entry<RuleNode,RuleNode> nodeEntry : getMorphism().nodeMap().entrySet()) {
+            RuleNode mergeTarget = rhsToLhsMap.get(nodeEntry.getValue());
             if (mergeTarget == null) {
                 mergeTarget = nodeEntry.getKey();
                 rhsToLhsMap.put(nodeEntry.getValue(), mergeTarget);
@@ -1115,7 +1115,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * variable if it carries a regular expression which, when it matches, must
      * provide a value for at least one variable.
      */
-    final Edge[] getSimpleVarEdges() {
+    final RuleEdge[] getSimpleVarEdges() {
         if (this.varEdges == null) {
             this.varEdges = computeSimpleVarEdges();
         }
@@ -1125,8 +1125,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * Computes the set of variable-binding edges occurring in the lhs.
      */
-    private Edge[] computeSimpleVarEdges() {
-        return VarSupport.getSimpleVarEdges(lhs()).toArray(new Edge[0]);
+    private RuleEdge[] computeSimpleVarEdges() {
+        return VarSupport.getSimpleVarEdges(lhs()).toArray(new RuleEdge[0]);
     }
 
     /**
@@ -1135,7 +1135,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * rule. This means it contains all eraser edges and all variables and nodes
      * necessary for creation.
      */
-    private Graph getAnchorGraph() {
+    private RuleGraph getAnchorGraph() {
         if (this.anchorGraph == null) {
             this.anchorGraph = computeAnchorGraph();
         }
@@ -1146,13 +1146,13 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Computes the anchor graph of this rule.
      * @see #getAnchorGraph()
      */
-    private Graph computeAnchorGraph() {
-        Graph result = lhs().newGraph();
+    private RuleGraph computeAnchorGraph() {
+        RuleGraph result = lhs().newGraph();
         for (Element elem : anchor()) {
-            if (elem instanceof Node) {
-                result.addNode((Node) elem);
+            if (elem instanceof RuleNode) {
+                result.addNode((RuleNode) elem);
             } else {
-                result.addEdge((Edge) elem);
+                result.addEdge((RuleEdge) elem);
             }
         }
         // add the root map images
@@ -1168,7 +1168,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * matches. The set consists of the anchor nodes and the root sources of the
      * universal sub-conditions.
      */
-    private Set<Node> getMatchRelevantNodes() {
+    private Set<RuleNode> getMatchRelevantNodes() {
         if (this.matchRelevantNodes == null) {
             this.matchRelevantNodes = computeMatchRelevantGraph();
         }
@@ -1179,14 +1179,14 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Computes the match-relevant nodes of the left hand side.
      * @see #getMatchRelevantNodes()
      */
-    private Set<Node> computeMatchRelevantGraph() {
-        Set<Node> result = new HashSet<Node>();
+    private Set<RuleNode> computeMatchRelevantGraph() {
+        Set<RuleNode> result = new HashSet<RuleNode>();
         for (Element elem : anchor()) {
-            if (elem instanceof Node) {
-                result.add((Node) elem);
+            if (elem instanceof RuleNode) {
+                result.add((RuleNode) elem);
             } else {
-                result.add(((Edge) elem).source());
-                result.add(((Edge) elem).target());
+                result.add(((RuleEdge) elem).source());
+                result.add(((RuleEdge) elem).target());
             }
         }
         // add the root map sources of the sub-conditions
@@ -1203,7 +1203,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         super.computeUnresolvedNodes();
         Iterator<VariableNode> it = this.unresolvedVariableNodes.iterator();
         while (it.hasNext()) {
-            Node node = it.next();
+            RuleNode node = it.next();
             boolean resolved = false;
             for (CtrlPar.Var par : getSignature()) {
                 if (par.getRuleNode() == node && !par.isOutOnly()) {
@@ -1259,50 +1259,50 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * The underlying production morphism.
      * @invariant ruleMorph : lhs --> rhs
      */
-    private final Morphism morphism;
+    private final RuleGraphMap morphism;
     /**
      * This production rule's left hand side.
      * @invariant lhs != null
      */
-    private Graph lhs;
+    private RuleGraph lhs;
     /**
      * This production rule's right hand side.
      * @invariant rhs != null
      */
-    private Graph rhs;
+    private RuleGraph rhs;
     /** Mapping from the context of this rule to the RHS. */
-    private final NodeEdgeMap coRootMap;
+    private final RuleGraphMap coRootMap;
     /**
      * Smallest subgraph of the left hand side that is necessary to apply the
      * rule.
      */
-    private Graph anchorGraph;
+    private RuleGraph anchorGraph;
     /**
      * Subgraph of the left hand containing all elements that are used to
      * distinguish matches.
      */
-    private Set<Node> matchRelevantNodes;
+    private Set<RuleNode> matchRelevantNodes;
     /**
      * A sub-graph of the production rule's right hand side, consisting only of
      * the fresh nodes and edges.
      */
-    private Graph creatorGraph;
+    private RuleGraph creatorGraph;
     /**
      * A map from the nodes of <tt>rhsOnlyGraph</tt> to <tt>lhs</tt>, which is
      * the restriction of the inverse of <tt>ruleMorph</tt> to
      * <tt>rhsOnlyGraph</tt>.
      */
-    private NodeEdgeMap creatorMap;
+    private RuleGraphMap creatorMap;
     /**
      * The lhs nodes that are not ruleMorph keys
      * @invariant lhsOnlyNodes \subseteq lhs.nodeSet()
      */
-    private Node[] eraserNodes;
+    private RuleNode[] eraserNodes;
     /**
      * The lhs edges that are not ruleMorph keys
      * @invariant lhsOnlyEdges \subseteq lhs.edgeSet()
      */
-    private Edge[] eraserEdges;
+    private RuleEdge[] eraserEdges;
     /**
      * The set of anchors of this rule.
      */
@@ -1310,39 +1310,39 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * The lhs edges that are not ruleMorph keys and are not anchors
      */
-    private Edge[] eraserNonAnchorEdges;
+    private RuleEdge[] eraserNonAnchorEdges;
     /**
      * The lhs edges containing bound variables.
      */
-    private Edge[] varEdges;
+    private RuleEdge[] varEdges;
     /**
      * The lhs nodes that are end points of eraser edges, either in this rule or
      * one of its sub-rules.
      */
-    private Set<Node> modifierEnds;
+    private Set<RuleNode> modifierEnds;
     /**
      * The LHS nodes that do not have any incident edges in the LHS.
      */
-    private Node[] isolatedNodes;
+    private RuleNode[] isolatedNodes;
     /**
      * The rhs nodes that are not ruleMorph images
      * @invariant creatorNodes \subseteq rhs.nodeSet()
      */
-    private Node[] creatorNodes;
+    private RuleNode[] creatorNodes;
 
     /**
      * The rhs edges that are not ruleMorph images
      */
-    private Edge[] creatorEdges;
+    private RuleEdge[] creatorEdges;
     /**
      * The rhs edges that are not ruleMorph images but with all ends morphism
      * images
      */
-    private Edge[] simpleCreatorEdges;
+    private RuleEdge[] simpleCreatorEdges;
     /**
      * The rhs edges with at least one end not a morphism image
      */
-    private Set<Edge> complexCreatorEdges;
+    private Set<RuleEdge> complexCreatorEdges;
     /**
      * Variables occurring in the rhsOnlyEdges
      */
@@ -1351,7 +1351,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * A partial mapping from LHS nodes to RHS nodes, indicating which nodes are
      * merged and which nodes are deleted.
      */
-    private Map<Node,Node> mergeMap;
+    private Map<RuleNode,RuleNode> mergeMap;
 
     private GraphProperties ruleProperties;
 
@@ -1366,9 +1366,9 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * Set of anonymous (unnumbered) parameters.
      */
-    private Set<Node> hiddenPars;
+    private Set<RuleNode> hiddenPars;
     /** The matcher for events of this rule. */
-    private MatchStrategy<VarNodeEdgeMap> eventMatcher;
+    private MatchStrategy<RuleToStateMap> eventMatcher;
 
     /** Returns the current anchor factory for all rules. */
     public static AnchorFactory<SPORule> getAnchorFactory() {
@@ -1390,24 +1390,6 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     static public long getMatchingTime() {
         return SearchPlanStrategy.searchFindReporter.getTotalTime();
     }
-
-    //
-    //    /** Special rule that models termination. */
-    //    public static final SPORule OMEGA_RULE;
-    //    static {
-    //        Graph emptyGraph = AbstractGraph.EMPTY_GRAPH;
-    //        Morphism emptyMorph = new DefaultMorphism(emptyGraph, emptyGraph);
-    //        GraphProperties ruleProperties = new GraphProperties();
-    //        SystemProperties systemProperties = new SystemProperties();
-    //        OMEGA_RULE =
-    //            new SPORule(emptyMorph, new RuleName(OMEGA_NAME), ruleProperties,
-    //                systemProperties);
-    //        try {
-    //            OMEGA_RULE.setFixed();
-    //        } catch (FormatException e) {
-    //            assert false;
-    //        }
-    //    }
 
     /**
      * The factory used for creating rule anchors.

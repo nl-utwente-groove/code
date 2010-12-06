@@ -92,6 +92,18 @@ public class TypeNode implements Node {
         return this.type;
     }
 
+    /** Indicates if this node type is abstract. */
+    public final boolean isAbstract() {
+        return this.abstractType;
+    }
+
+    /** Sets this node type to abstract. */
+    public final void setAbstract() {
+        this.abstractType = true;
+    }
+
+    /** Flag indicating if this edge type is abstract. */
+    private boolean abstractType;
     /** The number of this node. */
     private final int nr;
     /** The type of this node. */

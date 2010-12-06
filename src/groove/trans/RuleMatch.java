@@ -16,7 +16,7 @@
  */
 package groove.trans;
 
-import groove.rel.VarNodeEdgeMap;
+import groove.rel.RuleToStateMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,7 +28,7 @@ import java.util.Collection;
  */
 public class RuleMatch extends CompositeMatch {
     /** Constructs a match for a given {@link SPORule}. */
-    public RuleMatch(SPORule rule, VarNodeEdgeMap elementMap) {
+    public RuleMatch(SPORule rule, RuleToStateMap elementMap) {
         super(elementMap);
         this.rule = rule;
     }
@@ -76,7 +76,7 @@ public class RuleMatch extends CompositeMatch {
 
     /**
      * Callback factory method to create a simple event. Delegates to
-     * {@link SystemRecord#createSimpleEvent(SPORule, VarNodeEdgeMap)} if
+     * {@link SystemRecord#createSimpleEvent(SPORule, RuleToStateMap)} if
      * <code>nodeFactory</code> is not <code>null</code>.
      */
     private SPOEvent createSimpleEvent(SystemRecord nodeFactory) {
@@ -89,7 +89,7 @@ public class RuleMatch extends CompositeMatch {
 
     /**
      * Callback factory method to create a composite event. Delegates to
-     * {@link SystemRecord#createSimpleEvent(SPORule, VarNodeEdgeMap)} if
+     * {@link SystemRecord#createSimpleEvent(SPORule, RuleToStateMap)} if
      * <code>nodeFactory</code> is not <code>null</code>.
      */
     private RuleEvent createCompositeEvent(SystemRecord nodeFactory,

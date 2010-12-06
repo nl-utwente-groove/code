@@ -16,18 +16,13 @@
  */
 package groove.trans;
 
-import groove.graph.DefaultEdge;
-import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.LabelStore;
-import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
-import groove.rel.VarNodeEdgeMap;
+import groove.rel.RuleToStateMap;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
@@ -60,7 +55,7 @@ abstract public class PositiveCondition<M extends Match> extends
      * @param properties properties for matching the condition; may be
      *        <code>null</code>
      */
-    PositiveCondition(RuleName name, Graph target, NodeEdgeMap rootMap,
+    PositiveCondition(RuleName name, RuleGraph target, RuleGraphMap rootMap,
             LabelStore labelStore, SystemProperties properties) {
         super(name, target, rootMap, labelStore, properties);
     }
@@ -84,7 +79,7 @@ abstract public class PositiveCondition<M extends Match> extends
         Set<FormatError> errors = new TreeSet<FormatError>();
         computeUnresolvedNodes();
         stabilizeUnresolvedNodes();
-        for (Node node : this.unresolvedVariableNodes) {
+        for (RuleNode node : this.unresolvedVariableNodes) {
             errors.add(new FormatError(
                 "Cannot resolve attribute value node '%s'", node));
         }
@@ -113,11 +108,11 @@ abstract public class PositiveCondition<M extends Match> extends
         this.unresolvedVariableNodes = new HashSet<VariableNode>();
         this.unresolvedProductNodes = new HashMap<ProductNode,BitSet>();
         // test if product nodes have the required arguments
-        for (Node node : getTarget().nodeSet()) {
+        for (RuleNode node : getTarget().nodeSet()) {
             if (node instanceof VariableNode && !(node instanceof ValueNode)) {
                 boolean hasIncomingNonAttributeEdge = false;
-                for (Edge edge : getTarget().inEdgeSet(node)) {
-                    if (edge instanceof DefaultEdge) {
+                for (RuleEdge edge : getTarget().inEdgeSet(node)) {
+                    if (edge.getClass().equals(RuleEdge.class)) {
                         hasIncomingNonAttributeEdge = true;
                     }
                 }
@@ -131,7 +126,7 @@ abstract public class PositiveCondition<M extends Match> extends
             }
         }
         this.unresolvedVariableNodes.removeAll(getRootMap().nodeMap().values());
-        for (Node node : getRootMap().nodeMap().values()) {
+        for (RuleNode node : getRootMap().nodeMap().values()) {
             this.unresolvedProductNodes.remove(node);
         }
     }
@@ -154,7 +149,7 @@ abstract public class PositiveCondition<M extends Match> extends
                 Map.Entry<ProductNode,BitSet> productEntry = productIter.next();
                 ProductNode product = productEntry.getKey();
                 BitSet arguments = productEntry.getValue();
-                for (Edge edge : getTarget().outEdgeSet(product)) {
+                for (RuleEdge edge : getTarget().outEdgeSet(product)) {
                     if (edge instanceof ArgumentEdge
                         && !this.unresolvedVariableNodes.contains(edge.target())) {
                         int argumentNumber = ((ArgumentEdge) edge).getNumber();
@@ -164,7 +159,7 @@ abstract public class PositiveCondition<M extends Match> extends
                 if (arguments.cardinality() == product.arity()) {
                     // the product node is resolved, so resolve the targets of
                     // the outgoing operations
-                    for (Edge edge : getTarget().outEdgeSet(product)) {
+                    for (RuleEdge edge : getTarget().outEdgeSet(product)) {
                         if (edge instanceof OperatorEdge) {
                             if (this.unresolvedVariableNodes.remove(((OperatorEdge) edge).target())) {
                                 stable = false;
@@ -216,7 +211,7 @@ abstract public class PositiveCondition<M extends Match> extends
       *        {@link #getTarget()} into some host graph
       * @return a match constructed on the basis of <code>map</code>
       */
-    abstract M createMatch(VarNodeEdgeMap matchMap);
+    abstract M createMatch(RuleToStateMap matchMap);
 
     /**
      * The sub-conditions that are not edge or merge embargoes.

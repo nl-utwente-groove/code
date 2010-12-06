@@ -54,7 +54,7 @@ public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
             new LinkedHashSet<Element>(Arrays.asList(rule.getEraserNodes()));
         Set<Node> parameters = new LinkedHashSet<Node>();
         if (rule.isTop()) {
-            Set<Node> hiddenPars = rule.getHiddenPars();
+            Set<RuleNode> hiddenPars = rule.getHiddenPars();
             if (hiddenPars != null) {
                 parameters.addAll(hiddenPars);
             }

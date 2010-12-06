@@ -17,8 +17,8 @@
 package groove.match;
 
 import groove.graph.Edge;
-import groove.graph.Node;
 import groove.rel.LabelVar;
+import groove.trans.RuleNode;
 
 import java.util.Collection;
 
@@ -51,13 +51,13 @@ public interface SearchItem extends Comparable<SearchItem> {
      * Returns the collection of nodes that should already be matched before
      * this item should be scheduled.
      */
-    Collection<Node> needsNodes();
+    Collection<RuleNode> needsNodes();
 
     /**
      * Returns the collection of nodes for which this search item will find a
      * matching when activated.
      */
-    Collection<? extends Node> bindsNodes();
+    Collection<RuleNode> bindsNodes();
 
     /**
      * Returns the collection of label variables that should already be matched

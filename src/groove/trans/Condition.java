@@ -16,11 +16,10 @@
  */
 package groove.trans;
 
-import groove.graph.Graph;
 import groove.graph.GraphShape;
 import groove.graph.LabelStore;
-import groove.graph.NodeEdgeMap;
 import groove.rel.LabelVar;
+import groove.rel.RuleToStateMap;
 import groove.util.Fixable;
 import groove.view.FormatException;
 
@@ -53,7 +52,7 @@ public interface Condition extends Fixable {
      * The root map identifies the elements of the target that are expected to
      * be matched before the condition is tested.
      */
-    public NodeEdgeMap getRootMap();
+    public RuleGraphMap getRootMap();
 
     /**
      * Set of variables in the target of this condition that also occur in root
@@ -65,7 +64,7 @@ public interface Condition extends Fixable {
      * The codomain of the pattern morphism. Convenience method for
      * <code>getPattern().cod()</code>.
      */
-    public Graph getTarget();
+    public RuleGraph getTarget();
 
     /** Returns the secondary properties of this graph condition. */
     public SystemProperties getSystemProperties();
@@ -119,5 +118,5 @@ public interface Condition extends Fixable {
      *         graph
      */
     public Iterator<? extends Match> getMatchIter(GraphShape host,
-            NodeEdgeMap contextMap);
+            RuleToStateMap contextMap);
 }

@@ -23,6 +23,7 @@ import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.match.SearchPlanStrategy.Search;
+import groove.trans.RuleNode;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,13 +49,13 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
         this.operation = edge.getOperation();
         this.arguments = edge.source().getArguments();
         this.target = edge.target();
-        this.neededNodes = new HashSet<Node>(this.arguments);
+        this.neededNodes = new HashSet<RuleNode>(this.arguments);
         if (this.target instanceof ValueNode) {
-            this.boundNodes = Collections.<Node>emptySet();
+            this.boundNodes = Collections.<RuleNode>emptySet();
             this.neededNodes.add(this.target);
             this.value = ((ValueNode) this.target).getValue();
         } else {
-            this.boundNodes = Collections.<Node>singleton(this.target);
+            this.boundNodes = Collections.<RuleNode>singleton(this.target);
             this.value = null;
         }
     }
@@ -68,7 +69,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
      * edge.
      */
     @Override
-    public Collection<? extends Node> bindsNodes() {
+    public Collection<RuleNode> bindsNodes() {
         return this.boundNodes;
     }
 
@@ -76,7 +77,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
      * Returns the set of argument nodes of the source (product) node.
      */
     @Override
-    public Collection<Node> needsNodes() {
+    public Collection<RuleNode> needsNodes() {
         return this.neededNodes;
     }
 
@@ -96,7 +97,8 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
         int result = 0;
         if (other instanceof OperatorEdgeSearchItem) {
             OperatorEdge otherEdge = ((OperatorEdgeSearchItem) other).getEdge();
-            List<VariableNode> otherArguments = otherEdge.source().getArguments();
+            List<VariableNode> otherArguments =
+                otherEdge.source().getArguments();
             result = this.edge.label().compareTo(otherEdge.label());
             for (int i = 0; result == 0 && i < this.arguments.size(); i++) {
                 result = this.arguments.get(i).compareTo(otherArguments.get(i));
@@ -145,9 +147,9 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
     /** The value of the target node, if it is a constant. */
     final Object value;
     /** Singleton set consisting of <code>target</code>. */
-    final Collection<Node> boundNodes;
+    final Collection<RuleNode> boundNodes;
     /** Set of the nodes in <code>arguments</code>. */
-    final Collection<Node> neededNodes;
+    final Collection<RuleNode> neededNodes;
     /** Indices of the argument nodes in the result. */
     int[] argumentIxs;
     /** Flag indicating if the target node has been found at search time. */

@@ -593,7 +593,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Switches the simulator to the state panel view, and
      * refreshes the actions.
      */
-    private void switchSimulatorToRulePanel() {
+    void switchSimulatorToRulePanel() {
         getSimulator().setGraphPanel(getSimulator().getRulePanel());
         getSimulator().refreshActions();
     }

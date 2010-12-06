@@ -28,7 +28,10 @@ import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.Condition;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
+import groove.trans.RuleEdge;
+import groove.trans.RuleGraph;
 import groove.trans.RuleMatch;
+import groove.trans.RuleNode;
 import groove.trans.SPORule;
 import groove.util.Reporter;
 import groove.view.StoredGrammarView;
@@ -265,17 +268,17 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
 
     @Override
     public synchronized ReteStrategy createMatcher(Condition condition,
-            Collection<? extends Node> anchorNodes,
-            Collection<? extends Edge> anchorEdges,
-            Collection<? extends Node> relevantNodes) {
+            Collection<RuleNode> anchorNodes,
+            Collection<RuleEdge> anchorEdges,
+            Collection<RuleNode> relevantNodes) {
         //this will get more complicated when we have complex conditions        
         return new ReteStrategy(this, condition);
     }
 
     @Override
-    public synchronized ReteStrategy createMatcher(GraphShape graph,
-            Collection<? extends Node> anchorNodes,
-            Collection<? extends Edge> anchorEdges, LabelStore labelStore) {
+    public synchronized ReteStrategy createMatcher(RuleGraph graph,
+            Collection<RuleNode> anchorNodes,
+            Collection<RuleEdge> anchorEdges, LabelStore labelStore) {
         //right now we just assume the graph is actually 
         return new ReteStrategy(this, null);
     }

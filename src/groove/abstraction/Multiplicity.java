@@ -134,7 +134,7 @@ public final class Multiplicity {
      * Returns the multiplicity of the set of nodes given, bounded by the node
      * multiplicity bound (\nu) set in the Parameters class. 
      */
-    public static Multiplicity getNodeSetMult(Set<Node> nodes) {
+    public static Multiplicity getNodeSetMult(Set<? extends Node> nodes) {
         int setSize = nodes.size();
         int nodesMultBound = Parameters.getNodeMultBound();
         return getMult(setSize, nodesMultBound);
@@ -144,7 +144,7 @@ public final class Multiplicity {
      * Returns the multiplicity of the set of edges given, bounded by the edge
      * multiplicity bound (\mu) set in the Parameters class. 
      */
-    public static Multiplicity getEdgeSetMult(Set<Edge> edges) {
+    public static Multiplicity getEdgeSetMult(Set<? extends Edge> edges) {
         int setSize = edges.size();
         int edgesMultBound = Parameters.getEdgeMultBound();
         return getMult(setSize, edgesMultBound);
@@ -169,7 +169,7 @@ public final class Multiplicity {
     }
 
     /** Returns true if both given sets have the same multiplicity. */
-    public static boolean haveSameMult(Set<Edge> s0, Set<Edge> s1) {
+    public static <E extends Edge> boolean haveSameMult(Set<E> s0, Set<E> s1) {
         return getEdgeSetMult(s0).equals(getEdgeSetMult(s1));
     }
 

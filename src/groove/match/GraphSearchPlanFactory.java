@@ -16,10 +16,8 @@
  */
 package groove.match;
 
-import groove.graph.DefaultEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
-import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.Node;
@@ -32,6 +30,9 @@ import groove.rel.LabelVar;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.rel.VarSupport;
+import groove.trans.RuleEdge;
+import groove.trans.RuleGraph;
+import groove.trans.RuleNode;
 import groove.util.Bag;
 import groove.util.HashBag;
 
@@ -86,9 +87,9 @@ public class GraphSearchPlanFactory {
      * @return a list of search items that will result in a matching of
      *         <code>graph</code> when successfully executed in the given order
      */
-    public SearchPlanStrategy createMatcher(GraphShape graph,
-            Collection<? extends Node> anchorNodes,
-            Collection<? extends Edge> anchorEdges, LabelStore labelStore) {
+    public SearchPlanStrategy createMatcher(RuleGraph graph,
+            Collection<RuleNode> anchorNodes, Collection<RuleEdge> anchorEdges,
+            LabelStore labelStore) {
         PlanData data = new PlanData(graph, labelStore);
         SearchPlanStrategy result =
             new SearchPlanStrategy(graph,
@@ -164,11 +165,11 @@ public class GraphSearchPlanFactory {
          * @param graph the graph to be matched by the plan
          * @param labelStore the label store containing the subtype relation
          */
-        PlanData(GraphShape graph, LabelStore labelStore) {
+        PlanData(RuleGraph graph, LabelStore labelStore) {
             // compute the set of remaining (unmatched) nodes
-            this.remainingNodes = new LinkedHashSet<Node>(graph.nodeSet());
+            this.remainingNodes = new LinkedHashSet<RuleNode>(graph.nodeSet());
             // compute the set of remaining (unmatched) edges and variables
-            this.remainingEdges = new LinkedHashSet<Edge>(graph.edgeSet());
+            this.remainingEdges = new LinkedHashSet<RuleEdge>(graph.edgeSet());
             this.remainingVars =
                 new LinkedHashSet<LabelVar>(VarSupport.getAllVars(graph));
             this.labelStore = labelStore;
@@ -182,8 +183,8 @@ public class GraphSearchPlanFactory {
          *        <code>null</code> for an empty set
          */
         public List<AbstractSearchItem> getPlan(
-                Collection<? extends Node> anchorNodes,
-                Collection<? extends Edge> anchorEdges) {
+                Collection<RuleNode> anchorNodes,
+                Collection<RuleEdge> anchorEdges) {
             if (this.used) {
                 throw new IllegalStateException(
                     "Method getPlan() was already called");
@@ -217,14 +218,14 @@ public class GraphSearchPlanFactory {
          *        <code>null</code> for an empty set
          */
         Collection<AbstractSearchItem> computeSearchItems(
-                Collection<? extends Node> anchorNodes,
-                Collection<? extends Edge> anchorEdges) {
+                Collection<RuleNode> anchorNodes,
+                Collection<RuleEdge> anchorEdges) {
             Collection<AbstractSearchItem> result =
                 new ArrayList<AbstractSearchItem>();
-            Set<Node> unmatchedNodes =
-                new LinkedHashSet<Node>(this.remainingNodes);
-            Set<Edge> unmatchedEdges =
-                new LinkedHashSet<Edge>(this.remainingEdges);
+            Set<RuleNode> unmatchedNodes =
+                new LinkedHashSet<RuleNode>(this.remainingNodes);
+            Set<RuleEdge> unmatchedEdges =
+                new LinkedHashSet<RuleEdge>(this.remainingEdges);
             // first a single search item for the pre-matched elements
             if (anchorNodes == null) {
                 anchorNodes = Collections.emptySet();
@@ -240,16 +241,16 @@ public class GraphSearchPlanFactory {
                 unmatchedEdges.removeAll(preMatchItem.bindsEdges());
             }
             // match all the value nodes explicitly
-            Iterator<Node> unmatchedNodeIter = unmatchedNodes.iterator();
+            Iterator<RuleNode> unmatchedNodeIter = unmatchedNodes.iterator();
             while (unmatchedNodeIter.hasNext()) {
-                Node node = unmatchedNodeIter.next();
+                RuleNode node = unmatchedNodeIter.next();
                 if (node instanceof ValueNode) {
                     result.add(createNodeSearchItem(node));
                     unmatchedNodeIter.remove();
                 }
             }
             // then a search item per remaining edge
-            for (Edge edge : unmatchedEdges) {
+            for (RuleEdge edge : unmatchedEdges) {
                 AbstractSearchItem edgeItem = createEdgeSearchItem(edge);
                 if (edgeItem != null) {
                     result.add(edgeItem);
@@ -257,7 +258,7 @@ public class GraphSearchPlanFactory {
                 }
             }
             // finally a search item per remaining node
-            for (Node node : unmatchedNodes) {
+            for (RuleNode node : unmatchedNodes) {
                 AbstractSearchItem nodeItem = createNodeSearchItem(node);
                 if (nodeItem != null) {
                     assert !(node instanceof VariableNode)
@@ -326,10 +327,10 @@ public class GraphSearchPlanFactory {
         /**
          * Callback factory method for creating an edge search item.
          */
-        protected AbstractSearchItem createEdgeSearchItem(Edge edge) {
+        protected AbstractSearchItem createEdgeSearchItem(RuleEdge edge) {
             Label label = edge.label();
-            Node target = edge.target();
-            Node source = edge.source();
+            RuleNode target = edge.target();
+            RuleNode source = edge.source();
             RegExpr negOperand = RegExprLabel.getNegOperand(label);
             if (negOperand instanceof RegExpr.Empty) {
                 if (!GraphSearchPlanFactory.this.ignoreNeg) {
@@ -337,9 +338,8 @@ public class GraphSearchPlanFactory {
                 }
             } else if (negOperand != null) {
                 if (!GraphSearchPlanFactory.this.ignoreNeg) {
-                    Edge negatedEdge =
-                        DefaultEdge.createEdge(source, negOperand.toLabel(),
-                            target);
+                    RuleEdge negatedEdge =
+                        new RuleEdge(source, negOperand.toLabel(), target);
                     return createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
                 }
             } else if (RegExprLabel.isSharp(label)) {
@@ -351,9 +351,9 @@ public class GraphSearchPlanFactory {
             } else if (label.isNodeType()) {
                 return new NodeTypeSearchItem(edge, this.labelStore);
             } else if (RegExprLabel.isAtom(label)) {
-                DefaultEdge defaultEdge =
-                    DefaultEdge.createEdge(source,
-                        RegExprLabel.getAtomText(label), target);
+                RuleEdge defaultEdge =
+                    new RuleEdge(source, RegExprLabel.getAtomText(label),
+                        target);
                 return new Edge2SearchItem(defaultEdge);
             } else if (label instanceof RegExprLabel) {
                 return new RegExprEdgeSearchItem(edge, this.labelStore);
@@ -370,7 +370,7 @@ public class GraphSearchPlanFactory {
         /**
          * Callback factory method for creating a node search item.
          */
-        protected AbstractSearchItem createNodeSearchItem(Node node) {
+        protected AbstractSearchItem createNodeSearchItem(RuleNode node) {
             if (node instanceof ValueNode) {
                 return new ValueNodeSearchItem((ValueNode) node);
             } else if (node instanceof VariableNode) {
@@ -397,7 +397,7 @@ public class GraphSearchPlanFactory {
          * @return an instance of {@link InjectionSearchItem}
          */
         protected InjectionSearchItem createInjectionSearchItem(
-                Collection<? extends Node> injection) {
+                Collection<RuleNode> injection) {
             return new InjectionSearchItem(injection);
         }
 
@@ -407,19 +407,19 @@ public class GraphSearchPlanFactory {
          * @param node2 the second node to be matched injectively
          * @return an instance of {@link InjectionSearchItem}
          */
-        protected InjectionSearchItem createInjectionSearchItem(Node node1,
-                Node node2) {
+        protected InjectionSearchItem createInjectionSearchItem(RuleNode node1,
+                RuleNode node2) {
             return new InjectionSearchItem(node1, node2);
         }
 
         /**
          * The set of nodes to be matched.
          */
-        private final Set<Node> remainingNodes;
+        private final Set<RuleNode> remainingNodes;
         /**
          * The set of edges to be matched.
          */
-        private final Set<Edge> remainingEdges;
+        private final Set<RuleEdge> remainingEdges;
         /**
          * The set of variables to be matched.
          */
@@ -520,7 +520,7 @@ public class GraphSearchPlanFactory {
      * @version $Revision$
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
-        NeededPartsComparator(Set<Node> remainingNodes,
+        NeededPartsComparator(Set<RuleNode> remainingNodes,
                 Set<LabelVar> remainingVars) {
             this.remainingNodes = remainingNodes;
             this.remainingVars = remainingVars;
@@ -540,7 +540,7 @@ public class GraphSearchPlanFactory {
          */
         private int getNeedCount(SearchItem item) {
             boolean missing = false;
-            Iterator<Node> neededNodeIter = item.needsNodes().iterator();
+            Iterator<RuleNode> neededNodeIter = item.needsNodes().iterator();
             while (!missing && neededNodeIter.hasNext()) {
                 missing = this.remainingNodes.contains(neededNodeIter.next());
             }
@@ -552,7 +552,7 @@ public class GraphSearchPlanFactory {
         }
 
         /** The set of (as yet) unscheduled nodes. */
-        private final Set<Node> remainingNodes;
+        private final Set<RuleNode> remainingNodes;
         /** The set of (as yet) unscheduled variables. */
         private final Set<LabelVar> remainingVars;
     }
@@ -564,7 +564,7 @@ public class GraphSearchPlanFactory {
      * @version $Revision$
      */
     static class ConnectedPartsComparator implements Comparator<SearchItem> {
-        ConnectedPartsComparator(Set<Node> remainingNodes,
+        ConnectedPartsComparator(Set<RuleNode> remainingNodes,
                 Set<LabelVar> remainingVars) {
             this.remainingNodes = remainingNodes;
             this.remainingVars = remainingVars;
@@ -598,7 +598,7 @@ public class GraphSearchPlanFactory {
         }
 
         /** The set of (as yet) unscheduled nodes. */
-        private final Set<Node> remainingNodes;
+        private final Set<RuleNode> remainingNodes;
         /** The set of (as yet) unscheduled variables. */
         private final Set<LabelVar> remainingVars;
     }

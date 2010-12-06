@@ -17,13 +17,104 @@
 package groove.trans;
 
 import groove.graph.DefaultGraph;
+import groove.graph.DefaultNode;
+import groove.graph.Edge;
+import groove.graph.Label;
+import groove.graph.Node;
+
+import java.util.Set;
 
 /**
  * Special class of graphs that can appear (only) in rules.
- * Rule graphs have special rule nodes and rule edges.
+ * Rule graphs may only have {@link RuleEdge}s.
  * @author Arend Rensink
  * @version $Revision $
  */
 public class RuleGraph extends DefaultGraph {
-    // empty
+    /**
+     * Constructs a new, empty rule graph.
+     */
+    public RuleGraph() {
+        // empty
+    }
+
+    /**
+     * Clones a given rule graph.
+     */
+    public RuleGraph(RuleGraph graph) {
+        super(graph);
+    }
+
+    @Override
+    public RuleGraph clone() {
+        return new RuleGraph(this);
+    }
+
+    @Override
+    public RuleGraph newGraph() {
+        return new RuleGraph();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<RuleEdge> edgeSet() {
+        return (Set<RuleEdge>) super.edgeSet();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<RuleNode> nodeSet() {
+        return (Set<RuleNode>) super.nodeSet();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<RuleEdge> edgeSet(Node node) {
+        return (Set<RuleEdge>) super.edgeSet(node);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<RuleEdge> outEdgeSet(Node node) {
+        return (Set<RuleEdge>) super.outEdgeSet(node);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<RuleEdge> inEdgeSet(Node node) {
+        return (Set<RuleEdge>) super.inEdgeSet(node);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<RuleEdge> labelEdgeSet(Label label) {
+        return (Set<RuleEdge>) super.labelEdgeSet(label);
+    }
+
+    @Override
+    public RuleNode createNode() {
+        return DefaultNode.createNode();
+    }
+
+    @Override
+    public RuleEdge createEdge(Node source, Label label, Node target) {
+        assert source instanceof RuleNode;
+        assert target instanceof RuleNode;
+        return new RuleEdge((RuleNode) source, label, (RuleNode) target);
+    }
+
+    @Override
+    public RuleNode addNode() {
+        return (RuleNode) super.addNode();
+    }
+
+    @Override
+    protected boolean isTypeCorrect(Node edge) {
+        return edge instanceof RuleNode;
+    }
+
+    @Override
+    protected boolean isTypeCorrect(Edge edge) {
+        return edge instanceof RuleEdge;
+    }
 }

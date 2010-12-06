@@ -28,6 +28,7 @@ import groove.graph.NodeEdgeMap;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.trans.RuleMatch;
+import groove.trans.RuleNode;
 import groove.trans.SPORule;
 import groove.view.FormatException;
 
@@ -127,10 +128,10 @@ public class TypeReconstructor {
         NodeEdgeMap newLhsTyping = getTyping(rule.lhs());
 
         MergeMap merges = new MergeMap();
-        Map<Node,Node> nodeMap;
+        Map<RuleNode,RuleNode> nodeMap;
 
-        nodeMap = rule.getMorphism().elementMap().nodeMap();
-        for (Map.Entry<Node,Node> nodes : nodeMap.entrySet()) {
+        nodeMap = rule.getMorphism().nodeMap();
+        for (Map.Entry<RuleNode,RuleNode> nodes : nodeMap.entrySet()) {
             merges.putNode(lhsTyping.getNode(nodes.getKey()),
                 rhsTyping.getNode(nodes.getValue()));
         }
@@ -141,8 +142,7 @@ public class TypeReconstructor {
         Iterable<RuleMatch> matches =
             removeApplicationConditions(rule).getMatches(this.typeGraph, null);
         for (RuleMatch match : matches) {
-            nodeMap = match.getElementMap().nodeMap();
-            for (Map.Entry<Node,Node> nodes : nodeMap.entrySet()) {
+            for (Map.Entry<RuleNode,Node> nodes : match.getElementMap().nodeMap().entrySet()) {
                 merges.putNode(lhsTyping.getNode(nodes.getKey()),
                     nodes.getValue());
             }
@@ -189,8 +189,9 @@ public class TypeReconstructor {
         Rule result = null;
         try {
             result =
-                new SPORule(rule.getMorphism(), rule.getName(),
-                    rule.getRuleProperties(), rule.getSystemProperties());
+                new SPORule(rule.getName(), rule.lhs(), rule.rhs(),
+                    rule.getMorphism(), rule.getRuleProperties(),
+                    rule.getSystemProperties());
             result.setFixed();
         } catch (FormatException fe) {
             return rule;

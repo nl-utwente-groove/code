@@ -16,6 +16,9 @@
  */
 package groove.graph;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Abstract implementation of a generic node-edge-map. The underlying node and
  * edge maps are left abstract.
@@ -94,14 +97,20 @@ public abstract class AbstractNodeEdgeMap<NS,NT,ES,ET> implements
         return edgeMap().remove(key);
     }
 
+    @Override
+    public boolean isInjective() {
+        Set<NT> nodeValues = new HashSet<NT>(nodeMap().values());
+        return nodeMap().size() == nodeValues.size();
+    }
+
     /**
      * Tests for equality of the node and edge maps.
      */
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof NodeEdgeMap)
-            && nodeMap().equals(((NodeEdgeMap) obj).nodeMap())
-            && edgeMap().equals(((NodeEdgeMap) obj).edgeMap());
+        return (obj instanceof AbstractNodeEdgeMap)
+            && nodeMap().equals(((AbstractNodeEdgeMap<?,?,?,?>) obj).nodeMap())
+            && edgeMap().equals(((AbstractNodeEdgeMap<?,?,?,?>) obj).edgeMap());
     }
 
     /**

@@ -19,16 +19,17 @@ package groove.match.rete;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeLinkedHashMap;
-import groove.rel.VarNodeEdgeMap;
+import groove.rel.RuleToStateMap;
+import groove.trans.RuleEdge;
+import groove.trans.RuleNode;
 import groove.util.TreeHashSet;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * @author Arash Jalali
@@ -283,10 +284,10 @@ public class ReteMatch implements Comparable<ReteMatch> {
         return result;
     }
 
-    public boolean conformsWith(NodeEdgeMap anchorMap) {
+    public boolean conformsWith(RuleToStateMap anchorMap) {
         LookupTable lookup = this.origin.getPatternLookupTable();
         boolean result = true;
-        for (Entry<Edge,Edge> m : anchorMap.edgeMap().entrySet()) {
+        for (Entry<RuleEdge,Edge> m : anchorMap.edgeMap().entrySet()) {
             int i = lookup.getEdge(m.getKey());
             if ((i == -1) || (!this.units[i].equals(m.getValue()))) {
                 result = false;
@@ -294,7 +295,7 @@ public class ReteMatch implements Comparable<ReteMatch> {
             }
         }
         if (result) {
-            for (Node n : anchorMap.nodeMap().keySet()) {
+            for (RuleNode n : anchorMap.nodeMap().keySet()) {
                 int[] idx = lookup.getNode(n);
                 if (idx != null) {
                     Element e = this.units[idx[0]];
@@ -497,9 +498,9 @@ public class ReteMatch implements Comparable<ReteMatch> {
         this.superMatches.remove(m);
     }
 
-    private VarNodeEdgeMap equivalentMap = null;
+    private RuleToStateMap equivalentMap = null;
 
-    public VarNodeEdgeMap toVarNodeEdgeMap() {
+    public RuleToStateMap toVarNodeEdgeMap() {
         if (this.equivalentMap == null) {
             this.equivalentMap = new VarNodeEdgeLinkedHashMap();
 
@@ -507,9 +508,9 @@ public class ReteMatch implements Comparable<ReteMatch> {
             for (int i = 0; i < this.units.length; i++) {
                 Element e = this.units[i];
                 if (e instanceof Node) {
-                    this.equivalentMap.putNode((Node) pattern[i], (Node) e);
+                    this.equivalentMap.putNode((RuleNode) pattern[i], (Node) e);
                 } else if (e instanceof Edge) {
-                    Edge e1 = (Edge) pattern[i];
+                    RuleEdge e1 = (RuleEdge) pattern[i];
                     Edge e2 = (Edge) e;
                     this.equivalentMap.putEdge(e1, e2);
                     this.equivalentMap.putNode(e1.source(), e2.source());

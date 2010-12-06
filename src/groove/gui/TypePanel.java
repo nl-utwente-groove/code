@@ -17,8 +17,8 @@
 package groove.gui;
 
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
+import groove.graph.DefaultGraph;
 import groove.graph.Graph;
-import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.graph.LabelStore;
 import groove.gui.JTypeNameList.CheckBoxListModel;
@@ -295,7 +295,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
     private final List<Refreshable> refreshables = new ArrayList<Refreshable>();
 
     /** Indicates if the currently loaded grammar is modifiable. */
-    private boolean isModifiable() {
+    boolean isModifiable() {
         SystemStore store = getSimulator().getGrammarStore();
         return store != null && store.isModifiable();
     }
@@ -304,12 +304,12 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
      * Returns the current grammar view. Convenience method for
      * <code>getSimulator().getGrammarView()</code>.
      */
-    protected StoredGrammarView getGrammarView() {
+    StoredGrammarView getGrammarView() {
         return getSimulator().getGrammarView();
     }
 
     /** Returns the simulator object. */
-    private Simulator getSimulator() {
+    Simulator getSimulator() {
         return this.simulator;
     }
 
@@ -620,7 +620,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            final Graph initType = GraphFactory.getInstance().newGraph();
+            final Graph initType = new DefaultGraph();
             GraphInfo.setTypeRole(initType);
             GraphInfo.setName(initType, Groove.DEFAULT_TYPE_NAME);
             handleEditType(initType, true);

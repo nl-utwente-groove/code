@@ -132,7 +132,7 @@ public class GraphInfo {
      * certain value.
      * @see #getLayoutMap()
      */
-    public void setLayoutMap(LayoutMap<Node,Edge> layoutMap) {
+    public void setLayoutMap(LayoutMap<? extends Node,? extends Edge> layoutMap) {
         this.data.put(LAYOUT_KEY, layoutMap);
     }
 
@@ -248,8 +248,8 @@ public class GraphInfo {
         this.data.putAll(other.getData());
         // copy the properties object
         if (other.hasProperties()) {
-            this.data.put(PROPERTIES_KEY, new GraphProperties(
-                other.getProperties(false)));
+            this.data.put(PROPERTIES_KEY,
+                new GraphProperties(other.getProperties(false)));
         }
     }
 
@@ -541,16 +541,18 @@ public class GraphInfo {
      * @param target the graph to transfer the information to
      * @param elementMap map from the source elements to the target elements
      */
-    public static void transfer(GraphShape source, GraphShape target,
-            NodeEdgeMap elementMap) {
+    public static <N1 extends Node,N2 extends Node,E1 extends Edge,E2 extends Edge> void transfer(
+            GraphShape source, GraphShape target,
+            GenericNodeEdgeMap<N1,N2,E1,E2> elementMap) {
         GraphInfo sourceInfo = source.getInfo();
         if (sourceInfo != null) {
             // copy all the info
             GraphInfo targetInfo = target.setInfo(sourceInfo);
             if (elementMap != null) {
                 // modify the layout map using the element map
-                LayoutMap<Node,Edge> sourceLayoutMap =
-                    sourceInfo.getLayoutMap();
+                @SuppressWarnings("unchecked")
+                LayoutMap<N1,E1> sourceLayoutMap =
+                    (LayoutMap<N1,E1>) sourceInfo.getLayoutMap();
                 if (sourceLayoutMap != null) {
                     targetInfo.setLayoutMap(sourceLayoutMap.afterInverse(elementMap));
                 }

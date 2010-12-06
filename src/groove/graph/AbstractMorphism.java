@@ -16,8 +16,6 @@
  */
 package groove.graph;
 
-import groove.match.MatchStrategy;
-import groove.rel.VarNodeEdgeMap;
 import groove.view.FormatException;
 
 import java.util.HashSet;
@@ -61,6 +59,15 @@ public abstract class AbstractMorphism extends
         this.cod = null;
     }
 
+    public boolean containsNodeKey(Node key) {
+        return nodeMap().containsKey(key);
+    }
+
+    public boolean containsEdgeKey(Edge key) {
+        return edgeMap().containsKey(key);
+    }
+
+    @Deprecated
     public boolean containsKey(Element key) {
         return nodeMap().containsKey(key) || edgeMap().containsKey(key);
     }
@@ -339,11 +346,6 @@ public abstract class AbstractMorphism extends
      */
     @Override
     abstract public Morphism clone();
-
-    /**
-     * Factory method for match strategies.
-     */
-    abstract protected MatchStrategy<VarNodeEdgeMap> createMatchStrategy();
 
     /**
      * The codomain of this Morphism.

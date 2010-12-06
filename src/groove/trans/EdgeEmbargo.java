@@ -16,8 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.Node;
@@ -36,12 +34,12 @@ public class EdgeEmbargo extends NotCondition {
      * @param embargoEdge the edge that is forbidden
      * @param labelStore label store specifying the subtype relation
      */
-    public EdgeEmbargo(Graph graph, Edge embargoEdge,
+    public EdgeEmbargo(RuleGraph graph, RuleEdge embargoEdge,
             SystemProperties properties, LabelStore labelStore) {
         super(graph.newGraph(), properties, labelStore);
         this.embargoEdge = embargoEdge;
-        Node sourceImage = addRoot(embargoEdge.source());
-        Node targetImage = addRoot(embargoEdge.target());
+        RuleNode sourceImage = addRoot(embargoEdge.source());
+        RuleNode targetImage = addRoot(embargoEdge.target());
         getTarget().addEdge(sourceImage, embargoEdge.label(), targetImage);
         if (CONSTRUCTOR_DEBUG) {
             Groove.message("Edge embargo: " + this);
@@ -52,8 +50,8 @@ public class EdgeEmbargo extends NotCondition {
     /**
      * Adds a node to the root map with a fresh image, and returns the image. 
      */
-    private Node addRoot(Node root) {
-        Node result = getRootMap().getNode(root);
+    private RuleNode addRoot(RuleNode root) {
+        RuleNode result = getRootMap().getNode(root);
         if (result == null) {
             result = getTarget().addNode();
             getRootMap().putNode(root, result);
@@ -65,7 +63,7 @@ public class EdgeEmbargo extends NotCondition {
      * Returns the embargo edge, which is an edge in this NAC's domain that is
      * tested for.
      */
-    public Edge getEmbargoEdge() {
+    public RuleEdge getEmbargoEdge() {
         return this.embargoEdge;
     }
 
@@ -88,7 +86,7 @@ public class EdgeEmbargo extends NotCondition {
     /**
      * The forbidden edge.
      */
-    protected final Edge embargoEdge;
+    protected final RuleEdge embargoEdge;
 
     private final static boolean CONSTRUCTOR_DEBUG = false;
 }

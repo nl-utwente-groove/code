@@ -180,11 +180,11 @@ public class AspectJModel extends GraphJModel {
     private NodeEdgeMap getModelToViewMap() {
         if (this.modelToViewMap == null) {
             this.modelToViewMap = new NodeEdgeHashMap();
-            for (Map.Entry<Node,Node> nodeEntry : this.view.getMap().nodeMap().entrySet()) {
+            for (Map.Entry<AspectNode,? extends Node> nodeEntry : this.view.getMap().nodeMap().entrySet()) {
                 this.modelToViewMap.putNode(nodeEntry.getValue(),
                     nodeEntry.getKey());
             }
-            for (Map.Entry<Edge,Edge> edgeEntry : this.view.getMap().edgeMap().entrySet()) {
+            for (Map.Entry<AspectEdge,? extends Edge> edgeEntry : this.view.getMap().edgeMap().entrySet()) {
                 this.modelToViewMap.putEdge(edgeEntry.getValue(),
                     edgeEntry.getKey());
             }
@@ -281,13 +281,13 @@ public class AspectJModel extends GraphJModel {
 
     /** Retrieves a node's image according to the view. */
     Node getModelNode(AspectNode node) {
-        NodeEdgeMap viewMap = this.view.getMap();
+        View.ViewToModelMap<?,?> viewMap = this.view.getMap();
         return viewMap == null ? null : viewMap.getNode(node);
     }
 
     /** Retrieves an edge's image according to the view. */
     Edge getModelEdge(AspectEdge edge) {
-        NodeEdgeMap viewMap = this.view.getMap();
+        View.ViewToModelMap<?,?> viewMap = this.view.getMap();
         return viewMap == null ? null : viewMap.getEdge(edge);
     }
 

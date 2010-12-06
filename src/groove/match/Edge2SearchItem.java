@@ -23,6 +23,8 @@ import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.RegExprLabel;
+import groove.trans.RuleEdge;
+import groove.trans.RuleNode;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -39,7 +41,7 @@ class Edge2SearchItem extends AbstractSearchItem {
      * Creates a search item for a given binary edge.
      * @param edge the edge to be matched
      */
-    public Edge2SearchItem(Edge edge) {
+    public Edge2SearchItem(RuleEdge edge) {
         this.edge = edge;
         this.source = edge.source();
         this.target = edge.target();
@@ -47,7 +49,7 @@ class Edge2SearchItem extends AbstractSearchItem {
             RegExprLabel.isSharp(edge.label())
                     ? RegExprLabel.getSharpLabel(edge.label()) : edge.label();
         this.selfEdge = this.source == this.target;
-        this.boundNodes = new HashSet<Node>();
+        this.boundNodes = new HashSet<RuleNode>();
         this.boundNodes.add(edge.source());
         this.boundNodes.add(edge.target());
     }
@@ -56,7 +58,7 @@ class Edge2SearchItem extends AbstractSearchItem {
      * Returns the end nodes of the edge.
      */
     @Override
-    public Collection<? extends Node> bindsNodes() {
+    public Collection<RuleNode> bindsNodes() {
         return this.boundNodes;
     }
 
@@ -170,15 +172,15 @@ class Edge2SearchItem extends AbstractSearchItem {
     /**
      * The edge for which this search item is to find an image.
      */
-    final Edge edge;
+    final RuleEdge edge;
     /**
      * The source end of {@link #edge}, separately stored for efficiency.
      */
-    final Node source;
+    final RuleNode source;
     /**
      * The target end of {@link #edge}, separately stored for efficiency.
      */
-    final Node target;
+    final RuleNode target;
     /** The label of {@link #edge}, separately stored for efficiency. */
     final Label label;
     /**
@@ -186,7 +188,7 @@ class Edge2SearchItem extends AbstractSearchItem {
      */
     final boolean selfEdge;
     /** The set of end nodes of this edge. */
-    private final Set<Node> boundNodes;
+    private final Set<RuleNode> boundNodes;
 
     /** The index of the edge in the search. */
     int edgeIx;

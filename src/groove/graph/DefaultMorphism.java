@@ -16,10 +16,6 @@
  */
 package groove.graph;
 
-import groove.match.GraphSearchPlanFactory;
-import groove.match.MatchStrategy;
-import groove.rel.VarNodeEdgeMap;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -125,16 +121,6 @@ public class DefaultMorphism extends AbstractMorphism implements Cloneable {
      */
     public Morphism createMorphism(Graph dom, Graph cod) {
         return new DefaultMorphism(dom, cod);
-    }
-
-    /**
-     * Factory method for match strategies.
-     */
-    @Override
-    protected MatchStrategy<VarNodeEdgeMap> createMatchStrategy() {
-        return GraphSearchPlanFactory.getInstance().createMatcher(dom(),
-            elementMap().nodeMap().keySet(), elementMap().edgeMap().keySet(),
-            null);
     }
 
     /**

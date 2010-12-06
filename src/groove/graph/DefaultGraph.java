@@ -139,6 +139,7 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
     public boolean addEdge(Edge edge) {
         // assert edge instanceof BinaryEdge : "This graph implementation only
         // supports binary edges";
+        assert isTypeCorrect(edge);
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
         Node source = edge.source();
         Node target = edge.target();
@@ -161,6 +162,7 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
     }
 
     public boolean addEdgeWithoutCheck(Edge edge) {
+        assert isTypeCorrect(edge);
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
         Set<Edge> sourceOutEdges = this.edgeMap.get(edge.source());
         boolean added = sourceOutEdges.add(edge);

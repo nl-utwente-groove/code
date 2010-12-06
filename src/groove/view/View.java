@@ -16,9 +16,13 @@
  */
 package groove.view;
 
+import groove.graph.Edge;
+import groove.graph.GenericNodeEdgeMap;
 import groove.graph.Label;
-import groove.graph.NodeEdgeMap;
+import groove.graph.Node;
+import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectNode;
 
 import java.util.List;
 import java.util.Set;
@@ -44,7 +48,7 @@ public interface View<Model> {
      * @return the mapping from view to model elements; empty if the view
      *         contains errors.
      */
-    NodeEdgeMap getMap();
+    ViewToModelMap<?,?> getMap();
 
     /**
      * Returns the (non-<code>null</code>) name of the underlying model.
@@ -72,4 +76,10 @@ public interface View<Model> {
      * @return a non-<code>null</code>, possibly empty list of syntax errors
      */
     List<FormatError> getErrors();
+
+    /** Mapping from view graph elements to model graph elements. */
+    interface ViewToModelMap<N extends Node,E extends Edge> extends
+            GenericNodeEdgeMap<AspectNode,N,AspectEdge,E> {
+        // no extra functionality
+    }
 }

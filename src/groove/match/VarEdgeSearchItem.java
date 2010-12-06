@@ -21,6 +21,7 @@ import groove.graph.Label;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
 import groove.rel.RegExprLabel;
+import groove.trans.RuleEdge;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -37,7 +38,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
      * Constructs a new search item. The item will match any edge between the
      * end images, and record the edge label as value of the wildcard variable.
      */
-    public VarEdgeSearchItem(Edge edge) {
+    public VarEdgeSearchItem(RuleEdge edge) {
         super(edge);
         this.var = RegExprLabel.getWildcardId(edge.label());
         this.labelConstraint = RegExprLabel.getWildcardGuard(edge.label());

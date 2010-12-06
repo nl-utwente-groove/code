@@ -16,6 +16,7 @@
  */
 package groove.graph;
 
+import groove.trans.RuleNode;
 import groove.util.Dispenser;
 
 /**
@@ -24,7 +25,7 @@ import groove.util.Dispenser;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class DefaultNode implements Node, Cloneable {
+public class DefaultNode implements Node, RuleNode, Cloneable {
     /**
      * Constructs a fresh node, with an explicitly given number. Note that node
      * equality is determined by identity, but it is assumed that never two

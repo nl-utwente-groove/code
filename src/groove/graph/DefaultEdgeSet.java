@@ -1,11 +1,12 @@
 package groove.graph;
 
-import java.util.Set;
-
 import groove.util.TreeHashSet;
 
+import java.util.Set;
+
 /**
- * Specialisation of a set of edges, for use inside this class.
+ * Specialisation of a set of edges that relies on the 
+ * edge hashcode uniquely identifying the edge.
  */
 public class DefaultEdgeSet extends TreeHashSet<DefaultEdge> {
     /** Creates an empty edge set. */

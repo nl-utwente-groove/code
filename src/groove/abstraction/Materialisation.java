@@ -21,13 +21,14 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
-import groove.rel.VarNodeEdgeMap;
+import groove.rel.RuleToStateMap;
 import groove.trans.DefaultApplication;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
+import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
+import groove.trans.RuleNode;
 import groove.trans.SPOEvent;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
@@ -91,7 +92,7 @@ public final class Materialisation implements Cloneable {
     /**
      * The concrete match of the rule into the (partially) materialised shape.
      */
-    final NodeEdgeMap match;
+    final RuleToStateMap match;
     /**
      * The queue of operations that need to be performed on the materialisation
      * object. When this queue is empty, the materialisation is complete. 
@@ -269,7 +270,7 @@ public final class Materialisation implements Cloneable {
      */
     public Shape applyMatch() {
         RuleEvent event =
-            new SPOEvent(this.preMatch.getRule(), (VarNodeEdgeMap) this.match,
+            new SPOEvent(this.preMatch.getRule(), this.match,
                 ShapeNodeFactory.FACTORY, false);
         DefaultApplication app = new DefaultApplication(event, this.shape);
         Shape result = (Shape) app.getTarget();
@@ -382,21 +383,22 @@ public final class Materialisation implements Cloneable {
      * will be performed.
      */
     private void planTasks() {
-        NodeEdgeMap originalMap = this.preMatch.getElementMap();
+        RuleToStateMap originalMap = this.preMatch.getElementMap();
         boolean isMatNodeOpEmpty = true;
         boolean isMatEdgeOpEmpty = true;
 
         // Search for nodes in the match image that have abstract
         // multiplicities. 
         Set<ShapeNode> processedNodes = new HashSet<ShapeNode>();
-        for (Entry<Node,Node> nodeEntry : originalMap.nodeMap().entrySet()) {
+        for (Entry<RuleNode,Node> nodeEntry : originalMap.nodeMap().entrySet()) {
             ShapeNode nodeS = (ShapeNode) nodeEntry.getValue();
             if (!processedNodes.contains(nodeS)
                 && this.shape.getNodeMult(nodeS).isAbstract()) {
                 // We have a node in the rule that was matched to an abstract
                 // node. We need to materialise this abstract node.
                 // Check the nodes on the rule that were mapped to nodeS.
-                Set<Node> nodesR = Util.getReverseNodeMap(originalMap, nodeS);
+                Set<RuleNode> nodesR =
+                    Util.getReverseNodeMap(originalMap, nodeS);
                 this.tasks.add(new MaterialiseNode(this, nodeS, nodesR));
                 processedNodes.add(nodeS);
                 isMatNodeOpEmpty = false;
@@ -407,7 +409,7 @@ public final class Materialisation implements Cloneable {
         // multiplicities.
         Set<ShapeEdge> processedEdges = new HashSet<ShapeEdge>();
         Set<ShapeEdge> edgesToFreeze = new HashSet<ShapeEdge>();
-        for (Entry<Edge,Edge> edgeEntry : originalMap.edgeMap().entrySet()) {
+        for (Entry<RuleEdge,Edge> edgeEntry : originalMap.edgeMap().entrySet()) {
             Edge edgeR = edgeEntry.getKey();
             ShapeEdge edgeS = (ShapeEdge) edgeEntry.getValue();
             if (!Util.isUnary(edgeR) && !processedEdges.contains(edgeS)) {
@@ -423,7 +425,7 @@ public final class Materialisation implements Cloneable {
                     // in the shape with an abstract multiplicity. We need to
                     // materialise this edge.
                     // Check the edges on the rule that were mapped to edgeS.
-                    Set<Edge> edgesR =
+                    Set<RuleEdge> edgesR =
                         Util.getReverseEdgeMap(originalMap, edgeS);
                     this.tasks.add(new MaterialiseEdge(this, edgeS, edgesR));
                     processedEdges.add(edgeS);
@@ -437,7 +439,7 @@ public final class Materialisation implements Cloneable {
         this.shape.freezeEdges(edgesToFreeze);
 
         // Check that all nodes of the LHS are in the same equivalence class.
-        for (Entry<Node,Node> nodeEntry : originalMap.nodeMap().entrySet()) {
+        for (Entry<RuleNode,Node> nodeEntry : originalMap.nodeMap().entrySet()) {
             ShapeNode nodeS = (ShapeNode) nodeEntry.getValue();
             boolean isSingletonEc =
                 this.shape.getEquivClassOf(nodeS).size() == 1;
@@ -467,12 +469,12 @@ public final class Materialisation implements Cloneable {
      * @param nodeR - the node in the rule.
      * @param nodeS - the newly materialised node in the shape.
      */
-    private void extendMatch(Node nodeR, ShapeNode nodeS,
+    private void extendMatch(RuleNode nodeR, ShapeNode nodeS,
             Set<ShapeEdge> edgesToFreeze) {
         this.match.putNode(nodeR, nodeS);
         // Look for all edges where nodeR occurs and update the edge map.
-        for (Entry<Edge,Edge> edgeEntry : this.match.edgeMap().entrySet()) {
-            Edge edgeR = edgeEntry.getKey();
+        for (Entry<RuleEdge,Edge> edgeEntry : this.match.edgeMap().entrySet()) {
+            RuleEdge edgeR = edgeEntry.getKey();
             ShapeEdge origEdgeS = (ShapeEdge) edgeEntry.getValue();
             // Start with the nodes from the original edge.
             ShapeNode srcS = origEdgeS.source();
@@ -722,11 +724,11 @@ public final class Materialisation implements Cloneable {
          * The nodes in the LHS of the rule that were mapped to the collector
          * node by the pre-match.
          */
-        private final Set<Node> nodesR;
+        private final Set<RuleNode> nodesR;
 
         /** Default constructor. */
         private MaterialiseNode(Materialisation mat, ShapeNode nodeS,
-                Set<Node> nodesR) {
+                Set<RuleNode> nodesR) {
             super(mat);
             this.nodeS = nodeS;
             this.nodesR = nodesR;
@@ -842,10 +844,10 @@ public final class Materialisation implements Cloneable {
                 // Both sets have the same size. Go over both of them at the
                 // same time, and take the returned values of the iterator as
                 // the match.
-                Iterator<Node> nodesRIter = this.nodesR.iterator();
+                Iterator<RuleNode> nodesRIter = this.nodesR.iterator();
                 Iterator<ShapeNode> newNodesIter = newNodes.iterator();
                 for (int i = 0; i < copies; i++) {
-                    Node nodeR = nodesRIter.next();
+                    RuleNode nodeR = nodesRIter.next();
                     ShapeNode nodeS = newNodesIter.next();
                     // Adjust the match of the materialisation.
                     newMat.extendMatch(nodeR, nodeS, edgesToFreeze);
@@ -895,11 +897,11 @@ public final class Materialisation implements Cloneable {
          * The edges in the LHS of the rule that were mapped to the collector
          * edge by the pre-match.
          */
-        private final Set<Edge> edgesR;
+        private final Set<RuleEdge> edgesR;
 
         /** Default constructor. */
         private MaterialiseEdge(Materialisation mat, ShapeEdge edgeS,
-                Set<Edge> edgesR) {
+                Set<RuleEdge> edgesR) {
             super(mat);
             this.edgeS = edgeS;
             this.edgesR = edgesR;
@@ -976,7 +978,7 @@ public final class Materialisation implements Cloneable {
         void perform() { // MaterialiseEdge
             this.mat.logOp(this.toString());
 
-            NodeEdgeMap match = this.mat.match;
+            RuleToStateMap match = this.mat.match;
             Shape shape = this.mat.shape;
 
             // Collect all signatures that will be affected by this operation.
@@ -986,7 +988,7 @@ public final class Materialisation implements Cloneable {
                 new CountingSet<EdgeSignature>();
             Set<ShapeEdge> frozenEdges = new HashSet<ShapeEdge>();
             // For each edge involved edge in the rule.
-            for (Edge edgeR : this.edgesR) {
+            for (RuleEdge edgeR : this.edgesR) {
                 Label label = edgeR.label();
                 // Get the image of source and target from the match.
                 ShapeNode srcS = (ShapeNode) match.getNode(edgeR.source());

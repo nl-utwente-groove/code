@@ -12,6 +12,7 @@ import groove.rel.NodeRelation;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.rel.RelationEdge;
+import groove.trans.RuleEdge;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -32,7 +33,7 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
      * @param labelStore label store used to determine subtypes for 
      * node type labels in the regular expression
      */
-    public RegExprEdgeSearchItem(Edge edge, LabelStore labelStore) {
+    public RegExprEdgeSearchItem(RuleEdge edge, LabelStore labelStore) {
         super(edge);
         RegExprLabel label = (RegExprLabel) edge.label();
         this.labelAutomaton = label.getAutomaton(labelStore);

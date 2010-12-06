@@ -21,7 +21,9 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
+import groove.rel.RuleToStateMap;
+import groove.trans.RuleEdge;
+import groove.trans.RuleNode;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -95,11 +97,13 @@ public final class Util {
      * Returns the set of outgoing edges from the given node with the
      * given label.
      */
-    public static Set<Edge> getOutEdges(Graph graph, Node node, Label label) {
-        Set<Edge> outEdges = new HashSet<Edge>();
+    @SuppressWarnings("unchecked")
+    public static <N extends Node,E extends Edge> Set<E> getOutEdges(
+            Graph graph, N node, Label label) {
+        Set<E> outEdges = new HashSet<E>();
         for (Edge edge : graph.outEdgeSet(node)) {
             if (edge.label().equals(label)) {
-                outEdges.add(edge);
+                outEdges.add((E) edge);
             }
         }
         return outEdges;
@@ -109,13 +113,14 @@ public final class Util {
      * Returns the set of outgoing edges from the given nodes with the
      * given label.
      */
-    public static Set<Edge> getOutEdges(Graph graph, Set<Node> nodes,
-            Label label) {
-        Set<Edge> outEdges = new HashSet<Edge>();
-        for (Node node : nodes) {
+    @SuppressWarnings("unchecked")
+    public static <N extends Node,E extends Edge> Set<E> getOutEdges(
+            Graph graph, Set<N> nodes, Label label) {
+        Set<E> outEdges = new HashSet<E>();
+        for (N node : nodes) {
             for (Edge edge : graph.outEdgeSet(node)) {
                 if (edge.label().equals(label)) {
-                    outEdges.add(edge);
+                    outEdges.add((E) edge);
                 }
             }
         }
@@ -126,11 +131,13 @@ public final class Util {
      * Returns the set of incoming edges to the given node with the
      * given label.
      */
-    public static Set<Edge> getInEdges(Graph graph, Node node, Label label) {
-        Set<Edge> inEdges = new HashSet<Edge>();
+    @SuppressWarnings("unchecked")
+    public static <N extends Node,E extends Edge> Set<E> getInEdges(
+            Graph graph, N node, Label label) {
+        Set<E> inEdges = new HashSet<E>();
         for (Edge edge : graph.edgeSet(node)) {
             if (edge.target().equals(node) && edge.label().equals(label)) {
-                inEdges.add(edge);
+                inEdges.add((E) edge);
             }
         }
         return inEdges;
@@ -140,12 +147,14 @@ public final class Util {
      * Returns the set of incoming edges to the given nodes with the
      * given label.
      */
-    public static Set<Edge> getInEdges(Graph graph, Set<Node> nodes, Label label) {
-        Set<Edge> inEdges = new HashSet<Edge>();
-        for (Node node : nodes) {
+    @SuppressWarnings("unchecked")
+    public static <N extends Node,E extends Edge> Set<E> getInEdges(
+            Graph graph, Set<N> nodes, Label label) {
+        Set<E> inEdges = new HashSet<E>();
+        for (N node : nodes) {
             for (Edge edge : graph.edgeSet(node)) {
                 if (edge.target().equals(node) && edge.label().equals(label)) {
-                    inEdges.add(edge);
+                    inEdges.add((E) edge);
                 }
             }
         }
@@ -153,26 +162,26 @@ public final class Util {
     }
 
     /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
-    public static Set<Edge> getIntersectEdges(Graph graph, Node src, Node tgt,
-            Label label) {
-        Set<Edge> outEdges = getOutEdges(graph, src, label);
-        Set<Edge> inEdges = getInEdges(graph, tgt, label);
+    public static <N extends Node,E extends Edge> Set<E> getIntersectEdges(
+            Graph graph, N src, N tgt, Label label) {
+        Set<E> outEdges = getOutEdges(graph, src, label);
+        Set<E> inEdges = getInEdges(graph, tgt, label);
         return intersection(outEdges, inEdges);
     }
 
     /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
-    public static Set<Edge> getIntersectEdges(Graph graph, Set<Node> srcs,
-            Node tgt, Label label) {
-        Set<Edge> outEdges = getOutEdges(graph, srcs, label);
-        Set<Edge> inEdges = getInEdges(graph, tgt, label);
+    public static <N extends Node,E extends Edge> Set<E> getIntersectEdges(
+            Graph graph, Set<N> srcs, N tgt, Label label) {
+        Set<E> outEdges = getOutEdges(graph, srcs, label);
+        Set<E> inEdges = getInEdges(graph, tgt, label);
         return intersection(outEdges, inEdges);
     }
 
     /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
-    public static Set<Edge> getIntersectEdges(Graph graph, Node src,
-            Set<Node> tgts, Label label) {
-        Set<Edge> outEdges = getOutEdges(graph, src, label);
-        Set<Edge> inEdges = getInEdges(graph, tgts, label);
+    public static <N extends Node,E extends Edge> Set<E> getIntersectEdges(
+            Graph graph, N src, Set<N> tgts, Label label) {
+        Set<E> outEdges = getOutEdges(graph, src, label);
+        Set<E> inEdges = getInEdges(graph, tgts, label);
         return intersection(outEdges, inEdges);
     }
 
@@ -199,16 +208,16 @@ public final class Util {
     }
 
     /** Performs a reverse lookup in the node map given. */
-    public static Set<Node> getReverseNodeMap(NodeEdgeMap map, Node value) {
+    public static Set<RuleNode> getReverseNodeMap(RuleToStateMap map, Node value) {
         return getReverseNodeMap(map.nodeMap(), value);
     }
 
     /** Performs a reverse lookup in the node map given. */
-    public static Set<Node> getReverseNodeMap(Map<Node,? extends Node> map,
-            Node value) {
-        Set<Node> result = new HashSet<Node>();
+    public static <N extends Node> Set<N> getReverseNodeMap(
+            Map<N,? extends Node> map, Node value) {
+        Set<N> result = new HashSet<N>();
         if (map.containsValue(value)) {
-            for (Entry<Node,? extends Node> entry : map.entrySet()) {
+            for (Entry<N,? extends Node> entry : map.entrySet()) {
                 if (entry.getValue().equals(value)) {
                     result.add(entry.getKey());
                 }
@@ -218,16 +227,16 @@ public final class Util {
     }
 
     /** Performs a reverse lookup in the edge map given. */
-    public static Set<Edge> getReverseEdgeMap(NodeEdgeMap map, Edge value) {
+    public static Set<RuleEdge> getReverseEdgeMap(RuleToStateMap map, Edge value) {
         return getReverseEdgeMap(map.edgeMap(), value);
     }
 
     /** Performs a reverse lookup in the edge map given. */
-    public static Set<Edge> getReverseEdgeMap(Map<Edge,? extends Edge> map,
-            Edge value) {
-        Set<Edge> result = new HashSet<Edge>();
+    public static Set<RuleEdge> getReverseEdgeMap(
+            Map<RuleEdge,? extends Edge> map, Edge value) {
+        Set<RuleEdge> result = new HashSet<RuleEdge>();
         if (map.containsValue(value)) {
-            for (Entry<Edge,? extends Edge> entry : map.entrySet()) {
+            for (Entry<RuleEdge,? extends Edge> entry : map.entrySet()) {
                 if (entry.getValue().equals(value)) {
                     result.add(entry.getKey());
                 }

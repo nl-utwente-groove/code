@@ -16,11 +16,9 @@
  */
 package groove.trans;
 
-import groove.graph.Graph;
 import groove.graph.GraphShape;
 import groove.graph.LabelStore;
-import groove.graph.NodeEdgeMap;
-import groove.rel.VarNodeEdgeMap;
+import groove.rel.RuleToStateMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,18 +32,18 @@ import java.util.List;
  */
 public class ForallCondition extends AbstractCondition<CompositeMatch> {
     /** Constructs an instance based on a given target and root map. */
-    public ForallCondition(RuleName name, Graph target, NodeEdgeMap rootMap,
+    public ForallCondition(RuleName name, RuleGraph target, RuleGraphMap rootMap,
             LabelStore labelStore, SystemProperties properties) {
         super(name, target, rootMap, labelStore, properties);
     }
 
     @Override
     final public Collection<CompositeMatch> getMatches(GraphShape host,
-            NodeEdgeMap contextMap) {
+            RuleToStateMap contextMap) {
         Collection<CompositeMatch> result = null;
         testFixed(true);
         // lift the pattern match to a pre-match of this condition's target
-        final VarNodeEdgeMap anchorMap;
+        final RuleToStateMap anchorMap;
         if (contextMap == null) {
             testGround();
             anchorMap = EMPTY_ANCHOR_MAP;
@@ -65,7 +63,7 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
      * Returns the matches of this condition, given an iterator of match maps.
      */
     Collection<CompositeMatch> computeMatches(GraphShape host,
-            Iterator<VarNodeEdgeMap> matchMapIter) {
+            Iterator<RuleToStateMap> matchMapIter) {
         Collection<CompositeMatch> result = new ArrayList<CompositeMatch>();
         // add the empty match if the condition is not positive
         if (!this.positive) {
@@ -78,7 +76,7 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
                 result.add(new CompositeMatch());
                 first = false;
             }
-            VarNodeEdgeMap matchMap = matchMapIter.next();
+            RuleToStateMap matchMap = matchMapIter.next();
             Collection<Match> subResults = new ArrayList<Match>();
             for (Condition subCondition : getSubConditions()) {
                 if (subCondition instanceof PositiveCondition<?>) {
@@ -101,11 +99,11 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
 
     /**
      * This implementation iterates over the result of
-     * {@link #getMatches(GraphShape, NodeEdgeMap)}.
+     * {@link #getMatches(GraphShape, RuleToStateMap)}.
      */
     @Override
     public Iterator<CompositeMatch> computeMatchIter(GraphShape host,
-            Iterator<VarNodeEdgeMap> matchMapIter) {
+            Iterator<RuleToStateMap> matchMapIter) {
         return computeMatches(host, matchMapIter).iterator();
     }
 

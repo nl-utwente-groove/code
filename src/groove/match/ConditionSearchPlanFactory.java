@@ -16,15 +16,16 @@
  */
 package groove.match;
 
-import groove.graph.Edge;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.rel.LabelVar;
 import groove.trans.AbstractCondition;
 import groove.trans.Condition;
 import groove.trans.EdgeEmbargo;
 import groove.trans.MergeEmbargo;
 import groove.trans.NotCondition;
+import groove.trans.RuleEdge;
+import groove.trans.RuleGraphMap;
+import groove.trans.RuleNode;
 import groove.trans.SystemProperties;
 
 import java.util.Collection;
@@ -74,8 +75,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
      *        already
      */
     public SearchPlanStrategy createMatcher(Condition condition,
-            Collection<? extends Node> anchorNodes,
-            Collection<? extends Edge> anchorEdges) {
+            Collection<RuleNode> anchorNodes, Collection<RuleEdge> anchorEdges) {
         return createMatcher(condition, anchorNodes, anchorEdges, null);
     }
 
@@ -97,12 +97,11 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
      *        <code>null</code>, all nodes are relevant
      */
     public SearchPlanStrategy createMatcher(Condition condition,
-            Collection<? extends Node> anchorNodes,
-            Collection<? extends Edge> anchorEdges,
-            Collection<? extends Node> relevantNodes) {
+            Collection<RuleNode> anchorNodes, Collection<RuleEdge> anchorEdges,
+            Collection<RuleNode> relevantNodes) {
         assert (anchorNodes == null) == (anchorEdges == null) : "Anchor nodes and edges should be null simultaneously";
         if (anchorNodes == null) {
-            NodeEdgeMap patternMap = condition.getRootMap();
+            RuleGraphMap patternMap = condition.getRootMap();
             anchorNodes = patternMap.nodeMap().values();
             anchorEdges = patternMap.edgeMap().values();
         }
@@ -168,17 +167,17 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
          */
         @Override
         Collection<AbstractSearchItem> computeSearchItems(
-                Collection<? extends Node> anchorNodes,
-                Collection<? extends Edge> anchorEdges) {
+                Collection<RuleNode> anchorNodes,
+                Collection<RuleEdge> anchorEdges) {
             Collection<AbstractSearchItem> result =
                 super.computeSearchItems(anchorNodes, anchorEdges);
             for (Condition subCondition : ((AbstractCondition<?>) this.condition).getSubConditions()) {
                 if (subCondition instanceof MergeEmbargo) {
-                    Node node1 = ((MergeEmbargo) subCondition).node1();
-                    Node node2 = ((MergeEmbargo) subCondition).node2();
+                    RuleNode node1 = ((MergeEmbargo) subCondition).node1();
+                    RuleNode node2 = ((MergeEmbargo) subCondition).node2();
                     result.add(createInjectionSearchItem(node1, node2));
                 } else if (subCondition instanceof EdgeEmbargo) {
-                    Edge embargoEdge =
+                    RuleEdge embargoEdge =
                         ((EdgeEmbargo) subCondition).getEmbargoEdge();
                     result.add(createNegatedSearchItem(createEdgeSearchItem(embargoEdge)));
                 } else if (subCondition instanceof NotCondition) {

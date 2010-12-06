@@ -17,11 +17,11 @@
 package groove.view;
 
 import groove.graph.Edge;
+import groove.graph.GenericNodeEdgeHashMap;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.NodeEdgeHashMap;
-import groove.graph.NodeEdgeMap;
+import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
 import groove.graph.TypeNode;
 import groove.util.Pair;
@@ -81,7 +81,7 @@ public class DefaultTypeView implements TypeView {
     }
 
     @Override
-    public NodeEdgeMap getMap() {
+    public ViewToTypeMap getMap() {
         initialise();
         return this.viewToModelMap;
     }
@@ -98,14 +98,14 @@ public class DefaultTypeView implements TypeView {
         // first test if there is something to be done
         if (this.errors == null) {
             try {
-                Pair<TypeGraph,NodeEdgeMap> modelPlusMap =
+                Pair<TypeGraph,ViewToTypeMap> modelPlusMap =
                     computeModel(this.view);
                 this.model = modelPlusMap.first();
                 this.viewToModelMap = modelPlusMap.second();
                 this.errors = Collections.emptyList();
             } catch (FormatException e) {
                 this.model = null;
-                this.viewToModelMap = new NodeEdgeHashMap();
+                this.viewToModelMap = new ViewToTypeMap();
                 this.errors = e.getErrors();
             }
         }
@@ -115,7 +115,7 @@ public class DefaultTypeView implements TypeView {
      * Computes a fresh model from a given aspect graph, together with a mapping
      * from the aspect graph's node to the (fresh) graph nodes.
      */
-    private Pair<TypeGraph,NodeEdgeMap> computeModel(AspectGraph view)
+    private Pair<TypeGraph,ViewToTypeMap> computeModel(AspectGraph view)
         throws FormatException {
         Set<FormatError> errors = new TreeSet<FormatError>(view.getErrors());
         TypeGraph model = new TypeGraph();
@@ -130,14 +130,13 @@ public class DefaultTypeView implements TypeView {
         // mapping from types to model nodes
         Map<Label,TypeNode> typeNodeMap = new HashMap<Label,TypeNode>();
         // View-to-model element map
-        NodeEdgeMap elementMap = new NodeEdgeHashMap();
+        ViewToTypeMap elementMap = new ViewToTypeMap();
         // collect node type edges and build the view type map
         for (AspectEdge viewEdge : view.edgeSet()) {
             Label modelLabel = viewEdge.getModelLabel();
             if (modelLabel != null && modelLabel.isNodeType()) {
                 AspectNode viewSource = viewEdge.source();
-                TypeNode oldTypeNode =
-                    (TypeNode) elementMap.getNode(viewSource);
+                TypeNode oldTypeNode = elementMap.getNode(viewSource);
                 if (oldTypeNode != null) {
                     errors.add(new FormatError(
                         "Node '%s' has types '%s' and '%s'", viewSource,
@@ -204,7 +203,7 @@ public class DefaultTypeView implements TypeView {
         GraphInfo.transfer(view, model, elementMap);
         if (errors.isEmpty()) {
             model.setFixed();
-            return new Pair<TypeGraph,NodeEdgeMap>(model, elementMap);
+            return new Pair<TypeGraph,ViewToTypeMap>(model, elementMap);
         } else {
             throw new FormatException(errors);
         }
@@ -231,7 +230,7 @@ public class DefaultTypeView implements TypeView {
      * map and subtypes.
      * @throws FormatException if the presence of the edge signifies an error
      */
-    private void processViewEdge(TypeGraph model, NodeEdgeMap elementMap,
+    private void processViewEdge(TypeGraph model, ViewToTypeMap elementMap,
             AspectEdge viewEdge) throws FormatException {
         for (AspectValue value : viewEdge.getAspectMap()) {
             if (isVirtualValue(value)) {
@@ -242,21 +241,21 @@ public class DefaultTypeView implements TypeView {
                     "Edge aspect value '%s' not allowed in type graphs", value);
             }
         }
-        Node modelSource = elementMap.getNode(viewEdge.source());
+        TypeNode modelSource = elementMap.getNode(viewEdge.source());
         assert modelSource != null : String.format(
             "Source of view edge '%s' not in element map %s",
             viewEdge.source(), elementMap);
-        Node modelTarget = elementMap.getNode(viewEdge.target());
+        TypeNode modelTarget = elementMap.getNode(viewEdge.target());
         assert modelTarget != null : String.format(
             "Target of view edge '%s' not in element map %s",
             viewEdge.source(), elementMap);
         // register subtype edges
         if (!TypeAspect.isSubtype(viewEdge)) {
             Label modelLabel = viewEdge.getModelLabel();
-            Edge modelEdge =
+            TypeEdge modelEdge =
                 model.addEdge(modelSource, modelLabel, modelTarget);
             if (TypeAspect.isAbstract(viewEdge)) {
-                model.setAbstract(modelEdge);
+                modelEdge.setAbstract();
             }
             elementMap.putEdge(viewEdge, modelEdge);
         }
@@ -287,5 +286,12 @@ public class DefaultTypeView implements TypeView {
      */
     private List<FormatError> errors;
     /** Map from view to model nodes. */
-    private NodeEdgeMap viewToModelMap;
+    private ViewToTypeMap viewToModelMap;
+
+    /** Mapping from type graph elements to rule graph elements. */
+    public static class ViewToTypeMap extends
+            GenericNodeEdgeHashMap<AspectNode,TypeNode,AspectEdge,Edge>
+            implements ViewToModelMap<TypeNode,Edge> {
+        // no additional functionality
+    }
 }

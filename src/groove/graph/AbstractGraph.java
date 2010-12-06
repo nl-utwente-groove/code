@@ -19,7 +19,6 @@ package groove.graph;
 import groove.graph.iso.CertificateStrategy;
 import groove.util.Dispenser;
 import groove.util.Pair;
-import groove.view.FormatException;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -70,7 +69,11 @@ public abstract class AbstractGraph<C extends GraphCache> extends
      * @return the freshly binary created edge
      */
     public Edge createEdge(Node source, Label label, Node target) {
-        return DefaultEdge.createEdge(source, label, target);
+        assert isTypeCorrect(source);
+        assert isTypeCorrect(target);
+        Edge result = DefaultEdge.createEdge(source, label, target);
+        assert isTypeCorrect(result);
+        return result;
     }
 
     /**
@@ -84,7 +87,12 @@ public abstract class AbstractGraph<C extends GraphCache> extends
      */
     public Edge createEdge(Node source, Label label, Node target,
             DefaultEdge constructor) {
-        return DefaultEdge.createEdge(source, label, target, constructor);
+        assert isTypeCorrect(source);
+        assert isTypeCorrect(target);
+        Edge result =
+            DefaultEdge.createEdge(source, label, target, constructor);
+        assert isTypeCorrect(result);
+        return result;
     }
 
     public Node addNode() {
@@ -153,6 +161,8 @@ public abstract class AbstractGraph<C extends GraphCache> extends
     }
 
     public boolean mergeNodes(Node from, Node to) {
+        assert isTypeCorrect(from);
+        assert isTypeCorrect(to);
         if (!from.equals(to)) {
             fireReplaceNode(from, to);
             // compute edge replacements and add new edges
@@ -186,14 +196,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends
     /** This should return a <i>modifiable</i> clone of the graph. */
     @Override
     public abstract Graph clone();
-
-    public Graph newGraph(Graph graph) throws FormatException {
-        Graph result = newGraph();
-        result.addNodeSet(graph.nodeSet());
-        result.addEdgeSet(graph.edgeSet());
-        result.setInfo(graph.getInfo());
-        return result;
-    }
 
     /**
      * Calls {@link GraphListener#replaceUpdate(GraphShape, Node, Node)} on all
@@ -246,15 +248,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends
      */
     public CertificateStrategy getCertifier(boolean strong) {
         return getCache().getCertifier(strong);
-    }
-
-    /**
-     * Factory method for a morphism. This implementation invokes
-     * {@link GraphFactory#newMorphism(Graph, Graph)} on the current graph
-     * factory.
-     */
-    protected Morphism createMorphism(Graph dom, Graph cod) {
-        return graphFactory.newMorphism(dom, cod);
     }
 
     /**
@@ -339,12 +332,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends
     static public <C extends GraphCache> AbstractGraph<C> emptyGraph() {
         return EMPTY_GRAPH;
     }
-
-    /**
-     * The factory used to get morphisms from
-     * @see #createMorphism(Graph,Graph)
-     */
-    static private GraphFactory graphFactory = GraphFactory.getInstance();
 
     /**
      * The current strategy for computing isomorphism certificates.

@@ -21,12 +21,13 @@ import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.rel.LabelVar;
 import groove.rel.VarNodeEdgeLinkedHashMap;
-import groove.rel.VarNodeEdgeMap;
+import groove.rel.RuleToStateMap;
+import groove.trans.RuleEdge;
+import groove.trans.RuleNode;
 import groove.util.Reporter;
 
 import java.util.Arrays;
@@ -44,7 +45,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
+public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToStateMap> {
     /**
      * Constructs a strategy from a given list of search items. A flag controls
      * if solutions should be injective.
@@ -53,19 +54,19 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
      */
     public SearchPlanStrategy(GraphShape source,
             List<? extends SearchItem> plan, boolean injective) {
-        this.nodeIxMap = new HashMap<Node,Integer>();
-        this.edgeIxMap = new HashMap<Edge,Integer>();
+        this.nodeIxMap = new HashMap<RuleNode,Integer>();
+        this.edgeIxMap = new HashMap<RuleEdge,Integer>();
         this.varIxMap = new HashMap<LabelVar,Integer>();
         this.plan = plan;
         this.injective = injective;
     }
 
-    public Iterator<VarNodeEdgeMap> getMatchIter(GraphShape host,
-            NodeEdgeMap anchorMap) {
-        Iterator<VarNodeEdgeMap> result;
+    public Iterator<RuleToStateMap> getMatchIter(GraphShape host,
+            RuleToStateMap anchorMap) {
+        Iterator<RuleToStateMap> result;
         getMatchIterReporter.start();
         final Search search = createSearch(host, anchorMap);
-        result = new Iterator<VarNodeEdgeMap>() {
+        result = new Iterator<RuleToStateMap>() {
             public boolean hasNext() {
                 // test if there is an unreturned next or if we are done
                 if (this.next == null && !this.atEnd) {
@@ -80,9 +81,9 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
                 return !this.atEnd;
             }
 
-            public VarNodeEdgeMap next() {
+            public RuleToStateMap next() {
                 if (hasNext()) {
-                    VarNodeEdgeMap result = this.next;
+                    RuleToStateMap result = this.next;
                     this.next = null;
                     return result;
                 } else {
@@ -95,7 +96,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
             }
 
             /** The next refinement to be returned. */
-            private VarNodeEdgeMap next;
+            private RuleToStateMap next;
             /**
              * Flag to indicate that the last refinement has been returned, so
              * {@link #next()} henceforth will return <code>false</code>.
@@ -129,7 +130,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     /**
      * Callback factory method for an auxiliary {@link Search} object.
      */
-    protected Search createSearch(GraphShape host, NodeEdgeMap anchorMap) {
+    protected Search createSearch(GraphShape host, RuleToStateMap anchorMap) {
         testFixed(true);
         return new Search(host, anchorMap);
     }
@@ -167,7 +168,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
      * @param node the node to be looked up
      * @return an index for <code>node</code>
      */
-    int getNodeIx(Node node) {
+    int getNodeIx(RuleNode node) {
         Integer result = this.nodeIxMap.get(node);
         if (result == null) {
             testFixed(false);
@@ -182,7 +183,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
      * @param edge the edge to be looked up
      * @return an index for <code>edge</code>
      */
-    int getEdgeIx(Edge edge) {
+    int getEdgeIx(RuleEdge edge) {
         Integer value = this.edgeIxMap.get(edge);
         if (value == null) {
             testFixed(false);
@@ -216,12 +217,12 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
                 item.activate(this);
             }
             // now create the inverse of the index maps
-            this.nodeKeys = new Node[this.nodeIxMap.size()];
-            for (Map.Entry<Node,Integer> nodeIxEntry : this.nodeIxMap.entrySet()) {
+            this.nodeKeys = new RuleNode[this.nodeIxMap.size()];
+            for (Map.Entry<RuleNode,Integer> nodeIxEntry : this.nodeIxMap.entrySet()) {
                 this.nodeKeys[nodeIxEntry.getValue()] = nodeIxEntry.getKey();
             }
-            this.edgeKeys = new Edge[this.edgeIxMap.size()];
-            for (Map.Entry<Edge,Integer> edgeIxEntry : this.edgeIxMap.entrySet()) {
+            this.edgeKeys = new RuleEdge[this.edgeIxMap.size()];
+            for (Map.Entry<RuleEdge,Integer> edgeIxEntry : this.edgeIxMap.entrySet()) {
                 this.edgeKeys[edgeIxEntry.getValue()] = edgeIxEntry.getKey();
             }
             this.varKeys = new LabelVar[this.varIxMap.size()];
@@ -254,11 +255,11 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     /**
      * Map from source graph nodes to (distinct) indices.
      */
-    private final Map<Node,Integer> nodeIxMap;
+    private final Map<RuleNode,Integer> nodeIxMap;
     /**
      * Map from source graph edges to (distinct) indices.
      */
-    private final Map<Edge,Integer> edgeIxMap;
+    private final Map<RuleEdge,Integer> edgeIxMap;
     /**
      * Map from source graph variables to (distinct) indices.
      */
@@ -266,11 +267,11 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     /**
      * Array of source graph nodes, which is the inverse of {@link #nodeIxMap} .
      */
-    Node[] nodeKeys;
+    RuleNode[] nodeKeys;
     /**
      * Array of source graph edges, which is the inverse of {@link #edgeIxMap} .
      */
-    Edge[] edgeKeys;
+    RuleEdge[] edgeKeys;
     /**
      * Array of source graph variables, which is the inverse of
      * {@link #varIxMap} .
@@ -285,7 +286,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     /** Reporter instance to profile matcher methods. */
     static private final Reporter reporter =
         Reporter.register(SearchPlanStrategy.class);
-    /** Handle for profiling {@link #getMatchIter(GraphShape, NodeEdgeMap)} */
+    /** Handle for profiling {@link #getMatchIter(GraphShape, RuleToStateMap)} */
     static final Reporter getMatchIterReporter =
         reporter.register("getMatchIter()");
     /** Handle for profiling {@link Search#find()} */
@@ -298,7 +299,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
      */
     public class Search {
         /** Constructs a new record for a given graph and partial match. */
-        public Search(GraphShape host, NodeEdgeMap anchorMap) {
+        public Search(GraphShape host, RuleToStateMap anchorMap) {
             this.host = host;
             this.records =
                 new SearchItem.Record[SearchPlanStrategy.this.plan.size()];
@@ -313,7 +314,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
             this.varAnchors = new Label[SearchPlanStrategy.this.varKeys.length];
             this.noMatches = false;
             if (anchorMap != null) {
-                for (Map.Entry<Node,Node> nodeEntry : anchorMap.nodeMap().entrySet()) {
+                for (Map.Entry<RuleNode,Node> nodeEntry : anchorMap.nodeMap().entrySet()) {
                     assert isNodeFound(nodeEntry.getKey());
                     int i = getNodeIx(nodeEntry.getKey());
                     this.nodeImages[i] =
@@ -330,19 +331,17 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
                 // anchorMap.nodeMap().size()) {
                 // noMatches = true;
                 // }
-                for (Map.Entry<Edge,Edge> edgeEntry : anchorMap.edgeMap().entrySet()) {
+                for (Map.Entry<RuleEdge,Edge> edgeEntry : anchorMap.edgeMap().entrySet()) {
                     assert isEdgeFound(edgeEntry.getKey());
                     int i = getEdgeIx(edgeEntry.getKey());
                     this.edgeImages[i] =
                         this.edgeAnchors[i] = edgeEntry.getValue();
                 }
-                if (anchorMap instanceof VarNodeEdgeMap) {
-                    for (Map.Entry<LabelVar,Label> varEntry : ((VarNodeEdgeMap) anchorMap).getValuation().entrySet()) {
-                        assert isVarFound(varEntry.getKey());
-                        int i = getVarIx(varEntry.getKey());
-                        this.varImages[i] =
-                            this.varAnchors[i] = varEntry.getValue();
-                    }
+                for (Map.Entry<LabelVar,Label> varEntry : anchorMap.getValuation().entrySet()) {
+                    assert isVarFound(varEntry.getKey());
+                    int i = getVarIx(varEntry.getKey());
+                    this.varImages[i] =
+                        this.varAnchors[i] = varEntry.getValue();
                 }
             }
         }
@@ -393,7 +392,6 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
                     // we have to go on searching
                     current--;
                     found = false;
-                    this.match = null;
                 }
             } while (!found && !exhausted);
             this.found = found;
@@ -520,9 +518,10 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
          * Returns a copy of the search result, or <code>null</code> if the last
          * invocation of {@link #find()} was not successful.
          */
-        public VarNodeEdgeMap getMatch() {
-            if (this.found && this.match == null) {
-                VarNodeEdgeMap result = new VarNodeEdgeLinkedHashMap();
+        public RuleToStateMap getMatch() {
+            RuleToStateMap result = null;
+            if (this.found) {
+                result = new VarNodeEdgeLinkedHashMap();
                 for (int i = 0; i < this.nodeImages.length; i++) {
                     Node image = this.nodeImages[i];
                     if (image != null) {
@@ -543,10 +542,8 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
                         result.putVar(SearchPlanStrategy.this.varKeys[i], image);
                     }
                 }
-                return result;
-            } else {
-                return this.match;
             }
+            return result;
         }
 
         /** Returns the target graph of the search. */
@@ -601,11 +598,6 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
         private final boolean noMatches;
         /** Search stack. */
         private final SearchItem.Record[] records;
-        /**
-         * The match found at the last invocation of {@link #find()}, if it has
-         * been computed (in {@link #getMatch()}).
-         */
-        private VarNodeEdgeMap match;
     }
 
 }

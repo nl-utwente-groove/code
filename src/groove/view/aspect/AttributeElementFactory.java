@@ -24,13 +24,14 @@ import groove.algebra.Algebra;
 import groove.algebra.AlgebraRegister;
 import groove.algebra.Operation;
 import groove.algebra.UnknownSymbolException;
-import groove.graph.Edge;
 import groove.graph.Node;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
+import groove.trans.RuleEdge;
+import groove.trans.RuleNode;
 import groove.trans.SystemProperties;
 import groove.view.FormatException;
 import groove.view.aspect.AttributeAspect.ConstantAspectValue;
@@ -80,8 +81,8 @@ public class AttributeElementFactory {
      * @throws FormatException if attribute-related errors are found in
      *         <code>graph</code>
      */
-    public Node createAttributeNode(AspectNode node) throws FormatException {
-        Node result;
+    public RuleNode createAttributeNode(AspectNode node) throws FormatException {
+        RuleNode result;
         AspectValue attributeValue = getAttributeValue(node);
         if (attributeValue == null) {
             result = null;
@@ -195,9 +196,9 @@ public class AttributeElementFactory {
      * @throws FormatException if attribute-related errors are found in
      *         <code>graph</code>
      */
-    public Edge createAttributeEdge(AspectEdge edge, Node source, Node target)
-        throws FormatException {
-        Edge result;
+    public RuleEdge createAttributeEdge(AspectEdge edge, Node source,
+            Node target) throws FormatException {
+        RuleEdge result;
         AspectValue attributeValue = getAttributeValue(edge);
         if (attributeValue == null || source == target) {
             result = null;
@@ -229,8 +230,8 @@ public class AttributeElementFactory {
      * @throws FormatException if <code>edge</code> does not have a correct set
      *         of outgoing attribute edges in <code>graph</code>
      */
-    private Edge createOperatorEdge(Operation operator, Node source, Node target)
-        throws FormatException {
+    private OperatorEdge createOperatorEdge(Operation operator, Node source,
+            Node target) throws FormatException {
         assert operator != null : String.format(
             "Cannot create edge between %s and %s for empty operator", source,
             target);

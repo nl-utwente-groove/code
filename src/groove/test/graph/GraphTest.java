@@ -26,10 +26,10 @@ import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
-import groove.graph.GraphFactory;
 import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.PartitionMap;
 import groove.io.DefaultGxl;
@@ -96,12 +96,8 @@ public class GraphTest {
 
     public DefaultIsoChecker checker = DefaultIsoChecker.getInstance(true);
 
-    private void setMarshaller(GraphFactory factory) {
-        this.xml = new DefaultGxl(factory);
-    }
-
-    GraphFactory getFactory() {
-        return GraphFactory.getInstance();
+    Graph createGraph() {
+        return new NodeSetEdgeSetGraph();
     }
 
     /*
@@ -109,7 +105,6 @@ public class GraphTest {
      */
     @Before
     public void setUp() {
-        this.setMarshaller(this.getFactory());
         for (int i = 0; i < this.matchDom.length; i++) {
             this.matchDom[i] = loadGraph(testFile(MATCH_DOM_NAME + i));
         }
@@ -138,9 +133,11 @@ public class GraphTest {
     }
 
     protected Graph loadGraph(File file) {
-        Graph result = null;
+        Graph result = createGraph();
         try {
-            result = this.xml.unmarshalGraph(file);
+            Graph graph = this.xml.unmarshalGraph(file);
+            result.addNodeSet(graph.nodeSet());
+            result.addEdgeSet(graph.edgeSet());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -661,5 +658,5 @@ public class GraphTest {
         Set<Graph> listeningTo = this.added.keySet();
     }
 
-    private Xml<Graph> xml;
+    private final Xml<Graph> xml = new DefaultGxl();
 }

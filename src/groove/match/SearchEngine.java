@@ -16,12 +16,12 @@
  */
 package groove.match;
 
-import groove.graph.Edge;
-import groove.graph.GraphShape;
 import groove.graph.LabelStore;
-import groove.graph.Node;
-import groove.rel.VarNodeEdgeMap;
+import groove.rel.RuleToStateMap;
 import groove.trans.Condition;
+import groove.trans.RuleEdge;
+import groove.trans.RuleGraph;
+import groove.trans.RuleNode;
 
 import java.util.Collection;
 
@@ -33,7 +33,7 @@ import java.util.Collection;
  * @author Arash Jalali
  * @version $Revision $
  */
-public abstract class SearchEngine<MatcherType extends AbstractMatchStrategy<VarNodeEdgeMap>> {
+public abstract class SearchEngine<MatcherType extends AbstractMatchStrategy<RuleToStateMap>> {
 
     /**
      * Factory method returning a search engine for 
@@ -60,8 +60,7 @@ public abstract class SearchEngine<MatcherType extends AbstractMatchStrategy<Var
      *        already
      */
     public MatcherType createMatcher(Condition condition,
-            Collection<? extends Node> anchorNodes,
-            Collection<? extends Edge> anchorEdges) {
+            Collection<RuleNode> anchorNodes, Collection<RuleEdge> anchorEdges) {
         return createMatcher(condition, anchorNodes, anchorEdges, null);
     }
 
@@ -83,9 +82,8 @@ public abstract class SearchEngine<MatcherType extends AbstractMatchStrategy<Var
      *        <code>null</code>, all nodes are relevant
      */
     public abstract MatcherType createMatcher(Condition condition,
-            Collection<? extends Node> anchorNodes,
-            Collection<? extends Edge> anchorEdges,
-            Collection<? extends Node> relevantNodes);
+            Collection<RuleNode> anchorNodes, Collection<RuleEdge> anchorEdges,
+            Collection<RuleNode> relevantNodes);
 
     /**
      * Implementations of this method would be factory methods returning 
@@ -105,9 +103,9 @@ public abstract class SearchEngine<MatcherType extends AbstractMatchStrategy<Var
      *         that adhere to the conditions set by the anchors.  
      *         
      */
-    public abstract MatcherType createMatcher(GraphShape graph,
-            Collection<? extends Node> anchorNodes,
-            Collection<? extends Edge> anchorEdges, LabelStore labelStore);
+    public abstract MatcherType createMatcher(RuleGraph graph,
+            Collection<RuleNode> anchorNodes, Collection<RuleEdge> anchorEdges,
+            LabelStore labelStore);
 
     /** Indicates if the matchers this factory produces are injective. */
     public abstract boolean isInjective();

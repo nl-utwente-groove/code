@@ -17,16 +17,17 @@
 package groove.io;
 
 import groove.graph.DefaultEdge;
+import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.Node;
+import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
 import groove.graph.algebra.ValueNode;
 import groove.util.Groove;
@@ -233,8 +234,7 @@ public class JaxbGxlIO implements GxlIO {
         for (Edge edge : graph.edgeSet()) {
             // create an xml element for this edge
             String prefixedLabel = DefaultLabel.toPrefixedString(edge.label());
-            if (graph instanceof TypeGraph
-                && ((TypeGraph) graph).isAbstract(edge)) {
+            if (edge instanceof TypeEdge && ((TypeEdge) edge).isAbstract()) {
                 prefixedLabel = ABSTRACT_PREFIX + prefixedLabel;
             }
             EdgeType gxlEdge =
@@ -333,7 +333,7 @@ public class JaxbGxlIO implements GxlIO {
         throws FormatException {
 
         // Initialize the new objects to be created.
-        Graph graph = this.graphFactory.newGraph();
+        Graph graph = createGraph();
         Map<String,Node> nodeIds = new HashMap<String,Node>();
         // MdM - LayoutMap<Node,Edge> layoutMap = new LayoutMap();
 
@@ -480,8 +480,9 @@ public class JaxbGxlIO implements GxlIO {
         }
     }
 
-    /** The graph factory for this marshaller. */
-    private final GraphFactory graphFactory = GraphFactory.getInstance();
+    private Graph createGraph() {
+        return new DefaultGraph();
+    }
 
     /** Reusable context for JAXB (un)marshalling. */
     private JAXBContext context;
