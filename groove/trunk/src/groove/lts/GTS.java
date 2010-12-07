@@ -19,6 +19,8 @@ package groove.lts;
 import groove.control.CtrlState;
 import groove.explore.result.Result;
 import groove.graph.AbstractGraphShape;
+import groove.graph.DefaultGraph;
+import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphShapeCache;
@@ -388,6 +390,37 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      */
     public boolean checkDiamonds() {
         return true;
+    }
+
+    /** 
+     * Exports the GTS to a plain graph representation,
+     * optionally including special edges to represent start, final and
+     * open states, and state identifiers.
+     */
+    public Graph toPlainGraph(boolean showFinal, boolean showStart,
+            boolean showOpen, boolean showNames) {
+        Graph result = new DefaultGraph();
+        for (State state : nodeSet()) {
+            result.addNode(state);
+            if (showFinal && isFinal(state)) {
+                result.addEdge(state,
+                    DefaultLabel.createLabel(LTS.FINAL_LABEL_TEXT), state);
+            }
+            if (showStart && startState().equals(state)) {
+                result.addEdge(state,
+                    DefaultLabel.createLabel(LTS.START_LABEL_TEXT), state);
+            }
+            if (showOpen && !state.isClosed()) {
+                result.addEdge(state,
+                    DefaultLabel.createLabel(LTS.OPEN_LABEL_TEXT), state);
+            }
+            if (showNames) {
+                result.addEdge(state,
+                    DefaultLabel.createLabel(state.toString()), state);
+            }
+        }
+        result.addEdgeSet(edgeSet());
+        return result;
     }
 
     /**

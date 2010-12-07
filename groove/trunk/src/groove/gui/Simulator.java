@@ -90,7 +90,6 @@ import groove.io.Xml;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.LTSGraph;
 import groove.lts.State;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
@@ -3841,8 +3840,8 @@ public class Simulator {
 
                 GTS gts = Simulator.this.getGTS();
 
-                LTSGraph lts =
-                    new LTSGraph(gts, showFinal, showStart, showOpen, showNames);
+                Graph lts =
+                    gts.toPlainGraph(showFinal, showStart, showOpen, showNames);
 
                 Collection<GraphState> export = new HashSet<GraphState>(0);
 
