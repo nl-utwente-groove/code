@@ -33,8 +33,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.jgraph.JGraph;
@@ -169,19 +169,37 @@ public class ShapeJGraph extends JGraph {
     }
 
     private void createEdgeMults() {
-        String labels[] = new String[2];
         Point2D[] labelPositions =
             {new Point2D.Double(GraphConstants.PERMILLE * 95 / 100, -10),
                 new Point2D.Double(GraphConstants.PERMILLE * 5 / 100, -10)};
 
-        for (ShapeEdge edgeS : this.getMainEdges()) {
+        HashMap<ShapeEdge,String> edge2OutMult =
+            new HashMap<ShapeEdge,String>();
+        HashMap<ShapeEdge,String> edge2InMult = new HashMap<ShapeEdge,String>();
+        this.getEdgeToMultMaps(edge2OutMult, edge2InMult);
+
+        for (Edge edge : Util.getBinaryEdges(this.shape)) {
+            ShapeEdge edgeS = (ShapeEdge) edge;
             ShapeJEdge jEdge = this.edgeMap.get(edgeS);
-            jEdge.setMain(true);
-            labels[0] = this.shape.getEdgeOutMult(edgeS).toString();
-            labels[1] = this.shape.getEdgeInMult(edgeS).toString();
+            String labels[] = new String[2];
+            labels[0] = edge2InMult.get(edgeS);
+            labels[1] = edge2OutMult.get(edgeS);
+            if (labels[0] == null) {
+                labels[0] = "";
+            } else {
+                jEdge.setMainTgt(true);
+            }
+            if (labels[1] == null) {
+                labels[1] = "";
+            } else {
+                jEdge.setMainSrc(true);
+            }
             AttributeMap attrMap = jEdge.getAttributes();
             GraphConstants.setExtraLabelPositions(attrMap, labelPositions);
             GraphConstants.setExtraLabels(attrMap, labels);
+            /*if (main) {
+                GraphConstants.setLineColor(attrMap, Color.BLUE);
+            }*/
         }
     }
 
@@ -224,23 +242,66 @@ public class ShapeJGraph extends JGraph {
         this.getGraphLayoutCache().edit(nested);
     }
 
-    private Set<ShapeEdge> getMainEdges() {
-        Set<ShapeEdge> result = new HashSet<ShapeEdge>();
-        for (EdgeSignature outEs : this.outEsMap.keySet()) {
-            Set<ShapeEdge> edges = this.shape.getEdgesFrom(outEs, true);
+    private void getEdgeToMultMaps(HashMap<ShapeEdge,String> edge2OutMult,
+            HashMap<ShapeEdge,String> edge2InMult) {
+        HashMap<ShapeJPort,ShapeEdge> outPort2Edge =
+            new HashMap<ShapeJPort,ShapeEdge>();
+        for (ShapeJPort outPort : this.outEsMap.values()) {
+            outPort2Edge.put(outPort, null);
+        }
+        HashMap<ShapeJPort,ShapeEdge> inPort2Edge =
+            new HashMap<ShapeJPort,ShapeEdge>();
+        for (ShapeJPort inPort : this.inEsMap.values()) {
+            inPort2Edge.put(inPort, null);
+        }
+
+        for (Edge edge : Util.getBinaryEdges(this.shape)) {
+            edge2OutMult.put((ShapeEdge) edge, null);
+            edge2InMult.put((ShapeEdge) edge, null);
+        }
+
+        for (Entry<EdgeSignature,ShapeJPort> entry : this.outEsMap.entrySet()) {
+            EdgeSignature outEs = entry.getKey();
+            ShapeJPort outPort = entry.getValue();
+            Set<ShapeEdge> outEdges = this.shape.getEdgesFrom(outEs, true);
             if (this.shape.isOutEdgeSigUnique(outEs)) {
-                result.add(edges.iterator().next());
+                ShapeEdge outEdge = outEdges.iterator().next();
+                outPort2Edge.put(outPort, outEdge);
+                edge2OutMult.put(outEdge,
+                    this.shape.getEdgeOutMult(outEdge).toString());
             } else {
-                for (ShapeEdge edge : edges) {
-                    if (!edge.isLoop()) {
-                        result.add(edge);
+                for (ShapeEdge outEdge : outEdges) {
+                    if (!outEdge.isLoop() && outPort2Edge.get(outEdge) == null) {
+                        outPort2Edge.put(outPort, outEdge);
+                        edge2OutMult.put(outEdge,
+                            this.shape.getEdgeOutMult(outEdge).toString());
                         break;
                     }
                 }
             }
         }
 
-        return result;
+        for (Entry<EdgeSignature,ShapeJPort> entry : this.inEsMap.entrySet()) {
+            EdgeSignature inEs = entry.getKey();
+            ShapeJPort inPort = entry.getValue();
+            Set<ShapeEdge> inEdges = this.shape.getEdgesFrom(inEs, false);
+            if (this.shape.isInEdgeSigUnique(inEs)) {
+                ShapeEdge inEdge = inEdges.iterator().next();
+                inPort2Edge.put(inPort, inEdge);
+                edge2InMult.put(inEdge,
+                    this.shape.getEdgeInMult(inEdge).toString());
+            } else {
+                for (ShapeEdge inEdge : inEdges) {
+                    if (!inEdge.isLoop() && inPort2Edge.get(inEdge) == null) {
+                        inPort2Edge.put(inPort, inEdge);
+                        edge2InMult.put(inEdge,
+                            this.shape.getEdgeInMult(inEdge).toString());
+                        break;
+                    }
+                }
+            }
+        }
+
     }
 
     private class MyMouseListener extends MouseAdapter {

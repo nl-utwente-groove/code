@@ -31,4 +31,11 @@ public class ShapeJVertexView extends VertexView {
         super(cell);
     }
 
+    /**
+     * EDUARDO: Comment this...
+     */
+    public ShapeJVertex getShapeJVertex() {
+        return (ShapeJVertex) this.getCell();
+    }
+
 }

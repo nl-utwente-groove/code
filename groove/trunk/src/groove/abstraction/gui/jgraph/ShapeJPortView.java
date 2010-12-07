@@ -77,8 +77,13 @@ public class ShapeJPortView extends PortView {
         Rectangle2D r = vertex.getBounds();
         Point2D pos = this.getPortPosition(r);
         if (edge != null) {
-            ShapeJEdge jEdge = (ShapeJEdge) edge.getCell();
-            if (jEdge.isMain() && nearest != null) {
+            assert edge instanceof ShapeJEdgeView;
+            ShapeJEdgeView edgeView = (ShapeJEdgeView) edge;
+            ShapeJEdge jEdge = edgeView.getShapeJEdge();
+            boolean srcVertex = edgeView.isSrcVertex((ShapeJVertexView) vertex);
+            boolean tgtVertex = edgeView.isTgtVertex((ShapeJVertexView) vertex);
+            if (nearest != null
+                && ((srcVertex && jEdge.isMainSrc()) || (tgtVertex && jEdge.isMainTgt()))) {
                 pos = vertex.getPerimeterPoint(edge, null, nearest);
                 Point2D newOffset = this.computeNewOffset(r, pos);
                 GraphConstants.setOffset(this.allAttributes, newOffset);
