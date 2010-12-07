@@ -17,7 +17,7 @@
 package groove.abstraction;
 
 import groove.graph.DefaultEdge;
-import groove.graph.EdgeStore;
+import groove.graph.DefaultEdgeStore;
 import groove.graph.Label;
 import groove.graph.Node;
 
@@ -40,7 +40,7 @@ public final class ShapeEdge extends DefaultEdge {
 
     /** Factory constructor. */
     @Override
-    public ShapeEdge newEdge(Node source, Label label, Node target, int nr) {
+    protected ShapeEdge newEdge(Node source, Label label, Node target, int nr) {
         assert source instanceof ShapeNode : "Invalid source node";
         assert target instanceof ShapeNode : "Invalid target node";
         return new ShapeEdge(source, label, target, nr);
@@ -79,7 +79,7 @@ public final class ShapeEdge extends DefaultEdge {
      */
     static public ShapeEdge createEdge(ShapeNode source, Label label,
             ShapeNode target) {
-        return store.createEdge(source, label, target);
+        return (ShapeEdge) store.createEdge(source, label, target);
     }
 
     // ------------------------------------------------------------------------
@@ -90,12 +90,6 @@ public final class ShapeEdge extends DefaultEdge {
     private static final ShapeEdge PROTOTYPE = new ShapeEdge(null, null, null,
         0);
     /** The static edge store. */
-    private static final EdgeStore<ShapeNode,ShapeEdge> store =
-        new EdgeStore<ShapeNode,ShapeEdge>(new Factory<ShapeNode,ShapeEdge>() {
-            @Override
-            public ShapeEdge newEdge(ShapeNode source, Label label,
-                    ShapeNode target, int nr) {
-                return PROTOTYPE.newEdge(source, label, target, nr);
-            }
-        });
+    private static final DefaultEdgeStore store = new DefaultEdgeStore(
+        PROTOTYPE);
 }

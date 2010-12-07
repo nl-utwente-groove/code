@@ -16,7 +16,6 @@
  */
 package groove.graph;
 
-import groove.graph.CanonicalEdge.Factory;
 import groove.util.TreeHashSet;
 
 /**
@@ -24,12 +23,12 @@ import groove.util.TreeHashSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class EdgeStore<N extends Node,E extends Edge> {
-    /**
-     * Creates a store, given a prototype edge object to 
-     * create new edges off.
+public class DefaultEdgeStore {
+    /** Creates a store based on a given prototype.
+     * All edges are constructed by calling {@link DefaultEdge#newEdge(Node, Label, Node, int)}
+     * on this prototype.
      */
-    public EdgeStore(Factory<N,E> factory) {
+    public DefaultEdgeStore(DefaultEdge factory) {
         this.factory = factory;
     }
 
@@ -47,7 +46,7 @@ public class EdgeStore<N extends Node,E extends Edge> {
      *         <code>target</code>; the label is a {@link DefaultLabel}
      * @see #createEdge(Node, Label, Node)
      */
-    public E createEdge(N source, String text, N target) {
+    public DefaultEdge createEdge(Node source, String text, Node target) {
         return createEdge(source, DefaultLabel.createLabel(text), target);
     }
 
@@ -65,12 +64,13 @@ public class EdgeStore<N extends Node,E extends Edge> {
      *         <code>target</code>
      * @see #createEdge(Node, String, Node)
      */
-    public E createEdge(N source, Label label, N target) {
+    public DefaultEdge createEdge(Node source, Label label, Node target) {
         assert source != null : "Source node of default edge should not be null";
         assert target != null : "Target node of default edge should not be null";
         assert label != null : "Label of default edge should not be null";
-        E edge = this.factory.newEdge(source, label, target, getEdgeCount());
-        E result = this.edgeSet.put(edge);
+        DefaultEdge edge =
+            this.factory.newEdge(source, label, target, getEdgeCount());
+        DefaultEdge result = this.edgeSet.put(edge);
         if (result == null) {
             result = edge;
         }
@@ -89,28 +89,29 @@ public class EdgeStore<N extends Node,E extends Edge> {
         this.edgeSet.clear();
     }
 
-    private final Factory<N,E> factory;
-
     /**
      * A identity map, mapping previously created instances of
      * {@link DefaultEdge} to themselves. Used to ensure that edge objects are
      * reused.
      */
-    private final TreeHashSet<E> edgeSet = new TreeHashSet<E>() {
-        /**
-         * As {@link DefaultEdge}s test equality by object identity,
-         * we need to weaken the set's equality test.
-         */
-        @Override
-        final protected boolean areEqual(E o1, E o2) {
-            return o1.source().equals(o2.source())
-                && o1.target().equals(o2.target())
-                && o1.label().equals(o2.label());
-        }
+    private final TreeHashSet<DefaultEdge> edgeSet =
+        new TreeHashSet<DefaultEdge>() {
+            /**
+             * As {@link DefaultEdge}s test equality by object identity,
+             * we need to weaken the set's equality test.
+             */
+            @Override
+            final protected boolean areEqual(DefaultEdge o1, DefaultEdge o2) {
+                return o1.source().equals(o2.source())
+                    && o1.target().equals(o2.target())
+                    && o1.label().equals(o2.label());
+            }
 
-        @Override
-        final protected boolean allEqual() {
-            return false;
-        }
-    };
+            @Override
+            final protected boolean allEqual() {
+                return false;
+            }
+        };
+
+    private final DefaultEdge factory;
 }
