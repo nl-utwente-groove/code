@@ -90,7 +90,191 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
         return result.toString();
     }
 
+    @Override
+    public void setFixed() {
+        super.setFixed();
+        // when the graph is fixed, we can initialise the auxiliary structures.
+        initNodeEdgeIndices();
+        initNodeLabelEdgeMaps();
+        initVarSets();
+    }
+
+    /**
+     * Initializes the node indices and the set of cyclic nodes.
+     * @see #getIndex(Node)
+     * @see #isCyclic(int)
+     */
+    private void initNodeEdgeIndices() {
+        this.nodeIndexMap = new HashMap<Node,Integer>();
+        this.edgeIndexMap = new HashMap<Edge,Integer>();
+        Set<Node> cyclicNodeSet = new HashSet<Node>();
+        this.cyclicNodes = new BitSet(nodeCount());
+        // the nodeList is a precursor to the nodes array
+        List<Node> nodeList = new ArrayList<Node>();
+        nodeList.add(getStartNode());
+        // the set of nodes already investigated
+        Set<Node> visitedNodes = new HashSet<Node>();
+        // the following lists are precursors to the corresponding arrays
+        List<Node> sourceList = new ArrayList<Node>();
+        List<Node> targetList = new ArrayList<Node>();
+        List<Label> labelList = new ArrayList<Label>();
+        // set the index of the first node and edge
+        int nodeIndex = 0;
+        int edgeIndex = 0;
+        while (nodeIndex < nodeList.size()) {
+            Node node = nodeList.get(nodeIndex);
+            this.nodeIndexMap.put(node, Integer.valueOf(nodeIndex));
+            nodeIndex++;
+            for (Edge outEdge : outEdgeSet(node)) {
+                Node target = outEdge.target();
+                if (visitedNodes.add(target)) {
+                    nodeList.add(target);
+                } else {
+                    cyclicNodeSet.add(target);
+                }
+                this.edgeIndexMap.put(outEdge, edgeIndex);
+                edgeIndex++;
+                sourceList.add(outEdge.source());
+                targetList.add(outEdge.target());
+                labelList.add(outEdge.label());
+            }
+        }
+        // convert the node list to a node array
+        this.nodes = new Node[nodeList.size()];
+        nodeList.toArray(this.nodes);
+        // convert the cyclic node set to a bitset
+        this.cyclicNodes = new BitSet(nodeIndex);
+        for (Node cyclicNode : cyclicNodeSet) {
+            this.cyclicNodes.set(getIndex(cyclicNode));
+        }
+        // convert the lists to arrays
+        this.sources = toIntArray(sourceList);
+        this.targets = toIntArray(targetList);
+        this.labels = new Label[labelList.size()];
+        labelList.toArray(this.labels);
+    }
+
+    /**
+     * Initialises all the node-to-label-to-edge-sets maps of this automaton.
+     * @throws IllegalStateException if the method is called before the graph is
+     *         fixed
+     */
+    @SuppressWarnings("unchecked")
+    private void initNodeLabelEdgeMaps() {
+        Set<Label> initPosLabelSet = new HashSet<Label>();
+        Set<Label> initInvLabelSet = new HashSet<Label>();
+        int indexedNodeCount = this.nodes.length;
+        Map<Label,Set<Edge>>[][] nodeInvLabelEdgeMap =
+            new Map[2][indexedNodeCount];
+        Map<Label,Set<Edge>>[][] nodePosLabelEdgeMap =
+            new Map[2][indexedNodeCount];
+        // iterate over the reachable edges (the one that have an index)
+        for (Edge edge : this.edgeIndexMap.keySet()) {
+            Label label = edge.label();
+            boolean isInverse = RegExprLabel.isInv(label);
+            if (isInverse) {
+                label = RegExprLabel.getInvOperand(label).toLabel();
+            }
+            Set<Label> derivedLabels;
+            if (RegExprLabel.isWildcard(label)) {
+                derivedLabels =
+                    new HashSet<Label>(
+                        this.labelStore.getLabels(RegExprLabel.getWildcardKind(label)));
+                derivedLabels.add(DUMMY_LABELS[RegExprLabel.getWildcardKind(label)]);
+            } else if (label.isNodeType() && !RegExprLabel.isSharp(label)) {
+                derivedLabels = this.labelStore.getSubtypes(label);
+            } else {
+                derivedLabels = Collections.singleton(label);
+            }
+            Map<Label,Set<Edge>>[][] nodeLabelEdgeMap =
+                isInverse ? nodeInvLabelEdgeMap : nodePosLabelEdgeMap;
+            for (Label derivedLabel : derivedLabels) {
+                for (int direction = FORWARD; direction <= BACKWARD; direction++) {
+                    Node end =
+                        (direction == FORWARD) ? edge.source() : edge.target();
+                    addToNodeLabelEdgeSetMap(nodeLabelEdgeMap[direction], end,
+                        derivedLabel, edge);
+                }
+                if (edge.source() == getStartNode()) {
+                    (isInverse ? initInvLabelSet : initPosLabelSet).add(derivedLabel);
+                }
+            }
+        }
+        // now convert the sets of nodes to arrays of node indices
+        this.initPosLabels = new Label[initPosLabelSet.size()];
+        initPosLabelSet.toArray(this.initPosLabels);
+        this.initInvLabels = new Label[initInvLabelSet.size()];
+        initInvLabelSet.toArray(this.initInvLabels);
+        this.nodePosLabelEdgeIndicesMap = new Map[2][indexedNodeCount];
+        this.nodeInvLabelEdgeIndicesMap = new Map[2][indexedNodeCount];
+        for (int direction = FORWARD; direction <= BACKWARD; direction++) {
+            for (int nodeIndex = 0; nodeIndex < indexedNodeCount; nodeIndex++) {
+                this.nodePosLabelEdgeIndicesMap[direction][nodeIndex] =
+                    toIntArrayMap(nodePosLabelEdgeMap[direction][nodeIndex]);
+                this.nodeInvLabelEdgeIndicesMap[direction][nodeIndex] =
+                    toIntArrayMap(nodeInvLabelEdgeMap[direction][nodeIndex]);
+            }
+        }
+        this.initPosLabels = new Label[initPosLabelSet.size()];
+        initPosLabelSet.toArray(this.initPosLabels);
+    }
+
+    /**
+     * Initializes the sets of all variables and bound variables.
+     * @see #allVarSet()
+     * @see #boundVarSet()
+     */
+    private void initVarSets() {
+        // traverse the automaton
+        Set<Node> remainingNodes = new HashSet<Node>();
+        remainingNodes.add(getStartNode());
+        // keep maps from automaton nodes to all vars and bound vars
+        Map<Node,Set<LabelVar>> allVarMap = new HashMap<Node,Set<LabelVar>>();
+        allVarMap.put(getStartNode(), new HashSet<LabelVar>());
+        Map<Node,Set<LabelVar>> boundVarMap = new HashMap<Node,Set<LabelVar>>();
+        boundVarMap.put(getStartNode(), new HashSet<LabelVar>());
+        while (!remainingNodes.isEmpty()) {
+            Node source = remainingNodes.iterator().next();
+            remainingNodes.remove(source);
+            Set<LabelVar> sourceAllVarSet = allVarMap.get(source);
+            Set<LabelVar> sourceBoundVarSet = boundVarMap.get(source);
+            for (Edge outEdge : outEdgeSet(source)) {
+                Node target = outEdge.target();
+                Set<LabelVar> targetAllVarSet =
+                    new HashSet<LabelVar>(sourceAllVarSet);
+                Set<LabelVar> targetBoundVarSet =
+                    new HashSet<LabelVar>(sourceBoundVarSet);
+                if (outEdge.label() instanceof RegExprLabel) {
+                    RegExpr expr =
+                        ((RegExprLabel) outEdge.label()).getRegExpr();
+                    targetAllVarSet.addAll(expr.allVarSet());
+                    targetBoundVarSet.addAll(expr.boundVarSet());
+                }
+                if (allVarMap.containsKey(target)) {
+                    // the target is known; take the union of all vars and the
+                    // intersection of the bound vars
+                    allVarMap.get(target).addAll(targetAllVarSet);
+                    boundVarMap.get(target).retainAll(targetAllVarSet);
+                } else {
+                    // the target is new; store all and bound vars
+                    remainingNodes.add(target);
+                    allVarMap.put(target, targetAllVarSet);
+                    boundVarMap.put(target, targetBoundVarSet);
+                }
+            }
+        }
+        this.allVarSet = allVarMap.get(getEndNode());
+        if (this.allVarSet == null) {
+            this.allVarSet = Collections.emptySet();
+        }
+        this.boundVarSet = boundVarMap.get(getEndNode());
+        if (this.boundVarSet == null) {
+            this.boundVarSet = Collections.emptySet();
+        }
+    }
+
     public boolean accepts(List<String> word) {
+        assert isFixed();
         if (word.isEmpty()) {
             return isAcceptsEmptyWord();
         } else {
@@ -151,6 +335,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
     public NodeRelation getMatches(GraphShape graph,
             Set<? extends Node> startImages, Set<? extends Node> endImages,
             Map<LabelVar,Label> valuation) {
+        assert isFixed();
         if (valuation == null) {
             valuation = Collections.emptyMap();
         }
@@ -181,7 +366,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * explicit start nodes are provided.
      * @see #getMatches(GraphShape, Set, Set, Map)
      */
-    protected Set<Node> createStartImages(GraphShape graph) {
+    private Set<Node> createStartImages(GraphShape graph) {
         Set<Node> result = new HashSet<Node>();
         if (isAcceptsEmptyWord() || isInitWildcard()) {
             // too bad, all graph nodes can be start images
@@ -208,9 +393,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * Returns the set of all wildcard variables occurring in this automaton.
      */
     public Set<LabelVar> allVarSet() {
-        if (this.allVarSet == null) {
-            initVarSets();
-        }
+        assert isFixed();
         return Collections.unmodifiableSet(this.allVarSet);
     }
 
@@ -219,9 +402,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * is bound if it occurs on every path from start to end node.
      */
     public Set<LabelVar> boundVarSet() {
-        if (this.boundVarSet == null) {
-            initVarSets();
-        }
+        assert isFixed();
         return Collections.unmodifiableSet(this.boundVarSet);
     }
 
@@ -230,9 +411,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * method for <code>!getWildcardIds().isEmpty()</code>.
      */
     public boolean hasVars() {
-        if (this.allVarSet == null) {
-            initVarSets();
-        }
+        assert isFixed();
         return !this.allVarSet.isEmpty();
     }
 
@@ -241,14 +420,13 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * method for <code>!getWildcardIds().isEmpty()</code>.
      */
     public boolean bindsVars() {
-        if (this.boundVarSet == null) {
-            initVarSets();
-        }
+        assert isFixed();
         return !this.boundVarSet.isEmpty();
     }
 
     @Override
     public Set<Label> getAlphabet() {
+        assert isFixed();
         Set<Label> result = new HashSet<Label>();
         for (Edge edge : edgeSet()) {
             Label label = edge.label();
@@ -273,7 +451,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * @param direction the matching direction: either {@link #FORWARD} or
      *        {@link #BACKWARD}
      */
-    protected MatchingAlgorithm getMatchingAlgorithm(int direction) {
+    final MatchingAlgorithm getMatchingAlgorithm(int direction) {
         if (this.algorithm == null) {
             this.algorithm = new MatchingAlgorithm[2];
             this.algorithm[FORWARD] = createMatchingAlgorithm(FORWARD);
@@ -289,56 +467,40 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * @param direction the matching direction: either {@link #FORWARD} or
      *        {@link #BACKWARD}
      */
-    protected MatchingAlgorithm createMatchingAlgorithm(int direction) {
+    final MatchingAlgorithm createMatchingAlgorithm(int direction) {
         return new MatchingAlgorithm(direction);
     }
 
     /**
      * Returns a mapping from source nodes to mappings from labels to
      * (non-empty) sets of (automaton) edges with that source node and label.
-     * The map is created on demand using {@link #initNodeLabelEdgeMaps()}.
      */
-    protected Map<Label,int[]>[] getNodePosLabelEdgeMap(int direction) {
-        if (this.nodePosLabelEdgeIndicesMap == null) {
-            initNodeLabelEdgeMaps();
-        }
+    final Map<Label,int[]>[] getNodePosLabelEdgeMap(int direction) {
         return this.nodePosLabelEdgeIndicesMap[direction];
     }
 
     /**
      * Returns a mapping from source nodes to mappings from labels to
      * (non-empty) sets of (automaton) edges with that source node, and the
-     * label wrapped in a {@link RegExpr.Inv}. The map is created on demand
-     * using {@link #initNodeLabelEdgeMaps()}.
+     * label wrapped in a {@link RegExpr.Inv}.
      */
-    protected Map<Label,int[]>[] getNodeInvLabelEdgeMap(int direction) {
-        if (this.nodeInvLabelEdgeIndicesMap == null) {
-            initNodeLabelEdgeMaps();
-        }
+    final Map<Label,int[]>[] getNodeInvLabelEdgeMap(int direction) {
         return this.nodeInvLabelEdgeIndicesMap[direction];
     }
 
     /**
      * Returns the set of positive labels occurring on initial edges. Guaranteed
-     * to be non-<code>null</code>. The map is created on demand in
-     * {@link #initNodeLabelEdgeMaps()}.
+     * to be non-<code>null</code>.
      */
-    protected Label[] getInitPosLabels() {
-        if (this.initPosLabels == null) {
-            initNodeLabelEdgeMaps();
-        }
+    final Label[] getInitPosLabels() {
         return this.initPosLabels;
     }
 
     /**
      * Returns the set of inverse labels occurring on initial edges. Guaranteed
-     * to be non-<code>null</code>. The map is created on demand in
-     * {@link #initNodeLabelEdgeMaps()}.
+     * to be non-<code>null</code>.
      */
-    protected Label[] getInitInvLabels() {
-        if (this.initInvLabels == null) {
-            initNodeLabelEdgeMaps();
-        }
+    final Label[] getInitInvLabels() {
         return this.initInvLabels;
     }
 
@@ -346,220 +508,23 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * Indicates if the automaton has an initial (normal or inverse) edge with a
      * wildcard label inside.
      */
-    protected boolean isInitWildcard() {
-        if (this.initPosLabels == null) {
-            initNodeLabelEdgeMaps();
-        }
+    final boolean isInitWildcard() {
         return this.initWildcard;
     }
 
     /**
-     * Initialises all the node-to-label-to-edge-sets maps of this automaton.
-     * @throws IllegalStateException if the method is called before the graph is
-     *         fixed
-     */
-    @SuppressWarnings("unchecked")
-    protected void initNodeLabelEdgeMaps() {
-        if (!isFixed()) {
-            throw new IllegalStateException(
-                "Maps cannot be calculated reliably before automaton is closed");
-        }
-        Set<Label> initPosLabelSet = new HashSet<Label>();
-        Set<Label> initInvLabelSet = new HashSet<Label>();
-        Map<Label,Set<Edge>>[][] nodeInvLabelEdgeMap =
-            new Map[2][indexedNodeCount()];
-        Map<Label,Set<Edge>>[][] nodePosLabelEdgeMap =
-            new Map[2][indexedNodeCount()];
-        for (Edge edge : edgeSet()) {
-            Label label = edge.label();
-            boolean isInverse = RegExprLabel.isInv(label);
-            if (isInverse) {
-                label = RegExprLabel.getInvOperand(label).toLabel();
-            }
-            Set<Label> derivedLabels;
-            if (RegExprLabel.isWildcard(label)) {
-                derivedLabels =
-                    new HashSet<Label>(
-                        this.labelStore.getLabels(RegExprLabel.getWildcardKind(label)));
-                derivedLabels.add(DUMMY_LABELS[RegExprLabel.getWildcardKind(label)]);
-            } else if (label.isNodeType() && !RegExprLabel.isSharp(label)) {
-                derivedLabels = this.labelStore.getSubtypes(label);
-            } else {
-                derivedLabels = Collections.singleton(label);
-            }
-            Map<Label,Set<Edge>>[][] nodeLabelEdgeMap =
-                isInverse ? nodeInvLabelEdgeMap : nodePosLabelEdgeMap;
-            for (Label derivedLabel : derivedLabels) {
-                for (int direction = FORWARD; direction <= BACKWARD; direction++) {
-                    Node end =
-                        (direction == FORWARD) ? edge.source() : edge.target();
-                    addToNodeLabelEdgeSetMap(nodeLabelEdgeMap[direction], end,
-                        derivedLabel, edge);
-                }
-                if (edge.source() == getStartNode()) {
-                    (isInverse ? initInvLabelSet : initPosLabelSet).add(derivedLabel);
-                }
-            }
-        }
-        // now convert the sets of nodes to arrays of node indices
-        this.initPosLabels = new Label[initPosLabelSet.size()];
-        initPosLabelSet.toArray(this.initPosLabels);
-        this.initInvLabels = new Label[initInvLabelSet.size()];
-        initInvLabelSet.toArray(this.initInvLabels);
-        this.nodePosLabelEdgeIndicesMap = new Map[2][indexedNodeCount()];
-        this.nodeInvLabelEdgeIndicesMap = new Map[2][indexedNodeCount()];
-        for (int direction = FORWARD; direction <= BACKWARD; direction++) {
-            for (int nodeIndex = 0; nodeIndex < indexedNodeCount(); nodeIndex++) {
-                this.nodePosLabelEdgeIndicesMap[direction][nodeIndex] =
-                    toIntArrayMap(nodePosLabelEdgeMap[direction][nodeIndex]);
-                this.nodeInvLabelEdgeIndicesMap[direction][nodeIndex] =
-                    toIntArrayMap(nodeInvLabelEdgeMap[direction][nodeIndex]);
-            }
-        }
-        this.initPosLabels = new Label[initPosLabelSet.size()];
-        initPosLabelSet.toArray(this.initPosLabels);
-    }
-
-    /**
      * Tests if a given node lies on a cycle reachable from the start state.
-     * This implementation uses a precomputed set, constructed on demand using
-     * {@link #initNodeIndices()}.
+     * This implementation uses a precomputed set.
      */
-    protected boolean isCyclic(int nodeIndex) {
-        if (this.cyclicNodes == null) {
-            initNodeIndices();
-        }
+    final boolean isCyclic(int nodeIndex) {
         return this.cyclicNodes.get(nodeIndex);
-    }
-
-    /**
-     * Initializes the node indices and the set of cyclic nodes.
-     * @see #getIndex(Node)
-     * @see #isCyclic(int)
-     */
-    protected void initNodeIndices() {
-        this.nodeIndexMap = new HashMap<Node,Integer>();
-        Set<Node> cyclicNodeSet = new HashSet<Node>();
-        this.cyclicNodes = new BitSet(nodeCount());
-        // the nodeList is a precursor to the nodes array
-        List<Node> nodeList = new ArrayList<Node>();
-        nodeList.add(getStartNode());
-        // the set of nodes already investigated
-        Set<Node> visitedNodes = new HashSet<Node>();
-        // set the index of the first node
-        int nodeIndex = 0;
-        while (nodeIndex < nodeList.size()) {
-            Node node = nodeList.get(nodeIndex);
-            this.nodeIndexMap.put(node, Integer.valueOf(nodeIndex));
-            nodeIndex++;
-            for (Edge outEdge : outEdgeSet(node)) {
-                Node opposite = outEdge.target();
-                if (visitedNodes.add(opposite)) {
-                    nodeList.add(opposite);
-                } else {
-                    cyclicNodeSet.add(opposite);
-                }
-            }
-        }
-        // convert the node list to a node array
-        this.nodes = new Node[nodeList.size()];
-        nodeList.toArray(this.nodes);
-        // convert the cyclic node set to a bitset
-        this.cyclicNodes = new BitSet(nodeIndex);
-        for (Node cyclicNode : cyclicNodeSet) {
-            this.cyclicNodes.set(getIndex(cyclicNode));
-        }
-    }
-
-    /**
-     * Initializes the node indices and the set of cyclic nodes.
-     * @see #getIndex(Node)
-     * @see #isCyclic(int)
-     */
-    protected void initEdgeIndices() {
-        this.edgeIndexMap = new HashMap<Edge,Integer>();
-        // the following lists are precursors to the corresponding arrays
-        List<Node> sourceList = new ArrayList<Node>();
-        List<Node> targetList = new ArrayList<Node>();
-        List<Label> labelList = new ArrayList<Label>();
-        // set the index of the first edge
-        int edgeIndex = 0;
-        for (Edge edge : edgeSet()) {
-            this.edgeIndexMap.put(edge, edgeIndex);
-            edgeIndex++;
-            sourceList.add(edge.source());
-            targetList.add(edge.target());
-            labelList.add(edge.label());
-        }
-        // convert the lists to arrays
-        this.sources = toIntArray(sourceList);
-        this.targets = toIntArray(targetList);
-        this.labels = new Label[labelList.size()];
-        labelList.toArray(this.labels);
-    }
-
-    /**
-     * Initializes the sets of all variables and bound variables.
-     * @see #allVarSet()
-     * @see #boundVarSet()
-     */
-    protected void initVarSets() {
-        // traverse the automaton
-        Set<Node> remainingNodes = new HashSet<Node>();
-        remainingNodes.add(getStartNode());
-        // keep maps from automaton nodes to all vars and bound vars
-        Map<Node,Set<LabelVar>> allVarMap = new HashMap<Node,Set<LabelVar>>();
-        allVarMap.put(getStartNode(), new HashSet<LabelVar>());
-        Map<Node,Set<LabelVar>> boundVarMap = new HashMap<Node,Set<LabelVar>>();
-        boundVarMap.put(getStartNode(), new HashSet<LabelVar>());
-        while (!remainingNodes.isEmpty()) {
-            Node source = remainingNodes.iterator().next();
-            remainingNodes.remove(source);
-            Set<LabelVar> sourceAllVarSet = allVarMap.get(source);
-            Set<LabelVar> sourceBoundVarSet = boundVarMap.get(source);
-            Iterator<? extends Edge> outEdgeIter =
-                outEdgeSet(source).iterator();
-            while (outEdgeIter.hasNext()) {
-                Edge outEdge = outEdgeIter.next();
-                Node target = outEdge.target();
-                Set<LabelVar> targetAllVarSet =
-                    new HashSet<LabelVar>(sourceAllVarSet);
-                Set<LabelVar> targetBoundVarSet =
-                    new HashSet<LabelVar>(sourceBoundVarSet);
-                if (outEdge.label() instanceof RegExprLabel) {
-                    RegExpr expr =
-                        ((RegExprLabel) outEdge.label()).getRegExpr();
-                    targetAllVarSet.addAll(expr.allVarSet());
-                    targetBoundVarSet.addAll(expr.boundVarSet());
-                }
-                if (allVarMap.containsKey(target)) {
-                    // the target is known; take the union of all vars and the
-                    // intersection of the bound vars
-                    allVarMap.get(target).addAll(targetAllVarSet);
-                    boundVarMap.get(target).retainAll(targetAllVarSet);
-                } else {
-                    // the target is new; store all and bound vars
-                    remainingNodes.add(target);
-                    allVarMap.put(target, targetAllVarSet);
-                    boundVarMap.put(target, targetBoundVarSet);
-                }
-            }
-        }
-        this.allVarSet = allVarMap.get(getEndNode());
-        if (this.allVarSet == null) {
-            this.allVarSet = Collections.emptySet();
-        }
-        this.boundVarSet = boundVarMap.get(getEndNode());
-        if (this.boundVarSet == null) {
-            this.boundVarSet = Collections.emptySet();
-        }
     }
 
     /**
      * Adds a combination of node, label and edge to one of the maps in this
      * automaton.
      */
-    private void addToNodeLabelEdgeSetMap(
+    final void addToNodeLabelEdgeSetMap(
             Map<Label,Set<Edge>>[] nodeLabelEdgeSetMap, Node node, Label label,
             Edge edge) {
         Map<Label,Set<Edge>> labelEdgeMap = nodeLabelEdgeSetMap[getIndex(node)];
@@ -575,16 +540,12 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
     }
 
     /**
-     * Returns the index calculated for a given node. The indices are
-     * initialized on demand using {@link #initNodeIndices()}.
+     * Returns the index calculated for a given node.
      * @param node the node for which the index is to be returned
      * @return the index for <code>node</code>, or <code>-1</code> if
      *         <code>node</code> is not a known node.
      */
-    protected final int getIndex(Node node) {
-        if (this.nodeIndexMap == null) {
-            initNodeIndices();
-        }
+    final int getIndex(Node node) {
         Integer result = this.nodeIndexMap.get(node);
         if (result != null) {
             return result;
@@ -594,16 +555,12 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
     }
 
     /**
-     * Returns the index calculated for a given edge. The indices are
-     * initialized on demand using {@link #initEdgeIndices()}.
+     * Returns the index calculated for a given edge.
      * @param edge the edge for which the index is to be returned
      * @return the index for <code>edge</code>, or <code>-1</code> if
      *         <code>edge</code> is not a known edge.
      */
-    protected final int getIndex(Edge edge) {
-        if (this.edgeIndexMap == null) {
-            initEdgeIndices();
-        }
+    final int getIndex(Edge edge) {
         Integer result = this.edgeIndexMap.get(edge);
         if (result != null) {
             return result;
@@ -615,83 +572,42 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
     /**
      * Returns the number of indexed nodes. This number is one higher than the
      * highest valid node index.
-     * @see #getNode(int)
      */
-    protected final int indexedNodeCount() {
-        if (this.nodes == null) {
-            initNodeIndices();
-        }
+    final int indexedNodeCount() {
         return this.nodes.length;
-    }
-
-    /**
-     * Returns the number of indexed nodes. This number is one higher than the
-     * highest valid node index.
-     * @see #getNode(int)
-     */
-    protected final int indexedEdgeCount() {
-        if (this.sources == null) {
-            initEdgeIndices();
-        }
-        return this.sources.length;
     }
 
     /**
      * Returns the index of the start node. Always returns <code>0</code>.
      */
-    protected final int getStartNodeIndex() {
+    final int getStartNodeIndex() {
         return 0;
     }
 
     /**
-     * Returns the node at a given index. Inverse mapping of
-     * {@link #getIndex(Node)}. Initialized on demand in
-     * {@link #initNodeIndices()}.
-     * @param nodeIndex the index of the node to be retrieved
-     */
-    protected final Node getNode(int nodeIndex) {
-        if (this.nodes == null) {
-            initNodeIndices();
-        }
-        return this.nodes[nodeIndex];
-    }
-
-    /**
      * Returns the source index of an edge at a given index. Inverse mapping of
-     * {@link #getIndex(Node)}. Initialized on demand in
-     * {@link #initNodeIndices()}.
+     * {@link #getIndex(Node)}.
      * @param edgeIndex the index of the node to be retrieved
      */
-    protected final int getSource(int edgeIndex) {
-        if (this.sources == null) {
-            initEdgeIndices();
-        }
+    final int getSource(int edgeIndex) {
         return this.sources[edgeIndex];
     }
 
     /**
      * Returns the target index of an edge at a given index. Inverse mapping of
-     * {@link #getIndex(Node)}. Initialized on demand in
-     * {@link #initNodeIndices()}.
+     * {@link #getIndex(Node)}.
      * @param edgeIndex the index of the node to be retrieved
      */
-    protected final int getTarget(int edgeIndex) {
-        if (this.targets == null) {
-            initEdgeIndices();
-        }
+    final int getTarget(int edgeIndex) {
         return this.targets[edgeIndex];
     }
 
     /**
      * Returns the label at a given index. Inverse mapping of
-     * {@link #getIndex(Node)}. Initialized on demand in
-     * {@link #initNodeIndices()}.
+     * {@link #getIndex(Node)}.
      * @param edgeIndex the index of the node to be retrieved
      */
-    protected final Label getLabel(int edgeIndex) {
-        if (this.labels == null) {
-            initEdgeIndices();
-        }
+    final Label getLabel(int edgeIndex) {
         return this.labels[edgeIndex];
     }
 
@@ -699,14 +615,14 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * Returns the index of the end node. Convenience method for
      * <code>getIndex(getEndNode())</code>.
      */
-    protected final int getEndNodeIndex() {
+    final int getEndNodeIndex() {
         if (this.endNodeIndex < 0) {
             this.endNodeIndex = getIndex(getEndNode());
         }
         return this.endNodeIndex;
     }
 
-    private Map<Label,int[]> toIntArrayMap(
+    final Map<Label,int[]> toIntArrayMap(
             Map<Label,? extends Collection<? extends Element>> labelSetMap) {
         if (labelSetMap != null) {
             Map<Label,int[]> result = new HashMap<Label,int[]>();
@@ -719,7 +635,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
         }
     }
 
-    private int[] toIntArray(Collection<? extends Element> elementSet) {
+    final int[] toIntArray(Collection<? extends Element> elementSet) {
         int[] result = new int[elementSet.size()];
         int i = 0;
         for (Element element : elementSet) {
@@ -754,7 +670,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * Direction-indexed array of mappings from nodes in this automaton to maps
      * from labels to corresponding sets of edges, where the node key is either
      * the source node or the target node of the edge, depending on the
-     * direction. Initialized using {@link #initNodeLabelEdgeMaps()}.
+     * direction.
      */
     private Map<Label,int[]>[][] nodePosLabelEdgeIndicesMap;
 
@@ -762,8 +678,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * Direction-indexed array of mappings from nodes in this automaton to maps
      * from labels to sets of edges where the label occurs in the context of a
      * {@link RegExpr.Inv}. The node key is either the source node or the target
-     * node of the edge, depending on the direction. Initialized using
-     * {@link #initNodeLabelEdgeMaps()}.
+     * node of the edge, depending on the direction.
      */
     private Map<Label,int[]>[][] nodeInvLabelEdgeIndicesMap;
     /**
