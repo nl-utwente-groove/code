@@ -70,7 +70,7 @@ public class JGraphTest {
     }
 
     private static JGraph getJGraphFrom(Shape shape) {
-        ShapeJModel model = new ShapeJModel(shape);
+        ShapeJModel model = new ShapeJModel(shape, null);
         ShapeJGraph jGraph = new ShapeJGraph();
         jGraph.setJModel(model);
         jGraph.runLayout();

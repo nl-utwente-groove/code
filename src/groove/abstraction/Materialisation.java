@@ -436,7 +436,7 @@ public final class Materialisation implements Cloneable {
                 }
             }
         }
-        this.shape.freezeEdges(edgesToFreeze);
+        this.shape.freeze(edgesToFreeze);
 
         // Check that all nodes of the LHS are in the same equivalence class.
         for (Entry<RuleNode,Node> nodeEntry : originalMap.nodeMap().entrySet()) {
@@ -854,7 +854,7 @@ public final class Materialisation implements Cloneable {
                 }
 
                 // Freeze all extended edges.
-                newMat.shape.freezeEdges(edgesToFreeze);
+                newMat.shape.freeze(edgesToFreeze);
                 // ------------------------------------------------------------
                 // End Extend Pre-Match
                 // ------------------------------------------------------------

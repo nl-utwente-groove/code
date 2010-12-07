@@ -70,6 +70,7 @@ public class ShapeState extends AbstractGraphState {
         super(null);
         setCtrlState(ctrlState);
         this.shape = shape;
+        this.shape.freeze();
         this.closed = false;
         this.nr = -1;
     }

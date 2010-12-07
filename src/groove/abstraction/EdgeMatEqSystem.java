@@ -253,7 +253,7 @@ public final class EdgeMatEqSystem extends EquationSystem {
         Shape newShape = this.shape.clone();
 
         // Freeze the edges in the new shape.
-        newShape.freezeEdges(this.frozenEdges);
+        newShape.freeze(this.frozenEdges);
 
         // Update multiplicities from the variables values.
         // Outgoing multiplicities.
