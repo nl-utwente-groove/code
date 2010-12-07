@@ -122,7 +122,7 @@ public class ShowHideMenu extends JMenu {
     /** Name of the action to process elements by label. */
     static public final String LABEL_MENU_NAME = "Label";
     /** Highlight trace to start state name */
-    public static final String TRACE_ACTION_NAME = "trace to start state";
+    public static final String TRACE_ACTION_NAME = "Trace From Start State";
 
     /**
      * Returns the name for a show mode.
@@ -835,7 +835,7 @@ public class ShowHideMenu extends JMenu {
     }
 
     /**
-     * Show/hide action based on a trace from current state to start state.
+     * Show/hide action based on a trace from start state to current state.
      * @author Eduardo Zambon
      */
     static protected class TraceAction extends ShowHideAction {
@@ -857,8 +857,10 @@ public class ShowHideMenu extends JMenu {
             this.trace = new ArrayList<JCell>();
             while (state instanceof GraphNextState) {
                 this.trace.add(jGraph.getModel().getJCell(state));
+                this.trace.add(jGraph.getModel().getJCell((Edge) state));
                 state = ((GraphNextState) state).source();
             }
+            this.trace.add(jGraph.getModel().getJCell(state));
             super.actionPerformed(evt);
         }
 
