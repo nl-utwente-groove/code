@@ -24,7 +24,6 @@ import groove.explore.StrategyEnumerator;
 import groove.explore.encode.Serialized;
 import groove.graph.Graph;
 import groove.lts.GTS;
-import groove.lts.LTSGraph;
 import groove.trans.GraphGrammar;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -244,7 +243,8 @@ public class ExplorationTest {
 
             if (save) {
                 try {
-                    Groove.saveGraph(new LTSGraph(lts), view.getName());
+                    Groove.saveGraph(lts.toPlainGraph(true, true, true, true),
+                        view.getName());
                 } catch (IOException exc) { // proceed
                 }
             }

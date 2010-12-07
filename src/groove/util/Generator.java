@@ -25,10 +25,10 @@ import groove.explore.encode.TemplateList;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.Strategy;
 import groove.explore.util.ExplorationStatistics;
+import groove.graph.Graph;
 import groove.io.ExtensionFilter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.LTSGraph;
 import groove.lts.State;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
@@ -476,8 +476,8 @@ public class Generator extends CommandLineTool {
         }
 
         // Create the LTS view to be exported.
-        LTSGraph lts =
-            new LTSGraph(getGTS(), flags.labelFinalStates,
+        Graph lts =
+            getGTS().toPlainGraph(flags.labelFinalStates,
                 flags.labelStartState, flags.labelOpenStates,
                 flags.exportStateNames);
 
@@ -573,8 +573,9 @@ public class Generator extends CommandLineTool {
             if (getVerbosity() == HIGH_VERBOSITY) {
                 print(GraphReporter.createInstance().getReport(getGTS()).toString());
             }
-            if (!Groove.exportGraph(new LTSGraph(getGTS()), getOutputFileName())) {
-                Groove.saveGraph(new LTSGraph(getGTS()), getOutputFileName());
+            Graph gtsGraph = getGTS().toPlainGraph(true, true, true, false);
+            if (!Groove.exportGraph(gtsGraph, getOutputFileName())) {
+                Groove.saveGraph(gtsGraph, getOutputFileName());
             }
         }
     }
