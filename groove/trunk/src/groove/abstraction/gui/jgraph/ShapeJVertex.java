@@ -22,6 +22,7 @@ import groove.abstraction.Shape;
 import groove.abstraction.ShapeNode;
 import groove.abstraction.Util;
 import groove.graph.Label;
+import groove.gui.Options;
 import groove.gui.jgraph.JAttr;
 import groove.util.Converter;
 
@@ -45,16 +46,22 @@ public class ShapeJVertex extends DefaultGraphCell {
     /**
      * EDUARDO: Comment this...
      */
-    public ShapeJVertex(Shape shape, ShapeNode node) {
+    public ShapeJVertex(Shape shape, ShapeNode node, Options options) {
         super(null);
         this.shape = shape;
         this.node = node;
-        this.setUserObject(getLines());
+        this.setUserObject(getLines(options));
         this.setAttributes();
     }
 
-    private String getLines() {
+    private String getLines(Options options) {
         StringBuilder result = new StringBuilder();
+        if (options != null
+            && options.getValue(Options.SHOW_NODE_IDS_OPTION) == 1) {
+            int nr = this.node.getNumber();
+            result.append(ITALIC_TAG.on("n" + nr));
+            result.append(Converter.HTML_LINEBREAK);
+        }
         String mult = this.shape.getNodeMult(this.node).toString();
         result.append(Converter.createSpanTag("color: rgb(50,50,255)").on(
             ITALIC_TAG.on(mult)));

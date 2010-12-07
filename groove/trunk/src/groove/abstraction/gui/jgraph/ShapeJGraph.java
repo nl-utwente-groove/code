@@ -26,6 +26,7 @@ import groove.abstraction.Util;
 import groove.graph.Edge;
 import groove.gui.jgraph.JAttr;
 
+import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
@@ -79,6 +80,22 @@ public class ShapeJGraph extends JGraph {
         this.inEsMap = new HashMap<EdgeSignature,ShapeJPort>();
     }
 
+    @Override
+    public Dimension getPreferredSize() {
+        double maxX = 0.0;
+        double maxY = 0.0;
+        for (ShapeJVertex vertex : this.nodeMap.values()) {
+            Rectangle2D bounds =
+                GraphConstants.getBounds(vertex.getAttributes());
+            maxX = Math.max(maxX, bounds.getMaxX());
+            maxY = Math.max(maxY, bounds.getMaxY());
+        }
+        // Add some inset space...
+        maxX += 25.0;
+        maxY += 25.0;
+        return new Dimension((int) maxX, (int) maxY);
+    }
+
     /**
      * EDUARDO: Comment this...
      */
@@ -113,7 +130,9 @@ public class ShapeJGraph extends JGraph {
         ShapeJVertex vertices[] = new ShapeJVertex[nodeCount];
         int i = 0;
         for (ShapeNode node : this.shape.nodeSet()) {
-            vertices[i] = new ShapeJVertex(this.shape, node);
+            vertices[i] =
+                new ShapeJVertex(this.shape, node,
+                    ((ShapeJModel) this.getModel()).getOptions());
             this.nodeMap.put(node, vertices[i]);
             i++;
         }
@@ -198,7 +217,8 @@ public class ShapeJGraph extends JGraph {
         JGraphFacade facade = new JGraphFacade(this, roots);
         facade.setIgnoresUnconnectedCells(false);
         JGraphFastOrganicLayout layout = new JGraphFastOrganicLayout();
-        layout.setForceConstant(100.0);
+        layout.setForceConstant(200.0);
+        layout.setInitialTemp(25.0);
         layout.run(facade);
         Map<?,?> nested = facade.createNestedMap(true, true);
         this.getGraphLayoutCache().edit(nested);

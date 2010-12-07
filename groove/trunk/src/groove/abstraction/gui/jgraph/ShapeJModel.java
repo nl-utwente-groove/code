@@ -17,6 +17,7 @@
 package groove.abstraction.gui.jgraph;
 
 import groove.abstraction.Shape;
+import groove.gui.Options;
 
 import org.jgraph.graph.DefaultGraphModel;
 
@@ -27,12 +28,14 @@ import org.jgraph.graph.DefaultGraphModel;
 public class ShapeJModel extends DefaultGraphModel {
 
     private Shape shape;
+    private Options options;
 
     /**
      * EDUARDO: Comment this...
      */
-    public ShapeJModel(Shape shape) {
+    public ShapeJModel(Shape shape, Options options) {
         this.shape = shape;
+        this.options = options;
     }
 
     /**
@@ -42,4 +45,10 @@ public class ShapeJModel extends DefaultGraphModel {
         return this.shape;
     }
 
+    /**
+     * EDUARDO: Comment this...
+     */
+    public Options getOptions() {
+        return this.options;
+    }
 }
