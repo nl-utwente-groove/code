@@ -33,12 +33,44 @@ public class ShapeJEdgeView extends EdgeView {
 
     @Override
     public boolean isLoop() {
-        ShapeJEdge edge = (ShapeJEdge) this.getCell();
-        ShapeJPort source = (ShapeJPort) edge.getSource();
-        ShapeJPort target = (ShapeJPort) edge.getTarget();
+        ShapeJPort source = this.getSourcePort();
+        ShapeJPort target = this.getTargetPort();
         Object sp = source.getParent();
         Object tp = target.getParent();
         return sp.equals(tp);
+    }
+
+    /**
+     * EDUARDO: Comment this...
+     */
+    public ShapeJEdge getShapeJEdge() {
+        return (ShapeJEdge) this.getCell();
+    }
+
+    private ShapeJPort getSourcePort() {
+        return (ShapeJPort) this.getShapeJEdge().getSource();
+    }
+
+    private ShapeJPort getTargetPort() {
+        return (ShapeJPort) this.getShapeJEdge().getTarget();
+    }
+
+    /**
+     * EDUARDO: Comment this...
+     */
+    public boolean isSrcVertex(ShapeJVertexView vertexView) {
+        ShapeJVertex srcVertex = vertexView.getShapeJVertex();
+        ShapeJPort srcPort = this.getSourcePort();
+        return srcVertex.equals(srcPort.getParent());
+    }
+
+    /**
+     * EDUARDO: Comment this...
+     */
+    public boolean isTgtVertex(ShapeJVertexView vertexView) {
+        ShapeJVertex tgtVertex = vertexView.getShapeJVertex();
+        ShapeJPort tgtPort = this.getTargetPort();
+        return tgtVertex.equals(tgtPort.getParent());
     }
 
 }

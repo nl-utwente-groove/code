@@ -30,7 +30,8 @@ import org.jgraph.graph.Port;
  */
 public class ShapeJEdge extends DefaultEdge {
 
-    private boolean main;
+    private boolean mainSrc;
+    private boolean mainTgt;
 
     /**
      * EDUARDO: Comment this...
@@ -38,7 +39,8 @@ public class ShapeJEdge extends DefaultEdge {
     public ShapeJEdge(Shape shape, ShapeEdge edge, Port source, Port target) {
         super(edge.label().text());
         assert source instanceof ShapeJPort && target instanceof ShapeJPort;
-        this.main = false;
+        this.mainSrc = false;
+        this.mainTgt = false;
         this.setSource(source);
         this.setTarget(target);
 
@@ -50,15 +52,29 @@ public class ShapeJEdge extends DefaultEdge {
     /**
      * EDUARDO: Comment this...
      */
-    public void setMain(boolean main) {
-        this.main = main;
+    public void setMainSrc(boolean mainSrc) {
+        this.mainSrc = mainSrc;
     }
 
     /**
      * EDUARDO: Comment this...
      */
-    public boolean isMain() {
-        return this.main;
+    public void setMainTgt(boolean mainTgt) {
+        this.mainTgt = mainTgt;
+    }
+
+    /**
+     * EDUARDO: Comment this...
+     */
+    public boolean isMainSrc() {
+        return this.mainSrc;
+    }
+
+    /**
+     * EDUARDO: Comment this...
+     */
+    public boolean isMainTgt() {
+        return this.mainTgt;
     }
 
 }
