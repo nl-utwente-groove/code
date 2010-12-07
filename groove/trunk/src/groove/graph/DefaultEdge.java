@@ -25,8 +25,7 @@ import groove.abstraction.ShapeNode;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-12 15:15:31 $
  */
-public class DefaultEdge extends CanonicalEdge<Node,Label> implements
-        groove.graph.CanonicalEdge.Factory<Node,DefaultEdge> {
+public class DefaultEdge extends AbstractEdge<Node,Label,Node> {
     /**
      * Constructs a new edge on the basis of a given source, label and target.
      * @param source source node of the new edge
@@ -37,12 +36,37 @@ public class DefaultEdge extends CanonicalEdge<Node,Label> implements
      *         <tt>target()==target </tt>
      */
     protected DefaultEdge(Node source, Label label, Node target, int nr) {
-        super(source, label, target, nr);
+        super(source, label, target);
+        this.nr = nr;
     }
 
-    /** Factory constructor. */
     @Override
-    public DefaultEdge newEdge(Node source, Label label, Node target, int nr) {
+    public boolean equals(Object obj) {
+        boolean result = this == obj;
+        // test that the result is the same as number equality
+        // or source-label-target equality
+        assert result == (obj instanceof DefaultEdge && this.nr == ((DefaultEdge) obj).nr) : String.format(
+            "Distinct %s and %s %s with the same number %d",
+            getClass().getName(), obj.getClass().getName(), this, this.nr);
+        assert result == (obj instanceof DefaultEdge && super.equals(obj)) : String.format(
+            "Distinct %s and %s %s with the same content",
+            getClass().getName(), obj.getClass().getName(), this);
+        return result;
+    }
+
+    /** 
+     * Returns the number of this edge.
+     * The number is guaranteed to be unique for each canonical edge representative.
+     */
+    public int getNumber() {
+        return this.nr;
+    }
+
+    /** The (unique) number of this edge. */
+    private final int nr;
+
+    /** Factory constructor. */
+    protected DefaultEdge newEdge(Node source, Label label, Node target, int nr) {
         return new DefaultEdge(source, label, target, nr);
     }
 
@@ -91,8 +115,8 @@ public class DefaultEdge extends CanonicalEdge<Node,Label> implements
     }
 
     /** Used only as a reference for the constructor */
-    public static final DefaultEdge CONS = new DefaultEdge(null, null, null, 0);
+    private static final DefaultEdge CONS =
+        new DefaultEdge(null, null, null, 0);
     /** The static edge store. */
-    private static final EdgeStore<Node,DefaultEdge> store =
-        new EdgeStore<Node,DefaultEdge>(CONS);
+    private static final DefaultEdgeStore store = new DefaultEdgeStore(CONS);
 }
