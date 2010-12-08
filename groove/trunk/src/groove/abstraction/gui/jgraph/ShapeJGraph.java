@@ -160,8 +160,15 @@ public class ShapeJGraph extends JGraph {
             EdgeSignature inEs = this.shape.getEdgeInSignature(edgeS);
             Port source = this.outEsMap.get(outEs);
             Port target = this.inEsMap.get(inEs);
-            ShapeJEdge jEdge =
-                new ShapeJEdge(this.shape, edgeS, source, target);
+            ShapeJEdge jEdge;
+            if (this.shape.isFrozen(edgeS)) {
+                jEdge =
+                    new ShapeJEdge(this.shape, edgeS,
+                        this.nodeMap.get(edgeS.source()),
+                        this.nodeMap.get(edgeS.target()));
+            } else {
+                jEdge = new ShapeJEdge(this.shape, edgeS, source, target);
+            }
             edges.add(jEdge);
             this.edgeMap.put(edgeS, jEdge);
         }

@@ -43,7 +43,23 @@ public class ShapeJEdge extends DefaultEdge {
         this.mainTgt = false;
         this.setSource(source);
         this.setTarget(target);
+        this.setAttributes();
+    }
 
+    /**
+     * EDUARDO: Comment this...
+     */
+    public ShapeJEdge(Shape shape, ShapeEdge edge, ShapeJVertex source,
+            ShapeJVertex target) {
+        super(edge.label().text());
+        this.mainSrc = false;
+        this.mainTgt = false;
+        this.setSource(source);
+        this.setTarget(target);
+        this.setAttributes();
+    }
+
+    private void setAttributes() {
         AttributeMap attrMap = this.getAttributes();
         GraphConstants.setLineEnd(attrMap, GraphConstants.ARROW_CLASSIC);
         GraphConstants.setEndFill(attrMap, true);

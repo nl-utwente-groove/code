@@ -745,6 +745,15 @@ public abstract class EquationSystem {
         }
 
         /**
+         * Returns true if there are no outgoing or incoming terms and the
+         * constants are not overlapping.
+         */
+        public boolean isInvalid() {
+            return this.outSumTerms.isEmpty() && this.inSumTerms.isEmpty()
+                && !this.outSumConst.overlaps(this.inSumConst);
+        }
+
+        /**
          * The constraint is satisfied if the resulting multiplicities of both
          * sums are overlapping, i.e., have a non-empty intersection.
          */
