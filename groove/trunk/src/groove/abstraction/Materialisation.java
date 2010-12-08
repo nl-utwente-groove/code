@@ -1103,8 +1103,7 @@ public final class Materialisation implements Cloneable {
         }
 
         /**
-         * Two pull node operations are equal if the pulled node, the pulling
-         * edge and the new node multiplicity are equal.
+         * Two pull node operations are equal if the pulled nodes are equal.
          */
         @Override
         public boolean equals(Object o) {
@@ -1115,10 +1114,7 @@ public final class Materialisation implements Cloneable {
                 result = false;
             } else {
                 PullNode other = (PullNode) o;
-                result =
-                //this.pullingEdge.equals(other.pullingEdge)
-                    /*&&*/this.pulledNode.equals(other.pulledNode);
-                //&& this.mult.equals(other.mult);
+                result = this.pulledNode.equals(other.pulledNode);
             }
             // Check for consistency between equals and hashCode.
             assert (!result || this.hashCode() == o.hashCode());
@@ -1127,12 +1123,6 @@ public final class Materialisation implements Cloneable {
 
         @Override
         public int hashCode() {
-            /*final int prime = 31;
-            int result = 1;
-            result = prime * result + this.pullingEdge.hashCode();
-            result = prime * result + this.pulledNode.hashCode();
-            result = prime * result + this.mult.hashCode();
-            return result;*/
             return this.pulledNode.hashCode();
         }
 

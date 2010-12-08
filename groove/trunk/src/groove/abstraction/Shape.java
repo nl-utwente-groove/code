@@ -1564,28 +1564,32 @@ public final class Shape extends DefaultGraph {
      * See last item of Def. 7, pg. 10.
      */
     public void checkShapeInvariant() {
-        // For all nodes in the shape.
-        for (ShapeNode node : this.nodeSet()) {
-            // For all labels.
-            for (Label label : Util.binaryLabelSet(this)) {
+        // For all labels.
+        for (Label label : Util.binaryLabelSet(this)) {
+            // For all nodes in the shape.
+            for (ShapeNode node : this.nodeSet()) {
                 // For all equivalence classes.
                 for (EquivClass<ShapeNode> ec : this.equivRel) {
                     EdgeSignature es = this.getEdgeSignature(node, label, ec);
+
                     // Check outgoing multiplicities.
                     Multiplicity sigOutMult = this.getEdgeSigOutMult(es);
-                    if (!sigOutMult.isPositive()) {
-                        Multiplicity interOutMult =
-                            Multiplicity.getEdgeSetMult(Util.getIntersectEdges(
-                                this, node, ec.downcast(), label));
-                        assert sigOutMult.equals(interOutMult) : "Violation of outgoing multiplicities";
+                    Multiplicity interOutMult =
+                        Multiplicity.getEdgeSetMult(Util.getIntersectEdges(
+                            this, node, ec.downcast(), label));
+                    if ((sigOutMult.isZero() && interOutMult.isPositive())
+                        || (interOutMult.isZero() && sigOutMult.isPositive())) {
+                        assert false : "Violation of outgoing multiplicities";
                     }
+
                     // Check incoming multiplicities.
                     Multiplicity sigInMult = this.getEdgeSigInMult(es);
-                    if (!sigInMult.isPositive()) {
-                        Multiplicity interInMult =
-                            Multiplicity.getEdgeSetMult(Util.getIntersectEdges(
-                                this, ec.downcast(), node, label));
-                        assert sigInMult.equals(interInMult) : "Violation of incoming multiplicities";
+                    Multiplicity interInMult =
+                        Multiplicity.getEdgeSetMult(Util.getIntersectEdges(
+                            this, ec.downcast(), node, label));
+                    if ((sigInMult.isZero() && interInMult.isPositive())
+                        || (interInMult.isZero() && sigInMult.isPositive())) {
+                        assert false : "Violation of incoming multiplicities";
                     }
                 }
             }
