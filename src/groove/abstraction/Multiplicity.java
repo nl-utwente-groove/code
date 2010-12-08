@@ -250,6 +250,11 @@ public final class Multiplicity {
         return this.value == OMEGA_VALUE || this.value > 0;
     }
 
+    /** Returns true if the multiplicity equals zero; false, otherwise. */
+    public boolean isZero() {
+        return this.value == 0;
+    }
+
     /** Returns false if the multiplicity is at most one; true, otherwise. */
     public boolean isAbstract() {
         return !this.isAtMost(getMultOf(1));
