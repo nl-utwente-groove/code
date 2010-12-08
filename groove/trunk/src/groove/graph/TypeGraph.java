@@ -396,7 +396,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                     }
                 }
             }
-            if (typeEdge.isAbstract()) {
+            if (typeEdge != null && typeEdge.isAbstract()) {
                 abstractElems.add(edge);
             }
         }
