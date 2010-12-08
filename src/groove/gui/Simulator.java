@@ -4370,7 +4370,6 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             Graph newGraph = new DefaultGraph();
-            ;
             GraphInfo.setGraphRole(newGraph);
             handleEditGraph(newGraph, true);
         }
@@ -4407,7 +4406,6 @@ public class Simulator {
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(false)) {
                 Graph newRule = new DefaultGraph();
-                ;
                 GraphInfo.setRuleRole(newRule);
                 EditorDialog dialog =
                     new EditorDialog(getFrame(), getOptions(), newRule,
