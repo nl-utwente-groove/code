@@ -33,11 +33,15 @@ public class ShapeJEdgeView extends EdgeView {
 
     @Override
     public boolean isLoop() {
-        ShapeJPort source = this.getSourcePort();
-        ShapeJPort target = this.getTargetPort();
-        Object sp = source.getParent();
-        Object tp = target.getParent();
-        return sp.equals(tp);
+        if (this.getShapeJEdge().getSource() instanceof ShapeJPort) {
+            ShapeJPort source = this.getSourcePort();
+            ShapeJPort target = this.getTargetPort();
+            Object sp = source.getParent();
+            Object tp = target.getParent();
+            return sp.equals(tp);
+        } else {
+            return false;
+        }
     }
 
     /**

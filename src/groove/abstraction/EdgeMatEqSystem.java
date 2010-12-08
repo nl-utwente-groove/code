@@ -234,7 +234,7 @@ public final class EdgeMatEqSystem extends EquationSystem {
                     }
 
                     // We don't want trivially valid constraints.
-                    if (!admisConstr.isVacuous()) {
+                    if (!admisConstr.isVacuous() && !admisConstr.isInvalid()) {
                         this.addAdmisConstr(admisConstr);
                     }
                 }

@@ -1116,9 +1116,9 @@ public final class Materialisation implements Cloneable {
             } else {
                 PullNode other = (PullNode) o;
                 result =
-                    this.pullingEdge.equals(other.pullingEdge)
-                        && this.pulledNode.equals(other.pulledNode)
-                        && this.mult.equals(other.mult);
+                //this.pullingEdge.equals(other.pullingEdge)
+                    /*&&*/this.pulledNode.equals(other.pulledNode);
+                //&& this.mult.equals(other.mult);
             }
             // Check for consistency between equals and hashCode.
             assert (!result || this.hashCode() == o.hashCode());
@@ -1127,12 +1127,13 @@ public final class Materialisation implements Cloneable {
 
         @Override
         public int hashCode() {
-            final int prime = 31;
+            /*final int prime = 31;
             int result = 1;
             result = prime * result + this.pullingEdge.hashCode();
             result = prime * result + this.pulledNode.hashCode();
             result = prime * result + this.mult.hashCode();
-            return result;
+            return result;*/
+            return this.pulledNode.hashCode();
         }
 
         @Override
