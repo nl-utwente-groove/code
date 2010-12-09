@@ -17,9 +17,11 @@
 package groove.abstraction;
 
 import groove.abstraction.gui.ShapeDialog;
+import groove.graph.Edge;
 import groove.graph.Label;
 import groove.util.Pair;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -71,6 +73,8 @@ public final class NodeSingEqSystem extends EquationSystem {
     private final EquivClass<ShapeNode> singEc; // C'
     /** The remaining equivalence class. */
     private final EquivClass<ShapeNode> remEc; // C''
+    /** Map from variables to associated equivalence classes. */
+    private final HashMap<MultVar,EquivClass<ShapeNode>> varMap;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -96,6 +100,8 @@ public final class NodeSingEqSystem extends EquationSystem {
         // The remaining equivalence class: C''
         this.remEc = this.origEc.clone();
         this.remEc.remove(this.node);
+
+        this.varMap = new HashMap<MultVar,EquivClass<ShapeNode>>();
 
         this.buildEquationSystem();
     }
@@ -140,8 +146,10 @@ public final class NodeSingEqSystem extends EquationSystem {
                         && !this.shape.isOutEdgeSigUnique(es)) {
                         // Outgoing MultVar for C'
                         MultVar p = this.newMultVar();
+                        this.varMap.put(p, this.singEc);
                         // Outgoing MultVar for C''
                         MultVar q = this.newMultVar();
+                        this.varMap.put(q, this.remEc);
                         // Create the equation: q = oM - p
                         this.newEquation(p, q, oM);
                         // Create the constraint: p \in {0, 1}
@@ -160,8 +168,10 @@ public final class NodeSingEqSystem extends EquationSystem {
                         && !this.shape.isInEdgeSigUnique(es)) {
                         // Incoming MultVar for C'
                         MultVar r = this.newMultVar();
+                        this.varMap.put(r, this.singEc);
                         // Incoming MultVar for C''
                         MultVar s = this.newMultVar();
+                        this.varMap.put(s, this.remEc);
                         // Create the equation: s = iM - r
                         this.newEquation(r, s, iM);
                         // Create the constraint: r \in {0, 1}
@@ -197,6 +207,9 @@ public final class NodeSingEqSystem extends EquationSystem {
 
         final int OUTGOING = 0;
         final int INCOMING = 1;
+
+        // Variable used to handle a particular corner case.
+        boolean handledCrossCutting = false;
 
         // For all binary labels.
         for (Label label : Util.binaryLabelSet(this.shape)) {
@@ -235,8 +248,6 @@ public final class NodeSingEqSystem extends EquationSystem {
                     // equivalence class and the remainder equivalence class.
                     AdmissibilityConstraint remConstr = this.newAdmisConstr();
 
-                    MultTerm term;
-
                     // Outgoing terms.
                     for (ShapeNode nO : ecO) {
                         Multiplicity nOMult = this.shape.getNodeMult(nO);
@@ -249,10 +260,25 @@ public final class NodeSingEqSystem extends EquationSystem {
                         if (outMultVars != null) {
                             // Yes, we do. Create a new MultTerm for each
                             // element in the pair.
-                            term = new MultTerm(nOMult, outMultVars.first());
-                            singConstr.addToOutSum(term);
-                            term = new MultTerm(nOMult, outMultVars.second());
-                            remConstr.addToOutSum(term);
+                            MultVar p = outMultVars.first();
+                            MultTerm pTerm = new MultTerm(nOMult, p);
+                            if (this.varMap.get(p).equals(this.singEc)) {
+                                singConstr.addToOutSum(pTerm);
+                            } else if (this.varMap.get(p).equals(this.remEc)) {
+                                remConstr.addToOutSum(pTerm);
+                            } else {
+                                assert false : "Error in building the EqSys!";
+                            }
+
+                            MultVar q = outMultVars.second();
+                            MultTerm qTerm = new MultTerm(nOMult, q);
+                            if (this.varMap.get(q).equals(this.singEc)) {
+                                singConstr.addToOutSum(qTerm);
+                            } else if (this.varMap.get(q).equals(this.remEc)) {
+                                remConstr.addToOutSum(qTerm);
+                            } else {
+                                assert false : "Error in building the EqSys!";
+                            }
                         } else {
                             // No, we don't. Multiply the two multiplicities
                             // and add the result to the constant in the
@@ -282,10 +308,25 @@ public final class NodeSingEqSystem extends EquationSystem {
                         if (inMultVars != null) {
                             // Yes, we do. Create a new MultTerm for each
                             // element in the pair.
-                            term = new MultTerm(nIMult, inMultVars.first());
-                            singConstr.addToInSum(term);
-                            term = new MultTerm(nIMult, inMultVars.second());
-                            remConstr.addToInSum(term);
+                            MultVar r = inMultVars.first();
+                            MultTerm rTerm = new MultTerm(nIMult, r);
+                            if (this.varMap.get(r).equals(this.singEc)) {
+                                singConstr.addToInSum(rTerm);
+                            } else if (this.varMap.get(r).equals(this.remEc)) {
+                                remConstr.addToInSum(rTerm);
+                            } else {
+                                assert false : "Error in building the EqSys!";
+                            }
+
+                            MultVar s = inMultVars.second();
+                            MultTerm sTerm = new MultTerm(nIMult, s);
+                            if (this.varMap.get(s).equals(this.singEc)) {
+                                singConstr.addToInSum(sTerm);
+                            } else if (this.varMap.get(s).equals(this.remEc)) {
+                                remConstr.addToInSum(sTerm);
+                            } else {
+                                assert false : "Error in building the EqSys!";
+                            }
                         } else {
                             // No, we don't. Multiply the two multiplicities
                             // and add the result to the constant in the
@@ -306,6 +347,26 @@ public final class NodeSingEqSystem extends EquationSystem {
 
                     this.addAdmisConstr(singConstr);
                     this.addAdmisConstr(remConstr);
+
+                    // This is a corner case on which we need to add additional
+                    // constraints for the opposite edges in the same EC.
+                    if (!handledCrossCutting && ecO.equals(ecI)) {
+                        HashMap<Edge,Pair<MultVar,MultVar>> edgeMap =
+                            new HashMap<Edge,Pair<MultVar,MultVar>>();
+                        this.buildEdgeToVarsMap(edgeMap);
+                        Multiplicity one = Multiplicity.getMultOf(1);
+                        for (Pair<MultVar,MultVar> vars : edgeMap.values()) {
+                            AdmissibilityConstraint constr =
+                                new AdmissibilityConstraint();
+                            MultTerm outTerm = new MultTerm(one, vars.first());
+                            MultTerm inTerm = new MultTerm(one, vars.second());
+                            constr.addToOutSum(outTerm);
+                            constr.addToInSum(inTerm);
+                            this.addAdmisConstr(constr);
+                        }
+                        handledCrossCutting = true;
+                    }
+                    // End corner case.
                 }
             }
         }
@@ -410,6 +471,45 @@ public final class NodeSingEqSystem extends EquationSystem {
             }
         }
         return result;
+    }
+
+    private void buildEdgeToVarsMap(HashMap<Edge,Pair<MultVar,MultVar>> edgeMap) {
+        for (Edge edge : Util.getBinaryEdges(this.shape)) {
+            edgeMap.put(edge, new Pair<MultVar,MultVar>(null, null));
+        }
+        for (Entry<EdgeSignature,Pair<MultVar,MultVar>> entry : this.outMap.entrySet()) {
+            EdgeSignature es = entry.getKey();
+            Pair<MultVar,MultVar> vars = entry.getValue();
+            for (ShapeEdge edge : this.shape.getEdgesFrom(es, true)) {
+                if (this.remEc.contains(edge.target())) {
+                    edgeMap.get(edge).setFirst(vars.second());
+                } else {
+                    edgeMap.get(edge).setFirst(vars.first());
+                }
+            }
+        }
+        for (Entry<EdgeSignature,Pair<MultVar,MultVar>> entry : this.inMap.entrySet()) {
+            EdgeSignature es = entry.getKey();
+            Pair<MultVar,MultVar> vars = entry.getValue();
+            for (ShapeEdge edge : this.shape.getEdgesFrom(es, false)) {
+                if (this.remEc.contains(edge.source())) {
+                    edgeMap.get(edge).setSecond(vars.second());
+                } else {
+                    edgeMap.get(edge).setSecond(vars.first());
+                }
+            }
+        }
+        Set<Edge> edgesToRemove = new HashSet<Edge>();
+        for (Entry<Edge,Pair<MultVar,MultVar>> entry : edgeMap.entrySet()) {
+            Edge edge = entry.getKey();
+            Pair<MultVar,MultVar> pair = entry.getValue();
+            if (pair.first() == null || pair.second() == null) {
+                edgesToRemove.add(edge);
+            }
+        }
+        for (Edge edge : edgesToRemove) {
+            edgeMap.remove(edge);
+        }
     }
 
 }
