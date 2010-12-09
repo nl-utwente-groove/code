@@ -43,6 +43,20 @@ public class Pair<T,U> {
     }
 
     /**
+     * Sets the first value of the pair.
+     */
+    public void setFirst(T first) {
+        this.first = first;
+    }
+
+    /**
+     * Sets the second value of the pair.
+     */
+    public void setSecond(U second) {
+        this.second = second;
+    }
+
+    /**
      * Tests for the equality of the {@link #first()} and {@link #second()}
      * fields.
      */
@@ -99,7 +113,7 @@ public class Pair<T,U> {
     }
 
     /** The first value of the pair. */
-    private final T first;
+    private T first;
     /** The second value of the pair. */
-    private final U second;
+    private U second;
 }
