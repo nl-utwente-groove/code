@@ -16,6 +16,7 @@
  */
 package groove.test.abstraction;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import groove.abstraction.Materialisation;
 import groove.abstraction.Multiplicity;
@@ -59,11 +60,11 @@ public class TestMaterialisation {
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-mat-0");
             Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            assertTrue(preMatches.size() == 1);
+            assertEquals(1, preMatches.size());
             for (RuleMatch preMatch : preMatches) {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);
-                assertTrue(mats.size() == 6);
+                assertEquals(6, mats.size());
                 for (Materialisation mat : mats) {
                     Shape matShape = mat.getShape();
                     assertTrue((matShape.nodeSet().size() == 5 && Util.getBinaryEdges(
@@ -89,11 +90,11 @@ public class TestMaterialisation {
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-mat-1");
             Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            assertTrue(preMatches.size() == 1);
+            assertEquals(1, preMatches.size());
             for (RuleMatch preMatch : preMatches) {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);
-                assertTrue(mats.size() == 3);
+                assertEquals(3, mats.size());
                 for (Materialisation mat : mats) {
                     Shape matShape = mat.getShape();
                     assertTrue((matShape.nodeSet().size() == 4 && Util.getBinaryEdges(
@@ -119,11 +120,11 @@ public class TestMaterialisation {
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-mat-1");
             Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            assertTrue(preMatches.size() == 1);
+            assertEquals(1, preMatches.size());
             for (RuleMatch preMatch : preMatches) {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);
-                assertTrue(mats.size() == 6);
+                assertEquals(6, mats.size());
                 for (Materialisation mat : mats) {
                     Shape matShape = mat.getShape();
                     assertTrue((matShape.nodeSet().size() == 5 && Util.getBinaryEdges(
@@ -149,11 +150,11 @@ public class TestMaterialisation {
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("add");
             Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            assertTrue(preMatches.size() == 1);
+            assertEquals(1, preMatches.size());
             for (RuleMatch preMatch : preMatches) {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);
-                assertTrue(mats.size() == 2);
+                assertEquals(2, mats.size());
                 for (Materialisation mat : mats) {
                     assertTrue(mat.getShape().nodeSet().size() == 5);
                     assertTrue(Util.getBinaryEdges(mat.getShape()).size() == 7);
