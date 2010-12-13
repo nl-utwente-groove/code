@@ -16,8 +16,6 @@
  */
 package groove.trans;
 
-import groove.rel.RuleToStateMap;
-
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -28,7 +26,7 @@ import java.util.Collection;
  */
 public class RuleMatch extends CompositeMatch {
     /** Constructs a match for a given {@link SPORule}. */
-    public RuleMatch(SPORule rule, RuleToStateMap elementMap) {
+    public RuleMatch(SPORule rule, RuleToHostMap elementMap) {
         super(elementMap);
         this.rule = rule;
     }
@@ -76,20 +74,20 @@ public class RuleMatch extends CompositeMatch {
 
     /**
      * Callback factory method to create a simple event. Delegates to
-     * {@link SystemRecord#createSimpleEvent(SPORule, RuleToStateMap)} if
+     * {@link SystemRecord#createSimpleEvent(SPORule, RuleToHostMap)} if
      * <code>nodeFactory</code> is not <code>null</code>.
      */
-    private SPOEvent createSimpleEvent(SystemRecord nodeFactory) {
-        if (nodeFactory == null) {
-            return new SPOEvent(getRule(), getElementMap(), null, false);
+    private SPOEvent createSimpleEvent(SystemRecord record) {
+        if (record == null) {
+            return new SPOEvent(getRule(), getElementMap(), false);
         } else {
-            return nodeFactory.createSimpleEvent(getRule(), getElementMap());
+            return record.createSimpleEvent(getRule(), getElementMap());
         }
     }
 
     /**
      * Callback factory method to create a composite event. Delegates to
-     * {@link SystemRecord#createSimpleEvent(SPORule, RuleToStateMap)} if
+     * {@link SystemRecord#createSimpleEvent(SPORule, RuleToHostMap)} if
      * <code>nodeFactory</code> is not <code>null</code>.
      */
     private RuleEvent createCompositeEvent(SystemRecord nodeFactory,

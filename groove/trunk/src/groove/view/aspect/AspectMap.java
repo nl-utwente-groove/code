@@ -17,8 +17,6 @@
 package groove.view.aspect;
 
 import groove.graph.Label;
-import groove.graph.MergeLabel;
-import groove.rel.RegExprLabel;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -48,7 +46,7 @@ public class AspectMap implements Iterable<AspectValue>, Comparable<AspectMap>,
     public AspectMap(boolean rule) {
         this.rule = rule;
         if (rule) {
-            this.defaultParser = RegExprLabelParser.getInstance(false);
+            this.defaultParser = RuleLabelParser.getInstance(false);
         } else {
             this.defaultParser = PrefixedLabelParser.getInstance();
         }
@@ -274,11 +272,6 @@ public class AspectMap implements Iterable<AspectValue>, Comparable<AspectMap>,
             && !RuleAspect.REMARK.equals(get(RuleAspect.getInstance()))) {
             // parse the label
             result = getLabelParser().parse(getText());
-            // create a merge label if appropriate
-            if (RuleAspect.CREATOR.equals(get(RuleAspect.getInstance()))
-                && RegExprLabel.isEmpty(result)) {
-                result = MergeLabel.getInstance();
-            }
         }
         return result;
     }
@@ -421,7 +414,7 @@ public class AspectMap implements Iterable<AspectValue>, Comparable<AspectMap>,
     private String text;
     /**
      * Flag indicating if we are in the context of a rule. This affects the
-     * default parser, which is a {@link RegExprLabelParser} for a rule but a
+     * default parser, which is a {@link RuleLabelParser} for a rule but a
      * {@link FreeLabelParser} for a graph.
      */
     private final boolean rule;

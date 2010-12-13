@@ -18,7 +18,7 @@ package groove.io;
 
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.Label;
+import groove.graph.TypeLabel;
 import groove.gui.Options;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
@@ -545,7 +545,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public void relabel(Label oldLabel, Label newLabel) throws IOException {
+    public void relabel(TypeLabel oldLabel, TypeLabel newLabel) throws IOException {
         Edit edit = doRelabel(oldLabel, newLabel);
         if (edit != null) {
             postEdit(edit);
@@ -553,10 +553,10 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     /**
-     * Implements the functionality of {@link #relabel(Label, Label)}. Returns
+     * Implements the functionality of {@link #relabel(TypeLabel, TypeLabel)}. Returns
      * an undoable edit wrapping this functionality.
      */
-    private MyCompoundEdit doRelabel(Label oldLabel, Label newLabel)
+    private MyCompoundEdit doRelabel(TypeLabel oldLabel, TypeLabel newLabel)
         throws IOException {
         MyCompoundEdit result = new MyCompoundEdit(Options.RELABEL_ACTION_NAME);
         for (AspectGraph graph : getGraphs().values()) {

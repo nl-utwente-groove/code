@@ -25,11 +25,10 @@ import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
-import groove.graph.Label;
 import groove.graph.LabelStore;
-import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
+import groove.graph.TypeLabel;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JCell;
@@ -157,7 +156,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
             setEnabled(false);
         } else {
             GraphView startGraph = grammar.getStartGraphView();
-            Map<String,Set<Label>> labelsMap = new HashMap<String,Set<Label>>();
+            Map<String,Set<TypeLabel>> labelsMap =
+                new HashMap<String,Set<TypeLabel>>();
             for (String typeName : grammar.getActiveTypeNames()) {
                 try {
                     TypeView view = grammar.getTypeView(typeName);
@@ -247,7 +247,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         GraphState newState = transition.target();
         GraphJModel newModel = getStateJModel(newState, false);
         GraphState oldState = transition.source();
-        Morphism morphism = transition.getMorphism();
+        NodeEdgeMap morphism = transition.getMorphism();
         copyLayout(getStateJModel(oldState, true), newModel, morphism);
         // set the graph model to the new state
         setJModel(newModel);
@@ -367,7 +367,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         if (copyLayout) {
             if (state instanceof GraphNextState) {
                 GraphState oldState = ((GraphNextState) state).source();
-                Morphism morphism = ((GraphNextState) state).getMorphism();
+                NodeEdgeMap morphism = ((GraphNextState) state).getMorphism();
                 // walk back along the derivation chain to find one for
                 // which we have a state model (and hence layout information)
                 while (!this.stateJModelMap.containsKey(oldState)

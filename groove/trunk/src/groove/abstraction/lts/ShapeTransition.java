@@ -16,10 +16,10 @@
  */
 package groove.abstraction.lts;
 
-import groove.graph.Morphism;
-import groove.graph.Node;
+import groove.graph.NodeEdgeMap;
 import groove.lts.DefaultGraphTransition;
 import groove.lts.GraphTransitionStub;
+import groove.trans.HostNode;
 import groove.trans.RuleEvent;
 
 /**
@@ -66,7 +66,7 @@ public final class ShapeTransition extends DefaultGraphTransition {
     // Unimplemented methods.
 
     @Override
-    public Morphism getMorphism() {
+    public NodeEdgeMap getMorphism() {
         throw new UnsupportedOperationException();
     }
 
@@ -81,7 +81,7 @@ public final class ShapeTransition extends DefaultGraphTransition {
     }
 
     @Override
-    public Node[] getAddedNodes() {
+    public HostNode[] getAddedNodes() {
         throw new UnsupportedOperationException();
     }
 

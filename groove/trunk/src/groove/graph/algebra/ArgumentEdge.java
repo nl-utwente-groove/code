@@ -16,9 +16,8 @@
  */
 package groove.graph.algebra;
 
-import groove.graph.DefaultLabel;
 import groove.trans.RuleEdge;
-import groove.util.Groove;
+import groove.trans.RuleLabel;
 
 /**
  * Instances of this class are edges between
@@ -31,8 +30,7 @@ import groove.util.Groove;
 public class ArgumentEdge extends RuleEdge {
     /** Constructs a fresh edge. */
     public ArgumentEdge(ProductNode source, int number, VariableNode target) {
-        super(source, DefaultLabel.createLabel("" + Groove.LC_PI + number),
-            target);
+        super(source, new RuleLabel(number), target);
         this.number = number;
     }
 

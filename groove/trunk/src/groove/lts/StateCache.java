@@ -18,14 +18,13 @@ package groove.lts;
 
 import groove.control.CtrlCall;
 import groove.graph.DeltaApplier;
-import groove.graph.DeltaGraphFactory;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.FrozenDeltaApplier;
 import groove.graph.Graph;
-import groove.graph.NewDeltaGraph;
 import groove.graph.Node;
 import groove.trans.DefaultApplication;
+import groove.trans.DeltaHostGraph;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.TreeHashSet;
@@ -53,7 +52,7 @@ class StateCache {
         this.record = state.getRecord();
         this.freezeGraphs = this.record.isCollapse();
         this.graphFactory =
-            NewDeltaGraph.getInstance(this.record.isCopyGraphs());
+            DeltaHostGraph.getInstance(this.record.isCopyGraphs());
     }
 
     /** Adds a transition stub to the data structures stored in this cache. */
@@ -70,7 +69,7 @@ class StateCache {
     }
 
     /** Sets the cached graph. */
-    void setGraph(Graph graph) {
+    void setGraph(DeltaHostGraph graph) {
         this.graph = graph;
     }
 
@@ -80,7 +79,7 @@ class StateCache {
      * @throws IllegalStateException if the underlying state is not a
      *         {@link GraphNextState}
      */
-    Graph getGraph() {
+    DeltaHostGraph getGraph() {
         if (this.graph == null) {
             this.graph = computeGraph();
         }
@@ -137,9 +136,9 @@ class StateCache {
      * to be a {@link DefaultGraphNextState}.
      */
     @SuppressWarnings("unchecked")
-    private Graph computeGraph() {
+    private DeltaHostGraph computeGraph() {
         Element[] frozenGraph = this.state.getFrozenGraph();
-        Graph result;
+        DeltaHostGraph result;
         if (frozenGraph != null) {
             result =
                 this.graphFactory.newGraph(null, new FrozenDeltaApplier(
@@ -164,7 +163,7 @@ class StateCache {
             }
             // now let all states along the chain reconstruct their graphs,
             // from ancestor to this one
-            result = backward.getGraph();
+            result = (DeltaHostGraph) backward.getGraph();
             for (DefaultGraphNextState forward : stateChain) {
                 result = this.graphFactory.newGraph(result, forward.getDelta());
             }
@@ -327,15 +326,14 @@ class StateCache {
     /** Cached map from events to target transitions. */
     private Map<CtrlCall,Collection<GraphTransition>> transitionMap;
     /** Cached graph for this state. */
-    private Graph graph;
+    private DeltaHostGraph graph;
     /**
      * Flag indicating if (a fraction of the) state graphs should be frozen.
      * This is set to <code>true</code> if states in the GTS are collapsed.
      */
     private final boolean freezeGraphs;
     /** Factory used to create the state graphs. */
-    @SuppressWarnings("rawtypes")
-    private final DeltaGraphFactory graphFactory;
+    private final DeltaHostGraph graphFactory;
     /**
      * The depth of the graph above which the underlying graph will be frozen.
      */

@@ -16,11 +16,10 @@
  */
 package groove.match;
 
-import groove.graph.Edge;
-import groove.graph.Label;
+import groove.graph.TypeLabel;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
-import groove.rel.RegExprLabel;
+import groove.trans.HostEdge;
 import groove.trans.RuleEdge;
 
 import java.util.Collection;
@@ -40,8 +39,8 @@ class VarEdgeSearchItem extends Edge2SearchItem {
      */
     public VarEdgeSearchItem(RuleEdge edge) {
         super(edge);
-        this.var = RegExprLabel.getWildcardId(edge.label());
-        this.labelConstraint = RegExprLabel.getWildcardGuard(edge.label());
+        this.var = edge.label().getWildcardId();
+        this.labelConstraint = edge.label().getWildcardGuard();
         this.boundVars = Collections.singleton(this.var);
         assert this.var != null : String.format(
             "Edge %s is not a variable edge", edge);
@@ -76,13 +75,13 @@ class VarEdgeSearchItem extends Edge2SearchItem {
     }
 
     @Override
-    MultipleRecord<Edge> createMultipleRecord(Search search) {
+    MultipleRecord<HostEdge> createMultipleRecord(Search search) {
         return new VarEdgeMultipleRecord(search, this.edgeIx, this.sourceIx,
             this.targetIx, this.varIx, this.sourceFound, this.targetFound,
             this.varFound);
     }
 
-    boolean isLabelConstraintSatisfied(Label label) {
+    boolean isLabelConstraintSatisfied(TypeLabel label) {
         return label.getKind() == this.var.getKind()
             && this.labelConstraint == null
             || this.labelConstraint.isSatisfied(label);
@@ -100,7 +99,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
     boolean varFound;
 
     /** The constraint on the variable valuation, if any. */
-    private final groove.util.Property<Label> labelConstraint;
+    private final groove.util.Property<TypeLabel> labelConstraint;
 
     class VarEdgeSingularRecord extends Edge2SingularRecord {
         /**
@@ -116,8 +115,8 @@ class VarEdgeSearchItem extends Edge2SearchItem {
 
         /** This implementation returns the variable image from the match. */
         @Override
-        Label getLabel() {
-            Label result = this.varPreMatch;
+        TypeLabel getLabel() {
+            TypeLabel result = this.varPreMatch;
             if (result == null) {
                 result = this.search.getVar(this.varIx);
             }
@@ -126,12 +125,12 @@ class VarEdgeSearchItem extends Edge2SearchItem {
 
         /** Tests the label constraint, in addition to calling the super method. */
         @Override
-        boolean isImageCorrect(Edge image) {
-            return isLabelConstraintSatisfied(VarEdgeSearchItem.this.edge.label())
+        boolean isImageCorrect(HostEdge image) {
+            return isLabelConstraintSatisfied(image.label())
                 && super.isImageCorrect(image);
         }
 
-        private final Label varPreMatch;
+        private final TypeLabel varPreMatch;
         /** The index of {@link #var} in the result. */
         private final int varIx;
     }
@@ -161,7 +160,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
 
         @Override
         void initImages() {
-            Set<? extends Edge> edgeSet;
+            Set<? extends HostEdge> edgeSet;
             if (this.varFind != null) {
                 if (isLabelConstraintSatisfied(this.varFind)) {
                     edgeSet = this.host.labelEdgeSet(this.varFind);
@@ -184,7 +183,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         }
 
         @Override
-        boolean setImage(Edge image) {
+        boolean setImage(HostEdge image) {
             boolean result =
                 isLabelConstraintSatisfied(image.label())
                     && super.setImage(image);
@@ -205,7 +204,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         /**
          * The pre-matched variable image, if any.
          */
-        private final Label varPreMatch;
+        private final TypeLabel varPreMatch;
         /** The index of {@link #var} in the result. */
         private final int varIx;
         /**
@@ -216,8 +215,8 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         /**
          * The found variable image, if any.
          */
-        private Label varFind;
+        private TypeLabel varFind;
     }
 
-    private static final Set<Edge> EMPTY_IMAGE_SET = Collections.emptySet();
+    private static final Set<HostEdge> EMPTY_IMAGE_SET = Collections.emptySet();
 }

@@ -21,6 +21,7 @@ import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
+import groove.trans.RuleLabel;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,15 +39,18 @@ import java.util.Set;
 public class VarSupport {
     /**
      * Returns the set of all variables involved in a given edge. If the edge is
-     * has a {@link RegExprLabel}, this is the result of
+     * has a {@link RuleLabel}, this is the result of
      * {@link RegExpr#allVarSet()}; otherwise, it is the empty set.
      */
     static public Set<LabelVar> getAllVars(Edge edge) {
-        if (edge.label() instanceof RegExprLabel) {
-            return ((RegExprLabel) edge.label()).getRegExpr().allVarSet();
-        } else {
-            return Collections.emptySet();
+        Set<LabelVar> result = Collections.emptySet();
+        if (edge.label() instanceof RuleLabel) {
+            RegExpr expr = ((RuleLabel) edge.label()).getRegExpr();
+            if (expr != null) {
+                result = expr.allVarSet();
+            }
         }
+        return result;
     }
 
     /**
@@ -64,15 +68,18 @@ public class VarSupport {
 
     /**
      * Returns the set of variables bound by a given edge. If the edge is has a
-     * {@link RegExprLabel}, this is the result of
+     * {@link RuleLabel}, this is the result of
      * {@link RegExpr#boundVarSet()}; otherwise, it is the empty set.
      */
     static public Set<LabelVar> getBoundVars(Edge edge) {
-        if (edge.label() instanceof RegExprLabel) {
-            return ((RegExprLabel) edge.label()).getRegExpr().boundVarSet();
-        } else {
-            return Collections.emptySet();
+        Set<LabelVar> result = Collections.emptySet();
+        if (edge.label() instanceof RuleLabel) {
+            RegExpr expr = ((RuleLabel) edge.label()).getRegExpr();
+            if (expr != null) {
+                result = expr.boundVarSet();
+            }
         }
+        return result;
     }
 
     /**
@@ -121,7 +128,7 @@ public class VarSupport {
     static public Set<RuleEdge> getSimpleVarEdges(RuleGraph graph) {
         Set<RuleEdge> result = new HashSet<RuleEdge>();
         for (RuleEdge edge : graph.edgeSet()) {
-            if (RegExprLabel.getWildcardId(edge.label()) != null) {
+            if (edge.label().getWildcardId() != null) {
                 result.add(edge);
             }
         }
@@ -135,7 +142,7 @@ public class VarSupport {
     static public Map<LabelVar,RuleEdge> getSimpleVarBinders(RuleGraph graph) {
         Map<LabelVar,RuleEdge> result = new HashMap<LabelVar,RuleEdge>();
         for (RuleEdge binder : graph.edgeSet()) {
-            LabelVar id = RegExprLabel.getWildcardId(binder.label());
+            LabelVar id = binder.label().getWildcardId();
             if (id != null) {
                 result.put(id, binder);
             }

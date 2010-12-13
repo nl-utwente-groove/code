@@ -18,25 +18,28 @@ package groove.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.GraphProperties;
-import groove.graph.Morphism;
-import groove.graph.Node;
+import groove.graph.LabelStore;
+import groove.graph.NodeEdgeMap;
+import groove.graph.TypeLabel;
+import groove.trans.DefaultHostGraph;
 import groove.trans.EdgeEmbargo;
+import groove.trans.HostEdge;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.trans.MergeEmbargo;
 import groove.trans.NotCondition;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
-import groove.trans.RuleGraphMap;
+import groove.trans.RuleLabel;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.RuleNode;
+import groove.trans.RuleToRuleMap;
 import groove.trans.SPORule;
 import groove.trans.SystemProperties;
 import groove.view.FormatException;
@@ -77,17 +80,17 @@ public class NACTest {
 
     protected SPORule rule;
     protected NotCondition[] NACs = new NotCondition[NR_NACS];
-    protected Graph[] g = new Graph[NR_GRAPHS];
+    protected HostGraph[] g = new HostGraph[NR_GRAPHS];
 
     protected RuleNode[][] ruleNodes = new RuleNode[2 + NR_NACS][];
     protected RuleEdge[][] ruleEdges = new RuleEdge[2 + NR_NACS][];
 
-    protected Node[][] stateNodes = new Node[2 + NR_GRAPHS][];
-    protected Edge[][] stateEdges = new Edge[2 + NR_GRAPHS][];
+    protected HostNode[][] stateNodes = new HostNode[2 + NR_GRAPHS][];
+    protected HostEdge[][] stateEdges = new HostEdge[2 + NR_GRAPHS][];
 
     /** The setup is as in the paper */
     @Before
-    public void setUp() {
+    public void setUp() throws FormatException {
         RuleGraph protREGraph = new RuleGraph();
         int[] lhsSrc = {0};
         String[] lhsLab = {"a"};
@@ -101,7 +104,7 @@ public class NACTest {
         RuleGraph rhs =
             setUpRuleGraph(protREGraph, 1, 2, rhsSrc, rhsLab, rhsTgt);
 
-        RuleGraphMap ruleMorphism = new RuleGraphMap();
+        RuleToRuleMap ruleMorphism = new RuleToRuleMap();
         lhs.addNode(this.ruleNodes[0][0]);
         rhs.addNode(this.ruleNodes[1][0]);
         ruleMorphism.putNode(this.ruleNodes[0][0], this.ruleNodes[1][0]);
@@ -111,34 +114,36 @@ public class NACTest {
         this.rule =
             new SPORule(new RuleName("test"), lhs, rhs, ruleMorphism,
                 ruleProperties, SystemProperties.DEFAULT_PROPERTIES);
-
+        this.rule.setLabelStore(this.labelStore);
         this.NACs[0] =
             new MergeEmbargo(lhs, this.ruleNodes[0][0], this.ruleNodes[0][1],
-                null, SystemProperties.getInstance());
+                SystemProperties.getInstance());
 
         this.NACs[3] =
-            new EdgeEmbargo(lhs, new RuleEdge(this.ruleNodes[0][1], "c",
-                this.ruleNodes[0][0]), SystemProperties.getInstance(), null);
+            new EdgeEmbargo(lhs, new RuleEdge(this.ruleNodes[0][1],
+                new RuleLabel("c"), this.ruleNodes[0][0]),
+                SystemProperties.getInstance());
 
         RuleGraph protGraph = new RuleGraph();
         int[] g0Src = {1, 1, 2};
         String[] g0Lab = {"b", "a", "c"};
         int[] g0Tgt = {0, 2, 1};
-        this.g[0] = setUpStateGraph(protGraph, 0, 3, g0Src, g0Lab, g0Tgt);
+        this.g[0] = setUpHostGraph(protGraph, 0, 3, g0Src, g0Lab, g0Tgt);
 
         int[] g1Src = {0, 0};
         String[] g1Lab = {"a", "c"};
         int[] g1Tgt = {0, 1};
-        this.g[1] = setUpStateGraph(protGraph, 1, 2, g1Src, g1Lab, g1Tgt);
+        this.g[1] = setUpHostGraph(protGraph, 1, 2, g1Src, g1Lab, g1Tgt);
 
         int[] g2Src = {0, 1, 1};
         String[] g2Lab = {"a", "a", "c"};
         int[] g2Tgt = {1, 2, 2};
-        this.g[2] = setUpStateGraph(protGraph, 2, 3, g2Src, g2Lab, g2Tgt);
+        this.g[2] = setUpHostGraph(protGraph, 2, 3, g2Src, g2Lab, g2Tgt);
     }
 
     private RuleGraph setUpRuleGraph(RuleGraph prototype, int graphNr,
-            int nrNodes, int[] sources, String[] labels, int[] targets) {
+            int nrNodes, int[] sources, String[] labels, int[] targets)
+        throws FormatException {
         RuleGraph res = prototype.newGraph();
 
         this.ruleNodes[graphNr] = new DefaultNode[nrNodes];
@@ -151,7 +156,8 @@ public class NACTest {
         this.ruleEdges[graphNr] = new RuleEdge[nrEdges];
         for (int j = 0; j < nrEdges; j++) {
             this.ruleEdges[graphNr][j] =
-                new RuleEdge(this.ruleNodes[graphNr][sources[j]], labels[j],
+                new RuleEdge(this.ruleNodes[graphNr][sources[j]],
+                    createRuleLabel(labels[j]),
                     this.ruleNodes[graphNr][targets[j]]);
             res.addEdge(this.ruleEdges[graphNr][j]);
         }
@@ -159,23 +165,23 @@ public class NACTest {
         return res;
     }
 
-    private Graph setUpStateGraph(RuleGraph prototype, int graphNr,
+    private HostGraph setUpHostGraph(RuleGraph prototype, int graphNr,
             int nrNodes, int[] sources, String[] labels, int[] targets) {
-        Graph res = new DefaultGraph();
+        HostGraph res = new DefaultHostGraph();
 
-        this.stateNodes[graphNr] = new DefaultNode[nrNodes];
+        this.stateNodes[graphNr] = new HostNode[nrNodes];
         for (int j = 0; j < nrNodes; j++) {
             this.stateNodes[graphNr][j] = DefaultNode.createNode();
             res.addNode(this.stateNodes[graphNr][j]);
         }
 
         int nrEdges = sources.length;
-        this.stateEdges[graphNr] = new DefaultEdge[nrEdges];
+        this.stateEdges[graphNr] = new HostEdge[nrEdges];
         for (int j = 0; j < nrEdges; j++) {
             this.stateEdges[graphNr][j] =
-                DefaultEdge.createEdge(this.stateNodes[graphNr][sources[j]],
-                    labels[j], this.stateNodes[graphNr][targets[j]]);
-            res.addEdge(this.stateEdges[graphNr][j]);
+                res.addEdge(this.stateNodes[graphNr][sources[j]],
+                    createTypeLabel(labels[j]),
+                    this.stateNodes[graphNr][targets[j]]);
         }
 
         return res;
@@ -193,7 +199,7 @@ public class NACTest {
         assertEquals(1, derivSet.size());
         Iterator<RuleApplication> derivIter = derivSet.iterator();
         RuleApplication deriv = derivIter.next();
-        equalsG0Deriv(deriv.getMorphism());
+        equalsG0Deriv(deriv);
 
         derivSet = getDerivations(this.rule, this.g[1]);
         assertEquals(1, derivSet.size());
@@ -266,7 +272,8 @@ public class NACTest {
         assertEquals(2, derivSet.size());
     }
 
-    private Collection<RuleApplication> getDerivations(SPORule rule, Graph graph) {
+    private Collection<RuleApplication> getDerivations(SPORule rule,
+            HostGraph graph) {
         Collection<RuleApplication> result = new ArrayList<RuleApplication>();
         for (RuleMatch match : ((Rule) rule).getMatches(graph, null)) {
             result.add(match.newEvent(null).newApplication(graph));
@@ -274,15 +281,28 @@ public class NACTest {
         return result;
     }
 
-    private void equalsG0Deriv(Morphism derivMorph) {
-        assertEquals(this.g[0], derivMorph.dom());
+    private void equalsG0Deriv(RuleApplication deriv) {
+        NodeEdgeMap derivMorph = deriv.getMorphism();
+        assertEquals(this.g[0], deriv.getSource());
         assertEquals(null, derivMorph.getNode(this.stateNodes[0][2]));
         Edge image = derivMorph.getEdge(this.stateEdges[0][0]);
         assertTrue(image != null);
         Collection<? extends Edge> targetOutEdgeSet =
-            derivMorph.cod().outEdgeSet(
+            deriv.getTarget().outEdgeSet(
                 derivMorph.getNode(this.stateNodes[0][1]));
         assertEquals(2, targetOutEdgeSet.size());
         assertTrue(targetOutEdgeSet.contains(image));
     }
+
+    private RuleLabel createRuleLabel(String text) {
+        return new RuleLabel(createTypeLabel(text));
+    }
+
+    private TypeLabel createTypeLabel(String text) {
+        TypeLabel result = TypeLabel.createLabel(text);
+        this.labelStore.addLabel(result);
+        return result;
+    }
+
+    private LabelStore labelStore = new LabelStore();
 }

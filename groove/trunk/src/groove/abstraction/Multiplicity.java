@@ -17,8 +17,9 @@
 package groove.abstraction;
 
 import groove.graph.Edge;
-import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
+import groove.trans.HostNode;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -180,7 +181,7 @@ public final class Multiplicity {
      * more details.
      */
     public static Multiplicity sumOutMult(Shape shape, ShapeNode node,
-            Label label, Set<EquivClass<ShapeNode>> kSet) {
+            TypeLabel label, Set<EquivClass<ShapeNode>> kSet) {
         Multiplicity accumulator = getMultOf(0);
         for (EquivClass<ShapeNode> k : kSet) {
             EdgeSignature es = shape.getEdgeSignature(node, label, k);
@@ -197,7 +198,7 @@ public final class Multiplicity {
      * more details.
      */
     public static Multiplicity sumInMult(Shape shape, ShapeNode node,
-            Label label, Set<EquivClass<ShapeNode>> kSet) {
+            TypeLabel label, Set<EquivClass<ShapeNode>> kSet) {
         Multiplicity accumulator = getMultOf(0);
         for (EquivClass<ShapeNode> k : kSet) {
             EdgeSignature es = shape.getEdgeSignature(node, label, k);
@@ -212,7 +213,7 @@ public final class Multiplicity {
      * See item 5 of Def. 22 on page 17 of the Technical Report for
      * more details.
      */
-    public static Multiplicity getNodeSetMultSum(Shape shape, Set<Node> nodes) {
+    public static Multiplicity getNodeSetMultSum(Shape shape, Set<HostNode> nodes) {
         Multiplicity accumulator = getMultOf(0);
         for (Node node : nodes) {
             Multiplicity nodeMult = shape.getNodeMult((ShapeNode) node);

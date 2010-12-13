@@ -20,6 +20,7 @@ import groove.graph.AbstractEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Label;
+import groove.graph.TypeLabel;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
@@ -33,8 +34,9 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectEdge extends AbstractEdge<AspectNode,Label,AspectNode>
-        implements AspectElement {
+public class AspectEdge extends
+        AbstractEdge<AspectNode,DefaultLabel,AspectNode> implements
+        AspectElement {
     /**
      * Constructs a new edge, with source and target node, label, and aspect
      * values as given.
@@ -99,7 +101,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,Label,AspectNode>
      * Tests if the parsed edge label is allowed by all inferred aspects.
      * @throws FormatException if there is an aspect whose value for this edge
      *         is incompatible with the edge label
-     * @see Aspect#testLabel(Label, AspectValue, AspectValue)
+     * @see Aspect#testLabel(DefaultLabel, AspectValue, AspectValue)
      */
     private void testLabel() throws FormatException {
         List<FormatError> errors = new ArrayList<FormatError>();
@@ -161,7 +163,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,Label,AspectNode>
         if (result != null && !result.isBinary() && !source().equals(target())) {
             throw new FormatException(
                 "%s label '%s' should only occur on nodes",
-                DefaultLabel.getDescriptor(result.getKind()), result, this,
+                TypeLabel.getDescriptor(result.getKind()), result, this,
                 this.source());
         }
         return result;

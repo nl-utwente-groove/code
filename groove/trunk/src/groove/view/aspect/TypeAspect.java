@@ -16,9 +16,9 @@
  */
 package groove.view.aspect;
 
-import groove.graph.DefaultLabel;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
+import groove.graph.TypeLabel;
 import groove.view.FormatException;
 
 /**
@@ -109,7 +109,7 @@ public class TypeAspect extends AbstractAspect {
     static {
         try {
             PATH = instance.addEdgeValue(PATH_NAME);
-            PATH.setLabelParser(RegExprLabelParser.getInstance(true));
+            PATH.setLabelParser(RuleLabelParser.getInstance(true));
             SUB = instance.addEdgeValue(SUB_NAME);
             SUB.setLabelParser(EmptyLabelParser.getInstance());
             SUB.setIncompatible(RuleAspect.getInstance());
@@ -138,12 +138,7 @@ public class TypeAspect extends AbstractAspect {
                 throw new FormatException(
                     "Only empty label text allowed for '%s'-label", SUB);
             }
-            return DefaultLabel.createLabel(text);
-        }
-
-        @Override
-        public DefaultLabel unparse(Label label) {
-            return DefaultLabel.createLabel("");
+            return TypeLabel.createLabel(text);
         }
 
         /** Returns the singleton instance of this class. */

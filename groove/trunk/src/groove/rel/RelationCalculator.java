@@ -16,31 +16,43 @@
  */
 package groove.rel;
 
+import groove.graph.Edge;
 import groove.graph.GraphShape;
+import groove.graph.Label;
+import groove.graph.Node;
+import groove.lts.LTS;
+import groove.lts.LTSAdapter;
 import groove.rel.RegExpr.Sharp;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Calculator yielding a {@link groove.rel.NodeRelation}.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class RelationCalculator implements RegExprCalculator<NodeRelation> {
-    /**
-     * Creates a relation calculator based on a given relation factory.
-     */
-    public RelationCalculator(NodeRelation factory) {
-        this.factory = factory;
-    }
-
+public class RelationCalculator extends LTSAdapter implements
+        RegExprCalculator<NodeRelation> {
     /**
      * Creates a relation calculator based on a given graph. The relation
      * factory will be set to a {@link SetNodeRelation} over that graph.
      */
     public RelationCalculator(GraphShape graph) {
-        this(new SetNodeRelation(graph));
+        this(graph, new SetNodeRelation());
+    }
+
+    /**
+     * Creates a relation calculator based on a given graph and 
+     * relation factory.
+     */
+    public RelationCalculator(GraphShape graph, NodeRelation factory) {
+        this.factory = factory;
+        this.graph = graph;
     }
 
     /**
@@ -48,7 +60,7 @@ public class RelationCalculator implements RegExprCalculator<NodeRelation> {
      * stores it in the underlying mapping.
      */
     public NodeRelation computeAtom(RegExpr.Atom expr) {
-        return this.factory.newInstance(expr.toLabel());
+        return createRelation(expr.toTypeLabel());
     }
 
     /**
@@ -70,7 +82,11 @@ public class RelationCalculator implements RegExprCalculator<NodeRelation> {
      * Computes the identity relation and stores it in the underlying mapping.
      */
     public NodeRelation computeEmpty(RegExpr.Empty expr) {
-        return this.factory.createIdentityRelation();
+        NodeRelation result = getFactory().newInstance();
+        for (Node node : this.graph.nodeSet()) {
+            result.addSelfRelated(node);
+        }
+        return result;
     }
 
     /**
@@ -78,7 +94,8 @@ public class RelationCalculator implements RegExprCalculator<NodeRelation> {
      * <code>expr</code> and stores it in the underlying mapping.
      */
     public NodeRelation computeInv(RegExpr.Inv expr, NodeRelation arg) {
-        return arg.getInverse();
+        arg.doInverse();
+        return arg;
     }
 
     /**
@@ -119,20 +136,31 @@ public class RelationCalculator implements RegExprCalculator<NodeRelation> {
      */
     public NodeRelation computeStar(RegExpr.Star expr, NodeRelation arg) {
         arg.doTransitiveClosure();
-        arg.doReflexiveClosure();
+        for (Node node : this.graph.nodeSet()) {
+            arg.addSelfRelated(node);
+        }
         return arg;
     }
 
     @Override
     public NodeRelation computeSharp(Sharp expr) {
-        return this.factory.newInstance(expr.getTypeLabel());
+        return createRelation(expr.getTypeLabel());
     }
 
     /**
      * Creates a fresh relation on the basis of the set of all pairs.
      */
     public NodeRelation computeWildcard(RegExpr.Wildcard expr) {
-        return this.factory.createMaximalRelation();
+        NodeRelation result = getFactory().newInstance();
+        for (Edge edge : this.graph.edgeSet()) {
+            result.addRelated(edge);
+        }
+        return result;
+    }
+
+    /** Returns the graph on which this calculator is based. */
+    public GraphShape getGraph() {
+        return this.graph;
     }
 
     /**
@@ -142,6 +170,67 @@ public class RelationCalculator implements RegExprCalculator<NodeRelation> {
         return this.factory;
     }
 
+    @Override
+    public void addUpdate(GraphShape graph, Edge edge) {
+        if (this.labelEdgeMap != null) {
+            addToLabelEdgeMap(edge, this.labelEdgeMap);
+        }
+    }
+
+    /** Start listening to the wrapped graph, if it supports listeners. */
+    public void startListening() {
+        if (this.graph instanceof LTS) {
+            ((LTS) this.graph).addGraphListener(this);
+        }
+    }
+
+    /** Stop listening to the wrapped graph. */
+    public void stopListening() {
+        if (this.graph instanceof LTS) {
+            ((LTS) this.graph).removeGraphListener(this);
+        }
+    }
+
+    private NodeRelation createRelation(Label label) {
+        NodeRelation result = getFactory().newInstance();
+        Set<Edge> edges = getEdgeSet(label);
+        if (edges != null) {
+            for (Edge edge : edges) {
+                result.addRelated(edge);
+            }
+        }
+        return result;
+    }
+
+    private Set<Edge> getEdgeSet(Label label) {
+        if (this.labelEdgeMap == null) {
+            this.labelEdgeMap = computeLabelEdgeMap();
+        }
+        return this.labelEdgeMap.get(label.text());
+    }
+
+    private Map<String,Set<Edge>> computeLabelEdgeMap() {
+        Map<String,Set<Edge>> result = new HashMap<String,Set<Edge>>();
+        for (Edge edge : this.graph.edgeSet()) {
+            addToLabelEdgeMap(edge, result);
+        }
+        return result;
+    }
+
+    /** Adds an edge to a given label-edge-set-map. */
+    private void addToLabelEdgeMap(Edge edge, Map<String,Set<Edge>> result) {
+        String text = edge.label().text();
+        Set<Edge> edges = result.get(text);
+        if (edges == null) {
+            result.put(text, edges = new HashSet<Edge>());
+        }
+        edges.add(edge);
+    }
+
+    /** Mapping from label test to sets of edges. */
+    private Map<String,Set<Edge>> labelEdgeMap;
+    /** The graph from which relations are to be computed. */
+    private final GraphShape graph;
     /** Factory for creating relations. */
     private final NodeRelation factory;
 }

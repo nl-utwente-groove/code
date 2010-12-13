@@ -60,7 +60,7 @@ class AnchorSearchItem extends AbstractSearchItem {
 
     /** This implementation returns the set of pre-matched edges. */
     @Override
-    public Collection<? extends Edge> bindsEdges() {
+    public Collection<RuleEdge> bindsEdges() {
         return this.edges;
     }
 

@@ -291,7 +291,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      */
     private void removeOptionListeners() {
         for (Pair<JMenuItem,ItemListener> record : this.listeners) {
-            record.first().removeItemListener(record.second());
+            record.one().removeItemListener(record.two());
         }
         this.listeners.clear();
     }

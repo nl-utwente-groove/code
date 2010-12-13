@@ -16,12 +16,9 @@
  */
 package groove.rel;
 
-import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.Node;
 
 import java.util.Collection;
-import java.util.Map;
 
 /**
  * Binary relation over nodes which for each pair of related nodes contains a
@@ -35,20 +32,4 @@ public interface SupportedNodeRelation extends NodeRelation {
      * Yields the set of all graph elements supporting this relation.
      */
     public Collection<Element> getSupport();
-
-    /**
-     * Returns the support for the relation between two nodes, if the nodes are
-     * in fact related. Returns <tt>null</tt> if the nodes are unrelated.
-     * @param pre the investigated pre-image
-     * @param post the investigated post-image
-     * @return the support for the relation between <tt>pre</tt> and
-     *         <tt>post</tt>, if any
-     */
-    public Collection<Element> getSupport(Node pre, Node post);
-
-    /**
-     * Yields a mapping from each pair of related elements to the set of graph
-     * elements supporting that relation.
-     */
-    public Map<Edge,Collection<Element>> getSupportMap();
 }

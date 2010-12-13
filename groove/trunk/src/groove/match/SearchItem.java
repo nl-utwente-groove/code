@@ -16,8 +16,8 @@
  */
 package groove.match;
 
-import groove.graph.Edge;
 import groove.rel.LabelVar;
+import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 
 import java.util.Collection;
@@ -75,7 +75,7 @@ public interface SearchItem extends Comparable<SearchItem> {
      * Returns the collection of edges for which this search item will find a
      * matching.
      */
-    Collection<? extends Edge> bindsEdges();
+    Collection<RuleEdge> bindsEdges();
 
     /**
      * Signals if the image of this search item is a relevant part of the match.

@@ -20,17 +20,18 @@ import groove.explore.DefaultScenario;
 import groove.explore.Scenario;
 import groove.explore.result.Result;
 import groove.explore.strategy.RandomLinearStrategy;
-import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphShape;
 import groove.graph.Label;
+import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.lts.GTS;
 import groove.lts.GraphTransition;
 import groove.lts.LTSAdapter;
 import groove.lts.LTSListener;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.GrammarView;
@@ -71,7 +72,7 @@ public class AntWorld {
             long startTime = System.currentTimeMillis();
             Result result = scenario.play();
             long endTime = System.currentTimeMillis();
-            Graph graph = result.getValue().iterator().next().getGraph();
+            HostGraph graph = result.getValue().iterator().next().getGraph();
             //            System.out.println(graph);
             int turnCount = getTargetValue(graph, TURN_COUNT_LABEL);
             int antCount = getTargetValue(graph, ANT_COUNT_LABEL);
@@ -113,11 +114,11 @@ public class AntWorld {
     }
 
     static private final Label TURN_COUNT_LABEL =
-        DefaultLabel.createLabel("turnCount");
+        TypeLabel.createLabel("turnCount");
     static private final Label FIELD_COUNT_LABEL =
-        DefaultLabel.createLabel("fieldCount");
+        TypeLabel.createLabel("fieldCount");
     static private final Label ANT_COUNT_LABEL =
-        DefaultLabel.createLabel("antCount");
+        TypeLabel.createLabel("antCount");
     static private final Label RING_COUNT_LABEL =
-        DefaultLabel.createLabel("ringCount");
+        TypeLabel.createLabel("ringCount");
 }

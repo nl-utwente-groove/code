@@ -141,6 +141,7 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
     // -------------------- PackageGraph methods ---------------------
 
     public boolean addEdgeWithoutCheck(Edge edge) {
+        assert isTypeCorrect(edge);
         boolean result;
         result = this.graphEdgeSet.add(edge);
         return result;
@@ -152,13 +153,14 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
     }
 
     public boolean removeNodeWithoutCheck(Node node) {
+        assert isTypeCorrect(node);
         boolean result;
         result = this.graphNodeSet.remove(node);
         return result;
     }
 
     @Override
-    public boolean removeNodeSetWithoutCheck(Collection<Node> nodeSet) {
+    public boolean removeNodeSetWithoutCheck(Collection<? extends Node> nodeSet) {
         return this.graphNodeSet.removeAll(nodeSet);
     }
 

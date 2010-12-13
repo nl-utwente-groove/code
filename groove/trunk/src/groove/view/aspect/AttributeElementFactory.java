@@ -31,7 +31,6 @@ import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.trans.RuleEdge;
-import groove.trans.RuleNode;
 import groove.trans.SystemProperties;
 import groove.view.FormatException;
 import groove.view.aspect.AttributeAspect.ConstantAspectValue;
@@ -81,8 +80,9 @@ public class AttributeElementFactory {
      * @throws FormatException if attribute-related errors are found in
      *         <code>graph</code>
      */
-    public RuleNode createAttributeNode(AspectNode node) throws FormatException {
-        RuleNode result;
+    public ProductNode createAttributeNode(AspectNode node)
+        throws FormatException {
+        ProductNode result;
         AspectValue attributeValue = getAttributeValue(node);
         if (attributeValue == null) {
             result = null;

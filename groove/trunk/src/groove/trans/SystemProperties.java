@@ -1,8 +1,8 @@
 package groove.trans;
 
 import groove.algebra.AlgebraRegister;
-import groove.graph.Label;
 import groove.graph.LabelStore;
+import groove.graph.TypeLabel;
 import groove.util.Fixable;
 import groove.util.Groove;
 import groove.util.Property;
@@ -412,7 +412,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * @return a clone of these properties, or the properties themselves if
      *         {@code oldLabel} did not occur
      */
-    public SystemProperties relabel(Label oldLabel, Label newLabel) {
+    public SystemProperties relabel(TypeLabel oldLabel, TypeLabel newLabel) {
         SystemProperties result = clone();
         boolean hasChanged = false;
         String oldText = oldLabel.text();

@@ -17,11 +17,11 @@
 package groove.match;
 
 import groove.graph.LabelStore;
-import groove.rel.RuleToStateMap;
 import groove.trans.Condition;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
 import groove.trans.RuleNode;
+import groove.trans.RuleToHostMap;
 
 import java.util.Collection;
 
@@ -33,7 +33,7 @@ import java.util.Collection;
  * @author Arash Jalali
  * @version $Revision $
  */
-public abstract class SearchEngine<MatcherType extends AbstractMatchStrategy<RuleToStateMap>> {
+public abstract class SearchEngine<MatcherType extends AbstractMatchStrategy<RuleToHostMap>> {
 
     /**
      * Factory method returning a search engine for 

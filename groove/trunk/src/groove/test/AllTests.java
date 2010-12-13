@@ -32,8 +32,8 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({AllAbstractionTests.class, AllControlTests.class,
     AllGraphTests.class, AllVerifyTests.class, AutomatonTest.class,
     BinaryEdgeTest.class, ExplorationTest.class, HashBagTest.class,
-    IOTest.class, LabelStoreTest.class, MorphismTest.class, NACTest.class,
-    TreeHashSetTest.class, LabelParseTest.class})
+    IOTest.class, LabelStoreTest.class, NACTest.class, TreeHashSetTest.class,
+    LabelParseTest.class})
 public class AllTests {
     // Empty by design.
 }

@@ -16,11 +16,11 @@
  */
 package groove.lts;
 
-import java.util.Arrays;
-
 import groove.graph.Element;
-import groove.graph.Node;
+import groove.trans.HostNode;
 import groove.trans.RuleEvent;
+
+import java.util.Arrays;
 
 /**
  * Abstract graph transition stub that only stores an event and a target state.
@@ -35,7 +35,7 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
      * Constructs a stub on the basis of a given rule event, added nodes and
      * target state.
      */
-    AbstractGraphTransitionStub(RuleEvent event, Node[] addedNodes,
+    AbstractGraphTransitionStub(RuleEvent event, HostNode[] addedNodes,
             GraphState target) {
         this.event = event;
         this.addedNodes = addedNodes;
@@ -56,7 +56,7 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
         return getEvent();
     }
 
-    public Node[] getAddedNodes(GraphState source) {
+    public HostNode[] getAddedNodes(GraphState source) {
         return this.addedNodes;
     }
 
@@ -83,7 +83,9 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
      * from {@link #equals(Object)}.
      */
     protected boolean equalsStub(AbstractGraphTransitionStub other) {
-        boolean result = this.target == other.target && getEvent() == other.getEvent() && isSymmetry() == other.isSymmetry();
+        boolean result =
+            this.target == other.target && getEvent() == other.getEvent()
+                && isSymmetry() == other.isSymmetry();
         assert !result || Arrays.equals(this.addedNodes, other.addedNodes);
         return result;
     }
@@ -117,5 +119,5 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
     /**
      * The added nodes of this transition stub.
      */
-    private final Node[] addedNodes;
+    private final HostNode[] addedNodes;
 }

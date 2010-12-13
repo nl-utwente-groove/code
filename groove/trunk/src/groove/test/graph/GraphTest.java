@@ -518,9 +518,7 @@ public class GraphTest {
         this.graph.addEdge(this.source, this.aLabel, this.aTarget);
         // add a fresh edge with a fresh end node
         addedNode = DefaultNode.createNode();
-        addedEdge =
-            DefaultEdge.createEdge(this.aTarget, this.cLabel, addedNode);
-        this.graph.addEdge(addedEdge);
+        addedEdge = this.graph.addEdge(this.aTarget, this.cLabel, addedNode);
         addedGraphElements.add(addedNode);
         addedGraphElements.add(addedEdge);
         // add a set of nodes

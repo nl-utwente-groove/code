@@ -16,13 +16,13 @@
  */
 package groove.view;
 
-import groove.graph.Edge;
-import groove.graph.GenericNodeEdgeHashMap;
+import groove.graph.ElementFactory;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
+import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
@@ -87,7 +87,7 @@ public class DefaultTypeView implements TypeView {
     }
 
     /** Returns the set of labels used in this graph. */
-    public Set<Label> getLabels() {
+    public Set<TypeLabel> getLabels() {
         initialise();
         return this.model == null ? null
                 : this.model.getLabelStore().getLabels();
@@ -100,8 +100,8 @@ public class DefaultTypeView implements TypeView {
             try {
                 Pair<TypeGraph,ViewToTypeMap> modelPlusMap =
                     computeModel(this.view);
-                this.model = modelPlusMap.first();
-                this.viewToModelMap = modelPlusMap.second();
+                this.model = modelPlusMap.one();
+                this.viewToModelMap = modelPlusMap.two();
                 this.errors = Collections.emptyList();
             } catch (FormatException e) {
                 this.model = null;
@@ -135,6 +135,7 @@ public class DefaultTypeView implements TypeView {
         for (AspectEdge viewEdge : view.edgeSet()) {
             Label modelLabel = viewEdge.getModelLabel();
             if (modelLabel != null && modelLabel.isNodeType()) {
+                assert modelLabel instanceof TypeLabel;
                 AspectNode viewSource = viewEdge.source();
                 TypeNode oldTypeNode = elementMap.getNode(viewSource);
                 if (oldTypeNode != null) {
@@ -146,7 +147,9 @@ public class DefaultTypeView implements TypeView {
                 viewTypeMap.put(viewSource, modelLabel);
                 TypeNode typeNode = typeNodeMap.get(modelLabel);
                 if (typeNode == null) {
-                    typeNode = new TypeNode(viewSource.getNumber(), modelLabel);
+                    typeNode =
+                        new TypeNode(viewSource.getNumber(),
+                            (TypeLabel) modelLabel);
                     model.addNode(typeNode);
                     typeNodeMap.put(modelLabel, typeNode);
                     modelTypeMap.put(typeNode, modelLabel);
@@ -289,9 +292,15 @@ public class DefaultTypeView implements TypeView {
     private ViewToTypeMap viewToModelMap;
 
     /** Mapping from type graph elements to rule graph elements. */
-    public static class ViewToTypeMap extends
-            GenericNodeEdgeHashMap<AspectNode,TypeNode,AspectEdge,Edge>
-            implements ViewToModelMap<TypeNode,Edge> {
-        // no additional functionality
+    public static class ViewToTypeMap extends ViewToModelMap<TypeNode,TypeEdge> {
+        @Override
+        public ViewToTypeMap newMap() {
+            return new ViewToTypeMap();
+        }
+
+        @Override
+        public ElementFactory<TypeNode,?,TypeEdge> getFactory() {
+            return TypeGraph.MyFactory.INSTANCE;
+        }
     }
 }

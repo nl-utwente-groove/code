@@ -17,7 +17,7 @@
 package groove.trans;
 
 import groove.graph.Graph;
-import groove.graph.Morphism;
+import groove.graph.NodeEdgeMap;
 
 /**
  * Interface for a direct derivation. Only the derivation rule is initialised at
@@ -33,7 +33,7 @@ public interface Derivation {
     /**
      * Returns the transformation morphism underlying this derivation.
      */
-    public Morphism getMorphism();
+    public NodeEdgeMap getMorphism();
 
     /**
      * Returns the source graph of this derivation.

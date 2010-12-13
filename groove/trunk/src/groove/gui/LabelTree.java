@@ -16,9 +16,9 @@
  */
 package groove.gui;
 
-import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.graph.LabelStore;
+import groove.graph.TypeLabel;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
@@ -234,7 +234,7 @@ public class LabelTree extends JTree implements GraphModelListener,
     }
 
     /** Convenience method to return the labels map of the jgraph. */
-    private Map<String,Set<Label>> getLabelsMap() {
+    private Map<String,Set<TypeLabel>> getLabelsMap() {
         return this.jgraph.getLabelsMap();
     }
 
@@ -422,9 +422,9 @@ public class LabelTree extends JTree implements GraphModelListener,
             LabelTreeNode labelNode = new LabelTreeNode(label, true);
             this.topNode.add(labelNode);
             if (labelStore != null && labelStore.getLabels().contains(label)) {
-                addRelatedTypes(labelNode, isShowsSubtypes()
-                        ? labelStore.getDirectSubtypeMap()
-                        : labelStore.getDirectSupertypeMap(), newNodes);
+                addRelatedTypes(labelNode,
+                    isShowsSubtypes() ? labelStore.getDirectSubtypeMap()
+                            : labelStore.getDirectSupertypeMap(), newNodes);
             }
         }
         this.treeModel.reload(this.topNode);
@@ -439,9 +439,9 @@ public class LabelTree extends JTree implements GraphModelListener,
      * Only first level subtypes are added.
      */
     private void addRelatedTypes(LabelTreeNode labelNode,
-            Map<Label,Set<Label>> map, Set<LabelTreeNode> newNodes) {
+            Map<TypeLabel,Set<TypeLabel>> map, Set<LabelTreeNode> newNodes) {
         Label label = labelNode.getLabel();
-        Set<Label> relatedTypes = map.get(label);
+        Set<TypeLabel> relatedTypes = map.get(label);
         assert relatedTypes != null : String.format(
             "Label '%s' does not occur in label store '%s'", label,
             map.keySet());
@@ -605,7 +605,7 @@ public class LabelTree extends JTree implements GraphModelListener,
             text.append(Options.EMPTY_LABEL_TEXT);
             specialLabelColour = true;
         } else {
-            text.append(DefaultLabel.toHtmlString(label));
+            text.append(TypeLabel.toHtmlString(label));
         }
         if (specialLabelColour) {
             Converter.createColorTag(SPECIAL_COLOR).on(text);
@@ -898,11 +898,11 @@ public class LabelTree extends JTree implements GraphModelListener,
 
     /** Menu offering a selection of type graphs to be filtered. */
     private class TypeFilterMenu extends JMenu {
-        TypeFilterMenu(Map<String,Set<Label>> labelsMap, boolean filter) {
+        TypeFilterMenu(Map<String,Set<TypeLabel>> labelsMap, boolean filter) {
             super(filter ? Options.FILTER_TYPE_ACTION_NAME
                     : Options.UNFILTER_TYPE_ACTION_NAME);
             this.filter = filter;
-            for (Map.Entry<String,Set<Label>> labelsEntry : labelsMap.entrySet()) {
+            for (Map.Entry<String,Set<TypeLabel>> labelsEntry : labelsMap.entrySet()) {
                 add(new TypeFilterMenuItem(labelsEntry.getKey(),
                     labelsEntry.getValue()));
             }
@@ -911,11 +911,13 @@ public class LabelTree extends JTree implements GraphModelListener,
         private final boolean filter;
 
         private class TypeFilterMenuItem extends AbstractAction {
-            TypeFilterMenuItem(String name, Set<Label> labels) {
+            TypeFilterMenuItem(String name, Set<TypeLabel> labels) {
                 super(name);
                 this.labels = new HashSet<Label>();
-                for (Label label : labels) {
-                    this.labels.addAll(getLabelStore().getSubtypes(label));
+                for (TypeLabel label : labels) {
+                    if (label instanceof TypeLabel) {
+                        this.labels.addAll(getLabelStore().getSubtypes(label));
+                    }
                 }
             }
 
@@ -1228,16 +1230,17 @@ public class LabelTree extends JTree implements GraphModelListener,
                     int separatorIndex = dataRow.indexOf(' ');
                     if (separatorIndex < 0) {
                         Label keyType =
-                            DefaultLabel.createLabel(dataRow, Label.NODE_TYPE);
+                            TypeLabel.createLabel(dataRow, Label.NODE_TYPE);
                         if (!draggedLabels.containsKey(keyType)) {
                             draggedLabels.put(keyType, new HashSet<Label>());
                         }
                     } else {
                         Label keyType =
-                            DefaultLabel.createLabel(dataRow.substring(0,
-                                separatorIndex), Label.NODE_TYPE);
+                            TypeLabel.createLabel(
+                                dataRow.substring(0, separatorIndex),
+                                Label.NODE_TYPE);
                         Label valueType =
-                            DefaultLabel.createLabel(
+                            TypeLabel.createLabel(
                                 dataRow.substring(separatorIndex + 1),
                                 Label.NODE_TYPE);
                         Set<Label> values = draggedLabels.get(keyType);
@@ -1259,7 +1262,8 @@ public class LabelTree extends JTree implements GraphModelListener,
                                 isShowsSubtypes() ? dragEntry.getKey() : value;
                             Label oldSupertype =
                                 isShowsSubtypes() ? value : dragEntry.getKey();
-                            newStore.removeSubtype(oldSupertype, oldSubtype);
+                            newStore.removeSubtype((TypeLabel) oldSupertype,
+                                (TypeLabel) oldSubtype);
                         }
                     }
                 }
@@ -1274,9 +1278,10 @@ public class LabelTree extends JTree implements GraphModelListener,
                             isShowsSubtypes() ? keyType : targetType;
                         Label newSupertype =
                             isShowsSubtypes() ? targetType : keyType;
-                        if (!newStore.getSubtypes(newSubtype).contains(
+                        if (!newStore.getSubtypes((TypeLabel) newSubtype).contains(
                             newSupertype)) {
-                            newStore.addSubtype(newSupertype, newSubtype);
+                            newStore.addSubtype((TypeLabel) newSupertype,
+                                (TypeLabel) newSubtype);
                         }
                     }
                 }

@@ -16,6 +16,9 @@
  */
 package groove.graph;
 
+import groove.trans.HostEdge;
+import groove.trans.HostNode;
+
 import java.util.Set;
 
 /**
@@ -44,8 +47,9 @@ public class DeltaStore extends DefaultDeltaApplier implements DeltaTarget {
      * Creates a delta store based on explicitly given added and removed sets.
      * The sets are copied.
      */
-    protected DeltaStore(Set<Node> addedNodeSet, Set<Node> removedNodeSet,
-            Set<Edge> addedEdgeSet, Set<Edge> removedEdgeSet) {
+    protected DeltaStore(Set<HostNode> addedNodeSet,
+            Set<HostNode> removedNodeSet, Set<HostEdge> addedEdgeSet,
+            Set<HostEdge> removedEdgeSet) {
         super(addedNodeSet, removedNodeSet, addedEdgeSet, removedEdgeSet);
     }
 
@@ -53,8 +57,9 @@ public class DeltaStore extends DefaultDeltaApplier implements DeltaTarget {
      * Creates a delta store based on explicitly given added and removed sets. A
      * further parameter controls if the sets are copied or shared.
      */
-    protected DeltaStore(Set<Node> addedNodeSet, Set<Node> removedNodeSet,
-            Set<Edge> addedEdgeSet, Set<Edge> removedEdgeSet, boolean share) {
+    protected DeltaStore(Set<HostNode> addedNodeSet,
+            Set<HostNode> removedNodeSet, Set<HostEdge> addedEdgeSet,
+            Set<HostEdge> removedEdgeSet, boolean share) {
         super(addedNodeSet, removedNodeSet, addedEdgeSet, removedEdgeSet, share);
     }
 
@@ -68,18 +73,20 @@ public class DeltaStore extends DefaultDeltaApplier implements DeltaTarget {
     }
 
     public boolean addEdge(Edge elem) {
+        assert elem instanceof HostEdge;
         if (!getRemovedEdgeSet().remove(elem)) {
             assert !getAddedEdgeSet().contains(elem) : "Added edge set "
                 + getAddedEdgeSet() + " already contains " + elem;
-            return getAddedEdgeSet().add(elem);
+            return getAddedEdgeSet().add((HostEdge) elem);
         } else {
             return true;
         }
     }
 
     public boolean addNode(Node elem) {
+        assert elem instanceof HostNode;
         if (!getRemovedNodeSet().remove(elem)) {
-            boolean added = getAddedNodeSet().add(elem);
+            boolean added = getAddedNodeSet().add((HostNode) elem);
             assert added : "Added node set " + getAddedNodeSet()
                 + " already contains " + elem;
             return added;
@@ -89,20 +96,22 @@ public class DeltaStore extends DefaultDeltaApplier implements DeltaTarget {
     }
 
     public boolean removeEdge(Edge elem) {
+        assert elem instanceof HostEdge;
         if (!getAddedEdgeSet().remove(elem)) {
             // assert !removedEdgeSet.contains(elem) : "Removed edge set "
             // + removedEdgeSet + " already contains " + elem;
-            return getRemovedEdgeSet().add(elem);
+            return getRemovedEdgeSet().add((HostEdge) elem);
         } else {
             return true;
         }
     }
 
     public boolean removeNode(Node elem) {
+        assert elem instanceof HostNode;
         if (!getAddedNodeSet().remove(elem)) {
             // assert !removedNodeSet.contains(elem) : "Removed node set "
             // + removedNodeSet + " already contains " + elem;
-            return getRemovedNodeSet().add(elem);
+            return getRemovedNodeSet().add((HostNode) elem);
         } else {
             return true;
         }

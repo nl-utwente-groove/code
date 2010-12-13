@@ -47,6 +47,28 @@ public interface Graph extends GraphShape, DeltaTarget {
     Node addNode();
 
     /**
+     * Adds a node with a given number to this graph.
+     * The node is required to be fresh within the graph.
+     * @return the new node
+     * @see Graph#addNode(Node)
+     */
+    Node addNode(int nr);
+
+    /**
+     * Adds a binary edge to the graph, between given nodes and with a given
+     * label text, and returns the edge. Also adds the end nodes if these are not yet
+     * in the graph. If an edge with these properties already exists, the method
+     * returns the existing edge.
+     * @param source the source node of the new edge
+     * @param label the label text of the new edge
+     * @param target the target node of the new edge
+     * @return a binary edge between <tt>source</tt> and <tt>target</tt>,
+     *         labelled <tt>label</tt>
+     * @see Graph#addEdge(Edge)
+     */
+    Edge addEdge(Node source, String label, Node target);
+
+    /**
      * Adds a binary edge to the graph, between given nodes and with a given
      * label, and returns the edge. Also adds the end nodes if these are not yet
      * in the graph. If an edge with these properties already exists, the method
@@ -260,5 +282,8 @@ public interface Graph extends GraphShape, DeltaTarget {
      *          edges.
      * @see #removeNodeSet(Collection)
      */
-    boolean removeNodeSetWithoutCheck(Collection<Node> nodeSet);
+    boolean removeNodeSetWithoutCheck(Collection<? extends Node> nodeSet);
+
+    /** Returns the element factory used for elements of this graph. */
+    ElementFactory<?,?,?> getFactory();
 }

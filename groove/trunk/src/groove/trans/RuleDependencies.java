@@ -18,16 +18,13 @@ package groove.trans;
 
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
-import groove.graph.DefaultLabel;
-import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.Node;
+import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
-import groove.rel.Automaton;
+import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
-import groove.rel.RegExprLabel;
 import groove.util.Groove;
 import groove.view.FormatException;
 
@@ -51,18 +48,18 @@ public class RuleDependencies {
     /** Label text for merges (merger edges and merge embargoes) */
     static private final String MERGE_LABEL_TEXT = "'node merge";
     /** Label for merges (merger edges and merge embargoes) */
-    static private final Label MERGE_LABEL =
-        DefaultLabel.createLabel(MERGE_LABEL_TEXT);
+    static private final TypeLabel MERGE_LABEL =
+        TypeLabel.createLabel(MERGE_LABEL_TEXT);
     /** Label text for merges (merger edges and merge embargoes) */
     static private final String ALL_LABEL_TEXT = "'all labels";
     /** Label for merges (merger edges and merge embargoes) */
-    static private final Label ALL_LABEL =
-        DefaultLabel.createLabel(ALL_LABEL_TEXT);
+    static private final TypeLabel ALL_LABEL =
+        TypeLabel.createLabel(ALL_LABEL_TEXT);
     /** Label text indicating an isolated node. */
     static private final String ANY_NODE_TEXT = "'any node";
     /** Label to indicate that a condition or rule contains an isolated node. */
-    static private final Label ANY_NODE =
-        DefaultLabel.createLabel(ANY_NODE_TEXT);
+    static private final TypeLabel ANY_NODE =
+        TypeLabel.createLabel(ANY_NODE_TEXT);
 
     /**
      * Analyzes and prints the dependencies of a given graph grammar.
@@ -214,7 +211,7 @@ public class RuleDependencies {
      * Constructs and returns a mapping from rules to the sets of labels
      * consumed by those rules.
      */
-    Map<Rule,Set<Label>> getConsumedLabelsMap() {
+    Map<Rule,Set<TypeLabel>> getConsumedLabelsMap() {
         if (!this.rules.isEmpty() && this.consumedLabelsMap.isEmpty()) {
             collectCharacteristics();
         }
@@ -225,7 +222,7 @@ public class RuleDependencies {
      * Constructs and returns a mapping from rules to the sets of labels
      * occurring in a negative application condition.
      */
-    Map<Rule,Set<Label>> getNegativeLabelsMap() {
+    Map<Rule,Set<TypeLabel>> getNegativeLabelsMap() {
         if (!this.rules.isEmpty() && this.negativeLabelsMap.isEmpty()) {
             collectCharacteristics();
         }
@@ -236,7 +233,7 @@ public class RuleDependencies {
      * Constructs and returns a mapping from rules to the sets of labels
      * occurring in a positive application condition.
      */
-    Map<Rule,Set<Label>> getPositiveLabelsMap() {
+    Map<Rule,Set<TypeLabel>> getPositiveLabelsMap() {
         if (!this.rules.isEmpty() && this.positiveLabelsMap.isEmpty()) {
             collectCharacteristics();
         }
@@ -247,7 +244,7 @@ public class RuleDependencies {
      * Constructs and returns a mapping from rules to the sets of labels
      * produced by those rules.
      */
-    Map<Rule,Set<Label>> getProducedLabelsMap() {
+    Map<Rule,Set<TypeLabel>> getProducedLabelsMap() {
         if (!this.rules.isEmpty() && this.producedLabelsMap.isEmpty()) {
             collectCharacteristics();
         }
@@ -282,10 +279,10 @@ public class RuleDependencies {
      */
     void collectCharacteristics() {
         for (Rule rule : this.rules) {
-            Set<Label> consumedLabelsSet = new HashSet<Label>();
+            Set<TypeLabel> consumedLabelsSet = new HashSet<TypeLabel>();
             this.consumedLabelsMap.put(rule,
                 Collections.unmodifiableSet(consumedLabelsSet));
-            Set<Label> producedLabelsSet = new HashSet<Label>();
+            Set<TypeLabel> producedLabelsSet = new HashSet<TypeLabel>();
             this.producedLabelsMap.put(rule,
                 Collections.unmodifiableSet(producedLabelsSet));
             Set<CtrlType> inParSet = new HashSet<CtrlType>();
@@ -295,10 +292,10 @@ public class RuleDependencies {
                 Collections.unmodifiableSet(outParSet));
             collectRuleCharacteristics(rule, consumedLabelsSet,
                 producedLabelsSet, inParSet, outParSet);
-            Set<Label> positiveLabelSet = new HashSet<Label>();
+            Set<TypeLabel> positiveLabelSet = new HashSet<TypeLabel>();
             this.positiveLabelsMap.put(rule,
                 Collections.unmodifiableSet(positiveLabelSet));
-            Set<Label> negativeLabelSet = new HashSet<Label>();
+            Set<TypeLabel> negativeLabelSet = new HashSet<TypeLabel>();
             this.negativeLabelsMap.put(rule,
                 Collections.unmodifiableSet(negativeLabelSet));
             collectConditionCharacteristics(rule, positiveLabelSet,
@@ -310,8 +307,8 @@ public class RuleDependencies {
         init(this.enabledMap);
         init(this.disabledMap);
         for (Rule rule : this.rules) {
-            Set<Label> positives = this.positiveLabelsMap.get(rule);
-            Set<Label> negatives = this.negativeLabelsMap.get(rule);
+            Set<TypeLabel> positives = this.positiveLabelsMap.get(rule);
+            Set<TypeLabel> negatives = this.negativeLabelsMap.get(rule);
             //            Set<CtrlType> inPars = this.inParameterMap.get(rule);
             for (Rule depRule : this.rules) {
                 // a positive dependency exists if the other rule produces
@@ -384,33 +381,33 @@ public class RuleDependencies {
      * delete all labels; this is to take dangling edges into account. The
      * method also tests for the production of isolated nodes.
      */
-    void collectRuleCharacteristics(Rule rule, Set<Label> consumed,
-            Set<Label> produced, Set<CtrlType> inPars, Set<CtrlType> outPars) {
-        Graph lhs = rule.lhs();
-        Graph rhs = rule.rhs();
-        RuleGraphMap ruleMorphism = rule.getMorphism();
+    void collectRuleCharacteristics(Rule rule, Set<TypeLabel> consumed,
+            Set<TypeLabel> produced, Set<CtrlType> inPars, Set<CtrlType> outPars) {
+        RuleGraph lhs = rule.lhs();
+        RuleGraph rhs = rule.rhs();
+        RuleToRuleMap ruleMorphism = rule.getMorphism();
         // test if a node is consumed (and there is no dangling edge check)
-        Iterator<? extends Node> lhsNodeIter = lhs.nodeSet().iterator();
+        Iterator<RuleNode> lhsNodeIter = lhs.nodeSet().iterator();
         while (lhsNodeIter.hasNext() && !consumed.contains(ALL_LABEL)
             && !this.properties.isCheckDangling()) {
-            Node lhsNode = lhsNodeIter.next();
+            RuleNode lhsNode = lhsNodeIter.next();
             if (!ruleMorphism.containsNodeKey(lhsNode)) {
                 consumed.addAll(getIncidentLabels(lhs, lhsNode));
             }
         }
         // determine the set of edges consumed
-        Iterator<? extends Edge> lhsEdgeIter = lhs.edgeSet().iterator();
+        Iterator<RuleEdge> lhsEdgeIter = lhs.edgeSet().iterator();
         while (lhsEdgeIter.hasNext() && !consumed.contains(ALL_LABEL)) {
-            Edge lhsEdge = lhsEdgeIter.next();
+            RuleEdge lhsEdge = lhsEdgeIter.next();
             if (!ruleMorphism.containsEdgeKey(lhsEdge)) {
                 // the only regular expressions allowed on erasers are wildcards
                 consumed.addAll(getMatchedLabels(lhsEdge.label()));
             }
         }
         // determine the set of edges produced
-        Iterator<? extends Edge> rhsEdgeIter = rhs.edgeSet().iterator();
+        Iterator<RuleEdge> rhsEdgeIter = rhs.edgeSet().iterator();
         while (rhsEdgeIter.hasNext() && !produced.contains(ALL_LABEL)) {
-            Edge rhsEdge = rhsEdgeIter.next();
+            RuleEdge rhsEdge = rhsEdgeIter.next();
             if (!ruleMorphism.containsValue(rhsEdge)) {
                 produced.add(getSharpLabel(rhsEdge.label()));
             }
@@ -449,9 +446,9 @@ public class RuleDependencies {
         }
     }
 
-    void collectConditionCharacteristics(Condition cond, Set<Label> positive,
-            Set<Label> negative) {
-        RuleGraphMap pattern = cond.getRootMap();
+    void collectConditionCharacteristics(Condition cond,
+            Set<TypeLabel> positive, Set<TypeLabel> negative) {
+        RuleToRuleMap pattern = cond.getRootMap();
         RuleGraph target = cond.getTarget();
         // collected the isolated fresh nodes
         Set<RuleNode> isolatedNodes = new HashSet<RuleNode>(target.nodeSet());
@@ -461,22 +458,20 @@ public class RuleDependencies {
             new HashSet<RuleEdge>(target.edgeSet());
         freshTargetEdges.removeAll(pattern.edgeMap().values());
         for (RuleEdge edge : freshTargetEdges) {
+            RuleLabel label = edge.label();
             // don't look at attribute-related edges
-            if (edge.getClass().equals(RuleEdge.class)) {
-                Label label = edge.label();
+            if (!(label.isArgument() || label.isOperator())) {
                 // flag indicating that the edge always tests positively
                 // for the presence of connecting structure
                 boolean presence = true;
-                Set<Label> affectedSet;
-                if (RegExprLabel.isNeg(label)) {
-                    label = RegExprLabel.getNegOperand(label).toLabel();
+                Set<TypeLabel> affectedSet;
+                if (label.isNeg()) {
+                    label = label.getNegOperand().toLabel();
                     affectedSet = negative;
                     presence = false;
                 } else {
                     affectedSet = positive;
-                    presence =
-                        !(label instanceof RegExprLabel && ((RegExprLabel) label).getAutomaton(
-                            this.labelStore).isAcceptsEmptyWord());
+                    presence = !label.getRegExpr().isAcceptsEmptyWord();
                 }
                 affectedSet.addAll(getMatchedLabels(label));
                 if (presence) {
@@ -501,8 +496,8 @@ public class RuleDependencies {
             positive.add(ANY_NODE);
         }
         for (Condition negCond : cond.getSubConditions()) {
-            Set<Label> subPositives = new HashSet<Label>();
-            Set<Label> subNegatives = new HashSet<Label>();
+            Set<TypeLabel> subPositives = new HashSet<TypeLabel>();
+            Set<TypeLabel> subNegatives = new HashSet<TypeLabel>();
             collectConditionCharacteristics(negCond, subPositives, subNegatives);
             if (negCond instanceof PositiveCondition<?> == cond instanceof PositiveCondition<?>
                 || negCond instanceof ForallCondition) {
@@ -572,26 +567,17 @@ public class RuleDependencies {
      * type of regular expression.
      * The label may not wrap {@link RegExpr.Neg}.
      */
-    private Set<Label> getMatchedLabels(Label label) {
-        assert !RegExprLabel.isNeg(label);
-        Set<Label> result = new HashSet<Label>();
-        if (RegExprLabel.isWildcard(label)) {
-            result.add(ALL_LABEL);
-        } else if (RegExprLabel.isSharp(label)) {
-            result.add(RegExprLabel.getSharpLabel(label));
-        } else if (label instanceof RegExprLabel) {
-            Automaton labelAut =
-                ((RegExprLabel) label).getAutomaton(this.labelStore);
-            // if a regular expression accepts the empty word, 
-            // its matching is affected by merging
-            if (labelAut.isAcceptsEmptyWord()) {
-                result.add(MERGE_LABEL);
+    private Set<TypeLabel> getMatchedLabels(RuleLabel label) {
+        assert !label.isNeg();
+        Set<TypeLabel> result = new HashSet<TypeLabel>();
+        RegExpr expr = label.getRegExpr();
+        if (label.getRegExpr() != null) {
+            for (Label autLabel : label.getAutomaton(this.labelStore).getAlphabet()) {
+                result.add((TypeLabel) autLabel);
             }
-            // all the labels in the regular expression's automaton
-            // are tested for
-            result.addAll(labelAut.getAlphabet());
-        } else {
-            result.addAll(this.labelStore.getSubtypes(label));
+            if (expr.isAcceptsEmptyWord()) {
+                result.add(ALL_LABEL);
+            }
         }
         return result;
     }
@@ -601,14 +587,14 @@ public class RuleDependencies {
      * condition label - such as a default label or wildcard.
      * The label may not wrap {@link RegExpr.Neg}.
      */
-    private Label getSharpLabel(Label label) {
-        assert !RegExprLabel.isNeg(label);
-        Label result;
-        if (RegExprLabel.isWildcard(label)) {
+    private TypeLabel getSharpLabel(RuleLabel label) {
+        assert !label.isNeg();
+        TypeLabel result;
+        if (label.isWildcard()) {
             result = ALL_LABEL;
         } else {
-            assert label instanceof DefaultLabel;
-            result = label;
+            assert label.isAtom() || label.isSharp();
+            result = label.getTypeLabel();
         }
         return result;
     }
@@ -617,22 +603,26 @@ public class RuleDependencies {
      * Computes an over-approximation of the labels that will be
      * deleted if a node is deleted from a graph.
      */
-    private Set<Label> getIncidentLabels(Graph graph, Node node) {
-        Set<Label> result;
+    private Set<TypeLabel> getIncidentLabels(RuleGraph graph, RuleNode node) {
+        Set<TypeLabel> result;
         if (this.type == null) {
-            result = Collections.singleton(ALL_LABEL);
+            result = Collections.<TypeLabel>singleton(ALL_LABEL);
         } else {
-            result = new HashSet<Label>();
+            result = new HashSet<TypeLabel>();
             // the type labels that can be matched by the node
-            Set<Label> typeLabels = null;
-            for (Edge incidentEdge : graph.edgeSet(node)) {
-                Label label = incidentEdge.label();
-                if (label.isNodeType() && !RegExprLabel.isWildcard(label)) {
-                    if (RegExprLabel.isSharp(label)) {
+            Set<TypeLabel> typeLabels = null;
+            for (RuleEdge incidentEdge : graph.edgeSet(node)) {
+                RuleLabel label = incidentEdge.label();
+                if (label.isNodeType() && !label.isWildcard()) {
+                    if (label.isSharp()) {
                         typeLabels =
-                            Collections.singleton(RegExprLabel.getSharpLabel(label));
+                            Collections.singleton(label.getTypeLabel());
                     } else {
-                        typeLabels = this.labelStore.getSubtypes(label);
+                        // since the node is an eraser, it cannot have
+                        // arbitrary regular expressions on incident edges
+                        assert label.isAtom();
+                        typeLabels =
+                            this.labelStore.getSubtypes(label.getTypeLabel());
                     }
                     break;
                 }
@@ -646,7 +636,7 @@ public class RuleDependencies {
                     Node typeNode =
                         this.type.labelEdgeSet(typeLabel).iterator().next().source();
                     // now find all incident labels of the type node
-                    for (Edge typeEdge : this.type.edgeSet(typeNode)) {
+                    for (TypeEdge typeEdge : this.type.edgeSet(typeNode)) {
                         result.add(typeEdge.label());
                     }
                 }
@@ -695,17 +685,17 @@ public class RuleDependencies {
     private final Map<Rule,Set<Rule>> disabledMap =
         new HashMap<Rule,Set<Rule>>();
     /** Mapping from rules to the sets of labels tested for positively. */
-    private final Map<Rule,Set<Label>> positiveLabelsMap =
-        new HashMap<Rule,Set<Label>>();
+    private final Map<Rule,Set<TypeLabel>> positiveLabelsMap =
+        new HashMap<Rule,Set<TypeLabel>>();
     /** Mapping from rules to the sets of labels tested for negatively. */
-    private final Map<Rule,Set<Label>> negativeLabelsMap =
-        new HashMap<Rule,Set<Label>>();
+    private final Map<Rule,Set<TypeLabel>> negativeLabelsMap =
+        new HashMap<Rule,Set<TypeLabel>>();
     /** Mapping from rules to the sets of labels consumed by those rules. */
-    private final Map<Rule,Set<Label>> consumedLabelsMap =
-        new HashMap<Rule,Set<Label>>();
+    private final Map<Rule,Set<TypeLabel>> consumedLabelsMap =
+        new HashMap<Rule,Set<TypeLabel>>();
     /** Mapping from rules to the sets of labels produced by those rules. */
-    private final Map<Rule,Set<Label>> producedLabelsMap =
-        new HashMap<Rule,Set<Label>>();
+    private final Map<Rule,Set<TypeLabel>> producedLabelsMap =
+        new HashMap<Rule,Set<TypeLabel>>();
     /** Mapping from rules to the sets of labels produced by those rules. */
     private final Map<Rule,Set<CtrlType>> inParameterMap =
         new HashMap<Rule,Set<CtrlType>>();

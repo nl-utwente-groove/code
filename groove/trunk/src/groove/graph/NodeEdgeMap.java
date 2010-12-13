@@ -25,5 +25,45 @@ import java.util.Map;
  * @version $Revision $
  */
 public interface NodeEdgeMap extends GraphMap<Node,Node,Edge,Edge> {
+    /**
+     * Returns the concatenation of another morphism followed by this one. Does
+     * not alias or modify either this morphism or the other. 
+     * @param morph the morphism to be applied before this one
+     * @return the concatenation of <tt>morph</tt>, followed by this morphism
+     * @see #then(NodeEdgeMap)
+     */
+    public NodeEdgeMap after(NodeEdgeMap morph);
+
+    /**
+     * Returns the concatenation of this morphism followed by another. Does not
+     * alias or modify either this morphism or the other.
+     * @param morph the morphism to be applied after this one
+     * @return the concatenation of this morphism, followed by morph
+     * @see #after(NodeEdgeMap)
+     */
+    public NodeEdgeMap then(NodeEdgeMap morph);
+
+    /**
+     * Returns the concatenation of the inverse of another morphism followed by
+     * this one, if defined. Does not alias or modify either this morphism or
+     * the other.
+     * @param morph the morphism to be inversely applied before this one
+     * @return the concatenation of this morphism, followed by the inverse of
+     *         morph
+     * @see #inverseThen(NodeEdgeMap)
+     */
+    public NodeEdgeMap afterInverse(NodeEdgeMap morph);
+
+    /**
+     * Returns the concatenation of the inverse of this morphism followed by
+     * another, if defined. Does not alias or modify either this morphism or the
+     * other.
+     * @param morph the morphism to be applied after the inverse of this one
+     * @return the concatenation of the inverse of this morphism, followed by
+     *         morph
+     * @see #afterInverse(NodeEdgeMap)
+     */
+    public NodeEdgeMap inverseThen(NodeEdgeMap morph);
+
     public NodeEdgeMap clone();
 }

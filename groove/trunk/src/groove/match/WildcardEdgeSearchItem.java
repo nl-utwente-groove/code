@@ -16,10 +16,9 @@
  */
 package groove.match;
 
-import groove.graph.Edge;
-import groove.graph.Label;
+import groove.graph.TypeLabel;
 import groove.match.SearchPlanStrategy.Search;
-import groove.rel.RegExprLabel;
+import groove.trans.HostEdge;
 import groove.trans.RuleEdge;
 
 import java.util.Set;
@@ -36,10 +35,10 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
      */
     public WildcardEdgeSearchItem(RuleEdge edge) {
         super(edge);
-        this.labelConstraint = RegExprLabel.getWildcardGuard(edge.label());
-        assert RegExprLabel.isWildcard(edge.label())
-            && RegExprLabel.getWildcardId(edge.label()) == null : String.format(
+        assert edge.label().isWildcard()
+            && edge.label().getWildcardId() == null : String.format(
             "Edge %s is not a true wildcard edge", edge);
+        this.labelConstraint = edge.label().getWildcardGuard();
     }
 
     /** This implementation returns <code>false</code>. */
@@ -50,18 +49,18 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
 
     /** This implementation returns a {@link WildcardEdgeRecord}. */
     @Override
-    MultipleRecord<Edge> createMultipleRecord(Search search) {
+    MultipleRecord<HostEdge> createMultipleRecord(Search search) {
         return new WildcardEdgeRecord(search, this.edgeIx, this.sourceIx,
             this.targetIx, this.sourceFound, this.targetFound);
     }
 
-    boolean isLabelConstraintSatisfied(Label label) {
+    boolean isLabelConstraintSatisfied(TypeLabel label) {
         return this.labelConstraint == null
             || this.labelConstraint.isSatisfied(label);
     }
 
     /** The constraint on the wildcard valuation, if any. */
-    final groove.util.Property<Label> labelConstraint;
+    final groove.util.Property<TypeLabel> labelConstraint;
 
     /** Record for this type of search item. */
     class WildcardEdgeRecord extends Edge2MultipleRecord {
@@ -73,7 +72,7 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
 
         @Override
         void initImages() {
-            Set<? extends Edge> edgeSet;
+            Set<? extends HostEdge> edgeSet;
             if (this.sourceFind != null) {
                 edgeSet = this.host.outEdgeSet(this.sourceFind);
             } else if (this.targetFind != null) {
@@ -90,7 +89,7 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
          * <code>false</code>.
          */
         @Override
-        boolean setImage(Edge image) {
+        boolean setImage(HostEdge image) {
             if (WildcardEdgeSearchItem.this.labelConstraint == null
                 || WildcardEdgeSearchItem.this.labelConstraint.isSatisfied(image.label())) {
                 return super.setImage(image);

@@ -19,14 +19,17 @@ package groove.abstraction;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphShape;
-import groove.graph.Label;
 import groove.graph.Node;
-import groove.rel.RuleToStateMap;
+import groove.graph.TypeLabel;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
+import groove.trans.RuleLabel;
 import groove.trans.RuleMatch;
 import groove.trans.RuleNode;
+import groove.trans.RuleToHostMap;
 
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -80,9 +83,8 @@ public final class PreMatch {
      * A pre-match is valid if the non-injective matching of the LHS
      * respects node multiplicities.
      */
-    public static boolean isValidPreMatch(GraphShape host, RuleEvent event) {
-        assert host instanceof Graph;
-        return isValidPreMatch(host, event.getMatch((Graph) host));
+    public static boolean isValidPreMatch(HostGraph host, RuleEvent event) {
+        return isValidPreMatch(host, event.getMatch(host));
     }
 
     /**
@@ -94,7 +96,7 @@ public final class PreMatch {
         assert host instanceof Shape : "Cannot use abstract methods on non-abstract graphs.";
 
         Shape shape = (Shape) host;
-        RuleToStateMap map = match.getElementMap();
+        RuleToHostMap map = match.getElementMap();
 
         // Since we have non-injective matching of the LHS of the rule
         // we need to check if the multiplicities are respected. 
@@ -102,6 +104,7 @@ public final class PreMatch {
         // Check node multiplicities.
         boolean complyToNodeMult = true;
         // For all nodes in the image of the LHS.
+        // FIXME this will repeat needlessly for all multiple images
         for (Node node : map.nodeMap().values()) {
             ShapeNode nodeS = (ShapeNode) node;
             Multiplicity nSMult = shape.getNodeMult(nodeS);
@@ -153,9 +156,9 @@ public final class PreMatch {
         if (complyToNodeMult) {
             Graph lhs = match.getRule().lhs();
             // For all binary labels.
-            outerLoop: for (Label label : Util.binaryLabelSet(shape)) {
+            outerLoop: for (TypeLabel label : Util.binaryLabelSet(shape)) {
                 // For all nodes of the LHS.
-                for (Entry<RuleNode,Node> entry : map.nodeMap().entrySet()) {
+                for (Entry<RuleNode,HostNode> entry : map.nodeMap().entrySet()) {
                     RuleNode v = entry.getKey();
                     ShapeNode pV = (ShapeNode) entry.getValue();
 
@@ -164,9 +167,13 @@ public final class PreMatch {
                         ShapeEdge e = (ShapeEdge) edge;
                         ShapeNode w = e.target();
                         Set<RuleNode> pInvW = Util.getReverseNodeMap(map, w);
+                        // FIXME label is of the wrong type:
+                        // it is a DefaultLabel whereas in the rule you
+                        // have RuleLabels
+                        RuleLabel ruleLabel = new RuleLabel(label);
                         Set<RuleEdge> vInterPInvW =
                             Util.<RuleNode,RuleEdge>getIntersectEdges(lhs, v,
-                                pInvW, label);
+                                pInvW, ruleLabel);
                         Multiplicity leftMult =
                             Multiplicity.getEdgeSetMult(vInterPInvW);
 
@@ -186,8 +193,12 @@ public final class PreMatch {
                         ShapeEdge e = (ShapeEdge) edge;
                         ShapeNode w = e.source();
                         Set<RuleNode> pInvW = Util.getReverseNodeMap(map, w);
+                        // FIXME label is of the wrong type:
+                        // it is a DefaultLabel whereas in the rule you
+                        // have RuleLabels
+                        RuleLabel ruleLabel = new RuleLabel(label);
                         Set<RuleEdge> pInvWInterV =
-                            Util.getIntersectEdges(lhs, pInvW, v, label);
+                            Util.getIntersectEdges(lhs, pInvW, v, ruleLabel);
                         Multiplicity leftMult =
                             Multiplicity.getEdgeSetMult(pInvWInterV);
 

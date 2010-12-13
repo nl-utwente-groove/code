@@ -16,8 +16,8 @@
  */
 package groove.trans;
 
+import groove.graph.ElementFactory;
 import groove.graph.GraphHashMap;
-import groove.graph.Label;
 
 /**
  * Default implementation of a generic node-edge-map. The implementation is
@@ -26,29 +26,20 @@ import groove.graph.Label;
  * @author Arend Rensink
  * @version $Revision: 2754 $
  */
-public class RuleGraphMap extends
+public class RuleToRuleMap extends
         GraphHashMap<RuleNode,RuleNode,RuleEdge,RuleEdge> {
-    /** Constructs a copy of another node-edge-map. */
-    public RuleGraphMap(RuleGraphMap other) {
-        nodeMap().putAll(other.nodeMap());
-        edgeMap().putAll(other.edgeMap());
-    }
-
-    /** Constructs an initially empty node-edge-map. */
-    public RuleGraphMap() {
-        // empty constructor
-    }
-
-    /**
-     * Callback method to create a binary edge image.
-     */
     @Override
-    protected RuleEdge createEdge(RuleNode source, Label label, RuleNode target) {
-        return new RuleEdge(source, label, target);
+    public RuleToRuleMap clone() {
+        return (RuleToRuleMap) super.clone();
     }
 
     @Override
-    public RuleGraphMap clone() {
-        return new RuleGraphMap(this);
+    public RuleToRuleMap newMap() {
+        return new RuleToRuleMap();
+    }
+
+    @Override
+    public ElementFactory<RuleNode,RuleLabel,RuleEdge> getFactory() {
+        return RuleFactory.INSTANCE;
     }
 }

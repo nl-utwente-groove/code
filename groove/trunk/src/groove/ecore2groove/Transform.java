@@ -174,10 +174,8 @@ public class Transform {
             + " (" + (new Date().getTime() - start) + " ms)"); //print duration
 
         // Get type graphs to store
-        AspectGraph atg =
-            AspectGraph.getFactory().fromPlainGraph(tgr.getTypeGraph());
-        AspectGraph ecoreatg =
-            AspectGraph.getFactory().fromPlainGraph(tgr.getEcoreTypeGraph());
+        AspectGraph atg = AspectGraph.newInstance(tgr.getTypeGraph());
+        AspectGraph ecoreatg = AspectGraph.newInstance(tgr.getEcoreTypeGraph());
 
         // Set info about how to store type graph
         if (modelName.equals("EcoreTypes")) {
@@ -233,7 +231,7 @@ public class Transform {
         for (DefaultGraph constraintRule : constraints.getConstraints()) {
             AspectGraph arg;
             try {
-                arg = AspectGraph.getFactory().fromPlainGraph(constraintRule);
+                arg = AspectGraph.newInstance(constraintRule);
             } catch (Exception e) {
                 System.out.println("Error with: "
                     + constraints.getName(constraintRule));
@@ -270,8 +268,7 @@ public class Transform {
             System.out.println("Created instance graph: " + instanceName + " ("
                 + (new Date().getTime() - start) + " ms)");
 
-            AspectGraph aig =
-                AspectGraph.getFactory().fromPlainGraph(igr.getInstanceGraph());
+            AspectGraph aig = AspectGraph.newInstance(igr.getInstanceGraph());
 
             // Set info about how to store the instance graph and then store it
             aig.getInfo().setFile(f + File.separator + instanceName);

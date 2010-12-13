@@ -17,7 +17,7 @@
 package groove.abstraction;
 
 import groove.graph.Edge;
-import groove.graph.Label;
+import groove.graph.TypeLabel;
 
 /**
  * An edge signature is composed by a node (n), a label (l), and an equivalence
@@ -32,7 +32,7 @@ public final class EdgeSignature {
     // Object Fields
     // ------------------------------------------------------------------------
 
-    private final Label label;
+    private final TypeLabel label;
     private final ShapeNode node;
     private final EquivClass<ShapeNode> equivClass;
 
@@ -41,7 +41,7 @@ public final class EdgeSignature {
     // ------------------------------------------------------------------------
 
     /** Standard constructor that just fills in the object fields. */
-    public EdgeSignature(ShapeNode node, Label label,
+    public EdgeSignature(ShapeNode node, TypeLabel label,
             EquivClass<ShapeNode> equivClass) {
         this.label = label;
         this.node = node;
@@ -122,7 +122,7 @@ public final class EdgeSignature {
     }
 
     /** Basic getter method. */
-    public Label getLabel() {
+    public TypeLabel getLabel() {
         return this.label;
     }
 

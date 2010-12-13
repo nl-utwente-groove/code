@@ -188,6 +188,10 @@ public class RuleSystem {
         priorityRuleSet.add(rule);
         // add the rule to the map
         this.nameRuleMap.put(ruleName, rule);
+        // copy the label store to the rule, if it is set
+        if (this.labelStore != null) {
+            rule.setLabelStore(this.labelStore);
+        }
         return oldRuleForName;
     }
 
@@ -222,6 +226,7 @@ public class RuleSystem {
      * derivations when it is fixed.
      */
     public final boolean isFixed() {
+        assert !this.fixed || this.labelStore != null;
         return this.fixed;
     }
 
@@ -294,6 +299,9 @@ public class RuleSystem {
     public void setLabelStore(LabelStore store) {
         testFixed(false);
         this.labelStore = store.clone();
+        for (Rule rule : getRules()) {
+            rule.setLabelStore(this.labelStore);
+        }
     }
 
     /** Returns the labels and subtypes of this rule system. */

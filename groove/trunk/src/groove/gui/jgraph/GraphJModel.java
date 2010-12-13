@@ -18,7 +18,6 @@
 package groove.gui.jgraph;
 
 import groove.graph.AbstractGraph;
-import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GenericNodeEdgeHashMap;
@@ -35,7 +34,7 @@ import groove.gui.layout.JCellLayout;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
-import groove.rel.RegExprLabel;
+import groove.trans.RuleLabel;
 import groove.util.Groove;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.RuleAspect;
@@ -345,16 +344,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         Node modelNode = ((GraphJVertex) root).getActualNode();
         assert modelNode != null : String.format(
             "JModel node '%s' does not have underlying graph node", root);
-        Node result = DefaultNode.createNode(modelNode.getNumber());
-        boolean fresh = graph.addNode(result);
-        assert fresh;
-        if (!fresh) {
-            // a node with this number already existed in the graph
-            // this may happen because value nodes use the same numbers
-            // as default nodes
-            result = graph.addNode();
-        }
-        return result;
+        return graph.addNode(modelNode.getNumber());
     }
 
     /**
@@ -616,7 +606,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         // change the font to bold if the edges contain a node type
         if (edge.label().isNodeType()) {
             setFontAttr(result, Font.BOLD);
-        } else if (edge.label() instanceof RegExprLabel) {
+        } else if (edge.label() instanceof RuleLabel) {
             setFontAttr(result, Font.ITALIC);
         }
     }

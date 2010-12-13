@@ -79,16 +79,12 @@ public class InstanceGraphRep {
             // Add new labeled  node to ig 
             String labelText = GraphLabels.getLabel(iClass.eClass());
 
-            DefaultNode node = DefaultNode.createNode();
-            DefaultLabel label = DefaultLabel.createLabel(labelText);
-            DefaultLabel rootLabel = DefaultLabel.createLabel("flag:root");
-            Edge edge = DefaultEdge.createEdge(node, label, node);
-            this.ig.addNode(node);
-            this.ig.addEdge(edge);
+            DefaultNode node = (DefaultNode) this.ig.addNode();
+            this.ig.addEdge(node, labelText, node);
 
             // If this instance EClass is the root element, add the root flag
             if (iClass.eContainingFeature() == null) {
-                this.ig.addEdge(node, rootLabel, node);
+                this.ig.addEdge(node, "flag:root", node);
             }
 
             // Add map of EClass to node representing it
@@ -132,12 +128,7 @@ public class InstanceGraphRep {
 
                                     // Add next edge if references are ordered
                                     if (ordered && previous != null) {
-                                        DefaultLabel label =
-                                            DefaultLabel.createLabel("next");
-                                        Edge edge =
-                                            DefaultEdge.createEdge(previous,
-                                                label, last);
-                                        this.ig.addEdge(edge);
+                                        this.ig.addEdge(previous, "next", last);
                                     }
                                     previous = last;
                                 }
@@ -336,11 +327,8 @@ public class InstanceGraphRep {
         String labelText = GraphLabels.getLabel(feature);
 
         // Create node to represent the reference and add it to ig
-        DefaultNode node = DefaultNode.createNode();
-        DefaultLabel label = DefaultLabel.createLabel(labelText);
-        Edge edge = DefaultEdge.createEdge(node, label, node);
-        this.ig.addNode(node);
-        this.ig.addEdge(edge);
+        DefaultNode node = (DefaultNode) this.ig.addNode();
+        this.ig.addEdge(node, labelText, node);
 
         // If the reference is a containment reference, add flag:containment
         if (((EReference) feature).isContainment()) {
@@ -350,16 +338,13 @@ public class InstanceGraphRep {
 
         // Create and add an edge from the source of the EReference to the 
         // EReference node
-        DefaultLabel sourceLabel = DefaultLabel.createLabel(feature.getName());
         Node sourceNode = this.iClassToNodeMap.get(source);
-        Edge sourceEdge = DefaultEdge.createEdge(sourceNode, sourceLabel, node);
-        this.ig.addEdge(sourceEdge);
+        this.ig.addEdge(sourceNode, feature.getName(), node);
 
         // Create and add an edge from the EReference node to the target of the
         // EReference
         Node targetNode = this.iClassToNodeMap.get(target);
-        Edge targetEdge = DefaultEdge.createEdge(node, "val", targetNode);
-        this.ig.addEdge(targetEdge);
+        this.ig.addEdge(node, "val", targetNode);
 
         // Either add the node to the set of nodes that represent the
         // iReference, or add a new set to the map

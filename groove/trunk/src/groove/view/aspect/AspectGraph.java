@@ -17,8 +17,8 @@
 package groove.view.aspect;
 
 import groove.graph.DefaultLabel;
-import groove.graph.DefaultNode;
 import groove.graph.Edge;
+import groove.graph.ElementFactory;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
@@ -27,7 +27,9 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeSetEdgeSetGraph;
-import groove.rel.RegExprLabel;
+import groove.graph.TypeLabel;
+import groove.rel.RegExpr;
+import groove.trans.RuleLabel;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.DefaultGraphView;
@@ -323,7 +325,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
             elementMap.putNode(node, nodeImage);
             for (AspectValue value : node.getDeclaredValues()) {
                 result.addEdge(nodeImage,
-                    createLabel(AspectParser.toString(value)), nodeImage);
+                    getFactory().createLabel(AspectParser.toString(value)),
+                    nodeImage);
             }
         }
         for (AspectEdge edge : edgeSet()) {
@@ -342,11 +345,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
      * existing aspect node.
      */
     private Node addFreshNode(Graph graph, AspectNode node) {
-        Node result = DefaultNode.createNode(node.getNumber());
-        boolean fresh = graph.addNode(result);
-        assert fresh : String.format("Node '%s' is not fresh in graph '%s'",
-            node, graph);
-        return result;
+        return graph.addNode(node.getNumber());
     }
 
     /**
@@ -398,17 +397,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
         return new NodeSetEdgeSetGraph();
     }
 
-    /**
-     * Factory method for an <code>AspectNode</code>.
-     */
-    @Override
-    public AspectNode createNode() {
-        return new AspectNode(getNodeCounter().getNumber());
-    }
-
     /** Factory method for an aspect node with a given number. */
     private AspectNode createAspectNode(int nr) {
-        return new AspectNode(nr);
+        return getFactory().createNode(nr);
     }
 
     /**
@@ -480,37 +471,33 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
      * @return a clone of this aspect graph with changed labels, or this graph
      *         if {@code oldLabel} did not occur
      */
-    public AspectGraph relabel(Label oldLabel, Label newLabel) {
+    public AspectGraph relabel(TypeLabel oldLabel, TypeLabel newLabel) {
         AspectGraph result = clone();
         Map<AspectEdge,AspectEdge> oldToNew =
             new HashMap<AspectEdge,AspectEdge>();
         for (AspectEdge edge : result.edgeSet()) {
             try {
                 Label label = edge.getModelLabel();
-                Label replacement = null;
-                if (label instanceof DefaultLabel) {
+                TypeLabel replacement = null;
+                if (label instanceof TypeLabel) {
                     if (label.equals(oldLabel)) {
                         replacement = newLabel;
                     }
-                } else if (label instanceof RegExprLabel) {
-                    replacement =
-                        ((RegExprLabel) label).getRegExpr().relabel(oldLabel,
-                            newLabel).toLabel();
+                } else {
+                    assert label instanceof RuleLabel;
+                    RegExpr expr = ((RuleLabel) label).getRegExpr();
+                    if (expr != null) {
+                        RuleLabel ruleLabel =
+                            expr.relabel(oldLabel, newLabel).toLabel();
+                        replacement =
+                            RuleLabelParser.getInstance(false).unparse(
+                                ruleLabel);
+                    }
                 }
                 if (replacement != null) {
                     AspectMap newData = edge.getAspectMap().clone();
                     newData.remove(TypeAspect.getInstance());
-                    //                    if (replacement.isNodeType()) {
-                    //                        newData.addDeclaredValue(TypeAspect.NODE_TYPE);
-                    //                    } else if (replacement.isFlag()) {
-                    //                        newData.addDeclaredValue(TypeAspect.FLAG);
-                    //                    }
-                    if (GraphInfo.hasRuleRole(this)) {
-                        replacement =
-                            RegExprLabelParser.getInstance(false).unparse(
-                                replacement);
-                    }
-                    newData.setText(DefaultLabel.toPrefixedString(replacement));
+                    newData.setText(TypeLabel.toPrefixedString(replacement));
                     oldToNew.put(edge,
                         createAspectEdge(edge.source(), edge.target(), newData));
                 }
@@ -671,16 +658,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
         return result;
     }
 
-    //
-    // /** Format errors in this aspect graph. */
-    // private List<String> errors;
-
-    /**
-     * Returns a factory for {@link AspectGraph}s, i.e., an object to invoke
-     * {@link #fromPlainGraph(GraphShape)} upon.
-     */
-    public static AspectGraph getFactory() {
-        return factory;
+    @Override
+    public AspectFactory getFactory() {
+        return new AspectFactory();
     }
 
     /**
@@ -691,7 +671,22 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
      * @see #fromPlainGraph(GraphShape)
      */
     public static AspectGraph newInstance(GraphShape plainGraph) {
-        return getFactory().fromPlainGraph(plainGraph);
+        return factory.fromPlainGraph(plainGraph);
+    }
+
+    /**
+     * Creates an aspect graph from a given (plain) graph. Convenience method
+     * for {@link #fromPlainGraph(GraphShape, NodeEdgeMap)}.
+     * @param plainGraph the plain graph to convert; non-null
+     * @param elementMap output parameter for mapping from plain graph elements
+     *        to resulting {@link AspectGraph} elements; should be initially
+     *        empty
+     * @return the resulting aspect graph; non-null
+     * @see #fromPlainGraph(GraphShape)
+     */
+    public static AspectGraph newInstance(GraphShape plainGraph,
+            NodeEdgeMap elementMap) {
+        return factory.fromPlainGraph(plainGraph, elementMap);
     }
 
     /**
@@ -750,7 +745,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
         NodeEdgeMap fromPlainToAspect = new NodeEdgeHashMap();
         NodeEdgeMap fromAspectToPlain = new NodeEdgeHashMap();
         AspectGraph aspectGraph =
-            getFactory().fromPlainGraph(plainGraph, fromPlainToAspect);
+            factory.fromPlainGraph(plainGraph, fromPlainToAspect);
         Graph result = aspectGraph.toPlainGraph(fromAspectToPlain);
         if (result.nodeCount() > plainGraph.nodeCount()) {
             throw new FormatException(
@@ -818,8 +813,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
         Set<AspectValue> result = new HashSet<AspectValue>();
         for (Edge outEdge : graph.outEdgeSet(node)) {
             AspectValue nodeValue =
-                getFactory().getNodeValue(outEdge,
-                    getFactory().getAspectParser(graph));
+                factory.getNodeValue(outEdge, factory.getAspectParser(graph));
             if (nodeValue != null) {
                 result.add(nodeValue);
             }
@@ -831,4 +825,33 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
      * The static instance serving as a factory.
      */
     private static final AspectGraph factory = new AspectGraph();
+
+    /** Factory for AspectGraph elements. */
+    private class AspectFactory implements
+            ElementFactory<AspectNode,DefaultLabel,AspectEdge> {
+        @Override
+        public AspectNode createNode() {
+            return createNode(getNodeCounter().getNumber());
+        }
+
+        @Override
+        public AspectNode createNode(int nr) {
+            return new AspectNode(nr);
+        }
+
+        @Override
+        public DefaultLabel createLabel(String text) {
+            return DefaultLabel.createLabel(text);
+        }
+
+        @Override
+        public AspectEdge createEdge(Node source, String label, Node target) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public AspectEdge createEdge(Node source, Label label, Node target) {
+            throw new UnsupportedOperationException();
+        }
+    }
 }

@@ -16,11 +16,8 @@
  */
 package groove.view.aspect;
 
-import groove.graph.DefaultLabel;
 import groove.graph.Label;
-import groove.graph.MergeLabel;
-import groove.rel.RegExpr;
-import groove.rel.RegExprLabel;
+import groove.trans.RuleLabel;
 import groove.util.Groove;
 import groove.view.FormatException;
 
@@ -60,16 +57,14 @@ public class RuleAspect extends AbstractAspect {
     public void checkEdge(AspectEdge edge, AspectGraph graph)
         throws FormatException {
         if (isEraser(edge)) {
-            Label label = edge.getModelLabel();
-            if (!(label instanceof DefaultLabel
-                || RegExprLabel.isWildcard(label) || RegExprLabel.isSharp(label))) {
+            RuleLabel label = (RuleLabel) edge.getModelLabel();
+            if (!(label.isAtom() || label.isSharp() || label.isWildcard())) {
                 throw new FormatException(
                     "Eraser label %s should be wildcard or atom", label, edge);
             }
         } else if (isCreator(edge)) {
-            Label label = edge.getModelLabel();
-            if (label instanceof RegExprLabel
-                && !(RegExprLabel.getWildcardId(label) != null || RegExprLabel.isEmpty(label))) {
+            RuleLabel label = (RuleLabel) edge.getModelLabel();
+            if (!(label.isAtom() || label.isWildcard() || label.isEmpty())) {
                 throw new FormatException(
                     "Creator label %s should be named wildcard, merger or atom",
                     label, edge);
@@ -87,50 +82,6 @@ public class RuleAspect extends AbstractAspect {
                 throw new FormatException(
                     "Merge edge '%s' with creator end node '%s' not allowed",
                     edge, creatorEnd);
-            }
-        }
-    }
-
-    /**
-     * This implementation tests for certain regular expressions. No declared
-     * eraser may carry a regular expression label other than a wildcard or
-     * variable, and no inferred creator may have a regular expression other
-     * than a wildcard, merger or variable.
-     */
-    @Override
-    public void testLabel(Label label, AspectValue declaredValue,
-            AspectValue inferredValue) throws FormatException {
-        // if the label is not a regular expression, it is in any case fine
-        if (label instanceof RegExprLabel) {
-            testLabel(((RegExprLabel) label).getRegExpr(), declaredValue,
-                inferredValue);
-        }
-    }
-
-    /**
-     * Callback method to test the label with the knowledge that it is a regular
-     * expression.
-     * @see #testLabel(Label, AspectValue, AspectValue)
-     */
-    private void testLabel(RegExpr expr, AspectValue declaredValue,
-            AspectValue inferredValue) throws FormatException {
-        // check if negation occurs anywhere except on top level
-        if (expr.containsOperator(RegExpr.NEG_OPERATOR)) {
-            throw new FormatException(
-                "Negation may only occur on top level in %s", expr);
-        }
-        // check the expression is a regular eraser pattern
-        if (ERASER.equals(declaredValue)) {
-            if (!expr.isWildcard()) {
-                throw new FormatException(
-                    "Regular expression %s not allowed on an eraser edge", expr);
-            }
-        }
-        // check the expression is a regular creator pattern
-        if (CREATOR.equals(inferredValue)) {
-            if (!(expr.getWildcardId() != null || expr.isEmpty())) {
-                throw new FormatException(
-                    "Regular expression %s not allowed on a creator edge", expr);
             }
         }
     }
@@ -278,7 +229,10 @@ public class RuleAspect extends AbstractAspect {
         boolean result = false;
         if (isCreator(edge)) {
             try {
-                result = edge.getModelLabel() instanceof MergeLabel;
+                Label modelLabel = edge.getModelLabel();
+                result =
+                    (modelLabel instanceof RuleLabel)
+                        && ((RuleLabel) modelLabel).isEmpty();
             } catch (FormatException exc) {
                 // do nothing
             }

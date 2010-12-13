@@ -220,8 +220,8 @@ public class ExprParser {
         List<String> result = new ArrayList<String>();
         // Parse the expression first, so only non-quoted spaces are used to split
         Pair<String,List<String>> parseResult = parse(expr);
-        String parseExpr = parseResult.first();
-        Iterator<String> replacements = parseResult.second().iterator();
+        String parseExpr = parseResult.one();
+        Iterator<String> replacements = parseResult.two().iterator();
         // go through the parsed expression
         SimpleStringBuilder subResult = new SimpleStringBuilder(expr.length());
         for (int i = 0; i < parseExpr.length(); i++) {
@@ -283,8 +283,8 @@ public class ExprParser {
             return result;
         case PREFIX_POSITION:
             Pair<String,List<String>> parsedExpr = parse(expr);
-            String parsedBasis = parsedExpr.first();
-            List<String> replacements = parsedExpr.second();
+            String parsedBasis = parsedExpr.one();
+            List<String> replacements = parsedExpr.two();
             int operIndex = parsedBasis.indexOf(oper);
             if (operIndex < 0) {
                 return null;
@@ -300,8 +300,8 @@ public class ExprParser {
             }
         case POSTFIX_POSITION:
             parsedExpr = parse(expr);
-            parsedBasis = parsedExpr.first();
-            replacements = parsedExpr.second();
+            parsedBasis = parsedExpr.one();
+            replacements = parsedExpr.two();
             operIndex = parsedBasis.lastIndexOf(oper);
             if (operIndex < 0) {
                 return null;
@@ -472,8 +472,8 @@ public class ExprParser {
         throws FormatException {
         Pair<String,List<String>> parseResult =
             new ExprParser(new char[] {open, close}).parse(expr);
-        if (parseResult.first().length() != 1
-            || parseResult.second().get(0).charAt(0) != open) {
+        if (parseResult.one().length() != 1
+            || parseResult.two().get(0).charAt(0) != open) {
             throw new FormatException(
                 "Expression %s not surrounded by bracket pair %c%c", expr,
                 open, close);
@@ -687,8 +687,8 @@ public class ExprParser {
         try {
             System.out.println("Parsing: " + expr);
             Pair<String,?> result = parseExpr(expr);
-            System.out.println("Result: " + result.first()
-                + " with replacements " + result.second());
+            System.out.println("Result: " + result.one()
+                + " with replacements " + result.two());
         } catch (FormatException exc) {
             System.out.println("Error: " + exc.getMessage());
         }

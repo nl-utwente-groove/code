@@ -20,8 +20,9 @@ import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.match.AbstractMatchStrategy;
-import groove.rel.RuleToStateMap;
 import groove.trans.Condition;
+import groove.trans.HostGraph;
+import groove.trans.RuleToHostMap;
 import groove.util.TransformIterator;
 
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ import java.util.Iterator;
  * @author Arash Jalali
  * @version $Revision $
  */
-public class ReteStrategy extends AbstractMatchStrategy<RuleToStateMap> {
+public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
 
     private ReteSearchEngine owner;
     private Condition condition = null;
@@ -47,10 +48,10 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToStateMap> {
     }
 
     @Override
-    public synchronized Iterator<RuleToStateMap> getMatchIter(GraphShape host,
-            RuleToStateMap anchorMap) {
-        Iterator<RuleToStateMap> result =
-            (new ArrayList<RuleToStateMap>()).iterator();
+    public synchronized Iterator<RuleToHostMap> getMatchIter(HostGraph host,
+            RuleToHostMap anchorMap) {
+        Iterator<RuleToHostMap> result =
+            (new ArrayList<RuleToHostMap>()).iterator();
         assert this.owner.getNetwork() != null;
 
         if (host != this.owner.getNetwork().getState().getHostGraph()) {
@@ -69,19 +70,19 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToStateMap> {
             if (cc != null) {
                 if ((anchorMap != null) && (!anchorMap.isEmpty())) {
                     result =
-                        new TransformIterator<ReteMatch,RuleToStateMap>(
+                        new TransformIterator<ReteMatch,RuleToHostMap>(
                             cc.getConflictSetIterator(anchorMap)) {
                             @Override
-                            public RuleToStateMap toOuter(ReteMatch matchMap) {
+                            public RuleToHostMap toOuter(ReteMatch matchMap) {
                                 return matchMap.toVarNodeEdgeMap();
                             }
                         };
                 } else {
                     result =
-                        new TransformIterator<ReteMatch,RuleToStateMap>(
+                        new TransformIterator<ReteMatch,RuleToHostMap>(
                             cc.getConflictSetIterator()) {
                             @Override
-                            public RuleToStateMap toOuter(ReteMatch matchMap) {
+                            public RuleToHostMap toOuter(ReteMatch matchMap) {
                                 return matchMap.toVarNodeEdgeMap();
                             }
                         };

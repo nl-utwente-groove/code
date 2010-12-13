@@ -17,8 +17,8 @@
 package groove.lts;
 
 import groove.control.CtrlTransition;
-import groove.graph.Morphism;
-import groove.graph.Node;
+import groove.graph.NodeEdgeMap;
+import groove.trans.HostNode;
 import groove.trans.RuleMatch;
 
 /**
@@ -39,7 +39,7 @@ public interface GraphTransition extends Transition, MatchResult {
     /**
      * Returns the nodes added by this transition, in coanchor order.
      */
-    public Node[] getAddedNodes();
+    public HostNode[] getAddedNodes();
 
     /**
      * Returns the matching of the LHS into the source graph.
@@ -49,7 +49,7 @@ public interface GraphTransition extends Transition, MatchResult {
     /**
      * Returns the (partial) morphism from the source to the target graph.
      */
-    public Morphism getMorphism();
+    public NodeEdgeMap getMorphism();
 
     /**
      * Indicates if the transition involves a non-trivial symmetry. This is the

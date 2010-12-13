@@ -18,6 +18,7 @@ package groove.gui.jgraph;
 
 import groove.graph.Label;
 import groove.graph.LabelStore;
+import groove.graph.TypeLabel;
 import groove.gui.Exporter;
 import groove.gui.LabelTree;
 import groove.gui.Options;
@@ -153,7 +154,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * @param labelStoreMap map from names to subsets of labels; may be {@code null}
      */
     public final void setLabelStore(LabelStore store,
-            Map<String,Set<Label>> labelStoreMap) {
+            Map<String,Set<TypeLabel>> labelStoreMap) {
         this.labelStore = store;
         this.labelsMap = labelStoreMap;
     }
@@ -171,7 +172,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * This can be used to filter labels.
      * May be {@code null} even if {@link #getLabelStore()} is not.
      */
-    public final Map<String,Set<Label>> getLabelsMap() {
+    public final Map<String,Set<TypeLabel>> getLabelsMap() {
         return this.labelsMap;
     }
 
@@ -1053,7 +1054,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /** Set of all labels and subtypes in the graph. */
     private LabelStore labelStore;
     /** Mapping from names to sub-label stores. */
-    private Map<String,Set<Label>> labelsMap;
+    private Map<String,Set<TypeLabel>> labelsMap;
     /** The fixed refresh listener of this {@link JModel}. */
     private final RefreshListener refreshListener = new RefreshListener();
     /**

@@ -16,19 +16,18 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
-import groove.rel.RegExprLabel;
+import groove.trans.RuleLabel;
 import groove.util.Converter;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -115,12 +114,12 @@ public class GraphJEdge extends JEdge implements GraphJCell {
         boolean result;
         // we don't want vacuous filtering: there should be at least one
         // filtered label
-        Collection<Label> listLabels = getListLabels();
+        Collection<? extends Label> listLabels = getListLabels();
         if (listLabels.isEmpty()) {
             result = false;
         } else {
             result = true;
-            Iterator<Label> listLabelIter = listLabels.iterator();
+            Iterator<? extends Label> listLabelIter = listLabels.iterator();
             while (result && listLabelIter.hasNext()) {
                 result = this.jModel.isFiltering(listLabelIter.next());
             }
@@ -213,7 +212,7 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      * This implementation calls {@link #getListLabels(Edge)} on all edges in
      * {@link #getUserObject()}.
      */
-    public Collection<Label> getListLabels() {
+    public Collection<? extends Label> getListLabels() {
         List<Label> result = new ArrayList<Label>();
         for (Edge edge : getUserObject()) {
             result.addAll(getListLabels(edge));
@@ -222,14 +221,16 @@ public class GraphJEdge extends JEdge implements GraphJCell {
     }
 
     /** This implementation delegates to {@link Edge#label()}. */
-    public Set<Label> getListLabels(Edge edge) {
-        Set<Label> result;
+    public Set<? extends Label> getListLabels(Edge edge) {
+        Set<? extends Label> result;
         Label label = getLabel(edge);
-        if (label instanceof RegExprLabel) {
-            result = ((RegExprLabel) label).getRegExpr().getLabels();
+        if (label instanceof RuleLabel) {
+            result = ((RuleLabel) label).getRegExpr().getTypeLabels();
         } else {
-            result = new HashSet<Label>();
-            result.add(label);
+            //            assert label instanceof TypeLabel
+            //                || label instanceof DerivationLabel : String.format(
+            //                "Unexpected label type %s", label.getClass().getName());
+            result = Collections.singleton(label);
         }
         return result;
     }
@@ -247,10 +248,10 @@ public class GraphJEdge extends JEdge implements GraphJCell {
     }
 
     /**
-     * This implementation returns <code>edge.label().text()</code>.
+     * This implementation calls {@link TypeLabel#toPrefixedString(Label)}.
      */
     public String getPlainLabel(Edge edge) {
-        return DefaultLabel.toPrefixedString(edge.label());
+        return TypeLabel.toPrefixedString(edge.label());
     }
 
     /** Specialises the return type of the method. */
@@ -286,8 +287,8 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      * @ensure if <tt>result</tt> then <tt>getEdgeSet().contains(edge)</tt>
      */
     public boolean addEdge(Edge edge) {
-        boolean thisIsRegExpr = getEdge().label() instanceof RegExprLabel;
-        boolean edgeIsRegExpr = edge.label() instanceof RegExprLabel;
+        boolean thisIsRegExpr = getEdge().label() instanceof RuleLabel;
+        boolean edgeIsRegExpr = edge.label() instanceof RuleLabel;
         boolean result = (thisIsRegExpr == edgeIsRegExpr);
         if (result) {
             getUserObject().add(edge);

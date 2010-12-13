@@ -109,4 +109,10 @@ public interface GenericNodeEdgeMap<NS,NT,ES,ET> {
      */
     public boolean isInjective();
 
+    /**
+     * Factory method for this type of map.
+     * Returns a fresh map of the type of this map.
+     */
+    GenericNodeEdgeMap<NS,NT,ES,ET> newMap();
+
 }

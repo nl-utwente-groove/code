@@ -16,9 +16,9 @@
  */
 package groove.gui.dialog;
 
-import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.graph.LabelStore;
+import groove.graph.TypeLabel;
 import groove.util.Converter;
 import groove.view.FormatException;
 
@@ -55,7 +55,7 @@ public class RelabelDialog {
      * @param existingLabels the set of existing labels (non-empty)
      * @param oldLabel the label to rename; may be <code>null</code>
      */
-    public RelabelDialog(LabelStore existingLabels, Label oldLabel) {
+    public RelabelDialog(LabelStore existingLabels, TypeLabel oldLabel) {
         this.existingLabels = existingLabels;
         this.suggestedLabel = oldLabel;
     }
@@ -89,7 +89,7 @@ public class RelabelDialog {
      * Propagates the selection in the old field to all other GUI elements.
      */
     private void propagateSelection() {
-        Label selection = (Label) getOldField().getSelectedItem();
+        TypeLabel selection = (TypeLabel) getOldField().getSelectedItem();
         getOldTypeLabel().setText(LABEL_TYPE_TEXT[selection.getKind()]);
         //        getOldTypeCombobox().setSelectedIndex(selection.getType());
         getNewTypeCombobox().setSelectedIndex(selection.getKind());
@@ -101,13 +101,13 @@ public class RelabelDialog {
     }
 
     /** Returns the label to be renamed. */
-    public Label getOldLabel() {
-        return (Label) getOldField().getSelectedItem();
+    public TypeLabel getOldLabel() {
+        return (TypeLabel) getOldField().getSelectedItem();
     }
 
     /** Returns the renamed label. */
-    public Label getNewLabel() {
-        Label result;
+    public TypeLabel getNewLabel() {
+        TypeLabel result;
         try {
             result = getNewLabelWithErrors();
         } catch (FormatException exc) {
@@ -120,13 +120,13 @@ public class RelabelDialog {
      * Returns the renamed label, or throws an exception if the renamed label is
      * not OK.
      */
-    private Label getNewLabelWithErrors() throws FormatException {
-        Label result = null;
+    private TypeLabel getNewLabelWithErrors() throws FormatException {
+        TypeLabel result = null;
         String text = getNewField().getText();
         if (text.length() > 0) {
             int labelType = getNewTypeCombobox().getSelectedIndex();
-            result = DefaultLabel.createLabel(text, labelType);
-            Label oldLabel = getOldLabel();
+            result = TypeLabel.createLabel(text, labelType);
+            TypeLabel oldLabel = getOldLabel();
             if (this.existingLabels.getLabels().contains(result)) {
                 if (result.equals(oldLabel)) {
                     throw new FormatException("Old and new labels coincide");
@@ -235,9 +235,9 @@ public class RelabelDialog {
                 public Component getListCellRendererComponent(JList list,
                         Object value, int index, boolean isSelected,
                         boolean cellHasFocus) {
-                    if (value instanceof Label) {
+                    if (value instanceof TypeLabel) {
                         value =
-                            Converter.HTML_TAG.on(DefaultLabel.toHtmlString((Label) value));
+                            Converter.HTML_TAG.on(TypeLabel.toHtmlString((TypeLabel) value));
                     }
                     return super.getListCellRendererComponent(list, value,
                         index, isSelected, cellHasFocus);
@@ -249,7 +249,7 @@ public class RelabelDialog {
                     propagateSelection();
                 }
             });
-            for (Label label : this.existingLabels.getLabels()) {
+            for (TypeLabel label : this.existingLabels.getLabels()) {
                 result.addItem(label);
             }
         }
@@ -343,7 +343,7 @@ public class RelabelDialog {
     private final LabelStore existingLabels;
 
     /** The old label value suggested at construction time; may be {@code null}. */
-    private final Label suggestedLabel;
+    private final TypeLabel suggestedLabel;
     /** Default dialog title. */
     static private String DEFAULT_TITLE = "Relabel";
     /** Text of find label on dialog. */

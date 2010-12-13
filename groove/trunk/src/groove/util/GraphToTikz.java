@@ -33,7 +33,7 @@ import groove.gui.jgraph.LTSJModel;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
-import groove.rel.RegExprLabel;
+import groove.trans.RuleLabel;
 import groove.view.FormatException;
 import groove.view.aspect.AspectEdge;
 
@@ -521,7 +521,7 @@ public final class GraphToTikz {
         Edge e = edge.getEdge();
         if (e instanceof AspectEdge) {
             try {
-                if (((AspectEdge) e).getModelLabel() instanceof RegExprLabel) {
+                if (((AspectEdge) e).getModelLabel() instanceof RuleLabel) {
                     // We have a regular expression on the label, make it italic.
                     s.append(encloseCurly(encloseItalicStyle(escapeSpecialChars(edge.getText()))));
                 } else {

@@ -143,7 +143,7 @@ public abstract class TemporalFormula {
      * @throws FormatException if the text contains a special character
      */
     protected void assertAtom(String text) throws FormatException {
-        String parsedText = ExprParser.parseExpr(text).first();
+        String parsedText = ExprParser.parseExpr(text).one();
         for (int c = 0; c < operators.size(); c++) {
             if (parsedText.indexOf(operators.get(c)) >= 0) {
                 throw new FormatException("Operator " + operators.get(c)

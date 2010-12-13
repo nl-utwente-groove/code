@@ -19,8 +19,8 @@ package groove.lts;
 import groove.control.CtrlCall;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
-import groove.graph.Graph;
-import groove.graph.Node;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.trans.RuleEvent;
 
 import java.util.Collection;
@@ -37,7 +37,7 @@ import java.util.Set;
  */
 public interface GraphState extends State {
     /** Returns the graph contained in this state. */
-    public Graph getGraph();
+    public HostGraph getGraph();
 
     /** Returns the (possibly {@code null}) control state associated with this state. */
     public CtrlState getCtrlState();
@@ -111,5 +111,5 @@ public interface GraphState extends State {
     /**
      * Returns a list of values of the bound variables.
      */
-    public Node[] getBoundNodes();
+    public HostNode[] getBoundNodes();
 }

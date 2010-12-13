@@ -112,8 +112,8 @@ public class GraphShapeCache implements GraphShapeListener {
     public void removeUpdate(GraphShape graph, Edge elem) {
         removeFromLabelEdgeMap(this.labelEdgeMap, elem);
         removeFromNodeEdgeMap(this.nodeEdgeMap, elem);
-        removeFromNodeInEdgeMap(this.nodeEdgeMap, elem);
-        removeFromNodeOutEdgeMap(this.nodeEdgeMap, elem);
+        removeFromNodeInEdgeMap(this.nodeInEdgeMap, elem);
+        removeFromNodeOutEdgeMap(this.nodeOutEdgeMap, elem);
     }
 
     /**

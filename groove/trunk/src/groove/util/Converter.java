@@ -16,14 +16,11 @@
  */
 package groove.util;
 
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
 import groove.graph.Node;
-import groove.graph.NodeSet;
 import groove.gui.jgraph.EditorJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JAttr;
@@ -40,6 +37,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.BitSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -84,7 +82,7 @@ public class Converter {
         // mapping from nodes to node numbers
         Map<Node,Integer> nodeNrMap = new HashMap<Node,Integer>();
         // nodes that do not have a valid number (in the range 0..nodeCount-1)
-        Set<Node> restNodes = new NodeSet();
+        Set<Node> restNodes = new HashSet<Node>();
         // iterate over the existing nodes
         for (Node node : graph.nodeSet()) {
             int nodeNr = node.getNumber();
@@ -129,9 +127,9 @@ public class Converter {
             int edgeCountStart = line.indexOf(',') + 1;
             int root =
                 Integer.parseInt(line.substring(rootStart, edgeCountStart - 1).trim());
-            Node rootNode = DefaultNode.createNode(root);
+            Node rootNode = graph.addNode(root);
             result.put("" + root, rootNode);
-            graph.addEdge(DefaultEdge.createEdge(rootNode, ROOT_LABEL, rootNode));
+            graph.addEdge(rootNode, ROOT_LABEL, rootNode);
             for (line = in.readLine(); line != null; line = in.readLine()) {
                 linenr++;
                 if (line.trim().length() > 0) {
@@ -145,12 +143,11 @@ public class Converter {
                     int target =
                         Integer.parseInt(line.substring(targetStart,
                             line.lastIndexOf(')')).trim());
-                    Node sourceNode = DefaultNode.createNode(source);
-                    Node targetNode = DefaultNode.createNode(target);
+                    Node sourceNode = graph.addNode(source);
+                    Node targetNode = graph.addNode(target);
                     result.put("" + source, sourceNode);
                     result.put("" + target, targetNode);
-                    graph.addEdge(DefaultEdge.createEdge(sourceNode, label,
-                        targetNode));
+                    graph.addEdge(sourceNode, label, targetNode);
                 }
             }
         } catch (Exception e) {

@@ -38,12 +38,11 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
-import groove.graph.MergeLabel;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.gui.Options;
-import groove.rel.RegExprLabel;
+import groove.trans.RuleLabel;
 import groove.util.Converter;
 import groove.util.Groove;
 import groove.view.FormatError;
@@ -232,14 +231,16 @@ public class AspectJModel extends GraphJModel {
             result.applyMap(RULE_EDGE_ATTR.get(role));
             try {
                 Label modelLabel = aspectEdge.getModelLabel();
-                if (modelLabel instanceof MergeLabel
-                    || RegExprLabel.isEmpty(modelLabel)
-                    || RegExprLabel.isNeg(modelLabel)
-                    && RegExprLabel.getNegOperand(modelLabel).isEmpty()) {
-                    // remove edge arrow
-                    GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
-                } else if (modelLabel instanceof RegExprLabel) {
-                    setFontAttr(result, Font.ITALIC);
+                if (modelLabel instanceof RuleLabel) {
+                    RuleLabel ruleModelLabel = (RuleLabel) modelLabel;
+                    if (ruleModelLabel.isEmpty() || ruleModelLabel.isNeg()
+                        && ruleModelLabel.getNegOperand().isEmpty()) {
+                        // remove edge arrow
+                        GraphConstants.setLineEnd(result,
+                            GraphConstants.ARROW_NONE);
+                    } else if (!ruleModelLabel.isAtom()) {
+                        setFontAttr(result, Font.ITALIC);
+                    }
                 }
             } catch (FormatException exc) {
                 // do nothing

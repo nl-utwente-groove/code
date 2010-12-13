@@ -17,11 +17,13 @@
 
 package groove.match;
 
-import groove.graph.Edge;
-import groove.graph.Element;
-import groove.graph.GraphShape;
+import groove.graph.TypeLabel;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
+import groove.trans.HostEdge;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
+import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 
 import java.util.Collection;
@@ -52,7 +54,7 @@ abstract class AbstractSearchItem implements SearchItem {
     /**
      * This implementation returns the empty set.
      */
-    public Collection<? extends Edge> bindsEdges() {
+    public Collection<RuleEdge> bindsEdges() {
         return Collections.emptySet();
     }
 
@@ -116,7 +118,7 @@ abstract class AbstractSearchItem implements SearchItem {
     void setRelevant(boolean relevant) {
         this.relevant = relevant;
     }
-    
+
     public boolean isRelevant() {
         return this.relevant;
     }
@@ -127,7 +129,7 @@ abstract class AbstractSearchItem implements SearchItem {
      * @see #isRelevant()
      */
     private boolean relevant = true;
-    
+
     /**
      * Dummy search record, which does nothing upon {@link #find()} except
      * alternatingly return <code>true</code> and <code>false</code>.
@@ -183,11 +185,16 @@ abstract class AbstractSearchItem implements SearchItem {
         public boolean isRelevant() {
             return AbstractSearchItem.this.isRelevant();
         }
-        
+
+        final HostEdge createEdge(HostNode source, TypeLabel label,
+                HostNode target) {
+            return this.host.getFactory().createEdge(source, label, target);
+        }
+
         /** The underlying search for this record. */
         final Search search;
         /** The underlying search for this record. */
-        final GraphShape host;
+        final HostGraph host;
     }
 
     /**
@@ -256,7 +263,7 @@ abstract class AbstractSearchItem implements SearchItem {
      * @author Arend Rensink
      * @version $Revision$
      */
-    abstract class MultipleRecord<E extends Element> extends BasicRecord {
+    abstract class MultipleRecord<E> extends BasicRecord {
         /** Constructs a record for a given search. */
         MultipleRecord(Search search) {
             super(search);
@@ -270,7 +277,7 @@ abstract class AbstractSearchItem implements SearchItem {
         /**
          * If {@link #imageIter} is not initialised, first invokes
          * {@link #init()}. Then iterates over the images of {@link #imageIter}
-         * until one is found for which {@link #setImage(Element)} is satisfied.
+         * until one is found for which {@link #setImage(Object)} is satisfied.
          * Calls {@link #reset()} if no such image is found.
          */
         final public boolean find() {

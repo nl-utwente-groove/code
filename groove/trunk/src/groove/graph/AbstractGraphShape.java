@@ -17,7 +17,6 @@
 
 package groove.graph;
 
-import groove.rel.RelationEdge;
 import groove.util.AbstractCacheHolder;
 import groove.util.Groove;
 
@@ -75,12 +74,8 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
      */
     @Deprecated
     public boolean containsElement(Element elem) {
-        assert !(elem instanceof RelationEdge);
         if (elem instanceof Node) {
             return nodeSet().contains(elem);
-        } else if (elem instanceof RelationEdge) {
-            return nodeSet().contains(((Edge) elem).source())
-                && nodeSet().contains(((Edge) elem).target());
         } else {
             return edgeSet().contains(elem);
         }

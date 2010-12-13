@@ -29,7 +29,7 @@ public class TypeNode implements Node {
      * The label must be a node type.
      * @see Label#isNodeType() 
      */
-    public TypeNode(int nr, Label type) {
+    public TypeNode(int nr, TypeLabel type) {
         assert type.isNodeType() : String.format(
             "Can't create type node for non-type label '%s'", type);
         this.nr = nr;
@@ -42,7 +42,7 @@ public class TypeNode implements Node {
      * @param nr the number of the new node
      */
     public TypeNode(int nr) {
-        this(nr, DefaultLabel.createLabel("t0:" + nr, Label.NODE_TYPE));
+        this(nr, TypeLabel.createLabel("t0:" + nr, Label.NODE_TYPE));
     }
 
     /** 
@@ -88,7 +88,7 @@ public class TypeNode implements Node {
     }
 
     /** Returns the type of this node. */
-    public Label getType() {
+    public TypeLabel getType() {
         return this.type;
     }
 
@@ -107,5 +107,5 @@ public class TypeNode implements Node {
     /** The number of this node. */
     private final int nr;
     /** The type of this node. */
-    private final Label type;
+    private final TypeLabel type;
 }

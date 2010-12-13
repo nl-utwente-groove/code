@@ -16,14 +16,17 @@
  */
 package groove.abstraction;
 
-import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.rel.RuleToStateMap;
+import groove.graph.TypeLabel;
+import groove.trans.HostEdge;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
+import groove.trans.RuleToHostMap;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -53,9 +56,9 @@ public final class Util {
     // ------------------------------------------------------------------------
 
     /** Returns the set of labels used as node labels. */
-    public static Set<Label> getNodeLabels(Graph graph, Node node) {
-        HashSet<Label> nodeLabels = new HashSet<Label>();
-        for (Edge edge : graph.outEdgeSet(node)) {
+    public static Set<TypeLabel> getNodeLabels(HostGraph graph, HostNode node) {
+        HashSet<TypeLabel> nodeLabels = new HashSet<TypeLabel>();
+        for (HostEdge edge : graph.outEdgeSet(node)) {
             if (isUnary(edge)) {
                 nodeLabels.add(edge.label());
             }
@@ -64,9 +67,9 @@ public final class Util {
     }
 
     /** Returns the set of binary edges of the graph. */
-    public static Set<Edge> getBinaryEdges(Graph graph) {
-        HashSet<Edge> edges = new HashSet<Edge>();
-        for (Edge edge : graph.edgeSet()) {
+    public static Set<HostEdge> getBinaryEdges(HostGraph graph) {
+        HashSet<HostEdge> edges = new HashSet<HostEdge>();
+        for (HostEdge edge : graph.edgeSet()) {
             if (!isUnary(edge)) {
                 edges.add(edge);
             }
@@ -78,17 +81,13 @@ public final class Util {
     public static boolean isUnary(Edge edge) {
         boolean result = false;
         Label label = edge.label();
-        if (label instanceof DefaultLabel) {
-            // We may have labels with proper information.
-            DefaultLabel dl = (DefaultLabel) label;
-            result = !dl.isBinary();
-            if (!result) {
-                // It may be the case that binary edges are still used
-                // in a plain graph...
-                result =
-                    label.text().startsWith("type:")
-                        || label.text().startsWith("flag:");
-            }
+        result = !label.isBinary();
+        if (!result) {
+            // It may be the case that binary edges are still used
+            // in a plain graph...
+            result =
+                label.text().startsWith("type:")
+                    || label.text().startsWith("flag:");
         }
         return result;
     }
@@ -197,9 +196,9 @@ public final class Util {
     }
 
     /** Returns the label set of binary edges of the given graph */
-    public static Set<Label> binaryLabelSet(Graph graph) {
-        Set<Label> result = new HashSet<Label>();
-        for (Edge edge : graph.edgeSet()) {
+    public static Set<TypeLabel> binaryLabelSet(HostGraph graph) {
+        Set<TypeLabel> result = new HashSet<TypeLabel>();
+        for (HostEdge edge : graph.edgeSet()) {
             if (!isUnary(edge)) {
                 result.add(edge.label());
             }
@@ -208,13 +207,14 @@ public final class Util {
     }
 
     /** Performs a reverse lookup in the node map given. */
-    public static Set<RuleNode> getReverseNodeMap(RuleToStateMap map, Node value) {
+    public static Set<RuleNode> getReverseNodeMap(RuleToHostMap map,
+            HostNode value) {
         return getReverseNodeMap(map.nodeMap(), value);
     }
 
     /** Performs a reverse lookup in the node map given. */
     public static <N extends Node> Set<N> getReverseNodeMap(
-            Map<N,? extends Node> map, Node value) {
+            Map<N,HostNode> map, HostNode value) {
         Set<N> result = new HashSet<N>();
         if (map.containsValue(value)) {
             for (Entry<N,? extends Node> entry : map.entrySet()) {
@@ -227,13 +227,14 @@ public final class Util {
     }
 
     /** Performs a reverse lookup in the edge map given. */
-    public static Set<RuleEdge> getReverseEdgeMap(RuleToStateMap map, Edge value) {
+    public static Set<RuleEdge> getReverseEdgeMap(RuleToHostMap map,
+            HostEdge value) {
         return getReverseEdgeMap(map.edgeMap(), value);
     }
 
     /** Performs a reverse lookup in the edge map given. */
-    public static Set<RuleEdge> getReverseEdgeMap(
-            Map<RuleEdge,? extends Edge> map, Edge value) {
+    public static Set<RuleEdge> getReverseEdgeMap(Map<RuleEdge,HostEdge> map,
+            HostEdge value) {
         Set<RuleEdge> result = new HashSet<RuleEdge>();
         if (map.containsValue(value)) {
             for (Entry<RuleEdge,? extends Edge> entry : map.entrySet()) {

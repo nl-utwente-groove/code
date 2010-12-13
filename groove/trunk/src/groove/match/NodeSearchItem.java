@@ -16,8 +16,8 @@
  */
 package groove.match;
 
-import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
+import groove.trans.HostNode;
 import groove.trans.RuleNode;
 
 import java.util.Collection;
@@ -55,7 +55,7 @@ class NodeSearchItem extends AbstractSearchItem {
     /**
      * Returns the node that this item tries to match.
      */
-    public Node getNode() {
+    public RuleNode getNode() {
         return this.node;
     }
 
@@ -94,7 +94,7 @@ class NodeSearchItem extends AbstractSearchItem {
      * @author Arend Rensink
      * @version $Revision $
      */
-    class NodeRecord extends MultipleRecord<Node> {
+    class NodeRecord extends MultipleRecord<HostNode> {
         /** Constructs a record for a given matcher. */
         NodeRecord(Search search) {
             super(search);
@@ -126,7 +126,7 @@ class NodeSearchItem extends AbstractSearchItem {
          * @return <code>true</code> if the selection has succeeded
          */
         @Override
-        boolean setImage(Node image) {
+        boolean setImage(HostNode image) {
             boolean result =
                 this.search.putNode(NodeSearchItem.this.nodeIx, image);
             this.selected = image;
@@ -137,6 +137,6 @@ class NodeSearchItem extends AbstractSearchItem {
          * The image for {@link #node} set during the last call to
          * {@link #find()}.
          */
-        private Node selected;
+        private HostNode selected;
     }
 }

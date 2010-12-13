@@ -76,8 +76,8 @@ public class LayedOutXml extends AbstractXml {
         // first get the non-layed out result
         Pair<Graph,Map<String,Node>> preliminary =
             this.marshaller.unmarshalGraphMap(url);
-        Graph result = preliminary.first();
-        Map<String,Node> nodeMap = preliminary.second();
+        Graph result = preliminary.one();
+        Map<String,Node> nodeMap = preliminary.two();
         URL layoutURL = toLayoutURL(url);
         try {
             InputStream in = layoutURL.openStream();

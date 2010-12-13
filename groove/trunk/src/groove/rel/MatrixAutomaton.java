@@ -16,14 +16,19 @@
  */
 package groove.rel;
 
+import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
-import groove.graph.DefaultLabel;
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
+import groove.trans.HostEdge;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
+import groove.trans.RuleLabel;
 import groove.util.Property;
 
 import java.util.ArrayList;
@@ -48,11 +53,9 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * The label store indicates which labels to expect (which is used
      * to predict the matching of wildcards).
      */
-    public MatrixAutomaton(Node startNode, Node endNode, LabelStore labelStore) {
-        addNode(startNode);
-        this.start = startNode;
-        addNode(endNode);
-        this.end = endNode;
+    public MatrixAutomaton(LabelStore labelStore) {
+        this.start = addNode();
+        this.end = addNode();
         this.labelStore = labelStore;
         assert labelStore != null;
     }
@@ -117,7 +120,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
         // the following lists are precursors to the corresponding arrays
         List<Node> sourceList = new ArrayList<Node>();
         List<Node> targetList = new ArrayList<Node>();
-        List<Label> labelList = new ArrayList<Label>();
+        List<RuleLabel> labelList = new ArrayList<RuleLabel>();
         // set the index of the first node and edge
         int nodeIndex = 0;
         int edgeIndex = 0;
@@ -136,7 +139,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
                 edgeIndex++;
                 sourceList.add(outEdge.source());
                 targetList.add(outEdge.target());
-                labelList.add(outEdge.label());
+                labelList.add((RuleLabel) outEdge.label());
             }
         }
         // convert the node list to a node array
@@ -150,7 +153,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
         // convert the lists to arrays
         this.sources = toIntArray(sourceList);
         this.targets = toIntArray(targetList);
-        this.labels = new Label[labelList.size()];
+        this.labels = new RuleLabel[labelList.size()];
         labelList.toArray(this.labels);
     }
 
@@ -161,34 +164,38 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      */
     @SuppressWarnings("unchecked")
     private void initNodeLabelEdgeMaps() {
-        Set<Label> initPosLabelSet = new HashSet<Label>();
-        Set<Label> initInvLabelSet = new HashSet<Label>();
+        Set<TypeLabel> initPosLabelSet = new HashSet<TypeLabel>();
+        Set<TypeLabel> initInvLabelSet = new HashSet<TypeLabel>();
         int indexedNodeCount = this.nodes.length;
-        Map<Label,Set<Edge>>[][] nodeInvLabelEdgeMap =
+        Map<TypeLabel,Set<Edge>>[][] nodeInvLabelEdgeMap =
             new Map[2][indexedNodeCount];
-        Map<Label,Set<Edge>>[][] nodePosLabelEdgeMap =
+        Map<TypeLabel,Set<Edge>>[][] nodePosLabelEdgeMap =
             new Map[2][indexedNodeCount];
         // iterate over the reachable edges (the one that have an index)
         for (Edge edge : this.edgeIndexMap.keySet()) {
-            Label label = edge.label();
-            boolean isInverse = RegExprLabel.isInv(label);
+            RuleLabel label = (RuleLabel) edge.label();
+            boolean isInverse = label.isInv();
             if (isInverse) {
-                label = RegExprLabel.getInvOperand(label).toLabel();
+                label = label.getInvLabel();
             }
-            Set<Label> derivedLabels;
-            if (RegExprLabel.isWildcard(label)) {
+            Set<TypeLabel> derivedLabels;
+            if (label.isWildcard()) {
                 derivedLabels =
-                    new HashSet<Label>(
-                        this.labelStore.getLabels(RegExprLabel.getWildcardKind(label)));
-                derivedLabels.add(DUMMY_LABELS[RegExprLabel.getWildcardKind(label)]);
-            } else if (label.isNodeType() && !RegExprLabel.isSharp(label)) {
-                derivedLabels = this.labelStore.getSubtypes(label);
+                    new HashSet<TypeLabel>(
+                        this.labelStore.getLabels(label.getWildcardKind()));
+                derivedLabels.add(DUMMY_LABELS[label.getWildcardKind()]);
+            } else if (label.isAtom()) {
+                derivedLabels =
+                    this.labelStore.getSubtypes(label.getTypeLabel());
             } else {
-                derivedLabels = Collections.singleton(label);
+                assert label.isSharp();
+                derivedLabels = Collections.singleton(label.getTypeLabel());
             }
-            Map<Label,Set<Edge>>[][] nodeLabelEdgeMap =
+            assert derivedLabels != null : String.format(
+                "No derived labels for %s", label);
+            Map<TypeLabel,Set<Edge>>[][] nodeLabelEdgeMap =
                 isInverse ? nodeInvLabelEdgeMap : nodePosLabelEdgeMap;
-            for (Label derivedLabel : derivedLabels) {
+            for (TypeLabel derivedLabel : derivedLabels) {
                 for (int direction = FORWARD; direction <= BACKWARD; direction++) {
                     Node end =
                         (direction == FORWARD) ? edge.source() : edge.target();
@@ -201,9 +208,9 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
             }
         }
         // now convert the sets of nodes to arrays of node indices
-        this.initPosLabels = new Label[initPosLabelSet.size()];
+        this.initPosLabels = new TypeLabel[initPosLabelSet.size()];
         initPosLabelSet.toArray(this.initPosLabels);
-        this.initInvLabels = new Label[initInvLabelSet.size()];
+        this.initInvLabels = new TypeLabel[initInvLabelSet.size()];
         initInvLabelSet.toArray(this.initInvLabels);
         this.nodePosLabelEdgeIndicesMap = new Map[2][indexedNodeCount];
         this.nodeInvLabelEdgeIndicesMap = new Map[2][indexedNodeCount];
@@ -215,7 +222,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
                     toIntArrayMap(nodeInvLabelEdgeMap[direction][nodeIndex]);
             }
         }
-        this.initPosLabels = new Label[initPosLabelSet.size()];
+        this.initPosLabels = new TypeLabel[initPosLabelSet.size()];
         initPosLabelSet.toArray(this.initPosLabels);
     }
 
@@ -244,12 +251,9 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
                     new HashSet<LabelVar>(sourceAllVarSet);
                 Set<LabelVar> targetBoundVarSet =
                     new HashSet<LabelVar>(sourceBoundVarSet);
-                if (outEdge.label() instanceof RegExprLabel) {
-                    RegExpr expr =
-                        ((RegExprLabel) outEdge.label()).getRegExpr();
-                    targetAllVarSet.addAll(expr.allVarSet());
-                    targetBoundVarSet.addAll(expr.boundVarSet());
-                }
+                RegExpr expr = ((RuleLabel) outEdge.label()).getRegExpr();
+                targetAllVarSet.addAll(expr.allVarSet());
+                targetBoundVarSet.addAll(expr.boundVarSet());
                 if (allVarMap.containsKey(target)) {
                     // the target is known; take the union of all vars and the
                     // intersection of the bound vars
@@ -300,12 +304,12 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
                         outEdgeSet(match).iterator();
                     while (!accepts && outEdgeIter.hasNext()) {
                         Edge outEdge = outEdgeIter.next();
-                        Label label = outEdge.label();
-                        LabelVar wildcardId = RegExprLabel.getWildcardId(label);
+                        RuleLabel label = (RuleLabel) outEdge.label();
+                        LabelVar wildcardId = label.getWildcardId();
                         boolean labelOK;
                         if (wildcardId == null) {
                             labelOK =
-                                RegExprLabel.isWildcard(label)
+                                label.isWildcard()
                                     || label.text().equals(word.get(index));
                         } else {
                             idMap = new HashMap<LabelVar,String>(idMap);
@@ -332,9 +336,8 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
         }
     }
 
-    public NodeRelation getMatches(GraphShape graph,
-            Set<? extends Node> startImages, Set<? extends Node> endImages,
-            Map<LabelVar,Label> valuation) {
+    public Set<Result> getMatches(HostGraph graph, Set<HostNode> startImages,
+            Set<HostNode> endImages, Map<LabelVar,TypeLabel> valuation) {
         assert isFixed();
         if (valuation == null) {
             valuation = Collections.emptyMap();
@@ -356,18 +359,18 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
         }
     }
 
-    public NodeRelation getMatches(GraphShape graph,
-            Set<? extends Node> startImages, Set<? extends Node> endImages) {
+    public Set<Result> getMatches(HostGraph graph, Set<HostNode> startImages,
+            Set<HostNode> endImages) {
         return getMatches(graph, startImages, endImages, null);
     }
 
     /**
      * Creates a set of start nodes to be used in the search for matches if no
      * explicit start nodes are provided.
-     * @see #getMatches(GraphShape, Set, Set, Map)
+     * @see #getMatches(HostGraph, Set, Set, Map)
      */
-    private Set<Node> createStartImages(GraphShape graph) {
-        Set<Node> result = new HashSet<Node>();
+    private Set<HostNode> createStartImages(HostGraph graph) {
+        Set<HostNode> result = new HashSet<HostNode>();
         if (isAcceptsEmptyWord() || isInitWildcard()) {
             // too bad, all graph nodes can be start images
             result.addAll(graph.nodeSet());
@@ -378,12 +381,14 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
         return result;
     }
 
-    private void addStartImages(Set<Node> result, GraphShape graph,
+    private void addStartImages(Set<HostNode> result, HostGraph graph,
             boolean positive) {
-        Label[] initLabels = positive ? getInitPosLabels() : getInitInvLabels();
-        for (Label initLabel : initLabels) {
-            for (Edge graphEdge : graph.labelEdgeSet(initLabel)) {
-                Node end = positive ? graphEdge.source() : graphEdge.target();
+        TypeLabel[] initLabels =
+            positive ? getInitPosLabels() : getInitInvLabels();
+        for (TypeLabel initLabel : initLabels) {
+            for (HostEdge graphEdge : graph.labelEdgeSet(initLabel)) {
+                HostNode end =
+                    positive ? graphEdge.source() : graphEdge.target();
                 result.add(end);
             }
         }
@@ -425,21 +430,43 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
     }
 
     @Override
-    public Set<Label> getAlphabet() {
+    public Set<TypeLabel> getAlphabet() {
         assert isFixed();
-        Set<Label> result = new HashSet<Label>();
+        Set<TypeLabel> result = new HashSet<TypeLabel>();
         for (Edge edge : edgeSet()) {
-            Label label = edge.label();
-            if (RegExprLabel.isInv(label)) {
-                label = RegExprLabel.getInvOperand(label).toLabel();
+            RuleLabel label = (RuleLabel) edge.label();
+            if (label.isInv()) {
+                label = label.getInvLabel();
             }
-            if (RegExprLabel.isWildcard(label)) {
-                result.addAll(this.labelStore.getLabels(RegExprLabel.getWildcardKind(label)));
-            } else if (RegExprLabel.isSharp(label)) {
-                result.add(RegExprLabel.getSharpLabel(label));
+            if (label.isWildcard()) {
+                result.addAll(this.labelStore.getLabels(label.getWildcardKind()));
+            } else if (label.isSharp()) {
+                result.add(label.getTypeLabel());
             } else {
-                result.addAll(this.labelStore.getSubtypes(label));
+                assert label.isAtom();
+                result.addAll(this.labelStore.getSubtypes(label.getTypeLabel()));
             }
+        }
+        return result;
+    }
+
+    @Override
+    protected boolean isTypeCorrect(Node node) {
+        return node instanceof DefaultNode;
+    }
+
+    @Override
+    protected boolean isTypeCorrect(Edge edge) {
+        boolean result =
+            edge instanceof DefaultEdge && edge.label() instanceof RuleLabel;
+        if (result) {
+            RuleLabel edgeLabel = (RuleLabel) edge.label();
+            if (edgeLabel.isInv()) {
+                edgeLabel = edgeLabel.getInvLabel();
+            }
+            result =
+                edgeLabel.isWildcard() || edgeLabel.isSharp()
+                    || edgeLabel.isAtom();
         }
         return result;
     }
@@ -475,7 +502,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * Returns a mapping from source nodes to mappings from labels to
      * (non-empty) sets of (automaton) edges with that source node and label.
      */
-    final Map<Label,int[]>[] getNodePosLabelEdgeMap(int direction) {
+    final Map<TypeLabel,int[]>[] getNodePosLabelEdgeMap(int direction) {
         return this.nodePosLabelEdgeIndicesMap[direction];
     }
 
@@ -484,7 +511,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * (non-empty) sets of (automaton) edges with that source node, and the
      * label wrapped in a {@link RegExpr.Inv}.
      */
-    final Map<Label,int[]>[] getNodeInvLabelEdgeMap(int direction) {
+    final Map<TypeLabel,int[]>[] getNodeInvLabelEdgeMap(int direction) {
         return this.nodeInvLabelEdgeIndicesMap[direction];
     }
 
@@ -492,7 +519,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * Returns the set of positive labels occurring on initial edges. Guaranteed
      * to be non-<code>null</code>.
      */
-    final Label[] getInitPosLabels() {
+    final TypeLabel[] getInitPosLabels() {
         return this.initPosLabels;
     }
 
@@ -500,7 +527,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * Returns the set of inverse labels occurring on initial edges. Guaranteed
      * to be non-<code>null</code>.
      */
-    final Label[] getInitInvLabels() {
+    final TypeLabel[] getInitInvLabels() {
         return this.initInvLabels;
     }
 
@@ -525,12 +552,13 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * automaton.
      */
     final void addToNodeLabelEdgeSetMap(
-            Map<Label,Set<Edge>>[] nodeLabelEdgeSetMap, Node node, Label label,
-            Edge edge) {
-        Map<Label,Set<Edge>> labelEdgeMap = nodeLabelEdgeSetMap[getIndex(node)];
+            Map<TypeLabel,Set<Edge>>[] nodeLabelEdgeSetMap, Node node,
+            TypeLabel label, Edge edge) {
+        Map<TypeLabel,Set<Edge>> labelEdgeMap =
+            nodeLabelEdgeSetMap[getIndex(node)];
         if (labelEdgeMap == null) {
             nodeLabelEdgeSetMap[getIndex(node)] =
-                labelEdgeMap = new HashMap<Label,Set<Edge>>();
+                labelEdgeMap = new HashMap<TypeLabel,Set<Edge>>();
         }
         Set<Edge> edgeSet = labelEdgeMap.get(label);
         if (edgeSet == null) {
@@ -607,7 +635,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * {@link #getIndex(Node)}.
      * @param edgeIndex the index of the node to be retrieved
      */
-    final Label getLabel(int edgeIndex) {
+    final RuleLabel getLabel(int edgeIndex) {
         return this.labels[edgeIndex];
     }
 
@@ -622,11 +650,11 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
         return this.endNodeIndex;
     }
 
-    final Map<Label,int[]> toIntArrayMap(
-            Map<Label,? extends Collection<? extends Element>> labelSetMap) {
+    final Map<TypeLabel,int[]> toIntArrayMap(
+            Map<TypeLabel,? extends Collection<? extends Element>> labelSetMap) {
         if (labelSetMap != null) {
-            Map<Label,int[]> result = new HashMap<Label,int[]>();
-            for (Map.Entry<Label,? extends Collection<? extends Element>> entry : labelSetMap.entrySet()) {
+            Map<TypeLabel,int[]> result = new HashMap<TypeLabel,int[]>();
+            for (Map.Entry<TypeLabel,? extends Collection<? extends Element>> entry : labelSetMap.entrySet()) {
                 result.put(entry.getKey(), toIntArray(entry.getValue()));
             }
             return result;
@@ -672,7 +700,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * the source node or the target node of the edge, depending on the
      * direction.
      */
-    private Map<Label,int[]>[][] nodePosLabelEdgeIndicesMap;
+    private Map<TypeLabel,int[]>[][] nodePosLabelEdgeIndicesMap;
 
     /**
      * Direction-indexed array of mappings from nodes in this automaton to maps
@@ -680,15 +708,15 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * {@link RegExpr.Inv}. The node key is either the source node or the target
      * node of the edge, depending on the direction.
      */
-    private Map<Label,int[]>[][] nodeInvLabelEdgeIndicesMap;
+    private Map<TypeLabel,int[]>[][] nodeInvLabelEdgeIndicesMap;
     /**
      * The set of positive labels occurring on initial edges of this automaton.
      */
-    private Label[] initPosLabels;
+    private TypeLabel[] initPosLabels;
     /**
      * The set of inverse labels occurring on initial edges of this automaton.
      */
-    private Label[] initInvLabels;
+    private TypeLabel[] initInvLabels;
     /**
      * Flag to indicate that the initial edges of this automaton include one
      * with wildcard label. Used to create a set of initial start images if none
@@ -727,7 +755,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * Array of edge labels, in the order of the edge indices. Provides the
      * inverse mapping to {@link #edgeIndexMap}.
      */
-    private Label[] labels;
+    private RuleLabel[] labels;
     /**
      * Set of wildcard ids occurring in this automaton.
      */
@@ -759,7 +787,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
     /** Returns the dummy label for a given label kind.
      *  The dummy labels can be used to match wildcards in case there is no proper match for them. 
      */
-    static public Label getDummyLabel(int kind) {
+    static public TypeLabel getDummyLabel(int kind) {
         return DUMMY_LABELS[kind];
     }
 
@@ -767,19 +795,19 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
      * Array of dummy labels for each label kind.
      * Can be used to match wildcards in case there is no proper match for them. 
      */
-    private static final Label[] DUMMY_LABELS = new Label[3];
+    private static final TypeLabel[] DUMMY_LABELS = new TypeLabel[3];
     static {
         DUMMY_LABELS[Label.NODE_TYPE] =
-            DefaultLabel.createLabel(DUMMY_LABEL_TEXT, Label.NODE_TYPE);
+            TypeLabel.createLabel(DUMMY_LABEL_TEXT, Label.NODE_TYPE);
         DUMMY_LABELS[Label.BINARY] =
-            DefaultLabel.createLabel(DUMMY_LABEL_TEXT, Label.BINARY);
+            TypeLabel.createLabel(DUMMY_LABEL_TEXT, Label.BINARY);
         DUMMY_LABELS[Label.FLAG] =
-            DefaultLabel.createLabel(DUMMY_LABEL_TEXT, Label.FLAG);
+            TypeLabel.createLabel(DUMMY_LABEL_TEXT, Label.FLAG);
     }
 
     /**
      * Class to encapsulate the algorithm used to compute the result of
-     * {@link Automaton#getMatches(GraphShape, Set, Set, Map)}.
+     * {@link Automaton#getMatches(HostGraph, Set, Set, Map)}.
      */
     private class MatchingAlgorithm {
         /** Dummy object used in matching. */
@@ -795,7 +823,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
          * the results of one computation are copied to the dependent ones.
          */
         protected class MatchingComputation extends
-                HashMap<Node,Set<Map<LabelVar,Label>>> {
+                HashMap<HostNode,Set<Map<LabelVar,TypeLabel>>> {
             /**
              * Constructs a computation for a given key-image pair, as a
              * sub-computation of another (the <i>dependent</i> computation).
@@ -807,8 +835,9 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
              *        which this one occurs
              * @param valuation the initial valuation for this computation
              */
-            public MatchingComputation(int keyIndex, Node image,
-                    MatchingComputation dependent, Map<LabelVar,Label> valuation) {
+            public MatchingComputation(int keyIndex, HostNode image,
+                    MatchingComputation dependent,
+                    Map<LabelVar,TypeLabel> valuation) {
                 this.keyIndex = keyIndex;
                 this.image = image;
                 this.valuation = valuation;
@@ -839,8 +868,8 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
              * @param image the image (graph node) for this computation
              * @param valuation the initial valuation for this computation
              */
-            public MatchingComputation(int keyIndex, Node image,
-                    Map<LabelVar,Label> valuation) {
+            public MatchingComputation(int keyIndex, HostNode image,
+                    Map<LabelVar,TypeLabel> valuation) {
                 this(keyIndex, image, null, valuation);
                 // if the set of end images is not null, count the number of
                 // remaining images
@@ -860,7 +889,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
              * Starts this computation. May be invoked only once.
              * @return an alias to this computation, as a set of end images
              */
-            public Map<Node,Set<Map<LabelVar,Label>>> start() {
+            public Map<HostNode,Set<Map<LabelVar,TypeLabel>>> start() {
                 propagate(this.keyIndex, this.image, this.valuation);
                 // store the new results in all the dependent sets, if any
                 if (this.dependents != null) {
@@ -880,11 +909,11 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
              *        image
              * @param valuation the valuation of the wildcard names encountered
              *        so far
-             * @see #getPosEdgeSet(Node)
-             * @see #getOpposite(Edge)
+             * @see #getPosEdgeSet(HostNode)
+             * @see #getOpposite(HostEdge)
              */
-            private void propagate(int keyIndex, Node image,
-                    Map<LabelVar,Label> valuation) {
+            private void propagate(int keyIndex, HostNode image,
+                    Map<LabelVar,TypeLabel> valuation) {
                 extend(getPosLabelEdgeMap(keyIndex), getPosEdgeSet(image),
                     valuation, true);
                 extend(getInvLabelEdgeMap(keyIndex), getInvEdgeSet(image),
@@ -898,16 +927,16 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
              * @param valuation the valuation of the wildcard names encountered
              *        so far
              */
-            private void extend(Map<Label,int[]> keyLabelEdgeMap,
-                    Collection<? extends Edge> imageEdgeSet,
-                    Map<LabelVar,Label> valuation, boolean positive) {
+            private void extend(Map<TypeLabel,int[]> keyLabelEdgeMap,
+                    Collection<? extends HostEdge> imageEdgeSet,
+                    Map<LabelVar,TypeLabel> valuation, boolean positive) {
                 if (keyLabelEdgeMap != null) {
-                    for (Edge imageEdge : imageEdgeSet) {
+                    for (HostEdge imageEdge : imageEdgeSet) {
                         if (MatchingAlgorithm.this.remainingImageCount == 0) {
                             break;
                         }
-                        Label imageLabel = imageEdge.label();
-                        Node imageNode =
+                        TypeLabel imageLabel = imageEdge.label();
+                        HostNode imageNode =
                             positive ? getOpposite(imageEdge)
                                     : getThisEnd(imageEdge);
                         extend(keyLabelEdgeMap.get(imageEdge.label()),
@@ -927,28 +956,29 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
              * @param valuation the valuation of the wildcard names encountered
              *        so far
              */
-            private void extend(int[] keyEdgeIndices, Node imageNode,
-                    Label label, Map<LabelVar,Label> valuation) {
+            private void extend(int[] keyEdgeIndices, HostNode imageNode,
+                    TypeLabel label, Map<LabelVar,TypeLabel> valuation) {
                 if (keyEdgeIndices != null) {
                     for (int keyEdgeIndex : keyEdgeIndices) {
                         if (MatchingAlgorithm.this.remainingImageCount == 0) {
                             break;
                         }
-                        Label edgeLabel = getLabel(keyEdgeIndex);
+                        RuleLabel edgeLabel = getLabel(keyEdgeIndex);
                         boolean labelOk = true;
-                        if (RegExprLabel.isWildcard(edgeLabel)) {
-                            Property<Label> constraint =
-                                RegExprLabel.getWildcardGuard(edgeLabel);
+                        if (edgeLabel.isWildcard()) {
+                            Property<TypeLabel> constraint =
+                                edgeLabel.getWildcardGuard();
                             if (constraint != null) {
                                 labelOk = constraint.isSatisfied(label);
                             }
-                            LabelVar id = RegExprLabel.getWildcardId(edgeLabel);
+                            LabelVar id = edgeLabel.getWildcardId();
                             if (labelOk && id != null) {
                                 // we have a wildcard id; let's look it up
-                                Label oldLabel = valuation.get(id);
+                                TypeLabel oldLabel = valuation.get(id);
                                 if (oldLabel == null) {
                                     valuation =
-                                        new HashMap<LabelVar,Label>(valuation);
+                                        new HashMap<LabelVar,TypeLabel>(
+                                            valuation);
                                     valuation.put(id, label);
                                 } else {
                                     // it's a know id; check its value
@@ -974,8 +1004,8 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
              * @param valuation the valuation of the wildcard names encountered
              *        so far
              */
-            private void extend(int keyIndex, Node image,
-                    Map<LabelVar,Label> valuation) {
+            private void extend(int keyIndex, HostNode image,
+                    Map<LabelVar,TypeLabel> valuation) {
                 if (keyIndex == MatchingAlgorithm.this.endIndex) {
                     add(image, valuation);
                 } else if (!isCyclic(keyIndex)) {
@@ -1015,21 +1045,22 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
              * Adds a combination of edge image and wildcard name valuation to
              * the currently stored result.
              */
-            public boolean add(Node image, Map<LabelVar,Label> valuation) {
+            public boolean add(HostNode image, Map<LabelVar,TypeLabel> valuation) {
                 if (isStoringIntermediates() || isAllowedResult(image)) {
                     if (hasVars()) {
                         // add the valuations to those stored for the image
-                        Set<Map<LabelVar,Label>> currentValuations = get(image);
+                        Set<Map<LabelVar,TypeLabel>> currentValuations =
+                            get(image);
                         if (currentValuations == null) {
                             put(image, currentValuations =
-                                new HashSet<Map<LabelVar,Label>>());
+                                new HashSet<Map<LabelVar,TypeLabel>>());
                         }
                         return currentValuations.add(valuation);
                     } else {
                         // store the result and
                         boolean result =
                             super.put(image,
-                                Collections.<Map<LabelVar,Label>>emptySet()) == null;
+                                Collections.<Map<LabelVar,TypeLabel>>emptySet()) == null;
                         if (result) {
                             if (MatchingAlgorithm.this.remainingImageCount > 0) {
                                 MatchingAlgorithm.this.remainingImageCount--;
@@ -1047,15 +1078,16 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
              */
             public void addAll(MatchingComputation other) {
                 if (hasVars()) {
-                    for (Map.Entry<Node,Set<Map<LabelVar,Label>>> otherEntry : other.entrySet()) {
-                        Node image = otherEntry.getKey();
-                        Set<Map<LabelVar,Label>> valuations =
+                    for (Map.Entry<HostNode,Set<Map<LabelVar,TypeLabel>>> otherEntry : other.entrySet()) {
+                        HostNode image = otherEntry.getKey();
+                        Set<Map<LabelVar,TypeLabel>> valuations =
                             otherEntry.getValue();
                         // add the valuations to those stored for the image
-                        Set<Map<LabelVar,Label>> currentValuations = get(image);
+                        Set<Map<LabelVar,TypeLabel>> currentValuations =
+                            get(image);
                         if (currentValuations == null) {
                             put(image, currentValuations =
-                                new HashSet<Map<LabelVar,Label>>());
+                                new HashSet<Map<LabelVar,TypeLabel>>());
                         }
                         currentValuations.addAll(valuations);
                     }
@@ -1163,11 +1195,11 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
             /** The automaton key for which this computation has bee constructs. */
             private final int keyIndex;
             /** The graph node for which this computation has bee constructs. */
-            private final Node image;
+            private final HostNode image;
             /**
              * The initial valuation for the matching.
              */
-            private final Map<LabelVar,Label> valuation;
+            private final Map<LabelVar,TypeLabel> valuation;
         }
 
         /**
@@ -1207,9 +1239,9 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
          *        allowed
          * @param valuation initial mapping from variables to labels
          */
-        public NodeRelation computeMatches(GraphShape graph,
-                Set<? extends Node> startImages, Set<? extends Node> endImages,
-                Map<LabelVar,Label> valuation) {
+        public Set<Result> computeMatches(HostGraph graph,
+                Set<HostNode> startImages, Set<HostNode> endImages,
+                Map<LabelVar,TypeLabel> valuation) {
             if (graph != this.graph) {
                 // we're working on a different graph, so the previous matchings
                 // are no good
@@ -1220,16 +1252,16 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
             this.storeIntermediates = !hasVars();// && endImages == null;//
             // && startImages.size() >
             // 1;
-            this.result = createRelation(graph);
-            for (Node startImage : startImages) {
+            this.result = new HashSet<Result>();
+            for (HostNode startImage : startImages) {
                 if (isAcceptsEmptyWord() && isAllowedResult(startImage)) {
-                    this.result.addSelfRelated(startImage);
+                    this.result.add(new Result(startImage, startImage, null));
                 }
-                Map<Node,Set<Map<LabelVar,Label>>> resultMap =
+                Map<HostNode,Set<Map<LabelVar,TypeLabel>>> resultMap =
                     new MatchingComputation(this.startIndex, startImage,
                         valuation).start();
-                for (Map.Entry<Node,Set<Map<LabelVar,Label>>> resultEntry : resultMap.entrySet()) {
-                    Node endImage = resultEntry.getKey();
+                for (Map.Entry<HostNode,Set<Map<LabelVar,TypeLabel>>> resultEntry : resultMap.entrySet()) {
+                    HostNode endImage = resultEntry.getKey();
                     if (isAllowedResult(endImage)) {
                         if (hasVars()) {
                             addRelated(startImage, endImage,
@@ -1240,23 +1272,15 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
                     }
                 }
             }
-            NodeRelation tmpResult = this.result;
+            Set<Result> tmpResult = this.result;
             this.result = null;
             return tmpResult;
         }
 
         /**
-         * Callback factory method. Creates a relation over a given graph. This
-         * implementation returns a {@link SetNodeRelation}.
-         */
-        protected NodeRelation createRelation(GraphShape graph) {
-            return new SetNodeRelation(graph);
-        }
-
-        /**
          * Retrieves the label-to-node-sets mapping for a given automaton node.
          */
-        protected Map<Label,int[]> getPosLabelEdgeMap(int nodeIndex) {
+        protected Map<TypeLabel,int[]> getPosLabelEdgeMap(int nodeIndex) {
             return this.nodePosLabelEdgeMap[nodeIndex];
         }
 
@@ -1264,7 +1288,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
          * Retrieves the inverse-label-to-node-sets mapping for a given
          * automaton node.
          */
-        protected Map<Label,int[]> getInvLabelEdgeMap(int nodeIndex) {
+        protected Map<TypeLabel,int[]> getInvLabelEdgeMap(int nodeIndex) {
             return this.nodeInvLabelEdgeMap[nodeIndex];
         }
 
@@ -1272,9 +1296,9 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
          * Returns the "outgoing" edge set for a given graph node. This may be
          * implemented either by the outgoing or by the incoming edges,
          * depending on whether we do forward or backward matching.
-         * @see #getInvEdgeSet(Node)
+         * @see #getInvEdgeSet(HostNode)
          */
-        protected Collection<? extends Edge> getPosEdgeSet(Node node) {
+        protected Collection<? extends HostEdge> getPosEdgeSet(HostNode node) {
             switch (this.direction) {
             case FORWARD:
                 return this.graph.outEdgeSet(node);
@@ -1287,9 +1311,9 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
          * Returns the "incoming" edge set for a given graph node. This may be
          * implemented either by the incoming or by the outgoing edges,
          * depending on whether we do forward or backward matching.
-         * @see #getPosEdgeSet(Node)
+         * @see #getPosEdgeSet(HostNode)
          */
-        protected Collection<? extends Edge> getInvEdgeSet(Node node) {
+        protected Collection<? extends HostEdge> getInvEdgeSet(HostNode node) {
             switch (this.direction) {
             case FORWARD:
                 return this.graph.inEdgeSet(node);
@@ -1303,7 +1327,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
          * target or the source, depending on whether we do forward or backward
          * matching.
          */
-        protected Node getThisEnd(Edge edge) {
+        protected HostNode getThisEnd(HostEdge edge) {
             switch (this.direction) {
             case FORWARD:
                 return edge.source();
@@ -1317,7 +1341,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
          * target or the source, depending on whether we do forward or backward
          * matching.
          */
-        protected Node getOpposite(Edge edge) {
+        protected HostNode getOpposite(HostEdge edge) {
             switch (this.direction) {
             case FORWARD:
                 return edge.target();
@@ -1345,12 +1369,12 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
          * post-images or swapped, depending on whether we do forward or
          * backward matching.
          */
-        protected boolean addRelated(Node startImage, Node endImage) {
+        protected boolean addRelated(HostNode startImage, HostNode endImage) {
             switch (this.direction) {
             case FORWARD:
-                return this.result.addRelated(startImage, endImage);
+                return this.result.add(createResult(startImage, endImage, null));
             default:
-                return this.result.addRelated(endImage, startImage);
+                return this.result.add(createResult(endImage, startImage, null));
             }
         }
 
@@ -1359,30 +1383,30 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
          * post-images or swapped, depending on whether we do forward or
          * backward matching, and labels containing wildcard name valuations.
          */
-        protected boolean addRelated(Node startImage, Node endImage,
-                Set<Map<LabelVar,Label>> valuations) {
+        protected boolean addRelated(HostNode startImage, HostNode endImage,
+                Set<Map<LabelVar,TypeLabel>> valuations) {
             boolean res = false;
-            for (Map<LabelVar,Label> valuation : valuations) {
+            for (Map<LabelVar,TypeLabel> valuation : valuations) {
                 // Label label = new ValuationLabel(valuation);
-                RelationEdge edge;
+                Result edge;
                 switch (this.direction) {
                 case FORWARD:
-                    edge = createRelationEdge(startImage, endImage, valuation);
+                    edge = createResult(startImage, endImage, valuation);
                     break;
                 default:
-                    edge = createRelationEdge(endImage, startImage, valuation);
+                    edge = createResult(endImage, startImage, valuation);
                 }
-                res |= this.result.addRelated(edge);
+                res |= this.result.add(edge);
             }
             return res;
         }
 
         /**
-         * Callback factory method for a {@link RelationEdge}.
+         * Callback factory method for a {@link Result} object.
          */
-        RelationEdge createRelationEdge(Node source, Node target,
-                Map<LabelVar,Label> valuation) {
-            return new RelationEdge(source, target, valuation);
+        Result createResult(HostNode source, HostNode target,
+                Map<LabelVar,TypeLabel> valuation) {
+            return new Result(source, target, valuation);
         }
 
         /** Cleans the array of auxiliary results. */
@@ -1440,14 +1464,14 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
          * reflect the automaton's outgoing or incoming edge structure,
          * depending on whether we do forward or backward matching.
          */
-        final Map<Label,int[]>[] nodePosLabelEdgeMap;
+        final Map<TypeLabel,int[]>[] nodePosLabelEdgeMap;
 
         /**
          * Mapping from automaton nodes to inverse label-to-opposite-node-ends
          * maps. May reflect the automaton's outgoing or incoming edge
          * structure, depending on whether we do forward or backward matching.
          */
-        final Map<Label,int[]>[] nodeInvLabelEdgeMap;
+        final Map<TypeLabel,int[]>[] nodeInvLabelEdgeMap;
         /**
          * Flag indicating if we are doing forward or backward matching.
          */
@@ -1456,7 +1480,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
         /**
          * Graph on which the current matching computation is performed.
          */
-        transient GraphShape graph;
+        transient HostGraph graph;
 
         /**
          * Set of potential end images for the current matching computation.
@@ -1472,7 +1496,7 @@ public class MatrixAutomaton extends DefaultGraph implements Automaton {
          * Relation where the result of the current matching computation is
          * built.
          */
-        transient NodeRelation result;
+        transient Set<Result> result;
         /**
          * Flag indicating if intermediate results are to be stored during
          * matching.

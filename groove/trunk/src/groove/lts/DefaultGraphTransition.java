@@ -20,15 +20,13 @@ import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.graph.AbstractEdge;
 import groove.graph.AbstractGraphShape;
-import groove.graph.DefaultMorphism;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
-import groove.graph.Morphism;
-import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.iso.DefaultIsoChecker;
+import groove.trans.HostNode;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
@@ -45,7 +43,7 @@ public class DefaultGraphTransition extends
      * Constructs a GraphTransition on the basis of a given rule event, between
      * a given source and target state.
      */
-    public DefaultGraphTransition(RuleEvent event, Node[] addedNodes,
+    public DefaultGraphTransition(RuleEvent event, HostNode[] addedNodes,
             GraphState source, GraphState target, boolean symmetry) {
         super(source, new DerivationLabel(event, addedNodes), target);
         this.event = event;
@@ -75,7 +73,7 @@ public class DefaultGraphTransition extends
         return this.symmetry;
     }
 
-    public Node[] getAddedNodes() {
+    public HostNode[] getAddedNodes() {
         return this.addedNodes;
     }
 
@@ -116,7 +114,7 @@ public class DefaultGraphTransition extends
      * <code>source</code> is not equal to the source of the transition,
      * otherwise it returns {@link #getAddedNodes()}.
      */
-    public Node[] getAddedNodes(GraphState source) {
+    public HostNode[] getAddedNodes(GraphState source) {
         if (source != source()) {
             throw new IllegalArgumentException("Source state incompatible");
         } else {
@@ -154,7 +152,7 @@ public class DefaultGraphTransition extends
      * This implementation reconstructs the rule application from the stored
      * footprint, and appends an isomorphism to the actual target if necessary.
      */
-    public Morphism getMorphism() {
+    public NodeEdgeMap getMorphism() {
         if (this.morphism == null) {
             this.morphism = computeMorphism();
         }
@@ -165,7 +163,7 @@ public class DefaultGraphTransition extends
      * Constructs an underlying morphism for the transition from the stored
      * footprint.
      */
-    protected Morphism computeMorphism() {
+    protected NodeEdgeMap computeMorphism() {
         RuleApplication appl = getEvent().newApplication(source().getGraph());
         if (isSymmetry()) {
             Graph derivedTarget = new NodeSetEdgeSetGraph(appl.getTarget());
@@ -180,12 +178,7 @@ public class DefaultGraphTransition extends
                 + " and \n"
                 + AbstractGraphShape.toString(realTarget)
                 + " \nnot isomorphic";
-            Morphism iso = new DefaultMorphism(derivedTarget, realTarget) {
-                @Override
-                protected NodeEdgeMap createElementMap() {
-                    return map;
-                }
-            };
+            NodeEdgeMap iso = map;
             return appl.getMorphism().then(iso);
         } else {
             return appl.getMorphism();
@@ -267,12 +260,12 @@ public class DefaultGraphTransition extends
      */
     private RuleEvent event;
     /** The array of added nodes of this transition. */
-    private final Node[] addedNodes;
+    private final HostNode[] addedNodes;
     /**
      * The underlying morphism of this transition. Computed lazily (using the
      * footprint) using {@link #computeMorphism()}.
      */
-    private Morphism morphism;
+    private NodeEdgeMap morphism;
     /** Flag indicating that the underlying morphism is a partial identity. */
     private final boolean symmetry;
 

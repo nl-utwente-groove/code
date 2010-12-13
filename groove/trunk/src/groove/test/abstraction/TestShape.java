@@ -16,6 +16,7 @@
  */
 package groove.test.abstraction;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import groove.abstraction.Materialisation;
@@ -27,8 +28,9 @@ import groove.abstraction.ShapeEdge;
 import groove.abstraction.ShapeNode;
 import groove.abstraction.Util;
 import groove.graph.Edge;
-import groove.graph.Graph;
+import groove.trans.DefaultHostGraph;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.trans.Rule;
 import groove.trans.RuleMatch;
 import groove.util.Groove;
@@ -61,10 +63,9 @@ public class TestShape {
     public void testShapeBuild0() {
         File file = new File(DIRECTORY + "shape-build-test-0.gst");
         try {
-            Graph graph = Groove.loadGraph(file);
-            Shape shape = new Shape(graph);
-            assertTrue(shape.nodeSet().size() == 5);
-            assertTrue(Util.getBinaryEdges(shape).size() == 7);
+            Shape shape = createShape(file);
+            assertEquals(5, shape.nodeSet().size());
+            assertEquals(7, Util.getBinaryEdges(shape).size());
             Multiplicity oneMult = Multiplicity.getMultOf(1);
             for (Edge edge : Util.getBinaryEdges(shape)) {
                 ShapeEdge se = (ShapeEdge) edge;
@@ -80,10 +81,9 @@ public class TestShape {
     public void testShapeBuild1() {
         File file = new File(DIRECTORY + "shape-build-test-1.gst");
         try {
-            Graph graph = Groove.loadGraph(file);
-            Shape shape = new Shape(graph);
-            assertTrue(shape.nodeSet().size() == 10);
-            assertTrue(Util.getBinaryEdges(shape).size() == 12);
+            Shape shape = createShape(file);
+            assertEquals(10, shape.nodeSet().size());
+            assertEquals(12, Util.getBinaryEdges(shape).size());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -93,10 +93,9 @@ public class TestShape {
     public void testShapeBuild2() {
         File file = new File(DIRECTORY + "shape-build-test-2.gst");
         try {
-            Graph graph = Groove.loadGraph(file);
-            Shape shape = new Shape(graph);
-            assertTrue(shape.nodeSet().size() == 1);
-            assertTrue(Util.getBinaryEdges(shape).size() == 1);
+            Shape shape = createShape(file);
+            assertEquals(1, shape.nodeSet().size());
+            assertEquals(1, Util.getBinaryEdges(shape).size());
             ShapeNode node = shape.nodeSet().iterator().next();
             assertTrue(shape.getNodeMult(node).equals(Multiplicity.OMEGA));
         } catch (IOException e) {
@@ -106,10 +105,9 @@ public class TestShape {
         Parameters.setNodeMultBound(3);
         Multiplicity.initMultStore();
         try {
-            Graph graph = Groove.loadGraph(file);
-            Shape shape = new Shape(graph);
-            assertTrue(shape.nodeSet().size() == 1);
-            assertTrue(Util.getBinaryEdges(shape).size() == 1);
+            Shape shape = createShape(file);
+            assertEquals(1, shape.nodeSet().size());
+            assertEquals(1, Util.getBinaryEdges(shape).size());
             ShapeNode node = shape.nodeSet().iterator().next();
             assertTrue(shape.getNodeMult(node).equals(Multiplicity.getMultOf(3)));
         } catch (IOException e) {
@@ -119,10 +117,9 @@ public class TestShape {
         Parameters.setNodeMultBound(1);
         Multiplicity.initMultStore();
         try {
-            Graph graph = Groove.loadGraph(file);
-            Shape shape = new Shape(graph);
-            assertTrue(shape.nodeSet().size() == 1);
-            assertTrue(Util.getBinaryEdges(shape).size() == 1);
+            Shape shape = createShape(file);
+            assertEquals(1, shape.nodeSet().size());
+            assertEquals(1, Util.getBinaryEdges(shape).size());
             ShapeNode node = shape.nodeSet().iterator().next();
             assertTrue(shape.getNodeMult(node).equals(Multiplicity.OMEGA));
         } catch (IOException e) {
@@ -134,28 +131,25 @@ public class TestShape {
     public void testShapeBuild3() {
         File file = new File(DIRECTORY + "shape-build-test-5.gst");
         try {
-            Graph graph = Groove.loadGraph(file);
-            Shape shape = new Shape(graph);
-            assertTrue(shape.nodeSet().size() == 2);
-            assertTrue(Util.getBinaryEdges(shape).size() == 2);
+            Shape shape = createShape(file);
+            assertEquals(2, shape.nodeSet().size());
+            assertEquals(2, Util.getBinaryEdges(shape).size());
         } catch (IOException e) {
             e.printStackTrace();
         }
         file = new File(DIRECTORY + "shape-build-test-6.gst");
         try {
-            Graph graph = Groove.loadGraph(file);
-            Shape shape = new Shape(graph);
-            assertTrue(shape.nodeSet().size() == 4);
-            assertTrue(Util.getBinaryEdges(shape).size() == 6);
+            Shape shape = createShape(file);
+            assertEquals(4, shape.nodeSet().size());
+            assertEquals(6, Util.getBinaryEdges(shape).size());
         } catch (IOException e) {
             e.printStackTrace();
         }
         file = new File(DIRECTORY + "shape-build-test-7.gst");
         try {
-            Graph graph = Groove.loadGraph(file);
-            Shape shape = new Shape(graph);
-            assertTrue(shape.nodeSet().size() == 2);
-            assertTrue(Util.getBinaryEdges(shape).size() == 4);
+            Shape shape = createShape(file);
+            assertEquals(2, shape.nodeSet().size());
+            assertEquals(4, Util.getBinaryEdges(shape).size());
             for (ShapeNode node : shape.nodeSet()) {
                 assertTrue(shape.getNodeMult(node).equals(Multiplicity.OMEGA));
             }
@@ -174,10 +168,9 @@ public class TestShape {
     public void testShapeBuild4() {
         File file = new File(DIRECTORY + "shape-build-test-8.gst");
         try {
-            Graph graph = Groove.loadGraph(file);
-            Shape shape = new Shape(graph);
-            assertTrue(shape.nodeSet().size() == 3);
-            assertTrue(Util.getBinaryEdges(shape).size() == 2);
+            Shape shape = createShape(file);
+            assertEquals(3, shape.nodeSet().size());
+            assertEquals(2, Util.getBinaryEdges(shape).size());
             for (Edge edge : Util.getBinaryEdges(shape)) {
                 ShapeEdge se = (ShapeEdge) edge;
                 assertTrue(shape.getEdgeOutMult(se).equals(Multiplicity.OMEGA));
@@ -194,21 +187,21 @@ public class TestShape {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
             GraphGrammar grammar = view.toGrammar();
 
-            Graph graph0 =
+            HostGraph graph0 =
                 view.getGraphView("materialisation-test-0").toModel();
             Shape shape0 = new Shape(graph0);
-            Graph graph1 =
+            HostGraph graph1 =
                 view.getGraphView("materialisation-test-1").toModel();
             Shape shape1 = new Shape(graph1);
-            Graph graph2 =
+            HostGraph graph2 =
                 view.getGraphView("materialisation-test-2").toModel();
             Shape shape2 = new Shape(graph2);
 
             // Basic tests.
             // A shape must be isomorphic to itself.
-            assertTrue(shape0.equals(shape0));
+            assertEquals(shape0, shape0);
             // Compare to a clone.
-            assertTrue(shape0.equals(shape0.clone()));
+            assertEquals(shape0, shape0.clone());
             // Two completely different shapes.
             assertFalse(shape0.equals(shape1));
             // Shapes with same graph structure but different multiplicities.
@@ -238,4 +231,8 @@ public class TestShape {
         }
     }
 
+    private Shape createShape(File file) throws IOException {
+        HostGraph graph = new DefaultHostGraph(Groove.loadGraph(file));
+        return new Shape(graph);
+    }
 }

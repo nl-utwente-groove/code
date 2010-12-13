@@ -16,7 +16,7 @@
  */
 package groove.view.aspect;
 
-import groove.graph.Label;
+import groove.graph.DefaultLabel;
 import groove.util.Groove;
 import groove.view.FormatException;
 
@@ -99,7 +99,7 @@ public abstract class Aspect {
      * @throws FormatException if the label is not correct, given the aspect
      *         values
      */
-    abstract void testLabel(Label label, AspectValue declaredValue,
+    abstract void testLabel(DefaultLabel label, AspectValue declaredValue,
             AspectValue inferredValue) throws FormatException;
 
     /** Returns the array of all known aspects. */

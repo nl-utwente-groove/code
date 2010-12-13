@@ -223,8 +223,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         GraphInfo.setRole(result, getRole(false));
         GraphInfo.setVersion(result, Version.GXL_VERSION);
         NodeEdgeMap plainToAspectMap = new NodeEdgeHashMap();
-        this.graph =
-            AspectGraph.getFactory().fromPlainGraph(result, plainToAspectMap);
+        this.graph = AspectGraph.newInstance(result, plainToAspectMap);
         this.graphToModelMap = new HashMap<Element,JCell>();
         for (Map.Entry<Element,JCell> plainToModelEntry : plainToModelMap.entrySet()) {
             Element plainKey = plainToModelEntry.getKey();

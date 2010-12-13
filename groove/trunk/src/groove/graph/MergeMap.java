@@ -16,6 +16,8 @@
  */
 package groove.graph;
 
+import groove.trans.HostFactory;
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -91,6 +93,11 @@ public class MergeMap extends NodeEdgeHashMap {
         } else {
             return super.mapEdge(key);
         }
+    }
+
+    @Override
+    public HostFactory getFactory() {
+        return HostFactory.INSTANCE;
     }
 
     /**

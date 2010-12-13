@@ -4,6 +4,7 @@ package groove.lts;
 import groove.control.CtrlAut;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
+import groove.trans.DeltaHostGraph;
 import groove.trans.SystemRecord;
 
 /**
@@ -26,7 +27,7 @@ public class StartGraphState extends AbstractGraphState {
     }
 
     @Override
-    public Graph getGraph() {
+    public DeltaHostGraph getGraph() {
         if (this.graph == null) {
             this.graph = getCache().getGraph();
         }
@@ -39,5 +40,5 @@ public class StartGraphState extends AbstractGraphState {
     }
 
     /** The stored graph. */
-    private Graph graph;
+    private DeltaHostGraph graph;
 }

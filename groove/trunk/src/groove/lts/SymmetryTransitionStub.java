@@ -16,7 +16,7 @@
  */
 package groove.lts;
 
-import groove.graph.Node;
+import groove.trans.HostNode;
 import groove.trans.RuleEvent;
 
 /**
@@ -29,7 +29,7 @@ class SymmetryTransitionStub extends AbstractGraphTransitionStub {
      * Default constructor, providing the event, added nodes and target of the
      * stub.
      */
-    SymmetryTransitionStub(RuleEvent event, Node[] addedNodes, GraphState target) {
+    SymmetryTransitionStub(RuleEvent event, HostNode[] addedNodes, GraphState target) {
         super(event, addedNodes, target);
     }
 

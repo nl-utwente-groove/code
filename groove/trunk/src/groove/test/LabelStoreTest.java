@@ -21,9 +21,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.graph.LabelStore;
+import groove.graph.TypeLabel;
 import groove.view.FormatException;
 
 import java.util.Collections;
@@ -71,7 +71,7 @@ public class LabelStoreTest {
 
     /**
      * Test method for
-     * {@link groove.graph.LabelStore#addLabel(groove.graph.Label)}.
+     * {@link groove.graph.LabelStore#addLabel(TypeLabel)}.
      */
     @Test
     public void testAddLabel() {
@@ -93,11 +93,11 @@ public class LabelStoreTest {
     }
 
     /**
-     * Test method for {@link groove.graph.LabelStore#addLabels(java.util.Set)}.
+     * Test method for {@link groove.graph.LabelStore#addLabels(Set)}.
      */
     @Test
     public void testAddLabels() {
-        Set<Label> labelSet = new HashSet<Label>();
+        Set<TypeLabel> labelSet = new HashSet<TypeLabel>();
         labelSet.add(this.a);
         labelSet.add(this.typeA);
         labelSet.add(this.b);
@@ -109,7 +109,7 @@ public class LabelStoreTest {
 
     /**
      * Test method for
-     * {@link groove.graph.LabelStore#addSubtype(groove.graph.Label, groove.graph.Label)}
+     * {@link groove.graph.LabelStore#addSubtype(TypeLabel, TypeLabel)}
      * .
      */
     @Test
@@ -134,7 +134,7 @@ public class LabelStoreTest {
 
     /**
      * Test method for
-     * {@link groove.graph.LabelStore#removeSubtype(groove.graph.Label, groove.graph.Label)}
+     * {@link groove.graph.LabelStore#removeSubtype(TypeLabel, TypeLabel)}
      * .
      */
     @Test
@@ -153,7 +153,7 @@ public class LabelStoreTest {
 
     /**
      * Test method for
-     * {@link groove.graph.LabelStore#getSupertypes(groove.graph.Label)}.
+     * {@link groove.graph.LabelStore#getSupertypes(TypeLabel)}.
      */
     @Test
     public void testGetSupertypes() {
@@ -177,7 +177,7 @@ public class LabelStoreTest {
 
     /**
      * Test method for
-     * {@link groove.graph.LabelStore#getDirectSupertypes(groove.graph.Label)}.
+     * {@link groove.graph.LabelStore#getDirectSupertypes(TypeLabel)}.
      */
     @Test
     public void testGetDirectSupertypes() {
@@ -300,11 +300,11 @@ public class LabelStoreTest {
 
     private LabelStore store1;
     private LabelStore store2;
-    private final Label typeA = DefaultLabel.createLabel("A", Label.NODE_TYPE);
-    private final Label typeB = DefaultLabel.createLabel("B", Label.NODE_TYPE);
-    private final Label typeC = DefaultLabel.createLabel("C", Label.NODE_TYPE);
-    private final Label typeD = DefaultLabel.createLabel("D", Label.NODE_TYPE);
-    private final Label a = DefaultLabel.createLabel("a");
-    private final Label b = DefaultLabel.createLabel("b");
-    private final Label c = DefaultLabel.createLabel("c");
+    private final TypeLabel typeA = TypeLabel.createLabel("A", Label.NODE_TYPE);
+    private final TypeLabel typeB = TypeLabel.createLabel("B", Label.NODE_TYPE);
+    private final TypeLabel typeC = TypeLabel.createLabel("C", Label.NODE_TYPE);
+    private final TypeLabel typeD = TypeLabel.createLabel("D", Label.NODE_TYPE);
+    private final TypeLabel a = TypeLabel.createLabel("a");
+    private final TypeLabel b = TypeLabel.createLabel("b");
+    private final TypeLabel c = TypeLabel.createLabel("c");
 }

@@ -16,14 +16,13 @@
  */
 package groove.match;
 
-import groove.graph.DefaultEdge;
-import groove.graph.Edge;
-import groove.graph.Label;
-import groove.graph.Node;
+import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.match.SearchPlanStrategy.Search;
-import groove.rel.RegExprLabel;
+import groove.trans.HostEdge;
+import groove.trans.HostNode;
 import groove.trans.RuleEdge;
+import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
 
 import java.util.Collection;
@@ -45,9 +44,12 @@ class Edge2SearchItem extends AbstractSearchItem {
         this.edge = edge;
         this.source = edge.source();
         this.target = edge.target();
-        this.label =
-            RegExprLabel.isSharp(edge.label())
-                    ? RegExprLabel.getSharpLabel(edge.label()) : edge.label();
+        RuleLabel edgeLabel = edge.label();
+        // as this is subclassed by VarEdgeSearchItem,
+        // the label may actually be an arbitrary regular expression
+        assert edgeLabel.isSharp() || edgeLabel.isAtom()
+            || edgeLabel.isWildcard();
+        this.label = edgeLabel.getTypeLabel();
         this.selfEdge = this.source == this.target;
         this.boundNodes = new HashSet<RuleNode>();
         this.boundNodes.add(edge.source());
@@ -64,14 +66,14 @@ class Edge2SearchItem extends AbstractSearchItem {
 
     /** Returns the singleton set consisting of the matched edge. */
     @Override
-    public Collection<? extends Edge> bindsEdges() {
+    public Collection<RuleEdge> bindsEdges() {
         return Collections.singleton(this.edge);
     }
 
     /**
      * Returns the edge for which this item tests.
      */
-    public Edge getEdge() {
+    public RuleEdge getEdge() {
         return this.edge;
     }
 
@@ -90,7 +92,7 @@ class Edge2SearchItem extends AbstractSearchItem {
         int result = 0;
         if (other instanceof Edge2SearchItem) {
             // compare first the edge labels, then the edge ends
-            Edge otherEdge = ((Edge2SearchItem) other).getEdge();
+            RuleEdge otherEdge = ((Edge2SearchItem) other).getEdge();
             result = getEdge().label().compareTo(otherEdge.label());
             if (result == 0) {
                 result = this.edge.source().compareTo(otherEdge.source());
@@ -164,7 +166,7 @@ class Edge2SearchItem extends AbstractSearchItem {
     }
 
     /** Creates a record for the case the image is not singular. */
-    MultipleRecord<Edge> createMultipleRecord(Search search) {
+    MultipleRecord<HostEdge> createMultipleRecord(Search search) {
         return new Edge2MultipleRecord(search, this.edgeIx, this.sourceIx,
             this.targetIx, this.sourceFound, this.targetFound);
     }
@@ -182,7 +184,7 @@ class Edge2SearchItem extends AbstractSearchItem {
      */
     final RuleNode target;
     /** The label of {@link #edge}, separately stored for efficiency. */
-    final Label label;
+    final TypeLabel label;
     /**
      * Flag indicating that {@link #edge} is a self-edge.
      */
@@ -221,7 +223,7 @@ class Edge2SearchItem extends AbstractSearchItem {
 
         @Override
         final boolean set() {
-            Edge image = getEdgeImage();
+            HostEdge image = getEdgeImage();
             assert image != null;
             boolean result = isImageCorrect(image);
             if (result) {
@@ -237,7 +239,7 @@ class Edge2SearchItem extends AbstractSearchItem {
         }
 
         /** Tests if the (uniquely determined) edge image can be used. */
-        boolean isImageCorrect(Edge image) {
+        boolean isImageCorrect(HostEdge image) {
             return this.host.containsEdge(image);
         }
 
@@ -245,26 +247,26 @@ class Edge2SearchItem extends AbstractSearchItem {
          * Creates and returns the edge image, as constructed from the available
          * end node images.
          */
-        private Edge getEdgeImage() {
-            Node sourceFind = this.sourcePreMatch;
+        private HostEdge getEdgeImage() {
+            HostNode sourceFind = this.sourcePreMatch;
             if (sourceFind == null) {
                 sourceFind = this.search.getNode(this.sourceIx);
             }
             assert sourceFind != null : String.format(
                 "Source node of %s has not been found",
                 Edge2SearchItem.this.edge);
-            Node targetFind = this.targetPreMatch;
+            HostNode targetFind = this.targetPreMatch;
             if (targetFind == null) {
                 targetFind = this.search.getNode(this.targetIx);
             }
             assert targetFind != null : String.format(
                 "Target node of %s has not been found",
                 Edge2SearchItem.this.edge);
-            return DefaultEdge.createEdge(sourceFind, getLabel(), targetFind);
+            return createEdge(sourceFind, getLabel(), targetFind);
         }
 
         /** Callback method to determine the label of the edge image. */
-        Label getLabel() {
+        TypeLabel getLabel() {
             return Edge2SearchItem.this.label;
         }
 
@@ -274,9 +276,9 @@ class Edge2SearchItem extends AbstractSearchItem {
         }
 
         /** The pre-matched (fixed) source image, if any. */
-        private final Node sourcePreMatch;
+        private final HostNode sourcePreMatch;
         /** The pre-matched (fixed) target image, if any. */
-        private final Node targetPreMatch;
+        private final HostNode targetPreMatch;
         /** The index of the edge in the search. */
         private final int edgeIx;
         /** The index of the source in the search. */
@@ -291,7 +293,7 @@ class Edge2SearchItem extends AbstractSearchItem {
      * @author Arend Rensink
      * @version $Revision $
      */
-    class Edge2MultipleRecord extends MultipleRecord<Edge> {
+    class Edge2MultipleRecord extends MultipleRecord<HostEdge> {
         /**
          * Creates a record based on a given search.
          */
@@ -327,8 +329,8 @@ class Edge2SearchItem extends AbstractSearchItem {
         }
 
         @Override
-        boolean setImage(Edge image) {
-            Node source = image.source();
+        boolean setImage(HostEdge image) {
+            HostNode source = image.source();
             if (this.sourceFind == null) {
                 // maybe the prospective source image was used as
                 // target image of this same edge in the previous attempt
@@ -341,7 +343,7 @@ class Edge2SearchItem extends AbstractSearchItem {
                     return false;
                 }
             }
-            Node target = image.target();
+            HostNode target = image.target();
             if (Edge2SearchItem.this.selfEdge) {
                 if (target != source) {
                     return false;
@@ -401,24 +403,24 @@ class Edge2SearchItem extends AbstractSearchItem {
          * result map, as a side effect.
          */
         void initImages() {
-            Set<? extends Edge> result = null;
+            Set<? extends HostEdge> result = null;
             boolean checkLabel = false;
             // it does not pay off here to take only the incident edges of
             // pre-matched ends,
             // no doubt because building the necessary additional data
             // structures takes more
             // time than is saved by trying out fewer images
-            Set<? extends Edge> labelEdgeSet =
+            Set<? extends HostEdge> labelEdgeSet =
                 this.host.labelEdgeSet(Edge2SearchItem.this.label);
             if (this.sourceFind != null) {
-                Set<? extends Edge> nodeEdgeSet =
+                Set<? extends HostEdge> nodeEdgeSet =
                     this.host.edgeSet(this.sourceFind);
                 if (nodeEdgeSet.size() < labelEdgeSet.size()) {
                     result = nodeEdgeSet;
                     checkLabel = true;
                 }
             } else if (this.targetFind != null) {
-                Set<? extends Edge> nodeEdgeSet =
+                Set<? extends HostEdge> nodeEdgeSet =
                     this.host.edgeSet(this.targetFind);
                 if (nodeEdgeSet == null) {
                     assert this.targetFind instanceof ValueNode : String.format(
@@ -448,7 +450,7 @@ class Edge2SearchItem extends AbstractSearchItem {
          * @param checkLabel if <code>true</code>, the sources of potential
          *        images have to be compared with #label.
          */
-        final void initImages(Set<? extends Edge> imageSet,
+        final void initImages(Set<? extends HostEdge> imageSet,
                 boolean checkSource, boolean checkTarget, boolean checkLabel,
                 boolean setEdge) {
             this.imageIter = imageSet.iterator();
@@ -474,20 +476,20 @@ class Edge2SearchItem extends AbstractSearchItem {
         /** Indicates if the target is found before this item is invoked. */
         final private boolean targetFound;
 
-        private final Node sourcePreMatch;
-        private final Node targetPreMatch;
+        private final HostNode sourcePreMatch;
+        private final HostNode targetPreMatch;
         /**
          * The pre-matched image for the edge source, if any. A value of
          * <code>null</code> means that no image is currently selected for the
          * source, or the source was pre-matched.
          */
-        Node sourceFind;
+        HostNode sourceFind;
         /**
          * The pre-matched image for the edge target, if any. A value of
          * <code>null</code> means that no image is currently selected for the
          * target, or the target was pre-matched.
          */
-        Node targetFind;
+        HostNode targetFind;
         /**
          * Flag indicating the if sources of images returned by
          * {@link #initImages()} have to be checked against the found source
@@ -511,6 +513,6 @@ class Edge2SearchItem extends AbstractSearchItem {
          */
         private boolean setEdge;
         /** Image found by the latest call to {@link #find()}, if any. */
-        Edge selected;
+        HostEdge selected;
     }
 }

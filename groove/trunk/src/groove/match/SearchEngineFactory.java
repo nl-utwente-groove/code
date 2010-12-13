@@ -17,15 +17,15 @@
 package groove.match;
 
 import groove.graph.DeltaStore;
-import groove.graph.Graph;
 import groove.lts.DefaultGraphNextState;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.match.rete.ReteSearchEngine;
-import groove.rel.RuleToStateMap;
+import groove.trans.HostGraph;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
+import groove.trans.RuleToHostMap;
 import groove.view.StoredGrammarView;
 
 /**
@@ -87,9 +87,9 @@ public class SearchEngineFactory {
      * @param ignoreNeg
      * @return an 
      */
-    public SearchEngine<? extends AbstractMatchStrategy<RuleToStateMap>> getEngine(
+    public SearchEngine<? extends AbstractMatchStrategy<RuleToHostMap>> getEngine(
             boolean injective, boolean ignoreNeg) {
-        SearchEngine<? extends AbstractMatchStrategy<RuleToStateMap>> result =
+        SearchEngine<? extends AbstractMatchStrategy<RuleToHostMap>> result =
             null;
         switch (this.getCurrentEngineType()) {
         case SEARCH_PLAN:
@@ -102,7 +102,7 @@ public class SearchEngineFactory {
 
     }
 
-    public SearchEngine<? extends AbstractMatchStrategy<RuleToStateMap>> getEngine(
+    public SearchEngine<? extends AbstractMatchStrategy<RuleToHostMap>> getEngine(
             boolean injective) {
         return this.getEngine(injective, false);
     }
@@ -178,7 +178,7 @@ public class SearchEngineFactory {
      * 
      * @param g
      */
-    public synchronized void newStartGraphLoad(Graph g) {
+    public synchronized void newStartGraphLoad(HostGraph g) {
         if (this.getCurrentEngineType() == EngineType.RETE) {
             for (int inj = 0; inj <= 1; inj++) {
                 ReteSearchEngine se =

@@ -16,11 +16,8 @@
  */
 package groove.trans;
 
-import groove.graph.DefaultEdgeSet;
-import groove.graph.Edge;
-import groove.graph.Graph;
+import groove.graph.HostNodeSet;
 import groove.graph.Node;
-import groove.graph.NodeSet;
 import groove.lts.DefaultGraphTransition;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -90,17 +87,17 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
         return result;
     }
 
-    public RuleApplication newApplication(Graph source) {
+    public RuleApplication newApplication(HostGraph source) {
         return new DefaultApplication(this, source);
     }
 
     /** Returns the cached set of nodes erased by the event. */
-    public Set<Node> getErasedNodes() {
+    public Set<HostNode> getErasedNodes() {
         return getCache().getErasedNodes();
     }
 
     /** Computes and returns the set of erased nodes. */
-    abstract Set<Node> computeErasedNodes();
+    abstract Set<HostNode> computeErasedNodes();
 
     @Override
     public String toString() {
@@ -165,7 +162,7 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
      * actually applicable at <code>source</code>.
      * @throws UnsupportedOperationException if the rule is not unmodifying
      */
-    public Node[] getAddedNodes(GraphState source) {
+    public HostNode[] getAddedNodes(GraphState source) {
         if (getRule().isModifying()) {
             throw new UnsupportedOperationException(
                 "Only unmodifying events can be used as graph transition stubs");
@@ -229,33 +226,31 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
     /**
      * Callback factory method to create a fresh, empty node set.
      */
-    protected Set<Node> createNodeSet() {
-        return new NodeSet();
+    protected Set<HostNode> createNodeSet() {
+        return new HostNodeSet();
     }
 
     /**
      * Callback factory method to create a fresh, empty node set with a given
      * initial capacity.
      */
-    protected Set<Node> createNodeSet(int capacity) {
-        return new NodeSet(capacity);
+    protected Set<HostNode> createNodeSet(int capacity) {
+        return new HostNodeSet(capacity);
     }
 
     /**
      * Callback factory method to create a fresh, empty edge set.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    protected Set<Edge> createEdgeSet() {
-        return (Set) new DefaultEdgeSet();
+    protected Set<HostEdge> createEdgeSet() {
+        return new HostEdgeSet();
     }
 
     /**
      * Callback factory method to create a fresh, empty edge set with a given
      * initial capacity.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    protected Set<Edge> createEdgeSet(int capacity) {
-        return (Set) new DefaultEdgeSet(capacity);
+    protected Set<HostEdge> createEdgeSet(int capacity) {
+        return new HostEdgeSet(capacity);
     }
 
     /** The rule for which this is an event. */
@@ -269,12 +264,12 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
     /** The pre-computed identity hash code for this object. */
     private int identityHashCode;
     /** Constant empty node array. */
-    private static final Node[] EMPTY_NODE_ARRAY = new Node[0];
+    private static final HostNode[] EMPTY_NODE_ARRAY = new HostNode[0];
 
     /** Cache holding the anchor map. */
     abstract protected class AbstractEventCache {
         /** Returns the cached set of nodes erased by the event. */
-        public final Set<Node> getErasedNodes() {
+        public final Set<HostNode> getErasedNodes() {
             if (this.erasedNodeSet == null) {
                 this.erasedNodeSet = computeErasedNodes();
             }
@@ -284,6 +279,6 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
         /**
          * Set of nodes from the source that are to be erased in the target.
          */
-        private Set<Node> erasedNodeSet;
+        private Set<HostNode> erasedNodeSet;
     }
 }

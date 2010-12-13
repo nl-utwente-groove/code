@@ -51,8 +51,8 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     }
 
     /** This implementation just returns the user object. */
-    public Collection<Label> getListLabels() {
-        Collection<Label> result = new ArrayList<Label>();
+    public Collection<? extends Label> getListLabels() {
+        Collection<DefaultLabel> result = new ArrayList<DefaultLabel>();
         for (String labelString : getUserObject()) {
             result.add(DefaultLabel.createLabel(labelString));
         }

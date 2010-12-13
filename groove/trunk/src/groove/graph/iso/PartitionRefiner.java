@@ -16,7 +16,6 @@
  */
 package groove.graph.iso;
 
-import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
@@ -964,7 +963,7 @@ public class PartitionRefiner implements CertificateStrategy {
             super(edge);
             this.source = source;
             this.target = target;
-            this.labelIndex = ((DefaultLabel) edge.label()).hashCode();
+            this.labelIndex = edge.label().hashCode();
             initValue();
             source.addValue(this.value);
             target.addValue(this.value << 1);
@@ -1059,7 +1058,7 @@ public class PartitionRefiner implements CertificateStrategy {
         public Edge1Certificate(Edge edge, NodeCertificate source) {
             super(edge);
             this.source = source;
-            this.labelIndex = ((DefaultLabel) edge.label()).hashCode();
+            this.labelIndex = edge.label().hashCode();
             initValue();
             source.addValue(this.value);
         }

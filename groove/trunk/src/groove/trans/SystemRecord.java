@@ -5,8 +5,6 @@ import groove.abstraction.ShapeNode;
 import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.graph.NodeFactory;
-import groove.rel.RuleToStateMap;
 import groove.util.DefaultDispenser;
 import groove.util.TreeHashSet;
 
@@ -22,7 +20,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class SystemRecord implements NodeFactory {
+public class SystemRecord {
     /**
      * The total number of events (over all rules) created in
      * {@link #getEvent(RuleMatch)}.
@@ -86,16 +84,6 @@ public class SystemRecord implements NodeFactory {
         this.nodeCounter.setCount(Math.max(count, this.nodeCounter.getCount()));
     }
 
-    /**
-     * Factory method to create a fresh node during rule application. Each call
-     * yields a node with an increased node number, based on a special counter.
-     * @return fresh node with number increased by 1 with respect to previous
-     *         call
-     */
-    public Node newNode() {
-        return DefaultNode.createNode(this.nodeCounter.getNumber());
-    }
-
     /** Returns the stored rule system on which the derivations are based. */
     public GraphGrammar getGrammar() {
         return this.grammar;
@@ -146,8 +134,8 @@ public class SystemRecord implements NodeFactory {
      * @param rule the rule of the composite event
      * @param elementMap the element map for the simple event
      */
-    public SPOEvent createSimpleEvent(SPORule rule, RuleToStateMap elementMap) {
-        return (SPOEvent) normaliseEvent(new SPOEvent(rule, elementMap, this,
+    public SPOEvent createSimpleEvent(SPORule rule, RuleToHostMap elementMap) {
+        return (SPOEvent) normaliseEvent(new SPOEvent(rule, elementMap,
             isReuseEvents()));
     }
 

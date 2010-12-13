@@ -17,8 +17,6 @@
 package groove.explore.util;
 
 import groove.control.CtrlState;
-import groove.graph.Graph;
-import groove.graph.Node;
 import groove.lts.AbstractGraphState;
 import groove.lts.DefaultGraphNextState;
 import groove.lts.DefaultGraphTransition;
@@ -28,6 +26,8 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.GraphTransitionStub;
 import groove.lts.MatchResult;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.util.Reporter;
@@ -113,7 +113,7 @@ public class MatchApplier implements RuleEventApplier {
      * state.
      */
     private GraphNextState createState(MatchResult match, GraphState source) {
-        Node[] addedNodes;
+        HostNode[] addedNodes;
         RuleEvent event;
         if (match instanceof GraphTransition) {
             GraphTransition parentOut = (GraphTransition) match;
@@ -136,7 +136,7 @@ public class MatchApplier implements RuleEventApplier {
      */
     private GraphTransition createTransition(MatchResult match,
             GraphState source, GraphState target, boolean symmetry) {
-        Node[] addedNodes;
+        HostNode[] addedNodes;
         RuleEvent event;
         if (match instanceof GraphTransition) {
             GraphTransition parentOut = (GraphTransition) match;
@@ -158,15 +158,17 @@ public class MatchApplier implements RuleEventApplier {
      *         coincides with the source state event; otherwise, the added nodes
      *         are computed from the event.
      */
-    private Node[] getCreatedNodes(GraphTransition parentOut, GraphState source) {
-        Node[] result;
+    private HostNode[] getCreatedNodes(GraphTransition parentOut,
+            GraphState source) {
+        HostNode[] result;
         result = parentOut.getAddedNodes();
         // if this application's event is the same as that of the source,
         // test if the added nodes coincide
         if (result.length > 0
             && ((GraphNextState) source).getEvent() == parentOut.getEvent()) {
-            Graph host = source.getGraph();
-            Node[] sourceAddedNodes = ((GraphNextState) source).getAddedNodes();
+            HostGraph host = source.getGraph();
+            HostNode[] sourceAddedNodes =
+                ((GraphNextState) source).getAddedNodes();
             boolean conflict = false;
             for (int i = 0; !conflict && i < result.length; i++) {
                 conflict = result[i] == sourceAddedNodes[i];
@@ -181,7 +183,7 @@ public class MatchApplier implements RuleEventApplier {
     }
 
     /** Computes the nodes created by applying a given event to a given graph. */
-    private Node[] getCreatedNodes(RuleEvent event, Graph graph) {
+    private HostNode[] getCreatedNodes(RuleEvent event, HostGraph graph) {
         // optimise to avoid reconstructing the node set if there
         // are no node creators in the rule
         if (event.getRule().hasCreators()) {
@@ -217,7 +219,7 @@ public class MatchApplier implements RuleEventApplier {
      * Constant empty node array, to be shared among rule applications that
      * create no nodes.
      */
-    private static final Node[] EMPTY_NODE_ARRAY = new Node[0];
+    private static final HostNode[] EMPTY_NODE_ARRAY = new HostNode[0];
 
     /** Reporter for profiling information. */
     static private final Reporter reporter =

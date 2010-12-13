@@ -18,8 +18,6 @@ package groove.trans;
 
 import groove.graph.AbstractEdge;
 import groove.graph.DefaultEdge;
-import groove.graph.DefaultLabel;
-import groove.graph.Label;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 
@@ -30,19 +28,11 @@ import groove.graph.algebra.OperatorEdge;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RuleEdge extends AbstractEdge<RuleNode,Label,RuleNode> {
+public class RuleEdge extends AbstractEdge<RuleNode,RuleLabel,RuleNode> {
     /**
      * Constructs a fresh rule edge
      */
-    public RuleEdge(RuleNode source, Label label, RuleNode target) {
+    public RuleEdge(RuleNode source, RuleLabel label, RuleNode target) {
         super(source, label, target);
-    }
-
-    /**
-     * Constructs a fresh rule edge with a default label constructed from a given
-     * string.
-     */
-    public RuleEdge(RuleNode source, String label, RuleNode target) {
-        this(source, DefaultLabel.createLabel(label), target);
     }
 }

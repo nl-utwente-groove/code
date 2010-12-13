@@ -16,104 +16,133 @@
  */
 package groove.util;
 
+import groove.view.FormatException;
+
 /**
  * Implements a generic pair of values.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Pair<T,U> {
+public class Pair<T,U> implements Fixable {
     /** Constructs a pair with given first and second fields. */
-    public Pair(final T first, final U second) {
-        this.first = first;
-        this.second = second;
+    public Pair(final T one, final U two) {
+        this.one = one;
+        this.two = two;
     }
 
     /**
      * Returns the first value of the pair.
      */
-    public T first() {
-        return this.first;
+    public T one() {
+        return this.one;
     }
 
     /**
      * Returns the second value of the pair.
      */
-    public U second() {
-        return this.second;
+    public U two() {
+        return this.two;
+    }
+
+    /** Changes the first value of the pair. */
+    public T setOne(T one) {
+        assert !isFixed() : "Can't set a value after the pair is fixed.";
+        T result = this.one;
+        this.one = one;
+        return result;
+    }
+
+    /** Changes the second value of the pair. */
+    public U setTwo(U two) {
+        assert !isFixed() : "Can't set a value after the pair is fixed.";
+        U result = this.two;
+        this.two = two;
+        return result;
+    }
+
+    @Override
+    public void setFixed() throws FormatException {
+        // the pair is fixed by computing the hash code.
+        hashCode();
+    }
+
+    @Override
+    public boolean isFixed() {
+        // the pair is fixed as soon as the hash code is computed.
+        return this.hashCode != 0;
+    }
+
+    @Override
+    public void testFixed(boolean fixed) {
+        assert isFixed() == fixed;
     }
 
     /**
-     * Sets the first value of the pair.
-     */
-    public void setFirst(T first) {
-        this.first = first;
-    }
-
-    /**
-     * Sets the second value of the pair.
-     */
-    public void setSecond(U second) {
-        this.second = second;
-    }
-
-    /**
-     * Tests for the equality of the {@link #first()} and {@link #second()}
+     * Tests for the equality of the {@link #one()} and {@link #two()}
      * fields.
      */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof Pair<?,?> && equalsFirst((Pair<?,?>) obj)
-            && equalsSecond((Pair<?,?>) obj);
+        return obj instanceof Pair<?,?> && equalsOne((Pair<?,?>) obj)
+            && equalsTwo((Pair<?,?>) obj);
     }
 
-    /** Tests if the {@link #first()} field of this pair equals that of another. */
-    protected boolean equalsFirst(Pair<?,?> other) {
-        if (this.first == null) {
-            return other.first == null;
+    /** Tests if the {@link #one()} field of this pair equals that of another. */
+    protected boolean equalsOne(Pair<?,?> other) {
+        if (this.one == null) {
+            return other.one == null;
         } else {
-            return this.first.equals(other.first);
+            return this.one.equals(other.one);
         }
     }
 
-    /** Tests if the {@link #second()} field of this pair equals that of another. */
-    protected boolean equalsSecond(Pair<?,?> other) {
-        if (this.second == null) {
-            return other.second == null;
+    /** Tests if the {@link #two()} field of this pair equals that of another. */
+    protected boolean equalsTwo(Pair<?,?> other) {
+        if (this.two == null) {
+            return other.two == null;
         } else {
-            return this.second.equals(other.second);
+            return this.two.equals(other.two);
         }
     }
 
     /**
-     * This implementation uses the hash codes of the {@link #first()} and
-     * {@link #second()} fields.
+     * This implementation uses the hash codes of the {@link #one()} and
+     * {@link #two()} fields.
      */
     @Override
     public int hashCode() {
-        int firstHash = this.first == null ? 0 : this.first.hashCode();
-        int secondHash = this.second == null ? 0 : this.second.hashCode();
-        return firstHash ^ (secondHash << 1);
+        if (this.hashCode == 0) {
+            int firstHash = this.one == null ? 0 : this.one.hashCode();
+            int secondHash = this.two == null ? 0 : this.two.hashCode();
+            this.hashCode = firstHash ^ (secondHash << 1);
+            if (this.hashCode == 0) {
+                this.hashCode = 1;
+            }
+        }
+        return this.hashCode;
     }
 
     @Override
     public String toString() {
-        return String.format("<%s,%s>", this.first, this.second);
+        return String.format("<%s,%s>", this.one, this.two);
     }
 
     /**
      * Factory method for generically creating typed pairs.
      * @param <TT> type capture of the first parameter
      * @param <UU> type capture of the second parameter
-     * @param first first element of the new pair
-     * @param second second element of the new pair
+     * @param one first element of the new pair
+     * @param two second element of the new pair
      * @return a new typed pair for with the given values
      */
-    public static <TT,UU> Pair<TT,UU> createPair(TT first, UU second) {
-        return new Pair<TT,UU>(first, second);
+    public static <TT,UU> Pair<TT,UU> createPair(TT one, UU two) {
+        return new Pair<TT,UU>(one, two);
     }
 
+    /** The precomputed hash code. The pair is fixed iff this value is not 0. */
+    private int hashCode;
     /** The first value of the pair. */
-    private T first;
+    private T one;
     /** The second value of the pair. */
-    private U second;
+    private U two;
 }

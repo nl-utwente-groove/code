@@ -40,8 +40,21 @@ public abstract class AbstractGraph<C extends GraphCache> extends
      * Factory method for nodes of this graph.
      * @return the freshly created node
      */
-    public Node createNode() {
-        return DefaultNode.createNode();
+    final protected Node createNode() {
+        return getFactory().createNode();
+    }
+
+    /**
+     * Factory method for numbered nodes of this graph.
+     * @return the freshly created node
+     */
+    final protected Node createNode(int nr) {
+        return getFactory().createNode(nr);
+    }
+
+    @Override
+    public ElementFactory<?,?,?> getFactory() {
+        return DefaultFactory.INSTANCE;
     }
 
     /**
@@ -59,10 +72,10 @@ public abstract class AbstractGraph<C extends GraphCache> extends
      * @param target the target node of the new edge
      * @return the freshly binary created edge
      */
-    public Edge createEdge(Node source, Label label, Node target) {
+    final protected Edge createEdge(Node source, Label label, Node target) {
         assert isTypeCorrect(source);
         assert isTypeCorrect(target);
-        Edge result = DefaultEdge.createEdge(source, label, target);
+        Edge result = getFactory().createEdge(source, label, target);
         assert isTypeCorrect(result);
         return result;
     }
@@ -73,6 +86,21 @@ public abstract class AbstractGraph<C extends GraphCache> extends
             "Fresh node %s already in node set %s", freshNode, nodeSet());
         addNode(freshNode);
         return freshNode;
+    }
+
+    public Node addNode(int nr) {
+        Node freshNode = createNode(nr);
+        assert !nodeSet().contains(freshNode) : String.format(
+            "Fresh node %s already in node set %s", freshNode, nodeSet());
+        addNode(freshNode);
+        return freshNode;
+    }
+
+    /**
+     * Creates its result using {@link #createEdge(Node, Label, Node)}.
+     */
+    public Edge addEdge(Node source, String label, Node target) {
+        return addEdge(source, getFactory().createLabel(label), target);
     }
 
     /**
@@ -116,7 +144,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends
         return removed;
     }
 
-    public boolean removeNodeSetWithoutCheck(Collection<Node> nodeSet) {
+    public boolean removeNodeSetWithoutCheck(Collection<? extends Node> nodeSet) {
         boolean removed = false;
         for (Node node : nodeSet) {
             removed |= removeNodeWithoutCheck(node);
@@ -234,6 +262,20 @@ public abstract class AbstractGraph<C extends GraphCache> extends
     }
 
     /**
+     * Tests if a given graph is connected; throws a
+     * {@link IllegalArgumentException} if it is not. Implemented by testing
+     * whether the number of partitions of the graph equals 1.
+     * 
+     * @return <tt>true</tt> if this graph contains exactly one connected
+     *         component, <tt>false</tt> otherwise
+     */
+    public boolean isConnected() {
+        return getConnectedSets(nodeSet(), edgeSet()).size() == 1;
+    }
+
+    // -------------------- REPORTER DEFINITIONS ------------------------
+
+    /**
      * Partitions a set of graph elements into its maximal connected subsets.
      * The set does not necessarily contain all endpoints of edges it contains.
      * A subset is connected if there is a chain of edges and edge endpoints,
@@ -261,12 +303,12 @@ public abstract class AbstractGraph<C extends GraphCache> extends
                 if (sourceCell == null) {
                     sourceCell = targetCell;
                 } else if (targetCell != sourceCell) {
-                    sourceCell.first().addAll(targetCell.first());
-                    sourceCell.second().addAll(targetCell.second());
-                    for (N loser : targetCell.first()) {
+                    sourceCell.one().addAll(targetCell.one());
+                    sourceCell.two().addAll(targetCell.two());
+                    for (N loser : targetCell.one()) {
                         resultMap.put(loser, sourceCell);
                     }
-                    for (E loser : targetCell.second()) {
+                    for (E loser : targetCell.two()) {
                         resultMap.put(loser, sourceCell);
                     }
                 }
@@ -278,26 +320,12 @@ public abstract class AbstractGraph<C extends GraphCache> extends
                 sourceCell =
                     new Pair<Set<N>,Set<E>>(new HashSet<N>(), cellSecond);
             } else {
-                sourceCell.second().add(edge);
+                sourceCell.two().add(edge);
             }
             resultMap.put(edge, sourceCell);
         }
         return new HashSet<Pair<Set<N>,Set<E>>>(resultMap.values());
     }
-
-    /**
-     * Tests if a given graph is connected; throws a
-     * {@link IllegalArgumentException} if it is not. Implemented by testing
-     * whether the number of partitions of the graph equals 1.
-     * 
-     * @return <tt>true</tt> if this graph contains exactly one connected
-     *         component, <tt>false</tt> otherwise
-     */
-    public boolean isConnected() {
-        return getConnectedSets(nodeSet(), edgeSet()).size() == 1;
-    }
-
-    // -------------------- REPORTER DEFINITIONS ------------------------
 
     /** Returns an empty graph. */
     @SuppressWarnings("all")

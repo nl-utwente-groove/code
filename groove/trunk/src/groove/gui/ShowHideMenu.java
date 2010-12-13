@@ -16,13 +16,11 @@
  */
 package groove.gui;
 
-import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.GraphAdapter;
-import groove.graph.GraphListener;
 import groove.graph.GraphShape;
 import groove.graph.Label;
+import groove.graph.TypeLabel;
 import groove.gui.dialog.StringDialog;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
@@ -39,7 +37,6 @@ import groove.rel.SupportedNodeRelation;
 import groove.rel.SupportedSetNodeRelation;
 import groove.util.Converter;
 import groove.util.Groove;
-import groove.util.KeyPartition;
 import groove.view.FormatException;
 
 import java.awt.event.ActionEvent;
@@ -567,11 +564,9 @@ public class ShowHideMenu extends JMenu {
         protected LabelAction(JGraph jgraph, int showMode, Label label)
             throws IllegalArgumentException {
             super(jgraph, showMode, "");
-            putValue(
-                NAME,
-                label.text().length() == 0
-                        ? Options.EMPTY_LABEL_TEXT
-                        : Converter.HTML_TAG.on(DefaultLabel.toHtmlString(label)));
+            putValue(NAME,
+                label.text().length() == 0 ? Options.EMPTY_LABEL_TEXT
+                        : Converter.HTML_TAG.on(TypeLabel.toHtmlString(label)));
             this.label = label;
         }
 
@@ -598,77 +593,6 @@ public class ShowHideMenu extends JMenu {
      */
     static protected class RegExprAction extends ShowHideAction {
         /**
-         * Relation factory that makes sure strings are correctly interpreted as
-         * edge labels.
-         */
-        public class Relation extends SupportedSetNodeRelation {
-            /** Constructs a relation for a given graph. */
-            protected Relation(GraphShape graph) {
-                super(graph);
-            }
-
-            @Override
-            public Relation newInstance() {
-                return new Relation(getGraph());
-            }
-
-            /**
-             * This implementation uses a mapping from the label text to the
-             * edges to make sure the user view of the label is correctly
-             * interpreted.
-             */
-            @Override
-            protected Collection<? extends Edge> getRelatedSet(Label label) {
-                if (this.textEdgeMap == null) {
-                    // since the labels may not be default labels
-                    // (as in the case of LTS graphs)
-                    // we have to convert the label map so that it maps label
-                    // text instead
-                    this.textEdgeMap = new KeyPartition<String,Edge>() {
-                        @Override
-                        protected String getKey(Object value) {
-                            if (value instanceof Edge) {
-                                return ((Edge) value).label().text();
-                            } else {
-                                return null;
-                            }
-                        }
-                    };
-                    this.textEdgeMap.values().addAll(getGraph().edgeSet());
-                    getGraph().addGraphListener(this.listener);
-                }
-                return this.textEdgeMap.getCell(label.text());
-            }
-
-            /**
-             * Removes the graph listener from the underlying graph.
-             */
-            protected void unregister() {
-                getGraph().removeGraphListener(this.listener);
-            }
-
-            /** Returns a map from the text to the corresponding edges. */
-            KeyPartition<String,Edge> getTextEdgeMap() {
-                return this.textEdgeMap;
-            }
-
-            /** Mapping from label text to edges. */
-            private KeyPartition<String,Edge> textEdgeMap;
-            /** Graph listener to keep the {@link #textEdgeMap} up-to-date. */
-            private final GraphListener listener = new GraphAdapter() {
-                @Override
-                public void addUpdate(GraphShape graph, Edge edge) {
-                    getTextEdgeMap().add(edge);
-                }
-
-                @Override
-                public void removeUpdate(GraphShape graph, Edge edge) {
-                    getTextEdgeMap().remove(edge);
-                }
-            };
-        }
-
-        /**
          * Constructs an instance of the action for a given j-graph, either for
          * showing or for hiding.
          * @param jgraph the underlying j-graph
@@ -689,17 +613,18 @@ public class ShowHideMenu extends JMenu {
                 try {
                     RegExpr expr = RegExpr.parse(exprText);
                     if (expr != null) {
-                        if (this.currentRelation == null
-                            || this.currentRelation.getGraph() != graph) {
-                            if (this.currentRelation != null) {
-                                this.currentRelation.unregister();
+                        if (this.calculator == null
+                            || this.calculator.getGraph() != graph) {
+                            if (this.calculator != null) {
+                                this.calculator.stopListening();
                             }
-                            this.currentRelation = new Relation(graph);
+                            this.calculator =
+                                new RelationCalculator(graph,
+                                    new SupportedSetNodeRelation());
+                            this.calculator.startListening();
                         }
-                        RelationCalculator calculator =
-                            new RelationCalculator(this.currentRelation);
                         SupportedNodeRelation rel =
-                            (SupportedNodeRelation) expr.apply(calculator);
+                            (SupportedNodeRelation) expr.apply(this.calculator);
                         this.elementSet = rel.getSupport();
                     }
                     super.actionPerformed(evt);
@@ -736,7 +661,7 @@ public class ShowHideMenu extends JMenu {
          * The currently used relation factory in the regular expression
          * calculator.
          */
-        private Relation currentRelation;
+        private RelationCalculator calculator;
 
         private static StringDialog exprDialog = new StringDialog(
             "Regular Expression: ");

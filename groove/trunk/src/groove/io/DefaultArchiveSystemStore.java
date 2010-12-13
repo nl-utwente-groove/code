@@ -19,8 +19,8 @@ package groove.io;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
 import groove.gui.layout.LayoutMap;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
@@ -287,7 +287,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public void relabel(Label oldLabel, Label newLabel)
+    public void relabel(TypeLabel oldLabel, TypeLabel newLabel)
         throws UnsupportedOperationException {
         throw new UnsupportedOperationException(String.format(
             "Archived grammar '%s' is immutable", getName()));
@@ -517,7 +517,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
             try {
                 Pair<Graph,Map<String,Node>> plainGraphAndMap =
                     JaxbGxlIO.getInstance().loadGraphWithMap(in);
-                Graph plainGraph = plainGraphAndMap.first();
+                Graph plainGraph = plainGraphAndMap.one();
                 /*
                  * For backward compatibility, we set the role and name of the
                  * graph.
@@ -525,7 +525,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
                 GraphInfo.setRole(plainGraph, role);
                 GraphInfo.setName(plainGraph, graphName);
                 addLayout(file, graphEntry.getKey(), plainGraph,
-                    plainGraphAndMap.second());
+                    plainGraphAndMap.two());
                 AspectGraph graph = AspectGraph.newInstance(plainGraph);
                 /* Store the graph */
                 result.put(graphName, graph);

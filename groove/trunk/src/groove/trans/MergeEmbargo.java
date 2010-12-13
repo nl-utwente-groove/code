@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.LabelStore;
 
 /**
  * A specialised NAC that enforces an injectivity constraint. Merge embargoes
@@ -32,13 +31,12 @@ public class MergeEmbargo extends NotCondition {
      * @param source the graph on which this embargo works
      * @param node1 the first of the nodes that may not be merged
      * @param node2 the second of the nodes that may not me merged
-     * @param labelStore label store specifying the subtype relation
      * @require <tt>source.contains(node1) && source.contains(node2)</tt>
      * @ensure <tt>node1().equals(node1) && node2().equals(node2)</tt>
      */
     public MergeEmbargo(RuleGraph source, RuleNode node1, RuleNode node2,
-            LabelStore labelStore, SystemProperties properties) {
-        super(source.newGraph(), properties, labelStore);
+            SystemProperties properties) {
+        super(source.newGraph(), properties);
         this.node1 = node1;
         this.node2 = node2;
         RuleNode codNode = getTarget().addNode();

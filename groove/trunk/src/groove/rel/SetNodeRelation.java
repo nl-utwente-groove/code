@@ -17,10 +17,12 @@
 package groove.rel;
 
 import groove.graph.Edge;
-import groove.graph.GraphShape;
 import groove.graph.Node;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -28,82 +30,89 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class SetNodeRelation extends AbstractNodeRelation {
-    /**
-     * Constructs a relation over a given universe.
-     */
-    public SetNodeRelation(GraphShape graph) {
-        super(graph);
+public class SetNodeRelation implements NodeRelation {
+    public Set<Entry> getAllRelated() {
+        return Collections.unmodifiableSet(this.relatedSet);
+    }
+
+    @Override
+    public boolean addSelfRelated(Node node) {
+        return addRelated(createEntry(node));
     }
 
     public boolean addRelated(Edge edge) {
-        return this.relatedSet.add(edge);
+        return addRelated(createEntry(edge));
     }
 
-    public boolean addSelfRelated(Node node) {
-        return this.relatedSet.add(createRelated(node, node));
-    }
-
-    public NodeRelation copy() {
-        SetNodeRelation result = (SetNodeRelation) newInstance();
-        result.relatedSet.addAll(this.relatedSet);
+    @Override
+    public SetNodeRelation clone() {
+        SetNodeRelation result = newInstance();
+        for (Entry entry : getAllRelated()) {
+            result.addRelated(entry);
+        }
         return result;
     }
 
-    public NodeRelation newInstance() {
-        return new SetNodeRelation(getGraph());
+    public SetNodeRelation newInstance() {
+        return new SetNodeRelation();
+    }
+
+    public boolean doOr(NodeRelation other) {
+        boolean result = false;
+        for (Entry entry : other.getAllRelated()) {
+            result |= addRelated(entry);
+        }
+        return result;
     }
 
     public NodeRelation doThen(NodeRelation other) {
         assert other instanceof SetNodeRelation;
-        this.relatedSet = new HashSet<Edge>();
-        for (Edge oldRel : this.relatedSet) {
-            for (Edge otherRel : ((SetNodeRelation) other).getRelatedSet()) {
-                if (otherRel.source().equals(oldRel.target())) {
-                    RelationEdge newRel =
-                        createRelated(oldRel.source(), otherRel.target());
-                    this.relatedSet.add(newRel);
+        Set<Entry> oldRelatedSet = new HashSet<Entry>(getAllRelated());
+        clear();
+        for (Entry oldRel : oldRelatedSet) {
+            Set<Entry> otherEntries =
+                ((SetNodeRelation) other).getEntries(oldRel.two());
+            if (otherEntries != null) {
+                for (Entry otherRel : otherEntries) {
+                    assert otherRel.one().equals(oldRel.two());
+                    Entry newRel = oldRel.append(otherRel);
+                    addRelated(newRel);
                 }
             }
         }
         return this;
     }
 
-    @Override
-    protected boolean doOrThen() {
+    /**
+     * This implementation repeatedly takes the union of <tt>this</tt> with the
+     * concatenation of <tt>this</tt> and it's reflexive closure, until that no
+     * longer changes the relation.
+     */
+    public boolean doTransitiveClosure() {
         boolean result = false;
-        Set<Edge> oldRelatedSet = new HashSet<Edge>(this.relatedSet);
-        for (Edge oldRel : oldRelatedSet) {
-            for (Edge otherRel : oldRelatedSet) {
-                if (otherRel.source().equals(oldRel.target())) {
-                    RelationEdge newRel =
-                        createRelated(oldRel.source(), otherRel.target());
-                    result |= this.relatedSet.add(newRel);
-                }
-            }
+        boolean unstable = true;
+        SetNodeRelation me = clone();
+        while (unstable) {
+            unstable = doOrThen(me);
+            result |= unstable;
         }
         return result;
-    }
-
-    public boolean doOr(NodeRelation other) {
-        return this.relatedSet.addAll(other.getAllRelated());
     }
 
     /**
      * This implementation iterates over the set of related elements and adds
      * their inverse to a new relation.
      */
-    public NodeRelation getInverse() {
-        SetNodeRelation result = (SetNodeRelation) newInstance();
-        for (Edge related : this.relatedSet) {
-            result.getRelatedSet().add(
-                createRelated(related.target(), related.source()));
+    public void doInverse() {
+        Set<Entry> relatedSet = new HashSet<Entry>(getAllRelated());
+        clear();
+        for (Entry entry : relatedSet) {
+            addRelated(entry.invert());
         }
-        return result;
     }
 
     public boolean isEmpty() {
-        return this.relatedSet.isEmpty();
+        return getAllRelated().isEmpty();
     }
 
     /**
@@ -112,7 +121,7 @@ public class SetNodeRelation extends AbstractNodeRelation {
     @Override
     public boolean equals(Object obj) {
         return (obj instanceof SetNodeRelation)
-            && this.relatedSet.equals(((SetNodeRelation) obj).relatedSet);
+            && getAllRelated().equals(((SetNodeRelation) obj).getAllRelated());
     }
 
     /**
@@ -120,7 +129,7 @@ public class SetNodeRelation extends AbstractNodeRelation {
      */
     @Override
     public int hashCode() {
-        return this.relatedSet.hashCode();
+        return getAllRelated().hashCode();
     }
 
     /**
@@ -128,17 +137,96 @@ public class SetNodeRelation extends AbstractNodeRelation {
      */
     @Override
     public String toString() {
-        return this.relatedSet.toString();
+        return getAllRelated().toString();
+    }
+
+    /** Clears this relation. */
+    protected void clear() {
+        this.relatedSet.clear();
+        this.oneToEntryMap = null;
+    }
+
+    /** Adds a given entry to this relation. */
+    protected boolean addRelated(Entry entry) {
+        addToEntryMap(entry);
+        return this.relatedSet.add(entry);
     }
 
     /**
-     * Returns a shared view upon the set of related object in this relation.
+     * Constructs the union of this relation and its concatenation
+     * with another.
      */
-    @Override
-    protected Set<Edge> getRelatedSet() {
-        return this.relatedSet;
+    protected boolean doOrThen(SetNodeRelation other) {
+        boolean result = false;
+        Set<Entry> oldRelatedSet = new HashSet<Entry>(getAllRelated());
+        for (Entry oldRel : oldRelatedSet) {
+            Set<Entry> otherEntries = other.getEntries(oldRel.two());
+            if (otherEntries != null) {
+                for (Entry otherRel : otherEntries) {
+                    assert otherRel.one().equals(oldRel.two());
+                    Entry newRel = oldRel.append(otherRel);
+                    result |= addRelated(newRel);
+                }
+            }
+        }
+        return result;
     }
 
+    /**
+     * Factory method: constructs a self-entry for a given node.
+     */
+    protected Entry createEntry(Node node) {
+        return new Entry(node);
+    }
+
+    /**
+     * Factory method: constructs an entry from an edge.
+     */
+    protected Entry createEntry(Edge edge) {
+        return new Entry(edge.source(), edge.target());
+    }
+
+    /** Returns the set of entries with a given node as first element. */
+    protected Set<Entry> getEntries(Node one) {
+        return getOneToEntryMap().get(one);
+    }
+
+    /** Adds a given entry to the internally kept entry maps. */
+    protected boolean addToEntryMap(Entry entry) {
+        boolean result = false;
+        if (this.oneToEntryMap != null) {
+            result = addToOneToEntryMap(entry, this.oneToEntryMap);
+        }
+        return result;
+    }
+
+    private Map<Node,Set<Entry>> getOneToEntryMap() {
+        if (this.oneToEntryMap == null) {
+            this.oneToEntryMap = computeOneToEntryMap();
+        }
+        return this.oneToEntryMap;
+    }
+
+    /** Constructs the one-to-entry-map. */
+    private Map<Node,Set<Entry>> computeOneToEntryMap() {
+        Map<Node,Set<Entry>> result = new HashMap<Node,Set<Entry>>();
+        for (Entry entry : getAllRelated()) {
+            addToOneToEntryMap(entry, result);
+        }
+        return result;
+    }
+
+    /** Adds a given entry to the one-to-entry-map. */
+    private boolean addToOneToEntryMap(Entry entry, Map<Node,Set<Entry>> result) {
+        Set<Entry> entries = result.get(entry.one());
+        if (entries == null) {
+            result.put(entry.one(), entries = new HashSet<Entry>());
+        }
+        return entries.add(entry);
+    }
+
+    /** Mapping from the first element in the duo to the set of entries. */
+    private Map<Node,Set<Entry>> oneToEntryMap;
     /** The set of related nodes, stored as edges. */
-    private Set<Edge> relatedSet = new HashSet<Edge>();
+    private Set<Entry> relatedSet = new HashSet<Entry>();
 }

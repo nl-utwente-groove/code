@@ -20,9 +20,9 @@ import static groove.view.aspect.Aspect.CONTENT_ASSIGN;
 import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
 import groove.algebra.AlgebraRegister;
 import groove.algebra.UnknownSymbolException;
-import groove.graph.DefaultLabel;
 import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
+import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
 import groove.util.ExprParser;
 import groove.view.FormatException;
@@ -130,7 +130,7 @@ public class AspectParser {
         int result = text.indexOf(VALUE_SEPARATOR);
         if (result > 0) {
             if (!Character.isLetter(text.charAt(0))
-                || DefaultLabel.getPrefix(text) != null) {
+                || TypeLabel.getPrefix(text) != null) {
                 result = -1;
             }
         }

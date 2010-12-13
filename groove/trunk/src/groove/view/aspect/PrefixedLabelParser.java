@@ -1,7 +1,6 @@
 package groove.view.aspect;
 
-import groove.graph.DefaultLabel;
-import groove.graph.Label;
+import groove.graph.TypeLabel;
 import groove.view.FormatException;
 
 /**
@@ -16,19 +15,14 @@ class PrefixedLabelParser implements LabelParser {
     }
 
     @Override
-    public Label parse(String text) throws FormatException {
-        String prefix = DefaultLabel.getPrefix(text);
+    public TypeLabel parse(String text) throws FormatException {
+        String prefix = TypeLabel.getPrefix(text);
         if (prefix == null) {
             prefix = "";
         }
-        int kind = DefaultLabel.getPrefixKind(prefix);
+        int kind = TypeLabel.getPrefixKind(prefix);
         text = text.substring(prefix.length());
-        return DefaultLabel.createLabel(text, kind, true);
-    }
-
-    @Override
-    public DefaultLabel unparse(Label label) {
-        return DefaultLabel.createLabel(label.text(), label.getKind());
+        return TypeLabel.createLabel(text, kind, true);
     }
 
     /**

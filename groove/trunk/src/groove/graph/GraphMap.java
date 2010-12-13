@@ -25,9 +25,7 @@ import java.util.Map;
  * @version $Revision $
  */
 public interface GraphMap<SN extends Node,TN extends Node,SE extends Edge,TE extends Edge>
-        extends GenericNodeEdgeMap<SN,TN,SE,TE> { // extends
-    // Map<Element,Element>
-    // {
+        extends GenericNodeEdgeMap<SN,TN,SE,TE> {
     /**
      * Tests if a given node occurs as a key in the node map.
      * @param elem the element tested for
@@ -58,7 +56,7 @@ public interface GraphMap<SN extends Node,TN extends Node,SE extends Edge,TE ext
     boolean containsValue(Element elem);
 
     /** Returns the image of a label under this map. */
-    Label getLabel(Label label);
+    Label mapLabel(Label label);
 
     /**
      * Returns the image of an edge under this map, creating the image if
@@ -73,4 +71,13 @@ public interface GraphMap<SN extends Node,TN extends Node,SE extends Edge,TE ext
      * @return a copy of this object
      */
     GraphMap<SN,TN,SE,TE> clone();
+
+    /**
+     * Factory method for this type of objects.
+     * Returns a fresh map of the type of this object.
+     */
+    GraphMap<SN,TN,SE,TE> newMap();
+
+    /** Returns a factory for target graph elements. */
+    ElementFactory<? extends TN,?,? extends TE> getFactory();
 }
