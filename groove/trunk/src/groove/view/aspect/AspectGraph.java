@@ -16,6 +16,7 @@
  */
 package groove.view.aspect;
 
+import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.ElementFactory;
@@ -305,7 +306,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
      * Creates a graph where the aspect values are represented as label prefixes
      * for the edges, and as special edges for the nodes.
      */
-    public Graph toPlainGraph() {
+    public DefaultGraph toPlainGraph() {
         NodeEdgeMap elementMap = new NodeEdgeHashMap();
         return toPlainGraph(elementMap);
     }
@@ -318,10 +319,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
      *        to resulting {@link AspectGraph} elements; should be initially
      *        empty
      */
-    private Graph toPlainGraph(NodeEdgeMap elementMap) {
-        Graph result = createPlainGraph();
+    private DefaultGraph toPlainGraph(NodeEdgeMap elementMap) {
+        DefaultGraph result = createPlainGraph();
         for (AspectNode node : nodeSet()) {
-            Node nodeImage = addFreshNode(result, node);
+            Node nodeImage = result.addNode(node.getNumber());
             elementMap.putNode(node, nodeImage);
             for (AspectValue value : node.getDeclaredValues()) {
                 result.addEdge(nodeImage,
@@ -338,14 +339,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
         }
         GraphInfo.transfer(this, result, elementMap);
         return result;
-    }
-
-    /**
-     * Adds a fresh node to a given graph, taking the node identity from an
-     * existing aspect node.
-     */
-    private Node addFreshNode(Graph graph, AspectNode node) {
-        return graph.addNode(node.getNumber());
     }
 
     /**
@@ -393,8 +386,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
      * Factory method for a <code>Graph</code>.
      * @see #toPlainGraph()
      */
-    private Graph createPlainGraph() {
-        return new NodeSetEdgeSetGraph();
+    private DefaultGraph createPlainGraph() {
+        return new DefaultGraph();
     }
 
     /** Factory method for an aspect node with a given number. */
@@ -746,7 +739,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
         NodeEdgeMap fromAspectToPlain = new NodeEdgeHashMap();
         AspectGraph aspectGraph =
             factory.fromPlainGraph(plainGraph, fromPlainToAspect);
-        Graph result = aspectGraph.toPlainGraph(fromAspectToPlain);
+        DefaultGraph result = aspectGraph.toPlainGraph(fromAspectToPlain);
         if (result.nodeCount() > plainGraph.nodeCount()) {
             throw new FormatException(
                 "Result graph has more nodes: %s (%d) than original: %s (%d)",

@@ -92,12 +92,12 @@ public class JaxbGxlIO implements GxlIO {
      * information consists of a map from node identities as they occur in the
      * input to node identities in the resulting graph.
      */
-    public Pair<Graph,Map<String,Node>> loadGraphWithMap(InputStream in)
+    public Pair<DefaultGraph,Map<String,Node>> loadGraphWithMap(InputStream in)
         throws IOException, FormatException {
         try {
             GraphType gxlGraph = unmarshal(in);
-            Pair<Graph,Map<String,Node>> result = gxlToGraph(gxlGraph);
-            Graph graph = result.one();
+            Pair<DefaultGraph,Map<String,Node>> result = gxlToGraph(gxlGraph);
+            DefaultGraph graph = result.one();
             if (!Version.isKnownGxlVersion(GraphInfo.getVersion(graph))) {
                 GraphInfo.addErrors(
                     graph,
@@ -115,7 +115,8 @@ public class JaxbGxlIO implements GxlIO {
      * Loads a graph from an input stream. Convenience method for
      * <code>loadGraphWithMap(in).first()</code>.
      */
-    public Graph loadGraph(InputStream in) throws IOException, FormatException {
+    public DefaultGraph loadGraph(InputStream in) throws IOException,
+        FormatException {
         return loadGraphWithMap(in).one();
     }
 
@@ -330,11 +331,11 @@ public class JaxbGxlIO implements GxlIO {
      * @param gxlGraph the source of the unmarshalling
      * @return pair consisting of the resulting graph and a non-<code>null</code> map
      */
-    private Pair<Graph,Map<String,Node>> gxlToGraph(GraphType gxlGraph)
+    private Pair<DefaultGraph,Map<String,Node>> gxlToGraph(GraphType gxlGraph)
         throws FormatException {
 
         // Initialize the new objects to be created.
-        Graph graph = createGraph();
+        DefaultGraph graph = createGraph();
         Map<String,Node> nodeIds = new HashMap<String,Node>();
         // MdM - LayoutMap<Node,Edge> layoutMap = new LayoutMap();
 
@@ -422,7 +423,7 @@ public class JaxbGxlIO implements GxlIO {
         GraphInfo.setName(graph, gxlGraph.getId());
         GraphInfo.setRole(graph, gxlGraph.getRole());
         // MdM - GraphInfo.setLayoutMap(graph, layoutMap);
-        return new Pair<Graph,Map<String,Node>>(graph, nodeIds);
+        return new Pair<DefaultGraph,Map<String,Node>>(graph, nodeIds);
     }
 
     /**
@@ -481,7 +482,7 @@ public class JaxbGxlIO implements GxlIO {
         }
     }
 
-    private Graph createGraph() {
+    private DefaultGraph createGraph() {
         return new DefaultGraph();
     }
 

@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.Graph;
 import groove.graph.NodeEdgeMap;
 
 /**
@@ -38,12 +37,12 @@ public interface Derivation {
     /**
      * Returns the source graph of this derivation.
      */
-    public Graph getSource();
+    public HostGraph getSource();
 
     /**
      * Returns the target graph of this derivation.
      */
-    public Graph getTarget();
+    public HostGraph getTarget();
 
     /**
      * Returns the production rule on which this derivation is based.

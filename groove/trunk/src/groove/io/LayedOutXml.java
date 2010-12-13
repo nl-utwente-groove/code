@@ -74,7 +74,7 @@ public class LayedOutXml extends AbstractXml {
     protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(URL url)
         throws IOException {
         // first get the non-layed out result
-        Pair<Graph,Map<String,Node>> preliminary =
+        Pair<? extends Graph,Map<String,Node>> preliminary =
             this.marshaller.unmarshalGraphMap(url);
         Graph result = preliminary.one();
         Map<String,Node> nodeMap = preliminary.two();
