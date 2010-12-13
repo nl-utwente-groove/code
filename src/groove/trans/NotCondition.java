@@ -16,9 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.GraphShape;
-import groove.graph.LabelStore;
-import groove.rel.RuleToStateMap;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -36,18 +33,17 @@ public class NotCondition extends AbstractCondition<CompositeMatch> {
      * Creates a negative condition that attempts to match a given graph, with
      * given root map.
      */
-    public NotCondition(RuleGraph target, RuleGraphMap rootMap,
-            LabelStore labelStore, SystemProperties properties) {
-        super(null, target, rootMap, labelStore, properties);
+    public NotCondition(RuleGraph target, RuleToRuleMap rootMap,
+            SystemProperties properties) {
+        super(null, target, rootMap, properties);
     }
 
     /**
      * Creates a NAC over a default context and an initially empty target
      * pattern.
      */
-    public NotCondition(RuleGraph pattern, SystemProperties properties,
-            LabelStore labelStore) {
-        this(pattern, new RuleGraphMap(), labelStore, properties);
+    public NotCondition(RuleGraph pattern, SystemProperties properties) {
+        this(pattern, new RuleToRuleMap(), properties);
     }
 
     /**
@@ -60,8 +56,8 @@ public class NotCondition extends AbstractCondition<CompositeMatch> {
     }
 
     @Override
-    Iterator<CompositeMatch> computeMatchIter(final GraphShape host,
-            Iterator<RuleToStateMap> matchMapIter) {
+    Iterator<CompositeMatch> computeMatchIter(final HostGraph host,
+            Iterator<RuleToHostMap> matchMapIter) {
         Iterator<CompositeMatch> result = null;
         if (matchMapIter.hasNext()) {
             result = Collections.<CompositeMatch>emptySet().iterator();

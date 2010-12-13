@@ -31,9 +31,10 @@ import groove.io.DefaultGxl;
 import groove.io.ExtensionFilter;
 import groove.io.Xml;
 import groove.match.GraphSearchPlanFactory;
-import groove.rel.RuleToStateMap;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.trans.RuleGraph;
+import groove.trans.RuleToHostMap;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
@@ -481,7 +482,7 @@ public class Groove {
             result = new Pair<ExtensionFilter,ExtensionFilter>(first, second);
             extensionFilterMap.put(extension, result);
         }
-        return acceptDirectories ? result.second() : result.first();
+        return acceptDirectories ? result.two() : result.one();
     }
 
     /**
@@ -701,10 +702,10 @@ public class Groove {
      * @param source the graph to be embedded
      * @param target the graph into which it is to be embedded
      * @return an iterator over maps from the source to the target graph.
-     * @see #getEmbeddings(RuleGraph, GraphShape, LabelStore, boolean)
+     * @see #getEmbeddings(RuleGraph, HostGraph, LabelStore, boolean)
      */
-    static public Iterator<RuleToStateMap> getEmbeddings(RuleGraph source,
-            GraphShape target) {
+    static public Iterator<RuleToHostMap> getEmbeddings(RuleGraph source,
+            HostGraph target) {
         return getEmbeddings(source, target, null);
     }
 
@@ -717,10 +718,10 @@ public class Groove {
      * @param labelStore subtype relation; if <code>null</code>, no subtyping
      *        exists
      * @return an iterator over maps from the source to the target graph.
-     * @see #getEmbeddings(RuleGraph, GraphShape, LabelStore, boolean)
+     * @see #getEmbeddings(RuleGraph, HostGraph, LabelStore, boolean)
      */
-    static public Iterator<RuleToStateMap> getEmbeddings(RuleGraph source,
-            GraphShape target, LabelStore labelStore) {
+    static public Iterator<RuleToHostMap> getEmbeddings(RuleGraph source,
+            HostGraph target, LabelStore labelStore) {
         return getEmbeddings(source, target, labelStore, false);
     }
 
@@ -734,8 +735,8 @@ public class Groove {
      *        injective
      * @return an iterator over maps from the source to the target graph.
      */
-    static public Iterator<RuleToStateMap> getEmbeddings(RuleGraph source,
-            GraphShape target, boolean injective) {
+    static public Iterator<RuleToHostMap> getEmbeddings(RuleGraph source,
+            HostGraph target, boolean injective) {
         return getEmbeddings(source, target, null, injective);
     }
 
@@ -752,8 +753,8 @@ public class Groove {
      *        injective
      * @return an iterator over maps from the source to the target graph.
      */
-    static public Iterator<RuleToStateMap> getEmbeddings(RuleGraph source,
-            GraphShape target, LabelStore labelStore, boolean injective) {
+    static public Iterator<RuleToHostMap> getEmbeddings(RuleGraph source,
+            HostGraph target, LabelStore labelStore, boolean injective) {
         return GraphSearchPlanFactory.getInstance(injective, false).createMatcher(
             source, null, null, labelStore).getMatchIter(target, null);
     }

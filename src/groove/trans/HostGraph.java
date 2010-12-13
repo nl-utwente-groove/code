@@ -16,49 +16,49 @@
  */
 package groove.trans;
 
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
+import groove.graph.Graph;
+import groove.graph.Label;
+import groove.graph.Node;
 
 import java.util.Set;
 
 /**
- * Class representing graphs under transformation.
+ * Graph type used for graphs under transformation.
+ * Host graphs consist of {@link HostNode}s and {@link HostEdge}s.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class HostGraph extends DefaultGraph {
-    /**
-     * Constructs an empty host graph.
-     */
-    public HostGraph() {
-        // empty
-    }
-
-    /**
-     * Copies an existing host graph.
-     */
-    public HostGraph(HostGraph graph) {
-        super(graph);
-    }
+public interface HostGraph extends Graph {
+    @Override
+    HostGraph newGraph();
 
     @Override
-    public HostGraph clone() {
-        return new HostGraph(this);
-    }
+    HostNode addNode();
 
     @Override
-    public HostGraph newGraph() {
-        return new HostGraph();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<HostNode> nodeSet() {
-        return (Set<HostNode>) super.nodeSet();
-    }
+    HostNode addNode(int nr);
 
     @Override
-    public HostNode createNode() {
-        return DefaultNode.createNode();
-    }
+    HostEdge addEdge(Node source, Label label, Node target);
+
+    @Override
+    Set<? extends HostNode> nodeSet();
+
+    @Override
+    Set<? extends HostEdge> edgeSet();
+
+    @Override
+    Set<? extends HostEdge> edgeSet(Node node);
+
+    @Override
+    Set<? extends HostEdge> inEdgeSet(Node node);
+
+    @Override
+    Set<? extends HostEdge> outEdgeSet(Node node);
+
+    @Override
+    Set<? extends HostEdge> labelEdgeSet(Label label);
+
+    @Override
+    HostFactory getFactory();
 }

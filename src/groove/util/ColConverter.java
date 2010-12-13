@@ -20,10 +20,10 @@ import groove.algebra.Algebra;
 import groove.algebra.AlgebraRegister;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
-import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.io.ExtensionFilter;
 
@@ -104,14 +104,13 @@ public class ColConverter {
     }
 
     private static Node addNode(Graph result, String id) {
-        Node node = DefaultNode.createNode(Integer.parseInt(id));
-        result.addEdge(node, DefaultLabel.createLabel("i" + id, Label.FLAG),
-            node);
+        Node node = result.addNode(Integer.parseInt(id));
+        result.addEdge(node, TypeLabel.createLabel("i" + id, Label.FLAG), node);
         return node;
     }
 
     private static final ExtensionFilter colFilter = new ExtensionFilter(
         "DIMACS graph format", ".col");
-    private static final Label LABEL = DefaultLabel.createLabel("n");
+    private static final Label LABEL = TypeLabel.createLabel("n");
     private static final boolean DEBUG = false;
 }

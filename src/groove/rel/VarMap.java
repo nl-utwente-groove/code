@@ -18,7 +18,7 @@ package groove.rel;
 
 import java.util.Map;
 
-import groove.graph.Label;
+import groove.graph.TypeLabel;
 
 /**
  * Add-on interface that specifies support for mapping variables (given by
@@ -30,23 +30,23 @@ public interface VarMap {
     /**
      * Returns a mapping from variables to labels.
      */
-    Map<LabelVar,Label> getValuation();
+    Map<LabelVar,TypeLabel> getValuation();
 
     /**
      * Returns the value stored for a given variable. Returns <code>null</code>
      * if the variable does not occur in the source or has no value in the
      * morphism.
      */
-    Label getVar(LabelVar var);
+    TypeLabel getVar(LabelVar var);
 
     /**
      * Inserts a value at a given variable. Returns the old value for the
      * variable, if any.
      */
-    Label putVar(LabelVar var, Label value);
+    TypeLabel putVar(LabelVar var, TypeLabel value);
 
     /**
      * Copies a given valuation mapping into this one.
      */
-    void putAllVar(Map<LabelVar,Label> valuation);
+    void putAllVar(Map<LabelVar,TypeLabel> valuation);
 }

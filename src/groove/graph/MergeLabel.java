@@ -19,6 +19,7 @@ package groove.graph;
 import groove.rel.RegExpr;
 
 /** Label for merger edges in a transformation rule. */
+@Deprecated
 public class MergeLabel extends AbstractLabel {
     private MergeLabel() {
         // empty

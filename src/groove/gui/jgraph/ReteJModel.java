@@ -18,12 +18,10 @@ package groove.gui.jgraph;
 
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
-import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphShape;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.match.rete.CompositeConditionChecker;
 import groove.match.rete.ConditionChecker;
@@ -70,24 +68,16 @@ public class ReteJModel extends GraphJModel {
         for (ConditionChecker cc : this.network.getConditonCheckerNodes()) {
             ConditionChecker parent = cc.getParent();
             if (parent != null) {
-                DefaultLabel l;
-                l = DefaultLabel.createLabel("subcondition");
-                Edge e =
-                    DefaultEdge.createEdge(this.map.get(cc), l,
-                        this.map.get(parent));
-                this.graph.addEdge(e);
+                String l = "subcondition";
+                this.graph.addEdge(this.map.get(cc), l, this.map.get(parent));
             }
         }
 
         for (CompositeConditionChecker cc : this.network.getCompositeConditonCheckerNodes()) {
             ConditionChecker parent = cc.getParent();
             if (parent != null) {
-                DefaultLabel l;
-                l = DefaultLabel.createLabel("NAC");
-                Edge e =
-                    DefaultEdge.createEdge(this.map.get(cc), l,
-                        this.map.get(parent));
-                this.graph.addEdge(e);
+                String l = "NAC";
+                this.graph.addEdge(this.map.get(cc), l, this.map.get(parent));
             }
         }
 
@@ -115,34 +105,24 @@ public class ReteJModel extends GraphJModel {
                     navigate = true;
                 }
 
-                Label l;
                 if (childNNode instanceof SubgraphCheckerNode) {
                     if (childNNode.getAntecedents().get(0) != childNNode.getAntecedents().get(
                         1)) {
                         if (nnode == childNNode.getAntecedents().get(0)) {
-                            l = DefaultLabel.createLabel("left");
+                            this.graph.addEdge(jNode, "left", childJNode);
                         } else {
-                            l = DefaultLabel.createLabel("right");
+                            this.graph.addEdge(jNode, "right", childJNode);
                         }
-                        Edge e = DefaultEdge.createEdge(jNode, l, childJNode);
-                        this.graph.addEdge(e);
                     } else {
-                        l = DefaultLabel.createLabel("left");
-                        Edge e = DefaultEdge.createEdge(jNode, l, childJNode);
-                        this.graph.addEdge(e);
-                        l = DefaultLabel.createLabel("right");
-                        e = DefaultEdge.createEdge(jNode, l, childJNode);
-                        this.graph.addEdge(e);
+                        this.graph.addEdge(jNode, "left", childJNode);
+                        this.graph.addEdge(jNode, "right", childJNode);
                     }
                 } else if ((childNNode instanceof ConditionChecker)
                     && (repeatCounter > 0)) {
-                    l = DefaultLabel.createLabel("receive_" + repeatCounter);
-                    Edge e = DefaultEdge.createEdge(jNode, l, childJNode);
-                    this.graph.addEdge(e);
+                    this.graph.addEdge(jNode, "receive_" + repeatCounter,
+                        childJNode);
                 } else {
-                    l = DefaultLabel.createLabel("receive");
-                    Edge e = DefaultEdge.createEdge(jNode, l, childJNode);
-                    this.graph.addEdge(e);
+                    this.graph.addEdge(jNode, "receive", childJNode);
                 }
 
                 if (navigate) {

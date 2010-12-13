@@ -18,12 +18,9 @@ package groove.rel;
 
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.GraphShape;
 import groove.graph.Node;
-import groove.util.CollectionOfCollections;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -34,141 +31,53 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class SupportedSetNodeRelation extends AbstractNodeRelation implements
+public class SupportedSetNodeRelation extends SetNodeRelation implements
         SupportedNodeRelation {
-    /**
-     * Creates a new relation on the basis of a given universe of nodes.
-     * @ensure <tt>getUniverse().equals(universe)</tt>
-     */
-    public SupportedSetNodeRelation(GraphShape graph) {
-        super(graph);
-    }
-
-    public boolean addRelated(Edge edge) {
-        Set<Element> support = new HashSet<Element>();
-        support.add(edge);
-        return addToSupport(createRelated(edge.source(), edge.target()),
-            support);
-    }
-
-    public boolean addSelfRelated(Node node) {
-        return addToSupport(createRelated(node, node),
-            Collections.<Element>singleton(node));
-    }
-
-    public NodeRelation copy() {
-        SupportedSetNodeRelation result = newInstance();
-        result.supportMap.putAll(this.supportMap);
-        return result;
-    }
-
-    public boolean doOr(NodeRelation other) {
-        boolean result = false;
-        for (Map.Entry<Edge,Collection<Element>> supportEntry : ((SupportedNodeRelation) other).getSupportMap().entrySet()) {
-            Edge rel = supportEntry.getKey();
-            result |= addToSupport(rel, supportEntry.getValue());
-        }
-        return result;
-    }
-
-    public NodeRelation doThen(NodeRelation other) {
-        Map<Edge,Collection<Element>> oldSupportMap = this.supportMap;
-        this.supportMap = new HashMap<Edge,Collection<Element>>();
-        for (Map.Entry<Edge,Collection<Element>> supportEntry : oldSupportMap.entrySet()) {
-            Edge rel = supportEntry.getKey();
-            for (Map.Entry<Edge,Collection<Element>> otherSupportEntry : ((SupportedNodeRelation) other).getSupportMap().entrySet()) {
-                Edge otherRel = otherSupportEntry.getKey();
-                if (otherRel.source().equals(rel.target())) {
-                    RelationEdge newRel =
-                        createRelated(rel.source(), otherRel.target());
-                    addToSupport(newRel, supportEntry.getValue());
-                    addToSupport(newRel, otherSupportEntry.getValue());
-                }
-            }
-        }
-        return this;
+    @Override
+    protected void clear() {
+        super.clear();
+        this.supportMap.clear();
+        this.allSupport.clear();
     }
 
     @Override
-    protected boolean doOrThen() {
-        boolean result = false;
-        Map<Edge,Collection<Element>> oldSupportEntrySet =
-            new HashMap<Edge,Collection<Element>>(this.supportMap);
-        for (Map.Entry<Edge,Collection<Element>> supportEntry : oldSupportEntrySet.entrySet()) {
-            Edge rel = supportEntry.getKey();
-            for (Map.Entry<Edge,Collection<Element>> otherSupportEntry : oldSupportEntrySet.entrySet()) {
-                Edge otherRel = otherSupportEntry.getKey();
-                if (otherRel.source().equals(rel.target())) {
-                    RelationEdge newRel =
-                        createRelated(rel.source(), otherRel.target());
-                    result |= addToSupport(newRel, supportEntry.getValue());
-                    result |=
-                        addToSupport(newRel, otherSupportEntry.getValue());
-                }
-            }
+    protected boolean addRelated(Entry entry) {
+        boolean result;
+        assert entry instanceof MyEntry;
+        addToEntryMap(entry);
+        MyEntry existing = this.supportMap.get(entry);
+        if (existing == null) {
+            this.supportMap.put(entry, (MyEntry) entry);
+            result = true;
+        } else {
+            result = existing.addSupport((MyEntry) entry);
         }
+        this.allSupport.addAll(((MyEntry) entry).getSupport());
         return result;
     }
 
-    /**
-     * This implementation iterates over the support map and adds the inverse of
-     * each pair, with the same support.
-     */
-    public NodeRelation getInverse() {
-        SupportedSetNodeRelation result = newInstance();
-        for (Map.Entry<Edge,Collection<Element>> entry : this.supportMap.entrySet()) {
-            Edge related = entry.getKey();
-            result.addToSupport(
-                createRelated(related.target(), related.source()),
-                entry.getValue());
-        }
-        return result;
+    @Override
+    protected Entry createEntry(Node node) {
+        return new MyEntry(node);
+    }
+
+    @Override
+    protected Entry createEntry(Edge edge) {
+        return new MyEntry(edge);
     }
 
     public Collection<Element> getSupport() {
-        return new CollectionOfCollections<Element>(this.supportMap.values());
-    }
-
-    public Collection<Element> getSupport(Node pre, Node post) {
-        return this.supportMap.get(createRelated(pre, post));
+        return this.allSupport;
     }
 
     @Override
-    public Set<? extends Edge> getAllRelated() {
-        return Collections.unmodifiableSet(this.supportMap.keySet());
-    }
-
-    public Map<Edge,Collection<Element>> getSupportMap() {
-        return Collections.unmodifiableMap(this.supportMap);
-    }
-
-    public boolean isEmpty() {
-        return this.supportMap.isEmpty();
-    }
-
     public SupportedSetNodeRelation newInstance() {
-        return new SupportedSetNodeRelation(getGraph());
+        return new SupportedSetNodeRelation();
     }
 
     @Override
-    protected Set<Edge> getRelatedSet() {
+    public Set<Entry> getAllRelated() {
         return this.supportMap.keySet();
-    }
-
-    /**
-     * Augments the support for a given edge. The edge is added to the support
-     * map if it was not already there.
-     */
-    protected boolean addToSupport(Edge rel, Collection<Element> support) {
-        boolean result;
-        Collection<Element> existingSupport = this.supportMap.get(rel);
-        if (existingSupport == null) {
-            this.supportMap.put(rel, new HashSet<Element>(support));
-            result = true;
-        } else {
-            result = existingSupport.addAll(support);
-        }
-        return result;
     }
 
     /**
@@ -176,6 +85,58 @@ public class SupportedSetNodeRelation extends AbstractNodeRelation implements
      * mapping from edges (which encode the related pairs) to collections of
      * elements justifying them.
      */
-    private Map<Edge,Collection<Element>> supportMap =
-        new HashMap<Edge,Collection<Element>>();
+    private Map<Entry,MyEntry> supportMap = new HashMap<Entry,MyEntry>();
+    /** The set of all support elements. */
+    private Set<Element> allSupport = new HashSet<Element>();
+
+    static private class MyEntry extends Entry {
+        public MyEntry(Edge edge) {
+            super(edge);
+            this.support.add(edge);
+        }
+
+        protected MyEntry(Node one, Node two) {
+            super(one, two);
+            this.support.add(one);
+            this.support.add(two);
+        }
+
+        public MyEntry(Node node) {
+            this(node, node);
+        }
+
+        @Override
+        public Entry invert() {
+            MyEntry result = new MyEntry(two(), one());
+            result.addSupport(this);
+            return result;
+        }
+
+        @Override
+        public Entry append(Entry other) {
+            assert other instanceof MyEntry;
+            assert two().equals(other.one());
+            MyEntry result = new MyEntry(one(), other.two());
+            result.addSupport(this);
+            result.addSupport((MyEntry) other);
+            return result;
+        }
+
+        /** Returns the support of this entry. */
+        public Set<Element> getSupport() {
+            return this.support;
+        }
+
+        /** Augments the support of this entry with that of another. */
+        public boolean addSupport(MyEntry other) {
+            return this.support.addAll(other.support);
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + ", support: " + this.support.toString();
+        }
+
+        final private Set<Element> support = new HashSet<Element>();
+    }
 }

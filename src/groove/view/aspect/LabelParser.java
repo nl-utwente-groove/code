@@ -16,7 +16,6 @@
  */
 package groove.view.aspect;
 
-import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.view.FormatException;
 
@@ -30,11 +29,4 @@ public interface LabelParser {
      *         according to this parser.
      */
     Label parse(String text) throws FormatException;
-
-    /**
-     * Method turning a structured label into a default label from which the
-     * original label can be reconstructed by this parser, or <code>null</code>
-     * if no such default label can be found.
-     */
-    DefaultLabel unparse(Label label);
 }

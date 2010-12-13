@@ -20,7 +20,6 @@ import groove.control.CtrlState;
 import groove.explore.result.Result;
 import groove.graph.AbstractGraphShape;
 import groove.graph.DefaultGraph;
-import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphShapeCache;
@@ -32,6 +31,7 @@ import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.trans.SystemRecord;
 import groove.util.CollectionView;
 import groove.util.FilterIterator;
@@ -86,9 +86,9 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     /**
      * Callback factory method to create and initialise the start graph of the
      * GTS, on the basis of a given (non-{@code null}) graph. Creation is done using
-     * {@link #createStartState(Graph)}.
+     * {@link #createStartState(HostGraph)}.
      */
-    protected GraphState computeStartState(Graph startGraph) {
+    protected GraphState computeStartState(HostGraph startGraph) {
         GraphState result = createStartState(startGraph);
         // result.getGraph().setFixed();
         return result;
@@ -98,7 +98,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * Callback factory method to create the start graph of the GTS, on the
      * basis of a given (non-{@code null}) graph.
      */
-    protected GraphState createStartState(Graph startGraph) {
+    protected GraphState createStartState(HostGraph startGraph) {
         return new StartGraphState(getRecord(), startGraph);
     }
 
@@ -403,20 +403,16 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         for (State state : nodeSet()) {
             result.addNode(state);
             if (showFinal && isFinal(state)) {
-                result.addEdge(state,
-                    DefaultLabel.createLabel(LTS.FINAL_LABEL_TEXT), state);
+                result.addEdge(state, LTS.FINAL_LABEL_TEXT, state);
             }
             if (showStart && startState().equals(state)) {
-                result.addEdge(state,
-                    DefaultLabel.createLabel(LTS.START_LABEL_TEXT), state);
+                result.addEdge(state, LTS.START_LABEL_TEXT, state);
             }
             if (showOpen && !state.isClosed()) {
-                result.addEdge(state,
-                    DefaultLabel.createLabel(LTS.OPEN_LABEL_TEXT), state);
+                result.addEdge(state, LTS.OPEN_LABEL_TEXT, state);
             }
             if (showNames) {
-                result.addEdge(state,
-                    DefaultLabel.createLabel(state.toString()), state);
+                result.addEdge(state, state.toString(), state);
             }
         }
         result.addEdgeSet(edgeSet());

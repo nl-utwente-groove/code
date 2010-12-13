@@ -16,8 +16,6 @@
  */
 package groove.graph;
 
-import groove.abstraction.ShapeEdge;
-import groove.abstraction.ShapeNode;
 
 /**
  * Default implementation of an (immutable) graph edge, as a triple consisting
@@ -91,14 +89,6 @@ public class DefaultEdge extends AbstractEdge<Node,Label,Node> {
 
     /** Default method that uses the DefaultEdge constructor. */
     static public Edge createEdge(Node source, Label label, Node target) {
-        // EDUARDO says: very ugly hack here.
-        // Sorry about this, need to solve this fast... :P
-        // Begin HACK 
-        if (source instanceof ShapeNode && target instanceof ShapeNode) {
-            return ShapeEdge.createEdge((ShapeNode) source, label,
-                (ShapeNode) target);
-        }
-        // End HACK
         return store.createEdge(source, label, target);
     }
 

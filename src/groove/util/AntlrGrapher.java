@@ -5,11 +5,11 @@ package groove.util;
 
 import groove.algebra.StringAlgebra;
 import groove.graph.DefaultGraph;
-import groove.graph.DefaultLabel;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeGraph;
+import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ValueNode;
 import groove.view.FormatException;
@@ -75,8 +75,8 @@ public class AntlrGrapher {
         for (int i = 0; i < this.tokens.length; i++) {
             String token = this.tokens[i];
             if (ExprParser.isIdentifier(token)) {
-                Label typeLabel =
-                    DefaultLabel.createLabel(token, Label.NODE_TYPE);
+                TypeLabel typeLabel =
+                    TypeLabel.createLabel(token, Label.NODE_TYPE);
                 TypeNode tokenNode = result.addNode(typeLabel);
                 try {
                     result.addSubtype(topNode, tokenNode);
@@ -130,7 +130,7 @@ public class AntlrGrapher {
         Node result = graph.addNode();
         int tokenType = tree.getType();
         graph.addEdge(result,
-            DefaultLabel.createLabel(this.tokens[tokenType], Label.NODE_TYPE),
+            TypeLabel.createLabel(this.tokens[tokenType], Label.NODE_TYPE),
             result);
         if (this.textTypes.get(tokenType) && tree.getText() != null) {
             ValueNode nameNode =
@@ -151,25 +151,25 @@ public class AntlrGrapher {
     private static final String TOKEN_NAMES = "tokenNames";
 
     /** Default label to be used for child edges. */
-    public final static Label CHILD_LABEL = DefaultLabel.createLabel("child");
+    public final static TypeLabel CHILD_LABEL = TypeLabel.createLabel("child");
     /** Default label to be used for next edges. */
-    public final static Label NEXT_LABEL = DefaultLabel.createLabel("next");
+    public final static TypeLabel NEXT_LABEL = TypeLabel.createLabel("next");
     /** Default label to be used for text edges. */
-    public final static Label TEXT_LABEL = DefaultLabel.createLabel("text");
+    public final static TypeLabel TEXT_LABEL = TypeLabel.createLabel("text");
     /** Flag to be used for the first child. */
-    public final static Label FIRST_FLAG = DefaultLabel.createLabel("first",
+    public final static TypeLabel FIRST_FLAG = TypeLabel.createLabel("first",
         Label.FLAG);
     /** Flag to be used for the last child. */
-    public final static Label LAST_FLAG = DefaultLabel.createLabel("last",
+    public final static TypeLabel LAST_FLAG = TypeLabel.createLabel("last",
         Label.FLAG);
     /** Flag to be used for a childless token node. */
-    public final static Label LEAF_FLAG = DefaultLabel.createLabel("leaf",
+    public final static TypeLabel LEAF_FLAG = TypeLabel.createLabel("leaf",
         Label.FLAG);
     /** Type of the (abstract) top node. */
-    public final static Label TOP_TYPE = DefaultLabel.createLabel("TOP$",
+    public final static TypeLabel TOP_TYPE = TypeLabel.createLabel("TOP$",
         Label.NODE_TYPE);
     /** String type label. */
-    private final static Label STRING_TYPE = DefaultLabel.createLabel("string",
-        Label.NODE_TYPE);
+    private final static TypeLabel STRING_TYPE = TypeLabel.createLabel(
+        "string", Label.NODE_TYPE);
     /** Subtype edge label. */
 }

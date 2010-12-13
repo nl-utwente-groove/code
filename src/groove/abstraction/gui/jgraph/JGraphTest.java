@@ -18,7 +18,7 @@ package groove.abstraction.gui.jgraph;
 
 import groove.abstraction.Multiplicity;
 import groove.abstraction.Shape;
-import groove.graph.Graph;
+import groove.trans.HostGraph;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
@@ -48,7 +48,7 @@ public class JGraphTest {
         File file = new File(DIRECTORY);
         try {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            Graph graph = view.getGraphView("rule-app-test-0").toModel();
+            HostGraph graph = view.getGraphView("rule-app-test-0").toModel();
             Shape shape = new Shape(graph);
             showShape(shape);
         } catch (IOException e) {

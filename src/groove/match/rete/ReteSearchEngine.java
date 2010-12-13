@@ -18,8 +18,6 @@ package groove.match.rete;
 
 import groove.graph.DeltaStore;
 import groove.graph.Edge;
-import groove.graph.Graph;
-import groove.graph.GraphShape;
 import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.lts.GraphState;
@@ -27,6 +25,7 @@ import groove.match.SearchEngine;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.Condition;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
@@ -143,7 +142,7 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
      * @param g the grammar to build the RETE network with
      */
     public synchronized void setUp(StoredGrammarView g) {
-        GraphShape oldGraph = null;
+        HostGraph oldGraph = null;
         if (this.network != null) {
             oldGraph = this.network.getState().getHostGraph();
         }
@@ -161,7 +160,7 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
      * Populates the RETE network by processing the initial host graph state
      * @param host the host graph to start with
      */
-    public synchronized void initializeState(Graph host) {
+    public synchronized void initializeState(HostGraph host) {
         if (this.network != null) {
             this.network.processGraph(host);
         } else {
@@ -170,7 +169,7 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
         }
     }
 
-    public synchronized void transitionOccurred(Graph destGraph,
+    public synchronized void transitionOccurred(HostGraph destGraph,
             DeltaStore deltaStore) {
         transitionOccurredReporter.start();
 
@@ -268,8 +267,7 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
 
     @Override
     public synchronized ReteStrategy createMatcher(Condition condition,
-            Collection<RuleNode> anchorNodes,
-            Collection<RuleEdge> anchorEdges,
+            Collection<RuleNode> anchorNodes, Collection<RuleEdge> anchorEdges,
             Collection<RuleNode> relevantNodes) {
         //this will get more complicated when we have complex conditions        
         return new ReteStrategy(this, condition);
@@ -277,8 +275,8 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
 
     @Override
     public synchronized ReteStrategy createMatcher(RuleGraph graph,
-            Collection<RuleNode> anchorNodes,
-            Collection<RuleEdge> anchorEdges, LabelStore labelStore) {
+            Collection<RuleNode> anchorNodes, Collection<RuleEdge> anchorEdges,
+            LabelStore labelStore) {
         //right now we just assume the graph is actually 
         return new ReteStrategy(this, null);
     }

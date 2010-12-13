@@ -17,9 +17,8 @@
 
 package groove.match;
 
-import groove.graph.Graph;
-import groove.graph.GraphShape;
-import groove.rel.RuleToStateMap;
+import groove.trans.HostGraph;
+import groove.trans.RuleToHostMap;
 import groove.util.Property;
 
 import java.util.Collection;
@@ -46,7 +45,8 @@ public interface MatchStrategy<Result> {
      *         that augment <code>preMatch</code> and fulfill the requirements
      *         to be total matches
      */
-    public Collection<Result> getMatchSet(Graph host, RuleToStateMap anchorMap);
+    public Collection<Result> getMatchSet(HostGraph host,
+            RuleToHostMap anchorMap);
 
     /**
      * Returns an iterator over all matches to a given graph that extend a given
@@ -59,9 +59,9 @@ public interface MatchStrategy<Result> {
      *        <code>null</code> if there is no predefined mapping
      * @return an iterator over all mappings to the elements of
      *         <code>host</code> that augment <code>preMatch</code> and
-     *         fulfill the requirements to be total matches
+     *         fulfil the requirements to be total matches
      */
-    public Iterator<Result> getMatchIter(GraphShape host, RuleToStateMap anchorMap);
+    public Iterator<Result> getMatchIter(HostGraph host, RuleToHostMap anchorMap);
 
     /**
      * Returns the collection of all matches to a given graph that extend a
@@ -72,10 +72,10 @@ public interface MatchStrategy<Result> {
      *        <code>host</code> that all the solutions should respect. May be
      *        <code>null</code> if there is no predefined mapping
      * @return the set of all mappings to the elements of <code>host</code>
-     *         that augment <code>preMatch</code> and fulfill the requirements
+     *         that augment <code>preMatch</code> and fulfil the requirements
      *         to be total matches
      */
-    public Iterable<Result> getMatches(Graph host, RuleToStateMap anchorMap);
+    public Iterable<Result> getMatches(HostGraph host, RuleToHostMap anchorMap);
 
     /**
      * Sets a filter for this strategy. A filter is a property that is required

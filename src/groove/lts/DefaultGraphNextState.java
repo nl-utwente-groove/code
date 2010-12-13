@@ -17,12 +17,13 @@ package groove.lts;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.graph.DeltaApplier;
-import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.MergeMap;
-import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.NodeEdgeMap;
 import groove.trans.DefaultApplication;
+import groove.trans.DeltaHostGraph;
+import groove.trans.HostNode;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
@@ -40,7 +41,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * rule application, and a given control location.
      */
     public DefaultGraphNextState(AbstractGraphState source, RuleEvent event,
-            Node[] addedNodes) {
+            HostNode[] addedNodes) {
         super(source.getCacheReference());
         this.source = source;
         this.event = event;
@@ -60,42 +61,42 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         return this.event;
     }
 
-    public Node[] getAddedNodes() {
+    public HostNode[] getAddedNodes() {
         return this.addedNodes;
     }
 
     @Override
-    public Node[] getBoundNodes() {
+    public HostNode[] getBoundNodes() {
         return this.boundNodes;
     }
 
-    private Node[] computeBoundNodes(CtrlTransition ctrlTrans) {
-        Node[] result;
+    private HostNode[] computeBoundNodes(CtrlTransition ctrlTrans) {
+        HostNode[] result;
         if (getCtrlState() == null) {
             result = EMPTY_NODE_LIST;
         } else {
             int valueCount = getCtrlState().getBoundVars().size();
-            result = new Node[valueCount];
-            Node[] parentValues = this.source.getBoundNodes();
+            result = new HostNode[valueCount];
+            HostNode[] parentValues = this.source.getBoundNodes();
             int[] varBinding = ctrlTrans.getTargetVarBinding();
             SPORule rule = ((SPORule) getEvent().getRule());
             int anchorSize = getEvent().getAnchorSize();
             MergeMap mergeMap = getEvent().getMergeMap();
             for (int i = 0; i < valueCount; i++) {
                 int fromI = varBinding[i];
-                Node value;
+                HostNode value;
                 if (fromI >= parentValues.length) {
                     int binding =
                         rule.getParBinding(fromI - parentValues.length);
                     if (binding < anchorSize) {
                         value =
-                            mergeMap.getNode((Node) getEvent().getAnchorImage(
+                            (HostNode) mergeMap.getNode((Node) getEvent().getAnchorImage(
                                 binding));
                     } else {
                         value = getAddedNodes()[binding - anchorSize];
                     }
                 } else {
-                    value = mergeMap.getNode(parentValues[fromI]);
+                    value = (HostNode) mergeMap.getNode(parentValues[fromI]);
                 }
                 result[i] = value;
             }
@@ -115,7 +116,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * Constructs an underlying morphism for the transition from the stored
      * footprint.
      */
-    public Morphism getMorphism() {
+    public NodeEdgeMap getMorphism() {
         RuleApplication appl =
             new DefaultApplication(getEvent(), source().getGraph(), getGraph(),
                 getAddedNodes());
@@ -169,7 +170,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         }
     }
 
-    public Node[] getAddedNodes(GraphState source) {
+    public HostNode[] getAddedNodes(GraphState source) {
         if (source == source()) {
             return getAddedNodes();
         } else {
@@ -210,7 +211,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     }
 
     @Override
-    public Graph getGraph() {
+    public DeltaHostGraph getGraph() {
         return getCache().getGraph();
     }
 
@@ -243,7 +244,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * Returns the event from the source of this transition, if that is itself a
      * {@link groove.lts.GraphTransitionStub}.
      */
-    protected Node[] getSourceAddedNodes() {
+    protected HostNode[] getSourceAddedNodes() {
         if (source() instanceof GraphNextState) {
             return ((GraphNextState) source()).getAddedNodes();
         } else {
@@ -290,7 +291,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      */
     @Override
     protected GraphTransitionStub createInTransitionStub(GraphState source,
-            RuleEvent event, Node[] addedNodes) {
+            RuleEvent event, HostNode[] addedNodes) {
         if (source == source() && event == getEvent()) {
             return this;
         } else if (source != source() && event == getSourceEvent()) {
@@ -307,7 +308,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     }
 
     /** Keeps track of bound variables */
-    private Node[] boundNodes;
+    private HostNode[] boundNodes;
     /**
      * The rule of the incoming transition with which this state was created.
      */
@@ -320,5 +321,5 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     /**
      * The identities of the nodes added with respect to the source state.
      */
-    private final Node[] addedNodes;
+    private final HostNode[] addedNodes;
 }

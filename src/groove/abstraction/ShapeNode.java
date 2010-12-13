@@ -51,6 +51,11 @@ public final class ShapeNode extends DefaultNode {
         return shapeStore.createNode();
     }
 
+    /** Returns the node with a given number. */
+    static public ShapeNode createNode(int nr) {
+        return shapeStore.createNode(nr);
+    }
+
     // ------------------------------------------------------------------------
     // Static Fields
     // ------------------------------------------------------------------------

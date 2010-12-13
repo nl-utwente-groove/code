@@ -27,7 +27,9 @@ import java.util.Collections;
  * A search item for a value node.
  * @author Arend Rensink
  * @version $Revision $
+ * @deprecated should not occur
  */
+@Deprecated
 class VariableNodeSearchItem extends AbstractSearchItem {
     /**
      * Creates a search item for a value node. The image is always the node
@@ -103,8 +105,7 @@ class VariableNodeSearchItem extends AbstractSearchItem {
          */
         @Override
         boolean set() {
-            return this.search.putNode(VariableNodeSearchItem.this.nodeIx,
-                VariableNodeSearchItem.this.node);
+            return this.search.putNode(VariableNodeSearchItem.this.nodeIx, null);
         }
 
         @Override

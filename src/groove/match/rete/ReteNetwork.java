@@ -17,12 +17,10 @@
 package groove.match.rete;
 
 import groove.graph.DefaultEdge;
-import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.gui.jgraph.ReteJModel;
@@ -33,12 +31,13 @@ import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.AbstractCondition;
 import groove.trans.Condition;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.trans.NotCondition;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
-import groove.trans.RuleGraphMap;
 import groove.trans.RuleName;
 import groove.trans.RuleNode;
+import groove.trans.RuleToRuleMap;
 import groove.util.TreeHashSet;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
@@ -149,7 +148,7 @@ public class ReteNetwork {
         openList.clear();
         Graph g = condition.getTarget();
 
-        Collection<? extends Edge> edgeList = getEdgeCollection(condition);
+        Collection<RuleEdge> edgeList = getEdgeCollection(condition);
 
         mapEdgesAndNodes(openList, edgeList, g.nodeSet());
 
@@ -364,19 +363,15 @@ public class ReteNetwork {
     /**
      * Returns the collection of edges in the given graph's {@link Graph#edgeSet()}
      * in the order that is deemed suitable for making RETE. 
-     * 
-     * @param g
-     * @return
      */
-    @SuppressWarnings("unchecked")
-    protected Collection<? extends Edge> getEdgeCollection(Condition c) {
+    protected Collection<RuleEdge> getEdgeCollection(Condition c) {
 
-        Collection<? extends Edge> result = c.getTarget().edgeSet();
+        Collection<RuleEdge> result = c.getTarget().edgeSet();
 
-        result = new ArrayList<Edge>(c.getTarget().edgeSet());
-        Collections.sort((List<Edge>) result, new Comparator<Edge>() {
+        result = new ArrayList<RuleEdge>(c.getTarget().edgeSet());
+        Collections.sort((List<RuleEdge>) result, new Comparator<RuleEdge>() {
             @Override
-            public int compare(Edge e1, Edge e2) {
+            public int compare(RuleEdge e1, RuleEdge e2) {
                 return e2.compareTo(e1);
             }
         });
@@ -397,7 +392,7 @@ public class ReteNetwork {
         return result;
     }
 
-    private Node translate(RuleGraphMap translationMap, RuleNode node) {
+    private Node translate(RuleToRuleMap translationMap, RuleNode node) {
         Node result = node;
         if (translationMap != null) {
             result = translationMap.getNode(node);
@@ -408,7 +403,7 @@ public class ReteNetwork {
         return result;
     }
 
-    private Edge translate(RuleGraphMap translationMap, RuleEdge edge) {
+    private Edge translate(RuleToRuleMap translationMap, RuleEdge edge) {
         Edge result = edge;
         if (translationMap != null) {
             Node n1 = translate(translationMap, edge.source());
@@ -426,12 +421,11 @@ public class ReteNetwork {
     }
 
     private void mapEdgesAndNodes(StaticMap openList,
-            Collection<? extends Edge> edgeSet,
-            Collection<? extends Node> nodeSet) {
+            Collection<RuleEdge> edgeSet, Collection<? extends Node> nodeSet) {
 
         Collection<Node> mappedLHSNodes = new HashSet<Node>();
         //Adding the required edge-checkers if needed.
-        for (Edge e : edgeSet) {
+        for (RuleEdge e : edgeSet) {
             //TODO this call should be removed after all features of groove are implemented into RETE
             checkEdgeForSupport(e);
 
@@ -517,7 +511,7 @@ public class ReteNetwork {
     }
 
     private ReteStaticMapping duplicateAndTranslateMapping(
-            ReteStaticMapping source, RuleGraphMap translationMap) {
+            ReteStaticMapping source, RuleToRuleMap translationMap) {
         ReteStaticMapping result = null;
         if (source != null) {
             Element[] oldElements = source.getElements();
@@ -551,15 +545,15 @@ public class ReteNetwork {
      * is not of the currently supported type.
      * @param e
      */
-    private void checkEdgeForSupport(Edge e) {
-        if (!(e.label() instanceof DefaultLabel)) {
+    private void checkEdgeForSupport(RuleEdge e) {
+        if (!(e.label().isAtom())) {
             throw new RuntimeException(
                 "The current RETE implementation does not support rules with edge labels of type "
                     + e.label().getClass().toString());
-        } else if (!(e instanceof RuleEdge)) {
-            throw new RuntimeException(
-                "The current RETE implementation does not support rules with edges of type "
-                    + e.getClass().toString());
+            //        } else if (!(e instanceof RuleEdge)) {
+            //            throw new RuntimeException(
+            //                "The current RETE implementation does not support rules with edges of type "
+            //                    + e.getClass().toString());
         }
     }
 
@@ -693,7 +687,7 @@ public class ReteNetwork {
         return result;
     }
 
-    public void processGraph(GraphShape g) {
+    public void processGraph(HostGraph g) {
         this.getState().clearSubscribers();
         for (Node n : g.nodeSet()) {
             this.getRoot().receiveElement(null, n, Action.ADD);
@@ -900,7 +894,7 @@ public class ReteNetwork {
      */
     static class ReteState {
         private ReteNetwork owner;
-        private GraphShape hostGraph;
+        private HostGraph hostGraph;
         private Set<StateSubscriber> subscribers =
             new HashSet<StateSubscriber>();
 
@@ -934,12 +928,12 @@ public class ReteNetwork {
 
         }
 
-        synchronized void setHostGraph(GraphShape hgraph) {
+        synchronized void setHostGraph(HostGraph hgraph) {
             this.hostGraph = hgraph;
             //assert this.owner.checkAllMatchesConformWithHost();
         }
 
-        public GraphShape getHostGraph() {
+        public HostGraph getHostGraph() {
             return this.hostGraph;
         }
     }

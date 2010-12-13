@@ -17,16 +17,15 @@
 package groove.trans;
 
 import groove.graph.AbstractGraphShape;
-import groove.graph.DefaultMorphism;
 import groove.graph.DeltaTarget;
 import groove.graph.Edge;
 import groove.graph.FilteredDeltaTarget;
 import groove.graph.Graph;
 import groove.graph.MergeMap;
-import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.NodeEdgeHashMap;
+import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ValueNode;
-import groove.rel.RuleToStateMap;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,7 +47,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * @param event the production rule instance involved
      * @param source the host graph to which the rule is to be applied
      */
-    public DefaultApplication(RuleEvent event, Graph source) {
+    public DefaultApplication(RuleEvent event, HostGraph source) {
         this(event, source, null);
     }
 
@@ -61,8 +60,8 @@ public class DefaultApplication implements RuleApplication, Derivation {
      *        coanchor. If <code>null</code>, the coanchor image has to be
      *        computed from the source graph.
      */
-    public DefaultApplication(RuleEvent event, Graph source,
-            Node[] coanchorImage) {
+    public DefaultApplication(RuleEvent event, HostGraph source,
+            HostNode[] coanchorImage) {
         this.event = event;
         this.rule = event.getRule();
         this.source = source;
@@ -89,8 +88,8 @@ public class DefaultApplication implements RuleApplication, Derivation {
      *        coanchor. If <code>null</code>, the coanchor image has to be
      *        computed from the source graph.
      */
-    public DefaultApplication(RuleEvent event, Graph source, Graph target,
-            Node[] coanchorImage) {
+    public DefaultApplication(RuleEvent event, HostGraph source,
+            HostGraph target, HostNode[] coanchorImage) {
         this(event, source, coanchorImage);
         this.target = target;
     }
@@ -144,7 +143,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
         return getEvent().getMatch(this.source);
     }
 
-    public Morphism getMorphism() {
+    public NodeEdgeMap getMorphism() {
         if (this.morphism == null) {
             this.morphism = computeMorphism();
         }
@@ -155,21 +154,23 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * Constructs the morphism between source and target graph from the
      * application.
      */
-    private Morphism computeMorphism() {
-        Morphism result = createMorphism();
+    private NodeEdgeMap computeMorphism() {
+        NodeEdgeMap result = createMorphism();
         MergeMap mergeMap = getMergeMap();
         // copy the source node and edge set, to avoid modification exceptions
         // in case graph aliasing was used
-        Set<Node> sourceNodes = new HashSet<Node>(this.source.nodeSet());
-        Set<Edge> sourceEdges = new HashSet<Edge>(this.source.edgeSet());
+        Set<HostNode> sourceNodes =
+            new HashSet<HostNode>(this.source.nodeSet());
+        Set<HostEdge> sourceEdges =
+            new HashSet<HostEdge>(this.source.edgeSet());
         for (Node node : sourceNodes) {
             Node nodeImage = mergeMap.getNode(node);
             if (nodeImage != null && getTarget().containsNode(nodeImage)) {
                 result.putNode(node, nodeImage);
             }
         }
-        Set<Edge> erasedEdges = getErasedEdges();
-        for (Edge edge : sourceEdges) {
+        Set<HostEdge> erasedEdges = getErasedEdges();
+        for (HostEdge edge : sourceEdges) {
             if (!erasedEdges.contains(edge)) {
                 Edge edgeImage = mergeMap.mapEdge(edge);
                 if (edgeImage != null && getTarget().containsEdge(edgeImage)) {
@@ -180,7 +181,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
         return result;
     }
 
-    public Node[] getCreatedNodes() {
+    public HostNode[] getCreatedNodes() {
         if (this.coanchorImage == null) {
             this.coanchorImage = computeCreatedNodes();
         }
@@ -193,14 +194,14 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * fresh images for the creator nodes of the rule.
      */
     // protected to allow subclassing by AliasSPOApplication
-    protected Node[] computeCreatedNodes() {
-        Node[] result;
-        Set<? extends Node> createdNodes =
+    protected HostNode[] computeCreatedNodes() {
+        HostNode[] result;
+        Set<HostNode> createdNodes =
             getEvent().getCreatedNodes(this.source.nodeSet());
         if (createdNodes.size() == 0) {
             result = EMPTY_COANCHOR_IMAGE;
         } else {
-            result = new Node[createdNodes.size()];
+            result = new HostNode[createdNodes.size()];
             createdNodes.toArray(result);
         }
         return result;
@@ -236,15 +237,15 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * @param target the target to which to apply the changes
      */
     private void eraseNodes(DeltaTarget target) {
-        Set<Node> nodeSet = getErasedNodes();
+        Set<HostNode> nodeSet = getErasedNodes();
         // also remove the incident edges of the eraser nodes
         if (!nodeSet.isEmpty()) {
             // there is a choice here to query the graph for its incident edge
             // set
             // which may be expensive if it hasn't yet been computed
             Set<Edge> removedEdges = new HashSet<Edge>();
-            for (Node node : nodeSet) {
-                for (Edge edge : this.source.edgeSet(node)) {
+            for (HostNode node : nodeSet) {
+                for (HostEdge edge : this.source.edgeSet(node)) {
                     if (removedEdges.add(edge)) {
                         target.removeEdge(edge);
                         registerErasure(edge);
@@ -291,7 +292,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * @param target the target to which to apply the changes
      */
     private void eraseEdges(DeltaTarget target) {
-        for (Edge erasedEdge : getErasedEdges()) {
+        for (HostEdge erasedEdge : getErasedEdges()) {
             target.removeEdge(erasedEdge);
             registerErasure(erasedEdge);
         }
@@ -301,10 +302,10 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * Callback method to notify that an edge has been erased. Used to ensure
      * that isolated value nodes are removed from the graph.
      */
-    private void registerErasure(Edge edge) {
+    private void registerErasure(HostEdge edge) {
         Node target = edge.target();
         if (target instanceof ValueNode) {
-            Set<Edge> edges = getValueNodeEdges((ValueNode) target);
+            Set<HostEdge> edges = getValueNodeEdges((ValueNode) target);
             edges.remove(edge);
             if (edges.isEmpty()) {
                 getIsolatedValueNodes().add((ValueNode) target);
@@ -319,15 +320,15 @@ public class DefaultApplication implements RuleApplication, Derivation {
     private void mergeNodes(DeltaTarget target) {
         // delete the merged nodes
         MergeMap mergeMap = getMergeMap();
-        Set<Edge> addedEdges = new HashSet<Edge>();
-        Set<Edge> erasedEdges = getErasedEdges();
+        Set<HostEdge> addedEdges = new HashSet<HostEdge>();
+        Set<HostEdge> erasedEdges = getErasedEdges();
         for (Node mergedElem : mergeMap.nodeMap().keySet()) {
             removeNode(target, mergedElem);
             // replace the incident edges of the merged nodes
-            for (Edge sourceEdge : this.source.edgeSet(mergedElem)) {
+            for (HostEdge sourceEdge : this.source.edgeSet(mergedElem)) {
                 if (!erasedEdges.contains(sourceEdge)) {
                     target.removeEdge(sourceEdge);
-                    Edge image = mergeMap.mapEdge(sourceEdge);
+                    HostEdge image = (HostEdge) mergeMap.mapEdge(sourceEdge);
                     assert image != sourceEdge;
                     // if the edge is in the source and not erased, it is also
                     // already
@@ -449,7 +450,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * Returns the set of explicitly erased nodes, i.e., the images of the LHS
      * eraser nodes.
      */
-    protected Set<Node> getErasedNodes() {
+    protected Set<HostNode> getErasedNodes() {
         return this.event.getErasedNodes();
     }
 
@@ -457,7 +458,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * Returns the set of explicitly erased edges, i.e., the images of the LHS
      * eraser edges.
      */
-    protected Set<Edge> getErasedEdges() {
+    protected Set<HostEdge> getErasedEdges() {
         if (this.erasedEdges == null) {
             this.erasedEdges = this.event.getSimpleErasedEdges();
         }
@@ -486,9 +487,8 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * Callback factory method to create a morphism from source to target graph.
      * Note that this is <i>not</i> the same kind of object as the matching.
      */
-    protected DefaultMorphism createMorphism() {
-        // do not use the rule factory for this one
-        return new DefaultMorphism(this.source, getTarget());
+    protected NodeEdgeMap createMorphism() {
+        return new NodeEdgeHashMap();
     }
 
     /**
@@ -551,9 +551,9 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * {@link Graph#removeNodeWithoutCheck(Node)} if the target is an
      * {@link Graph}.
      */
-    private void removeNodeSet(DeltaTarget target, Collection<Node> nodeSet) {
-        if (target instanceof Graph) {
-            ((Graph) target).removeNodeSetWithoutCheck(nodeSet);
+    private void removeNodeSet(DeltaTarget target, Collection<HostNode> nodeSet) {
+        if (target instanceof HostGraph) {
+            ((HostGraph) target).removeNodeSetWithoutCheck(nodeSet);
         } else {
             // apparently the target wasn't an InternalGraph
             // so we can't do efficient edge removal
@@ -567,13 +567,13 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * Lazily creates and returns the set of remaining incident edges of a given
      * value node.
      */
-    private Set<Edge> getValueNodeEdges(ValueNode node) {
+    private Set<HostEdge> getValueNodeEdges(ValueNode node) {
         if (this.valueNodeEdgesMap == null) {
-            this.valueNodeEdgesMap = new HashMap<ValueNode,Set<Edge>>();
+            this.valueNodeEdgesMap = new HashMap<ValueNode,Set<HostEdge>>();
         }
-        Set<Edge> result = this.valueNodeEdgesMap.get(node);
+        Set<HostEdge> result = this.valueNodeEdgesMap.get(node);
         if (result == null) {
-            result = new HashSet<Edge>(this.source.inEdgeSet(node));
+            result = new HashSet<HostEdge>(this.source.inEdgeSet(node));
             this.valueNodeEdgesMap.put(node, result);
         }
         return result;
@@ -607,11 +607,11 @@ public class DefaultApplication implements RuleApplication, Derivation {
     /**
      * The source graph of this derivation. May not be <tt>null</tt>.
      */
-    protected final Graph source;
+    protected final HostGraph source;
     /**
      * Matching from the rule's lhs to the source graph.
      */
-    private RuleToStateMap anchorMap;
+    private RuleToHostMap anchorMap;
     /**
      * The event from which we get the rule and anchor image.
      */
@@ -620,7 +620,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * Mapping from selected RHS elements to target graph. The comatch is
      * constructed in the course of rule application.
      */
-    protected RuleToStateMap coAnchorMap;
+    protected RuleToHostMap coAnchorMap;
     /**
      * The target graph of this derivation, created lazily in
      * {@link #computeTarget()}.
@@ -634,17 +634,17 @@ public class DefaultApplication implements RuleApplication, Derivation {
     /**
      * Underlying morphism from the source to the target.
      */
-    protected Morphism morphism;
+    protected NodeEdgeMap morphism;
     /**
      * The images of the creator nodes. This is part of the information needed
      * to (re)construct the derivation target.
      */
-    protected Node[] coanchorImage;
+    protected HostNode[] coanchorImage;
     /**
      * A mapping from target value nodes of erased edges to their remaining
      * incident edges, used to judge spurious value nodes.
      */
-    private Map<ValueNode,Set<Edge>> valueNodeEdgesMap;
+    private Map<ValueNode,Set<HostEdge>> valueNodeEdgesMap;
     /** The set of value nodes that have become isolated due to edge erasure. */
     private Set<ValueNode> isolatedValueNodes;
     /** The set of value nodes that have been added due to edge creation. */
@@ -652,7 +652,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
     /** The set of value nodes that have been removed due to edge deletion. */
     private Set<ValueNode> removedValueNodes;
     /** The set of edges (to be) erased by this rule applications. */
-    private Set<Edge> erasedEdges;
+    private Set<HostEdge> erasedEdges;
 
     /**
      * Returns the number of nodes that were created during rule application.
@@ -667,6 +667,6 @@ public class DefaultApplication implements RuleApplication, Derivation {
     static int freshNodeCount;
 
     /** Static constant for rules with coanchors. */
-    static private final Node[] EMPTY_COANCHOR_IMAGE = new Node[0];
+    static private final HostNode[] EMPTY_COANCHOR_IMAGE = new HostNode[0];
     /** Reporter for profiling the application class. */
 }

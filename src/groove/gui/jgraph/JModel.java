@@ -18,7 +18,6 @@ package groove.gui.jgraph;
 
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
-import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
@@ -234,7 +233,7 @@ abstract public class JModel extends DefaultGraphModel {
                 elementMap.put(node, (JVertex) root);
                 layoutMap.putNode(node, ((JVertex) root).getAttributes());
                 for (String label : ((JVertex) root).getPlainLabels()) {
-                    result.addEdge(node, DefaultLabel.createLabel(label), node);
+                    result.addEdge(node, label, node);
                 }
             }
         }
@@ -253,9 +252,7 @@ abstract public class JModel extends DefaultGraphModel {
                     JEdgeLayout.newInstance(edgeAttr).isDefault();
                 // parse edge text into label set
                 for (String label : jEdge.getPlainLabels()) {
-                    Edge edge =
-                        result.addEdge(source, DefaultLabel.createLabel(label),
-                            target);
+                    Edge edge = result.addEdge(source, label, target);
                     // add layout information if there is anything to be noted
                     // about the edge
                     if (!attrIsDefault) {
@@ -276,11 +273,7 @@ abstract public class JModel extends DefaultGraphModel {
      * a JVertex. Subclasses may use this to determine the node number.
      */
     protected Node addFreshNode(groove.graph.Graph result, JVertex root) {
-        Node node = DefaultNode.createNode(root.getNumber());
-        boolean fresh = result.addNode(node);
-        assert fresh : String.format("Node '%s' already occurred in %s", node,
-            result);
-        return node;
+        return result.addNode(root.getNumber());
     }
 
     /**

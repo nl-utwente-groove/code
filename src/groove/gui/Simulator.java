@@ -60,6 +60,7 @@ import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
 import groove.gui.dialog.AboutBox;
 import groove.gui.dialog.BoundedModelCheckingDialog;
 import groove.gui.dialog.ErrorDialog;
@@ -95,9 +96,9 @@ import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
+import groove.util.Duo;
 import groove.util.Groove;
 import groove.util.GrooveModules;
-import groove.util.Pair;
 import groove.util.Version;
 import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
@@ -959,7 +960,7 @@ public class Simulator {
     }
 
     /** Replaces all occurrences of a given label into another label. */
-    void doRelabel(Label oldLabel, Label newLabel) {
+    void doRelabel(TypeLabel oldLabel, TypeLabel newLabel) {
         try {
             getGrammarStore().relabel(oldLabel, newLabel);
             updateGrammar();
@@ -2650,11 +2651,11 @@ public class Simulator {
      *         replacement, neither of which can be <code>null</code>; or
      *         <code>null</code> if the dialog was cancelled.
      */
-    private Pair<Label,Label> askRelabelling(Label oldLabel) {
+    private Duo<TypeLabel> askRelabelling(TypeLabel oldLabel) {
         RelabelDialog dialog =
             new RelabelDialog(getGrammarView().getLabelStore(), oldLabel);
         if (dialog.showDialog(getFrame(), null)) {
-            return new Pair<Label,Label>(dialog.getOldLabel(),
+            return new Duo<TypeLabel>(dialog.getOldLabel(),
                 dialog.getNewLabel());
         } else {
             return null;
@@ -4635,9 +4636,9 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            Pair<Label,Label> relabelling = askRelabelling(this.oldLabel);
+            Duo<TypeLabel> relabelling = askRelabelling(this.oldLabel);
             if (relabelling != null) {
-                doRelabel(relabelling.first(), relabelling.second());
+                doRelabel(relabelling.one(), relabelling.two());
             }
         }
 
@@ -4647,10 +4648,11 @@ public class Simulator {
             this.oldLabel = null;
             Object[] selection = ((JGraph) e.getSource()).getSelectionCells();
             if (selection != null && selection.length > 0) {
-                Collection<Label> selectedLabels =
+                Collection<? extends Label> selectedLabels =
                     ((JCell) selection[0]).getListLabels();
                 if (selectedLabels.size() > 0) {
-                    this.oldLabel = selectedLabels.iterator().next();
+                    this.oldLabel =
+                        (TypeLabel) selectedLabels.iterator().next();
                 }
             }
         }
@@ -4662,12 +4664,12 @@ public class Simulator {
                 ((LabelTree) e.getSource()).getSelectionPaths();
             if (selection != null && selection.length > 0) {
                 this.oldLabel =
-                    ((LabelTree.LabelTreeNode) selection[0].getLastPathComponent()).getLabel();
+                    (TypeLabel) ((LabelTree.LabelTreeNode) selection[0].getLastPathComponent()).getLabel();
             }
         }
 
         /** The label to be replaced; may be {@code null}. */
-        private Label oldLabel;
+        private TypeLabel oldLabel;
     }
 
     /**

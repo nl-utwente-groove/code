@@ -17,7 +17,6 @@
 package groove.type;
 
 import groove.graph.DefaultEdge;
-import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -25,7 +24,10 @@ import groove.graph.MergeMap;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
+import groove.trans.DefaultHostGraph;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.trans.Rule;
 import groove.trans.RuleMatch;
 import groove.trans.RuleNode;
@@ -44,7 +46,7 @@ public class TypeReconstructor {
 
     private final Map<Graph,NodeEdgeMap> typings =
         new HashMap<Graph,NodeEdgeMap>();
-    private final Graph typeGraph = new DefaultGraph();
+    private final HostGraph typeGraph = new DefaultHostGraph();
     private final MergeMap nodeTypes = new MergeMap();
 
     /**
@@ -142,7 +144,7 @@ public class TypeReconstructor {
         Iterable<RuleMatch> matches =
             removeApplicationConditions(rule).getMatches(this.typeGraph, null);
         for (RuleMatch match : matches) {
-            for (Map.Entry<RuleNode,Node> nodes : match.getElementMap().nodeMap().entrySet()) {
+            for (Map.Entry<RuleNode,HostNode> nodes : match.getElementMap().nodeMap().entrySet()) {
                 merges.putNode(lhsTyping.getNode(nodes.getKey()),
                     nodes.getValue());
             }

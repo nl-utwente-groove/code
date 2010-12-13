@@ -17,7 +17,9 @@
 package groove.graph;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Default implementation of a generic node-edge-map. The implementation is
@@ -25,8 +27,110 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GenericNodeEdgeHashMap<NS,NT,ES,ET> extends
-        AbstractNodeEdgeMap<NS,NT,ES,ET> implements Cloneable {
+public class GenericNodeEdgeHashMap<NS,NT,ES,ET> implements
+        GenericNodeEdgeMap<NS,NT,ES,ET>, Cloneable {
+    public void clear() {
+        nodeMap().clear();
+        edgeMap().clear();
+    }
+
+    public boolean isEmpty() {
+        return nodeMap().isEmpty() && edgeMap().isEmpty();
+    }
+
+    public int size() {
+        return nodeMap().size() + edgeMap().size();
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see groove.graph.GenericNodeEdgeMap#getNode(NS)
+     */
+    public NT getNode(NS key) {
+        return nodeMap().get(key);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see groove.graph.GenericNodeEdgeMap#getEdge(ES)
+     */
+    public ET getEdge(ES key) {
+        return edgeMap().get(key);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see groove.graph.GenericNodeEdgeMap#putNode(NS, NT)
+     */
+    public NT putNode(NS key, NT layout) {
+        return nodeMap().put(key, layout);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see groove.graph.GenericNodeEdgeMap#putEdge(ES, ET)
+     */
+    public ET putEdge(ES key, ET layout) {
+        return edgeMap().put(key, layout);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see groove.graph.GenericNodeEdgeMap#putAll(groove.graph.GenericNodeEdgeHashMap)
+     */
+    public void putAll(GenericNodeEdgeMap<NS,NT,ES,ET> other) {
+        nodeMap().putAll(other.nodeMap());
+        edgeMap().putAll(other.edgeMap());
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see groove.graph.GenericNodeEdgeMap#removeNode(NS)
+     */
+    public NT removeNode(NS key) {
+        return nodeMap().remove(key);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see groove.graph.GenericNodeEdgeMap#removeEdge(ES)
+     */
+    public ET removeEdge(ES key) {
+        return edgeMap().remove(key);
+    }
+
+    @Override
+    public boolean isInjective() {
+        Set<NT> nodeValues = new HashSet<NT>(nodeMap().values());
+        return nodeMap().size() == nodeValues.size();
+    }
+
+    /**
+     * Tests for equality of the node and edge maps.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        return (obj instanceof GenericNodeEdgeMap)
+            && nodeMap().equals(((GenericNodeEdgeMap<?,?,?,?>) obj).nodeMap())
+            && edgeMap().equals(((GenericNodeEdgeMap<?,?,?,?>) obj).edgeMap());
+    }
+
+    /**
+     * Adds the hash codes of the node and edge maps.
+     */
+    @Override
+    public int hashCode() {
+        return nodeMap().hashCode() + edgeMap().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        String result;
+        result = "Node map: " + nodeMap();
+        result += "; Edge map: " + edgeMap();
+        return result;
+    }
+
     /**
      * This implementation returns a {@link HashMap}.
      */
@@ -52,17 +156,14 @@ public class GenericNodeEdgeHashMap<NS,NT,ES,ET> extends
      */
     @Override
     public GenericNodeEdgeMap<NS,NT,ES,ET> clone() {
-        try {
-            @SuppressWarnings({"unchecked", "rawtypes"})
-            GenericNodeEdgeHashMap<NS,NT,ES,ET> result =
-                (GenericNodeEdgeHashMap) super.clone();
-            result.nodeMap = null;
-            result.edgeMap = null;
-            result.putAll(this);
-            return result;
-        } catch (CloneNotSupportedException exc) {
-            throw new UnsupportedOperationException("Cloning went wrong");
-        }
+        GenericNodeEdgeMap<NS,NT,ES,ET> result = newMap();
+        result.putAll(this);
+        return result;
+    }
+
+    @Override
+    public GenericNodeEdgeMap<NS,NT,ES,ET> newMap() {
+        return new GenericNodeEdgeHashMap<NS,NT,ES,ET>();
     }
 
     /**

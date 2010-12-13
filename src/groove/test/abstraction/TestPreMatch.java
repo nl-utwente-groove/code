@@ -22,8 +22,8 @@ import groove.abstraction.Multiplicity;
 import groove.abstraction.Parameters;
 import groove.abstraction.PreMatch;
 import groove.abstraction.Shape;
-import groove.graph.Graph;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.trans.Rule;
 import groove.trans.RuleMatch;
 import groove.view.FormatException;
@@ -59,7 +59,7 @@ public class TestPreMatch {
         File file = new File(DIRECTORY);
         try {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            Graph graph = view.getGraphView("shape-build-test-2").toModel();
+            HostGraph graph = view.getGraphView("shape-build-test-2").toModel();
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-match-0");
@@ -80,7 +80,7 @@ public class TestPreMatch {
         File file = new File(DIRECTORY);
         try {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            Graph graph = view.getGraphView("shape-build-test-2").toModel();
+            HostGraph graph = view.getGraphView("shape-build-test-2").toModel();
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-match-4");
@@ -101,7 +101,7 @@ public class TestPreMatch {
         File file = new File(DIRECTORY);
         try {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            Graph graph = view.getGraphView("shape-build-test-8").toModel();
+            HostGraph graph = view.getGraphView("shape-build-test-8").toModel();
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-match-1");
@@ -122,7 +122,7 @@ public class TestPreMatch {
         File file = new File(DIRECTORY);
         try {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            Graph graph = view.getGraphView("shape-build-test-9").toModel();
+            HostGraph graph = view.getGraphView("shape-build-test-9").toModel();
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-match-3");

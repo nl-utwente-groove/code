@@ -36,7 +36,7 @@ import java.util.Map;
  */
 public abstract class AbstractXml implements Xml<Graph> {
     public Graph unmarshalGraph(URL url) throws IOException {
-        return unmarshalGraphMap(url).first();
+        return unmarshalGraphMap(url).one();
     }
 
     /** backwards compatibility method */

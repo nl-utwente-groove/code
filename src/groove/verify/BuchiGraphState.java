@@ -17,13 +17,13 @@
 package groove.verify;
 
 import groove.control.CtrlState;
-import groove.graph.Graph;
 import groove.lts.AbstractGraphState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.GraphTransitionStub;
 import groove.lts.ProductTransition;
 import groove.lts.StateReference;
+import groove.trans.HostGraph;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.TransformIterator;
@@ -95,7 +95,7 @@ public class BuchiGraphState extends AbstractGraphState {
     }
 
     @Override
-    public Graph getGraph() {
+    public HostGraph getGraph() {
         return this.state.getGraph();
     }
 

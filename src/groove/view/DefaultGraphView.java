@@ -17,19 +17,19 @@
 package groove.view;
 
 import static groove.view.aspect.AttributeAspect.getAttributeValue;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultLabel;
-import groove.graph.DefaultNode;
-import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.GenericNodeEdgeHashMap;
-import groove.graph.Graph;
+import groove.graph.ElementFactory;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
-import groove.graph.Node;
 import groove.graph.TypeGraph;
+import groove.graph.TypeLabel;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ValueNode;
+import groove.trans.DefaultHostGraph;
+import groove.trans.HostEdge;
+import groove.trans.HostFactory;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.trans.SystemProperties;
 import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
@@ -79,7 +79,7 @@ public class DefaultGraphView implements GraphView {
         return this.view;
     }
 
-    public Graph toModel() throws FormatException {
+    public HostGraph toModel() throws FormatException {
         initialise();
         if (this.model == null) {
             throw new FormatException(getErrors());
@@ -94,7 +94,7 @@ public class DefaultGraphView implements GraphView {
     }
 
     @Override
-    public ViewToStateMap getMap() {
+    public ViewToHostMap getMap() {
         initialise();
         return this.viewToModelMap;
     }
@@ -120,7 +120,7 @@ public class DefaultGraphView implements GraphView {
     }
 
     /** Returns the set of labels used in this graph. */
-    public Set<Label> getLabels() {
+    public Set<TypeLabel> getLabels() {
         initialise();
         return this.labelSet;
     }
@@ -129,10 +129,11 @@ public class DefaultGraphView implements GraphView {
     private void initialise() {
         // first test if there is something to be done
         if (this.errors == null) {
-            this.labelSet = new HashSet<Label>();
-            Pair<Graph,ViewToStateMap> modelPlusMap = computeModel(this.view);
-            this.model = modelPlusMap.first();
-            this.viewToModelMap = modelPlusMap.second();
+            this.labelSet = new HashSet<TypeLabel>();
+            Pair<HostGraph,ViewToHostMap> modelPlusMap =
+                computeModel(this.view);
+            this.model = modelPlusMap.one();
+            this.viewToModelMap = modelPlusMap.two();
             this.errors = GraphInfo.getErrors(this.model);
         }
     }
@@ -158,11 +159,11 @@ public class DefaultGraphView implements GraphView {
      * Computes a fresh model from a given aspect graph, together with a mapping
      * from the aspect graph's node to the (fresh) graph nodes.
      */
-    private Pair<Graph,ViewToStateMap> computeModel(AspectGraph view) {
+    private Pair<HostGraph,ViewToHostMap> computeModel(AspectGraph view) {
         Set<FormatError> errors = new TreeSet<FormatError>(view.getErrors());
-        Graph model = createGraph();
+        HostGraph model = createGraph();
         // we need to record the view-to-model element map for layout transfer
-        ViewToStateMap elementMap = new ViewToStateMap();
+        ViewToHostMap elementMap = new ViewToHostMap();
         // copy the nodes from view to model
         for (AspectNode viewNode : view.nodeSet()) {
             try {
@@ -180,12 +181,12 @@ public class DefaultGraphView implements GraphView {
             }
         }
         // remove isolated variable nodes from the result graph
-        Iterator<Map.Entry<AspectNode,Node>> viewToModelIter =
+        Iterator<Map.Entry<AspectNode,HostNode>> viewToModelIter =
             elementMap.nodeMap().entrySet().iterator();
         while (viewToModelIter.hasNext()) {
-            Map.Entry<AspectNode,Node> viewToModelEntry =
+            Map.Entry<AspectNode,HostNode> viewToModelEntry =
                 viewToModelIter.next();
-            Node modelNode = viewToModelEntry.getValue();
+            HostNode modelNode = viewToModelEntry.getValue();
             if (modelNode instanceof ValueNode
                 && model.edgeSet(modelNode).isEmpty()) {
                 // the node is an isolated value node; remove it
@@ -197,18 +198,18 @@ public class DefaultGraphView implements GraphView {
         if (this.type != null) {
             Collection<FormatError> typeErrors;
             try {
-                TypeGraph.Typing<Node,Edge> typing =
+                TypeGraph.Typing<HostNode,HostEdge> typing =
                     this.type.checkTyping(model);
                 typeErrors = new TreeSet<FormatError>();
                 for (Element elem : typing.getAbstractElements()) {
-                    if (elem instanceof Node) {
+                    if (elem instanceof HostNode) {
                         typeErrors.add(new FormatError(
                             "Graph may not contain abstract %s-node",
-                            typing.getType((Node) elem), elem));
+                            typing.getType((HostNode) elem), elem));
                     } else {
                         typeErrors.add(new FormatError(
                             "Graph may not contain abstract %s-edge",
-                            ((Edge) elem).label(), elem));
+                            ((HostEdge) elem).label(), elem));
                     }
                 }
             } catch (FormatException e) {
@@ -218,10 +219,10 @@ public class DefaultGraphView implements GraphView {
                 // compute inverse element map
                 Map<Element,Element> inverseMap =
                     new HashMap<Element,Element>();
-                for (Map.Entry<AspectNode,Node> nodeEntry : elementMap.nodeMap().entrySet()) {
+                for (Map.Entry<AspectNode,HostNode> nodeEntry : elementMap.nodeMap().entrySet()) {
                     inverseMap.put(nodeEntry.getValue(), nodeEntry.getKey());
                 }
-                for (Map.Entry<AspectEdge,Edge> edgeEntry : elementMap.edgeMap().entrySet()) {
+                for (Map.Entry<AspectEdge,HostEdge> edgeEntry : elementMap.edgeMap().entrySet()) {
                     inverseMap.put(edgeEntry.getValue(), edgeEntry.getKey());
                 }
                 for (FormatError error : typeErrors) {
@@ -233,7 +234,7 @@ public class DefaultGraphView implements GraphView {
         GraphInfo.transfer(view, model, elementMap);
         GraphInfo.setErrors(model, errors);
         model.setFixed();
-        return new Pair<Graph,ViewToStateMap>(model, elementMap);
+        return new Pair<HostGraph,ViewToHostMap>(model, elementMap);
     }
 
     /**
@@ -241,7 +242,7 @@ public class DefaultGraphView implements GraphView {
      * element map.
      * @throws FormatException if the presence of the node signifies an error
      */
-    private void processViewNode(Graph model, ViewToStateMap elementMap,
+    private void processViewNode(HostGraph model, ViewToHostMap elementMap,
             AspectNode viewNode) throws FormatException {
         FormatError error = null;
         boolean nodeInModel = true;
@@ -257,15 +258,15 @@ public class DefaultGraphView implements GraphView {
         }
         // include the node in the model if it is not virtual
         if (nodeInModel) {
-            Node nodeImage = null;
+            HostNode nodeImage = null;
             try {
-                nodeImage = this.attributeFactory.createAttributeNode(viewNode);
+                nodeImage =
+                    (ValueNode) this.attributeFactory.createAttributeNode(viewNode);
             } catch (FormatException exc) {
                 error = new FormatError(exc.getErrors().get(0), viewNode);
             }
             if (nodeImage == null) {
-                nodeImage = DefaultNode.createNode(viewNode.getNumber());
-                model.addNode(nodeImage);
+                nodeImage = model.addNode(viewNode.getNumber());
             } else if (isAllowedNode(nodeImage)) {
                 model.addNode(nodeImage);
             } else {
@@ -286,7 +287,7 @@ public class DefaultGraphView implements GraphView {
      * map and subtypes.
      * @throws FormatException if the presence of the edge signifies an error
      */
-    private void processViewEdge(Graph model, ViewToStateMap elementMap,
+    private void processViewEdge(HostGraph model, ViewToHostMap elementMap,
             AspectEdge viewEdge) throws FormatException {
         if (AttributeAspect.isConstant(viewEdge)
             || viewEdge.getModelLabel() == null) {
@@ -302,11 +303,11 @@ public class DefaultGraphView implements GraphView {
                     viewEdge);
             }
         }
-        Node modelSource = elementMap.getNode(viewEdge.source());
+        HostNode modelSource = elementMap.getNode(viewEdge.source());
         assert modelSource != null : String.format(
             "Source of '%s' is not in element map %s", viewEdge.source(),
             elementMap);
-        Node modelTarget = elementMap.getNode(viewEdge.target());
+        HostNode modelTarget = elementMap.getNode(viewEdge.target());
         assert modelTarget != null : String.format(
             "Target of '%s' is not in element map %s", viewEdge.target(),
             elementMap);
@@ -317,20 +318,24 @@ public class DefaultGraphView implements GraphView {
                 getAttributeValue(viewEdge), viewEdge);
         }
         Label modelLabel = viewEdge.getModelLabel();
-        if (DefaultLabel.isDataType(modelLabel)) {
+        assert modelLabel instanceof TypeLabel : String.format(
+            "Label %s is of type %s rather %s", modelLabel,
+            modelLabel.getClass().getName(), TypeLabel.class.getName());
+        if (((TypeLabel) modelLabel).isDataType()) {
             throw new FormatException(
                 "Data type label '%s' not allowed in graphs", modelLabel,
                 viewEdge);
         }
-        Edge modelEdge = model.addEdge(modelSource, modelLabel, modelTarget);
-        this.labelSet.add(modelLabel);
+        HostEdge modelEdge =
+            model.addEdge(modelSource, modelLabel, modelTarget);
+        this.labelSet.add((TypeLabel) modelLabel);
         elementMap.putEdge(viewEdge, modelEdge);
     }
 
     /**
      * Tests if a certain attribute node is of the type allowed in graphs.
      */
-    private boolean isAllowedNode(Node node) {
+    private boolean isAllowedNode(HostNode node) {
         return node instanceof ValueNode;
     }
 
@@ -355,8 +360,8 @@ public class DefaultGraphView implements GraphView {
     /**
      * Returns the graph factory used to construct the model.
      */
-    private Graph createGraph() {
-        return new DefaultGraph();
+    private HostGraph createGraph() {
+        return new DefaultHostGraph();
     }
 
     /** The name of the view. */
@@ -364,24 +369,30 @@ public class DefaultGraphView implements GraphView {
     /** The view represented by this object. */
     private final AspectGraph view;
     /** The graph model that is being viewed. */
-    private Graph model;
+    private HostGraph model;
     /**
      * List of errors in the view that prevent the model from being constructed.
      */
     private List<FormatError> errors;
     /** Map from view to model nodes. */
-    private ViewToStateMap viewToModelMap;
+    private ViewToHostMap viewToModelMap;
     /** Set of labels occurring in this graph. */
-    private Set<Label> labelSet;
+    private Set<TypeLabel> labelSet;
     /** The attribute element factory for this view. */
     private AttributeElementFactory attributeFactory;
     /** Optional type graph for this aspect graph. */
     private TypeGraph type;
 
     /** Mapping from aspect graph to type graph. */
-    public static class ViewToStateMap extends
-            GenericNodeEdgeHashMap<AspectNode,Node,AspectEdge,Edge> implements
-            ViewToModelMap<Node,Edge> {
-        // no added functionality
+    public static class ViewToHostMap extends ViewToModelMap<HostNode,HostEdge> {
+        @Override
+        public ElementFactory<HostNode,?,HostEdge> getFactory() {
+            return HostFactory.INSTANCE;
+        }
+
+        @Override
+        public ViewToHostMap newMap() {
+            return new ViewToHostMap();
+        }
     }
 }

@@ -16,7 +16,6 @@
  */
 package groove.rel;
 
-import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.LabelStore;
@@ -31,6 +30,7 @@ import groove.rel.RegExpr.Seq;
 import groove.rel.RegExpr.Sharp;
 import groove.rel.RegExpr.Star;
 import groove.rel.RegExpr.Wildcard;
+import groove.trans.RuleLabel;
 import groove.util.DefaultDispenser;
 
 import java.util.Iterator;
@@ -54,9 +54,13 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
     /**
      * Applies this calculator to a given regular expression, fixes the
      * resulting automaton and returns it.
+     * It is required that all the expression labels occur in the
+     * label store.
+     * @param labelStore the label store for the automaton (non-{@code null})
      */
-    public synchronized Automaton compute(RegExpr expr) {
+    public synchronized Automaton compute(RegExpr expr, LabelStore labelStore) {
         this.nodeDispenser.reset();
+        this.labelStore = labelStore;
         Automaton result = expr.apply(this);
         result.setFixed();
         return result;
@@ -87,8 +91,7 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
      * node for every current edge from the start node.
      */
     public Automaton computePlus(Plus expr, Automaton result) {
-        Node newNode = createNode();
-        result.addNode(newNode);
+        Node newNode = result.addNode();
         // copy final edges
         for (Edge finalEdge : result.inEdgeSet(result.getEndNode())) {
             result.addEdge(finalEdge.source(), finalEdge.label(), newNode);
@@ -107,7 +110,7 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
     public Automaton computeInv(Inv expr, Automaton arg) {
         Automaton result = createAutomaton();
         for (Edge edge : arg.edgeSet()) {
-            Label label = invert(edge.label());
+            Label label = invert((RuleLabel) edge.label());
             result.addEdge(edge.target(), label, edge.source());
         }
         result.mergeNodes(arg.getEndNode(), result.getStartNode());
@@ -175,9 +178,12 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
     /**
      * Returns an automaton with a single edge, from start to end node, labelled
      * with the text of the atomic expression.
+     * It is required that the atom's type label occurs in the label store.
      */
     public Automaton computeAtom(Atom expr) {
         Automaton result = createAutomaton();
+        assert this.labelStore.getLabels().contains(expr.toTypeLabel()) : String.format(
+            "Unknown label %s", expr.toTypeLabel());
         result.addEdge(result.getStartNode(), expr.toLabel(),
             result.getEndNode());
         return result;
@@ -185,7 +191,7 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
 
     /**
      * Returns an automaton with a single edge, from start to end node, labelled
-     * with <code>expr</code> (as a {@link RegExprLabel}).
+     * with <code>expr</code> (as a {@link RuleLabel}).
      */
     public Automaton computeSharp(Sharp expr) {
         Automaton result = createAutomaton();
@@ -196,7 +202,7 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
 
     /**
      * Returns an automaton with a single edge, from start to end node, labelled
-     * with <code>expr</code> (as a {@link RegExprLabel}).
+     * with <code>expr</code> (as a {@link RuleLabel}).
      */
     public Automaton computeWildcard(Wildcard expr) {
         Automaton result = createAutomaton();
@@ -220,44 +226,25 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
      * identities (in the context of this calculator).
      */
     protected Automaton createAutomaton() {
-        return new MatrixAutomaton(createNode(), createNode(), this.labelStore);
+        return new MatrixAutomaton(this.labelStore);
     }
 
     /**
      * Constructs the inverse of a given label. The inverse is a
-     * {@link RegExprLabel} with a {@link RegExpr.Inv} inside if the original
+     * {@link RuleLabel} with a {@link RegExpr.Inv} inside if the original
      * label is not already of this form; otherwise, the {@link RegExpr.Inv} is
      * stripped. Also takes wildcards into account.
      */
-    protected Label invert(Label label) {
+    protected RuleLabel invert(RuleLabel label) {
         // invert the label
-        RegExpr invOperand = RegExprLabel.getInvOperand(label);
-        if (invOperand == null) {
-            RegExpr innerExpr =
-                label instanceof RegExprLabel
-                        ? ((RegExprLabel) label).getRegExpr()
-                        : RegExpr.atom(label.text());
-            return innerExpr.inv().toLabel();
+        RuleLabel result;
+        RuleLabel invLabel = label.getInvLabel();
+        if (invLabel == null) {
+            result = label.getRegExpr().inv().toLabel();
         } else {
-            return invOperand.toLabel();
+            result = invLabel;
         }
-    }
-
-    /**
-     * Callback factory method to create a fresh node, using the fixed node
-     * identity dispenser.
-     */
-    private Node createNode() {
-        return DefaultNode.createNode(this.nodeDispenser.getNumber());
-    }
-
-    /** 
-     * Sets the label store of this calculator.
-     * The label store is used in the automaton for matching
-     * node type labels.
-     */
-    public final void setLabelStore(LabelStore labelStore) {
-        this.labelStore = labelStore;
+        return result;
     }
 
     /** Label store currently used to build automata. */

@@ -17,8 +17,8 @@
 package groove.trans;
 
 import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
 import groove.graph.Edge;
+import groove.graph.ElementFactory;
 import groove.graph.Label;
 import groove.graph.Node;
 
@@ -92,18 +92,6 @@ public class RuleGraph extends DefaultGraph {
     }
 
     @Override
-    public RuleNode createNode() {
-        return DefaultNode.createNode();
-    }
-
-    @Override
-    public RuleEdge createEdge(Node source, Label label, Node target) {
-        assert source instanceof RuleNode;
-        assert target instanceof RuleNode;
-        return new RuleEdge((RuleNode) source, label, (RuleNode) target);
-    }
-
-    @Override
     public RuleNode addNode() {
         return (RuleNode) super.addNode();
     }
@@ -116,5 +104,10 @@ public class RuleGraph extends DefaultGraph {
     @Override
     protected boolean isTypeCorrect(Edge edge) {
         return edge instanceof RuleEdge;
+    }
+
+    @Override
+    public ElementFactory<?,?,?> getFactory() {
+        return RuleFactory.INSTANCE;
     }
 }

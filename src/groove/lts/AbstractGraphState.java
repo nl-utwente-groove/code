@@ -20,8 +20,7 @@ import groove.control.CtrlCall;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.graph.Element;
-import groove.graph.Graph;
-import groove.graph.Node;
+import groove.trans.HostNode;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.AbstractCacheHolder;
@@ -52,8 +51,6 @@ abstract public class AbstractGraphState extends
         stateCount++;
     }
 
-    abstract public Graph getGraph();
-
     /*
      * (non-Javadoc)
      * @see groove.lts.GraphState#getOutTransitionIter()
@@ -82,7 +79,7 @@ abstract public class AbstractGraphState extends
             protected GraphTransitionStub toInner(Object key) {
                 if (key instanceof GraphTransition) {
                     RuleEvent keyEvent = ((GraphTransition) key).getEvent();
-                    Node[] keyAddedNodes =
+                    HostNode[] keyAddedNodes =
                         ((GraphTransition) key).getAddedNodes();
                     GraphState keyTarget = ((GraphTransition) key).target();
                     return createTransitionStub(keyEvent, keyAddedNodes,
@@ -162,12 +159,12 @@ abstract public class AbstractGraphState extends
     /**
      * Callback factory method for creating an outgoing transition (from this
      * state) for the given derivation and target state. This implementation
-     * invokes {@link #createInTransitionStub(GraphState, RuleEvent, Node[])} if
+     * invokes {@link #createInTransitionStub(GraphState, RuleEvent, HostNode[])} if
      * the target is a {@link AbstractGraphState}, otherwise it creates a
      * {@link IdentityTransitionStub}.
      */
     protected GraphTransitionStub createTransitionStub(RuleEvent event,
-            Node[] addedNodes, GraphState target) {
+            HostNode[] addedNodes, GraphState target) {
         if (target instanceof AbstractGraphState) {
             return ((AbstractGraphState) target).createInTransitionStub(this,
                 event, addedNodes);
@@ -181,7 +178,7 @@ abstract public class AbstractGraphState extends
      * from a given graph and with a given rule event.
      */
     protected GraphTransitionStub createInTransitionStub(GraphState source,
-            RuleEvent event, Node[] addedNodes) {
+            RuleEvent event, HostNode[] addedNodes) {
         return new IdentityTransitionStub(event, addedNodes, this);
     }
 
@@ -373,7 +370,7 @@ abstract public class AbstractGraphState extends
      * Returns the map of parameters to nodes for this state
      * @return a Map<String,Node> of parameters
      */
-    public Node[] getBoundNodes() {
+    public HostNode[] getBoundNodes() {
         return EMPTY_NODE_LIST;
     }
 
@@ -436,5 +433,5 @@ abstract public class AbstractGraphState extends
     /** Constant empty array of out transition, shared for memory efficiency. */
     private static final GraphTransitionStub[] EMPTY_TRANSITION_STUBS =
         new GraphTransitionStub[0];
-    static final Node[] EMPTY_NODE_LIST = new Node[0];
+    static final HostNode[] EMPTY_NODE_LIST = new HostNode[0];
 }

@@ -16,10 +16,8 @@
  */
 package groove.trans;
 
-import groove.graph.GraphShape;
 import groove.graph.LabelStore;
 import groove.rel.LabelVar;
-import groove.rel.RuleToStateMap;
 import groove.util.Fixable;
 import groove.view.FormatException;
 
@@ -52,7 +50,7 @@ public interface Condition extends Fixable {
      * The root map identifies the elements of the target that are expected to
      * be matched before the condition is tested.
      */
-    public RuleGraphMap getRootMap();
+    public RuleToRuleMap getRootMap();
 
     /**
      * Set of variables in the target of this condition that also occur in root
@@ -70,8 +68,13 @@ public interface Condition extends Fixable {
     public SystemProperties getSystemProperties();
 
     /**
-     * Returns the subtyping relation of this graph condition, or
-     * <code>null</code> if there is no subtyping relation.
+     * Sets the label store of this graph condition.
+     */
+    public void setLabelStore(LabelStore labelStore);
+
+    /**
+     * Returns the label store of this graph condition.
+     * The label store must be set before the graph is fixed.
      */
     public LabelStore getLabelStore();
 
@@ -104,7 +107,7 @@ public interface Condition extends Fixable {
      * Tests if this condition is ground and has a match to a given host graph.
      * Convenience method for <code>getMatchIter(host, null).hasNext()</code>
      */
-    public boolean hasMatch(GraphShape host);
+    public boolean hasMatch(HostGraph host);
 
     /**
      * Returns an iterator over all matches for a given host graph, given a
@@ -117,6 +120,6 @@ public interface Condition extends Fixable {
      *         <code>patternMatch</code> is not compatible with the pattern
      *         graph
      */
-    public Iterator<? extends Match> getMatchIter(GraphShape host,
-            RuleToStateMap contextMap);
+    public Iterator<? extends Match> getMatchIter(HostGraph host,
+            RuleToHostMap contextMap);
 }

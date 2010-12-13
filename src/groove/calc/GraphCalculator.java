@@ -21,6 +21,7 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.Condition;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 
 import java.util.Collection;
 
@@ -122,7 +123,7 @@ public interface GraphCalculator {
      *         the grammar properties
      * @see GraphGrammar#testConsistent()
      */
-    public GraphCalculator newInstance(Graph basis)
+    public GraphCalculator newInstance(HostGraph basis)
         throws IllegalArgumentException;
 
     /**

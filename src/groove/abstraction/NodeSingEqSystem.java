@@ -17,8 +17,8 @@
 package groove.abstraction;
 
 import groove.abstraction.gui.ShapeDialog;
-import groove.graph.Edge;
-import groove.graph.Label;
+import groove.graph.TypeLabel;
+import groove.trans.HostEdge;
 import groove.util.Pair;
 
 import java.util.HashMap;
@@ -130,7 +130,7 @@ public final class NodeSingEqSystem extends EquationSystem {
     @Override
     void buildEquationSystem() {
         // For all binary labels.
-        for (Label label : Util.binaryLabelSet(this.shape)) {
+        for (TypeLabel label : Util.binaryLabelSet(this.shape)) {
             // For all equivalence classes of the shape: D \in N_S/~
             for (EquivClass<ShapeNode> D : this.shape.getEquivRelation()) {
                 // For all nodes in the equivalence class: w \in D
@@ -212,7 +212,7 @@ public final class NodeSingEqSystem extends EquationSystem {
         boolean handledCrossCutting = false;
 
         // For all binary labels.
-        for (Label label : Util.binaryLabelSet(this.shape)) {
+        for (TypeLabel label : Util.binaryLabelSet(this.shape)) {
             // For outgoing and incoming directions.
             for (int direction = OUTGOING; direction <= INCOMING; direction++) {
                 EquivClass<ShapeNode> ecO = null;
@@ -260,7 +260,7 @@ public final class NodeSingEqSystem extends EquationSystem {
                         if (outMultVars != null) {
                             // Yes, we do. Create a new MultTerm for each
                             // element in the pair.
-                            MultVar p = outMultVars.first();
+                            MultVar p = outMultVars.one();
                             MultTerm pTerm = new MultTerm(nOMult, p);
                             if (this.varMap.get(p).equals(this.singEc)) {
                                 singConstr.addToOutSum(pTerm);
@@ -270,7 +270,7 @@ public final class NodeSingEqSystem extends EquationSystem {
                                 assert false : "Error in building the EqSys!";
                             }
 
-                            MultVar q = outMultVars.second();
+                            MultVar q = outMultVars.two();
                             MultTerm qTerm = new MultTerm(nOMult, q);
                             if (this.varMap.get(q).equals(this.singEc)) {
                                 singConstr.addToOutSum(qTerm);
@@ -308,7 +308,7 @@ public final class NodeSingEqSystem extends EquationSystem {
                         if (inMultVars != null) {
                             // Yes, we do. Create a new MultTerm for each
                             // element in the pair.
-                            MultVar r = inMultVars.first();
+                            MultVar r = inMultVars.one();
                             MultTerm rTerm = new MultTerm(nIMult, r);
                             if (this.varMap.get(r).equals(this.singEc)) {
                                 singConstr.addToInSum(rTerm);
@@ -318,7 +318,7 @@ public final class NodeSingEqSystem extends EquationSystem {
                                 assert false : "Error in building the EqSys!";
                             }
 
-                            MultVar s = inMultVars.second();
+                            MultVar s = inMultVars.two();
                             MultTerm sTerm = new MultTerm(nIMult, s);
                             if (this.varMap.get(s).equals(this.singEc)) {
                                 singConstr.addToInSum(sTerm);
@@ -351,15 +351,15 @@ public final class NodeSingEqSystem extends EquationSystem {
                     // This is a corner case on which we need to add additional
                     // constraints for the opposite edges in the same EC.
                     if (!handledCrossCutting && ecO.equals(ecI)) {
-                        HashMap<Edge,Pair<MultVar,MultVar>> edgeMap =
-                            new HashMap<Edge,Pair<MultVar,MultVar>>();
+                        HashMap<HostEdge,Pair<MultVar,MultVar>> edgeMap =
+                            new HashMap<HostEdge,Pair<MultVar,MultVar>>();
                         this.buildEdgeToVarsMap(edgeMap);
                         Multiplicity one = Multiplicity.getMultOf(1);
                         for (Pair<MultVar,MultVar> vars : edgeMap.values()) {
                             AdmissibilityConstraint constr =
                                 new AdmissibilityConstraint();
-                            MultTerm outTerm = new MultTerm(one, vars.first());
-                            MultTerm inTerm = new MultTerm(one, vars.second());
+                            MultTerm outTerm = new MultTerm(one, vars.one());
+                            MultTerm inTerm = new MultTerm(one, vars.two());
                             constr.addToOutSum(outTerm);
                             constr.addToInSum(inTerm);
                             this.addAdmisConstr(constr);
@@ -413,8 +413,8 @@ public final class NodeSingEqSystem extends EquationSystem {
             EdgeSignature remEs =
                 newShape.getEdgeSignature(origEs.getNode(), origEs.getLabel(),
                     this.remEc);
-            MultVar singVar = entry.getValue().first();
-            MultVar remVar = entry.getValue().second();
+            MultVar singVar = entry.getValue().one();
+            MultVar remVar = entry.getValue().two();
             newShape.setEdgeOutMult(singEs, singVar.mult);
             newShape.setEdgeOutMult(remEs, remVar.mult);
         }
@@ -427,8 +427,8 @@ public final class NodeSingEqSystem extends EquationSystem {
             EdgeSignature remEs =
                 newShape.getEdgeSignature(origEs.getNode(), origEs.getLabel(),
                     this.remEc);
-            MultVar singVar = entry.getValue().first();
-            MultVar remVar = entry.getValue().second();
+            MultVar singVar = entry.getValue().one();
+            MultVar remVar = entry.getValue().two();
             newShape.setEdgeInMult(singEs, singVar.mult);
             newShape.setEdgeInMult(remEs, remVar.mult);
         }
@@ -449,7 +449,7 @@ public final class NodeSingEqSystem extends EquationSystem {
      * classes should be iterated.
      */
     private boolean haveVars(EquivClass<ShapeNode> ec0,
-            EquivClass<ShapeNode> ec1, Label label, boolean outgoing) {
+            EquivClass<ShapeNode> ec1, TypeLabel label, boolean outgoing) {
         boolean result = false;
         Map<EdgeSignature,Pair<MultVar,MultVar>> map;
         EquivClass<ShapeNode> ec;
@@ -473,8 +473,8 @@ public final class NodeSingEqSystem extends EquationSystem {
         return result;
     }
 
-    private void buildEdgeToVarsMap(HashMap<Edge,Pair<MultVar,MultVar>> edgeMap) {
-        for (Edge edge : Util.getBinaryEdges(this.shape)) {
+    private void buildEdgeToVarsMap(Map<HostEdge,Pair<MultVar,MultVar>> edgeMap) {
+        for (HostEdge edge : Util.getBinaryEdges(this.shape)) {
             edgeMap.put(edge, new Pair<MultVar,MultVar>(null, null));
         }
         for (Entry<EdgeSignature,Pair<MultVar,MultVar>> entry : this.outMap.entrySet()) {
@@ -482,32 +482,35 @@ public final class NodeSingEqSystem extends EquationSystem {
             Pair<MultVar,MultVar> vars = entry.getValue();
             for (ShapeEdge edge : this.shape.getEdgesFrom(es, true)) {
                 if (this.remEc.contains(edge.target())) {
-                    edgeMap.get(edge).setFirst(vars.second());
+                    edgeMap.get(edge).setOne(vars.two());
                 } else {
-                    edgeMap.get(edge).setFirst(vars.first());
+                    edgeMap.get(edge).setOne(vars.one());
                 }
             }
         }
         for (Entry<EdgeSignature,Pair<MultVar,MultVar>> entry : this.inMap.entrySet()) {
             EdgeSignature es = entry.getKey();
             Pair<MultVar,MultVar> vars = entry.getValue();
+            assert vars != null;
             for (ShapeEdge edge : this.shape.getEdgesFrom(es, false)) {
+                Pair<MultVar,MultVar> edgeVars = edgeMap.get(edge);
+                assert edgeVars != null;
                 if (this.remEc.contains(edge.source())) {
-                    edgeMap.get(edge).setSecond(vars.second());
+                    edgeVars.setTwo(vars.two());
                 } else {
-                    edgeMap.get(edge).setSecond(vars.first());
+                    edgeVars.setTwo(vars.one());
                 }
             }
         }
-        Set<Edge> edgesToRemove = new HashSet<Edge>();
-        for (Entry<Edge,Pair<MultVar,MultVar>> entry : edgeMap.entrySet()) {
-            Edge edge = entry.getKey();
+        Set<HostEdge> edgesToRemove = new HashSet<HostEdge>();
+        for (Entry<HostEdge,Pair<MultVar,MultVar>> entry : edgeMap.entrySet()) {
+            HostEdge edge = entry.getKey();
             Pair<MultVar,MultVar> pair = entry.getValue();
-            if (pair.first() == null || pair.second() == null) {
+            if (pair.one() == null || pair.two() == null) {
                 edgesToRemove.add(edge);
             }
         }
-        for (Edge edge : edgesToRemove) {
+        for (HostEdge edge : edgesToRemove) {
             edgeMap.remove(edge);
         }
     }

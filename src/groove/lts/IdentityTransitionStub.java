@@ -16,7 +16,7 @@
  */
 package groove.lts;
 
-import groove.graph.Node;
+import groove.trans.HostNode;
 import groove.trans.RuleEvent;
 
 /**
@@ -28,7 +28,7 @@ class IdentityTransitionStub extends AbstractGraphTransitionStub {
     /**
      * Default constructor, providing the event and target of the stub.
      */
-    IdentityTransitionStub(RuleEvent event, Node[] addedNodes, GraphState target) {
+    IdentityTransitionStub(RuleEvent event, HostNode[] addedNodes, GraphState target) {
         super(event, addedNodes, target);
     }
 

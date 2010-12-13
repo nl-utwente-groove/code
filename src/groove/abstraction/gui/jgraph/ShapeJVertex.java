@@ -21,7 +21,7 @@ import static groove.util.Converter.ITALIC_TAG;
 import groove.abstraction.Shape;
 import groove.abstraction.ShapeNode;
 import groove.abstraction.Util;
-import groove.graph.Label;
+import groove.graph.TypeLabel;
 import groove.gui.Options;
 import groove.gui.jgraph.JAttr;
 import groove.util.Converter;
@@ -65,8 +65,8 @@ public class ShapeJVertex extends DefaultGraphCell {
         String mult = this.shape.getNodeMult(this.node).toString();
         result.append(Converter.createSpanTag("color: rgb(50,50,255)").on(
             ITALIC_TAG.on(mult)));
-        Set<Label> labels = Util.getNodeLabels(this.shape, this.node);
-        for (Label label : labels) {
+        Set<TypeLabel> labels = Util.getNodeLabels(this.shape, this.node);
+        for (TypeLabel label : labels) {
             result.append(Converter.HTML_LINEBREAK);
             result.append(label.toString());
         }

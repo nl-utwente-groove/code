@@ -27,7 +27,7 @@ abstract public class GraphHashMap<SN extends Node,TN extends Node,SE extends Ed
         extends GenericNodeEdgeHashMap<SN,TN,SE,TE> implements
         GraphMap<SN,TN,SE,TE> {
     /** Constructs a copy of another node-edge-map. */
-    public GraphHashMap(GraphMap<SN,TN,SE,TE> other) {
+    public GraphHashMap(GraphHashMap<SN,TN,SE,TE> other) {
         nodeMap().putAll(other.nodeMap());
         edgeMap().putAll(other.edgeMap());
     }
@@ -37,11 +37,11 @@ abstract public class GraphHashMap<SN extends Node,TN extends Node,SE extends Ed
         // empty constructor
     }
 
-    public boolean containsEdgeKey(Edge elem) {
+    public boolean containsEdgeKey(SE elem) {
         return edgeMap().containsKey(elem);
     }
 
-    public boolean containsNodeKey(Node elem) {
+    public boolean containsNodeKey(SN elem) {
         return nodeMap().containsKey(elem);
     }
 
@@ -63,7 +63,7 @@ abstract public class GraphHashMap<SN extends Node,TN extends Node,SE extends Ed
     }
 
     /** This implementation acts as the identity function. */
-    public Label getLabel(Label label) {
+    public Label mapLabel(Label label) {
         return label;
     }
 
@@ -90,7 +90,7 @@ abstract public class GraphHashMap<SN extends Node,TN extends Node,SE extends Ed
         if (sourceImage == null) {
             return null;
         }
-        Label labelImage = getLabel(key.label());
+        Label labelImage = mapLabel(key.label());
         if (labelImage == null) {
             return null;
         }
@@ -99,18 +99,15 @@ abstract public class GraphHashMap<SN extends Node,TN extends Node,SE extends Ed
         if (targetImage == null) {
             return null;
         } else {
-            return createEdge(sourceImage, labelImage, targetImage);
+            return getFactory().createEdge(sourceImage, labelImage, targetImage);
         }
     }
 
-    /**
-     * Callback method to create a binary edge image.
-     */
-    abstract protected TE createEdge(TN source, Label label,
-            TN target);
+    @Override
+    public GraphHashMap<SN,TN,SE,TE> clone() {
+        return (GraphHashMap<SN,TN,SE,TE>) super.clone();
+    }
 
     @Override
-    public GraphMap<SN,TN,SE,TE> clone() {
-        return (GraphMap<SN,TN,SE,TE>) super.clone();
-    }
+    abstract public GraphHashMap<SN,TN,SE,TE> newMap();
 }

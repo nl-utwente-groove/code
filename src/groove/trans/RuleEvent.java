@@ -16,9 +16,7 @@
  */
 package groove.trans;
 
-import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.Graph;
 import groove.graph.MergeMap;
 import groove.graph.Node;
 import groove.lts.GraphTransitionStub;
@@ -67,14 +65,14 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
     public int getAnchorSize();
 
     /** Returns the set of nodes erased by the event. */
-    public Set<Node> getErasedNodes();
+    public Set<HostNode> getErasedNodes();
 
     /**
      * Returns the set of edges explicitly erased by the event. This does
      * <code>not</code> include all incident edges of the erased or merged
      * nodes.
      */
-    public Set<Edge> getSimpleErasedEdges();
+    public Set<HostEdge> getSimpleErasedEdges();
 
     /**
      * Returns the merge map of the event. The merge map contains entries for
@@ -88,7 +86,7 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
      * are the images of those creator edges of which the endpoints are not
      * fresh.
      */
-    public Set<Edge> getSimpleCreatedEdges();
+    public Set<HostEdge> getSimpleCreatedEdges();
 
     /**
      * Returns a set of created nodes of this event, given a set of nodes
@@ -97,7 +95,7 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
      * of the creator nodes.
      * @param hostNodes set of nodes not available as fresh nodes
      */
-    public Set<? extends Node> getCreatedNodes(Set<? extends Node> hostNodes);
+    public Set<HostNode> getCreatedNodes(Set<? extends HostNode> hostNodes);
 
     /**
      * Returns the set of explicitly created edges of which at least one end is
@@ -105,20 +103,20 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
      * @param createdNodes the images of the creator nodes, in the order of the
      *        rule's creator nodes.
      */
-    public Collection<? extends Edge> getComplexCreatedEdges(
-            Iterator<Node> createdNodes);
+    public Collection<HostEdge> getComplexCreatedEdges(
+            Iterator<HostNode> createdNodes);
 
     /**
      * Indicates if a matching of this event's rule exists, based on the anchor
      * map in this event.
      */
-    public boolean hasMatch(Graph source);
+    public boolean hasMatch(HostGraph source);
 
     /**
      * Returns a match of this event's rule, based on the anchor map in this
      * event. Returns <code>null</code> if no match exists.
      */
-    public RuleMatch getMatch(Graph source);
+    public RuleMatch getMatch(HostGraph source);
 
     /**
      * Tests if this event conflicts with another, in the sense that if the
@@ -131,9 +129,9 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
     /**
      * Factory method to create a rule application on a given source graph. The
      * method does <i>not</i> check if the event is actually applicable to the
-     * host graph; for that, use {@link #hasMatch(Graph)} first.
+     * host graph; for that, use {@link #hasMatch(HostGraph)} first.
      */
-    public RuleApplication newApplication(Graph source);
+    public RuleApplication newApplication(HostGraph source);
 
     /**
      * Convenience method for {@link System#identityHashCode(Object)}, included

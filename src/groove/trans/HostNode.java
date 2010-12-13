@@ -21,7 +21,7 @@ import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 
 /**
- * Supertype of all nodes that can occur in a {@link HostGraph}.
+ * Supertype of all nodes that can occur in a {@link DefaultHostGraph}.
  * These are {@link DefaultNode}s and {@link ValueNode}s.
  * @author Arend Rensink
  * @version $Revision $

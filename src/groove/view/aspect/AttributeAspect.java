@@ -22,10 +22,12 @@ import groove.algebra.Operation;
 import groove.algebra.Operator;
 import groove.algebra.UnknownSymbolException;
 import groove.graph.Element;
+import groove.graph.TypeLabel;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
+import groove.trans.RuleLabel;
 import groove.util.Groove;
 import groove.view.FormatException;
 
@@ -334,7 +336,7 @@ public class AttributeAspect extends AbstractAspect {
     static {
         try {
             ARGUMENT = instance.addEdgeValue(ARGUMENT_NAME);
-            ARGUMENT.setLabelParser(new NumberLabelParser());
+            ARGUMENT.setLabelParser(NumberLabelParser.INSTANCE);
             VALUE = instance.addNodeValue(VALUE_NAME);
             PRODUCT = instance.addNodeValue(PRODUCT_NAME);
             for (String signatureName : AlgebraRegister.getSignatureNames()) {
@@ -360,9 +362,10 @@ public class AttributeAspect extends AbstractAspect {
      * for correct formatting using a callback method that can be overridden by
      * subclasses.
      */
-    private static class NumberLabelParser extends FreeLabelParser {
+    private static class NumberLabelParser extends
+            AbstractLabelParser<RuleLabel> {
         /** Empty constructor for the singleton instance. */
-        NumberLabelParser() {
+        private NumberLabelParser() {
             // Empty
         }
 
@@ -386,13 +389,23 @@ public class AttributeAspect extends AbstractAspect {
                 return false;
             }
         }
+
+        /** Construct a {@link RuleLabel}. */
+        @Override
+        protected RuleLabel createLabel(String text) {
+            return new RuleLabel(TypeLabel.createLabel(text));
+        }
+
+        public static final NumberLabelParser INSTANCE =
+            new NumberLabelParser();
     }
 
     /**
      * Class that attempts to parse a string as the operation of a given
      * algebra, and returns the result as a DefaultLabel if successful.
      */
-    private static class OperationLabelParser extends FreeLabelParser {
+    private static class OperationLabelParser extends
+            AbstractLabelParser<RuleLabel> {
         /** Constructs an instance of this parser class for a given algebra. */
         OperationLabelParser(String signature) {
             this.signature = signature;
@@ -428,6 +441,11 @@ public class AttributeAspect extends AbstractAspect {
             } catch (FormatException exc) {
                 return exc.getMessage();
             }
+        }
+
+        @Override
+        protected RuleLabel createLabel(String text) {
+            return new RuleLabel(TypeLabel.createLabel(text));
         }
 
         /**

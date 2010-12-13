@@ -19,10 +19,11 @@ package groove.match.rete;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
-import groove.rel.VarNodeEdgeLinkedHashMap;
-import groove.rel.RuleToStateMap;
+import groove.trans.HostEdge;
+import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
+import groove.trans.RuleToHostMap;
 import groove.util.TreeHashSet;
 
 import java.util.ArrayList;
@@ -284,10 +285,10 @@ public class ReteMatch implements Comparable<ReteMatch> {
         return result;
     }
 
-    public boolean conformsWith(RuleToStateMap anchorMap) {
+    public boolean conformsWith(RuleToHostMap anchorMap) {
         LookupTable lookup = this.origin.getPatternLookupTable();
         boolean result = true;
-        for (Entry<RuleEdge,Edge> m : anchorMap.edgeMap().entrySet()) {
+        for (Entry<RuleEdge,HostEdge> m : anchorMap.edgeMap().entrySet()) {
             int i = lookup.getEdge(m.getKey());
             if ((i == -1) || (!this.units[i].equals(m.getValue()))) {
                 result = false;
@@ -498,20 +499,21 @@ public class ReteMatch implements Comparable<ReteMatch> {
         this.superMatches.remove(m);
     }
 
-    private RuleToStateMap equivalentMap = null;
+    private RuleToHostMap equivalentMap = null;
 
-    public RuleToStateMap toVarNodeEdgeMap() {
+    public RuleToHostMap toVarNodeEdgeMap() {
         if (this.equivalentMap == null) {
-            this.equivalentMap = new VarNodeEdgeLinkedHashMap();
+            this.equivalentMap = new RuleToHostMap();
 
             Element[] pattern = this.getOrigin().getPattern();
             for (int i = 0; i < this.units.length; i++) {
                 Element e = this.units[i];
                 if (e instanceof Node) {
-                    this.equivalentMap.putNode((RuleNode) pattern[i], (Node) e);
+                    this.equivalentMap.putNode((RuleNode) pattern[i],
+                        (HostNode) e);
                 } else if (e instanceof Edge) {
                     RuleEdge e1 = (RuleEdge) pattern[i];
-                    Edge e2 = (Edge) e;
+                    HostEdge e2 = (HostEdge) e;
                     this.equivalentMap.putEdge(e1, e2);
                     this.equivalentMap.putNode(e1.source(), e2.source());
                     this.equivalentMap.putNode(e1.target(), e2.target());

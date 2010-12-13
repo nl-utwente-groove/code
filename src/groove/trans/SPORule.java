@@ -23,13 +23,10 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
-import groove.graph.LabelStore;
 import groove.graph.algebra.VariableNode;
 import groove.match.MatchStrategy;
 import groove.match.SearchPlanStrategy;
 import groove.rel.LabelVar;
-import groove.rel.RegExprLabel;
-import groove.rel.RuleToStateMap;
 import groove.rel.VarSupport;
 import groove.util.Groove;
 import groove.util.NestedIterator;
@@ -64,9 +61,9 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @param systemProperties the global grammar properties
      */
     public SPORule(RuleName name, RuleGraph lhs, RuleGraph rhs,
-            RuleGraphMap morphism, GraphProperties ruleProperties,
+            RuleToRuleMap morphism, GraphProperties ruleProperties,
             SystemProperties systemProperties) {
-        this(name, lhs, rhs, morphism, null, null, null, ruleProperties,
+        this(name, lhs, rhs, morphism, null, null, ruleProperties,
             systemProperties);
     }
 
@@ -81,16 +78,15 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @param rootMap pattern map leading into the LHS
      * @param coRootMap map of creator nodes in the parent rule to creator nodes
      *        of this rule
-     * @param labelStore label store specifying the subtype relation
      * @param ruleProperties the rule properties
      * @param systemProperties the global grammar properties
      */
     public SPORule(RuleName name, RuleGraph lhs, RuleGraph rhs,
-            RuleGraphMap morphism, RuleGraphMap rootMap,
-            RuleGraphMap coRootMap, LabelStore labelStore,
-            GraphProperties ruleProperties, SystemProperties systemProperties) {
-        super(name, lhs, rootMap, labelStore, systemProperties);
-        this.coRootMap = coRootMap == null ? new RuleGraphMap() : coRootMap;
+            RuleToRuleMap morphism, RuleToRuleMap rootMap,
+            RuleToRuleMap coRootMap, GraphProperties ruleProperties,
+            SystemProperties systemProperties) {
+        super(name, lhs, rootMap, systemProperties);
+        this.coRootMap = coRootMap == null ? new RuleToRuleMap() : coRootMap;
         this.lhs = lhs;
         this.rhs = rhs;
         this.morphism = morphism;
@@ -352,7 +348,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     }
 
     /** Creates the search plan using the rule's search plan factory. */
-    public MatchStrategy<RuleToStateMap> getEventMatcher() {
+    public MatchStrategy<RuleToHostMap> getEventMatcher() {
         if (this.eventMatcher == null) {
             this.eventMatcher =
                 getMatcherFactory().createMatcher(this,
@@ -370,7 +366,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 
     /** This implementation sets the anchor graph elements to relevant. */
     @Override
-    MatchStrategy<RuleToStateMap> createMatcher() {
+    MatchStrategy<RuleToHostMap> createMatcher() {
         Set<RuleNode> anchorNodes = new HashSet<RuleNode>();
         Set<RuleEdge> anchorEdges = new HashSet<RuleEdge>();
         if (getRootMap() != null) {
@@ -389,15 +385,15 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     }
 
     @Override
-    public Iterator<RuleMatch> computeMatchIter(final GraphShape host,
-            Iterator<RuleToStateMap> matchMapIter) {
+    public Iterator<RuleMatch> computeMatchIter(final HostGraph host,
+            Iterator<RuleToHostMap> matchMapIter) {
         Iterator<RuleMatch> result = null;
         result =
             new NestedIterator<RuleMatch>(
-                new TransformIterator<RuleToStateMap,Iterator<RuleMatch>>(
+                new TransformIterator<RuleToHostMap,Iterator<RuleMatch>>(
                     matchMapIter) {
                     @Override
-                    public Iterator<RuleMatch> toOuter(RuleToStateMap matchMap) {
+                    public Iterator<RuleMatch> toOuter(RuleToHostMap matchMap) {
                         if (isValidMatchMap(host, matchMap)) {
                             return addSubMatches(host, createMatch(matchMap)).iterator();
                         } else {
@@ -412,9 +408,9 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Returns a collection of matches extending a given match with matches for
      * the sub-conditions.
      */
-    Collection<RuleMatch> addSubMatches(GraphShape host, RuleMatch simpleMatch) {
+    Collection<RuleMatch> addSubMatches(HostGraph host, RuleMatch simpleMatch) {
         Collection<RuleMatch> result = Collections.singleton(simpleMatch);
-        RuleToStateMap matchMap = simpleMatch.getElementMap();
+        RuleToHostMap matchMap = simpleMatch.getElementMap();
         for (AbstractCondition<?> condition : getComplexSubConditions()) {
             Iterable<? extends Match> subMatches =
                 condition.getMatches(host, matchMap);
@@ -436,7 +432,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @return a match constructed on the basis of <code>map</code>
      */
     @Override
-    protected RuleMatch createMatch(RuleToStateMap matchMap) {
+    protected RuleMatch createMatch(RuleToHostMap matchMap) {
         return new RuleMatch(this, matchMap);
     }
 
@@ -449,7 +445,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @return <code>true</code> if <code>matchMap</code> satisfies the
      *         constraints imposed by the rule (if any).
      */
-    boolean isValidMatchMap(GraphShape host, RuleToStateMap matchMap) {
+    boolean isValidMatchMap(GraphShape host, RuleToHostMap matchMap) {
         boolean result = true;
         if (SystemProperties.isCheckDangling(getSystemProperties())) {
             result = satisfiesDangling(host, matchMap);
@@ -461,7 +457,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Tests if a given (proposed) match into a host graph leaves dangling
      * edges.
      */
-    private boolean satisfiesDangling(GraphShape host, RuleToStateMap match) {
+    private boolean satisfiesDangling(GraphShape host, RuleToHostMap match) {
         boolean result = true;
         for (RuleNode eraserNode : getEraserNodes()) {
             RuleNode erasedNode = (RuleNode) match.getNode(eraserNode);
@@ -490,7 +486,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         return this.rhs;
     }
 
-    public RuleGraphMap getMorphism() {
+    public RuleToRuleMap getMorphism() {
         return this.morphism;
     }
 
@@ -907,7 +903,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         return result;
     }
 
-    RuleGraphMap getCoRootMap() {
+    RuleToRuleMap getCoRootMap() {
         return this.coRootMap;
     }
 
@@ -1016,8 +1012,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         Set<LabelVar> creatorVarSet = new HashSet<LabelVar>();
         for (int i = 0; i < getCreatorEdges().length; i++) {
             RuleEdge creatorEdge = getCreatorEdges()[i];
-            LabelVar creatorVar =
-                RegExprLabel.getWildcardId(creatorEdge.label());
+            LabelVar creatorVar = creatorEdge.label().getWildcardId();
             if (creatorVar != null) {
                 creatorVarSet.add(creatorVar);
             }
@@ -1052,7 +1047,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * {@link #getCreatorGraph()}) that are not themselves creator nodes but are
      * the ends of creator edges, to the corresponding nodes of the LHS.
      */
-    final RuleGraphMap getCreatorMap() {
+    final RuleToRuleMap getCreatorMap() {
         if (this.creatorMap == null) {
             this.creatorMap = computeCreatorMap();
         }
@@ -1064,9 +1059,9 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * of creator edges that are not themselves creator nodes to one of their
      * pre-images.
      */
-    private RuleGraphMap computeCreatorMap() {
+    private RuleToRuleMap computeCreatorMap() {
         // construct rhsOnlyMap
-        RuleGraphMap result = new RuleGraphMap();
+        RuleToRuleMap result = new RuleToRuleMap();
         Set<? extends RuleNode> creatorNodes = getCreatorGraph().nodeSet();
         for (Map.Entry<RuleNode,RuleNode> nodeEntry : getMorphism().nodeMap().entrySet()) {
             if (creatorNodes.contains(nodeEntry.getValue())) {
@@ -1259,7 +1254,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * The underlying production morphism.
      * @invariant ruleMorph : lhs --> rhs
      */
-    private final RuleGraphMap morphism;
+    private final RuleToRuleMap morphism;
     /**
      * This production rule's left hand side.
      * @invariant lhs != null
@@ -1271,7 +1266,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     private RuleGraph rhs;
     /** Mapping from the context of this rule to the RHS. */
-    private final RuleGraphMap coRootMap;
+    private final RuleToRuleMap coRootMap;
     /**
      * Smallest subgraph of the left hand side that is necessary to apply the
      * rule.
@@ -1292,7 +1287,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * the restriction of the inverse of <tt>ruleMorph</tt> to
      * <tt>rhsOnlyGraph</tt>.
      */
-    private RuleGraphMap creatorMap;
+    private RuleToRuleMap creatorMap;
     /**
      * The lhs nodes that are not ruleMorph keys
      * @invariant lhsOnlyNodes \subseteq lhs.nodeSet()
@@ -1368,7 +1363,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     private Set<RuleNode> hiddenPars;
     /** The matcher for events of this rule. */
-    private MatchStrategy<RuleToStateMap> eventMatcher;
+    private MatchStrategy<RuleToHostMap> eventMatcher;
 
     /** Returns the current anchor factory for all rules. */
     public static AnchorFactory<SPORule> getAnchorFactory() {

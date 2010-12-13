@@ -16,8 +16,8 @@
  */
 package groove.match;
 
-import groove.graph.Graph;
-import groove.rel.RuleToStateMap;
+import groove.trans.HostGraph;
+import groove.trans.RuleToHostMap;
 import groove.util.Property;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ import java.util.Iterator;
 /**
  * Class providing basic functionality for match strategies. The only method
  * left to be implemented is
- * {@link #getMatches(Graph host, RuleToStateMap anchorMap)}.
+ * {@link #getMatches(HostGraph host, RuleToHostMap anchorMap)}.
  * @param <R> the result type of the match
  * @author Arend Rensink
  * @version $Revision $
@@ -48,7 +48,8 @@ public abstract class AbstractMatchStrategy<R> implements MatchStrategy<R> {
         return this.filter;
     }
 
-    public Iterable<R> getMatches(final Graph host, final RuleToStateMap anchorMap) {
+    public Iterable<R> getMatches(final HostGraph host,
+            final RuleToHostMap anchorMap) {
         return new Iterable<R>() {
             public Iterator<R> iterator() {
                 return getMatchIter(host, anchorMap);
@@ -56,7 +57,7 @@ public abstract class AbstractMatchStrategy<R> implements MatchStrategy<R> {
         };
     }
 
-    public Collection<R> getMatchSet(Graph host, RuleToStateMap anchorMap) {
+    public Collection<R> getMatchSet(HostGraph host, RuleToHostMap anchorMap) {
         Collection<R> result = new ArrayList<R>();
         for (R match : getMatches(host, anchorMap)) {
             result.add(match);

@@ -22,8 +22,9 @@ import static groove.util.ExprParser.LPAR_CHAR;
 import static groove.util.ExprParser.PLACEHOLDER;
 import static groove.util.ExprParser.RPAR_CHAR;
 import static groove.util.ExprParser.SINGLE_QUOTE_CHAR;
-import groove.graph.DefaultLabel;
 import groove.graph.Label;
+import groove.graph.TypeLabel;
+import groove.trans.RuleLabel;
 import groove.util.ExprParser;
 import groove.util.Groove;
 import groove.util.Pair;
@@ -86,7 +87,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * Returns the type label this is a {@link RegExpr.Sharp},
      * or {@code null} otherwise.
      */
-    public Label getSharpLabel() {
+    public TypeLabel getSharpLabel() {
         return isSharp() ? ((Sharp) this).getTypeLabel() : null;
     }
 
@@ -111,7 +112,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * If this is a {@link RegExpr.Wildcard}, returns the guard of the wildcard,
      * if any; otherwise returns <code>null</code>.
      */
-    public Property<Label> getWildcardGuard() {
+    public Property<TypeLabel> getWildcardGuard() {
         if (this instanceof Wildcard) {
             return ((Wildcard) this).getGuard();
         } else {
@@ -310,7 +311,10 @@ abstract public class RegExpr { // implements VarSetSupport {
      * the labels that, when relabelled, result in a different expression.
      * @see #relabel(Label, Label)
      */
-    abstract public Set<Label> getLabels();
+    abstract public Set<TypeLabel> getTypeLabels();
+
+    /** Indicates if the regular expression accepts the empty word. */
+    public abstract boolean isAcceptsEmptyWord();
 
     /**
      * Tests if this expression contains a given operator (given by its string
@@ -430,9 +434,9 @@ abstract public class RegExpr { // implements VarSetSupport {
     }
 
     /** Returns a label based on this expression. */
-    public Label toLabel() {
+    public RuleLabel toLabel() {
         if (this.label == null) {
-            this.label = new RegExprLabel(this);
+            this.label = new RuleLabel(this);
         }
         return this.label;
     }
@@ -498,7 +502,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                 // quoted/bracketed atoms
                 Pair<String,List<String>> parseResult =
                     ExprParser.parseExpr(text);
-                if (parseResult.first().length() != 1) {
+                if (parseResult.one().length() != 1) {
                     String error;
                     if (text.charAt(0) == DOUBLE_QUOTE_CHAR) {
                         error =
@@ -516,7 +520,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             default:
                 // default atoms
                 // skip any node type or flag prefix
-                text = DefaultLabel.createTypedLabel(text).text();
+                text = TypeLabel.createTypedLabel(text).text();
                 boolean correct = true;
                 int i;
                 for (i = 0; correct && i < text.length(); i++) {
@@ -596,7 +600,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     /**
      * A regular expression label based on this expression.
      */
-    private RegExprLabel label;
+    private RuleLabel label;
 
     /**
      * Parses a given string as a regular expression. Throws an exception if the
@@ -630,7 +634,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     /**
      * Creates and returns a sharp test for a given node type label.
      */
-    public static Sharp sharp(Label typeLabel) {
+    public static Sharp sharp(TypeLabel typeLabel) {
         return new Sharp(typeLabel);
     }
 
@@ -808,10 +812,9 @@ abstract public class RegExpr { // implements VarSetSupport {
      * priority. In particular, atoms that have special meaning should come
      * before the {@link Atom}.
      */
-    static private final RegExpr[] prototypes =
-        new RegExpr[] {new Atom(), new Neg(), new Choice(), new Seq(),
-            new Inv(), new Star(), new Plus(), new Wildcard(), new Sharp(),
-            new Empty()};
+    static private final RegExpr[] prototypes = new RegExpr[] {new Atom(),
+        new Neg(), new Choice(), new Seq(), new Inv(), new Star(), new Plus(),
+        new Wildcard(), new Sharp(), new Empty()};
 
     /**
      * The list of operators into which a regular expression will be parsed, in
@@ -859,6 +862,8 @@ abstract public class RegExpr { // implements VarSetSupport {
         public Infix(String operator, String symbol, List<RegExpr> operands) {
             super(operator, symbol);
             this.operandList = operands;
+            this.acceptsEmptyWord =
+                operands != null && computeAcceptsEmptyWord(operands);
         }
 
         /**
@@ -934,10 +939,10 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         @Override
-        public Set<Label> getLabels() {
-            Set<Label> result = new HashSet<Label>();
+        public Set<TypeLabel> getTypeLabels() {
+            Set<TypeLabel> result = new HashSet<TypeLabel>();
             for (RegExpr operand : getOperands()) {
-                result.addAll(operand.getLabels());
+                result.addAll(operand.getTypeLabels());
             }
             return result;
         }
@@ -958,10 +963,24 @@ abstract public class RegExpr { // implements VarSetSupport {
         abstract protected <Result> Result applyInfix(
                 RegExprCalculator<Result> visitor, List<Result> argsList);
 
+        @Override
+        public boolean isAcceptsEmptyWord() {
+            return this.acceptsEmptyWord;
+        }
+
+        /** 
+         * Callback method to compute whether the expression accepts the
+         * empty word.
+         */
+
+        abstract boolean computeAcceptsEmptyWord(List<RegExpr> operandList);
+
         /**
          * The operands of this infix expression.
          */
         private final List<RegExpr> operandList;
+        /*8 Flag indicating of the expression accepts the empty word. */
+        private final boolean acceptsEmptyWord;
     }
 
     /**
@@ -985,8 +1004,8 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         @Override
-        public Set<Label> getLabels() {
-            return getOperand().getLabels();
+        public Set<TypeLabel> getTypeLabels() {
+            return getOperand().getTypeLabels();
         }
 
         /** Returns the single operand of this postfix expression. */
@@ -1086,8 +1105,8 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         @Override
-        public Set<Label> getLabels() {
-            return getOperand().getLabels();
+        public Set<TypeLabel> getTypeLabels() {
+            return getOperand().getTypeLabels();
         }
 
         /** Returns the single operand of this prefix expression. */
@@ -1244,6 +1263,19 @@ abstract public class RegExpr { // implements VarSetSupport {
                 List<Result> argsList) {
             return visitor.computeSeq(this, argsList);
         }
+
+        /** A sequence accepts the empty word if all operands do. */
+        @Override
+        boolean computeAcceptsEmptyWord(List<RegExpr> operandList) {
+            boolean result = true;
+            for (RegExpr operand : operandList) {
+                if (!operand.isAcceptsEmptyWord()) {
+                    result = false;
+                    break;
+                }
+            }
+            return result;
+        }
     }
 
     /**
@@ -1275,6 +1307,20 @@ abstract public class RegExpr { // implements VarSetSupport {
                 List<Result> argsList) {
             return visitor.computeChoice(this, argsList);
         }
+
+        /** A choice accepts the empty word if at least one operand does. */
+        @Override
+        boolean computeAcceptsEmptyWord(List<RegExpr> operandList) {
+            boolean result = false;
+            for (RegExpr operand : operandList) {
+                if (operand.isAcceptsEmptyWord()) {
+                    result = true;
+                    break;
+                }
+            }
+            return result;
+        }
+
     }
 
     /**
@@ -1309,8 +1355,8 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         @Override
-        public Set<Label> getLabels() {
-            Set<Label> result = null;
+        public Set<TypeLabel> getTypeLabels() {
+            Set<TypeLabel> result = null;
             if (this.guard != null) {
                 result = this.guard.getLabels();
             }
@@ -1361,7 +1407,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             }
             result.append(getSymbol());
             if (this.guard != null) {
-                String type = DefaultLabel.getPrefix(this.guard.kind);
+                String type = TypeLabel.getPrefix(this.guard.kind);
                 if (!type.isEmpty()) {
                     result.append(" ");
                     result.append(type.subSequence(0, type.length() - 1));
@@ -1429,7 +1475,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             int kind = Label.BINARY;
             int separatorPos = prefix.length() - 1;
             if (separatorPos >= 0) {
-                kind = DefaultLabel.getPrefixKind(prefix);
+                kind = TypeLabel.getPrefixKind(prefix);
                 if (kind < 0) {
                     throw error;
                 }
@@ -1440,12 +1486,12 @@ abstract public class RegExpr { // implements VarSetSupport {
             if (!text.isEmpty()) {
                 // decompose text into identifier and label list
                 Pair<String,List<String>> operand = ExprParser.parseExpr(text);
-                int subStringCount = operand.second().size();
-                identifier = operand.first();
+                int subStringCount = operand.two().size();
+                identifier = operand.one();
                 if (subStringCount > 1) {
                     throw error;
                 } else if (subStringCount == 1) {
-                    String parameter = operand.second().iterator().next();
+                    String parameter = operand.two().iterator().next();
                     if (identifier.indexOf(ExprParser.PLACEHOLDER) != identifier.length() - 1) {
                         throw error;
                     } else {
@@ -1530,6 +1576,11 @@ abstract public class RegExpr { // implements VarSetSupport {
             return new Wildcard();
         }
 
+        @Override
+        public boolean isAcceptsEmptyWord() {
+            return false;
+        }
+
         /** The (optional) constraint for this wildcard. */
         private LabelConstraint guard;
 
@@ -1549,7 +1600,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         static private final char CONSTRAINT_SEPARATOR = ',';
 
         /** Constraint testing if a label is of a correct type and is or is not in a predefined set of labels. */
-        private static class LabelConstraint extends Property<Label> {
+        private static class LabelConstraint extends Property<TypeLabel> {
             /** Constructs a new constraint.
              * @param kind The kind of labels tested for; only labels of this type can ever satisfy the constraint
              */
@@ -1564,9 +1615,9 @@ abstract public class RegExpr { // implements VarSetSupport {
              */
             public void setLabels(List<String> textList, boolean negated) {
                 this.textList = textList;
-                this.labelSet = new HashSet<Label>();
+                this.labelSet = new HashSet<TypeLabel>();
                 for (String text : textList) {
-                    this.labelSet.add(DefaultLabel.createLabel(text, this.kind));
+                    this.labelSet.add(TypeLabel.createLabel(text, this.kind));
                 }
                 this.negated = negated;
             }
@@ -1599,14 +1650,14 @@ abstract public class RegExpr { // implements VarSetSupport {
 
             /**
              * Returns the (possibly {@code null}) set of labels occurring in this label constraint.
-             * @see RegExpr#getLabels()
+             * @see RegExpr#getTypeLabels()
              */
-            public Set<Label> getLabels() {
+            public Set<TypeLabel> getLabels() {
                 return this.labelSet;
             }
 
             @Override
-            public boolean isSatisfied(Label value) {
+            public boolean isSatisfied(TypeLabel value) {
                 return this.kind == value.getKind()
                     && (this.labelSet == null || this.negated != this.labelSet.contains(value));
             }
@@ -1633,13 +1684,13 @@ abstract public class RegExpr { // implements VarSetSupport {
 
             /** Returns the wildcard prefix dictated by the label type of this constraint. */
             public String getTypePrefix() {
-                return DefaultLabel.getPrefix(this.kind);
+                return TypeLabel.getPrefix(this.kind);
             }
 
             /** The list of strings indicating the labels to be matched. */
             private List<String> textList;
             /** The set of labels to be tested for inclusion. */
-            private Set<Label> labelSet;
+            private Set<TypeLabel> labelSet;
             /** Flag indicating if we are testing for absence or presence. */
             private boolean negated;
             /** The type of label we are testing for. See {@link Label#getKind()} */
@@ -1661,7 +1712,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          * Constructs a sharp test for a given node type label
          * @param typeLabel the type label
          */
-        public Sharp(Label typeLabel) {
+        public Sharp(TypeLabel typeLabel) {
             this();
             this.typeLabel = typeLabel;
         }
@@ -1671,7 +1722,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             RegExpr result;
             if (getTypeLabel().equals(oldLabel)) {
                 if (newLabel.isNodeType()) {
-                    result = newInstance(newLabel);
+                    result = newInstance((TypeLabel) newLabel);
                 } else {
                     result = new Atom(newLabel.text());
                 }
@@ -1682,8 +1733,8 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         @Override
-        public Set<Label> getLabels() {
-            Set<Label> result = new HashSet<Label>();
+        public Set<TypeLabel> getTypeLabels() {
+            Set<TypeLabel> result = new HashSet<TypeLabel>();
             result.add(getTypeLabel());
             return result;
         }
@@ -1704,8 +1755,8 @@ abstract public class RegExpr { // implements VarSetSupport {
          */
         @Override
         public String toString() {
-            return DefaultLabel.getPrefix(DefaultLabel.NODE_TYPE)
-                + super.toString() + getTypeLabel();
+            return TypeLabel.getPrefix(Label.NODE_TYPE) + super.toString()
+                + getTypeLabel();
         }
 
         /**
@@ -1723,19 +1774,18 @@ abstract public class RegExpr { // implements VarSetSupport {
             // separate the expression into operator and text
             String prefix = expr.substring(0, index);
             String text = expr.substring(index + 1);
-            String nodeTypePrefix =
-                DefaultLabel.getPrefix(DefaultLabel.NODE_TYPE);
+            String nodeTypePrefix = TypeLabel.getPrefix(Label.NODE_TYPE);
             if (!prefix.equals(nodeTypePrefix)) {
                 throw new FormatException(
                     "Sharp operator '%s' must be preceded by '%s'",
                     getOperator(), nodeTypePrefix);
             }
-            return newInstance(DefaultLabel.createLabel(text,
-                DefaultLabel.NODE_TYPE, true));
+            return newInstance(TypeLabel.createLabel(text, Label.NODE_TYPE,
+                true));
         }
 
         /** Returns a {@link Wildcard} with a given identifier. */
-        protected Sharp newInstance(Label typeLabel) {
+        protected Sharp newInstance(TypeLabel typeLabel) {
             return new Sharp(typeLabel);
         }
 
@@ -1746,12 +1796,17 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         /** Returns the type label that should be sharply matched. */
-        public Label getTypeLabel() {
+        public TypeLabel getTypeLabel() {
             return this.typeLabel;
         }
 
+        @Override
+        public boolean isAcceptsEmptyWord() {
+            return false;
+        }
+
         /** The type labels that should be matched sharply. */
-        private Label typeLabel;
+        private TypeLabel typeLabel;
     }
 
     /**
@@ -1769,7 +1824,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         @Override
-        public Set<Label> getLabels() {
+        public Set<TypeLabel> getTypeLabels() {
             return Collections.emptySet();
         }
 
@@ -1787,6 +1842,12 @@ abstract public class RegExpr { // implements VarSetSupport {
         public <Result> Result apply(RegExprCalculator<Result> calculator) {
             return calculator.computeEmpty(this);
         }
+
+        @Override
+        public boolean isAcceptsEmptyWord() {
+            return true;
+        }
+
     }
 
     /**
@@ -1818,9 +1879,9 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         @Override
-        public Set<Label> getLabels() {
-            Set<Label> result = new HashSet<Label>();
-            result.add(toLabel());
+        public Set<TypeLabel> getTypeLabels() {
+            Set<TypeLabel> result = new HashSet<TypeLabel>();
+            result.add(toTypeLabel());
             return result;
         }
 
@@ -1844,16 +1905,16 @@ abstract public class RegExpr { // implements VarSetSupport {
             return this.text;
         }
 
-        @Override
-        public Label toLabel() {
-            return DefaultLabel.createTypedLabel(text());
-        }
-
         /**
          * Returns the bare text of the atom.
          */
         public String text() {
             return this.text;
+        }
+
+        /** Constructs a default label from this atom. */
+        public TypeLabel toTypeLabel() {
+            return TypeLabel.createTypedLabel(text());
         }
 
         /**
@@ -1874,9 +1935,9 @@ abstract public class RegExpr { // implements VarSetSupport {
                 // the only hope is that the expression is quoted or bracketed
                 Pair<String,List<String>> parseResult =
                     ExprParser.parseExpr(expr);
-                if (parseResult.first().length() == 1
-                    && parseResult.first().charAt(0) == PLACEHOLDER) {
-                    String parsedExpr = parseResult.second().get(0);
+                if (parseResult.one().length() == 1
+                    && parseResult.one().charAt(0) == PLACEHOLDER) {
+                    String parsedExpr = parseResult.two().get(0);
                     switch (parsedExpr.charAt(0)) {
                     case LPAR_CHAR:
                         return parse(parsedExpr.substring(1, expr.length() - 1));
@@ -1920,6 +1981,11 @@ abstract public class RegExpr { // implements VarSetSupport {
             return calculator.computeAtom(this);
         }
 
+        @Override
+        public boolean isAcceptsEmptyWord() {
+            return false;
+        }
+
         /** The text of the atom. */
         private final String text;
     }
@@ -1954,6 +2020,11 @@ abstract public class RegExpr { // implements VarSetSupport {
                 RegExprCalculator<Result> visitor, Result arg) {
             return visitor.computeStar(this, arg);
         }
+
+        @Override
+        public boolean isAcceptsEmptyWord() {
+            return true;
+        }
     }
 
     /**
@@ -1985,6 +2056,11 @@ abstract public class RegExpr { // implements VarSetSupport {
         protected <Result> Result applyPostfix(
                 RegExprCalculator<Result> visitor, Result arg) {
             return visitor.computePlus(this, arg);
+        }
+
+        @Override
+        public boolean isAcceptsEmptyWord() {
+            return false;
         }
     }
 
@@ -2018,6 +2094,11 @@ abstract public class RegExpr { // implements VarSetSupport {
                 RegExprCalculator<Result> visitor, Result arg) {
             return visitor.computeInv(this, arg);
         }
+
+        @Override
+        public boolean isAcceptsEmptyWord() {
+            return getOperand().isAcceptsEmptyWord();
+        }
     }
 
     /**
@@ -2049,6 +2130,11 @@ abstract public class RegExpr { // implements VarSetSupport {
         protected <Result> Result applyPrefix(
                 RegExprCalculator<Result> visitor, Result arg) {
             return visitor.computeNeg(this, arg);
+        }
+
+        @Override
+        public boolean isAcceptsEmptyWord() {
+            return getOperand().isAcceptsEmptyWord();
         }
     }
 }

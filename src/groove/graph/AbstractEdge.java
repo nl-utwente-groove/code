@@ -54,7 +54,7 @@ public abstract class AbstractEdge<SN extends Node,L extends Label,TN extends No
         return this.source;
     }
 
-    public final L label() {
+    public L label() {
         return this.label;
     }
 

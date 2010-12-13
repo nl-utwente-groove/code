@@ -21,10 +21,9 @@ import static groove.util.ExprParser.LCURLY_CHAR;
 import static groove.util.ExprParser.PLACEHOLDER;
 import static groove.util.ExprParser.RCURLY_CHAR;
 import static groove.util.ExprParser.SINGLE_QUOTE_CHAR;
-import groove.graph.DefaultLabel;
-import groove.graph.Label;
+import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
-import groove.rel.RegExprLabel;
+import groove.trans.RuleLabel;
 import groove.util.ExprParser;
 import groove.util.Pair;
 import groove.view.FormatException;
@@ -35,22 +34,22 @@ import java.util.List;
 import java.util.Set;
 
 /** Parser that attempts to turn the string into a regular expression label. */
-public class RegExprLabelParser implements LabelParser {
+public class RuleLabelParser implements LabelParser {
     /** Private constructor for pre-computed images.
      * @param certain if {@code true}, the parsed text is certainly a regular 
      * expression; otherwise, it should be distinguished as such by curly braces.
      */
-    private RegExprLabelParser(boolean certain) {
+    private RuleLabelParser(boolean certain) {
         this.certain = certain;
     }
 
     /**
      * This implementation attempts to turn <code>text</code> into a regular
      * expression, and if successful, turns the expression into a
-     * {@link RegExprLabel}.
+     * {@link RuleLabel}.
      */
-    public Label parse(String text) throws FormatException {
-        Label result;
+    public RuleLabel parse(String text) throws FormatException {
+        RuleLabel result;
         try {
             RegExpr expr = parseAsRegExpr(text);
             result = expr.toLabel();
@@ -91,12 +90,12 @@ public class RegExprLabelParser implements LabelParser {
         }
         if (result == null) {
             Pair<String,List<String>> parseResult = CURLY_PARSER.parse(text);
-            List<String> substitutions = parseResult.second();
+            List<String> substitutions = parseResult.two();
             if (!substitutions.isEmpty()) {
                 String subText = substitutions.get(0);
                 switch (subText.charAt(0)) {
                 case ExprParser.LCURLY_CHAR:
-                    if (parseResult.first().length() != 1) {
+                    if (parseResult.one().length() != 1) {
                         throw new FormatException(
                             "Incorrectly bracketed regular expression");
                     } else {
@@ -111,7 +110,7 @@ public class RegExprLabelParser implements LabelParser {
                     assert subText.charAt(0) == SINGLE_QUOTE_CHAR : String.format(
                         "Unexpected substitution character %c",
                         subText.charAt(0));
-                    if (parseResult.first().length() != 1) {
+                    if (parseResult.one().length() != 1) {
                         throw new FormatException(
                             "Incorrectly quoted expression");
                     } else {
@@ -148,49 +147,26 @@ public class RegExprLabelParser implements LabelParser {
         return null;
     }
 
-    /**
-     * This implementation puts quotes around the label text, if it can
-     * otherwise be interpreted as a non-atom.
-     */
-    public DefaultLabel unparse(Label label) {
-        DefaultLabel result;
-        if (label instanceof RegExprLabel) {
-            result = unparse(((RegExprLabel) label).getRegExpr());
-        } else if (label.isNodeType() || label.isFlag()) {
-            result = (DefaultLabel) label;
-        } else {
-            // test if the label should be quoted
-            boolean quote;
-            try {
-                // only quote if the label cannot be parsed as itself
-                Label parsedLabel = parse(label.text());
-                quote = !parsedLabel.equals(label);
-            } catch (FormatException exc) {
-                quote = true;
-            }
-            if (quote) {
-                result =
-                    DefaultLabel.createLabel(ExprParser.toQuoted(label.text(),
-                        SINGLE_QUOTE_CHAR));
+    /** Returns a default label that parses to this RuleLabel. */
+    public TypeLabel unparse(RuleLabel label) {
+        TypeLabel result = null;
+        RegExpr expr = label.getRegExpr();
+        if (expr != null) {
+            String text;
+            if (expr.isNeg()) {
+                text =
+                    RegExpr.NEG_OPERATOR
+                        + unparse(expr.getNegOperand().toLabel());
+            } else if (expr.isEmpty() || this.certain) {
+                text = expr.toString();
+            } else if (expr.isAtom()) {
+                text = expr.getAtomText();
             } else {
-                result = (DefaultLabel) label;
+                text = LCURLY_CHAR + expr.toString() + RCURLY_CHAR;
             }
+            result = TypeLabel.createLabel(text);
         }
         return result;
-    }
-
-    private DefaultLabel unparse(RegExpr expr) {
-        String text;
-        if (expr.isNeg()) {
-            text = RegExpr.NEG_OPERATOR + unparse(expr.getNegOperand());
-        } else if (expr.isEmpty() || this.certain) {
-            text = expr.toString();
-        } else if (expr.isAtom()) {
-            text = expr.getAtomText();
-        } else {
-            text = LCURLY_CHAR + expr.toString() + RCURLY_CHAR;
-        }
-        return DefaultLabel.createLabel(text);
     }
 
     /**
@@ -204,25 +180,24 @@ public class RegExprLabelParser implements LabelParser {
      * @param certain if {@code true}, the parsed text is certainly a regular 
      * expression; otherwise, it should be distinguished as such by curly braces.
      */
-    static public RegExprLabelParser getInstance(boolean certain) {
+    static public RuleLabelParser getInstance(boolean certain) {
         return certain ? certainInstance : uncertainInstance;
     }
 
     /** Static parser for curly-bracketed expressions. */
-    static private final ExprParser CURLY_PARSER =
-        new ExprParser(PLACEHOLDER, new char[] {SINGLE_QUOTE_CHAR}, new char[] {
-            LCURLY_CHAR, RCURLY_CHAR});
+    static private final ExprParser CURLY_PARSER = new ExprParser(PLACEHOLDER,
+        new char[] {SINGLE_QUOTE_CHAR}, new char[] {LCURLY_CHAR, RCURLY_CHAR});
     /**
      * String of characters whose occurrence in an atomic label requires the
      * unparsed view to be quoted.
      */
-    static private final Set<Character> SPECIAL_CHARS =
-        new HashSet<Character>(Arrays.asList(new Character[] {'{', '}', '\'',
-            '\\', Aspect.VALUE_SEPARATOR}));
+    static private final Set<Character> SPECIAL_CHARS = new HashSet<Character>(
+        Arrays.asList(new Character[] {'{', '}', '\'', '\\',
+            Aspect.VALUE_SEPARATOR}));
     /** Static instance of parser that will parse any text as regular expression. */
-    static private final RegExprLabelParser certainInstance =
-        new RegExprLabelParser(true);
+    static private final RuleLabelParser certainInstance = new RuleLabelParser(
+        true);
     /** Static instance of parser that will parse only distinguished text as regular expressions. */
-    static private final RegExprLabelParser uncertainInstance =
-        new RegExprLabelParser(false);
+    static private final RuleLabelParser uncertainInstance =
+        new RuleLabelParser(false);
 }

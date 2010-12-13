@@ -17,18 +17,19 @@
 package groove.abstraction;
 
 import groove.abstraction.gui.ShapeDialog;
-import groove.graph.Edge;
-import groove.graph.Graph;
-import groove.graph.Label;
-import groove.graph.Node;
-import groove.rel.RuleToStateMap;
+import groove.graph.TypeLabel;
 import groove.trans.DefaultApplication;
 import groove.trans.GraphGrammar;
+import groove.trans.HostEdge;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
+import groove.trans.RuleLabel;
 import groove.trans.RuleMatch;
 import groove.trans.RuleNode;
+import groove.trans.RuleToHostMap;
 import groove.trans.SPOEvent;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
@@ -92,7 +93,7 @@ public final class Materialisation implements Cloneable {
     /**
      * The concrete match of the rule into the (partially) materialised shape.
      */
-    final RuleToStateMap match;
+    final RuleToHostMap match;
     /**
      * The queue of operations that need to be performed on the materialisation
      * object. When this queue is empty, the materialisation is complete. 
@@ -270,8 +271,7 @@ public final class Materialisation implements Cloneable {
      */
     public Shape applyMatch() {
         RuleEvent event =
-            new SPOEvent(this.preMatch.getRule(), this.match,
-                ShapeNodeFactory.FACTORY, false);
+            new SPOEvent(this.preMatch.getRule(), this.match, false);
         DefaultApplication app = new DefaultApplication(event, this.shape);
         Shape result = (Shape) app.getTarget();
         return result;
@@ -314,7 +314,7 @@ public final class Materialisation implements Cloneable {
         boolean complyToNodeMult = true;
         Multiplicity oneMult = Multiplicity.getMultOf(1);
         // For all nodes in the image of the LHS.
-        for (Node node : this.match.nodeMap().values()) {
+        for (HostNode node : this.match.nodeMap().values()) {
             ShapeNode nodeS = (ShapeNode) node;
             if (!this.shape.getNodeMult(nodeS).equals(oneMult)) {
                 complyToNodeMult = false;
@@ -327,7 +327,7 @@ public final class Materialisation implements Cloneable {
         boolean complyToEquivClass = true;
         if (complyToNodeMult) {
             // For all nodes in the image of the LHS.
-            for (Node node : this.match.nodeMap().values()) {
+            for (HostNode node : this.match.nodeMap().values()) {
                 ShapeNode nodeS = (ShapeNode) node;
                 if (this.shape.getEquivClassOf(nodeS).size() != 1) {
                     complyToEquivClass = false;
@@ -342,12 +342,12 @@ public final class Materialisation implements Cloneable {
         boolean complyToEdgeMult = true;
         if (complyToNodeMult && complyToEquivClass) {
             // For all binary labels.
-            for (Label label : Util.binaryLabelSet(this.shape)) {
+            for (TypeLabel label : Util.binaryLabelSet(this.shape)) {
                 // For all nodes v in the image of the LHS.
-                for (Node n0 : this.match.nodeMap().values()) {
+                for (HostNode n0 : this.match.nodeMap().values()) {
                     ShapeNode v = (ShapeNode) n0;
                     // For all nodes w in the image of the LHS.
-                    for (Node n1 : this.match.nodeMap().values()) {
+                    for (HostNode n1 : this.match.nodeMap().values()) {
                         ShapeNode w = (ShapeNode) n1;
                         EquivClass<ShapeNode> ecW =
                             this.shape.getEquivClassOf(w);
@@ -355,12 +355,14 @@ public final class Materialisation implements Cloneable {
                             this.shape.getEdgeSignature(v, label, ecW);
                         Multiplicity outMult = this.shape.getEdgeSigOutMult(es);
                         Multiplicity inMult = this.shape.getEdgeSigInMult(es);
-                        Set<Edge> vInterW =
-                            Util.getIntersectEdges(this.shape, v, w, label);
+                        Set<ShapeEdge> vInterW =
+                            Util.<ShapeNode,ShapeEdge>getIntersectEdges(
+                                this.shape, v, w, label);
                         Multiplicity vInterWMult =
                             Multiplicity.getEdgeSetMult(vInterW);
-                        Set<Edge> wInterV =
-                            Util.getIntersectEdges(this.shape, w, v, label);
+                        Set<ShapeEdge> wInterV =
+                            Util.<ShapeNode,ShapeEdge>getIntersectEdges(
+                                this.shape, w, v, label);
                         Multiplicity wInterVMult =
                             Multiplicity.getEdgeSetMult(wInterV);
                         if (!outMult.equals(vInterWMult)
@@ -383,14 +385,14 @@ public final class Materialisation implements Cloneable {
      * will be performed.
      */
     private void planTasks() {
-        RuleToStateMap originalMap = this.preMatch.getElementMap();
+        RuleToHostMap originalMap = this.preMatch.getElementMap();
         boolean isMatNodeOpEmpty = true;
         boolean isMatEdgeOpEmpty = true;
 
         // Search for nodes in the match image that have abstract
         // multiplicities. 
         Set<ShapeNode> processedNodes = new HashSet<ShapeNode>();
-        for (Entry<RuleNode,Node> nodeEntry : originalMap.nodeMap().entrySet()) {
+        for (Entry<RuleNode,HostNode> nodeEntry : originalMap.nodeMap().entrySet()) {
             ShapeNode nodeS = (ShapeNode) nodeEntry.getValue();
             if (!processedNodes.contains(nodeS)
                 && this.shape.getNodeMult(nodeS).isAbstract()) {
@@ -409,8 +411,8 @@ public final class Materialisation implements Cloneable {
         // multiplicities.
         Set<ShapeEdge> processedEdges = new HashSet<ShapeEdge>();
         Set<ShapeEdge> edgesToFreeze = new HashSet<ShapeEdge>();
-        for (Entry<RuleEdge,Edge> edgeEntry : originalMap.edgeMap().entrySet()) {
-            Edge edgeR = edgeEntry.getKey();
+        for (Entry<RuleEdge,HostEdge> edgeEntry : originalMap.edgeMap().entrySet()) {
+            RuleEdge edgeR = edgeEntry.getKey();
             ShapeEdge edgeS = (ShapeEdge) edgeEntry.getValue();
             if (!Util.isUnary(edgeR) && !processedEdges.contains(edgeS)) {
                 // Check if the image edge in the shape has abstract
@@ -439,7 +441,7 @@ public final class Materialisation implements Cloneable {
         this.shape.freeze(edgesToFreeze);
 
         // Check that all nodes of the LHS are in the same equivalence class.
-        for (Entry<RuleNode,Node> nodeEntry : originalMap.nodeMap().entrySet()) {
+        for (Entry<RuleNode,HostNode> nodeEntry : originalMap.nodeMap().entrySet()) {
             ShapeNode nodeS = (ShapeNode) nodeEntry.getValue();
             boolean isSingletonEc =
                 this.shape.getEquivClassOf(nodeS).size() == 1;
@@ -473,7 +475,7 @@ public final class Materialisation implements Cloneable {
             Set<ShapeEdge> edgesToFreeze) {
         this.match.putNode(nodeR, nodeS);
         // Look for all edges where nodeR occurs and update the edge map.
-        for (Entry<RuleEdge,Edge> edgeEntry : this.match.edgeMap().entrySet()) {
+        for (Entry<RuleEdge,HostEdge> edgeEntry : this.match.edgeMap().entrySet()) {
             RuleEdge edgeR = edgeEntry.getKey();
             ShapeEdge origEdgeS = (ShapeEdge) edgeEntry.getValue();
             // Start with the nodes from the original edge.
@@ -539,7 +541,7 @@ public final class Materialisation implements Cloneable {
                 if (!this.shape.isFrozen(edgeS)) {
                     EquivClass<ShapeNode> srcEc =
                         this.shape.getEquivClassOf(srcS);
-                    Label label = edgeS.label();
+                    TypeLabel label = edgeS.label();
                     ShapeNode tgtS = edgeS.target();
                     EdgeSignature inEs =
                         this.shape.getEdgeSignature(tgtS, label, srcEc);
@@ -569,7 +571,7 @@ public final class Materialisation implements Cloneable {
                 if (!this.shape.isFrozen(edgeS)) {
                     EquivClass<ShapeNode> tgtEc =
                         this.shape.getEquivClassOf(tgtS);
-                    Label label = edgeS.label();
+                    TypeLabel label = edgeS.label();
                     srcS = edgeS.source();
                     EdgeSignature outEs =
                         this.shape.getEdgeSignature(srcS, label, tgtEc);
@@ -978,7 +980,7 @@ public final class Materialisation implements Cloneable {
         void perform() { // MaterialiseEdge
             this.mat.logOp(this.toString());
 
-            RuleToStateMap match = this.mat.match;
+            RuleToHostMap match = this.mat.match;
             Shape shape = this.mat.shape;
 
             // Collect all signatures that will be affected by this operation.
@@ -989,13 +991,14 @@ public final class Materialisation implements Cloneable {
             Set<ShapeEdge> frozenEdges = new HashSet<ShapeEdge>();
             // For each edge involved edge in the rule.
             for (RuleEdge edgeR : this.edgesR) {
-                Label label = edgeR.label();
+                RuleLabel label = edgeR.label();
+                TypeLabel shapeLabel = label.getTypeLabel();
                 // Get the image of source and target from the match.
                 ShapeNode srcS = (ShapeNode) match.getNode(edgeR.source());
                 ShapeNode tgtS = (ShapeNode) match.getNode(edgeR.target());
                 // Outgoing signatures.
                 EdgeSignature outEs =
-                    shape.getEdgeSignature(srcS, label,
+                    shape.getEdgeSignature(srcS, label.getTypeLabel(),
                         shape.getEquivClassOf(tgtS));
                 if (!shape.isOutEdgeSigUnique(outEs)
                     || !shape.isOutEdgeSigConcrete(outEs)) {
@@ -1003,7 +1006,7 @@ public final class Materialisation implements Cloneable {
                 }
                 // Incoming signatures.
                 EdgeSignature inEs =
-                    shape.getEdgeSignature(tgtS, label,
+                    shape.getEdgeSignature(tgtS, shapeLabel,
                         shape.getEquivClassOf(srcS));
                 if (!shape.isInEdgeSigUnique(inEs)
                     || !shape.isInEdgeSigConcrete(inEs)) {
@@ -1011,7 +1014,7 @@ public final class Materialisation implements Cloneable {
                 }
 
                 // We can already set the match here.
-                ShapeEdge edge = shape.getShapeEdge(srcS, label, tgtS);
+                ShapeEdge edge = shape.getShapeEdge(srcS, shapeLabel, tgtS);
                 if (edge != null) {
                     match.putEdge(edgeR, edge);
                     frozenEdges.add(edge);
@@ -1046,7 +1049,6 @@ public final class Materialisation implements Cloneable {
                 this.result.add(newMat);
             }
         }
-
     }
 
     // --------------
@@ -1329,7 +1331,8 @@ public final class Materialisation implements Cloneable {
         File file = new File(DIRECTORY);
         try {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            Graph graph = view.getGraphView("materialisation-test-0").toModel();
+            HostGraph graph =
+                view.getGraphView("materialisation-test-0").toModel();
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-mat-0");
@@ -1363,7 +1366,8 @@ public final class Materialisation implements Cloneable {
         File file = new File(DIRECTORY);
         try {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            Graph graph = view.getGraphView("materialisation-test-1").toModel();
+            HostGraph graph =
+                view.getGraphView("materialisation-test-1").toModel();
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-mat-1");
@@ -1397,7 +1401,8 @@ public final class Materialisation implements Cloneable {
         File file = new File(DIRECTORY);
         try {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            Graph graph = view.getGraphView("materialisation-test-2").toModel();
+            HostGraph graph =
+                view.getGraphView("materialisation-test-2").toModel();
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-mat-1");
@@ -1431,7 +1436,7 @@ public final class Materialisation implements Cloneable {
         File file = new File(DIRECTORY);
         try {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            Graph graph = view.getGraphView("rule-app-test-0").toModel();
+            HostGraph graph = view.getGraphView("rule-app-test-0").toModel();
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("add");

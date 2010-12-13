@@ -19,16 +19,16 @@ package groove.gui.jgraph;
 import static groove.util.Converter.ITALIC_TAG;
 import groove.algebra.Algebra;
 import groove.control.CtrlState;
-import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.lts.GraphState;
-import groove.rel.RegExprLabel;
+import groove.trans.RuleLabel;
 import groove.util.Converter;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectValue;
@@ -38,7 +38,6 @@ import groove.view.aspect.TypeAspect;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -194,7 +193,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         // add signature label for typed variable nodes
         if (isVariableNode() && getAlgebra() != null) {
             result.add(new StringBuilder(
-                DefaultLabel.toHtmlString(DefaultLabel.createDataType(getAlgebra()))));
+                TypeLabel.toHtmlString(TypeLabel.createDataType(getAlgebra()))));
         }
         for (Edge edge : getSelfEdges()) {
             if (!this.jModel.isFiltering(getLabel(edge))) {
@@ -227,14 +226,14 @@ public class GraphJVertex extends JVertex implements GraphJCell {
                 AspectValue edgeRole = AspectJModel.role(aspectEdge);
                 AspectValue sourceRole = AspectJModel.role(aspectEdge.source());
                 if (edgeRole != null && !edgeRole.equals(sourceRole)) {
-                    result.append(DefaultLabel.toHtmlString(edgeLabel, edgeRole));
+                    result.append(TypeLabel.toHtmlString(edgeLabel, edgeRole));
                 }
             }
             if (result.length() == 0) {
-                result.append(DefaultLabel.toHtmlString(edgeLabel));
+                result.append(TypeLabel.toHtmlString(edgeLabel));
             }
-            if (edgeLabel instanceof RegExprLabel
-                && !RegExprLabel.isSharp(edgeLabel)
+            if (edgeLabel instanceof RuleLabel
+                && !(((RuleLabel) edgeLabel).isSharp() || ((RuleLabel) edgeLabel).isAtom())
                 || edge instanceof AspectEdge
                 && TypeAspect.isAbstract((AspectEdge) edge)) {
                 result = Converter.ITALIC_TAG.on(result);
@@ -266,7 +265,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * a constant, followed by the self-edge labels and data-edge labels; or
      * {@link JCell#NO_LABEL} if the result would otherwise be empty.
      */
-    public Collection<Label> getListLabels() {
+    public Collection<? extends Label> getListLabels() {
         Collection<Label> result = new ArrayList<Label>();
         if (hasValue()) {
             result.add(getValueLabel());
@@ -275,7 +274,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
             result.addAll(getListLabels(edge));
         }
         if (isVariableNode() && getAlgebra() != null) {
-            result.add(DefaultLabel.createDataType(getAlgebra()));
+            result.add(TypeLabel.createDataType(getAlgebra()));
         } else if (getSelfEdges().isEmpty()) {
             result.add(NO_LABEL);
         }
@@ -286,18 +285,16 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     }
 
     /** This implementation delegates to {@link Edge#label()}. */
-    public Set<Label> getListLabels(Edge edge) {
-        Set<Label> result;
+    public Set<? extends Label> getListLabels(Edge edge) {
+        Set<? extends Label> result;
         Label label = getLabel(edge);
-        if (label instanceof RegExprLabel) {
-            result = ((RegExprLabel) label).getRegExpr().getLabels();
+        if (label instanceof RuleLabel) {
+            result = ((RuleLabel) label).getRegExpr().getTypeLabels();
             if (result.isEmpty()) {
-                result = new HashSet<Label>();
-                result.add(NO_LABEL);
+                result = Collections.singleton(NO_LABEL);
             }
         } else {
-            result = new HashSet<Label>();
-            result.add(label);
+            result = Collections.singleton(label);
         }
         return result;
     }
@@ -321,11 +318,11 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     }
 
     /**
-     * This implementation calls {@link DefaultLabel#toPrefixedString(Label)} on
+     * This implementation calls {@link TypeLabel#toPrefixedString(Label)} on
      * the edge label.
      */
     public String getPlainLabel(Edge edge) {
-        return DefaultLabel.toPrefixedString(edge.label());
+        return TypeLabel.toPrefixedString(edge.label());
     }
 
     /**
@@ -435,7 +432,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      */
     boolean isDataTypeNode() {
         return getActualNode() instanceof TypeNode
-            && DefaultLabel.isDataType(((TypeNode) getActualNode()).getType());
+            && ((TypeNode) getActualNode()).getType().isDataType();
     }
 
     /**
@@ -473,9 +470,9 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * in the underlying graph node, in case the graph node is a value node.
      * @see ValueNode#getSymbol()
      */
-    Label getValueLabel() {
+    TypeLabel getValueLabel() {
         if (getActualNode() instanceof ValueNode) {
-            return DefaultLabel.createLabel(((ValueNode) getActualNode()).getSymbol());
+            return TypeLabel.createLabel(((ValueNode) getActualNode()).getSymbol());
         } else {
             return null;
         }

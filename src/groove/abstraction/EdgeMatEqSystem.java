@@ -17,7 +17,7 @@
 package groove.abstraction;
 
 import groove.abstraction.gui.ShapeDialog;
-import groove.graph.Label;
+import groove.graph.TypeLabel;
 import groove.util.Pair;
 
 import java.util.HashSet;
@@ -166,7 +166,7 @@ public final class EdgeMatEqSystem extends EquationSystem {
             new ShapeDialog(this.shape, "");
         }
         // For all binary labels.
-        for (Label label : Util.binaryLabelSet(this.shape)) {
+        for (TypeLabel label : Util.binaryLabelSet(this.shape)) {
             // For all equivalence classes. (As outgoing)
             for (EquivClass<ShapeNode> ecO : this.shape.getEquivRelation()) {
                 // For all equivalence classes. (As incoming)
@@ -188,7 +188,7 @@ public final class EdgeMatEqSystem extends EquationSystem {
                             // Yes, we do. Create a new MultTerm for the second
                             // element in the pair.
                             MultTerm term;
-                            term = new MultTerm(nOMult, outMultVars.second());
+                            term = new MultTerm(nOMult, outMultVars.two());
                             admisConstr.addToOutSum(term);
                         } else {
                             // No, we don't. Multiply the two multiplicities
@@ -217,7 +217,7 @@ public final class EdgeMatEqSystem extends EquationSystem {
                             // Yes, we do. Create a new MultTerm for the second
                             // element in the pair.
                             MultTerm term;
-                            term = new MultTerm(nIMult, inMultVars.second());
+                            term = new MultTerm(nIMult, inMultVars.two());
                             admisConstr.addToInSum(term);
                         } else {
                             // No, we don't. Multiply the two multiplicities
@@ -259,13 +259,13 @@ public final class EdgeMatEqSystem extends EquationSystem {
         // Outgoing multiplicities.
         for (Entry<EdgeSignature,Pair<MultVar,MultVar>> entry : this.outMap.entrySet()) {
             EdgeSignature es = entry.getKey();
-            MultVar var = entry.getValue().second();
+            MultVar var = entry.getValue().two();
             newShape.setEdgeOutMult(es, var.mult);
         }
         // Incoming multiplicities.
         for (Entry<EdgeSignature,Pair<MultVar,MultVar>> entry : this.inMap.entrySet()) {
             EdgeSignature es = entry.getKey();
-            MultVar var = entry.getValue().second();
+            MultVar var = entry.getValue().two();
             newShape.setEdgeInMult(es, var.mult);
         }
 

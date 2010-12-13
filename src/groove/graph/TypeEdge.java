@@ -21,11 +21,11 @@ package groove.graph;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TypeEdge extends AbstractEdge<TypeNode,Label,TypeNode> {
+public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel,TypeNode> {
     /**
      * Constructs a new type edge.
      */
-    public TypeEdge(TypeNode source, Label label, TypeNode target) {
+    public TypeEdge(TypeNode source, TypeLabel label, TypeNode target) {
         super(source, label, target);
     }
 

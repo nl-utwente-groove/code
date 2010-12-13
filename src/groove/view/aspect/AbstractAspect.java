@@ -16,7 +16,7 @@
  */
 package groove.view.aspect;
 
-import groove.graph.Label;
+import groove.graph.DefaultLabel;
 import groove.view.FormatException;
 
 import java.util.Collections;
@@ -278,7 +278,7 @@ public abstract class AbstractAspect extends Aspect {
      * This default implementation never throws the exception.
      */
     @Override
-    public void testLabel(Label label, AspectValue declaredValue,
+    public void testLabel(DefaultLabel label, AspectValue declaredValue,
             AspectValue inferredValue) throws FormatException {
         // does nothing
     }

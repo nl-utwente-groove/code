@@ -19,6 +19,7 @@ package groove.graph.algebra;
 import static groove.view.aspect.Aspect.CONTENT_SEPARATOR;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraRegister;
+import groove.trans.HostNode;
 import groove.view.aspect.Aspect;
 import groove.view.aspect.AttributeAspect;
 
@@ -31,7 +32,7 @@ import java.util.Map;
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-02-12 15:15:32 $
  */
-public class ValueNode extends VariableNode {
+public class ValueNode extends VariableNode implements HostNode {
     /**
      * Constructs a (numbered) node for a given algebra and value of that
      * algebra.

@@ -19,7 +19,6 @@ package groove.trans;
 import groove.graph.DeltaApplier;
 import groove.graph.DeltaTarget;
 import groove.graph.Graph;
-import groove.graph.Node;
 
 /**
  * Interface to wrap the computation involved in applying a production rule.
@@ -54,7 +53,7 @@ public interface RuleApplication extends Derivation, DeltaApplier {
     /**
      * Returns the image of the rule's creator nodes in the target graph.
      */
-    public Node[] getCreatedNodes();
+    public HostNode[] getCreatedNodes();
 
     /**
      * Applies the rule to a given delta target. This is presumably the host

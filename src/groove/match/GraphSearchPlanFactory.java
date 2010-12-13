@@ -16,22 +16,21 @@
  */
 package groove.match;
 
-import groove.graph.DefaultLabel;
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.Node;
-import groove.graph.algebra.ArgumentEdge;
+import groove.graph.TypeLabel;
 import groove.graph.algebra.OperatorEdge;
-import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
-import groove.rel.RegExprLabel;
 import groove.rel.VarSupport;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
+import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
 import groove.util.Bag;
 import groove.util.HashBag;
@@ -328,43 +327,36 @@ public class GraphSearchPlanFactory {
          * Callback factory method for creating an edge search item.
          */
         protected AbstractSearchItem createEdgeSearchItem(RuleEdge edge) {
-            Label label = edge.label();
+            AbstractSearchItem result = null;
+            RuleLabel label = edge.label();
             RuleNode target = edge.target();
             RuleNode source = edge.source();
-            RegExpr negOperand = RegExprLabel.getNegOperand(label);
+            RegExpr negOperand = label.getNegOperand();
             if (negOperand instanceof RegExpr.Empty) {
                 if (!GraphSearchPlanFactory.this.ignoreNeg) {
-                    return createInjectionSearchItem(source, target);
+                    result = createInjectionSearchItem(source, target);
                 }
             } else if (negOperand != null) {
                 if (!GraphSearchPlanFactory.this.ignoreNeg) {
                     RuleEdge negatedEdge =
                         new RuleEdge(source, negOperand.toLabel(), target);
-                    return createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
+                    result =
+                        createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
                 }
-            } else if (RegExprLabel.isSharp(label)) {
-                return new Edge2SearchItem(edge);
-            } else if (RegExprLabel.getWildcardId(label) != null) {
-                return new VarEdgeSearchItem(edge);
-            } else if (RegExprLabel.isWildcard(label)) {
-                return new WildcardEdgeSearchItem(edge);
             } else if (label.isNodeType()) {
-                return new NodeTypeSearchItem(edge, this.labelStore);
-            } else if (RegExprLabel.isAtom(label)) {
-                RuleEdge defaultEdge =
-                    new RuleEdge(source, RegExprLabel.getAtomText(label),
-                        target);
-                return new Edge2SearchItem(defaultEdge);
-            } else if (label instanceof RegExprLabel) {
-                return new RegExprEdgeSearchItem(edge, this.labelStore);
-            } else if (edge instanceof OperatorEdge) {
-                return new OperatorEdgeSearchItem((OperatorEdge) edge);
-            } else if (edge instanceof ArgumentEdge) {
-                return null;
-            } else {
-                return new Edge2SearchItem(edge);
+                result = new NodeTypeSearchItem(edge, this.labelStore);
+            } else if (label.isSharp() || label.isAtom()) {
+                result = new Edge2SearchItem(edge);
+            } else if (label.getWildcardId() != null) {
+                result = new VarEdgeSearchItem(edge);
+            } else if (label.isWildcard()) {
+                result = new WildcardEdgeSearchItem(edge);
+            } else if (label.isOperator()) {
+                result = new OperatorEdgeSearchItem((OperatorEdge) edge);
+            } else if (!label.isArgument()) {
+                result = new RegExprEdgeSearchItem(edge, this.labelStore);
             }
-            return null;
+            return result;
         }
 
         /**
@@ -373,12 +365,10 @@ public class GraphSearchPlanFactory {
         protected AbstractSearchItem createNodeSearchItem(RuleNode node) {
             if (node instanceof ValueNode) {
                 return new ValueNodeSearchItem((ValueNode) node);
-            } else if (node instanceof VariableNode) {
-                return new VariableNodeSearchItem((VariableNode) node);
-            } else if (node instanceof ProductNode) {
-                return null;
-            } else {
+            } else if (node instanceof DefaultNode) {
                 return new NodeSearchItem(node);
+            } else {
+                return null;
             }
         }
 
@@ -689,9 +679,11 @@ public class GraphSearchPlanFactory {
             if (itemClass == NodeSearchItem.class) {
                 return result;
             }
+            result++;
             if (itemClass == NodeTypeSearchItem.class) {
                 return result;
             }
+            result++;
             if (itemClass == ConditionSearchItem.class) {
                 return result;
             }
@@ -728,10 +720,10 @@ public class GraphSearchPlanFactory {
                 return result;
             }
             result++;
-            if (itemClass == VariableNodeSearchItem.class) {
-                return result;
-            }
-            result++;
+            //            if (itemClass == VariableNodeSearchItem.class) {
+            //                return result;
+            //            }
+            //            result++;
             if (itemClass == AnchorSearchItem.class) {
                 return result;
             }
@@ -762,13 +754,13 @@ public class GraphSearchPlanFactory {
             this.priorities = new HashMap<Label,Integer>();
             if (rare != null) {
                 for (int i = 0; i < rare.size(); i++) {
-                    Label label = DefaultLabel.createTypedLabel(rare.get(i));
+                    Label label = TypeLabel.createTypedLabel(rare.get(i));
                     this.priorities.put(label, rare.size() - i);
                 }
             }
             if (common != null) {
                 for (int i = 0; i < common.size(); i++) {
-                    Label label = DefaultLabel.createTypedLabel(common.get(i));
+                    Label label = TypeLabel.createTypedLabel(common.get(i));
                     this.priorities.put(label, i - common.size());
                 }
             }

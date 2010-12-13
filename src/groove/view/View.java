@@ -17,9 +17,9 @@
 package groove.view;
 
 import groove.graph.Edge;
-import groove.graph.GenericNodeEdgeMap;
-import groove.graph.Label;
+import groove.graph.GraphHashMap;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
@@ -60,7 +60,7 @@ public interface View<Model> {
      * @return the set of labels occurring in the view; empty if the view
      *         contains errors.
      */
-    public Set<Label> getLabels() throws FormatException;
+    public Set<TypeLabel> getLabels() throws FormatException;
 
     /**
      * Returns the underlying model. This can only be successful if there are no
@@ -78,8 +78,8 @@ public interface View<Model> {
     List<FormatError> getErrors();
 
     /** Mapping from view graph elements to model graph elements. */
-    interface ViewToModelMap<N extends Node,E extends Edge> extends
-            GenericNodeEdgeMap<AspectNode,N,AspectEdge,E> {
+    abstract class ViewToModelMap<N extends Node,E extends Edge> extends
+            GraphHashMap<AspectNode,N,AspectEdge,E> {
         // no extra functionality
     }
 }

@@ -17,12 +17,12 @@
 package groove.abstraction.lts;
 
 import groove.abstraction.Shape;
-import groove.graph.Graph;
 import groove.graph.GraphShapeCache;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.trans.SystemRecord;
 
 /**
@@ -95,7 +95,7 @@ public final class AGTS extends GTS {
     }
 
     @Override
-    protected ShapeState createStartState(Graph startGraph) {
+    protected ShapeState createStartState(HostGraph startGraph) {
         Shape shape = new Shape(startGraph);
         ShapeState result =
             new ShapeState(shape, getGrammar().getCtrlAut().getStart());

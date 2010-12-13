@@ -16,7 +16,7 @@
  */
 package groove.lts;
 
-import groove.graph.Node;
+import groove.trans.HostNode;
 import groove.trans.RuleEvent;
 
 /**
@@ -37,7 +37,7 @@ public interface GraphTransitionStub { //extends Element {
      * Returns the added nodes in the transition from a given source to this
      * object.
      */
-    Node[] getAddedNodes(GraphState source);
+    HostNode[] getAddedNodes(GraphState source);
 
     /**
      * Returns the target state of this graph transition stub, given

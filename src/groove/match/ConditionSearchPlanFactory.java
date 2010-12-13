@@ -24,8 +24,8 @@ import groove.trans.EdgeEmbargo;
 import groove.trans.MergeEmbargo;
 import groove.trans.NotCondition;
 import groove.trans.RuleEdge;
-import groove.trans.RuleGraphMap;
 import groove.trans.RuleNode;
+import groove.trans.RuleToRuleMap;
 import groove.trans.SystemProperties;
 
 import java.util.Collection;
@@ -101,7 +101,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
             Collection<RuleNode> relevantNodes) {
         assert (anchorNodes == null) == (anchorEdges == null) : "Anchor nodes and edges should be null simultaneously";
         if (anchorNodes == null) {
-            RuleGraphMap patternMap = condition.getRootMap();
+            RuleToRuleMap patternMap = condition.getRootMap();
             anchorNodes = patternMap.nodeMap().values();
             anchorEdges = patternMap.edgeMap().values();
         }

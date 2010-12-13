@@ -17,7 +17,6 @@
 package groove.trans;
 
 import groove.graph.Label;
-import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.util.Groove;
 
@@ -32,11 +31,10 @@ public class EdgeEmbargo extends NotCondition {
      * nodes in a given graph (presumably a rule lhs).
      * @param graph the graph on which this embargo works
      * @param embargoEdge the edge that is forbidden
-     * @param labelStore label store specifying the subtype relation
      */
     public EdgeEmbargo(RuleGraph graph, RuleEdge embargoEdge,
-            SystemProperties properties, LabelStore labelStore) {
-        super(graph.newGraph(), properties, labelStore);
+            SystemProperties properties) {
+        super(graph.newGraph(), properties);
         this.embargoEdge = embargoEdge;
         RuleNode sourceImage = addRoot(embargoEdge.source());
         RuleNode targetImage = addRoot(embargoEdge.target());

@@ -16,16 +16,20 @@
  */
 package groove.abstraction;
 
-import groove.graph.DefaultGraph;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
+import groove.graph.TypeLabel;
 import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.DefaultIsoChecker.IsoCheckerState;
+import groove.trans.DefaultHostGraph;
+import groove.trans.HostEdge;
+import groove.trans.HostFactory;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
@@ -53,7 +57,7 @@ import java.util.Set;
  * 
  * @author Eduardo Zambon
  */
-public final class Shape extends DefaultGraph {
+public final class Shape extends DefaultHostGraph {
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -64,7 +68,7 @@ public final class Shape extends DefaultGraph {
      * this is NOT the underlying graph structure of the shape but instead a
      * reference to the object that gave rise to this current shape.
      */
-    private Graph graph;
+    private HostGraph graph;
 
     /**
      * The shaping relation between 'this.graph' and 'this'.
@@ -126,7 +130,7 @@ public final class Shape extends DefaultGraph {
     // ------------------------------------------------------------------------
 
     /** Default constructor. Creates a shape from a concrete graph. */
-    public Shape(Graph graph) {
+    public Shape(HostGraph graph) {
         super();
         this.graph = graph;
         this.nodeShaping = new HashMap<Node,ShapeNode>();
@@ -218,17 +222,6 @@ public final class Shape extends DefaultGraph {
     @SuppressWarnings("unchecked")
     public Set<ShapeEdge> outEdgeSet(Node node) {
         return (Set<ShapeEdge>) super.outEdgeSet(node);
-    }
-
-    @Override
-    public ShapeNode createNode() {
-        return ShapeNode.createNode();
-    }
-
-    @Override
-    public ShapeEdge createEdge(Node source, Label label, Node target) {
-        return ShapeEdge.createEdge((ShapeNode) source, label,
-            (ShapeNode) target);
     }
 
     @Override
@@ -383,7 +376,7 @@ public final class Shape extends DefaultGraph {
     }
 
     @Override
-    public boolean removeNodeSetWithoutCheck(Collection<Node> nodeSet) {
+    public boolean removeNodeSetWithoutCheck(Collection<? extends Node> nodeSet) {
         assert !this.isFrozen();
         boolean removed = false;
         for (Node node : nodeSet) {
@@ -437,6 +430,11 @@ public final class Shape extends DefaultGraph {
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
+
+    @Override
+    public HostFactory getFactory() {
+        return ShapeFactory.INSTANCE;
+    }
 
     /**
      * Constructs a new shape from a given shape. This method is used when
@@ -494,14 +492,14 @@ public final class Shape extends DefaultGraph {
         assert !this.isFrozen();
         // Each node of the shape correspond to an equivalence class
         // of the graph.
-        for (EquivClass<Node> nodeEquivClass : currGraphNeighEquiv) {
-            ShapeNode shapeNode = this.createNode();
+        for (EquivClass<HostNode> nodeEquivClass : currGraphNeighEquiv) {
+            ShapeNode shapeNode = (ShapeNode) this.createNode();
             // Add a shape node to the shape.
             // Call the super method because we have additional information on
             // the node to be added.
             super.addNode(shapeNode);
             // Update the shaping information.
-            for (Node graphNode : nodeEquivClass) {
+            for (HostNode graphNode : nodeEquivClass) {
                 this.nodeShaping.put(graphNode, shapeNode);
             }
             // Fill the shape node multiplicity.
@@ -524,9 +522,9 @@ public final class Shape extends DefaultGraph {
     private void createShapeNodesEquivRel(GraphNeighEquiv prevGraphNeighEquiv) {
         assert !this.isFrozen();
         // We use the previous (i-1) graph equivalence relation.
-        for (EquivClass<Node> nodeEquivClass : prevGraphNeighEquiv) {
+        for (EquivClass<HostNode> nodeEquivClass : prevGraphNeighEquiv) {
             EquivClass<ShapeNode> shapeEquivClass = new EquivClass<ShapeNode>();
-            for (Node graphNode : nodeEquivClass) {
+            for (HostNode graphNode : nodeEquivClass) {
                 shapeEquivClass.add(this.nodeShaping.get(graphNode));
             }
             this.equivRel.add(shapeEquivClass);
@@ -536,21 +534,21 @@ public final class Shape extends DefaultGraph {
     /**
      * Creates the edges of this shape based on the equivalence relation given. 
      */
-    private void createShapeEdges(EquivRelation<Edge> edgeEquivRel) {
+    private void createShapeEdges(EquivRelation<HostEdge> edgeEquivRel) {
         assert !this.isFrozen();
         // Each edge of the shape correspond to an equivalence class
         // of the graph.
-        for (EquivClass<Edge> edgeEquivClassG : edgeEquivRel) {
+        for (EquivClass<HostEdge> edgeEquivClassG : edgeEquivRel) {
             // Get an arbitrary edge from the equivalence class.
-            Edge edgeG = edgeEquivClassG.iterator().next();
+            HostEdge edgeG = edgeEquivClassG.iterator().next();
 
             // Create and add a shape edge to the shape.
-            Node srcG = edgeG.source();
-            Node tgtG = edgeG.target();
+            HostNode srcG = edgeG.source();
+            HostNode tgtG = edgeG.target();
             ShapeNode srcS = this.nodeShaping.get(srcG);
             ShapeNode tgtS = this.nodeShaping.get(tgtG);
             Label labelS = edgeG.label();
-            ShapeEdge edgeS = this.createEdge(srcS, labelS, tgtS);
+            ShapeEdge edgeS = (ShapeEdge) this.createEdge(srcS, labelS, tgtS);
             this.addEdge(edgeS);
 
             // Update the shaping information.
@@ -566,7 +564,7 @@ public final class Shape extends DefaultGraph {
     private void createEdgeMultMaps(GraphNeighEquiv currGraphNeighEquiv) {
         assert !this.isFrozen();
         // For all binary labels.
-        for (Label label : Util.binaryLabelSet(this.graph)) {
+        for (TypeLabel label : Util.binaryLabelSet(this.graph)) {
             // For all nodes in the graph.
             for (Node node : this.graph.nodeSet()) {
                 ShapeNode nodeS = this.getShapeNode(node);
@@ -606,7 +604,7 @@ public final class Shape extends DefaultGraph {
         // Original shape (S).
         Shape origShape = (Shape) this.graph;
         // For all binary labels.
-        for (Label label : Util.binaryLabelSet(origShape)) {
+        for (TypeLabel label : Util.binaryLabelSet(origShape)) {
             // For all the nodes in the new shape (T).
             for (ShapeNode nodeT : this.nodeSet()) {
                 // First get a node from S that is part of the equivalence class
@@ -831,7 +829,7 @@ public final class Shape extends DefaultGraph {
      * already existing signature in the shape signature set. If the signature
      * object has to be created, then it is stored in this set. 
      */
-    public EdgeSignature getEdgeSignature(ShapeNode node, Label label,
+    public EdgeSignature getEdgeSignature(ShapeNode node, TypeLabel label,
             EquivClass<ShapeNode> ec) {
         EdgeSignature newEs = new EdgeSignature(node, label, ec);
         EdgeSignature result = null;
@@ -854,7 +852,7 @@ public final class Shape extends DefaultGraph {
      */
     public EdgeSignature getEdgeSignature(EdgeSignature es) {
         ShapeNode node = es.getNode();
-        Label label = es.getLabel();
+        TypeLabel label = es.getLabel();
         EquivClass<ShapeNode> ec =
             this.getEquivClassOf(es.getEquivClass().iterator().next());
         return this.getEdgeSignature(node, label, ec);
@@ -964,7 +962,7 @@ public final class Shape extends DefaultGraph {
     }
 
     /** The method name is self-explanatory. */
-    public void setShapeAndCreateIdentityMorphism(Graph graph) {
+    public void setShapeAndCreateIdentityMorphism(HostGraph graph) {
         assert !this.isFrozen();
         assert graph instanceof Shape : "Cannot create a shaping morphism from a non-abstract graph.";
 
@@ -1029,7 +1027,7 @@ public final class Shape extends DefaultGraph {
         ShapeNode newNodes[] = new ShapeNode[copies];
         EquivClass<ShapeNode> origNodeEc = this.getEquivClassOf(origNode);
         for (int i = 0; i < copies; i++) {
-            ShapeNode newNode = this.createNode();
+            ShapeNode newNode = (ShapeNode) this.createNode();
             newNodes[i] = newNode;
             // Add the new node to the shape. Call the super method because
             // we have additional information on the node to be added.
@@ -1059,7 +1057,8 @@ public final class Shape extends DefaultGraph {
             ShapeNode target = origEdge.target();
             Multiplicity origEdgeOutMult = this.getEdgeOutMult(origEdge);
             for (ShapeNode newNode : newNodes) {
-                ShapeEdge newEdge = this.createEdge(newNode, label, target);
+                ShapeEdge newEdge =
+                    (ShapeEdge) this.createEdge(newNode, label, target);
                 newEdges.add(newEdge);
                 // Update the outgoing multiplicity map.
                 EdgeSignature newEdgeSig = this.getEdgeOutSignature(newEdge);
@@ -1079,7 +1078,8 @@ public final class Shape extends DefaultGraph {
             ShapeNode source = origEdge.source();
             Multiplicity origEdgeInMult = this.getEdgeInMult(origEdge);
             for (ShapeNode newNode : newNodes) {
-                ShapeEdge newEdge = this.createEdge(source, label, newNode);
+                ShapeEdge newEdge =
+                    (ShapeEdge) this.createEdge(source, label, newNode);
                 newEdges.add(newEdge);
                 // Update the incoming multiplicity map.
                 EdgeSignature newEdgeSig = this.getEdgeInSignature(newEdge);
@@ -1113,7 +1113,7 @@ public final class Shape extends DefaultGraph {
     }
 
     /** Basic getter method. */
-    public ShapeEdge getShapeEdge(ShapeNode source, Label label,
+    public ShapeEdge getShapeEdge(ShapeNode source, TypeLabel label,
             ShapeNode target) {
         ShapeEdge result = null;
         for (ShapeEdge edge : this.outEdgeSet(source)) {
@@ -1155,7 +1155,7 @@ public final class Shape extends DefaultGraph {
     private int getOutEdgeSigCount(EdgeSignature es) {
         int edgeCount = 0;
         ShapeNode source = es.getNode();
-        Label label = es.getLabel();
+        TypeLabel label = es.getLabel();
         for (ShapeNode target : es.getEquivClass()) {
             ShapeEdge edge = this.getShapeEdge(source, label, target);
             if (edge != null && !this.isFrozen(edge)) {
@@ -1183,7 +1183,7 @@ public final class Shape extends DefaultGraph {
     private int getInEdgeSigCount(EdgeSignature es) {
         int edgeCount = 0;
         ShapeNode target = es.getNode();
-        Label label = es.getLabel();
+        TypeLabel label = es.getLabel();
         for (ShapeNode source : es.getEquivClass()) {
             ShapeEdge edge = this.getShapeEdge(source, label, target);
             if (edge != null && !this.isFrozen(edge)) {
@@ -1223,7 +1223,7 @@ public final class Shape extends DefaultGraph {
     public Set<ShapeEdge> getEdgesFrom(EdgeSignature es, boolean outgoing) {
         Set<ShapeEdge> result = new HashSet<ShapeEdge>();
         ShapeNode node = es.getNode();
-        Label label = es.getLabel();
+        TypeLabel label = es.getLabel();
         EquivClass<ShapeNode> ec = es.getEquivClass();
         for (ShapeNode ecNode : ec) {
             ShapeEdge edge;
@@ -1282,7 +1282,7 @@ public final class Shape extends DefaultGraph {
 
         for (EdgeSignature origEs : this.getEdgeSignatures(origEc)) {
             ShapeNode origNode = origEs.getNode();
-            Label label = origEs.getLabel();
+            TypeLabel label = origEs.getLabel();
             EdgeSignature remEs = new EdgeSignature(origNode, label, remEc);
             EdgeSignature singEs = new EdgeSignature(origNode, label, singEc);
 
@@ -1414,7 +1414,7 @@ public final class Shape extends DefaultGraph {
             Multiplicity oneMult = Multiplicity.getMultOf(1);
             ShapeNode src = frozenEdge.source();
             ShapeNode tgt = frozenEdge.target();
-            Label label = frozenEdge.label();
+            TypeLabel label = frozenEdge.label();
             EquivClass<ShapeNode> srcEc = this.getEquivClassOf(src);
             EquivClass<ShapeNode> tgtEc = this.getEquivClassOf(tgt);
 
@@ -1565,7 +1565,7 @@ public final class Shape extends DefaultGraph {
      */
     public void checkShapeInvariant() {
         // For all labels.
-        for (Label label : Util.binaryLabelSet(this)) {
+        for (TypeLabel label : Util.binaryLabelSet(this)) {
             // For all nodes in the shape.
             for (ShapeNode node : this.nodeSet()) {
                 // For all equivalence classes.

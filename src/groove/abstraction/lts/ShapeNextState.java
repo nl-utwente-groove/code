@@ -19,12 +19,12 @@ package groove.abstraction.lts;
 import groove.abstraction.Shape;
 import groove.control.CtrlTransition;
 import groove.graph.Label;
-import groove.graph.Morphism;
-import groove.graph.Node;
+import groove.graph.NodeEdgeMap;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.GraphTransitionStub;
+import groove.trans.HostNode;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 
@@ -106,7 +106,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
-    public Node[] getAddedNodes() {
+    public HostNode[] getAddedNodes() {
         throw new UnsupportedOperationException();
     }
 
@@ -121,7 +121,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
-    public Morphism getMorphism() {
+    public NodeEdgeMap getMorphism() {
         throw new UnsupportedOperationException();
     }
 
@@ -136,7 +136,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
-    public Node[] getAddedNodes(GraphState source) {
+    public HostNode[] getAddedNodes(GraphState source) {
         throw new UnsupportedOperationException();
     }
 

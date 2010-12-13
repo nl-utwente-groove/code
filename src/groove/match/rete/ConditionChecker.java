@@ -20,8 +20,8 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
-import groove.rel.RuleToStateMap;
 import groove.trans.Condition;
+import groove.trans.RuleToHostMap;
 import groove.util.FilterIterator;
 import groove.util.HashBag;
 import groove.util.TreeHashSet;
@@ -87,7 +87,7 @@ public class ConditionChecker extends ReteNetworkNode implements
         }
 
         @SuppressWarnings("unchecked")
-        Set<ReteMatch> getStorageFor(RuleToStateMap anchorMap) {
+        Set<ReteMatch> getStorageFor(RuleToHostMap anchorMap) {
             Set<ReteMatch> result = null;
             HashMap<Element,Object> leaf = this.root;
             for (int i = 0; i < this.rootSearchOrder.length - 1; i++) {
@@ -305,7 +305,7 @@ public class ConditionChecker extends ReteNetworkNode implements
      * the given anchor map and are not inhibited by any NAC subconditions.
      */
     public Iterator<ReteMatch> getConflictSetIterator(
-            final RuleToStateMap anchorMap) {
+            final RuleToHostMap anchorMap) {
         Iterator<ReteMatch> result;
 
         if (this.isEmpty()) {
@@ -333,7 +333,7 @@ public class ConditionChecker extends ReteNetworkNode implements
                     new FilterIterator<ReteMatch>(
                         this.getConflictSet().iterator()) {
 
-                        RuleToStateMap anchor = anchorMap;
+                        RuleToHostMap anchor = anchorMap;
 
                         @Override
                         protected boolean approves(Object obj) {
@@ -354,7 +354,7 @@ public class ConditionChecker extends ReteNetworkNode implements
                     new FilterIterator<ReteMatch>(
                         this.getConflictSet().iterator()) {
 
-                        RuleToStateMap anchor = anchorMap;
+                        RuleToHostMap anchor = anchorMap;
 
                         @Override
                         protected boolean approves(Object obj) {

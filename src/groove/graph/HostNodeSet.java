@@ -19,6 +19,7 @@ package groove.graph;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
+import groove.trans.HostNode;
 import groove.util.TreeHashSet;
 
 import java.util.Collection;
@@ -30,14 +31,14 @@ import java.util.Collection;
  * @author Arend Rensink
  * @version $Revision $
  */
-final public class NodeSet extends TreeHashSet<Node> {
+final public class HostNodeSet extends TreeHashSet<HostNode> {
     /** Constructs an empty set with a given initial capacity. */
-    public NodeSet(int capacity) {
+    public HostNodeSet(int capacity) {
         super(capacity, NODE_RESOLUTION, NODE_RESOLUTION);
     }
 
     /** Constructs an empty set. */
-    public NodeSet() {
+    public HostNodeSet() {
         this(DEFAULT_CAPACITY);
         // super(DefaultNode.getNodeCount(), HASHCODE_EQUATOR);
         // super(NODE_SET_RESOLUTION, DefaultNode.getNodeCount(),
@@ -46,13 +47,13 @@ final public class NodeSet extends TreeHashSet<Node> {
     }
 
     /** Constructs a copy of an existing set. */
-    public NodeSet(Collection<? extends Node> other) {
+    public HostNodeSet(Collection<? extends HostNode> other) {
         this(other.size());
         addAll(other);
     }
 
     /** Constructs a copy of an existing node set. */
-    public NodeSet(NodeSet other) {
+    public HostNodeSet(HostNodeSet other) {
         super(other);
     }
 
@@ -62,12 +63,12 @@ final public class NodeSet extends TreeHashSet<Node> {
     }
 
     @Override
-    protected boolean areEqual(Node newKey, Node oldKey) {
+    protected boolean areEqual(HostNode newKey, HostNode oldKey) {
         return true;
     }
 
     @Override
-    protected int getCode(Node key) {
+    protected int getCode(HostNode key) {
         int nr = key.getNumber();
         if (key instanceof ValueNode) {
             assert nr < MAX_VALUE_NODE_NR : String.format(
@@ -103,11 +104,11 @@ final public class NodeSet extends TreeHashSet<Node> {
     /** Offset added to product node numbers, to keep them distinct. */
     static private final int PRODUCT_NODE_BASE = (int) MAX_DEFAULT_NODE_NR;
     /** Offset added to variable node numbers, to keep them distinct. */
-    static private final int VARIABLE_NODE_BASE =
-        PRODUCT_NODE_BASE + (int) MAX_PRODUCT_NODE_NR;
+    static private final int VARIABLE_NODE_BASE = PRODUCT_NODE_BASE
+        + (int) MAX_PRODUCT_NODE_NR;
     /** Offset added to value node numbers, to keep them distinct. */
-    static private final int VALUE_NODE_BASE =
-        VARIABLE_NODE_BASE + (int) MAX_VARIABLE_NODE_NR;
+    static private final int VALUE_NODE_BASE = VARIABLE_NODE_BASE
+        + (int) MAX_VARIABLE_NODE_NR;
     /** The resolution of the tree for a node set. */
     static private final int NODE_RESOLUTION = 4;
 }

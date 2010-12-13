@@ -16,6 +16,7 @@
  */
 package groove.view.aspect;
 
+import groove.graph.DefaultLabel;
 import groove.view.FormatException;
 
 import java.util.HashSet;
@@ -322,7 +323,8 @@ public class NestingAspect extends AbstractAspect {
     /**
      * Parser that establishes whether a nesting edge label is a known label.
      */
-    private static class NestingLabelParser extends FreeLabelParser {
+    private static class NestingLabelParser extends
+            AbstractLabelParser<DefaultLabel> {
         /** Empty constructor with the correct visibility. */
         NestingLabelParser() {
             // empty
@@ -343,5 +345,11 @@ public class NestingAspect extends AbstractAspect {
                 "Label '%s' on nesting edge should be one of %s", text,
                 ALLOWED_LABELS);
         }
+
+        @Override
+        protected DefaultLabel createLabel(String text) {
+            return DefaultLabel.createLabel(text);
+        }
+
     }
 }

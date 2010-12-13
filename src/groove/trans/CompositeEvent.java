@@ -16,9 +16,7 @@
  */
 package groove.trans;
 
-import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.Graph;
 import groove.graph.MergeMap;
 import groove.graph.Node;
 import groove.util.CacheReference;
@@ -86,8 +84,9 @@ public class CompositeEvent extends
         return Arrays.toString(eventLabels.toArray());
     }
 
-    public Set<? extends Node> getCreatedNodes(Set<? extends Node> hostNodes) {
-        Set<Node> result = new LinkedHashSet<Node>(this.eventArray.length);
+    public Set<HostNode> getCreatedNodes(Set<? extends HostNode> hostNodes) {
+        Set<HostNode> result =
+            new LinkedHashSet<HostNode>(this.eventArray.length);
         for (SPOEvent event : this.eventArray) {
             event.collectCreatedNodes(hostNodes, result);
         }
@@ -95,15 +94,15 @@ public class CompositeEvent extends
     }
 
     @Override
-    Set<Node> computeErasedNodes() {
-        Set<Node> result = createNodeSet(this.eventArray.length);
+    Set<HostNode> computeErasedNodes() {
+        Set<HostNode> result = createNodeSet(this.eventArray.length);
         for (SPOEvent event : this.eventArray) {
             event.collectErasedNodes(result);
         }
         return result;
     }
 
-    public RuleMatch getMatch(Graph source) {
+    public RuleMatch getMatch(HostGraph source) {
         if (false) {
             // the events are ordered according to rule level
             // so we can build a stack of corresponding matches
@@ -154,17 +153,18 @@ public class CompositeEvent extends
         return result;
     }
 
-    public Set<Edge> getSimpleCreatedEdges() {
-        Set<Edge> result = createEdgeSet(this.eventArray.length * 2);
+    public Set<HostEdge> getSimpleCreatedEdges() {
+        Set<HostEdge> result = createEdgeSet(this.eventArray.length * 2);
         for (SPOEvent event : this.eventArray) {
             event.collectSimpleCreatedEdges(getErasedNodes(), result);
         }
         return result;
     }
 
-    public Set<Edge> getComplexCreatedEdges(Iterator<Node> createdNodes) {
-        Set<Edge> result = createEdgeSet(this.eventArray.length * 2);
-        Map<Node,Node> coRootImages = new HashMap<Node,Node>();
+    public Collection<HostEdge> getComplexCreatedEdges(
+            Iterator<HostNode> createdNodes) {
+        Set<HostEdge> result = createEdgeSet(this.eventArray.length * 2);
+        Map<RuleNode,HostNode> coRootImages = new HashMap<RuleNode,HostNode>();
         for (SPOEvent event : this.eventArray) {
             event.collectComplexCreatedEdges(getErasedNodes(), createdNodes,
                 coRootImages, result);
@@ -172,8 +172,8 @@ public class CompositeEvent extends
         return result;
     }
 
-    public Set<Edge> getSimpleErasedEdges() {
-        Set<Edge> result = createEdgeSet(this.eventArray.length * 2);
+    public Set<HostEdge> getSimpleErasedEdges() {
+        Set<HostEdge> result = createEdgeSet(this.eventArray.length * 2);
         for (SPOEvent event : this.eventArray) {
             event.collectSimpleErasedEdges(result);
         }
@@ -186,7 +186,7 @@ public class CompositeEvent extends
      * since the universal information was lost in the conversion from rule
      * match to rule event.
      */
-    public boolean hasMatch(Graph source) {
+    public boolean hasMatch(HostGraph source) {
         return false;
     }
 
@@ -196,7 +196,7 @@ public class CompositeEvent extends
      * matches! TODO has to be adapted now that the anchor no longer includes
      * the root map images
      */
-    boolean hasSubMatches(Graph source) {
+    boolean hasSubMatches(HostGraph source) {
         for (RuleEvent event : this.eventArray) {
             // the isGround test is necessary as long as we are not able to
             // include the

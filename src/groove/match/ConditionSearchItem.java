@@ -19,13 +19,12 @@ package groove.match;
 import groove.graph.Edge;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
-import groove.rel.RuleToStateHashMap;
-import groove.rel.RuleToStateMap;
 import groove.rel.VarSupport;
 import groove.trans.AbstractCondition;
 import groove.trans.Condition;
-import groove.trans.RuleGraphMap;
+import groove.trans.RuleToRuleMap;
 import groove.trans.RuleNode;
+import groove.trans.RuleToHostMap;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -93,7 +92,7 @@ class ConditionSearchItem extends AbstractSearchItem {
     /** The graph condition that should be matched by this search item. */
     final Condition condition;
     /** The root map of the graph condition. */
-    private final RuleGraphMap rootMap;
+    private final RuleToRuleMap rootMap;
     /** The source nodes of the root map. */
     private final Set<RuleNode> neededNodes;
     /** The variables occurring in edges of the root map. */
@@ -114,7 +113,8 @@ class ConditionSearchItem extends AbstractSearchItem {
 
         @Override
         boolean set() {
-            RuleToStateMap contextMap = new RuleToStateHashMap();
+            RuleToHostMap contextMap =
+                this.host.getFactory().createRuleToHostMap();
             for (Map.Entry<RuleNode,Integer> nodeIxEntry : ConditionSearchItem.this.nodeIxMap.entrySet()) {
                 contextMap.putNode(nodeIxEntry.getKey(),
                     this.search.getNode(nodeIxEntry.getValue()));

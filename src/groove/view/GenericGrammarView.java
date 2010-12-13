@@ -17,9 +17,9 @@
 package groove.view;
 
 import groove.control.ControlView;
-import groove.graph.Graph;
 import groove.graph.TypeGraph;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 
@@ -32,7 +32,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface GenericGrammarView<GV extends View<Graph>,RV extends RuleView,TV extends View<TypeGraph>,CV> {
+public interface GenericGrammarView<GV extends View<HostGraph>,RV extends RuleView,TV extends View<TypeGraph>,CV> {
     /** Returns the name of the rule system. */
     public String getName();
 

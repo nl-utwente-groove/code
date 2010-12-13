@@ -16,9 +16,11 @@
  */
 package groove.graph;
 
+import groove.trans.HostEdge;
+import groove.trans.HostEdgeSet;
+import groove.trans.HostNode;
 import groove.util.DeltaSet;
 import groove.util.StackedSet;
-import groove.util.TreeHashSet;
 
 import java.util.Collection;
 import java.util.Set;
@@ -33,9 +35,9 @@ public class DefaultDeltaApplier implements DeltaApplier {
      * Creates a delta store based on explicitly given added and removed sets.
      * The sets are copied.
      */
-    protected DefaultDeltaApplier(Set<Node> addedNodeSet,
-            Set<Node> removedNodeSet, Set<Edge> addedEdgeSet,
-            Set<Edge> removedEdgeSet) {
+    protected DefaultDeltaApplier(Set<HostNode> addedNodeSet,
+            Set<HostNode> removedNodeSet, Set<HostEdge> addedEdgeSet,
+            Set<HostEdge> removedEdgeSet) {
         this.addedNodeSet = createNodeSet(addedNodeSet);
         this.removedNodeSet = createNodeSet(removedNodeSet);
         this.addedEdgeSet = createEdgeSet(addedEdgeSet);
@@ -46,9 +48,9 @@ public class DefaultDeltaApplier implements DeltaApplier {
      * Creates a delta store based on explicitly given added and removed sets. A
      * further parameter controls if the sets are copied or shared.
      */
-    protected DefaultDeltaApplier(Set<Node> addedNodeSet,
-            Set<Node> removedNodeSet, Set<Edge> addedEdgeSet,
-            Set<Edge> removedEdgeSet, boolean share) {
+    protected DefaultDeltaApplier(Set<HostNode> addedNodeSet,
+            Set<HostNode> removedNodeSet, Set<HostEdge> addedEdgeSet,
+            Set<HostEdge> removedEdgeSet, boolean share) {
         this.addedNodeSet = share ? addedNodeSet : createNodeSet(addedNodeSet);
         this.removedNodeSet =
             share ? removedNodeSet : createNodeSet(removedNodeSet);
@@ -88,22 +90,22 @@ public class DefaultDeltaApplier implements DeltaApplier {
     }
 
     /** Returns an alias of the set of added nodes of this delta. */
-    public Set<Node> getAddedNodeSet() {
+    public Set<HostNode> getAddedNodeSet() {
         return this.addedNodeSet;
     }
 
     /** Returns an alias of the set of removed nodes of this delta. */
-    public Set<Node> getRemovedNodeSet() {
+    public Set<HostNode> getRemovedNodeSet() {
         return this.removedNodeSet;
     }
 
     /** Returns an alias of the set of added edges of this delta. */
-    public Set<Edge> getAddedEdgeSet() {
+    public Set<HostEdge> getAddedEdgeSet() {
         return this.addedEdgeSet;
     }
 
     /** Returns an alias of the set of removed edges of this delta. */
-    public Set<Edge> getRemovedEdgeSet() {
+    public Set<HostEdge> getRemovedEdgeSet() {
         return this.removedEdgeSet;
     }
 
@@ -113,8 +115,8 @@ public class DefaultDeltaApplier implements DeltaApplier {
      * the added edges.
      * @param origin the set to create the result from
      */
-    public Set<Node> newNodeSet(Collection<? extends Node> origin) {
-        Set<Node> result = createNodeSet(origin);
+    public Set<HostNode> newNodeSet(Collection<HostNode> origin) {
+        Set<HostNode> result = createNodeSet(origin);
         result.removeAll(this.removedNodeSet);
         result.addAll(this.addedNodeSet);
         return result;
@@ -126,8 +128,8 @@ public class DefaultDeltaApplier implements DeltaApplier {
      * the added edges.
      * @param origin the set to create the result from
      */
-    public Set<Edge> newEdgeSet(Collection<? extends Edge> origin) {
-        Set<Edge> result = createEdgeSet(origin);
+    public Set<HostEdge> newEdgeSet(Collection<HostEdge> origin) {
+        Set<HostEdge> result = createEdgeSet(origin);
         result.removeAll(this.removedEdgeSet);
         result.addAll(this.addedEdgeSet);
         return result;
@@ -141,7 +143,7 @@ public class DefaultDeltaApplier implements DeltaApplier {
      * @return a stacked set based on <code>origin</code>, and the added and
      *         removed edge sets in this store
      */
-    public StackedSet<Edge> newStackedEdgeSet(Set<? extends Edge> origin) {
+    public StackedSet<HostEdge> newStackedEdgeSet(Set<HostEdge> origin) {
         return createStackedSet(origin, this.addedEdgeSet, this.removedEdgeSet);
     }
 
@@ -153,7 +155,7 @@ public class DefaultDeltaApplier implements DeltaApplier {
      * @return a stacked set based on <code>origin</code>, and the added and
      *         removed node sets in this store
      */
-    public StackedSet<Node> newStackedNodeSet(Set<? extends Node> origin) {
+    public StackedSet<HostNode> newStackedNodeSet(Set<HostNode> origin) {
         return createStackedSet(origin, this.addedNodeSet, this.removedNodeSet);
     }
 
@@ -166,7 +168,7 @@ public class DefaultDeltaApplier implements DeltaApplier {
      * @return a delta set based on <code>origin</code>, and the added and
      *         removed edge sets in this store
      */
-    public DeltaSet<Edge> newDeltaEdgeSet(Collection<Edge> origin) {
+    public DeltaSet<HostEdge> newDeltaEdgeSet(Collection<HostEdge> origin) {
         return createDeltaSet(newEdgeSet(origin), this.addedEdgeSet,
             this.removedEdgeSet);
     }
@@ -180,7 +182,7 @@ public class DefaultDeltaApplier implements DeltaApplier {
      * @return a delta set based on <code>origin</code>, and the added and
      *         removed node sets in this store
      */
-    public DeltaSet<Node> newDeltaNodeSet(Collection<Node> origin) {
+    public DeltaSet<HostNode> newDeltaNodeSet(Collection<HostNode> origin) {
         return createDeltaSet(newNodeSet(origin), this.addedNodeSet,
             this.removedNodeSet);
     }
@@ -228,11 +230,11 @@ public class DefaultDeltaApplier implements DeltaApplier {
      * Callback factory method for copying a given node set. Returns the empty
      * set if the given node set is <code>null</code>.
      */
-    protected Set<Node> createNodeSet(Collection<? extends Node> set) {
+    protected Set<HostNode> createNodeSet(Collection<HostNode> set) {
         if (set == null) {
-            return new NodeSet();
+            return new HostNodeSet();
         } else {
-            return new NodeSet(set);
+            return new HostNodeSet(set);
         }
     }
 
@@ -240,8 +242,8 @@ public class DefaultDeltaApplier implements DeltaApplier {
      * Callback factory method for copying a given edge set. Returns the empty
      * set if the given edge set is <code>null</code>.
      */
-    protected Set<Edge> createEdgeSet(Collection<? extends Edge> set) {
-        Set<Edge> result = new TreeHashSet<Edge>();
+    protected Set<HostEdge> createEdgeSet(Collection<HostEdge> set) {
+        Set<HostEdge> result = new HostEdgeSet();
         if (set != null) {
             result.addAll(set);
         }
@@ -265,11 +267,11 @@ public class DefaultDeltaApplier implements DeltaApplier {
     }
 
     /** The set of added nodes of this delta. */
-    final private Set<Node> addedNodeSet;
+    final private Set<HostNode> addedNodeSet;
     /** The set of removed nodes of this delta. */
-    final private Set<Node> removedNodeSet;
+    final private Set<HostNode> removedNodeSet;
     /** The set of added edges of this delta. */
-    final private Set<Edge> addedEdgeSet;
+    final private Set<HostEdge> addedEdgeSet;
     /** The set of removed edges of this delta. */
-    final private Set<Edge> removedEdgeSet;
+    final private Set<HostEdge> removedEdgeSet;
 }

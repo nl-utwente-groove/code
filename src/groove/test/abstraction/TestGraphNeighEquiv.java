@@ -16,13 +16,15 @@
  */
 package groove.test.abstraction;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import groove.abstraction.GraphNeighEquiv;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.Parameters;
-import groove.graph.Graph;
-import groove.graph.Node;
+import groove.trans.DefaultHostGraph;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.util.Groove;
 
 import java.io.File;
@@ -51,13 +53,14 @@ public class TestGraphNeighEquiv {
     public void testLevelZeroEquiv() {
         File file = new File(DIRECTORY + "equiv-test-0.gst");
         try {
-            Graph graph = Groove.loadGraph(file);
+            HostGraph graph = createHostGraph(file);
             GraphNeighEquiv gne = new GraphNeighEquiv(graph);
-            assertTrue(gne.getRadius() == 0 && gne.size() == 4);
-            Node n0 = null, n1 = null, n4 = null;
-            Iterator<? extends Node> iterator = graph.nodeSet().iterator();
+            assertEquals(0, gne.getRadius());
+            assertEquals(4, gne.size());
+            HostNode n0 = null, n1 = null, n4 = null;
+            Iterator<? extends HostNode> iterator = graph.nodeSet().iterator();
             while (iterator.hasNext()) {
-                Node n = iterator.next();
+                HostNode n = iterator.next();
                 if (n.getNumber() == 0) {
                     n0 = n;
                 } else if (n.getNumber() == 1) {
@@ -78,13 +81,16 @@ public class TestGraphNeighEquiv {
     public void testLevelOneEquiv() {
         File file = new File(DIRECTORY + "equiv-test-1.gst");
         try {
-            Graph graph = Groove.loadGraph(file);
+            HostGraph graph = createHostGraph(file);
             GraphNeighEquiv gne = new GraphNeighEquiv(graph);
-            assertTrue(gne.getRadius() == 0 && gne.size() == 2);
+            assertEquals(0, gne.getRadius());
+            assertEquals(2, gne.size());
             gne.refineEquivRelation();
-            assertTrue(gne.getRadius() == 1 && gne.size() == 4);
+            assertEquals(1, gne.getRadius());
+            assertEquals(4, gne.size());
             gne.refineEquivRelation();
-            assertTrue(gne.getRadius() == 2 && gne.size() == 6);
+            assertEquals(2, gne.getRadius());
+            assertEquals(6, gne.size());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -94,17 +100,25 @@ public class TestGraphNeighEquiv {
     public void testLevelTwoEquiv() {
         File file = new File(DIRECTORY + "equiv-test-2.gst");
         try {
-            Graph graph = Groove.loadGraph(file);
+            HostGraph graph = createHostGraph(file);
             GraphNeighEquiv gne = new GraphNeighEquiv(graph);
-            assertTrue(gne.getRadius() == 0 && gne.size() == 2);
+            assertEquals(0, gne.getRadius());
+            assertEquals(2, gne.size());
             gne.refineEquivRelation();
-            assertTrue(gne.getRadius() == 1 && gne.size() == 4);
+            assertEquals(1, gne.getRadius());
+            assertEquals(4, gne.size());
             gne.refineEquivRelation();
-            assertTrue(gne.getRadius() == 2 && gne.size() == 6);
+            assertEquals(2, gne.getRadius());
+            assertEquals(6, gne.size());
             gne.refineEquivRelation();
-            assertTrue(gne.getRadius() == 3 && gne.size() == 7);
+            assertEquals(3, gne.getRadius());
+            assertEquals(7, gne.size());
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private HostGraph createHostGraph(File file) throws IOException {
+        return new DefaultHostGraph(Groove.loadGraph(file));
     }
 }

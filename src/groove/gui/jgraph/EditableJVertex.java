@@ -59,13 +59,13 @@ public class EditableJVertex extends JVertex implements EditableJCell {
      * This implementation just returns the user object, or a singleton
      * containing {@link JVertex#NO_LABEL} if the user object is empty.
      */
-    public Collection<Label> getListLabels() {
+    public Collection<? extends Label> getListLabels() {
         Collection<Label> result = new ArrayList<Label>();
         for (String labelString : getUserObject()) {
             result.add(DefaultLabel.createLabel(labelString));
         }
         if (result.isEmpty()) {
-            result = Collections.singleton(NO_LABEL);
+            result = Collections.singleton((Label) NO_LABEL);
         }
         return result;
     }

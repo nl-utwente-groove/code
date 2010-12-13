@@ -18,7 +18,6 @@ package groove.io;
 
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
-import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -29,6 +28,7 @@ import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
+import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.util.Groove;
 import groove.util.Pair;
@@ -97,7 +97,7 @@ public class JaxbGxlIO implements GxlIO {
         try {
             GraphType gxlGraph = unmarshal(in);
             Pair<Graph,Map<String,Node>> result = gxlToGraph(gxlGraph);
-            Graph graph = result.first();
+            Graph graph = result.one();
             if (!Version.isKnownGxlVersion(GraphInfo.getVersion(graph))) {
                 GraphInfo.addErrors(
                     graph,
@@ -116,7 +116,7 @@ public class JaxbGxlIO implements GxlIO {
      * <code>loadGraphWithMap(in).first()</code>.
      */
     public Graph loadGraph(InputStream in) throws IOException, FormatException {
-        return loadGraphWithMap(in).first();
+        return loadGraphWithMap(in).one();
     }
 
     /** Adds a layout attribute to a gxlNode. */
@@ -233,7 +233,7 @@ public class JaxbGxlIO implements GxlIO {
         // add the edges
         for (Edge edge : graph.edgeSet()) {
             // create an xml element for this edge
-            String prefixedLabel = DefaultLabel.toPrefixedString(edge.label());
+            String prefixedLabel = TypeLabel.toPrefixedString(edge.label());
             if (edge instanceof TypeEdge && ((TypeEdge) edge).isAbstract()) {
                 prefixedLabel = ABSTRACT_PREFIX + prefixedLabel;
             }
@@ -247,9 +247,10 @@ public class JaxbGxlIO implements GxlIO {
         // add subtype edges if the graph is a type graph
         if (graph instanceof TypeGraph) {
             LabelStore labelStore = ((TypeGraph) graph).getLabelStore();
-            Map<Label,Set<Label>> subtypeMap = labelStore.getDirectSubtypeMap();
-            for (Map.Entry<Label,Set<Label>> subtypeEntry : subtypeMap.entrySet()) {
-                for (Label subtype : subtypeEntry.getValue()) {
+            Map<TypeLabel,Set<TypeLabel>> subtypeMap =
+                labelStore.getDirectSubtypeMap();
+            for (Map.Entry<TypeLabel,Set<TypeLabel>> subtypeEntry : subtypeMap.entrySet()) {
+                for (TypeLabel subtype : subtypeEntry.getValue()) {
                     for (Edge subtypeEdge : graph.labelEdgeSet(subtype)) {
                         Label supertype = subtypeEntry.getKey();
                         for (Edge supertypeEdge : graph.labelEdgeSet(supertype)) {

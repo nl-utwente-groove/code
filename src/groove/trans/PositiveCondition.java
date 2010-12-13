@@ -16,13 +16,11 @@
  */
 package groove.trans;
 
-import groove.graph.LabelStore;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
-import groove.rel.RuleToStateMap;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
@@ -51,13 +49,12 @@ abstract public class PositiveCondition<M extends Match> extends
      * @param rootMap element map from the context to the anchor elements of
      *        <code>target</code>; may be <code>null</code> if the condition is
      *        ground
-     * @param labelStore label store specifying the subtype relation
      * @param properties properties for matching the condition; may be
      *        <code>null</code>
      */
-    PositiveCondition(RuleName name, RuleGraph target, RuleGraphMap rootMap,
-            LabelStore labelStore, SystemProperties properties) {
-        super(name, target, rootMap, labelStore, properties);
+    PositiveCondition(RuleName name, RuleGraph target, RuleToRuleMap rootMap,
+            SystemProperties properties) {
+        super(name, target, rootMap, properties);
     }
 
     @Override
@@ -211,7 +208,7 @@ abstract public class PositiveCondition<M extends Match> extends
       *        {@link #getTarget()} into some host graph
       * @return a match constructed on the basis of <code>map</code>
       */
-    abstract M createMatch(RuleToStateMap matchMap);
+    abstract M createMatch(RuleToHostMap matchMap);
 
     /**
      * The sub-conditions that are not edge or merge embargoes.

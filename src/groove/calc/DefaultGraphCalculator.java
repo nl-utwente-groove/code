@@ -30,6 +30,7 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.Condition;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.trans.Rule;
 import groove.trans.RuleSystem;
 import groove.view.FormatException;
@@ -47,7 +48,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
      * @param rules the rule system for the calculator
      * @param start the start graph for the calculator
      */
-    public DefaultGraphCalculator(RuleSystem rules, Graph start) {
+    public DefaultGraphCalculator(RuleSystem rules, HostGraph start) {
         this(new GraphGrammar(rules, start), false);
     }
 
@@ -194,7 +195,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
         return scenario.play();
     }
 
-    public GraphCalculator newInstance(Graph start)
+    public GraphCalculator newInstance(HostGraph start)
         throws IllegalArgumentException {
         try {
             GraphGrammar newGrammar = new GraphGrammar(this.grammar, start);

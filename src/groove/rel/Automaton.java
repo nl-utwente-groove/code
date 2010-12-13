@@ -16,19 +16,34 @@
  */
 package groove.rel;
 
+import groove.graph.DefaultEdge;
 import groove.graph.Graph;
-import groove.graph.GraphShape;
-import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
+import groove.trans.RuleLabel;
+import groove.trans.RuleToHostMap;
+import groove.util.Duo;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.sun.org.apache.xerces.internal.impl.xs.opti.DefaultNode;
+
 /**
  * Interface for regular automata. An automaton extends a graph with a start
  * state, an end state, and a flag to indicate whether empty words are accepted.
+ * An automaton has {@link DefaultNode}s and {@link DefaultEdge}s;
+ * the latter have {@link RuleLabel}s that are one of the following:
+ * <ul>
+ * <li> Inverted labels of one of the following types
+ * <li> Wildcards
+ * <li> Sharp node type labels
+ * <li> Atoms
+ * </ul>
  */
 public interface Automaton extends Graph {
     /** Returns the start node of the automaton. */
@@ -53,7 +68,7 @@ public interface Automaton extends Graph {
     boolean accepts(List<String> word);
 
     /** Returns the set of labels that can be matched by the automaton. */
-    Set<Label> getAlphabet();
+    Set<TypeLabel> getAlphabet();
 
     /** Returns the label store used by this automaton. */
     LabelStore getLabelStore();
@@ -69,13 +84,13 @@ public interface Automaton extends Graph {
      *        matching paths should end; if <code>null</code>, there is no
      *        constraint
      */
-    NodeRelation getMatches(GraphShape graph, Set<? extends Node> startImages,
-            Set<? extends Node> endImages);
+    Set<Result> getMatches(HostGraph graph, Set<HostNode> startImages,
+            Set<HostNode> endImages);
 
     /**
      * Returns a relation consisting of pairs of nodes of a given graph between
      * which there is a path matching this automaton. If this automaton has
-     * variables, the pairs are edges with {@link RuleToStateMap} labels giving
+     * variables, the pairs are edges with {@link RuleToHostMap} labels giving
      * a valuation of the variables.
      * @param graph the graph in which the paths are sought
      * @param startImages set of nodes in <code>graph</code> from which the
@@ -88,6 +103,50 @@ public interface Automaton extends Graph {
      *        adhered to in the matching; if <code>null</code>, there is no
      *        constraint
      */
-    NodeRelation getMatches(GraphShape graph, Set<? extends Node> startImages,
-            Set<? extends Node> endImages, Map<LabelVar,Label> valuation);
+    Set<Result> getMatches(HostGraph graph, Set<HostNode> startImages,
+            Set<HostNode> endImages, Map<LabelVar,TypeLabel> valuation);
+
+    /** Type of the automaton's match results. */
+    class Result extends Duo<HostNode> {
+        public Result(HostNode one, HostNode two,
+                Map<LabelVar,TypeLabel> valuation) {
+            super(one, two);
+            this.valuation = valuation;
+        }
+
+        /**
+         * Returns the valuation.
+         */
+        public Map<LabelVar,TypeLabel> getValuation() {
+            return this.valuation;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            boolean result = super.equals(obj);
+            if (result) {
+                Result other = (Result) obj;
+                if (this.valuation == null) {
+                    result = other.valuation == null;
+                } else {
+                    result = this.valuation.equals(other.valuation);
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode()
+                ^ (this.valuation == null ? 0 : this.valuation.hashCode());
+        }
+
+        @Override
+        public String toString() {
+            return "Result [one=" + one() + ", two=" + two() + ", valuation="
+                + this.valuation + "]";
+        }
+
+        private final Map<LabelVar,TypeLabel> valuation;
+    }
 }

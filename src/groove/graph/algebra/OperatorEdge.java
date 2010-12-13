@@ -17,8 +17,8 @@
 package groove.graph.algebra;
 
 import groove.algebra.Operation;
-import groove.graph.DefaultLabel;
 import groove.trans.RuleEdge;
+import groove.trans.RuleLabel;
 
 /**
  * This class represents the edges in attributed graphs which support the
@@ -38,7 +38,7 @@ public class OperatorEdge extends RuleEdge {
      */
     public OperatorEdge(ProductNode source, VariableNode target,
             Operation operation) {
-        super(source, DefaultLabel.createLabel(operation.getSymbol()), target);
+        super(source, new RuleLabel(operation), target);
         this.operation = operation;
     }
 

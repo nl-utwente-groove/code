@@ -16,9 +16,9 @@
  */
 package groove.abstraction;
 
-import groove.graph.Graph;
-import groove.graph.Label;
-import groove.graph.Node;
+import groove.graph.TypeLabel;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -37,7 +37,7 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
     // ------------------------------------------------------------------------
 
     /** Default constructor. */
-    public ShapeNeighEquiv(Graph graph) {
+    public ShapeNeighEquiv(HostGraph graph) {
         super(graph);
         assert graph instanceof Shape : "Invalid argument type!";
     }
@@ -52,14 +52,14 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
      * comment on the class definition, top of this file).
      */
     @Override
-    boolean areStillEquivalent(Node n0, Node n1) {
+    boolean areStillEquivalent(HostNode n0, HostNode n1) {
         Shape shape = (Shape) this.graph;
         Set<EquivClass<ShapeNode>> kSet = new HashSet<EquivClass<ShapeNode>>();
         boolean equiv = true;
         // For all labels.
-        labelLoop: for (Label label : Util.binaryLabelSet(this.graph)) {
+        labelLoop: for (TypeLabel label : Util.binaryLabelSet(this.graph)) {
             // For all equivalence classes.
-            for (EquivClass<Node> ec : this) {
+            for (EquivClass<HostNode> ec : this) {
                 // Compute the set of equivalence classes from the shape that
                 // we need to consider.
                 for (EquivClass<ShapeNode> possibleK : shape.getEquivRelation()) {

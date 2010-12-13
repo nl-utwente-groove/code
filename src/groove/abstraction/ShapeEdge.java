@@ -16,10 +16,10 @@
  */
 package groove.abstraction;
 
-import groove.graph.DefaultEdge;
 import groove.graph.DefaultEdgeStore;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
 
 /**
  * Class that implements the edges of a shape.
@@ -28,9 +28,10 @@ import groove.graph.Node;
  * 
  * @author Eduardo Zambon
  */
-public final class ShapeEdge extends DefaultEdge {
+public final class ShapeEdge extends groove.trans.HostEdge {
     /** Default constructor. */
-    private ShapeEdge(Node source, Label label, Node target, int nr) {
+    private ShapeEdge(ShapeNode source, TypeLabel label, ShapeNode target,
+            int nr) {
         super(source, label, target, nr);
     }
 
@@ -43,7 +44,9 @@ public final class ShapeEdge extends DefaultEdge {
     protected ShapeEdge newEdge(Node source, Label label, Node target, int nr) {
         assert source instanceof ShapeNode : "Invalid source node";
         assert target instanceof ShapeNode : "Invalid target node";
-        return new ShapeEdge(source, label, target, nr);
+        assert label instanceof TypeLabel : "Invalid label";
+        return new ShapeEdge((ShapeNode) source, (TypeLabel) label,
+            (ShapeNode) target, nr);
     }
 
     /** Specialises the returned type. */
@@ -59,6 +62,7 @@ public final class ShapeEdge extends DefaultEdge {
     }
 
     /** Returns true if the edge is a loop. */
+    @Override
     public boolean isLoop() {
         return this.source().equals(this.target());
     }
@@ -77,7 +81,7 @@ public final class ShapeEdge extends DefaultEdge {
      *         <code>target</code>
      * @see #createEdge(Node, String, Node)
      */
-    static public ShapeEdge createEdge(ShapeNode source, Label label,
+    static public ShapeEdge createEdge(ShapeNode source, TypeLabel label,
             ShapeNode target) {
         return (ShapeEdge) store.createEdge(source, label, target);
     }
