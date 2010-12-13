@@ -16,10 +16,10 @@
  */
 package groove.explore.result;
 
-import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.Label;
 import groove.lts.GraphState;
+import groove.trans.HostEdge;
+import groove.trans.HostGraph;
 
 import java.util.Map;
 import java.util.Set;
@@ -37,9 +37,9 @@ public class EdgeBoundCondition extends ExploreCondition<Map<Label,Integer>> {
     @Override
     public boolean isSatisfied(GraphState state) {
         boolean result = true;
-        Graph g = state.getGraph();
+        HostGraph g = state.getGraph();
         for (Map.Entry<Label,Integer> entry : this.condition.entrySet()) {
-            Set<? extends Edge> labelSet = g.labelEdgeSet(entry.getKey());
+            Set<? extends HostEdge> labelSet = g.labelEdgeSet(entry.getKey());
             if (labelSet != null) {
                 result = labelSet.size() <= entry.getValue();
             }

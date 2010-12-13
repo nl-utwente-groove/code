@@ -16,8 +16,6 @@
  */
 package groove.abstraction;
 
-import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
@@ -26,6 +24,7 @@ import groove.trans.HostNode;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
+import groove.trans.RuleGraph;
 import groove.trans.RuleLabel;
 import groove.trans.RuleMatch;
 import groove.trans.RuleNode;
@@ -154,7 +153,7 @@ public final class PreMatch {
         // two items: 2' and 2''. See the updated version of the report.
 
         if (complyToNodeMult) {
-            Graph lhs = match.getRule().lhs();
+            RuleGraph lhs = match.getRule().lhs();
             // For all binary labels.
             outerLoop: for (TypeLabel label : Util.binaryLabelSet(shape)) {
                 // For all nodes of the LHS.
@@ -163,8 +162,8 @@ public final class PreMatch {
                     ShapeNode pV = (ShapeNode) entry.getValue();
 
                     // For all outgoing edges from the image of v. Item 2'.
-                    for (Edge edge : Util.getOutEdges(shape, pV, label)) {
-                        ShapeEdge e = (ShapeEdge) edge;
+                    for (ShapeEdge e : Util.<ShapeNode,ShapeEdge>getOutEdges(
+                        shape, pV, label)) {
                         ShapeNode w = e.target();
                         Set<RuleNode> pInvW = Util.getReverseNodeMap(map, w);
                         // FIXME label is of the wrong type:
@@ -189,8 +188,8 @@ public final class PreMatch {
                     }
 
                     // For all incoming edges from the image of v. Item 2''.
-                    for (Edge edge : Util.getInEdges(shape, pV, label)) {
-                        ShapeEdge e = (ShapeEdge) edge;
+                    for (ShapeEdge e : Util.<ShapeNode,ShapeEdge>getInEdges(
+                        shape, pV, label)) {
                         ShapeNode w = e.source();
                         Set<RuleNode> pInvW = Util.getReverseNodeMap(map, w);
                         // FIXME label is of the wrong type:

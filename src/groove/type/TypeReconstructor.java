@@ -53,7 +53,7 @@ public class TypeReconstructor {
      * @param grammar the grammar for which the type graph should be build.
      */
     protected TypeReconstructor(GraphGrammar grammar) {
-        Graph startGraph = grammar.getStartGraph();
+        HostGraph startGraph = grammar.getStartGraph();
         Collection<Rule> rules = grammar.getRules();
 
         addTyping(startGraph);
@@ -102,7 +102,7 @@ public class TypeReconstructor {
     }
 
     /** Returns the associated type graph */
-    public Graph getTypeGraph() {
+    public HostGraph getTypeGraph() {
         return this.typeGraph;
     }
 
@@ -111,7 +111,7 @@ public class TypeReconstructor {
      * @param grammar A graph grammar to construct a type graph for
      * @return A type graph for grammar
      */
-    public static Graph reconstruct(GraphGrammar grammar) {
+    public static HostGraph reconstruct(GraphGrammar grammar) {
 
         return new TypeReconstructor(grammar).getTypeGraph();
     }

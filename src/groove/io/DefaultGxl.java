@@ -16,6 +16,7 @@
  */
 package groove.io;
 
+import groove.graph.DefaultGraph;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.Node;
@@ -72,13 +73,14 @@ public class DefaultGxl extends AbstractXml {
      * This implementation works by delegating to a {@link GxlIO}.
      */
     @Override
-    protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(URL url)
+    protected Pair<DefaultGraph,Map<String,Node>> unmarshalGraphMap(URL url)
         throws IOException {
         try {
             URLConnection connection = url.openConnection();
             InputStream in = connection.getInputStream();
-            Pair<Graph,Map<String,Node>> result = io.loadGraphWithMap(in);
-            Graph resultGraph = result.one();
+            Pair<DefaultGraph,Map<String,Node>> result =
+                io.loadGraphWithMap(in);
+            DefaultGraph resultGraph = result.one();
             // set some more information in the graph, based on the URL
             GraphInfo.setFile(resultGraph, url.getFile());
             // derive the name of the graph from the URL

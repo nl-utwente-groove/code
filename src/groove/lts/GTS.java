@@ -20,8 +20,6 @@ import groove.control.CtrlState;
 import groove.explore.result.Result;
 import groove.graph.AbstractGraphShape;
 import groove.graph.DefaultGraph;
-import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.GraphShapeCache;
 import groove.graph.GraphShapeListener;
 import groove.graph.Node;
@@ -31,7 +29,9 @@ import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.trans.GraphGrammar;
+import groove.trans.HostEdge;
 import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.trans.SystemRecord;
 import groove.util.CollectionView;
 import groove.util.FilterIterator;
@@ -397,9 +397,9 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * optionally including special edges to represent start, final and
      * open states, and state identifiers.
      */
-    public Graph toPlainGraph(boolean showFinal, boolean showStart,
+    public DefaultGraph toPlainGraph(boolean showFinal, boolean showStart,
             boolean showOpen, boolean showNames) {
-        Graph result = new DefaultGraph();
+        DefaultGraph result = new DefaultGraph();
         for (State state : nodeSet()) {
             result.addNode(state);
             if (showFinal && isFinal(state)) {
@@ -478,18 +478,18 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
             if (myState.getCtrlState() != otherState.getCtrlState()) {
                 return false;
             }
-            Node[] myBoundNodes = myState.getBoundNodes();
-            Node[] otherBoundNodes = otherState.getBoundNodes();
-            Graph myGraph = myState.getGraph();
-            Graph otherGraph = otherState.getGraph();
+            HostNode[] myBoundNodes = myState.getBoundNodes();
+            HostNode[] otherBoundNodes = otherState.getBoundNodes();
+            HostGraph myGraph = myState.getGraph();
+            HostGraph otherGraph = otherState.getGraph();
             if (this.collapse == COLLAPSE_EQUAL) {
                 // check for equality of the bound nodes
                 if (!Arrays.equals(myBoundNodes, otherBoundNodes)) {
                     return false;
                 }
                 // check for graph equality
-                Set<?> myNodeSet = new HashSet<Node>(myGraph.nodeSet());
-                Set<?> myEdgeSet = new HashSet<Edge>(myGraph.edgeSet());
+                Set<?> myNodeSet = new HashSet<HostNode>(myGraph.nodeSet());
+                Set<?> myEdgeSet = new HashSet<HostEdge>(myGraph.edgeSet());
                 return myNodeSet.equals(otherGraph.nodeSet())
                     && myEdgeSet.equals(otherGraph.edgeSet());
             }
@@ -507,13 +507,13 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
             if (this.collapse == COLLAPSE_NONE) {
                 result = System.identityHashCode(stateKey);
             } else if (this.collapse == COLLAPSE_EQUAL) {
-                Graph graph = stateKey.getGraph();
+                HostGraph graph = stateKey.getGraph();
                 result =
                     graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
                 CtrlState ctrlState = stateKey.getCtrlState();
                 if (ctrlState != null) {
                     result += ctrlState.hashCode();
-                    for (Node node : stateKey.getBoundNodes()) {
+                    for (HostNode node : stateKey.getBoundNodes()) {
                         result += node == null ? 31 : node.hashCode();
                         // shift left to ensure the parameters' order matters
                         result = result << 1 | (result < 0 ? 1 : 0);
@@ -527,7 +527,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
                 CtrlState ctrlState = stateKey.getCtrlState();
                 if (ctrlState != null) {
                     result += ctrlState.hashCode();
-                    for (Node node : stateKey.getBoundNodes()) {
+                    for (HostNode node : stateKey.getBoundNodes()) {
                         int hashCode;
                         // value nodes may be no longer in the graph
                         if (node == null) {

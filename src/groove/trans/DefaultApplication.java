@@ -94,7 +94,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
         this.target = target;
     }
 
-    public Graph getSource() {
+    public HostGraph getSource() {
         return this.source;
     }
 
@@ -106,7 +106,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * This implementation constructs the target lazily. If the rule is not
      * modifying, the source is aliased.
      */
-    public Graph getTarget() {
+    public HostGraph getTarget() {
         if (this.target == null) {
             if (this.rule.isModifying()) {
                 this.target = computeTarget();
@@ -120,8 +120,8 @@ public class DefaultApplication implements RuleApplication, Derivation {
     /**
      * Callback factory method to compute a target for this applier.
      */
-    private Graph computeTarget() {
-        Graph target = createTarget();
+    private HostGraph computeTarget() {
+        HostGraph target = createTarget();
         applyDelta(target);
         target.setFixed();
         return target;
@@ -496,7 +496,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * This implementation clones the source.
      * @see Graph#clone()
      */
-    protected Graph createTarget() {
+    protected HostGraph createTarget() {
         return getSource().clone();
     }
 
@@ -625,7 +625,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * The target graph of this derivation, created lazily in
      * {@link #computeTarget()}.
      */
-    protected Graph target;
+    protected HostGraph target;
     /**
      * Matching from the rule's LHS to the source. Created lazily in
      * {@link #getMatch()}.

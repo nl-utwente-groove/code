@@ -25,7 +25,6 @@ import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.DFSStrategy;
 import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.Strategy;
-import groove.graph.Graph;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.Condition;
@@ -178,7 +177,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
         return null;
     }
 
-    public Graph getBasis() {
+    public HostGraph getBasis() {
         if (isPrototype()) {
             return null;
         } else {

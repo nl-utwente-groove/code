@@ -16,8 +16,8 @@
  */
 package groove.io;
 
+import groove.graph.DefaultGraph;
 import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
@@ -515,9 +515,9 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
             String graphName = filter.stripExtension(graphEntry.getKey());
             InputStream in = file.getInputStream(graphEntry.getValue());
             try {
-                Pair<Graph,Map<String,Node>> plainGraphAndMap =
+                Pair<DefaultGraph,Map<String,Node>> plainGraphAndMap =
                     JaxbGxlIO.getInstance().loadGraphWithMap(in);
-                Graph plainGraph = plainGraphAndMap.one();
+                DefaultGraph plainGraph = plainGraphAndMap.one();
                 /*
                  * For backward compatibility, we set the role and name of the
                  * graph.
@@ -546,8 +546,9 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
      * Adds layout information to a graph, based on the layout info found in a
      * given zip file.
      */
-    private void addLayout(ZipFile file, String entryName, Graph plainGraph,
-            Map<String,Node> nodeMap) throws IOException {
+    private void addLayout(ZipFile file, String entryName,
+            DefaultGraph plainGraph, Map<String,Node> nodeMap)
+        throws IOException {
         ZipEntry layoutEntry = this.layoutEntryMap.get(entryName);
         if (layoutEntry != null) {
             try {

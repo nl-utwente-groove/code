@@ -5,7 +5,6 @@ package groove.util;
 
 import groove.algebra.StringAlgebra;
 import groove.graph.DefaultGraph;
-import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeGraph;
@@ -92,8 +91,8 @@ public class AntlrGrapher {
     }
 
     /** Returns the graph representing a given AST. */
-    public Graph getGraph(CommonTree tree) {
-        Graph result = new DefaultGraph();
+    public DefaultGraph getGraph(CommonTree tree) {
+        DefaultGraph result = new DefaultGraph();
         Map<CommonTree,Node> treeNodeMap = new HashMap<CommonTree,Node>();
         treeNodeMap.put(tree, createNode(result, tree));
         Set<CommonTree> pool = new HashSet<CommonTree>();
@@ -126,7 +125,7 @@ public class AntlrGrapher {
         return result;
     }
 
-    private Node createNode(Graph graph, CommonTree tree) {
+    private Node createNode(DefaultGraph graph, CommonTree tree) {
         Node result = graph.addNode();
         int tokenType = tree.getType();
         graph.addEdge(result,

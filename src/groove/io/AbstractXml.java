@@ -67,6 +67,6 @@ public abstract class AbstractXml implements Xml<Graph> {
      *         unmarshalled graph
      * @throws IOException if an error occurred during file input
      */
-    abstract protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(URL url)
-        throws IOException;
+    abstract protected Pair<? extends Graph,Map<String,Node>> unmarshalGraphMap(
+            URL url) throws IOException;
 }

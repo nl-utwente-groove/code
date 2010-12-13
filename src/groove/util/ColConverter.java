@@ -20,7 +20,6 @@ import groove.algebra.Algebra;
 import groove.algebra.AlgebraRegister;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
-import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
@@ -72,8 +71,8 @@ public class ColConverter {
     }
 
     /** Reads a .col file and returns the corresponding graph. */
-    private static Graph convert(File inFile) throws IOException {
-        Graph result = new DefaultGraph();
+    private static DefaultGraph convert(File inFile) throws IOException {
+        DefaultGraph result = new DefaultGraph();
         System.out.printf("Converting %s%n", inFile.getCanonicalPath());
         BufferedReader reader = new BufferedReader(new FileReader(inFile));
         Algebra<?> intAlgebra = AlgebraRegister.getInstance().getAlgebra("0");
@@ -103,7 +102,7 @@ public class ColConverter {
         return result;
     }
 
-    private static Node addNode(Graph result, String id) {
+    private static Node addNode(DefaultGraph result, String id) {
         Node node = result.addNode(Integer.parseInt(id));
         result.addEdge(node, TypeLabel.createLabel("i" + id, Label.FLAG), node);
         return node;

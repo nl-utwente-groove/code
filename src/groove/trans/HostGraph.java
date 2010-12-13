@@ -33,6 +33,9 @@ public interface HostGraph extends Graph {
     HostGraph newGraph();
 
     @Override
+    HostGraph clone();
+
+    @Override
     HostNode addNode();
 
     @Override

@@ -1102,7 +1102,7 @@ public class Groove {
     /**
      * The fixed GXL graph loader.
      */
-    static private final Xml<Graph> gxlGraphLoader = new DefaultGxl();
+    static private final DefaultGxl gxlGraphLoader = new DefaultGxl();
     /**
      * The fixed AUT graph loader.
      */
