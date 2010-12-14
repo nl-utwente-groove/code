@@ -21,9 +21,6 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.GraphListener;
-import groove.graph.GraphShape;
-import groove.graph.GraphShapeListener;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
@@ -130,11 +127,11 @@ public class ProductGTS implements LTS {
             // openStates.remove(state);
             this.closedCount++;
             this.openStateCount--;
-            notifyListenersOfClose(state);
+            fireCloseState(state);
         }
         // always notify listeners of state-closing
         // even if the state was already closed
-        notifyListenersOfClose(state);
+        fireCloseState(state);
     }
 
     /**
@@ -176,7 +173,7 @@ public class ProductGTS implements LTS {
      * Adds a listener to the ProductGTS.
      * @param listener the listener to be added.
      */
-    public void addListener(GraphListener listener) {
+    public void addListener(LTSListener listener) {
         this.listeners.add(listener);
     }
 
@@ -184,7 +181,7 @@ public class ProductGTS implements LTS {
      * Removes a listener from the ProductGTS
      * @param listener the listener to be removed.
      */
-    public void removeListener(GraphListener listener) {
+    public void removeListener(LTSListener listener) {
         assert (this.listeners.contains(listener)) : "Listener cannot be removed since it is not registered.";
         this.listeners.remove(listener);
     }
@@ -193,7 +190,7 @@ public class ProductGTS implements LTS {
      * Returns an iterator over the current listeners.
      * @return an iterator over the current listeners.
      */
-    public Iterator<GraphShapeListener> getListeners() {
+    public Iterator<LTSListener> getListeners() {
         return this.listeners.iterator();
     }
 
@@ -201,8 +198,8 @@ public class ProductGTS implements LTS {
      * Notifies the listeners of the event of closing a state.
      * @param state the state that has been closed.
      */
-    public void notifyListenersOfClose(BuchiGraphState state) {
-        for (GraphShapeListener listener : this.listeners) {
+    public void fireCloseState(BuchiGraphState state) {
+        for (LTSListener listener : this.listeners) {
             if (listener instanceof Acceptor) {
                 ((Acceptor) listener).closeUpdate(this, state);
             }
@@ -210,14 +207,14 @@ public class ProductGTS implements LTS {
     }
 
     /**
-     * Calls {@link GraphShapeListener#addUpdate(GraphShape, Node)} on all
+     * Calls {@link LTSListener#addUpdate(LTS, GraphState)} on all
      * GraphListeners in listeners.
-     * @param node the node being added
+     * @param state the node being added
      */
-    protected void fireAddNode(Node node) {
-        Iterator<GraphShapeListener> iter = getListeners();
+    protected void fireAddNode(GraphState state) {
+        Iterator<LTSListener> iter = getListeners();
         while (iter.hasNext()) {
-            iter.next().addUpdate(this, node);
+            iter.next().addUpdate(this, state);
         }
     }
 
@@ -302,8 +299,7 @@ public class ProductGTS implements LTS {
     private int transitionCount = 0;
     private SystemRecord record;
 
-    private final Set<GraphShapeListener> listeners =
-        new HashSet<GraphShapeListener>();
+    private final Set<LTSListener> listeners = new HashSet<LTSListener>();
 
     /** Specialised set implementation for storing states. */
     private class TreeHashStateSet extends TreeHashSet<BuchiGraphState> {
@@ -393,7 +389,7 @@ public class ProductGTS implements LTS {
         return null;
     }
 
-    public void addGraphListener(GraphShapeListener listener) {
+    public void addLTSListener(LTSListener listener) {
         // Empty.
     }
 
@@ -485,7 +481,7 @@ public class ProductGTS implements LTS {
         return null;
     }
 
-    public void removeGraphListener(GraphShapeListener listener) {
+    public void removeLTSListener(LTSListener listener) {
         // Empty.
     }
 

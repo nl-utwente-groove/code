@@ -1,15 +1,14 @@
 package groove.explore.util;
 
-import groove.graph.GraphAdapter;
-import groove.graph.GraphShape;
-import groove.graph.Node;
 import groove.lts.GraphState;
+import groove.lts.LTS;
+import groove.lts.LTSAdapter;
 
 /**
  * Listens to a GTS and allows to pick a random state among those newly added to
  * the GTS. Should listen to a single GTS.
  */
-public class RandomNewStateChooser extends GraphAdapter {
+public class RandomNewStateChooser extends LTSAdapter {
 
     /**
      * Returns a randomly chosen state among those newly added to the GTS it
@@ -36,8 +35,8 @@ public class RandomNewStateChooser extends GraphAdapter {
     }
 
     @Override
-    public void addUpdate(GraphShape shape, Node node) {
-        this.rc.show((GraphState) node);
+    public void addUpdate(LTS shape, GraphState state) {
+        this.rc.show((GraphState) state);
     }
 
     private final RandomChooserInSequence<GraphState> rc =

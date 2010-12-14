@@ -17,13 +17,10 @@
 package groove.explore;
 
 import groove.explore.result.Acceptor;
-import groove.explore.result.ConditionalAcceptor;
-import groove.explore.result.ExploreCondition;
 import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.Result;
 import groove.explore.strategy.Boundary;
 import groove.explore.strategy.BoundedModelCheckingStrategy;
-import groove.explore.strategy.ConditionalStrategy;
 import groove.explore.strategy.GraphNodeSizeBoundary;
 import groove.explore.strategy.ModelCheckingStrategy;
 import groove.explore.strategy.RuleSetBorderBoundary;
@@ -59,49 +56,6 @@ public class GeneratorScenarioFactory {
             final Strategy strategy, final String description, final String name) {
         Acceptor acceptor = new FinalStateAcceptor(new Result(1));
         return new DefaultScenario(strategy, acceptor, name, description);
-    }
-
-    /**
-     * Retrieves a conditional scenario handler for a scenario based on an
-     * conditional acceptor and with given (GraphState) result.
-     * @param <C> Type of the condition.
-     * @param strategy Strategy for the scenario.
-     * @param acceptor Acceptor for the scenario.
-     * @param description A one-sentence description of the scenario.
-     * @param name A short (one or few words) description of the scenario. Is to
-     *        be used in menus, or as identification (for instance in
-     *        command-line options).
-     */
-    public static <C> ConditionalScenario<C> getConditionalScenario(
-            final Strategy strategy, final Class<?> type,
-            final ConditionalAcceptor<C> acceptor, final String description,
-            final String name) {
-        return new ConditionalScenario<C>(strategy, acceptor, name,
-            description, type);
-    }
-
-    /**
-     * Constructs a conditional scenario handler based on a conditional strategy
-     * and with empty acceptor and empty result.
-     * @param <C> The generic type for the explore condition.
-     * @param strategy The strategy
-     * @param description A one sentence description of the scenario.
-     * @param name A short name for the scenario. Is to be used in menus, or as
-     *        identification (for instance in command-line options).
-     */
-    public static <C> ConditionalScenario<C> getConditionalScenario(
-            final ConditionalStrategy strategy, final Class<?> type,
-            final String description, final String name) {
-        return new ConditionalScenario<C>(strategy, new FinalStateAcceptor(),
-            name, description, type) {
-            @Override
-            public void setCondition(ExploreCondition<C> explCond, String name) {
-                super.setCondition(explCond, name);
-                assert type.isAssignableFrom(explCond.getConditionType()) : "Incompatible types: "
-                    + explCond.getConditionType() + " and " + type;
-                strategy.setExploreCondition(explCond);
-            }
-        };
     }
 
     /**

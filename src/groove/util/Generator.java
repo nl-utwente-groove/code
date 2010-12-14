@@ -434,7 +434,7 @@ public class Generator extends CommandLineTool {
             println("Exploration:\t" + getExploration().getIdentifier());
             println("Timestamp:\t" + this.invocationTime);
             print("\nProgress:\t");
-            getGTS().addGraphListener(new GenerateProgressMonitor());
+            getGTS().addLTSListener(new GenerateProgressMonitor());
         }
         this.explorationStats.start();
         try {

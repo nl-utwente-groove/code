@@ -17,12 +17,11 @@
 package groove.explore.strategy;
 
 import groove.graph.DeltaStore;
-import groove.graph.GraphShape;
-import groove.graph.Node;
 import groove.lts.DefaultGraphNextState;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.LTS;
 import groove.lts.LTSAdapter;
 import groove.lts.MatchResult;
 import groove.match.SearchEngineFactory;
@@ -45,7 +44,7 @@ public class ReteStrategy extends AbstractStrategy {
         ReteStrategyNextReporter.start();
         if (getAtState() == null) {
             unprepare();
-            getGTS().removeGraphListener(this.exploreListener);
+            getGTS().removeLTSListener(this.exploreListener);
             ReteStrategyNextReporter.stop();
             return false;
         }
@@ -73,7 +72,7 @@ public class ReteStrategy extends AbstractStrategy {
     public void prepare(GTS gts, GraphState startState) {
         super.prepare(gts, startState);
         gts.getRecord().setCopyGraphs(false);
-        getGTS().addGraphListener(this.exploreListener);
+        getGTS().addLTSListener(this.exploreListener);
         clearPool();
         this.newStates.clear();
         //initializing the rete network
@@ -175,8 +174,8 @@ public class ReteStrategy extends AbstractStrategy {
     /** A queue with states to be explored, used as a FIFO. */
     private class ExploreListener extends LTSAdapter {
         @Override
-        public void addUpdate(GraphShape graph, Node node) {
-            ReteStrategy.this.newStates.add((GraphState) node);
+        public void addUpdate(LTS lts, GraphState state) {
+            ReteStrategy.this.newStates.add((GraphState) state);
         }
     }
 

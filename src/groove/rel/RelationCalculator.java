@@ -20,6 +20,7 @@ import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.lts.LTSAdapter;
 import groove.rel.RegExpr.Sharp;
@@ -171,23 +172,23 @@ public class RelationCalculator extends LTSAdapter implements
     }
 
     @Override
-    public void addUpdate(GraphShape graph, Edge edge) {
+    public void addUpdate(LTS lts, GraphTransition transition) {
         if (this.labelEdgeMap != null) {
-            addToLabelEdgeMap(edge, this.labelEdgeMap);
+            addToLabelEdgeMap(transition, this.labelEdgeMap);
         }
     }
 
     /** Start listening to the wrapped graph, if it supports listeners. */
     public void startListening() {
         if (this.graph instanceof LTS) {
-            ((LTS) this.graph).addGraphListener(this);
+            ((LTS) this.graph).addLTSListener(this);
         }
     }
 
     /** Stop listening to the wrapped graph. */
     public void stopListening() {
         if (this.graph instanceof LTS) {
-            ((LTS) this.graph).removeGraphListener(this);
+            ((LTS) this.graph).removeLTSListener(this);
         }
     }
 

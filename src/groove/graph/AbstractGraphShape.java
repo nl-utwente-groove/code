@@ -23,7 +23,6 @@ import groove.util.Groove;
 import java.lang.ref.Reference;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -170,13 +169,12 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
     }
 
     public boolean isFixed() {
-        return this.listeners == null;
+        return isCacheCollectable();
     }
 
     public void setFixed() {
         if (!isFixed()) {
             setCacheCollectable();
-            this.listeners = null;
             if (GATHER_STATISTICS) {
                 modifiableGraphCount--;
             }
@@ -200,83 +198,46 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
     // -------------------- Graph listener methods ---------------------------
 
     /**
-     * Returns an iterator over the graph listeners of this graph.
-     * @return an iterator over the graph listeners of this graph
-     * @ensure result \subseteq GraphListener
-     */
-    public Iterator<GraphShapeListener> getGraphListeners() {
-        if (isFixed()) {
-            return Collections.<GraphShapeListener>emptySet().iterator();
-        } else {
-            return this.listeners.iterator();
-        }
-    }
-
-    /**
-     * Adds a graph listener to this graph.
-     */
-    public void addGraphListener(GraphShapeListener listener) {
-        if (this.listeners != null) {
-            this.listeners.add(listener);
-        }
-    }
-
-    /**
-     * Removes a graph listener from this graph.
-     */
-    public void removeGraphListener(GraphShapeListener listener) {
-        if (this.listeners != null) {
-            this.listeners.remove(listener);
-        }
-    }
-
-    /**
-     * Calls {@link GraphShapeListener#addUpdate(GraphShape, Node)} on all
-     * GraphListeners in listeners.
+     * Calls {@link GraphShapeCache#addUpdate(Node)} 
+     * if the cache is not cleared.
      * @param node the node being added
      */
     protected void fireAddNode(Node node) {
-        Iterator<GraphShapeListener> iter = getGraphListeners();
-        while (iter.hasNext()) {
-            iter.next().addUpdate(this, node);
+        if (!isCacheCleared()) {
+            getCache().addUpdate(node);
         }
     }
 
     /**
-     * Calls {@link GraphShapeListener#addUpdate(GraphShape, Edge)} on all
-     * GraphListeners in listeners.
+     * Calls {@link GraphShapeCache#addUpdate(Edge)}
+     * if the cache is not cleared.
      * @param edge the edge being added
      */
     protected void fireAddEdge(Edge edge) {
-        Iterator<GraphShapeListener> iter = getGraphListeners();
-        while (iter.hasNext()) {
-            iter.next().addUpdate(this, edge);
+        if (!isCacheCleared()) {
+            getCache().addUpdate(edge);
         }
     }
 
     /**
-     * Calls {@link GraphShapeListener#removeUpdate(GraphShape, Node)} on all
-     * GraphListeners in listeners.
+     * Calls {@link GraphShapeCache#removeUpdate(Node)}
+     * if the cache is not cleared.
      * @param node the node being removed
      */
     protected void fireRemoveNode(Node node) {
-        Iterator<GraphShapeListener> iter = getGraphListeners();
-        while (iter.hasNext()) {
-            GraphShapeListener listener = iter.next();
-            listener.removeUpdate(this, node);
+        if (!isCacheCleared()) {
+            getCache().removeUpdate(node);
         }
     }
 
     /**
-     * Calls {@link GraphShapeListener#removeUpdate(GraphShape, Edge)} on all
-     * GraphListeners in listeners.
+     * Calls {@link GraphShapeCache#removeUpdate(Edge)}
+     * if the cache is not cleared.
      * @param edge the edge being removed
      */
     protected void fireRemoveEdge(Edge edge) {
-        Iterator<GraphShapeListener> iter = getGraphListeners();
-        while (iter.hasNext()) {
-            GraphShapeListener listener = iter.next();
-            listener.removeUpdate(this, edge);
+        if (!isCacheCleared()) {
+            getCache().removeUpdate(edge);
         }
     }
 
@@ -304,13 +265,6 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends
     protected boolean isTypeCorrect(Edge edge) {
         return true;
     }
-
-    /**
-     * Set of {@link GraphListener} s to be identified of changes in this graph.
-     * Set to <tt>null</tt> when the graph is fixed.
-     */
-    private Set<GraphShapeListener> listeners =
-        new HashSet<GraphShapeListener>();
 
     /**
      * Map in which varies kinds of data can be stored.

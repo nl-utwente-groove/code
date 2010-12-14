@@ -16,11 +16,9 @@
  */
 package groove.explore.result;
 
-import groove.graph.Edge;
-import groove.graph.GraphShape;
-import groove.graph.Node;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.LTS;
 
 /**
  * A <code>PredicateAcceptor</code> is an acceptor that adds states to its
@@ -64,11 +62,10 @@ public class PredicateAcceptor extends Acceptor {
      * Evaluates the state predicate, and updates the result set if needed.
      */
     @Override
-    public void addUpdate(GraphShape graph, Node node) {
+    public void addUpdate(LTS lts, GraphState state) {
         if (!this.statePredicate) {
             return;
         }
-        GraphState state = (GraphState) node;
         if (this.P.eval(state)) {
             this.getResult().add(state);
         }
@@ -80,11 +77,10 @@ public class PredicateAcceptor extends Acceptor {
      * needed.
      */
     @Override
-    public void addUpdate(GraphShape graph, Edge edge) {
+    public void addUpdate(LTS lts, GraphTransition transition) {
         if (!this.transitionPredicate) {
             return;
         }
-        GraphTransition transition = (GraphTransition) edge;
         if (this.Q.eval(transition)) {
             getResult().add(transition.target());
         }

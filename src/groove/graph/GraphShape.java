@@ -156,28 +156,6 @@ public interface GraphShape extends java.io.Serializable, Fixable {
      */
     void setFixed();
 
-    // ------------------------ graph listener methods
-    // ----------------------------
-    /**
-     * Adds a graph listener to this graph.
-     * @param listener the GraphListener to be added
-     * @require <tt>listener != null</tt>
-     * @ensure <tt>listener</tt> will be notified of addition and removal of
-     *         elements
-     * @see #removeGraphListener(GraphShapeListener)
-     */
-    void addGraphListener(GraphShapeListener listener);
-
-    /**
-     * Removes a graph listener from this graph.
-     * @param listener the GraphListener to be removed
-     * @require <tt>listener != null</tt>
-     * @ensure <tt>listener</tt> will no longer be notified of addition and
-     *         removal of elements
-     * @see #addGraphListener(GraphShapeListener)
-     */
-    void removeGraphListener(GraphShapeListener listener);
-
     /**
      * Returns an information object with additional information about this
      * graph. The object may be <code>null</code> if there is no additional

@@ -18,10 +18,7 @@ package groove.gui;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
-import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.GraphShape;
-import groove.graph.Node;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
@@ -159,10 +156,10 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         boolean result = gts != this.gts;
         if (result) {
             if (this.gts != null) {
-                this.gts.removeGraphListener(this.ltsListener);
+                this.gts.removeLTSListener(this.ltsListener);
             }
             if (gts != null) {
-                gts.addGraphListener(this.ltsListener);
+                gts.addLTSListener(this.ltsListener);
             }
         }
         this.gts = gts;
@@ -323,8 +320,8 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
          * the frame title by showing the number of nodes and edges.
          */
         @Override
-        public void addUpdate(GraphShape graph, Node node) {
-            assert graph == getGTS() : "I want to listen only to my lts";
+        public void addUpdate(LTS lts, GraphState state) {
+            assert lts == getGTS() : "I want to listen only to my lts";
             this.stateAdded = true;
             refreshStatus();
         }
@@ -334,8 +331,8 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
          * the frame title by showing the number of nodes and edges.
          */
         @Override
-        public void addUpdate(GraphShape graph, Edge edge) {
-            assert graph == getGTS() : "I want to listen only to my lts";
+        public void addUpdate(LTS lts, GraphTransition transition) {
+            assert lts == getGTS() : "I want to listen only to my lts";
             refreshStatus();
         }
 
@@ -343,7 +340,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
          * If a state is closed, its background should be reset.
          */
         @Override
-        public void closeUpdate(LTS graph, State closed) {
+        public void closeUpdate(LTS graph, GraphState closed) {
             JCell jCell = getJModel().getJCell(closed);
             // during automatic generation, we do not always have vertices for
             // all states

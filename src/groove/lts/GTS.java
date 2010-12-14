@@ -20,8 +20,8 @@ import groove.control.CtrlState;
 import groove.explore.result.Result;
 import groove.graph.AbstractGraphShape;
 import groove.graph.DefaultGraph;
+import groove.graph.Edge;
 import groove.graph.GraphShapeCache;
-import groove.graph.GraphShapeListener;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 import groove.graph.iso.CertificateStrategy;
@@ -217,7 +217,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
                 setFinal(state);
             }
             incClosedCount();
-            notifyLTSListenersOfClose(state);
+            fireCloseState(state);
         }
     }
 
@@ -364,16 +364,69 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     }
 
     /**
+     * Returns the set of listeners of this GTS.
+     * @return an iterator over the graph listeners of this graph
+     * @ensure result \subseteq GraphListener
+     */
+    public Set<LTSListener> getGraphListeners() {
+        if (isFixed()) {
+            return Collections.<LTSListener>emptySet();
+        } else {
+            return this.listeners;
+        }
+    }
+
+    /**
+     * Adds a graph listener to this graph.
+     */
+    public void addLTSListener(LTSListener listener) {
+        if (this.listeners != null) {
+            this.listeners.add(listener);
+        }
+    }
+
+    /**
+     * Removes a graph listener from this graph.
+     */
+    public void removeLTSListener(LTSListener listener) {
+        if (this.listeners != null) {
+            this.listeners.remove(listener);
+        }
+    }
+
+    /**
+     * Calls {@link GraphShapeCache#addUpdate(Node)} 
+     * if the cache is not cleared.
+     * @param node the node being added
+     */
+    @Override
+    protected void fireAddNode(Node node) {
+        super.fireAddNode(node);
+        assert node instanceof GraphState;
+        for (LTSListener listener : getGraphListeners()) {
+            listener.addUpdate(this, (GraphState) node);
+        }
+    }
+
+    /**
+     * Calls {@link LTSListener#addUpdate(LTS, GraphTransition)}.
+     */
+    @Override
+    protected void fireAddEdge(Edge edge) {
+        super.fireAddEdge(edge);
+        assert edge instanceof GraphTransition;
+        for (LTSListener listener : getGraphListeners()) {
+            listener.addUpdate(this, (GraphTransition) edge);
+        }
+    }
+
+    /**
      * Iterates over the graph listeners and notifies those which are also LTS
      * listeners of the fact that a state has been closed.
      */
-    protected void notifyLTSListenersOfClose(State closed) {
-        Iterator<GraphShapeListener> listenerIter = getGraphListeners();
-        while (listenerIter.hasNext()) {
-            GraphShapeListener listener = listenerIter.next();
-            if (listener instanceof LTSListener) {
-                ((LTSListener) listener).closeUpdate(this, closed);
-            }
+    protected void fireCloseState(GraphState closed) {
+        for (LTSListener listener : getGraphListeners()) {
+            listener.closeUpdate(this, closed);
         }
     }
 
@@ -451,6 +504,12 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * The number of transitions in the GTS.
      */
     private int transitionCount = 0;
+
+    /**
+     * Set of {@link GraphListener} s to be identified of changes in this graph.
+     * Set to <tt>null</tt> when the graph is fixed.
+     */
+    private Set<LTSListener> listeners = new HashSet<LTSListener>();
 
     // /** Flag to indicate whether transitions are to be stored in the GTS. */
     // private final boolean storeTransitions;

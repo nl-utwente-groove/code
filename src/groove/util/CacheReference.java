@@ -144,8 +144,8 @@ public class CacheReference<C> extends SoftReference<C> {
      * Returns a (shared) null reference with the strength (strong or soft) and
      * the incarnation count of this reference.
      */
-    final public CacheReference<C> getNullReference() {
-        return getNullInstance(this.strong, this.incarnation);
+    final public CacheReference<C> getNullReference(boolean strong) {
+        return getNullInstance(strong, this.incarnation);
     }
 
     /**

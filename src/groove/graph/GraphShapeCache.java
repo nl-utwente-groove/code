@@ -31,7 +31,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphShapeCache implements GraphShapeListener {
+public class GraphShapeCache {
     /**
      * Switch to determine if the node-edge-set should be dynamically cached.
      */
@@ -72,7 +72,6 @@ public class GraphShapeCache implements GraphShapeListener {
     public GraphShapeCache(AbstractGraphShape<?> graph, boolean dynamic) {
         this.graph = graph;
         this.dynamic = dynamic;
-        graph.addGraphListener(this);
         if (Groove.GATHER_STATISTICS) {
             createCount++;
         }
@@ -81,7 +80,7 @@ public class GraphShapeCache implements GraphShapeListener {
     /**
      * Keeps the cached sets in sync with changes in the graph.
      */
-    public void addUpdate(GraphShape graph, Node node) {
+    protected void addUpdate(Node node) {
         addToNodeEdgeMap(this.nodeEdgeMap, node);
         addToNodeEdgeMap(this.nodeInEdgeMap, node);
         addToNodeEdgeMap(this.nodeOutEdgeMap, node);
@@ -90,7 +89,7 @@ public class GraphShapeCache implements GraphShapeListener {
     /**
      * Keeps the cached sets in sync with changes in the graph.
      */
-    public void addUpdate(GraphShape graph, Edge edge) {
+    protected void addUpdate(Edge edge) {
         addToLabelEdgeMap(this.labelEdgeMap, edge);
         addToNodeInEdgeMap(this.nodeInEdgeMap, edge);
         addToNodeOutEdgeMap(this.nodeOutEdgeMap, edge);
@@ -100,7 +99,7 @@ public class GraphShapeCache implements GraphShapeListener {
     /**
      * Keeps the cached sets in sync with changes in the graph.
      */
-    public void removeUpdate(GraphShape graph, Node node) {
+    protected void removeUpdate(Node node) {
         removeFromNodeEdgeMap(this.nodeEdgeMap, node);
         removeFromNodeEdgeMap(this.nodeInEdgeMap, node);
         removeFromNodeEdgeMap(this.nodeOutEdgeMap, node);
@@ -109,7 +108,7 @@ public class GraphShapeCache implements GraphShapeListener {
     /**
      * Keeps the cached sets in sync with changes in the graph.
      */
-    public void removeUpdate(GraphShape graph, Edge elem) {
+    protected void removeUpdate(Edge elem) {
         removeFromLabelEdgeMap(this.labelEdgeMap, elem);
         removeFromNodeEdgeMap(this.nodeEdgeMap, elem);
         removeFromNodeInEdgeMap(this.nodeInEdgeMap, elem);

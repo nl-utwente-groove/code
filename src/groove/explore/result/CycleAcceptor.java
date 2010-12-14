@@ -18,10 +18,10 @@
 package groove.explore.result;
 
 import groove.explore.strategy.ModelCheckingStrategy;
+import groove.lts.GraphState;
 import groove.lts.LTS;
 import groove.lts.ProductGTS;
 import groove.lts.ProductTransition;
-import groove.lts.State;
 import groove.verify.BuchiGraphState;
 import groove.verify.ModelChecking;
 
@@ -49,7 +49,7 @@ public class CycleAcceptor extends Acceptor {
     }
 
     @Override
-    public void closeUpdate(LTS gts, State state) {
+    public void closeUpdate(LTS gts, GraphState state) {
         if (state instanceof BuchiGraphState) {
             if (((BuchiGraphState) state).getBuchiLocation().isAccepting()) {
                 assert (gts instanceof ProductGTS) : "Expected a GTS instead of an LTS.";

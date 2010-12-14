@@ -64,10 +64,11 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
      */
     final public void setCacheCollectable() {
         if (isCacheCleared()) {
-            setCacheReference(getCacheReference().getNullReference());
+            setCacheReference(getCacheReference().getNullReference(false));
         } else {
             getCacheReference().setSoft();
         }
+        assert isCacheCollectable();
     }
 
     /**

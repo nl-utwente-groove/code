@@ -75,4 +75,10 @@ public interface LTS extends groove.graph.GraphShape {
      * {@link Transition}s.
      */
     public Set<? extends Transition> edgeSet();
+
+    /** Adds a listener to this LTS. */
+    public void addLTSListener(LTSListener listener);
+
+    /** Removes a listener from this LTS. */
+    public void removeLTSListener(LTSListener listener);
 }

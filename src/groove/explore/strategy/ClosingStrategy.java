@@ -16,10 +16,9 @@
  */
 package groove.explore.strategy;
 
-import groove.graph.GraphShape;
-import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.lts.LTS;
 import groove.lts.LTSAdapter;
 
 /**
@@ -36,7 +35,7 @@ abstract public class ClosingStrategy extends AbstractStrategy {
         // the graph data structures. On the whole, this seems wise, to
         // avoid excessive garbage collection.
         // gts.getRecord().setCopyGraphs(true);
-        getGTS().addGraphListener(this.exploreListener);
+        getGTS().addLTSListener(this.exploreListener);
         clearPool();
     }
 
@@ -44,7 +43,7 @@ abstract public class ClosingStrategy extends AbstractStrategy {
     protected boolean updateAtState() {
         boolean result = (this.atState = getFromPool()) != null;
         if (!result) {
-            getGTS().removeGraphListener(this.exploreListener);
+            getGTS().removeLTSListener(this.exploreListener);
         }
         return result;
     }
@@ -64,8 +63,8 @@ abstract public class ClosingStrategy extends AbstractStrategy {
     /** A queue with states to be explored, used as a FIFO. */
     private class ExploreListener extends LTSAdapter {
         @Override
-        public void addUpdate(GraphShape graph, Node node) {
-            putInPool((GraphState) node);
+        public void addUpdate(LTS lts, GraphState state) {
+            putInPool((GraphState) state);
         }
     }
 }
