@@ -30,8 +30,8 @@ import java.util.Set;
 public class ProductionNode extends ConditionChecker {
 
     /**
-     * @param network
-     * @param p
+     * @param network The RETE network to which this node belongs
+     * @param p The production rule associated with this checker. 
      */
     public ProductionNode(ReteNetwork network, Rule p,
             ReteStaticMapping antecedents) {
@@ -55,6 +55,9 @@ public class ProductionNode extends ConditionChecker {
         return getProductionRule().hashCode();
     }
 
+    /**
+     * @return The rule associated with this checker node.
+     */
     public Rule getProductionRule() {
         return (Rule) this.getCondition();
     }

@@ -29,8 +29,8 @@ import groove.util.TreeHashSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * @author Arash Jalali
@@ -68,16 +68,27 @@ public class ReteMatch implements Comparable<ReteMatch> {
 
     private boolean injective = false;
 
+    /**
+     * Creates a new match object from a given sub-match copying all the units of the submatch.
+     * @param origin The n-node this match is associated with.
+     * @param injective Determines if this match is used in an engine with injective matching  
+     * @param subMatch The sub-match to be used.
+     */
     public ReteMatch(ReteNetworkNode origin, boolean injective,
             ReteMatch subMatch) {
         this(origin, injective);
         this.specialPrefix = subMatch.specialPrefix;
         subMatch.superMatches.add(this);
         assert origin.getPattern().length == subMatch.getOrigin().getPattern().length;
-        Element[] smUnits = subMatch.getAllUnits();
         this.units = subMatch.units;
     }
 
+    /**
+     * Creates an empty match
+     * 
+     * @param origin The n-node that this match belongs to.
+     * @param injective  determines if the match is being used in an injective engine instance.
+     */
     public ReteMatch(ReteNetworkNode origin, boolean injective) {
         this.injective = injective;
         this.origin = origin;
@@ -86,9 +97,9 @@ public class ReteMatch implements Comparable<ReteMatch> {
 
     /**
      * Creates a singleton match consisting of one Edge match
-     * @param origin
-     * @param match
-     * @param injective
+     * @param origin The n-node to which this match belongs/is found by.
+     * @param match The matched edge.
+     * @param injective Determines if this is an injectively found match.
      */
     public ReteMatch(ReteNetworkNode origin, Edge match, boolean injective) {
         this(origin, injective);
@@ -98,9 +109,10 @@ public class ReteMatch implements Comparable<ReteMatch> {
 
     /**
      * Creates a singleton match consisting of one Node match
-     * @param origin
-     * @param match
-     * @param injective
+     * @param origin The n-node by which this match has been found.
+     * @param match The graph node that has been found as a match
+     * @param injective Determines if this is a match found by an 
+     *        injective matcher.
      */
     public ReteMatch(ReteNetworkNode origin, Node match, boolean injective) {
         this(origin, injective);
@@ -108,14 +120,26 @@ public class ReteMatch implements Comparable<ReteMatch> {
         this.hashCode = match.hashCode();
     }
 
+    /**
+     * @return The n-node that this match originates from/is found by.
+     */
     public ReteNetworkNode getOrigin() {
         return this.origin;
     }
 
+    /**
+     * @return The reference to the prefix positive match that this match is a composite
+     * (positive + negative) extension of. The return value will be <code>null</code>
+     * if this match is not the left prefix of a composite (positive+negative) match. 
+     */
     public ReteMatch getSpecialPrefix() {
         return this.specialPrefix;
     }
 
+    /**
+     * @return The array of all the match elements, i.e. elements of 
+     * the host graph that are part of this match.
+     */
     public Element[] getAllUnits() {
         return this.units;
     }
@@ -128,8 +152,8 @@ public class ReteMatch implements Comparable<ReteMatch> {
     }
 
     /**
-     * @param n
-     * @return
+     * @param n A RETE or LHS node. 
+     * @return The {@link Node} object in the host graph to which <code>n</code> is mapped.
      */
     public Node getNode(Node n) {
         int[] index = this.getOrigin().getPatternLookupTable().getNode(n);
@@ -149,6 +173,10 @@ public class ReteMatch implements Comparable<ReteMatch> {
         return result;
     }
 
+    /**
+     * @return The set of host-nodes of the match, i.e. nodes in the host graph
+     * that this match covers.
+     */
     public Set<Node> getNodes() {
         if (this.nodes == null) {
             this.nodes = new TreeHashSet<Node>();
@@ -168,8 +196,9 @@ public class ReteMatch implements Comparable<ReteMatch> {
     }
 
     /**
-     * @param e
-     * @return the Edge to which <code>e</code> is mapped, <code>null</code>
+     * @param e An edge in the pattern associated with the {@link #origin} of this
+     *          match.
+     * @return the host-Edge to which <code>e</code> is mapped, <code>null</code>
      * otherwise.
      */
     public Edge getEdge(Edge e) {
@@ -184,7 +213,7 @@ public class ReteMatch implements Comparable<ReteMatch> {
      * 
      * To check comparability the {@link #equals(ReteMatch)} method should be called.
      * 
-     * @param m
+     * @param m The match to which the current match object should be compared.
      * @return positive integer if this match is greater than <code>m</code>,
      * zero if the two have the exact same match-units in the exact same order, and
      * a negative integer if the this match is less than <code>m</code>.
@@ -234,18 +263,26 @@ public class ReteMatch implements Comparable<ReteMatch> {
         refreshHashCode(0, 0);
     }
 
+    /**
+     * @param m A given match
+     * @return <code>true</code> if this object is equal to <code>m</code>, i.e.
+     * if they both refer to the same object or if they have the same origin,
+     * and the exact array of elements in their array of {@link #units} with the exact
+     * same order. Otherwise, <code>m</code> is considered unequal to the current object
+     * and the return value will be <code>null</code>. 
+     */
     public boolean equals(ReteMatch m) {
         boolean result;
-        if ((this.origin == m.origin) && (this.hashCode() == m.hashCode())) {
-            result =
-                (m == this) || ((m != null) && (this.compareToForEquality(m)));
+        if ((m != null) && (this.origin == m.origin)
+            && (this.hashCode() == m.hashCode())) {
+            result = (m == this) || (this.compareToForEquality(m));
         } else {
             result = false;
         }
         return result;
     }
 
-    public boolean compareToForEquality(ReteMatch m) {
+    private boolean compareToForEquality(ReteMatch m) {
         Element[] thisList = this.getAllUnits();
         Element[] mList = m.getAllUnits();
         boolean result = true;
@@ -266,11 +303,11 @@ public class ReteMatch implements Comparable<ReteMatch> {
     }
 
     /**
-     * Determines if a submatch <code>m</code>'s units exist in this units
+     * Determines if a sub-match <code>m</code>'s units exist in the units
      * of this match beginning at a given index.
      *  
-     * @param index
-     * @param m
+     * @param index The index at which the units of <code>m</code> should begin to correspond.
+     * @param m The alleged sub-match at the given index.
      * @return <code>true</code> if it is contained, <code>false</code> otherwise.
      */
     public boolean isContainedAt(int index, ReteMatch m) {
@@ -285,6 +322,13 @@ public class ReteMatch implements Comparable<ReteMatch> {
         return result;
     }
 
+    /**
+     * Decides if this match is an extension of a given partial match.
+     *  
+     * @param anchorMap The partial match
+     * @return <code>true</code> if the units in this match do 
+     *         not contradict the given partial match in <code>anchorMap</code>
+     */
     public boolean conformsWith(RuleToHostMap anchorMap) {
         LookupTable lookup = this.origin.getPatternLookupTable();
         boolean result = true;
@@ -327,8 +371,8 @@ public class ReteMatch implements Comparable<ReteMatch> {
     /**
      * Checks if the intersection of two sets of nodes is empty.
      * 
-     * @param s1
-     * @param s2
+     * @param s1 One set of nodes
+     * @param s2 Another set of nodes.
      * @return <code>true</code> if the intersection of s1 and s2 is empty,<code>false</code>
      * otherwise.
      */
@@ -346,16 +390,17 @@ public class ReteMatch implements Comparable<ReteMatch> {
     }
 
     /**
-     * Merges two matches into one match. 
+     * Combines two matches into one match. 
      * 
-     * If the matches conflict, this method will fail. A conflict constitutes
-     * violation of injectivity if the resulting merge is meant to be an
-     * injective match.
+     * No conflict checking is performed. In other words, this method assumes
+     * that merging the given sub-matches will result in a consistent bigger match.
      *   
-     * @param origin  
-     * @param m1
-     * @param m2
-     * @param injective 
+     * @param origin The n-node that is to be set as the origin of the resulting merge.  
+     * @param m1 The left match, the units of which will be at the beginning of the
+     *           units of the merged match.
+     * @param m2 The right match, the units of which will be at the end of the
+     *           units of the merged match.
+     * @param injective Specifies if this is an injectively found match. 
      * @param copyPrefix if {@literal true} then the special prefix link of m1 
      *        (or m1 if it's prefix is null) will be copied to that of the result.
      * @return A newly created match object containing the merge of m1 and m2
@@ -385,6 +430,18 @@ public class ReteMatch implements Comparable<ReteMatch> {
         return result;
     }
 
+    /**
+     * Merges two sub-matches into a bigger one. For more details see 
+     * the documentation for {@link #merge(ReteNetworkNode, ReteMatch, ReteMatch, boolean, boolean)}
+     *
+     * @param origin The n-node that is to be set as the origin of the resulting merge.  
+     * @param m1 The left match, the units of which will be at the beginning of the
+     *           units of the merged match.
+     * @param m2 The right match, the units of which will be at the end of the
+     *           units of the merged match.
+     * @param injective Specifies if this is an injectively found match. 
+     * @return The resulting merged match.
+     */
     public static ReteMatch merge(ReteNetworkNode origin, ReteMatch m1,
             ReteMatch m2, boolean injective) {
         return ReteMatch.merge(origin, m1, m2, injective, false);
@@ -397,9 +454,9 @@ public class ReteMatch implements Comparable<ReteMatch> {
      * violation of injectivity if the resulting merge is meant to be an
      * injective match.
      *   
-     * @param origin  
-     * @param subMatches
-     * @param injective 
+     * @param origin The n-node that is to be set as the origin of the resulting merge.  
+     * @param subMatches the array of sub-matches
+     * @param injective Specifies if this is an injectively found match.      
      * @return A newly created match object containing the merge of all the subMatches
      * if they do not conflict, {@literal null} otherwise. 
      */
@@ -432,14 +489,18 @@ public class ReteMatch implements Comparable<ReteMatch> {
 
     /**
      * Makes another <code>ReteMatch</code> object that contains the same
-     * units as the one indicated by the parameter <code>source</code>.
+     * units as the one indicated by the parameter <code>source</code> but whose
+     * origin is set to a new value.
      * 
-     * @param newOrigin
-     * @param source
+     * @param newOrigin The {@link ReteNetworkNode} object that is to be used as the
+     *                  origin of the resulting match object.
+     * @param source The match object from which the units are to be copied
      * @param naive  if {@literal true} then the unit array of the source is reused
      *               otherwise a new array of the same size is created and the contents
      *               are copied.
-     * @return
+     * @return A new {@link ReteMatch} object the content (the match units)
+     *         of which is copied from the match object given in the 
+     *         <code>source</code> parameter.
      */
     public static ReteMatch copyContents(ReteNetworkNode newOrigin,
             ReteMatch source, boolean naive) {
@@ -456,6 +517,21 @@ public class ReteMatch implements Comparable<ReteMatch> {
         return result;
     }
 
+    /**
+     * Determines if this match object is already marked as deleted through a 
+     * domino process. 
+     * 
+     * This is necessary because the domino-deletion moves only 
+     * forward and so if a match M is the result of the merge of two match M1 and M2,
+     * the domino deletion of M1 will mark M as deleted, however since M2 is still
+     * holding a reference to M as its super-match, then it is important for M2
+     * to know upon M2's deletion (possibly at some later time) that M is already 
+     * deleted, so that it won't have to follow the domino thread
+     * originating from M twice.
+     * 
+     * @return <code>true</code> if this match object is already domino-deleted,
+     * <code>false</code> otherwise.
+     */
     public boolean isDeleted() {
         return this.deleted;
     }
@@ -463,16 +539,29 @@ public class ReteMatch implements Comparable<ReteMatch> {
     /**
      * Adds a collection to the list of container collections of this match
      * so that in case of deletion it would have them remove itself from them.
-     * @param c
+     * @param c The collection that is alleged to contain is match as well.
      */
     public void addContainerCollection(Collection<ReteMatch> c) {
         this.containerCollections.add(c);
     }
 
+    /**
+     * Adds a listener to the list of {@link DominoEventListener} objects
+     * that will be notified when this match object is deleted through 
+     * a domino-deletion process.
+     * @param listener The object to be added to the list of listeners.
+     */
     public void addDominoListener(DominoEventListener listener) {
         this.dominoListeners.add(listener);
     }
 
+    /**
+     * This method is called whenever the match object is deleted through the domino
+     * deletion process. This will cause the deletion to cascade through its associated
+     * super-matches, i.e. matches that are partially made of this match object.
+     *  
+     * @param callerSubMatch The sub-match that has called this method.
+     */
     public synchronized void dominoDelete(ReteMatch callerSubMatch) {
         if (!this.deleted) {
             this.deleted = true;
@@ -495,13 +584,17 @@ public class ReteMatch implements Comparable<ReteMatch> {
         }
     }
 
-    private void removeSuperMatch(ReteMatch m) {
-        this.superMatches.remove(m);
-    }
-
     private RuleToHostMap equivalentMap = null;
 
-    public RuleToHostMap toVarNodeEdgeMap() {
+    /**
+     * Translates this match object, which is only used inside the RETE network,
+     * to an instance of {@link RuleToHostMap} that is the standard representation 
+     * of any matching between a rule's nodes and edges to those of a host graph 
+     * in GROOVE.
+     * 
+     * @return A translation of this match object to the {@link RuleToHostMap} representation  
+     */
+    public RuleToHostMap toRuleToHostMap() {
         if (this.equivalentMap == null) {
             this.equivalentMap = new RuleToHostMap();
 

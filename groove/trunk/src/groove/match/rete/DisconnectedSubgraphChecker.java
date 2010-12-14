@@ -42,22 +42,19 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
 
     private Element[] pattern;
 
-    private int completeMatchCount = 0;
-
-    private DominoEventListener completeMatchDominoAdapter =
-        new DominoEventListener() {
-            @Override
-            public void matchRemoved(ReteMatch match) {
-                DisconnectedSubgraphChecker.this.completeMatchCount--;
-            }
-        };
-
+    /**
+     * Collection of partial matches separately kept based on the antecedent
+     * that they belong to.
+     */
     protected HashMap<ReteNetworkNode,TreeHashSet<ReteMatch>> partialMatches =
         new HashMap<ReteNetworkNode,TreeHashSet<ReteMatch>>();
 
     /**
-     * @param network
-     * @param antecedents
+     * Creates a subgraph-checker from a list of antecedents, each of which
+     * check a disconnected component.
+     * 
+     * @param network The RETE network that is to own this node.
+     * @param antecedents The list of the antecedents.
      */
     public DisconnectedSubgraphChecker(ReteNetwork network,
             List<ReteStaticMapping> antecedents) {
@@ -69,9 +66,11 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
 
     private void connectToAntecedents(List<ReteStaticMapping> antecedents) {
         List<Element> tempPatternList = new ArrayList<Element>();
-        //We sort the mappings based on the associated nnodes so that those with the
-        //same nnode would be next to one another and so identically repeating antecedents
-        //would be adjacent to one another in the antecedents list of this condition checker.
+        //We sort the mappings based on the associated n-nodes 
+        //so that those with the same n-node would be next to 
+        //one another and so identically repeating antecedents
+        //would be adjacent to one another in the antecedents 
+        //list of this condition checker.
         Collections.sort(antecedents, new Comparator<ReteStaticMapping>() {
             @Override
             public int compare(ReteStaticMapping o1, ReteStaticMapping o2) {
@@ -95,10 +94,16 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
      * antecedent and takes appropriate action according to the <code>action<code>
      * parameter.
      * 
-     * @param source
-     * @param repeatIndex
-     * @param mu
-     * @param action
+     * @param source The n-node that is calling this method
+     * @param repeatIndex This parameter is basically a counter over repeating antecedents.
+     *        If <code>source</code> checks against more than one disjoint component, it will
+     *        repeat in the list of the current n-nodes antecedents. In such a case this
+     *        parameter specifies which of those components is calling this method, which
+     *        could be any value from 0 to k-1, which k is the number of 
+     *        times <code>source</code> occurs in the list of antecedents. 
+     *         
+     * @param mu The match object found by <code>source</code>.
+     * @param action Determines if the match is added or removed.
      */
     public void receive(ReteNetworkNode source, int repeatIndex, Element mu,
             Action action) {
@@ -124,21 +129,37 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
      * Receives a match of a connected subgraph component of an otherwise
      * disconnected LHS represented by this object. 
      *  
-     * @param antecedent
+     * @param source The n-node that is calling this method
      * @param repeatIndex This parameter is basically a counter over repeating antecedents.
-     *        If the disconnected component patterns, represented
-     *        by a subgraph-checker, repeats more than once in the list of antecedents, then
-     *        the associated subgraph-checker will have to call this method several times, and
-     *        the value of this parameter will have to increase on each subsequent call, starting from 0.  
-     * @param match
-     * @param action
+     *        If <code>source</code> checks against more than one disjoint component, it will
+     *        repeat in the list of the current n-nodes antecedents. In such a case this
+     *        parameter specifies which of those components is calling this method, which
+     *        could be any value from 0 to k-1, which k is the number of 
+     *        times <code>source</code> occurs in the list of antecedents. 
+     * @param match The match object found by <code>source</code>.
+     * @param action Determines if the match is added or removed.
      */
-    public void receive(ReteNetworkNode antecedent, int repeatIndex,
+    public void receive(ReteNetworkNode source, int repeatIndex,
             ReteMatch match, Action action) {
         assert action == Action.ADD;
-        produceAndSendDownNewMatches(antecedent, repeatIndex, match, action);
+        produceAndSendDownNewMatches(source, repeatIndex, match, action);
     }
 
+    /**
+     * Takes a newly received partial match and then produces and forwards down the
+     * RETE network the combination of this partial match with the already found 
+     * partial matches from other disjoint components.
+     * 
+     * @param antecedent The antecedent that has produced the new partial match
+     * @param repeatIndex This parameter is basically a counter over repeating antecedents.
+     *        If <code>antecedent</code> checks against more than one disjoint component, it will
+     *        repeat in the list of the current n-nodes antecedents. In such a case this
+     *        parameter specifies which of those components is calling this method, which
+     *        could be any value from 0 to k-1, which k is the number of 
+     *        times <code>antecedent</code> occurs in the list of antecedents. 
+     * @param m The newly received partial match
+     * @param action Determines if the match is added to removed from the network.
+     */
     protected void produceAndSendDownNewMatches(ReteNetworkNode antecedent,
             int repeatIndex, ReteMatch m, Action action) {
 
@@ -153,7 +174,6 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
                 this.makeWholeMatchesIfPossible(antecedent, repeatIndex, m);
 
             if (completeMatches != null) {
-                this.completeMatchCount += completeMatches.size();
                 for (ReteMatch completeMatch : completeMatches) {
                     ReteNetworkNode previous = null;
                     int repeatedSuccessorIndex = 0;
@@ -177,6 +197,21 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
         }
     }
 
+    /**
+     * Generates all the matches resulting from combining a new partial match
+     * with the already found partial matches of other antecedents.
+     * 
+     * @param antecedent The antecedent that has produced the new partial match
+     * @param repeatIndex This parameter is basically a counter over repeating antecedents.
+     *        If <code>antecedent</code> checks against more than one disjoint component, it will
+     *        repeat in the list of the current n-nodes antecedents. In such a case this
+     *        parameter specifies which of those components is calling this method, which
+     *        could be any value from 0 to k-1, which k is the number of 
+     *        times <code>antecedent</code> occurs in the list of antecedents. 
+     * @param newMatch The newly received partial match
+     * @return The list of complete matches generated by combining <code>newMatch</code>
+     *          with other existing partial matches of other disjoint components.
+     */
     @SuppressWarnings("unchecked")
     protected List<ReteMatch> makeWholeMatchesIfPossible(
             ReteNetworkNode antecedent, int repeatIndex, ReteMatch newMatch) {
@@ -253,6 +288,10 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
         return result;
     }
 
+    /**
+     * @param antecedent The antecedent the partial matches of which is needed. 
+     * @return The list of already received partial matches for a given antecedent.
+     */
     protected TreeHashSet<ReteMatch> getPartialMatchesFor(
             ReteNetworkNode antecedent) {
         TreeHashSet<ReteMatch> result = this.partialMatches.get(antecedent);
@@ -265,8 +304,7 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
 
     @Override
     public boolean equals(ReteNetworkNode node) {
-        // TODO Auto-generated method stub
-        return false;
+        return node == this;
     }
 
     @Override
@@ -276,8 +314,7 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
 
     @Override
     public int size() {
-        // TODO Auto-generated method stub
-        return 0;
+        return this.pattern.length;
     }
 
     @Override

@@ -16,16 +16,22 @@
  */
 package groove.gui.jgraph;
 
-
 /**
  * @author Arash Jalali
  * @version $Revision $
  */
 public class ReteJGraph extends JGraph {
 
-    public ReteJGraph(JModel model, boolean hasFilters) {
+    /**
+     * A graph representing the looks of the static structure of a RETE network.
+     * @param model the associated model that represents the structure of the graph.
+     * @param hasFilters indicates if this JGraph is to use label filtering.
+     */
+    public ReteJGraph(ReteJModel model, boolean hasFilters) {
         super(model, hasFilters);
-        // TODO Auto-generated constructor stub
     }
+
+    //TODO ARASH: we can add a new tab to the groove GUI to display the constructed RETE 
+    //network of a given grammar more appropriately.
 
 }

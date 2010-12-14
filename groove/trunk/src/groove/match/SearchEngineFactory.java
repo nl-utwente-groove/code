@@ -16,17 +16,8 @@
  */
 package groove.match;
 
-import groove.graph.DeltaStore;
-import groove.lts.DefaultGraphNextState;
-import groove.lts.GTS;
-import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.match.rete.ReteSearchEngine;
-import groove.trans.HostGraph;
-import groove.trans.RuleMatch;
-import groove.trans.RuleName;
 import groove.trans.RuleToHostMap;
-import groove.view.StoredGrammarView;
 
 /**
  * This is a factory class generating search engines. This is where
@@ -38,20 +29,20 @@ import groove.view.StoredGrammarView;
 
 public class SearchEngineFactory {
 
-    public enum EngineType {
-        SEARCH_PLAN, RETE
-    };
-
     /**
-     * This global lock flag, when <code>true</code>
-     * indicates that all consumers of the search engine
-     * service should refrain from using any
-     * search-engine-related object instances that they may
-     * have cached. If it is <code>false</code> then they
-     * can continue with their cached instances or simply 
-     * ask the factories for an instance. 
+     * Enumerates the types of engine available 
      */
-    private static boolean globalLock = false;
+    public enum EngineType {
+        /** 
+         * the engine type that uses the search plan algorithm
+         */
+        SEARCH_PLAN,
+        /**
+         * the engine type that uses the RETE algorithm
+         */
+        RETE
+    }
+
     private static SearchEngineFactory instance = null;
     private EngineType currentEngineType;
 
@@ -83,9 +74,11 @@ public class SearchEngineFactory {
      * in GROOVE. Currently supporting the Search Plan engine and
      * the RETE engine.
      * 
-     * @param injective
-     * @param ignoreNeg
-     * @return an 
+     * @param injective injective <code>true</code> if the desired engine is to do injective matching,
+     * <code>false</code> otherwise.
+     * @param ignoreNeg this parameter is currently ignored by the factory.
+     * @return the currently active engine that matches based on 
+     *         the requirements specified in the parameters.
      */
     public SearchEngine<? extends AbstractMatchStrategy<RuleToHostMap>> getEngine(
             boolean injective, boolean ignoreNeg) {
@@ -102,89 +95,31 @@ public class SearchEngineFactory {
 
     }
 
+    /**    
+     * @param injective <code>true</code> if the desired engine is to do injective matching,
+     * <code>false</code> otherwise.
+     * @return the currently active search engine that matches the injectivity requirements
+     * as expressed by the parameter <code>injective</code>.
+     */
     public SearchEngine<? extends AbstractMatchStrategy<RuleToHostMap>> getEngine(
             boolean injective) {
         return this.getEngine(injective, false);
     }
 
+    /**
+     * @return the currently used engine type
+     */
     public EngineType getCurrentEngineType() {
         return this.currentEngineType;
     }
 
+    /**
+     * Changes the currently used search engine instance to the type specified in the
+     * parameter.
+     * @param engineType the type of engine to be returned by the factory 
+     */
     public void setCurrentEngineType(EngineType engineType) {
         this.currentEngineType = engineType;
     }
 
-    public synchronized void applyTransitionUpdate(GraphTransition transition) {
-        if (this.getCurrentEngineType() == EngineType.RETE) {
-            for (int inj = 0; inj <= 1; inj++) {
-                ReteSearchEngine se =
-                    ((ReteSearchEngine) this.getEngine(inj == 1));
-                DefaultGraphNextState target =
-                    (DefaultGraphNextState) transition.target();
-                DeltaStore delta = new DeltaStore(target.getDelta());
-                se.transitionOccurred(target.getGraph(), delta);
-            }
-        }
-    }
-
-    public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
-    }
-
-    public synchronized void setMatchUpdate(RuleMatch match) {
-    }
-
-    public synchronized void setRuleUpdate(RuleName name) {
-
-    }
-
-    public synchronized void setStateUpdate(GraphState state) {
-        if (this.getCurrentEngineType() == EngineType.RETE) {
-            for (int inj = 0; inj <= 1; inj++) {
-                ReteSearchEngine se =
-                    ((ReteSearchEngine) this.getEngine(inj == 1));
-                se.changeState(state);
-            }
-        }
-    }
-
-    public synchronized void setTransitionUpdate(GraphTransition transition) {
-    }
-
-    public synchronized void startSimulationUpdate(GTS gts) {
-    }
-
-    /**
-     * This method should be called to tell the engine factory
-     * to notify the current engine (if needed) that a new
-     * grammar has been loaded.
-     * 
-     * @param g
-     */
-    public synchronized void newGrammarLoaded(StoredGrammarView g) {
-        if (this.getCurrentEngineType() == EngineType.RETE) {
-            for (int inj = 0; inj <= 1; inj++) {
-                ReteSearchEngine se =
-                    ((ReteSearchEngine) this.getEngine(inj == 1));
-                se.setUp(g);
-            }
-        }
-    }
-
-    /**
-     * This method should be called to tell the engine factory
-     * to notify the current engine (if needed) that a new 
-     * start graph has been loaded.
-     * 
-     * @param g
-     */
-    public synchronized void newStartGraphLoad(HostGraph g) {
-        if (this.getCurrentEngineType() == EngineType.RETE) {
-            for (int inj = 0; inj <= 1; inj++) {
-                ReteSearchEngine se =
-                    ((ReteSearchEngine) this.getEngine(inj == 1));
-                se.initializeState(g);
-            }
-        }
-    }
 }

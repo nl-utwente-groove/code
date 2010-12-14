@@ -31,13 +31,23 @@ public class EdgeCheckerNode extends ReteNetworkNode {
 
     private Element[] pattern = new Element[1];
 
+    /**
+     * The reporter.
+     */
     protected static final Reporter reporter =
         Reporter.register(EdgeCheckerNode.class);
+    /**
+     * For collecting reports on the number of time the 
+     * {@link #receiveEdge(ReteNetworkNode, Edge, Action)} method is called.
+     */
     protected static final Reporter receiveEdgeReporter =
         reporter.register("receiveEdge(source, gEdge, action)");
 
     /**
-     * @param e
+     * Creates an new edge-checker n-node that matches a certain kind of edge.
+     * 
+     * @param e The edge that is to be used as a sample edge that this edge-checker 
+     *          must accept matches for.
      */
     public EdgeCheckerNode(ReteNetwork network, Edge e) {
         super(network);
@@ -46,7 +56,7 @@ public class EdgeCheckerNode extends ReteNetworkNode {
             (e.source().equals(e.target())) ? n1 : DefaultNode.createNode();
         this.pattern[0] = DefaultEdge.createEdge(n1, e.label().text(), n2);
         //This is just to fill up the lookup table
-        LookupTable t = getPatternLookupTable();
+        getPatternLookupTable();
     }
 
     @Override
@@ -63,18 +73,34 @@ public class EdgeCheckerNode extends ReteNetworkNode {
     }
 
     /**
-     * Determines if this n-edge-checker node could potentially be mapped to a given graph edge.     * 
+     * Determines if this n-edge-checker node could potentially be mapped to a given graph edge.     *
+     * This routine no longer checks the edge-labels for compatibility and assumes that
+     * the given edge in the parameter <code>e</code> has the same label as the pattern of 
+     * this edge-checker. This is because the ROOT is made responsible for sending only
+     * those edges that have the same label as this edge-checker's associated pattern.
+     *  
      * @param e the given graph edge
-     * @return
+     * @return <code>true</code> if the given edge show be handed over to this
+     *          edge-checker by the root, <code>false</code> otherwise.
      */
     public boolean canBeMappedToEdge(Edge e) {
         Edge e1 = this.getEdge();
-        //condition 1: labels must match
+        //condition 1: labels must match <-- commented out because we check this in the root
         //condition 2: if this is an edge checker for a loop then e should also be a loop
-        return //e1.label().equals(e.label()) &&   <-- commented out because we check this in the root
-        (!e1.source().equals(e1.target()) || (e.source().equals(e.target())));
+        return (!e1.source().equals(e1.target()) || (e.source().equals(e.target())));
     }
 
+    /**
+     * Decides if this edge checker object can be put in charge of matching edges that
+     * look like the given edge in the parameter <code>e</code>.
+     * 
+     * @param e The LHS edge for which this edge-checker might be put in charge.  
+     *
+     * @return <code>true</code> if this edge checker can match the LHS edge given 
+     *         in the parameter <code>e</code>. That is, if the labels match and 
+     *         they have the same shape, i.e. both the pattern of this edge-checker
+     *         and <code>e</code> are loops or both are non-loops.
+     */
     public boolean canBeStaticallyMappedToEdge(Edge e) {
         Edge e1 = this.getEdge();
         //condition 1: labels must match
@@ -86,9 +112,9 @@ public class EdgeCheckerNode extends ReteNetworkNode {
     /**
      * Receives an edge that is sent from the root to see 
      * if the edge label equals the label of the edge-checker itself.
-     * @param source 
-     * @param gEdge
-     * @param action
+     * @param source the RETE node that is actually calling this method.
+     * @param gEdge the edge that has been added/removed
+     * @param action whether the action is ADD or remove.
      */
     public void receiveEdge(ReteNetworkNode source, groove.graph.Edge gEdge,
             Action action) {
@@ -104,7 +130,7 @@ public class EdgeCheckerNode extends ReteNetworkNode {
         //and we check that the received edge is of the same "shape" as the associated edge
         //of this edge-checker n-node, i.e. either both are unary (loop) edges or both are
         //binary(non-loop) edges.
-        Edge nEdge = this.getEdge();
+
         if (this.canBeMappedToEdge(gEdge)) {
             ReteNetworkNode previous = null;
             int repeatedSuccessorIndex = 0;
@@ -115,8 +141,7 @@ public class EdgeCheckerNode extends ReteNetworkNode {
                     ((SubgraphCheckerNode) n).receive(this,
                         repeatedSuccessorIndex, gEdge, action);
                 } else if (n instanceof ConditionChecker) {
-                    ((ConditionChecker) n).receive(this,
-                        repeatedSuccessorIndex, gEdge, action);
+                    ((ConditionChecker) n).receive(gEdge, action);
                 } else if (n instanceof DisconnectedSubgraphChecker) {
                     ((DisconnectedSubgraphChecker) n).receive(this,
                         repeatedSuccessorIndex, gEdge, action);

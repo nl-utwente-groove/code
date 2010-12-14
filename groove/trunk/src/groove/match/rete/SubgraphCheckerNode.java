@@ -73,6 +73,13 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
         staticJoin(left, right);
     }
 
+    /**
+     * Creates a new subgraph checker n-node from two left and right antecedent mappings.
+     *
+     * @param network The RETE network this n-node is to belong to.
+     * @param left The left antecedent.
+     * @param right The right antecedent.
+     */
     public SubgraphCheckerNode(ReteNetwork network, ReteStaticMapping left,
             ReteStaticMapping right) {
         this(network, left, right, false);
@@ -135,13 +142,19 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
      * Receives a matched edge/node during runtime from an EdgeChecker/NodeChecker antecedent
      * and passes along down the RETE network based on the rules of the algorithm.
      * 
-     * This method uses the {@link #receive(ReteNetworkNode, List, Action)} variant
+     * This method uses the {@link #receive(ReteNetworkNode, int, ReteMatch, Action)} variant
      * to do the actual job.
      * 
-     * @param source
-     * @param mu
-     * @param action
-     */
+     * @param source The n-node that is calling this method.
+     * @param repeatIndex This parameter is basically a counter over repeating antecedents.
+     *        If <code>source</code> checks against more than one sub-component of this subgraph
+     *        , it will repeat in the list of antecedents. In such a case this
+     *        parameter specifies which of those components is calling this method, which
+     *        could be any value from 0 to k-1, which k is the number of 
+     *        times <code>source</code> occurs in the list of antecedents. 
+     *         
+     * @param mu The graph element found by <code>source</code>.
+     * @param action Determines if the match is added or removed.     */
     public void receive(ReteNetworkNode source, int repeatIndex, Element mu,
             Action action) {
         ReteMatch sg =
@@ -170,8 +183,19 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
     }
 
     /**
-     * @param source
-     * @param subgraph
+     * Receives a subgraph match of type {@link ReteMatch} from an antecedent
+     * and passes along down the RETE network based on the rules of the algorithm.
+     *  
+     * @param source The n-node that is calling this method.
+     * @param repeatIndex This parameter is basically a counter over repeating antecedents.
+     *        If <code>source</code> checks against more than one sub-component of this subgraph
+     *        , it will repeat in the list of antecedents. In such a case this
+     *        parameter specifies which of those components is calling this method, which
+     *        could be any value from 0 to k-1, which k is the number of 
+     *        times <code>source</code> occurs in the list of antecedents. 
+     *         
+     * @param subgraph The subgraph match found by <code>source</code>.
+     * @param action Determines if the match is added or removed.     
      */
     public void receive(ReteNetworkNode source, int repeatIndex,
             ReteMatch subgraph, Action action) {
@@ -213,8 +237,7 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
                         ((SubgraphCheckerNode) n).receive(this,
                             repeatedSuccessorIndex, combined, action);
                     } else if (n instanceof ConditionChecker) {
-                        ((ConditionChecker) n).receive(this,
-                            repeatedSuccessorIndex, combined, action);
+                        ((ConditionChecker) n).receive(combined, action);
                     } else if (n instanceof DisconnectedSubgraphChecker) {
                         ((DisconnectedSubgraphChecker) n).receive(this,
                             repeatedSuccessorIndex, combined, action);
@@ -235,16 +258,6 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
     private boolean test(ReteMatch left, ReteMatch right) {
         boolean allEqualitiesSatisfied = true;
         boolean injective = this.getOwner().isInjective();
-
-        //these are the nodes that allowed to be shared
-        //between the left and right matches.
-        //In case of injective matching, we collect these
-        //shared nodes so that we could then subtract them from
-        //other nodes in the left and right. What remains from
-        //left and right should then have an empty intersection
-        //This collection is only of use if injective matching is on
-        Set<Node> allowedSharedNodes =
-            (injective) ? (new TreeHashSet<Node>()) : null;
 
         Element[] leftUnits = left.getAllUnits();
         Element[] rightUnits = right.getAllUnits();
@@ -296,7 +309,7 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
      * This is an auxiliary utility method to quickly get the 
      * antecedent of a subgraph-checker other than the one specified
      * by the argument oneAntecedent
-     * @param oneAntecedent
+     * @param oneAntecedent The antecedent whose opposite we need.
      * @return the antecedent that is not the one passed in the oneAntecedent parameter.
      */
     public ReteNetworkNode getOtherAntecedent(ReteNetworkNode oneAntecedent) {
@@ -437,7 +450,8 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
     /**
      * Determines if this subgraph-checker merges two completely disjoint
      * subgraphs. This happens when a rule has a disconnected LHS.
-     * @return
+     * @return <code>true</code> if this subgraph checker is joining to disjoint
+     *         components (i.e. they have no overlapping nodes).
      */
     public boolean isDisjointMerger() {
         return this.fastEqualityLookupTable.length == 0;

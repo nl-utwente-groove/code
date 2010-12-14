@@ -24,7 +24,6 @@ import groove.graph.Node;
 import groove.lts.DefaultGraphNextState;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.match.SearchEngineFactory;
 import groove.match.SearchEngineFactory.EngineType;
@@ -76,7 +75,7 @@ public class ReteLinearStrategy extends AbstractStrategy {
 
         MatchResult event = getMatch();
         if (event != null) {
-            this.newTrans = getMatchApplier().apply(getAtState(), event);
+            getMatchApplier().apply(getAtState(), event);
             if (closeExit()) {
                 setClosed(getAtState(), false);
             }
@@ -130,7 +129,15 @@ public class ReteLinearStrategy extends AbstractStrategy {
         assert lockingSuccess;
     }
 
+    /**
+     * Does some clean-up for when the full exploration is finished.
+     */
     protected void unprepare() {
+        //TODO ARASH: (Talk to Arend about this)
+        //If the exploration is stopped half-way through, then this method
+        //will not be called. I think The AbstractStrategy should be changed so that
+        //a notification is set to an strategy that it is abruptly stopped so as to
+        //let the strategy do any clean-up necessary.
         ReteSearchEngine.unlock();
         SearchEngineFactory.getInstance().setCurrentEngineType(this.oldType);
     }
@@ -148,9 +155,6 @@ public class ReteLinearStrategy extends AbstractStrategy {
 
     /** Collects states newly added to the GTS. */
     private final NewStateCollector collector = new NewStateCollector();
-
-    /** Internal store of newly applied state. */
-    private GraphTransition newTrans;
 
     private EngineType oldType;
 
@@ -212,16 +216,14 @@ public class ReteLinearStrategy extends AbstractStrategy {
         }
 
         /** 
-         * @return The match at the <code>index</code>'th for 
-         * the state passed in through the constructor.
-         * @param index 
+         * @return The next match available at the current state
          **/
         @Override
         public MatchResult getMatch() {
             getMatchReporter.start();
             MatchResult result = null;
             Rule currentRule = firstCall().getRule();
-            while (result == null && currentRule != null) {
+            while (currentRule != null) {
                 for (RuleMatch ruleMatch : this.reteEngine.getRuleMatches(currentRule)) {
                     // convert the match to an event
                     result = this.record.getEvent(ruleMatch);

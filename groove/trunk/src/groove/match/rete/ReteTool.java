@@ -47,6 +47,10 @@ public class ReteTool extends CommandLineTool {
     private SaveNetworkOption saveNetworkOption = new SaveNetworkOption();
     private StoredGrammarView grammarView;
 
+    /**
+     * 
+     * @param args The command-line arguments.
+     */
     public ReteTool(List<String> args) {
         super(args);
         addOption(this.saveNetworkOption);
@@ -63,7 +67,7 @@ public class ReteTool extends CommandLineTool {
         }
     }
 
-    public void start() {
+    private void start() {
         processArguments();
         doSaveReteNetwork();
         print("RETE network shape was successuflly saved to "
@@ -103,7 +107,7 @@ public class ReteTool extends CommandLineTool {
     }
 
     /**
-     * @param args
+     * @param args The command-line arguments.
      */
     public static void main(String[] args) {
         new ReteTool(new LinkedList<String>(Arrays.asList(args))).start();

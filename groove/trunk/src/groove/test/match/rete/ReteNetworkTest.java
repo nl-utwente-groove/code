@@ -46,6 +46,9 @@ public class ReteNetworkTest extends TestCase {
         //Nothing in particular to set up.
     }
 
+    /**
+     * Tests the static structure of the RETE network for an empty grammar.
+     */
     public void testStaticEmptyGrammar() {
         GraphGrammar g = new GraphGrammar("empty");
         ReteNetwork network = new ReteNetwork(g, false);
@@ -54,18 +57,27 @@ public class ReteNetworkTest extends TestCase {
         assertEquals(0, network.getProductionNodes().size());
     }
 
+    /**
+     * Tests the static structure of the RETE network in the case of a rule with an empty LHS.
+     */
     public void testStaticEmptyPriorRules() {
         GraphGrammar g = loadGrammar("emptypriorules.gps", "start");
         ReteNetwork network = new ReteNetwork(g, false);
         testNetworkStructure(network);
     }
 
+    /**
+     * RETE static structure test for the simple grammar.
+     */
     public void testStaticSimple() {
         GraphGrammar g = loadGrammar("simple.gps", "start");
         ReteNetwork network = new ReteNetwork(g, false);
         testNetworkStructure(network);
     }
 
+    /**
+     * RETE static structure test for the Petri Net grammar.
+     */
     public void testStaticPetriNet() {
         GraphGrammar g = loadGrammar("petrinet.gps", "start");
         ReteNetwork network = new ReteNetwork(g, false);
@@ -93,6 +105,9 @@ public class ReteNetworkTest extends TestCase {
         }
     }
 
+    /**
+     * Dynamic behavior test of the RETE for an empty grammar.
+     */
     public void testDynamicEmptyRule() {
         GraphGrammar g = loadGrammar("emptypriorules.gps", "start");
         ReteNetwork network =
@@ -104,6 +119,9 @@ public class ReteNetworkTest extends TestCase {
         }
     }
 
+    /**
+     * Dynamic behavior test of the RETE for a grammar with simple injective rules.
+     */
     public void testDynamicSimpleInjectiveRule() {
         GraphGrammar g = loadGrammar("simpleInjective.gps", "start");
         ReteNetwork network =
@@ -120,6 +138,9 @@ public class ReteNetworkTest extends TestCase {
         }
     }
 
+    /**
+     * Dynamic behavior test of the RETE for the control grammar.
+     */
     public void testDynamicControl() {
         GraphGrammar g = loadGrammar("control.gps", "start");
         ReteNetwork network = new ReteNetwork(g, false);

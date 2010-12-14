@@ -38,11 +38,20 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
     private ReteSearchEngine owner;
     private Condition condition = null;
 
+    /**
+     * Creates a matching strategy object that uses the RETE algorithm for matching.  
+     * @param owner The RETE search engine
+     * @param condition the condition for which this strategy is to be created.
+     */
     public ReteStrategy(ReteSearchEngine owner, Condition condition) {
         this.owner = owner;
         this.condition = condition;
     }
 
+    /**
+     * Creates a matching strategy object that uses the RETE algorithm for matching.  
+     * @param owner The RETE search engine
+     */
     public ReteStrategy(ReteSearchEngine owner) {
         this(owner, null);
     }
@@ -74,7 +83,7 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
                             cc.getConflictSetIterator(anchorMap)) {
                             @Override
                             public RuleToHostMap toOuter(ReteMatch matchMap) {
-                                return matchMap.toVarNodeEdgeMap();
+                                return matchMap.toRuleToHostMap();
                             }
                         };
                 } else {
@@ -83,7 +92,7 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
                             cc.getConflictSetIterator()) {
                             @Override
                             public RuleToHostMap toOuter(ReteMatch matchMap) {
-                                return matchMap.toVarNodeEdgeMap();
+                                return matchMap.toRuleToHostMap();
                             }
                         };
                 }

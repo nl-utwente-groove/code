@@ -20,7 +20,6 @@ import groove.graph.DeltaStore;
 import groove.graph.Edge;
 import groove.graph.LabelStore;
 import groove.graph.Node;
-import groove.lts.GraphState;
 import groove.match.SearchEngine;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.Condition;
@@ -31,14 +30,10 @@ import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
 import groove.trans.RuleMatch;
 import groove.trans.RuleNode;
-import groove.trans.SPORule;
 import groove.util.Reporter;
 import groove.view.StoredGrammarView;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Arash Jalali
@@ -58,8 +53,15 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
     private boolean injective = false;
     private boolean ignoreNeg = false;
 
+    /**
+     * The reporter object.
+     */
     static public final Reporter reporter =
         Reporter.register(ReteSearchEngine.class);
+
+    /**
+     * The reporter for the transitionOccurred method
+     */
     static public final Reporter transitionOccurredReporter =
         reporter.register("transitionOccurred()");
 
@@ -70,10 +72,10 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
     }
 
     /**
-     * Instructs the engine to lock down all factory responses to those derived from
-     * this instance.
+     * Instructs the RETE engine to lock down all factory responses to a specific instance.
      * 
-     * @param engineInstance
+     * This method will not lock to the given instance if it is already locked to another one.
+     * @param engineInstance The engine instance that this search engine should be locked to.
      * @return <code>true</code> if the engine has not already been locked,
      * <code>false</code> otherwise.
      */
@@ -87,6 +89,9 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
         return result;
     }
 
+    /**
+     * Instructs the engine to come out of the locked mode.
+     */
     public static void unlock() {
         ReteSearchEngine.locked = false;
         ReteSearchEngine.lockedInstance = null;
@@ -106,8 +111,9 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
      * injectivity property as requested through the <code>injective</code>
      * parameter.
      * 
-     * @param injective  
-     * @param ignoreNeg  this parameter is ingored at the moment
+     * @param injective  Determines if the desired engine instance should perform
+     *                   injective matching.
+     * @param ignoreNeg  this parameter is ignored at the moment.
      */
     public static synchronized ReteSearchEngine getInstance(boolean injective,
             boolean ignoreNeg) {
@@ -122,8 +128,10 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
     /**
      * Creates a fresh instance of the engine for anyone who wants to 
      * make sure their engine is not being updated by other threads.
-     * @param injective
-     * @param ignoreNeg
+     * @param injective Determines if the desired engine instance should perform
+     *                  injective matching.
+     * @param ignoreNeg Look at the documentation for the parameter with the same name
+     *                  in the {@link ReteSearchEngine} constructor.
      * @return a fresh instance of the engine.
      */
     public static ReteSearchEngine createFreshInstance(boolean injective,
@@ -133,6 +141,9 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
 
     private ReteNetwork network;
 
+    /**
+     * @return The network object used by this engine.
+     */
     public ReteNetwork getNetwork() {
         return this.network;
     }
@@ -152,6 +163,12 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
         }
     }
 
+    /**
+     * Tells the engine to set up its RETE network using the given grammar.
+     * 
+     * All prior matching state of the engine (if any) will be lost after calling this method.
+     * @param g The given grammar.
+     */
     public synchronized void setUp(GraphGrammar g) {
         this.network = new ReteNetwork(g, this.isInjective());
     }
@@ -169,6 +186,17 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
         }
     }
 
+    /**
+     * Tells the engine to update the RETE runtime state.
+     *  
+     * @param destGraph The state/host graph that has resulted from the given update.
+     *                  This host graph is given to the method so that it could
+     *                  decide if re-initializing the RETE network is less costly
+     *                  than applying the updates in the <code>deltaStore</code>.
+     * @param deltaStore Represents the actual update (node/edge creations/removals) 
+     *                   to the host graph which could be the sum of the effects 
+     *                   of a series of rule applications/transitions.
+     */
     public synchronized void transitionOccurred(HostGraph destGraph,
             DeltaStore deltaStore) {
         transitionOccurredReporter.start();
@@ -199,70 +227,17 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
         transitionOccurredReporter.stop();
     }
 
-    public synchronized void transitionOccurred(DeltaStore deltaStore) {
-        transitionOccurredReporter.start();
-
-        for (Node n : deltaStore.getRemovedNodeSet()) {
-            this.network.update(n, Action.REMOVE);
-        }
-
-        for (Edge e : deltaStore.getRemovedEdgeSet()) {
-            this.network.update(e, Action.REMOVE);
-        }
-
-        for (Node n : deltaStore.getAddedNodeSet()) {
-            this.network.update(n, Action.ADD);
-        }
-
-        for (Edge e : deltaStore.getAddedEdgeSet()) {
-            this.network.update(e, Action.ADD);
-        }
-
-        transitionOccurredReporter.stop();
-    }
-
-    public int ruleMatchSize(Condition c) {
-        return this.network.getConditionCheckerNodeFor(c).getConflictSet().size();
-    }
-
-    /**
+    //TODO ARASH: this method should probably be moved into ReteMatchSetCollector
+    //     This does not seem to be right place for it.
+    /** 
+     * @param rule The rule for which the matches are needed. 
+     * @return An {@link Iterable} collection of {@link RuleMatch} objects for a given rule.
      * 
-     * @param rule
-     * @param index
-     * @return the {@link RuleMatch} object corresponding to the {@link ReteMatch}
-     * object at the <code>index</code> position of the conflict-set
-     * of the <code>rule</code>.
      */
-    public RuleMatch getRuleMatchAt(final Rule rule, final int index) {
-        assert index < ruleMatchSize(rule);
-        List<ReteMatch> l =
-            new ArrayList<ReteMatch>(
-                this.network.getProductionNodeFor(rule).getConflictSet());
-
-        Collections.sort(l);
-
-        ReteMatch match = l.get(index);
-        return new RuleMatch((SPORule) rule, match.toVarNodeEdgeMap());
-    }
-
     public Iterable<RuleMatch> getRuleMatches(Rule rule) {
-        //TODO: ARASH: this is generally not a good idea. The SearchEngineFactory
-        //is being coerced into changing types from within a specific engine.
-        //We might have to move this line as well as the one reverting
-        //back to the old engine type out of this method and
-        //somewhere in the ReteStrategy where we need it.
         Iterable<RuleMatch> it =
             rule.getMatches(this.network.getState().getHostGraph(), null);
         return it;
-    }
-
-    /**
-     * Should be called if for any reason the RETE should be reinitialized
-     * as opposed to updated.
-     * @param state
-     */
-    public synchronized void changeState(GraphState state) {
-        this.initializeState(state.getGraph());
     }
 
     @Override

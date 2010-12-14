@@ -64,7 +64,7 @@ public class ReteNetwork {
 
     //Every RETE network in GROOVE will have at most one node-checker.
     //This <code>nodeChecker</code> attribute is not null if and only if
-    //the LHS of some rule/subc-ondition in the grammar has at least 
+    //the LHS of some rule/sub-condition in the grammar has at least 
     //one isolated node.
     private NodeCheckerNode nodeChecker = null;
 
@@ -98,6 +98,9 @@ public class ReteNetwork {
             try {
                 rules.add(grammarView.getRuleView(rn).toModel());
             } catch (FormatException ex) {
+                throw new RuntimeException(
+                    String.format("Failed to add rule %s to the RETE network.",
+                        rn.toString()));
             }
         }
         this.build(rules);
@@ -107,8 +110,9 @@ public class ReteNetwork {
      * Creates a RETE network and initializes its state by processing the
      * given grammar's start graph.
      * 
-     * @param g
-     * @param enableInjectivity
+     * @param g The grammar from which a RETE network should be built.
+     * @param enableInjectivity determines if this RETE network should perform 
+     *        injective matching.
      */
     public ReteNetwork(GraphGrammar g, boolean enableInjectivity) {
         this.injective = enableInjectivity;
@@ -119,10 +123,11 @@ public class ReteNetwork {
 
     /**
      * implements the static construction of the RETE network
-     * @param rules
+     * @param rules The list of rules that are to be processes and added to the RETE
+     * network.
      */
     public void build(Collection<Rule> rules) {
-        Collection<Rule> shuffledRules = rules; //new ArrayList<Rule>(rules);
+        Collection<Rule> shuffledRules = rules;
         //Collections.shuffle(shuffledRules);
         for (Rule p : shuffledRules) {
             addConditionToNetwork(p, null);
@@ -130,11 +135,11 @@ public class ReteNetwork {
     }
 
     /**
-     * adds one another {@link AbstractCondition} to the structure of
-     * the rete network. If the condition is complex it recursively
-     * adds the subconditions as well.
+     * Adds one {@link AbstractCondition} to the structure of
+     * the RETE network. If the condition is complex it recursively
+     * adds the sub-conditions as well.
      *  
-     * @param condition
+     * @param condition The condition to processed and added to the RETE network.
      */
     private void addConditionToNetwork(Condition condition,
             ConditionChecker parent) {
@@ -145,7 +150,6 @@ public class ReteNetwork {
          * of the RETE network only.
          */
         StaticMap openList = new StaticMap();
-        openList.clear();
         Graph g = condition.getTarget();
 
         Collection<RuleEdge> edgeList = getEdgeCollection(condition);
@@ -363,6 +367,9 @@ public class ReteNetwork {
     /**
      * Returns the collection of edges in the given graph's {@link Graph#edgeSet()}
      * in the order that is deemed suitable for making RETE. 
+     * 
+     * @param c The condition from target of which the edges have to be listed. 
+     * @return A collection of edges of the given condition. 
      */
     protected Collection<RuleEdge> getEdgeCollection(Condition c) {
 
@@ -457,11 +464,15 @@ public class ReteNetwork {
     /**
      * Creates composite subgraph-checkers for each NAC sub-condition
      * all the way down to a CompositeConditionChecker corresponding to
-     * each NAC subcondition of the condition represented by
+     * each NAC sub-condition of the condition represented by
      * <code>positiveConditionChecker</code>.   
-     * @param lastSubgraphMapping
-     * @param nacs
-     * @param positiveConditionChecker
+     * @param lastSubgraphMapping This is the mapping of the antecedent subgraph checker
+     *        of the positive condition that corresponds with 
+     *        <code>positiveConditionChecker</code>. 
+     * @param nacs The list of NAC sub-conditions of the condition represented by
+     *        the parameter <code>positiveConditionChecker</code>
+     * @param positiveConditionChecker This is the condition-checker for the positive
+     *        condition that has negative sub-conditions.
      */
     private void processNacs(ReteStaticMapping lastSubgraphMapping,
             Set<NotCondition> nacs, ConditionChecker positiveConditionChecker) {
@@ -543,7 +554,7 @@ public class ReteNetwork {
     /**
      * Throws a {@link RuntimeException} if the given edge in <code>e</code>
      * is not of the currently supported type.
-     * @param e
+     * @param e The edge to be checked.
      */
     private void checkEdgeForSupport(RuleEdge e) {
         if (!(e.label().isAtom())) {
@@ -593,17 +604,6 @@ public class ReteNetwork {
         return result;
     }
 
-    private NodeCheckerNode getActualNodeChecker() {
-        NodeCheckerNode result = null;
-        for (ReteNetworkNode n : this.getRoot().getSuccessors()) {
-            if (n instanceof NodeCheckerNode) {
-                result = (NodeCheckerNode) n;
-                break;
-            }
-        }
-        return result;
-    }
-
     private EdgeCheckerNode findEdgeCheckerForEdge(Edge e) {
         EdgeCheckerNode result = null;
         for (ReteNetworkNode n : this.getRoot().getSuccessors()) {
@@ -631,11 +631,12 @@ public class ReteNetwork {
      * updates the RETE state by receiving an element that is added or
      * removed.
      * 
-     * @param e
-     * @param action
+     * @param e The graph element that has been added/removed to/from the 
+     *          host graph.
+     * @param action Determines if the given element has been added or removed.
      */
     public void update(Element e, Action action) {
-        this.getRoot().receiveElement(null, e, action);
+        this.getRoot().receiveElement(e, action);
     }
 
     /**
@@ -647,10 +648,10 @@ public class ReteNetwork {
         return this.root;
     }
 
-    public void setState(ReteState state) {
-        this.state = state;
-    }
-
+    /**
+     * 
+     * @return The object containing some global runtime information about the RETE network. 
+     */
     public ReteState getState() {
         return this.state;
     }
@@ -677,23 +678,40 @@ public class ReteNetwork {
         return this.compositeConditionCheckerNodes;
     }
 
+    /**
+     * @param r The given rule
+     * @return Returns the production checker node in the RETE network that finds matches
+     * for the given rule <code>r</code>
+     */
     public ProductionNode getProductionNodeFor(Rule r) {
         ProductionNode result = this.productionNodes.get(r);
         return result;
     }
 
+    /**
+     * 
+     * @param c The given condition
+     * @return Returns the condition checker node in the RETE network that finds 
+     * top-level matches for the given condition <code>c</code>
+     */
     public ConditionChecker getConditionCheckerNodeFor(Condition c) {
         ConditionChecker result = this.conditionCheckerNodes.get(c);
         return result;
     }
 
+    /**
+     * Initializes the RETE network by feeding all nodes and edges of a given
+     * host graph to it.
+     *  
+     * @param g The given host graph.
+     */
     public void processGraph(HostGraph g) {
         this.getState().clearSubscribers();
         for (Node n : g.nodeSet()) {
-            this.getRoot().receiveElement(null, n, Action.ADD);
+            this.getRoot().receiveElement(n, Action.ADD);
         }
         for (Edge e : g.edgeSet()) {
-            this.getRoot().receiveElement(null, e, Action.ADD);
+            this.getRoot().receiveElement(e, Action.ADD);
         }
         this.getState().setHostGraph(g);
     }
@@ -702,7 +720,7 @@ public class ReteNetwork {
      * Saves the RETE network's shape into a GST file.
      * 
      * @param filePath the path of the directory that would contain the saved file
-     * @param name the saved file name without the .gst extension 
+     * @param fileName the file name to use for saving, without the .gst extension 
      */
     public void save(String filePath, String fileName) {
         AspectGraph graph =
@@ -793,8 +811,7 @@ public class ReteNetwork {
         public static ReteStaticMapping combine(List<ReteStaticMapping> maps,
                 DisconnectedSubgraphChecker suc) {
 
-            int totalSize = 0;
-            List<Element> tempElementsList = new ArrayList();
+            List<Element> tempElementsList = new ArrayList<Element>();
             for (int i = 0; i < maps.size(); i++) {
                 Element[] elems = maps.get(i).getElements();
                 for (int j = 0; j < elems.length; j++) {
@@ -887,8 +904,8 @@ public class ReteNetwork {
     }
 
     /**
-     * Encapsulates a RETE runtime state.
-     *  
+     * Encapsulates a RETE global runtime state.
+     *   
      * @author Arash Jalali
      * @version $Revision $
      */
@@ -930,7 +947,6 @@ public class ReteNetwork {
 
         synchronized void setHostGraph(HostGraph hgraph) {
             this.hostGraph = hgraph;
-            //assert this.owner.checkAllMatchesConformWithHost();
         }
 
         public HostGraph getHostGraph() {

@@ -28,13 +28,21 @@ import groove.util.Reporter;
 public class NodeCheckerNode extends ReteNetworkNode {
 
     private Element[] pattern = new Element[1];
+
+    /**
+     * The reporter object for this class.
+     */
     protected static final Reporter reporter =
         Reporter.register(NodeCheckerNode.class);
+
+    /**
+     * The reporter collecting statistics for the {@link #receiveNode} method.
+     */
     protected static final Reporter receiveNodeReporter =
         reporter.register("receiveNode(node, action)");
 
     /**
-     * @param network
+     * @param network The {@link ReteNetwork} object to which this node will belong.
      */
     public NodeCheckerNode(ReteNetwork network) {
         super(network);
@@ -53,6 +61,13 @@ public class NodeCheckerNode extends ReteNetworkNode {
         return (Node) this.pattern[0];
     }
 
+    /**
+     * This method is called by the ROOT of the RETE network whenever a new {@link Node}
+     * is added or removed to/from the host graph.
+     * 
+     * @param node The node in host graph that has been added or removed.
+     * @param action Determines if the given <code>node</code> has been added or removed.
+     */
     public void receiveNode(Node node, Action action) {
         receiveNodeReporter.start();
         ReteNetworkNode previous = null;
@@ -61,8 +76,7 @@ public class NodeCheckerNode extends ReteNetworkNode {
             repeatedSuccessorIndex =
                 (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
             if (n instanceof ConditionChecker) {
-                ((ConditionChecker) n).receive(this, repeatedSuccessorIndex,
-                    node, action);
+                ((ConditionChecker) n).receive(node, action);
             } else if (n instanceof SubgraphCheckerNode) {
                 ((SubgraphCheckerNode) n).receive(this, repeatedSuccessorIndex,
                     node, action);

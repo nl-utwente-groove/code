@@ -32,7 +32,7 @@ public interface DominoEventListener {
      * This method is called by the match object referenced by the
      * <code>match</code> argument to notify the listener that it has been deleted.
      * 
-     * @param match
+     * @param match The match object that is deleted through the domino-deletion scheme 
      */
     void matchRemoved(ReteMatch match);
 }
