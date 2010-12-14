@@ -57,10 +57,20 @@ public abstract class ReteNetworkNode {
         REMOVE
     }
 
+    /**
+     * A look up table that allows fast querying about the 
+     * pattern that an n-node finds matches for.
+     */
     protected LookupTable patternLookupTable;
 
+    /**
+     * @return The pattern of elements this n-node finds matches for.
+     */
     public abstract Element[] getPattern();
 
+    /**
+     * @return The fast lookup table for the pattern.
+     */
     public LookupTable getPatternLookupTable() {
         if ((this.patternLookupTable == null) && (this.getPattern() != null)) {
             this.patternLookupTable = new LookupTable(this);
@@ -102,8 +112,8 @@ public abstract class ReteNetworkNode {
      * useful when the RETE network is being built to avoid
      * adding the same checker node twice.
      * 
-     * @param node
-     * @return
+     * @param node The node with which equality is to be tested.
+     * @return <code>true</code> if the nodes are equal, <code>false</code> otherwise.
      */
     public abstract boolean equals(ReteNetworkNode node);
 
@@ -116,6 +126,11 @@ public abstract class ReteNetworkNode {
      */
     public abstract int size();
 
+    /**
+     * @param nnode A given n-node
+     * @return <code>true</code> if the given n-node is a successor of this
+     * n-node.
+     */
     protected boolean isAlreadySuccessor(ReteNetworkNode nnode) {
         boolean result = false;
         for (ReteNetworkNode n : this.getSuccessors()) {
@@ -127,22 +142,26 @@ public abstract class ReteNetworkNode {
         return result;
     }
 
+    /**
+     * 
+     * @return The RETE network to which this n-node belongs.
+     */
     public ReteNetwork getOwner() {
         return this.owner;
     }
 
-    public void setOnwer(ReteNetwork newOwner) {
-        this.owner = newOwner;
-    }
-
+    /**
+     * @return The list of this n-node's antecedents. The order is important
+     * to those n-nodes that performing some sort of match merging, such as the
+     * subgraph-checker. 
+     */
     public List<ReteNetworkNode> getAntecedents() {
         return this.antecedents;
     }
 
     /**
-     * Adds a backward reference from this node to its antecedent if it's not
-     * already in the list of antecedents. 
-     * @param nnode
+     * Adds a backward reference from this node to its antecedent 
+     * @param nnode The antecedent
      */
     public void addAntecedent(ReteNetworkNode nnode) {
         this.antecedents.add(nnode);

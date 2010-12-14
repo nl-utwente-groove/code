@@ -21,7 +21,7 @@ import groove.graph.Node;
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
 
 /**
- * A checker node which is the result of amalgamating the
+ * A checker node which is the result of superimposing the
  * positive and negative components of a condition.
  * 
  * @author Arash Jalali
@@ -37,6 +37,13 @@ public class CompositeConditionChecker extends ConditionChecker {
             }
         };
 
+    /**
+     * Creates a composite condition checker
+     * 
+     * @param network The RETE network this n-node belongs to.
+     * @param parentConditionChecker  The condition checker for the positive part.
+     * @param antecedent The antecedent subgraph-checker.
+     */
     public CompositeConditionChecker(ReteNetwork network,
             ConditionChecker parentConditionChecker,
             ReteStaticMapping antecedent) {
@@ -45,8 +52,7 @@ public class CompositeConditionChecker extends ConditionChecker {
     }
 
     @Override
-    public void receive(SubgraphCheckerNode antecedent, int repeatIndex,
-            ReteMatch match, Action action) {
+    public void receive(ReteMatch match, Action action) {
         match.addDominoListener(this.conflictSetMatchDominoAdapter);
         ReteMatch actualPrefixMatchWithCorrectOwner =
             ReteMatch.copyContents(this.parent, match.getSpecialPrefix(), true);
@@ -61,17 +67,21 @@ public class CompositeConditionChecker extends ConditionChecker {
     }
 
     @Override
-    public void receive(EdgeCheckerNode antecedent, int repeatIndex, Edge mu,
-            Action action) {
+    public void receive(Edge mu, Action action) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void receive(NodeCheckerNode antecedent, int repeatIndex, Node node,
-            Action action) {
+    public void receive(Node node, Action action) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * This method is the call-back method called by the composite 
+     * matches when they are domino-removed.
+     * 
+     * @param m The composite match that has been removed.
+     */
     public void matchDeminoRemovedFromConflictSet(ReteMatch m) {
         ReteMatch actualPrefixMatchWithCorrectOwner =
             ReteMatch.copyContents(this.parent, m.getSpecialPrefix(), true);

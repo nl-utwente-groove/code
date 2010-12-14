@@ -26,6 +26,10 @@ import groove.graph.Node;
  */
 public class RootNode extends ReteNetworkNode {
 
+    /**
+     * Creates a root n-node for a given RETE network.
+     * @param network The given RETE network.
+     */
     public RootNode(ReteNetwork network) {
         super(network);
     }
@@ -50,8 +54,14 @@ public class RootNode extends ReteNetworkNode {
         return result;
     }
 
-    public void receiveElement(ReteNetworkNode source, Element elem,
-            Action action) {
+    /**
+     * This is the method that is to be called for each single atomic update
+     * to the RETE network, i.e. a single node/edge creation/removal.
+     * 
+     * @param elem The element that is added or deleted from the host graph.
+     * @param action Determined if the given element is deleted or added.
+     */
+    public void receiveElement(Element elem, Action action) {
 
         if (elem instanceof Node) {
             for (ReteNetworkNode nnode : this.getSuccessors()) {

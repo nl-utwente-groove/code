@@ -71,8 +71,4 @@ public class LookupTable {
     public int[] getNode(Node n) {
         return this.table.get(n);
     }
-
-    public HashMap<Element,int[]> getTable() {
-        return this.table;
-    }
 }

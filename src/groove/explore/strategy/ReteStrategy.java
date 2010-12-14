@@ -90,7 +90,11 @@ public class ReteStrategy extends AbstractStrategy {
         assert lockingSuccess;
     }
 
+    /**
+     * Does some clean-up for when the full exploration is finished.
+     */
     protected void unprepare() {
+        //TODO ARASH: look at a similar todo comment in the corresponding method for ReteLinearStrategy
         ReteSearchEngine.unlock();
         SearchEngineFactory.getInstance().setCurrentEngineType(this.oldType);
     }
@@ -180,6 +184,9 @@ public class ReteStrategy extends AbstractStrategy {
 
     private ReteSearchEngine rete;
 
+    /**
+     * The reporter object
+     */
     static public final Reporter reporter =
         Reporter.register(ReteStrategy.class);
     /** Handle for profiling {@link #next()}. */

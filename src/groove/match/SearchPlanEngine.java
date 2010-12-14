@@ -49,10 +49,24 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
         }
     }
 
+    /**
+     * Factory method for creating a search engine that uses Search Plan for matching.
+     * 
+     * @param injective Determines if the desired engine should perform matching injectively. 
+     * @return An instance of the SearchPlan engine
+     */
     public static SearchPlanEngine getInstance(boolean injective) {
         return getInstance(injective, false);
     }
 
+    /**
+     * Factory method for creating a search engine that uses Search Plan for matching.
+     * 
+     * @param injective Determines if the matching should be done injectively.
+     * @param ignoreNeg See the documentation for the <code>ignoreNeg</code> parameter of the 
+     *                  {@link GraphSearchPlanFactory#getInstance()} method.
+     * @return An instance of the SearchPlan matching engine
+     */
     public static SearchPlanEngine getInstance(boolean injective,
             boolean ignoreNeg) {
         return instances[injective ? 1 : 0][ignoreNeg ? 1 : 0];
@@ -65,8 +79,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
 
     @Override
     public SearchPlanStrategy createMatcher(Condition condition,
-            Collection<RuleNode> anchorNodes,
-            Collection<RuleEdge> anchorEdges,
+            Collection<RuleNode> anchorNodes, Collection<RuleEdge> anchorEdges,
             Collection<RuleNode> relevantNodes) {
         return ConditionSearchPlanFactory.getInstance(
             condition.getSystemProperties().isInjective()).createMatcher(
@@ -75,8 +88,8 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
 
     @Override
     public SearchPlanStrategy createMatcher(RuleGraph graph,
-            Collection<RuleNode> anchorNodes,
-            Collection<RuleEdge> anchorEdges, LabelStore labelStore) {
+            Collection<RuleNode> anchorNodes, Collection<RuleEdge> anchorEdges,
+            LabelStore labelStore) {
         return GraphSearchPlanFactory.getInstance(this.isInjective(),
             this.isIgnoreNeg()).createMatcher(graph, anchorNodes, anchorEdges,
             labelStore);

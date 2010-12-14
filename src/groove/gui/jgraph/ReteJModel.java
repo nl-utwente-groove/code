@@ -47,6 +47,10 @@ public class ReteJModel extends GraphJModel {
     private HashMap<ReteNetworkNode,Node> map =
         new HashMap<ReteNetworkNode,Node>();
 
+    /**
+     * Constructs a graph model for the static structure of a given RETE network. 
+     * @param network The RETE network.
+     */
     public ReteJModel(ReteNetwork network) {
         super();
         this.network = network;
@@ -163,8 +167,8 @@ public class ReteJModel extends GraphJModel {
                 source));
             for (int i = 0; i < ((ProductionNode) nnode).getPattern().length; i++) {
                 Element e = ((ProductionNode) nnode).getPattern()[i];
-                result.add(DefaultEdge.createEdge(source,
-                    "--" + i + " " + e.toString(), source));
+                result.add(DefaultEdge.createEdge(source, "--" + i + " "
+                    + e.toString(), source));
             }
         } else if (nnode instanceof ConditionChecker) {
             result.add(DefaultEdge.createEdge(source, "- Condition Checker "
@@ -172,8 +176,8 @@ public class ReteJModel extends GraphJModel {
                 source));
             for (int i = 0; i < ((ConditionChecker) nnode).getPattern().length; i++) {
                 Element e = ((ConditionChecker) nnode).getPattern()[i];
-                result.add(DefaultEdge.createEdge(source,
-                    "--" + i + " " + e.toString(), source));
+                result.add(DefaultEdge.createEdge(source, "--" + i + " "
+                    + e.toString(), source));
             }
         }
         DefaultEdge[] res = new DefaultEdge[result.size()];
