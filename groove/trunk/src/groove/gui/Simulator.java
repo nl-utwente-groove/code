@@ -52,14 +52,11 @@ import groove.explore.util.RuleEventApplier;
 import groove.graph.DefaultGraph;
 import groove.graph.Element;
 import groove.graph.Graph;
-import groove.graph.GraphAdapter;
 import groove.graph.GraphInfo;
-import groove.graph.GraphListener;
 import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.LabelStore;
-import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.gui.dialog.AboutBox;
 import groove.gui.dialog.BoundedModelCheckingDialog;
@@ -91,6 +88,9 @@ import groove.io.Xml;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.LTS;
+import groove.lts.LTSAdapter;
+import groove.lts.LTSListener;
 import groove.lts.State;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
@@ -728,7 +728,7 @@ public class Simulator {
         GraphJModel ltsJModel = getLtsPanel().getJModel();
         synchronized (ltsJModel) {
             // unhook the lts' jmodel from the lts, for efficiency's sake
-            getGTS().removeGraphListener(ltsJModel);
+            getGTS().removeLTSListener(ltsJModel);
             // disable rule application for the time being
             boolean applyEnabled = getApplyTransitionAction().isEnabled();
             getApplyTransitionAction().setEnabled(false);
@@ -1061,7 +1061,7 @@ public class Simulator {
         GraphJModel ltsJModel = getLtsPanel().getJModel();
         synchronized (ltsJModel) {
             // unhook the lts' jmodel from the lts, for efficiency's sake
-            getGTS().removeGraphListener(ltsJModel);
+            getGTS().removeLTSListener(ltsJModel);
             // disable rule application for the time being
             boolean applyEnabled = getApplyTransitionAction().isEnabled();
             getApplyTransitionAction().setEnabled(false);
@@ -4042,7 +4042,7 @@ public class Simulator {
         public void doAction() {
             GTS gts = getGTS();
             displayProgress(gts);
-            gts.addGraphListener(this.progressListener);
+            gts.addLTSListener(this.progressListener);
 
             if (this.exploration == null) {
                 this.scenario.play();
@@ -4074,7 +4074,7 @@ public class Simulator {
                     }
                 }
             }
-            gts.removeGraphListener(this.progressListener);
+            gts.removeLTSListener(this.progressListener);
         }
 
         @Override
@@ -4094,16 +4094,16 @@ public class Simulator {
          * Creates a graph listener that displays the progress of the generate
          * thread on the cancel dialog.
          */
-        private GraphListener createProgressListener() {
-            return new GraphAdapter() {
+        private LTSListener createProgressListener() {
+            return new LTSAdapter() {
                 @Override
-                public void addUpdate(GraphShape graph, Node node) {
-                    displayProgress(graph);
+                public void addUpdate(LTS lts, GraphState state) {
+                    displayProgress(lts);
                 }
 
                 @Override
-                public void addUpdate(GraphShape graph, groove.graph.Edge edge) {
-                    displayProgress(graph);
+                public void addUpdate(LTS lts, GraphTransition transition) {
+                    displayProgress(lts);
                 }
             };
         }
@@ -4163,7 +4163,7 @@ public class Simulator {
         /** LTS generation strategy of this thread. (new version) */
         private final Exploration exploration;
         /** Progress listener for the generate thread. */
-        private final GraphListener progressListener;
+        private final LTSListener progressListener;
         /** Label displaying the number of states generated so far. */
         private JLabel transitionCountLabel;
         /** Label displaying the number of transitions generated so far. */

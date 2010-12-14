@@ -26,7 +26,6 @@ import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
-import groove.graph.GraphShapeListener;
 import groove.graph.Node;
 import groove.graph.algebra.VariableNode;
 import groove.gui.Options;
@@ -34,6 +33,10 @@ import groove.gui.layout.JCellLayout;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
+import groove.lts.GraphState;
+import groove.lts.GraphTransition;
+import groove.lts.LTS;
+import groove.lts.LTSListener;
 import groove.trans.RuleLabel;
 import groove.util.Groove;
 import groove.view.aspect.AspectEdge;
@@ -59,7 +62,7 @@ import org.jgraph.graph.GraphConstants;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphJModel extends JModel implements GraphShapeListener {
+public class GraphJModel extends JModel implements LTSListener {
     /**
      * Creates a new GraphJModel instance on top of a given Graph, with given
      * node and edge attributes, and an indication whether self-edges should be
@@ -129,8 +132,10 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * the sake of efficiency.
      */
     public void reload() {
-        // temporarily remove the model as a graph listener
-        this.graph.removeGraphListener(this);
+        if (this.graph instanceof LTS) {
+            // temporarily remove the model as a graph listener
+            ((LTS) this.graph).removeLTSListener(this);
+        }
         // add nodes from Graph to GraphModel
         initializeTransients();
         Set<Node> addedNodeSet = new HashSet<Node>(this.graph.nodeSet());
@@ -150,7 +155,9 @@ public class GraphJModel extends JModel implements GraphShapeListener {
             setName(name);
         }
         // add the model as a graph listener
-        this.graph.addGraphListener(this);
+        if (this.graph instanceof LTS) {
+            ((LTS) this.graph).addLTSListener(this);
+        }
     }
 
     /**
@@ -158,10 +165,10 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * the change in the GraphModel. Can alse deal with NodeSet and EdgeSet
      * additions.
      */
-    public synchronized void addUpdate(GraphShape graph, Node node) {
+    public synchronized void addUpdate(LTS lts, GraphState state) {
         initializeTransients();
         // add a corresponding GraphCell to the GraphModel
-        addNode(node);
+        addNode(state);
         // insert(cells.toArray(), connections, null, attributes);
         doInsert();
     }
@@ -171,11 +178,11 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * the change in the GraphModel. Can alse deal with NodeSet and EdgeSet
      * additions.
      */
-    public synchronized void addUpdate(GraphShape graph, Edge edge) {
+    public synchronized void addUpdate(LTS lts, GraphTransition transition) {
         initializeTransients();
         // note that (as per GraphListener contract)
         // source and target Nodes (if any) have already been added
-        addEdge(edge);
+        addEdge(transition);
         doInsert();
         // new edges should be behind the nodes
         toBack(this.addedJCells.toArray());
@@ -216,6 +223,11 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         }
         // in any case, remove the object from the cell map
         this.toJCellMap.removeEdge(edge);
+    }
+
+    @Override
+    public void closeUpdate(LTS graph, GraphState explored) {
+        // do nothing
     }
 
     /**

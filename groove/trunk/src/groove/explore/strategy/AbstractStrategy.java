@@ -144,12 +144,12 @@ public abstract class AbstractStrategy implements Strategy {
 
     /** Default implementation; does nothing. */
     public void addGTSListener(Acceptor listener) {
-        getGTS().addGraphListener(listener);
+        getGTS().addLTSListener(listener);
     }
 
     /** Default implementation; does nothing. */
     public void removeGTSListener(Acceptor listener) {
-        getGTS().removeGraphListener(listener);
+        getGTS().removeLTSListener(listener);
     }
 
     /** Convenience method to retrieve the GTS' system record. */

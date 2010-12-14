@@ -16,19 +16,12 @@
  */
 package groove.gui;
 
-import groove.explore.ConditionalScenario;
 import groove.explore.Scenario;
-import groove.explore.result.ExploreCondition;
-import groove.explore.result.IsRuleApplicableCondition;
-import groove.graph.GraphShape;
-import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.lts.LTSAdapter;
-import groove.lts.State;
-import groove.trans.Rule;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.view.StoredGrammarView;
@@ -212,33 +205,14 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public void startSimulationUpdate(GTS gts) {
         this.gtsListener.set(gts);
         // the lts's of the strategies in this menu are changed
         // moreover, the conditions in condition strategies are reset
         // furthermore, the enabling is (re)set
         for (Map.Entry<Scenario,Action> entry : this.scenarioActionMap.entrySet()) {
-            Scenario scenario = entry.getKey();
             Action generateAction = entry.getValue();
-            if (scenario instanceof ConditionalScenario) {
-                if (this.simulator.getCurrentRule() != null) {
-                    ExploreCondition<Rule> explCond =
-                        new IsRuleApplicableCondition();
-                    String ruleName = this.simulator.getCurrentRule().getName();
-                    explCond.setCondition(gts.getGrammar().getRule(ruleName));
-                    ((ConditionalScenario<Rule>) scenario).setCondition(
-                        explCond, ruleName);
-                    generateAction.putValue(Action.NAME, scenario.getName());
-                    generateAction.setEnabled(true);
-                } else {
-                    ((ConditionalScenario<?>) scenario).setCondition(null, "");
-                    generateAction.putValue(Action.NAME, scenario.getName());
-                    generateAction.setEnabled(false);
-                }
-            } else {
-                generateAction.setEnabled(true);
-            }
+            generateAction.setEnabled(true);
         }
         setStateUpdate(gts.startState());
     }
@@ -251,24 +225,8 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public void setRuleUpdate(RuleName name) {
-        GTS gts = this.simulator.getGTS();
-        if (gts != null) {
-            for (Map.Entry<Scenario,Action> entry : this.scenarioActionMap.entrySet()) {
-                Scenario scenario = entry.getKey();
-                if (scenario instanceof ConditionalScenario) {
-                    Action generateAction = entry.getValue();
-                    ExploreCondition<Rule> explCond =
-                        new IsRuleApplicableCondition();
-                    explCond.setCondition(gts.getGrammar().getRule(name));
-                    ((ConditionalScenario<Rule>) scenario).setCondition(
-                        explCond, name.toString());
-                    generateAction.putValue(Action.NAME, scenario.getName());
-                    generateAction.setEnabled(true);
-                }
-            }
-        }
+        // do nothing
     }
 
     public void setTransitionUpdate(GraphTransition transition) {
@@ -318,18 +276,18 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         /** Sets the GTS to listen to. */
         public void set(GTS newGTS) {
             if (this.gts != null) {
-                this.gts.removeGraphListener(this);
+                this.gts.removeLTSListener(this);
             }
             this.gts = newGTS;
             if (this.gts != null) {
-                this.gts.addGraphListener(this);
+                this.gts.addLTSListener(this);
                 this.openStateCount = this.gts.openStateCount();
                 setEnabled(true);
             }
         }
 
         @Override
-        public void closeUpdate(LTS graph, State explored) {
+        public void closeUpdate(LTS graph, GraphState explored) {
             assert graph == this.gts;
             this.openStateCount--;
             assert this.openStateCount == this.gts.openStateCount();
@@ -340,7 +298,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
 
         /** If the added element is a state, increases the open state count. */
         @Override
-        public void addUpdate(GraphShape graph, Node node) {
+        public void addUpdate(LTS lts, GraphState state) {
             this.openStateCount++;
         }
 

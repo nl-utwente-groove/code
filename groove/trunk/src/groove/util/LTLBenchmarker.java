@@ -27,9 +27,6 @@ import groove.explore.strategy.OptimizedBoundedNestedDFSPocketStrategy;
 import groove.explore.strategy.OptimizedBoundedNestedDFSStrategy;
 import groove.explore.util.MatchApplier;
 import groove.explore.util.MatchSetCollector;
-import groove.graph.GraphAdapter;
-import groove.graph.GraphShape;
-import groove.graph.Node;
 import groove.graph.iso.Bisimulator;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.io.ExtensionFilter;
@@ -37,6 +34,8 @@ import groove.io.SystemStore;
 import groove.io.SystemStoreFactory;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.lts.LTS;
+import groove.lts.LTSAdapter;
 import groove.lts.ProductGTS;
 import groove.trans.DefaultApplication;
 import groove.trans.GraphGrammar;
@@ -1045,10 +1044,10 @@ public class LTLBenchmarker extends CommandLineTool {
             System.out.println("; start graph: "
                 + (startStateName == null ? "default" : startStateName));
             System.out.println("Exploration: " + getScenario());
-            getGTS().addGraphListener(new GenerateProgressMonitor());
+            getGTS().addLTSListener(new GenerateProgressMonitor());
         }
         if (getVerbosity() == HIGH_VERBOSITY) {
-            getProductGTS().addGraphListener(getStatisticsListener());
+            getProductGTS().addLTSListener(getStatisticsListener());
         }
         this.startTime = System.currentTimeMillis();
         result = getScenario().play().getValue();
@@ -1481,15 +1480,14 @@ public class LTLBenchmarker extends CommandLineTool {
         "Serialized graph files", GRAPH_FILE_EXTENSION);
 
     /** Listener to an LTS that counts the nodes and edges of the states. */
-    private static class StatisticsListener extends GraphAdapter {
+    private static class StatisticsListener extends LTSAdapter {
         /** Empty constructor with the correct visibility. */
         StatisticsListener() {
             // Auto-generated constructor stub
         }
 
         @Override
-        public void addUpdate(GraphShape graph, Node node) {
-            GraphState state = (GraphState) node;
+        public void addUpdate(LTS lts, GraphState state) {
             this.nodeCount += state.getGraph().nodeCount();
             this.edgeCount += state.getGraph().edgeCount();
         }

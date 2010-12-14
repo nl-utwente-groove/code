@@ -16,19 +16,30 @@
  */
 package groove.lts;
 
-import groove.graph.GraphAdapter;
 
 /**
  * Default implementation of an LTS listener that does nothing.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class LTSAdapter extends GraphAdapter implements LTSListener {
+public class LTSAdapter implements LTSListener {
+    /** Provides an empty default implementation. */
+    @Override
+    public void addUpdate(LTS lts, GraphState state) {
+        // empty default implementation
+    }
+
+    /** Provides an empty default implementation. */
+    @Override
+    public void addUpdate(LTS lts, GraphTransition transition) {
+        // empty default implementation
+    }
+
     /**
      * Event that occurs when closing a state. This default implementation
      * has no behaviour.
      */
-    public void closeUpdate(LTS graph, State explored) {
+    public void closeUpdate(LTS graph, GraphState explored) {
         // this implementation does nothing
     }
 }

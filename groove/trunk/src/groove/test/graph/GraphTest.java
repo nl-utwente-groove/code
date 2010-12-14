@@ -24,9 +24,7 @@ import groove.graph.DefaultEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
-import groove.graph.Element;
 import groove.graph.Graph;
-import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
@@ -40,12 +38,8 @@ import groove.util.Groove;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -492,168 +486,6 @@ public class GraphTest {
         assertTrue(this.graph.isFixed());
         // fixedness of the graph is not tested, it is a precondition
         // so there is little else to do here
-    }
-
-    @Test
-    final public void testAddGraphListenerAdd() {
-        Graph graph1 = this.matchCod;
-        GraphListener listener = new GraphListener();
-        listener.addGraph(this.graph);
-        this.graph.addGraphListener(listener);
-        listener.addGraph(graph1);
-        graph1.addGraphListener(listener);
-        List<Element> addedGraphElements = new LinkedList<Element>();
-        // add a fresh node using addNode()
-        Node addedNode = this.graph.addNode();
-        addedGraphElements.add(addedNode);
-        // add a fresh node using addNode(Node)
-        addedNode = DefaultNode.createNode();
-        this.graph.addNode(addedNode);
-        addedGraphElements.add(addedNode);
-        // add a fresh edge using addEdge(Node,Label,Node)
-        Edge addedEdge =
-            this.graph.addEdge(this.bTarget, this.aLabel, this.aTarget);
-        addedGraphElements.add(addedEdge);
-        // add an existing edge using addEdge(Node,Label,Node)
-        this.graph.addEdge(this.source, this.aLabel, this.aTarget);
-        // add a fresh edge with a fresh end node
-        addedNode = DefaultNode.createNode();
-        addedEdge = this.graph.addEdge(this.aTarget, this.cLabel, addedNode);
-        addedGraphElements.add(addedNode);
-        addedGraphElements.add(addedEdge);
-        // add a set of nodes
-        Collection<Node> nodeSet = new LinkedList<Node>();
-        nodeSet.add(DefaultNode.createNode());
-        nodeSet.add(DefaultNode.createNode());
-        nodeSet.add(DefaultNode.createNode());
-        addedGraphElements.addAll(nodeSet);
-        this.graph.addNodeSet(nodeSet);
-        // add a set of edges
-        Collection<Edge> edgeSet = new LinkedList<Edge>();
-        addedNode = DefaultNode.createNode();
-        addedEdge =
-            DefaultEdge.createEdge(this.bTarget, this.cLabel, addedNode);
-        addedGraphElements.add(addedNode);
-        addedGraphElements.add(addedEdge);
-        edgeSet.add(addedEdge);
-        addedEdge =
-            DefaultEdge.createEdge(this.source, this.aLabel, this.aTarget);
-        edgeSet.add(addedEdge);
-        addedEdge =
-            DefaultEdge.createEdge(this.source, this.bLabel, this.aTarget);
-        edgeSet.add(addedEdge);
-        addedGraphElements.add(addedEdge);
-        this.graph.addEdgeSet(edgeSet);
-        // now test if we did ok
-        assertEquals(addedGraphElements, listener.added.get(this.graph));
-    }
-
-    @Test
-    final public void testAddGraphListenerRemove() {
-        GraphListener listener = new GraphListener();
-        listener.addGraph(this.graph);
-        this.graph.addGraphListener(listener);
-        List<Element> removedGraphElements = new LinkedList<Element>();
-        // try to remove a non-existent edge
-        Edge removedEdge =
-            DefaultEdge.createEdge(this.aTarget, this.aLabel, this.aTarget);
-        this.graph.removeEdge(removedEdge);
-        assertEquals(removedGraphElements, listener.removed.get(this.graph));
-        // remove an existing edge
-        this.graph.removeEdge(this.bEdge);
-        removedGraphElements.add(this.bEdge);
-        assertEquals(removedGraphElements, listener.removed.get(this.graph));
-        // try to remove a non-existent node
-        Node removedNode = DefaultNode.createNode();
-        this.graph.removeNode(removedNode);
-        assertEquals(removedGraphElements, listener.removed.get(this.graph));
-        // remove an existing node
-        this.graph.removeNode(this.aTarget);
-        removedGraphElements.add(this.aEdge);
-        removedGraphElements.add(this.aTarget);
-        assertEquals(removedGraphElements, listener.removed.get(this.graph));
-        // add the nodes and edges again, to continue testing
-        this.graph.addEdge(this.aEdge);
-        this.graph.addEdge(this.bEdge);
-        assertEquals(removedGraphElements, listener.removed.get(this.graph));
-        // remove a set of nodes
-        Collection<Node> nodeSet = new LinkedList<Node>();
-        nodeSet.add(DefaultNode.createNode());
-        nodeSet.add(this.bTarget);
-        removedGraphElements.add(this.bEdge);
-        removedGraphElements.add(this.bTarget);
-        this.graph.removeNodeSet(nodeSet);
-        assertEquals(removedGraphElements, listener.removed.get(this.graph));
-        // remove a set of edges
-        Collection<Edge> edgeSet = new LinkedList<Edge>();
-        edgeSet.add(DefaultEdge.createEdge(this.bTarget, this.cLabel,
-            DefaultNode.createNode()));
-        edgeSet.add(this.aEdge);
-        removedGraphElements.add(this.aEdge);
-        this.graph.removeEdgeSet(edgeSet);
-        // now test if we did ok
-        assertEquals(removedGraphElements, listener.removed.get(this.graph));
-    }
-
-    @Test
-    final public void testRemoveGraphListener() {
-        GraphListener listener = new GraphListener();
-        this.graph.addGraphListener(listener);
-    }
-
-    private class GraphListener implements groove.graph.GraphListener {
-        /** Empty constructor with the correct visibility. */
-        GraphListener() {
-            // empty
-        }
-
-        public void addUpdate(GraphShape graph, Node node) {
-            assertTrue(this.listeningTo.contains(graph));
-            this.added.get(graph).add(node);
-        }
-
-        public void addUpdate(GraphShape graph, Edge edge) {
-            assertTrue(this.listeningTo.contains(graph));
-            this.added.get(graph).add(edge);
-        }
-
-        public void removeUpdate(GraphShape graph, Node node) {
-            assertTrue(this.listeningTo.contains(graph));
-            this.removed.get(graph).add(node);
-        }
-
-        public void removeUpdate(GraphShape graph, Edge elem) {
-            assertTrue(this.listeningTo.contains(graph));
-            this.removed.get(graph).add(elem);
-        }
-
-        public void replaceUpdate(GraphShape graph, Node from, Node to) {
-            assertTrue(this.listeningTo.contains(graph));
-            this.replacedFrom.get(graph).add(from);
-            this.replacedBy.get(graph).add(to);
-        }
-
-        public void replaceUpdate(GraphShape graph, Edge elem1, Edge elem2) {
-            assertTrue(this.listeningTo.contains(graph));
-            this.replacedFrom.get(graph).add(elem1);
-            this.replacedBy.get(graph).add(elem2);
-        }
-
-        public void addGraph(Graph graph) {
-            assertFalse(this.listeningTo.contains(graph));
-            this.added.put(graph, new LinkedList<Element>());
-            this.removed.put(graph, new LinkedList<Element>());
-            this.replacedFrom.put(graph, new LinkedList<Element>());
-            this.replacedBy.put(graph, new LinkedList<Element>());
-        }
-
-        Map<Graph,List<Element>> added = new HashMap<Graph,List<Element>>();
-        Map<Graph,List<Element>> removed = new HashMap<Graph,List<Element>>();
-        Map<Graph,List<Element>> replacedFrom =
-            new HashMap<Graph,List<Element>>();
-        Map<Graph,List<Element>> replacedBy =
-            new HashMap<Graph,List<Element>>();
-        Set<Graph> listeningTo = this.added.keySet();
     }
 
     private final Xml<Graph> xml = new DefaultGxl();

@@ -16,11 +16,11 @@
  */
 package groove.util;
 
-import groove.graph.Edge;
-import groove.graph.GraphAdapter;
-import groove.graph.GraphShape;
-import groove.graph.Node;
 import groove.lts.GTS;
+import groove.lts.GraphState;
+import groove.lts.GraphTransition;
+import groove.lts.LTS;
+import groove.lts.LTSAdapter;
 
 /**
  * Class that implements a visualisation of the progress of a GTS generation
@@ -29,7 +29,7 @@ import groove.lts.GTS;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GenerateProgressMonitor extends GraphAdapter {
+public class GenerateProgressMonitor extends LTSAdapter {
     /**
      * Creates a monitor that reports on states and transitions generated.
      */
@@ -38,21 +38,21 @@ public class GenerateProgressMonitor extends GraphAdapter {
     }
 
     @Override
-    public void addUpdate(GraphShape graph, Node node) {
-        if (graph.nodeCount() % UNIT == 0) {
+    public void addUpdate(LTS lts, GraphState state) {
+        if (lts.nodeCount() % UNIT == 0) {
             System.out.print("s");
             this.printed++;
         }
-        endLine((GTS) graph);
+        endLine((GTS) lts);
     }
 
     @Override
-    public void addUpdate(GraphShape graph, Edge edge) {
-        if (graph.edgeCount() % UNIT == 0) {
+    public void addUpdate(LTS lts, GraphTransition transition) {
+        if (lts.edgeCount() % UNIT == 0) {
             System.out.print("t");
             this.printed++;
         }
-        endLine((GTS) graph);
+        endLine((GTS) lts);
     }
 
     private void endLine(GTS gts) {

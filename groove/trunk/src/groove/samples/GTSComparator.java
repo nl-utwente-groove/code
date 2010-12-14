@@ -20,15 +20,11 @@ import groove.explore.Scenario;
 import groove.explore.ScenarioFactory;
 import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.DFSStrategy;
-import groove.graph.Edge;
-import groove.graph.GraphShape;
-import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.lts.LTSAdapter;
-import groove.lts.State;
 import groove.trans.GraphGrammar;
 import groove.util.GenerateProgressMonitor;
 import groove.util.Groove;
@@ -68,7 +64,7 @@ public class GTSComparator {
 
     static private GTS runScenario1(GraphGrammar grammar) {
         GTS result = new GTS(grammar);
-        result.addGraphListener(new GenerateProgressMonitor());
+        result.addLTSListener(new GenerateProgressMonitor());
         Scenario scenario1 =
             ScenarioFactory.getScenario(new BFSStrategy(), null, null, null);
         scenario1.prepare(result);
@@ -82,19 +78,18 @@ public class GTSComparator {
         final java.util.Map<GraphState,GraphState> relation =
             new HashMap<GraphState,GraphState>();
         GTS result = new GTS(grammar);
-        result.addGraphListener(new GenerateProgressMonitor());
-        result.addGraphListener(new LTSAdapter() {
+        result.addLTSListener(new GenerateProgressMonitor());
+        result.addLTSListener(new LTSAdapter() {
             @Override
-            public void closeUpdate(LTS graph, State explored) {
-                GraphState otherState = result1.addState((GraphState) explored);
-                if (otherState.getTransitionSet().size() != ((GraphState) explored).getTransitionSet().size()) {
+            public void closeUpdate(LTS graph, GraphState explored) {
+                GraphState otherState = result1.addState(explored);
+                if (otherState.getTransitionSet().size() != (explored).getTransitionSet().size()) {
                     throw new IllegalStateException();
                 }
             }
 
             @Override
-            public void addUpdate(GraphShape graph, Node node) {
-                GraphState state = (GraphState) node;
+            public void addUpdate(LTS lts, GraphState state) {
                 if (!result1.containsNode(state)) {
                     throw new IllegalStateException();
                 } else {
@@ -103,12 +98,9 @@ public class GTSComparator {
             }
 
             @Override
-            public void addUpdate(GraphShape graph, Edge edge) {
-                GraphTransition trans = (GraphTransition) edge;
-                if (!result1.containsEdge(trans)) {
+            public void addUpdate(LTS lts, GraphTransition transition) {
+                if (!result1.containsEdge(transition)) {
                     throw new IllegalStateException();
-                } else {
-                    //                    relation.put(trans, result1.getStateSet().put(trans));
                 }
             }
         });

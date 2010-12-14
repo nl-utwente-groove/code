@@ -16,11 +16,10 @@
  */
 package groove.explore.strategy;
 
-import groove.graph.GraphAdapter;
-import groove.graph.GraphShape;
-import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.lts.LTS;
+import groove.lts.LTSAdapter;
 import groove.lts.MatchResult;
 
 /**
@@ -78,7 +77,7 @@ public class LinearStrategy extends AbstractStrategy {
         boolean result = (this.atState = this.collector.getNewState()) != null;
         this.collector.reset();
         if (!result) {
-            getGTS().removeGraphListener(this.collector);
+            getGTS().removeLTSListener(this.collector);
         }
         return result;
     }
@@ -91,7 +90,7 @@ public class LinearStrategy extends AbstractStrategy {
         gts.getRecord().setCopyGraphs(false);
         gts.getRecord().setReuseEvents(false);
         super.prepare(gts, state);
-        gts.addGraphListener(this.collector);
+        gts.addLTSListener(this.collector);
     }
 
     /** Return the current value of the "close on exit" setting */
@@ -119,7 +118,7 @@ public class LinearStrategy extends AbstractStrategy {
      * Registers the first new state added to the GTS it listens to. Such an
      * object should be added as listener only to a single GTS.
      */
-    static private class NewStateCollector extends GraphAdapter {
+    static private class NewStateCollector extends LTSAdapter {
         NewStateCollector() {
             reset();
         }
@@ -140,9 +139,9 @@ public class LinearStrategy extends AbstractStrategy {
         }
 
         @Override
-        public void addUpdate(GraphShape shape, Node node) {
+        public void addUpdate(LTS shape, GraphState state) {
             if (this.newState == null) {
-                this.newState = (GraphState) node;
+                this.newState = (GraphState) state;
             }
         }
 

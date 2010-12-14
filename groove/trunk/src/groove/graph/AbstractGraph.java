@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -164,7 +163,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends
         assert isTypeCorrect(from);
         assert isTypeCorrect(to);
         if (!from.equals(to)) {
-            fireReplaceNode(from, to);
             // compute edge replacements and add new edges
             for (Edge edge : new HashSet<Edge>(edgeSet(from))) {
                 boolean changed = false;
@@ -181,7 +179,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends
                 if (changed) {
                     Edge newEdge = createEdge(source, edge.label(), target);
                     addEdgeWithoutCheck(newEdge);
-                    fireReplaceEdge(edge, newEdge);
                     removeEdge(edge);
                 }
             }
@@ -196,40 +193,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends
     /** This should return a <i>modifiable</i> clone of the graph. */
     @Override
     public abstract Graph clone();
-
-    /**
-     * Calls {@link GraphListener#replaceUpdate(GraphShape, Node, Node)} on all
-     * registered GraphListeners.
-     * @param from the replaced node
-     * @param to the new node
-     * @see GraphListener#replaceUpdate(GraphShape,Node,Node)
-     */
-    protected synchronized void fireReplaceNode(Node from, Node to) {
-        Iterator<GraphShapeListener> iter = getGraphListeners();
-        while (iter.hasNext()) {
-            GraphShapeListener listener = iter.next();
-            if (listener instanceof GraphListener) {
-                ((GraphListener) listener).replaceUpdate(this, from, to);
-            }
-        }
-    }
-
-    /**
-     * Calls {@link GraphListener#replaceUpdate(GraphShape, Edge, Edge)} on all
-     * registered GraphListeners.
-     * @param from the replaced edge
-     * @param to the new edge
-     * @see GraphListener#replaceUpdate(GraphShape,Edge,Edge)
-     */
-    protected synchronized void fireReplaceEdge(Edge from, Edge to) {
-        Iterator<GraphShapeListener> iter = getGraphListeners();
-        while (iter.hasNext()) {
-            GraphShapeListener listener = iter.next();
-            if (listener instanceof GraphListener) {
-                ((GraphListener) listener).replaceUpdate(this, from, to);
-            }
-        }
-    }
 
     /**
      * Tests if the certificate strategy (of the correct strength) is currently instantiated.

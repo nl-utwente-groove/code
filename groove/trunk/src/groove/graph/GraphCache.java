@@ -56,8 +56,8 @@ public class GraphCache extends GraphShapeCache {
      * Keeps the cached sets in sync with changes in the graph.
      */
     @Override
-    public void addUpdate(GraphShape graph, Node node) {
-        super.addUpdate(graph, node);
+    public void addUpdate(Node node) {
+        super.addUpdate(node);
         DefaultDispenser nodeCounter = getNodeCounter();
         int nodeNr = node.getNumber();
         if (nodeCounter.getCount() <= nodeNr) {

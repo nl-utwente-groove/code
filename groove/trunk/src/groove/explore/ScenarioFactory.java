@@ -17,8 +17,6 @@
 package groove.explore;
 
 import groove.explore.result.Acceptor;
-import groove.explore.result.ConditionalAcceptor;
-import groove.explore.result.ExploreCondition;
 import groove.explore.strategy.BoundedModelCheckingStrategy;
 import groove.explore.strategy.ModelCheckingStrategy;
 import groove.explore.strategy.Strategy;
@@ -45,41 +43,6 @@ public class ScenarioFactory {
     public static <T> Scenario getScenario(final Strategy strategy,
             final Acceptor acceptor, final String description, final String name) {
         return new DefaultScenario(strategy, acceptor, name, description);
-    }
-
-    /**
-     * Retrieves a conditional scenario handler for a scenario constructed from
-     * its components.
-     * @param <C> Type of the condition.
-     * @param strategy Strategy for the scenario.
-     * @param acceptor Acceptor for the scenario.
-     * @param description A one-sentence description of the scenario.
-     * @param name A short (one or few words) description of the scenario. Is to
-     *        be used in menus, or as identification (for instance in
-     *        command-line options).
-     * @param negated Whether the condition of the acceptor is to be negated. Is
-     *        designed for the needs of the {@link groove.gui.Simulator} where
-     *        the negated characteristic is taken into account in the name of
-     *        the scenario.
-     */
-    public static <C> ConditionalScenario<C> getConditionalScenario(
-            final Strategy strategy, final ConditionalAcceptor<C> acceptor,
-            final String description, final String name, final boolean negated) {
-        return new ConditionalScenario<C>(strategy, acceptor, name,
-            description, null) {
-            @Override
-            public void setCondition(ExploreCondition<C> condition, String name) {
-                if (condition != null) {
-                    condition.setNegated(negated);
-                }
-                super.setCondition(condition, name);
-            }
-
-            @Override
-            public Class<?> getConditionType() {
-                return getCondition().getConditionType();
-            }
-        };
     }
 
     /**

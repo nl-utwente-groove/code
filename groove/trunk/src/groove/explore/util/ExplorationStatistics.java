@@ -18,16 +18,15 @@ package groove.explore.util;
 
 import groove.explore.DefaultScenario;
 import groove.graph.AbstractGraphShape;
-import groove.graph.Edge;
-import groove.graph.GraphAdapter;
-import groove.graph.GraphShape;
-import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.PartitionRefiner;
 import groove.lts.AbstractGraphState;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
+import groove.lts.GraphTransition;
+import groove.lts.LTS;
+import groove.lts.LTSAdapter;
 import groove.trans.DefaultApplication;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
@@ -111,7 +110,7 @@ public class ExplorationStatistics {
         runTime.gc();
         this.startUsedMemory = runTime.totalMemory() - runTime.freeMemory();
         if (getVerbosity() == VerbosityOption.HIGH_VERBOSITY) {
-            this.gts.addGraphListener(this.statisticsListener);
+            this.gts.addLTSListener(this.statisticsListener);
         }
         this.startTime = System.currentTimeMillis();
     }
@@ -120,7 +119,7 @@ public class ExplorationStatistics {
     public void stop() {
         this.endTime = System.currentTimeMillis();
         if (getVerbosity() == VerbosityOption.HIGH_VERBOSITY) {
-            this.gts.removeGraphListener(this.statisticsListener);
+            this.gts.removeLTSListener(this.statisticsListener);
         }
     }
 
@@ -389,21 +388,20 @@ public class ExplorationStatistics {
     // ------------------------------------------------------------------------
 
     /** Listener to an LTS that counts the nodes and edges of the states. */
-    private static class StatisticsListener extends GraphAdapter {
+    private static class StatisticsListener extends LTSAdapter {
         /** Empty constructor with the correct visibility. */
         StatisticsListener() {
             // Empty.
         }
 
         @Override
-        public void addUpdate(GraphShape graph, Node node) {
-            GraphState state = (GraphState) node;
+        public void addUpdate(LTS lts, GraphState state) {
             this.nodeCount += state.getGraph().nodeCount();
             this.edgeCount += state.getGraph().edgeCount();
         }
 
         @Override
-        public void addUpdate(GraphShape graph, Edge edge) {
+        public void addUpdate(LTS lts, GraphTransition transition) {
             // Does nothing by design.
         }
 

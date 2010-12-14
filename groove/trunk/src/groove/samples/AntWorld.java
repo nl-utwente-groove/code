@@ -20,14 +20,13 @@ import groove.explore.DefaultScenario;
 import groove.explore.Scenario;
 import groove.explore.result.Result;
 import groove.explore.strategy.RandomLinearStrategy;
-import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.lts.GTS;
 import groove.lts.GraphTransition;
+import groove.lts.LTS;
 import groove.lts.LTSAdapter;
 import groove.lts.LTSListener;
 import groove.trans.GraphGrammar;
@@ -65,7 +64,7 @@ public class AntWorld {
             grammarView.setStartGraph("start-" + rounds);
             GraphGrammar grammar = grammarView.toGrammar();
             GTS gts = new GTS(grammar);
-            gts.addGraphListener(getStatisticsListener());
+            gts.addLTSListener(getStatisticsListener());
             Scenario scenario =
                 new DefaultScenario(new RandomLinearStrategy(), null);
             scenario.prepare(gts);
@@ -94,9 +93,9 @@ public class AntWorld {
     static private LTSListener getStatisticsListener() {
         return new LTSAdapter() {
             @Override
-            public void addUpdate(GraphShape graph, Edge edge) {
+            public void addUpdate(LTS lts, GraphTransition transition) {
                 this.counter++;
-                GraphTransition trans = (GraphTransition) edge;
+                GraphTransition trans = (GraphTransition) transition;
                 if (trans.getEvent().getRule().getName().equals("end_turn")) {
                     System.out.print("\n" + trans.getEvent());
                 } else if (this.counter % 10 == 0) {

@@ -18,12 +18,11 @@ package groove.explore.strategy;
 
 import groove.explore.util.MatchSetCollector;
 import groove.graph.DeltaStore;
-import groove.graph.GraphAdapter;
-import groove.graph.GraphShape;
-import groove.graph.Node;
 import groove.lts.DefaultGraphNextState;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.lts.LTS;
+import groove.lts.LTSAdapter;
 import groove.lts.MatchResult;
 import groove.match.SearchEngineFactory;
 import groove.match.SearchEngineFactory.EngineType;
@@ -68,7 +67,7 @@ public class ReteLinearStrategy extends AbstractStrategy {
     @Override
     public boolean next() {
         if (this.atState == null) {
-            getGTS().removeGraphListener(this.collector);
+            getGTS().removeLTSListener(this.collector);
             unprepare();
             return false;
         }
@@ -101,7 +100,7 @@ public class ReteLinearStrategy extends AbstractStrategy {
             this.rete.transitionOccurred(this.atState.getGraph(), d);
 
         } else {
-            getGTS().removeGraphListener(this.collector);
+            getGTS().removeLTSListener(this.collector);
         }
         return result;
     }
@@ -114,7 +113,7 @@ public class ReteLinearStrategy extends AbstractStrategy {
         gts.getRecord().setCopyGraphs(false);
         gts.getRecord().setReuseEvents(false);
         super.prepare(gts, state);
-        gts.addGraphListener(this.collector);
+        gts.addLTSListener(this.collector);
 
         //initializing the RETE network
         this.rete =
@@ -170,7 +169,7 @@ public class ReteLinearStrategy extends AbstractStrategy {
      * Registers the first new state added to the GTS it listens to. Such an
      * object should be added as listener only to a single GTS.
      */
-    static private class NewStateCollector extends GraphAdapter {
+    static private class NewStateCollector extends LTSAdapter {
         NewStateCollector() {
             reset();
         }
@@ -191,9 +190,9 @@ public class ReteLinearStrategy extends AbstractStrategy {
         }
 
         @Override
-        public void addUpdate(GraphShape shape, Node node) {
+        public void addUpdate(LTS shape, GraphState state) {
             if (this.newState == null) {
-                this.newState = (GraphState) node;
+                this.newState = (GraphState) state;
             }
         }
 

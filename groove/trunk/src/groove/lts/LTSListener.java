@@ -16,7 +16,6 @@
  */
 package groove.lts;
 
-import groove.graph.GraphShapeListener;
 
 /**
  * An extended graph listener, which is also notified of explore actions on an
@@ -24,11 +23,27 @@ import groove.graph.GraphShapeListener;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface LTSListener extends GraphShapeListener {
+public interface LTSListener {
+    /**
+     * Signals that a node has been added to a given graph.
+     * @param lts the graph that has been updated
+     * @param state the node that has been added
+     * @require <tt>graph.containsElement(elem)</tt>
+     */
+    void addUpdate(LTS lts, GraphState state);
+
+    /**
+     * Signals that an edge has been added to a given graph.
+     * @param lts the graph that has been updated
+     * @param transition the edge that has been added
+     * @require <tt>graph.containsElement(elem)</tt>
+     */
+    void addUpdate(LTS lts, GraphTransition transition);
+
     /**
      * Update method called when a state of the LTS is set to closed, in the
      * course of LTS exploration.
      * @see LTS#isOpen(State)
      */
-    public void closeUpdate(LTS graph, State explored);
+    public void closeUpdate(LTS graph, GraphState explored);
 }
