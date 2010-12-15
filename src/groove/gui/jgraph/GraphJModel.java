@@ -403,7 +403,7 @@ public class GraphJModel extends JModel implements LTSListener {
             result = isPotentialUnaryEdge(edge);
         } else if (edge instanceof AspectEdge) {
             result =
-                ((AspectEdge) edge).isUnaryEdge() || isPotentialUnaryEdge(edge)
+                !edge.isBinary() || isPotentialUnaryEdge(edge)
                     && RuleAspect.isRemark((AspectEdge) edge);
         } else {
             result = !edge.label().isBinary();

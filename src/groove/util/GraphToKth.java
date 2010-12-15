@@ -205,7 +205,7 @@ public final class GraphToKth {
     private static String getType(AspectNode node) {
         String type = null;
         for (AspectEdge edge : graph.outEdgeSet(node)) {
-            if (edge.isNodeType() == 1) {
+            if (edge.isNodeType()) {
                 type = edge.label().text();
                 break;
             }
@@ -220,7 +220,7 @@ public final class GraphToKth {
         assert isFlowNode(node) : "Node " + node + " has an illegal type.";
         ArrayList<String> flags = new ArrayList<String>();
         for (AspectEdge edge : graph.outEdgeSet(node)) {
-            if (edge.isFlag() == 0) {
+            if (edge.isFlag()) {
                 flags.add(edge.label().text());
             }
         }
