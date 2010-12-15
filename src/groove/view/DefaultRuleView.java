@@ -1450,7 +1450,7 @@ public class DefaultRuleView implements RuleView {
                     LabelVar oldVar = varNames.put(varName, var);
                     if (oldVar != null && !var.equals(oldVar)) {
                         errors.add(new FormatError(
-                            "Duplucate variable name '%s' for different label types",
+                            "Duplicate variable name '%s' for different label types",
                             varName));
                     }
                 }

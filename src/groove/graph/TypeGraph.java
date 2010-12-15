@@ -231,7 +231,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
         for (Edge edge : model.edgeSet()) {
             N node = (N) edge.source();
             TypeLabel label = getActualType(edge.label());
-            if (label.isNodeType()) {
+            if (label != null && label.isNodeType()) {
                 if (edge.label() instanceof RuleLabel
                     && ((RuleLabel) edge.label()).isSharp()) {
                     sharpNodes.add(node);
@@ -309,7 +309,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                 edgeType = ((RuleLabel) edgeType).getNegOperand().toLabel();
             }
             Node source = edge.source();
-            Label sourceType = nodeTypeMap.get(source);
+            TypeLabel sourceType = nodeTypeMap.get(source);
             Node target = edge.target();
             TypeLabel targetType = nodeTypeMap.get(target);
             if (sourceType == null || targetType == null) {
@@ -325,22 +325,16 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                         "Wildcard expression '%s' not supported in typed rules",
                         edgeType, edge));
                 } else if (ruleEdgeType.isEmpty()) {
-                    boolean error = false;
-                    if (!isSharpType(sourceType)) {
+                    // this is a (possibly negative) comparison of nodes
+                    // which can only be correct if they have a common subtype
+                    Set<TypeLabel> commonSubtypes =
+                        new HashSet<TypeLabel>(getLabelStore().getSubtypes(
+                            sourceType));
+                    commonSubtypes.retainAll(getLabelStore().getSubtypes(
+                        targetType));
+                    if (commonSubtypes.isEmpty()) {
                         errors.add(new FormatError(
-                            "Merged %s-node '%s' should be sharply typed",
-                            sourceType, source));
-                        error = true;
-                    }
-                    if (!isSharpType(targetType)) {
-                        errors.add(new FormatError(
-                            "Merged %s-node '%s' should be sharply typed",
-                            targetType, target));
-                        error = true;
-                    }
-                    if (!error && !sourceType.equals(targetType)) {
-                        errors.add(new FormatError(
-                            "Merged %s-node '%s' and %s-node '%s' should be identically typed",
+                            "Compared nodes %s-node '%s' and %s-node '%s' have no common subtypes",
                             sourceType, source, targetType, target));
                     }
                 } else {
@@ -503,12 +497,12 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
 
     /**
      * Returns the actual type label wrapped inside a (possibly sharp) type.
+     * Returns {@code null} if the label is an operator or argument edge.
      */
     private TypeLabel getActualType(Label type) {
         TypeLabel result;
         if (type instanceof RuleLabel) {
             RuleLabel ruleLabel = (RuleLabel) type;
-            assert ruleLabel.isAtom() || ruleLabel.isSharp();
             result = ruleLabel.getTypeLabel();
         } else {
             assert type instanceof TypeLabel;
