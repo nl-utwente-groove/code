@@ -17,7 +17,7 @@
 package groove.match.rete;
 
 import groove.graph.Edge;
-import groove.graph.GraphShape;
+import groove.graph.Graph;
 import groove.graph.Node;
 import groove.match.AbstractMatchStrategy;
 import groove.trans.Condition;
@@ -103,7 +103,7 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         return result;
     }
 
-    private synchronized boolean graphShapesEqual(GraphShape g1, GraphShape g2) {
+    private synchronized boolean graphShapesEqual(Graph g1, Graph g2) {
         boolean result = true;
 
         HashSet<Node> nodes = new HashSet<Node>(g1.nodeSet());

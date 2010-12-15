@@ -17,15 +17,15 @@
 package groove.lts;
 
 import groove.explore.result.Acceptor;
+import groove.graph.AbstractGraph;
 import groove.graph.Edge;
-import groove.graph.Element;
 import groove.graph.Graph;
-import groove.graph.GraphInfo;
-import groove.graph.Label;
+import groove.graph.GraphCache;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.trans.SystemRecord;
 import groove.util.CollectionView;
 import groove.util.FilterIterator;
@@ -44,7 +44,7 @@ import java.util.Set;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class ProductGTS implements LTS {
+public class ProductGTS extends AbstractGraph<GraphCache> implements LTS {
 
     /**
      * Constructs a GTS from a (fixed) graph grammar.
@@ -71,25 +71,15 @@ public class ProductGTS implements LTS {
     }
 
     /**
-     * Returns the Buechi start-state of the gts.
-     * @return the Buechi start-state of the gts
-     */
-    public BuchiGraphState startBuchiState() {
-        return this.startState;
-    }
-
-    /**
      * Adds a transition to the product gts. Basically, the transition is only
      * added to the set of outgoing transitions of the source state.
      * 
      * @param transition the transition to be added
      * @return the singleton set containing the transition added.
      */
-    public Set<ProductTransition> addTransition(ProductTransition transition) {
-        transition.source().addTransition(transition);
+    public boolean addTransition(ProductTransition transition) {
+        boolean result = transition.source().addTransition(transition);
         this.transitionCount++;
-        Set<ProductTransition> result = new HashSet<ProductTransition>(1);
-        result.add(transition);
         return result;
     }
 
@@ -319,8 +309,8 @@ public class ProductGTS implements LTS {
             if ((stateKey.getCtrlState() == otherStateKey.getCtrlState())
                 && (stateKey.getBuchiLocation() == null || stateKey.getBuchiLocation().equals(
                     otherStateKey.getBuchiLocation()))) {
-                Graph one = stateKey.getGraph();
-                Graph two = otherStateKey.getGraph();
+                HostGraph one = stateKey.getGraph();
+                HostGraph two = otherStateKey.getGraph();
                 if (isCheckIsomorphism()) {
                     return this.checker.areIsomorphic(one, two);
                 } else {
@@ -343,7 +333,7 @@ public class ProductGTS implements LTS {
                 result =
                     this.checker.getCertifier(stateKey.getGraph(), true).getGraphCertificate().hashCode();
             } else {
-                Graph graph = stateKey.getGraph();
+                HostGraph graph = stateKey.getGraph();
                 result =
                     graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
             }
@@ -381,12 +371,8 @@ public class ProductGTS implements LTS {
         return this.stateSet;
     }
 
-    /**
-     * Deprecated. Use {@link ProductGTS#startBuchiState()} instead.
-     */
-    @Deprecated
-    public State startState() {
-        return null;
+    public BuchiGraphState startState() {
+        return this.startState;
     }
 
     public void addLTSListener(LTSListener listener) {
@@ -403,17 +389,6 @@ public class ProductGTS implements LTS {
     public boolean containsEdge(Edge elem) {
         assert elem instanceof ProductTransition;
         return containsTransition((ProductTransition) elem);
-    }
-
-    @Override
-    @Deprecated
-    public boolean containsElement(Element elem) {
-        if (elem instanceof BuchiGraphState) {
-            return containsState((BuchiGraphState) elem);
-        } else if (elem instanceof ProductTransition) {
-            return containsTransition((ProductTransition) elem);
-        }
-        return false;
     }
 
     /**
@@ -440,60 +415,50 @@ public class ProductGTS implements LTS {
             && source.outTransitions().contains(transition);
     }
 
-    @Deprecated
-    public boolean containsElementSet(Collection<? extends Element> elements) {
-        return false;
-    }
-
+    @Override
     public int edgeCount() {
         return this.transitionCount;
     }
 
-    public Set<? extends Edge> edgeSet(Node node) {
-        return null;
-    }
-
-    public GraphInfo getInfo() {
-        return null;
-    }
-
-    public boolean isEmpty() {
-        return false;
-    }
-
-    public boolean isFixed() {
-        return false;
-    }
-
-    public Set<? extends Edge> labelEdgeSet(Label label) {
-        return null;
-    }
-
+    @Override
     public int nodeCount() {
         return this.stateSet.size();
-    }
-
-    public Set<? extends GraphTransition> inEdgeSet(Node node) {
-        return null;
-    }
-
-    public Set<? extends GraphTransition> outEdgeSet(Node node) {
-        return null;
     }
 
     public void removeLTSListener(LTSListener listener) {
         // Empty.
     }
 
-    public void setFixed() {
-        // Empty.
+    @Override
+    public ProductGTS newGraph() {
+        return new ProductGTS(this.graphGrammar);
     }
 
-    public GraphInfo setInfo(GraphInfo info) {
-        return null;
+    @Override
+    public boolean addNode(Node node) {
+        assert node instanceof BuchiGraphState;
+        return addState((BuchiGraphState) node) == null;
     }
 
-    public int size() {
-        return 0;
+    @Override
+    public boolean removeEdge(Edge edge) {
+        throw new UnsupportedOperationException();
     }
+
+    @Override
+    public boolean addEdgeWithoutCheck(Edge edge) {
+        assert edge instanceof ProductTransition;
+        return addTransition((ProductTransition) edge);
+    }
+
+    @Override
+    public boolean removeNodeWithoutCheck(Node node) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ProductGTS clone() {
+        throw new UnsupportedOperationException();
+    }
+
 }

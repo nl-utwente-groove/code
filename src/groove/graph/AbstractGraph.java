@@ -17,9 +17,12 @@
 package groove.graph;
 
 import groove.graph.iso.CertificateStrategy;
+import groove.util.AbstractCacheHolder;
 import groove.util.Dispenser;
+import groove.util.Groove;
 import groove.util.Pair;
 
+import java.lang.ref.Reference;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,7 +37,205 @@ import java.util.Set;
  * @version $Revision$
  */
 public abstract class AbstractGraph<C extends GraphCache> extends
-        AbstractGraphShape<C> implements Graph {
+        AbstractCacheHolder<C> implements Graph {
+    /**
+     * This constructor polls the cache reference queue and calls
+     * {@link Reference#clear()} on all encountered references.
+     */
+    protected AbstractGraph() {
+        super(null);
+        modifiableGraphCount++;
+    }
+
+    public int nodeCount() {
+        return nodeSet().size();
+    }
+
+    public int edgeCount() {
+        return edgeSet().size();
+    }
+
+    /**
+     * Defers the containment question to {@link #nodeSet()}
+     */
+    public boolean containsNode(Node elem) {
+        assert isTypeCorrect(elem);
+        return nodeSet().contains(elem);
+    }
+
+    /**
+     * Defers the containment question to {@link #edgeSet()}
+     */
+    public boolean containsEdge(Edge elem) {
+        assert isTypeCorrect(elem);
+        return edgeSet().contains(elem);
+    }
+
+    public int size() {
+        return nodeCount() + edgeCount();
+    }
+
+    public boolean isEmpty() {
+        return nodeCount() == 0;
+    }
+
+    /**
+     * This implementation retrieves the node-to-edges mapping from the cache,
+     * and looks up the required set in the image for <tt>node</tt>.
+     */
+    public Set<? extends Edge> edgeSet(Node node) {
+        assert isTypeCorrect(node);
+        Set<? extends Edge> result = getCache().getNodeEdgeMap().get(node);
+        if (result == null) {
+            return Collections.emptySet();
+        } else {
+            return Collections.unmodifiableSet(result);
+        }
+    }
+
+    /**
+     * This implementation retrieves the node-to-out-edges mapping from the cache,
+     * and looks up the required set in the image for <tt>node</tt>.
+     */
+    public Set<? extends Edge> outEdgeSet(final Node node) {
+        assert isTypeCorrect(node);
+        Set<? extends Edge> result = getCache().getNodeOutEdgeMap().get(node);
+        if (result == null) {
+            return Collections.emptySet();
+        } else {
+            return Collections.unmodifiableSet(result);
+        }
+    }
+
+    /**
+     * This implementation retrieves the node-to-in-edges mapping from the cache,
+     * and looks up the required set in the image for <tt>node</tt>.
+     */
+    public Set<? extends Edge> inEdgeSet(final Node node) {
+        assert isTypeCorrect(node);
+        Set<? extends Edge> result = getCache().getNodeInEdgeMap().get(node);
+        if (result == null) {
+            return Collections.emptySet();
+        } else {
+            return Collections.unmodifiableSet(result);
+        }
+    }
+
+    public Set<? extends Edge> labelEdgeSet(Label label) {
+        Set<? extends Edge> result = getCache().getLabelEdgeMap().get(label);
+        if (result != null) {
+            return Collections.unmodifiableSet(result);
+        } else {
+            return Collections.emptySet();
+        }
+    }
+
+    public GraphInfo getInfo() {
+        return this.graphInfo;
+    }
+
+    /**
+     * Callback factory method for a graph information object.
+     * @param info the {@link groove.graph.GraphInfo} to create a fresh instance
+     *        of
+     * @return a fresh instance of {@link groove.graph.GraphInfo} based on
+     *         <code>info</code>
+     */
+    protected GraphInfo createInfo(GraphInfo info) {
+        return new GraphInfo(info);
+    }
+
+    public GraphInfo setInfo(GraphInfo info) {
+        return this.graphInfo = (info == null ? null : createInfo(info));
+    }
+
+    public boolean isFixed() {
+        return isCacheCollectable();
+    }
+
+    public void setFixed() {
+        if (!isFixed()) {
+            setCacheCollectable();
+            if (GATHER_STATISTICS) {
+                modifiableGraphCount--;
+            }
+        }
+    }
+
+    @Override
+    public void testFixed(boolean fixed) throws IllegalStateException {
+        if (isFixed() != fixed) {
+            throw new IllegalStateException(String.format(
+                "Expected graph to be %s", fixed ? "fixed" : "unfixed"));
+        }
+    }
+
+    /** Calls {@link #toString(Graph)}. */
+    @Override
+    public String toString() {
+        return toString(this);
+    }
+
+    // -------------------- Graph listener methods ---------------------------
+
+    /**
+     * Calls {@link GraphCache#addUpdate(Node)} 
+     * if the cache is not cleared.
+     * @param node the node being added
+     */
+    protected void fireAddNode(Node node) {
+        if (!isCacheCleared()) {
+            getCache().addUpdate(node);
+        }
+    }
+
+    /**
+     * Calls {@link GraphCache#addUpdate(Edge)}
+     * if the cache is not cleared.
+     * @param edge the edge being added
+     */
+    protected void fireAddEdge(Edge edge) {
+        if (!isCacheCleared()) {
+            getCache().addUpdate(edge);
+        }
+    }
+
+    /**
+     * Calls {@link GraphCache#removeUpdate(Node)}
+     * if the cache is not cleared.
+     * @param node the node being removed
+     */
+    protected void fireRemoveNode(Node node) {
+        if (!isCacheCleared()) {
+            getCache().removeUpdate(node);
+        }
+    }
+
+    /**
+     * Calls {@link GraphCache#removeUpdate(Edge)}
+     * if the cache is not cleared.
+     * @param edge the edge being removed
+     */
+    protected void fireRemoveEdge(Edge edge) {
+        if (!isCacheCleared()) {
+            getCache().removeUpdate(edge);
+        }
+    }
+
+    /** 
+     * Tests if a node is of the correct type to be included in this graph.
+     */
+    protected boolean isTypeCorrect(Node node) {
+        return true;
+    }
+
+    /** 
+     * Tests if an edge is of the correct type to be included in this graph.
+     */
+    protected boolean isTypeCorrect(Edge edge) {
+        return true;
+    }
+
     /**
      * Factory method for nodes of this graph.
      * @return the freshly created node
@@ -127,12 +328,50 @@ public abstract class AbstractGraph<C extends GraphCache> extends
         return added;
     }
 
+    /** 
+     * This implementation calls {@link #addEdgeWithoutCheck(Edge)} for all
+     * elements of the given edge set.
+     */
     public boolean addEdgeSetWithoutCheck(Collection<? extends Edge> edgeSet) {
         boolean added = false;
         for (Edge edge : edgeSet) {
             added |= addEdgeWithoutCheck(edge);
         }
         return added;
+    }
+
+    /**
+     * This implementation calls {@link #addNode(Node)} and
+     * {@link #addEdgeWithoutCheck(Edge)} for the actual addition of
+     * the edge and its incident nodes.
+     */
+    public boolean addEdge(Edge edge) {
+        assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
+        boolean added = !containsEdge(edge);
+        if (added) {
+            addNode(edge.source());
+            addNode(edge.target());
+            addEdgeWithoutCheck(edge);
+        }
+        return added;
+    }
+
+    /**
+     * This implementation calls {@link #removeEdge(Edge)} and 
+     * {@link #removeNodeWithoutCheck(Node)} for the actual removal
+     * of the incident edges and the node.
+     */
+    public boolean removeNode(Node node) {
+        assert !isFixed() : "Trying to remove " + node
+            + " from unmodifiable graph";
+        boolean removed = containsNode(node);
+        if (removed) {
+            for (Edge edge : edgeSet(node)) {
+                removeEdge(edge);
+            }
+            removeNodeWithoutCheck(node);
+        }
+        return removed;
     }
 
     public boolean removeNodeSet(Collection<Node> nodeSet) {
@@ -225,16 +464,9 @@ public abstract class AbstractGraph<C extends GraphCache> extends
     }
 
     /**
-     * Tests if a given graph is connected; throws a
-     * {@link IllegalArgumentException} if it is not. Implemented by testing
-     * whether the number of partitions of the graph equals 1.
-     * 
-     * @return <tt>true</tt> if this graph contains exactly one connected
-     *         component, <tt>false</tt> otherwise
+     * Map in which varies kinds of data can be stored.
      */
-    public boolean isConnected() {
-        return getConnectedSets(nodeSet(), edgeSet()).size() == 1;
-    }
+    private GraphInfo graphInfo;
 
     // -------------------- REPORTER DEFINITIONS ------------------------
 
@@ -297,6 +529,38 @@ public abstract class AbstractGraph<C extends GraphCache> extends
     }
 
     /**
+     * Returns the number of graphs created and never fixed.
+     * @return the number of graphs created and never fixed
+     */
+    static public int getModifiableGraphCount() {
+        return modifiableGraphCount;
+    }
+
+    /**
+     * Provides a textual description of a given graph. Lists the nodes and
+     * their outgoing edges.
+     * @param graph the graph to be described
+     * @return a textual description of <tt>graph</tt>
+     */
+    public static String toString(Graph graph) {
+        StringBuffer result = new StringBuffer();
+        result.append(graph.getInfo());
+        result.append(String.format("Nodes: %s%n", graph.nodeSet()));
+        result.append(String.format("Edges: %s%n", graph.edgeSet()));
+        return "Nodes: " + graph.nodeSet() + "; Edges: " + graph.edgeSet();
+    }
+
+    /**
+     * Private copy of the static variable to allow compiler optimization.
+     */
+    static private final boolean GATHER_STATISTICS = Groove.GATHER_STATISTICS;
+
+    /**
+     * Counts the number of graphs that were not fixed. Added for debugging
+     * purposes: observers of modifiable graphs may cause memory leaks.
+     */
+    static private int modifiableGraphCount = 0;
+    /**
      * The current strategy for computing isomorphism certificates.
      * @see #getCertifier(boolean)
      */
@@ -356,11 +620,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends
             return new EmptyGraph<C>();
         }
 
-        public boolean addEdge(Edge edge) {
-            throw new UnsupportedOperationException(
-                "Can't add element to fixed empty graph");
-        }
-
         public boolean addNode(Node node) {
             throw new UnsupportedOperationException(
                 "Can't add element to fixed empty graph");
@@ -379,9 +638,5 @@ public abstract class AbstractGraph<C extends GraphCache> extends
                 "Can't remove element from fixed empty graph");
         }
 
-        public boolean removeNode(Node node) {
-            throw new UnsupportedOperationException(
-                "Can't remove element from fixed empty graph");
-        }
     }
 }

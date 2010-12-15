@@ -17,6 +17,7 @@
 package groove.view;
 
 import groove.graph.ElementFactory;
+import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -49,7 +50,7 @@ import java.util.TreeSet;
 public class DefaultTypeView implements TypeView {
     /**
      * Constructs an instance from a given aspect graph.
-     * @see GraphInfo#getName(groove.graph.GraphShape)
+     * @see GraphInfo#getName(Graph)
      */
     public DefaultTypeView(AspectGraph view) {
         this.view = view;

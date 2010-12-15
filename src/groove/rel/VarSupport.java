@@ -18,7 +18,7 @@
 package groove.rel;
 
 import groove.graph.Edge;
-import groove.graph.GraphShape;
+import groove.graph.Graph;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
 import groove.trans.RuleLabel;
@@ -58,7 +58,7 @@ public class VarSupport {
      * union of the variables involved in the edges.
      * @see #getAllVars(Edge)
      */
-    static public Set<LabelVar> getAllVars(GraphShape graph) {
+    static public Set<LabelVar> getAllVars(Graph graph) {
         Set<LabelVar> result = new HashSet<LabelVar>();
         for (Edge edge : graph.edgeSet()) {
             result.addAll(getAllVars(edge));

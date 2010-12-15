@@ -35,7 +35,7 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
      * @return a prototype <tt>GeneralGraph</tt> instance, only intended to be
      *         used for its <tt>newGraph()</tt> method.
      */
-    static public Graph getPrototype() {
+    static public NodeSetEdgeSetGraph getPrototype() {
         return new NodeSetEdgeSetGraph();
     }
 
@@ -77,26 +77,9 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
     }
 
     /**
-     * This implementation may be relied upon to call
-     * <tt>{@link #addEdgeWithoutCheck(Edge)}</tt> for the actual addition of
-     * the edge.
+     * Improved implementation taking advantage of the edge set.
      */
-    public boolean addEdge(Edge edge) {
-        assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
-        boolean added = !this.graphEdgeSet.contains(edge);
-        if (added) {
-            this.graphNodeSet.add(edge.source());
-            this.graphNodeSet.add(edge.target());
-            addEdgeWithoutCheck(edge);
-        }
-        return added;
-    }
-
-    /**
-     * This implementation may be relied upon to call
-     * <tt>{@link #removeNodeWithoutCheck(Node)}</tt> for the actual removal
-     * of the node.
-     */
+    @Override
     public boolean removeNode(Node node) {
         assert !isFixed() : "Trying to remove " + node
             + " from unmodifiable graph";
@@ -110,7 +93,6 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
                 }
             }
             removeNodeWithoutCheck(node);
-            // notifyGraphListenersOfRemove(node);
         }
         return removed;
     }
@@ -167,12 +149,12 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
     // ------------- general methods (see AbstractGraph) ----------
 
     @Override
-    public Graph clone() {
-        Graph result = new NodeSetEdgeSetGraph(this);
+    public NodeSetEdgeSetGraph clone() {
+        NodeSetEdgeSetGraph result = new NodeSetEdgeSetGraph(this);
         return result;
     }
 
-    public Graph newGraph() {
+    public NodeSetEdgeSetGraph newGraph() {
         return new NodeSetEdgeSetGraph();
     }
 

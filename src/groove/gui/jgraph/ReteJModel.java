@@ -21,7 +21,7 @@ import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.GraphShape;
+import groove.graph.Graph;
 import groove.graph.Node;
 import groove.match.rete.CompositeConditionChecker;
 import groove.match.rete.ConditionChecker;
@@ -190,7 +190,7 @@ public class ReteJModel extends GraphJModel {
     }
 
     @Override
-    public GraphShape getGraph() {
+    public Graph getGraph() {
         return this.graph;
     }
 }

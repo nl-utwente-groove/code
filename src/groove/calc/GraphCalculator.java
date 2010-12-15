@@ -16,7 +16,6 @@
  */
 package groove.calc;
 
-import groove.graph.Graph;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.Condition;
@@ -111,7 +110,7 @@ public interface GraphCalculator {
      * May return <code>null</code> if this object is only intended to be used
      * as a prototype.
      */
-    public Graph getBasis();
+    public HostGraph getBasis();
 
     /**
      * Creates and returns a new instance of the calculator, based on another

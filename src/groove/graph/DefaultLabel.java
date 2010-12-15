@@ -32,22 +32,13 @@ public final class DefaultLabel extends AbstractLabel {
      * Constructs a standard implementation of Label on the basis of a given
      * text index. For internal purposes only.
      * @param index the index of the label text
-     * @param kind indicator of the type of label (normal, node type or flag).
-     *        The value is respectively 0, {@link #NODE_TYPE_MASK} or
-     *        {@link #FLAG_MASK}.
      */
-    private DefaultLabel(char index, int kind) {
+    private DefaultLabel(char index) {
         this.index = index;
-        this.kind = kind;
     }
 
     public String text() {
         return getText(this.index);
-    }
-
-    @Override
-    public int getKind() {
-        return this.kind;
     }
 
     // ------------------------- OBJECT OVERRIDES ---------------------
@@ -57,7 +48,12 @@ public final class DefaultLabel extends AbstractLabel {
      */
     @Override
     public boolean equals(Object obj) {
-        return this == obj || obj instanceof Label && text().equals(((Label) obj).text());
+        boolean result = this == obj;
+        // test that inequality of objects implies inequality of content
+        assert result
+            || !(obj instanceof DefaultLabel && text().equals(
+                ((Label) obj).text()));
+        return result;
     }
 
     @Override
@@ -98,8 +94,6 @@ public final class DefaultLabel extends AbstractLabel {
      * @invariant <tt>text != null</tt>
      */
     private final char index;
-    /** The type of label (normal, node type or flag). */
-    private final int kind;
 
     /**
      * Returns the unique representative of a {@link DefaultLabel} for a given
@@ -109,21 +103,7 @@ public final class DefaultLabel extends AbstractLabel {
      * @return an existing or new label with the given text; non-null
      */
     public static DefaultLabel createLabel(String text) {
-        return createLabel(text, BINARY);
-    }
-
-    /**
-     * Returns the unique representative of a {@link DefaultLabel} for a given
-     * string and label kind. The string is used as-is, and is guaranteed to
-     * equal the text of the resulting label.
-     * @param text the text of the label; non-null
-     * @param kind kind of label to be created
-     * @return an existing or new label with the given text and kind; non-null
-     * @see #getKind()
-     */
-    public static DefaultLabel createLabel(String text, int kind) {
-        assert text != null : "Label text of default label should not be null";
-        return getLabel(newLabelIndex(text, kind));
+        return getLabel(newLabelIndex(text));
     }
 
     /**
@@ -135,7 +115,7 @@ public final class DefaultLabel extends AbstractLabel {
         do {
             freshLabelIndex++;
             text = "L" + freshLabelIndex;
-        } while (labelIndex(text, BINARY) < Character.MAX_VALUE);
+        } while (labelIndex(text) < Character.MAX_VALUE);
         return createLabel(text);
     }
 
@@ -171,12 +151,11 @@ public final class DefaultLabel extends AbstractLabel {
      * Returns the index of a certain label text, if it is in the list. Returns
      * a special value if the text is not in the list.
      * @param text the label text being looked up
-     * @param kind the kind of label to be looked up or created
      * @return the index of <tt>text</tt>, if it is the list;
      *         <tt>Character.MAX_VALUE</tt> otherwise.
      */
-    static private char labelIndex(String text, int kind) {
-        Character index = getIndexMap(kind).get(text);
+    static private char labelIndex(String text) {
+        Character index = getIndexMap().get(text);
         if (index == null) {
             return Character.MAX_VALUE;
         } else {
@@ -188,18 +167,17 @@ public final class DefaultLabel extends AbstractLabel {
      * Returns an index for a certain label text, creating a new entry if
      * required.
      * @param text the label text being looked up
-     * @param kind the kind of label to be looked up or created
      * @return a valid index for <tt>text</tt>
      * @require <tt>text != null</tt>
      * @ensure <tt>labelText(result).equals(text)</tt>
      */
-    static private char newLabelIndex(String text, int kind) {
-        Character index = getIndexMap(kind).get(text);
+    static private char newLabelIndex(String text) {
+        Character index = getIndexMap().get(text);
         if (index == null) {
             char result = (char) textList.size();
             textList.add(text);
-            labelList.add(new DefaultLabel(result, kind));
-            getIndexMap(kind).put(text, Character.valueOf(result));
+            labelList.add(new DefaultLabel(result));
+            getIndexMap().put(text, Character.valueOf(result));
             return result;
         } else {
             return index.charValue();
@@ -209,15 +187,8 @@ public final class DefaultLabel extends AbstractLabel {
     /**
      * Returns the appropriate index map for a given label kind.
      */
-    static private Map<String,Character> getIndexMap(int kind) {
-        switch (kind) {
-        case NODE_TYPE:
-            return nodeTypeIndexMap;
-        case FLAG:
-            return flagIndexMap;
-        default:
-            return standardIndexMap;
-        }
+    static private Map<String,Character> getIndexMap() {
+        return standardIndexMap;
     }
 
     /**
@@ -235,21 +206,7 @@ public final class DefaultLabel extends AbstractLabel {
      */
     static private final Map<String,Character> standardIndexMap =
         new HashMap<String,Character>();
-    /**
-     * The internal translation table from strings to node type label indices.
-     */
-    static private final Map<String,Character> nodeTypeIndexMap =
-        new HashMap<String,Character>();
-    /**
-     * The internal translation table from strings to flag label indices.
-     */
-    static private final Map<String,Character> flagIndexMap =
-        new HashMap<String,Character>();
 
     /** Counter to support the generation of fresh labels. */
     static private int freshLabelIndex;
-    /** Mask to distinguish (the hash code of) node type labels. */
-    static private final int NODE_TYPE_MASK = 0xAAAA;
-    /** Mask to distinguish (the hash code of) flag labels. */
-    static private final int FLAG_MASK = 0x5555;
 }

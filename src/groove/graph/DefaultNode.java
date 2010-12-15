@@ -65,10 +65,12 @@ public class DefaultNode extends AbstractNode implements RuleNode, HostNode,
         return defaultStore.createNode();
     }
 
+    /** Returns the highest default node node number. */
     public static int getHighestNodeNr() {
         return defaultStore.size();
     }
 
+    /** Returns the number of created nodes. */
     public static int getNodeCount() {
         return defaultStore.getNodeCount();
     }

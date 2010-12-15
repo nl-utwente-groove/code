@@ -16,7 +16,6 @@
  */
 package groove.abstraction;
 
-import groove.graph.GraphShape;
 import groove.trans.RuleEvent;
 
 import java.util.HashSet;
@@ -49,15 +48,13 @@ public final class Transform {
      * shape. The transformation produces a set of shapes because the
      * materialisation of a shape is a non-deterministic step.
      * 
-     * @param host - the host of the transformation, must be a Shape object.
+     * @param shape - the host of the transformation, must be a Shape object.
      * @param event - the rule event that defines a pre-match on the host.
      * @return a set of shapes produced by the transformation.
      *         The return set is empty if the pre-match is not valid or if the
      *         host does not admit a valid materialisation w.r.t. the rule.
      */
-    public static Set<Shape> transform(GraphShape host, RuleEvent event) {
-        assert host instanceof Shape : "Cannot use abstract methods on non-abstract graphs.";
-        Shape shape = (Shape) host;
+    public static Set<Shape> transform(Shape shape, RuleEvent event) {
         Set<Shape> result = new HashSet<Shape>();
 
         if (shape.isValidPreMatch(event)) {

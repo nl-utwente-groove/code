@@ -37,7 +37,7 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
      * @return a prototype <tt>DefaultGraph</tt> instance, only intended to be
      *         used for its <tt>newGraph()</tt> method.
      */
-    static public Graph getPrototype() {
+    static public DefaultGraph getPrototype() {
         return new DefaultGraph();
     }
 
@@ -83,18 +83,6 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
         return edgeSet != null && edgeSet.contains(edge);
     }
 
-    @Override
-    @Deprecated
-    public boolean containsElement(Element elem) {
-        if (elem instanceof Node) {
-            return this.edgeMap.containsKey(elem);
-        } else {
-            assert elem instanceof Edge;
-            Set<Edge> edgeSet = this.edgeMap.get(((Edge) elem).source());
-            return edgeSet != null && edgeSet.contains(elem);
-        }
-    }
-
     public Set<? extends Edge> edgeSet() {
         Set<Edge> result = new HashSet<Edge>();
         for (Map.Entry<Node,Set<Edge>> edgeEntry : this.edgeMap.entrySet()) {
@@ -113,12 +101,12 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
     }
 
     @Override
-    public Graph clone() {
-        Graph result = new DefaultGraph(this);
+    public DefaultGraph clone() {
+        DefaultGraph result = new DefaultGraph(this);
         return result;
     }
 
-    public Graph newGraph() {
+    public DefaultGraph newGraph() {
         return new DefaultGraph();
     }
 
@@ -126,37 +114,10 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
 
     public boolean addNode(Node node) {
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
-        boolean added = !containsElement(node);
-        assert added == !new HashSet<Node>(nodeSet()).contains(node) : String.format(
-            "Overlapping node number for %s in %s", node, nodeSet());
+        boolean added = !containsNode(node);
         if (added) {
             this.edgeMap.put(node, new HashSet<Edge>());
             fireAddNode(node);
-        }
-        return added;
-    }
-
-    public boolean addEdge(Edge edge) {
-        // assert edge instanceof BinaryEdge : "This graph implementation only
-        // supports binary edges";
-        assert isTypeCorrect(edge);
-        assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
-        Node source = edge.source();
-        Node target = edge.target();
-        Set<Edge> sourceOutEdges = this.edgeMap.get(source);
-        if (sourceOutEdges == null) {
-            addNode(source);
-            sourceOutEdges = this.edgeMap.get(source);
-        }
-        if (!this.edgeMap.containsKey(source)) {
-            addNode(source);
-        }
-        if (!this.edgeMap.containsKey(target)) {
-            addNode(target);
-        }
-        boolean added = sourceOutEdges.add(edge);
-        if (added) {
-            fireAddEdge(edge);
         }
         return added;
     }
@@ -183,6 +144,8 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
         return removed;
     }
 
+    /** Reimplementation to improve performance. */
+    @Override
     public boolean removeNode(Node node) {
         assert !isFixed() : "Trying to remove " + node
             + " from unmodifiable graph";

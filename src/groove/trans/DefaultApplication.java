@@ -16,7 +16,7 @@
  */
 package groove.trans;
 
-import groove.graph.AbstractGraphShape;
+import groove.graph.AbstractGraph;
 import groove.graph.DeltaTarget;
 import groove.graph.Edge;
 import groove.graph.FilteredDeltaTarget;
@@ -70,12 +70,12 @@ public class DefaultApplication implements RuleApplication, Derivation {
             this.anchorMap = ((SPOEvent) event).getAnchorMap();
             assert event.hasMatch(source) : String.format(
                 "Rule event %s has no matching in %s", event,
-                AbstractGraphShape.toString(source));
+                AbstractGraph.toString(source));
         } else {
             assert event instanceof CompositeEvent
                 && ((CompositeEvent) event).hasSubMatches(source) : String.format(
                 "Composite event %s has no matching in %s", event,
-                AbstractGraphShape.toString(source));
+                AbstractGraph.toString(source));
         }
     }
 
@@ -494,7 +494,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
     /**
      * Callback factory method for creating the target graph of an application.
      * This implementation clones the source.
-     * @see Graph#clone()
+     * @see HostGraph#clone()
      */
     protected HostGraph createTarget() {
         return getSource().clone();

@@ -17,7 +17,6 @@
 package groove.test.graph;
 
 import groove.graph.DefaultGraph;
-import groove.graph.Graph;
 
 /**
  * Test class to test <tt>DefaultGraph</tt>
@@ -27,7 +26,7 @@ import groove.graph.Graph;
 public class DefaultGraphTest extends GraphTest {
 
     @Override
-    Graph createGraph() {
+    DefaultGraph createGraph() {
         return new DefaultGraph();
     }
 

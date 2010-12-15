@@ -76,13 +76,16 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
     @Override
     public boolean addNode(Node node) {
         assert node instanceof TypeNode;
-        assert !this.generatedNodes : "Mixed calls of TypeGraph.addNode(Node) and TypeGraph.addNode(Label)";
-        this.predefinedNodes = true;
-        TypeNode oldType =
-            this.typeMap.put(((TypeNode) node).getType(), (TypeNode) node);
-        assert oldType == null || oldType.equals(node) : String.format(
-            "Duplicate type node for %s", oldType.getType());
-        return super.addNode(node);
+        boolean result = super.addNode(node);
+        if (result) {
+            assert !this.generatedNodes : "Mixed calls of TypeGraph.addNode(Node) and TypeGraph.addNode(Label)";
+            this.predefinedNodes = true;
+            TypeNode oldType =
+                this.typeMap.put(((TypeNode) node).getType(), (TypeNode) node);
+            assert oldType == null : String.format(
+                "Duplicate type node for %s", oldType.getType());
+        }
+        return result;
     }
 
     /**
@@ -97,13 +100,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
     public TypeNode addNode(TypeLabel label) {
         assert label.isNodeType() : String.format(
             "Label %s is not a node type", label);
-        assert !this.predefinedNodes : "Mixed calls of TypeGraph.addNode(Node) and TypeGraph.addNode(Label)";
         TypeNode result = this.typeMap.get(label);
         if (result == null) {
+            assert !this.predefinedNodes : "Mixed calls of TypeGraph.addNode(Node) and TypeGraph.addNode(Label)";
             this.maxNodeNr++;
             result = new TypeNode(this.maxNodeNr, label);
             this.typeMap.put(label, result);
-            addEdge(result, label, result);
+            super.addNode(result);
+            addEdgeWithoutCheck(createEdge(result, label, result));
             this.generatedNodes = true;
         }
         return result;

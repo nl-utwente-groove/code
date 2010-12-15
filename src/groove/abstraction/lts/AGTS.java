@@ -17,7 +17,7 @@
 package groove.abstraction.lts;
 
 import groove.abstraction.Shape;
-import groove.graph.GraphShapeCache;
+import groove.graph.GraphCache;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -90,7 +90,7 @@ public final class AGTS extends GTS {
     }
 
     @Override
-    protected GraphShapeCache createCache() {
+    protected GraphCache createCache() {
         throw new UnsupportedOperationException();
     }
 

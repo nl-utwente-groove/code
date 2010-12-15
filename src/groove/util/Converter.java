@@ -19,7 +19,6 @@ package groove.util;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.gui.jgraph.EditorJModel;
 import groove.gui.jgraph.GraphJModel;
@@ -27,6 +26,7 @@ import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.gui.layout.LayoutMap;
+import groove.view.aspect.AspectGraph;
 import groove.view.aspect.RuleAspect;
 
 import java.awt.Color;
@@ -55,7 +55,7 @@ public class Converter {
     }
 
     /** Writes a graph in FSM format to a print writer. */
-    static public void graphToFsm(GraphShape graph, PrintWriter writer) {
+    static public void graphToFsm(Graph graph, PrintWriter writer) {
         // mapping from nodes of graphs to integers
         Map<Node,Integer> nodeMap = new HashMap<Node,Integer>();
         writer.println("NodeNumber(0)");
@@ -74,7 +74,7 @@ public class Converter {
     }
 
     /** Writes a graph in CADP .aut format to a print writer. */
-    static public void graphToAut(GraphShape graph, PrintWriter writer) {
+    static public void graphToAut(Graph graph, PrintWriter writer) {
         // collect the node numbers, to be able to number them consecutively
         int nodeCount = graph.nodeCount();
         // list marking which node numbers have been used
@@ -177,7 +177,7 @@ public class Converter {
     }
 
     /** Writes a graph in a simple .kth format to a print writer. */
-    static public void graphToKth(GraphShape graph, PrintWriter writer) {
+    static public void graphToKth(AspectGraph graph, PrintWriter writer) {
         writer.print(GraphToKth.convertGraph(graph));
     }
 

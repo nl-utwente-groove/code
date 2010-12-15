@@ -16,17 +16,146 @@
  */
 package groove.graph;
 
+import groove.util.Fixable;
+
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * Provides a model of a graph whose nodes and edges are unstructured, in the
  * sense that they are immutable and edges are completely determined by source
- * and target nodes and edge label. The interface extends <tt>GraphShape</tt>
- * with factory methods for nodes and edges and methods for generating
- * morphisms.
+ * and target nodes and edge label.
  * @version $Revision$ $Date: 2008-01-30 09:32:52 $
  */
-public interface Graph extends GraphShape, DeltaTarget {
+public interface Graph extends DeltaTarget, Fixable {
+    /**
+     * Returns the set of nodes of this graph. The return value is an
+     * unmodifiable view of the underlying node set, which is <i>not</i>
+     * guaranteed to be up-to-date with, or even safe in the face of, concurrent
+     * modifications to the graph.
+     * @ensure <tt>result != null</tt>
+     */
+    Set<? extends Node> nodeSet();
+
+    /**
+     * Returns the number of nodes in this graph. Convenience method for
+     * <tt>nodeSet().size()</tt>
+     * @return the number of nodes in this graph
+     * @ensure <tt>result == nodeSet().size()</tt>
+     */
+    int nodeCount();
+
+    /**
+     * Returns the set of Edges of this Graph. The return value is an
+     * unmodifiable view of the underlying edge set, which is <i>not</i>
+     * guaranteed to remain up-to-date with, or even safe in the face of,
+     * concurrent modifications to the graph.
+     * @ensure <tt>result != null</tt>
+     */
+    Set<? extends Edge> edgeSet();
+
+    /**
+     * Returns the number of edges of this graph. Convenience method for
+     * <tt>nodeSet().size()</tt>
+     * @return the number of edges in this graph
+     * @ensure <tt>result == edgeSet().size()</tt>
+     */
+    int edgeCount();
+
+    /**
+     * Returns the set of all incident edges of a given node of this graph.
+     * Although the return type is a <tt>Collection</tt> to allow efficient
+     * implementation, it is guaranteed to contain distinct elements.
+     * @param node the node of which the incident edges are required
+     * @require node != null
+     * @ensure result == { edge \in E | \exists i: edge.end(i).equals(node) }
+     */
+    Set<? extends Edge> edgeSet(Node node);
+
+    /**
+     * Returns the set of incoming edges of a given node of this graph.
+     * @param node the node of which the incoming edges are required
+     */
+    Set<? extends Edge> inEdgeSet(Node node);
+
+    /**
+     * Returns the set of outgoing edges of a given node of this graph.
+     * @param node the node of which the outgoing edges are required
+     */
+    Set<? extends Edge> outEdgeSet(Node node);
+
+    /**
+     * Returns the set of all edges in this graph with a given label.
+     * Although the return
+     * type is a <tt>Collection</tt> to allow efficient implementation, it is
+     * guaranteed to contain distinct elements.
+     * @param label the label of the required edges
+     */
+    Set<? extends Edge> labelEdgeSet(Label label);
+
+    /**
+     * Returns the total number of elements (nodes plus edges) in this graph.
+     * @ensure <tt>result == nodeCount() + edgeCount()</tt>
+     */
+    int size();
+
+    /**
+     * Tests whether this Graph is empty (i.e., contains no Nodes or Edges).
+     * @return <tt>result == nodeSet().isEmpty()</tt>
+     */
+    boolean isEmpty();
+
+    /**
+     * Indicates whether the graph is modifiable, i.e., if the <tt>add</tt> and
+     * <tt>remove</tt> methods can change the graph. The graph is modifiable
+     * when it is created, and becomes fixed only after an invocation of
+     * <tt>setFixed()</tt>.
+     * @return <tt>true</tt> iff <tt>setFixed()</tt> has been invoked
+     * @see #setFixed()
+     */
+    boolean isFixed();
+
+    /**
+     * Tests whether this graph contains a given node.
+     * @param node the node of which the presence is tested.
+     */
+    boolean containsNode(Node node);
+
+    /**
+     * Tests whether this graph contains a given edge.
+     * @param edge the edge of which the presence is tested.
+     */
+    boolean containsEdge(Edge edge);
+
+    // -------------------- Commands -----------------
+
+    /**
+     * Changes the modifiability of this graph. After invoking this method,
+     * <tt>isFixed()</tt> holds. If the graph is fixed, no <tt>add</tt>- or
+     * <tt>remove</tt>-method may be invoked any more; moreover, all graph
+     * listeners are removed.
+     * @ensure <tt>isFixed()</tt>
+     * @see #isFixed()
+     */
+    void setFixed();
+
+    /**
+     * Returns an information object with additional information about this
+     * graph. The object may be <code>null</code> if there is no additional
+     * information.
+     */
+    GraphInfo getInfo();
+
+    /**
+     * Sets an information object with additional information about this graph,
+     * by copying an existing information object.
+     * @param info an information object; may be <code>null</code> to reset the
+     *        graph info
+     * @return a shallow copy of <code>info</code>, or <code>null</code> if
+     *         <code>info</code> was <code>null</code>
+     */
+    GraphInfo setInfo(GraphInfo info);
+
     /**
      * Makes a copy of this Graph with cloned (not aliased) node and edge sets
      * but aliased nodes and edges.
@@ -85,11 +214,7 @@ public interface Graph extends GraphShape, DeltaTarget {
     /**
      * Adds a node to this graph. This is allowed only if the graph is not
      * fixed. If the node is already in the graph then the method has no effect.
-     * All {@link GraphListener}s are notified if the node is actually added.
-     * <i>Note:</i> It is <i>not</i> guaranteed that <tt>addNode(Node)</tt>
-     * is called for the addition of all nodes, so overwriting it may not have
-     * the expected effect. Use a {@link GraphListener} to ensure notification
-     * of all changes to the graph.
+     * 
      * @param node the node to be added.
      * @return <tt>true</tt> if the node was indeed added (and not yet
      *         present)
@@ -103,11 +228,7 @@ public interface Graph extends GraphShape, DeltaTarget {
     /**
      * Adds an edge and its end nodes to this graph. This is allowed only if the
      * graph is not fixed. If the edge is already in the graph then the method
-     * has no effect. All {@link GraphListener}s are notified if the edge is
-     * actually added. <i>Note:</i> It is <i>not</i> guaranteed that this
-     * method is called for the addition of all edges, so overwriting it may not
-     * have the expected effect. Use a {@link GraphListener} to ensure
-     * notification of all changes to the graph.
+     * has no effect. 
      * @param edge the edge to be added.
      * @return <tt>true</tt> if the edge was indeed added (and not yet
      *         present)
@@ -230,9 +351,7 @@ public interface Graph extends GraphShape, DeltaTarget {
 
     /**
      * Merges two nodes in this graph, by adding all edges to and from the first
-     * node to the second, and subsequently removing the first. Before the
-     * remove notifications, all graph listeners receive a call of
-     * {@link GraphListener#replaceUpdate(GraphShape, Node, Node)}.
+     * node to the second, and subsequently removing the first.
      * @param from node to be deleted
      * @param to node to receive copies of the edges to and from the other
      * @return <tt>true</tt> if <code>first</code> is distinct from

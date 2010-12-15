@@ -18,7 +18,6 @@ package groove.verify;
 
 import groove.graph.DefaultGraph;
 import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.Node;
 
 import java.util.HashMap;
@@ -36,12 +35,12 @@ import rwth.i2.ltl2ba4j.model.ITransition;
  */
 public class BuchiAutomatonGraph extends DefaultGraph {
 
-    static public Graph getPrototype() {
+    static public BuchiAutomatonGraph getPrototype() {
         return new BuchiAutomatonGraph();
     }
 
     @Override
-    public Graph newGraph() {
+    public BuchiAutomatonGraph newGraph() {
         return new BuchiAutomatonGraph();
     }
 

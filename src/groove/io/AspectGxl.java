@@ -3,7 +3,6 @@ package groove.io;
 
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.GraphShape;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
@@ -44,7 +43,7 @@ public class AspectGxl implements Xml<AspectGraph> {
      * Unmarshals the URL using the inner marshaller and converts the resulting
      * graph to an {@link AspectGraph}. Derives the name of the graph from the
      * last part of the URL path
-     * @see AspectGraph#newInstance(GraphShape)
+     * @see AspectGraph#newInstance(Graph)
      */
     public AspectGraph unmarshalGraph(URL url) throws IOException {
         Graph plainGraph = this.marshaller.unmarshalGraph(url);
@@ -56,7 +55,7 @@ public class AspectGxl implements Xml<AspectGraph> {
      * Unmarshals the file using the inner marshaller and converts the resulting
      * graph to an {@link AspectGraph}. Derives the name of the graph from the
      * name part of the file
-     * @see AspectGraph#newInstance(GraphShape)
+     * @see AspectGraph#newInstance(Graph)
      */
     public AspectGraph unmarshalGraph(File file) throws IOException {
         Graph plainGraph = this.marshaller.unmarshalGraph(file);

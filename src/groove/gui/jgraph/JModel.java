@@ -21,7 +21,6 @@ import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
@@ -207,7 +206,7 @@ abstract public class JModel extends DefaultGraphModel {
      * Converts this model to a plain Groove graph.
      * @see #toPlainGraph(Map)
      */
-    public Graph toPlainGraph() {
+    public DefaultGraph toPlainGraph() {
         Map<Element,JCell> dummyMap = new HashMap<Element,JCell>();
         return toPlainGraph(dummyMap);
     }
@@ -220,8 +219,8 @@ abstract public class JModel extends DefaultGraphModel {
      * @param elementMap receives the mapping from elements of the new graph
      * to root cells of this model
      */
-    public groove.graph.Graph toPlainGraph(Map<Element,JCell> elementMap) {
-        groove.graph.Graph result = new DefaultGraph();
+    public DefaultGraph toPlainGraph(Map<Element,JCell> elementMap) {
+        DefaultGraph result = new DefaultGraph();
         LayoutMap<Node,Edge> layoutMap = new LayoutMap<Node,Edge>();
         Map<JVertex,Node> nodeMap = new HashMap<JVertex,Node>();
 

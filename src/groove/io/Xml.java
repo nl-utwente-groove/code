@@ -16,7 +16,7 @@
  */
 package groove.io;
 
-import groove.graph.GraphShape;
+import groove.graph.Graph;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +29,7 @@ import java.net.URL;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface Xml<G extends GraphShape> {
+public interface Xml<G extends Graph> {
     /**
      * Writes a graph to an output stream, in XML format.
      * @param graph the graph to be marshalled

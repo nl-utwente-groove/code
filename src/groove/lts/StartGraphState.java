@@ -2,9 +2,9 @@
 package groove.lts;
 
 import groove.control.CtrlAut;
-import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.trans.DeltaHostGraph;
+import groove.trans.HostGraph;
 import groove.trans.SystemRecord;
 
 /**
@@ -15,7 +15,7 @@ public class StartGraphState extends AbstractGraphState {
     /**
      * Creates a start state based on a given system record and start graph
      */
-    public StartGraphState(SystemRecord record, Graph graph) {
+    public StartGraphState(SystemRecord record, HostGraph graph) {
         super(StateReference.newInstance(record));
         setFrozenGraph(getCache().computeFrozenGraph(graph));
         this.graph = getCache().getGraph();

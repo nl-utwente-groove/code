@@ -16,7 +16,6 @@
  */
 package groove.test.graph;
 
-import groove.graph.Graph;
 import groove.graph.NodeSetEdgeSetGraph;
 
 /**
@@ -27,7 +26,7 @@ import groove.graph.NodeSetEdgeSetGraph;
 public class NodeSetEdgeSetGraphTest extends GraphTest {
 
     @Override
-    Graph createGraph() {
+    NodeSetEdgeSetGraph createGraph() {
         return new NodeSetEdgeSetGraph();
     }
 }

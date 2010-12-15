@@ -22,7 +22,6 @@ import groove.graph.Edge;
 import groove.graph.ElementFactory;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
@@ -166,7 +165,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
      * @return an aspect graph whose format errors are recorded in
      *         {@link #getErrors()}
      */
-    public AspectGraph fromPlainGraph(GraphShape graph) {
+    public AspectGraph fromPlainGraph(Graph graph) {
         // map from original graph elements to aspect graph elements
         NodeEdgeMap elementMap = new NodeEdgeHashMap();
         return fromPlainGraph(graph, elementMap);
@@ -185,7 +184,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
      *        to resulting {@link AspectGraph} elements; should be initially
      *        empty
      */
-    public AspectGraph fromPlainGraph(GraphShape graph, NodeEdgeMap elementMap) {
+    public AspectGraph fromPlainGraph(Graph graph, NodeEdgeMap elementMap) {
         AspectGraph result = new AspectGraph();
         // we set the role now, because some of the aspects may depend on it
         GraphInfo.setRole(result, GraphInfo.getRole(graph));
@@ -298,7 +297,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
      * Returns the correct aspect parser for a given graph. This may take
      * version information into account.
      */
-    private AspectParser getAspectParser(GraphShape graph) {
+    private AspectParser getAspectParser(Graph graph) {
         return new AspectParser(graph);
     }
 
@@ -661,23 +660,23 @@ public class AspectGraph extends NodeSetEdgeSetGraph implements Cloneable {
      * for <code>getFactory().fromPlainGraph(GraphShape)</code>.
      * @param plainGraph the plain graph to convert; non-null
      * @return the resulting aspect graph; non-null
-     * @see #fromPlainGraph(GraphShape)
+     * @see #fromPlainGraph(Graph)
      */
-    public static AspectGraph newInstance(GraphShape plainGraph) {
+    public static AspectGraph newInstance(Graph plainGraph) {
         return factory.fromPlainGraph(plainGraph);
     }
 
     /**
      * Creates an aspect graph from a given (plain) graph. Convenience method
-     * for {@link #fromPlainGraph(GraphShape, NodeEdgeMap)}.
+     * for {@link #fromPlainGraph(Graph, NodeEdgeMap)}.
      * @param plainGraph the plain graph to convert; non-null
      * @param elementMap output parameter for mapping from plain graph elements
      *        to resulting {@link AspectGraph} elements; should be initially
      *        empty
      * @return the resulting aspect graph; non-null
-     * @see #fromPlainGraph(GraphShape)
+     * @see #fromPlainGraph(Graph)
      */
-    public static AspectGraph newInstance(GraphShape plainGraph,
+    public static AspectGraph newInstance(Graph plainGraph,
             NodeEdgeMap elementMap) {
         return factory.fromPlainGraph(plainGraph, elementMap);
     }

@@ -22,9 +22,9 @@ import static org.junit.Assert.assertFalse;
 import groove.explore.Exploration;
 import groove.explore.StrategyEnumerator;
 import groove.explore.encode.Serialized;
-import groove.graph.Graph;
 import groove.lts.GTS;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.GrammarView;
@@ -151,7 +151,8 @@ public class ExplorationTest {
     public void testSierpinsky() {
         GTS lts = testExploration("sierpinsky.gps", "start7", "linear", 8, 7);
         assertEquals(1, lts.getFinalStates().size());
-        Graph finalGraph = lts.getFinalStates().iterator().next().getGraph();
+        HostGraph finalGraph =
+            lts.getFinalStates().iterator().next().getGraph();
         assertEquals(3290, finalGraph.nodeCount());
         assertEquals(6577, finalGraph.edgeCount());
     }

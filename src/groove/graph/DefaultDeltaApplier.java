@@ -19,6 +19,7 @@ package groove.graph;
 import groove.trans.HostEdge;
 import groove.trans.HostEdgeSet;
 import groove.trans.HostNode;
+import groove.trans.HostNodeSet;
 import groove.util.DeltaSet;
 import groove.util.StackedSet;
 

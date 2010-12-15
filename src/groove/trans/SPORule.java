@@ -22,7 +22,6 @@ import groove.control.CtrlVar;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphProperties;
-import groove.graph.GraphShape;
 import groove.graph.algebra.VariableNode;
 import groove.match.MatchStrategy;
 import groove.match.SearchPlanStrategy;
@@ -445,7 +444,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @return <code>true</code> if <code>matchMap</code> satisfies the
      *         constraints imposed by the rule (if any).
      */
-    boolean isValidMatchMap(GraphShape host, RuleToHostMap matchMap) {
+    boolean isValidMatchMap(HostGraph host, RuleToHostMap matchMap) {
         boolean result = true;
         if (SystemProperties.isCheckDangling(getSystemProperties())) {
             result = satisfiesDangling(host, matchMap);
@@ -457,7 +456,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Tests if a given (proposed) match into a host graph leaves dangling
      * edges.
      */
-    private boolean satisfiesDangling(GraphShape host, RuleToHostMap match) {
+    private boolean satisfiesDangling(HostGraph host, RuleToHostMap match) {
         boolean result = true;
         for (RuleNode eraserNode : getEraserNodes()) {
             RuleNode erasedNode = (RuleNode) match.getNode(eraserNode);
