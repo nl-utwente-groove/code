@@ -23,6 +23,7 @@ import groove.explore.encode.Template;
 import groove.explore.encode.Template.Template0;
 import groove.explore.encode.Template.Template1;
 import groove.explore.encode.Template.Template2;
+import groove.explore.encode.Template.Visibility;
 import groove.explore.encode.TemplateList;
 import groove.explore.prettyparse.PAll;
 import groove.explore.prettyparse.PIdentifier;
@@ -49,12 +50,18 @@ import groove.trans.Rule;
  */
 public class AcceptorEnumerator extends TemplateList<Acceptor> {
 
-    /** Mask for acceptors that are only valid for the concrete case. */
+    /** Mask for strategies that are only enabled in 'concrete' mode. */
     public final static int MASK_CONCRETE = 1;
-    /** Mask for acceptors that are only valid for the abstract case. */
+    /** Mask for strategies that are only enabled in 'abstraction' mode. */
     public final static int MASK_ABSTRACT = 2;
-    /** Mask for acceptors that are always valid. */
+
+    /** Special mask for development strategies only. Treated specially. */
+    public final static int MASK_DEVELOPMENT_ONLY = 4;
+
+    /** Mask for strategies that are enabled in all modes. */
     public final static int MASK_ALL = MASK_CONCRETE | MASK_ABSTRACT;
+    /** Mask that is used by default. */
+    public final static int MASK_DEFAULT = MASK_CONCRETE;
 
     private static final String ACCEPTOR_TOOLTIP = "<HTML>"
         + "An acceptor is a predicate that is applied each time the LTS is "
@@ -153,12 +160,20 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
             });
     }
 
-    /**
-     * Default addition of acceptors. Marks the acceptor for use in the
-     * concrete case only.
-     */
+    /** Specialized addTemplate. Scans for MASK_DEVELOPMENT_ONLY. */
+    public void addTemplate(int mask, Template<Acceptor> template) {
+        int mymask = mask;
+        if ((mymask & MASK_DEVELOPMENT_ONLY) == MASK_DEVELOPMENT_ONLY) {
+            template.setVisibility(Visibility.DEVELOPMENT_ONLY);
+            mymask = mymask - MASK_DEVELOPMENT_ONLY;
+        }
+        template.setMask(mymask);
+        addTemplate(template);
+    }
+
     @Override
     public void addTemplate(Template<Acceptor> template) {
-        addTemplate(MASK_CONCRETE, template);
+        template.setMask(MASK_DEFAULT);
+        super.addTemplate(template);
     }
 }

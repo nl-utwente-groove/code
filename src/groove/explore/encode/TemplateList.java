@@ -16,10 +16,12 @@
  */
 package groove.explore.encode;
 
+import groove.explore.encode.Template.Visibility;
 import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.layout.SpringUtilities;
 import groove.lts.GTS;
+import groove.util.Version;
 import groove.view.FormatException;
 
 import java.awt.CardLayout;
@@ -89,16 +91,9 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      * Add a template. The keyword of the template is assumed to be unique
      * with respect to the already stored templates.
      */
-    public void addTemplate(int mask, Template<A> template) {
-        template.setMask(mask);
+    public void addTemplate(Template<A> template) {
         this.templates.add(template);
     }
-
-    /**
-     * Add a template with a default mask. This method must be implemented by
-     * the subclass, in which the masks must also be defined.
-     */
-    public abstract void addTemplate(Template<A> template);
 
     /**
      * Adds a listener, which will be invoked each time the selected
@@ -213,10 +208,13 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             this.templateNames = new ArrayList<String>(nrTemplates);
             for (Template<A> template : TemplateList.this.templates) {
                 if ((template.getMask() & TemplateList.this.mask) == TemplateList.this.mask) {
-                    this.templateKeywords.add(template.getKeyword());
-                    this.templateNames.add(template.getName());
-                    this.editors.put(template.getKeyword(),
-                        template.createEditor(simulator));
+                    if (Version.isDevelopmentVersion()
+                        || template.getVisibility() == Visibility.ALL) {
+                        this.templateKeywords.add(template.getKeyword());
+                        this.templateNames.add(template.getName());
+                        this.editors.put(template.getKeyword(),
+                            template.createEditor(simulator));
+                    }
                 }
             }
         }

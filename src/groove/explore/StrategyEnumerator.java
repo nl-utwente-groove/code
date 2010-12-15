@@ -22,10 +22,11 @@ import groove.explore.encode.EncodedEnabledRule;
 import groove.explore.encode.EncodedInt;
 import groove.explore.encode.EncodedRuleMode;
 import groove.explore.encode.Template;
-import groove.explore.encode.TemplateList;
 import groove.explore.encode.Template.Template0;
 import groove.explore.encode.Template.Template1;
 import groove.explore.encode.Template.Template2;
+import groove.explore.encode.Template.Visibility;
+import groove.explore.encode.TemplateList;
 import groove.explore.prettyparse.PIdentifier;
 import groove.explore.prettyparse.PLiteral;
 import groove.explore.prettyparse.PNumber;
@@ -63,19 +64,25 @@ import java.util.Map;
  */
 public class StrategyEnumerator extends TemplateList<Strategy> {
 
-    /** Mask for strategies that are only valid for the concrete case. */
+    /** Mask for strategies that are only enabled in 'concrete' mode. */
     public final static int MASK_CONCRETE = 1;
-    /** Mask for strategies that are only valid for the abstract case. */
+    /** Mask for strategies that are only enabled in 'abstraction' mode. */
     public final static int MASK_ABSTRACT = 2;
-    /** Mask for strategies that are always valid. */
-    public final static int MASK_ALL = MASK_CONCRETE | MASK_ABSTRACT;
 
-    private static final String STRATEGY_TOOLTIP =
-        "<HTML>" + "The exploration strategy determines at each state:<BR>"
-            + "<B>1.</B> Which of the applicable transitions will be taken; "
-            + "and<BR>"
-            + "<B>2.</B> In which order the reached states will be explored."
-            + "</HTML>";
+    /** Special mask for development strategies only. Treated specially. */
+    public final static int MASK_DEVELOPMENT_ONLY = 4;
+
+    /** Mask for strategies that are enabled in all modes. */
+    public final static int MASK_ALL = MASK_CONCRETE | MASK_ABSTRACT;
+    /** Mask that is used by default. */
+    public final static int MASK_DEFAULT = MASK_CONCRETE;
+
+    private static final String STRATEGY_TOOLTIP = "<HTML>"
+        + "The exploration strategy determines at each state:<BR>"
+        + "<B>1.</B> Which of the applicable transitions will be taken; "
+        + "and<BR>"
+        + "<B>2.</B> In which order the reached states will be explored."
+        + "</HTML>";
 
     /**
      * Enumerates the available strategies one by one. A strategy is defined
@@ -84,40 +91,42 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
     public StrategyEnumerator() {
         super("exploration strategy", STRATEGY_TOOLTIP);
 
-        addTemplate(new Template0<Strategy>(
-            "rete",
-            "Rete Strategy (DFS based)",
-            "This strategy finds all possible transitions from the Rete network,  "
-                + "and continues in a depth-first fashion using virtual events when possible. Rete updates are applied accumulatively") {
+        addTemplate(MASK_CONCRETE | MASK_DEVELOPMENT_ONLY,
+            new Template0<Strategy>("rete", "Rete Strategy (DFS based)",
+                "This strategy finds all possible transitions from the Rete "
+                    + "network, and continues in a depth-first fashion using "
+                    + "virtual events when possible. Rete updates are applied "
+                    + "accumulatively") {
 
-            @Override
-            public Strategy create(GTS gts) {
-                return new ReteStrategy();
-            }
-        });
+                @Override
+                public Strategy create(GTS gts) {
+                    return new ReteStrategy();
+                }
+            });
 
-        addTemplate(new Template0<Strategy>("retelinear",
-            "Rete Linear Exploration",
-            "This strategy chooses one transition from each open state. "
-                + "The transition of choice will be the same within one "
-                + "incarnation of Groove.") {
+        addTemplate(MASK_CONCRETE | MASK_DEVELOPMENT_ONLY,
+            new Template0<Strategy>("retelinear", "Rete Linear Exploration",
+                "This strategy chooses one transition from each open state. "
+                    + "The transition of choice will be the same within one "
+                    + "incarnation of Groove.") {
 
-            @Override
-            public Strategy create(GTS gts) {
-                return new ReteLinearStrategy();
-            }
-        });
+                @Override
+                public Strategy create(GTS gts) {
+                    return new ReteLinearStrategy();
+                }
+            });
 
-        addTemplate(new Template0<Strategy>("reterandom",
-            "Rete Random Linear Exploration",
-            "This strategy chooses one transition from each open state. "
-                + "The transition is chosen randomly.") {
+        addTemplate(MASK_CONCRETE | MASK_DEVELOPMENT_ONLY,
+            new Template0<Strategy>("reterandom",
+                "Rete Random Linear Exploration",
+                "This strategy chooses one transition from each open state. "
+                    + "The transition is chosen randomly.") {
 
-            @Override
-            public Strategy create(GTS gts) {
-                return new ReteRandomLinearStrategy();
-            }
-        });
+                @Override
+                public Strategy create(GTS gts) {
+                    return new ReteRandomLinearStrategy();
+                }
+            });
 
         addTemplate(new Template0<Strategy>("bfs", "Breadth-First Exploration",
             "This strategy first generates all possible transitions from each "
@@ -234,23 +243,32 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
             }
         });
 
-        addTemplate(MASK_ABSTRACT, new Template0<Strategy>("shapebfs",
-            "Shape Breadth-First Exploration",
-            "This strategy is used for abstract state space exploration.") {
+        addTemplate(MASK_ABSTRACT | MASK_DEVELOPMENT_ONLY,
+            new Template0<Strategy>("shapebfs",
+                "Shape Breadth-First Exploration",
+                "This strategy is used for abstract state space exploration.") {
 
-            @Override
-            public Strategy create(GTS gts) {
-                return new ShapeBFSStrategy();
-            }
-        });
+                @Override
+                public Strategy create(GTS gts) {
+                    return new ShapeBFSStrategy();
+                }
+            });
     }
 
-    /**
-     * Default addition of strategies. Marks the strategy for use in the
-     * concrete case only.
-     */
+    /** Specialized addTemplate. Scans for MASK_DEVELOPMENT_ONLY. */
+    public void addTemplate(int mask, Template<Strategy> template) {
+        int mymask = mask;
+        if ((mymask & MASK_DEVELOPMENT_ONLY) == MASK_DEVELOPMENT_ONLY) {
+            template.setVisibility(Visibility.DEVELOPMENT_ONLY);
+            mymask = mymask - MASK_DEVELOPMENT_ONLY;
+        }
+        template.setMask(mymask);
+        super.addTemplate(template);
+    }
+
     @Override
     public void addTemplate(Template<Strategy> template) {
-        addTemplate(MASK_CONCRETE, template);
+        template.setMask(MASK_DEFAULT);
+        super.addTemplate(template);
     }
 }

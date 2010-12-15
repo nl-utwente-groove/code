@@ -112,6 +112,14 @@ public class Version {
     }
 
     /**
+     * @return <code>true</code> if the current version is a development
+     *         version, <code>false</code> otherwise
+     */
+    public static boolean isDevelopmentVersion() {
+        return NUMBER.charAt(NUMBER.length() - 1) == '+';
+    }
+
+    /**
      * @return the grammar version that is to be used when the grammar
      * properties has no entry for the version. 
      */
