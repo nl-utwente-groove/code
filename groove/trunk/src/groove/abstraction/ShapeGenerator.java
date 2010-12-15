@@ -88,7 +88,9 @@ public final class ShapeGenerator {
     /** Generates the state space for the given grammar and start graph. */
     public void generate(String grammarFile, String startGraph, boolean fromMain) {
         loadGrammar(grammarFile, startGraph);
-        exploreGrammar(fromMain);
+        if (this.grammar != null) {
+            exploreGrammar(fromMain);
+        }
     }
 
     /** Basic getter method. */
