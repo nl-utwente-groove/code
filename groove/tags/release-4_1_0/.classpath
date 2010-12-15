@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="resources"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/OSXAdapter.jar"/>
+	<classpathentry kind="lib" path="lib/junit-4_8_2.jar"/>
+	<classpathentry kind="lib" path="lib/jgraph-5_13_0.jar" sourcepath="lib/src/jgraph-5.13.0.4-src.zip"/>
+	<classpathentry kind="lib" path="lib/emf-common-2_5_0.jar"/>
+	<classpathentry kind="lib" path="lib/emf-ecore-2_5_0.jar"/>
+	<classpathentry kind="lib" path="lib/emf-ecore-xmi-2_5_0.jar"/>
+	<classpathentry kind="lib" path="lib/epsgraphics-1.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/jaxb-gxl-1_0.jar"/>
+	<classpathentry kind="lib" path="lib/layouts.jar"/>
+	<classpathentry kind="lib" path="lib/looks-2.1.4.jar"/>
+	<classpathentry kind="lib" path="lib/ltl2ba4j.jar"/>
+	<classpathentry kind="lib" path="lib/ltl2buchi.jar"/>
+	<classpathentry kind="lib" path="lib/rsyntaxtextarea.jar"/>
+	<classpathentry kind="lib" path="lib/antlr-3.2.jar" sourcepath="lib/src/antlr-3.2-src.zip"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
