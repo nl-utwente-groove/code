@@ -51,6 +51,17 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
     private final String explanation;
     /** Template mask. Must be set manually, outside constructor. */
     private int mask;
+    /** Template visibility. Defaults to always visible. */
+    private Visibility visibility = Visibility.ALL;
+
+    /** The possible visibilities of templates. */
+    public static enum Visibility {
+        /** always visible */
+        ALL,
+        /** only visible in development version of GROOVE */
+        DEVELOPMENT_ONLY
+    }
+
     private final SerializedParser commandlineParser; // for the arguments only
     /** Array of argument names. */
     private final String[] argumentNames;
@@ -107,6 +118,20 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
      */
     public void setMask(int mask) {
         this.mask = mask;
+    }
+
+    /**
+     * Getter for the visibility flag.
+     */
+    public Visibility getVisibility() {
+        return this.visibility;
+    }
+
+    /**
+     * Setter for the visibility flag.
+     */
+    public void setVisibility(Visibility visibility) {
+        this.visibility = visibility;
     }
 
     /**
