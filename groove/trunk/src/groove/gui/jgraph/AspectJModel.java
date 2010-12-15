@@ -34,9 +34,9 @@ import static groove.view.aspect.RuleAspect.ERASER;
 import static groove.view.aspect.RuleAspect.READER;
 import static groove.view.aspect.RuleAspect.REMARK;
 import static groove.view.aspect.RuleAspect.getRuleValue;
+import groove.graph.DefaultGraph;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
@@ -107,7 +107,7 @@ public class AspectJModel extends GraphJModel {
      * @see #getGraph()
      */
     @Override
-    public Graph toPlainGraph() {
+    public DefaultGraph toPlainGraph() {
         return getGraph().toPlainGraph();
     }
 

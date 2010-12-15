@@ -16,7 +16,7 @@
  */
 package groove.io;
 
-import groove.graph.GraphShape;
+import groove.graph.Graph;
 import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.aspect.AspectGraph;
@@ -149,7 +149,7 @@ public class Validator {
     }
 
     /** Validates a file supposedly containing a graph. */
-    static GraphShape validateGraph(File file) {
+    static Graph validateGraph(File file) {
         try {
             graphsValidated++;
             String name =
@@ -158,7 +158,7 @@ public class Validator {
             if (verbosity > GraphFileHandler.QUIET_MODE) {
                 System.out.print("* Validating " + name + " as a graph: ");
             }
-            GraphShape result = gxl.unmarshalGraph(file);
+            Graph result = gxl.unmarshalGraph(file);
             if (verbosity > GraphFileHandler.QUIET_MODE) {
                 System.out.println("OK");
             }
@@ -178,7 +178,7 @@ public class Validator {
     /** Validates a file supposedly containing a rule. */
     static void validateRule(File file) {
         rulesValidated++;
-        GraphShape graph = validateGraph(file);
+        Graph graph = validateGraph(file);
         if (graph == null) {
             // there was already an error in the graph format
             return;
@@ -209,11 +209,11 @@ public class Validator {
     /** Array of all options. */
     static private final String[] OPTIONS = {HELP_OPTION, VERBOSE_OPTION};
     /** Array op all option descriptions. */
-    static private final String[] OPTION_DESCRIPTIONS =
-        {HELP_DESCRIPTION, VERBOSE_DESCRIPTION};
-    static private final ExtensionFilter[] FILTERS =
-        {Groove.createGxlFilter(false), Groove.createRuleFilter(false),
-            Groove.createStateFilter(false)};
+    static private final String[] OPTION_DESCRIPTIONS = {HELP_DESCRIPTION,
+        VERBOSE_DESCRIPTION};
+    static private final ExtensionFilter[] FILTERS = {
+        Groove.createGxlFilter(false), Groove.createRuleFilter(false),
+        Groove.createStateFilter(false)};
 
     /** Array of files to be checked. */
     static private final List<File> files = new ArrayList<File>();

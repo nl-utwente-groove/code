@@ -18,12 +18,10 @@ package groove.gui;
 
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import groove.graph.DefaultGraph;
-import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.LabelStore;
 import groove.gui.JTypeNameList.CheckBoxListModel;
 import groove.gui.jgraph.AspectJModel;
-import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.TypeJGraph;
 import groove.io.SystemStore;
 import groove.lts.GTS;
@@ -32,9 +30,7 @@ import groove.lts.GraphTransition;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
-import groove.type.TypeReconstructor;
 import groove.util.Groove;
-import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 import groove.view.TypeView;
 import groove.view.aspect.AspectGraph;
@@ -90,8 +86,6 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         result.addSeparator();
         result.add(createButton(getUncheckAllAction()));
         result.add(createButton(getCheckAllAction()));
-        result.addSeparator();
-        result.add(createButton(new CreateAction()));
         return result;
     }
 
@@ -155,22 +149,12 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
     }
 
     /**
-     * Displays a type graph inside the typeGraphPanel.
-     * @param typeGraph The type graph to be displayed.
-     */
-    public void displayTypeGraph(Graph typeGraph) {
-        GraphInfo.setName(typeGraph, "Type graph");
-        this.jGraph.setModel(GraphJModel.newInstance(typeGraph, getOptions()));
-        setEnabled(true);
-    }
-
-    /**
      * Invokes the editor and saves the resulting type.
      * @param type the graph to be edited
      * @param fresh if <code>true</code>, the name for the edited type should be
      *        fresh
      */
-    private void handleEditType(final Graph type, final boolean fresh) {
+    private void handleEditType(final DefaultGraph type, final boolean fresh) {
         final String oldSelectedType = getSelectedType();
         EditorDialog dialog =
             new EditorDialog(getSimulator().getFrame(), getOptions(), type,
@@ -426,39 +410,6 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
     }
 
     /**
-     * Action listener class for the "create type graph" button
-     * @author Frank van Es
-     * @version $Revision $
-     */
-    class CreateAction extends RefreshableAction {
-        public CreateAction() {
-            super("Compute type graph", null);
-        }
-
-        @Override
-        public void refresh() {
-            setEnabled(getGrammarView() != null
-                && getGrammarView().getStartGraphView() != null);
-        }
-
-        /**
-         * This method is executed when the "create type graph" button is
-         * clicked. Then a new type graph for the current grammar is being
-         * computed; the type graph will be displayed and saved inside the graph
-         * grammar directory.
-         */
-        public void actionPerformed(ActionEvent e) {
-            try {
-                Graph typeGraph =
-                    TypeReconstructor.reconstruct(getGrammarView().toGrammar());
-                displayTypeGraph(typeGraph);
-            } catch (FormatException fe) {
-                System.err.printf("Graph format error: %s", fe.getMessage());
-            }
-        }
-    }
-
-    /**
      * Lazily creates and returns the singleton instance of the
      * {@link DeleteAction}.
      */
@@ -584,7 +535,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         }
 
         public void actionPerformed(ActionEvent e) {
-            final Graph initType =
+            final DefaultGraph initType =
                 getGrammarView().getTypeView(getSelectedType()).getView().toPlainGraph();
             handleEditType(initType, false);
         }
@@ -620,7 +571,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            final Graph initType = new DefaultGraph();
+            final DefaultGraph initType = new DefaultGraph();
             GraphInfo.setTypeRole(initType);
             GraphInfo.setName(initType, Groove.DEFAULT_TYPE_NAME);
             handleEditType(initType, true);

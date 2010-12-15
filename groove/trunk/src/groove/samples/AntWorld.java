@@ -20,7 +20,6 @@ import groove.explore.DefaultScenario;
 import groove.explore.Scenario;
 import groove.explore.result.Result;
 import groove.explore.strategy.RandomLinearStrategy;
-import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
@@ -93,9 +92,8 @@ public class AntWorld {
     static private LTSListener getStatisticsListener() {
         return new LTSAdapter() {
             @Override
-            public void addUpdate(LTS lts, GraphTransition transition) {
+            public void addUpdate(LTS lts, GraphTransition trans) {
                 this.counter++;
-                GraphTransition trans = (GraphTransition) transition;
                 if (trans.getEvent().getRule().getName().equals("end_turn")) {
                     System.out.print("\n" + trans.getEvent());
                 } else if (this.counter % 10 == 0) {
@@ -108,7 +106,7 @@ public class AntWorld {
     }
 
     /** Retrieves the int value that is the target of the only edge with a given label. */
-    static private int getTargetValue(Graph graph, Label label) {
+    static private int getTargetValue(HostGraph graph, Label label) {
         return (Integer) ((ValueNode) graph.labelEdgeSet(label).iterator().next().target()).getValue();
     }
 

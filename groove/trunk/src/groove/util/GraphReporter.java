@@ -18,7 +18,6 @@ package groove.util;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.GraphShape;
 import groove.graph.Label;
 
 import java.io.IOException;
@@ -44,7 +43,7 @@ public class GraphReporter extends CommandLineTool {
 
     /**
      * Constructs a new reporter, with default settings. This reporter should
-     * exclusively be used to call {@link #getReport(GraphShape)}.
+     * exclusively be used to call {@link #getReport(Graph)}.
      */
     private GraphReporter() {
         super(Collections.<String>emptyList());
@@ -104,7 +103,7 @@ public class GraphReporter extends CommandLineTool {
      * parameters of this reporter, and is returned in the form of a
      * StringBuilder.
      */
-    public StringBuilder getReport(GraphShape graph) {
+    public StringBuilder getReport(Graph graph) {
         StringBuilder result = new StringBuilder();
         // count the labels
         Bag<Label> labels = new TreeBag<Label>();

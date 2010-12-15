@@ -51,10 +51,8 @@ import groove.explore.util.MatchApplier;
 import groove.explore.util.RuleEventApplier;
 import groove.graph.DefaultGraph;
 import groove.graph.Element;
-import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
-import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
@@ -462,7 +460,7 @@ public class Simulator {
      * @param graph the graph to be edited.
      * @param fresh flag indicating if the name for the graph should be fresh
      */
-    void handleEditGraph(final Graph graph, final boolean fresh) {
+    void handleEditGraph(final DefaultGraph graph, final boolean fresh) {
         EditorDialog dialog =
             new EditorDialog(getFrame(), getOptions(), graph, getTypeView()) {
                 @Override
@@ -3841,7 +3839,7 @@ public class Simulator {
 
                 GTS gts = Simulator.this.getGTS();
 
-                Graph lts =
+                DefaultGraph lts =
                     gts.toPlainGraph(showFinal, showStart, showOpen, showNames);
 
                 Collection<GraphState> export = new HashSet<GraphState>(0);
@@ -4136,10 +4134,9 @@ public class Simulator {
          * Displays the number of lts states and transitions in the message
          * dialog.
          */
-        void displayProgress(GraphShape graph) {
-            getStateCountLabel().setText("States: " + graph.nodeCount());
-            getTransitionCountLabel().setText(
-                "Transitions: " + graph.edgeCount());
+        void displayProgress(LTS lts) {
+            getStateCountLabel().setText("States: " + lts.nodeCount());
+            getTransitionCountLabel().setText("Transitions: " + lts.edgeCount());
         }
 
         private void showResult() {
@@ -4370,7 +4367,7 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            Graph newGraph = new DefaultGraph();
+            DefaultGraph newGraph = new DefaultGraph();
             GraphInfo.setGraphRole(newGraph);
             handleEditGraph(newGraph, true);
         }
@@ -4406,7 +4403,7 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(false)) {
-                Graph newRule = new DefaultGraph();
+                DefaultGraph newRule = new DefaultGraph();
                 GraphInfo.setRuleRole(newRule);
                 EditorDialog dialog =
                     new EditorDialog(getFrame(), getOptions(), newRule,

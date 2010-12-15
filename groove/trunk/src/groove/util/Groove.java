@@ -20,7 +20,6 @@ import groove.calc.DefaultGraphCalculator;
 import groove.calc.GraphCalculator;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.GraphShape;
 import groove.graph.LabelStore;
 import groove.graph.NodeEdgeMap;
 import groove.graph.iso.DefaultIsoChecker;
@@ -612,7 +611,7 @@ public class Groove {
      * @return <code>true</code> if the format was known
      * @throws IOException if saving ran into problems
      */
-    static public boolean exportGraph(GraphShape graph, String filename)
+    static public boolean exportGraph(Graph graph, String filename)
         throws IOException {
         for (StructuralFormat exportFormat : new Exporter().getStructuralFormats()) {
             if (exportFormat.getFilter().hasExtension(filename)) {

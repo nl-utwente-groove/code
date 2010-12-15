@@ -16,7 +16,6 @@
  */
 package groove.abstraction;
 
-import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.trans.HostGraph;
@@ -63,7 +62,7 @@ public final class PreMatch {
      * Computes and returns the valid pre-matches of a rule into a shape.
      * The given host must be a shape.
      */
-    public static Set<RuleMatch> getPreMatches(GraphShape host, Rule rule) {
+    public static Set<RuleMatch> getPreMatches(HostGraph host, Rule rule) {
         assert host instanceof Shape : "Cannot use abstract methods on non-abstract graphs.";
         Shape shape = (Shape) host;
         Set<RuleMatch> preMatches = new HashSet<RuleMatch>();
@@ -91,7 +90,7 @@ public final class PreMatch {
      * A pre-match is valid if the non-injective matching of the LHS
      * respects node multiplicities.
      */
-    public static boolean isValidPreMatch(GraphShape host, RuleMatch match) {
+    public static boolean isValidPreMatch(HostGraph host, RuleMatch match) {
         assert host instanceof Shape : "Cannot use abstract methods on non-abstract graphs.";
 
         Shape shape = (Shape) host;

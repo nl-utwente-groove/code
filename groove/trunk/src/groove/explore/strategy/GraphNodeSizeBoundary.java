@@ -16,8 +16,8 @@
  */
 package groove.explore.strategy;
 
-import groove.graph.Graph;
 import groove.lts.ProductTransition;
+import groove.trans.HostGraph;
 import groove.verify.ModelChecking;
 
 /**
@@ -50,7 +50,7 @@ public class GraphNodeSizeBoundary extends AbstractBoundary {
     }
 
     /** Returns whether the given graph's size crosses this boundary. */
-    public boolean crossingBoundary(Graph graph) {
+    public boolean crossingBoundary(HostGraph graph) {
         return graph.nodeCount() > this.graphSizeBoundary;
     }
 

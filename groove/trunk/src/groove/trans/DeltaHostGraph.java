@@ -19,13 +19,11 @@ package groove.trans;
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultGraph;
 import groove.graph.DeltaApplier;
-import groove.graph.DeltaGraphFactory;
 import groove.graph.DeltaStore;
 import groove.graph.DeltaTarget;
 import groove.graph.Edge;
 import groove.graph.FrozenDeltaApplier;
 import groove.graph.GraphCache;
-import groove.graph.HostNodeSet;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
@@ -49,7 +47,7 @@ import java.util.Stack;
  * @version $Revision $
  */
 public class DeltaHostGraph extends AbstractGraph<GraphCache> implements
-        DeltaGraphFactory<DeltaHostGraph>, Cloneable, HostGraph {
+        HostGraph {
     /**
      * Constructs a graph with a given basis and delta The basis may be
      * <code>null</code>, meaning that it is the empty graph.
@@ -101,6 +99,7 @@ public class DeltaHostGraph extends AbstractGraph<GraphCache> implements
         return new DefaultHostGraph();
     }
 
+    /** Creates a new delta graph from a given basis and delta applier. */
     public DeltaHostGraph newGraph(DeltaHostGraph graph, DeltaApplier applier) {
         return new DeltaHostGraph(graph, applier, this.copyData);
     }
@@ -132,14 +131,6 @@ public class DeltaHostGraph extends AbstractGraph<GraphCache> implements
      * Since the graph is fixed, this method always throws an exception.
      * @throws UnsupportedOperationException always.
      */
-    public boolean addEdge(Edge edge) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Since the graph is fixed, this method always throws an exception.
-     * @throws UnsupportedOperationException always.
-     */
     public boolean addNode(Node node) {
         throw new UnsupportedOperationException();
     }
@@ -149,14 +140,6 @@ public class DeltaHostGraph extends AbstractGraph<GraphCache> implements
      * @throws UnsupportedOperationException always.
      */
     public boolean removeEdge(Edge edge) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Since the graph is fixed, this method always throws an exception.
-     * @throws UnsupportedOperationException always.
-     */
-    public boolean removeNode(Node node) {
         throw new UnsupportedOperationException();
     }
 

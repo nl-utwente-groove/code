@@ -23,14 +23,12 @@ import groove.explore.result.Acceptor;
 import groove.explore.result.Result;
 import groove.explore.util.RandomChooserInSequence;
 import groove.explore.util.RandomNewStateChooser;
-import groove.graph.Graph;
 import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.ProductGTS;
 import groove.lts.ProductTransition;
-import groove.verify.BuchiAutomatonGraph;
 import groove.verify.BuchiGraphState;
 import groove.verify.BuchiLocation;
 import groove.verify.DefaultBuchiLocation;
@@ -253,8 +251,6 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
      * @param automaton the collection of {@link ITransition}s
      */
     protected void processAutomaton(Collection<ITransition> automaton) {
-        Graph prototype = BuchiAutomatonGraph.getPrototype().newGraph();
-        assert (prototype instanceof BuchiAutomatonGraph) : "Resulting graph wrongly instantiated.";
         Map<IState,DefaultBuchiLocation> state2location =
             new HashMap<IState,DefaultBuchiLocation>();
         // BuchiAutomatonGraph result = (BuchiAutomatonGraph) prototype;

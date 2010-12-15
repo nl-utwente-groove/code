@@ -20,8 +20,8 @@ import static groove.view.aspect.Aspect.CONTENT_ASSIGN;
 import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
 import groove.algebra.AlgebraRegister;
 import groove.algebra.UnknownSymbolException;
+import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.GraphShape;
 import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
 import groove.util.ExprParser;
@@ -41,7 +41,7 @@ public class AspectParser {
     /**
      * Constructs a parser for a given aspect graph.
      */
-    public AspectParser(GraphShape graph) {
+    public AspectParser(Graph graph) {
         this.rule = GraphInfo.hasRuleRole(graph);
         this.convertToCurly = this.rule && GraphInfo.getVersion(graph) == null;
     }

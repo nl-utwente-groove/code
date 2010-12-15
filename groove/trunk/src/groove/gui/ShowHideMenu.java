@@ -18,7 +18,7 @@ package groove.gui;
 
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.GraphShape;
+import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.gui.dialog.StringDialog;
@@ -606,8 +606,7 @@ public class ShowHideMenu extends JMenu {
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            GraphShape graph =
-                ((GraphJModel) this.jgraph.getModel()).getGraph();
+            Graph graph = ((GraphJModel) this.jgraph.getModel()).getGraph();
             String exprText = exprDialog.showDialog(null);
             if (exprText != null) {
                 try {

@@ -19,6 +19,7 @@ package groove.view;
 import static groove.view.aspect.AttributeAspect.getAttributeValue;
 import groove.graph.Element;
 import groove.graph.ElementFactory;
+import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.graph.TypeGraph;
@@ -59,7 +60,7 @@ import java.util.TreeSet;
 public class DefaultGraphView implements GraphView {
     /**
      * Constructs an instance from a given aspect graph view.
-     * @see GraphInfo#getName(groove.graph.GraphShape)
+     * @see GraphInfo#getName(Graph)
      */
     public DefaultGraphView(AspectGraph view, SystemProperties properties) {
         this.view = view;

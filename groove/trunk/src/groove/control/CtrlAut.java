@@ -16,8 +16,11 @@
  */
 package groove.control;
 
-import groove.graph.AbstractGraphShape;
+import groove.graph.AbstractGraph;
+import groove.graph.Edge;
+import groove.graph.Graph;
 import groove.graph.GraphCache;
+import groove.graph.Node;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
 import groove.view.FormatException;
@@ -51,7 +54,7 @@ import java.util.TreeSet;
  * </ul>
  * @author Arend Rensink
  */
-public class CtrlAut extends AbstractGraphShape<GraphCache> {
+public class CtrlAut extends AbstractGraph<GraphCache> {
     /**
      * Constructs a new control automaton.
      * The start state and final state are automatically initialised.
@@ -59,6 +62,38 @@ public class CtrlAut extends AbstractGraphShape<GraphCache> {
     public CtrlAut() {
         this.startState = addState();
         this.finalState = addState();
+    }
+
+    @Override
+    public CtrlAut newGraph() {
+        return new CtrlAut();
+    }
+
+    @Override
+    public boolean addNode(Node node) {
+        assert node instanceof CtrlState;
+        return addState((CtrlState) node);
+    }
+
+    @Override
+    public boolean removeEdge(Edge edge) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean addEdgeWithoutCheck(Edge edge) {
+        assert edge instanceof CtrlTransition;
+        return addTransition((CtrlTransition) edge);
+    }
+
+    @Override
+    public boolean removeNodeWithoutCheck(Node node) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Graph clone() {
+        throw new UnsupportedOperationException();
     }
 
     /** Adds a control transition to this automaton. */

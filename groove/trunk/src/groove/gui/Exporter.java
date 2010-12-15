@@ -18,8 +18,8 @@ package groove.gui;
 
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
+import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
@@ -186,7 +186,7 @@ public class Exporter {
             export(jGraph.getModel().toPlainGraph(), file);
         }
 
-        public void export(GraphShape graph, File file) throws IOException {
+        public void export(Graph graph, File file) throws IOException {
             PrintWriter writer = new PrintWriter(new FileWriter(file));
             Converter.graphToFsm(graph, writer);
             writer.close();
@@ -632,11 +632,11 @@ public class Exporter {
 
         /**
          * Exports the jgraph by calling
-         * {@link Converter#graphToAut(groove.graph.GraphShape, PrintWriter)} on
+         * {@link Converter#graphToAut(Graph, PrintWriter)} on
          * the graph contained therein.
          */
         public void export(JGraph jGraph, File file) throws IOException {
-            GraphShape graph;
+            Graph graph;
             if (jGraph.getModel() instanceof GraphJModel) {
                 graph = ((GraphJModel) jGraph.getModel()).getGraph();
             } else {
@@ -647,9 +647,9 @@ public class Exporter {
 
         /**
          * Exports the graph by calling
-         * {@link Converter#graphToAut(groove.graph.GraphShape, PrintWriter)}.
+         * {@link Converter#graphToAut(Graph, PrintWriter)}.
          */
-        public void export(GraphShape graph, File file) throws IOException {
+        public void export(Graph graph, File file) throws IOException {
             PrintWriter writer = new PrintWriter(new FileWriter(file));
             Converter.graphToAut(graph, writer);
             writer.close();
@@ -719,13 +719,13 @@ public class Exporter {
 
         /**
          * Exports the jgraph by calling
-         * {@link Converter#graphToKth(groove.graph.GraphShape, PrintWriter)} on
+         * {@link Converter#graphToKth(AspectGraph, PrintWriter)} on
          * the graph contained therein.
          */
         public void export(JGraph jGraph, File file) throws IOException {
-            GraphShape graph;
+            Graph graph;
             if (jGraph instanceof StateJGraph) {
-                graph = ((GraphJModel) jGraph.getModel()).getGraph();
+                graph = ((StateJGraph) jGraph).getModel().getGraph();
                 export(graph, file);
             } else {
                 throw new IOException(
@@ -736,11 +736,11 @@ public class Exporter {
 
         /**
          * Exports the graph by calling
-         * {@link Converter#graphToAut(groove.graph.GraphShape, PrintWriter)}.
+         * {@link Converter#graphToAut(Graph, PrintWriter)}.
          */
-        public void export(GraphShape graph, File file) throws IOException {
+        public void export(Graph graph, File file) throws IOException {
             PrintWriter writer = new PrintWriter(new FileWriter(file));
-            Converter.graphToKth(graph, writer);
+            Converter.graphToKth((AspectGraph) graph, writer);
             writer.close();
         }
 
@@ -776,6 +776,6 @@ public class Exporter {
      */
     public static interface StructuralFormat extends Format {
         /** Exports a GraphShape into this format. */
-        void export(GraphShape graph, File file) throws IOException;
+        void export(Graph graph, File file) throws IOException;
     }
 }

@@ -278,7 +278,7 @@ public class GraphInfo {
      * @return a non-<code>null</code> value which equals (afterwards)
      *         <code>graph.getInfo()</code>
      */
-    public static GraphInfo getInfo(GraphShape graph, boolean create) {
+    public static GraphInfo getInfo(Graph graph, boolean create) {
         GraphInfo result = graph.getInfo();
         if (result == null && create) {
             result = graph.setInfo(new GraphInfo());
@@ -290,7 +290,7 @@ public class GraphInfo {
      * Convenience method to indicate if a graph has a non-empty set of errors.
      * @see #getErrors()
      */
-    public static boolean hasErrors(GraphShape graph) {
+    public static boolean hasErrors(Graph graph) {
         GraphInfo graphInfo = graph.getInfo();
         return graphInfo != null && graphInfo.getErrors() != null;
     }
@@ -299,7 +299,7 @@ public class GraphInfo {
      * Convenience method to retrieve the list of format errors of a graph.
      * @see #getErrors()
      */
-    public static List<FormatError> getErrors(GraphShape graph) {
+    public static List<FormatError> getErrors(Graph graph) {
         GraphInfo graphInfo = graph.getInfo();
         if (graphInfo == null) {
             return null;
@@ -312,7 +312,7 @@ public class GraphInfo {
      * Convenience method to add a list of errors to a graph.
      * @see #addErrors(List)
      */
-    public static void addErrors(GraphShape graph, List<FormatError> errors) {
+    public static void addErrors(Graph graph, List<FormatError> errors) {
         getInfo(graph, true).addErrors(errors);
     }
 
@@ -320,7 +320,7 @@ public class GraphInfo {
      * Convenience method to set the list of format errors of a graph.
      * @see #setErrors(Collection)
      */
-    public static void setErrors(GraphShape graph,
+    public static void setErrors(Graph graph,
             Collection<FormatError> errors) {
         if (errors != null) {
             getInfo(graph, true).setErrors(errors);
@@ -330,7 +330,7 @@ public class GraphInfo {
     /**
      * Convenience method to retrieve the file of a graph.
      */
-    public static File getFile(GraphShape graph) {
+    public static File getFile(Graph graph) {
         GraphInfo graphInfo = graph.getInfo();
         return new File(graphInfo.getFile());
     }
@@ -338,7 +338,7 @@ public class GraphInfo {
     /**
      * Convenience method to set the file of a graph.
      */
-    public static void setFile(GraphShape graph, String file) {
+    public static void setFile(Graph graph, String file) {
         if (file != null) {
             getInfo(graph, true).setFile(file);
         }
@@ -347,7 +347,7 @@ public class GraphInfo {
     /**
      * Convenience method to test if a graph contains layout information.
      */
-    public static boolean hasLayoutMap(GraphShape graph) {
+    public static boolean hasLayoutMap(Graph graph) {
         GraphInfo graphInfo = graph.getInfo();
         return graphInfo != null && graphInfo.hasLayoutMap();
     }
@@ -355,7 +355,7 @@ public class GraphInfo {
     /**
      * Convenience method to retrieve the layout map from a graph.
      */
-    public static LayoutMap<Node,Edge> getLayoutMap(GraphShape graph) {
+    public static LayoutMap<Node,Edge> getLayoutMap(Graph graph) {
         GraphInfo graphInfo = graph.getInfo();
         if (graphInfo == null) {
             return null;
@@ -367,7 +367,7 @@ public class GraphInfo {
     /**
      * Convenience method to set the layout map of a graph.
      */
-    public static void setLayoutMap(GraphShape graph,
+    public static void setLayoutMap(Graph graph,
             LayoutMap<Node,Edge> layoutMap) {
         if (layoutMap != null) {
             getInfo(graph, true).setLayoutMap(layoutMap);
@@ -380,7 +380,7 @@ public class GraphInfo {
      *         stored
      * @see #getName()
      */
-    public static String getName(GraphShape graph) {
+    public static String getName(Graph graph) {
         GraphInfo graphInfo = graph.getInfo();
         if (graphInfo == null) {
             return null;
@@ -393,7 +393,7 @@ public class GraphInfo {
      * Convenience method to set the name of a graph.
      * @see #setName(String)
      */
-    public static void setName(GraphShape graph, String name) {
+    public static void setName(Graph graph, String name) {
         GraphInfo info = getInfo(graph, name != null);
         if (info != null) {
             info.setName(name);
@@ -408,7 +408,7 @@ public class GraphInfo {
      *        object itself) should be created if not yet there
      * @return the properties map of <code>graph</code>, or <code>null</code>
      */
-    public static GraphProperties getProperties(GraphShape graph, boolean create) {
+    public static GraphProperties getProperties(Graph graph, boolean create) {
         GraphInfo graphInfo = getInfo(graph, create);
         if (graphInfo == null) {
             return null;
@@ -421,7 +421,7 @@ public class GraphInfo {
      * Convenience method to set the graph properties of a graph. Only sets the
      * map if it is not <code>null</code> or empty.
      */
-    public static void setProperties(GraphShape graph,
+    public static void setProperties(Graph graph,
             GraphProperties properties) {
         if (properties != null) {
             getInfo(graph, true).setProperties(properties);
@@ -432,7 +432,7 @@ public class GraphInfo {
      * Convenience method to set the version of a graph.
      * @see Version#GXL_VERSION
      */
-    public static void setVersion(GraphShape graph, String version) {
+    public static void setVersion(Graph graph, String version) {
         GraphProperties properties =
             getProperties(graph, version.length() != 0);
         if (properties != null) {
@@ -444,7 +444,7 @@ public class GraphInfo {
      * Convenience method to retrieve the version of a graph.
      * @see Version#GXL_VERSION
      */
-    public static String getVersion(GraphShape graph) {
+    public static String getVersion(Graph graph) {
         GraphProperties properties = getProperties(graph, false);
         if (properties == null) {
             return null;
@@ -459,7 +459,7 @@ public class GraphInfo {
      *         stored
      * @see #setRole(String)
      */
-    public static String getRole(GraphShape graph) {
+    public static String getRole(Graph graph) {
         GraphInfo graphInfo = graph.getInfo();
         if (graphInfo == null) {
             return null;
@@ -472,7 +472,7 @@ public class GraphInfo {
      * Convenience method to set the role of a graph.
      * @see #setRole(String)
      */
-    public static void setRole(GraphShape graph, String role) {
+    public static void setRole(Graph graph, String role) {
         GraphInfo info = getInfo(graph, role != null);
         if (info != null) {
             info.setRole(role);
@@ -484,7 +484,7 @@ public class GraphInfo {
      * @see #getRole()
      * @see Groove#RULE_ROLE
      */
-    public static boolean hasRuleRole(GraphShape graph) {
+    public static boolean hasRuleRole(Graph graph) {
         return Groove.isRuleRole(getRole(graph));
     }
 
@@ -493,7 +493,7 @@ public class GraphInfo {
      * @see #getRole()
      * @see Groove#GRAPH_ROLE
      */
-    public static boolean hasGraphRole(GraphShape graph) {
+    public static boolean hasGraphRole(Graph graph) {
         return Groove.isGraphRole(getRole(graph));
     }
 
@@ -502,7 +502,7 @@ public class GraphInfo {
      * @see #getRole()
      * @see Groove#TYPE_ROLE
      */
-    public static boolean hasTypeRole(GraphShape graph) {
+    public static boolean hasTypeRole(Graph graph) {
         return Groove.isTypeRole(getRole(graph));
     }
 
@@ -511,7 +511,7 @@ public class GraphInfo {
      * @see #setRole(String)
      * @see Groove#RULE_ROLE
      */
-    public static void setRuleRole(GraphShape graph) {
+    public static void setRuleRole(Graph graph) {
         setRole(graph, Groove.RULE_ROLE);
     }
 
@@ -520,7 +520,7 @@ public class GraphInfo {
      * @see #setRole(String)
      * @see Groove#GRAPH_ROLE
      */
-    public static void setGraphRole(GraphShape graph) {
+    public static void setGraphRole(Graph graph) {
         setRole(graph, Groove.GRAPH_ROLE);
     }
 
@@ -529,7 +529,7 @@ public class GraphInfo {
      * @see #setRole(String)
      * @see Groove#TYPE_ROLE
      */
-    public static void setTypeRole(GraphShape graph) {
+    public static void setTypeRole(Graph graph) {
         setRole(graph, Groove.TYPE_ROLE);
     }
 
@@ -542,7 +542,7 @@ public class GraphInfo {
      * @param elementMap map from the source elements to the target elements
      */
     public static <N1 extends Node,N2 extends Node,E1 extends Edge,E2 extends Edge> void transfer(
-            GraphShape source, GraphShape target,
+            Graph source, Graph target,
             GenericNodeEdgeMap<N1,N2,E1,E2> elementMap) {
         GraphInfo sourceInfo = source.getInfo();
         if (sourceInfo != null) {

@@ -14,12 +14,11 @@
  * 
  * $Id: NodeSet.java,v 1.9 2008-01-30 09:32:57 iovka Exp $
  */
-package groove.graph;
+package groove.trans;
 
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
-import groove.trans.HostNode;
 import groove.util.TreeHashSet;
 
 import java.util.Collection;

@@ -18,10 +18,11 @@ package groove.lts;
 
 import groove.control.CtrlState;
 import groove.explore.result.Result;
-import groove.graph.AbstractGraphShape;
+import groove.graph.AbstractGraph;
 import groove.graph.DefaultGraph;
 import groove.graph.Edge;
-import groove.graph.GraphShapeCache;
+import groove.graph.Graph;
+import groove.graph.GraphCache;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 import groove.graph.iso.CertificateStrategy;
@@ -53,7 +54,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
+public class GTS extends AbstractGraph<GraphCache> implements LTS {
     /**
      * The number of transitions generated but not added (due to overlapping
      * existing transitions)
@@ -295,11 +296,6 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         return collapse;
     }
 
-    @Override
-    protected GraphShapeCache createCache() {
-        return new GraphShapeCache(this, false);
-    }
-
     /**
      * Returns the (fixed) derivation record for this GTS.
      */
@@ -395,7 +391,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     }
 
     /**
-     * Calls {@link GraphShapeCache#addUpdate(Node)} 
+     * Calls {@link GraphCache#addUpdate(Node)} 
      * if the cache is not cleared.
      * @param node the node being added
      */
@@ -472,6 +468,40 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         return result;
     }
 
+    @Override
+    public Graph newGraph() {
+        return new GTS(this.ruleSystem);
+    }
+
+    @Override
+    public boolean addNode(Node node) {
+        assert node instanceof GraphState;
+        return addState((GraphState) node) == null;
+    }
+
+    @Override
+    public boolean removeEdge(Edge edge) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean addEdgeWithoutCheck(Edge edge) {
+        assert edge instanceof GraphTransition;
+        assert edgeSet().contains(edge);
+        addTransition((GraphTransition) edge);
+        return true;
+    }
+
+    @Override
+    public boolean removeNodeWithoutCheck(Node node) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public GTS clone() {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * The start state of this LTS.
      * @invariant <tt>nodeSet().contains(startState)</tt>
@@ -506,7 +536,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     private int transitionCount = 0;
 
     /**
-     * Set of {@link GraphListener} s to be identified of changes in this graph.
+     * Set of {@link LTSListener} s to be identified of changes in this graph.
      * Set to <tt>null</tt> when the graph is fixed.
      */
     private Set<LTSListener> listeners = new HashSet<LTSListener>();

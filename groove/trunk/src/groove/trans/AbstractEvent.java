@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.HostNodeSet;
 import groove.graph.Node;
 import groove.lts.DefaultGraphTransition;
 import groove.lts.GraphState;

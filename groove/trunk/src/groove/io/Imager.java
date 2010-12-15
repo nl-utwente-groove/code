@@ -16,8 +16,8 @@
  */
 package groove.io;
 
+import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.GraphShape;
 import groove.gui.Exporter;
 import groove.gui.Options;
 import groove.gui.jgraph.AspectJModel;
@@ -175,7 +175,7 @@ public class Imager extends CommandLineTool {
                         new File(
                             outFileParent,
                             new ExtensionFilter(imageFormat).addExtension(outFileName));
-                    GraphShape graph = graphLoader.unmarshalGraph(inFile);
+                    Graph graph = graphLoader.unmarshalGraph(inFile);
 
                     if (graph.size() == 0) {
                         // fix to skip empty graphs and rules, since

@@ -18,6 +18,7 @@
 package groove.gui.jgraph;
 
 import groove.graph.AbstractGraph;
+import groove.graph.DefaultGraph;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GenericNodeEdgeHashMap;
@@ -25,7 +26,6 @@ import groove.graph.GenericNodeEdgeMap;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
-import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.graph.algebra.VariableNode;
 import groove.gui.Options;
@@ -74,7 +74,7 @@ public class GraphJModel extends JModel implements LTSListener {
      *        labels are used to display self edges.
      * @require graph != null, nodeAttr != null, edgeAttr != null;
      */
-    protected GraphJModel(GraphShape graph, AttributeMap defaultNodeAttr,
+    protected GraphJModel(Graph graph, AttributeMap defaultNodeAttr,
             AttributeMap defaultEdgeAttr, Options options) {
         // the model is to store attributes
         super(defaultNodeAttr, defaultEdgeAttr, options);
@@ -93,7 +93,7 @@ public class GraphJModel extends JModel implements LTSListener {
      * @param graph the underlying Graph
      * @require graph != null;
      */
-    GraphJModel(GraphShape graph, Options options) {
+    GraphJModel(Graph graph, Options options) {
         this(graph, JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, options);
     }
 
@@ -121,7 +121,7 @@ public class GraphJModel extends JModel implements LTSListener {
      * Returns the underlying Graph of this GraphModel.
      * @ensure result != null
      */
-    public GraphShape getGraph() {
+    public Graph getGraph() {
         return this.graph;
     }
 
@@ -186,43 +186,6 @@ public class GraphJModel extends JModel implements LTSListener {
         doInsert();
         // new edges should be behind the nodes
         toBack(this.addedJCells.toArray());
-    }
-
-    /**
-     * Reacts to a (node of edge) deletion in the underlying Graph by mimicking
-     * the change in the GraphModel.
-     */
-    public synchronized void removeUpdate(GraphShape graph, Node node) {
-        // deletes the corresponding GraphCell from the GraphModel
-        // note that (as per GraphListener contract)
-        // all incident Edges have already been removed
-        remove(new Object[] {this.toJCellMap.removeNode(node)});
-    }
-
-    /**
-     * Reacts to a (node of edge) deletion in the underlying Graph by mimicking
-     * the change in the GraphModel.
-     */
-    public synchronized void removeUpdate(GraphShape graph, Edge edge) {
-        // the only remaining possibility is an Edge
-        JCell jEdge = getJCell(edge);
-        // self-edges are treated separately
-        if (jEdge == getJVertex(edge.source())) {
-            // self-edge; remove label from image node label set
-            ((GraphJVertex) jEdge).removeSelfEdge(edge);
-        } else {
-            // not a self-edge; remove the edge from the set modelled by this
-            // jedge
-            ((GraphJEdge) jEdge).removeEdge(edge);
-            // but was it the only edge modelled by this jedge?
-            if (((GraphJEdge) jEdge).getEdges().isEmpty()) {
-                // delete the edge and its source/target port (if any)
-                // from the GraphModel
-                remove(new Object[] {jEdge});
-            }
-        }
-        // in any case, remove the object from the cell map
-        this.toJCellMap.removeEdge(edge);
     }
 
     @Override
@@ -339,8 +302,8 @@ public class GraphJModel extends JModel implements LTSListener {
      * This method also sets the role of the resulting graph.
      */
     @Override
-    public Graph toPlainGraph() {
-        Graph result = super.toPlainGraph();
+    public DefaultGraph toPlainGraph() {
+        DefaultGraph result = super.toPlainGraph();
         GraphInfo.setRole(result, Groove.GRAPH_ROLE);
         return result;
     }
@@ -765,7 +728,7 @@ public class GraphJModel extends JModel implements LTSListener {
      * The underlying Graph of this GraphModel.
      * @invariant graph != null
      */
-    private final GraphShape graph;
+    private final Graph graph;
     /**
      * The layout map for the underlying graph. It maps {@link Element}s to
      * {@link JCellLayout}s. This is set to an empty map if the graph is not a
@@ -811,7 +774,7 @@ public class GraphJModel extends JModel implements LTSListener {
      * all self-edges without explicit layout information will be treated as node
      * labels.
      */
-    static public GraphJModel newInstance(GraphShape graph, Options options,
+    static public GraphJModel newInstance(Graph graph, Options options,
             boolean forEditor) {
         GraphJModel result =
             new GraphJModel(graph, JAttr.DEFAULT_NODE_ATTR,
@@ -832,7 +795,7 @@ public class GraphJModel extends JModel implements LTSListener {
      * @param graph the underlying Graph
      * @param options display options
      */
-    static public GraphJModel newInstance(GraphShape graph, Options options) {
+    static public GraphJModel newInstance(Graph graph, Options options) {
         return newInstance(graph, options, false);
     }
 

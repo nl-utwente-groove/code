@@ -21,10 +21,10 @@ import groove.graph.DeltaApplier;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.FrozenDeltaApplier;
-import groove.graph.Graph;
 import groove.graph.Node;
 import groove.trans.DefaultApplication;
 import groove.trans.DeltaHostGraph;
+import groove.trans.HostGraph;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.TreeHashSet;
@@ -135,7 +135,6 @@ class StateCache {
      * Compute the graph from the information in the state. The state is assumed
      * to be a {@link DefaultGraphNextState}.
      */
-    @SuppressWarnings("unchecked")
     private DeltaHostGraph computeGraph() {
         Element[] frozenGraph = this.state.getFrozenGraph();
         DeltaHostGraph result;
@@ -206,7 +205,7 @@ class StateCache {
      * graph representation consists of all nodes and edges of the graph in a
      * single array.
      */
-    Element[] computeFrozenGraph(Graph graph) {
+    Element[] computeFrozenGraph(HostGraph graph) {
         Element[] result = new Element[graph.size()];
         int index = 0;
         for (Node node : graph.nodeSet()) {

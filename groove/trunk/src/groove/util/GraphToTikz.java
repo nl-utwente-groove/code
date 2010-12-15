@@ -18,8 +18,8 @@ package groove.util;
 
 import groove.control.CtrlTransition;
 import groove.graph.Edge;
+import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.jgraph.CtrlJModel;
@@ -64,7 +64,7 @@ public final class GraphToTikz {
     public static String convertGraphToTikzStr(GraphJModel model,
             LayoutMap<Node,Edge> layoutMap) {
 
-        GraphShape graph = model.getGraph();
+        Graph graph = model.getGraph();
         boolean showBackground =
             model.getOptions().getValue(Options.SHOW_BACKGROUND_OPTION) == 1
                     ? true : false;

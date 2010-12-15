@@ -18,10 +18,9 @@ package groove.util;
 
 import groove.algebra.StringAlgebra;
 import groove.graph.Edge;
-import groove.graph.Graph;
-import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
+import groove.trans.HostGraph;
 import groove.view.FormatException;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
@@ -65,8 +64,8 @@ public final class GraphToKth {
      *        <code>AspectGraph</code>.
      * @return a string with the simple encoding of the graph.
      */
-    public static String convertGraph(GraphShape graph) {
-        GraphToKth.graph = (AspectGraph) graph;
+    public static String convertGraph(AspectGraph graph) {
+        GraphToKth.graph = graph;
         result = new StringBuilder();
 
         beginFile();
@@ -235,7 +234,7 @@ public final class GraphToKth {
      */
     private static Map<String,String> getStringAttributes(AspectNode node) {
         HashMap<String,String> attrs = new HashMap<String,String>();
-        Graph model = null;
+        HostGraph model = null;
         try {
             model = graph.toGraphView(null).toModel();
         } catch (FormatException e) {
