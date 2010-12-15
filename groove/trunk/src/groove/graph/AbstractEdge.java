@@ -187,6 +187,21 @@ public abstract class AbstractEdge<SN extends Node,L extends Label,TN extends No
         return label().equals(other.label());
     }
 
+    @Override
+    public boolean isNodeType() {
+        return label().isNodeType();
+    }
+
+    @Override
+    public boolean isFlag() {
+        return label().isFlag();
+    }
+
+    @Override
+    public boolean isBinary() {
+        return label().isBinary();
+    }
+
     /**
      * The source node of this edge.
      */

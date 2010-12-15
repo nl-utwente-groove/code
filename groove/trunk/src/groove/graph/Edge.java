@@ -38,4 +38,26 @@ public interface Edge extends Element {
      * @ensure <tt>result != null</tt>
      */
     public Label label();
+
+    /**
+     * Indicates if the edge label stands for a node type. Convenience
+     * method for {@code label().isNodeType()}.
+     * @see Label#isNodeType()
+     */
+    boolean isNodeType();
+
+    /**
+     * Indicates if the edge label stands for a flag. Convenience method for
+     * {@code label().isNodeType()}.
+     * @see Label#isFlag()
+     */
+    boolean isFlag();
+
+    /**
+     * Indicates if this is a (normal) binary edge. Convenience method for {@code
+     * label().isNodeType()}.
+     * @see Label#isBinary()
+     */
+    boolean isBinary();
+
 }

@@ -216,12 +216,13 @@ public class AspectEdge extends
      * @return true, if the label is a node type label or a flag;
      *         false, otherwise.
      */
-    public boolean isUnaryEdge() {
-        boolean result = false;
+    @Override
+    public boolean isBinary() {
+        boolean result = true;
         try {
             Label modelLabel = getModelLabel();
             if (modelLabel != null) {
-                result = !modelLabel.isBinary();
+                result = modelLabel.isBinary();
             }
         } catch (FormatException e1) {
             // do nothing
@@ -243,10 +244,10 @@ public class AspectEdge extends
         // label, then the target
         result = source().compareTo(other.source());
         if (result == 0) {
-            result = other.isNodeType() - isNodeType();
+            result = (other.isNodeType() ? 1 : 0) - (isNodeType() ? 1 : 0);
         }
         if (result == 0) {
-            result = other.isFlag() - isFlag();
+            result = (other.isFlag() ? 1 : 0) - (isFlag() ? 1 : 0);
         }
         if (result == 0) {
             result = getAspectMap().compareTo(other.getAspectMap());
@@ -261,11 +262,12 @@ public class AspectEdge extends
     }
 
     /** Tests if this aspect edge stands for a node type. */
-    public int isNodeType() {
-        int result = 0;
+    @Override
+    public boolean isNodeType() {
+        boolean result = false;
         try {
             Label modelLabel = getModelLabel();
-            result = modelLabel != null && modelLabel.isNodeType() ? 1 : 0;
+            result = modelLabel != null && modelLabel.isNodeType();
         } catch (FormatException e) {
             // do nothing
         }
@@ -273,11 +275,12 @@ public class AspectEdge extends
     }
 
     /** Tests if this aspect edge stands for a flag. */
-    public int isFlag() {
-        int result = 0;
+    @Override
+    public boolean isFlag() {
+        boolean result = false;
         try {
             Label modelLabel = getModelLabel();
-            result = modelLabel != null && modelLabel.isFlag() ? 1 : 0;
+            result = modelLabel != null && modelLabel.isFlag();
         } catch (FormatException e) {
             // do nothing
         }

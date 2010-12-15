@@ -106,6 +106,21 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
+    public boolean isNodeType() {
+        return false;
+    }
+
+    @Override
+    public boolean isFlag() {
+        return false;
+    }
+
+    @Override
+    public boolean isBinary() {
+        return true;
+    }
+
+    @Override
     public HostNode[] getAddedNodes() {
         throw new UnsupportedOperationException();
     }

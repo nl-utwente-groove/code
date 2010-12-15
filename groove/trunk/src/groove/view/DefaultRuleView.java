@@ -1096,8 +1096,7 @@ public class DefaultRuleView implements RuleView {
                 for (Level sublevel : this.children) {
                     sublevel.addEdge(viewEdge, ruleEdge);
                 }
-            } else if (!RuleAspect.inNAC(viewEdge)
-                && viewEdge.isNodeType() == 1) {
+            } else if (!RuleAspect.inNAC(viewEdge) && viewEdge.isNodeType()) {
                 // add type edges to all sublevels
                 for (Level sublevel : this.children) {
                     sublevel.addParentType(ruleEdge);
