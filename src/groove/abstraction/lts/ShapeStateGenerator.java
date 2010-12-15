@@ -107,10 +107,6 @@ public final class ShapeStateGenerator implements RuleEventApplier {
             result = trans;
         }
 
-        if (this.states % 100 == 0) {
-            System.out.println(this.states + " " + this.transitions);
-        }
-
         return result;
     }
 
