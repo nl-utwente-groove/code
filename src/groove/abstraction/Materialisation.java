@@ -16,14 +16,10 @@
  */
 package groove.abstraction;
 
-import groove.abstraction.gui.ShapeDialog;
 import groove.graph.TypeLabel;
 import groove.trans.DefaultApplication;
-import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
-import groove.trans.HostGraph;
 import groove.trans.HostNode;
-import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
 import groove.trans.RuleLabel;
@@ -31,11 +27,7 @@ import groove.trans.RuleMatch;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
 import groove.trans.SPOEvent;
-import groove.view.FormatException;
-import groove.view.StoredGrammarView;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -432,7 +424,7 @@ public final class Materialisation implements Cloneable {
                     this.tasks.add(new MaterialiseEdge(this, edgeS, edgesR));
                     processedEdges.add(edgeS);
                     isMatEdgeOpEmpty = false;
-                } else {
+                } else if (!(processedNodes.contains(edgeS.source()) && processedNodes.contains(edgeS.target()))) {
                     // We have a concrete match of an edge. Freeze it.
                     edgesToFreeze.add(edgeS);
                 }
@@ -473,48 +465,47 @@ public final class Materialisation implements Cloneable {
      */
     private void extendMatch(RuleNode nodeR, ShapeNode nodeS,
             Set<ShapeEdge> edgesToFreeze) {
+
         this.match.putNode(nodeR, nodeS);
+
         // Look for all edges where nodeR occurs and update the edge map.
         for (Entry<RuleEdge,HostEdge> edgeEntry : this.match.edgeMap().entrySet()) {
             RuleEdge edgeR = edgeEntry.getKey();
-            ShapeEdge origEdgeS = (ShapeEdge) edgeEntry.getValue();
-            // Start with the nodes from the original edge.
-            ShapeNode srcS = origEdgeS.source();
-            ShapeNode tgtS = origEdgeS.target();
+            RuleNode srcR = edgeR.source();
+            RuleNode tgtR = edgeR.target();
 
-            boolean modifyMatch = false;
-            if (edgeR.source().equals(nodeR)) {
-                srcS = nodeS;
-                modifyMatch = true;
-            }
-            if (edgeR.target().equals(nodeR)) {
-                tgtS = nodeS;
-                modifyMatch = true;
+            if (!(srcR.equals(nodeR) || tgtR.equals(nodeR))) {
+                // This edgeR is unaffected. Continue with the next one.
+                continue;
             }
 
-            if (modifyMatch) {
-                // Get the new edge from the shape.
-                // Variables srcS and tgtS were already properly updated.
-                ShapeEdge newEdgeS =
-                    this.shape.getShapeEdge(srcS, origEdgeS.label(), tgtS);
-                if (newEdgeS != null) {
-                    if (Util.isUnary(newEdgeS)) {
-                        this.match.putEdge(edgeR, newEdgeS);
-                    } else {
-                        EdgeSignature outEs =
-                            this.shape.getEdgeOutSignature(newEdgeS);
-                        EdgeSignature inEs =
-                            this.shape.getEdgeInSignature(newEdgeS);
-                        if (this.shape.isOutEdgeSigConcrete(outEs)
-                            && this.shape.isOutEdgeSigUnique(outEs)
-                            && this.shape.isInEdgeSigConcrete(inEs)
-                            && this.shape.isInEdgeSigUnique(inEs)) {
-                            this.match.putEdge(edgeR, newEdgeS);
-                            edgesToFreeze.add(newEdgeS);
-                        } // else, we have an edge that needs to be materialised.
-                          // Wait for the MaterialiseEdge operation to take care
-                          // of this edge.
-                    }
+            if (this.willBeMaterialised(srcR) || this.willBeMaterialised(tgtR)
+                || this.willBeMaterialised(edgeR)) {
+                // We have to wait for the other materialise operations
+                // before we can set this edgeR in the match.
+                continue;
+            }
+
+            TypeLabel label = edgeEntry.getValue().label();
+            // Look into the node map and get the corresponding shape nodes.
+            ShapeNode srcS = (ShapeNode) this.match.getNode(srcR);
+            ShapeNode tgtS = (ShapeNode) this.match.getNode(tgtR);
+            // Get the new edge from the shape.
+            // Variables srcS and tgtS were already properly updated.
+            ShapeEdge newEdgeS = this.shape.getShapeEdge(srcS, label, tgtS);
+            if (newEdgeS != null) {
+                this.match.putEdge(edgeR, newEdgeS);
+                EdgeSignature outEs = this.shape.getEdgeOutSignature(newEdgeS);
+                EdgeSignature inEs = this.shape.getEdgeInSignature(newEdgeS);
+                if (!this.shape.isOutEdgeSigUnique(outEs)
+                    || !this.shape.isInEdgeSigUnique(inEs)) {
+                    // We have an edge that needs to be materialised.
+                    // Create the proper operation.
+                    Set<RuleEdge> edgesR = new HashSet<RuleEdge>();
+                    edgesR.add(edgeR);
+                    this.tasks.add(new MaterialiseEdge(this, newEdgeS, edgesR));
+                } else if (!Util.isUnary(newEdgeS)) {
+                    edgesToFreeze.add(newEdgeS);
                 }
             }
         }
@@ -527,6 +518,13 @@ public final class Materialisation implements Cloneable {
      * multiplicities, then we create new PullNode operations.
      */
     void addPullNodeOps() {
+
+        if (this.haveMatEdgeOp()) {
+            // We are still performing MaterialiseEdge operations. Wait until
+            // all such operations are done because some edges may disappear.
+            return;
+        }
+
         HashSet<PullNode> pullNodeOps = new HashSet<PullNode>();
         // Check all nodes marked to be singularised.
         for (MatOp op : this.tasks) {
@@ -597,6 +595,49 @@ public final class Materialisation implements Cloneable {
         }
 
         this.tasks.addAll(pullNodeOps);
+    }
+
+    private boolean willBeMaterialised(RuleNode nodeR) {
+        boolean result = false;
+        for (MatOp op : this.tasks) {
+            if (!(op instanceof MaterialiseNode)) {
+                // Ignore this operation.
+                continue;
+            }
+            Set<RuleNode> nodesR = ((MaterialiseNode) op).nodesR;
+            if (nodesR.contains(nodeR)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    private boolean willBeMaterialised(RuleEdge edgeR) {
+        boolean result = false;
+        for (MatOp op : this.tasks) {
+            if (!(op instanceof MaterialiseEdge)) {
+                // Ignore this operation.
+                continue;
+            }
+            Set<RuleEdge> edgesR = ((MaterialiseEdge) op).edgesR;
+            if (edgesR.contains(edgeR)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    private boolean haveMatEdgeOp() {
+        boolean result = false;
+        for (MatOp op : this.tasks) {
+            if (op instanceof MaterialiseEdge) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     // ------------------------------------------------------------------------
@@ -1325,155 +1366,6 @@ public final class Materialisation implements Cloneable {
             }
         }
 
-    }
-
-    // ------------------------------------------------------------------------
-    // Test methods.
-    // ------------------------------------------------------------------------
-
-    /** Test method. */
-    public static void test0() {
-        final String DIRECTORY = "junit/samples/abs-test.gps/";
-
-        File file = new File(DIRECTORY);
-        try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            HostGraph graph =
-                view.getGraphView("materialisation-test-0").toModel();
-            Shape shape = new Shape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-0");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            for (RuleMatch preMatch : preMatches) {
-                Set<Materialisation> mats =
-                    Materialisation.getMaterialisations(shape, preMatch);
-                for (Materialisation mat : mats) {
-                    System.out.println(mat);
-                    String test;
-                    if (mat.hasConcreteMatch()) {
-                        test = "concrete";
-                    } else {
-                        test = "abstract";
-                    }
-                    Shape matShape = mat.getShape();
-                    new ShapeDialog(matShape, test);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /** Test method. */
-    public static void test1() {
-        final String DIRECTORY = "junit/samples/abs-test.gps/";
-
-        File file = new File(DIRECTORY);
-        try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            HostGraph graph =
-                view.getGraphView("materialisation-test-1").toModel();
-            Shape shape = new Shape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-1");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            for (RuleMatch preMatch : preMatches) {
-                Set<Materialisation> mats =
-                    Materialisation.getMaterialisations(shape, preMatch);
-                for (Materialisation mat : mats) {
-                    System.out.println(mat);
-                    String test;
-                    if (mat.hasConcreteMatch()) {
-                        test = "concrete";
-                    } else {
-                        test = "abstract";
-                    }
-                    Shape matShape = mat.getShape();
-                    new ShapeDialog(matShape, test);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /** Test method. */
-    public static void test2() {
-        final String DIRECTORY = "junit/samples/abs-test.gps/";
-
-        File file = new File(DIRECTORY);
-        try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            HostGraph graph =
-                view.getGraphView("materialisation-test-2").toModel();
-            Shape shape = new Shape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-1");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            for (RuleMatch preMatch : preMatches) {
-                Set<Materialisation> mats =
-                    Materialisation.getMaterialisations(shape, preMatch);
-                for (Materialisation mat : mats) {
-                    System.out.println(mat);
-                    String test;
-                    if (mat.hasConcreteMatch()) {
-                        test = "concrete";
-                    } else {
-                        test = "abstract";
-                    }
-                    Shape matShape = mat.getShape();
-                    new ShapeDialog(matShape, test);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /** Test method. */
-    public static void test3() {
-        final String DIRECTORY = "junit/samples/abs-test.gps/";
-
-        File file = new File(DIRECTORY);
-        try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            HostGraph graph = view.getGraphView("rule-app-test-0").toModel();
-            Shape shape = new Shape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("add");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
-            for (RuleMatch preMatch : preMatches) {
-                Set<Materialisation> mats =
-                    Materialisation.getMaterialisations(shape, preMatch);
-                for (Materialisation mat : mats) {
-                    System.out.println(mat);
-                    String test;
-                    if (mat.hasConcreteMatch()) {
-                        test = "concrete";
-                    } else {
-                        test = "abstract";
-                    }
-                    Shape matShape = mat.getShape();
-                    new ShapeDialog(matShape, test);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /** Test method. */
-    public static void main(String args[]) {
-        Multiplicity.initMultStore();
-        test0();
     }
 
 }
