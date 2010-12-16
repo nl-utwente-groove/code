@@ -989,7 +989,7 @@ public final class Materialisation implements Cloneable {
             CountingSet<EdgeSignature> inEsSet =
                 new CountingSet<EdgeSignature>();
             Set<ShapeEdge> frozenEdges = new HashSet<ShapeEdge>();
-            // For each edge involved edge in the rule.
+            // For each involved edge in the rule.
             for (RuleEdge edgeR : this.edgesR) {
                 RuleLabel label = edgeR.label();
                 TypeLabel shapeLabel = label.getTypeLabel();
@@ -1125,7 +1125,7 @@ public final class Materialisation implements Cloneable {
 
         @Override
         public int hashCode() {
-            return this.pulledNode.hashCode();
+            return this.pulledNode.getNumber();
         }
 
         @Override
@@ -1144,6 +1144,13 @@ public final class Materialisation implements Cloneable {
         @Override
         void perform() { // PullNode
             this.mat.logOp(this.toString());
+
+            if (!this.mult.isAtMost(this.mat.shape.getNodeMult(this.pulledNode))) {
+                // We are trying to extract more copies than the collector
+                // node multiplicity. This is of course impossible, so the
+                // operation fails.
+                return;
+            }
 
             // Materialise the node and get the new multiplicity set back.
             Set<Multiplicity> mults =
