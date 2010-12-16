@@ -73,4 +73,20 @@ public class TestShapeGenerator {
         assertEquals(204, generator.getTransitionCount());
     }
 
+    @Test
+    public void testShapeGenerator2() {
+        final String GRAMMAR = "junit/samples/abs-tri-part-graph.gps";
+        final String START_GRAPH = "start";
+        ShapeGenerator generator;
+
+        Parameters.setEdgeMultBound(1);
+        Parameters.setAbsRadius(1);
+        Parameters.setNodeMultBound(1);
+
+        generator = new ShapeGenerator();
+        generator.generate(GRAMMAR, START_GRAPH, false);
+        assertEquals(6, generator.getStateCount());
+        assertEquals(8, generator.getTransitionCount());
+    }
+
 }

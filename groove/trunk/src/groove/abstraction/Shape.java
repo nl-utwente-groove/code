@@ -235,8 +235,12 @@ public final class Shape extends DefaultHostGraph {
         sb.append("Edges:\n");
         for (Edge edge : Util.getBinaryEdges(this)) {
             ShapeEdge e = (ShapeEdge) edge;
+            String frozen = "";
+            if (this.isFrozen(e)) {
+                frozen = " F ";
+            }
             sb.append("  " + this.getEdgeOutMult(e) + ":" + edge + ":"
-                + this.getEdgeInMult(e) + "\n");
+                + this.getEdgeInMult(e) + frozen + "\n");
         }
         return sb.toString();
     }
@@ -731,10 +735,7 @@ public final class Shape extends DefaultHostGraph {
             mult = Multiplicity.getMultOf(1);
         } else {
             EdgeSignature es = this.getEdgeOutSignature(edge);
-            mult = this.outEdgeMultMap.get(es);
-            if (mult == null) {
-                mult = Multiplicity.getMultOf(0);
-            }
+            mult = this.getEdgeSigOutMult(es);
         }
         return mult;
     }
@@ -746,10 +747,7 @@ public final class Shape extends DefaultHostGraph {
             mult = Multiplicity.getMultOf(1);
         } else {
             EdgeSignature es = this.getEdgeInSignature(edge);
-            mult = this.inEdgeMultMap.get(es);
-            if (mult == null) {
-                mult = Multiplicity.getMultOf(0);
-            }
+            mult = this.getEdgeSigInMult(es);
         }
         return mult;
     }
@@ -1355,9 +1353,9 @@ public final class Shape extends DefaultHostGraph {
      * Freezes the given edge in the shape. The given edge must be part of
      * the shape.
      * Recall that frozen edges are considered concrete, i.e., have outgoing
-     * and incoming multiplicities equal to one. This invariant is not check by
-     * this method. It is assumed that either before or after calling the
-     * method, the called will ensure that the invariant is true.  
+     * and incoming multiplicities equal to one. This invariant is not checked
+     * by this method. It is assumed that either before or after calling the
+     * method, the caller will ensure that the invariant is true.  
      */
     public void freeze(ShapeEdge edgeToFreeze) {
         assert !this.isFrozen();
