@@ -275,13 +275,21 @@ public final class EdgeMatEqSystem extends EquationSystem {
     }
 
     /**
-     * The MaterialiseEdge operation does not give rise to trivial equation
-     * systems. Therefore, this method should never be called. It throws an
-     * UnsupportedOperationException.
+     * Stores the result of a trivial equation system. Since there are no
+     * variables, we only have to freeze the edges in the shape.
+     * No cloning is necessary.
      */
     @Override
     void storeTrivialResultShape() {
-        throw new UnsupportedOperationException();
+        assert this.varCount == 0;
+        Shape newShape = this.shape;
+
+        // Freeze the edges in the new shape.
+        newShape.freeze(this.frozenEdges);
+
+        // Sanity check.
+        newShape.checkShapeInvariant();
+        this.results.add(newShape);
     }
 
 }
