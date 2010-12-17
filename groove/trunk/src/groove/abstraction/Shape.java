@@ -59,6 +59,17 @@ import java.util.Set;
  */
 public final class Shape extends DefaultHostGraph {
 
+    private static boolean assertsEnabled = false;
+
+    @SuppressWarnings("all")
+    private static void testAssertions() {
+        assert assertsEnabled = true; // Intentional side effect!!!
+    }
+
+    static {
+        testAssertions();
+    }
+
     // ------------------------------------------------------------------------
     // Object Fields
     // ------------------------------------------------------------------------
@@ -1562,6 +1573,13 @@ public final class Shape extends DefaultHostGraph {
      * See last item of Def. 7, pg. 10.
      */
     public void checkShapeInvariant() {
+        // We don't want to run this if the assertions are off, since nothing
+        // will happen... This makes the code run faster.
+        // EDUARDO: Refactor this method to make it return a boolean.
+        if (!assertsEnabled) {
+            return;
+        }
+
         // For all labels.
         for (TypeLabel label : Util.binaryLabelSet(this)) {
             // For all nodes in the shape.

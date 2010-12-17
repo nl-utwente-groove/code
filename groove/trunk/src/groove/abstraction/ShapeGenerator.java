@@ -68,8 +68,8 @@ public final class ShapeGenerator {
         this.gts = new AGTS(this.grammar);
 
         Exploration exploration =
-            new Exploration(new Serialized("shapebfs"), new Serialized("none"),
-                0);
+            new Exploration(new Serialized("shapebfs"),
+                new Serialized("final"), 0);
         try {
             exploration.play(this.gts, null);
         } catch (FormatException e) {
@@ -82,6 +82,7 @@ public final class ShapeGenerator {
         if (fromMain) {
             System.out.println("States: " + this.getStateCount());
             System.out.println("Transitions: " + this.getTransitionCount());
+            System.out.println("Final states: " + this.getFinalStatesCount());
         }
     }
 
@@ -101,6 +102,11 @@ public final class ShapeGenerator {
     /** Basic getter method. */
     public int getTransitionCount() {
         return this.gts.edgeCount();
+    }
+
+    /** Basic getter method. */
+    public int getFinalStatesCount() {
+        return this.gts.getResultStates().size();
     }
 
     // ------------------------------------------------------------------------
