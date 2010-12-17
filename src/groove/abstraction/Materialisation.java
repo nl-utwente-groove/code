@@ -1041,16 +1041,16 @@ public final class Materialisation implements Cloneable {
                 EdgeSignature outEs =
                     shape.getEdgeSignature(srcS, label.getTypeLabel(),
                         shape.getEquivClassOf(tgtS));
-                if (!shape.isOutEdgeSigUnique(outEs)
-                    || !shape.isOutEdgeSigConcrete(outEs)) {
+                if (shape.getEdgeSigOutMult(outEs).isPositive()
+                    && (!shape.isOutEdgeSigUnique(outEs) || !shape.isOutEdgeSigConcrete(outEs))) {
                     outEsSet.add(outEs);
                 }
                 // Incoming signatures.
                 EdgeSignature inEs =
                     shape.getEdgeSignature(tgtS, shapeLabel,
                         shape.getEquivClassOf(srcS));
-                if (!shape.isInEdgeSigUnique(inEs)
-                    || !shape.isInEdgeSigConcrete(inEs)) {
+                if (shape.getEdgeSigInMult(inEs).isPositive()
+                    && (!shape.isInEdgeSigUnique(inEs) || !shape.isInEdgeSigConcrete(inEs))) {
                     inEsSet.add(inEs);
                 }
 
