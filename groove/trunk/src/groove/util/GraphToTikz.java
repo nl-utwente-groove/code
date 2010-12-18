@@ -58,13 +58,12 @@ public final class GraphToTikz {
     /**
      * Converts a graph to a Tikz representation.
      * @param model the graph to be converted.
-     * @param layoutMap the layout information associated with the graph.
      * @return a string with the Tikz encoding of the graph.
      */
-    public static String convertGraphToTikzStr(GraphJModel model,
-            LayoutMap<Node,Edge> layoutMap) {
-
-        Graph graph = model.getGraph();
+    public static <N extends Node,E extends Edge> String convertGraphToTikzStr(
+            GraphJModel<N,E> model) {
+        Graph<N,?,E> graph = model.getGraph();
+        LayoutMap<N,E> layoutMap = GraphInfo.getLayoutMap(graph);
         boolean showBackground =
             model.getOptions().getValue(Options.SHOW_BACKGROUND_OPTION) == 1
                     ? true : false;
@@ -73,8 +72,8 @@ public final class GraphToTikz {
 
         result.append(beginTikzFig());
 
-        for (Node node : graph.nodeSet()) {
-            GraphJVertex vertex = model.getJVertex(node);
+        for (N node : graph.nodeSet()) {
+            GraphJVertex<N,E> vertex = model.getJVertex(node);
             model.synchroniseLayout(vertex);
             JVertexLayout layout = null;
             if (layoutMap != null) {
@@ -86,7 +85,7 @@ public final class GraphToTikz {
                 isEmphasized, isGrayedOut, role));
         }
 
-        for (Edge edge : graph.edgeSet()) {
+        for (E edge : graph.edgeSet()) {
             JEdgeLayout layout = null;
             if (layoutMap != null) {
                 layout = layoutMap.getEdge(edge);
@@ -113,9 +112,10 @@ public final class GraphToTikz {
      * @param role the role of the containing graph (see {@link GraphInfo#getRole()})
      * @return a StringBuilder filled with the Tikz string.
      */
-    private static StringBuilder convertNodeToTikzStr(GraphJVertex node,
-            JVertexLayout layout, boolean showBackground, boolean isEmphasized,
-            boolean isGrayedOut, String role) {
+    private static <N extends Node,E extends Edge> StringBuilder convertNodeToTikzStr(
+            GraphJVertex<N,E> node, JVertexLayout layout,
+            boolean showBackground, boolean isEmphasized, boolean isGrayedOut,
+            String role) {
 
         StringBuilder result = new StringBuilder();
 
@@ -170,12 +170,14 @@ public final class GraphToTikz {
      * @return a StringBuilder filled with the Tikz string if the JCell could
      *         cast into a valid sub-type or an empty StringBuilder otherwise.
      */
-    private static StringBuilder convertEdgeToTikzStr(JCell cell,
-            JEdgeLayout layout, LayoutMap<Node,Edge> layoutMap,
+    private static <N extends Node,E extends Edge> StringBuilder convertEdgeToTikzStr(
+            JCell cell, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
             boolean isEmphasized, boolean isGrayedOut, String role) {
 
         if (cell instanceof GraphJEdge) {
-            return convertEdgeToTikzStr((GraphJEdge) cell, layout, layoutMap,
+            @SuppressWarnings("unchecked")
+            GraphJEdge<N,E> graphCell = (GraphJEdge<N,E>) cell;
+            return convertEdgeToTikzStr(graphCell, layout, layoutMap,
                 isEmphasized, isGrayedOut, role);
         } else {
             return new StringBuilder();
@@ -192,8 +194,8 @@ public final class GraphToTikz {
      * @param role the role of the containing graph (see {@link GraphInfo#getRole()})
      * @return a StringBuilder filled with the Tikz string.
      */
-    private static StringBuilder convertEdgeToTikzStr(GraphJEdge edge,
-            JEdgeLayout layout, LayoutMap<Node,Edge> layoutMap,
+    private static <N extends Node,E extends Edge> StringBuilder convertEdgeToTikzStr(
+            GraphJEdge<N,E> edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
             boolean isEmphasized, boolean isGrayedOut, String role) {
 
         StringBuilder result = new StringBuilder();
@@ -244,11 +246,12 @@ public final class GraphToTikz {
      * @param labStyle a string describing the style to be used in the label.
      * @param s a StringBuilder where the Tikz string will be appended.
      */
-    private static void appendDefaultLayout(GraphJEdge edge,
-            LayoutMap<Node,Edge> layoutMap, String labStyle, StringBuilder s) {
+    private static <N extends Node,E extends Edge> void appendDefaultLayout(
+            GraphJEdge<N,E> edge, LayoutMap<N,E> layoutMap, String labStyle,
+            StringBuilder s) {
 
-        GraphJVertex srcVertex = edge.getSourceVertex();
-        GraphJVertex tgtVertex = edge.getTargetVertex();
+        GraphJVertex<N,E> srcVertex = edge.getSourceVertex();
+        GraphJVertex<N,E> tgtVertex = edge.getTargetVertex();
 
         appendSourceNode(srcVertex, tgtVertex, layoutMap, s);
         s.append(encloseSpace(DOUBLE_DASH));
@@ -268,12 +271,12 @@ public final class GraphToTikz {
      * @param connection the string with the type of Tikz connection to be used.
      * @param s a StringBuilder where the Tikz string will be appended.
      */
-    private static void appendOrthogonalLayout(GraphJEdge edge,
-            JEdgeLayout layout, LayoutMap<Node,Edge> layoutMap,
+    private static <N extends Node,E extends Edge> void appendOrthogonalLayout(
+            GraphJEdge<N,E> edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
             String labStyle, String connection, StringBuilder s) {
 
-        GraphJVertex srcVertex = edge.getSourceVertex();
-        GraphJVertex tgtVertex = edge.getTargetVertex();
+        GraphJVertex<N,E> srcVertex = edge.getSourceVertex();
+        GraphJVertex<N,E> tgtVertex = edge.getTargetVertex();
         List<Point2D> points = layout.getPoints();
 
         if (points.size() == 2) {
@@ -323,8 +326,8 @@ public final class GraphToTikz {
      * @param labStyle a string describing the style to be used in the label.
      * @param s a StringBuilder where the Tikz string will be appended.
      */
-    private static void appendOrthogonalLayout(GraphJEdge edge,
-            JEdgeLayout layout, LayoutMap<Node,Edge> layoutMap,
+    private static <N extends Node,E extends Edge> void appendOrthogonalLayout(
+            GraphJEdge<N,E> edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
             String labStyle, StringBuilder s) {
         appendOrthogonalLayout(edge, layout, layoutMap, labStyle, DOUBLE_DASH,
             s);
@@ -342,11 +345,12 @@ public final class GraphToTikz {
      * @param labStyle a string describing the style to be used in the label.
      * @param s a StringBuilder where the Tikz string will be appended.
      */
-    private static void appendBezierLayout(GraphJEdge edge, JEdgeLayout layout,
-            LayoutMap<Node,Edge> layoutMap, String labStyle, StringBuilder s) {
+    private static <N extends Node,E extends Edge> void appendBezierLayout(
+            GraphJEdge<N,E> edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
+            String labStyle, StringBuilder s) {
 
-        GraphJVertex srcVertex = edge.getSourceVertex();
-        GraphJVertex tgtVertex = edge.getTargetVertex();
+        GraphJVertex<N,E> srcVertex = edge.getSourceVertex();
+        GraphJVertex<N,E> tgtVertex = edge.getTargetVertex();
         List<Point2D> points = layout.getPoints();
         boolean isLoop = srcVertex.getNode().equals(tgtVertex.getNode());
 
@@ -407,8 +411,9 @@ public final class GraphToTikz {
      * @param labStyle a string describing the style to be used in the label.
      * @param s a StringBuilder where the Tikz string will be appended.
      */
-    private static void appendSplineLayout(GraphJEdge edge, JEdgeLayout layout,
-            LayoutMap<Node,Edge> layoutMap, String labStyle, StringBuilder s) {
+    private static <N extends Node,E extends Edge> void appendSplineLayout(
+            GraphJEdge<N,E> edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
+            String labStyle, StringBuilder s) {
 
         System.err.println("Sorry, the SPLINE line style is not yet "
             + "supported, using BEZIER style...");
@@ -425,8 +430,8 @@ public final class GraphToTikz {
      * @param labStyle a string describing the style to be used in the label.
      * @param s a StringBuilder where the Tikz string will be appended.
      */
-    private static void appendManhattanLayout(GraphJEdge edge,
-            JEdgeLayout layout, LayoutMap<Node,Edge> layoutMap,
+    private static <N extends Node,E extends Edge> void appendManhattanLayout(
+            GraphJEdge<N,E> edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
             String labStyle, StringBuilder s) {
         appendOrthogonalLayout(edge, layout, layoutMap, labStyle, ANGLE, s);
     }
@@ -436,7 +441,8 @@ public final class GraphToTikz {
     /**
      * Appends the node name to the given string builder.
      */
-    private static void appendNode(GraphJVertex node, StringBuilder s) {
+    private static <N extends Node,E extends Edge> void appendNode(
+            GraphJVertex<N,E> node, StringBuilder s) {
         s.append(encloseSpace(enclosePar(node.getNode().toString())));
     }
 
@@ -445,8 +451,9 @@ public final class GraphToTikz {
      * the given node and appends the node to the string builder, together
      * with a node anchor that keeps the edge horizontal or vertical.
      */
-    private static void appendNode(GraphJVertex node, Point2D point,
-            LayoutMap<Node,Edge> layoutMap, StringBuilder s) {
+    private static <N extends Node,E extends Edge> void appendNode(
+            GraphJVertex<N,E> node, Point2D point, LayoutMap<N,E> layoutMap,
+            StringBuilder s) {
 
         int side = getSide(node, point, layoutMap);
         if (side == 0) {
@@ -465,9 +472,9 @@ public final class GraphToTikz {
      * string builder, together with a node anchor that keeps the edge
      * horizontal or vertical.
      */
-    private static void appendSourceNode(GraphJVertex srcNode,
-            GraphJVertex tgtNode, LayoutMap<Node,Edge> layoutMap,
-            StringBuilder s) {
+    private static <N extends Node,E extends Edge> void appendSourceNode(
+            GraphJVertex<N,E> srcNode, GraphJVertex<N,E> tgtNode,
+            LayoutMap<N,E> layoutMap, StringBuilder s) {
 
         if (layoutMap != null) {
             JVertexLayout tgtLayout = layoutMap.getNode(tgtNode.getNode());
@@ -489,9 +496,9 @@ public final class GraphToTikz {
      * string builder, together with a node anchor that keeps the edge
      * horizontal or vertical.
      */
-    private static void appendTargetNode(GraphJVertex srcNode,
-            GraphJVertex tgtNode, LayoutMap<Node,Edge> layoutMap,
-            StringBuilder s) {
+    private static <N extends Node,E extends Edge> void appendTargetNode(
+            GraphJVertex<N,E> srcNode, GraphJVertex<N,E> tgtNode,
+            LayoutMap<N,E> layoutMap, StringBuilder s) {
 
         if (layoutMap != null) {
             JVertexLayout srcLayout = layoutMap.getNode(srcNode.getNode());
@@ -517,8 +524,9 @@ public final class GraphToTikz {
         }
     }
 
-    private static void appendEdgeLabel(GraphJEdge edge, StringBuilder s) {
-        Edge e = edge.getEdge();
+    private static <N extends Node,E extends Edge> void appendEdgeLabel(
+            GraphJEdge<N,E> edge, StringBuilder s) {
+        E e = edge.getEdge();
         if (e instanceof AspectEdge) {
             try {
                 if (((AspectEdge) e).getModelLabel() instanceof RuleLabel) {
@@ -539,8 +547,8 @@ public final class GraphToTikz {
     /**
      * Appends the edge label along the path that is being drawn.
      */
-    private static void appendEdgeLabelInPath(GraphJEdge edge, String labStyle,
-            StringBuilder s) {
+    private static <N extends Node,E extends Edge> void appendEdgeLabelInPath(
+            GraphJEdge<N,E> edge, String labStyle, StringBuilder s) {
 
         if (!labStyle.equals(INHERITANCE_LABEL_STYLE)) {
             s.append(NODE);
@@ -553,8 +561,9 @@ public final class GraphToTikz {
      * Creates an extra path to place the edge label which has especial
      * placement requirements.
      */
-    private static void appendEdgeLabel(GraphJEdge edge, JEdgeLayout layout,
-            String labStyle, List<Point2D> points, StringBuilder s) {
+    private static <N extends Node,E extends Edge> void appendEdgeLabel(
+            GraphJEdge<N,E> edge, JEdgeLayout layout, String labStyle,
+            List<Point2D> points, StringBuilder s) {
 
         if (!labStyle.equals(INHERITANCE_LABEL_STYLE)) {
             Point2D labelPos =
@@ -722,8 +731,9 @@ public final class GraphToTikz {
      * @param layoutMap the layout information associated with the graph.
      * @return true if the edge is horizontal or vertical and false otherwise.
      */
-    private static boolean isHorizontalOrVertical(List<Point2D> points,
-            int index, GraphJVertex tgtVertex, LayoutMap<Node,Edge> layoutMap) {
+    private static <N extends Node,E extends Edge> boolean isHorizontalOrVertical(
+            List<Point2D> points, int index, GraphJVertex<N,E> tgtVertex,
+            LayoutMap<N,E> layoutMap) {
 
         boolean result = false;
 
@@ -749,8 +759,8 @@ public final class GraphToTikz {
      * @return 1 if the point lies east, 2 if it lies north, 3 if it lies west,
      *         4 if it lies south, and 0 if its outside a proper position.
      */
-    private static int getSide(GraphJVertex vertex, Point2D point,
-            LayoutMap<Node,Edge> layoutMap) {
+    private static <N extends Node,E extends Edge> int getSide(
+            GraphJVertex<N,E> vertex, Point2D point, LayoutMap<N,E> layoutMap) {
 
         int side = 0;
         if (layoutMap != null) {
@@ -1046,9 +1056,9 @@ public final class GraphToTikz {
      * @param role the role of the containing graph (see {@link GraphInfo#getRole()})
      * @return a string with all the Tikz styles to be used.
      */
-    private static String convertStyles(GraphJVertex node,
-            boolean showBackground, boolean isEmphasized, boolean isGrayedOut,
-            String role) {
+    private static <N extends Node,E extends Edge> String convertStyles(
+            GraphJVertex<N,E> node, boolean showBackground,
+            boolean isEmphasized, boolean isGrayedOut, String role) {
 
         if (node instanceof CtrlJModel.StateJVertex) {
             // Node from control automaton.
@@ -1211,8 +1221,9 @@ public final class GraphToTikz {
      * @return an array of size two. The first string is the edge style and the
      *         second one is the label style.
      */
-    private static ArrayList<String> convertStyles(GraphJEdge edge,
-            boolean isEmphasized, boolean isGrayedOut, String role) {
+    private static <N extends Node,E extends Edge> ArrayList<String> convertStyles(
+            GraphJEdge<N,E> edge, boolean isEmphasized, boolean isGrayedOut,
+            String role) {
 
         if (edge instanceof TransitionJEdge) {
             return convertStyles((TransitionJEdge) edge, isEmphasized,

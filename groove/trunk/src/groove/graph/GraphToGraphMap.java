@@ -17,23 +17,22 @@
 package groove.graph;
 
 /**
- * Default implementation of a generic node-edge-map. The implementation is
- * based on two internally stored hash maps, for the nodes and edges. Labels are
- * not translated.
+ * Map from graph elements to graph elements for graphs of
+ * different types.
  * @author Arend Rensink
  * @version $Revision: 2754 $
  */
-abstract public class GraphHashMap<SN extends Node,TN extends Node,SE extends Edge,TE extends Edge>
+abstract public class GraphToGraphMap<SN extends Node,SL extends Label,SE extends Edge,TN extends Node,TL extends Label,TE extends Edge>
         extends GenericNodeEdgeHashMap<SN,TN,SE,TE> implements
-        GraphMap<SN,TN,SE,TE> {
+        GraphMap<SN,SL,SE,TN,TL,TE> {
     /** Constructs a copy of another node-edge-map. */
-    public GraphHashMap(GraphHashMap<SN,TN,SE,TE> other) {
+    public GraphToGraphMap(GraphToGraphMap<SN,SL,SE,TN,TL,TE> other) {
         nodeMap().putAll(other.nodeMap());
         edgeMap().putAll(other.edgeMap());
     }
 
     /** Constructs an initially empty node-edge-map. */
-    public GraphHashMap() {
+    public GraphToGraphMap() {
         // empty constructor
     }
 
@@ -54,6 +53,7 @@ abstract public class GraphHashMap<SN extends Node,TN extends Node,SE extends Ed
         }
     }
 
+    @Deprecated
     public boolean containsValue(Element elem) {
         if (elem instanceof Node) {
             return nodeMap().containsValue(elem);
@@ -62,9 +62,18 @@ abstract public class GraphHashMap<SN extends Node,TN extends Node,SE extends Ed
         }
     }
 
+    public boolean containsNodeValue(TN elem) {
+        return nodeMap().containsValue(elem);
+    }
+
+    public boolean containsEdgeValue(TE elem) {
+        return edgeMap().containsValue(elem);
+    }
+
     /** This implementation acts as the identity function. */
-    public Label mapLabel(Label label) {
-        return label;
+    @SuppressWarnings("unchecked")
+    public TL mapLabel(SL label) {
+        return (TL) label;
     }
 
     /**
@@ -90,7 +99,8 @@ abstract public class GraphHashMap<SN extends Node,TN extends Node,SE extends Ed
         if (sourceImage == null) {
             return null;
         }
-        Label labelImage = mapLabel(key.label());
+        @SuppressWarnings("unchecked")
+        TL labelImage = mapLabel((SL) key.label());
         if (labelImage == null) {
             return null;
         }
@@ -103,11 +113,12 @@ abstract public class GraphHashMap<SN extends Node,TN extends Node,SE extends Ed
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public GraphHashMap<SN,TN,SE,TE> clone() {
-        return (GraphHashMap<SN,TN,SE,TE>) super.clone();
+    public GraphToGraphMap<SN,SL,SE,TN,TL,TE> clone() {
+        return (GraphToGraphMap<SN,SL,SE,TN,TL,TE>) super.clone();
     }
 
     @Override
-    abstract public GraphHashMap<SN,TN,SE,TE> newMap();
+    abstract public GraphToGraphMap<SN,SL,SE,TN,TL,TE> newMap();
 }

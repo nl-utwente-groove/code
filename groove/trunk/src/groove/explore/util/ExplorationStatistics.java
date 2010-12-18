@@ -28,6 +28,7 @@ import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.lts.LTSAdapter;
 import groove.trans.DefaultApplication;
+import groove.trans.HostFactory;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemRecord;
@@ -248,11 +249,11 @@ public class ExplorationStatistics {
     /** Reports on the graph data. */
     private void reportGraphElementStatistics() {
         printf("\n\tDefault nodes:\t%d%n",
-            groove.graph.DefaultNode.getNodeCount());
+            HostFactory.instance().getNodeCount());
         printf("\tDefault labels:\t%d%n",
-            groove.graph.DefaultLabel.getLabelCount());
+            HostFactory.instance().getLabelCount());
         printf("\tFresh nodes:\t%d%n", DefaultApplication.getFreshNodeCount());
-        printf("\tFresh edges:\t%d%n", groove.graph.DefaultEdge.getEdgeCount());
+        printf("\tFresh edges:\t%d%n", HostFactory.instance().getEdgeCount());
         double nodeAvg =
             (double) this.statisticsListener.getNodeCount()
                 / this.gts.nodeCount();

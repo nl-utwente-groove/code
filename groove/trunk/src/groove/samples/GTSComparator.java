@@ -81,7 +81,7 @@ public class GTSComparator {
         result.addLTSListener(new GenerateProgressMonitor());
         result.addLTSListener(new LTSAdapter() {
             @Override
-            public void closeUpdate(LTS graph, GraphState explored) {
+            public void closeUpdate(LTS lts, GraphState explored) {
                 GraphState otherState = result1.addState(explored);
                 if (otherState.getTransitionSet().size() != (explored).getTransitionSet().size()) {
                     throw new IllegalStateException();

@@ -72,21 +72,19 @@ public class DeltaStore extends DefaultDeltaApplier implements DeltaTarget {
         basis.applyDelta(this);
     }
 
-    public boolean addEdge(Edge elem) {
-        assert elem instanceof HostEdge;
+    public boolean addEdge(HostEdge elem) {
         if (!getRemovedEdgeSet().remove(elem)) {
             assert !getAddedEdgeSet().contains(elem) : "Added edge set "
                 + getAddedEdgeSet() + " already contains " + elem;
-            return getAddedEdgeSet().add((HostEdge) elem);
+            return getAddedEdgeSet().add(elem);
         } else {
             return true;
         }
     }
 
-    public boolean addNode(Node elem) {
-        assert elem instanceof HostNode;
+    public boolean addNode(HostNode elem) {
         if (!getRemovedNodeSet().remove(elem)) {
-            boolean added = getAddedNodeSet().add((HostNode) elem);
+            boolean added = getAddedNodeSet().add(elem);
             assert added : "Added node set " + getAddedNodeSet()
                 + " already contains " + elem;
             return added;
@@ -95,23 +93,21 @@ public class DeltaStore extends DefaultDeltaApplier implements DeltaTarget {
         }
     }
 
-    public boolean removeEdge(Edge elem) {
-        assert elem instanceof HostEdge;
+    public boolean removeEdge(HostEdge elem) {
         if (!getAddedEdgeSet().remove(elem)) {
             // assert !removedEdgeSet.contains(elem) : "Removed edge set "
             // + removedEdgeSet + " already contains " + elem;
-            return getRemovedEdgeSet().add((HostEdge) elem);
+            return getRemovedEdgeSet().add(elem);
         } else {
             return true;
         }
     }
 
-    public boolean removeNode(Node elem) {
-        assert elem instanceof HostNode;
+    public boolean removeNode(HostNode elem) {
         if (!getAddedNodeSet().remove(elem)) {
             // assert !removedNodeSet.contains(elem) : "Removed node set "
             // + removedNodeSet + " already contains " + elem;
-            return getRemovedNodeSet().add((HostNode) elem);
+            return getRemovedNodeSet().add(elem);
         } else {
             return true;
         }

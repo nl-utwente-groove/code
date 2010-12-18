@@ -16,11 +16,8 @@
  */
 package groove.trans;
 
-import groove.graph.DefaultGraph;
-import groove.graph.Edge;
 import groove.graph.ElementFactory;
-import groove.graph.Label;
-import groove.graph.Node;
+import groove.graph.NodeSetEdgeSetGraph;
 
 import java.util.Set;
 
@@ -30,7 +27,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RuleGraph extends DefaultGraph {
+public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleLabel,RuleEdge> {
     /**
      * Constructs a new, empty rule graph.
      */
@@ -67,47 +64,8 @@ public class RuleGraph extends DefaultGraph {
         return (Set<RuleNode>) super.nodeSet();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public Set<RuleEdge> edgeSet(Node node) {
-        return (Set<RuleEdge>) super.edgeSet(node);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<RuleEdge> outEdgeSet(Node node) {
-        return (Set<RuleEdge>) super.outEdgeSet(node);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<RuleEdge> inEdgeSet(Node node) {
-        return (Set<RuleEdge>) super.inEdgeSet(node);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<RuleEdge> labelEdgeSet(Label label) {
-        return (Set<RuleEdge>) super.labelEdgeSet(label);
-    }
-
-    @Override
-    public RuleNode addNode() {
-        return (RuleNode) super.addNode();
-    }
-
-    @Override
-    protected boolean isTypeCorrect(Node edge) {
-        return edge instanceof RuleNode;
-    }
-
-    @Override
-    protected boolean isTypeCorrect(Edge edge) {
-        return edge instanceof RuleEdge;
-    }
-
-    @Override
-    public ElementFactory<?,?,?> getFactory() {
+    public ElementFactory<RuleNode,RuleLabel,RuleEdge> getFactory() {
         return RuleFactory.INSTANCE;
     }
 }

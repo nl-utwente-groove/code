@@ -16,7 +16,7 @@
  */
 package groove.view.aspect;
 
-import groove.graph.DefaultNode;
+import groove.graph.AbstractNode;
 import groove.view.FormatException;
 
 import java.util.Collection;
@@ -26,7 +26,7 @@ import java.util.Collection;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectNode extends DefaultNode implements AspectElement {
+public class AspectNode extends AbstractNode implements AspectElement {
     /** Constructs an aspect node with a given number. */
     AspectNode(int nr) {
         super(nr);
@@ -40,6 +40,11 @@ public class AspectNode extends DefaultNode implements AspectElement {
     @Override
     protected int computeHashCode() {
         return getNumber() ^ getClass().hashCode();
+    }
+
+    @Override
+    protected String getToStringPrefix() {
+        return "a";
     }
 
     /**

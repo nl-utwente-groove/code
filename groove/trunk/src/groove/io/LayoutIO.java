@@ -17,6 +17,7 @@
 package groove.io;
 
 import groove.graph.DefaultEdge;
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Node;
 import groove.gui.jgraph.JAttr;
@@ -62,7 +63,8 @@ public class LayoutIO {
     }
 
     /** Writes a layout map in the correct format to a given output stream. */
-    public void writeLayout(LayoutMap<Node,Edge> layoutMap, OutputStream out) {
+    public <N extends Node,E extends Edge> void writeLayout(
+            LayoutMap<N,E> layoutMap, OutputStream out) {
         // if there is layout information, create a file for it
         PrintWriter layoutWriter = new PrintWriter(out);
         // some general wise words first
@@ -71,10 +73,10 @@ public class LayoutIO {
         }
         layoutWriter.println(VERSION_LINE);
         // iterator over the layout map and write the layout information
-        for (Map.Entry<Node,JVertexLayout> entry : layoutMap.nodeMap().entrySet()) {
+        for (Map.Entry<N,JVertexLayout> entry : layoutMap.nodeMap().entrySet()) {
             layoutWriter.println(toString(entry.getKey(), entry.getValue()));
         }
-        for (Map.Entry<Edge,JEdgeLayout> entry : layoutMap.edgeMap().entrySet()) {
+        for (Map.Entry<E,JEdgeLayout> entry : layoutMap.edgeMap().entrySet()) {
             layoutWriter.println(toString(entry.getKey(), entry.getValue()));
         }
         layoutWriter.close();
@@ -89,11 +91,13 @@ public class LayoutIO {
      * @throws IOException if an error occurred in reading the layout file
      * @throws FormatException if the layout file contains format errors
      */
-    public LayoutMap<Node,Edge> readLayout(Map<String,Node> nodeMap,
-            InputStream in) throws IOException, FormatException {
+    public LayoutMap<DefaultNode,DefaultEdge> readLayout(
+            Map<String,DefaultNode> nodeMap, InputStream in)
+        throws IOException, FormatException {
         BufferedReader layoutReader =
             new BufferedReader(new InputStreamReader(in));
-        LayoutMap<Node,Edge> result = new LayoutMap<Node,Edge>();
+        LayoutMap<DefaultNode,DefaultEdge> result =
+            new LayoutMap<DefaultNode,DefaultEdge>();
         List<FormatError> errors = new ArrayList<FormatError>();
         try {
             int version = 1;
@@ -141,9 +145,10 @@ public class LayoutIO {
      * Inserts vertex layout information in a given layout map, based on a
      * string array description and node map.
      */
-    private void putVertexLayout(LayoutMap<Node,Edge> layoutMap,
-            String[] parts, Map<String,Node> nodeMap) throws FormatException {
-        Node node = nodeMap.get(parts[1]);
+    private void putVertexLayout(LayoutMap<DefaultNode,DefaultEdge> layoutMap,
+            String[] parts, Map<String,DefaultNode> nodeMap)
+        throws FormatException {
+        DefaultNode node = nodeMap.get(parts[1]);
         if (node == null) {
             throw new FormatException("Unknown node " + parts[1]);
         }
@@ -161,23 +166,24 @@ public class LayoutIO {
      * array description and node map.
      * @param version for version 2, the layout position info has changed
      */
-    private Edge putEdgeLayout(LayoutMap<Node,Edge> layoutMap, String[] parts,
-            Map<String,Node> nodeMap, int version) throws FormatException {
+    private Edge putEdgeLayout(LayoutMap<DefaultNode,DefaultEdge> layoutMap,
+            String[] parts, Map<String,DefaultNode> nodeMap, int version)
+        throws FormatException {
         if (parts.length < 7) {
             throw new FormatException("Incomplete edge layout line");
         }
-        Node source = nodeMap.get(parts[1]);
+        DefaultNode source = nodeMap.get(parts[1]);
         if (source == null) {
             throw new FormatException("Unknown node " + parts[1]);
         }
-        Node target = nodeMap.get(parts[2]);
+        DefaultNode target = nodeMap.get(parts[2]);
         if (target == null) {
             throw new FormatException("Unknown node " + parts[2]);
         }
         String labelTextWithQuotes = parts[3];
         String labelText =
             ExprParser.toUnquoted(labelTextWithQuotes, DOUBLE_QUOTE);
-        Edge edge = DefaultEdge.createEdge(source, labelText, target);
+        DefaultEdge edge = DefaultEdge.createEdge(source, labelText, target);
         try {
             List<Point2D> points;
             int lineStyle;

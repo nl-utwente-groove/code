@@ -146,7 +146,7 @@ public class CompositeEvent extends
     public MergeMap getMergeMap() {
         MergeMap result = new MergeMap();
         for (RuleEvent event : this.eventArray) {
-            for (Map.Entry<Node,Node> mergeEntry : event.getMergeMap().nodeMap().entrySet()) {
+            for (Map.Entry<HostNode,HostNode> mergeEntry : event.getMergeMap().nodeMap().entrySet()) {
                 result.putNode(mergeEntry.getKey(), mergeEntry.getValue());
             }
         }

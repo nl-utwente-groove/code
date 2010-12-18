@@ -18,8 +18,8 @@
 package groove.verify;
 
 import groove.lts.GTS;
+import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.State;
 import groove.trans.Condition;
 import groove.util.ExprParser;
 import groove.view.FormatException;
@@ -877,17 +877,18 @@ public class CTLStarFormula {
      * @param state the state for which to look for predecessors.
      * @return an iterator over the predecessor-states
      */
-    protected Iterator<State> getPredecessorsIterator(GTS gts, State state) {
-        Set<State> result = new HashSet<State>();
+    protected Iterator<GraphState> getPredecessorsIterator(GTS gts,
+            GraphState state) {
+        Set<GraphState> result = new HashSet<GraphState>();
         // for the time being, we look for predecessor-states by
         // checking all transitions having the current state as target
         Iterator<? extends GraphTransition> transitionIter =
             gts.edgeSet().iterator();
         while (transitionIter.hasNext()) {
             GraphTransition nextTransition = transitionIter.next();
-            State target = nextTransition.target();
+            GraphState target = nextTransition.target();
             if (target.equals(state)) {
-                State predecessorState = nextTransition.source();
+                GraphState predecessorState = nextTransition.source();
                 result.add(predecessorState);
             }
         }

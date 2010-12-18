@@ -36,7 +36,7 @@ public class RandomNewStateChooser extends LTSAdapter {
 
     @Override
     public void addUpdate(LTS shape, GraphState state) {
-        this.rc.show((GraphState) state);
+        this.rc.show(state);
     }
 
     private final RandomChooserInSequence<GraphState> rc =

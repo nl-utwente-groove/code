@@ -16,9 +16,6 @@
  */
 package groove.abstraction;
 
-import groove.graph.DefaultEdgeStore;
-import groove.graph.Label;
-import groove.graph.Node;
 import groove.graph.TypeLabel;
 
 /**
@@ -30,24 +27,13 @@ import groove.graph.TypeLabel;
  */
 public final class ShapeEdge extends groove.trans.HostEdge {
     /** Default constructor. */
-    private ShapeEdge(ShapeNode source, TypeLabel label, ShapeNode target,
-            int nr) {
+    ShapeEdge(ShapeNode source, TypeLabel label, ShapeNode target, int nr) {
         super(source, label, target, nr);
     }
 
     // ------------------------------------------------------------------------
     // Overridden methods
     // ------------------------------------------------------------------------
-
-    /** Factory constructor. */
-    @Override
-    protected ShapeEdge newEdge(Node source, Label label, Node target, int nr) {
-        assert source instanceof ShapeNode : "Invalid source node";
-        assert target instanceof ShapeNode : "Invalid target node";
-        assert label instanceof TypeLabel : "Invalid label";
-        return new ShapeEdge((ShapeNode) source, (TypeLabel) label,
-            (ShapeNode) target, nr);
-    }
 
     /** Specialises the returned type. */
     @Override
@@ -59,12 +45,6 @@ public final class ShapeEdge extends groove.trans.HostEdge {
     @Override
     public ShapeNode target() {
         return (ShapeNode) super.target();
-    }
-
-    /** Returns true if the edge is a loop. */
-    @Override
-    public boolean isLoop() {
-        return this.source().equals(this.target());
     }
 
     /**
@@ -79,21 +59,11 @@ public final class ShapeEdge extends groove.trans.HostEdge {
      *        <code>null</code>
      * @return an edge based on <code>source</code>, <code>label</code> and
      *         <code>target</code>
-     * @see #createEdge(Node, String, Node)
      */
     static public ShapeEdge createEdge(ShapeNode source, TypeLabel label,
             ShapeNode target) {
-        return (ShapeEdge) store.createEdge(source, label, target);
+        return FACTORY.createEdge(source, label, target);
     }
 
-    // ------------------------------------------------------------------------
-    // Static Fields
-    // ------------------------------------------------------------------------
-
-    /** Used only as a reference for the constructor. */
-    private static final ShapeEdge PROTOTYPE = new ShapeEdge(null, null, null,
-        0);
-    /** The static edge store. */
-    private static final DefaultEdgeStore store = new DefaultEdgeStore(
-        PROTOTYPE);
+    private static final ShapeFactory FACTORY = ShapeFactory.instance();
 }

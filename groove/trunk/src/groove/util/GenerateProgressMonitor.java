@@ -21,10 +21,11 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.lts.LTSAdapter;
+import groove.lts.LTSListener;
 
 /**
  * Class that implements a visualisation of the progress of a GTS generation
- * process. The monitor should be added as a {@link groove.graph.GraphListener}
+ * process. The monitor should be added as a {@link LTSListener}
  * to the GTS in question.
  * @author Arend Rensink
  * @version $Revision$

@@ -20,6 +20,7 @@ import groove.graph.ElementFactory;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
+import groove.graph.TypeFactory;
 import groove.graph.Node;
 import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
@@ -257,7 +258,7 @@ public class DefaultTypeView implements TypeView {
         if (!TypeAspect.isSubtype(viewEdge)) {
             Label modelLabel = viewEdge.getModelLabel();
             TypeEdge modelEdge =
-                model.addEdge(modelSource, modelLabel, modelTarget);
+                model.addEdge(modelSource, (TypeLabel) modelLabel, modelTarget);
             if (TypeAspect.isAbstract(viewEdge)) {
                 modelEdge.setAbstract();
             }
@@ -293,15 +294,16 @@ public class DefaultTypeView implements TypeView {
     private ViewToTypeMap viewToModelMap;
 
     /** Mapping from type graph elements to rule graph elements. */
-    public static class ViewToTypeMap extends ViewToModelMap<TypeNode,TypeEdge> {
+    public static class ViewToTypeMap extends
+            ViewToModelMap<TypeNode,TypeLabel,TypeEdge> {
         @Override
         public ViewToTypeMap newMap() {
             return new ViewToTypeMap();
         }
 
         @Override
-        public ElementFactory<TypeNode,?,TypeEdge> getFactory() {
-            return TypeGraph.MyFactory.INSTANCE;
+        public ElementFactory<TypeNode,TypeLabel,TypeEdge> getFactory() {
+            return TypeFactory.INSTANCE;
         }
     }
 }

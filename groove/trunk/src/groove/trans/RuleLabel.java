@@ -20,7 +20,7 @@ import groove.algebra.Operation;
 import groove.graph.AbstractLabel;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
-import groove.rel.Automaton;
+import groove.rel.RegAut;
 import groove.rel.AutomatonCalculator;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
@@ -132,7 +132,7 @@ public class RuleLabel extends AbstractLabel {
      * @param labelStore alphabet of the automaton,
      * used to match node type labels properly; non-{@code null}
      */
-    public Automaton getAutomaton(LabelStore labelStore) {
+    public RegAut getAutomaton(LabelStore labelStore) {
         if (getRegExpr() != null && this.automaton == null
             || this.automaton.getLabelStore() != labelStore) {
             this.automaton = calculator.compute(getRegExpr(), labelStore);
@@ -412,7 +412,7 @@ public class RuleLabel extends AbstractLabel {
     /** The underlying regular expression, if any. */
     private final RegExpr regExpr;
     /** An automaton constructed lazily for the regular expression. */
-    private Automaton automaton;
+    private RegAut automaton;
     /** The wrapped operator, if any. */
     private final Operation operator;
     /** The argument number wrapped by this label, if any. */

@@ -27,8 +27,6 @@ import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.State;
-import groove.lts.Transition;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -131,7 +129,7 @@ public class LTSJGraph extends JGraph {
      * @require nodeOrEdge instanceof State || nodeOrEdge instanceof Transition
      */
     public void scrollTo(Element nodeOrEdge) {
-        JCell cell = ((GraphJModel) getModel()).getJCell(nodeOrEdge);
+        JCell cell = getModel().getJCell(nodeOrEdge);
         assert cell != null;
         Rectangle2D bounds = getCellBounds(cell);
         if (bounds != null) {
@@ -213,7 +211,7 @@ public class LTSJGraph extends JGraph {
          * Adapts the name of the action so that it reflects that the element to
          * scroll to is a given transition.
          */
-        public void setTransition(Transition edge) {
+        public void setTransition(GraphTransition edge) {
             putValue(Action.NAME, Options.SCROLL_TO_ACTION_NAME + " derivation");
         }
 
@@ -221,7 +219,7 @@ public class LTSJGraph extends JGraph {
          * Adapts the name of the action so that it reflects that the element to
          * scroll to is a given state.
          */
-        public void setState(State node) {
+        public void setState(GraphState node) {
             putValue(Action.NAME, Options.SCROLL_TO_ACTION_NAME + " state");
         }
     }
@@ -245,12 +243,14 @@ public class LTSJGraph extends JGraph {
                 DefaultGraphCell cell =
                     (DefaultGraphCell) getFirstCellForLocation(loc.x, loc.y);
                 if (cell instanceof GraphJEdge) {
+                    @SuppressWarnings("unchecked")
                     GraphTransition edge =
-                        (GraphTransition) ((GraphJEdge) cell).getEdge();
+                        ((GraphJEdge<GraphState,GraphTransition>) cell).getEdge();
                     getSimulator().setTransition(edge);
                 } else if (cell instanceof GraphJVertex) {
+                    @SuppressWarnings("unchecked")
                     GraphState node =
-                        (GraphState) ((GraphJVertex) cell).getNode();
+                        ((GraphJVertex<GraphState,GraphTransition>) cell).getNode();
                     if (!getSimulator().getCurrentState().equals(node)) {
                         getSimulator().setState(node);
                     }

@@ -16,12 +16,10 @@
  */
 package groove.match.rete;
 
-import groove.graph.DefaultEdge;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.gui.jgraph.ReteJModel;
 import groove.io.AspectGxl;
@@ -35,6 +33,7 @@ import groove.trans.HostGraph;
 import groove.trans.NotCondition;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
+import groove.trans.RuleGraph;
 import groove.trans.RuleName;
 import groove.trans.RuleNode;
 import groove.trans.RuleToRuleMap;
@@ -150,7 +149,7 @@ public class ReteNetwork {
          * of the RETE network only.
          */
         StaticMap openList = new StaticMap();
-        Graph g = condition.getTarget();
+        RuleGraph g = condition.getTarget();
 
         Collection<RuleEdge> edgeList = getEdgeCollection(condition);
 
@@ -399,8 +398,8 @@ public class ReteNetwork {
         return result;
     }
 
-    private Node translate(RuleToRuleMap translationMap, RuleNode node) {
-        Node result = node;
+    private RuleNode translate(RuleToRuleMap translationMap, RuleNode node) {
+        RuleNode result = node;
         if (translationMap != null) {
             result = translationMap.getNode(node);
             if (result == null) {
@@ -411,17 +410,12 @@ public class ReteNetwork {
     }
 
     private Edge translate(RuleToRuleMap translationMap, RuleEdge edge) {
-        Edge result = edge;
+        RuleEdge result = edge;
         if (translationMap != null) {
-            Node n1 = translate(translationMap, edge.source());
-            Node n2 = translate(translationMap, edge.target());
-            Label l = edge.label();
-
+            RuleNode n1 = translate(translationMap, edge.source());
+            RuleNode n2 = translate(translationMap, edge.target());
             if (!edge.source().equals(n1) || !edge.target().equals(n2)) {
-                result =
-                    (edge.getClass().equals(RuleEdge.class))
-                            ? DefaultEdge.createEdge(n1, l, n2)
-                            : DefaultEdge.createEdge(n1, l, n1);
+                result = new RuleEdge(n1, edge.label(), n2);
             }
         }
         return result;

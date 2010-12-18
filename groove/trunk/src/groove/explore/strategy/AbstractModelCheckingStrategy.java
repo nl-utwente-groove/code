@@ -338,7 +338,8 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
      * @return the set of rule names contained in the given
      *         <code>iterator</code>
      */
-    protected Set<String> filterRuleNames(Set<GraphTransition> graphTransitions) {
+    protected Set<String> filterRuleNames(
+            Set<? extends GraphTransition> graphTransitions) {
         Set<String> result = new HashSet<String>();
         for (GraphTransition nextTransition : graphTransitions) {
             result.add(nextTransition.getEvent().getRule().getName().toString());

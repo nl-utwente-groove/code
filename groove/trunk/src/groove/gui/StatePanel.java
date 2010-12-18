@@ -24,7 +24,6 @@ import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.Graph;
 import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
@@ -38,7 +37,7 @@ import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.State;
+import groove.trans.HostGraph;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
@@ -130,15 +129,15 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * Specialises the return type to {@link GraphJModel}.
      */
     @Override
-    public GraphJModel getJModel() {
-        return (GraphJModel) super.getJModel();
+    public GraphJModel<?,?> getJModel() {
+        return (GraphJModel<?,?>) super.getJModel();
     }
 
     /**
      * Sets the graph model in the jgraph. Convenience method for
      * <code>this.jGraph.setModel(newModel)</code>.
      */
-    private void setJModel(GraphJModel newModel) {
+    private void setJModel(GraphJModel<?,?> newModel) {
         clearSelectedMatch();
         this.jGraph.setModel(newModel);
     }
@@ -208,7 +207,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * direct derivation. Emphasis is by fat lines.
      */
     public synchronized void setTransitionUpdate(GraphTransition trans) {
-        GraphJModel newJModel = getCurrentStateJModel();
+        GraphJModel<?,?> newJModel = getCurrentStateJModel();
         if (getJModel() != newJModel) {
             // get a model for the new graph and set it
             setJModel(newJModel);
@@ -232,7 +231,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         for (Edge matchedEdge : match.getEdgeValues()) {
             emphElems.add(matchedEdge);
         }
-        GraphJModel currentModel = getJModel();
+        GraphJModel<?,?> currentModel = getJModel();
         currentModel.setEmphasized(currentModel.getJCellSet(emphElems));
         this.selectedMatch = match;
         refreshStatus();
@@ -245,7 +244,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      */
     public synchronized void applyTransitionUpdate(GraphTransition transition) {
         GraphState newState = transition.target();
-        GraphJModel newModel = getStateJModel(newState, false);
+        GraphJModel<?,?> newModel = getStateJModel(newState, false);
         GraphState oldState = transition.source();
         NodeEdgeMap morphism = transition.getMorphism();
         copyLayout(getStateJModel(oldState, true), newModel, morphism);
@@ -269,7 +268,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     public void setGraphModel(String graphName) {
         GraphView graphView =
             getSimulator().getGrammarView().getGraphView(graphName);
-        GraphJModel newModel =
+        GraphJModel<?,?> newModel =
             graphView == null ? getCurrentStateJModel()
                     : getGraphJModel(graphView);
         if (newModel != null) {
@@ -336,7 +335,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     }
 
     /** Returns the graph model for the current graph state. */
-    private GraphJModel getCurrentStateJModel() {
+    private GraphJModel<?,?> getCurrentStateJModel() {
         GraphState currentState = getSimulator().getCurrentState();
         return currentState == null ? null : getStateJModel(currentState, true);
     }
@@ -346,8 +345,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * retrieved from stateJModelMap; if there is no image for the requested
      * state then one is created.
      */
-    private GraphJModel getStateJModel(GraphState state, boolean copyLayout) {
-        GraphJModel result = this.stateJModelMap.get(state);
+    private GraphJModel<?,?> getStateJModel(GraphState state, boolean copyLayout) {
+        GraphJModel<?,?> result = this.stateJModelMap.get(state);
         if (result == null) {
             result = computeStateJModel(state, copyLayout);
             assert result != null;
@@ -359,9 +358,10 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     /**
      * Computes a fresh GraphJModel for a given graph state.
      */
-    private GraphJModel computeStateJModel(GraphState state, boolean copyLayout) {
+    private GraphJModel<?,?> computeStateJModel(GraphState state,
+            boolean copyLayout) {
         // create a fresh model
-        GraphJModel result = createStateJModel(state);
+        GraphJModel<?,?> result = createStateJModel(state);
         result.setName(state.toString());
         // try to find layout information for the model
         if (copyLayout) {
@@ -376,7 +376,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
                         ((GraphNextState) oldState).getMorphism().then(morphism);
                     oldState = ((GraphNextState) oldState).source();
                 }
-                GraphJModel oldJModel = getStateJModel(oldState, true);
+                GraphJModel<?,?> oldJModel = getStateJModel(oldState, true);
                 copyLayout(oldJModel, result, morphism);
             }
         }
@@ -384,8 +384,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     }
 
     /** Creates a j-model for a given graph. */
-    private GraphJModel createStateJModel(GraphState state) {
-        Graph graph = state.getGraph();
+    private GraphJModel<?,?> createStateJModel(GraphState state) {
+        HostGraph graph = state.getGraph();
         return GraphJModel.newInstance(graph, getOptions());
     }
 
@@ -417,8 +417,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * @param derivationMap mapping from the nodes and edges of the old to the
      *        new j-model
      */
-    private void copyLayout(GraphJModel oldStateJModel,
-            GraphJModel newStateJModel, NodeEdgeMap derivationMap) {
+    private void copyLayout(GraphJModel<?,?> oldStateJModel,
+            GraphJModel<?,?> newStateJModel, NodeEdgeMap derivationMap) {
         Set<JCell> newGrayedOut = new HashSet<JCell>();
         for (Map.Entry<Node,Node> entry : derivationMap.nodeMap().entrySet()) {
             JCell sourceCell = oldStateJModel.getJCell(entry.getKey());
@@ -485,8 +485,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     /**
      * Mapping from states to the corresponding graph models.
      */
-    private final Map<State,GraphJModel> stateJModelMap =
-        new HashMap<State,GraphJModel>();
+    private final Map<GraphState,GraphJModel<?,?>> stateJModelMap =
+        new HashMap<GraphState,GraphJModel<?,?>>();
     /**
      * Mapping from graphs to the corresponding graph models.
      */

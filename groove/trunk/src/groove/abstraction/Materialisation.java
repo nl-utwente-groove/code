@@ -347,14 +347,12 @@ public final class Materialisation implements Cloneable {
                             this.shape.getEdgeSignature(v, label, ecW);
                         Multiplicity outMult = this.shape.getEdgeSigOutMult(es);
                         Multiplicity inMult = this.shape.getEdgeSigInMult(es);
-                        Set<ShapeEdge> vInterW =
-                            Util.<ShapeNode,ShapeEdge>getIntersectEdges(
-                                this.shape, v, w, label);
+                        Set<HostEdge> vInterW =
+                            Util.getIntersectEdges(this.shape, v, w, label);
                         Multiplicity vInterWMult =
                             Multiplicity.getEdgeSetMult(vInterW);
-                        Set<ShapeEdge> wInterV =
-                            Util.<ShapeNode,ShapeEdge>getIntersectEdges(
-                                this.shape, w, v, label);
+                        Set<HostEdge> wInterV =
+                            Util.getIntersectEdges(this.shape, w, v, label);
                         Multiplicity wInterVMult =
                             Multiplicity.getEdgeSetMult(wInterV);
                         if (!outMult.equals(vInterWMult)

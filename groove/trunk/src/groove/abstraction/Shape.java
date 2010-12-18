@@ -27,7 +27,6 @@ import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.DefaultIsoChecker.IsoCheckerState;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
-import groove.trans.HostFactory;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.Rule;
@@ -95,8 +94,8 @@ public final class Shape extends DefaultHostGraph {
     // - If 'this.graph' is an instance of a shape and 'this' has been
     //   normalised, then the shaping relation is an abstraction morphism that
     //   goes from elements of 'this.graph' to elements of 'this'.
-    private final Map<Node,ShapeNode> nodeShaping;
-    private final Map<Edge,ShapeEdge> edgeShaping;
+    private final Map<HostNode,ShapeNode> nodeShaping;
+    private final Map<HostEdge,ShapeEdge> edgeShaping;
 
     /**
      * The equivalence relation over the nodes of the shape.
@@ -144,8 +143,8 @@ public final class Shape extends DefaultHostGraph {
     public Shape(HostGraph graph) {
         super();
         this.graph = graph;
-        this.nodeShaping = new HashMap<Node,ShapeNode>();
-        this.edgeShaping = new HashMap<Edge,ShapeEdge>();
+        this.nodeShaping = new HashMap<HostNode,ShapeNode>();
+        this.edgeShaping = new HashMap<HostEdge,ShapeEdge>();
         this.equivRel = new EquivRelation<ShapeNode>();
         this.nodeMultMap = new HashMap<ShapeNode,Multiplicity>();
         this.outEdgeMultMap = new HashMap<EdgeSignature,Multiplicity>();
@@ -163,8 +162,8 @@ public final class Shape extends DefaultHostGraph {
     private Shape() {
         super();
         this.graph = null;
-        this.nodeShaping = new HashMap<Node,ShapeNode>();
-        this.edgeShaping = new HashMap<Edge,ShapeEdge>();
+        this.nodeShaping = new HashMap<HostNode,ShapeNode>();
+        this.edgeShaping = new HashMap<HostEdge,ShapeEdge>();
         this.equivRel = new EquivRelation<ShapeNode>();
         this.nodeMultMap = new HashMap<ShapeNode,Multiplicity>();
         this.outEdgeMultMap = new HashMap<EdgeSignature,Multiplicity>();
@@ -178,8 +177,8 @@ public final class Shape extends DefaultHostGraph {
     private Shape(Shape shape) {
         super(shape);
         this.graph = shape.graph;
-        this.nodeShaping = new HashMap<Node,ShapeNode>(shape.nodeShaping);
-        this.edgeShaping = new HashMap<Edge,ShapeEdge>(shape.edgeShaping);
+        this.nodeShaping = new HashMap<HostNode,ShapeNode>(shape.nodeShaping);
+        this.edgeShaping = new HashMap<HostEdge,ShapeEdge>(shape.edgeShaping);
         this.nodeMultMap =
             new HashMap<ShapeNode,Multiplicity>(shape.nodeMultMap);
         this.equivRel = new EquivRelation<ShapeNode>(shape.equivRel);
@@ -274,7 +273,7 @@ public final class Shape extends DefaultHostGraph {
      * be careful not to leave the shape structures in an inconsistent state.
      */
     @Override
-    public boolean addNode(Node node) {
+    public boolean addNode(HostNode node) {
         assert !this.isFrozen();
         assert node instanceof ShapeNode : "Invalid node type!";
         boolean added = super.addNode(node);
@@ -291,7 +290,7 @@ public final class Shape extends DefaultHostGraph {
      * when necessary.
      */
     @Override
-    public boolean addEdgeWithoutCheck(Edge edge) {
+    public boolean addEdgeWithoutCheck(HostEdge edge) {
         assert !this.isFrozen();
         assert edge instanceof ShapeEdge : "Invalid edge type!";
         ShapeEdge edgeS = (ShapeEdge) edge;
@@ -320,7 +319,7 @@ public final class Shape extends DefaultHostGraph {
 
     /** Removes the node from the shape and updates all related structures. */
     @Override
-    public boolean removeNode(Node node) {
+    public boolean removeNode(HostNode node) {
         assert !this.isFrozen();
         assert node instanceof ShapeNode;
         ShapeNode nodeS = (ShapeNode) node;
@@ -369,7 +368,7 @@ public final class Shape extends DefaultHostGraph {
 
     /** Removes the edge from the shape and updates all related structures. */
     @Override
-    public boolean removeEdge(Edge edge) {
+    public boolean removeEdge(HostEdge edge) {
         assert !this.isFrozen();
         assert edge instanceof ShapeEdge;
         ShapeEdge edgeS = (ShapeEdge) edge;
@@ -391,10 +390,11 @@ public final class Shape extends DefaultHostGraph {
     }
 
     @Override
-    public boolean removeNodeSetWithoutCheck(Collection<? extends Node> nodeSet) {
+    public boolean removeNodeSetWithoutCheck(
+            Collection<? extends HostNode> nodeSet) {
         assert !this.isFrozen();
         boolean removed = false;
-        for (Node node : nodeSet) {
+        for (HostNode node : nodeSet) {
             removed |= this.removeNode(node);
         }
         return removed;
@@ -447,8 +447,8 @@ public final class Shape extends DefaultHostGraph {
     // ------------------------------------------------------------------------
 
     @Override
-    public HostFactory getFactory() {
-        return ShapeFactory.INSTANCE;
+    public ShapeFactory getFactory() {
+        return ShapeFactory.instance();
     }
 
     /**
@@ -508,7 +508,7 @@ public final class Shape extends DefaultHostGraph {
         // Each node of the shape correspond to an equivalence class
         // of the graph.
         for (EquivClass<HostNode> nodeEquivClass : currGraphNeighEquiv) {
-            ShapeNode shapeNode = (ShapeNode) this.createNode();
+            ShapeNode shapeNode = getFactory().createNode();
             // Add a shape node to the shape.
             // Call the super method because we have additional information on
             // the node to be added.
@@ -562,12 +562,12 @@ public final class Shape extends DefaultHostGraph {
             HostNode tgtG = edgeG.target();
             ShapeNode srcS = this.nodeShaping.get(srcG);
             ShapeNode tgtS = this.nodeShaping.get(tgtG);
-            Label labelS = edgeG.label();
+            TypeLabel labelS = edgeG.label();
             ShapeEdge edgeS = (ShapeEdge) this.createEdge(srcS, labelS, tgtS);
             this.addEdge(edgeS);
 
             // Update the shaping information.
-            for (Edge eG : edgeEquivClassG) {
+            for (HostEdge eG : edgeEquivClassG) {
                 this.edgeShaping.put(eG, edgeS);
             }
         }
@@ -581,20 +581,20 @@ public final class Shape extends DefaultHostGraph {
         // For all binary labels.
         for (TypeLabel label : Util.binaryLabelSet(this.graph)) {
             // For all nodes in the graph.
-            for (Node node : this.graph.nodeSet()) {
+            for (HostNode node : this.graph.nodeSet()) {
                 ShapeNode nodeS = this.getShapeNode(node);
                 // For all equivalence classes in the shape.
                 for (EquivClass<ShapeNode> ecS : this.equivRel) {
-                    Set<Node> nodesG = this.getReverseNodeMap(ecS);
+                    Set<HostNode> nodesG = this.getReverseNodeMap(ecS);
                     EdgeSignature es = this.getEdgeSignature(nodeS, label, ecS);
 
                     // Outgoing multiplicity.
-                    Set<Edge> outInter =
+                    Set<HostEdge> outInter =
                         Util.getIntersectEdges(this.graph, node, nodesG, label);
                     Multiplicity outMult =
                         Multiplicity.getEdgeSetMult(outInter);
                     // Incoming multiplicity.
-                    Set<Edge> inInter =
+                    Set<HostEdge> inInter =
                         Util.getIntersectEdges(this.graph, nodesG, node, label);
                     Multiplicity inMult = Multiplicity.getEdgeSetMult(inInter);
 
@@ -767,9 +767,9 @@ public final class Shape extends DefaultHostGraph {
      * Returns the set of nodes in the shaping relation that maps to values
      * occurring in the given equivalence class. 
      */
-    private Set<Node> getReverseNodeMap(EquivClass<ShapeNode> ecS) {
-        Set<Node> nodesG = new HashSet<Node>();
-        for (Entry<Node,ShapeNode> entry : this.nodeShaping.entrySet()) {
+    private Set<HostNode> getReverseNodeMap(EquivClass<ShapeNode> ecS) {
+        Set<HostNode> nodesG = new HashSet<HostNode>();
+        for (Entry<HostNode,ShapeNode> entry : this.nodeShaping.entrySet()) {
             if (ecS.contains(entry.getValue())) {
                 nodesG.add(entry.getKey());
             }
@@ -785,7 +785,7 @@ public final class Shape extends DefaultHostGraph {
     public Set<ShapeNode> getReverseNodeMap(ShapeNode nodeS) {
         assert this.graph instanceof Shape : "Invalid method call.";
         Set<ShapeNode> nodesG = new HashSet<ShapeNode>();
-        for (Entry<Node,ShapeNode> entry : this.nodeShaping.entrySet()) {
+        for (Entry<HostNode,ShapeNode> entry : this.nodeShaping.entrySet()) {
             if (nodeS.equals(entry.getValue())) {
                 nodesG.add((ShapeNode) entry.getKey());
             }
@@ -801,7 +801,7 @@ public final class Shape extends DefaultHostGraph {
     private EquivClass<ShapeNode> getReverseEc(EquivClass<ShapeNode> ecS) {
         assert this.graph instanceof Shape : "Invalid method call.";
         EquivClass<ShapeNode> rEc = new EquivClass<ShapeNode>();
-        for (Entry<Node,ShapeNode> entry : this.nodeShaping.entrySet()) {
+        for (Entry<HostNode,ShapeNode> entry : this.nodeShaping.entrySet()) {
             if (ecS.contains(entry.getValue())) {
                 rEc.add((ShapeNode) entry.getKey());
             }
@@ -940,9 +940,9 @@ public final class Shape extends DefaultHostGraph {
     /** Duplicate all unary edges occurring in the given 'from' node. */
     private void copyUnaryEdges(ShapeNode from, ShapeNode to) {
         assert !this.isFrozen();
-        for (Edge edge : this.outEdgeSet(from)) {
+        for (HostEdge edge : this.outEdgeSet(from)) {
             if (Util.isUnary(edge)) {
-                Label label = edge.label();
+                TypeLabel label = edge.label();
                 this.addEdge(to, label, to);
             }
         }
@@ -982,12 +982,12 @@ public final class Shape extends DefaultHostGraph {
         this.edgeShaping.clear();
 
         // Create identity node morphism.
-        for (Node node : this.graph.nodeSet()) {
+        for (HostNode node : this.graph.nodeSet()) {
             this.nodeShaping.put(node, (ShapeNode) node);
         }
 
         // Create identity edge morphism.
-        for (Edge edge : this.graph.edgeSet()) {
+        for (HostEdge edge : this.graph.edgeSet()) {
             this.edgeShaping.put(edge, (ShapeEdge) edge);
         }
     }
@@ -1036,7 +1036,7 @@ public final class Shape extends DefaultHostGraph {
         ShapeNode newNodes[] = new ShapeNode[copies];
         EquivClass<ShapeNode> origNodeEc = this.getEquivClassOf(origNode);
         for (int i = 0; i < copies; i++) {
-            ShapeNode newNode = (ShapeNode) this.createNode();
+            ShapeNode newNode = getFactory().createNode();
             newNodes[i] = newNode;
             // Add the new node to the shape. Call the super method because
             // we have additional information on the node to be added.
@@ -1062,7 +1062,7 @@ public final class Shape extends DefaultHostGraph {
         // Outgoing edges with origNode as source.
         Set<ShapeEdge> newEdges = new HashSet<ShapeEdge>(copies);
         for (ShapeEdge origEdge : this.outBinaryEdgeSet(origNode)) {
-            Label label = origEdge.label();
+            TypeLabel label = origEdge.label();
             ShapeNode target = origEdge.target();
             Multiplicity origEdgeOutMult = this.getEdgeOutMult(origEdge);
             for (ShapeNode newNode : newNodes) {
@@ -1083,7 +1083,7 @@ public final class Shape extends DefaultHostGraph {
         // Incoming edges with origNode as target.
         newEdges.clear();
         for (ShapeEdge origEdge : this.inBinaryEdgeSet(origNode)) {
-            Label label = origEdge.label();
+            TypeLabel label = origEdge.label();
             ShapeNode source = origEdge.source();
             Multiplicity origEdgeInMult = this.getEdgeInMult(origEdge);
             for (ShapeNode newNode : newNodes) {
@@ -1112,12 +1112,12 @@ public final class Shape extends DefaultHostGraph {
     }
 
     /** Basic getter method. */
-    public Map<Node,ShapeNode> getNodeShaping() {
+    public Map<HostNode,ShapeNode> getNodeShaping() {
         return this.nodeShaping;
     }
 
     /** Basic getter method. */
-    public Map<Edge,ShapeEdge> getEdgeShaping() {
+    public Map<HostEdge,ShapeEdge> getEdgeShaping() {
         return this.edgeShaping;
     }
 

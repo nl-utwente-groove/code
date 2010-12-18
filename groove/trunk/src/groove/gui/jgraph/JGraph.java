@@ -16,8 +16,10 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.LabelStore;
+import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.gui.Exporter;
 import groove.gui.LabelTree;
@@ -351,10 +353,17 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         }
         // if the backing JModel has an underlying Groove graph, then
         // store the changed layout information in that Groove graph
-        for (Object jCell : evt.getChange().getChanged()) {
-            if (jCell instanceof GraphJCell
-                && getModel() instanceof GraphJModel) {
-                ((GraphJModel) getModel()).synchroniseLayout((GraphJCell) jCell);
+        if (getModel() instanceof GraphJModel) {
+            @SuppressWarnings("unchecked")
+            GraphJModel<Node,Edge> graphJModel =
+                (GraphJModel<Node,Edge>) getModel();
+            for (Object jCell : evt.getChange().getChanged()) {
+                if (jCell instanceof GraphJCell) {
+                    @SuppressWarnings("unchecked")
+                    GraphJCell<Node,Edge> graphJCell =
+                        (GraphJCell<Node,Edge>) jCell;
+                    graphJModel.synchroniseLayout(graphJCell);
+                }
             }
         }
     }

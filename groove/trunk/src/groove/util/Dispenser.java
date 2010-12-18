@@ -21,5 +21,5 @@ package groove.util;
  */
 public interface Dispenser {
     /** Returns a number, according to the policy of this dispenser. */
-    int getNumber();
+    int getNext();
 }

@@ -19,10 +19,8 @@ package groove.trans;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.Graph;
 import groove.graph.MergeMap;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ValueNode;
 import groove.rel.LabelVar;
 import groove.util.CacheReference;
@@ -221,7 +219,7 @@ final public class SPOEvent extends
      * @return <code>true</code> if the anchor map images are all in
      *         <code>host</code>
      */
-    private boolean isCorrectFor(Graph host) {
+    private boolean isCorrectFor(HostGraph host) {
         RuleToHostMap anchorMap = getAnchorMap();
         boolean correct = true;
         Iterator<HostEdge> edgeImageIter =
@@ -805,8 +803,7 @@ final public class SPOEvent extends
         private RuleToHostMap computeCoanchorMap() {
             final RuleToHostMap result = createRuleToHostMap();
             RuleToHostMap anchorMap = getAnchorMap();
-            NodeEdgeMap mergeMap =
-                getRule().hasMergers() ? getMergeMap() : null;
+            MergeMap mergeMap = getRule().hasMergers() ? getMergeMap() : null;
             Set<HostNode> erasedNodes = this.getErasedNodes();
             // add coanchor mappings for creator edge ends that are themselves
             // not creators
@@ -823,7 +820,7 @@ final public class SPOEvent extends
                         SPOEvent.this, creatorKey, anchorMap);
                 }
                 if (mergeMap != null) {
-                    createdValue = (HostNode) mergeMap.getNode(createdValue);
+                    createdValue = mergeMap.getNode(createdValue);
                 } else if (erasedNodes.contains(createdValue)) {
                     createdValue = null;
                 }
@@ -866,12 +863,13 @@ final public class SPOEvent extends
             RuleToHostMap anchorMap = getAnchorMap();
             MergeMap mergeMap = createMergeMap();
             for (Map.Entry<RuleNode,RuleNode> ruleMergeEntry : getRule().getMergeMap().entrySet()) {
-                Node mergeKey = anchorMap.getNode(ruleMergeEntry.getKey());
-                Node mergeImage = anchorMap.getNode(ruleMergeEntry.getValue());
+                HostNode mergeKey = anchorMap.getNode(ruleMergeEntry.getKey());
+                HostNode mergeImage =
+                    anchorMap.getNode(ruleMergeEntry.getValue());
                 mergeMap.putNode(mergeKey, mergeImage);
             }
             // now map the erased nodes to null
-            for (Node node : this.getErasedNodes()) {
+            for (HostNode node : this.getErasedNodes()) {
                 mergeMap.removeNode(node);
             }
             return mergeMap;

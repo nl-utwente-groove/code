@@ -16,10 +16,10 @@
  */
 package groove.io;
 
+import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
-import groove.graph.Edge;
+import groove.graph.DefaultNode;
 import groove.graph.GraphInfo;
-import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.gui.layout.LayoutMap;
 import groove.trans.RuleName;
@@ -515,7 +515,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
             String graphName = filter.stripExtension(graphEntry.getKey());
             InputStream in = file.getInputStream(graphEntry.getValue());
             try {
-                Pair<DefaultGraph,Map<String,Node>> plainGraphAndMap =
+                Pair<DefaultGraph,Map<String,DefaultNode>> plainGraphAndMap =
                     JaxbGxlIO.getInstance().loadGraphWithMap(in);
                 DefaultGraph plainGraph = plainGraphAndMap.one();
                 /*
@@ -547,12 +547,12 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
      * given zip file.
      */
     private void addLayout(ZipFile file, String entryName,
-            DefaultGraph plainGraph, Map<String,Node> nodeMap)
+            DefaultGraph plainGraph, Map<String,DefaultNode> nodeMap)
         throws IOException {
         ZipEntry layoutEntry = this.layoutEntryMap.get(entryName);
         if (layoutEntry != null) {
             try {
-                LayoutMap<Node,Edge> layout =
+                LayoutMap<DefaultNode,DefaultEdge> layout =
                     LayoutIO.getInstance().readLayout(nodeMap,
                         file.getInputStream(layoutEntry));
                 GraphInfo.setLayoutMap(plainGraph, layout);

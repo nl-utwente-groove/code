@@ -18,6 +18,7 @@ package groove.abstraction;
 
 import groove.graph.Node;
 import groove.graph.TypeLabel;
+import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.Rule;
@@ -161,9 +162,9 @@ public final class PreMatch {
                     ShapeNode pV = (ShapeNode) entry.getValue();
 
                     // For all outgoing edges from the image of v. Item 2'.
-                    for (ShapeEdge e : Util.<ShapeNode,ShapeEdge>getOutEdges(
+                    for (HostEdge e : Util.<HostNode,HostEdge>getOutEdges(
                         shape, pV, label)) {
-                        ShapeNode w = e.target();
+                        ShapeNode w = (ShapeNode) e.target();
                         Set<RuleNode> pInvW = Util.getReverseNodeMap(map, w);
                         // FIXME label is of the wrong type:
                         // it is a DefaultLabel whereas in the rule you
@@ -187,9 +188,9 @@ public final class PreMatch {
                     }
 
                     // For all incoming edges from the image of v. Item 2''.
-                    for (ShapeEdge e : Util.<ShapeNode,ShapeEdge>getInEdges(
-                        shape, pV, label)) {
-                        ShapeNode w = e.source();
+                    for (HostEdge e : Util.<HostNode,HostEdge>getInEdges(shape,
+                        pV, label)) {
+                        ShapeNode w = (ShapeNode) e.source();
                         Set<RuleNode> pInvW = Util.getReverseNodeMap(map, w);
                         // FIXME label is of the wrong type:
                         // it is a DefaultLabel whereas in the rule you

@@ -24,6 +24,7 @@ import groove.graph.Node;
 import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.rel.RegExpr;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -408,7 +409,7 @@ public class RuleDependencies {
         Iterator<RuleEdge> rhsEdgeIter = rhs.edgeSet().iterator();
         while (rhsEdgeIter.hasNext() && !produced.contains(ALL_LABEL)) {
             RuleEdge rhsEdge = rhsEdgeIter.next();
-            if (!ruleMorphism.containsValue(rhsEdge)) {
+            if (!ruleMorphism.containsEdgeValue(rhsEdge)) {
                 produced.add(getSharpLabel(rhsEdge.label()));
             }
         }
@@ -418,8 +419,8 @@ public class RuleDependencies {
             produced.add(ALL_LABEL);
         }
         // determine if the rule introduces an isolated node
-        for (Node rhsNode : rhs.nodeSet()) {
-            if (!ruleMorphism.containsValue(rhsNode)) { // &&
+        for (RuleNode rhsNode : rhs.nodeSet()) {
+            if (!ruleMorphism.containsNodeValue(rhsNode)) { // &&
                 // rhs.edgeSet(rhsNode).isEmpty())
                 // {
                 produced.add(ANY_NODE);
@@ -633,7 +634,7 @@ public class RuleDependencies {
             if (typeLabels != null) {
                 for (Label typeLabel : typeLabels) {
                     // find the type node
-                    Node typeNode =
+                    TypeNode typeNode =
                         this.type.labelEdgeSet(typeLabel).iterator().next().source();
                     // now find all incident labels of the type node
                     for (TypeEdge typeEdge : this.type.edgeSet(typeNode)) {

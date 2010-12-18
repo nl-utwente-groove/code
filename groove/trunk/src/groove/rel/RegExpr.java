@@ -304,12 +304,12 @@ abstract public class RegExpr { // implements VarSetSupport {
      * @return a clone of this expression, or this expression itself if {@code
      *         oldLabel} did not occur
      */
-    abstract public RegExpr relabel(Label oldLabel, Label newLabel);
+    abstract public RegExpr relabel(TypeLabel oldLabel, TypeLabel newLabel);
 
     /**
      * Returns the set of labels occurring in this regular expression. These are
      * the labels that, when relabelled, result in a different expression.
-     * @see #relabel(Label, Label)
+     * @see #relabel(TypeLabel, TypeLabel)
      */
     abstract public Set<TypeLabel> getTypeLabels();
 
@@ -927,7 +927,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         @Override
-        public RegExpr relabel(Label oldLabel, Label newLabel) {
+        public RegExpr relabel(TypeLabel oldLabel, TypeLabel newLabel) {
             List<RegExpr> newOperands = new ArrayList<RegExpr>();
             boolean hasChanged = false;
             for (RegExpr operand : getOperands()) {
@@ -998,7 +998,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         @Override
-        public RegExpr relabel(Label oldLabel, Label newLabel) {
+        public RegExpr relabel(TypeLabel oldLabel, TypeLabel newLabel) {
             RegExpr newOperand = getOperand().relabel(oldLabel, newLabel);
             return newOperand != getOperand() ? newInstance(newOperand) : this;
         }
@@ -1099,7 +1099,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         @Override
-        public RegExpr relabel(Label oldLabel, Label newLabel) {
+        public RegExpr relabel(TypeLabel oldLabel, TypeLabel newLabel) {
             RegExpr newOperand = getOperand().relabel(oldLabel, newLabel);
             return newOperand != getOperand() ? newInstance(newOperand) : this;
         }
@@ -1345,7 +1345,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         @Override
-        public RegExpr relabel(Label oldLabel, Label newLabel) {
+        public RegExpr relabel(TypeLabel oldLabel, TypeLabel newLabel) {
             LabelConstraint newConstraint = null;
             if (this.guard != null) {
                 newConstraint = this.guard.relabel(oldLabel, newLabel);
@@ -1718,11 +1718,11 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         @Override
-        public RegExpr relabel(Label oldLabel, Label newLabel) {
+        public RegExpr relabel(TypeLabel oldLabel, TypeLabel newLabel) {
             RegExpr result;
             if (getTypeLabel().equals(oldLabel)) {
                 if (newLabel.isNodeType()) {
-                    result = newInstance((TypeLabel) newLabel);
+                    result = newInstance(newLabel);
                 } else {
                     result = new Atom(newLabel.text());
                 }
@@ -1819,7 +1819,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         @Override
-        public RegExpr relabel(Label oldLabel, Label newLabel) {
+        public RegExpr relabel(TypeLabel oldLabel, TypeLabel newLabel) {
             return this;
         }
 
@@ -1873,7 +1873,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         @Override
-        public RegExpr relabel(Label oldLabel, Label newLabel) {
+        public RegExpr relabel(TypeLabel oldLabel, TypeLabel newLabel) {
             return oldLabel.text().equals(text())
                     ? newInstance(newLabel.text()) : this;
         }

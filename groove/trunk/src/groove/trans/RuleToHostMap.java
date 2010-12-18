@@ -17,8 +17,7 @@
 package groove.trans;
 
 import groove.graph.GenericNodeEdgeMap;
-import groove.graph.GraphHashMap;
-import groove.graph.Label;
+import groove.graph.GraphToGraphMap;
 import groove.graph.TypeLabel;
 import groove.rel.LabelVar;
 import groove.rel.VarMap;
@@ -33,8 +32,10 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class RuleToHostMap extends
-        GraphHashMap<RuleNode,HostNode,RuleEdge,HostEdge> implements VarMap {
+public class RuleToHostMap
+        extends
+        GraphToGraphMap<RuleNode,RuleLabel,RuleEdge,HostNode,TypeLabel,HostEdge>
+        implements VarMap {
     /**
      * Creates an empty map with an empty valuation.
      */
@@ -48,11 +49,10 @@ public class RuleToHostMap extends
      * @see #getVar(LabelVar)
      */
     @Override
-    public Label mapLabel(Label label) {
-        Label result;
-        RuleLabel ruleLabel = (RuleLabel) label;
-        if (ruleLabel.isWildcard()) {
-            LabelVar var = ruleLabel.getWildcardId();
+    public TypeLabel mapLabel(RuleLabel label) {
+        TypeLabel result;
+        if (label.isWildcard()) {
+            LabelVar var = label.getWildcardId();
             if (var == null) {
                 throw new IllegalArgumentException(String.format(
                     "Label %s cannot be mapped", label));
@@ -60,8 +60,8 @@ public class RuleToHostMap extends
                 result = getVar(var);
             }
         } else {
-            assert ruleLabel.isSharp() || ruleLabel.isAtom();
-            result = ruleLabel.getTypeLabel();
+            assert label.isSharp() || label.isAtom();
+            result = label.getTypeLabel();
         }
         return result;
     }
@@ -131,7 +131,7 @@ public class RuleToHostMap extends
 
     @Override
     public HostFactory getFactory() {
-        return HostFactory.INSTANCE;
+        return HostFactory.instance();
     }
 
     /**

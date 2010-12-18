@@ -17,7 +17,6 @@
 package groove.abstraction;
 
 import groove.graph.DefaultNode;
-import groove.graph.NodeStore;
 
 /**
  * Class that implements the nodes of a shape.
@@ -32,7 +31,7 @@ public final class ShapeNode extends DefaultNode {
     // ------------------------------------------------------------------------
 
     /** Default constructor. */
-    private ShapeNode(int nr) {
+    ShapeNode(int nr) {
         super(nr);
     }
 
@@ -48,26 +47,14 @@ public final class ShapeNode extends DefaultNode {
 
     /** Returns the node with the first currently unused node number. */
     static public ShapeNode createNode() {
-        return shapeStore.createNode();
+        return FACTORY.createNode();
     }
 
     /** Returns the node with a given number. */
     static public ShapeNode createNode(int nr) {
-        return shapeStore.createNode(nr);
+        return FACTORY.createNode(nr);
     }
 
-    // ------------------------------------------------------------------------
-    // Static Fields
-    // ------------------------------------------------------------------------
-
-    /** Used only as a reference for the constructor. */
-    private static final ShapeNode PROTOTYPE = new ShapeNode(0);
-    /** Store and factory of canonical shape nodes. */
-    static private NodeStore<ShapeNode> shapeStore = new NodeStore<ShapeNode>(
-        new Factory<ShapeNode>() {
-            @Override
-            public ShapeNode newNode(int nr) {
-                return PROTOTYPE.newNode(nr);
-            }
-        });
+    /** The factory for shape elements. */
+    private final static ShapeFactory FACTORY = ShapeFactory.instance();
 }

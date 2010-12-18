@@ -58,7 +58,7 @@ public class VarSupport {
      * union of the variables involved in the edges.
      * @see #getAllVars(Edge)
      */
-    static public Set<LabelVar> getAllVars(Graph graph) {
+    static public Set<LabelVar> getAllVars(Graph<?,RuleLabel,?> graph) {
         Set<LabelVar> result = new HashSet<LabelVar>();
         for (Edge edge : graph.edgeSet()) {
             result.addAll(getAllVars(edge));

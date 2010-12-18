@@ -16,7 +16,7 @@ t * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  */
 package groove.io;
 
-import groove.graph.Graph;
+import groove.graph.DefaultGraph;
 import groove.graph.GraphInfo;
 import groove.graph.TypeLabel;
 import groove.gui.Options;
@@ -545,7 +545,8 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public void relabel(TypeLabel oldLabel, TypeLabel newLabel) throws IOException {
+    public void relabel(TypeLabel oldLabel, TypeLabel newLabel)
+        throws IOException {
         Edit edit = doRelabel(oldLabel, newLabel);
         if (edit != null) {
             postEdit(edit);
@@ -708,7 +709,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     /** Callback factory method for creating a graph marshaller. */
-    private Xml<Graph> createGraphMarshaller(boolean layouted) {
+    private Xml<DefaultGraph> createGraphMarshaller(boolean layouted) {
         if (layouted) {
             return new LayedOutXml();
         } else {
@@ -745,7 +746,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         for (File file : files) {
             // check for overlapping rule and directory names
             if (!file.isDirectory()) {
-                Graph plainGraph = this.marshaller.unmarshalGraph(file);
+                DefaultGraph plainGraph = this.marshaller.unmarshalGraph(file);
                 String graphName = filter.stripExtension(file.getName());
                 /*
                  * For backward compatibility, we set the role and name of the
@@ -896,7 +897,8 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                         collectRules(file, ruleName);
                     }
                 } else {
-                    Graph plainGraph = this.marshaller.unmarshalGraph(file);
+                    DefaultGraph plainGraph =
+                        this.marshaller.unmarshalGraph(file);
                     /*
                      * For backward compatibility, we set the role and name of
                      * the rule graph
@@ -988,7 +990,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     /** Name of the rule system. */
     private final String name;
     /** The graph marshaller used for retrieving rule and graph files. */
-    private final Xml<Graph> marshaller;
+    private final Xml<DefaultGraph> marshaller;
     /** Flag indicating whether the store has been loaded. */
     private boolean initialised;
     /** The grammar view associated with this store. */

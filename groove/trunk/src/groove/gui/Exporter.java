@@ -186,7 +186,7 @@ public class Exporter {
             export(jGraph.getModel().toPlainGraph(), file);
         }
 
-        public void export(Graph graph, File file) throws IOException {
+        public void export(Graph<?,?,?> graph, File file) throws IOException {
             PrintWriter writer = new PrintWriter(new FileWriter(file));
             Converter.graphToFsm(graph, writer);
             writer.close();
@@ -321,7 +321,8 @@ public class Exporter {
 
             // if we have layout information, export it
             if (GraphInfo.hasLayoutMap(graph)) {
-                LayoutMap<Node,Edge> layoutMap = GraphInfo.getLayoutMap(graph);
+                LayoutMap<AspectNode,AspectEdge> layoutMap =
+                    GraphInfo.getLayoutMap(graph);
 
                 // lists of coordinates seen so far
                 ArrayList<Double> xlist = new ArrayList<Double>();
@@ -636,9 +637,9 @@ public class Exporter {
          * the graph contained therein.
          */
         public void export(JGraph jGraph, File file) throws IOException {
-            Graph graph;
+            Graph<?,?,?> graph;
             if (jGraph.getModel() instanceof GraphJModel) {
-                graph = ((GraphJModel) jGraph.getModel()).getGraph();
+                graph = ((GraphJModel<?,?>) jGraph.getModel()).getGraph();
             } else {
                 graph = jGraph.getModel().toPlainGraph();
             }
@@ -649,7 +650,7 @@ public class Exporter {
          * Exports the graph by calling
          * {@link Converter#graphToAut(Graph, PrintWriter)}.
          */
-        public void export(Graph graph, File file) throws IOException {
+        public void export(Graph<?,?,?> graph, File file) throws IOException {
             PrintWriter writer = new PrintWriter(new FileWriter(file));
             Converter.graphToAut(graph, writer);
             writer.close();
@@ -723,9 +724,9 @@ public class Exporter {
          * the graph contained therein.
          */
         public void export(JGraph jGraph, File file) throws IOException {
-            Graph graph;
             if (jGraph instanceof StateJGraph) {
-                graph = ((StateJGraph) jGraph).getModel().getGraph();
+                Graph<?,?,?> graph =
+                    ((StateJGraph) jGraph).getModel().getGraph();
                 export(graph, file);
             } else {
                 throw new IOException(
@@ -738,7 +739,7 @@ public class Exporter {
          * Exports the graph by calling
          * {@link Converter#graphToAut(Graph, PrintWriter)}.
          */
-        public void export(Graph graph, File file) throws IOException {
+        public void export(Graph<?,?,?> graph, File file) throws IOException {
             PrintWriter writer = new PrintWriter(new FileWriter(file));
             Converter.graphToKth((AspectGraph) graph, writer);
             writer.close();
@@ -776,6 +777,6 @@ public class Exporter {
      */
     public static interface StructuralFormat extends Format {
         /** Exports a GraphShape into this format. */
-        void export(Graph graph, File file) throws IOException;
+        void export(Graph<?,?,?> graph, File file) throws IOException;
     }
 }

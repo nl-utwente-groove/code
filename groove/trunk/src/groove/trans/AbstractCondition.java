@@ -180,9 +180,10 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     private boolean hasIsolatedNodes() {
         boolean result = false;
         // first test if the pattern target has isolated nodes
-        Set<Node> freshTargetNodes = new HashSet<Node>(getTarget().nodeSet());
+        Set<RuleNode> freshTargetNodes =
+            new HashSet<RuleNode>(getTarget().nodeSet());
         freshTargetNodes.removeAll(getRootMap().nodeMap().values());
-        Iterator<Node> nodeIter = freshTargetNodes.iterator();
+        Iterator<RuleNode> nodeIter = freshTargetNodes.iterator();
         while (!result && nodeIter.hasNext()) {
             result = getTarget().edgeSet(nodeIter.next()).isEmpty();
         }

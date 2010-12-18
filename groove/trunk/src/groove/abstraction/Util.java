@@ -98,7 +98,7 @@ public final class Util {
      */
     @SuppressWarnings("unchecked")
     public static <N extends Node,E extends Edge> Set<E> getOutEdges(
-            Graph graph, N node, Label label) {
+            Graph<N,?,E> graph, N node, Label label) {
         Set<E> outEdges = new HashSet<E>();
         for (Edge edge : graph.outEdgeSet(node)) {
             if (edge.label().equals(label)) {
@@ -114,7 +114,7 @@ public final class Util {
      */
     @SuppressWarnings("unchecked")
     public static <N extends Node,E extends Edge> Set<E> getOutEdges(
-            Graph graph, Set<N> nodes, Label label) {
+            Graph<N,?,E> graph, Set<N> nodes, Label label) {
         Set<E> outEdges = new HashSet<E>();
         for (N node : nodes) {
             for (Edge edge : graph.outEdgeSet(node)) {
@@ -132,7 +132,7 @@ public final class Util {
      */
     @SuppressWarnings("unchecked")
     public static <N extends Node,E extends Edge> Set<E> getInEdges(
-            Graph graph, N node, Label label) {
+            Graph<N,?,E> graph, N node, Label label) {
         Set<E> inEdges = new HashSet<E>();
         for (Edge edge : graph.edgeSet(node)) {
             if (edge.target().equals(node) && edge.label().equals(label)) {
@@ -148,7 +148,7 @@ public final class Util {
      */
     @SuppressWarnings("unchecked")
     public static <N extends Node,E extends Edge> Set<E> getInEdges(
-            Graph graph, Set<N> nodes, Label label) {
+            Graph<N,?,E> graph, Set<N> nodes, Label label) {
         Set<E> inEdges = new HashSet<E>();
         for (N node : nodes) {
             for (Edge edge : graph.edgeSet(node)) {
@@ -162,7 +162,7 @@ public final class Util {
 
     /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
     public static <N extends Node,E extends Edge> Set<E> getIntersectEdges(
-            Graph graph, N src, N tgt, Label label) {
+            Graph<N,?,E> graph, N src, N tgt, Label label) {
         Set<E> outEdges = getOutEdges(graph, src, label);
         Set<E> inEdges = getInEdges(graph, tgt, label);
         return intersection(outEdges, inEdges);
@@ -170,7 +170,7 @@ public final class Util {
 
     /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
     public static <N extends Node,E extends Edge> Set<E> getIntersectEdges(
-            Graph graph, Set<N> srcs, N tgt, Label label) {
+            Graph<N,?,E> graph, Set<N> srcs, N tgt, Label label) {
         Set<E> outEdges = getOutEdges(graph, srcs, label);
         Set<E> inEdges = getInEdges(graph, tgt, label);
         return intersection(outEdges, inEdges);
@@ -178,7 +178,7 @@ public final class Util {
 
     /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
     public static <N extends Node,E extends Edge> Set<E> getIntersectEdges(
-            Graph graph, N src, Set<N> tgts, Label label) {
+            Graph<N,?,E> graph, N src, Set<N> tgts, Label label) {
         Set<E> outEdges = getOutEdges(graph, src, label);
         Set<E> inEdges = getInEdges(graph, tgts, label);
         return intersection(outEdges, inEdges);

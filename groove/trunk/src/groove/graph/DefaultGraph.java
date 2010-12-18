@@ -29,7 +29,8 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:51 $
  */
-public class DefaultGraph extends AbstractGraph<GraphCache> implements
+public class DefaultGraph extends
+        AbstractGraph<DefaultNode,DefaultLabel,DefaultEdge> implements
         Cloneable {
     /**
      * Constructs a prototype object of this class, to be used as a factory for
@@ -56,20 +57,10 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
      * @ensure result.equals(graph)
      */
     protected DefaultGraph(DefaultGraph graph) {
-        for (Map.Entry<Node,Set<Edge>> edgeEntry : graph.edgeMap.entrySet()) {
-            this.edgeMap.put(edgeEntry.getKey(),
-                new HashSet<Edge>(edgeEntry.getValue()));
+        for (Map.Entry<DefaultNode,Set<DefaultEdge>> edgeEntry : graph.edgeMap.entrySet()) {
+            this.edgeMap.put(edgeEntry.getKey(), new HashSet<DefaultEdge>(
+                edgeEntry.getValue()));
         }
-    }
-
-    /**
-     * Constructs a clone of a given Graph.
-     * @param graph the DefaultGraph to be cloned
-     * @require graph != null
-     * @ensure result.equals(graph)
-     */
-    protected DefaultGraph(Graph graph) {
-        addEdgeSet(graph.edgeSet());
     }
 
     @Override
@@ -79,24 +70,24 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
 
     @Override
     public boolean containsEdge(Edge edge) {
-        Set<Edge> edgeSet = this.edgeMap.get(edge.source());
+        Set<DefaultEdge> edgeSet = this.edgeMap.get(edge.source());
         return edgeSet != null && edgeSet.contains(edge);
     }
 
-    public Set<? extends Edge> edgeSet() {
-        Set<Edge> result = new HashSet<Edge>();
-        for (Map.Entry<Node,Set<Edge>> edgeEntry : this.edgeMap.entrySet()) {
+    public Set<? extends DefaultEdge> edgeSet() {
+        Set<DefaultEdge> result = new HashSet<DefaultEdge>();
+        for (Map.Entry<DefaultNode,Set<DefaultEdge>> edgeEntry : this.edgeMap.entrySet()) {
             result.addAll(edgeEntry.getValue());
         }
         return Collections.unmodifiableSet(result);
     }
 
     @Override
-    public Set<? extends Edge> outEdgeSet(Node node) {
+    public Set<? extends DefaultEdge> outEdgeSet(Node node) {
         return Collections.unmodifiableSet(this.edgeMap.get(node));
     }
 
-    public Set<? extends Node> nodeSet() {
+    public Set<? extends DefaultNode> nodeSet() {
         return Collections.unmodifiableSet(this.edgeMap.keySet());
     }
 
@@ -112,20 +103,20 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
 
     // ------------------------- COMMANDS ------------------------------
 
-    public boolean addNode(Node node) {
+    public boolean addNode(DefaultNode node) {
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
         boolean added = !containsNode(node);
         if (added) {
-            this.edgeMap.put(node, new HashSet<Edge>());
+            this.edgeMap.put(node, new HashSet<DefaultEdge>());
             fireAddNode(node);
         }
         return added;
     }
 
-    public boolean addEdgeWithoutCheck(Edge edge) {
+    public boolean addEdgeWithoutCheck(DefaultEdge edge) {
         assert isTypeCorrect(edge);
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
-        Set<Edge> sourceOutEdges = this.edgeMap.get(edge.source());
+        Set<DefaultEdge> sourceOutEdges = this.edgeMap.get(edge.source());
         boolean added = sourceOutEdges.add(edge);
         if (added) {
             fireAddEdge(edge);
@@ -133,10 +124,10 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
         return added;
     }
 
-    public boolean removeEdge(Edge edge) {
+    public boolean removeEdge(DefaultEdge edge) {
         assert !isFixed() : "Trying to remove " + edge
             + " from unmodifiable graph";
-        Set<Edge> outEdgeSet = this.edgeMap.get(edge.source());
+        Set<DefaultEdge> outEdgeSet = this.edgeMap.get(edge.source());
         boolean removed = outEdgeSet != null && outEdgeSet.remove(edge);
         if (removed) {
             fireRemoveEdge(edge);
@@ -146,20 +137,20 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
 
     /** Reimplementation to improve performance. */
     @Override
-    public boolean removeNode(Node node) {
+    public boolean removeNode(DefaultNode node) {
         assert !isFixed() : "Trying to remove " + node
             + " from unmodifiable graph";
         boolean result = false;
-        Set<Edge> outEdges = this.edgeMap.remove(node);
+        Set<DefaultEdge> outEdges = this.edgeMap.remove(node);
         if (outEdges != null) {
             result = true;
-            for (Edge outEdge : outEdges) {
+            for (DefaultEdge outEdge : outEdges) {
                 fireRemoveEdge(outEdge);
             }
-            for (Set<Edge> edgeSet : this.edgeMap.values()) {
-                Iterator<Edge> edgeIter = edgeSet.iterator();
+            for (Set<DefaultEdge> edgeSet : this.edgeMap.values()) {
+                Iterator<DefaultEdge> edgeIter = edgeSet.iterator();
                 while (edgeIter.hasNext()) {
-                    Edge edge = edgeIter.next();
+                    DefaultEdge edge = edgeIter.next();
                     if (edge.source().equals(node)
                         || edge.target().equals(node)) {
                         // remove and notify observers
@@ -173,11 +164,11 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
         return result;
     }
 
-    public boolean removeNodeWithoutCheck(Node node) {
+    public boolean removeNodeWithoutCheck(DefaultNode node) {
         assert !isFixed() : "Trying to remove " + node
             + " from unmodifiable graph";
         boolean result = false;
-        Set<Edge> outEdges = this.edgeMap.remove(node);
+        Set<DefaultEdge> outEdges = this.edgeMap.remove(node);
         if (outEdges != null) {
             result = true;
             fireRemoveNode(node);
@@ -185,10 +176,16 @@ public class DefaultGraph extends AbstractGraph<GraphCache> implements
         return result;
     }
 
+    @Override
+    public ElementFactory<DefaultNode,DefaultLabel,DefaultEdge> getFactory() {
+        return DefaultFactory.instance();
+    }
+
     /**
      * Map from the nodes of this graph to the corresponding sets of outgoing
      * edges.
-     * @invariant <tt>edgeMap: Node -> 2^Edge</tt>
+     * @invariant <tt>edgeMap: DefaultNode -> 2^DefaultEdge</tt>
      */
-    private final Map<Node,Set<Edge>> edgeMap = new HashMap<Node,Set<Edge>>();
+    private final Map<DefaultNode,Set<DefaultEdge>> edgeMap =
+        new HashMap<DefaultNode,Set<DefaultEdge>>();
 }

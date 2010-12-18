@@ -16,7 +16,7 @@
  */
 package groove.io;
 
-import groove.graph.Graph;
+import groove.graph.DefaultGraph;
 import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.aspect.AspectGraph;
@@ -149,7 +149,7 @@ public class Validator {
     }
 
     /** Validates a file supposedly containing a graph. */
-    static Graph validateGraph(File file) {
+    static DefaultGraph validateGraph(File file) {
         try {
             graphsValidated++;
             String name =
@@ -158,7 +158,7 @@ public class Validator {
             if (verbosity > GraphFileHandler.QUIET_MODE) {
                 System.out.print("* Validating " + name + " as a graph: ");
             }
-            Graph result = gxl.unmarshalGraph(file);
+            DefaultGraph result = gxl.unmarshalGraph(file);
             if (verbosity > GraphFileHandler.QUIET_MODE) {
                 System.out.println("OK");
             }
@@ -178,7 +178,7 @@ public class Validator {
     /** Validates a file supposedly containing a rule. */
     static void validateRule(File file) {
         rulesValidated++;
-        Graph graph = validateGraph(file);
+        DefaultGraph graph = validateGraph(file);
         if (graph == null) {
             // there was already an error in the graph format
             return;
@@ -228,5 +228,5 @@ public class Validator {
     /** The number of validation errors found. */
     static private int errorsFound;
     /** The GXL transformer used in validation. */
-    static private Xml<?> gxl = new DefaultGxl();
+    static private DefaultGxl gxl = new DefaultGxl();
 }

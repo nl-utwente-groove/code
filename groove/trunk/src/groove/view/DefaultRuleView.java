@@ -679,7 +679,8 @@ public class DefaultRuleView implements RuleView {
                     // by the correctness of the aspect graph we know that
                     // there is at most one outgoing edge, which is a parent
                     // edge and points to the parent level node
-                    Set<AspectEdge> outEdges = getView().outEdgeSet(node);
+                    Set<? extends AspectEdge> outEdges =
+                        getView().outEdgeSet(node);
                     if (outEdges.isEmpty()) {
                         if (NestingAspect.isForall(node)) {
                             parentLevel = this.topLevelIndex;
@@ -1405,12 +1406,12 @@ public class DefaultRuleView implements RuleView {
             }
             // create singleton cells for the nodes appearing fresh on this
             // level
-            for (RuleNode newNode : this.viewToLevelMap.nodeMap().keySet()) {
+            for (AspectNode newNode : this.viewToLevelMap.nodeMap().keySet()) {
                 // test if the node is new
                 if (!result.containsKey(newNode)) {
                     SortedSet<AspectNode> newCell = new TreeSet<AspectNode>();
-                    newCell.add((AspectNode) newNode);
-                    result.put((AspectNode) newNode, newCell);
+                    newCell.add(newNode);
+                    result.put(newNode, newCell);
                 }
             }
             // now merge nodes whenever there is a merger
@@ -2029,14 +2030,15 @@ public class DefaultRuleView implements RuleView {
     }
 
     /** Mapping from aspect graph elements to rule graph elements. */
-    public static class ViewToRuleMap extends ViewToModelMap<RuleNode,RuleEdge> {
+    public static class ViewToRuleMap extends
+            ViewToModelMap<RuleNode,RuleLabel,RuleEdge> {
         @Override
         public ViewToRuleMap newMap() {
             return new ViewToRuleMap();
         }
 
         @Override
-        public ElementFactory<RuleNode,?,RuleEdge> getFactory() {
+        public ElementFactory<RuleNode,RuleLabel,RuleEdge> getFactory() {
             return RuleFactory.INSTANCE;
         }
     }

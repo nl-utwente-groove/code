@@ -19,12 +19,10 @@ package groove.gui.jgraph;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
-import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
-import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
@@ -221,13 +219,14 @@ abstract public class JModel extends DefaultGraphModel {
      */
     public DefaultGraph toPlainGraph(Map<Element,JCell> elementMap) {
         DefaultGraph result = new DefaultGraph();
-        LayoutMap<Node,Edge> layoutMap = new LayoutMap<Node,Edge>();
-        Map<JVertex,Node> nodeMap = new HashMap<JVertex,Node>();
+        LayoutMap<DefaultNode,DefaultEdge> layoutMap =
+            new LayoutMap<DefaultNode,DefaultEdge>();
+        Map<JVertex,DefaultNode> nodeMap = new HashMap<JVertex,DefaultNode>();
 
         // Create nodes
         for (Object root : getRoots()) {
             if (root instanceof JVertex) {
-                Node node = addFreshNode(result, ((JVertex) root));
+                DefaultNode node = addFreshNode(result, ((JVertex) root));
                 nodeMap.put((JVertex) root, node);
                 elementMap.put(node, (JVertex) root);
                 layoutMap.putNode(node, ((JVertex) root).getAttributes());
@@ -241,8 +240,8 @@ abstract public class JModel extends DefaultGraphModel {
         for (Object root : getRoots()) {
             if (root instanceof JEdge) {
                 JEdge jEdge = (JEdge) root;
-                Node source = nodeMap.get(jEdge.getSourceVertex());
-                Node target = nodeMap.get(jEdge.getTargetVertex());
+                DefaultNode source = nodeMap.get(jEdge.getSourceVertex());
+                DefaultNode target = nodeMap.get(jEdge.getTargetVertex());
                 assert target != null : "Edge with empty target: " + root;
                 assert source != null : "Edge with empty source: " + root;
                 AttributeMap edgeAttr = jEdge.getAttributes();
@@ -251,7 +250,7 @@ abstract public class JModel extends DefaultGraphModel {
                     JEdgeLayout.newInstance(edgeAttr).isDefault();
                 // parse edge text into label set
                 for (String label : jEdge.getPlainLabels()) {
-                    Edge edge = result.addEdge(source, label, target);
+                    DefaultEdge edge = result.addEdge(source, label, target);
                     // add layout information if there is anything to be noted
                     // about the edge
                     if (!attrIsDefault) {
@@ -271,7 +270,7 @@ abstract public class JModel extends DefaultGraphModel {
      * Callback factory method to add a fresh node to a given graph, reflecting
      * a JVertex. Subclasses may use this to determine the node number.
      */
-    protected Node addFreshNode(groove.graph.Graph result, JVertex root) {
+    protected DefaultNode addFreshNode(DefaultGraph result, JVertex root) {
         return result.addNode(root.getNumber());
     }
 

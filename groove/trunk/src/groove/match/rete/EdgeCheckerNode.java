@@ -20,7 +20,6 @@ import groove.graph.DefaultEdge;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.Node;
 import groove.util.Reporter;
 
 /**
@@ -51,8 +50,8 @@ public class EdgeCheckerNode extends ReteNetworkNode {
      */
     public EdgeCheckerNode(ReteNetwork network, Edge e) {
         super(network);
-        Node n1 = DefaultNode.createNode();
-        Node n2 =
+        DefaultNode n1 = DefaultNode.createNode();
+        DefaultNode n2 =
             (e.source().equals(e.target())) ? n1 : DefaultNode.createNode();
         this.pattern[0] = DefaultEdge.createEdge(n1, e.label().text(), n2);
         //This is just to fill up the lookup table

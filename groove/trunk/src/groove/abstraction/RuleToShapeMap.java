@@ -22,7 +22,7 @@ import groove.trans.RuleToHostMap;
 public class RuleToShapeMap extends RuleToHostMap {
     @Override
     public ShapeFactory getFactory() {
-        return ShapeFactory.INSTANCE;
+        return ShapeFactory.instance();
     }
 
     @Override

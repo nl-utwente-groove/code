@@ -27,7 +27,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.lts.LTSAdapter;
-import groove.lts.State;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.view.StoredGrammarView;
@@ -246,12 +245,12 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
      *        should be emphasised
      * @return message describing the size of the counterexample
      */
-    protected String emphasiseStates(Set<State> counterExamples,
+    protected String emphasiseStates(Set<GraphState> counterExamples,
             boolean allStates) {
         if (!allStates) {
-            State initial = getGTS().startState();
+            GraphState initial = getGTS().startState();
             boolean initialIsCounterexample = counterExamples.contains(initial);
-            counterExamples = new HashSet<State>();
+            counterExamples = new HashSet<GraphState>();
             if (initialIsCounterexample) {
                 counterExamples.add(initial);
             }
@@ -271,7 +270,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
             getSimulator().setGraphPanel(this);
         }
         Set<JCell> jCells = new HashSet<JCell>();
-        for (State counterExample : counterExamples) {
+        for (GraphState counterExample : counterExamples) {
             jCells.add(getJModel().getJCell(counterExample));
         }
         getJModel().setEmphasized(jCells);
@@ -340,7 +339,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
          * If a state is closed, its background should be reset.
          */
         @Override
-        public void closeUpdate(LTS graph, GraphState closed) {
+        public void closeUpdate(LTS lts, GraphState closed) {
             JCell jCell = getJModel().getJCell(closed);
             // during automatic generation, we do not always have vertices for
             // all states

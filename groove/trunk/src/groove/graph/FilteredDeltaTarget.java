@@ -18,6 +18,8 @@ package groove.graph;
 
 import static groove.graph.DeltaApplier.EDGES_ONLY;
 import static groove.graph.DeltaApplier.NODES_ONLY;
+import groove.trans.HostEdge;
+import groove.trans.HostNode;
 
 /**
  * A delta target that passes on calls of <code>add...</code> and
@@ -39,7 +41,7 @@ public class FilteredDeltaTarget implements DeltaTarget {
         this.mode = mode;
     }
 
-    public boolean addEdge(Edge elem) {
+    public boolean addEdge(HostEdge elem) {
         if (getMode() == NODES_ONLY) {
             return false;
         } else {
@@ -47,7 +49,7 @@ public class FilteredDeltaTarget implements DeltaTarget {
         }
     }
 
-    public boolean addNode(Node elem) {
+    public boolean addNode(HostNode elem) {
         if (getMode() == EDGES_ONLY) {
             return false;
         } else {
@@ -55,7 +57,7 @@ public class FilteredDeltaTarget implements DeltaTarget {
         }
     }
 
-    public boolean removeEdge(Edge elem) {
+    public boolean removeEdge(HostEdge elem) {
         if (getMode() == NODES_ONLY) {
             return false;
         } else {
@@ -63,7 +65,7 @@ public class FilteredDeltaTarget implements DeltaTarget {
         }
     }
 
-    public boolean removeNode(Node elem) {
+    public boolean removeNode(HostNode elem) {
         if (getMode() == EDGES_ONLY) {
             return false;
         } else {

@@ -4,13 +4,14 @@
 package groove.util;
 
 import groove.algebra.StringAlgebra;
-import groove.graph.DefaultGraph;
 import groove.graph.Label;
-import groove.graph.Node;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ValueNode;
+import groove.trans.DefaultHostGraph;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.view.FormatException;
 
 import java.util.BitSet;
@@ -70,7 +71,7 @@ public class AntlrGrapher {
         result.addEdge(topNode, FIRST_FLAG, topNode);
         result.addEdge(topNode, LAST_FLAG, topNode);
         result.addEdge(topNode, LEAF_FLAG, topNode);
-        Node stringNode = result.addNode(STRING_TYPE);
+        TypeNode stringNode = result.addNode(STRING_TYPE);
         for (int i = 0; i < this.tokens.length; i++) {
             String token = this.tokens[i];
             if (ExprParser.isIdentifier(token)) {
@@ -91,9 +92,10 @@ public class AntlrGrapher {
     }
 
     /** Returns the graph representing a given AST. */
-    public DefaultGraph getGraph(CommonTree tree) {
-        DefaultGraph result = new DefaultGraph();
-        Map<CommonTree,Node> treeNodeMap = new HashMap<CommonTree,Node>();
+    public HostGraph getGraph(CommonTree tree) {
+        HostGraph result = new DefaultHostGraph();
+        Map<CommonTree,HostNode> treeNodeMap =
+            new HashMap<CommonTree,HostNode>();
         treeNodeMap.put(tree, createNode(result, tree));
         Set<CommonTree> pool = new HashSet<CommonTree>();
         pool.add(tree);
@@ -101,11 +103,11 @@ public class AntlrGrapher {
             CommonTree next = pool.iterator().next();
             assert next != null;
             pool.remove(next);
-            Node nextNode = treeNodeMap.get(next);
-            Node prevChild = null;
+            HostNode nextNode = treeNodeMap.get(next);
+            HostNode prevChild = null;
             for (int i = 0; i < next.getChildCount(); i++) {
                 CommonTree child = (CommonTree) next.getChild(i);
-                Node childNode = createNode(result, child);
+                HostNode childNode = createNode(result, child);
                 treeNodeMap.put(child, childNode);
                 result.addEdge(nextNode, CHILD_LABEL, childNode);
                 if (prevChild == null) {
@@ -125,8 +127,8 @@ public class AntlrGrapher {
         return result;
     }
 
-    private Node createNode(DefaultGraph graph, CommonTree tree) {
-        Node result = graph.addNode();
+    private HostNode createNode(HostGraph graph, CommonTree tree) {
+        HostNode result = graph.addNode();
         int tokenType = tree.getType();
         graph.addEdge(result,
             TypeLabel.createLabel(this.tokens[tokenType], Label.NODE_TYPE),

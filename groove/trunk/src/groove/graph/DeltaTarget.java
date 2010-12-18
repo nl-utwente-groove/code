@@ -16,19 +16,22 @@
  */
 package groove.graph;
 
+import groove.trans.HostEdge;
+import groove.trans.HostNode;
+
 /**
  * Command interface to deal with graph changes.
  */
 public interface DeltaTarget {
     /** Callback method invoked to indicate that a node is to be added. */
-    public boolean addNode(Node elem);
+    public boolean addNode(HostNode elem);
 
     /** Callback method invoked to indicate that a node is to be removed. */
-    public boolean removeNode(Node elem);
+    public boolean removeNode(HostNode elem);
 
     /** Callback method invoked to indicate that an edge is to be added. */
-    public boolean addEdge(Edge elem);
+    public boolean addEdge(HostEdge elem);
 
     /** Callback method invoked to indicate that an edge is to be removed. */
-    public boolean removeEdge(Edge elem);
+    public boolean removeEdge(HostEdge elem);
 }

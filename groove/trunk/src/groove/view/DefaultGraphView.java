@@ -328,7 +328,7 @@ public class DefaultGraphView implements GraphView {
                 viewEdge);
         }
         HostEdge modelEdge =
-            model.addEdge(modelSource, modelLabel, modelTarget);
+            model.addEdge(modelSource, (TypeLabel) modelLabel, modelTarget);
         this.labelSet.add((TypeLabel) modelLabel);
         elementMap.putEdge(viewEdge, modelEdge);
     }
@@ -385,10 +385,11 @@ public class DefaultGraphView implements GraphView {
     private TypeGraph type;
 
     /** Mapping from aspect graph to type graph. */
-    public static class ViewToHostMap extends ViewToModelMap<HostNode,HostEdge> {
+    public static class ViewToHostMap extends
+            ViewToModelMap<HostNode,TypeLabel,HostEdge> {
         @Override
-        public ElementFactory<HostNode,?,HostEdge> getFactory() {
-            return HostFactory.INSTANCE;
+        public ElementFactory<HostNode,TypeLabel,HostEdge> getFactory() {
+            return HostFactory.instance();
         }
 
         @Override

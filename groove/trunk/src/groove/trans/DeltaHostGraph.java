@@ -23,7 +23,6 @@ import groove.graph.DeltaStore;
 import groove.graph.DeltaTarget;
 import groove.graph.Edge;
 import groove.graph.FrozenDeltaApplier;
-import groove.graph.GraphCache;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
@@ -46,8 +45,8 @@ import java.util.Stack;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DeltaHostGraph extends AbstractGraph<GraphCache> implements
-        HostGraph {
+public class DeltaHostGraph extends AbstractGraph<HostNode,TypeLabel,HostEdge>
+        implements HostGraph {
     /**
      * Constructs a graph with a given basis and delta The basis may be
      * <code>null</code>, meaning that it is the empty graph.
@@ -85,10 +84,10 @@ public class DeltaHostGraph extends AbstractGraph<GraphCache> implements
     }
 
     /**
-     * Since the result should be modifiable, returns a {@link DefaultGraph}.
+     * Since the result should be modifiable, returns a {@link DefaultHostGraph}.
      */
     @Override
-    public HostGraph clone() {
+    public DefaultHostGraph clone() {
         return new DefaultHostGraph(this);
     }
 
@@ -123,7 +122,7 @@ public class DeltaHostGraph extends AbstractGraph<GraphCache> implements
     }
 
     @Override
-    public HostEdge addEdge(Node source, Label label, Node target) {
+    public HostEdge addEdge(HostNode source, TypeLabel label, HostNode target) {
         throw new UnsupportedOperationException();
     }
 
@@ -131,7 +130,7 @@ public class DeltaHostGraph extends AbstractGraph<GraphCache> implements
      * Since the graph is fixed, this method always throws an exception.
      * @throws UnsupportedOperationException always.
      */
-    public boolean addNode(Node node) {
+    public boolean addNode(HostNode node) {
         throw new UnsupportedOperationException();
     }
 
@@ -139,7 +138,7 @@ public class DeltaHostGraph extends AbstractGraph<GraphCache> implements
      * Since the graph is fixed, this method always throws an exception.
      * @throws UnsupportedOperationException always.
      */
-    public boolean removeEdge(Edge edge) {
+    public boolean removeEdge(HostEdge edge) {
         throw new UnsupportedOperationException();
     }
 
@@ -147,7 +146,7 @@ public class DeltaHostGraph extends AbstractGraph<GraphCache> implements
      * Since the graph is fixed, this method always throws an exception.
      * @throws UnsupportedOperationException always.
      */
-    public boolean addEdgeWithoutCheck(Edge edge) {
+    public boolean addEdgeWithoutCheck(HostEdge edge) {
         throw new UnsupportedOperationException();
     }
 
@@ -155,7 +154,7 @@ public class DeltaHostGraph extends AbstractGraph<GraphCache> implements
      * Since the graph is fixed, this method always throws an exception.
      * @throws UnsupportedOperationException always.
      */
-    public boolean removeNodeWithoutCheck(Node node) {
+    public boolean removeNodeWithoutCheck(HostNode node) {
         throw new UnsupportedOperationException();
     }
 
@@ -413,7 +412,7 @@ public class DeltaHostGraph extends AbstractGraph<GraphCache> implements
 
     @Override
     public HostFactory getFactory() {
-        return HostFactory.INSTANCE;
+        return HostFactory.instance();
     }
 
     /** The fixed (possibly <code>null</code> basis of this graph. */
@@ -497,23 +496,21 @@ public class DeltaHostGraph extends AbstractGraph<GraphCache> implements
 
         /** Adds the node to the node set and the node-edge map. */
         @Override
-        public boolean addNode(Node node) {
-            Set<HostEdge> edges =
-                addKeyToMap(this.nodeEdgeMap, (HostNode) node);
+        public boolean addNode(HostNode node) {
+            Set<HostEdge> edges = addKeyToMap(this.nodeEdgeMap, node);
             assert edges == null;
-            addKeyToMap(this.nodeInEdgeMap, (HostNode) node);
-            addKeyToMap(this.nodeOutEdgeMap, (HostNode) node);
+            addKeyToMap(this.nodeInEdgeMap, node);
+            addKeyToMap(this.nodeOutEdgeMap, node);
             return true;
         }
 
         /** Removes the node from the node set and the node-edge map. */
         @Override
-        public boolean removeNode(Node elem) {
-            Set<HostEdge> edges =
-                removeKeyFromMap(this.nodeEdgeMap, (HostNode) elem);
+        public boolean removeNode(HostNode node) {
+            Set<HostEdge> edges = removeKeyFromMap(this.nodeEdgeMap, node);
             assert edges.isEmpty();
-            removeKeyFromMap(this.nodeOutEdgeMap, (HostNode) elem);
-            removeKeyFromMap(this.nodeInEdgeMap, (HostNode) elem);
+            removeKeyFromMap(this.nodeOutEdgeMap, node);
+            removeKeyFromMap(this.nodeInEdgeMap, node);
             return true;
         }
 
@@ -548,21 +545,21 @@ public class DeltaHostGraph extends AbstractGraph<GraphCache> implements
          * A second parameter determines if the set sets
          * in the map should be copied upon modification.
          */
-        final boolean removeEdge(Edge elem, boolean refreshSource,
+        final boolean removeEdge(HostEdge edge, boolean refreshSource,
                 boolean refreshTarget, boolean refreshLabel) {
-            boolean result = this.edgeSet.remove(elem);
+            boolean result = this.edgeSet.remove(edge);
             assert result;
             // adapt node-edge map
-            HostNode source = ((HostEdge) elem).source();
-            HostNode target = ((HostEdge) elem).target();
-            removeEdgeFromMap(this.nodeEdgeMap, source, elem, refreshSource);
+            HostNode source = edge.source();
+            HostNode target = edge.target();
+            removeEdgeFromMap(this.nodeEdgeMap, source, edge, refreshSource);
             if (source != target) {
-                removeEdgeFromMap(this.nodeEdgeMap, target, elem, refreshTarget);
+                removeEdgeFromMap(this.nodeEdgeMap, target, edge, refreshTarget);
             }
-            removeEdgeFromMap(this.nodeOutEdgeMap, source, elem, refreshSource);
-            removeEdgeFromMap(this.nodeInEdgeMap, target, elem, refreshTarget);
-            removeEdgeFromMap(this.labelEdgeMap, ((HostEdge) elem).label(),
-                elem, refreshLabel);
+            removeEdgeFromMap(this.nodeOutEdgeMap, source, edge, refreshSource);
+            removeEdgeFromMap(this.nodeInEdgeMap, target, edge, refreshTarget);
+            removeEdgeFromMap(this.labelEdgeMap, edge.label(), edge,
+                refreshLabel);
             return result;
         }
 
@@ -661,7 +658,7 @@ public class DeltaHostGraph extends AbstractGraph<GraphCache> implements
          * Adds the edge to the edge set, the node-edge map (if it is set), and
          * the label-edge maps (if it is set).
          */
-        public boolean addEdge(Edge elem) {
+        public boolean addEdge(HostEdge elem) {
             return super.addEdge(elem, false, false, false);
         }
 
@@ -669,7 +666,7 @@ public class DeltaHostGraph extends AbstractGraph<GraphCache> implements
          * Removes the edge from the edge set, the node-edge map (if it is set),
          * and the label-edge maps (if it is set).
          */
-        public boolean removeEdge(Edge elem) {
+        public boolean removeEdge(HostEdge elem) {
             return super.removeEdge(elem, false, false, false);
         }
 
@@ -721,15 +718,15 @@ public class DeltaHostGraph extends AbstractGraph<GraphCache> implements
          * the label-edge maps (if it is set).
          */
         @Override
-        public boolean addEdge(Edge elem) {
-            HostNode source = ((HostEdge) elem).source();
-            HostNode target = ((HostEdge) elem).target();
+        public boolean addEdge(HostEdge elem) {
+            HostNode source = (elem).source();
+            HostNode target = (elem).target();
             boolean refreshSource = this.freshNodeKeys.add(source);
             boolean refreshTarget =
                 source != target && this.freshNodeKeys.add(target);
             boolean refreshLabel =
                 this.freshLabelKeys != null
-                    && this.freshLabelKeys.add(((HostEdge) elem).label());
+                    && this.freshLabelKeys.add((elem).label());
             return super.addEdge(elem, refreshSource, refreshTarget,
                 refreshLabel);
         }
@@ -739,15 +736,14 @@ public class DeltaHostGraph extends AbstractGraph<GraphCache> implements
          * and the label-edge maps (if it is set).
          */
         @Override
-        public boolean removeEdge(Edge elem) {
-            HostNode source = ((HostEdge) elem).source();
-            HostNode target = ((HostEdge) elem).target();
+        public boolean removeEdge(HostEdge edge) {
+            HostNode source = edge.source();
+            HostNode target = edge.target();
             boolean refreshSource = this.freshNodeKeys.add(source);
             boolean refreshTarget =
                 source != target && this.freshNodeKeys.add(target);
-            boolean refreshLabel =
-                this.freshLabelKeys.add(((HostEdge) elem).label());
-            return super.removeEdge(elem, refreshSource, refreshTarget,
+            boolean refreshLabel = this.freshLabelKeys.add(edge.label());
+            return super.removeEdge(edge, refreshSource, refreshTarget,
                 refreshLabel);
         }
 

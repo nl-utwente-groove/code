@@ -20,6 +20,7 @@ import groove.control.CtrlCall;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.graph.Element;
+import groove.graph.Graph;
 import groove.trans.HostNode;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
@@ -286,7 +287,7 @@ abstract public class AbstractGraphState extends
      * Returns a name for this state, rather than a full description. To get the
      * full description, use <tt>DefaultGraph.toString(Graph)</tt>.
      * 
-     * @see groove.graph.AbstractGraph#toString(groove.graph.GraphShape)
+     * @see groove.graph.AbstractGraph#toString(Graph)
      */
     @Override
     public String toString() {

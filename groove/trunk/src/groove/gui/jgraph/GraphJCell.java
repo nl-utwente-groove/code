@@ -16,38 +16,17 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.Edge;
+import groove.graph.Node;
 
 /**
  * Extension of {@link JCell} that recognises that cells have underlying edges.
  * @author Arend Rensink
  * @version $Revision$
  */
-interface GraphJCell extends JCell {
-    // /**
-    // * Callback method from {@link #getLines()} to obtain the (html-formatted)
-    // * text to be displayed for a given edge.
-    // */
-    // StringBuilder getLine(Edge edge);
-
-    //
-    // /**
-    // * Retrieves the set of labels to which an edge refers. For default
-    // labels,
-    // * this is a singleton set consisting only of the label itself; for
-    // regular
-    // * expression labels it is the set of labels occurring in the transition.
-    // * Callback method from {@link #getLine(Edge)}.
-    // */
-    // Label getLabel(Edge edge);
-    //
-    // /**
-    // * Returns the label of the edge as to be displayed in an edit view.
-    // * Callback method from {@link #getPlainLabels()}.
-    // */
-    // String getPlainLabel(Edge edge);
-
+interface GraphJCell<N extends Node,E extends Edge> extends JCell {
     /**
      * Specialises the return type.
      */
-    public EdgeContent getUserObject();
+    public EdgeContent<E> getUserObject();
 }

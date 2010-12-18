@@ -16,7 +16,7 @@
  */
 package groove.explore.result;
 
-import groove.graph.Label;
+import groove.graph.TypeLabel;
 import groove.lts.GraphState;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
@@ -32,13 +32,14 @@ import java.util.Set;
  * 
  * @author Iovka Boneva
  */
-public class EdgeBoundCondition extends ExploreCondition<Map<Label,Integer>> {
+public class EdgeBoundCondition extends
+        ExploreCondition<Map<TypeLabel,Integer>> {
 
     @Override
     public boolean isSatisfied(GraphState state) {
         boolean result = true;
         HostGraph g = state.getGraph();
-        for (Map.Entry<Label,Integer> entry : this.condition.entrySet()) {
+        for (Map.Entry<TypeLabel,Integer> entry : this.condition.entrySet()) {
             Set<? extends HostEdge> labelSet = g.labelEdgeSet(entry.getKey());
             if (labelSet != null) {
                 result = labelSet.size() <= entry.getValue();

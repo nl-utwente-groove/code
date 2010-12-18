@@ -24,11 +24,6 @@ import groove.view.FormatException;
 import groove.view.aspect.AspectValue;
 import groove.view.aspect.RuleAspect;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * Labels encapsulating node or edge types.
  * These are the labels that occur in host graphs.
@@ -39,18 +34,26 @@ public final class TypeLabel extends AbstractLabel {
     /**
      * Constructs a standard implementation of Label on the basis of a given
      * text index. For internal purposes only.
-     * @param index the index of the label text
+     * @param text the label text
      * @param kind indicator of the type of label (normal, node type or flag).
      *        The value is one of {@link Label#NODE_TYPE}, {@link Label#FLAG} 
      *        or {@link Label#BINARY}.
+     * @param index the index of the label text
      */
-    private TypeLabel(char index, int kind) {
-        this.index = index;
+    TypeLabel(String text, int kind, int index) {
+        this.text = text;
         this.kind = kind;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        boolean result = this == obj;
+        assert result == super.equals(obj);
+        return result;
+    }
+
     public String text() {
-        return getText(this.index);
+        return this.text;
     }
 
     @Override
@@ -64,11 +67,8 @@ public final class TypeLabel extends AbstractLabel {
             && AlgebraRegister.getSignatureNames().contains(text());
     }
 
-    /**
-     * Index of the text making up this label.
-     * @invariant <tt>text != null</tt>
-     */
-    private final char index;
+    /** The label text. */
+    private final String text;
     /** The type of label (normal, node type or flag). */
     private final int kind;
 
@@ -80,7 +80,7 @@ public final class TypeLabel extends AbstractLabel {
      * @return an existing or new label with the given text; non-null
      */
     public static TypeLabel createLabel(String text) {
-        return createLabel(text, BINARY);
+        return factory.createLabel(text, BINARY);
     }
 
     /**
@@ -117,8 +117,7 @@ public final class TypeLabel extends AbstractLabel {
      * @see #getKind()
      */
     public static TypeLabel createLabel(String text, int kind) {
-        assert text != null : "Label text of default label should not be null";
-        return getLabel(newLabelIndex(text, kind));
+        return factory.createLabel(text, kind);
     }
 
     /**
@@ -129,28 +128,7 @@ public final class TypeLabel extends AbstractLabel {
      * @return a label with label type determined by the prefix
      */
     public static TypeLabel createTypedLabel(String prefixedText) {
-        int labelType = BINARY;
-        if (prefixedText.startsWith(getPrefix(NODE_TYPE))) {
-            labelType = NODE_TYPE;
-        } else if (prefixedText.startsWith(getPrefix(FLAG))) {
-            labelType = FLAG;
-        }
-        String actualText =
-            prefixedText.substring(getPrefix(labelType).length());
-        return createLabel(actualText, labelType);
-    }
-
-    /**
-     * Generates a previously non-existent label. The label generated is of the
-     * form "L"+index, where the index increases for every next fresh label.
-     */
-    public static TypeLabel createFreshLabel() {
-        String text;
-        do {
-            freshLabelIndex++;
-            text = "L" + freshLabelIndex;
-        } while (labelIndex(text, BINARY) < Character.MAX_VALUE);
-        return createLabel(text);
+        return factory.createLabel(prefixedText);
     }
 
     /**
@@ -158,27 +136,7 @@ public final class TypeLabel extends AbstractLabel {
      * @return Number of labels created
      */
     public static int getLabelCount() {
-        return labelList.size();
-    }
-
-    /**
-     * Returns the text at a certain index in the global label list.
-     * @param index the index of the requested label text
-     * @return the label text at <tt>textIndex</tt>
-     * @require <tt>index</tt> is a valid label index
-     */
-    static private String getText(char index) {
-        return textList.get(index);
-    }
-
-    /**
-     * Returns the label at a certain index in the global label list.
-     * @param index the index of the requested label text
-     * @return the label at <tt>textIndex</tt>
-     * @require <tt>index</tt> is a valid label index
-     */
-    static private TypeLabel getLabel(char index) {
-        return labelList.get(index);
+        return factory.getLabelCount();
     }
 
     /**
@@ -228,59 +186,6 @@ public final class TypeLabel extends AbstractLabel {
     /** Creates a data type label for a given algebra. */
     public static TypeLabel createDataType(Algebra<?> algebra) {
         return createLabel(AlgebraRegister.getSignatureName(algebra), NODE_TYPE);
-    }
-
-    /**
-     * Returns the index of a certain label text, if it is in the list. Returns
-     * a special value if the text is not in the list.
-     * @param text the label text being looked up
-     * @param kind the kind of label to be looked up or created
-     * @return the index of <tt>text</tt>, if it is the list;
-     *         <tt>Character.MAX_VALUE</tt> otherwise.
-     */
-    static private char labelIndex(String text, int kind) {
-        Character index = getIndexMap(kind).get(text);
-        if (index == null) {
-            return Character.MAX_VALUE;
-        } else {
-            return index.charValue();
-        }
-    }
-
-    /**
-     * Returns an index for a certain label text, creating a new entry if
-     * required.
-     * @param text the label text being looked up
-     * @param kind the kind of label to be looked up or created
-     * @return a valid index for <tt>text</tt>
-     * @require <tt>text != null</tt>
-     * @ensure <tt>labelText(result).equals(text)</tt>
-     */
-    static private char newLabelIndex(String text, int kind) {
-        Character index = getIndexMap(kind).get(text);
-        if (index == null) {
-            char result = (char) textList.size();
-            textList.add(text);
-            labelList.add(new TypeLabel(result, kind));
-            getIndexMap(kind).put(text, Character.valueOf(result));
-            return result;
-        } else {
-            return index.charValue();
-        }
-    }
-
-    /**
-     * Returns the appropriate index map for a given label kind.
-     */
-    static private Map<String,Character> getIndexMap(int kind) {
-        switch (kind) {
-        case NODE_TYPE:
-            return nodeTypeIndexMap;
-        case FLAG:
-            return flagIndexMap;
-        default:
-            return standardIndexMap;
-        }
     }
 
     /**
@@ -353,34 +258,7 @@ public final class TypeLabel extends AbstractLabel {
         return kindDescriptors[labelKind];
     }
 
-    /**
-     * The internal translation table from label indices to strings.
-     */
-    static private final List<String> textList = new ArrayList<String>();
-    /**
-     * The internal translation table from label indices to labels.
-     */
-    static private final List<TypeLabel> labelList = new ArrayList<TypeLabel>();
-    /**
-     * The internal translation table from strings to standard (non-node type)
-     * label indices.
-     */
-    static private final Map<String,Character> standardIndexMap =
-        new HashMap<String,Character>();
-    /**
-     * The internal translation table from strings to node type label indices.
-     */
-    static private final Map<String,Character> nodeTypeIndexMap =
-        new HashMap<String,Character>();
-    /**
-     * The internal translation table from strings to flag label indices.
-     */
-    static private final Map<String,Character> flagIndexMap =
-        new HashMap<String,Character>();
-
-    /** Counter to support the generation of fresh labels. */
-    static private int freshLabelIndex;
-
+    static private final TypeFactory factory = TypeFactory.INSTANCE;
     /** Separator between label kind prefix and label text. */
     static public final char KIND_SEPARATOR = ':';
     /** Prefix indicating that a label is a node type. */

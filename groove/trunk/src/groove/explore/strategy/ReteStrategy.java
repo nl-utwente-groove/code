@@ -175,7 +175,7 @@ public class ReteStrategy extends AbstractStrategy {
     private class ExploreListener extends LTSAdapter {
         @Override
         public void addUpdate(LTS lts, GraphState state) {
-            ReteStrategy.this.newStates.add((GraphState) state);
+            ReteStrategy.this.newStates.add(state);
         }
     }
 

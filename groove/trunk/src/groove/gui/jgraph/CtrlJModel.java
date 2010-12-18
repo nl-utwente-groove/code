@@ -20,8 +20,6 @@ import groove.control.CtrlAut;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.control.CtrlVar;
-import groove.graph.Edge;
-import groove.graph.Node;
 import groove.gui.Options;
 import groove.lts.GraphTransition;
 import groove.util.Converter;
@@ -38,7 +36,7 @@ import org.jgraph.graph.AttributeMap;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class CtrlJModel extends GraphJModel {
+public class CtrlJModel extends GraphJModel<CtrlState,CtrlTransition> {
 
     /**
      * The active state of the LTS. Is null if there is no active state.
@@ -136,18 +134,16 @@ public class CtrlJModel extends GraphJModel {
     /**
      * This implementation returns a {@link CtrlJModel.TransitionJEdge}.
      */
-
     @Override
-    protected TransitionJEdge createJEdge(Edge edge) {
-        assert edge instanceof CtrlTransition;
-        return new TransitionJEdge(this, (CtrlTransition) edge);
+    protected TransitionJEdge createJEdge(CtrlTransition edge) {
+        return new TransitionJEdge(this, edge);
     }
 
     /**
      * This implementation returns a {@link CtrlJModel.StateJVertex}.
      */
     @Override
-    protected StateJVertex createJVertex(Node node) {
+    protected StateJVertex createJVertex(CtrlState node) {
         return new StateJVertex(this, node);
     }
 
@@ -161,9 +157,8 @@ public class CtrlJModel extends GraphJModel {
      * @see JAttr#LTS_NODE_ACTIVE_CHANGE
      */
     @Override
-    protected AttributeMap createJVertexAttr(Node node) {
+    protected AttributeMap createJVertexAttr(CtrlState state) {
         AttributeMap result;
-        CtrlState state = (CtrlState) node;
         if (state.equals(getGraph().getStart())) {
             result = JAttr.CONTROL_START_NODE_ATTR.clone();
         } else if (state.equals(getGraph().getFinal())) {
@@ -182,10 +177,10 @@ public class CtrlJModel extends GraphJModel {
      */
     @Override
     protected void modifyJEdgeAttr(AttributeMap result,
-            Set<? extends Edge> edgeSet) {
+            Set<CtrlTransition> edgeSet) {
         super.modifyJEdgeAttr(result, edgeSet);
         // get the first node
-        CtrlTransition t = (CtrlTransition) edgeSet.iterator().next();
+        CtrlTransition t = edgeSet.iterator().next();
 
         if (!t.label().getGuard().isEmpty()) {
             result.applyMap(JAttr.CONTROL_FAILURE_EDGE_ATTR);
@@ -199,18 +194,13 @@ public class CtrlJModel extends GraphJModel {
      * @author Tom Staijen
      * @version $Revision $
      */
-    public class TransitionJEdge extends GraphJEdge {
+    public class TransitionJEdge extends GraphJEdge<CtrlState,CtrlTransition> {
         /**
          * Creates a new instance from a given edge (required to be a
          * {@link GraphTransition}).
          */
         TransitionJEdge(CtrlJModel jModel, CtrlTransition edge) {
             super(jModel, edge);
-        }
-
-        @Override
-        public CtrlTransition getEdge() {
-            return (CtrlTransition) super.getEdge();
         }
 
         @Override
@@ -246,12 +236,13 @@ public class CtrlJModel extends GraphJModel {
      * @author Tom Staijen
      * @version $Revision $
      */
-    static public class StateJVertex extends GraphJVertex {
+    static public class StateJVertex extends
+            GraphJVertex<CtrlState,CtrlTransition> {
         /**
          * Creates a new instance for a given node (required to be a
          * {@link CtrlState}) in an LTS model.
          */
-        StateJVertex(CtrlJModel jModel, Node node) {
+        StateJVertex(CtrlJModel jModel, CtrlState node) {
             super(jModel, node, false);
         }
 
@@ -261,7 +252,7 @@ public class CtrlJModel extends GraphJModel {
         @Override
         public java.util.List<StringBuilder> getLines() {
             List<StringBuilder> result = super.getLines();
-            List<CtrlVar> boundVars = ((CtrlState) getNode()).getBoundVars();
+            List<CtrlVar> boundVars = getNode().getBoundVars();
             if (boundVars.size() > 0) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(boundVars.toString());

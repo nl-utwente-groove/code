@@ -173,7 +173,7 @@ public class JVertexView extends VertexView {
      */
     private int getVertexShape() {
         if (getCell() instanceof GraphJVertex) {
-            Node actualNode = ((GraphJVertex) getCell()).getActualNode();
+            Node actualNode = ((GraphJVertex<?,?>) getCell()).getActualNode();
             if (actualNode instanceof VariableNode) {
                 return ELLIPSE_SHAPE;
             } else if (actualNode instanceof ProductNode) {

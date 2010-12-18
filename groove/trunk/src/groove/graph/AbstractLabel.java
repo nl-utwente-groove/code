@@ -130,6 +130,11 @@ public abstract class AbstractLabel implements Cloneable, Label {
 
     private int hashCode;
 
+    /** Tests if a label kind is valid. */
+    public static boolean isValidKind(int kind) {
+        return kind == BINARY || kind == NODE_TYPE || kind == FLAG;
+    }
+
     /** Mask to distinguish (the hash code of) node type labels. */
     static private final int NODE_TYPE_MASK = 0xAAAA;
     /** Mask to distinguish (the hash code of) flag labels. */

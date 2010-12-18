@@ -16,18 +16,20 @@
  */
 package groove.graph;
 
+import groove.trans.HostNode;
+
 /**
  * Interface for an object that can process a {@link DeltaTarget}, by invoking
- * its {@link DeltaTarget#addNode(Node)} and
- * {@link DeltaTarget#removeNode(Node)} and the corresponding <code>Edge</code>
+ * its {@link DeltaTarget#addNode(HostNode)} and
+ * {@link DeltaTarget#removeNode(HostNode)} and the corresponding <code>Edge</code>
  * methods multiple times.
  * @author Arend Rensink
  * @version $Revision$
  */
 public interface DeltaApplier {
     /**
-     * When invoked, will call {@link DeltaTarget#addNode(Node)} and
-     * {@link DeltaTarget#removeNode(Node)} and the corresponding
+     * When invoked, will call {@link DeltaTarget#addNode(HostNode)} and
+     * {@link DeltaTarget#removeNode(HostNode)} and the corresponding
      * <code>Edge</code> methods on a given target. The effect is the same as
      * calling {@link #applyDelta(DeltaTarget, int)} with {@link #ALL_ELEMENTS}
      * as second parameter.
@@ -36,8 +38,8 @@ public interface DeltaApplier {
     void applyDelta(DeltaTarget target);
 
     /**
-     * When invoked, will call {@link DeltaTarget#addNode(Node)} and
-     * {@link DeltaTarget#removeNode(Node)} and the corresponding
+     * When invoked, will call {@link DeltaTarget#addNode(HostNode)} and
+     * {@link DeltaTarget#removeNode(HostNode)} and the corresponding
      * <code>Edge</code> methods on a given target. A second parameter
      * controls whether nodes, edges or both should be added and removed.
      * @param target the target to be processed

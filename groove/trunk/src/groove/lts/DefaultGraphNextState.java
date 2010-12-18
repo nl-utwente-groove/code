@@ -19,7 +19,6 @@ import groove.control.CtrlTransition;
 import groove.graph.DeltaApplier;
 import groove.graph.Label;
 import groove.graph.MergeMap;
-import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.trans.DefaultApplication;
 import groove.trans.DeltaHostGraph;
@@ -90,13 +89,13 @@ public class DefaultGraphNextState extends AbstractGraphState implements
                         rule.getParBinding(fromI - parentValues.length);
                     if (binding < anchorSize) {
                         value =
-                            (HostNode) mergeMap.getNode((Node) getEvent().getAnchorImage(
+                            mergeMap.getNode((HostNode) getEvent().getAnchorImage(
                                 binding));
                     } else {
                         value = getAddedNodes()[binding - anchorSize];
                     }
                 } else {
-                    value = (HostNode) mergeMap.getNode(parentValues[fromI]);
+                    value = mergeMap.getNode(parentValues[fromI]);
                 }
                 result[i] = value;
             }

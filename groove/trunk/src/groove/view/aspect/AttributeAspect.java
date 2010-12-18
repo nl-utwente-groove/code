@@ -62,7 +62,7 @@ public class AttributeAspect extends AbstractAspect {
     public void checkNode(AspectNode node, AspectGraph graph)
         throws FormatException {
         AspectValue value = getAttributeValue(node);
-        Set<AspectEdge> edges = graph.edgeSet(node);
+        Set<? extends AspectEdge> edges = graph.edgeSet(node);
         if (PRODUCT.equals(value)) {
             int arity = 0;
             BitSet arguments = new BitSet();

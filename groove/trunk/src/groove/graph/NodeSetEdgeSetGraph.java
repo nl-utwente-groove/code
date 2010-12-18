@@ -27,18 +27,8 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
-        Cloneable {
-    /**
-     * Constructs a prototype object of this class, to be used as a factory for
-     * new (default) graphs.
-     * @return a prototype <tt>GeneralGraph</tt> instance, only intended to be
-     *         used for its <tt>newGraph()</tt> method.
-     */
-    static public NodeSetEdgeSetGraph getPrototype() {
-        return new NodeSetEdgeSetGraph();
-    }
-
+public class NodeSetEdgeSetGraph<N extends Node,L extends Label,E extends Edge>
+        extends AbstractGraph<N,L,E> implements Cloneable {
     /**
      * Creates a new, empty graph.
      */
@@ -52,7 +42,7 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
      * @param graph the graph to be cloned
      * @require graph != null
      */
-    public NodeSetEdgeSetGraph(Graph graph) {
+    public NodeSetEdgeSetGraph(Graph<N,L,E> graph) {
         this.graphNodeSet = createNodeSet(graph.nodeSet());
         this.graphEdgeSet = createEdgeSet(graph.edgeSet());
     }
@@ -62,14 +52,14 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
      * @param graph the graph to be cloned
      * @require graph != null
      */
-    protected NodeSetEdgeSetGraph(NodeSetEdgeSetGraph graph) {
+    protected NodeSetEdgeSetGraph(NodeSetEdgeSetGraph<N,L,E> graph) {
         this.graphNodeSet = createNodeSet(graph.graphNodeSet);
         this.graphEdgeSet = createEdgeSet(graph.graphEdgeSet);
     }
 
     // ------------------------- COMMANDS ------------------------------
 
-    public boolean addNode(Node node) {
+    public boolean addNode(N node) {
         boolean result;
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
         result = this.graphNodeSet.add(node);
@@ -80,12 +70,12 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
      * Improved implementation taking advantage of the edge set.
      */
     @Override
-    public boolean removeNode(Node node) {
+    public boolean removeNode(N node) {
         assert !isFixed() : "Trying to remove " + node
             + " from unmodifiable graph";
         boolean removed = this.graphNodeSet.contains(node);
         if (removed) {
-            Iterator<Edge> edgeIter = this.graphEdgeSet.iterator();
+            Iterator<E> edgeIter = this.graphEdgeSet.iterator();
             while (edgeIter.hasNext()) {
                 Edge edge = edgeIter.next();
                 if (edge.source().equals(node) || edge.target().equals(node)) {
@@ -97,19 +87,19 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
         return removed;
     }
 
-    public boolean removeEdge(Edge edge) {
+    public boolean removeEdge(E edge) {
         assert !isFixed() : "Trying to remove " + edge
             + " from unmodifiable graph";
         return this.graphEdgeSet.remove(edge);
     }
 
     @Override
-    public boolean removeNodeSet(Collection<Node> nodeSet) {
+    public boolean removeNodeSet(Collection<? extends N> nodeSet) {
         boolean result;
         // first remove edges that depend on a node to be removed
-        Iterator<Edge> edgeIter = this.graphEdgeSet.iterator();
+        Iterator<E> edgeIter = this.graphEdgeSet.iterator();
         while (edgeIter.hasNext()) {
-            Edge other = edgeIter.next();
+            E other = edgeIter.next();
             if (nodeSet.contains(other.source())
                 || nodeSet.contains(other.target())) {
                 edgeIter.remove();
@@ -122,7 +112,7 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
 
     // -------------------- PackageGraph methods ---------------------
 
-    public boolean addEdgeWithoutCheck(Edge edge) {
+    public boolean addEdgeWithoutCheck(E edge) {
         assert isTypeCorrect(edge);
         boolean result;
         result = this.graphEdgeSet.add(edge);
@@ -130,11 +120,11 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
     }
 
     @Override
-    public boolean addEdgeSetWithoutCheck(Collection<? extends Edge> edgeSet) {
+    public boolean addEdgeSetWithoutCheck(Collection<? extends E> edgeSet) {
         return this.graphEdgeSet.addAll(edgeSet);
     }
 
-    public boolean removeNodeWithoutCheck(Node node) {
+    public boolean removeNodeWithoutCheck(N node) {
         assert isTypeCorrect(node);
         boolean result;
         result = this.graphNodeSet.remove(node);
@@ -142,94 +132,96 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
     }
 
     @Override
-    public boolean removeNodeSetWithoutCheck(Collection<? extends Node> nodeSet) {
+    public boolean removeNodeSetWithoutCheck(Collection<? extends N> nodeSet) {
         return this.graphNodeSet.removeAll(nodeSet);
     }
 
     // ------------- general methods (see AbstractGraph) ----------
 
     @Override
-    public NodeSetEdgeSetGraph clone() {
-        NodeSetEdgeSetGraph result = new NodeSetEdgeSetGraph(this);
+    public NodeSetEdgeSetGraph<N,L,E> clone() {
+        NodeSetEdgeSetGraph<N,L,E> result =
+            new NodeSetEdgeSetGraph<N,L,E>(this);
         return result;
     }
 
-    public NodeSetEdgeSetGraph newGraph() {
-        return new NodeSetEdgeSetGraph();
+    public NodeSetEdgeSetGraph<N,L,E> newGraph() {
+        return new NodeSetEdgeSetGraph<N,L,E>();
     }
 
-    public Set<? extends Edge> edgeSet() {
+    public Set<? extends E> edgeSet() {
         return Collections.unmodifiableSet(this.graphEdgeSet);
     }
 
-    public Set<? extends Node> nodeSet() {
+    public Set<? extends N> nodeSet() {
         return Collections.unmodifiableSet(this.graphNodeSet);
     }
 
     /**
      * Factory method for an empty node set of this graph.
      */
-    protected Set<Node> createNodeSet() {
+    protected Set<N> createNodeSet() {
         return new NodeNotifySet();
     }
 
     /**
      * Factory method for an empty edge set of this graph.
      */
-    protected Set<Edge> createEdgeSet() {
+    protected Set<E> createEdgeSet() {
         return new EdgeNotifySet();
     }
 
     /**
      * Factory method for a node set of this graph with initial elements.
      */
-    protected Set<Node> createNodeSet(Set<? extends Node> nodeSet) {
+    protected Set<N> createNodeSet(Set<? extends N> nodeSet) {
         return new NodeNotifySet(nodeSet);
     }
 
     /**
      * Factory method for an edge set of this graph with initial elements.
      */
-    protected Set<Edge> createEdgeSet(Set<? extends Edge> edgeSet) {
+    protected Set<E> createEdgeSet(Set<? extends E> edgeSet) {
         return new EdgeNotifySet(edgeSet);
     }
 
     /** The set of edges of this graph. */
-    protected final Set<Edge> graphEdgeSet;
+    protected final Set<E> graphEdgeSet;
     /** The set of nodes of this graph. */
-    protected final Set<Node> graphNodeSet;
+    protected final Set<N> graphNodeSet;
 
     /**
      * Extension of <tt>Set</tt> that invokes the notify methods of the graph
      * when elements are added or deleted
      */
-    abstract private class NotifySet<E extends Element> extends
-            LinkedHashSet<E> {
+    abstract private class NotifySet<EL extends Element> extends
+            LinkedHashSet<EL> {
         /**
          * An iterator over the underlying hash set that extends
          * <tt>remove()</tt> by invoking the graph listeners.
          */
-        class NotifySetIterator implements Iterator<E> {
+        class NotifySetIterator implements Iterator<EL> {
             public boolean hasNext() {
                 return this.setIterator.hasNext();
             }
 
-            public E next() {
+            public EL next() {
                 this.latest = this.setIterator.next();
                 return this.latest;
             }
 
+            @SuppressWarnings("unchecked")
             public void remove() {
                 this.setIterator.remove();
                 if (this.latest instanceof Node) {
-                    fireRemoveNode((Node) this.latest);
+                    fireRemoveNode((N) this.latest);
                 } else {
-                    fireRemoveEdge((Edge) this.latest);
+                    fireRemoveEdge((E) this.latest);
                 }
             }
 
-            private final Iterator<E> setIterator = superIterator();
-            E latest;
+            private final Iterator<EL> setIterator = superIterator();
+            EL latest;
         }
 
         /** Constructs an empty set. */
@@ -240,8 +232,8 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
         /**
          * Initializes the set <i>without</i> notification.
          */
-        public NotifySet(Set<? extends E> init) {
-            for (E elem : init) {
+        public NotifySet(Set<? extends EL> init) {
+            for (EL elem : init) {
                 super.add(elem);
             }
         }
@@ -251,12 +243,12 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
          * notification.
          */
         @Override
-        public Iterator<E> iterator() {
+        public Iterator<EL> iterator() {
             return new NotifySetIterator();
         }
 
         /** Returns <code>super.iterator()</code>. */
-        Iterator<E> superIterator() {
+        Iterator<EL> superIterator() {
             return super.iterator();
         }
 
@@ -265,13 +257,14 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
          * notification in all cases.
          * @require <tt>elem instanceof Element</tt>
          */
+        @SuppressWarnings("unchecked")
         @Override
-        public final boolean add(E elem) {
+        public final boolean add(EL elem) {
             if (super.add(elem)) {
                 if (elem instanceof Node) {
-                    fireAddNode((Node) elem);
+                    fireAddNode((N) elem);
                 } else {
-                    fireAddEdge((Edge) elem);
+                    fireAddEdge((E) elem);
                 }
                 return true;
             } else {
@@ -280,9 +273,9 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
         }
 
         @Override
-        public final boolean addAll(Collection<? extends E> elemSet) {
+        public final boolean addAll(Collection<? extends EL> elemSet) {
             boolean added = false;
-            for (E elem : elemSet) {
+            for (EL elem : elemSet) {
                 added |= add(elem);
             }
             return added;
@@ -292,13 +285,14 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
          * Overwrites the method from <tt>Set</tt> to ensure proper observer
          * notification in all cases.
          */
+        @SuppressWarnings("unchecked")
         @Override
         public final boolean remove(Object elem) {
             if (super.remove(elem)) {
                 if (elem instanceof Node) {
-                    fireRemoveNode((Node) elem);
+                    fireRemoveNode((N) elem);
                 } else {
-                    fireRemoveEdge((Edge) elem);
+                    fireRemoveEdge((E) elem);
                 }
                 return true;
             } else {
@@ -316,13 +310,13 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
         }
 
         /** Callback method, invoked when an element has been added to the set. */
-        abstract protected void fireAdd(E elem);
+        abstract protected void fireAdd(EL elem);
 
         /**
          * Callback method, invoked when an element has been removed from the
          * set.
          */
-        abstract protected void fireRemove(E elem);
+        abstract protected void fireRemove(EL elem);
     }
 
     /**
@@ -331,7 +325,7 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
      * {@link #fireRemove(Node)} to
      * {@link NodeSetEdgeSetGraph#fireRemoveNode(Node)}
      */
-    private class NodeNotifySet extends NotifySet<Node> {
+    private class NodeNotifySet extends NotifySet<N> {
         /**
          * Constructs an empty set.
          */
@@ -343,19 +337,19 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
          * Constructs a set initialised with a given set of elements, without
          * firing the notification.
          */
-        public NodeNotifySet(Set<? extends Node> init) {
+        public NodeNotifySet(Set<? extends N> init) {
             super(init);
         }
 
         /** Delegates to {@link NodeSetEdgeSetGraph#fireAddNode(Node)} . */
         @Override
-        final protected void fireAdd(Node elem) {
+        final protected void fireAdd(N elem) {
             fireAddNode(elem);
         }
 
         /** Delegates to {@link NodeSetEdgeSetGraph#fireRemoveNode(Node)} . */
         @Override
-        final protected void fireRemove(Node elem) {
+        final protected void fireRemove(N elem) {
             fireRemoveNode(elem);
         }
 
@@ -367,7 +361,7 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
      * {@link #fireRemove(Edge)} to
      * {@link NodeSetEdgeSetGraph#fireRemoveNode(Node)}
      */
-    private class EdgeNotifySet extends NotifySet<Edge> {
+    private class EdgeNotifySet extends NotifySet<E> {
         /**
          * Constructs an empty set.
          */
@@ -379,20 +373,21 @@ public class NodeSetEdgeSetGraph extends AbstractGraph<GraphCache> implements
          * Constructs a set initialised with a given set of elements, without
          * firing the notification.
          */
-        public EdgeNotifySet(Set<? extends Edge> init) {
+        public EdgeNotifySet(Set<? extends E> init) {
             super(init);
         }
 
         /** Delegates to {@link NodeSetEdgeSetGraph#fireAddEdge(Edge)} . */
         @Override
-        final protected void fireAdd(Edge elem) {
+        final protected void fireAdd(E elem) {
             fireAddEdge(elem);
         }
 
         /** Delegates to {@link NodeSetEdgeSetGraph#fireRemoveEdge(Edge)} . */
         @Override
-        final protected void fireRemove(Edge elem) {
+        final protected void fireRemove(E elem) {
             fireRemoveEdge(elem);
         }
     }
+
 }

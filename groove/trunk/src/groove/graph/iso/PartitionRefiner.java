@@ -49,7 +49,7 @@ public class PartitionRefiner implements CertificateStrategy {
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
      */
-    public PartitionRefiner(Graph graph) {
+    public PartitionRefiner(Graph<?,?,?> graph) {
         this(graph, false);
     }
 
@@ -60,12 +60,12 @@ public class PartitionRefiner implements CertificateStrategy {
      * @param strong if <code>true</code>, the strategy puts more effort into
      *        getting distinct certificates.
      */
-    public PartitionRefiner(Graph graph, boolean strong) {
+    public PartitionRefiner(Graph<?,?,?> graph, boolean strong) {
         this.graph = graph;
         this.strong = strong;
     }
 
-    public Graph getGraph() {
+    public Graph<?,?,?> getGraph() {
         return this.graph;
     }
 
@@ -177,7 +177,7 @@ public class PartitionRefiner implements CertificateStrategy {
         return this.graphCertificate;
     }
 
-    public CertificateStrategy newInstance(Graph graph, boolean strong) {
+    public CertificateStrategy newInstance(Graph<?,?,?> graph, boolean strong) {
         return new PartitionRefiner(graph, strong);
     }
 
@@ -507,7 +507,7 @@ public class PartitionRefiner implements CertificateStrategy {
     }
 
     /** The underlying graph */
-    private final Graph graph;
+    private final Graph<?,?,?> graph;
     /**
      * Flag to indicate that more effort should be put into obtaining distinct
      * certificates.

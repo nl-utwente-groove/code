@@ -44,7 +44,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TypeGraph extends NodeSetEdgeSetGraph {
+public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> {
     /** Constructs a fresh type graph. */
     public TypeGraph() {
         GraphInfo.setTypeRole(this);
@@ -74,14 +74,12 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
     }
 
     @Override
-    public boolean addNode(Node node) {
-        assert node instanceof TypeNode;
+    public boolean addNode(TypeNode node) {
         boolean result = super.addNode(node);
         if (result) {
             assert !this.generatedNodes : "Mixed calls of TypeGraph.addNode(Node) and TypeGraph.addNode(Label)";
             this.predefinedNodes = true;
-            TypeNode oldType =
-                this.typeMap.put(((TypeNode) node).getType(), (TypeNode) node);
+            TypeNode oldType = this.typeMap.put(node.getType(), node);
             assert oldType == null : String.format(
                 "Duplicate type node for %s", oldType.getType());
         }
@@ -91,7 +89,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
     /**
      * Adds a type node with a given (node type) label.
      * Also adds a self-edge with that label.
-     * This method should not be combined with {@link #addNode(Node)} to
+     * This method should not be combined with {@link #addNode(TypeNode)} to
      * the same type graph, as then there is no guarantee of distinct node
      * numbers.
      * @param label the label for the type node; must satisfy {@link Label#isNodeType()}
@@ -117,7 +115,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
      * to add type nodes.
      */
     private boolean generatedNodes;
-    /** Flag indicating that {@link #addNode(Node)} has been used
+    /** Flag indicating that {@link #addNode(TypeNode)} has been used
      * to add type nodes.
      */
     private boolean predefinedNodes;
@@ -126,25 +124,25 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
 
     /** Adds the label as well as the edge. */
     @Override
-    public TypeEdge addEdge(Node source, Label label, Node target) {
-        TypeEdge result = (TypeEdge) super.addEdge(source, label, target);
+    public TypeEdge addEdge(TypeNode source, TypeLabel label, TypeNode target) {
+        TypeEdge result = super.addEdge(source, label, target);
         this.labelStore.addLabel(result.label());
         return result;
     }
 
     /** Adds the labels as well as the edges. */
     @Override
-    public boolean addEdgeSetWithoutCheck(Collection<? extends Edge> edgeSet) {
-        for (Edge edge : edgeSet) {
-            this.labelStore.addLabel((TypeLabel) edge.label());
+    public boolean addEdgeSetWithoutCheck(Collection<? extends TypeEdge> edgeSet) {
+        for (TypeEdge edge : edgeSet) {
+            this.labelStore.addLabel(edge.label());
         }
         return super.addEdgeSetWithoutCheck(edgeSet);
     }
 
     /** Adds the label as well as the edge. */
     @Override
-    public boolean addEdgeWithoutCheck(Edge edge) {
-        this.labelStore.addLabel((TypeLabel) edge.label());
+    public boolean addEdgeWithoutCheck(TypeEdge edge) {
+        this.labelStore.addLabel(edge.label());
         return super.addEdgeWithoutCheck(edge);
     }
 
@@ -160,50 +158,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
         return new TypeGraph();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public Set<TypeEdge> edgeSet() {
-        return (Set<TypeEdge>) super.edgeSet();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<TypeNode> nodeSet() {
-        return (Set<TypeNode>) super.nodeSet();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<TypeEdge> edgeSet(Node node) {
-        return (Set<TypeEdge>) super.edgeSet(node);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<TypeEdge> outEdgeSet(Node node) {
-        return (Set<TypeEdge>) super.outEdgeSet(node);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<TypeEdge> inEdgeSet(Node node) {
-        return (Set<TypeEdge>) super.inEdgeSet(node);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<TypeEdge> labelEdgeSet(Label label) {
-        return (Set<TypeEdge>) super.labelEdgeSet(label);
-    }
-
-    @Override
-    public boolean removeEdge(Edge edge) {
+    public boolean removeEdge(TypeEdge edge) {
         throw new UnsupportedOperationException(
             "Edge removal not allowed in type graphs");
     }
 
     @Override
-    public boolean removeNodeWithoutCheck(Node node) {
+    public boolean removeNodeWithoutCheck(TypeNode node) {
         throw new UnsupportedOperationException(
             "Node removal not allowed in type graphs");
     }
@@ -224,14 +186,15 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
      * @throws FormatException report of typing errors
      */
     @SuppressWarnings("unchecked")
-    public <N extends Node,E extends Edge> Typing<N,E> getTyping(Graph model,
-            Map<N,Set<TypeLabel>> parentTypeMap) throws FormatException {
+    public <N extends Node,E extends Edge> Typing<N,E> getTyping(
+            Graph<N,?,E> model, Map<N,Set<TypeLabel>> parentTypeMap)
+        throws FormatException {
         Map<N,TypeLabel> nodeTypeMap = new HashMap<N,TypeLabel>();
         Set<N> sharpNodes = new HashSet<N>();
         Set<Element> abstractElems = new HashSet<Element>();
         Set<FormatError> errors = new TreeSet<FormatError>();
         // detect node types
-        Set<N> untypedNodes = new HashSet<N>((Set<N>) model.nodeSet());
+        Set<N> untypedNodes = new HashSet<N>(model.nodeSet());
         for (Edge edge : model.edgeSet()) {
             N node = (N) edge.source();
             TypeLabel label = getActualType(edge.label());
@@ -245,7 +208,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                     abstractElems.add(node);
                 }
                 if (isNodeType(label)) {
-                    Label oldType = nodeTypeMap.put(node, label);
+                    TypeLabel oldType = nodeTypeMap.put(node, label);
                     if (oldType != null) {
                         errors.add(new FormatError(
                             "Duplicate types %s and %s on node '%s'", oldType,
@@ -302,7 +265,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                 errors.add(new FormatError("Untyped node '%s'", untypedNode));
             }
         }
-        for (Edge edge : model.edgeSet()) {
+        for (E edge : model.edgeSet()) {
             Label edgeType = edge.label();
             if (isNodeType(edgeType) || edge instanceof ArgumentEdge
                 || edge instanceof OperatorEdge) {
@@ -356,14 +319,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
                     }
                 }
             } else if (edgeType.isFlag()) {
-                typeEdge = getTypeEdge(sourceType, edgeType);
+                typeEdge = getTypeEdge(sourceType, (TypeLabel) edgeType);
                 if (typeEdge == null) {
                     errors.add(new FormatError(
                         "%s-node '%s' has unknown flag '%s'", sourceType,
                         source, edgeType));
                 }
             } else if (edgeType.isBinary()) {
-                typeEdge = getTypeEdge(sourceType, edgeType);
+                typeEdge = getTypeEdge(sourceType, (TypeLabel) edgeType);
                 if (typeEdge == null) {
                     errors.add(new FormatError(
                         "%s-node '%s' has unknown edge '%s'", sourceType,
@@ -404,8 +367,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
      * @return the typing of the model
      * @throws FormatException a report of the errors found during typing
      */
-    public <N extends Node,E extends Edge> Typing<N,E> checkTyping(Graph model)
-        throws FormatException {
+    public <N extends Node,E extends Edge> Typing<N,E> checkTyping(
+            Graph<N,?,E> model) throws FormatException {
         return getTyping(model, Collections.<N,Set<TypeLabel>>emptyMap());
     }
 
@@ -434,7 +397,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
      * edge label, or {@code null} if the edge label does not occur for the
      * node type or any of its supertypes.
      */
-    public TypeEdge getTypeEdge(Label sourceType, Label label) {
+    public TypeEdge getTypeEdge(TypeLabel sourceType, TypeLabel label) {
         TypeEdge result = null;
         TypeLabel resultType = null;
         assert sourceType.isNodeType() : String.format(
@@ -442,7 +405,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
         Set<TypeLabel> supertypes =
             this.labelStore.getSupertypes(getActualType(sourceType));
         if (supertypes != null) {
-            Set<TypeEdge> edges = labelEdgeSet(label);
+            Set<? extends TypeEdge> edges = labelEdgeSet(label);
             for (TypeEdge edge : edges) {
                 TypeLabel edgeType = getType(edge.source());
                 if (supertypes.contains(edgeType)) {
@@ -599,7 +562,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
             new HashMap<TypeLabel,Set<TypeLabel>>();
         for (TypeNode typeNode : nodeSet()) {
             HostNode nodeImage = result.addNode();
-            result.addNode(typeNode);
             typeNodeMap.put(getType(typeNode), nodeImage);
             connectMap.put(getType(typeNode), new HashSet<TypeLabel>());
         }
@@ -634,14 +596,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
         }
         for (Map.Entry<TypeLabel,Set<TypeLabel>> connectEntry : connectMap.entrySet()) {
             for (Label targetType : connectEntry.getValue()) {
-                Node source = typeNodeMap.get(connectEntry.getKey());
-                Node target = typeNodeMap.get(targetType);
+                HostNode source = typeNodeMap.get(connectEntry.getKey());
+                HostNode target = typeNodeMap.get(targetType);
                 result.addEdge(source,
                     MatrixAutomaton.getDummyLabel(Label.BINARY), target);
             }
         }
         for (Label flaggedType : flaggedNodes) {
-            Node source = typeNodeMap.get(flaggedType);
+            HostNode source = typeNodeMap.get(flaggedType);
             result.addEdge(source, MatrixAutomaton.getDummyLabel(Label.FLAG),
                 source);
         }
@@ -670,8 +632,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
     }
 
     @Override
-    public ElementFactory<?,?,?> getFactory() {
-        return MyFactory.INSTANCE;
+    public ElementFactory<TypeNode,TypeLabel,TypeEdge> getFactory() {
+        return TypeFactory.INSTANCE;
     }
 
     /** Label store permanently associated with this type graph. */
@@ -719,42 +681,5 @@ public class TypeGraph extends NodeSetEdgeSetGraph {
         private final Map<N,TypeLabel> nodeTypeMap;
         private final Set<N> sharpNodes;
         private final Set<Element> abstractElems;
-    }
-
-    /** Factory creating type nodes and edges. */
-    public static class MyFactory implements
-            ElementFactory<TypeNode,TypeLabel,TypeEdge> {
-        private MyFactory() {
-            // empty
-        }
-
-        @Override
-        public TypeNode createNode() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public TypeNode createNode(int nr) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public TypeLabel createLabel(String text) {
-            return TypeLabel.createLabel(text);
-        }
-
-        @Override
-        public TypeEdge createEdge(Node source, String label, Node target) {
-            return createEdge(source, createLabel(label), target);
-        }
-
-        @Override
-        public TypeEdge createEdge(Node source, Label label, Node target) {
-            return new TypeEdge((TypeNode) source, (TypeLabel) label,
-                (TypeNode) target);
-        }
-
-        /** Singleton instance of this class. */
-        public static final MyFactory INSTANCE = new MyFactory();
     }
 }

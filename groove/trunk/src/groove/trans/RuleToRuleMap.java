@@ -17,7 +17,7 @@
 package groove.trans;
 
 import groove.graph.ElementFactory;
-import groove.graph.GraphHashMap;
+import groove.graph.GraphToGraphMap;
 
 /**
  * Default implementation of a generic node-edge-map. The implementation is
@@ -26,8 +26,9 @@ import groove.graph.GraphHashMap;
  * @author Arend Rensink
  * @version $Revision: 2754 $
  */
-public class RuleToRuleMap extends
-        GraphHashMap<RuleNode,RuleNode,RuleEdge,RuleEdge> {
+public class RuleToRuleMap
+        extends
+        GraphToGraphMap<RuleNode,RuleLabel,RuleEdge,RuleNode,RuleLabel,RuleEdge> {
     @Override
     public RuleToRuleMap clone() {
         return (RuleToRuleMap) super.clone();

@@ -16,7 +16,6 @@
  */
 package groove.lts;
 
-
 /**
  * An extended graph listener, which is also notified of explore actions on an
  * LTS.
@@ -43,7 +42,7 @@ public interface LTSListener {
     /**
      * Update method called when a state of the LTS is set to closed, in the
      * course of LTS exploration.
-     * @see LTS#isOpen(State)
+     * @see LTS#isOpen(GraphState)
      */
     public void closeUpdate(LTS graph, GraphState explored);
 }

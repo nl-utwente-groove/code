@@ -16,8 +16,14 @@
  */
 package groove.graph;
 
+import groove.util.TreeHashSet;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /** Factory class for graph elements. */
-public class DefaultFactory implements ElementFactory<Node,Label,Edge> {
+public class DefaultFactory implements
+        ElementFactory<DefaultNode,DefaultLabel,DefaultEdge> {
     /** Private constructor. */
     protected DefaultFactory() {
         // empty
@@ -25,29 +31,147 @@ public class DefaultFactory implements ElementFactory<Node,Label,Edge> {
 
     /** Creates a fresh node. */
     public DefaultNode createNode() {
-        return DefaultNode.createNode();
-    }
-
-    /** Creates a node with a given number. */
-    public DefaultNode createNode(int nr) {
-        return DefaultNode.createNode(nr);
-    }
-
-    /** Creates a label with the given text. */
-    public DefaultLabel createLabel(String text) {
-        return DefaultLabel.createLabel(text);
+        return this.nodeStore.createNode();
     }
 
     @Override
-    public Edge createEdge(Node source, String label, Node target) {
-        return DefaultEdge.createEdge(source, label, target);
+    public DefaultNode createNode(int nr) {
+        return this.nodeStore.createNode(nr);
     }
 
-    /** Creates an edge with the given source, label and target. */
-    public Edge createEdge(Node source, Label label, Node target) {
-        return DefaultEdge.createEdge(source, label, target);
+    /**
+     * Generates a previously non-existent label. The label generated is of the
+     * form "L"+index, where the index increases for every next fresh label.
+     */
+    public DefaultLabel createFreshLabel() {
+        String text;
+        do {
+            this.freshLabelIndex++;
+            text = "L" + this.freshLabelIndex;
+        } while (this.labelMap.get(text) != null);
+        return createLabel(text);
     }
 
+    @Override
+    public DefaultLabel createLabel(String text) {
+        return newLabel(text);
+    }
+
+    @Override
+    public DefaultEdge createEdge(DefaultNode source, String text,
+            DefaultNode target) {
+        return createEdge(source, createLabel(text), target);
+    }
+
+    @Override
+    public DefaultEdge createEdge(DefaultNode source, DefaultLabel label,
+            DefaultNode target) {
+        assert source != null : "Source node of default edge should not be null";
+        assert target != null : "Target node of default edge should not be null";
+        assert label != null : "Label of default edge should not be null";
+        DefaultEdge edge =
+            new DefaultEdge(source, label, target, getEdgeCount());
+        DefaultEdge result = this.edgeSet.put(edge);
+        if (result == null) {
+            result = edge;
+        }
+        return result;
+    }
+
+    /** Returns the highest default node node number. */
+    public int getHighestNodeNr() {
+        return this.nodeStore.size();
+    }
+
+    /** Returns the number of created nodes. */
+    public int getNodeCount() {
+        return this.nodeStore.getNodeCount();
+    }
+
+    /**
+     * Returns the total number of default edges created.
+     */
+    public int getEdgeCount() {
+        return this.edgeSet.size();
+    }
+
+    /**
+     * Yields the number of labels created in the course of the program.
+     * @return Number of labels created
+     */
+    public int getLabelCount() {
+        return this.labelMap.size();
+    }
+
+    /** Clears the store of canonical edges. */
+    public void clear() {
+        this.edgeSet.clear();
+        this.labelMap.clear();
+        this.nodeStore.clear();
+    }
+
+    /**
+     * Returns a label with the given text, reusing previously created
+     * labels where possible.
+     * @param text the label text being looked up
+     * @return the (reused or new) label object.
+     */
+    private DefaultLabel newLabel(String text) {
+        DefaultLabel result = this.labelMap.get(text);
+        if (result == null) {
+            int index = this.labelMap.size();
+            result = new DefaultLabel(text, index);
+            this.labelMap.put(text, result);
+            return result;
+        } else {
+            return result;
+        }
+    }
+
+    /** Store and factory of canonical default nodes. */
+    private final NodeStore<DefaultNode> nodeStore =
+        new NodeStore<DefaultNode>(NODE_PROTOTYPE);
+    /**
+     * The internal translation table from strings to standard (non-node type)
+     * label indices.
+     */
+    private final Map<String,DefaultLabel> labelMap =
+        new HashMap<String,DefaultLabel>();
+
+    /** Counter to support the generation of fresh labels. */
+    private int freshLabelIndex;
+
+    /**
+     * A identity map, mapping previously created instances of
+     * {@link DefaultEdge} to themselves. Used to ensure that edge objects are
+     * reused.
+     */
+    private final TreeHashSet<DefaultEdge> edgeSet =
+        new TreeHashSet<DefaultEdge>() {
+            /**
+             * As {@link DefaultEdge}s test equality by object identity,
+             * we need to weaken the set's equality test.
+             */
+            @Override
+            final protected boolean areEqual(DefaultEdge o1, DefaultEdge o2) {
+                return o1.source().equals(o2.source())
+                    && o1.target().equals(o2.target())
+                    && o1.label().equals(o2.label());
+            }
+
+            @Override
+            final protected boolean allEqual() {
+                return false;
+            }
+        };
+
+    /** Returns the singleton instance of this factory. */
+    public static DefaultFactory instance() {
+        return INSTANCE;
+    }
+
+    /** Used only as a prototype for the store. */
+    private static final DefaultNode NODE_PROTOTYPE = new DefaultNode(0);
     /** Singleton instance of this factory. */
-    public final static DefaultFactory INSTANCE = new DefaultFactory();
+    private final static DefaultFactory INSTANCE = new DefaultFactory();
 }
