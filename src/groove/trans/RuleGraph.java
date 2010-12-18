@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.ElementFactory;
 import groove.graph.NodeSetEdgeSetGraph;
 
 import java.util.Set;
@@ -65,7 +64,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleLabel,RuleEdge> 
     }
 
     @Override
-    public ElementFactory<RuleNode,RuleLabel,RuleEdge> getFactory() {
-        return RuleFactory.INSTANCE;
+    public RuleFactory getFactory() {
+        return RuleFactory.instance();
     }
 }

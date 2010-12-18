@@ -16,11 +16,7 @@
  */
 package groove.abstraction;
 
-import groove.graph.Node;
 import groove.graph.TypeLabel;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
@@ -28,7 +24,6 @@ import groove.trans.RuleGraph;
 import groove.trans.RuleLabel;
 import groove.trans.RuleMatch;
 import groove.trans.RuleNode;
-import groove.trans.RuleToHostMap;
 
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -63,13 +58,11 @@ public final class PreMatch {
      * Computes and returns the valid pre-matches of a rule into a shape.
      * The given host must be a shape.
      */
-    public static Set<RuleMatch> getPreMatches(HostGraph host, Rule rule) {
-        assert host instanceof Shape : "Cannot use abstract methods on non-abstract graphs.";
-        Shape shape = (Shape) host;
+    public static Set<RuleMatch> getPreMatches(Shape shape, Rule rule) {
         Set<RuleMatch> preMatches = new HashSet<RuleMatch>();
         // We use the normal matching algorithms for finding matches.
         for (RuleMatch match : rule.getMatches(shape, null)) {
-            if (isValidPreMatch(host, match)) {
+            if (isValidPreMatch(shape, match)) {
                 // We have a pre-match.
                 preMatches.add(match);
             }
@@ -82,7 +75,7 @@ public final class PreMatch {
      * A pre-match is valid if the non-injective matching of the LHS
      * respects node multiplicities.
      */
-    public static boolean isValidPreMatch(HostGraph host, RuleEvent event) {
+    public static boolean isValidPreMatch(Shape host, RuleEvent event) {
         return isValidPreMatch(host, event.getMatch(host));
     }
 
@@ -91,11 +84,8 @@ public final class PreMatch {
      * A pre-match is valid if the non-injective matching of the LHS
      * respects node multiplicities.
      */
-    public static boolean isValidPreMatch(HostGraph host, RuleMatch match) {
-        assert host instanceof Shape : "Cannot use abstract methods on non-abstract graphs.";
-
-        Shape shape = (Shape) host;
-        RuleToHostMap map = match.getElementMap();
+    public static boolean isValidPreMatch(Shape shape, RuleMatch match) {
+        RuleToShapeMap map = (RuleToShapeMap) match.getElementMap();
 
         // Since we have non-injective matching of the LHS of the rule
         // we need to check if the multiplicities are respected. 
@@ -104,10 +94,9 @@ public final class PreMatch {
         boolean complyToNodeMult = true;
         // For all nodes in the image of the LHS.
         // FIXME this will repeat needlessly for all multiple images
-        for (Node node : map.nodeMap().values()) {
-            ShapeNode nodeS = (ShapeNode) node;
+        for (ShapeNode nodeS : map.nodeMap().values()) {
             Multiplicity nSMult = shape.getNodeMult(nodeS);
-            Set<RuleNode> nodesG = Util.getReverseNodeMap(map, nodeS);
+            Set<RuleNode> nodesG = map.getPreImages(nodeS);
             if (!Multiplicity.getNodeSetMult(nodesG).isAtMost(nSMult)) {
                 // Violation of node multiplicity.
                 complyToNodeMult = false;
@@ -155,20 +144,19 @@ public final class PreMatch {
         if (complyToNodeMult) {
             RuleGraph lhs = match.getRule().lhs();
             // For all binary labels.
-            outerLoop: for (TypeLabel label : Util.binaryLabelSet(shape)) {
+            outerLoop: for (TypeLabel label : Util.getBinaryLabels(shape)) {
                 // For all nodes of the LHS.
-                for (Entry<RuleNode,HostNode> entry : map.nodeMap().entrySet()) {
+                for (Entry<RuleNode,ShapeNode> entry : map.nodeMap().entrySet()) {
                     RuleNode v = entry.getKey();
-                    ShapeNode pV = (ShapeNode) entry.getValue();
+                    ShapeNode pV = entry.getValue();
 
                     // For all outgoing edges from the image of v. Item 2'.
-                    for (HostEdge e : Util.<HostNode,HostEdge>getOutEdges(
-                        shape, pV, label)) {
-                        ShapeNode w = (ShapeNode) e.target();
-                        Set<RuleNode> pInvW = Util.getReverseNodeMap(map, w);
-                        // FIXME label is of the wrong type:
-                        // it is a DefaultLabel whereas in the rule you
-                        // have RuleLabels
+                    for (ShapeEdge e : shape.outEdgeSet(pV)) {
+                        if (!e.label().equals(label)) {
+                            continue;
+                        }
+                        ShapeNode w = e.target();
+                        Set<RuleNode> pInvW = map.getPreImages(w);
                         RuleLabel ruleLabel = new RuleLabel(label);
                         Set<RuleEdge> vInterPInvW =
                             Util.<RuleNode,RuleEdge>getIntersectEdges(lhs, v,
@@ -188,13 +176,12 @@ public final class PreMatch {
                     }
 
                     // For all incoming edges from the image of v. Item 2''.
-                    for (HostEdge e : Util.<HostNode,HostEdge>getInEdges(shape,
-                        pV, label)) {
-                        ShapeNode w = (ShapeNode) e.source();
-                        Set<RuleNode> pInvW = Util.getReverseNodeMap(map, w);
-                        // FIXME label is of the wrong type:
-                        // it is a DefaultLabel whereas in the rule you
-                        // have RuleLabels
+                    for (ShapeEdge e : shape.inEdgeSet(pV)) {
+                        if (!e.label().equals(label)) {
+                            continue;
+                        }
+                        ShapeNode w = e.source();
+                        Set<RuleNode> pInvW = map.getPreImages(w);
                         RuleLabel ruleLabel = new RuleLabel(label);
                         Set<RuleEdge> pInvWInterV =
                             Util.getIntersectEdges(lhs, pInvW, v, ruleLabel);

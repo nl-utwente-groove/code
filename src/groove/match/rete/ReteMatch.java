@@ -20,6 +20,7 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
 import groove.trans.HostEdge;
+import groove.trans.HostFactory;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
@@ -29,8 +30,8 @@ import groove.util.TreeHashSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * @author Arash Jalali
@@ -332,7 +333,7 @@ public class ReteMatch implements Comparable<ReteMatch> {
     public boolean conformsWith(RuleToHostMap anchorMap) {
         LookupTable lookup = this.origin.getPatternLookupTable();
         boolean result = true;
-        for (Entry<RuleEdge,HostEdge> m : anchorMap.edgeMap().entrySet()) {
+        for (Entry<RuleEdge,? extends HostEdge> m : anchorMap.edgeMap().entrySet()) {
             int i = lookup.getEdge(m.getKey());
             if ((i == -1) || (!this.units[i].equals(m.getValue()))) {
                 result = false;
@@ -594,17 +595,17 @@ public class ReteMatch implements Comparable<ReteMatch> {
      * 
      * @return A translation of this match object to the {@link RuleToHostMap} representation  
      */
-    public RuleToHostMap toRuleToHostMap() {
+    public RuleToHostMap toRuleToHostMap(HostFactory factory) {
         if (this.equivalentMap == null) {
-            this.equivalentMap = new RuleToHostMap();
+            this.equivalentMap = factory.createRuleToHostMap();
 
             Element[] pattern = this.getOrigin().getPattern();
             for (int i = 0; i < this.units.length; i++) {
                 Element e = this.units[i];
-                if (e instanceof Node) {
+                if (e instanceof HostNode) {
                     this.equivalentMap.putNode((RuleNode) pattern[i],
                         (HostNode) e);
-                } else if (e instanceof Edge) {
+                } else {
                     RuleEdge e1 = (RuleEdge) pattern[i];
                     HostEdge e2 = (HostEdge) e;
                     this.equivalentMap.putEdge(e1, e2);

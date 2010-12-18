@@ -22,12 +22,12 @@ import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.GraphProperties;
 import groove.graph.LabelStore;
-import groove.graph.NodeEdgeMap;
 import groove.graph.TypeLabel;
 import groove.trans.DefaultHostGraph;
 import groove.trans.EdgeEmbargo;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
+import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.MergeEmbargo;
 import groove.trans.NotCondition;
@@ -35,11 +35,11 @@ import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
+import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleLabel;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.RuleNode;
-import groove.trans.RuleToRuleMap;
 import groove.trans.SPORule;
 import groove.trans.SystemProperties;
 import groove.view.FormatException;
@@ -104,7 +104,7 @@ public class NACTest {
         RuleGraph rhs =
             setUpRuleGraph(protREGraph, 1, 2, rhsSrc, rhsLab, rhsTgt);
 
-        RuleToRuleMap ruleMorphism = new RuleToRuleMap();
+        RuleGraphMorphism ruleMorphism = new RuleGraphMorphism();
         lhs.addNode(this.ruleNodes[0][0]);
         rhs.addNode(this.ruleNodes[1][0]);
         ruleMorphism.putNode(this.ruleNodes[0][0], this.ruleNodes[1][0]);
@@ -282,7 +282,7 @@ public class NACTest {
     }
 
     private void equalsG0Deriv(RuleApplication deriv) {
-        NodeEdgeMap derivMorph = deriv.getMorphism();
+        HostGraphMorphism derivMorph = deriv.getMorphism();
         assertEquals(this.g[0], deriv.getSource());
         assertEquals(null, derivMorph.getNode(this.stateNodes[0][2]));
         Edge image = derivMorph.getEdge(this.stateEdges[0][0]);

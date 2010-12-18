@@ -554,9 +554,9 @@ public class GraphInfo<N extends Node,E extends Edge> {
      * @param target the graph to transfer the information to
      * @param elementMap map from the source elements to the target elements
      */
-    public static <N1 extends Node,N2 extends Node,E1 extends Edge,E2 extends Edge> void transfer(
+    public static <N1 extends Node,L1 extends Label,E1 extends Edge,N2 extends Node,L2 extends Label,E2 extends Edge> void transfer(
             Graph<N1,?,E1> source, Graph<N2,?,E2> target,
-            GenericNodeEdgeMap<N1,N2,E1,E2> elementMap) {
+            ElementMap<N1,L1,E1,N2,L2,E2> elementMap) {
         GraphInfo<N1,E1> sourceInfo = source.getInfo();
         if (sourceInfo != null) {
             // copy all the info

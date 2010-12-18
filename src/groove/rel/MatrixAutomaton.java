@@ -21,7 +21,6 @@ import groove.graph.Element;
 import groove.graph.ElementFactory;
 import groove.graph.Label;
 import groove.graph.LabelStore;
-import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.TypeLabel;
 import groove.trans.HostEdge;
@@ -124,32 +123,32 @@ public class MatrixAutomaton extends
 
     /**
      * Initializes the node indices and the set of cyclic nodes.
-     * @see #getIndex(Node)
+     * @see #getIndex(RegNode)
      * @see #isCyclic(int)
      */
     private void initNodeEdgeIndices() {
-        this.nodeIndexMap = new HashMap<Node,Integer>();
-        this.edgeIndexMap = new HashMap<Edge,Integer>();
-        Set<Node> cyclicNodeSet = new HashSet<Node>();
+        this.nodeIndexMap = new HashMap<RegNode,Integer>();
+        this.edgeIndexMap = new HashMap<RegEdge,Integer>();
+        Set<RegNode> cyclicNodeSet = new HashSet<RegNode>();
         this.cyclicNodes = new BitSet(nodeCount());
         // the nodeList is a precursor to the nodes array
-        List<Node> nodeList = new ArrayList<Node>();
+        List<RegNode> nodeList = new ArrayList<RegNode>();
         nodeList.add(getStartNode());
         // the set of nodes already investigated
-        Set<Node> visitedNodes = new HashSet<Node>();
+        Set<RegNode> visitedNodes = new HashSet<RegNode>();
         // the following lists are precursors to the corresponding arrays
-        List<Node> sourceList = new ArrayList<Node>();
-        List<Node> targetList = new ArrayList<Node>();
+        List<RegNode> sourceList = new ArrayList<RegNode>();
+        List<RegNode> targetList = new ArrayList<RegNode>();
         List<RuleLabel> labelList = new ArrayList<RuleLabel>();
         // set the index of the first node and edge
         int nodeIndex = 0;
         int edgeIndex = 0;
         while (nodeIndex < nodeList.size()) {
-            Node node = nodeList.get(nodeIndex);
+            RegNode node = nodeList.get(nodeIndex);
             this.nodeIndexMap.put(node, Integer.valueOf(nodeIndex));
             nodeIndex++;
-            for (Edge outEdge : outEdgeSet(node)) {
-                Node target = outEdge.target();
+            for (RegEdge outEdge : outEdgeSet(node)) {
+                RegNode target = outEdge.target();
                 if (visitedNodes.add(target)) {
                     nodeList.add(target);
                 } else {
@@ -159,15 +158,15 @@ public class MatrixAutomaton extends
                 edgeIndex++;
                 sourceList.add(outEdge.source());
                 targetList.add(outEdge.target());
-                labelList.add((RuleLabel) outEdge.label());
+                labelList.add(outEdge.label());
             }
         }
         // convert the node list to a node array
-        this.nodes = new Node[nodeList.size()];
+        this.nodes = new RegNode[nodeList.size()];
         nodeList.toArray(this.nodes);
         // convert the cyclic node set to a bitset
         this.cyclicNodes = new BitSet(nodeIndex);
-        for (Node cyclicNode : cyclicNodeSet) {
+        for (RegNode cyclicNode : cyclicNodeSet) {
             this.cyclicNodes.set(getIndex(cyclicNode));
         }
         // convert the lists to arrays
@@ -187,13 +186,13 @@ public class MatrixAutomaton extends
         Set<TypeLabel> initPosLabelSet = new HashSet<TypeLabel>();
         Set<TypeLabel> initInvLabelSet = new HashSet<TypeLabel>();
         int indexedNodeCount = this.nodes.length;
-        Map<TypeLabel,Set<Edge>>[][] nodeInvLabelEdgeMap =
+        Map<TypeLabel,Set<RegEdge>>[][] nodeInvLabelEdgeMap =
             new Map[2][indexedNodeCount];
-        Map<TypeLabel,Set<Edge>>[][] nodePosLabelEdgeMap =
+        Map<TypeLabel,Set<RegEdge>>[][] nodePosLabelEdgeMap =
             new Map[2][indexedNodeCount];
         // iterate over the reachable edges (the one that have an index)
-        for (Edge edge : this.edgeIndexMap.keySet()) {
-            RuleLabel label = (RuleLabel) edge.label();
+        for (RegEdge edge : this.edgeIndexMap.keySet()) {
+            RuleLabel label = edge.label();
             boolean isInverse = label.isInv();
             if (isInverse) {
                 label = label.getInvLabel();
@@ -213,11 +212,11 @@ public class MatrixAutomaton extends
             }
             assert derivedLabels != null : String.format(
                 "No derived labels for %s", label);
-            Map<TypeLabel,Set<Edge>>[][] nodeLabelEdgeMap =
+            Map<TypeLabel,Set<RegEdge>>[][] nodeLabelEdgeMap =
                 isInverse ? nodeInvLabelEdgeMap : nodePosLabelEdgeMap;
             for (TypeLabel derivedLabel : derivedLabels) {
                 for (int direction = FORWARD; direction <= BACKWARD; direction++) {
-                    Node end =
+                    RegNode end =
                         (direction == FORWARD) ? edge.source() : edge.target();
                     addToNodeLabelEdgeSetMap(nodeLabelEdgeMap[direction], end,
                         derivedLabel, edge);
@@ -253,25 +252,27 @@ public class MatrixAutomaton extends
      */
     private void initVarSets() {
         // traverse the automaton
-        Set<Node> remainingNodes = new HashSet<Node>();
+        Set<RegNode> remainingNodes = new HashSet<RegNode>();
         remainingNodes.add(getStartNode());
         // keep maps from automaton nodes to all vars and bound vars
-        Map<Node,Set<LabelVar>> allVarMap = new HashMap<Node,Set<LabelVar>>();
+        Map<RegNode,Set<LabelVar>> allVarMap =
+            new HashMap<RegNode,Set<LabelVar>>();
         allVarMap.put(getStartNode(), new HashSet<LabelVar>());
-        Map<Node,Set<LabelVar>> boundVarMap = new HashMap<Node,Set<LabelVar>>();
+        Map<RegNode,Set<LabelVar>> boundVarMap =
+            new HashMap<RegNode,Set<LabelVar>>();
         boundVarMap.put(getStartNode(), new HashSet<LabelVar>());
         while (!remainingNodes.isEmpty()) {
-            Node source = remainingNodes.iterator().next();
+            RegNode source = remainingNodes.iterator().next();
             remainingNodes.remove(source);
             Set<LabelVar> sourceAllVarSet = allVarMap.get(source);
             Set<LabelVar> sourceBoundVarSet = boundVarMap.get(source);
-            for (Edge outEdge : outEdgeSet(source)) {
-                Node target = outEdge.target();
+            for (RegEdge outEdge : outEdgeSet(source)) {
+                RegNode target = outEdge.target();
                 Set<LabelVar> targetAllVarSet =
                     new HashSet<LabelVar>(sourceAllVarSet);
                 Set<LabelVar> targetBoundVarSet =
                     new HashSet<LabelVar>(sourceBoundVarSet);
-                RegExpr expr = ((RuleLabel) outEdge.label()).getMatchExpr();
+                RegExpr expr = outEdge.label().getMatchExpr();
                 targetAllVarSet.addAll(expr.allVarSet());
                 targetBoundVarSet.addAll(expr.boundVarSet());
                 if (allVarMap.containsKey(target)) {
@@ -453,8 +454,8 @@ public class MatrixAutomaton extends
     public Set<TypeLabel> getAlphabet() {
         assert isFixed();
         Set<TypeLabel> result = new HashSet<TypeLabel>();
-        for (Edge edge : edgeSet()) {
-            RuleLabel label = (RuleLabel) edge.label();
+        for (RegEdge edge : edgeSet()) {
+            RuleLabel label = edge.label();
             if (label.isInv()) {
                 label = label.getInvLabel();
             }
@@ -567,17 +568,17 @@ public class MatrixAutomaton extends
      * automaton.
      */
     final void addToNodeLabelEdgeSetMap(
-            Map<TypeLabel,Set<Edge>>[] nodeLabelEdgeSetMap, Node node,
-            TypeLabel label, Edge edge) {
-        Map<TypeLabel,Set<Edge>> labelEdgeMap =
+            Map<TypeLabel,Set<RegEdge>>[] nodeLabelEdgeSetMap, RegNode node,
+            TypeLabel label, RegEdge edge) {
+        Map<TypeLabel,Set<RegEdge>> labelEdgeMap =
             nodeLabelEdgeSetMap[getIndex(node)];
         if (labelEdgeMap == null) {
             nodeLabelEdgeSetMap[getIndex(node)] =
-                labelEdgeMap = new HashMap<TypeLabel,Set<Edge>>();
+                labelEdgeMap = new HashMap<TypeLabel,Set<RegEdge>>();
         }
-        Set<Edge> edgeSet = labelEdgeMap.get(label);
+        Set<RegEdge> edgeSet = labelEdgeMap.get(label);
         if (edgeSet == null) {
-            labelEdgeMap.put(label, edgeSet = new HashSet<Edge>());
+            labelEdgeMap.put(label, edgeSet = new HashSet<RegEdge>());
         }
         edgeSet.add(edge);
     }
@@ -588,7 +589,7 @@ public class MatrixAutomaton extends
      * @return the index for <code>node</code>, or <code>-1</code> if
      *         <code>node</code> is not a known node.
      */
-    final int getIndex(Node node) {
+    final int getIndex(RegNode node) {
         Integer result = this.nodeIndexMap.get(node);
         if (result != null) {
             return result;
@@ -603,7 +604,7 @@ public class MatrixAutomaton extends
      * @return the index for <code>edge</code>, or <code>-1</code> if
      *         <code>edge</code> is not a known edge.
      */
-    final int getIndex(Edge edge) {
+    final int getIndex(RegEdge edge) {
         Integer result = this.edgeIndexMap.get(edge);
         if (result != null) {
             return result;
@@ -629,7 +630,7 @@ public class MatrixAutomaton extends
 
     /**
      * Returns the source index of an edge at a given index. Inverse mapping of
-     * {@link #getIndex(Node)}.
+     * {@link #getIndex(RegNode)}.
      * @param edgeIndex the index of the node to be retrieved
      */
     final int getSource(int edgeIndex) {
@@ -638,7 +639,7 @@ public class MatrixAutomaton extends
 
     /**
      * Returns the target index of an edge at a given index. Inverse mapping of
-     * {@link #getIndex(Node)}.
+     * {@link #getIndex(RegNode)}.
      * @param edgeIndex the index of the node to be retrieved
      */
     final int getTarget(int edgeIndex) {
@@ -647,7 +648,7 @@ public class MatrixAutomaton extends
 
     /**
      * Returns the label at a given index. Inverse mapping of
-     * {@link #getIndex(Node)}.
+     * {@link #getIndex(RegNode)}.
      * @param edgeIndex the index of the node to be retrieved
      */
     final RuleLabel getLabel(int edgeIndex) {
@@ -683,8 +684,8 @@ public class MatrixAutomaton extends
         int i = 0;
         for (Element element : elementSet) {
             result[i] =
-                (element instanceof Node) ? getIndex((Node) element)
-                        : getIndex((Edge) element);
+                (element instanceof RegNode) ? getIndex((RegNode) element)
+                        : getIndex((RegEdge) element);
             i++;
         }
         return result;
@@ -746,16 +747,16 @@ public class MatrixAutomaton extends
     /**
      * Mapping from the nodes of this automaton to node indices.
      */
-    private Map<Node,Integer> nodeIndexMap;
+    private Map<RegNode,Integer> nodeIndexMap;
     /**
      * Array of nodes, in the order of the node indices. Provides the inverse
      * mapping to {@link #nodeIndexMap}.
      */
-    private Node[] nodes;
+    private RegNode[] nodes;
     /**
      * Mapping from the edges of this automaton to edge indices.
      */
-    private Map<Edge,Integer> edgeIndexMap;
+    private Map<RegEdge,Integer> edgeIndexMap;
     /**
      * Array of edge sources, in the order of the edge indices. Provides the
      * inverse mapping to {@link #edgeIndexMap}.
@@ -1121,7 +1122,7 @@ public class MatrixAutomaton extends
              *         is stored
              * @see #putMatch
              */
-            protected MatchingComputation getMatch(int keyIndex, Node image) {
+            protected MatchingComputation getMatch(int keyIndex, HostNode image) {
                 if (MatchingAlgorithm.this.auxResults[keyIndex] == null) {
                     return null;
                 } else {
@@ -1133,15 +1134,15 @@ public class MatrixAutomaton extends
              * Inserts a result in the store of computations. The key index and
              * graph node of the result are available from the object itself.
              * @param result the previously computed result to be stored
-             * @see #getMatch(int, Node)
+             * @see #getMatch(int, HostNode)
              */
             protected void putMatch(MatchingComputation result) {
-                Map<Node,MatchingComputation> matched =
+                Map<HostNode,MatchingComputation> matched =
                     MatchingAlgorithm.this.auxResults[result.keyIndex];
                 if (matched == null) {
                     matched =
                         MatchingAlgorithm.this.auxResults[result.keyIndex] =
-                            new HashMap<Node,MatchingComputation>();
+                            new HashMap<HostNode,MatchingComputation>();
                 }
                 matched.put(result.image, result);
             }
@@ -1153,15 +1154,15 @@ public class MatrixAutomaton extends
              * @param keyIndex the index of the automaton node at which the
              *        result is to be stored
              * @param image the graph node for the required result
-             * @see #getMatch(int, Node)
+             * @see #getMatch(int, HostNode)
              */
-            protected void putDummyMatch(int keyIndex, Node image) {
-                Map<Node,MatchingComputation> matched =
+            protected void putDummyMatch(int keyIndex, HostNode image) {
+                Map<HostNode,MatchingComputation> matched =
                     MatchingAlgorithm.this.auxResults[keyIndex];
                 if (matched == null) {
                     matched =
                         MatchingAlgorithm.this.auxResults[keyIndex] =
-                            new HashMap<Node,MatchingComputation>();
+                            new HashMap<HostNode,MatchingComputation>();
                 }
                 matched.put(image, MatchingAlgorithm.this.MATCH_DUMMY);
             }
@@ -1438,7 +1439,7 @@ public class MatrixAutomaton extends
          * Tests if a given node is in the pre-set set of allowed end images.
          * Always returns <code>true</code> if there is no such set.
          */
-        protected boolean isAllowedResult(Node image) {
+        protected boolean isAllowedResult(HostNode image) {
             return this.endImages == null || this.endImages.contains(image);
         }
 
@@ -1500,7 +1501,7 @@ public class MatrixAutomaton extends
         /**
          * Set of potential end images for the current matching computation.
          */
-        transient Set<? extends Node> endImages;
+        transient Set<? extends HostNode> endImages;
 
         /**
          * Number of images yet to add. Only used if non-negative.
@@ -1525,7 +1526,7 @@ public class MatrixAutomaton extends
          * images reachable from the automaton key/graph image pairs.
          */
         @SuppressWarnings("unchecked")
-        final Map<Node,MatchingComputation>[] auxResults =
+        final Map<HostNode,MatchingComputation>[] auxResults =
             new Map[indexedNodeCount()];
     }
 }

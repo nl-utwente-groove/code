@@ -387,7 +387,7 @@ public class RuleDependencies {
             Set<TypeLabel> produced, Set<CtrlType> inPars, Set<CtrlType> outPars) {
         RuleGraph lhs = rule.lhs();
         RuleGraph rhs = rule.rhs();
-        RuleToRuleMap ruleMorphism = rule.getMorphism();
+        RuleGraphMorphism ruleMorphism = rule.getMorphism();
         // test if a node is consumed (and there is no dangling edge check)
         Iterator<RuleNode> lhsNodeIter = lhs.nodeSet().iterator();
         while (lhsNodeIter.hasNext() && !consumed.contains(ALL_LABEL)
@@ -450,7 +450,7 @@ public class RuleDependencies {
 
     void collectConditionCharacteristics(Condition cond,
             Set<TypeLabel> positive, Set<TypeLabel> negative) {
-        RuleToRuleMap pattern = cond.getRootMap();
+        RuleGraphMorphism pattern = cond.getRootMap();
         RuleGraph target = cond.getTarget();
         // collected the isolated fresh nodes
         Set<RuleNode> isolatedNodes = new HashSet<RuleNode>(target.nodeSet());

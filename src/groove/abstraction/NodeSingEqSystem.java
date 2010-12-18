@@ -18,7 +18,7 @@ package groove.abstraction;
 
 import groove.abstraction.gui.ShapeDialog;
 import groove.graph.TypeLabel;
-import groove.trans.HostEdge;
+import groove.util.Duo;
 import groove.util.Pair;
 
 import java.util.HashMap;
@@ -130,7 +130,7 @@ public final class NodeSingEqSystem extends EquationSystem {
     @Override
     void buildEquationSystem() {
         // For all binary labels.
-        for (TypeLabel label : Util.binaryLabelSet(this.shape)) {
+        for (TypeLabel label : Util.getBinaryLabels(this.shape)) {
             // For all equivalence classes of the shape: D \in N_S/~
             for (EquivClass<ShapeNode> D : this.shape.getEquivRelation()) {
                 // For all nodes in the equivalence class: w \in D
@@ -155,8 +155,7 @@ public final class NodeSingEqSystem extends EquationSystem {
                         // Create the constraint: p \in {0, 1}
                         this.newSetConstr(p, zeroOneSet);
                         // Create a new entry in the map.
-                        Pair<MultVar,MultVar> pair =
-                            new Pair<MultVar,MultVar>(p, q);
+                        Duo<MultVar> pair = new Duo<MultVar>(p, q);
                         this.outMap.put(es, pair);
                     }
 
@@ -177,8 +176,7 @@ public final class NodeSingEqSystem extends EquationSystem {
                         // Create the constraint: r \in {0, 1}
                         this.newSetConstr(r, zeroOneSet);
                         // Create a new entry in the map.
-                        Pair<MultVar,MultVar> pair =
-                            new Pair<MultVar,MultVar>(r, s);
+                        Duo<MultVar> pair = new Duo<MultVar>(r, s);
                         this.inMap.put(es, pair);
                     }
                 }
@@ -212,7 +210,7 @@ public final class NodeSingEqSystem extends EquationSystem {
         boolean handledCrossCutting = false;
 
         // For all binary labels.
-        for (TypeLabel label : Util.binaryLabelSet(this.shape)) {
+        for (TypeLabel label : Util.getBinaryLabels(this.shape)) {
             // For outgoing and incoming directions.
             for (int direction = OUTGOING; direction <= INCOMING; direction++) {
                 EquivClass<ShapeNode> ecO = null;
@@ -351,8 +349,8 @@ public final class NodeSingEqSystem extends EquationSystem {
                     // This is a corner case on which we need to add additional
                     // constraints for the opposite edges in the same EC.
                     if (!handledCrossCutting && ecO.equals(ecI)) {
-                        HashMap<HostEdge,Pair<MultVar,MultVar>> edgeMap =
-                            new HashMap<HostEdge,Pair<MultVar,MultVar>>();
+                        HashMap<ShapeEdge,Pair<MultVar,MultVar>> edgeMap =
+                            new HashMap<ShapeEdge,Pair<MultVar,MultVar>>();
                         this.buildEdgeToVarsMap(edgeMap);
                         Multiplicity one = Multiplicity.getMultOf(1);
                         for (Pair<MultVar,MultVar> vars : edgeMap.values()) {
@@ -405,7 +403,7 @@ public final class NodeSingEqSystem extends EquationSystem {
 
         // Update multiplicities from the variables values.
         // Outgoing multiplicities.
-        for (Entry<EdgeSignature,Pair<MultVar,MultVar>> entry : this.outMap.entrySet()) {
+        for (Entry<EdgeSignature,Duo<MultVar>> entry : this.outMap.entrySet()) {
             EdgeSignature origEs = entry.getKey();
             EdgeSignature singEs =
                 newShape.getEdgeSignature(origEs.getNode(), origEs.getLabel(),
@@ -419,7 +417,7 @@ public final class NodeSingEqSystem extends EquationSystem {
             newShape.setEdgeOutMult(remEs, remVar.mult);
         }
         // Incoming multiplicities.
-        for (Entry<EdgeSignature,Pair<MultVar,MultVar>> entry : this.inMap.entrySet()) {
+        for (Entry<EdgeSignature,Duo<MultVar>> entry : this.inMap.entrySet()) {
             EdgeSignature origEs = entry.getKey();
             EdgeSignature singEs =
                 newShape.getEdgeSignature(origEs.getNode(), origEs.getLabel(),
@@ -451,7 +449,7 @@ public final class NodeSingEqSystem extends EquationSystem {
     private boolean haveVars(EquivClass<ShapeNode> ec0,
             EquivClass<ShapeNode> ec1, TypeLabel label, boolean outgoing) {
         boolean result = false;
-        Map<EdgeSignature,Pair<MultVar,MultVar>> map;
+        Map<EdgeSignature,Duo<MultVar>> map;
         EquivClass<ShapeNode> ec;
         EquivClass<ShapeNode> iterEc;
         if (outgoing) {
@@ -473,11 +471,13 @@ public final class NodeSingEqSystem extends EquationSystem {
         return result;
     }
 
-    private void buildEdgeToVarsMap(Map<HostEdge,Pair<MultVar,MultVar>> edgeMap) {
-        for (HostEdge edge : Util.getBinaryEdges(this.shape)) {
-            edgeMap.put(edge, new Pair<MultVar,MultVar>(null, null));
+    private void buildEdgeToVarsMap(Map<ShapeEdge,Pair<MultVar,MultVar>> edgeMap) {
+        for (ShapeEdge edge : this.shape.edgeSet()) {
+            if (edge.isBinary()) {
+                edgeMap.put(edge, new Pair<MultVar,MultVar>(null, null));
+            }
         }
-        for (Entry<EdgeSignature,Pair<MultVar,MultVar>> entry : this.outMap.entrySet()) {
+        for (Entry<EdgeSignature,Duo<MultVar>> entry : this.outMap.entrySet()) {
             EdgeSignature es = entry.getKey();
             Pair<MultVar,MultVar> vars = entry.getValue();
             for (ShapeEdge edge : this.shape.getEdgesFrom(es, true)) {
@@ -488,7 +488,7 @@ public final class NodeSingEqSystem extends EquationSystem {
                 }
             }
         }
-        for (Entry<EdgeSignature,Pair<MultVar,MultVar>> entry : this.inMap.entrySet()) {
+        for (Entry<EdgeSignature,Duo<MultVar>> entry : this.inMap.entrySet()) {
             EdgeSignature es = entry.getKey();
             Pair<MultVar,MultVar> vars = entry.getValue();
             assert vars != null;
@@ -502,15 +502,15 @@ public final class NodeSingEqSystem extends EquationSystem {
                 }
             }
         }
-        Set<HostEdge> edgesToRemove = new HashSet<HostEdge>();
-        for (Entry<HostEdge,Pair<MultVar,MultVar>> entry : edgeMap.entrySet()) {
-            HostEdge edge = entry.getKey();
+        Set<ShapeEdge> edgesToRemove = new HashSet<ShapeEdge>();
+        for (Entry<ShapeEdge,Pair<MultVar,MultVar>> entry : edgeMap.entrySet()) {
+            ShapeEdge edge = entry.getKey();
             Pair<MultVar,MultVar> pair = entry.getValue();
             if (pair.one() == null || pair.two() == null) {
                 edgesToRemove.add(edge);
             }
         }
-        for (HostEdge edge : edgesToRemove) {
+        for (ShapeEdge edge : edgesToRemove) {
             edgeMap.remove(edge);
         }
     }

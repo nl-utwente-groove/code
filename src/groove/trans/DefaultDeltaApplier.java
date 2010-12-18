@@ -14,12 +14,9 @@
  * 
  * $Id: DefaultDeltaApplier.java,v 1.7 2008-01-30 09:32:58 iovka Exp $
  */
-package groove.graph;
+package groove.trans;
 
-import groove.trans.HostEdge;
-import groove.trans.HostEdgeSet;
-import groove.trans.HostNode;
-import groove.trans.HostNodeSet;
+import groove.graph.Element;
 import groove.util.DeltaSet;
 import groove.util.StackedSet;
 

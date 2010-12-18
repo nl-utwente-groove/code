@@ -14,10 +14,9 @@
  * 
  * $Id: FrozenDeltaApplier.java,v 1.3 2008-01-30 09:32:51 iovka Exp $
  */
-package groove.graph;
+package groove.trans;
 
-import groove.trans.HostEdge;
-import groove.trans.HostNode;
+import groove.graph.Element;
 
 /**
  * Delta applier constructed from a frozen delta array. A frozen delta array is

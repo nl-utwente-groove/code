@@ -19,7 +19,6 @@ package groove.trans;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
-import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphProperties;
 import groove.graph.algebra.VariableNode;
@@ -60,7 +59,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @param systemProperties the global grammar properties
      */
     public SPORule(RuleName name, RuleGraph lhs, RuleGraph rhs,
-            RuleToRuleMap morphism, GraphProperties ruleProperties,
+            RuleGraphMorphism morphism, GraphProperties ruleProperties,
             SystemProperties systemProperties) {
         this(name, lhs, rhs, morphism, null, null, ruleProperties,
             systemProperties);
@@ -81,11 +80,12 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @param systemProperties the global grammar properties
      */
     public SPORule(RuleName name, RuleGraph lhs, RuleGraph rhs,
-            RuleToRuleMap morphism, RuleToRuleMap rootMap,
-            RuleToRuleMap coRootMap, GraphProperties ruleProperties,
+            RuleGraphMorphism morphism, RuleGraphMorphism rootMap,
+            RuleGraphMorphism coRootMap, GraphProperties ruleProperties,
             SystemProperties systemProperties) {
         super(name, lhs, rootMap, systemProperties);
-        this.coRootMap = coRootMap == null ? new RuleToRuleMap() : coRootMap;
+        this.coRootMap =
+            coRootMap == null ? new RuleGraphMorphism() : coRootMap;
         this.lhs = lhs;
         this.rhs = rhs;
         this.morphism = morphism;
@@ -370,8 +370,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         Set<RuleEdge> anchorEdges = new HashSet<RuleEdge>();
         if (getRootMap() != null) {
             anchorNodes.addAll(getRootMap().nodeMap().values());
-            for (Edge edge : getRootMap().edgeMap().values()) {
-                anchorEdges.add((RuleEdge) edge);
+            for (RuleEdge edge : getRootMap().edgeMap().values()) {
+                anchorEdges.add(edge);
             }
         }
         for (CtrlPar.Var par : getSignature()) {
@@ -485,7 +485,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         return this.rhs;
     }
 
-    public RuleToRuleMap getMorphism() {
+    public RuleGraphMorphism getMorphism() {
         return this.morphism;
     }
 
@@ -902,7 +902,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         return result;
     }
 
-    RuleToRuleMap getCoRootMap() {
+    RuleGraphMorphism getCoRootMap() {
         return this.coRootMap;
     }
 
@@ -1046,7 +1046,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * {@link #getCreatorGraph()}) that are not themselves creator nodes but are
      * the ends of creator edges, to the corresponding nodes of the LHS.
      */
-    final RuleToRuleMap getCreatorMap() {
+    final RuleGraphMorphism getCreatorMap() {
         if (this.creatorMap == null) {
             this.creatorMap = computeCreatorMap();
         }
@@ -1058,9 +1058,9 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * of creator edges that are not themselves creator nodes to one of their
      * pre-images.
      */
-    private RuleToRuleMap computeCreatorMap() {
+    private RuleGraphMorphism computeCreatorMap() {
         // construct rhsOnlyMap
-        RuleToRuleMap result = new RuleToRuleMap();
+        RuleGraphMorphism result = new RuleGraphMorphism();
         Set<? extends RuleNode> creatorNodes = getCreatorGraph().nodeSet();
         for (Map.Entry<RuleNode,RuleNode> nodeEntry : getMorphism().nodeMap().entrySet()) {
             if (creatorNodes.contains(nodeEntry.getValue())) {
@@ -1253,7 +1253,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * The underlying production morphism.
      * @invariant ruleMorph : lhs --> rhs
      */
-    private final RuleToRuleMap morphism;
+    private final RuleGraphMorphism morphism;
     /**
      * This production rule's left hand side.
      * @invariant lhs != null
@@ -1265,7 +1265,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     private RuleGraph rhs;
     /** Mapping from the context of this rule to the RHS. */
-    private final RuleToRuleMap coRootMap;
+    private final RuleGraphMorphism coRootMap;
     /**
      * Smallest subgraph of the left hand side that is necessary to apply the
      * rule.
@@ -1286,7 +1286,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * the restriction of the inverse of <tt>ruleMorph</tt> to
      * <tt>rhsOnlyGraph</tt>.
      */
-    private RuleToRuleMap creatorMap;
+    private RuleGraphMorphism creatorMap;
     /**
      * The lhs nodes that are not ruleMorph keys
      * @invariant lhsOnlyNodes \subseteq lhs.nodeSet()

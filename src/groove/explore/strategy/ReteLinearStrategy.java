@@ -17,7 +17,6 @@
 package groove.explore.strategy;
 
 import groove.explore.util.MatchSetCollector;
-import groove.graph.DeltaStore;
 import groove.lts.DefaultGraphNextState;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -27,6 +26,7 @@ import groove.lts.MatchResult;
 import groove.match.SearchEngineFactory;
 import groove.match.SearchEngineFactory.EngineType;
 import groove.match.rete.ReteSearchEngine;
+import groove.trans.DeltaStore;
 import groove.trans.Rule;
 import groove.trans.RuleMatch;
 import groove.trans.SystemRecord;

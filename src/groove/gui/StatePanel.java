@@ -26,7 +26,6 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.LabelStore;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.graph.TypeLabel;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
@@ -37,7 +36,10 @@ import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.trans.HostEdge;
 import groove.trans.HostGraph;
+import groove.trans.HostGraphMorphism;
+import groove.trans.HostNode;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
@@ -246,7 +248,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         GraphState newState = transition.target();
         GraphJModel<?,?> newModel = getStateJModel(newState, false);
         GraphState oldState = transition.source();
-        NodeEdgeMap morphism = transition.getMorphism();
+        HostGraphMorphism morphism = transition.getMorphism();
         copyLayout(getStateJModel(oldState, true), newModel, morphism);
         // set the graph model to the new state
         setJModel(newModel);
@@ -367,7 +369,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         if (copyLayout) {
             if (state instanceof GraphNextState) {
                 GraphState oldState = ((GraphNextState) state).source();
-                NodeEdgeMap morphism = ((GraphNextState) state).getMorphism();
+                HostGraphMorphism morphism =
+                    ((GraphNextState) state).getMorphism();
                 // walk back along the derivation chain to find one for
                 // which we have a state model (and hence layout information)
                 while (!this.stateJModelMap.containsKey(oldState)
@@ -418,9 +421,9 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      *        new j-model
      */
     private void copyLayout(GraphJModel<?,?> oldStateJModel,
-            GraphJModel<?,?> newStateJModel, NodeEdgeMap derivationMap) {
+            GraphJModel<?,?> newStateJModel, HostGraphMorphism derivationMap) {
         Set<JCell> newGrayedOut = new HashSet<JCell>();
-        for (Map.Entry<Node,Node> entry : derivationMap.nodeMap().entrySet()) {
+        for (Map.Entry<HostNode,HostNode> entry : derivationMap.nodeMap().entrySet()) {
             JCell sourceCell = oldStateJModel.getJCell(entry.getKey());
             assert sourceCell != null : "Source element " + entry.getKey()
                 + " unknown";
@@ -437,7 +440,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         }
         Set<Edge> newEdges =
             new HashSet<Edge>(newStateJModel.getGraph().edgeSet());
-        for (Map.Entry<Edge,Edge> entry : derivationMap.edgeMap().entrySet()) {
+        for (Map.Entry<HostEdge,HostEdge> entry : derivationMap.edgeMap().entrySet()) {
             JCell sourceCell = oldStateJModel.getJCell(entry.getKey());
             AttributeMap sourceAttributes = sourceCell.getAttributes();
             JCell targetCell = newStateJModel.getJCell(entry.getValue());

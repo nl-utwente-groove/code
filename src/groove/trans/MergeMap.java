@@ -14,11 +14,10 @@
  * 
  * $Id: MergeMap.java,v 1.7 2008-01-30 09:32:51 iovka Exp $
  */
-package groove.graph;
+package groove.trans;
 
-import groove.trans.HostEdge;
-import groove.trans.HostFactory;
-import groove.trans.HostNode;
+import groove.graph.Morphism;
+import groove.graph.TypeLabel;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -32,15 +31,13 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class MergeMap
-        extends
-        GraphToGraphMap<HostNode,TypeLabel,HostEdge,HostNode,TypeLabel,HostEdge> {
+public class MergeMap extends Morphism<HostNode,TypeLabel,HostEdge> {
     /**
      * Creates a global identity function.
      */
     public MergeMap() {
-        this.mergeTargets = new HashSet<Node>();
-        // empty constructor
+        super(HostFactory.instance());
+        this.mergeTargets = new HashSet<HostNode>();
     }
 
     /**
@@ -204,8 +201,9 @@ public class MergeMap
      * Set of nodes to which other nodes are mapped. The merge targets are
      * themselves fixpoints of the merge map.
      */
-    private final Set<Node> mergeTargets;
+    private final Set<HostNode> mergeTargets;
 
     /** Internal representation of undefined. */
-    static public final HostNode UNDEFINED = DefaultNode.createNode();
+    static public final HostNode UNDEFINED =
+        HostFactory.instance().createNode();
 }

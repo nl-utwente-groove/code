@@ -17,10 +17,8 @@
 package groove.match;
 
 import groove.graph.DefaultNode;
-import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.LabelStore;
-import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ValueNode;
@@ -445,10 +443,10 @@ public class GraphSearchPlanFactory {
          * Constructs a comparator on the basis of a given set of unmatched
          * edges.
          */
-        IndegreeComparator(Set<? extends Edge> remainingEdges) {
+        IndegreeComparator(Set<? extends RuleEdge> remainingEdges) {
             // compute indegrees
-            Bag<Node> indegrees = new HashBag<Node>();
-            for (Edge edge : remainingEdges) {
+            Bag<RuleNode> indegrees = new HashBag<RuleNode>();
+            for (RuleEdge edge : remainingEdges) {
                 if (!edge.target().equals(edge.source())) {
                     indegrees.add(edge.target());
                 }
@@ -464,8 +462,8 @@ public class GraphSearchPlanFactory {
             int result = 0;
             if (item1 instanceof Edge2SearchItem
                 && item2 instanceof Edge2SearchItem) {
-                Edge first = ((Edge2SearchItem) item1).getEdge();
-                Edge second = ((Edge2SearchItem) item2).getEdge();
+                RuleEdge first = ((Edge2SearchItem) item1).getEdge();
+                RuleEdge second = ((Edge2SearchItem) item2).getEdge();
                 // first test for the indegree of the source (lower = better)
                 result = indegree(second.source()) - indegree(first.source());
                 if (result == 0) {
@@ -483,7 +481,7 @@ public class GraphSearchPlanFactory {
          */
         public void update(Observable o, Object arg) {
             if (arg instanceof Edge2SearchItem) {
-                Edge selected = ((Edge2SearchItem) arg).getEdge();
+                RuleEdge selected = ((Edge2SearchItem) arg).getEdge();
                 this.indegrees.remove(selected.target());
             }
         }
@@ -491,14 +489,14 @@ public class GraphSearchPlanFactory {
         /**
          * Returns the indegree of a given node.
          */
-        private int indegree(Node node) {
+        private int indegree(RuleNode node) {
             return this.indegrees.multiplicity(node);
         }
 
         /**
          * The indegrees.
          */
-        private final Bag<Node> indegrees;
+        private final Bag<RuleNode> indegrees;
     }
 
     /**
@@ -574,7 +572,7 @@ public class GraphSearchPlanFactory {
          */
         private int getConnectCount(SearchItem item) {
             int result = 0;
-            for (Node node : item.bindsNodes()) {
+            for (RuleNode node : item.bindsNodes()) {
                 if (!this.remainingNodes.contains(node)) {
                     result++;
                 }
@@ -600,7 +598,7 @@ public class GraphSearchPlanFactory {
      * @version $Revision$
      */
     static class BoundPartsComparator implements Comparator<SearchItem> {
-        BoundPartsComparator(Set<Node> remainingNodes,
+        BoundPartsComparator(Set<RuleNode> remainingNodes,
                 Set<LabelVar> remainingVars) {
             this.remainingNodes = remainingNodes;
             this.remainingVars = remainingVars;
@@ -620,7 +618,7 @@ public class GraphSearchPlanFactory {
          */
         private int getBoundCount(SearchItem item) {
             int result = 0;
-            for (Node node : item.bindsNodes()) {
+            for (RuleNode node : item.bindsNodes()) {
                 if (this.remainingNodes.contains(node)) {
                     result++;
                 }
@@ -634,7 +632,7 @@ public class GraphSearchPlanFactory {
         }
 
         /** The set of (as yet) unscheduled nodes. */
-        private final Set<Node> remainingNodes;
+        private final Set<RuleNode> remainingNodes;
         /** The set of (as yet) unscheduled variables. */
         private final Set<LabelVar> remainingVars;
     }

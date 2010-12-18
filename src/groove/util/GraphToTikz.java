@@ -77,7 +77,7 @@ public final class GraphToTikz {
             model.synchroniseLayout(vertex);
             JVertexLayout layout = null;
             if (layoutMap != null) {
-                layout = layoutMap.getNode(node);
+                layout = layoutMap.getLayout(node);
             }
             boolean isEmphasized = model.isEmphasized(vertex);
             boolean isGrayedOut = model.isGrayedOut(vertex);
@@ -88,7 +88,7 @@ public final class GraphToTikz {
         for (E edge : graph.edgeSet()) {
             JEdgeLayout layout = null;
             if (layoutMap != null) {
-                layout = layoutMap.getEdge(edge);
+                layout = layoutMap.getLayout(edge);
             }
             JCell jCell = model.getJCell(edge);
             boolean isEmphasized = model.isEmphasized(jCell);
@@ -477,7 +477,7 @@ public final class GraphToTikz {
             LayoutMap<N,E> layoutMap, StringBuilder s) {
 
         if (layoutMap != null) {
-            JVertexLayout tgtLayout = layoutMap.getNode(tgtNode.getNode());
+            JVertexLayout tgtLayout = layoutMap.getLayout(tgtNode.getNode());
             if (tgtLayout != null) {
                 Rectangle2D tgtBounds = tgtLayout.getBounds();
                 Point2D tgtCenter =
@@ -501,8 +501,8 @@ public final class GraphToTikz {
             LayoutMap<N,E> layoutMap, StringBuilder s) {
 
         if (layoutMap != null) {
-            JVertexLayout srcLayout = layoutMap.getNode(srcNode.getNode());
-            JVertexLayout tgtLayout = layoutMap.getNode(tgtNode.getNode());
+            JVertexLayout srcLayout = layoutMap.getLayout(srcNode.getNode());
+            JVertexLayout tgtLayout = layoutMap.getLayout(tgtNode.getNode());
             if (srcLayout != null && tgtLayout != null) {
                 Rectangle2D tgtBounds = tgtLayout.getBounds();
                 Point2D tgtCenter =
@@ -738,7 +738,7 @@ public final class GraphToTikz {
         boolean result = false;
 
         if (layoutMap != null) {
-            JVertexLayout layout = layoutMap.getNode(tgtVertex.getNode());
+            JVertexLayout layout = layoutMap.getLayout(tgtVertex.getNode());
             if (layout != null) {
                 Rectangle2D tgtBounds = layout.getBounds();
                 if (points.get(index).getY() == points.get(index + 1).getY()
@@ -764,7 +764,7 @@ public final class GraphToTikz {
 
         int side = 0;
         if (layoutMap != null) {
-            JVertexLayout layout = layoutMap.getNode(vertex.getNode());
+            JVertexLayout layout = layoutMap.getLayout(vertex.getNode());
             if (layout != null) {
                 Rectangle2D bounds = layout.getBounds();
                 side = getSide(bounds, point);

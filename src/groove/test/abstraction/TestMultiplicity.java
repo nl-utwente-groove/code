@@ -23,8 +23,6 @@ import groove.abstraction.Parameters;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
-import groove.graph.Edge;
-import groove.graph.Node;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -50,7 +48,7 @@ public class TestMultiplicity {
     public void testGetNodeSetMult() {
         Parameters.setNodeMultBound(2);
         Multiplicity.initMultStore();
-        Set<Node> nodes = new HashSet<Node>(3);
+        Set<DefaultNode> nodes = new HashSet<DefaultNode>(3);
         assertTrue(Multiplicity.getMultOf(0).equals(
             Multiplicity.getNodeSetMult(nodes)));
         nodes.add(DefaultNode.createNode());
@@ -67,7 +65,7 @@ public class TestMultiplicity {
     public void testGetEdgeSetMult() {
         Parameters.setEdgeMultBound(2);
         Multiplicity.initMultStore();
-        Set<Edge> edges = new HashSet<Edge>(3);
+        Set<DefaultEdge> edges = new HashSet<DefaultEdge>(3);
         assertTrue(Multiplicity.getMultOf(0).equals(
             Multiplicity.getEdgeSetMult(edges)));
         edges.add(DefaultEdge.createEdge(DefaultNode.createNode(),

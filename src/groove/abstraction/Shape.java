@@ -20,7 +20,7 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
+import groove.graph.GraphMorphism;
 import groove.graph.TypeLabel;
 import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.graph.iso.DefaultIsoChecker;
@@ -235,6 +235,12 @@ public final class Shape extends DefaultHostGraph {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
+    public Set<ShapeEdge> inEdgeSet(Node node) {
+        return (Set<ShapeEdge>) super.inEdgeSet(node);
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Nodes:\n");
@@ -243,13 +249,15 @@ public final class Shape extends DefaultHostGraph {
             sb.append(Util.getNodeLabels(this, node) + "\n");
         }
         sb.append("Edges:\n");
-        for (Edge edge : Util.getBinaryEdges(this)) {
-            ShapeEdge e = (ShapeEdge) edge;
+        for (ShapeEdge e : edgeSet()) {
+            if (!e.isBinary()) {
+                continue;
+            }
             String frozen = "";
             if (this.isFrozen(e)) {
                 frozen = " F ";
             }
-            sb.append("  " + this.getEdgeOutMult(e) + ":" + edge + ":"
+            sb.append("  " + this.getEdgeOutMult(e) + ":" + e + ":"
                 + this.getEdgeInMult(e) + frozen + "\n");
         }
         return sb.toString();
@@ -296,7 +304,7 @@ public final class Shape extends DefaultHostGraph {
         ShapeEdge edgeS = (ShapeEdge) edge;
         boolean added = super.addEdgeWithoutCheck(edgeS);
         if (added) {
-            if (!Util.isUnary(edgeS)) {
+            if (edgeS.isBinary()) {
                 Multiplicity zero = Multiplicity.getMultOf(0);
                 Multiplicity one = Multiplicity.getMultOf(1);
 
@@ -579,7 +587,7 @@ public final class Shape extends DefaultHostGraph {
     private void createEdgeMultMaps(GraphNeighEquiv currGraphNeighEquiv) {
         assert !this.isFrozen();
         // For all binary labels.
-        for (TypeLabel label : Util.binaryLabelSet(this.graph)) {
+        for (TypeLabel label : Util.getBinaryLabels(this.graph)) {
             // For all nodes in the graph.
             for (HostNode node : this.graph.nodeSet()) {
                 ShapeNode nodeS = this.getShapeNode(node);
@@ -619,7 +627,7 @@ public final class Shape extends DefaultHostGraph {
         // Original shape (S).
         Shape origShape = (Shape) this.graph;
         // For all binary labels.
-        for (TypeLabel label : Util.binaryLabelSet(origShape)) {
+        for (TypeLabel label : Util.getBinaryLabels(origShape)) {
             // For all the nodes in the new shape (T).
             for (ShapeNode nodeT : this.nodeSet()) {
                 // First get a node from S that is part of the equivalence class
@@ -941,7 +949,7 @@ public final class Shape extends DefaultHostGraph {
     private void copyUnaryEdges(ShapeNode from, ShapeNode to) {
         assert !this.isFrozen();
         for (HostEdge edge : this.outEdgeSet(from)) {
-            if (Util.isUnary(edge)) {
+            if (!edge.isBinary()) {
                 TypeLabel label = edge.label();
                 this.addEdge(to, label, to);
             }
@@ -952,7 +960,7 @@ public final class Shape extends DefaultHostGraph {
     public Set<ShapeEdge> outBinaryEdgeSet(ShapeNode source) {
         Set<ShapeEdge> result = new HashSet<ShapeEdge>();
         for (ShapeEdge edge : this.outEdgeSet(source)) {
-            if (!Util.isUnary(edge)) {
+            if (edge.isBinary()) {
                 result.add(edge);
             }
         }
@@ -963,7 +971,7 @@ public final class Shape extends DefaultHostGraph {
     public Set<ShapeEdge> inBinaryEdgeSet(ShapeNode target) {
         Set<ShapeEdge> result = new HashSet<ShapeEdge>();
         for (ShapeEdge edge : this.edgeSet(target)) {
-            if (!Util.isUnary(edge) && edge.target().equals(target)) {
+            if (edge.isBinary() && edge.target().equals(target)) {
                 result.add(edge);
             }
         }
@@ -1461,7 +1469,8 @@ public final class Shape extends DefaultHostGraph {
         boolean result = false;
         IsoCheckerState state = new IsoCheckerState();
         DefaultIsoChecker isoChecker = DefaultIsoChecker.getInstance(true);
-        NodeEdgeMap morphism = isoChecker.getIsomorphism(this, other, state);
+        GraphMorphism morphism =
+            isoChecker.getIsomorphism(this, other, state);
         while (morphism != null) {
             // We found an isomorphism between the graph structures.
             // Check for the extra conditions.
@@ -1490,10 +1499,10 @@ public final class Shape extends DefaultHostGraph {
      * (2) they have the same outgoing and incoming edge multiplicities; and
      * (3) they have the same equivalence relation. 
      */
-    private boolean isValidIsomorphism(NodeEdgeMap morphism, Shape shape) {
+    private boolean isValidIsomorphism(GraphMorphism morphism, Shape shape) {
         // First check the node multiplicities.
         boolean complyToNodeMult = true;
-        for (Entry<Node,Node> nodeEntry : morphism.nodeMap().entrySet()) {
+        for (Entry<Node,? extends Node> nodeEntry : morphism.nodeMap().entrySet()) {
             ShapeNode domNode = (ShapeNode) nodeEntry.getKey();
             ShapeNode codNode = (ShapeNode) nodeEntry.getValue();
             Multiplicity domNMult = this.getNodeMult(domNode);
@@ -1507,7 +1516,7 @@ public final class Shape extends DefaultHostGraph {
         // Now check the edge multiplicities.
         boolean complyToEdgeMult = true;
         if (complyToNodeMult) {
-            for (Entry<Edge,Edge> edgeEntry : morphism.edgeMap().entrySet()) {
+            for (Entry<Edge,? extends Edge> edgeEntry : morphism.edgeMap().entrySet()) {
                 ShapeEdge domEdge = (ShapeEdge) edgeEntry.getKey();
                 ShapeEdge codEdge = (ShapeEdge) edgeEntry.getValue();
                 // Outgoing multiplicities.
@@ -1581,7 +1590,7 @@ public final class Shape extends DefaultHostGraph {
         }
 
         // For all labels.
-        for (TypeLabel label : Util.binaryLabelSet(this)) {
+        for (TypeLabel label : Util.getBinaryLabels(this)) {
             // For all nodes in the shape.
             for (ShapeNode node : this.nodeSet()) {
                 // For all equivalence classes.

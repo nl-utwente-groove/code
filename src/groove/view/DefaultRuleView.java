@@ -24,7 +24,6 @@ import groove.control.CtrlVar;
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Element;
-import groove.graph.ElementFactory;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
@@ -43,10 +42,10 @@ import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleFactory;
 import groove.trans.RuleGraph;
+import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleLabel;
 import groove.trans.RuleName;
 import groove.trans.RuleNode;
-import groove.trans.RuleToRuleMap;
 import groove.trans.SPORule;
 import groove.trans.SystemProperties;
 import groove.util.DefaultFixable;
@@ -388,7 +387,8 @@ public class DefaultRuleView implements RuleView {
      *         way in <code>context</code>
      */
     private RuleEdge computeEdgeImage(AspectEdge edge,
-            Map<AspectNode,RuleNode> elementMap) throws FormatException {
+            Map<AspectNode,? extends RuleNode> elementMap)
+        throws FormatException {
         assert edge.getModelLabel() != null : String.format(
             "Edge '%s' does not belong in model", edge);
         RuleNode sourceImage = elementMap.get(edge.source());
@@ -982,10 +982,10 @@ public class DefaultRuleView implements RuleView {
         /** Returns the inverse of the view-to-rule map. */
         public final Map<Element,Element> getRuleToViewMap() {
             Map<Element,Element> result = new HashMap<Element,Element>();
-            for (Map.Entry<AspectNode,RuleNode> nodeEntry : this.viewToRuleMap.nodeMap().entrySet()) {
+            for (Map.Entry<AspectNode,? extends RuleNode> nodeEntry : this.viewToRuleMap.nodeMap().entrySet()) {
                 result.put(nodeEntry.getValue(), nodeEntry.getKey());
             }
-            for (Map.Entry<AspectEdge,RuleEdge> edgeEntry : this.viewToRuleMap.edgeMap().entrySet()) {
+            for (Map.Entry<AspectEdge,? extends RuleEdge> edgeEntry : this.viewToRuleMap.edgeMap().entrySet()) {
                 result.put(edgeEntry.getValue(), edgeEntry.getKey());
             }
             return result;
@@ -1210,7 +1210,7 @@ public class DefaultRuleView implements RuleView {
             this.typableNodes = new HashSet<RuleNode>();
             this.typableEdges = new HashSet<RuleEdge>();
             Set<FormatError> errors = new TreeSet<FormatError>();
-            for (Map.Entry<AspectNode,RuleNode> viewNodeEntry : this.viewToLevelMap.nodeMap().entrySet()) {
+            for (Map.Entry<AspectNode,? extends RuleNode> viewNodeEntry : this.viewToLevelMap.nodeMap().entrySet()) {
                 try {
                     processNode(viewNodeEntry.getKey(),
                         viewNodeEntry.getValue());
@@ -1222,7 +1222,7 @@ public class DefaultRuleView implements RuleView {
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
             }
-            for (Map.Entry<AspectEdge,RuleEdge> viewEdgeEntry : this.viewToLevelMap.edgeMap().entrySet()) {
+            for (Map.Entry<AspectEdge,? extends RuleEdge> viewEdgeEntry : this.viewToLevelMap.edgeMap().entrySet()) {
                 try {
                     processEdge(viewEdgeEntry.getKey(),
                         viewEdgeEntry.getValue());
@@ -1328,7 +1328,7 @@ public class DefaultRuleView implements RuleView {
          * Returns the mapping from the LHS rule elements at the parent level to
          * the LHS rule elements at this level.
          */
-        private RuleToRuleMap getRootMap() {
+        private RuleGraphMorphism getRootMap() {
             testMode(LevelMode.FIXED);
             return this.index.isTopLevel() ? null : getConnectingMap(
                 this.parent.lhsMap, this.lhsMap);
@@ -1338,7 +1338,7 @@ public class DefaultRuleView implements RuleView {
          * Returns the mapping from the RHS rule elements at the parent level to
          * the RHS rule elements at this level.
          */
-        private RuleToRuleMap getCoRootMap() {
+        private RuleGraphMorphism getCoRootMap() {
             testMode(LevelMode.FIXED);
             return this.index.isTopLevel() ? null : getConnectingMap(
                 this.parent.parent.rhsMap, this.rhsMap);
@@ -1348,9 +1348,9 @@ public class DefaultRuleView implements RuleView {
          * Returns a mapping from the rule elements at a parent level to the
          * rule elements at this level, given view-to-rule maps for both levels.
          */
-        private RuleToRuleMap getConnectingMap(ViewToRuleMap parentMap,
+        private RuleGraphMorphism getConnectingMap(ViewToRuleMap parentMap,
                 ViewToRuleMap myMap) {
-            RuleToRuleMap result = new RuleToRuleMap();
+            RuleGraphMorphism result = new RuleGraphMorphism();
             for (Map.Entry<AspectNode,RuleNode> parentEntry : parentMap.nodeMap().entrySet()) {
                 RuleNode image = myMap.getNode(parentEntry.getKey());
                 if (image != null) {
@@ -1668,7 +1668,7 @@ public class DefaultRuleView implements RuleView {
                 // if we're here it means we couldn't make an embargo
                 result = createNAC(lhs);
                 RuleGraph nacTarget = result.getTarget();
-                RuleToRuleMap nacPatternMap = result.getRootMap();
+                RuleGraphMorphism nacPatternMap = result.getRootMap();
                 // add all nodes to nacTarget
                 nacTarget.addNodeSet(nacNodeSet);
                 // if the rule is injective, add all lhs nodes to the pattern
@@ -1720,7 +1720,7 @@ public class DefaultRuleView implements RuleView {
          * Adds a given node to a NAC pattern map.
          */
         private void addToNacPattern(RuleGraph nacTarget,
-                RuleToRuleMap nacPatternMap, RuleNode node) {
+                RuleGraphMorphism nacPatternMap, RuleNode node) {
             if (nacTarget.addNode(node)) {
                 // the node identity in the lhs is the same
                 nacPatternMap.putNode(node, node);
@@ -1774,8 +1774,8 @@ public class DefaultRuleView implements RuleView {
          * @return the fresh rule created by the factory
          */
         private SPORule createRule(String name, RuleGraph lhs, RuleGraph rhs,
-                RuleToRuleMap ruleMorphism, RuleToRuleMap rootMap,
-                RuleToRuleMap coRootMap) {
+                RuleGraphMorphism ruleMorphism, RuleGraphMorphism rootMap,
+                RuleGraphMorphism coRootMap) {
             SPORule result =
                 new SPORule(new RuleName(name), lhs, rhs, ruleMorphism,
                     rootMap, coRootMap, new GraphProperties(),
@@ -1793,7 +1793,7 @@ public class DefaultRuleView implements RuleView {
          * @return the fresh condition
          */
         private ForallCondition createForall(RuleGraph target,
-                RuleToRuleMap rootMap, String name, boolean positive) {
+                RuleGraphMorphism rootMap, String name, boolean positive) {
             ForallCondition result =
                 new ForallCondition(new RuleName(name), target, rootMap,
                     getSystemProperties());
@@ -1807,8 +1807,8 @@ public class DefaultRuleView implements RuleView {
          * Callback method to create an ordinary graph morphism.
          * @see #toRule()
          */
-        private RuleToRuleMap createMorphism() {
-            return new RuleToRuleMap();
+        private RuleGraphMorphism createMorphism() {
+            return new RuleGraphMorphism();
         }
 
         /**
@@ -1878,7 +1878,7 @@ public class DefaultRuleView implements RuleView {
         /** Set of all (lhs and rhs) typable edges. */
         private Set<RuleEdge> typableEdges;
         /** Rule morphism (from LHS to RHS). */
-        private RuleToRuleMap ruleMorph;
+        private RuleGraphMorphism ruleMorph;
         /** The set of nodes appearing in NACs. */
         private Set<RuleNode> nacNodeSet;
         /** The set of edges appearing in NACs. */
@@ -2037,14 +2037,16 @@ public class DefaultRuleView implements RuleView {
     /** Mapping from aspect graph elements to rule graph elements. */
     public static class ViewToRuleMap extends
             ViewToModelMap<RuleNode,RuleLabel,RuleEdge> {
-        @Override
-        public ViewToRuleMap newMap() {
-            return new ViewToRuleMap();
+        /**
+         * Creates a new, empty map.
+         */
+        public ViewToRuleMap() {
+            super(RuleFactory.instance());
         }
 
         @Override
-        public ElementFactory<RuleNode,RuleLabel,RuleEdge> getFactory() {
-            return RuleFactory.INSTANCE;
+        public ViewToRuleMap newMap() {
+            return new ViewToRuleMap();
         }
     }
 }

@@ -57,7 +57,7 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
         Set<EquivClass<ShapeNode>> kSet = new HashSet<EquivClass<ShapeNode>>();
         boolean equiv = true;
         // For all labels.
-        labelLoop: for (TypeLabel label : Util.binaryLabelSet(this.graph)) {
+        labelLoop: for (TypeLabel label : Util.getBinaryLabels(this.graph)) {
             // For all equivalence classes.
             for (EquivClass<HostNode> ec : this) {
                 // Compute the set of equivalence classes from the shape that

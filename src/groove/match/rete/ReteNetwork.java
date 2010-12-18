@@ -36,7 +36,7 @@ import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
 import groove.trans.RuleName;
 import groove.trans.RuleNode;
-import groove.trans.RuleToRuleMap;
+import groove.trans.RuleGraphMorphism;
 import groove.util.TreeHashSet;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
@@ -398,7 +398,7 @@ public class ReteNetwork {
         return result;
     }
 
-    private RuleNode translate(RuleToRuleMap translationMap, RuleNode node) {
+    private RuleNode translate(RuleGraphMorphism translationMap, RuleNode node) {
         RuleNode result = node;
         if (translationMap != null) {
             result = translationMap.getNode(node);
@@ -409,7 +409,7 @@ public class ReteNetwork {
         return result;
     }
 
-    private Edge translate(RuleToRuleMap translationMap, RuleEdge edge) {
+    private Edge translate(RuleGraphMorphism translationMap, RuleEdge edge) {
         RuleEdge result = edge;
         if (translationMap != null) {
             RuleNode n1 = translate(translationMap, edge.source());
@@ -516,7 +516,7 @@ public class ReteNetwork {
     }
 
     private ReteStaticMapping duplicateAndTranslateMapping(
-            ReteStaticMapping source, RuleToRuleMap translationMap) {
+            ReteStaticMapping source, RuleGraphMorphism translationMap) {
         ReteStaticMapping result = null;
         if (source != null) {
             Element[] oldElements = source.getElements();

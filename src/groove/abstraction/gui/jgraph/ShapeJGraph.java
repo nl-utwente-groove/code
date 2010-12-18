@@ -22,8 +22,6 @@ import groove.abstraction.EquivRelation;
 import groove.abstraction.Shape;
 import groove.abstraction.ShapeEdge;
 import groove.abstraction.ShapeNode;
-import groove.abstraction.Util;
-import groove.graph.Edge;
 import groove.gui.jgraph.JAttr;
 
 import java.awt.Dimension;
@@ -154,8 +152,10 @@ public class ShapeJGraph extends JGraph {
 
     private void createEdges() {
         ArrayList<ShapeJEdge> edges = new ArrayList<ShapeJEdge>();
-        for (Edge edge : Util.getBinaryEdges(this.shape)) {
-            ShapeEdge edgeS = (ShapeEdge) edge;
+        for (ShapeEdge edgeS : this.shape.edgeSet()) {
+            if (!edgeS.isBinary()) {
+                continue;
+            }
             EdgeSignature outEs = this.shape.getEdgeOutSignature(edgeS);
             EdgeSignature inEs = this.shape.getEdgeInSignature(edgeS);
             Port source = this.outEsMap.get(outEs);
@@ -185,8 +185,10 @@ public class ShapeJGraph extends JGraph {
         HashMap<ShapeEdge,String> edge2InMult = new HashMap<ShapeEdge,String>();
         this.getEdgeToMultMaps(edge2OutMult, edge2InMult);
 
-        for (Edge edge : Util.getBinaryEdges(this.shape)) {
-            ShapeEdge edgeS = (ShapeEdge) edge;
+        for (ShapeEdge edgeS : this.shape.edgeSet()) {
+            if (!edgeS.isBinary()) {
+                continue;
+            }
             ShapeJEdge jEdge = this.edgeMap.get(edgeS);
             String labels[] = new String[2];
             labels[0] = edge2InMult.get(edgeS);
@@ -262,9 +264,11 @@ public class ShapeJGraph extends JGraph {
             inPort2Edge.put(inPort, null);
         }
 
-        for (Edge edge : Util.getBinaryEdges(this.shape)) {
-            edge2OutMult.put((ShapeEdge) edge, null);
-            edge2InMult.put((ShapeEdge) edge, null);
+        for (ShapeEdge edge : this.shape.edgeSet()) {
+            if (edge.isBinary()) {
+                edge2OutMult.put(edge, null);
+                edge2InMult.put(edge, null);
+            }
         }
 
         for (Entry<EdgeSignature,ShapeJPort> entry : this.outEsMap.entrySet()) {

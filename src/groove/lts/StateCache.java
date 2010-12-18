@@ -17,13 +17,13 @@
 package groove.lts;
 
 import groove.control.CtrlCall;
-import groove.graph.DeltaApplier;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.FrozenDeltaApplier;
 import groove.graph.Node;
 import groove.trans.DefaultApplication;
+import groove.trans.DeltaApplier;
 import groove.trans.DeltaHostGraph;
+import groove.trans.FrozenDeltaApplier;
 import groove.trans.HostGraph;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;

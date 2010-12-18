@@ -16,7 +16,6 @@
  */
 package groove.abstraction;
 
-import groove.graph.Edge;
 import groove.graph.TypeLabel;
 
 /**
@@ -99,7 +98,7 @@ public final class EdgeSignature {
      * for outgoing edges, contains the edge (e) given as argument.
      * The test is true if n == src(e) && l == lbl(e) && tgt(e) \in C .
      */
-    public boolean asOutSigContains(Edge edge) {
+    public boolean asOutSigContains(ShapeEdge edge) {
         return this.node.equals(edge.source())
             && this.label.equals(edge.label())
             && this.equivClass.contains(edge.target());
@@ -110,7 +109,7 @@ public final class EdgeSignature {
      * for incoming edges, contains the edge (e) given as argument.
      * The test is true if n == tgt(e) && l == lbl(e) && src(e) \in C .
      */
-    public boolean asInSigContains(Edge edge) {
+    public boolean asInSigContains(ShapeEdge edge) {
         return this.node.equals(edge.target())
             && this.label.equals(edge.label())
             && this.equivClass.contains(edge.source());

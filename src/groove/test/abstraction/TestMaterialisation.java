@@ -22,7 +22,7 @@ import groove.abstraction.Materialisation;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.PreMatch;
 import groove.abstraction.Shape;
-import groove.abstraction.Util;
+import groove.abstraction.ShapeEdge;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
 import groove.trans.Rule;
@@ -32,6 +32,7 @@ import groove.view.StoredGrammarView;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.BeforeClass;
@@ -68,10 +69,9 @@ public class TestMaterialisation {
                 assertEquals(6, mats.size());
                 for (Materialisation mat : mats) {
                     Shape matShape = mat.getShape();
-                    assertTrue((matShape.nodeSet().size() == 5 && Util.getBinaryEdges(
-                        matShape).size() == 4)
-                        || (matShape.nodeSet().size() == 6 && Util.getBinaryEdges(
-                            matShape).size() == 7));
+                    int binaryEdgeCount = getBinaryEdges(matShape).size();
+                    assertTrue((matShape.nodeSet().size() == 5 && binaryEdgeCount == 4)
+                        || (matShape.nodeSet().size() == 6 && binaryEdgeCount == 7));
                 }
             }
         } catch (IOException e) {
@@ -99,10 +99,9 @@ public class TestMaterialisation {
                 assertEquals(3, mats.size());
                 for (Materialisation mat : mats) {
                     Shape matShape = mat.getShape();
-                    assertTrue((matShape.nodeSet().size() == 4 && Util.getBinaryEdges(
-                        matShape).size() == 3)
-                        || (matShape.nodeSet().size() == 3 && Util.getBinaryEdges(
-                            matShape).size() == 2));
+                    int binaryEdgeCount = getBinaryEdges(matShape).size();
+                    assertTrue((matShape.nodeSet().size() == 4 && binaryEdgeCount == 3)
+                        || (matShape.nodeSet().size() == 3 && binaryEdgeCount == 2));
                 }
             }
         } catch (IOException e) {
@@ -130,10 +129,9 @@ public class TestMaterialisation {
                 assertEquals(6, mats.size());
                 for (Materialisation mat : mats) {
                     Shape matShape = mat.getShape();
-                    assertTrue((matShape.nodeSet().size() == 5 && Util.getBinaryEdges(
-                        matShape).size() == 3)
-                        || (matShape.nodeSet().size() == 6 && Util.getBinaryEdges(
-                            matShape).size() == 4));
+                    int binaryEdgeCount = getBinaryEdges(matShape).size();
+                    assertTrue((matShape.nodeSet().size() == 5 && binaryEdgeCount == 3)
+                        || (matShape.nodeSet().size() == 6 && binaryEdgeCount == 4));
                 }
             }
         } catch (IOException e) {
@@ -160,13 +158,13 @@ public class TestMaterialisation {
                 assertEquals(2, mats.size());
                 for (Materialisation mat : mats) {
                     assertEquals(5, mat.getShape().nodeSet().size());
-                    assertEquals(7, Util.getBinaryEdges(mat.getShape()).size());
+                    assertEquals(7, getBinaryEdges(mat.getShape()).size());
                     Shape result = mat.applyMatch();
                     assertEquals(6, result.nodeSet().size());
-                    assertEquals(8, Util.getBinaryEdges(result).size());
+                    assertEquals(8, getBinaryEdges(result).size());
                     Shape normalisedShape = result.normalise();
                     assertEquals(4, normalisedShape.nodeSet().size());
-                    assertEquals(5, Util.getBinaryEdges(normalisedShape).size());
+                    assertEquals(5, getBinaryEdges(normalisedShape).size());
                 }
             }
         } catch (IOException e) {
@@ -174,5 +172,15 @@ public class TestMaterialisation {
         } catch (FormatException e) {
             e.printStackTrace();
         }
+    }
+
+    private Set<ShapeEdge> getBinaryEdges(Shape shape) {
+        Set<ShapeEdge> result = new HashSet<ShapeEdge>();
+        for (ShapeEdge edge : shape.edgeSet()) {
+            if (edge.isBinary()) {
+                result.add(edge);
+            }
+        }
+        return result;
     }
 }

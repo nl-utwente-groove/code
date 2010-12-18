@@ -16,13 +16,12 @@
  */
 package groove.view;
 
-import groove.graph.ElementFactory;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
-import groove.graph.TypeFactory;
 import groove.graph.Node;
 import groove.graph.TypeEdge;
+import groove.graph.TypeFactory;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
@@ -296,14 +295,16 @@ public class DefaultTypeView implements TypeView {
     /** Mapping from type graph elements to rule graph elements. */
     public static class ViewToTypeMap extends
             ViewToModelMap<TypeNode,TypeLabel,TypeEdge> {
-        @Override
-        public ViewToTypeMap newMap() {
-            return new ViewToTypeMap();
+        /**
+         * Creates a new, empty map.
+         */
+        public ViewToTypeMap() {
+            super(TypeFactory.instance());
         }
 
         @Override
-        public ElementFactory<TypeNode,TypeLabel,TypeEdge> getFactory() {
-            return TypeFactory.INSTANCE;
+        public ViewToTypeMap newMap() {
+            return new ViewToTypeMap();
         }
     }
 }

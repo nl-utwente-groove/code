@@ -16,8 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.DeltaApplier;
-import groove.graph.DeltaTarget;
 
 /**
  * Interface to wrap the computation involved in applying a production rule.

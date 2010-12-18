@@ -29,7 +29,7 @@ import java.util.List;
 public class ForallCondition extends AbstractCondition<CompositeMatch> {
     /** Constructs an instance based on a given target and root map. */
     public ForallCondition(RuleName name, RuleGraph target,
-            RuleToRuleMap rootMap, SystemProperties properties) {
+            RuleGraphMorphism rootMap, SystemProperties properties) {
         super(name, target, rootMap, properties);
     }
 

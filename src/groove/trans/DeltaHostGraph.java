@@ -18,11 +18,7 @@ package groove.trans;
 
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultGraph;
-import groove.graph.DeltaApplier;
-import groove.graph.DeltaStore;
-import groove.graph.DeltaTarget;
 import groove.graph.Edge;
-import groove.graph.FrozenDeltaApplier;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeLabel;

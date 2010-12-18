@@ -14,10 +14,8 @@
  * 
  * $Id: DeltaTarget.java,v 1.3 2008-01-30 09:32:51 iovka Exp $
  */
-package groove.graph;
+package groove.trans;
 
-import groove.trans.HostEdge;
-import groove.trans.HostNode;
 
 /**
  * Command interface to deal with graph changes.

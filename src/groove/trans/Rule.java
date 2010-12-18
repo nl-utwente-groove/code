@@ -70,7 +70,7 @@ public interface Rule extends Comparable<Rule>, Condition {
      * @see #lhs()
      * @see #rhs()
      */
-    public RuleToRuleMap getMorphism();
+    public RuleGraphMorphism getMorphism();
 
     /**
      * Indicates if application of this rule actually changes the host graph. If

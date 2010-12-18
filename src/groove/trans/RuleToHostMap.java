@@ -16,8 +16,7 @@
  */
 package groove.trans;
 
-import groove.graph.GenericNodeEdgeMap;
-import groove.graph.GraphToGraphMap;
+import groove.graph.ElementMap;
 import groove.graph.TypeLabel;
 import groove.rel.LabelVar;
 import groove.rel.VarMap;
@@ -32,14 +31,14 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class RuleToHostMap
-        extends
-        GraphToGraphMap<RuleNode,RuleLabel,RuleEdge,HostNode,TypeLabel,HostEdge>
+public class RuleToHostMap extends
+        ElementMap<RuleNode,RuleLabel,RuleEdge,HostNode,TypeLabel,HostEdge>
         implements VarMap {
     /**
      * Creates an empty map with an empty valuation.
      */
     public RuleToHostMap() {
+        super(HostFactory.instance());
         this.valuation = createValuation();
     }
 
@@ -87,7 +86,7 @@ public class RuleToHostMap
      */
     @Override
     public void putAll(
-            GenericNodeEdgeMap<RuleNode,HostNode,RuleEdge,HostEdge> other) {
+            ElementMap<RuleNode,RuleLabel,RuleEdge,HostNode,TypeLabel,HostEdge> other) {
         super.putAll(other);
         if (other instanceof RuleToHostMap) {
             putAllVar(((RuleToHostMap) other).getValuation());
@@ -129,9 +128,10 @@ public class RuleToHostMap
         return new RuleToHostMap();
     }
 
+    /** Specialises the return type. */
     @Override
     public HostFactory getFactory() {
-        return HostFactory.instance();
+        return (HostFactory) super.getFactory();
     }
 
     /**

@@ -20,10 +20,8 @@ import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
-import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
-import groove.graph.Node;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -105,8 +103,8 @@ public class GraphCreationTest extends TestCase {
      */
 
     public void testAddRemoveContains() {
-        Set<Node> nodeSet = new HashSet<Node>(this.g.nodeSet());
-        Set<Edge> edgeSet = new HashSet<Edge>(this.g.edgeSet());
+        Set<DefaultNode> nodeSet = new HashSet<DefaultNode>(this.g.nodeSet());
+        Set<DefaultEdge> edgeSet = new HashSet<DefaultEdge>(this.g.edgeSet());
 
         for (int i = 0; i < NR_EDGES; i++) {
             assertTrue(this.g.containsEdge(this.e[i]));
@@ -130,17 +128,17 @@ public class GraphCreationTest extends TestCase {
     }
 
     public void testGetOutEdges() {
-        Set<Edge> outEdges = new HashSet<Edge>();
+        Set<DefaultEdge> outEdges = new HashSet<DefaultEdge>();
         outEdges.add(this.e[0]);
         outEdges.add(this.e[1]);
 
-        for (Edge edge : this.g.outEdgeSet(this.n[0])) {
+        for (DefaultEdge edge : this.g.outEdgeSet(this.n[0])) {
             assertTrue(outEdges.contains(edge));
             outEdges.remove(edge);
         }
         assertTrue(outEdges.isEmpty());
 
-        Iterator<? extends Edge> edgeIter =
+        Iterator<? extends DefaultEdge> edgeIter =
             this.g.outEdgeSet(this.n[2]).iterator();
         assertTrue(!edgeIter.hasNext());
 
@@ -150,16 +148,17 @@ public class GraphCreationTest extends TestCase {
     }
 
     public void testGetInEdges() {
-        Set<Edge> inEdges = new HashSet<Edge>();
+        Set<DefaultEdge> inEdges = new HashSet<DefaultEdge>();
         inEdges.add(this.e[5]);
         inEdges.add(this.e[6]);
 
-        for (Edge edge : this.g.edgeSet()) {
+        for (DefaultEdge edge : this.g.edgeSet()) {
             inEdges.remove(edge);
         }
         assertTrue(inEdges.isEmpty());
 
-        Iterator<Edge> edgeIter2 = inEdgeSet(this.g, this.n[5]).iterator();
+        Iterator<DefaultEdge> edgeIter2 =
+            inEdgeSet(this.g, this.n[5]).iterator();
         assertTrue(!edgeIter2.hasNext());
 
         edgeIter2 = inEdgeSet(this.g, this.n[6]).iterator();
@@ -168,24 +167,24 @@ public class GraphCreationTest extends TestCase {
     }
 
     public void testGetEdgesWithLabel() {
-        Set<Edge> edges = new HashSet<Edge>();
+        Set<DefaultEdge> edges = new HashSet<DefaultEdge>();
         edges.add(this.e[0]);
         edges.add(this.e[2]);
         edges.add(this.e[5]);
 
-        for (Edge edge : labelEdgeSet(this.g,
+        for (DefaultEdge edge : labelEdgeSet(this.g,
             DefaultLabel.createLabel(new String("a")))) {
             assertTrue(edges.contains(edge));
             edges.remove(edge);
         }
-        assertEquals(new HashSet<Edge>(), edges);
+        assertEquals(new HashSet<DefaultEdge>(), edges);
 
         assertTrue(labelEdgeSet(this.g, DefaultLabel.createLabel("c")).isEmpty());
     }
 
-    private Set<Edge> labelEdgeSet(Graph<?,?,?> g, Label label) {
-        Set<Edge> labelEdges = new HashSet<Edge>();
-        for (Edge edge : g.edgeSet()) {
+    private Set<DefaultEdge> labelEdgeSet(DefaultGraph g, Label label) {
+        Set<DefaultEdge> labelEdges = new HashSet<DefaultEdge>();
+        for (DefaultEdge edge : g.edgeSet()) {
             if (edge.label().equals(label)) {
                 labelEdges.add(edge);
             }
@@ -193,9 +192,9 @@ public class GraphCreationTest extends TestCase {
         return labelEdges;
     }
 
-    private Set<Edge> inEdgeSet(Graph<?,?,?> g, Node target) {
-        Set<Edge> inEdges = new HashSet<Edge>();
-        for (Edge edge : g.edgeSet()) {
+    private Set<DefaultEdge> inEdgeSet(DefaultGraph g, DefaultNode target) {
+        Set<DefaultEdge> inEdges = new HashSet<DefaultEdge>();
+        for (DefaultEdge edge : g.edgeSet()) {
             if (edge.target().equals(target)) {
                 inEdges.add(edge);
             }

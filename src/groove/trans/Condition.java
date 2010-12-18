@@ -50,7 +50,7 @@ public interface Condition extends Fixable {
      * The root map identifies the elements of the target that are expected to
      * be matched before the condition is tested.
      */
-    public RuleToRuleMap getRootMap();
+    public RuleGraphMorphism getRootMap();
 
     /**
      * Set of variables in the target of this condition that also occur in root

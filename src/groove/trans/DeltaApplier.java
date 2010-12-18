@@ -14,9 +14,8 @@
  * 
  * $Id: DeltaApplier.java,v 1.4 2008-01-30 09:32:57 iovka Exp $
  */
-package groove.graph;
+package groove.trans;
 
-import groove.trans.HostNode;
 
 /**
  * Interface for an object that can process a {@link DeltaTarget}, by invoking

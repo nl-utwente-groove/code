@@ -16,13 +16,13 @@
  */
 package groove.match;
 
-import groove.graph.Edge;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
 import groove.rel.VarSupport;
 import groove.trans.AbstractCondition;
 import groove.trans.Condition;
-import groove.trans.RuleToRuleMap;
+import groove.trans.RuleEdge;
+import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
 
@@ -47,7 +47,7 @@ class ConditionSearchItem extends AbstractSearchItem {
         this.rootMap = condition.getRootMap();
         this.neededNodes = this.rootMap.nodeMap().keySet();
         this.neededVars = new HashSet<LabelVar>();
-        for (Edge edge : this.rootMap.edgeMap().keySet()) {
+        for (RuleEdge edge : this.rootMap.edgeMap().keySet()) {
             this.neededVars.addAll(VarSupport.getAllVars(edge));
         }
     }
@@ -92,7 +92,7 @@ class ConditionSearchItem extends AbstractSearchItem {
     /** The graph condition that should be matched by this search item. */
     final Condition condition;
     /** The root map of the graph condition. */
-    private final RuleToRuleMap rootMap;
+    private final RuleGraphMorphism rootMap;
     /** The source nodes of the root map. */
     private final Set<RuleNode> neededNodes;
     /** The variables occurring in edges of the root map. */
