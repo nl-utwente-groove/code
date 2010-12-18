@@ -20,7 +20,6 @@ import groove.explore.result.Acceptor;
 import groove.graph.AbstractGraph;
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.GraphCache;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
@@ -44,7 +43,9 @@ import java.util.Set;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class ProductGTS extends AbstractGraph<GraphCache> implements LTS {
+public class ProductGTS extends
+        AbstractGraph<GraphState,DerivationLabel,GraphTransition> implements
+        LTS {
 
     /**
      * Constructs a GTS from a (fixed) graph grammar.
@@ -201,7 +202,9 @@ public class ProductGTS extends AbstractGraph<GraphCache> implements LTS {
      * GraphListeners in listeners.
      * @param state the node being added
      */
+    @Override
     protected void fireAddNode(GraphState state) {
+        super.fireAddNode(state);
         Iterator<LTSListener> iter = getListeners();
         while (iter.hasNext()) {
             iter.next().addUpdate(this, state);
@@ -239,7 +242,7 @@ public class ProductGTS extends AbstractGraph<GraphCache> implements LTS {
         return new CollectionView<BuchiGraphState>(this.stateSet) {
             @Override
             public boolean approves(Object obj) {
-                return !((State) obj).isClosed();
+                return !((GraphState) obj).isClosed();
             }
         };
     }
@@ -268,7 +271,7 @@ public class ProductGTS extends AbstractGraph<GraphCache> implements LTS {
         return new FilterIterator<BuchiGraphState>(nodeSet().iterator()) {
             @Override
             protected boolean approves(Object obj) {
-                return !((State) obj).isClosed();
+                return !((GraphState) obj).isClosed();
             }
         };
     }
@@ -347,11 +350,11 @@ public class ProductGTS extends AbstractGraph<GraphCache> implements LTS {
             DefaultIsoChecker.getInstance(true);
     }
 
-    public Set<? extends Transition> edgeSet() {
+    public Set<? extends GraphTransition> edgeSet() {
         return null;
     }
 
-    public Collection<? extends State> getFinalStates() {
+    public Collection<? extends BuchiGraphState> getFinalStates() {
         return null;
     }
 
@@ -359,15 +362,15 @@ public class ProductGTS extends AbstractGraph<GraphCache> implements LTS {
         return false;
     }
 
-    public boolean isFinal(State state) {
+    public boolean isFinal(GraphState state) {
         return false;
     }
 
-    public boolean isOpen(State state) {
+    public boolean isOpen(GraphState state) {
         return !state.isClosed();
     }
 
-    public Set<? extends State> nodeSet() {
+    public Set<? extends BuchiGraphState> nodeSet() {
         return this.stateSet;
     }
 
@@ -435,24 +438,23 @@ public class ProductGTS extends AbstractGraph<GraphCache> implements LTS {
     }
 
     @Override
-    public boolean addNode(Node node) {
-        assert node instanceof BuchiGraphState;
+    public boolean addNode(GraphState node) {
         return addState((BuchiGraphState) node) == null;
     }
 
     @Override
-    public boolean removeEdge(Edge edge) {
+    public boolean removeEdge(GraphTransition edge) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean addEdgeWithoutCheck(Edge edge) {
+    public boolean addEdgeWithoutCheck(GraphTransition edge) {
         assert edge instanceof ProductTransition;
         return addTransition((ProductTransition) edge);
     }
 
     @Override
-    public boolean removeNodeWithoutCheck(Node node) {
+    public boolean removeNodeWithoutCheck(GraphState node) {
         throw new UnsupportedOperationException();
     }
 

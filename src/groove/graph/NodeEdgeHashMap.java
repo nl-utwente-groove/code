@@ -27,8 +27,8 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class NodeEdgeHashMap extends GraphHashMap<Node,Node,Edge,Edge>
-        implements NodeEdgeMap {
+public class NodeEdgeHashMap extends
+        GraphToGraphMap<Node,Label,Edge,Node,Label,Edge> implements NodeEdgeMap {
     @Override
     public NodeEdgeHashMap clone() {
         return (NodeEdgeHashMap) super.clone();
@@ -40,8 +40,8 @@ public class NodeEdgeHashMap extends GraphHashMap<Node,Node,Edge,Edge>
     }
 
     @Override
-    public ElementFactory<? extends Node,?,? extends Edge> getFactory() {
-        return DefaultFactory.INSTANCE;
+    public ElementFactory<Node,Label,Edge> getFactory() {
+        throw new UnsupportedOperationException();
     }
 
     @Override

@@ -97,7 +97,7 @@ public class BoundedNestedDFSStrategy extends
         }
         // else we have to do it now...
         else {
-            Set<GraphTransition> outTransitions =
+            Set<? extends GraphTransition> outTransitions =
                 getGTS().outEdgeSet(getAtState());
             Set<String> applicableRules = filterRuleNames(outTransitions);
 

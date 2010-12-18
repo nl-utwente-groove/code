@@ -24,7 +24,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface GraphMap<SN extends Node,TN extends Node,SE extends Edge,TE extends Edge>
+public interface GraphMap<SN extends Node,SL extends Label,SE extends Edge,TN extends Node,TL extends Label,TE extends Edge>
         extends GenericNodeEdgeMap<SN,TN,SE,TE> {
     /**
      * Tests if a given node occurs as a key in the node map.
@@ -53,10 +53,25 @@ public interface GraphMap<SN extends Node,TN extends Node,SE extends Edge,TE ext
      * @param elem the element tested for
      * @return <code>true</code> if <code>elem</code> occurs as a value
      */
+    boolean containsNodeValue(TN elem);
+
+    /**
+     * Tests if a given element occurs as a value in the node or edge map.
+     * @param elem the element tested for
+     * @return <code>true</code> if <code>elem</code> occurs as a value
+     */
+    boolean containsEdgeValue(TE elem);
+
+    /**
+     * Tests if a given element occurs as a value in the node or edge map.
+     * @param elem the element tested for
+     * @return <code>true</code> if <code>elem</code> occurs as a value
+     */
+    @Deprecated
     boolean containsValue(Element elem);
 
     /** Returns the image of a label under this map. */
-    Label mapLabel(Label label);
+    TL mapLabel(SL label);
 
     /**
      * Returns the image of an edge under this map, creating the image if
@@ -70,14 +85,14 @@ public interface GraphMap<SN extends Node,TN extends Node,SE extends Edge,TE ext
      * A public clone method returning a {@link GraphMap}.
      * @return a copy of this object
      */
-    GraphMap<SN,TN,SE,TE> clone();
+    GraphMap<SN,SL,SE,TN,TL,TE> clone();
 
     /**
      * Factory method for this type of objects.
      * Returns a fresh map of the type of this object.
      */
-    GraphMap<SN,TN,SE,TE> newMap();
+    GraphMap<SN,SL,SE,TN,TL,TE> newMap();
 
     /** Returns a factory for target graph elements. */
-    ElementFactory<? extends TN,?,? extends TE> getFactory();
+    ElementFactory<TN,TL,TE> getFactory();
 }

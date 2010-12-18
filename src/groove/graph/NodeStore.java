@@ -18,6 +18,8 @@ package groove.graph;
 
 import groove.graph.Node.Factory;
 
+import java.util.Arrays;
+
 /**
  * Store and factory for canonical representatives of node types.
  * @author Arend Rensink
@@ -77,6 +79,17 @@ public class NodeStore<N extends Node> {
         return this.nextNodeNr;
     }
 
+    /** 
+     * Resets the node store.
+     * Nodes created after calling this method will not be compatible
+     * with old nodes. 
+     */
+    public void clear() {
+        Arrays.fill(this.nodes, null);
+        this.nodeCount = 0;
+        this.nextNodeNr = 0;
+    }
+
     /**
      * Returns the next free node number, according to the static counter.
      * @return the next node-number
@@ -99,6 +112,7 @@ public class NodeStore<N extends Node> {
      */
     private int nextNodeNr;
 
+    /** The prototype object used to create new nodes from. */
     private final Factory<N> factory;
 
     /**

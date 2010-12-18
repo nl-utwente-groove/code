@@ -25,11 +25,10 @@ import groove.explore.encode.TemplateList;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.Strategy;
 import groove.explore.util.ExplorationStatistics;
-import groove.graph.Graph;
+import groove.graph.DefaultGraph;
 import groove.io.ExtensionFilter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.State;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
@@ -476,7 +475,7 @@ public class Generator extends CommandLineTool {
         }
 
         // Create the LTS view to be exported.
-        Graph lts =
+        DefaultGraph lts =
             getGTS().toPlainGraph(flags.labelFinalStates,
                 flags.labelStartState, flags.labelOpenStates,
                 flags.exportStateNames);
@@ -559,11 +558,10 @@ public class Generator extends CommandLineTool {
             if (result.isEmpty()) {
                 printlnMedium("No resulting graphs");
             } else {
-                for (State finalState : getGTS().getFinalStates()) {
+                for (GraphState finalState : getGTS().getFinalStates()) {
                     String outFileName = getFinalSaveName() + "-" + finalState;
                     outFileName = this.gstFilter.addExtension(outFileName);
-                    Groove.saveGraph(((GraphState) finalState).getGraph(),
-                        outFileName);
+                    Groove.saveGraph(finalState.getGraph(), outFileName);
                 }
                 printfMedium("Resulting graphs saved: %s%n",
                     getGTS().getFinalStates());
@@ -573,7 +571,8 @@ public class Generator extends CommandLineTool {
             if (getVerbosity() == HIGH_VERBOSITY) {
                 print(GraphReporter.createInstance().getReport(getGTS()).toString());
             }
-            Graph gtsGraph = getGTS().toPlainGraph(true, true, true, false);
+            DefaultGraph gtsGraph =
+                getGTS().toPlainGraph(true, true, true, false);
             if (!Groove.exportGraph(gtsGraph, getOutputFileName())) {
                 Groove.saveGraph(gtsGraph, getOutputFileName());
             }

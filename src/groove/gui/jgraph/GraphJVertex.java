@@ -50,7 +50,8 @@ import java.util.TreeSet;
  * retrieve the user object as a Node. Also provides a single default port for
  * the graph cell, and a convenience method to retrieve it.
  */
-public class GraphJVertex extends JVertex implements GraphJCell {
+public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
+        implements GraphJCell<N,E> {
     /**
      * Constructs a jnode on top of a graph node.
      * @param jModel the model in which this vertex exists
@@ -58,7 +59,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * @param vertexLabelled flag to indicate if the vertex should be labelled.
      * @ensure getUserObject() == node, labels().isEmpty()
      */
-    GraphJVertex(GraphJModel jModel, Node node, boolean vertexLabelled) {
+    GraphJVertex(GraphJModel<N,E> jModel, N node, boolean vertexLabelled) {
         this.jModel = jModel;
         this.node = node;
         this.vertexLabelled = vertexLabelled;
@@ -71,7 +72,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      *        may be null.
      * @ensure getUserObject() == node, labels().isEmpty()
      */
-    GraphJVertex(GraphJModel jModel, Node node) {
+    GraphJVertex(GraphJModel<N,E> jModel, N node) {
         this(jModel, node, true);
     }
 
@@ -80,7 +81,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * @return this model node's user object as a Node
      * @ensure if getUserObject() instanceof Node then result == getUserObject()
      */
-    public Node getNode() {
+    public N getNode() {
         return this.node;
     }
 
@@ -115,7 +116,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         boolean result = false;
         Iterator<?> jEdgeIter = getPort().edges();
         while (!result && jEdgeIter.hasNext()) {
-            GraphJEdge jEdge = (GraphJEdge) jEdgeIter.next();
+            GraphJEdge<?,?> jEdge = (GraphJEdge<?,?>) jEdgeIter.next();
             result =
                 !jEdge.isFiltered()
                     && (jEdge.getSource() == this || !jEdge.isSourceLabel());
@@ -137,7 +138,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
             result = true;
             // filter if either there is a filtered node type,
             // or all self-edges are filtered
-            for (Edge selfEdge : getSelfEdges()) {
+            for (E selfEdge : getSelfEdges()) {
                 for (Label label : getListLabels(selfEdge)) {
                     if (this.jModel.isFiltering(label)) {
                         if (label.isNodeType()) {
@@ -195,12 +196,12 @@ public class GraphJVertex extends JVertex implements GraphJCell {
             result.add(new StringBuilder(
                 TypeLabel.toHtmlString(TypeLabel.createDataType(getAlgebra()))));
         }
-        for (Edge edge : getSelfEdges()) {
+        for (E edge : getSelfEdges()) {
             if (!this.jModel.isFiltering(getLabel(edge))) {
                 result.add(getLine(edge));
             }
         }
-        for (Edge edge : getDataEdges()) {
+        for (E edge : getDataEdges()) {
             if (!this.jModel.isFiltering(getLabel(edge))) {
                 result.add(getLine(edge));
             }
@@ -216,7 +217,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * opposite end is not also this vertex, the line is turned into an
      * attribute-style assignment.
      */
-    public StringBuilder getLine(Edge edge) {
+    public StringBuilder getLine(E edge) {
         StringBuilder result = new StringBuilder();
         Label edgeLabel = getLabel(edge);
         if (edge.target() == getNode()) {
@@ -241,7 +242,9 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         } else {
             // this is a binary edge displayed as a node label
             result.append(edgeLabel);
-            GraphJVertex oppositeVertex = this.jModel.getJVertex(edge.target());
+            @SuppressWarnings("unchecked")
+            GraphJVertex<N,E> oppositeVertex =
+                this.jModel.getJVertex((N) edge.target());
             Node actualTarget = oppositeVertex.getActualNode();
             if (actualTarget instanceof ValueNode) {
                 result.append(ASSIGN_TEXT);
@@ -256,7 +259,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     }
 
     /** This implementation delegates to {@link Edge#label()}. */
-    public Label getLabel(Edge edge) {
+    public Label getLabel(E edge) {
         return edge.label();
     }
 
@@ -270,7 +273,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         if (hasValue()) {
             result.add(getValueLabel());
         }
-        for (Edge edge : getSelfEdges()) {
+        for (E edge : getSelfEdges()) {
             result.addAll(getListLabels(edge));
         }
         if (isVariableNode() && getAlgebra() != null) {
@@ -278,14 +281,14 @@ public class GraphJVertex extends JVertex implements GraphJCell {
         } else if (getSelfEdges().isEmpty()) {
             result.add(NO_LABEL);
         }
-        for (Edge edge : getDataEdges()) {
+        for (E edge : getDataEdges()) {
             result.addAll(getListLabels(edge));
         }
         return result;
     }
 
     /** This implementation delegates to {@link Edge#label()}. */
-    public Set<? extends Label> getListLabels(Edge edge) {
+    public Set<? extends Label> getListLabels(E edge) {
         Set<? extends Label> result;
         Label label = getLabel(edge);
         if (label instanceof RuleLabel) {
@@ -311,7 +314,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
                 AttributeAspect.getAttributeValueFor(getAlgebra()).getPrefix();
             result.add(prefix + symbol);
         }
-        for (Edge edge : getSelfEdges()) {
+        for (E edge : getSelfEdges()) {
             result.add(getPlainLabel(edge));
         }
         return result;
@@ -321,21 +324,22 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * This implementation calls {@link TypeLabel#toPrefixedString(Label)} on
      * the edge label.
      */
-    public String getPlainLabel(Edge edge) {
+    public String getPlainLabel(E edge) {
         return TypeLabel.toPrefixedString(edge.label());
     }
 
     /**
      * Returns an ordered set of outgoing edges going to constants.
      */
-    Set<Edge> getDataEdges() {
-        Set<Edge> result = new TreeSet<Edge>();
+    Set<E> getDataEdges() {
+        Set<E> result = new TreeSet<E>();
         if (!this.jModel.isShowValueNodes()) {
             for (Object edgeObject : getPort().getEdges()) {
-                GraphJEdge jEdge = (GraphJEdge) edgeObject;
+                @SuppressWarnings("unchecked")
+                GraphJEdge<N,E> jEdge = (GraphJEdge<N,E>) edgeObject;
                 if (jEdge.getSourceVertex() == this
                     && jEdge.isDataEdgeSourceLabel()) {
-                    for (Edge edge : jEdge.getEdges()) {
+                    for (E edge : jEdge.getEdges()) {
                         result.add(edge);
                     }
                 }
@@ -365,14 +369,15 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     /**
      * Specialises the return type of the super method.
      */
+    @SuppressWarnings("unchecked")
     @Override
-    public EdgeContent getUserObject() {
-        return (EdgeContent) super.getUserObject();
+    public EdgeContent<E> getUserObject() {
+        return (EdgeContent<E>) super.getUserObject();
     }
 
     @Override
-    EdgeContent createUserObject() {
-        EdgeContent result = new EdgeContent();
+    EdgeContent<E> createUserObject() {
+        EdgeContent<E> result = new EdgeContent<E>();
         result.setNumber(getNode().getNumber());
         return result;
     }
@@ -383,12 +388,13 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * all edges with equal source and target and without explicit
      * layout information are regarded as self edges.
      */
-    public Set<? extends Edge> getSelfEdges() {
+    public Set<E> getSelfEdges() {
         if (this.jModel.isShowVertexLabels()) {
             // add self-edges without layout info
-            Set<Edge> result = new TreeSet<Edge>(getUserObject());
+            Set<E> result = new TreeSet<E>(getUserObject());
             for (Object edgeObject : getPort().getEdges()) {
-                GraphJEdge jEdge = (GraphJEdge) edgeObject;
+                @SuppressWarnings("unchecked")
+                GraphJEdge<N,E> jEdge = (GraphJEdge<N,E>) edgeObject;
                 if (this.jModel.isPotentialUnaryEdge(jEdge.getEdge())) {
                     result.addAll(jEdge.getEdges());
                 }
@@ -409,7 +415,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * @require <tt>edge.source() == edge.target() == getNode()</tt>
      * @ensure if <tt>result</tt> then <tt>edges().contains(edge)</tt>
      */
-    public boolean addSelfEdge(Edge edge) {
+    public boolean addSelfEdge(E edge) {
         if (this.vertexLabelled && edge.source() == edge.target()) {
             getUserObject().add(edge);
             return true;
@@ -548,19 +554,19 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     }
 
     /** Returns the underlying GraphJModel. */
-    GraphJModel getGraphJModel() {
+    GraphJModel<N,E> getGraphJModel() {
         return this.jModel;
     }
 
     /** The model in which this vertex exists. */
-    private final GraphJModel jModel;
+    private final GraphJModel<N,E> jModel;
     /**
      * An indicator whether the vertex can be labelled (otherwise labels are
      * self-edges).
      */
     private final boolean vertexLabelled;
     /** The graph node modelled by this jgraph node. */
-    private final Node node;
+    private final N node;
 
     static private final String ASSIGN_TEXT = " = ";
     static private final String TYPE_TEXT = ": ";

@@ -39,6 +39,7 @@ import groove.lts.LTSAdapter;
 import groove.lts.ProductGTS;
 import groove.trans.DefaultApplication;
 import groove.trans.GraphGrammar;
+import groove.trans.HostFactory;
 import groove.trans.Rule;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
@@ -1164,12 +1165,11 @@ public class LTLBenchmarker extends CommandLineTool {
      * Reports on the graph data.
      */
     private void reportGraphElementStatistics() {
-        printf("\tDefault nodes:\t%d%n",
-            groove.graph.DefaultNode.getNodeCount());
+        printf("\tDefault nodes:\t%d%n", HostFactory.instance().getNodeCount());
         printf("\tDefault labels:\t%d%n",
-            groove.graph.DefaultLabel.getLabelCount());
+            HostFactory.instance().getLabelCount());
         printf("\tFresh nodes:\t%d%n", DefaultApplication.getFreshNodeCount());
-        printf("\tFresh edges:\t%d%n", groove.graph.DefaultEdge.getEdgeCount());
+        printf("\tFresh edges:\t%d%n", HostFactory.instance().getEdgeCount());
         double nodeAvg =
             (double) getStatisticsListener().getNodeCount()
                 / getProductGTS().nodeCount();

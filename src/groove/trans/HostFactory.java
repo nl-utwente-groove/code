@@ -16,11 +16,13 @@
  */
 package groove.trans;
 
+import groove.graph.DefaultEdge;
+import groove.graph.DefaultFactory;
 import groove.graph.DefaultNode;
 import groove.graph.ElementFactory;
-import groove.graph.Label;
-import groove.graph.Node;
+import groove.graph.TypeFactory;
 import groove.graph.TypeLabel;
+import groove.util.TreeHashSet;
 
 /** Factory class for graph elements. */
 public class HostFactory implements ElementFactory<HostNode,TypeLabel,HostEdge> {
@@ -41,18 +43,54 @@ public class HostFactory implements ElementFactory<HostNode,TypeLabel,HostEdge> 
 
     /** Creates a label with the given text. */
     public TypeLabel createLabel(String text) {
-        return TypeLabel.createLabel(text);
+        return LABEL_FACTORY.createLabel(text);
     }
 
     @Override
-    public HostEdge createEdge(Node source, String label, Node target) {
-        return createEdge(source, createLabel(label), target);
+    public HostEdge createEdge(HostNode source, String text, HostNode target) {
+        return createEdge(source, createLabel(text), target);
     }
 
-    /** Creates an edge with the given source, label and target. */
-    public HostEdge createEdge(Node source, Label label, Node target) {
-        return HostEdge.createEdge((HostNode) source, (TypeLabel) label,
-            (HostNode) target);
+    public HostEdge createEdge(HostNode source, TypeLabel label, HostNode target) {
+        assert source != null : "Source node of default edge should not be null";
+        assert target != null : "Target node of default edge should not be null";
+        assert label != null : "Label of default edge should not be null";
+        HostEdge edge = new HostEdge(source, label, target, getEdgeCount());
+        HostEdge result = this.edgeSet.put(edge);
+        if (result == null) {
+            result = edge;
+        }
+        return result;
+    }
+
+    /** Returns the highest default node node number. */
+    public int getHighestNodeNr() {
+        return NODE_FACTORY.getHighestNodeNr();
+    }
+
+    /** Returns the number of created nodes. */
+    public int getNodeCount() {
+        return NODE_FACTORY.getNodeCount();
+    }
+
+    /**
+     * Returns the total number of default edges created.
+     */
+    public int getEdgeCount() {
+        return this.edgeSet.size();
+    }
+
+    /**
+     * Yields the number of labels created in the course of the program.
+     * @return Number of labels created
+     */
+    public int getLabelCount() {
+        return LABEL_FACTORY.getLabelCount();
+    }
+
+    /** Clears the store of canonical edges. */
+    public void clear() {
+        this.edgeSet.clear();
     }
 
     /** Creates a fresh mapping from rules to (this type of) host graph. */
@@ -60,6 +98,39 @@ public class HostFactory implements ElementFactory<HostNode,TypeLabel,HostEdge> 
         return new RuleToHostMap();
     }
 
+    /**
+     * A identity map, mapping previously created instances of
+     * {@link DefaultEdge} to themselves. Used to ensure that edge objects are
+     * reused.
+     */
+    private final TreeHashSet<HostEdge> edgeSet = new TreeHashSet<HostEdge>() {
+        /**
+         * As {@link DefaultEdge}s test equality by object identity,
+         * we need to weaken the set's equality test.
+         */
+        @Override
+        final protected boolean areEqual(HostEdge o1, HostEdge o2) {
+            return o1.source().equals(o2.source())
+                && o1.target().equals(o2.target())
+                && o1.label().equals(o2.label());
+        }
+
+        @Override
+        final protected boolean allEqual() {
+            return false;
+        }
+    };
+
+    /** Returns the singleton instance of this factory. */
+    public static HostFactory instance() {
+        return INSTANCE;
+    }
+
     /** Singleton instance of this factory. */
-    public final static HostFactory INSTANCE = new HostFactory();
+    private final static HostFactory INSTANCE = new HostFactory();
+    /** The factory used for creating nodes. */
+    private final static DefaultFactory NODE_FACTORY =
+        DefaultFactory.instance();
+    /** The factory used for creating labels. */
+    private final static TypeFactory LABEL_FACTORY = TypeFactory.INSTANCE;
 }

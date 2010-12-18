@@ -17,13 +17,15 @@
 package groove.graph.iso;
 
 import groove.graph.AbstractGraph;
+import groove.graph.DefaultEdge;
+import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
-import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.util.Bag;
 import groove.util.Groove;
@@ -61,13 +63,14 @@ public class DefaultIsoChecker implements IsoChecker {
         this.strong = strong;
     }
 
-    public synchronized boolean areIsomorphic(Graph dom, Graph cod) {
+    public <N extends Node,L extends Label,E extends Edge> boolean areIsomorphic(
+            Graph<N,L,E> dom, Graph<N,L,E> cod) {
         return areIsomorphic(dom, cod, null, null);
     }
 
     /** Tests if two graphs, together with corresponding lists of nodes, are isomorphic. */
-    public synchronized boolean areIsomorphic(Graph dom, Graph cod,
-            Node[] domNodes, Node[] codNodes) {
+    public <N extends Node,L extends Label,E extends Edge> boolean areIsomorphic(
+            Graph<N,L,E> dom, Graph<N,L,E> cod, Node[] domNodes, Node[] codNodes) {
         boolean result;
         if ((domNodes == null) != (codNodes == null)
             || (domNodes != null && domNodes.length != codNodes.length)) {
@@ -126,8 +129,8 @@ public class DefaultIsoChecker implements IsoChecker {
      * @param codNodes list of nodes (from the codomain) to compare 
      * in addition to the graphs themselves
      */
-    private boolean areGraphEqual(Graph dom, Graph cod, Node[] domNodes,
-            Node[] codNodes) {
+    private <N extends Node,L extends Label,E extends Edge> boolean areGraphEqual(
+            Graph<N,L,E> dom, Graph<N,L,E> cod, Node[] domNodes, Node[] codNodes) {
         equalsTestReporter.start();
         // test if the node counts of domain and codomain coincide
         boolean result =
@@ -304,7 +307,8 @@ public class DefaultIsoChecker implements IsoChecker {
      * @param dom the first graph to be compared
      * @param cod the second graph to be compared
      */
-    public synchronized NodeEdgeMap getIsomorphism(Graph dom, Graph cod) {
+    public <N extends Node,L extends Label,E extends Edge> NodeEdgeMap getIsomorphism(
+            Graph<N,L,E> dom, Graph<N,L,E> cod) {
         return getIsomorphism(getCertifier(dom, true), getCertifier(cod, true),
             null);
     }
@@ -319,8 +323,8 @@ public class DefaultIsoChecker implements IsoChecker {
      * @param cod the second graph to be compared
      * @param state the state for the iso checker
      */
-    public synchronized NodeEdgeMap getIsomorphism(Graph dom, Graph cod,
-            IsoCheckerState state) {
+    public <N extends Node,L extends Label,E extends Edge> NodeEdgeMap getIsomorphism(
+            Graph<N,L,E> dom, Graph<N,L,E> cod, IsoCheckerState state) {
         return getIsomorphism(getCertifier(dom, true), getCertifier(cod, true),
             state);
     }
@@ -532,10 +536,10 @@ public class DefaultIsoChecker implements IsoChecker {
         }
     }
 
-    private List<IsoSearchItem> computePlan(CertificateStrategy domCertifier,
-            CertificateStrategy codCertifier, NodeEdgeMap resultMap,
-            Set<Node> usedNodeImages) {
-        Graph dom = domCertifier.getGraph();
+    private <N extends Node> List<IsoSearchItem> computePlan(
+            CertificateStrategy domCertifier, CertificateStrategy codCertifier,
+            NodeEdgeMap resultMap, Set<Node> usedNodeImages) {
+        Graph<?,?,?> dom = domCertifier.getGraph();
         List<IsoSearchItem> result = new ArrayList<IsoSearchItem>();
         PartitionMap<Edge> codPartitionMap = codCertifier.getEdgePartitionMap();
         Map<Edge,Collection<Edge>> remainingEdgeSet =
@@ -578,10 +582,10 @@ public class DefaultIsoChecker implements IsoChecker {
                 Node keySource = next.key.source();
                 next.sourcePreMatched = !connectedNodes.add(keySource);
                 if (!next.sourcePreMatched) {
-                    for (Edge edge : dom.edgeSet(keySource)) {
+                    for (Object edge : dom.edgeSet(keySource)) {
                         Collection<Edge> images = remainingEdgeSet.remove(edge);
                         if (images != null) {
-                            subPlan.add(new IsoSearchItem(edge, images));
+                            subPlan.add(new IsoSearchItem((Edge) edge, images));
                         }
                     }
                 }
@@ -590,10 +594,10 @@ public class DefaultIsoChecker implements IsoChecker {
                 Node keyTarget = next.key.target();
                 next.targetPreMatched = !connectedNodes.add(keyTarget);
                 if (!next.targetPreMatched) {
-                    for (Edge edge : dom.edgeSet(keyTarget)) {
+                    for (Object edge : dom.edgeSet(keyTarget)) {
                         Collection<Edge> images = remainingEdgeSet.remove(edge);
                         if (images != null) {
-                            subPlan.add(new IsoSearchItem(edge, images));
+                            subPlan.add(new IsoSearchItem((Edge) edge, images));
                         }
                     }
                 }
@@ -843,11 +847,13 @@ public class DefaultIsoChecker implements IsoChecker {
      * constructed; otherwise, it is only retrieved from the graph if the graph
      * has already stored a certifier.
      */
-    public CertificateStrategy getCertifier(Graph graph, boolean always) {
+    public CertificateStrategy getCertifier(Graph<?,?,?> graph, boolean always) {
         CertificateStrategy result = null;
         if (graph instanceof AbstractGraph) {
-            if (always || ((AbstractGraph<?>) graph).hasCertifier(isStrong())) {
-                result = ((AbstractGraph<?>) graph).getCertifier(isStrong());
+            if (always
+                || ((AbstractGraph<?,?,?>) graph).hasCertifier(isStrong())) {
+                result =
+                    ((AbstractGraph<?,?,?>) graph).getCertifier(isStrong());
             }
         } else if (always) {
             result =
@@ -857,7 +863,7 @@ public class DefaultIsoChecker implements IsoChecker {
         return result;
     }
 
-    private boolean checkIsomorphism(Graph dom, NodeEdgeMap map) {
+    private boolean checkIsomorphism(Graph<?,?,?> dom, NodeEdgeMap map) {
         for (Edge edge : dom.edgeSet()) {
             if (edge.source() != edge.target()
                 && !map.edgeMap().containsKey(edge)) {
@@ -897,7 +903,8 @@ public class DefaultIsoChecker implements IsoChecker {
     }
 
     /** Method to be used in an assert on the correctness of isomorphism. */
-    private boolean checkBisimulator(Graph dom, Graph cod, boolean result) {
+    private <N extends Node,L extends Label,E extends Edge> boolean checkBisimulator(
+            Graph<N,L,E> dom, Graph<N,L,E> cod, boolean result) {
         if (result && isStrong()) {
             CertificateStrategy domBis = new PartitionRefiner(dom, isStrong());
             CertificateStrategy codBis = new PartitionRefiner(cod, isStrong());
@@ -1092,20 +1099,20 @@ public class DefaultIsoChecker implements IsoChecker {
 
     private static void testIso(String name) {
         try {
-            Graph graph1 = Groove.loadGraph(name);
+            DefaultGraph graph1 = Groove.loadGraph(name);
             DefaultIsoChecker checker = new DefaultIsoChecker(true);
             System.out.printf("Graph certificate: %s%n",
                 checker.getCertifier(graph1, true).getGraphCertificate());
             for (int i = 0; i < 1000; i++) {
-                Graph graph2 = new NodeSetEdgeSetGraph();
+                DefaultGraph graph2 = new DefaultGraph();
                 NodeEdgeMap nodeMap = new NodeEdgeHashMap();
-                for (Node node : graph1.nodeSet()) {
-                    Node newNode = DefaultNode.createNode();
+                for (DefaultNode node : graph1.nodeSet()) {
+                    DefaultNode newNode = DefaultNode.createNode();
                     graph2.addNode(newNode);
                     nodeMap.putNode(node, newNode);
                 }
-                for (Edge edge : graph1.edgeSet()) {
-                    graph2.addEdge(nodeMap.mapEdge(edge));
+                for (DefaultEdge edge : graph1.edgeSet()) {
+                    graph2.addEdge((DefaultEdge) nodeMap.mapEdge(edge));
                 }
                 if (!checker.areIsomorphic(graph1, graph2)) {
                     System.err.println("Error! Graph not isomorphic to itself");
@@ -1119,8 +1126,8 @@ public class DefaultIsoChecker implements IsoChecker {
     private static void compareGraphs(String name1, String name2) {
         try {
             AbstractGraph.setCertificateFactory(certificateFactory);
-            Graph graph1 = Groove.loadGraph(name1);
-            Graph graph2 = Groove.loadGraph(name2);
+            DefaultGraph graph1 = Groove.loadGraph(name1);
+            DefaultGraph graph2 = Groove.loadGraph(name2);
             System.out.printf("Graphs '%s' and '%s' isomorphic?%n", name1,
                 name2);
             System.out.printf("Done. Result: %b%n",

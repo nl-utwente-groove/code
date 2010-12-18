@@ -1,8 +1,11 @@
 /* $Id: AspectGxl.java,v 1.5 2008-01-30 09:33:42 iovka Exp $ */
 package groove.io;
 
+import groove.graph.DefaultGraph;
+import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
+import groove.graph.Node;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
@@ -21,7 +24,7 @@ public class AspectGxl implements Xml<AspectGraph> {
     }
 
     /** Constructs a reader on top of a given graph marshaller. */
-    public AspectGxl(Xml<Graph> innerMarshaller) {
+    public AspectGxl(Xml<DefaultGraph> innerMarshaller) {
         this.marshaller = innerMarshaller;
     }
 
@@ -30,8 +33,10 @@ public class AspectGxl implements Xml<AspectGraph> {
      * inner marshaller.
      * @see AspectGraph#toPlainGraph()
      */
-    public void marshalGraph(AspectGraph graph, File file) throws IOException {
-        this.marshaller.marshalGraph(graph.toPlainGraph(), file);
+    public <N extends Node,E extends Edge> void marshalGraph(
+            Graph<N,?,E> graph, File file) throws IOException {
+        assert graph instanceof AspectGraph;
+        this.marshaller.marshalGraph(((AspectGraph) graph).toPlainGraph(), file);
     }
 
     /** Calls {@link #deleteGraph(File)} on the internal marshaller. */
@@ -43,10 +48,10 @@ public class AspectGxl implements Xml<AspectGraph> {
      * Unmarshals the URL using the inner marshaller and converts the resulting
      * graph to an {@link AspectGraph}. Derives the name of the graph from the
      * last part of the URL path
-     * @see AspectGraph#newInstance(Graph)
+     * @see AspectGraph#newInstance(DefaultGraph)
      */
     public AspectGraph unmarshalGraph(URL url) throws IOException {
-        Graph plainGraph = this.marshaller.unmarshalGraph(url);
+        DefaultGraph plainGraph = this.marshaller.unmarshalGraph(url);
         GraphInfo.setName(plainGraph, extractName(url.getPath()));
         return AspectGraph.newInstance(plainGraph);
     }
@@ -55,10 +60,10 @@ public class AspectGxl implements Xml<AspectGraph> {
      * Unmarshals the file using the inner marshaller and converts the resulting
      * graph to an {@link AspectGraph}. Derives the name of the graph from the
      * name part of the file
-     * @see AspectGraph#newInstance(Graph)
+     * @see AspectGraph#newInstance(DefaultGraph)
      */
     public AspectGraph unmarshalGraph(File file) throws IOException {
-        Graph plainGraph = this.marshaller.unmarshalGraph(file);
+        DefaultGraph plainGraph = this.marshaller.unmarshalGraph(file);
         GraphInfo.setName(plainGraph, extractName(file.toString()));
         return AspectGraph.newInstance(plainGraph);
     }
@@ -78,5 +83,5 @@ public class AspectGxl implements Xml<AspectGraph> {
      * The marshaller to get and store graphs, which are then converted to
      * aspect graphs.
      */
-    private final Xml<Graph> marshaller;
+    private final Xml<DefaultGraph> marshaller;
 }

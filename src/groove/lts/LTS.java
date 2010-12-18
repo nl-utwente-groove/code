@@ -17,7 +17,6 @@
 package groove.lts;
 
 import java.util.Collection;
-import java.util.Set;
 
 /**
  * Interface of a labelled transition system, as a graph where the nodes are
@@ -26,7 +25,8 @@ import java.util.Set;
  * graph.Graph with a start (i.e., initial) initial state.
  * @version $Revision$ $Date: 2008-01-30 09:32:20 $
  */
-public interface LTS extends groove.graph.Graph {
+public interface LTS extends
+        groove.graph.Graph<GraphState,DerivationLabel,GraphTransition> {
     /** The text of the self-edge label that indicates a start state. */
     public static final String START_LABEL_TEXT = "start";
     /** The text of the self-edge label that indicates an open state. */
@@ -39,7 +39,7 @@ public interface LTS extends groove.graph.Graph {
      * @return the start state of this LTS
      * @ensure result != null
      */
-    public State startState();
+    public GraphState startState();
 
     /**
      * Indicates whether we have found a final state during exploration.
@@ -50,31 +50,19 @@ public interface LTS extends groove.graph.Graph {
     /**
      * Returns the set of final states explored so far.
      */
-    Collection<? extends State> getFinalStates();
+    Collection<? extends GraphState> getFinalStates();
 
     /**
      * Indicates whether a given state is final. Equivalent to
      * <tt>getFinalStates().contains(state)</tt>.
      */
-    boolean isFinal(State state);
+    boolean isFinal(GraphState state);
 
     /**
      * Indicates whether a given state is open, in the sense of not (completely)
      * explored. Equivalent to <tt>!state.isClosed()</tt>.
      */
-    boolean isOpen(State state);
-
-    /**
-     * The return type is specialised so that the method is known to return
-     * {@link State}s.
-     */
-    public Set<? extends State> nodeSet();
-
-    /**
-     * The return type is specialised so that the method is known to return
-     * {@link Transition}s.
-     */
-    public Set<? extends Transition> edgeSet();
+    boolean isOpen(GraphState state);
 
     /** Adds a listener to this LTS. */
     public void addLTSListener(LTSListener listener);

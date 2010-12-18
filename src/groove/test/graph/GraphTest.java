@@ -21,7 +21,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.graph.DefaultEdge;
-import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -32,7 +31,6 @@ import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.PartitionMap;
 import groove.io.DefaultGxl;
 import groove.io.ExtensionFilter;
-import groove.io.Xml;
 import groove.util.Groove;
 
 import java.io.File;
@@ -50,7 +48,7 @@ import org.junit.Test;
  * @version $Revision$
  */
 @SuppressWarnings("all")
-public class GraphTest {
+public abstract class GraphTest<N extends Node,L extends Label,E extends Edge> {
     static public final String MATCH_DOM_NAME = "match-dom-";
     static public final String MATCH_COD_NAME = "match-cod";
     static public final String ISO_GRAPH_NAME = "iso-";
@@ -66,31 +64,33 @@ public class GraphTest {
      * The graph upon which most tests are done. It has three nodes, one of
      * which has an a-edge to another and a b-edge to the third.
      */
-    public Graph graph;
+    public Graph<N,L,E> graph;
+    /** An empty graph of the same type as {@code graph}. */
+    public Graph<N,L,E> newGraph;
     /** An a-label */
-    public DefaultLabel aLabel;
+    public L aLabel;
     /** A b-label */
-    public DefaultLabel bLabel;
+    public L bLabel;
     /** A c-label */
-    public DefaultLabel cLabel;
+    public L cLabel;
     /** The a-edge of <tt>graph</tt>. */
-    public Edge aEdge;
+    public E aEdge;
     /** The b-edge of <tt>graph</tt>. */
-    public Edge bEdge;
+    public E bEdge;
     /** The source node of <tt>aEdge</tt> and <tt>bEdge</tt>. */
-    public Node source;
+    public N source;
     /** The target node of <tt>aEdge</tt>. */
-    public Node aTarget;
+    public N aTarget;
     /** The target node of <tt>bEdge</tt>. */
-    public Node bTarget;
+    public N bTarget;
 
-    public Graph[] matchDom = new Graph[MATCH_DOM_COUNT];
-    public Graph matchCod;
-    public Graph[] isoGraph = new Graph[ISO_GRAPH_COUNT];
+    public Graph<N,L,E>[] matchDom = new Graph[MATCH_DOM_COUNT];
+    public Graph<N,L,E> matchCod;
+    public Graph<N,L,E>[] isoGraph = new Graph[ISO_GRAPH_COUNT];
 
     public DefaultIsoChecker checker = DefaultIsoChecker.getInstance(true);
 
-    Graph createGraph() {
+    Graph<N,L,E> createGraph() {
         return new NodeSetEdgeSetGraph();
     }
 
@@ -107,13 +107,14 @@ public class GraphTest {
             this.isoGraph[i] = loadGraph(testFile(ISO_GRAPH_NAME + i));
         }
         this.graph = this.matchDom[0];
-        this.aLabel = DefaultLabel.createLabel("a");
-        this.bLabel = DefaultLabel.createLabel("b");
-        this.cLabel = DefaultLabel.createLabel("c");
+        this.newGraph = this.graph.newGraph();
+        this.aLabel = this.graph.getFactory().createLabel("a");
+        this.bLabel = this.graph.getFactory().createLabel("b");
+        this.cLabel = this.graph.getFactory().createLabel("c");
 
-        Iterator<? extends Edge> edgeIter = this.graph.edgeSet().iterator();
-        Edge edge1 = edgeIter.next();
-        Edge edge2 = edgeIter.next();
+        Iterator<? extends E> edgeIter = this.graph.edgeSet().iterator();
+        E edge1 = edgeIter.next();
+        E edge2 = edgeIter.next();
         if (edge1.label().equals(this.aLabel)) {
             this.aEdge = edge1;
             this.bEdge = edge2;
@@ -121,13 +122,13 @@ public class GraphTest {
             this.aEdge = edge2;
             this.bEdge = edge1;
         }
-        this.source = this.aEdge.source();
-        this.aTarget = this.aEdge.target();
-        this.bTarget = this.bEdge.target();
+        this.source = (N) this.aEdge.source();
+        this.aTarget = (N) this.aEdge.target();
+        this.bTarget = (N) this.bEdge.target();
     }
 
-    protected Graph loadGraph(File file) {
-        Graph result = createGraph();
+    protected Graph<N,L,E> loadGraph(File file) {
+        Graph<N,L,E> result = createGraph();
         try {
             Graph graph = this.xml.unmarshalGraph(file);
             result.addNodeSet(graph.nodeSet());
@@ -233,12 +234,11 @@ public class GraphTest {
     final public void testAddEdgeNodeLabelNode() {
         int oldNodeCount = this.matchDom[0].nodeCount();
         int oldEdgeCount = this.matchDom[0].edgeCount();
-        Iterator<? extends Node> nodeIter =
-            this.matchDom[0].nodeSet().iterator();
-        Node sourceNode = nodeIter.next();
-        Node targetNode = nodeIter.next();
-        Label label = DefaultLabel.createLabel("test");
-        Edge newEdge = this.matchDom[0].addEdge(sourceNode, label, targetNode);
+        Iterator<? extends N> nodeIter = this.matchDom[0].nodeSet().iterator();
+        N sourceNode = nodeIter.next();
+        N targetNode = nodeIter.next();
+        L label = this.graph.getFactory().createLabel("test");
+        E newEdge = this.matchDom[0].addEdge(sourceNode, label, targetNode);
         newEdge.source().equals(sourceNode);
         newEdge.target().equals(targetNode);
         newEdge.label().equals(label);
@@ -337,7 +337,7 @@ public class GraphTest {
     @Test
     final public void testIsEmpty() {
         assertFalse(this.graph.isEmpty());
-        this.graph.removeNodeSet(new HashSet<Node>(this.graph.nodeSet()));
+        this.graph.removeNodeSet(new HashSet<N>(this.graph.nodeSet()));
         assertTrue(this.graph.isEmpty());
         assertTrue(this.graph.newGraph().isEmpty());
     }
@@ -354,11 +354,10 @@ public class GraphTest {
     final public void testContainsElement() {
         assertTrue(this.graph.containsNode(this.source));
         assertTrue(this.graph.containsEdge(this.aEdge));
-        assertFalse(this.graph.containsNode(DefaultNode.createNode()));
-        assertFalse(this.graph.containsEdge(DefaultEdge.createEdge(
+        assertFalse(this.graph.containsEdge(this.graph.getFactory().createEdge(
             this.aTarget, this.cLabel, this.aTarget)));
-        assertTrue(this.graph.containsEdge(DefaultEdge.createEdge(this.source,
-            this.aLabel, this.aTarget)));
+        assertTrue(this.graph.containsEdge(this.graph.getFactory().createEdge(
+            this.source, this.aLabel, this.aTarget)));
     }
 
     /*
@@ -367,9 +366,9 @@ public class GraphTest {
     @Test
     final public void testAddNodeNode() {
         assertFalse(this.graph.addNode(this.source));
-        Node newNode = DefaultNode.createNode();
-        assertTrue(this.graph.addNode(newNode));
+        N newNode = this.graph.addNode();
         assertTrue(this.graph.containsNode(newNode));
+        assertFalse(this.newGraph.containsNode(newNode));
     }
 
     /*
@@ -378,53 +377,57 @@ public class GraphTest {
     @Test
     final public void testAddEdgeEdge() {
         assertFalse(this.graph.addEdge(this.aEdge));
-        assertFalse(this.graph.addEdge(DefaultEdge.createEdge(this.source,
-            this.aLabel, this.aTarget)));
-        Edge newEdge =
-            DefaultEdge.createEdge(this.aTarget, this.cLabel, this.bTarget);
+        assertFalse(this.graph.addEdge(this.graph.getFactory().createEdge(
+            this.source, this.aLabel, this.aTarget)));
+        E newEdge =
+            this.graph.getFactory().createEdge(this.aTarget, this.cLabel,
+                this.bTarget);
         assertTrue(this.graph.addEdge(newEdge));
         assertTrue(this.graph.containsEdge(newEdge));
-        Node newNode = DefaultNode.createNode();
-        newEdge = DefaultEdge.createEdge(this.bTarget, this.cLabel, newNode);
-        assertTrue(this.graph.addEdge(newEdge));
-        assertTrue(this.graph.containsNode(newNode));
+        N newNode = this.graph.addNode();
+        newEdge =
+            this.graph.getFactory().createEdge(this.bTarget, this.cLabel,
+                newNode);
+        assertTrue(this.newGraph.addEdge(newEdge));
+        assertTrue(this.newGraph.containsNode(newNode));
     }
 
     @Test
     final public void testAddNodeSet() {
-        Set<Node> nodeSet = new HashSet<Node>();
+        Set<N> nodeSet = new HashSet<N>();
         assertFalse(this.graph.addNodeSet(nodeSet));
         nodeSet.add(this.source);
         assertFalse(this.graph.addNodeSet(nodeSet));
-        Node newNode = DefaultNode.createNode();
+        N newNode = this.graph.addNode();
         nodeSet.add(newNode);
-        assertTrue(this.graph.addNodeSet(nodeSet));
-        assertTrue(this.graph.containsNode(newNode));
+        assertTrue(this.newGraph.addNodeSet(nodeSet));
+        assertTrue(this.newGraph.containsNode(newNode));
     }
 
     @Test
     final public void testAddEdgeSet() {
-        Set<Edge> edgeSet = new HashSet<Edge>();
+        Set<E> edgeSet = new HashSet<E>();
         assertFalse(this.graph.addEdgeSet(edgeSet));
         edgeSet.add(this.aEdge);
         assertFalse(this.graph.addEdgeSet(edgeSet));
-        edgeSet.add(DefaultEdge.createEdge(this.source, this.bLabel,
-            this.bTarget));
+        edgeSet.add(this.graph.getFactory().createEdge(this.source,
+            this.bLabel, this.bTarget));
         assertFalse(this.graph.addEdgeSet(edgeSet));
-        Node newNode = DefaultNode.createNode();
-        Edge newEdge =
-            DefaultEdge.createEdge(this.bTarget, this.cLabel, newNode);
+        N newNode = this.graph.addNode();
+        E newEdge =
+            this.graph.getFactory().createEdge(this.bTarget, this.cLabel,
+                newNode);
         edgeSet.add(newEdge);
-        assertTrue(this.graph.addEdgeSet(edgeSet));
-        assertTrue(this.graph.containsNode(newNode));
+        assertTrue(this.newGraph.addEdgeSet(edgeSet));
+        assertTrue(this.newGraph.containsNode(newNode));
     }
 
     @Test
     final public void testRemoveNode() {
-        Node newNode = DefaultNode.createNode();
-        assertFalse(this.graph.removeNode(newNode));
-        this.graph.addNode(newNode);
-        assertTrue(this.graph.removeNode(newNode));
+        N newNode = this.graph.addNode();
+        assertFalse(this.newGraph.removeNode(newNode));
+        this.newGraph.addNode(newNode);
+        assertTrue(this.newGraph.removeNode(newNode));
         assertTrue(this.graph.removeNode(this.source));
         assertFalse(this.graph.containsNode(this.source));
         assertFalse(this.graph.containsEdge(this.aEdge));
@@ -433,8 +436,9 @@ public class GraphTest {
 
     @Test
     final public void testRemoveEdge() {
-        Edge newEdge =
-            DefaultEdge.createEdge(this.source, this.bLabel, this.aTarget);
+        E newEdge =
+            this.graph.getFactory().createEdge(this.source, this.bLabel,
+                this.aTarget);
         assertFalse(this.graph.removeEdge(newEdge));
         this.graph.addEdge(newEdge);
         assertTrue(this.graph.removeEdge(newEdge));
@@ -442,20 +446,20 @@ public class GraphTest {
         assertTrue(this.graph.containsNode(this.source));
         assertFalse(this.graph.containsEdge(this.aEdge));
         assertFalse(this.graph.removeEdge(this.aEdge));
-        assertTrue(this.graph.removeEdge(DefaultEdge.createEdge(this.source,
-            this.bLabel, this.bTarget)));
+        assertTrue(this.graph.removeEdge(this.graph.getFactory().createEdge(
+            this.source, this.bLabel, this.bTarget)));
     }
 
     @Test
     final public void testRemoveNodeSet() {
-        Set<Node> nodeSet = new HashSet<Node>();
+        Set<N> nodeSet = new HashSet<N>();
         assertFalse(this.graph.removeNodeSet(nodeSet));
-        Node newNode = DefaultNode.createNode();
+        N newNode = this.graph.addNode();
         nodeSet.add(newNode);
-        assertFalse(this.graph.removeNodeSet(nodeSet));
-        this.graph.addNode(newNode);
-        assertTrue(this.graph.removeNodeSet(nodeSet));
-        assertFalse(this.graph.containsNode(newNode));
+        assertFalse(this.newGraph.removeNodeSet(nodeSet));
+        this.newGraph.addNode(newNode);
+        assertTrue(this.newGraph.removeNodeSet(nodeSet));
+        assertFalse(this.newGraph.containsNode(newNode));
         nodeSet.add(this.source);
         assertTrue(this.graph.removeNodeSet(nodeSet));
         assertFalse(this.graph.containsNode(this.source));
@@ -464,15 +468,16 @@ public class GraphTest {
 
     @Test
     final public void testRemoveEdgeSet() {
-        Set<Edge> edgeSet = new HashSet<Edge>();
+        Set<E> edgeSet = new HashSet<E>();
         assertFalse(this.graph.removeEdgeSet(edgeSet));
-        Node newNode = DefaultNode.createNode();
-        Edge newEdge =
-            DefaultEdge.createEdge(this.bTarget, this.cLabel, newNode);
+        N newNode = this.graph.addNode();
+        E newEdge =
+            this.graph.getFactory().createEdge(this.bTarget, this.cLabel,
+                newNode);
         edgeSet.add(newEdge);
         assertFalse(this.graph.removeEdgeSet(edgeSet));
-        edgeSet.add(DefaultEdge.createEdge(this.source, this.bLabel,
-            this.bTarget));
+        edgeSet.add(this.graph.getFactory().createEdge(this.source,
+            this.bLabel, this.bTarget));
         edgeSet.add(this.aEdge);
         assertTrue(this.graph.removeEdgeSet(edgeSet));
         assertFalse(this.graph.containsEdge(this.bEdge));
@@ -488,5 +493,5 @@ public class GraphTest {
         // so there is little else to do here
     }
 
-    private final Xml<Graph> xml = new DefaultGxl();
+    private final DefaultGxl xml = new DefaultGxl();
 }

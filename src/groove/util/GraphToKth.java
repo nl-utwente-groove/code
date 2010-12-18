@@ -17,9 +17,9 @@
 package groove.util;
 
 import groove.algebra.StringAlgebra;
-import groove.graph.Edge;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
+import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.view.FormatException;
 import groove.view.aspect.AspectEdge;
@@ -241,7 +241,7 @@ public final class GraphToKth {
             // Should never happen...
             e.printStackTrace();
         }
-        for (Edge edge : model.edgeSet()) {
+        for (HostEdge edge : model.edgeSet()) {
             if (edge.source().getNumber() == node.getNumber()) {
                 String possibleKey = edge.label().text();
                 Node possibleTarget = edge.target();

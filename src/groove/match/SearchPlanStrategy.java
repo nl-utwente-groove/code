@@ -18,7 +18,6 @@ package groove.match;
 
 import groove.algebra.Algebra;
 import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
@@ -28,6 +27,7 @@ import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
+import groove.trans.RuleGraph;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
 import groove.util.Reporter;
@@ -54,8 +54,8 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
      * @param plan the search items that make up the search plan
      * @param injective flag to indicate that the matching should be injective
      */
-    public SearchPlanStrategy(Graph source, List<? extends SearchItem> plan,
-            boolean injective) {
+    public SearchPlanStrategy(RuleGraph source,
+            List<? extends SearchItem> plan, boolean injective) {
         this.nodeIxMap = new HashMap<RuleNode,Integer>();
         this.edgeIxMap = new HashMap<RuleEdge,Integer>();
         this.varIxMap = new HashMap<LabelVar,Integer>();

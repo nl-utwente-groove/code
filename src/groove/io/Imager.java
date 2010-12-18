@@ -16,7 +16,7 @@
  */
 package groove.io;
 
-import groove.graph.Graph;
+import groove.graph.DefaultGraph;
 import groove.graph.GraphInfo;
 import groove.gui.Exporter;
 import groove.gui.Options;
@@ -175,7 +175,7 @@ public class Imager extends CommandLineTool {
                         new File(
                             outFileParent,
                             new ExtensionFilter(imageFormat).addExtension(outFileName));
-                    Graph graph = graphLoader.unmarshalGraph(inFile);
+                    DefaultGraph graph = graphLoader.unmarshalGraph(inFile);
 
                     if (graph.size() == 0) {
                         // fix to skip empty graphs and rules, since
@@ -470,7 +470,7 @@ public class Imager extends CommandLineTool {
     static public final String BROWSE_LABEL = "Browse...";
 
     /** The loader used for the xml files. */
-    static final Xml<?> graphLoader = new LayedOutXml();
+    static final LayedOutXml graphLoader = new LayedOutXml();
 
     /** The rule filter. */
     static final ExtensionFilter ruleFilter = Groove.createRuleFilter();

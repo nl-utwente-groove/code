@@ -66,21 +66,21 @@ public class DefaultDeltaApplier implements DeltaApplier {
     public void applyDelta(DeltaTarget target, int mode) {
         // process the added and removed sets
         if (mode != EDGES_ONLY) {
-            for (Node addedNode : this.addedNodeSet) {
+            for (HostNode addedNode : this.addedNodeSet) {
                 target.addNode(addedNode);
             }
         }
         if (mode != NODES_ONLY) {
-            for (Edge addedEdge : this.addedEdgeSet) {
+            for (HostEdge addedEdge : this.addedEdgeSet) {
                 target.addEdge(addedEdge);
             }
-            for (Edge removedEdge : this.removedEdgeSet) {
+            for (HostEdge removedEdge : this.removedEdgeSet) {
                 target.removeEdge(removedEdge);
             }
         }
         // remove nodes only after the edges
         if (mode != EDGES_ONLY) {
-            for (Node removedNode : this.removedNodeSet) {
+            for (HostNode removedNode : this.removedNodeSet) {
                 target.removeNode(removedNode);
             }
         }

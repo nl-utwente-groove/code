@@ -73,7 +73,7 @@ public class EditorJModel extends JModel {
         for (Object jCell : rootCells) {
             if (!(jCell instanceof DefaultEdge)) {
                 assert jCell instanceof GraphJVertex;
-                GraphJVertex jVertex = (GraphJVertex) jCell;
+                GraphJVertex<?,?> jVertex = (GraphJVertex<?,?>) jCell;
                 // create node image and attributes
                 JVertex nodeImage = copyJVertex(jVertex);
                 // add new port to port map (for correct edge cloning)
@@ -86,7 +86,7 @@ public class EditorJModel extends JModel {
         for (Object jCell : rootCells) {
             if (jCell instanceof DefaultEdge) {
                 assert jCell instanceof GraphJEdge;
-                GraphJEdge jEdge = (GraphJEdge) jCell;
+                GraphJEdge<?,?> jEdge = (GraphJEdge<?,?>) jCell;
                 // create edge image and attributes
                 JEdge edgeImage = copyJEdge(jEdge);
                 // connect up edge image

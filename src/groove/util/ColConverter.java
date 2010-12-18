@@ -18,13 +18,13 @@ package groove.util;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraRegister;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultLabel;
 import groove.graph.Label;
-import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.io.ExtensionFilter;
+import groove.trans.DefaultHostGraph;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -71,12 +71,12 @@ public class ColConverter {
     }
 
     /** Reads a .col file and returns the corresponding graph. */
-    private static DefaultGraph convert(File inFile) throws IOException {
-        DefaultGraph result = new DefaultGraph();
+    private static HostGraph convert(File inFile) throws IOException {
+        HostGraph result = new DefaultHostGraph();
         System.out.printf("Converting %s%n", inFile.getCanonicalPath());
         BufferedReader reader = new BufferedReader(new FileReader(inFile));
         Algebra<?> intAlgebra = AlgebraRegister.getInstance().getAlgebra("0");
-        Label valueLabel = DefaultLabel.createLabel("value");
+        TypeLabel valueLabel = TypeLabel.createLabel("value");
         for (String nextLine = reader.readLine(); nextLine != null; nextLine =
             reader.readLine()) {
             if (DEBUG) {
@@ -84,15 +84,15 @@ public class ColConverter {
             }
             String[] fragments = nextLine.split(" ");
             if (fragments[0].equals("n")) {
-                Node node = addNode(result, fragments[1]);
-                Node valueNode =
+                HostNode node = addNode(result, fragments[1]);
+                ValueNode valueNode =
                     ValueNode.createValueNode(intAlgebra,
                         intAlgebra.getValue(fragments[2]));
                 result.addNode(valueNode);
                 result.addEdge(node, valueLabel, valueNode);
             } else if (fragments[0].equals("e")) {
-                Node source = addNode(result, fragments[1]);
-                Node target = addNode(result, fragments[2]);
+                HostNode source = addNode(result, fragments[1]);
+                HostNode target = addNode(result, fragments[2]);
                 result.addEdge(source, LABEL, target);
             }
         }
@@ -102,14 +102,14 @@ public class ColConverter {
         return result;
     }
 
-    private static Node addNode(DefaultGraph result, String id) {
-        Node node = result.addNode(Integer.parseInt(id));
+    private static HostNode addNode(HostGraph result, String id) {
+        HostNode node = result.addNode(Integer.parseInt(id));
         result.addEdge(node, TypeLabel.createLabel("i" + id, Label.FLAG), node);
         return node;
     }
 
     private static final ExtensionFilter colFilter = new ExtensionFilter(
         "DIMACS graph format", ".col");
-    private static final Label LABEL = TypeLabel.createLabel("n");
+    private static final TypeLabel LABEL = TypeLabel.createLabel("n");
     private static final boolean DEBUG = false;
 }

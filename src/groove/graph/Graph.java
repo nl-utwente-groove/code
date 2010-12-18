@@ -27,7 +27,8 @@ import java.util.Set;
  * and target nodes and edge label.
  * @version $Revision$ $Date: 2008-01-30 09:32:52 $
  */
-public interface Graph extends DeltaTarget, Fixable {
+public interface Graph<N extends Node,L extends Label,E extends Edge> extends
+        Fixable {
     /**
      * Returns the set of nodes of this graph. The return value is an
      * unmodifiable view of the underlying node set, which is <i>not</i>
@@ -35,7 +36,7 @@ public interface Graph extends DeltaTarget, Fixable {
      * modifications to the graph.
      * @ensure <tt>result != null</tt>
      */
-    Set<? extends Node> nodeSet();
+    Set<? extends N> nodeSet();
 
     /**
      * Returns the number of nodes in this graph. Convenience method for
@@ -52,7 +53,7 @@ public interface Graph extends DeltaTarget, Fixable {
      * concurrent modifications to the graph.
      * @ensure <tt>result != null</tt>
      */
-    Set<? extends Edge> edgeSet();
+    Set<? extends E> edgeSet();
 
     /**
      * Returns the number of edges of this graph. Convenience method for
@@ -70,19 +71,19 @@ public interface Graph extends DeltaTarget, Fixable {
      * @require node != null
      * @ensure result == { edge \in E | \exists i: edge.end(i).equals(node) }
      */
-    Set<? extends Edge> edgeSet(Node node);
+    Set<? extends E> edgeSet(Node node);
 
     /**
      * Returns the set of incoming edges of a given node of this graph.
      * @param node the node of which the incoming edges are required
      */
-    Set<? extends Edge> inEdgeSet(Node node);
+    Set<? extends E> inEdgeSet(Node node);
 
     /**
      * Returns the set of outgoing edges of a given node of this graph.
      * @param node the node of which the outgoing edges are required
      */
-    Set<? extends Edge> outEdgeSet(Node node);
+    Set<? extends E> outEdgeSet(Node node);
 
     /**
      * Returns the set of all edges in this graph with a given label.
@@ -91,7 +92,7 @@ public interface Graph extends DeltaTarget, Fixable {
      * guaranteed to contain distinct elements.
      * @param label the label of the required edges
      */
-    Set<? extends Edge> labelEdgeSet(Label label);
+    Set<? extends E> labelEdgeSet(Label label);
 
     /**
      * Returns the total number of elements (nodes plus edges) in this graph.
@@ -144,7 +145,7 @@ public interface Graph extends DeltaTarget, Fixable {
      * graph. The object may be <code>null</code> if there is no additional
      * information.
      */
-    GraphInfo getInfo();
+    GraphInfo<N,E> getInfo();
 
     /**
      * Sets an information object with additional information about this graph,
@@ -154,26 +155,26 @@ public interface Graph extends DeltaTarget, Fixable {
      * @return a shallow copy of <code>info</code>, or <code>null</code> if
      *         <code>info</code> was <code>null</code>
      */
-    GraphInfo setInfo(GraphInfo info);
+    GraphInfo<N,E> setInfo(GraphInfo<?,?> info);
 
     /**
      * Makes a copy of this Graph with cloned (not aliased) node and edge sets
      * but aliased nodes and edges.
      * @ensure <tt>resultnodeSet().equals(this.nodeSet()) && result.edgeSet().equals(this.edgeSet()</tt>
      */
-    Graph clone();
+    Graph<N,L,E> clone();
 
     /**
      * Factory method: returns a fresh, empty graph.
      */
-    Graph newGraph();
+    Graph<N,L,E> newGraph();
 
     /**
      * Generates a fresh node and adds it to this graph.
      * @return the new node
      * @see Graph#addNode(Node)
      */
-    Node addNode();
+    N addNode();
 
     /**
      * Adds a node with a given number to this graph.
@@ -181,7 +182,7 @@ public interface Graph extends DeltaTarget, Fixable {
      * @return the new node
      * @see Graph#addNode(Node)
      */
-    Node addNode(int nr);
+    N addNode(int nr);
 
     /**
      * Adds a binary edge to the graph, between given nodes and with a given
@@ -195,7 +196,7 @@ public interface Graph extends DeltaTarget, Fixable {
      *         labelled <tt>label</tt>
      * @see Graph#addEdge(Edge)
      */
-    Edge addEdge(Node source, String label, Node target);
+    E addEdge(N source, String label, N target);
 
     /**
      * Adds a binary edge to the graph, between given nodes and with a given
@@ -209,7 +210,7 @@ public interface Graph extends DeltaTarget, Fixable {
      *         labelled <tt>label</tt>
      * @see Graph#addEdge(Edge)
      */
-    Edge addEdge(Node source, Label label, Node target);
+    E addEdge(N source, L label, N target);
 
     /**
      * Adds a node to this graph. This is allowed only if the graph is not
@@ -223,7 +224,7 @@ public interface Graph extends DeltaTarget, Fixable {
      * @see #addEdge(Edge)
      * @see #isFixed()
      */
-    boolean addNode(Node node);
+    boolean addNode(N node);
 
     /**
      * Adds an edge and its end nodes to this graph. This is allowed only if the
@@ -238,7 +239,7 @@ public interface Graph extends DeltaTarget, Fixable {
      * @see #addNode(Node)
      * @see #isFixed()
      */
-    boolean addEdge(Edge edge);
+    boolean addEdge(E edge);
 
     /**
      * Adds a set of nodes to this graph. This is allowed only if the graph is
@@ -253,7 +254,7 @@ public interface Graph extends DeltaTarget, Fixable {
      * @see #addEdgeSet(Collection)
      * @see #isFixed()
      */
-    boolean addNodeSet(Collection<? extends Node> nodeSet);
+    boolean addNodeSet(Collection<? extends N> nodeSet);
 
     /**
      * Adds a set of edges and their end nodes to this graph. This is allowed
@@ -269,7 +270,7 @@ public interface Graph extends DeltaTarget, Fixable {
      * @see #addNodeSet(Collection)
      * @see #isFixed()
      */
-    boolean addEdgeSet(Collection<? extends Edge> edgeSet);
+    boolean addEdgeSet(Collection<? extends E> edgeSet);
 
     /**
      * Removes a given node from this graph, if it was in the graph to start
@@ -292,7 +293,7 @@ public interface Graph extends DeltaTarget, Fixable {
      * @see #isFixed()
      * @see #removeEdge(Edge)
      */
-    boolean removeNode(Node node);
+    boolean removeNode(N node);
 
     /**
      * Removes a given edge from this graph, if it was in the graph to start
@@ -310,7 +311,7 @@ public interface Graph extends DeltaTarget, Fixable {
      * @see #isFixed()
      * @see #removeNode(Node)
      */
-    boolean removeEdge(Edge edge);
+    boolean removeEdge(E edge);
 
     /**
      * Removes a set of nodes from this graph, if they were in the graph to
@@ -331,7 +332,7 @@ public interface Graph extends DeltaTarget, Fixable {
      * @see #removeNode(Node)
      * @see #removeEdgeSet(Collection)
      */
-    boolean removeNodeSet(Collection<Node> nodeSet);
+    boolean removeNodeSet(Collection<? extends N> nodeSet);
 
     /**
      * Removes a set of edges from this graph, if they were in the graph to
@@ -347,7 +348,7 @@ public interface Graph extends DeltaTarget, Fixable {
      * @see #removeEdge(Edge)
      * @see #removeNodeSet(Collection)
      */
-    boolean removeEdgeSet(Collection<? extends Edge> edgeSet);
+    boolean removeEdgeSet(Collection<? extends E> edgeSet);
 
     /**
      * Merges two nodes in this graph, by adding all edges to and from the first
@@ -363,7 +364,7 @@ public interface Graph extends DeltaTarget, Fixable {
      *         <tt>containsElement(n,l,to)</tt> if
      *         <tt>old.containsElement(n,l,from)</tt> and
      */
-    boolean mergeNodes(Node from, Node to);
+    boolean mergeNodes(N from, N to);
 
     /**
      * More efficient addition of edges; for package use only. Avoids both the
@@ -372,7 +373,7 @@ public interface Graph extends DeltaTarget, Fixable {
      * @require <tt>edge instanceof Edge && containsAll(edge.ends())</tt>
      * @see #addEdge(Edge)
      */
-    boolean addEdgeWithoutCheck(Edge edge);
+    boolean addEdgeWithoutCheck(E edge);
 
     /**
      * More efficient addition of sets of edges; for package use only. Avoids
@@ -381,7 +382,7 @@ public interface Graph extends DeltaTarget, Fixable {
      * @require <tt>edge: 2^Edge && containsAll(edge.ends())</tt>
      * @see #addEdgeSet(Collection)
      */
-    boolean addEdgeSetWithoutCheck(Collection<? extends Edge> edgeSet);
+    boolean addEdgeSetWithoutCheck(Collection<? extends E> edgeSet);
 
     /**
      * More efficient removal of nodes; for package use only. Avoids both the
@@ -391,7 +392,7 @@ public interface Graph extends DeltaTarget, Fixable {
      *          incident edges.
      * @see #removeNode(Node)
      */
-    boolean removeNodeWithoutCheck(Node node);
+    boolean removeNodeWithoutCheck(N node);
 
     /**
      * More efficient removal of sets of nodes; for package use only. Avoids the
@@ -401,8 +402,8 @@ public interface Graph extends DeltaTarget, Fixable {
      *          edges.
      * @see #removeNodeSet(Collection)
      */
-    boolean removeNodeSetWithoutCheck(Collection<? extends Node> nodeSet);
+    boolean removeNodeSetWithoutCheck(Collection<? extends N> nodeSet);
 
     /** Returns the element factory used for elements of this graph. */
-    ElementFactory<?,?,?> getFactory();
+    ElementFactory<N,L,E> getFactory();
 }

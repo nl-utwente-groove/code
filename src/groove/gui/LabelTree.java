@@ -915,9 +915,7 @@ public class LabelTree extends JTree implements GraphModelListener,
                 super(name);
                 this.labels = new HashSet<Label>();
                 for (TypeLabel label : labels) {
-                    if (label instanceof TypeLabel) {
-                        this.labels.addAll(getLabelStore().getSubtypes(label));
-                    }
+                    this.labels.addAll(getLabelStore().getSubtypes(label));
                 }
             }
 

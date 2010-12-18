@@ -18,14 +18,13 @@ package groove.util;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.GraphInfo;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.gui.jgraph.EditorJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
-import groove.gui.layout.LayoutMap;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.RuleAspect;
 
@@ -55,7 +54,7 @@ public class Converter {
     }
 
     /** Writes a graph in FSM format to a print writer. */
-    static public void graphToFsm(Graph graph, PrintWriter writer) {
+    static public void graphToFsm(Graph<?,?,?> graph, PrintWriter writer) {
         // mapping from nodes of graphs to integers
         Map<Node,Integer> nodeMap = new HashMap<Node,Integer>();
         writer.println("NodeNumber(0)");
@@ -74,7 +73,7 @@ public class Converter {
     }
 
     /** Writes a graph in CADP .aut format to a print writer. */
-    static public void graphToAut(Graph graph, PrintWriter writer) {
+    static public void graphToAut(Graph<?,?,?> graph, PrintWriter writer) {
         // collect the node numbers, to be able to number them consecutively
         int nodeCount = graph.nodeCount();
         // list marking which node numbers have been used
@@ -115,9 +114,9 @@ public class Converter {
     }
 
     /** Reads in a graph from CADP .aut format. */
-    static public Map<String,Node> autToGraph(InputStream reader, Graph graph)
-        throws IOException {
-        Map<String,Node> result = new HashMap<String,Node>();
+    static public <N extends Node> Map<String,N> autToGraph(InputStream reader,
+            Graph<N,? extends Label,? extends Edge> graph) throws IOException {
+        Map<String,N> result = new HashMap<String,N>();
         BufferedReader in = new BufferedReader(new InputStreamReader(reader));
         int linenr = 0;
         try {
@@ -127,7 +126,7 @@ public class Converter {
             int edgeCountStart = line.indexOf(',') + 1;
             int root =
                 Integer.parseInt(line.substring(rootStart, edgeCountStart - 1).trim());
-            Node rootNode = graph.addNode(root);
+            N rootNode = graph.addNode(root);
             result.put("" + root, rootNode);
             graph.addEdge(rootNode, ROOT_LABEL, rootNode);
             for (line = in.readLine(); line != null; line = in.readLine()) {
@@ -143,8 +142,8 @@ public class Converter {
                     int target =
                         Integer.parseInt(line.substring(targetStart,
                             line.lastIndexOf(')')).trim());
-                    Node sourceNode = graph.addNode(source);
-                    Node targetNode = graph.addNode(target);
+                    N sourceNode = graph.addNode(source);
+                    N targetNode = graph.addNode(target);
                     result.put("" + source, sourceNode);
                     result.put("" + target, targetNode);
                     graph.addEdge(sourceNode, label, targetNode);
@@ -158,9 +157,10 @@ public class Converter {
     }
 
     /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
-    static public void graphToTikz(JGraph graph, PrintWriter writer) {
+    static public <N extends Node,E extends Edge> void graphToTikz(
+            JGraph graph, PrintWriter writer) {
         JModel model = graph.getModel();
-        GraphJModel graphModel;
+        GraphJModel<?,?> graphModel;
         // if the model is an editor model, self-edges should be displayed as
         // node labels
         if (model instanceof EditorJModel) {
@@ -169,11 +169,9 @@ public class Converter {
                     model.getOptions());
             graphModel.setShowVertexLabels();
         } else {
-            graphModel = (GraphJModel) model;
+            graphModel = (GraphJModel<?,?>) model;
         }
-        LayoutMap<Node,Edge> layoutMap =
-            GraphInfo.getLayoutMap(graphModel.getGraph());
-        writer.print(GraphToTikz.convertGraphToTikzStr(graphModel, layoutMap));
+        writer.print(GraphToTikz.convertGraphToTikzStr(graphModel));
     }
 
     /** Writes a graph in a simple .kth format to a print writer. */

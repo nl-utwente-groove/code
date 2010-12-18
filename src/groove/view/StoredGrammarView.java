@@ -18,7 +18,7 @@ package groove.view;
 
 import groove.control.ControlView;
 import groove.control.CtrlFactory;
-import groove.graph.Graph;
+import groove.graph.DefaultGraph;
 import groove.graph.GraphInfo;
 import groove.graph.LabelStore;
 import groove.graph.TypeGraph;
@@ -539,7 +539,7 @@ public class StoredGrammarView implements GrammarView, Observer {
             if (result.getGraphNames().contains(startGraphName)) {
                 result.setStartGraph(startGraphName);
             } else {
-                Graph plainGraph = Groove.loadGraph(startGraphName);
+                DefaultGraph plainGraph = Groove.loadGraph(startGraphName);
                 if (plainGraph == null) {
                     throw new IOException(String.format(
                         "Cannot load start graph %s", startGraphName));

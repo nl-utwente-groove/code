@@ -100,7 +100,7 @@ public class NestingAspect extends AbstractAspect {
     @Override
     public void checkNode(AspectNode node, AspectGraph graph)
         throws FormatException {
-        Set<AspectEdge> outEdgeSet = graph.outEdgeSet(node);
+        Set<? extends AspectEdge> outEdgeSet = graph.outEdgeSet(node);
         if (outEdgeSet.size() > 1) {
             throw new FormatException("Meta-node '%s' has ambiguous parentage",
                 node);

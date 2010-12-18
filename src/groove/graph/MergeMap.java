@@ -16,7 +16,9 @@
  */
 package groove.graph;
 
+import groove.trans.HostEdge;
 import groove.trans.HostFactory;
+import groove.trans.HostNode;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -30,7 +32,9 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class MergeMap extends NodeEdgeHashMap {
+public class MergeMap
+        extends
+        GraphToGraphMap<HostNode,TypeLabel,HostEdge,HostNode,TypeLabel,HostEdge> {
     /**
      * Creates a global identity function.
      */
@@ -45,7 +49,7 @@ public class MergeMap extends NodeEdgeHashMap {
      * map contains <tt>null</tt>.
      */
     @Override
-    public Node getNode(Node key) {
+    public HostNode getNode(HostNode key) {
         return internalToExternal(super.getNode(key), key);
     }
 
@@ -55,12 +59,12 @@ public class MergeMap extends NodeEdgeHashMap {
      * their current images undergo the same operation.
      */
     @Override
-    public Node putNode(Node key, Node value) {
+    public HostNode putNode(HostNode key, HostNode value) {
         // the key-image pair should be put in the merge map,
         // but maybe one of them has been merged with a different node already
         // or deleted
-        Node keyImage = getNode(key);
-        Node valueImage = getNode(value);
+        HostNode keyImage = getNode(key);
+        HostNode valueImage = getNode(value);
         // if we are combining this merge map with another, if may occur
         // that the value is UNDEFINED, meaning we should rather remove the key
         if (valueImage == UNDEFINED) {
@@ -85,8 +89,8 @@ public class MergeMap extends NodeEdgeHashMap {
      * mapped to themselves.
      */
     @Override
-    public Edge mapEdge(Edge key) {
-        Map<Node,Node> nodeMap = nodeMap();
+    public HostEdge mapEdge(HostEdge key) {
+        Map<HostNode,HostNode> nodeMap = nodeMap();
         if (!nodeMap.containsKey(key.source())
             && !nodeMap.containsKey(key.target())) {
             return key;
@@ -97,7 +101,7 @@ public class MergeMap extends NodeEdgeHashMap {
 
     @Override
     public HostFactory getFactory() {
-        return HostFactory.INSTANCE;
+        return HostFactory.instance();
     }
 
     /**
@@ -106,7 +110,7 @@ public class MergeMap extends NodeEdgeHashMap {
      * @param key the key to be merged; should not be <code>null</code>
      * @param image the merge image; should not be <code>null</code>
      */
-    private void merge(Node key, Node image) {
+    private void merge(HostNode key, HostNode image) {
         assert key != null && image != null : "Merging " + key + " and "
             + image + " not correct: neither should be null";
         super.putNode(key, image);
@@ -114,7 +118,7 @@ public class MergeMap extends NodeEdgeHashMap {
         // now redirect all pre-images of key, if necessary
         if (this.mergeTargets.contains(key)) {
             // map all pre-images of key to image
-            for (Map.Entry<Node,Node> entry : nodeMap().entrySet()) {
+            for (Map.Entry<HostNode,HostNode> entry : nodeMap().entrySet()) {
                 if (entry.getValue() == key) {
                     setValue(entry, image);
                 }
@@ -127,14 +131,14 @@ public class MergeMap extends NodeEdgeHashMap {
      * Removes the key and its pre-images from the map.
      */
     @Override
-    public Node removeNode(Node key) {
-        Node keyImage = getNode(key);
+    public HostNode removeNode(HostNode key) {
+        HostNode keyImage = getNode(key);
         if (keyImage != null) {
             super.putNode(keyImage, UNDEFINED);
             // now redirect all pre-images of keyImage, if necessary
             if (this.mergeTargets.contains(keyImage)) {
                 // map all pre-images of keyImage to UNDEFINED
-                for (Map.Entry<Node,Node> entry : nodeMap().entrySet()) {
+                for (Map.Entry<HostNode,HostNode> entry : nodeMap().entrySet()) {
                     if (entry.getValue() == keyImage) {
                         entry.setValue(UNDEFINED);
                     }
@@ -148,10 +152,10 @@ public class MergeMap extends NodeEdgeHashMap {
     /**
      * Inserts a value into an entry, according to the rules of the
      * {@link MergeMap}. That is, the proposed value is converted using
-     * {@link #externalToInternal(Node, Node)} with the entry key as first
+     * {@link #externalToInternal(HostNode, HostNode)} with the entry key as first
      * parameter.
      */
-    private void setValue(Map.Entry<Node,Node> entry, Node value) {
+    private void setValue(Map.Entry<HostNode,HostNode> entry, HostNode value) {
         entry.setValue(externalToInternal(value, entry.getKey()));
     }
 
@@ -163,7 +167,7 @@ public class MergeMap extends NodeEdgeHashMap {
      * @param value the value to be converted
      * @param key the corresponding key
      */
-    private Node externalToInternal(Node value, Node key) {
+    private HostNode externalToInternal(HostNode value, HostNode key) {
         if (value == key) {
             return null;
         } else if (value == null) {
@@ -181,7 +185,7 @@ public class MergeMap extends NodeEdgeHashMap {
      * @param value the value to be converted
      * @param key the corresponding key
      */
-    private Node internalToExternal(Node value, Node key) {
+    private HostNode internalToExternal(HostNode value, HostNode key) {
         if (value == null) {
             return key;
         } else if (value == UNDEFINED) {
@@ -191,6 +195,11 @@ public class MergeMap extends NodeEdgeHashMap {
         }
     }
 
+    @Override
+    public MergeMap newMap() {
+        return new MergeMap();
+    }
+
     /**
      * Set of nodes to which other nodes are mapped. The merge targets are
      * themselves fixpoints of the merge map.
@@ -198,5 +207,5 @@ public class MergeMap extends NodeEdgeHashMap {
     private final Set<Node> mergeTargets;
 
     /** Internal representation of undefined. */
-    static public final Node UNDEFINED = DefaultNode.createNode();
+    static public final HostNode UNDEFINED = DefaultNode.createNode();
 }

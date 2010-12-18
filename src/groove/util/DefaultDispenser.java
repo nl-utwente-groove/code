@@ -37,7 +37,7 @@ public class DefaultDispenser implements Dispenser {
     /**
      * Returns the current value of the counter, and increases the counter.
      */
-    public int getNumber() {
+    public int getNext() {
         int result = this.count;
         this.count++;
         return result;

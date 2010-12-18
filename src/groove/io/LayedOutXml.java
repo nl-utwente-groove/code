@@ -16,6 +16,9 @@
  */
 package groove.io;
 
+import groove.graph.DefaultEdge;
+import groove.graph.DefaultGraph;
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
@@ -38,7 +41,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class LayedOutXml extends AbstractXml {
+public class LayedOutXml implements Xml<DefaultGraph> {
     /**
      * Constructs an xml (un)marshaller, based on {@link DefaultGxl}, also able
      * to deal with layout information. The graphs constructed by
@@ -49,8 +52,44 @@ public class LayedOutXml extends AbstractXml {
         this.marshaller = new DefaultGxl();
     }
 
+    public DefaultGraph unmarshalGraph(URL url) throws IOException {
+        // first get the non-layed out result
+        Pair<DefaultGraph,Map<String,DefaultNode>> preliminary =
+            this.marshaller.unmarshalGraphMap(url);
+        DefaultGraph result = preliminary.one();
+        Map<String,DefaultNode> nodeMap = preliminary.two();
+        URL layoutURL = toLayoutURL(url);
+        try {
+            InputStream in = layoutURL.openStream();
+            try {
+                LayoutMap<DefaultNode,DefaultEdge> layout =
+                    LayoutIO.getInstance().readLayout(nodeMap, in);
+                GraphInfo.setLayoutMap(result, layout);
+            } catch (FormatException exc) {
+                GraphInfo.addErrors(result, exc.getErrors());
+            }
+        } catch (IOException e) {
+            // we do nothing when there is no layout found at the url
+        }
+        return result;
+    }
+
+    /** backwards compatibility method */
+    public DefaultGraph unmarshalGraph(File file) throws IOException {
+        return unmarshalGraph(Groove.toURL(file));
+    }
+
+    /**
+     * Deletes the graph file, as well as all variants with the same name but
+     * different priorities.
+     */
+    public final void deleteGraph(File file) {
+        deleteFile(file);
+    }
+
     /** First marshals the graph; then the layout map if there is one. */
-    public void marshalGraph(Graph graph, File file) throws IOException {
+    public <N extends Node,E extends Edge> void marshalGraph(
+            Graph<N,?,E> graph, File file) throws IOException {
         // deleteVariants(file);
         if (GraphInfo.hasLayoutMap(graph)) {
             this.marshaller.marshalGraph(graph, file);
@@ -69,33 +108,7 @@ public class LayedOutXml extends AbstractXml {
         }
     }
 
-    /** This implementation also retrieves layout information. */
-    @Override
-    protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(URL url)
-        throws IOException {
-        // first get the non-layed out result
-        Pair<? extends Graph,Map<String,Node>> preliminary =
-            this.marshaller.unmarshalGraphMap(url);
-        Graph result = preliminary.one();
-        Map<String,Node> nodeMap = preliminary.two();
-        URL layoutURL = toLayoutURL(url);
-        try {
-            InputStream in = layoutURL.openStream();
-            try {
-                LayoutMap<Node,Edge> layout =
-                    LayoutIO.getInstance().readLayout(nodeMap, in);
-                GraphInfo.setLayoutMap(result, layout);
-            } catch (FormatException exc) {
-                GraphInfo.addErrors(result, exc.getErrors());
-            }
-        } catch (IOException e) {
-            // we do nothing when there is no layout found at the url
-        }
-        return new Pair<Graph,Map<String,Node>>(result, nodeMap);
-    }
-
     /** Deletes the file itself as well as the layout file. */
-    @Override
     protected void deleteFile(File file) {
         this.marshaller.deleteFile(file);
         toLayoutFile(file).delete();
@@ -123,7 +136,7 @@ public class LayedOutXml extends AbstractXml {
     /**
      * The inner (un)marshaller.
      */
-    private final AbstractXml marshaller;
+    private final DefaultGxl marshaller;
     /** Extension filter for layout extension. */
     private final ExtensionFilter layoutFilter = new ExtensionFilter(
         Groove.LAYOUT_EXTENSION);

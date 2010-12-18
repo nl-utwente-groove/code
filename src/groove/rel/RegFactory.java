@@ -14,38 +14,41 @@
  *
  * $Id$
  */
-package groove.trans;
+package groove.rel;
 
-import groove.graph.DefaultNode;
 import groove.graph.ElementFactory;
+import groove.trans.RuleLabel;
 
-/** Factory class for graph elements. */
-public class RuleFactory implements ElementFactory<RuleNode,RuleLabel,RuleEdge> {
-    /** Private constructor. */
-    private RuleFactory() {
-        // empty
+/**
+ * @author Arend Rensink
+ * @version $Revision $
+ */
+public class RegFactory implements ElementFactory<RegNode,RuleLabel,RegEdge> {
+    @Override
+    public RegNode createNode(int nr) {
+        return new RegNode(nr);
     }
 
-    /** Creates a node with a given number. */
-    public RuleNode createNode(int nr) {
-        return DefaultNode.createNode(nr);
-    }
-
-    /** Creates a label with the given text. */
+    @Override
     public RuleLabel createLabel(String text) {
         return new RuleLabel(text);
     }
 
     @Override
-    public RuleEdge createEdge(RuleNode source, String text, RuleNode target) {
+    public RegEdge createEdge(RegNode source, String text, RegNode target) {
         return createEdge(source, createLabel(text), target);
     }
 
-    /** Creates an edge with the given source, label and target. */
-    public RuleEdge createEdge(RuleNode source, RuleLabel label, RuleNode target) {
-        return new RuleEdge(source, label, target);
+    @Override
+    public RegEdge createEdge(RegNode source, RuleLabel label, RegNode target) {
+        return new RegEdge(source, label, target);
     }
 
-    /** Singleton instance of this factory. */
-    public final static RuleFactory INSTANCE = new RuleFactory();
+    /** Returns the singleton instance of this factory. */
+    public static RegFactory instance() {
+        return INSTANCE;
+    }
+
+    /** The singleton instance of this factory. */
+    private static final RegFactory INSTANCE = new RegFactory();
 }

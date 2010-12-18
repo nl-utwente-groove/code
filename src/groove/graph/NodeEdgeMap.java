@@ -24,7 +24,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface NodeEdgeMap extends GraphMap<Node,Node,Edge,Edge> {
+public interface NodeEdgeMap extends GraphMap<Node,Label,Edge,Node,Label,Edge> {
     /**
      * Returns the concatenation of another morphism followed by this one. Does
      * not alias or modify either this morphism or the other. 

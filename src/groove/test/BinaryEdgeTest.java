@@ -22,7 +22,6 @@ import groove.graph.DefaultEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
-import groove.graph.Node;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,8 +34,8 @@ import org.junit.Test;
  */
 @SuppressWarnings("all")
 public class BinaryEdgeTest {
-    static Node n1, n2;
-    static Edge e;
+    static DefaultNode n1, n2;
+    static DefaultEdge e;
 
     @BeforeClass
     public static void setUp() {

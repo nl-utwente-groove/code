@@ -16,7 +16,10 @@
  */
 package groove.graph.iso;
 
+import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.Label;
+import groove.graph.Node;
 
 /**
  * Interface for strategies that check isomorphism between graphs.
@@ -36,7 +39,8 @@ public interface IsoChecker {
      * @return <code>true</code> only if <code>dom</code> and
      *         <code>cod</code> are isomorphic
      */
-    public boolean areIsomorphic(Graph dom, Graph cod);
+    public <N extends Node,L extends Label,E extends Edge> boolean areIsomorphic(
+            Graph<N,L,E> dom, Graph<N,L,E> cod);
 
     /** 
      * Indicates if the checker is currently set to strong.

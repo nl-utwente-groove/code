@@ -20,9 +20,8 @@ import groove.control.CtrlState;
 import groove.explore.result.Result;
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultGraph;
-import groove.graph.Edge;
+import groove.graph.DefaultNode;
 import groove.graph.Graph;
-import groove.graph.GraphCache;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 import groove.graph.iso.CertificateStrategy;
@@ -44,8 +43,10 @@ import java.util.AbstractSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -54,7 +55,9 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GTS extends AbstractGraph<GraphCache> implements LTS {
+public class GTS extends
+        AbstractGraph<GraphState,DerivationLabel,GraphTransition> implements
+        LTS {
     /**
      * The number of transitions generated but not added (due to overlapping
      * existing transitions)
@@ -134,7 +137,7 @@ public class GTS extends AbstractGraph<GraphCache> implements LTS {
         return !getFinalStates().isEmpty();
     }
 
-    public boolean isFinal(State state) {
+    public boolean isFinal(GraphState state) {
         return getFinalStates().contains(state);
     }
 
@@ -142,13 +145,13 @@ public class GTS extends AbstractGraph<GraphCache> implements LTS {
      * @param state the state to be checked.
      * @return true if the state is a result state.
      */
-    public boolean isResult(State state) {
+    public boolean isResult(GraphState state) {
         return getResultStates().contains(state);
     }
 
     /** Adds a given state to the final states of this GTS. */
-    private void setFinal(State state) {
-        this.finalStates.add((GraphState) state);
+    private void setFinal(GraphState state) {
+        this.finalStates.add(state);
     }
 
     /**
@@ -158,7 +161,7 @@ public class GTS extends AbstractGraph<GraphCache> implements LTS {
         this.resultStates.addAll(result.getValue());
     }
 
-    public boolean isOpen(State state) {
+    public boolean isOpen(GraphState state) {
         return !state.isClosed();
     }
 
@@ -183,7 +186,7 @@ public class GTS extends AbstractGraph<GraphCache> implements LTS {
         return new CollectionView<GraphState>(getStateSet()) {
             @Override
             public boolean approves(Object obj) {
-                return !((State) obj).isClosed();
+                return !((GraphState) obj).isClosed();
             }
         };
     }
@@ -198,7 +201,7 @@ public class GTS extends AbstractGraph<GraphCache> implements LTS {
         return new FilterIterator<GraphState>(nodeSet().iterator()) {
             @Override
             protected boolean approves(Object obj) {
-                return !((State) obj).isClosed();
+                return !((GraphState) obj).isClosed();
             }
         };
     }
@@ -391,28 +394,26 @@ public class GTS extends AbstractGraph<GraphCache> implements LTS {
     }
 
     /**
-     * Calls {@link GraphCache#addUpdate(Node)} 
-     * if the cache is not cleared.
-     * @param node the node being added
+     * Notifies the {@link LTSListener}s, in addition to
+     * calling the super method.
      */
     @Override
-    protected void fireAddNode(Node node) {
+    protected void fireAddNode(GraphState node) {
         super.fireAddNode(node);
-        assert node instanceof GraphState;
         for (LTSListener listener : getGraphListeners()) {
-            listener.addUpdate(this, (GraphState) node);
+            listener.addUpdate(this, node);
         }
     }
 
     /**
-     * Calls {@link LTSListener#addUpdate(LTS, GraphTransition)}.
+     * Notifies the {@link LTSListener}s, in addition to
+     * calling the super method.
      */
     @Override
-    protected void fireAddEdge(Edge edge) {
+    protected void fireAddEdge(GraphTransition edge) {
         super.fireAddEdge(edge);
-        assert edge instanceof GraphTransition;
         for (LTSListener listener : getGraphListeners()) {
-            listener.addUpdate(this, (GraphTransition) edge);
+            listener.addUpdate(this, edge);
         }
     }
 
@@ -449,51 +450,55 @@ public class GTS extends AbstractGraph<GraphCache> implements LTS {
     public DefaultGraph toPlainGraph(boolean showFinal, boolean showStart,
             boolean showOpen, boolean showNames) {
         DefaultGraph result = new DefaultGraph();
-        for (State state : nodeSet()) {
-            result.addNode(state);
+        Map<GraphState,DefaultNode> nodeMap =
+            new HashMap<GraphState,DefaultNode>();
+        for (GraphState state : nodeSet()) {
+            DefaultNode image = result.addNode(state.getNumber());
+            nodeMap.put(state, image);
             if (showFinal && isFinal(state)) {
-                result.addEdge(state, LTS.FINAL_LABEL_TEXT, state);
+                result.addEdge(image, LTS.FINAL_LABEL_TEXT, image);
             }
             if (showStart && startState().equals(state)) {
-                result.addEdge(state, LTS.START_LABEL_TEXT, state);
+                result.addEdge(image, LTS.START_LABEL_TEXT, image);
             }
             if (showOpen && !state.isClosed()) {
-                result.addEdge(state, LTS.OPEN_LABEL_TEXT, state);
+                result.addEdge(image, LTS.OPEN_LABEL_TEXT, image);
             }
             if (showNames) {
-                result.addEdge(state, state.toString(), state);
+                result.addEdge(image, state.toString(), image);
             }
         }
-        result.addEdgeSet(edgeSet());
+        for (GraphTransition transition : edgeSet()) {
+            result.addEdge(nodeMap.get(transition.source()),
+                transition.label().text(), nodeMap.get(transition.target()));
+        }
         return result;
     }
 
     @Override
-    public Graph newGraph() {
+    public GTS newGraph() {
         return new GTS(this.ruleSystem);
     }
 
     @Override
-    public boolean addNode(Node node) {
-        assert node instanceof GraphState;
-        return addState((GraphState) node) == null;
+    public boolean addNode(GraphState node) {
+        return addState(node) == null;
     }
 
     @Override
-    public boolean removeEdge(Edge edge) {
+    public boolean removeEdge(GraphTransition edge) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean addEdgeWithoutCheck(Edge edge) {
-        assert edge instanceof GraphTransition;
+    public boolean addEdgeWithoutCheck(GraphTransition edge) {
         assert edgeSet().contains(edge);
-        addTransition((GraphTransition) edge);
+        addTransition(edge);
         return true;
     }
 
     @Override
-    public boolean removeNodeWithoutCheck(Node node) {
+    public boolean removeNodeWithoutCheck(GraphState node) {
         throw new UnsupportedOperationException();
     }
 

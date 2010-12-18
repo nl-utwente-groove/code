@@ -313,7 +313,7 @@ public class GraphProperties extends Properties {
      * graph has no properties, or the properties contain no priority value.
      * @see #getPriority()
      */
-    static public int getPriority(Graph graph) {
+    static public int getPriority(Graph<?,?,?> graph) {
         GraphProperties properties = GraphInfo.getProperties(graph, false);
         if (properties == null) {
             return Rule.DEFAULT_PRIORITY;
@@ -328,7 +328,7 @@ public class GraphProperties extends Properties {
      * graph has no properties.
      * @see #isEnabled()
      */
-    static public boolean isEnabled(Graph graph) {
+    static public boolean isEnabled(Graph<?,?,?> graph) {
         GraphProperties properties = GraphInfo.getProperties(graph, false);
         if (properties == null) {
             return true;
@@ -343,7 +343,7 @@ public class GraphProperties extends Properties {
      * graph has no properties.
      * @see #isConfluent()
      */
-    static public boolean isConfluent(Graph graph) {
+    static public boolean isConfluent(Graph<?,?,?> graph) {
         GraphProperties properties = GraphInfo.getProperties(graph, false);
         if (properties == null) {
             return false;
@@ -358,7 +358,7 @@ public class GraphProperties extends Properties {
      * no properties, or the properties contain no remark value.
      * @see #getRemark()
      */
-    static public String getRemark(Graph graph) {
+    static public String getRemark(Graph<?,?,?> graph) {
         GraphProperties properties = GraphInfo.getProperties(graph, false);
         if (properties == null) {
             return null;
@@ -373,7 +373,7 @@ public class GraphProperties extends Properties {
      * graph has no properties, or the properties contain no label value.
      * @see #getTransitionLabel()
      */
-    static public String getTransitionLabel(Graph graph) {
+    static public String getTransitionLabel(Graph<?,?,?> graph) {
         GraphProperties properties = GraphInfo.getProperties(graph, false);
         if (properties == null) {
             return null;

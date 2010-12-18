@@ -56,8 +56,9 @@ public class GraphReporter extends CommandLineTool {
         if (argsList.size() > 0) {
             String graphLocation = argsList.remove(0);
             if (argsList.size() > 0) {
-                printError(String.format("Spurious parameters '%s'",
-                    argsList.toString()), true);
+                printError(
+                    String.format("Spurious parameters '%s'",
+                        argsList.toString()), true);
             }
             try {
                 report(Groove.loadGraph(graphLocation));
@@ -93,7 +94,7 @@ public class GraphReporter extends CommandLineTool {
      * Does the actual reporting for a given graph. The report depends on the
      * parameters of this reporter, and is sent to the standard output.
      */
-    public void report(Graph graph) {
+    public void report(Graph<?,?,?> graph) {
         // count the labels
         println(getReport(graph).toString());
     }
@@ -103,7 +104,7 @@ public class GraphReporter extends CommandLineTool {
      * parameters of this reporter, and is returned in the form of a
      * StringBuilder.
      */
-    public StringBuilder getReport(Graph graph) {
+    public StringBuilder getReport(Graph<?,?,?> graph) {
         StringBuilder result = new StringBuilder();
         // count the labels
         Bag<Label> labels = new TreeBag<Label>();

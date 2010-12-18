@@ -19,8 +19,6 @@ package groove.gui;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.State;
-import groove.lts.Transition;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.util.Groove;
@@ -243,7 +241,7 @@ class UndoHistory implements SimulationListener {
 
     /**
      * Class to record history elements without having to rely on the
-     * distinction between {@link State}s and {@link Transition}s.
+     * distinction between {@link GraphState}s and {@link GraphTransition}s.
      */
     private abstract class HistoryAction {
         /**

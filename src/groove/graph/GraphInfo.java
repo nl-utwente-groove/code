@@ -34,10 +34,10 @@ import java.util.Map;
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-01-30 09:32:57 $
  */
-public class GraphInfo {
+public class GraphInfo<N extends Node,E extends Edge> {
 
     /** Constructs a copy of an existing information object. */
-    public GraphInfo(GraphInfo info) {
+    public GraphInfo(GraphInfo<?,?> info) {
         this.data = new HashMap<String,Object>(info.getData());
     }
 
@@ -123,8 +123,8 @@ public class GraphInfo {
      * @see #setLayoutMap(LayoutMap)
      */
     @SuppressWarnings("unchecked")
-    public LayoutMap<Node,Edge> getLayoutMap() {
-        return (LayoutMap<Node,Edge>) this.data.get(LAYOUT_KEY);
+    public LayoutMap<N,E> getLayoutMap() {
+        return (LayoutMap<N,E>) this.data.get(LAYOUT_KEY);
     }
 
     /**
@@ -244,7 +244,7 @@ public class GraphInfo {
      * Copies another graph info object into this one, overwriting all existing
      * keys but preserving those that are not overwritten.
      */
-    public void load(GraphInfo other) {
+    public void load(GraphInfo<?,?> other) {
         this.data.putAll(other.getData());
         // copy the properties object
         if (other.hasProperties()) {
@@ -278,10 +278,11 @@ public class GraphInfo {
      * @return a non-<code>null</code> value which equals (afterwards)
      *         <code>graph.getInfo()</code>
      */
-    public static GraphInfo getInfo(Graph graph, boolean create) {
-        GraphInfo result = graph.getInfo();
+    public static <N extends Node,E extends Edge> GraphInfo<N,E> getInfo(
+            Graph<N,?,E> graph, boolean create) {
+        GraphInfo<N,E> result = graph.getInfo();
         if (result == null && create) {
-            result = graph.setInfo(new GraphInfo());
+            result = graph.setInfo(new GraphInfo<N,E>());
         }
         return result;
     }
@@ -290,8 +291,9 @@ public class GraphInfo {
      * Convenience method to indicate if a graph has a non-empty set of errors.
      * @see #getErrors()
      */
-    public static boolean hasErrors(Graph graph) {
-        GraphInfo graphInfo = graph.getInfo();
+    public static <N extends Node,E extends Edge> boolean hasErrors(
+            Graph<N,?,E> graph) {
+        GraphInfo<N,E> graphInfo = graph.getInfo();
         return graphInfo != null && graphInfo.getErrors() != null;
     }
 
@@ -299,8 +301,9 @@ public class GraphInfo {
      * Convenience method to retrieve the list of format errors of a graph.
      * @see #getErrors()
      */
-    public static List<FormatError> getErrors(Graph graph) {
-        GraphInfo graphInfo = graph.getInfo();
+    public static <N extends Node,E extends Edge> List<FormatError> getErrors(
+            Graph<N,?,E> graph) {
+        GraphInfo<N,E> graphInfo = graph.getInfo();
         if (graphInfo == null) {
             return null;
         } else {
@@ -312,7 +315,8 @@ public class GraphInfo {
      * Convenience method to add a list of errors to a graph.
      * @see #addErrors(List)
      */
-    public static void addErrors(Graph graph, List<FormatError> errors) {
+    public static <N extends Node,E extends Edge> void addErrors(
+            Graph<N,?,E> graph, List<FormatError> errors) {
         getInfo(graph, true).addErrors(errors);
     }
 
@@ -320,8 +324,8 @@ public class GraphInfo {
      * Convenience method to set the list of format errors of a graph.
      * @see #setErrors(Collection)
      */
-    public static void setErrors(Graph graph,
-            Collection<FormatError> errors) {
+    public static <N extends Node,E extends Edge> void setErrors(
+            Graph<N,?,E> graph, Collection<FormatError> errors) {
         if (errors != null) {
             getInfo(graph, true).setErrors(errors);
         }
@@ -330,15 +334,17 @@ public class GraphInfo {
     /**
      * Convenience method to retrieve the file of a graph.
      */
-    public static File getFile(Graph graph) {
-        GraphInfo graphInfo = graph.getInfo();
+    public static <N extends Node,E extends Edge> File getFile(
+            Graph<N,?,E> graph) {
+        GraphInfo<N,E> graphInfo = graph.getInfo();
         return new File(graphInfo.getFile());
     }
 
     /**
      * Convenience method to set the file of a graph.
      */
-    public static void setFile(Graph graph, String file) {
+    public static <N extends Node,E extends Edge> void setFile(
+            Graph<N,?,E> graph, String file) {
         if (file != null) {
             getInfo(graph, true).setFile(file);
         }
@@ -347,16 +353,18 @@ public class GraphInfo {
     /**
      * Convenience method to test if a graph contains layout information.
      */
-    public static boolean hasLayoutMap(Graph graph) {
-        GraphInfo graphInfo = graph.getInfo();
+    public static <N extends Node,E extends Edge> boolean hasLayoutMap(
+            Graph<N,?,E> graph) {
+        GraphInfo<N,E> graphInfo = graph.getInfo();
         return graphInfo != null && graphInfo.hasLayoutMap();
     }
 
     /**
      * Convenience method to retrieve the layout map from a graph.
      */
-    public static LayoutMap<Node,Edge> getLayoutMap(Graph graph) {
-        GraphInfo graphInfo = graph.getInfo();
+    public static <N extends Node,E extends Edge> LayoutMap<N,E> getLayoutMap(
+            Graph<N,?,E> graph) {
+        GraphInfo<N,E> graphInfo = graph.getInfo();
         if (graphInfo == null) {
             return null;
         } else {
@@ -367,8 +375,8 @@ public class GraphInfo {
     /**
      * Convenience method to set the layout map of a graph.
      */
-    public static void setLayoutMap(Graph graph,
-            LayoutMap<Node,Edge> layoutMap) {
+    public static <N extends Node,E extends Edge> void setLayoutMap(
+            Graph<N,?,E> graph, LayoutMap<N,E> layoutMap) {
         if (layoutMap != null) {
             getInfo(graph, true).setLayoutMap(layoutMap);
         }
@@ -380,8 +388,9 @@ public class GraphInfo {
      *         stored
      * @see #getName()
      */
-    public static String getName(Graph graph) {
-        GraphInfo graphInfo = graph.getInfo();
+    public static <N extends Node,E extends Edge> String getName(
+            Graph<N,?,E> graph) {
+        GraphInfo<N,E> graphInfo = graph.getInfo();
         if (graphInfo == null) {
             return null;
         } else {
@@ -393,8 +402,9 @@ public class GraphInfo {
      * Convenience method to set the name of a graph.
      * @see #setName(String)
      */
-    public static void setName(Graph graph, String name) {
-        GraphInfo info = getInfo(graph, name != null);
+    public static <N extends Node,E extends Edge> void setName(
+            Graph<N,?,E> graph, String name) {
+        GraphInfo<N,E> info = getInfo(graph, name != null);
         if (info != null) {
             info.setName(name);
         }
@@ -408,8 +418,9 @@ public class GraphInfo {
      *        object itself) should be created if not yet there
      * @return the properties map of <code>graph</code>, or <code>null</code>
      */
-    public static GraphProperties getProperties(Graph graph, boolean create) {
-        GraphInfo graphInfo = getInfo(graph, create);
+    public static <N extends Node,E extends Edge> GraphProperties getProperties(
+            Graph<N,?,E> graph, boolean create) {
+        GraphInfo<N,E> graphInfo = getInfo(graph, create);
         if (graphInfo == null) {
             return null;
         } else {
@@ -421,8 +432,8 @@ public class GraphInfo {
      * Convenience method to set the graph properties of a graph. Only sets the
      * map if it is not <code>null</code> or empty.
      */
-    public static void setProperties(Graph graph,
-            GraphProperties properties) {
+    public static <N extends Node,E extends Edge> void setProperties(
+            Graph<N,?,E> graph, GraphProperties properties) {
         if (properties != null) {
             getInfo(graph, true).setProperties(properties);
         }
@@ -432,7 +443,7 @@ public class GraphInfo {
      * Convenience method to set the version of a graph.
      * @see Version#GXL_VERSION
      */
-    public static void setVersion(Graph graph, String version) {
+    public static void setVersion(Graph<?,?,?> graph, String version) {
         GraphProperties properties =
             getProperties(graph, version.length() != 0);
         if (properties != null) {
@@ -444,7 +455,7 @@ public class GraphInfo {
      * Convenience method to retrieve the version of a graph.
      * @see Version#GXL_VERSION
      */
-    public static String getVersion(Graph graph) {
+    public static String getVersion(Graph<?,?,?> graph) {
         GraphProperties properties = getProperties(graph, false);
         if (properties == null) {
             return null;
@@ -459,8 +470,9 @@ public class GraphInfo {
      *         stored
      * @see #setRole(String)
      */
-    public static String getRole(Graph graph) {
-        GraphInfo graphInfo = graph.getInfo();
+    public static <N extends Node,E extends Edge> String getRole(
+            Graph<N,?,E> graph) {
+        GraphInfo<N,E> graphInfo = graph.getInfo();
         if (graphInfo == null) {
             return null;
         } else {
@@ -472,8 +484,9 @@ public class GraphInfo {
      * Convenience method to set the role of a graph.
      * @see #setRole(String)
      */
-    public static void setRole(Graph graph, String role) {
-        GraphInfo info = getInfo(graph, role != null);
+    public static <N extends Node,E extends Edge> void setRole(
+            Graph<N,?,E> graph, String role) {
+        GraphInfo<N,E> info = getInfo(graph, role != null);
         if (info != null) {
             info.setRole(role);
         }
@@ -484,7 +497,7 @@ public class GraphInfo {
      * @see #getRole()
      * @see Groove#RULE_ROLE
      */
-    public static boolean hasRuleRole(Graph graph) {
+    public static boolean hasRuleRole(Graph<?,?,?> graph) {
         return Groove.isRuleRole(getRole(graph));
     }
 
@@ -493,7 +506,7 @@ public class GraphInfo {
      * @see #getRole()
      * @see Groove#GRAPH_ROLE
      */
-    public static boolean hasGraphRole(Graph graph) {
+    public static boolean hasGraphRole(Graph<?,?,?> graph) {
         return Groove.isGraphRole(getRole(graph));
     }
 
@@ -502,7 +515,7 @@ public class GraphInfo {
      * @see #getRole()
      * @see Groove#TYPE_ROLE
      */
-    public static boolean hasTypeRole(Graph graph) {
+    public static boolean hasTypeRole(Graph<?,?,?> graph) {
         return Groove.isTypeRole(getRole(graph));
     }
 
@@ -511,7 +524,7 @@ public class GraphInfo {
      * @see #setRole(String)
      * @see Groove#RULE_ROLE
      */
-    public static void setRuleRole(Graph graph) {
+    public static void setRuleRole(Graph<?,?,?> graph) {
         setRole(graph, Groove.RULE_ROLE);
     }
 
@@ -520,7 +533,7 @@ public class GraphInfo {
      * @see #setRole(String)
      * @see Groove#GRAPH_ROLE
      */
-    public static void setGraphRole(Graph graph) {
+    public static void setGraphRole(Graph<?,?,?> graph) {
         setRole(graph, Groove.GRAPH_ROLE);
     }
 
@@ -529,7 +542,7 @@ public class GraphInfo {
      * @see #setRole(String)
      * @see Groove#TYPE_ROLE
      */
-    public static void setTypeRole(Graph graph) {
+    public static void setTypeRole(Graph<?,?,?> graph) {
         setRole(graph, Groove.TYPE_ROLE);
     }
 
@@ -542,17 +555,15 @@ public class GraphInfo {
      * @param elementMap map from the source elements to the target elements
      */
     public static <N1 extends Node,N2 extends Node,E1 extends Edge,E2 extends Edge> void transfer(
-            Graph source, Graph target,
+            Graph<N1,?,E1> source, Graph<N2,?,E2> target,
             GenericNodeEdgeMap<N1,N2,E1,E2> elementMap) {
-        GraphInfo sourceInfo = source.getInfo();
+        GraphInfo<N1,E1> sourceInfo = source.getInfo();
         if (sourceInfo != null) {
             // copy all the info
-            GraphInfo targetInfo = target.setInfo(sourceInfo);
+            GraphInfo<N2,E2> targetInfo = target.setInfo(sourceInfo);
             if (elementMap != null) {
                 // modify the layout map using the element map
-                @SuppressWarnings("unchecked")
-                LayoutMap<N1,E1> sourceLayoutMap =
-                    (LayoutMap<N1,E1>) sourceInfo.getLayoutMap();
+                LayoutMap<N1,E1> sourceLayoutMap = sourceInfo.getLayoutMap();
                 if (sourceLayoutMap != null) {
                     targetInfo.setLayoutMap(sourceLayoutMap.afterInverse(elementMap));
                 }

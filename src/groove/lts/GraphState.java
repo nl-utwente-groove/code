@@ -19,6 +19,7 @@ package groove.lts;
 import groove.control.CtrlCall;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
+import groove.graph.Node;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleEvent;
@@ -35,7 +36,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-22 13:02:44 $
  */
-public interface GraphState extends State {
+public interface GraphState extends Node {
     /** Returns the graph contained in this state. */
     public HostGraph getGraph();
 
@@ -96,6 +97,12 @@ public interface GraphState extends State {
      * transitions of this state.
      */
     public boolean containsTransition(GraphTransition transition);
+
+    /**
+     * Tests if this state is fully explored, i.e., all outgoing transitions
+     * have been generated.
+     */
+    public boolean isClosed();
 
     /**
      * Closes this state. This announces that no more outgoing transitions will

@@ -41,7 +41,7 @@ public class AspectParser {
     /**
      * Constructs a parser for a given aspect graph.
      */
-    public AspectParser(Graph graph) {
+    public AspectParser(Graph<?,?,?> graph) {
         this.rule = GraphInfo.hasRuleRole(graph);
         this.convertToCurly = this.rule && GraphInfo.getVersion(graph) == null;
     }

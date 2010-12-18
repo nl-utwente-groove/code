@@ -14,19 +14,20 @@
  *
  * $Id$
  */
-package groove.graph;
+package groove.rel;
 
-/** Factory class for graph elements. */
-public interface ElementFactory<N extends Node,L extends Label,E extends Edge> {
-    /** Creates a node with a given number. */
-    N createNode(int nr);
+import groove.graph.AbstractEdge;
+import groove.trans.RuleLabel;
 
-    /** Creates a label with the given text. */
-    L createLabel(String text);
-
-    /** Creates an edge with the given source, label text and target. */
-    E createEdge(N source, String text, N target);
-
-    /** Creates an edge with the given source, label and target. */
-    E createEdge(N source, L label, N target);
+/**
+ * @author Arend Rensink
+ * @version $Revision $
+ */
+public class RegEdge extends AbstractEdge<RegNode,RuleLabel,RegNode> {
+    /**
+     * Creates an edge between the given end points.
+     */
+    public RegEdge(RegNode source, RuleLabel label, RegNode target) {
+        super(source, label, target);
+    }
 }

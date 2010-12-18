@@ -163,8 +163,8 @@ public class DefaultApplication implements RuleApplication, Derivation {
             new HashSet<HostNode>(this.source.nodeSet());
         Set<HostEdge> sourceEdges =
             new HashSet<HostEdge>(this.source.edgeSet());
-        for (Node node : sourceNodes) {
-            Node nodeImage = mergeMap.getNode(node);
+        for (HostNode node : sourceNodes) {
+            HostNode nodeImage = mergeMap.getNode(node);
             if (nodeImage != null && getTarget().containsNode(nodeImage)) {
                 result.putNode(node, nodeImage);
             }
@@ -172,7 +172,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
         Set<HostEdge> erasedEdges = getErasedEdges();
         for (HostEdge edge : sourceEdges) {
             if (!erasedEdges.contains(edge)) {
-                Edge edgeImage = mergeMap.mapEdge(edge);
+                HostEdge edgeImage = mergeMap.mapEdge(edge);
                 if (edgeImage != null && getTarget().containsEdge(edgeImage)) {
                     result.putEdge(edge, edgeImage);
                 }
@@ -322,13 +322,13 @@ public class DefaultApplication implements RuleApplication, Derivation {
         MergeMap mergeMap = getMergeMap();
         Set<HostEdge> addedEdges = new HashSet<HostEdge>();
         Set<HostEdge> erasedEdges = getErasedEdges();
-        for (Node mergedElem : mergeMap.nodeMap().keySet()) {
+        for (HostNode mergedElem : mergeMap.nodeMap().keySet()) {
             removeNode(target, mergedElem);
             // replace the incident edges of the merged nodes
             for (HostEdge sourceEdge : this.source.edgeSet(mergedElem)) {
                 if (!erasedEdges.contains(sourceEdge)) {
                     target.removeEdge(sourceEdge);
-                    HostEdge image = (HostEdge) mergeMap.mapEdge(sourceEdge);
+                    HostEdge image = mergeMap.mapEdge(sourceEdge);
                     assert image != sourceEdge;
                     // if the edge is in the source and not erased, it is also
                     // already
@@ -373,7 +373,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * @param target the target to which to apply the changes
      */
     private void createNodes(DeltaTarget target) {
-        for (Node node : getCreatedNodes()) {
+        for (HostNode node : getCreatedNodes()) {
             target.addNode(node);
         }
     }
@@ -384,7 +384,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
      */
     protected void createEdges(DeltaTarget target) {
         // first add the (pre-computed) simple creator edge images
-        for (Edge image : getEvent().getSimpleCreatedEdges()) {
+        for (HostEdge image : getEvent().getSimpleCreatedEdges()) {
             // only add if not already in the source or just erased
             if (!this.source.containsEdge(image)
                 || getErasedEdges().contains(image)) {
@@ -392,7 +392,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
             }
         }
         // now compute and add the complex creator edge images
-        for (Edge image : getEvent().getComplexCreatedEdges(
+        for (HostEdge image : getEvent().getComplexCreatedEdges(
             Arrays.asList(getCreatedNodes()).iterator())) {
             // only add if the image exists
             if (image != null) {
@@ -506,8 +506,8 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * {@link Graph#addEdgeWithoutCheck(Edge)} if the target is an
      * {@link Graph}.
      */
-    protected void addEdge(DeltaTarget target, Edge edge) {
-        Node targetNode = edge.target();
+    protected void addEdge(DeltaTarget target, HostEdge edge) {
+        HostNode targetNode = edge.target();
         if (targetNode instanceof ValueNode
             && (!this.source.containsNode(targetNode) && !getAddedValueNodes().contains(
                 targetNode)) || this.removedValueNodes != null
@@ -522,8 +522,8 @@ public class DefaultApplication implements RuleApplication, Derivation {
                 this.removedValueNodes.remove(targetNode);
             }
         }
-        if (target instanceof Graph) {
-            ((Graph) target).addEdgeWithoutCheck(edge);
+        if (target instanceof HostGraph) {
+            ((HostGraph) target).addEdgeWithoutCheck(edge);
         } else {
             // apparently the target wasn't an InternalGraph
             // so we can't do efficient edge addition
@@ -536,9 +536,9 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * {@link Graph#removeNodeWithoutCheck(Node)} if the target is an
      * {@link Graph}.
      */
-    private void removeNode(DeltaTarget target, Node node) {
-        if (target instanceof Graph) {
-            ((Graph) target).removeNodeWithoutCheck(node);
+    private void removeNode(DeltaTarget target, HostNode node) {
+        if (target instanceof HostGraph) {
+            ((HostGraph) target).removeNodeWithoutCheck(node);
         } else {
             // apparently the target wasn't an InternalGraph
             // so we can't do efficient edge removal
@@ -557,7 +557,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
         } else {
             // apparently the target wasn't an InternalGraph
             // so we can't do efficient edge removal
-            for (Node node : nodeSet) {
+            for (HostNode node : nodeSet) {
                 target.removeNode(node);
             }
         }

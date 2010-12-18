@@ -47,8 +47,7 @@ public class DefaultNode extends AbstractNode implements RuleNode, HostNode,
     }
 
     /**
-     * Returns a string consisting of the letter <tt>'n'</tt> and the node
-     * number.
+     * Returns a string consisting of the letter <tt>'n'</tt>.
      */
     @Override
     public String getToStringPrefix() {
@@ -57,27 +56,23 @@ public class DefaultNode extends AbstractNode implements RuleNode, HostNode,
 
     /** Default method that uses the DefaultNode constructor. */
     static public DefaultNode createNode(int nr) {
-        return defaultStore.createNode(nr);
+        return factory.createNode(nr);
     }
 
     /** Returns the node with the first currently unused node number. */
     static public DefaultNode createNode() {
-        return defaultStore.createNode();
+        return factory.createNode();
     }
 
     /** Returns the highest default node node number. */
     public static int getHighestNodeNr() {
-        return defaultStore.size();
+        return factory.getHighestNodeNr();
     }
 
     /** Returns the number of created nodes. */
     public static int getNodeCount() {
-        return defaultStore.getNodeCount();
+        return factory.getNodeCount();
     }
 
-    /** Used only as a prototype for the store. */
-    private static final DefaultNode PROTOTYPE = new DefaultNode(0);
-    /** Store and factory of canonical default nodes. */
-    static private NodeStore<DefaultNode> defaultStore =
-        new NodeStore<DefaultNode>(PROTOTYPE);
+    static private final DefaultFactory factory = DefaultFactory.instance();
 }

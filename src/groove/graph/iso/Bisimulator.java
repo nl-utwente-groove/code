@@ -45,11 +45,11 @@ public class Bisimulator implements CertificateStrategy {
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
      */
-    public Bisimulator(Graph graph) {
+    public Bisimulator(Graph<?,?,?> graph) {
         this.graph = graph;
     }
 
-    public Graph getGraph() {
+    public Graph<?,?,?> getGraph() {
         return this.graph;
     }
 
@@ -150,7 +150,7 @@ public class Bisimulator implements CertificateStrategy {
         return this.graphCertificate;
     }
 
-    public CertificateStrategy newInstance(Graph graph, boolean strong) {
+    public CertificateStrategy newInstance(Graph<?,?,?> graph, boolean strong) {
         return new Bisimulator(graph);
     }
 
@@ -389,7 +389,7 @@ public class Bisimulator implements CertificateStrategy {
     }
 
     /** The underlying graph */
-    private final Graph graph;
+    private final Graph<?,?,?> graph;
     /** The pre-computed graph certificate, if any. */
     private Object graphCertificate;
     /** The pre-computed certificate map, if any. */

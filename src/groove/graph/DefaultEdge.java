@@ -16,14 +16,14 @@
  */
 package groove.graph;
 
-
 /**
  * Default implementation of an (immutable) graph edge, as a triple consisting
  * of source and target nodes and an arbitrary label.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-12 15:15:31 $
  */
-public class DefaultEdge extends AbstractEdge<Node,Label,Node> {
+public class DefaultEdge extends
+        AbstractEdge<DefaultNode,DefaultLabel,DefaultNode> {
     /**
      * Constructs a new edge on the basis of a given source, label and target.
      * @param source source node of the new edge
@@ -33,7 +33,8 @@ public class DefaultEdge extends AbstractEdge<Node,Label,Node> {
      * @ensure <tt>source()==source</tt>, <tt>label()==label</tt>,
      *         <tt>target()==target </tt>
      */
-    protected DefaultEdge(Node source, Label label, Node target, int nr) {
+    DefaultEdge(DefaultNode source, DefaultLabel label, DefaultNode target,
+            int nr) {
         super(source, label, target);
         this.nr = nr;
     }
@@ -64,7 +65,8 @@ public class DefaultEdge extends AbstractEdge<Node,Label,Node> {
     private final int nr;
 
     /** Factory constructor. */
-    protected DefaultEdge newEdge(Node source, Label label, Node target, int nr) {
+    DefaultEdge newEdge(DefaultNode source, DefaultLabel label,
+            DefaultNode target, int nr) {
         return new DefaultEdge(source, label, target, nr);
     }
 
@@ -80,33 +82,17 @@ public class DefaultEdge extends AbstractEdge<Node,Label,Node> {
      *        <code>null</code>
      * @return an edge based on <code>source</code>, <code>text</code> and
      *         <code>target</code>; the label is a {@link DefaultLabel}
-     * @see #createEdge(Node, Label, Node)
+     * @see #createEdge(DefaultNode, DefaultLabel, DefaultNode)
      */
-    static public Edge createEdge(Node source, String text, Node target) {
-        return DefaultEdge.createEdge(source, DefaultLabel.createLabel(text),
-            target);
+    static public DefaultEdge createEdge(DefaultNode source, String text,
+            DefaultNode target) {
+        return DefaultFactory.instance().createEdge(source, text, target);
     }
 
     /** Default method that uses the DefaultEdge constructor. */
-    static public Edge createEdge(Node source, Label label, Node target) {
-        return store.createEdge(source, label, target);
+    static public DefaultEdge createEdge(DefaultNode source,
+            DefaultLabel label, DefaultNode target) {
+        return DefaultFactory.instance().createEdge(source, label, target);
     }
 
-    /**
-     * Returns the total number of default edges created.
-     */
-    static public int getEdgeCount() {
-        return store.getEdgeCount();
-    }
-
-    /** Clears the store of canonical edges. */
-    static public void clearEdgeMap() {
-        store.clearEdgeMap();
-    }
-
-    /** Used only as a reference for the constructor */
-    private static final DefaultEdge CONS =
-        new DefaultEdge(null, null, null, 0);
-    /** The static edge store. */
-    private static final DefaultEdgeStore store = new DefaultEdgeStore(CONS);
 }

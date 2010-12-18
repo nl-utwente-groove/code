@@ -16,7 +16,9 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
+import groove.graph.DefaultNode;
 import groove.gui.Exporter;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -34,15 +36,15 @@ public class StateJGraph extends JGraph {
      * @param simulator the simulator to which this j-graph is associated
      */
     public StateJGraph(Simulator simulator) {
-        this(simulator, new GraphJModel(new DefaultGraph(),
-            simulator.getOptions()));
+        this(simulator, new GraphJModel<DefaultNode,DefaultEdge>(
+            new DefaultGraph(), simulator.getOptions()));
     }
 
     /**
      * Constructs a state graph associated with a given simulator, and with
      * pre-defined underlying model.
      */
-    protected StateJGraph(Simulator simulator, GraphJModel graphModel) {
+    protected StateJGraph(Simulator simulator, GraphJModel<?,?> graphModel) {
         super(graphModel, true);
         setConnectable(false);
         setDisconnectable(false);
@@ -52,8 +54,8 @@ public class StateJGraph extends JGraph {
 
     /** Specialises the return type to a {@link JModel}. */
     @Override
-    public GraphJModel getModel() {
-        return (GraphJModel) this.graphModel;
+    public GraphJModel<?,?> getModel() {
+        return (GraphJModel<?,?>) super.getModel();
     }
 
     @Override

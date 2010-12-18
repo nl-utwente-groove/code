@@ -43,7 +43,7 @@ public class RelationCalculator extends LTSAdapter implements
      * Creates a relation calculator based on a given graph. The relation
      * factory will be set to a {@link SetNodeRelation} over that graph.
      */
-    public RelationCalculator(Graph graph) {
+    public RelationCalculator(Graph<?,?,?> graph) {
         this(graph, new SetNodeRelation());
     }
 
@@ -51,7 +51,7 @@ public class RelationCalculator extends LTSAdapter implements
      * Creates a relation calculator based on a given graph and 
      * relation factory.
      */
-    public RelationCalculator(Graph graph, NodeRelation factory) {
+    public RelationCalculator(Graph<?,?,?> graph, NodeRelation factory) {
         this.factory = factory;
         this.graph = graph;
     }
@@ -160,7 +160,7 @@ public class RelationCalculator extends LTSAdapter implements
     }
 
     /** Returns the graph on which this calculator is based. */
-    public Graph getGraph() {
+    public Graph<?,?,?> getGraph() {
         return this.graph;
     }
 
@@ -231,7 +231,7 @@ public class RelationCalculator extends LTSAdapter implements
     /** Mapping from label test to sets of edges. */
     private Map<String,Set<Edge>> labelEdgeMap;
     /** The graph from which relations are to be computed. */
-    private final Graph graph;
+    private final Graph<?,?,?> graph;
     /** Factory for creating relations. */
     private final NodeRelation factory;
 }

@@ -17,6 +17,7 @@
 package groove.lts;
 
 import groove.control.CtrlTransition;
+import groove.graph.Edge;
 import groove.graph.NodeEdgeMap;
 import groove.trans.HostNode;
 import groove.trans.RuleMatch;
@@ -26,7 +27,7 @@ import groove.trans.RuleMatch;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface GraphTransition extends Transition, MatchResult {
+public interface GraphTransition extends Edge, MatchResult {
     /** Overrides the method to specialise the result type. */
     GraphState source();
 

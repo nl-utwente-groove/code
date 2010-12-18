@@ -17,6 +17,8 @@
 package groove.io;
 
 import groove.graph.DefaultGraph;
+import groove.graph.DefaultNode;
+import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.Node;
@@ -41,11 +43,65 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class DefaultGxl extends AbstractXml {
+public class DefaultGxl implements Xml<DefaultGraph> {
+    public DefaultGraph unmarshalGraph(URL url) throws IOException {
+        try {
+            URLConnection connection = url.openConnection();
+            InputStream in = connection.getInputStream();
+            DefaultGraph resultGraph = io.loadGraphWithMap(in).one();
+            // set some more information in the graph, based on the URL
+            GraphInfo.setFile(resultGraph, url.getFile());
+            // derive the name of the graph from the URL
+            String entryName;
+            if (connection instanceof JarURLConnection) {
+                entryName = ((JarURLConnection) connection).getEntryName();
+            } else {
+                entryName = url.getFile();
+            }
+            PriorityFileName priorityName =
+                new PriorityFileName(new File(entryName));
+            if (priorityName.hasPriority()) {
+                GraphInfo.getProperties(resultGraph, true).setPriority(
+                    priorityName.getPriority());
+            }
+
+            // set graph role if necessary
+            if (GraphInfo.getRole(resultGraph) == null) {
+                if (Groove.isRuleURL(url)) {
+                    GraphInfo.setRuleRole(resultGraph);
+                } else {
+                    GraphInfo.setGraphRole(resultGraph);
+                }
+            }
+            // note: don't set the name,
+            // there is no general scheme to derive it from the URL
+            return resultGraph;
+        } catch (FormatException exc) {
+            throw new IOException(String.format(
+                "Format error while loading '%s':\n%s", url, exc.getMessage()),
+                exc);
+        } catch (IOException exc) {
+            throw new IOException(String.format(
+                "Error while loading '%s':\n%s", url, exc.getMessage()), exc);
+        }
+    }
+
+    /** backwards compatibility method */
+    public DefaultGraph unmarshalGraph(File file) throws IOException {
+        return unmarshalGraph(Groove.toURL(file));
+    }
+
+    /**
+     * Deletes the graph file, as well as all variants with the same name but
+     * different priorities.
+     */
+    public final void deleteGraph(File file) {
+        deleteFile(file);
+    }
+
     /**
      * Delete the given file
      */
-    @Override
     public void deleteFile(File file) {
         if (file.exists() && file.canWrite()) {
             file.delete();
@@ -55,7 +111,8 @@ public class DefaultGxl extends AbstractXml {
     /**
      * This implementation works by delegating to a {@link GxlIO}.
      */
-    public void marshalGraph(Graph graph, File file) throws IOException {
+    public <N extends Node,E extends Edge> void marshalGraph(
+            Graph<N,?,E> graph, File file) throws IOException {
         // create parent dirs if necessary
         File parent = file.getParentFile();
         if (parent != null && !parent.exists()) {
@@ -70,15 +127,21 @@ public class DefaultGxl extends AbstractXml {
     }
 
     /**
-     * This implementation works by delegating to a {@link GxlIO}.
+     * Reads a graph from an XML formatted URL and returns it. Also constructs
+     * a map from node identities in the XML file to graph nodes. This can be
+     * used to connect with layout information.
+     * @param url the URL to be read from
+     * @return a pair consisting of the unmarshalled graph and a string-to-node
+     *         map from node identities in the XML file to nodes in the
+     *         unmarshalled graph
+     * @throws IOException if an error occurred during file input
      */
-    @Override
-    protected Pair<DefaultGraph,Map<String,Node>> unmarshalGraphMap(URL url)
-        throws IOException {
+    protected Pair<DefaultGraph,Map<String,DefaultNode>> unmarshalGraphMap(
+            URL url) throws IOException {
         try {
             URLConnection connection = url.openConnection();
             InputStream in = connection.getInputStream();
-            Pair<DefaultGraph,Map<String,Node>> result =
+            Pair<DefaultGraph,Map<String,DefaultNode>> result =
                 io.loadGraphWithMap(in);
             DefaultGraph resultGraph = result.one();
             // set some more information in the graph, based on the URL
@@ -137,7 +200,7 @@ public class DefaultGxl extends AbstractXml {
                 System.out.println("OK");
                 // Unmarshal graph
                 System.out.print("    Unmarshalling graph: ");
-                Graph graph = gxl.unmarshalGraph(url);
+                DefaultGraph graph = gxl.unmarshalGraph(url);
                 System.out.println("OK");
                 System.out.print("    Creating output file: ");
                 // file = new java.io.File(element + ".tmp");
@@ -147,7 +210,7 @@ public class DefaultGxl extends AbstractXml {
                 System.out.println("OK");
                 // unmarshal again and test for isomorphism
                 System.out.print("    Testing for isomorphism of original and re-marshalled graph: ");
-                Graph newGraph = gxl.unmarshalGraph(url);
+                DefaultGraph newGraph = gxl.unmarshalGraph(url);
 
                 if (isoChecker.areIsomorphic(newGraph, graph)) {
                     System.out.println("OK");

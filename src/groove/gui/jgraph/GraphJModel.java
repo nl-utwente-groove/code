@@ -19,6 +19,7 @@ package groove.gui.jgraph;
 
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultGraph;
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GenericNodeEdgeHashMap;
@@ -26,6 +27,7 @@ import groove.graph.GenericNodeEdgeMap;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.algebra.VariableNode;
 import groove.gui.Options;
@@ -33,10 +35,6 @@ import groove.gui.layout.JCellLayout;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
-import groove.lts.GraphState;
-import groove.lts.GraphTransition;
-import groove.lts.LTS;
-import groove.lts.LTSListener;
 import groove.trans.RuleLabel;
 import groove.util.Groove;
 import groove.view.aspect.AspectEdge;
@@ -62,7 +60,7 @@ import org.jgraph.graph.GraphConstants;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphJModel extends JModel implements LTSListener {
+public class GraphJModel<N extends Node,E extends Edge> extends JModel {
     /**
      * Creates a new GraphJModel instance on top of a given Graph, with given
      * node and edge attributes, and an indication whether self-edges should be
@@ -74,16 +72,15 @@ public class GraphJModel extends JModel implements LTSListener {
      *        labels are used to display self edges.
      * @require graph != null, nodeAttr != null, edgeAttr != null;
      */
-    protected GraphJModel(Graph graph, AttributeMap defaultNodeAttr,
+    protected GraphJModel(Graph<N,?,E> graph, AttributeMap defaultNodeAttr,
             AttributeMap defaultEdgeAttr, Options options) {
         // the model is to store attributes
         super(defaultNodeAttr, defaultEdgeAttr, options);
         // set the transient variables (cells, attributes and connections)
         // add nodes from Graph to GraphModel
         this.graph = graph;
-        LayoutMap<Node,Edge> layoutMap = GraphInfo.getLayoutMap(graph);
-        this.layoutMap =
-            layoutMap == null ? new LayoutMap<Node,Edge>() : layoutMap;
+        LayoutMap<N,E> layoutMap = GraphInfo.getLayoutMap(graph);
+        this.layoutMap = layoutMap == null ? new LayoutMap<N,E>() : layoutMap;
     }
 
     /**
@@ -93,7 +90,7 @@ public class GraphJModel extends JModel implements LTSListener {
      * @param graph the underlying Graph
      * @require graph != null;
      */
-    GraphJModel(Graph graph, Options options) {
+    GraphJModel(Graph<N,?,E> graph, Options options) {
         this(graph, JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, options);
     }
 
@@ -101,7 +98,7 @@ public class GraphJModel extends JModel implements LTSListener {
      * Constructor for a dummy (empty) model.
      */
     GraphJModel() {
-        this(AbstractGraph.EMPTY_GRAPH, null);
+        this(AbstractGraph.<N,Label,E>emptyGraph(), null);
     }
 
     /**
@@ -121,7 +118,7 @@ public class GraphJModel extends JModel implements LTSListener {
      * Returns the underlying Graph of this GraphModel.
      * @ensure result != null
      */
-    public Graph getGraph() {
+    public Graph<N,?,E> getGraph() {
         return this.graph;
     }
 
@@ -132,16 +129,12 @@ public class GraphJModel extends JModel implements LTSListener {
      * the sake of efficiency.
      */
     public void reload() {
-        if (this.graph instanceof LTS) {
-            // temporarily remove the model as a graph listener
-            ((LTS) this.graph).removeLTSListener(this);
-        }
         // add nodes from Graph to GraphModel
         initializeTransients();
-        Set<Node> addedNodeSet = new HashSet<Node>(this.graph.nodeSet());
+        Set<N> addedNodeSet = new HashSet<N>(this.graph.nodeSet());
         addedNodeSet.removeAll(this.toJCellMap.nodeMap().keySet());
         addNodeSet(addedNodeSet);
-        Set<Edge> addedEdgeSet = new HashSet<Edge>(this.graph.edgeSet());
+        Set<E> addedEdgeSet = new HashSet<E>(this.graph.edgeSet());
         addedEdgeSet.removeAll(this.toJCellMap.edgeMap().keySet());
         addEdgeSet(addedEdgeSet);
         doInsert();
@@ -154,54 +147,18 @@ public class GraphJModel extends JModel implements LTSListener {
         if (name != null) {
             setName(name);
         }
-        // add the model as a graph listener
-        if (this.graph instanceof LTS) {
-            ((LTS) this.graph).addLTSListener(this);
-        }
-    }
-
-    /**
-     * Reacts to a (node of edge) extension of the underlying Graph by mimicking
-     * the change in the GraphModel. Can alse deal with NodeSet and EdgeSet
-     * additions.
-     */
-    public synchronized void addUpdate(LTS lts, GraphState state) {
-        initializeTransients();
-        // add a corresponding GraphCell to the GraphModel
-        addNode(state);
-        // insert(cells.toArray(), connections, null, attributes);
-        doInsert();
-    }
-
-    /**
-     * Reacts to a (node of edge) extension of the underlying Graph by mimicking
-     * the change in the GraphModel. Can alse deal with NodeSet and EdgeSet
-     * additions.
-     */
-    public synchronized void addUpdate(LTS lts, GraphTransition transition) {
-        initializeTransients();
-        // note that (as per GraphListener contract)
-        // source and target Nodes (if any) have already been added
-        addEdge(transition);
-        doInsert();
-        // new edges should be behind the nodes
-        toBack(this.addedJCells.toArray());
-    }
-
-    @Override
-    public void closeUpdate(LTS graph, GraphState explored) {
-        // do nothing
     }
 
     /**
      * Returns the set of graph edges between two given graph nodes.
      */
-    public Set<Edge> getEdgesBetween(Node source, Node target) {
+    public Set<Edge> getEdgesBetween(N source, N target) {
         Set<Edge> result = new HashSet<Edge>();
-        for (Map.Entry<Edge,JCell> cellEntry : this.toJCellMap.edgeMap().entrySet()) {
+        for (Map.Entry<E,JCell> cellEntry : this.toJCellMap.edgeMap().entrySet()) {
             Object cell = cellEntry.getValue();
             if (cell instanceof GraphJEdge) {
-                GraphJEdge jEdge = (GraphJEdge) cell;
+                @SuppressWarnings("unchecked")
+                GraphJEdge<N,E> jEdge = (GraphJEdge<N,E>) cell;
                 if (jEdge.getSourceNode() == source
                     && jEdge.getTargetNode() == target) {
                     result.add(cellEntry.getKey());
@@ -237,11 +194,12 @@ public class GraphJModel extends JModel implements LTSListener {
      * @param elem the graph element for which the jcell is requested
      * @return the jcell associated with <tt>elem</tt>
      */
+    @SuppressWarnings("unchecked")
     public final JCell getJCell(Element elem) {
         if (elem instanceof Node) {
-            return getJVertex((Node) elem);
+            return getJVertex((N) elem);
         } else {
-            return getJCell((Edge) elem);
+            return getJCell((E) elem);
         }
     }
 
@@ -255,7 +213,7 @@ public class GraphJModel extends JModel implements LTSListener {
      *         || result instanceof JEdge &&
      *         result.labels().contains(edge.label())
      */
-    public JCell getJCell(Edge edge) {
+    public JCell getJCell(E edge) {
         return this.toJCellMap.getEdge(edge);
     }
 
@@ -265,7 +223,7 @@ public class GraphJModel extends JModel implements LTSListener {
      * @return the JNode modelling node (if node is known)
      * @ensure result == null || result.getUserObject() == node
      */
-    public GraphJVertex getJVertex(Node node) {
+    public GraphJVertex<N,E> getJVertex(N node) {
         return this.toJCellMap.getNode(node);
     }
 
@@ -273,7 +231,7 @@ public class GraphJModel extends JModel implements LTSListener {
      * Sets the layout of the elements in this graph model to the values
      * provided by a given layout map.
      */
-    public void applyLayout(LayoutMap<Node,Edge> layoutMap) {
+    public void applyLayout(LayoutMap<N,E> layoutMap) {
         Map<Object,AttributeMap> attrMap =
             layoutMap.afterInverse(this.toJCellMap).toJAttrMap();
         edit(attrMap, null, null, null);
@@ -281,19 +239,19 @@ public class GraphJModel extends JModel implements LTSListener {
     }
 
     /** Stores the layout from the JModel back into the graph. */
-    public void synchroniseLayout(GraphJCell jCell) {
-        LayoutMap<Node,Edge> currentLayout = GraphInfo.getLayoutMap(getGraph());
+    public void synchroniseLayout(GraphJCell<N,E> jCell) {
+        LayoutMap<N,E> currentLayout = GraphInfo.getLayoutMap(getGraph());
         // create the layout map if it does not yet exist
         if (currentLayout == null) {
-            currentLayout = new LayoutMap<Node,Edge>();
+            currentLayout = new LayoutMap<N,E>();
             GraphInfo.setLayoutMap(getGraph(), currentLayout);
         }
         if (jCell instanceof GraphJEdge) {
-            for (Edge edge : ((GraphJEdge) jCell).getEdges()) {
+            for (E edge : ((GraphJEdge<N,E>) jCell).getEdges()) {
                 currentLayout.putEdge(edge, jCell.getAttributes());
             }
         } else {
-            currentLayout.putNode(((GraphJVertex) jCell).getNode(),
+            currentLayout.putNode(((GraphJVertex<N,E>) jCell).getNode(),
                 jCell.getAttributes());
         }
     }
@@ -315,8 +273,9 @@ public class GraphJModel extends JModel implements LTSListener {
 
     /** This method reuses the node identity of the JVertex. */
     @Override
-    protected Node addFreshNode(Graph graph, JVertex root) {
-        Node modelNode = ((GraphJVertex) root).getActualNode();
+    protected DefaultNode addFreshNode(DefaultGraph graph, JVertex root) {
+        @SuppressWarnings("unchecked")
+        Node modelNode = ((GraphJVertex<N,E>) root).getActualNode();
         assert modelNode != null : String.format(
             "JModel node '%s' does not have underlying graph node", root);
         return graph.addNode(modelNode.getNumber());
@@ -326,8 +285,8 @@ public class GraphJModel extends JModel implements LTSListener {
      * Creates a j-cell corresponding to a given node in the graph. Adds the
      * j-cell to {@link #addedJCells}, and updates {@link #toJCellMap}.
      */
-    protected JCell addNode(Node node) {
-        GraphJVertex jVertex = computeJVertex(node);
+    protected JCell addNode(N node) {
+        GraphJVertex<N,E> jVertex = computeJVertex(node);
         this.toJCellMap.putNode(node, jVertex);
         // we add nodes in front of the list to get them in front of the display
         this.addedJCells.add(0, jVertex);
@@ -340,9 +299,10 @@ public class GraphJModel extends JModel implements LTSListener {
      * existing j-edge, if the edge can be represented by it. Otherwise, it will
      * be a new j-edge.
      */
-    protected JCell addEdge(Edge edge) {
+    protected JCell addEdge(E edge) {
         if (isUnaryEdge(edge)) {
-            GraphJVertex jVertex = getJVertex(edge.source());
+            @SuppressWarnings("unchecked")
+            GraphJVertex<N,E> jVertex = getJVertex((N) edge.source());
             if (jVertex.addSelfEdge(edge)) {
                 // yes, the edge could be added here; we're done
                 this.toJCellMap.putEdge(edge, jVertex);
@@ -359,9 +319,11 @@ public class GraphJModel extends JModel implements LTSListener {
      * an existing j-edge, if the edge can be represented by it. Otherwise, it
      * will be a new j-edge.
      */
-    private GraphJEdge addBinaryEdge(Edge edge) {
-        Node source = edge.source();
-        Node target = edge.target();
+    private GraphJEdge<N,E> addBinaryEdge(E edge) {
+        @SuppressWarnings("unchecked")
+        N source = (N) edge.source();
+        @SuppressWarnings("unchecked")
+        N target = (N) edge.target();
         // don't do this for node types, as they need to be typeset in bold
         if (!edge.label().isNodeType()) {
             // maybe a j-edge between this source and target is already in the
@@ -369,25 +331,28 @@ public class GraphJModel extends JModel implements LTSListener {
             for (Edge edgeBetween : getGraph().outEdgeSet(source)) {
                 if (edgeBetween.target().equals(target)) {
                     // see if this edge is appropriate
-                    JCell jEdge = getJCell(edgeBetween);
-                    if (jEdge instanceof GraphJEdge
-                        && isLayoutCompatible((GraphJEdge) jEdge, edge)
-                        && ((GraphJEdge) jEdge).addEdge(edge)) {
-                        // yes, the edge could be added here; we're done
-                        this.toJCellMap.putEdge(edge, jEdge);
-                        return (GraphJEdge) jEdge;
+                    JCell jCell = getJCell(edgeBetween);
+                    if (jCell instanceof GraphJEdge) {
+                        @SuppressWarnings("unchecked")
+                        GraphJEdge<N,E> jEdge = (GraphJEdge<N,E>) jCell;
+                        if (isLayoutCompatible(jEdge, edge)
+                            && jEdge.addEdge(edge)) {
+                            // yes, the edge could be added here; we're done
+                            this.toJCellMap.putEdge(edge, jEdge);
+                            return jEdge;
+                        }
                     }
                 }
             }
         }
         // none of the above: so create a new j-edge
-        GraphJEdge jEdge = computeJEdge(edge);
+        GraphJEdge<N,E> jEdge = computeJEdge(edge);
         this.toJCellMap.putEdge(edge, jEdge);
         // put the edge at the end to make sure it goes to the back
         this.addedJCells.add(jEdge);
-        GraphJVertex sourceNode = getJVertex(source);
+        GraphJVertex<N,E> sourceNode = getJVertex(source);
         assert sourceNode != null : "No vertex for source node of " + edge;
-        GraphJVertex targetPort = getJVertex(target);
+        GraphJVertex<N,E> targetPort = getJVertex(target);
         assert targetPort != null : "No vertex for target node of " + edge;
         this.connections.connect(jEdge, sourceNode.getPort(),
             targetPort.getPort());
@@ -397,7 +362,7 @@ public class GraphJModel extends JModel implements LTSListener {
     /**
      * Tests if a given edge may be added to its source vertex.
      */
-    protected boolean isUnaryEdge(Edge edge) {
+    protected boolean isUnaryEdge(E edge) {
         boolean result;
         if (isForEditor()) {
             result = isPotentialUnaryEdge(edge);
@@ -416,7 +381,7 @@ public class GraphJModel extends JModel implements LTSListener {
      * of) explicit layouting is concerned, a given edge could be displayed as 
      * node label.
      */
-    protected boolean isPotentialUnaryEdge(Edge edge) {
+    protected boolean isPotentialUnaryEdge(E edge) {
         return edge.source() == edge.target()
             && this.layoutMap.getEdge(edge) == null;
     }
@@ -429,7 +394,7 @@ public class GraphJModel extends JModel implements LTSListener {
      * @param jEdge the jedge to which the edge is about to be added
      * @param edge the edge that is investigated for compatibility
      */
-    protected boolean isLayoutCompatible(GraphJEdge jEdge, Edge edge) {
+    protected boolean isLayoutCompatible(GraphJEdge<N,E> jEdge, E edge) {
         JCellLayout edgeLayout = this.layoutMap.getEdge(edge);
         JCellLayout jEdgeLayout = this.layoutMap.getEdge(jEdge.getEdge());
         if (edgeLayout == null) {
@@ -446,8 +411,8 @@ public class GraphJModel extends JModel implements LTSListener {
      *        <code>Node</code>s.
      * @see #addNode
      */
-    protected void addNodeSet(Collection<? extends Node> nodeSet) {
-        for (Node node : nodeSet) {
+    protected void addNodeSet(Collection<N> nodeSet) {
+        for (N node : nodeSet) {
             // Edge valueEdge = null;
             // boolean addValueEdge = false;
             // if (node instanceof ValueNode) {
@@ -467,8 +432,8 @@ public class GraphJModel extends JModel implements LTSListener {
      *        <code>BinaryEdge</code>s.
      * @see #addEdge
      */
-    protected void addEdgeSet(Collection<? extends Edge> edgeSet) {
-        for (Edge edge : edgeSet) {
+    protected void addEdgeSet(Collection<? extends E> edgeSet) {
+        for (E edge : edgeSet) {
             addEdge(edge);
         }
     }
@@ -479,8 +444,8 @@ public class GraphJModel extends JModel implements LTSListener {
      * layout information from the layout map stored in this model.
      * @param edge graph edge for which a corresponding j-edge is to be created
      */
-    protected GraphJEdge computeJEdge(Edge edge) {
-        GraphJEdge result = createJEdge(edge);
+    protected GraphJEdge<N,E> computeJEdge(E edge) {
+        GraphJEdge<N,E> result = createJEdge(edge);
         result.getAttributes().applyMap(createJEdgeAttr(result));
         JEdgeLayout layout = this.layoutMap.getEdge(edge);
         if (layout != null) {
@@ -497,8 +462,8 @@ public class GraphJModel extends JModel implements LTSListener {
      * @param node graph node for which a corresponding j-vertex is to be
      *        created
      */
-    protected GraphJVertex computeJVertex(Node node) {
-        GraphJVertex result = createJVertex(node);
+    protected GraphJVertex<N,E> computeJVertex(N node) {
+        GraphJVertex<N,E> result = createJVertex(node);
         result.getAttributes().applyMap(createJVertexAttr(result));
         if (GraphConstants.isMoveable(result.getAttributes())) {
             JVertexLayout layout = this.layoutMap.getNode(node);
@@ -525,8 +490,8 @@ public class GraphJModel extends JModel implements LTSListener {
      * @return j-edge corresponding to <tt>edge</tt>
      * @ensure <tt>result.getEdgeSet().contains(edge)</tt>
      */
-    protected GraphJEdge createJEdge(Edge edge) {
-        return new GraphJEdge(this, edge);
+    protected GraphJEdge<N,E> createJEdge(E edge) {
+        return new GraphJEdge<N,E>(this, edge);
     }
 
     /**
@@ -535,8 +500,8 @@ public class GraphJModel extends JModel implements LTSListener {
      * @return j-node corresponding to <tt>node</tt>
      * @ensure <tt>result.getNode().equals(node)</tt>
      */
-    protected GraphJVertex createJVertex(Node node) {
-        return new GraphJVertex(this, node, true);
+    protected GraphJVertex<N,E> createJVertex(N node) {
+        return new GraphJVertex<N,E>(this, node, true);
     }
 
     /**
@@ -553,10 +518,11 @@ public class GraphJModel extends JModel implements LTSListener {
      * fails, i.e., if #createJEdge.
      * @see GraphJVertex#isVisible()
      */
+    @SuppressWarnings("unchecked")
     @Override
     final protected AttributeMap createJEdgeAttr(JEdge jEdge) {
         AttributeMap result = super.createJEdgeAttr(jEdge);
-        modifyJEdgeAttr(result, ((GraphJEdge) jEdge).getEdges());
+        modifyJEdgeAttr(result, ((GraphJEdge<N,E>) jEdge).getEdges());
         return result;
     }
 
@@ -565,8 +531,7 @@ public class GraphJModel extends JModel implements LTSListener {
      * j-edge. Callback method from {@link #createJEdgeAttr(JEdge)}
      * @param result the map to be modified
      */
-    protected void modifyJEdgeAttr(AttributeMap result,
-            Set<? extends Edge> edgeSet) {
+    protected void modifyJEdgeAttr(AttributeMap result, Set<E> edgeSet) {
         if (!edgeSet.isEmpty()) {
             modifyJEdgeAttr(result, edgeSet.iterator().next());
         }
@@ -577,7 +542,7 @@ public class GraphJModel extends JModel implements LTSListener {
      * j-edge. Callback method from {@link #createJEdgeAttr(JEdge)}
      * @param result the map to be modified
      */
-    protected void modifyJEdgeAttr(AttributeMap result, Edge edge) {
+    protected void modifyJEdgeAttr(AttributeMap result, E edge) {
         // change the font to bold if the edges contain a node type
         if (edge.label().isNodeType()) {
             setFontAttr(result, Font.BOLD);
@@ -598,11 +563,12 @@ public class GraphJModel extends JModel implements LTSListener {
      * fails.
      * @see #createJVertexAttr(JVertex)
      */
+    @SuppressWarnings("unchecked")
     @Override
     final protected AttributeMap createJVertexAttr(JVertex jVertex) {
         AttributeMap result;
         // if (jVertex.isVisible()) {
-        result = createJVertexAttr(((GraphJVertex) jVertex).getNode());
+        result = createJVertexAttr(((GraphJVertex<N,E>) jVertex).getNode());
         if (result == null) {
             result = super.createJVertexAttr(jVertex);
         } else {
@@ -618,7 +584,7 @@ public class GraphJModel extends JModel implements LTSListener {
      * Creates the attributes based on the node contained in a j-vertex.
      * Callback method from {@link #createJVertexAttr(JVertex)}.
      */
-    protected AttributeMap createJVertexAttr(Node node) {
+    protected AttributeMap createJVertexAttr(N node) {
         AttributeMap result = (AttributeMap) this.defaultNodeAttr.clone();
         if (node instanceof VariableNode) {
             result.applyMap(getJVertexDataAttr());
@@ -640,9 +606,14 @@ public class GraphJModel extends JModel implements LTSListener {
      * Executes the insertion prepared by node and edge additions.
      */
     protected void doInsert() {
-        createEdit(this.addedJCells.toArray(), null, null, this.connections,
-            null, null).execute();
+        createEdit(toAddedJCellsArray(), null, null, this.connections, null,
+            null).execute();
         this.addedJCells.clear();
+    }
+
+    /** Returns the array of cells added since the last insert. */
+    Object[] toAddedJCellsArray() {
+        return this.addedJCells.toArray();
     }
 
     /**
@@ -728,18 +699,18 @@ public class GraphJModel extends JModel implements LTSListener {
      * The underlying Graph of this GraphModel.
      * @invariant graph != null
      */
-    private final Graph graph;
+    private final Graph<N,?,E> graph;
     /**
      * The layout map for the underlying graph. It maps {@link Element}s to
      * {@link JCellLayout}s. This is set to an empty map if the graph is not a
      * layed out graph.
      */
-    private final LayoutMap<Node,Edge> layoutMap;
+    private final LayoutMap<N,E> layoutMap;
     /**
      * Map from graph elements to JGraph cells.
      */
-    private final GenericNodeEdgeMap<Node,GraphJVertex,Edge,JCell> toJCellMap =
-        new GenericNodeEdgeHashMap<Node,GraphJVertex,Edge,JCell>();
+    private final GenericNodeEdgeMap<N,GraphJVertex<N,E>,E,JCell> toJCellMap =
+        new GenericNodeEdgeHashMap<N,GraphJVertex<N,E>,E,JCell>();
 
     /**
      * Set of GraphModel cells. Used in the process of constructing a
@@ -774,10 +745,10 @@ public class GraphJModel extends JModel implements LTSListener {
      * all self-edges without explicit layout information will be treated as node
      * labels.
      */
-    static public GraphJModel newInstance(Graph graph, Options options,
-            boolean forEditor) {
-        GraphJModel result =
-            new GraphJModel(graph, JAttr.DEFAULT_NODE_ATTR,
+    static public <N extends Node,E extends Edge> GraphJModel<N,E> newInstance(
+            Graph<N,?,E> graph, Options options, boolean forEditor) {
+        GraphJModel<N,E> result =
+            new GraphJModel<N,E>(graph, JAttr.DEFAULT_NODE_ATTR,
                 JAttr.DEFAULT_EDGE_ATTR, options);
         if (forEditor) {
             result.setForEditor();
@@ -795,12 +766,10 @@ public class GraphJModel extends JModel implements LTSListener {
      * @param graph the underlying Graph
      * @param options display options
      */
-    static public GraphJModel newInstance(Graph graph, Options options) {
+    static public <N extends Node,E extends Edge> GraphJModel<N,E> newInstance(
+            Graph<N,?,E> graph, Options options) {
         return newInstance(graph, options, false);
     }
-
-    /** Dummy (empty) j-model. */
-    static public final GraphJModel EMPTY_JMODEL = new GraphJModel();
 
     /** Constant map containing the special data vertex attributes. */
     static private final AttributeMap DATA_NODE_ATTR;

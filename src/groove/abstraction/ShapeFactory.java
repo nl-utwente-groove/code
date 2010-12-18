@@ -16,11 +16,14 @@
  */
 package groove.abstraction;
 
-import groove.graph.Label;
-import groove.graph.Node;
+import groove.graph.DefaultEdge;
+import groove.graph.Node.Factory;
+import groove.graph.NodeStore;
 import groove.graph.TypeLabel;
 import groove.trans.HostFactory;
+import groove.trans.HostNode;
 import groove.trans.RuleToHostMap;
+import groove.util.TreeHashSet;
 
 /** Factory class for graph elements. */
 public class ShapeFactory extends HostFactory {
@@ -29,31 +32,107 @@ public class ShapeFactory extends HostFactory {
         // empty
     }
 
-    /** Creates a fresh node. */
     @Override
     public ShapeNode createNode() {
-        return ShapeNode.createNode();
+        return this.nodeStore.createNode();
     }
 
-    /** Creates a node with a given number. */
     @Override
     public ShapeNode createNode(int nr) {
-        return ShapeNode.createNode(nr);
+        return this.nodeStore.createNode(nr);
     }
 
-    /** Creates an edge with the given source, label and target. */
     @Override
-    public ShapeEdge createEdge(Node source, Label label, Node target) {
-        return ShapeEdge.createEdge((ShapeNode) source, (TypeLabel) label,
-            (ShapeNode) target);
+    public ShapeEdge createEdge(HostNode source, String text, HostNode target) {
+        return createEdge(source, createLabel(text), target);
     }
 
-    /** Creates a fresh mapping from rules to (this type of) host graph. */
+    @Override
+    public ShapeEdge createEdge(HostNode source, TypeLabel label,
+            HostNode target) {
+        assert source instanceof ShapeNode : "Source node should be ShapeNode";
+        assert target instanceof ShapeNode : "Target node should be ShapeNode";
+        assert label != null : "Label should not be null";
+        ShapeEdge edge =
+            new ShapeEdge((ShapeNode) source, label, (ShapeNode) target,
+                getEdgeCount());
+        ShapeEdge result = this.edgeSet.put(edge);
+        if (result == null) {
+            result = edge;
+        }
+        return result;
+    }
+
+    @Override
+    public int getHighestNodeNr() {
+        return this.nodeStore.size();
+    }
+
+    @Override
+    public int getNodeCount() {
+        return this.nodeStore.getNodeCount();
+    }
+
+    @Override
+    public int getEdgeCount() {
+        return this.edgeSet.size();
+    }
+
+    @Override
+    public void clear() {
+        this.edgeSet.clear();
+        this.nodeStore.clear();
+    }
+
     @Override
     public RuleToHostMap createRuleToHostMap() {
         return new RuleToShapeMap();
     }
 
+    /** Store and factory of canonical shape nodes. */
+    private NodeStore<ShapeNode> nodeStore = new NodeStore<ShapeNode>(
+        new Factory<ShapeNode>() {
+            @Override
+            public ShapeNode newNode(int nr) {
+                return NODE_PROTOTYPE.newNode(nr);
+            }
+        });
+
+    // ------------------------------------------------------------------------
+    // Static Fields
+    // ------------------------------------------------------------------------
+
+    /**
+     * A identity map, mapping previously created instances of
+     * {@link DefaultEdge} to themselves. Used to ensure that edge objects are
+     * reused.
+     */
+    private final TreeHashSet<ShapeEdge> edgeSet =
+        new TreeHashSet<ShapeEdge>() {
+            /**
+             * As {@link DefaultEdge}s test equality by object identity,
+             * we need to weaken the set's equality test.
+             */
+            @Override
+            final protected boolean areEqual(ShapeEdge o1, ShapeEdge o2) {
+                return o1.source().equals(o2.source())
+                    && o1.target().equals(o2.target())
+                    && o1.label().equals(o2.label());
+            }
+
+            @Override
+            final protected boolean allEqual() {
+                return false;
+            }
+        };
+
+    /** Returns the singleton instance of this factory. */
+    public static ShapeFactory instance() {
+        return INSTANCE;
+    }
+
+    /** Used only as a reference for the constructor. */
+    private static final ShapeNode NODE_PROTOTYPE = new ShapeNode(0);
     /** Singleton instance of this factory. */
-    public final static ShapeFactory INSTANCE = new ShapeFactory();
+    private final static ShapeFactory INSTANCE = new ShapeFactory();
 }

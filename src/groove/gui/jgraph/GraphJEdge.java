@@ -37,7 +37,8 @@ import java.util.Set;
  * stored as a Set in the user object. In the latter case, toString() the user
  * object is the empty string.
  */
-public class GraphJEdge extends JEdge implements GraphJCell {
+public class GraphJEdge<N extends Node,E extends Edge> extends JEdge implements
+        GraphJCell<N,E> {
     /**
      * Constructs a model edge based on a graph edge. The graph edge is required
      * to have at least arity two; yet we cannot rely on it being a binary
@@ -49,10 +50,11 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      *         edge.source(), target() == edge.target()
      * @throws IllegalArgumentException if <code>edge.endCount() < 2</code>
      */
-    GraphJEdge(GraphJModel jModel, Edge edge) {
+    @SuppressWarnings("unchecked")
+    GraphJEdge(GraphJModel<N,E> jModel, E edge) {
         this.jModel = jModel;
-        this.source = edge.source();
-        this.target = edge.target();
+        this.source = (N) edge.source();
+        this.target = (N) edge.target();
         getUserObject().add(edge);
     }
 
@@ -130,44 +132,46 @@ public class GraphJEdge extends JEdge implements GraphJCell {
     /**
      * Returns the common source of the underlying graph edges.
      */
-    public Node getSourceNode() {
+    public N getSourceNode() {
         return this.source;
     }
 
     /**
      * Returns the common target of the underlying graph edges.
      */
-    public Node getTargetNode() {
+    public N getTargetNode() {
         return this.target;
     }
 
     /**
      * Specialises the return type.
      */
+    @SuppressWarnings("unchecked")
     @Override
-    public GraphJVertex getSourceVertex() {
-        return (GraphJVertex) super.getSourceVertex();
+    public GraphJVertex<N,E> getSourceVertex() {
+        return (GraphJVertex<N,E>) super.getSourceVertex();
     }
 
     /**
      * Specialises the return type.
      */
+    @SuppressWarnings("unchecked")
     @Override
-    public GraphJVertex getTargetVertex() {
-        return (GraphJVertex) super.getTargetVertex();
+    public GraphJVertex<N,E> getTargetVertex() {
+        return (GraphJVertex<N,E>) super.getTargetVertex();
     }
 
     /**
      * Returns an unmodifiable view upon the set of underlying graph edges.
      */
-    public Set<? extends Edge> getEdges() {
+    public Set<E> getEdges() {
         return Collections.unmodifiableSet(getUserObject());
     }
 
     /**
      * Returns an arbitrary edge from the set of underlying edges.
      */
-    public Edge getEdge() {
+    public E getEdge() {
         return getUserObject().iterator().next();
     }
 
@@ -181,7 +185,7 @@ public class GraphJEdge extends JEdge implements GraphJCell {
     }
 
     /** This implementation delegates to {@link Edge#label()}. */
-    public Label getLabel(Edge edge) {
+    public Label getLabel(E edge) {
         return edge.label();
     }
 
@@ -192,7 +196,7 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      */
     public List<StringBuilder> getLines() {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
-        for (Edge edge : getUserObject()) {
+        for (E edge : getUserObject()) {
             if (!this.jModel.isFiltering(getLabel(edge))) {
                 result.add(getLine(edge));
             }
@@ -204,7 +208,7 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      * This implementation returns the text from {@link #getLabel(Edge)} wrapped
      * in a StringBuilder.
      */
-    public StringBuilder getLine(Edge edge) {
+    public StringBuilder getLine(E edge) {
         return new StringBuilder(getLabel(edge).text());
     }
 
@@ -214,14 +218,14 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      */
     public Collection<? extends Label> getListLabels() {
         List<Label> result = new ArrayList<Label>();
-        for (Edge edge : getUserObject()) {
+        for (E edge : getUserObject()) {
             result.addAll(getListLabels(edge));
         }
         return result;
     }
 
     /** This implementation delegates to {@link Edge#label()}. */
-    public Set<? extends Label> getListLabels(Edge edge) {
+    public Set<? extends Label> getListLabels(E edge) {
         Set<? extends Label> result;
         Label label = getLabel(edge);
         if (label instanceof RuleLabel) {
@@ -241,7 +245,7 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      */
     public Collection<String> getPlainLabels() {
         List<String> result = new ArrayList<String>();
-        for (Edge edge : getUserObject()) {
+        for (E edge : getUserObject()) {
             result.add(getPlainLabel(edge));
         }
         return result;
@@ -250,19 +254,20 @@ public class GraphJEdge extends JEdge implements GraphJCell {
     /**
      * This implementation calls {@link TypeLabel#toPrefixedString(Label)}.
      */
-    public String getPlainLabel(Edge edge) {
+    public String getPlainLabel(E edge) {
         return TypeLabel.toPrefixedString(edge.label());
     }
 
     /** Specialises the return type of the method. */
+    @SuppressWarnings("unchecked")
     @Override
-    public EdgeContent getUserObject() {
-        return (EdgeContent) super.getUserObject();
+    public EdgeContent<E> getUserObject() {
+        return (EdgeContent<E>) super.getUserObject();
     }
 
     @Override
-    EdgeContent createUserObject() {
-        return new EdgeContent();
+    EdgeContent<E> createUserObject() {
+        return new EdgeContent<E>();
     }
 
     /**
@@ -286,7 +291,7 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      *          <tt>edge.target() == getTargetNode()</tt>
      * @ensure if <tt>result</tt> then <tt>getEdgeSet().contains(edge)</tt>
      */
-    public boolean addEdge(Edge edge) {
+    public boolean addEdge(E edge) {
         boolean thisIsRegExpr = getEdge().label() instanceof RuleLabel;
         boolean edgeIsRegExpr = edge.label() instanceof RuleLabel;
         boolean result = (thisIsRegExpr == edgeIsRegExpr);
@@ -299,7 +304,7 @@ public class GraphJEdge extends JEdge implements GraphJCell {
     /**
      * Adds an edge to the set underlying graph edges.
      */
-    public void removeEdge(Edge edge) {
+    public void removeEdge(E edge) {
         getUserObject().remove(edge);
     }
 
@@ -340,9 +345,9 @@ public class GraphJEdge extends JEdge implements GraphJCell {
     }
 
     /** Underlying {@link JModel} of this edge. */
-    private final GraphJModel jModel;
+    private final GraphJModel<N,E> jModel;
     /** Source node of the underlying graph edges. */
-    private final Node source;
+    private final N source;
     /** Target node of the underlying graph edges. */
-    private final Node target;
+    private final N target;
 }

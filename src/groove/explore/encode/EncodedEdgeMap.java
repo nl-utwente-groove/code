@@ -16,8 +16,8 @@
  */
 package groove.explore.encode;
 
-import groove.graph.Label;
 import groove.graph.LabelStore;
+import groove.graph.TypeLabel;
 import groove.gui.Simulator;
 import groove.lts.GTS;
 import groove.view.FormatException;
@@ -32,7 +32,8 @@ import java.util.TreeMap;
  * 
  * @author Maarten de Mol
  */
-public class EncodedEdgeMap implements EncodedType<Map<Label,Integer>,String> {
+public class EncodedEdgeMap implements
+        EncodedType<Map<TypeLabel,Integer>,String> {
 
     /**
      * An edge mapping is simply edited as a <code>String</code>. The edited
@@ -40,19 +41,19 @@ public class EncodedEdgeMap implements EncodedType<Map<Label,Integer>,String> {
      * when the <code>parse</code> method is called.
      */
     @Override
-    public EncodedTypeEditor<Map<Label,Integer>,String> createEditor(
+    public EncodedTypeEditor<Map<TypeLabel,Integer>,String> createEditor(
             Simulator simulator) {
-        return new StringEditor<Map<Label,Integer>>("label>num,[label>num]*",
-            "", 30);
+        return new StringEditor<Map<TypeLabel,Integer>>(
+            "label>num,[label>num]*", "", 30);
     }
 
     /**
      * Parse an edge label out of a <code>String</code>. Returns a
      * <code>FormatException</code> when parsing fails.
      */
-    private Label parseLabel(LabelStore store, String source)
+    private TypeLabel parseLabel(LabelStore store, String source)
         throws FormatException {
-        for (Label label : store.getLabels()) {
+        for (TypeLabel label : store.getLabels()) {
             if (label.text().equals(source)) {
                 return label;
             }
@@ -80,7 +81,7 @@ public class EncodedEdgeMap implements EncodedType<Map<Label,Integer>,String> {
      * Throws a <code>FormatException</code> if parsing fails.
      */
     @Override
-    public Map<Label,Integer> parse(GTS gts, String source)
+    public Map<TypeLabel,Integer> parse(GTS gts, String source)
         throws FormatException {
 
         // Disallow the empty string.
@@ -90,7 +91,7 @@ public class EncodedEdgeMap implements EncodedType<Map<Label,Integer>,String> {
         }
 
         // Allocate the result map.
-        Map<Label,Integer> edgeMap = new TreeMap<Label,Integer>();
+        Map<TypeLabel,Integer> edgeMap = new TreeMap<TypeLabel,Integer>();
 
         // Get the LabelStore from the GTS.
         LabelStore store = gts.getGrammar().getRuleSystem().getLabelStore();

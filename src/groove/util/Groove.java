@@ -18,9 +18,13 @@ package groove.util;
 
 import groove.calc.DefaultGraphCalculator;
 import groove.calc.GraphCalculator;
+import groove.graph.DefaultGraph;
+import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
+import groove.graph.Label;
 import groove.graph.LabelStore;
+import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.gui.Exporter;
@@ -512,7 +516,7 @@ public class Groove {
      * @throws IOException if <code>filename</code> does not exist or is wrongly
      *         formatted
      */
-    static public Graph loadGraph(String filename) throws IOException {
+    static public DefaultGraph loadGraph(String filename) throws IOException {
         // attempt to find the intended file
         File file = new File(filename);
         if (!(createAutFilter().accept(file) || createGxlFilter().accept(file) || createStateFilter().accept(
@@ -532,8 +536,8 @@ public class Groove {
      *         the file does not exist
      * @throws IOException if <code>file</code> cannot be parsed as a graph
      */
-    static public Graph loadGraph(File file) throws IOException {
-        Xml<Graph> marshaller;
+    static public DefaultGraph loadGraph(File file) throws IOException {
+        Xml<DefaultGraph> marshaller;
         if (createAutFilter().accept(file)) {
             marshaller = autGraphLoader;
         } else {
@@ -581,7 +585,7 @@ public class Groove {
      * @param filename the intended filename
      * @throws IOException if saving ran into problems
      */
-    static public File saveGraph(Graph graph, String filename)
+    static public File saveGraph(Graph<?,?,?> graph, String filename)
         throws IOException {
         if (!createStateFilter().hasExtension(filename)) {
             filename = createGxlFilter().addExtension(filename);
@@ -598,7 +602,8 @@ public class Groove {
      * @param file the intended file
      * @throws IOException if saving ran into problems
      */
-    static public void saveGraph(Graph graph, File file) throws IOException {
+    static public void saveGraph(Graph<?,?,?> graph, File file)
+        throws IOException {
         gxlGraphLoader.marshalGraph(graph, file);
     }
 
@@ -611,7 +616,7 @@ public class Groove {
      * @return <code>true</code> if the format was known
      * @throws IOException if saving ran into problems
      */
-    static public boolean exportGraph(Graph graph, String filename)
+    static public boolean exportGraph(Graph<?,?,?> graph, String filename)
         throws IOException {
         for (StructuralFormat exportFormat : new Exporter().getStructuralFormats()) {
             if (exportFormat.getFilter().hasExtension(filename)) {
@@ -767,7 +772,8 @@ public class Groove {
      *         or <code>null</code> if
      *         {@link DefaultIsoChecker#areIsomorphic(Graph, Graph)} fails.
      */
-    static public NodeEdgeMap getIsomorphism(Graph source, Graph target) {
+    static public <N extends Node,L extends Label,E extends Edge> NodeEdgeMap getIsomorphism(
+            Graph<N,L,E> source, Graph<N,L,E> target) {
         return DefaultIsoChecker.getInstance(true).getIsomorphism(source,
             target);
     }
@@ -1105,5 +1111,5 @@ public class Groove {
     /**
      * The fixed AUT graph loader.
      */
-    static private final Xml<Graph> autGraphLoader = new Aut();
+    static private final Aut autGraphLoader = new Aut();
 }

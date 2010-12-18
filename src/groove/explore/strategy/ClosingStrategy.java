@@ -64,7 +64,7 @@ abstract public class ClosingStrategy extends AbstractStrategy {
     private class ExploreListener extends LTSAdapter {
         @Override
         public void addUpdate(LTS lts, GraphState state) {
-            putInPool((GraphState) state);
+            putInPool(state);
         }
     }
 }

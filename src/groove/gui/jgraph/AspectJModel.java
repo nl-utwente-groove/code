@@ -39,8 +39,6 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.NodeEdgeHashMap;
-import groove.graph.NodeEdgeMap;
 import groove.gui.Options;
 import groove.trans.RuleLabel;
 import groove.util.Converter;
@@ -78,7 +76,7 @@ import org.jgraph.graph.GraphConstants;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectJModel extends GraphJModel {
+public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     // --------------------- INSTANCE DEFINITIONS ------------------------
 
@@ -124,14 +122,14 @@ public class AspectJModel extends GraphJModel {
             for (FormatError error : graphErrors) {
                 for (Element errorObject : error.getElements()) {
                     JCell errorCell = null;
-                    if (errorObject instanceof Node) {
-                        errorCell = getJVertex((Node) errorObject);
+                    if (errorObject instanceof AspectNode) {
+                        errorCell = getJVertex((AspectNode) errorObject);
                     } else if (errorObject instanceof Edge) {
-                        errorCell = getJCell((Edge) errorObject);
+                        errorCell = getJCell(errorObject);
                         if (errorCell instanceof GraphJEdge
-                            && ((GraphJEdge) errorCell).isDataEdgeSourceLabel()) {
+                            && ((GraphJEdge<?,?>) errorCell).isDataEdgeSourceLabel()) {
                             errorCell =
-                                ((GraphJEdge) errorCell).getSourceVertex();
+                                ((GraphJEdge<?,?>) errorCell).getSourceVertex();
                         }
                     }
                     if (errorCell != null) {
@@ -143,55 +141,6 @@ public class AspectJModel extends GraphJModel {
     }
 
     /**
-     * If <code>edge</code> is an AspectEdge, returns the super value;
-     * otherwise, assumes that it is a model edge, and returns the image of the
-     * corresponding view edge.
-     */
-    @Override
-    public JCell getJCell(Edge edge) {
-        assert edge instanceof AspectEdge;
-        if (edge instanceof AspectEdge) {
-            return super.getJCell(edge);
-        } else {
-            return super.getJCell(getModelToViewMap().getEdge(edge));
-        }
-    }
-
-    /**
-     * If <code>node</code> is an AspectNode, returns the super value;
-     * otherwise, assumes that it is a model node, and returns the image of the
-     * corresponding view node.
-     */
-    @Override
-    public GraphJVertex getJVertex(Node node) {
-        //assert node instanceof AspectNode;
-        if (node instanceof AspectNode) {
-            return super.getJVertex(node);
-        } else {
-            return super.getJVertex(getModelToViewMap().getNode(node));
-        }
-    }
-
-    /**
-     * Lazily computes and returns a mapping from model elements to view
-     * elements.
-     */
-    private NodeEdgeMap getModelToViewMap() {
-        if (this.modelToViewMap == null) {
-            this.modelToViewMap = new NodeEdgeHashMap();
-            for (Map.Entry<AspectNode,? extends Node> nodeEntry : this.view.getMap().nodeMap().entrySet()) {
-                this.modelToViewMap.putNode(nodeEntry.getValue(),
-                    nodeEntry.getKey());
-            }
-            for (Map.Entry<AspectEdge,? extends Edge> edgeEntry : this.view.getMap().edgeMap().entrySet()) {
-                this.modelToViewMap.putEdge(edgeEntry.getValue(),
-                    edgeEntry.getKey());
-            }
-        }
-        return this.modelToViewMap;
-    }
-
-    /**
      * Indicates whether aspect prefixes should be shown for nodes and edges.
      */
     public final boolean isShowRemarks() {
@@ -199,17 +148,16 @@ public class AspectJModel extends GraphJModel {
     }
 
     @Override
-    protected AttributeMap createJVertexAttr(Node node) {
+    protected AttributeMap createJVertexAttr(AspectNode node) {
         AttributeMap result;
-        AspectNode aspectNode = (AspectNode) node;
-        if (getNestingValue(aspectNode) != null) {
+        if (getNestingValue(node) != null) {
             result = NESTING_NODE_ATTR.clone();
-        } else if (TypeAspect.isAbstract(aspectNode)) {
+        } else if (TypeAspect.isAbstract(node)) {
             result = ABSTRACT_NODE_ATTR.clone();
         } else {
-            AspectValue role = role(aspectNode);
+            AspectValue role = role(node);
             result = RULE_NODE_ATTR.get(role).clone();
-            if (getAttributeValue(aspectNode) != null) {
+            if (getAttributeValue(node) != null) {
                 result.applyMap(getJVertexDataAttr());
             }
         }
@@ -217,20 +165,19 @@ public class AspectJModel extends GraphJModel {
     }
 
     @Override
-    protected void modifyJEdgeAttr(AttributeMap result, Edge edge) {
+    protected void modifyJEdgeAttr(AttributeMap result, AspectEdge edge) {
         super.modifyJEdgeAttr(result, edge);
-        AspectEdge aspectEdge = (AspectEdge) edge;
-        if (TypeAspect.isSubtype(aspectEdge)) {
+        if (TypeAspect.isSubtype(edge)) {
             result.applyMap(SUBTYPE_EDGE_ATTR);
-        } else if (TypeAspect.isAbstract(aspectEdge)) {
+        } else if (TypeAspect.isAbstract(edge)) {
             result.applyMap(ABSTRACT_EDGE_ATTR);
-        } else if (NestingAspect.isMetaElement(aspectEdge)) {
+        } else if (NestingAspect.isMetaElement(edge)) {
             result.applyMap(NESTING_EDGE_ATTR);
         } else {
-            AspectValue role = role(aspectEdge);
+            AspectValue role = role(edge);
             result.applyMap(RULE_EDGE_ATTR.get(role));
             try {
-                Label modelLabel = aspectEdge.getModelLabel();
+                Label modelLabel = edge.getModelLabel();
                 if (modelLabel instanceof RuleLabel) {
                     RuleLabel ruleModelLabel = (RuleLabel) modelLabel;
                     if (ruleModelLabel.isEmpty() || ruleModelLabel.isNeg()
@@ -267,8 +214,8 @@ public class AspectJModel extends GraphJModel {
      * @require <tt>edge instanceof RuleGraph.RuleNode</tt>
      */
     @Override
-    protected GraphJVertex createJVertex(Node node) {
-        return new AspectJVertex(this, (AspectNode) node);
+    protected GraphJVertex<AspectNode,AspectEdge> createJVertex(AspectNode node) {
+        return new AspectJVertex(this, node);
     }
 
     /**
@@ -276,19 +223,19 @@ public class AspectJModel extends GraphJModel {
      * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
      */
     @Override
-    protected GraphJEdge createJEdge(Edge edge) {
-        return new AspectJEdge((AspectEdge) edge);
+    protected GraphJEdge<AspectNode,AspectEdge> createJEdge(AspectEdge edge) {
+        return new AspectJEdge(edge);
     }
 
     /** Retrieves a node's image according to the view. */
     Node getModelNode(AspectNode node) {
-        View.ViewToModelMap<?,?> viewMap = this.view.getMap();
+        View.ViewToModelMap<?,?,?> viewMap = this.view.getMap();
         return viewMap == null ? null : viewMap.getNode(node);
     }
 
     /** Retrieves an edge's image according to the view. */
     Edge getModelEdge(AspectEdge edge) {
-        View.ViewToModelMap<?,?> viewMap = this.view.getMap();
+        View.ViewToModelMap<?,?,?> viewMap = this.view.getMap();
         return viewMap == null ? null : viewMap.getEdge(edge);
     }
 
@@ -299,7 +246,6 @@ public class AspectJModel extends GraphJModel {
     /** Mapping from the elements of the model to those of the view. */
     /** Set of cells with a format error. */
     private final Set<JCell> errorCells = new HashSet<JCell>();
-    private NodeEdgeMap modelToViewMap;
 
     /**
      * Creates a new aspect model instance on top of a given aspectual view.
@@ -356,7 +302,7 @@ public class AspectJModel extends GraphJModel {
     /**
      * Specialized j-vertex for rule graphs, with its own tool tip text.
      */
-    private class AspectJVertex extends GraphJVertex {
+    private class AspectJVertex extends GraphJVertex<AspectNode,AspectEdge> {
         /** Creates a j-vertex on the basis of a given (aspectual) node. */
         public AspectJVertex(AspectJModel jModel, AspectNode node) {
             super(jModel, node);
@@ -366,7 +312,7 @@ public class AspectJModel extends GraphJModel {
         /** Specialises the return type. */
         @Override
         public AspectNode getNode() {
-            return (AspectNode) super.getNode();
+            return super.getNode();
         }
 
         /**
@@ -401,9 +347,8 @@ public class AspectJModel extends GraphJModel {
          * method if the test is successful.
          */
         @Override
-        public boolean addSelfEdge(Edge edge) {
-            return isAllowedNodeLabel((AspectEdge) edge)
-                && super.addSelfEdge(edge);
+        public boolean addSelfEdge(AspectEdge edge) {
+            return isAllowedNodeLabel(edge) && super.addSelfEdge(edge);
         }
 
         /** Adds a quantifier, if the nesting aspect justifies this. */
@@ -489,17 +434,14 @@ public class AspectJModel extends GraphJModel {
          * On demand prefixes the label with the edge's aspect values.
          */
         @Override
-        public StringBuilder getLine(Edge object) {
-            assert object instanceof AspectEdge;
-            StringBuilder result = super.getLine(object);
+        public StringBuilder getLine(AspectEdge edge) {
+            StringBuilder result = super.getLine(edge);
             if (isShowAspects()) {
                 result =
-                    AspectParser.toString(
-                        ((AspectEdge) object).getDeclaredValues(), result);
+                    AspectParser.toString(edge.getDeclaredValues(), result);
             } else {
                 // add nesting level, if any
-                String levelName =
-                    NestingAspect.getLevelName((AspectEdge) object);
+                String levelName = NestingAspect.getLevelName(edge);
                 if (levelName != null && levelName.length() != 0) {
                     result.append(Converter.SUB_TAG.on(levelName));
                 }
@@ -518,7 +460,7 @@ public class AspectJModel extends GraphJModel {
             }
             // we do not do a super call, for that adds the value of the actual
             // node which we have here anyway
-            for (Edge edge : getSelfEdges()) {
+            for (AspectEdge edge : getSelfEdges()) {
                 result.add(getPlainLabel(edge));
             }
             // result.addAll(super.getPlainLabels());
@@ -529,16 +471,15 @@ public class AspectJModel extends GraphJModel {
          * This implementation adds an edge aspect prefix.
          */
         @Override
-        public String getPlainLabel(Edge edge) {
+        public String getPlainLabel(AspectEdge edge) {
             StringBuilder text = new StringBuilder(super.getPlainLabel(edge));
-            return AspectParser.toString(
-                ((AspectEdge) edge).getDeclaredValues(), text).toString();
+            return AspectParser.toString(edge.getDeclaredValues(), text).toString();
         }
 
         @Override
-        public Label getLabel(Edge edge) {
+        public Label getLabel(AspectEdge edge) {
             // go to the model edge to get correct edge labels
-            Edge modelEdge = getModelEdge((AspectEdge) edge);
+            Edge modelEdge = getModelEdge(edge);
             // the model edge may be null, for instance for value edges
             // in that case, we use the edge itself
             return (modelEdge == null ? edge : modelEdge).label();
@@ -576,7 +517,7 @@ public class AspectJModel extends GraphJModel {
     /**
      * Specialized j-edge for rule graphs, with its own tool tip text.
      */
-    private class AspectJEdge extends GraphJEdge {
+    private class AspectJEdge extends GraphJEdge<AspectNode,AspectEdge> {
         /** Creates a j-edge on the basis of a given (aspectual) edge. */
         public AspectJEdge(AspectEdge edge) {
             super(AspectJModel.this, edge);
@@ -603,24 +544,6 @@ public class AspectJModel extends GraphJModel {
             return result;
         }
 
-        /** Specialises the return type. */
-        @Override
-        public AspectEdge getEdge() {
-            return (AspectEdge) super.getEdge();
-        }
-
-        /** Specialises the return type. */
-        @Override
-        public AspectNode getSourceNode() {
-            return (AspectNode) super.getSourceNode();
-        }
-
-        /** Specialises the return type. */
-        @Override
-        public AspectNode getTargetNode() {
-            return (AspectNode) super.getTargetNode();
-        }
-
         @Override
         Edge getActualEdge() {
             return getModelEdge(getEdge());
@@ -628,8 +551,8 @@ public class AspectJModel extends GraphJModel {
 
         /** This implementation returns the (unparsed) label of the model edge. */
         @Override
-        public Label getLabel(Edge edge) {
-            Edge modelEdge = getModelEdge((AspectEdge) edge);
+        public Label getLabel(AspectEdge edge) {
+            Edge modelEdge = getModelEdge(edge);
             return modelEdge == null ? edge.label() : modelEdge.label();
         }
 
@@ -638,9 +561,8 @@ public class AspectJModel extends GraphJModel {
          * added equal those of this j-edge, and the superclass is also willing.
          */
         @Override
-        public boolean addEdge(Edge edge) {
-            if (((AspectEdge) edge).getAspectMap().equalsAspects(
-                getEdge().getAspectMap())) {
+        public boolean addEdge(AspectEdge edge) {
+            if (edge.getAspectMap().equalsAspects(getEdge().getAspectMap())) {
                 return super.addEdge(edge);
             } else {
                 return false;
@@ -651,17 +573,14 @@ public class AspectJModel extends GraphJModel {
          * On demand prefixes the label with the edge's aspect values.
          */
         @Override
-        public StringBuilder getLine(Edge object) {
-            assert object instanceof AspectEdge;
-            StringBuilder result = super.getLine(object);
+        public StringBuilder getLine(AspectEdge edge) {
+            StringBuilder result = super.getLine(edge);
             if (isShowAspects()) {
                 result =
-                    AspectParser.toString(
-                        ((AspectEdge) object).getDeclaredValues(), result);
+                    AspectParser.toString(edge.getDeclaredValues(), result);
             } else {
                 // add nesting level, if any
-                String levelName =
-                    NestingAspect.getLevelName((AspectEdge) object);
+                String levelName = NestingAspect.getLevelName(edge);
                 if (levelName != null && levelName.length() != 0) {
                     result.insert(0, levelName + LEVEL_NAME_SEPARATOR);
                 }
@@ -673,10 +592,9 @@ public class AspectJModel extends GraphJModel {
          * This implementation adds node and edge aspects.
          */
         @Override
-        public String getPlainLabel(Edge edge) {
+        public String getPlainLabel(AspectEdge edge) {
             StringBuilder text = new StringBuilder(super.getPlainLabel(edge));
-            return AspectParser.toString(
-                ((AspectEdge) edge).getDeclaredValues(), text).toString();
+            return AspectParser.toString(edge.getDeclaredValues(), text).toString();
         }
 
         /**

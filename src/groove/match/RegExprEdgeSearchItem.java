@@ -4,7 +4,7 @@ package groove.match;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.match.SearchPlanStrategy.Search;
-import groove.rel.Automaton;
+import groove.rel.RegAut;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
 import groove.trans.HostNode;
@@ -128,7 +128,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         return new RegExprEdgeSingularRecord(search);
     }
 
-    MultipleRecord<Automaton.Result> createMultipleRecord(Search search) {
+    MultipleRecord<RegAut.Result> createMultipleRecord(Search search) {
         return new RegExprEdgeMultipleRecord(search, this.sourceIx,
             this.targetIx, this.sourceFound, this.targetFound);
     }
@@ -166,7 +166,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
     /**
      * The automaton that computes the matches for the underlying edge.
      */
-    final Automaton labelAutomaton;
+    final RegAut labelAutomaton;
     /** The regular expression on the edge. */
     final RegExpr edgeExpr;
     /** Collection of all variables occurring in the regular expression. */
@@ -214,7 +214,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
          * Computes the image set by querying the automaton derived for the edge
          * label.
          */
-        private Set<Automaton.Result> computeRelation(
+        private Set<RegAut.Result> computeRelation(
                 Map<LabelVar,TypeLabel> valuation) {
             HostNode sourceFind = this.sourcePreMatch;
             if (sourceFind == null && RegExprEdgeSearchItem.this.sourceFound) {
@@ -238,7 +238,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         private final HostNode targetPreMatch;
     }
 
-    class RegExprEdgeMultipleRecord extends MultipleRecord<Automaton.Result> {
+    class RegExprEdgeMultipleRecord extends MultipleRecord<RegAut.Result> {
         /** Constructs a new record, for a given matcher. */
         RegExprEdgeMultipleRecord(Search search, int sourceIx, int targetIx,
                 boolean sourceFound, boolean targetFound) {
@@ -282,14 +282,14 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             Set<HostNode> imageTargetSet =
                 this.targetFind == null ? null
                         : Collections.singleton(this.targetFind);
-            Set<Automaton.Result> matches =
+            Set<RegAut.Result> matches =
                 RegExprEdgeSearchItem.this.labelAutomaton.getMatches(this.host,
                     imageSourceSet, imageTargetSet, this.valuation);
             this.imageIter = matches.iterator();
         }
 
         @Override
-        boolean setImage(Automaton.Result image) {
+        boolean setImage(RegAut.Result image) {
             boolean result = true;
             HostNode source = image.one();
             if (this.sourceFind == null) {
@@ -366,7 +366,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
          */
         HostNode targetFind;
         /** Image found by the latest call to {@link #find()}, if any. */
-        Automaton.Result selected;
+        RegAut.Result selected;
         private final Map<LabelVar,TypeLabel> valuation;
     }
 }

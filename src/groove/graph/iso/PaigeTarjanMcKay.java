@@ -54,7 +54,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
      */
-    public PaigeTarjanMcKay(Graph graph) {
+    public PaigeTarjanMcKay(Graph<?,?,?> graph) {
         this(graph, true);
     }
 
@@ -65,12 +65,12 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
      * @param strong if <code>true</code>, the strategy puts more effort into
      *        getting distinct certificates.
      */
-    public PaigeTarjanMcKay(Graph graph, boolean strong) {
+    public PaigeTarjanMcKay(Graph<?,?,?> graph, boolean strong) {
         this.graph = graph;
         this.strong = strong;
     }
 
-    public Graph getGraph() {
+    public Graph<?,?,?> getGraph() {
         return this.graph;
     }
 
@@ -179,7 +179,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
         return this.graphCertificate;
     }
 
-    public CertificateStrategy newInstance(Graph graph, boolean strong) {
+    public CertificateStrategy newInstance(Graph<?,?,?> graph, boolean strong) {
         return new PaigeTarjanMcKay(graph, strong);
     }
 
@@ -572,7 +572,7 @@ public class PaigeTarjanMcKay implements CertificateStrategy {
     }
 
     /** The underlying graph */
-    private final Graph graph;
+    private final Graph<?,?,?> graph;
     /**
      * Flag to indicate that more effort should be put into obtaining distinct
      * certificates.

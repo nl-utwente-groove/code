@@ -16,8 +16,10 @@
  */
 package groove.ecore2groove;
 
+import groove.graph.DefaultEdge;
+import groove.graph.DefaultGraph;
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.Node;
 import groove.view.aspect.AspectGraph;
 
@@ -45,15 +47,15 @@ import org.eclipse.emf.ecore.resource.Resource;
  */
 public class InstanceModelRep {
 
-    private Graph instanceGraph;
+    private DefaultGraph instanceGraph;
     private Resource instanceModel;
 
-    private Set<Edge> classEdgeSet;
-    private Set<Edge> referenceEdgeSet;
-    private Set<Edge> containmentReferenceEdgeSet;
-    private Set<Edge> attributeEdgeSet;
+    private Set<DefaultEdge> classEdgeSet;
+    private Set<DefaultEdge> referenceEdgeSet;
+    private Set<DefaultEdge> containmentReferenceEdgeSet;
+    private Set<DefaultEdge> attributeEdgeSet;
 
-    private Edge rootEdge;
+    private DefaultEdge rootEdge;
 
     private Map<Node,Node> nextNode;
 
@@ -66,7 +68,7 @@ public class InstanceModelRep {
 
     private Map<Node,Node> referenceToVal;
     private Map<Node,String> attributeToVal;
-    private Map<Node,Edge> featureToType;
+    private Map<Node,DefaultEdge> featureToType;
 
     private Map<Node,EObject> nodeToObject;
 
@@ -81,10 +83,10 @@ public class InstanceModelRep {
     public InstanceModelRep(ModelHandler mh, AspectGraph ig) {
         this.instanceGraph = ig.toPlainGraph();
 
-        this.classEdgeSet = new HashSet<Edge>();
-        this.referenceEdgeSet = new HashSet<Edge>();
-        this.containmentReferenceEdgeSet = new HashSet<Edge>();
-        this.attributeEdgeSet = new HashSet<Edge>();
+        this.classEdgeSet = new HashSet<DefaultEdge>();
+        this.referenceEdgeSet = new HashSet<DefaultEdge>();
+        this.containmentReferenceEdgeSet = new HashSet<DefaultEdge>();
+        this.attributeEdgeSet = new HashSet<DefaultEdge>();
 
         this.rootEdge = null;
 
@@ -99,7 +101,7 @@ public class InstanceModelRep {
 
         this.referenceToVal = new HashMap<Node,Node>();
         this.attributeToVal = new HashMap<Node,String>();
-        this.featureToType = new HashMap<Node,Edge>();
+        this.featureToType = new HashMap<Node,DefaultEdge>();
 
         this.nodeToObject = new HashMap<Node,EObject>();
 
@@ -134,7 +136,7 @@ public class InstanceModelRep {
         }
 
         // Fill edge sets with self edges of nodes that represent this type
-        for (Edge edge : this.instanceGraph.edgeSet()) {
+        for (DefaultEdge edge : this.instanceGraph.edgeSet()) {
             if (edge.source() == edge.target()) {
                 if (this.labelToClass.containsKey(edge.label().text())) {
                     this.classEdgeSet.add(edge);
@@ -152,9 +154,9 @@ public class InstanceModelRep {
                 } else if (this.labelToAttribute.containsKey(edge.label().text())) {
                     this.attributeEdgeSet.add(edge);
                     this.featureToType.put(edge.source(), edge);
-                    Node attrVal = getValue(edge.source());
+                    DefaultNode attrVal = getValue(edge.source());
                     if (attrVal != null) {
-                        for (Edge outEdge : this.instanceGraph.outEdgeSet(attrVal)) {
+                        for (DefaultEdge outEdge : this.instanceGraph.outEdgeSet(attrVal)) {
                             String outLabelText = outEdge.label().text();
                             if (outLabelText.startsWith("flag:")
                                 || outLabelText.startsWith("int:")
@@ -212,20 +214,20 @@ public class InstanceModelRep {
      * @param startEdge Edge on node to recursively add contained classes of
      */
     @SuppressWarnings("unchecked")
-    private void addContainedClasses(Edge startEdge) {
+    private void addContainedClasses(DefaultEdge startEdge) {
         // Check all outgoing edges from the node of this the startEdge
-        for (Edge outEdge : this.instanceGraph.outEdgeSet(startEdge.source())) {
+        for (DefaultEdge outEdge : this.instanceGraph.outEdgeSet(startEdge.source())) {
 
             // Get type: edge of target node, and if exists check if it
             // represents a containment reference
-            Edge refEdge = this.featureToType.get(outEdge.target());
+            DefaultEdge refEdge = this.featureToType.get(outEdge.target());
             if (refEdge != null
                 && this.containmentReferenceEdgeSet.contains(refEdge)) {
                 // When not ordered, the order doesn't matter
                 if (!this.labelToContainmentReference.get(
                     refEdge.label().text()).isOrdered()) {
 
-                    Edge valueEdge =
+                    DefaultEdge valueEdge =
                         this.featureToType.get(this.referenceToVal.get(refEdge.source()));
                     EClass valueEClass =
                         this.labelToClass.get(valueEdge.label().text());
@@ -259,7 +261,7 @@ public class InstanceModelRep {
 
                         Node next = outEdge.target();
                         do {
-                            Edge valueEdge =
+                            DefaultEdge valueEdge =
                                 this.featureToType.get(this.referenceToVal.get(next));
                             EClass valueEClass =
                                 this.labelToClass.get(valueEdge.label().text());
@@ -308,10 +310,10 @@ public class InstanceModelRep {
      */
     private void addStructuralFeatures() {
         // For all type edges of nodes that represent classes
-        for (Edge classEdge : this.classEdgeSet) {
+        for (DefaultEdge classEdge : this.classEdgeSet) {
 
             // Check all outgoing edges from the node of this the classEdge
-            for (Edge outEdge : this.instanceGraph.outEdgeSet(classEdge.source())) {
+            for (DefaultEdge outEdge : this.instanceGraph.outEdgeSet(classEdge.source())) {
 
                 // Get type: edge of target node, and if it exists 
                 Edge featureEdge = this.featureToType.get(outEdge.target());
@@ -493,10 +495,10 @@ public class InstanceModelRep {
      * @param featureNode The node representing an EStructuralFeature
      * @returns The node representing the value 
      */
-    private Node getValue(Node featureNode) {
-        Node value = null;
+    private DefaultNode getValue(DefaultNode featureNode) {
+        DefaultNode value = null;
 
-        for (Edge outEdge : this.instanceGraph.outEdgeSet(featureNode)) {
+        for (DefaultEdge outEdge : this.instanceGraph.outEdgeSet(featureNode)) {
             if (outEdge.label().text().equals("val")) {
                 value = outEdge.target();
             }

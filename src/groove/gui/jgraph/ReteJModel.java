@@ -19,10 +19,7 @@ package groove.gui.jgraph;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
-import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.Graph;
-import groove.graph.Node;
 import groove.match.rete.CompositeConditionChecker;
 import groove.match.rete.ConditionChecker;
 import groove.match.rete.DisconnectedSubgraphChecker;
@@ -41,11 +38,11 @@ import java.util.HashMap;
  * @author Arash Jalali
  * @version $Revision $
  */
-public class ReteJModel extends GraphJModel {
+public class ReteJModel extends GraphJModel<DefaultNode,DefaultEdge> {
     private ReteNetwork network;
     private DefaultGraph graph;
-    private HashMap<ReteNetworkNode,Node> map =
-        new HashMap<ReteNetworkNode,Node>();
+    private HashMap<ReteNetworkNode,DefaultNode> map =
+        new HashMap<ReteNetworkNode,DefaultNode>();
 
     /**
      * Constructs a graph model for the static structure of a given RETE network. 
@@ -59,9 +56,10 @@ public class ReteJModel extends GraphJModel {
 
     private void makeGraphFromNetwork() {
         this.graph = new DefaultGraph();
-        Node rootNode = DefaultNode.createNode();
+        DefaultNode rootNode = DefaultNode.createNode();
         this.map.put(this.network.getRoot(), rootNode);
-        Edge rootFlag = DefaultEdge.createEdge(rootNode, "ROOT", rootNode);
+        DefaultEdge rootFlag =
+            DefaultEdge.createEdge(rootNode, "ROOT", rootNode);
         this.graph.addNode(rootNode);
         this.graph.addEdge(rootFlag);
         addChildren(this.network.getRoot());
@@ -88,7 +86,7 @@ public class ReteJModel extends GraphJModel {
     }
 
     private void addChildren(ReteNetworkNode nnode) {
-        Node jNode = this.map.get(nnode);
+        DefaultNode jNode = this.map.get(nnode);
         boolean navigate;
         if (jNode != null) {
             ReteNetworkNode previous = null;
@@ -97,12 +95,12 @@ public class ReteJModel extends GraphJModel {
                 repeatCounter =
                     (previous == childNNode) ? repeatCounter + 1 : 0;
                 navigate = false;
-                Node childJNode = this.map.get(childNNode);
+                DefaultNode childJNode = this.map.get(childNNode);
                 if (childJNode == null) {
-                    childJNode = DefaultNode.createNode();
-                    Edge[] flags = makeNNodeLabels(childNNode, childJNode);
-                    this.graph.addNode(childJNode);
-                    for (Edge f : flags) {
+                    childJNode = this.graph.addNode();
+                    DefaultEdge[] flags =
+                        makeNNodeLabels(childNNode, childJNode);
+                    for (DefaultEdge f : flags) {
                         this.graph.addEdge(f);
                     }
                     this.map.put(childNNode, childJNode);
@@ -137,8 +135,9 @@ public class ReteJModel extends GraphJModel {
         }
     }
 
-    private Edge[] makeNNodeLabels(ReteNetworkNode nnode, Node source) {
-        ArrayList<Edge> result = new ArrayList<Edge>();
+    private DefaultEdge[] makeNNodeLabels(ReteNetworkNode nnode,
+            DefaultNode source) {
+        ArrayList<DefaultEdge> result = new ArrayList<DefaultEdge>();
         if (nnode instanceof RootNode) {
             result.add(DefaultEdge.createEdge(source, "ROOT", source));
         } else if (nnode instanceof NodeCheckerNode) {
@@ -167,8 +166,8 @@ public class ReteJModel extends GraphJModel {
                 source));
             for (int i = 0; i < ((ProductionNode) nnode).getPattern().length; i++) {
                 Element e = ((ProductionNode) nnode).getPattern()[i];
-                result.add(DefaultEdge.createEdge(source, "--" + i + " "
-                    + e.toString(), source));
+                result.add(DefaultEdge.createEdge(source,
+                    "--" + i + " " + e.toString(), source));
             }
         } else if (nnode instanceof ConditionChecker) {
             result.add(DefaultEdge.createEdge(source, "- Condition Checker "
@@ -176,8 +175,8 @@ public class ReteJModel extends GraphJModel {
                 source));
             for (int i = 0; i < ((ConditionChecker) nnode).getPattern().length; i++) {
                 Element e = ((ConditionChecker) nnode).getPattern()[i];
-                result.add(DefaultEdge.createEdge(source, "--" + i + " "
-                    + e.toString(), source));
+                result.add(DefaultEdge.createEdge(source,
+                    "--" + i + " " + e.toString(), source));
             }
         }
         DefaultEdge[] res = new DefaultEdge[result.size()];
@@ -190,7 +189,7 @@ public class ReteJModel extends GraphJModel {
     }
 
     @Override
-    public Graph getGraph() {
+    public DefaultGraph getGraph() {
         return this.graph;
     }
 }

@@ -31,6 +31,7 @@ import groove.gui.jgraph.LTSJGraph;
 import groove.io.GrooveFileChooser;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 import groove.rel.RegExpr;
 import groove.rel.RelationCalculator;
 import groove.rel.SupportedNodeRelation;
@@ -606,7 +607,8 @@ public class ShowHideMenu extends JMenu {
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            Graph graph = ((GraphJModel) this.jgraph.getModel()).getGraph();
+            Graph<?,?,?> graph =
+                ((GraphJModel<?,?>) this.jgraph.getModel()).getGraph();
             String exprText = exprDialog.showDialog(null);
             if (exprText != null) {
                 try {
@@ -639,9 +641,9 @@ public class ShowHideMenu extends JMenu {
         protected boolean isInvolved(JCell cell) {
             Set<? extends Edge> edgesInCell;
             if (cell instanceof GraphJEdge) {
-                edgesInCell = ((GraphJEdge) cell).getEdges();
+                edgesInCell = ((GraphJEdge<?,?>) cell).getEdges();
             } else {
-                edgesInCell = ((GraphJVertex) cell).getSelfEdges();
+                edgesInCell = ((GraphJVertex<?,?>) cell).getSelfEdges();
             }
             boolean edgeFound = false;
             Iterator<? extends Edge> edgeInCellIter = edgesInCell.iterator();
@@ -777,11 +779,12 @@ public class ShowHideMenu extends JMenu {
         @Override
         public void actionPerformed(ActionEvent evt) {
             LTSJGraph jGraph = (LTSJGraph) this.jgraph;
-            GraphState state = (GraphState) jGraph.getModel().getActiveState();
+            GraphState state = jGraph.getModel().getActiveState();
             this.trace = new ArrayList<JCell>();
             while (state instanceof GraphNextState) {
                 this.trace.add(jGraph.getModel().getJCell(state));
-                this.trace.add(jGraph.getModel().getJCell((Edge) state));
+                this.trace.add(jGraph.getModel().getJCell(
+                    (GraphTransition) state));
                 state = ((GraphNextState) state).source();
             }
             this.trace.add(jGraph.getModel().getJCell(state));

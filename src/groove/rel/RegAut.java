@@ -17,9 +17,9 @@
 package groove.rel;
 
 import groove.graph.DefaultEdge;
+import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.LabelStore;
-import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -30,8 +30,6 @@ import groove.util.Duo;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.sun.org.apache.xerces.internal.impl.xs.opti.DefaultNode;
 
 /**
  * Interface for regular automata. An automaton extends a graph with a start
@@ -45,18 +43,18 @@ import com.sun.org.apache.xerces.internal.impl.xs.opti.DefaultNode;
  * <li> Atoms
  * </ul>
  */
-public interface Automaton extends Graph {
+public interface RegAut extends Graph<RegNode,RuleLabel,RegEdge> {
     /** Returns the start node of the automaton. */
-    Node getStartNode();
+    RegNode getStartNode();
 
     /** Changes the start node of the automaton. */
-    void setStartNode(Node startNode);
+    void setStartNode(RegNode startNode);
 
     /** Returns the end node of the automaton. */
-    Node getEndNode();
+    RegNode getEndNode();
 
     /** Changes the end node of the automaton. */
-    void setEndNode(Node endNode);
+    void setEndNode(RegNode endNode);
 
     /** Indicates if the automaton will accept empty words. */
     boolean isAcceptsEmptyWord();

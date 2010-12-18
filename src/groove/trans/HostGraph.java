@@ -16,11 +16,9 @@
  */
 package groove.trans;
 
+import groove.graph.DeltaTarget;
 import groove.graph.Graph;
-import groove.graph.Label;
-import groove.graph.Node;
-
-import java.util.Set;
+import groove.graph.TypeLabel;
 
 /**
  * Graph type used for graphs under transformation.
@@ -28,39 +26,13 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface HostGraph extends Graph {
+public interface HostGraph extends Graph<HostNode,TypeLabel,HostEdge>,
+        DeltaTarget {
     @Override
     HostGraph newGraph();
 
     @Override
     HostGraph clone();
-
-    @Override
-    HostNode addNode();
-
-    @Override
-    HostNode addNode(int nr);
-
-    @Override
-    HostEdge addEdge(Node source, Label label, Node target);
-
-    @Override
-    Set<? extends HostNode> nodeSet();
-
-    @Override
-    Set<? extends HostEdge> edgeSet();
-
-    @Override
-    Set<? extends HostEdge> edgeSet(Node node);
-
-    @Override
-    Set<? extends HostEdge> inEdgeSet(Node node);
-
-    @Override
-    Set<? extends HostEdge> outEdgeSet(Node node);
-
-    @Override
-    Set<? extends HostEdge> labelEdgeSet(Label label);
 
     @Override
     HostFactory getFactory();

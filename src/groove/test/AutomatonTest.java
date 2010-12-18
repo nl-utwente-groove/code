@@ -25,8 +25,8 @@ import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.io.DefaultGxl;
 import groove.io.Xml;
-import groove.rel.Automaton;
-import groove.rel.Automaton.Result;
+import groove.rel.RegAut;
+import groove.rel.RegAut.Result;
 import groove.rel.AutomatonCalculator;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
@@ -53,7 +53,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Tests the available {@link Automaton} interface.
+ * Tests the available {@link RegAut} interface.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -136,7 +136,7 @@ public class AutomatonTest {
     @Test
     public void testEmptyAccepts() {
         try {
-            Automaton aut = createAutomaton("=");
+            RegAut aut = createAutomaton("=");
             assertTrue(aut.accepts(wordEmpty));
             assertFalse(aut.accepts(wordA));
             aut = createAutomaton("D*");
@@ -151,7 +151,7 @@ public class AutomatonTest {
     @Test
     public void testAtomAccepts() {
         try {
-            Automaton aut = createAutomaton("A");
+            RegAut aut = createAutomaton("A");
             assertTrue(aut.accepts(wordA));
             assertFalse(aut.accepts(wordB));
             assertFalse(aut.accepts(wordEmpty));
@@ -166,7 +166,7 @@ public class AutomatonTest {
     @Test
     public void testWildcardAccepts() {
         try {
-            Automaton aut = createAutomaton("?");
+            RegAut aut = createAutomaton("?");
             assertTrue(aut.accepts(wordA));
             assertTrue(aut.accepts(wordB));
             assertFalse(aut.accepts(wordEmpty));
@@ -181,7 +181,7 @@ public class AutomatonTest {
     @Test
     public void testSeqAccepts() {
         try {
-            Automaton aut = createAutomaton("A.B");
+            RegAut aut = createAutomaton("A.B");
             assertFalse(aut.accepts(wordA));
             assertFalse(aut.accepts(wordB));
             assertFalse(aut.accepts(wordEmpty));
@@ -288,7 +288,7 @@ public class AutomatonTest {
     @Test
     public void testChoiceAccepts() {
         try {
-            Automaton aut = createAutomaton("A|B");
+            RegAut aut = createAutomaton("A|B");
             assertTrue(aut.accepts(wordA));
             assertTrue(aut.accepts(wordB));
             assertFalse(aut.accepts(createWord("C")));
@@ -350,7 +350,7 @@ public class AutomatonTest {
     @Test
     public void testPlusAccepts() {
         try {
-            Automaton aut = createAutomaton("A+");
+            RegAut aut = createAutomaton("A+");
             assertFalse(aut.accepts(wordEmpty));
             assertTrue(aut.accepts(wordA));
             assertFalse(aut.accepts(wordB));
@@ -405,7 +405,7 @@ public class AutomatonTest {
     public void testStarAccepts() {
         try {
             // these are just the plus tests for the empty word
-            Automaton aut = createAutomaton("A*");
+            RegAut aut = createAutomaton("A*");
             assertTrue(aut.accepts(wordEmpty));
             aut = createAutomaton("(A|B)*");
             assertTrue(aut.accepts(wordEmpty));
@@ -427,7 +427,7 @@ public class AutomatonTest {
     @Test
     public void testInvAccepts() {
         try {
-            Automaton aut = createAutomaton("-A");
+            RegAut aut = createAutomaton("-A");
             assertFalse(aut.accepts(wordA));
             assertFalse(aut.accepts(wordB));
             assertFalse(aut.accepts(wordEmpty));
@@ -442,8 +442,8 @@ public class AutomatonTest {
     @Test
     public void testStarMatch() {
         try {
-            Automaton aut = createAutomaton("next*");
-            Set<Automaton.Result> results = new HashSet<Automaton.Result>();
+            RegAut aut = createAutomaton("next*");
+            Set<RegAut.Result> results = new HashSet<RegAut.Result>();
             addRelated(results, nC1, nC2);
             addRelated(results, nC1, nC3);
             addRelated(results, nC1, nC4);
@@ -473,7 +473,7 @@ public class AutomatonTest {
     @Test
     public void testPlusMatch() {
         try {
-            Automaton aut = createAutomaton("next+");
+            RegAut aut = createAutomaton("next+");
             Set<Result> results = new HashSet<Result>();
             addRelated(results, nC1, nC3);
             addRelated(results, nC1, nC4);
@@ -500,7 +500,7 @@ public class AutomatonTest {
     @Test
     public void testWildcardMatch() {
         try {
-            Automaton aut = createAutomaton("?.3");
+            RegAut aut = createAutomaton("?.3");
             Set<Result> result = new HashSet<Result>();
             addRelated(result, nI3, nI3);
             addRelated(result, nC3, nI3);
@@ -519,7 +519,7 @@ public class AutomatonTest {
     @Test
     public void testWildcardIdMatch() {
         try {
-            Automaton aut = createAutomaton("?x.3");
+            RegAut aut = createAutomaton("?x.3");
             Set<Result> result = new HashSet<Result>();
             addRelated(result, nI3, new String[] {"x", "3"}, nI3);
             addRelated(result, nC3, new String[] {"x", "val"}, nI3);
@@ -560,7 +560,7 @@ public class AutomatonTest {
     @Test
     public void testInvMatch() {
         try {
-            Automaton aut = createAutomaton("-(?.3)");
+            RegAut aut = createAutomaton("-(?.3)");
             Set<Result> result = new HashSet<Result>();
             addRelated(result, nI3, nI3);
             addRelated(result, nI3, nC3);
@@ -586,7 +586,7 @@ public class AutomatonTest {
     /**
      * Constructs an automaton from a regular expression.
      */
-    protected Automaton createAutomaton(String regExpr) throws FormatException {
+    protected RegAut createAutomaton(String regExpr) throws FormatException {
         RegExpr parsedRegExpr = RegExpr.parse(regExpr);
         return calculator.compute(parsedRegExpr, testStore);
     }

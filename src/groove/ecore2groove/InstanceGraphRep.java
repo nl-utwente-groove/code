@@ -16,14 +16,10 @@
  */
 package groove.ecore2groove;
 
-import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
-import groove.graph.Edge;
 import groove.graph.GraphInfo;
-import groove.graph.Label;
-import groove.graph.Node;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -79,7 +75,7 @@ public class InstanceGraphRep {
             // Add new labeled  node to ig 
             String labelText = GraphLabels.getLabel(iClass.eClass());
 
-            DefaultNode node = (DefaultNode) this.ig.addNode();
+            DefaultNode node = this.ig.addNode();
             this.ig.addEdge(node, labelText, node);
 
             // If this instance EClass is the root element, add the root flag
@@ -168,10 +164,7 @@ public class InstanceGraphRep {
                                 if (ordered && previous != null) {
                                     DefaultLabel label =
                                         DefaultLabel.createLabel("next");
-                                    Edge edge =
-                                        DefaultEdge.createEdge(previous, label,
-                                            last);
-                                    this.ig.addEdge(edge);
+                                    this.ig.addEdge(previous, label, last);
                                 }
                                 previous = last;
                             }
@@ -219,12 +212,8 @@ public class InstanceGraphRep {
                             this.iReferenceToNodeMap.get(Triple.create(target,
                                 oppositeRef, opposite));
                         DefaultNode node2 = nodeStack2.pop();
-                        Edge opp1Edge =
-                            DefaultEdge.createEdge(node1, "opposite", node2);
-                        Edge opp2Edge =
-                            DefaultEdge.createEdge(node2, "opposite", node1);
-                        this.ig.addEdge(opp1Edge);
-                        this.ig.addEdge(opp2Edge);
+                        this.ig.addEdge(node1, "opposite", node2);
+                        this.ig.addEdge(node2, "opposite", node1);
                     }
                 }
             } else {
@@ -242,12 +231,8 @@ public class InstanceGraphRep {
                         this.iReferenceToNodeMap.get(Triple.create(target,
                             oppositeRef, opposite));
                     DefaultNode node2 = nodeStack2.pop();
-                    Edge opp1Edge =
-                        DefaultEdge.createEdge(node1, "opposite", node2);
-                    Edge opp2Edge =
-                        DefaultEdge.createEdge(node2, "opposite", node1);
-                    this.ig.addEdge(opp1Edge);
-                    this.ig.addEdge(opp2Edge);
+                    this.ig.addEdge(node1, "opposite", node2);
+                    this.ig.addEdge(node2, "opposite", node1);
                 }
             }
         }
@@ -271,40 +256,26 @@ public class InstanceGraphRep {
         String datatypeLabel = GraphLabels.getLabel(attributeType, target);
 
         // Create and add a node to represent the EAttribute itself
-        DefaultNode attributeNode = DefaultNode.createNode();
-        Edge attributeEdge =
-            DefaultEdge.createEdge(attributeNode, attributeLabel, attributeNode);
-        this.ig.addNode(attributeNode);
-        this.ig.addEdge(attributeEdge);
+        DefaultNode attributeNode = this.ig.addNode();
+        this.ig.addEdge(attributeNode, attributeLabel, attributeNode);
 
         // Create and add an edge from the container EClass to the EAttribute
         DefaultNode sourceNode = this.iClassToNodeMap.get(source);
-        Edge sourceEdge =
-            DefaultEdge.createEdge(sourceNode, feature.getName(), attributeNode);
-        this.ig.addEdge(sourceEdge);
+        this.ig.addEdge(sourceNode, feature.getName(), attributeNode);
 
         if (!datatypeLabel.isEmpty()) {
             // Create and add a node to represent that datatype value
-            DefaultNode datatypeNode = DefaultNode.createNode();
-            Edge datatypeEdge =
-                DefaultEdge.createEdge(datatypeNode, datatypeLabel,
-                    datatypeNode);
-            this.ig.addNode(datatypeNode);
-            this.ig.addEdge(datatypeEdge);
+            DefaultNode datatypeNode = this.ig.addNode();
+            this.ig.addEdge(datatypeNode, datatypeLabel, datatypeNode);
 
             // Create and add a val edge to the value
-            Edge targetEdge =
-                DefaultEdge.createEdge(attributeNode, "val", datatypeNode);
-            this.ig.addEdge(targetEdge);
+            this.ig.addEdge(attributeNode, "val", datatypeNode);
 
             // When the value is an EEnum, the flag for the value needs to be
             // added as well
             if (attributeType.eClass().getName().equals("EEnum")) {
                 String flagLabel = "flag:" + target.toString();
-                Edge flagEdge =
-                    DefaultEdge.createEdge(datatypeNode, flagLabel,
-                        datatypeNode);
-                this.ig.addEdge(flagEdge);
+                this.ig.addEdge(datatypeNode, flagLabel, datatypeNode);
             }
         }
 
@@ -327,23 +298,24 @@ public class InstanceGraphRep {
         String labelText = GraphLabels.getLabel(feature);
 
         // Create node to represent the reference and add it to ig
-        DefaultNode node = (DefaultNode) this.ig.addNode();
+        DefaultNode node = this.ig.addNode();
         this.ig.addEdge(node, labelText, node);
 
         // If the reference is a containment reference, add flag:containment
         if (((EReference) feature).isContainment()) {
-            Label contLabel = DefaultLabel.createLabel("flag:containment");
+            DefaultLabel contLabel =
+                DefaultLabel.createLabel("flag:containment");
             this.ig.addEdge(node, contLabel, node);
         }
 
         // Create and add an edge from the source of the EReference to the 
         // EReference node
-        Node sourceNode = this.iClassToNodeMap.get(source);
+        DefaultNode sourceNode = this.iClassToNodeMap.get(source);
         this.ig.addEdge(sourceNode, feature.getName(), node);
 
         // Create and add an edge from the EReference node to the target of the
         // EReference
-        Node targetNode = this.iClassToNodeMap.get(target);
+        DefaultNode targetNode = this.iClassToNodeMap.get(target);
         this.ig.addEdge(node, "val", targetNode);
 
         // Either add the node to the set of nodes that represent the

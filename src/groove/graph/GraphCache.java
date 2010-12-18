@@ -33,13 +33,13 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphCache {
+public class GraphCache<N extends Node,L extends Label,E extends Edge> {
     /**
      * Constructs a dynamic graph cache for a given graph.
      * @param graph the graph for which the cache is to be created.
      * @see #GraphCache(AbstractGraph,boolean)
      */
-    public GraphCache(AbstractGraph<?> graph) {
+    public GraphCache(AbstractGraph<N,L,E> graph) {
         this(graph, true);
     }
 
@@ -55,7 +55,7 @@ public class GraphCache {
      * @param graph the graph for which the cache is to be created.
      * @param dynamic switch to indicate if caching should be dynamic
      */
-    public GraphCache(AbstractGraph<?> graph, boolean dynamic) {
+    public GraphCache(AbstractGraph<N,L,E> graph, boolean dynamic) {
         this.graph = graph;
         this.dynamic = dynamic;
         if (Groove.GATHER_STATISTICS) {
@@ -82,7 +82,7 @@ public class GraphCache {
     /**
      * Keeps the cached sets in sync with changes in the graph.
      */
-    protected void addUpdate(Node node) {
+    protected void addUpdate(N node) {
         addToNodeEdgeMap(this.nodeEdgeMap, node);
         addToNodeEdgeMap(this.nodeInEdgeMap, node);
         addToNodeEdgeMap(this.nodeOutEdgeMap, node);
@@ -96,7 +96,7 @@ public class GraphCache {
     /**
      * Keeps the cached sets in sync with changes in the graph.
      */
-    protected void addUpdate(Edge edge) {
+    protected void addUpdate(E edge) {
         addToLabelEdgeMap(this.labelEdgeMap, edge);
         addToNodeInEdgeMap(this.nodeInEdgeMap, edge);
         addToNodeOutEdgeMap(this.nodeOutEdgeMap, edge);
@@ -106,7 +106,7 @@ public class GraphCache {
     /**
      * Keeps the cached sets in sync with changes in the graph.
      */
-    protected void removeUpdate(Node node) {
+    protected void removeUpdate(N node) {
         removeFromNodeEdgeMap(this.nodeEdgeMap, node);
         removeFromNodeEdgeMap(this.nodeInEdgeMap, node);
         removeFromNodeEdgeMap(this.nodeOutEdgeMap, node);
@@ -115,7 +115,7 @@ public class GraphCache {
     /**
      * Keeps the cached sets in sync with changes in the graph.
      */
-    protected void removeUpdate(Edge elem) {
+    protected void removeUpdate(E elem) {
         removeFromLabelEdgeMap(this.labelEdgeMap, elem);
         removeFromNodeEdgeMap(this.nodeEdgeMap, elem);
         removeFromNodeInEdgeMap(this.nodeInEdgeMap, elem);
@@ -126,10 +126,10 @@ public class GraphCache {
      * Returns the label-to-edge mapping
      * @see #computeLabelEdgeMap()
      */
-    public Map<Label,? extends Set<? extends Edge>> getLabelEdgeMap() {
-        Map<Label,? extends Set<? extends Edge>> result = this.labelEdgeMap;
+    public Map<L,? extends Set<? extends E>> getLabelEdgeMap() {
+        Map<L,? extends Set<? extends E>> result = this.labelEdgeMap;
         if (result == null) {
-            Map<Label,Set<Edge>> newMaps = computeLabelEdgeMap();
+            Map<L,Set<E>> newMaps = computeLabelEdgeMap();
             if (storeData()) {
                 this.labelEdgeMap = newMaps;
             }
@@ -145,8 +145,8 @@ public class GraphCache {
      * graph is fixed (see {@link Graph#isFixed()}) then the fresh mapping is
      * cached.
      */
-    public Map<Node,? extends Set<? extends Edge>> getNodeInEdgeMap() {
-        Map<Node,Set<Edge>> result = this.nodeInEdgeMap;
+    public Map<N,? extends Set<? extends E>> getNodeInEdgeMap() {
+        Map<N,Set<E>> result = this.nodeInEdgeMap;
         if (result == null) {
             result = computeNodeInEdgeMap();
             if (storeData()) {
@@ -163,8 +163,8 @@ public class GraphCache {
      * graph is fixed (see {@link Graph#isFixed()}) then the fresh mapping is
      * cached.
      */
-    public Map<Node,? extends Set<? extends Edge>> getNodeOutEdgeMap() {
-        Map<Node,Set<Edge>> result = this.nodeOutEdgeMap;
+    public Map<N,? extends Set<? extends E>> getNodeOutEdgeMap() {
+        Map<N,Set<E>> result = this.nodeOutEdgeMap;
         if (result == null) {
             result = computeNodeOutEdgeMap();
             if (storeData()) {
@@ -181,8 +181,8 @@ public class GraphCache {
      * graph is fixed (see {@link Graph#isFixed()}) then the fresh mapping is
      * cached.
      */
-    public Map<Node,? extends Set<? extends Edge>> getNodeEdgeMap() {
-        Map<Node,Set<Edge>> result = this.nodeEdgeMap;
+    public Map<N,? extends Set<? extends E>> getNodeEdgeMap() {
+        Map<N,Set<E>> result = this.nodeEdgeMap;
         if (result == null) {
             result = computeNodeEdgeMap();
             if (storeData()) {
@@ -196,9 +196,9 @@ public class GraphCache {
      * Computes and returns a mapping from labels to
      * sets of edges.
      */
-    private Map<Label,Set<Edge>> computeLabelEdgeMap() {
-        Map<Label,Set<Edge>> result = new HashMap<Label,Set<Edge>>();
-        for (Edge edge : this.graph.edgeSet()) {
+    private Map<L,Set<E>> computeLabelEdgeMap() {
+        Map<L,Set<E>> result = new HashMap<L,Set<E>>();
+        for (E edge : this.graph.edgeSet()) {
             addToLabelEdgeMap(result, edge);
         }
         return result;
@@ -208,23 +208,23 @@ public class GraphCache {
      * Computes and returns a fresh mapping from nodes to incoming
      * edge sets.
      */
-    private Map<Node,Set<Edge>> computeNodeInEdgeMap() {
-        Map<Node,Set<Edge>> result;
+    private Map<N,Set<E>> computeNodeInEdgeMap() {
+        Map<N,Set<E>> result;
         if (this.nodeEdgeMap == null) {
-            result = new HashMap<Node,Set<Edge>>();
-            for (Node node : this.graph.nodeSet()) {
+            result = new HashMap<N,Set<E>>();
+            for (N node : this.graph.nodeSet()) {
                 result.put(node, createEdgeSet(null));
             }
-            for (Edge edge : this.graph.edgeSet()) {
+            for (E edge : this.graph.edgeSet()) {
                 result.get(edge.target()).add(edge);
             }
         } else {
             // reuse the precomputed node-edge-map
-            result = new HashMap<Node,Set<Edge>>(this.nodeEdgeMap);
-            for (Map.Entry<Node,Set<Edge>> resultEntry : result.entrySet()) {
+            result = new HashMap<N,Set<E>>(this.nodeEdgeMap);
+            for (Map.Entry<N,Set<E>> resultEntry : result.entrySet()) {
                 Node node = resultEntry.getKey();
-                Set<Edge> inEdges = createEdgeSet(null);
-                for (Edge edge : resultEntry.getValue()) {
+                Set<E> inEdges = createEdgeSet(null);
+                for (E edge : resultEntry.getValue()) {
                     if (edge.target().equals(node)) {
                         inEdges.add(edge);
                     }
@@ -239,23 +239,23 @@ public class GraphCache {
      * Computes and returns a fresh mapping from nodes to incoming
      * edge sets.
      */
-    private Map<Node,Set<Edge>> computeNodeOutEdgeMap() {
-        Map<Node,Set<Edge>> result;
+    private Map<N,Set<E>> computeNodeOutEdgeMap() {
+        Map<N,Set<E>> result;
         if (this.nodeEdgeMap == null) {
-            result = new HashMap<Node,Set<Edge>>();
-            for (Node node : this.graph.nodeSet()) {
+            result = new HashMap<N,Set<E>>();
+            for (N node : this.graph.nodeSet()) {
                 result.put(node, createEdgeSet(null));
             }
-            for (Edge edge : this.graph.edgeSet()) {
+            for (E edge : this.graph.edgeSet()) {
                 result.get(edge.source()).add(edge);
             }
         } else {
             // reuse the precomputed node-edge-map
-            result = new HashMap<Node,Set<Edge>>(this.nodeEdgeMap);
-            for (Map.Entry<Node,Set<Edge>> resultEntry : result.entrySet()) {
-                Node node = resultEntry.getKey();
-                Set<Edge> inEdges = createEdgeSet(null);
-                for (Edge edge : resultEntry.getValue()) {
+            result = new HashMap<N,Set<E>>(this.nodeEdgeMap);
+            for (Map.Entry<N,Set<E>> resultEntry : result.entrySet()) {
+                N node = resultEntry.getKey();
+                Set<E> inEdges = createEdgeSet(null);
+                for (E edge : resultEntry.getValue()) {
                     if (edge.source().equals(node)) {
                         inEdges.add(edge);
                     }
@@ -270,14 +270,14 @@ public class GraphCache {
      * Computes and returns a fresh mapping from nodes to incident
      * edge sets.
      */
-    private Map<Node,Set<Edge>> computeNodeEdgeMap() {
-        Map<Node,Set<Edge>> result = new HashMap<Node,Set<Edge>>();
-        for (Edge edge : this.graph.edgeSet()) {
+    private Map<N,Set<E>> computeNodeEdgeMap() {
+        Map<N,Set<E>> result = new HashMap<N,Set<E>>();
+        for (E edge : this.graph.edgeSet()) {
             addToNodeEdgeMap(result, edge);
         }
         // only do the nodes if there are (apparently) loose nodes
         if (result.size() != this.graph.nodeCount()) {
-            for (Node node : this.graph.nodeSet()) {
+            for (N node : this.graph.nodeSet()) {
                 addToNodeEdgeMap(result, node);
             }
         }
@@ -296,12 +296,13 @@ public class GraphCache {
      * @param currentMap the array to be updated
      * @param edge the edge to be added
      */
-    private void addToLabelEdgeMap(Map<Label,Set<Edge>> currentMap, Edge edge) {
+    @SuppressWarnings("unchecked")
+    private void addToLabelEdgeMap(Map<L,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
-            Set<Edge> labelEdgeSet = currentMap.get(edge.label());
+            Set<E> labelEdgeSet = currentMap.get(edge.label());
             if (labelEdgeSet == null) {
                 labelEdgeSet = createSmallEdgeSet();
-                currentMap.put(edge.label(), labelEdgeSet);
+                currentMap.put((L) edge.label(), labelEdgeSet);
             }
             labelEdgeSet.add(edge);
         }
@@ -312,10 +313,9 @@ public class GraphCache {
      * @param currentMap the array to be updated
      * @param edge the edge to be removed
      */
-    private void removeFromLabelEdgeMap(Map<Label,Set<Edge>> currentMap,
-            Edge edge) {
+    private void removeFromLabelEdgeMap(Map<L,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
-            Set<Edge> labelEdgeSet = currentMap.get(edge.label());
+            Set<E> labelEdgeSet = currentMap.get(edge.label());
             if (labelEdgeSet != null) {
                 labelEdgeSet.remove(edge);
             }
@@ -327,9 +327,10 @@ public class GraphCache {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be added
      */
-    private void addToNodeInEdgeMap(Map<Node,Set<Edge>> currentMap, Edge edge) {
+    @SuppressWarnings("unchecked")
+    private void addToNodeInEdgeMap(Map<N,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
-            addToNodeEdgeMap(currentMap, edge.target(), edge);
+            addToNodeEdgeMap(currentMap, (N) edge.target(), edge);
         }
     }
 
@@ -338,9 +339,10 @@ public class GraphCache {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be added
      */
-    private void addToNodeOutEdgeMap(Map<Node,Set<Edge>> currentMap, Edge edge) {
+    @SuppressWarnings("unchecked")
+    private void addToNodeOutEdgeMap(Map<N,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
-            addToNodeEdgeMap(currentMap, edge.source(), edge);
+            addToNodeEdgeMap(currentMap, (N) edge.source(), edge);
         }
     }
 
@@ -349,10 +351,11 @@ public class GraphCache {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be added
      */
-    private void addToNodeEdgeMap(Map<Node,Set<Edge>> currentMap, Edge edge) {
+    @SuppressWarnings("unchecked")
+    private void addToNodeEdgeMap(Map<N,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
-            addToNodeEdgeMap(currentMap, edge.source(), edge);
-            addToNodeEdgeMap(currentMap, edge.target(), edge);
+            addToNodeEdgeMap(currentMap, (N) edge.source(), edge);
+            addToNodeEdgeMap(currentMap, (N) edge.target(), edge);
         }
     }
 
@@ -362,9 +365,8 @@ public class GraphCache {
      * @param node the key for the node
      * @param edge the edge to be added
      */
-    private void addToNodeEdgeMap(Map<Node,Set<Edge>> currentMap, Node node,
-            Edge edge) {
-        Set<Edge> edgeSet = currentMap.get(node);
+    private void addToNodeEdgeMap(Map<N,Set<E>> currentMap, N node, E edge) {
+        Set<E> edgeSet = currentMap.get(node);
         if (edgeSet == null) {
             currentMap.put(node, edgeSet = createSmallEdgeSet());
         }
@@ -377,9 +379,9 @@ public class GraphCache {
      * @param currentMap the mapping to be updated
      * @param node the node to be added
      */
-    private void addToNodeEdgeMap(Map<Node,Set<Edge>> currentMap, Node node) {
+    private void addToNodeEdgeMap(Map<N,Set<E>> currentMap, N node) {
         if (currentMap != null) {
-            Set<Edge> currentValue = currentMap.put(node, createSmallEdgeSet());
+            Set<E> currentValue = currentMap.put(node, createSmallEdgeSet());
             if (currentValue != null) {
                 currentMap.put(node, currentValue);
             }
@@ -391,10 +393,9 @@ public class GraphCache {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be removed
      */
-    private void removeFromNodeInEdgeMap(Map<Node,Set<Edge>> currentMap,
-            Edge edge) {
+    private void removeFromNodeInEdgeMap(Map<N,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
-            Set<Edge> edgeSet = currentMap.get(edge.target());
+            Set<E> edgeSet = currentMap.get(edge.target());
             if (edgeSet != null) {
                 edgeSet.remove(edge);
             }
@@ -406,10 +407,9 @@ public class GraphCache {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be removed
      */
-    private void removeFromNodeOutEdgeMap(Map<Node,Set<Edge>> currentMap,
-            Edge edge) {
+    private void removeFromNodeOutEdgeMap(Map<N,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
-            Set<Edge> edgeSet = currentMap.get(edge.source());
+            Set<E> edgeSet = currentMap.get(edge.source());
             if (edgeSet != null) {
                 edgeSet.remove(edge);
             }
@@ -421,7 +421,7 @@ public class GraphCache {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be removed
      */
-    private void removeFromNodeEdgeMap(Map<Node,Set<Edge>> currentMap, Edge edge) {
+    private void removeFromNodeEdgeMap(Map<N,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
             removeFromNodeInEdgeMap(currentMap, edge);
             removeFromNodeOutEdgeMap(currentMap, edge);
@@ -433,7 +433,7 @@ public class GraphCache {
      * @param currentMap the mapping to be updated
      * @param node the node to be removed
      */
-    private void removeFromNodeEdgeMap(Map<Node,Set<Edge>> currentMap, Node node) {
+    private void removeFromNodeEdgeMap(Map<N,Set<E>> currentMap, N node) {
         if (currentMap != null) {
             currentMap.remove(node);
         }
@@ -444,8 +444,8 @@ public class GraphCache {
      * initial set may be <code>null</code>, indicating that the edge set is
      * to be initially empty.
      */
-    private Set<Edge> createEdgeSet(Collection<Edge> set) {
-        Set<Edge> result = createSmallEdgeSet();
+    private Set<E> createEdgeSet(Collection<E> set) {
+        Set<E> result = createSmallEdgeSet();
         if (set != null) {
             result.addAll(set);
         }
@@ -457,8 +457,8 @@ public class GraphCache {
      * source node or label. The set may be a collection; i.e., an edge should
      * only be added if it is certain that it is not already in the set.
      */
-    private Set<Edge> createSmallEdgeSet() {
-        return new TreeHashSet<Edge>();
+    private Set<E> createSmallEdgeSet() {
+        return new TreeHashSet<E>();
     }
 
     /** Indicates if the precomputed data should be permanently stored. */
@@ -469,7 +469,7 @@ public class GraphCache {
     /**
      * The graph on which the cache works.
      */
-    protected final AbstractGraph<?> graph;
+    protected final AbstractGraph<N,L,E> graph;
     /**
      * Switch to indicate that the cache is dynamic.
      */
@@ -478,31 +478,30 @@ public class GraphCache {
      * An array of label-to-edge mappings, indexed by arity of the edges - 1.
      * Initially set to <tt>null</tt>.
      */
-    private Map<Label,Set<Edge>> labelEdgeMap;
+    private Map<L,Set<E>> labelEdgeMap;
     /**
      * A node-to-incoming-edge mapping.
      */
-    private Map<Node,Set<Edge>> nodeInEdgeMap;
+    private Map<N,Set<E>> nodeInEdgeMap;
     /**
      * A node-to-outgoing-edge mapping.
      */
-    private Map<Node,Set<Edge>> nodeOutEdgeMap;
+    private Map<N,Set<E>> nodeOutEdgeMap;
     /**
      * A node-to-incident-edge mapping.
      */
-    private Map<Node,Set<Edge>> nodeEdgeMap;
+    private Map<N,Set<E>> nodeEdgeMap;
 
     /** Counter to ensure distinctness of fresh node identities. */
     protected DefaultDispenser getNodeCounter() {
         if (this.nodeCounter == null) {
             this.nodeCounter = new DefaultDispenser();
             // make sure all existing node numbers are accounted for
+            int maxNodeNr = -1;
             for (Node node : getGraph().nodeSet()) {
-                int nodeNr = node.getNumber();
-                if (nodeNr >= this.nodeCounter.getCount()) {
-                    this.nodeCounter.setCount(nodeNr + 1);
-                }
+                maxNodeNr = Math.max(maxNodeNr, node.getNumber());
             }
+            this.nodeCounter.setCount(maxNodeNr + 1);
         }
         return this.nodeCounter;
     }
@@ -541,7 +540,7 @@ public class GraphCache {
     /**
      * Returns the graph for which the cache is maintained.
      */
-    public AbstractGraph<?> getGraph() {
+    public AbstractGraph<N,L,E> getGraph() {
         return this.graph;
     }
 

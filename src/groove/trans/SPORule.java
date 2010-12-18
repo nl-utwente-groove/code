@@ -459,9 +459,9 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     private boolean satisfiesDangling(HostGraph host, RuleToHostMap match) {
         boolean result = true;
         for (RuleNode eraserNode : getEraserNodes()) {
-            RuleNode erasedNode = (RuleNode) match.getNode(eraserNode);
-            Set<Edge> danglingEdges =
-                new HashSet<Edge>(host.edgeSet(erasedNode));
+            HostNode erasedNode = match.getNode(eraserNode);
+            Set<HostEdge> danglingEdges =
+                new HashSet<HostEdge>(host.edgeSet(erasedNode));
             for (RuleEdge eraserEdge : lhs().edgeSet(eraserNode)) {
                 boolean removed =
                     danglingEdges.remove(match.getEdge(eraserEdge));

@@ -17,8 +17,8 @@
 package groove.io;
 
 import groove.graph.DefaultGraph;
+import groove.graph.DefaultNode;
 import groove.graph.Graph;
-import groove.graph.Node;
 import groove.util.Pair;
 import groove.view.FormatException;
 
@@ -32,7 +32,7 @@ public interface GxlIO {
     /**
      * Saves a graph to an output stream.
      */
-    public abstract void saveGraph(Graph graph, OutputStream out)
+    public abstract void saveGraph(Graph<?,?,?> graph, OutputStream out)
         throws IOException;
 
     /**
@@ -40,7 +40,7 @@ public interface GxlIO {
      * information consists of a map from node identities as they occur in the
      * input to node identities in the resulting graph.
      */
-    public abstract Pair<DefaultGraph,Map<String,Node>> loadGraphWithMap(
+    public abstract Pair<DefaultGraph,Map<String,DefaultNode>> loadGraphWithMap(
             InputStream in) throws FormatException, IOException;
 
     /**

@@ -17,42 +17,53 @@
 package groove.io;
 
 import groove.graph.DefaultGraph;
+import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.util.Converter;
-import groove.util.Pair;
+import groove.util.Groove;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URL;
-import java.util.Map;
 
 /**
  * Graph loader based on the CADP <code>.aut</code> format.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Aut extends AbstractXml {
-    @Override
-    protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(URL url)
-        throws IOException {
-        Graph resultGraph = createGraph();
+public class Aut implements Xml<DefaultGraph> {
+    public DefaultGraph unmarshalGraph(URL url) throws IOException {
+        DefaultGraph resultGraph = createGraph();
         InputStream in = url.openStream();
-        Map<String,Node> resultMap = Converter.autToGraph(in, resultGraph);
         in.close();
-        return new Pair<Graph,Map<String,Node>>(resultGraph, resultMap);
+        return resultGraph;
     }
 
-    public void marshalGraph(Graph graph, File file) throws IOException {
+    /** backwards compatibility method */
+    public DefaultGraph unmarshalGraph(File file) throws IOException {
+        return unmarshalGraph(Groove.toURL(file));
+    }
+
+    /**
+     * Deletes the graph file, as well as all variants with the same name but
+     * different priorities.
+     */
+    public final void deleteGraph(File file) {
+        file.delete();
+    }
+
+    public <N extends Node,E extends Edge> void marshalGraph(
+            Graph<N,?,E> graph, File file) throws IOException {
         PrintWriter out = new PrintWriter(file);
         Converter.graphToAut(graph, out);
         out.close();
     }
 
     /** Callback factory method to create the underlying graph. */
-    private Graph createGraph() {
+    private DefaultGraph createGraph() {
         return new DefaultGraph();
     }
 }

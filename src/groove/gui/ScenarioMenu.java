@@ -287,8 +287,8 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         }
 
         @Override
-        public void closeUpdate(LTS graph, GraphState explored) {
-            assert graph == this.gts;
+        public void closeUpdate(LTS lts, GraphState explored) {
+            assert lts == this.gts;
             this.openStateCount--;
             assert this.openStateCount == this.gts.openStateCount();
             if (this.openStateCount == 0 && !isDisableOnFinish()) {

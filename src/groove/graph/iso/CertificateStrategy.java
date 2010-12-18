@@ -16,12 +16,12 @@
  */
 package groove.graph.iso;
 
-import java.util.Map;
-
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Node;
+
+import java.util.Map;
 
 /**
  * Interface for algorithms to compute isomorphism certificates for a given
@@ -37,7 +37,7 @@ public interface CertificateStrategy {
      * Returns the underlying graph for which this is the certificate strategy.
      * @return the underlying graph
      */
-    public Graph getGraph();
+    public Graph<?,?,?> getGraph();
 
     /**
      * Method to compute the isomorphism certificate for the underlying graph.
@@ -92,14 +92,14 @@ public interface CertificateStrategy {
      * @return a fresh certificate strategy for <tt>graph</tt>
      * @see #getStrength()
      */
-    public CertificateStrategy newInstance(Graph graph, boolean strong);
+    public CertificateStrategy newInstance(Graph<?,?,?> graph, boolean strong);
 
     /** 
      * Returns the strength of the strategy:
      * A strong strategy will spend more effort in avoiding false negatives. 
      */
     public boolean getStrength();
-    
+
     /**
      * Type of the certificates constructed by the strategy. A value of this
      * type represents a given graph element in an isomorphism-invariant way.

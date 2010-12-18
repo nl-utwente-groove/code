@@ -18,7 +18,7 @@
 package groove.verify;
 
 import groove.lts.GTS;
-import groove.lts.State;
+import groove.lts.GraphState;
 import groove.trans.Condition;
 import groove.trans.RuleName;
 import groove.util.ExprParser;
@@ -105,7 +105,7 @@ public abstract class TemporalFormula {
     /** The top-level operator of this formula. */
     private final String operator;
     /** The set of states that do not fulfill this formula. */
-    private Set<State> counterExamples;
+    private Set<GraphState> counterExamples;
 
     /**
      * Parse the given expression with the current operator and return the
@@ -232,9 +232,9 @@ public abstract class TemporalFormula {
      * Returns the collection of counter-examples.
      * @return the collection of counter-examples.
      */
-    public Set<State> getCounterExamples() {
+    public Set<GraphState> getCounterExamples() {
         if (this.counterExamples == null) {
-            this.counterExamples = new HashSet<State>();
+            this.counterExamples = new HashSet<GraphState>();
         }
         return this.counterExamples;
     }

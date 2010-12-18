@@ -47,7 +47,7 @@ import groove.explore.strategy.ReteLinearStrategy;
 import groove.explore.strategy.ReteRandomLinearStrategy;
 import groove.explore.strategy.ReteStrategy;
 import groove.explore.strategy.Strategy;
-import groove.graph.Label;
+import groove.graph.TypeLabel;
 import groove.lts.GTS;
 import groove.trans.Rule;
 
@@ -220,7 +220,7 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
             }
         });
 
-        addTemplate(new Template1<Strategy,Map<Label,Integer>>("cebound",
+        addTemplate(new Template1<Strategy,Map<TypeLabel,Integer>>("cebound",
             "Conditional Exploration (Edge Bound)",
             "This strategy performs a conditional breadth-first exploration. "
                 + "If the number of edges in a newly reached state exceeds a "
@@ -233,8 +233,8 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
             new EncodedEdgeMap()) {
 
             @Override
-            public Strategy create(GTS gts, Map<Label,Integer> bounds) {
-                ExploreCondition<Map<Label,Integer>> condition =
+            public Strategy create(GTS gts, Map<TypeLabel,Integer> bounds) {
+                ExploreCondition<Map<TypeLabel,Integer>> condition =
                     new EdgeBoundCondition();
                 condition.setCondition(bounds);
                 ConditionalBFSStrategy strategy = new ConditionalBFSStrategy();

@@ -16,7 +16,6 @@
  */
 package groove.abstraction;
 
-import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.trans.HostEdge;
@@ -262,13 +261,13 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
         labelLoop: for (Label label : Util.binaryLabelSet(this.graph)) {
             // For all equivalence classes.
             for (EquivClass<HostNode> ec : this) {
-                Set<Edge> n0InterEc =
+                Set<HostEdge> n0InterEc =
                     Util.getIntersectEdges(this.graph, n0, ec, label);
-                Set<Edge> n1InterEc =
+                Set<HostEdge> n1InterEc =
                     Util.getIntersectEdges(this.graph, n1, ec, label);
-                Set<Edge> ecInterN0 =
+                Set<HostEdge> ecInterN0 =
                     Util.getIntersectEdges(this.graph, ec, n0, label);
-                Set<Edge> ecInterN1 =
+                Set<HostEdge> ecInterN1 =
                     Util.getIntersectEdges(this.graph, ec, n1, label);
                 equiv =
                     equiv && Multiplicity.haveSameMult(n0InterEc, n1InterEc)

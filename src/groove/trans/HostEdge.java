@@ -16,61 +16,53 @@
  */
 package groove.trans;
 
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultEdgeStore;
-import groove.graph.Label;
-import groove.graph.Node;
+import groove.graph.AbstractEdge;
 import groove.graph.TypeLabel;
 
 /**
- * Class that implements the edges of a shape.
- * This class is essentially a DefaultEdge and it was created just to improve
- * the code readability.
- * 
- * @author Eduardo Zambon
+ * Class that implements the edges of a host graph.
+ * @author Arend Rensink
  */
-public class HostEdge extends DefaultEdge {
+public class HostEdge extends AbstractEdge<HostNode,TypeLabel,HostNode> {
     /** Default constructor. */
     protected HostEdge(HostNode source, TypeLabel label, HostNode target, int nr) {
-        super(source, label, target, nr);
+        super(source, label, target);
+        this.nr = nr;
     }
 
     // ------------------------------------------------------------------------
     // Overridden methods
     // ------------------------------------------------------------------------
 
-    /** Factory constructor. */
-    @Override
-    protected HostEdge newEdge(Node source, Label label, Node target, int nr) {
-        assert source instanceof HostNode : "Invalid source node";
-        assert target instanceof HostNode : "Invalid target node";
-        assert label instanceof TypeLabel : "Invalid target node";
-        return new HostEdge((HostNode) source, (TypeLabel) label,
-            (HostNode) target, nr);
-    }
-
-    /** Specialises the returned type. */
-    @Override
-    public HostNode source() {
-        return (HostNode) super.source();
-    }
-
-    /** Specialises the returned type. */
-    @Override
-    public HostNode target() {
-        return (HostNode) super.target();
-    }
-
-    /** Specialises the return type. */
-    @Override
-    public TypeLabel label() {
-        return (TypeLabel) super.label();
-    }
-
     /** Returns true if the edge is a loop. */
     public boolean isLoop() {
         return this.source().equals(this.target());
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        boolean result = this == obj;
+        // test that the result is the same as number equality
+        // or source-label-target equality
+        assert result == (obj instanceof HostEdge && this.nr == ((HostEdge) obj).nr) : String.format(
+            "Distinct %s and %s %s with the same number %d",
+            getClass().getName(), obj.getClass().getName(), this, this.nr);
+        assert result == (obj instanceof HostEdge && super.equals(obj)) : String.format(
+            "Distinct %s and %s %s with the same content",
+            getClass().getName(), obj.getClass().getName(), this);
+        return result;
+    }
+
+    /** 
+     * Returns the number of this edge.
+     * The number is guaranteed to be unique for each canonical edge representative.
+     */
+    public int getNumber() {
+        return this.nr;
+    }
+
+    /** The (unique) number of this edge. */
+    private final int nr;
 
     /**
      * Creates a shape edge from a given source node, label and target node.
@@ -84,20 +76,9 @@ public class HostEdge extends DefaultEdge {
      *        <code>null</code>
      * @return an edge based on <code>source</code>, <code>label</code> and
      *         <code>target</code>
-     * @see #createEdge(Node, String, Node)
      */
     static public HostEdge createEdge(HostNode source, TypeLabel label,
             HostNode target) {
-        return (HostEdge) store.createEdge(source, label, target);
+        return HostFactory.instance().createEdge(source, label, target);
     }
-
-    // ------------------------------------------------------------------------
-    // Static Fields
-    // ------------------------------------------------------------------------
-
-    /** Used only as a reference for the constructor. */
-    private static final HostEdge PROTOTYPE = new HostEdge(null, null, null, 0);
-    /** The static edge store. */
-    private static final DefaultEdgeStore store = new DefaultEdgeStore(
-        PROTOTYPE);
 }

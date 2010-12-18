@@ -72,6 +72,7 @@ import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.LTSJGraph;
+import groove.gui.jgraph.LTSJModel;
 import groove.io.AspectGxl;
 import groove.io.Aut;
 import groove.io.DefaultFileSystemStore;
@@ -89,7 +90,6 @@ import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.lts.LTSAdapter;
 import groove.lts.LTSListener;
-import groove.lts.State;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
@@ -723,7 +723,7 @@ public class Simulator {
         }
 
         scenario.prepare(getGTS(), getCurrentState());
-        GraphJModel ltsJModel = getLtsPanel().getJModel();
+        LTSJModel ltsJModel = getLtsPanel().getJModel();
         synchronized (ltsJModel) {
             // unhook the lts' jmodel from the lts, for efficiency's sake
             getGTS().removeLTSListener(ltsJModel);
@@ -1056,7 +1056,7 @@ public class Simulator {
      */
     public void doRunExploration(Exploration exploration) {
         setDefaultExploration(exploration);
-        GraphJModel ltsJModel = getLtsPanel().getJModel();
+        LTSJModel ltsJModel = getLtsPanel().getJModel();
         synchronized (ltsJModel) {
             // unhook the lts' jmodel from the lts, for efficiency's sake
             getGTS().removeLTSListener(ltsJModel);
@@ -1168,7 +1168,7 @@ public class Simulator {
                 CTLModelChecker modelChecker =
                     new CTLModelChecker(getGTS(), formula);
                 modelChecker.verify();
-                Set<State> counterExamples = formula.getCounterExamples();
+                Set<GraphState> counterExamples = formula.getCounterExamples();
                 boolean reportForAllStates =
                     confirmBehaviour(
                         VERIFY_ALL_STATES_OPTION,
@@ -3394,7 +3394,7 @@ public class Simulator {
          * panel.
          */
         public void actionPerformed(ActionEvent e) {
-            GraphJModel stateModel = getStatePanel().getJModel();
+            GraphJModel<?,?> stateModel = getStatePanel().getJModel();
             handleEditGraph(stateModel.toPlainGraph(), false);
         }
     }

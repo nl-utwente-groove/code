@@ -141,15 +141,18 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     public boolean selectJCell(Element elem) {
         JCell cell = null;
         if (getJModel() instanceof GraphJModel) {
+            @SuppressWarnings("unchecked")
+            GraphJModel<Node,Edge> graphJModel =
+                (GraphJModel<Node,Edge>) getJModel();
             if (elem instanceof Node) {
-                cell = ((GraphJModel) getJModel()).getJVertex((Node) elem);
+                cell = graphJModel.getJVertex((Node) elem);
             } else if (elem instanceof Edge) {
-                cell = ((GraphJModel) getJModel()).getJCell((Edge) elem);
+                cell = graphJModel.getJCell((Edge) elem);
             }
             if (cell != null) {
                 if (cell instanceof GraphJEdge
-                    && ((GraphJEdge) cell).isSourceLabel()) {
-                    cell = ((GraphJEdge) cell).getSourceVertex();
+                    && ((GraphJEdge<?,?>) cell).isSourceLabel()) {
+                    cell = ((GraphJEdge<?,?>) cell).getSourceVertex();
                 }
                 getJGraph().setSelectionCell(cell);
             }

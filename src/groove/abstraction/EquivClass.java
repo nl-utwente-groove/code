@@ -16,7 +16,7 @@
  */
 package groove.abstraction;
 
-import groove.graph.Node;
+import groove.trans.HostNode;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -38,8 +38,8 @@ public final class EquivClass<T> extends HashSet<T> {
      * a sub-type of Node. Use it with care.
      */
     @SuppressWarnings("unchecked")
-    public Set<Node> downcast() {
-        return (Set<Node>) this;
+    public Set<HostNode> downcast() {
+        return (Set<HostNode>) this;
     }
 
     /** Specialises the return type of the super method. */

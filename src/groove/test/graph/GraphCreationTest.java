@@ -40,9 +40,9 @@ public class GraphCreationTest extends TestCase {
     protected static int NR_NODES_IN_GRAPH = 5;
     protected static int NR_EDGES = 7;
 
-    protected Graph g;
-    protected Node[] n = new Node[NR_NODES_TOTAL];
-    protected Edge[] e = new Edge[NR_EDGES];
+    protected DefaultGraph g;
+    protected DefaultNode[] n = new DefaultNode[NR_NODES_TOTAL];
+    protected DefaultEdge[] e = new DefaultEdge[NR_EDGES];
 
     public GraphCreationTest(String name) {
         super(name);
@@ -183,7 +183,7 @@ public class GraphCreationTest extends TestCase {
         assertTrue(labelEdgeSet(this.g, DefaultLabel.createLabel("c")).isEmpty());
     }
 
-    private Set<Edge> labelEdgeSet(Graph g, Label label) {
+    private Set<Edge> labelEdgeSet(Graph<?,?,?> g, Label label) {
         Set<Edge> labelEdges = new HashSet<Edge>();
         for (Edge edge : g.edgeSet()) {
             if (edge.label().equals(label)) {
@@ -193,7 +193,7 @@ public class GraphCreationTest extends TestCase {
         return labelEdges;
     }
 
-    private Set<Edge> inEdgeSet(Graph g, Node target) {
+    private Set<Edge> inEdgeSet(Graph<?,?,?> g, Node target) {
         Set<Edge> inEdges = new HashSet<Edge>();
         for (Edge edge : g.edgeSet()) {
             if (edge.target().equals(target)) {

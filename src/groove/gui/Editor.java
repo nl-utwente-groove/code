@@ -13,14 +13,14 @@
 package groove.gui;
 
 import static groove.gui.Options.HELP_MENU_NAME;
+import groove.graph.DefaultEdge;
+import groove.graph.DefaultGraph;
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Node;
-import groove.graph.NodeEdgeHashMap;
-import groove.graph.NodeEdgeMap;
 import groove.graph.TypeGraph;
 import groove.gui.dialog.AboutBox;
 import groove.gui.dialog.ErrorDialog;
@@ -48,6 +48,7 @@ import groove.view.RuleView;
 import groove.view.StoredGrammarView.TypeViewList;
 import groove.view.View;
 import groove.view.aspect.AspectGraph;
+import groove.view.aspect.PlainToAspectMap;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -183,7 +184,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * @param graph the graph to be edited; if <code>null</code>, an empty model
      *        is started.
      */
-    public void setPlainGraph(Graph graph) {
+    public void setPlainGraph(DefaultGraph graph) {
         setErrors(null);
         if (graph == null) {
             setModel(new EditorJModel(this));
@@ -218,18 +219,18 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      */
     private void setAspectGraph() {
         Map<Element,JCell> plainToModelMap = new HashMap<Element,JCell>();
-        Graph result = getModel().toPlainGraph(plainToModelMap);
+        DefaultGraph result = getModel().toPlainGraph(plainToModelMap);
         GraphInfo.setRole(result, getRole(false));
         GraphInfo.setVersion(result, Version.GXL_VERSION);
-        NodeEdgeMap plainToAspectMap = new NodeEdgeHashMap();
+        PlainToAspectMap plainToAspectMap = new PlainToAspectMap();
         this.graph = AspectGraph.newInstance(result, plainToAspectMap);
         this.graphToModelMap = new HashMap<Element,JCell>();
         for (Map.Entry<Element,JCell> plainToModelEntry : plainToModelMap.entrySet()) {
             Element plainKey = plainToModelEntry.getKey();
             Element aspectKey =
                 plainKey instanceof Node
-                        ? plainToAspectMap.getNode((Node) plainKey)
-                        : plainToAspectMap.getEdge((Edge) plainKey);
+                        ? plainToAspectMap.getNode((DefaultNode) plainKey)
+                        : plainToAspectMap.getEdge((DefaultEdge) plainKey);
             this.graphToModelMap.put(aspectKey, plainToModelEntry.getValue());
         }
     }
@@ -408,7 +409,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         AspectJModel previewedModel = showPreviewDialog(toView(), okOption);
         if (previewedModel != null) {
             // setSelectInsertedCells(false);
-            Graph plainGraph = previewedModel.toPlainGraph();
+            DefaultGraph plainGraph = previewedModel.toPlainGraph();
             setErrors(GraphInfo.getErrors(plainGraph));
             getModel().replace(
                 GraphJModel.newInstance(plainGraph, getOptions(), true));

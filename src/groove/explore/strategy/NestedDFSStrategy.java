@@ -58,7 +58,8 @@ public class NestedDFSStrategy extends AbstractModelCheckingStrategy {
         // current state with the current Buchi location and add
         // the resulting combined transition to the product GTS
 
-        Set<GraphTransition> outTransitions = getGTS().outEdgeSet(getAtState());
+        Set<? extends GraphTransition> outTransitions =
+            getGTS().outEdgeSet(getAtState());
         Set<String> applicableRules = filterRuleNames(outTransitions);
 
         for (BuchiTransition nextPropertyTransition : getAtBuchiLocation().outTransitions()) {
