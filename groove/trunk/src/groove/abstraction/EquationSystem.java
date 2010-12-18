@@ -16,7 +16,7 @@
  */
 package groove.abstraction;
 
-import groove.util.Pair;
+import groove.util.Duo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,8 +71,8 @@ public abstract class EquationSystem {
     final List<AdmissibilityConstraint> admisConstrs;
 
     /** Maps used in the construction of the system. */
-    final Map<EdgeSignature,Pair<MultVar,MultVar>> outMap;
-    final Map<EdgeSignature,Pair<MultVar,MultVar>> inMap;
+    final Map<EdgeSignature,Duo<MultVar>> outMap;
+    final Map<EdgeSignature,Duo<MultVar>> inMap;
 
     /**
      * Indices used when solving the equation system.
@@ -103,8 +103,8 @@ public abstract class EquationSystem {
         this.equations = new ArrayList<Equation>();
         this.setConstrs = new ArrayList<SetConstraint>();
         this.admisConstrs = new ArrayList<AdmissibilityConstraint>();
-        this.outMap = new HashMap<EdgeSignature,Pair<MultVar,MultVar>>();
-        this.inMap = new HashMap<EdgeSignature,Pair<MultVar,MultVar>>();
+        this.outMap = new HashMap<EdgeSignature,Duo<MultVar>>();
+        this.inMap = new HashMap<EdgeSignature,Duo<MultVar>>();
         this.results = new HashSet<Shape>();
     }
 

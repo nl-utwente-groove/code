@@ -46,6 +46,11 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleLabel,RuleEdge> 
         return new RuleEdge(source, label, target);
     }
 
+    /** Returns the singleton instance of this factory. */
+    public static RuleFactory instance() {
+        return INSTANCE;
+    }
+
     /** Singleton instance of this factory. */
-    public final static RuleFactory INSTANCE = new RuleFactory();
+    private final static RuleFactory INSTANCE = new RuleFactory();
 }

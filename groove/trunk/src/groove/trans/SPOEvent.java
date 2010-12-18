@@ -17,9 +17,7 @@
 package groove.trans;
 
 import groove.graph.DefaultNode;
-import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.MergeMap;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 import groove.rel.LabelVar;
@@ -222,13 +220,13 @@ final public class SPOEvent extends
     private boolean isCorrectFor(HostGraph host) {
         RuleToHostMap anchorMap = getAnchorMap();
         boolean correct = true;
-        Iterator<HostEdge> edgeImageIter =
+        Iterator<? extends HostEdge> edgeImageIter =
             anchorMap.edgeMap().values().iterator();
         while (correct && edgeImageIter.hasNext()) {
             correct = host.containsEdge(edgeImageIter.next());
         }
         if (correct) {
-            Iterator<HostNode> nodeImageIter =
+            Iterator<? extends HostNode> nodeImageIter =
                 anchorMap.nodeMap().values().iterator();
             while (correct && nodeImageIter.hasNext()) {
                 HostNode nodeImage = nodeImageIter.next();
@@ -776,7 +774,7 @@ final public class SPOEvent extends
             }
             // add the eraser edges
             for (RuleEdge eraserEdge : getRule().getEraserNonAnchorEdges()) {
-                Edge eraserImage = result.mapEdge(eraserEdge);
+                HostEdge eraserImage = result.mapEdge(eraserEdge);
                 assert eraserImage != null : String.format(
                     "Eraser edge %s has no image in anchor map %s", eraserEdge,
                     result);

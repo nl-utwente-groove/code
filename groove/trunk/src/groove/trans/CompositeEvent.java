@@ -17,7 +17,6 @@
 package groove.trans;
 
 import groove.graph.Element;
-import groove.graph.MergeMap;
 import groove.graph.Node;
 import groove.util.CacheReference;
 
@@ -146,7 +145,7 @@ public class CompositeEvent extends
     public MergeMap getMergeMap() {
         MergeMap result = new MergeMap();
         for (RuleEvent event : this.eventArray) {
-            for (Map.Entry<HostNode,HostNode> mergeEntry : event.getMergeMap().nodeMap().entrySet()) {
+            for (Map.Entry<HostNode,? extends HostNode> mergeEntry : event.getMergeMap().nodeMap().entrySet()) {
                 result.putNode(mergeEntry.getKey(), mergeEntry.getValue());
             }
         }

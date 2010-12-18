@@ -52,7 +52,7 @@ abstract public class PositiveCondition<M extends Match> extends
      * @param properties properties for matching the condition; may be
      *        <code>null</code>
      */
-    PositiveCondition(RuleName name, RuleGraph target, RuleToRuleMap rootMap,
+    PositiveCondition(RuleName name, RuleGraph target, RuleGraphMorphism rootMap,
             SystemProperties properties) {
         super(name, target, rootMap, properties);
     }

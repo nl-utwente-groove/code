@@ -18,7 +18,7 @@ package groove.lts;
 
 import groove.control.CtrlTransition;
 import groove.graph.Edge;
-import groove.graph.NodeEdgeMap;
+import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.RuleMatch;
 
@@ -50,7 +50,7 @@ public interface GraphTransition extends Edge, MatchResult {
     /**
      * Returns the (partial) morphism from the source to the target graph.
      */
-    public NodeEdgeMap getMorphism();
+    public HostGraphMorphism getMorphism();
 
     /**
      * Indicates if the transition involves a non-trivial symmetry. This is the

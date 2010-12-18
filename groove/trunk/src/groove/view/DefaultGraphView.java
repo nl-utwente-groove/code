@@ -18,7 +18,6 @@ package groove.view;
 
 import static groove.view.aspect.AttributeAspect.getAttributeValue;
 import groove.graph.Element;
-import groove.graph.ElementFactory;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
@@ -45,7 +44,6 @@ import groove.view.aspect.TypeAspect;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -181,18 +179,12 @@ public class DefaultGraphView implements GraphView {
                 errors.addAll(exc.getErrors());
             }
         }
-        // remove isolated variable nodes from the result graph
-        Iterator<Map.Entry<AspectNode,HostNode>> viewToModelIter =
-            elementMap.nodeMap().entrySet().iterator();
-        while (viewToModelIter.hasNext()) {
-            Map.Entry<AspectNode,HostNode> viewToModelEntry =
-                viewToModelIter.next();
-            HostNode modelNode = viewToModelEntry.getValue();
+        // remove isolated value nodes from the result graph
+        for (HostNode modelNode : elementMap.nodeMap().values()) {
             if (modelNode instanceof ValueNode
                 && model.edgeSet(modelNode).isEmpty()) {
                 // the node is an isolated value node; remove it
                 model.removeNode(modelNode);
-                //                viewToModelIter.remove();
             }
         }
         // test against the type graph, if any
@@ -220,10 +212,10 @@ public class DefaultGraphView implements GraphView {
                 // compute inverse element map
                 Map<Element,Element> inverseMap =
                     new HashMap<Element,Element>();
-                for (Map.Entry<AspectNode,HostNode> nodeEntry : elementMap.nodeMap().entrySet()) {
+                for (Map.Entry<AspectNode,? extends HostNode> nodeEntry : elementMap.nodeMap().entrySet()) {
                     inverseMap.put(nodeEntry.getValue(), nodeEntry.getKey());
                 }
-                for (Map.Entry<AspectEdge,HostEdge> edgeEntry : elementMap.edgeMap().entrySet()) {
+                for (Map.Entry<AspectEdge,? extends HostEdge> edgeEntry : elementMap.edgeMap().entrySet()) {
                     inverseMap.put(edgeEntry.getValue(), edgeEntry.getKey());
                 }
                 for (FormatError error : typeErrors) {
@@ -387,9 +379,11 @@ public class DefaultGraphView implements GraphView {
     /** Mapping from aspect graph to type graph. */
     public static class ViewToHostMap extends
             ViewToModelMap<HostNode,TypeLabel,HostEdge> {
-        @Override
-        public ElementFactory<HostNode,TypeLabel,HostEdge> getFactory() {
-            return HostFactory.instance();
+        /**
+         * Creates a new, empty map.
+         */
+        public ViewToHostMap() {
+            super(HostFactory.instance());
         }
 
         @Override

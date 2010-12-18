@@ -17,8 +17,6 @@
 
 package groove.rel;
 
-import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
 import groove.trans.RuleLabel;
@@ -42,13 +40,11 @@ public class VarSupport {
      * has a {@link RuleLabel}, this is the result of
      * {@link RegExpr#allVarSet()}; otherwise, it is the empty set.
      */
-    static public Set<LabelVar> getAllVars(Edge edge) {
+    static public Set<LabelVar> getAllVars(RuleEdge edge) {
         Set<LabelVar> result = Collections.emptySet();
-        if (edge.label() instanceof RuleLabel) {
-            RegExpr expr = ((RuleLabel) edge.label()).getMatchExpr();
-            if (expr != null) {
-                result = expr.allVarSet();
-            }
+        RuleLabel label = edge.label();
+        if (label.isMatchable()) {
+            result = label.getMatchExpr().allVarSet();
         }
         return result;
     }
@@ -56,11 +52,11 @@ public class VarSupport {
     /**
      * Returns the set of all variables involved in a given graph. This is the
      * union of the variables involved in the edges.
-     * @see #getAllVars(Edge)
+     * @see #getAllVars(RuleEdge)
      */
-    static public Set<LabelVar> getAllVars(Graph<?,RuleLabel,?> graph) {
+    static public Set<LabelVar> getAllVars(RuleGraph graph) {
         Set<LabelVar> result = new HashSet<LabelVar>();
-        for (Edge edge : graph.edgeSet()) {
+        for (RuleEdge edge : graph.edgeSet()) {
             result.addAll(getAllVars(edge));
         }
         return result;
@@ -71,13 +67,11 @@ public class VarSupport {
      * {@link RuleLabel}, this is the result of
      * {@link RegExpr#boundVarSet()}; otherwise, it is the empty set.
      */
-    static public Set<LabelVar> getBoundVars(Edge edge) {
+    static public Set<LabelVar> getBoundVars(RuleEdge edge) {
         Set<LabelVar> result = Collections.emptySet();
-        if (edge.label() instanceof RuleLabel) {
-            RegExpr expr = ((RuleLabel) edge.label()).getMatchExpr();
-            if (expr != null) {
-                result = expr.boundVarSet();
-            }
+        RegExpr expr = edge.label().getMatchExpr();
+        if (expr != null) {
+            result = expr.boundVarSet();
         }
         return result;
     }
@@ -85,11 +79,11 @@ public class VarSupport {
     /**
      * Returns the set of variables bound by a given graph. This is the union of
      * the variables bound by the edges.
-     * @see #getBoundVars(Edge)
+     * @see #getBoundVars(RuleEdge)
      */
     static public Set<LabelVar> getBoundVars(RuleGraph graph) {
         Set<LabelVar> result = new HashSet<LabelVar>();
-        for (Edge edge : graph.edgeSet()) {
+        for (RuleEdge edge : graph.edgeSet()) {
             result.addAll(getBoundVars(edge));
         }
         return result;
@@ -97,7 +91,7 @@ public class VarSupport {
 
     /**
      * Returns the set of variable-containing edges occurring in a given graph. An
-     * edge is variable-containing if {@link #getAllVars(Edge)} is non-empty.
+     * edge is variable-containing if {@link #getAllVars(RuleEdge)} is non-empty.
      */
     static public Set<RuleEdge> getVarEdges(RuleGraph graph) {
         Set<RuleEdge> result = new HashSet<RuleEdge>();

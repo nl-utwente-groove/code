@@ -25,7 +25,7 @@ import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
+import groove.graph.GraphMorphism;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.gui.Exporter;
 import groove.gui.Exporter.StructuralFormat;
@@ -772,7 +772,7 @@ public class Groove {
      *         or <code>null</code> if
      *         {@link DefaultIsoChecker#areIsomorphic(Graph, Graph)} fails.
      */
-    static public <N extends Node,L extends Label,E extends Edge> NodeEdgeMap getIsomorphism(
+    static public <N extends Node,L extends Label,E extends Edge> GraphMorphism getIsomorphism(
             Graph<N,L,E> source, Graph<N,L,E> target) {
         return DefaultIsoChecker.getInstance(true).getIsomorphism(source,
             target);

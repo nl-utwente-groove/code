@@ -632,8 +632,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> 
     }
 
     @Override
-    public ElementFactory<TypeNode,TypeLabel,TypeEdge> getFactory() {
-        return TypeFactory.INSTANCE;
+    public TypeFactory getFactory() {
+        return TypeFactory.instance();
     }
 
     /** Label store permanently associated with this type graph. */

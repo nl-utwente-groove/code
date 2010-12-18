@@ -19,14 +19,13 @@ package groove.abstraction;
 import groove.graph.TypeLabel;
 import groove.trans.DefaultApplication;
 import groove.trans.HostEdge;
-import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
 import groove.trans.RuleLabel;
 import groove.trans.RuleMatch;
 import groove.trans.RuleNode;
-import groove.trans.RuleToHostMap;
 import groove.trans.SPOEvent;
+import groove.trans.SPORule;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -76,16 +75,21 @@ public final class Materialisation implements Cloneable {
      * implies that the materialisation object needs to be cloned every time
      * we perform some modifying operation on the shape. 
      */
-    Shape shape;
+    private Shape shape;
     /**
-     * The pre-match of the rule into the shape. This is the starting point for
-     * the materialisation. We assume that the pre-match is a valid one.
+     * The matched rule.
      */
-    private final RuleMatch preMatch;
+    private final SPORule matchedRule;
+    /**
+     * A copy of the concrete match of the rule into the (partially) materialised shape.
+     * This is left unchanged during the materialisation.
+     */
+    final RuleToShapeMap originalMatch;
     /**
      * The concrete match of the rule into the (partially) materialised shape.
+     * This is modified as part of the materialisation.
      */
-    final RuleToHostMap match;
+    final RuleToShapeMap match;
     /**
      * The queue of operations that need to be performed on the materialisation
      * object. When this queue is empty, the materialisation is complete. 
@@ -106,8 +110,9 @@ public final class Materialisation implements Cloneable {
      */
     private Materialisation(Shape shape, RuleMatch preMatch) {
         this.shape = shape;
-        this.preMatch = preMatch;
-        this.match = preMatch.getElementMap().clone();
+        this.matchedRule = preMatch.getRule();
+        this.originalMatch = (RuleToShapeMap) preMatch.getElementMap();
+        this.match = this.originalMatch.clone();
         this.tasks = new PriorityQueue<MatOp>();
         if (LOG) {
             this.log = new ArrayList<String>();
@@ -123,7 +128,8 @@ public final class Materialisation implements Cloneable {
      */
     private Materialisation(Materialisation mat) {
         this.shape = mat.shape.clone();
-        this.preMatch = mat.preMatch;
+        this.matchedRule = mat.matchedRule;
+        this.originalMatch = mat.originalMatch;
         this.match = mat.match.clone();
         this.tasks = new PriorityQueue<MatOp>();
         // Update the materialisation reference in the tasks.
@@ -262,8 +268,7 @@ public final class Materialisation implements Cloneable {
      * transformed shape. This shape is not yet normalised.
      */
     public Shape applyMatch() {
-        RuleEvent event =
-            new SPOEvent(this.preMatch.getRule(), this.match, false);
+        RuleEvent event = new SPOEvent(this.matchedRule, this.match, false);
         DefaultApplication app = new DefaultApplication(event, this.shape);
         Shape result = (Shape) app.getTarget();
         return result;
@@ -306,8 +311,7 @@ public final class Materialisation implements Cloneable {
         boolean complyToNodeMult = true;
         Multiplicity oneMult = Multiplicity.getMultOf(1);
         // For all nodes in the image of the LHS.
-        for (HostNode node : this.match.nodeMap().values()) {
-            ShapeNode nodeS = (ShapeNode) node;
+        for (ShapeNode nodeS : this.match.nodeMap().values()) {
             if (!this.shape.getNodeMult(nodeS).equals(oneMult)) {
                 complyToNodeMult = false;
                 break;
@@ -319,8 +323,7 @@ public final class Materialisation implements Cloneable {
         boolean complyToEquivClass = true;
         if (complyToNodeMult) {
             // For all nodes in the image of the LHS.
-            for (HostNode node : this.match.nodeMap().values()) {
-                ShapeNode nodeS = (ShapeNode) node;
+            for (ShapeNode nodeS : this.match.nodeMap().values()) {
                 if (this.shape.getEquivClassOf(nodeS).size() != 1) {
                     complyToEquivClass = false;
                     break;
@@ -334,13 +337,11 @@ public final class Materialisation implements Cloneable {
         boolean complyToEdgeMult = true;
         if (complyToNodeMult && complyToEquivClass) {
             // For all binary labels.
-            for (TypeLabel label : Util.binaryLabelSet(this.shape)) {
+            for (TypeLabel label : Util.getBinaryLabels(this.shape)) {
                 // For all nodes v in the image of the LHS.
-                for (HostNode n0 : this.match.nodeMap().values()) {
-                    ShapeNode v = (ShapeNode) n0;
+                for (ShapeNode v : this.match.nodeMap().values()) {
                     // For all nodes w in the image of the LHS.
-                    for (HostNode n1 : this.match.nodeMap().values()) {
-                        ShapeNode w = (ShapeNode) n1;
+                    for (ShapeNode w : this.match.nodeMap().values()) {
                         EquivClass<ShapeNode> ecW =
                             this.shape.getEquivClassOf(w);
                         EdgeSignature es =
@@ -375,22 +376,20 @@ public final class Materialisation implements Cloneable {
      * will be performed.
      */
     private void planTasks() {
-        RuleToHostMap originalMap = this.preMatch.getElementMap();
         boolean isMatNodeOpEmpty = true;
         boolean isMatEdgeOpEmpty = true;
 
         // Search for nodes in the match image that have abstract
         // multiplicities. 
         Set<ShapeNode> processedNodes = new HashSet<ShapeNode>();
-        for (Entry<RuleNode,HostNode> nodeEntry : originalMap.nodeMap().entrySet()) {
-            ShapeNode nodeS = (ShapeNode) nodeEntry.getValue();
+        for (Entry<RuleNode,ShapeNode> nodeEntry : this.originalMatch.nodeMap().entrySet()) {
+            ShapeNode nodeS = nodeEntry.getValue();
             if (!processedNodes.contains(nodeS)
                 && this.shape.getNodeMult(nodeS).isAbstract()) {
                 // We have a node in the rule that was matched to an abstract
                 // node. We need to materialise this abstract node.
                 // Check the nodes on the rule that were mapped to nodeS.
-                Set<RuleNode> nodesR =
-                    Util.getReverseNodeMap(originalMap, nodeS);
+                Set<RuleNode> nodesR = this.originalMatch.getPreImages(nodeS);
                 this.tasks.add(new MaterialiseNode(this, nodeS, nodesR));
                 processedNodes.add(nodeS);
                 isMatNodeOpEmpty = false;
@@ -401,10 +400,10 @@ public final class Materialisation implements Cloneable {
         // multiplicities.
         Set<ShapeEdge> processedEdges = new HashSet<ShapeEdge>();
         Set<ShapeEdge> edgesToFreeze = new HashSet<ShapeEdge>();
-        for (Entry<RuleEdge,HostEdge> edgeEntry : originalMap.edgeMap().entrySet()) {
+        for (Entry<RuleEdge,ShapeEdge> edgeEntry : this.originalMatch.edgeMap().entrySet()) {
             RuleEdge edgeR = edgeEntry.getKey();
-            ShapeEdge edgeS = (ShapeEdge) edgeEntry.getValue();
-            if (!Util.isUnary(edgeR) && !processedEdges.contains(edgeS)) {
+            ShapeEdge edgeS = edgeEntry.getValue();
+            if (edgeR.isBinary() && !processedEdges.contains(edgeS)) {
                 // Check if the image edge in the shape has abstract
                 // multiplicities.
                 EdgeSignature outEs = this.shape.getEdgeOutSignature(edgeS);
@@ -418,7 +417,7 @@ public final class Materialisation implements Cloneable {
                     // materialise this edge.
                     // Check the edges on the rule that were mapped to edgeS.
                     Set<RuleEdge> edgesR =
-                        Util.getReverseEdgeMap(originalMap, edgeS);
+                        this.originalMatch.getPreImages(edgeS);
                     this.tasks.add(new MaterialiseEdge(this, edgeS, edgesR));
                     processedEdges.add(edgeS);
                     isMatEdgeOpEmpty = false;
@@ -431,8 +430,8 @@ public final class Materialisation implements Cloneable {
         this.shape.freeze(edgesToFreeze);
 
         // Check that all nodes of the LHS are in the same equivalence class.
-        for (Entry<RuleNode,HostNode> nodeEntry : originalMap.nodeMap().entrySet()) {
-            ShapeNode nodeS = (ShapeNode) nodeEntry.getValue();
+        for (Entry<RuleNode,ShapeNode> nodeEntry : this.originalMatch.nodeMap().entrySet()) {
+            ShapeNode nodeS = nodeEntry.getValue();
             boolean isSingletonEc =
                 this.shape.getEquivClassOf(nodeS).size() == 1;
             if (!processedNodes.contains(nodeS)
@@ -467,7 +466,7 @@ public final class Materialisation implements Cloneable {
         this.match.putNode(nodeR, nodeS);
 
         // Look for all edges where nodeR occurs and update the edge map.
-        for (Entry<RuleEdge,HostEdge> edgeEntry : this.match.edgeMap().entrySet()) {
+        for (Entry<RuleEdge,ShapeEdge> edgeEntry : this.match.edgeMap().entrySet()) {
             RuleEdge edgeR = edgeEntry.getKey();
             RuleNode srcR = edgeR.source();
             RuleNode tgtR = edgeR.target();
@@ -502,7 +501,7 @@ public final class Materialisation implements Cloneable {
                     Set<RuleEdge> edgesR = new HashSet<RuleEdge>();
                     edgesR.add(edgeR);
                     this.tasks.add(new MaterialiseEdge(this, newEdgeS, edgesR));
-                } else if (!Util.isUnary(newEdgeS)) {
+                } else if (newEdgeS.isBinary()) {
                     edgesToFreeze.add(newEdgeS);
                 }
             }
@@ -1019,7 +1018,7 @@ public final class Materialisation implements Cloneable {
         void perform() { // MaterialiseEdge
             this.mat.logOp(this.toString());
 
-            RuleToHostMap match = this.mat.match;
+            RuleToShapeMap match = this.mat.match;
             Shape shape = this.mat.shape;
 
             // Collect all signatures that will be affected by this operation.

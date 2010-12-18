@@ -16,13 +16,13 @@ package groove.lts;
 
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
-import groove.graph.DeltaApplier;
 import groove.graph.Label;
-import groove.graph.MergeMap;
-import groove.graph.NodeEdgeMap;
 import groove.trans.DefaultApplication;
+import groove.trans.DeltaApplier;
 import groove.trans.DeltaHostGraph;
+import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
+import groove.trans.MergeMap;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
@@ -115,7 +115,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * Constructs an underlying morphism for the transition from the stored
      * footprint.
      */
-    public NodeEdgeMap getMorphism() {
+    public HostGraphMorphism getMorphism() {
         RuleApplication appl =
             new DefaultApplication(getEvent(), source().getGraph(), getGraph(),
                 getAddedNodes());

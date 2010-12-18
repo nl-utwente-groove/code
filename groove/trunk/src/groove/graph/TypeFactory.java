@@ -85,6 +85,12 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeLabel,TypeEdge> 
             this.labelMaps[i] = new HashMap<String,TypeLabel>();
         }
     }
+
+    /** Returns the singleton instance of this class. */
+    public static TypeFactory instance() {
+        return INSTANCE;
+    }
+
     /** Singleton instance of this class. */
-    public static final TypeFactory INSTANCE = new TypeFactory();
+    private static final TypeFactory INSTANCE = new TypeFactory();
 }

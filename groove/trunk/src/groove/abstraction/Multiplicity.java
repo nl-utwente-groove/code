@@ -19,6 +19,7 @@ package groove.abstraction;
 import groove.graph.Edge;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
+import groove.trans.HostEdge;
 import groove.trans.HostNode;
 
 import java.util.HashSet;
@@ -170,7 +171,7 @@ public final class Multiplicity {
     }
 
     /** Returns true if both given sets have the same multiplicity. */
-    public static <E extends Edge> boolean haveSameMult(Set<E> s0, Set<E> s1) {
+    public static boolean haveSameMult(Set<HostEdge> s0, Set<HostEdge> s1) {
         return getEdgeSetMult(s0).equals(getEdgeSetMult(s1));
     }
 
@@ -213,7 +214,8 @@ public final class Multiplicity {
      * See item 5 of Def. 22 on page 17 of the Technical Report for
      * more details.
      */
-    public static Multiplicity getNodeSetMultSum(Shape shape, Set<HostNode> nodes) {
+    public static Multiplicity getNodeSetMultSum(Shape shape,
+            Set<HostNode> nodes) {
         Multiplicity accumulator = getMultOf(0);
         for (Node node : nodes) {
             Multiplicity nodeMult = shape.getNodeMult((ShapeNode) node);

@@ -44,17 +44,4 @@ public final class ShapeNode extends DefaultNode {
     public ShapeNode newNode(int nr) {
         return new ShapeNode(nr);
     }
-
-    /** Returns the node with the first currently unused node number. */
-    static public ShapeNode createNode() {
-        return FACTORY.createNode();
-    }
-
-    /** Returns the node with a given number. */
-    static public ShapeNode createNode(int nr) {
-        return FACTORY.createNode(nr);
-    }
-
-    /** The factory for shape elements. */
-    private final static ShapeFactory FACTORY = ShapeFactory.instance();
 }

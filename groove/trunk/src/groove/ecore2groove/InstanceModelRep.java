@@ -19,8 +19,6 @@ package groove.ecore2groove;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
-import groove.graph.Edge;
-import groove.graph.Node;
 import groove.view.aspect.AspectGraph;
 
 import java.util.HashMap;
@@ -57,7 +55,7 @@ public class InstanceModelRep {
 
     private DefaultEdge rootEdge;
 
-    private Map<Node,Node> nextNode;
+    private Map<DefaultNode,DefaultNode> nextNode;
 
     private Map<String,EClass> labelToClass;
     private Map<String,EReference> labelToReference;
@@ -66,11 +64,11 @@ public class InstanceModelRep {
     private Map<String,EEnum> labelToEnum; //delete
     private Map<String,EEnumLiteral> labelToLiteral; //delete
 
-    private Map<Node,Node> referenceToVal;
-    private Map<Node,String> attributeToVal;
-    private Map<Node,DefaultEdge> featureToType;
+    private Map<DefaultNode,DefaultNode> referenceToVal;
+    private Map<DefaultNode,String> attributeToVal;
+    private Map<DefaultNode,DefaultEdge> featureToType;
 
-    private Map<Node,EObject> nodeToObject;
+    private Map<DefaultNode,EObject> nodeToObject;
 
     /**
      * Constructor class, given a ModelHandler and an AspectGraph, creates
@@ -90,7 +88,7 @@ public class InstanceModelRep {
 
         this.rootEdge = null;
 
-        this.nextNode = new HashMap<Node,Node>();
+        this.nextNode = new HashMap<DefaultNode,DefaultNode>();
 
         this.labelToClass = new HashMap<String,EClass>();
         this.labelToReference = new HashMap<String,EReference>();
@@ -99,11 +97,11 @@ public class InstanceModelRep {
         this.labelToEnum = new HashMap<String,EEnum>(); //delete
         this.labelToLiteral = new HashMap<String,EEnumLiteral>(); //delete
 
-        this.referenceToVal = new HashMap<Node,Node>();
-        this.attributeToVal = new HashMap<Node,String>();
-        this.featureToType = new HashMap<Node,DefaultEdge>();
+        this.referenceToVal = new HashMap<DefaultNode,DefaultNode>();
+        this.attributeToVal = new HashMap<DefaultNode,String>();
+        this.featureToType = new HashMap<DefaultNode,DefaultEdge>();
 
-        this.nodeToObject = new HashMap<Node,EObject>();
+        this.nodeToObject = new HashMap<DefaultNode,EObject>();
 
         // Fill maps from label text to the EObjects from the Ecore model
         for (EClass eClass : mh.getEClasses()) {
@@ -259,7 +257,7 @@ public class InstanceModelRep {
                 } else {
                     if (!this.nextNode.containsValue(outEdge.target())) {
 
-                        Node next = outEdge.target();
+                        DefaultNode next = outEdge.target();
                         do {
                             DefaultEdge valueEdge =
                                 this.featureToType.get(this.referenceToVal.get(next));
@@ -316,7 +314,8 @@ public class InstanceModelRep {
             for (DefaultEdge outEdge : this.instanceGraph.outEdgeSet(classEdge.source())) {
 
                 // Get type: edge of target node, and if it exists 
-                Edge featureEdge = this.featureToType.get(outEdge.target());
+                DefaultEdge featureEdge =
+                    this.featureToType.get(outEdge.target());
                 if (featureEdge != null) {
 
                     // if it represents a non-containment and non-container ref
@@ -342,7 +341,7 @@ public class InstanceModelRep {
      * @param featureEdge edge of the EAttribute node type
      */
     @SuppressWarnings("unchecked")
-    private void addAttribute(Edge containerEdge, Edge featureEdge) {
+    private void addAttribute(DefaultEdge containerEdge, DefaultEdge featureEdge) {
         // check if it is ordered, and when not just add it
         if (!this.labelToAttribute.get(featureEdge.label().text()).isOrdered()) {
 
@@ -381,7 +380,7 @@ public class InstanceModelRep {
 
             // Else check if it is the first in a sequence. If not, then ignore it
         } else if (!this.nextNode.containsValue(featureEdge.target())) {
-            Node next = featureEdge.source();
+            DefaultNode next = featureEdge.source();
             do {
                 // create a new instance of a literal to add
                 String attrValue = this.attributeToVal.get(next);
@@ -429,11 +428,10 @@ public class InstanceModelRep {
      * @param containerEdge edge of the EClass node type
      * @param featureEdge edge of the EReference node type
      */
-    @SuppressWarnings("unchecked")
-    private void addReference(Edge containerEdge, Edge featureEdge) {
+    private void addReference(DefaultEdge containerEdge, DefaultEdge featureEdge) {
         // check if it is ordered, and when not just add it
         if (!this.labelToReference.get(featureEdge.label().text()).isOrdered()) {
-            Edge valueEdge =
+            DefaultEdge valueEdge =
                 this.featureToType.get(this.referenceToVal.get(featureEdge.source()));
 
             // Get the value of the EReference from the nodeToObject map
@@ -444,6 +442,7 @@ public class InstanceModelRep {
             // if multiplicity is many, add to set of values, otherwise it is
             // just the value
             if (valueEReference.isMany()) {
+                @SuppressWarnings("unchecked")
                 EList<EObject> values =
                     ((EList<EObject>) this.nodeToObject.get(
                         containerEdge.source()).eGet(valueEReference));
@@ -456,9 +455,9 @@ public class InstanceModelRep {
             }
             // Else check if it is the first in a sequence. If not, then ignore it
         } else if (!this.nextNode.containsValue(featureEdge.target())) {
-            Node next = featureEdge.source();
+            DefaultNode next = featureEdge.source();
             do {
-                Edge valueEdge =
+                DefaultEdge valueEdge =
                     this.featureToType.get(this.referenceToVal.get(next));
 
                 // Get the value of the EReference from the nodeToObject map
@@ -471,6 +470,7 @@ public class InstanceModelRep {
                 // already in the set or when already in the set, move it to 
                 // the last position
                 if (valueEReference.isMany()) {
+                    @SuppressWarnings("unchecked")
                     EList<EObject> values =
                         ((EList<EObject>) this.nodeToObject.get(
                             containerEdge.source()).eGet(valueEReference));

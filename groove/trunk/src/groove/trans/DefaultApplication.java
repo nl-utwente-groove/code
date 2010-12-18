@@ -17,14 +17,9 @@
 package groove.trans;
 
 import groove.graph.AbstractGraph;
-import groove.graph.DeltaTarget;
 import groove.graph.Edge;
-import groove.graph.FilteredDeltaTarget;
 import groove.graph.Graph;
-import groove.graph.MergeMap;
 import groove.graph.Node;
-import groove.graph.NodeEdgeHashMap;
-import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ValueNode;
 
 import java.util.Arrays;
@@ -143,7 +138,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
         return getEvent().getMatch(this.source);
     }
 
-    public NodeEdgeMap getMorphism() {
+    public HostGraphMorphism getMorphism() {
         if (this.morphism == null) {
             this.morphism = computeMorphism();
         }
@@ -154,8 +149,8 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * Constructs the morphism between source and target graph from the
      * application.
      */
-    private NodeEdgeMap computeMorphism() {
-        NodeEdgeMap result = createMorphism();
+    private HostGraphMorphism computeMorphism() {
+        HostGraphMorphism result = createMorphism();
         MergeMap mergeMap = getMergeMap();
         // copy the source node and edge set, to avoid modification exceptions
         // in case graph aliasing was used
@@ -487,8 +482,8 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * Callback factory method to create a morphism from source to target graph.
      * Note that this is <i>not</i> the same kind of object as the matching.
      */
-    protected NodeEdgeMap createMorphism() {
-        return new NodeEdgeHashMap();
+    protected HostGraphMorphism createMorphism() {
+        return new HostGraphMorphism();
     }
 
     /**
@@ -634,7 +629,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
     /**
      * Underlying morphism from the source to the target.
      */
-    protected NodeEdgeMap morphism;
+    protected HostGraphMorphism morphism;
     /**
      * The images of the creator nodes. This is part of the information needed
      * to (re)construct the derivation target.

@@ -16,7 +16,6 @@
  */
 package groove.explore.strategy;
 
-import groove.graph.DeltaStore;
 import groove.lts.DefaultGraphNextState;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -27,6 +26,7 @@ import groove.lts.MatchResult;
 import groove.match.SearchEngineFactory;
 import groove.match.SearchEngineFactory.EngineType;
 import groove.match.rete.ReteSearchEngine;
+import groove.trans.DeltaStore;
 import groove.util.Reporter;
 
 import java.util.ArrayList;

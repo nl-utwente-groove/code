@@ -14,10 +14,8 @@
  * 
  * $Id: DeltaStore.java,v 1.4 2008-01-30 09:32:50 iovka Exp $
  */
-package groove.graph;
+package groove.trans;
 
-import groove.trans.HostEdge;
-import groove.trans.HostNode;
 
 import java.util.Set;
 

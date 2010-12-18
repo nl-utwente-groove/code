@@ -26,8 +26,6 @@ import groove.abstraction.PreMatch;
 import groove.abstraction.Shape;
 import groove.abstraction.ShapeEdge;
 import groove.abstraction.ShapeNode;
-import groove.abstraction.Util;
-import groove.graph.Edge;
 import groove.trans.DefaultHostGraph;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
@@ -39,6 +37,7 @@ import groove.view.StoredGrammarView;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.BeforeClass;
@@ -65,10 +64,9 @@ public class TestShape {
         try {
             Shape shape = createShape(file);
             assertEquals(5, shape.nodeSet().size());
-            assertEquals(7, Util.getBinaryEdges(shape).size());
+            assertEquals(7, getBinaryEdges(shape).size());
             Multiplicity oneMult = Multiplicity.getMultOf(1);
-            for (Edge edge : Util.getBinaryEdges(shape)) {
-                ShapeEdge se = (ShapeEdge) edge;
+            for (ShapeEdge se : getBinaryEdges(shape)) {
                 assertTrue(shape.getEdgeOutMult(se).equals(oneMult));
                 assertTrue(shape.getEdgeInMult(se).equals(oneMult));
             }
@@ -83,7 +81,7 @@ public class TestShape {
         try {
             Shape shape = createShape(file);
             assertEquals(10, shape.nodeSet().size());
-            assertEquals(12, Util.getBinaryEdges(shape).size());
+            assertEquals(12, getBinaryEdges(shape).size());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -95,7 +93,7 @@ public class TestShape {
         try {
             Shape shape = createShape(file);
             assertEquals(1, shape.nodeSet().size());
-            assertEquals(1, Util.getBinaryEdges(shape).size());
+            assertEquals(1, getBinaryEdges(shape).size());
             ShapeNode node = shape.nodeSet().iterator().next();
             assertTrue(shape.getNodeMult(node).equals(Multiplicity.OMEGA));
         } catch (IOException e) {
@@ -107,7 +105,7 @@ public class TestShape {
         try {
             Shape shape = createShape(file);
             assertEquals(1, shape.nodeSet().size());
-            assertEquals(1, Util.getBinaryEdges(shape).size());
+            assertEquals(1, getBinaryEdges(shape).size());
             ShapeNode node = shape.nodeSet().iterator().next();
             assertTrue(shape.getNodeMult(node).equals(Multiplicity.getMultOf(3)));
         } catch (IOException e) {
@@ -119,7 +117,7 @@ public class TestShape {
         try {
             Shape shape = createShape(file);
             assertEquals(1, shape.nodeSet().size());
-            assertEquals(1, Util.getBinaryEdges(shape).size());
+            assertEquals(1, getBinaryEdges(shape).size());
             ShapeNode node = shape.nodeSet().iterator().next();
             assertTrue(shape.getNodeMult(node).equals(Multiplicity.OMEGA));
         } catch (IOException e) {
@@ -133,7 +131,7 @@ public class TestShape {
         try {
             Shape shape = createShape(file);
             assertEquals(2, shape.nodeSet().size());
-            assertEquals(2, Util.getBinaryEdges(shape).size());
+            assertEquals(2, getBinaryEdges(shape).size());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -141,7 +139,7 @@ public class TestShape {
         try {
             Shape shape = createShape(file);
             assertEquals(4, shape.nodeSet().size());
-            assertEquals(6, Util.getBinaryEdges(shape).size());
+            assertEquals(6, getBinaryEdges(shape).size());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -149,12 +147,11 @@ public class TestShape {
         try {
             Shape shape = createShape(file);
             assertEquals(2, shape.nodeSet().size());
-            assertEquals(4, Util.getBinaryEdges(shape).size());
+            assertEquals(4, getBinaryEdges(shape).size());
             for (ShapeNode node : shape.nodeSet()) {
                 assertTrue(shape.getNodeMult(node).equals(Multiplicity.OMEGA));
             }
-            for (Edge edge : Util.getBinaryEdges(shape)) {
-                ShapeEdge se = (ShapeEdge) edge;
+            for (ShapeEdge se : getBinaryEdges(shape)) {
                 assertTrue(shape.getEdgeOutMult(se).equals(
                     Multiplicity.getMultOf(1)));
                 assertTrue(shape.getEdgeInMult(se).equals(Multiplicity.OMEGA));
@@ -170,9 +167,8 @@ public class TestShape {
         try {
             Shape shape = createShape(file);
             assertEquals(3, shape.nodeSet().size());
-            assertEquals(2, Util.getBinaryEdges(shape).size());
-            for (Edge edge : Util.getBinaryEdges(shape)) {
-                ShapeEdge se = (ShapeEdge) edge;
+            assertEquals(2, getBinaryEdges(shape).size());
+            for (ShapeEdge se : getBinaryEdges(shape)) {
                 assertTrue(shape.getEdgeOutMult(se).equals(Multiplicity.OMEGA));
             }
         } catch (IOException e) {
@@ -229,6 +225,16 @@ public class TestShape {
         } catch (FormatException e) {
             e.printStackTrace();
         }
+    }
+
+    private Set<ShapeEdge> getBinaryEdges(Shape shape) {
+        Set<ShapeEdge> result = new HashSet<ShapeEdge>();
+        for (ShapeEdge edge : shape.edgeSet()) {
+            if (edge.isBinary()) {
+                result.add(edge);
+            }
+        }
+        return result;
     }
 
     private Shape createShape(File file) throws IOException {

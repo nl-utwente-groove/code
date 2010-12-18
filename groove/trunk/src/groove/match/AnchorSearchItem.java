@@ -16,8 +16,6 @@
  */
 package groove.match;
 
-import groove.graph.Edge;
-import groove.graph.Node;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
@@ -53,7 +51,7 @@ class AnchorSearchItem extends AbstractSearchItem {
         this.nodes = new HashSet<RuleNode>(nodes);
         this.edges = new HashSet<RuleEdge>(edges);
         this.vars = new HashSet<LabelVar>();
-        for (Edge edge : edges) {
+        for (RuleEdge edge : edges) {
             this.vars.addAll(VarSupport.getAllVars(edge));
         }
     }
@@ -85,7 +83,7 @@ class AnchorSearchItem extends AbstractSearchItem {
     }
 
     public void activate(SearchPlanStrategy strategy) {
-        this.nodeIxMap = new HashMap<Node,Integer>();
+        this.nodeIxMap = new HashMap<RuleNode,Integer>();
         for (RuleNode node : this.nodes) {
             assert !strategy.isNodeFound(node) : String.format(
                 "Node %s is not fresh", node);
@@ -93,7 +91,7 @@ class AnchorSearchItem extends AbstractSearchItem {
                 this.nodeIxMap.put(node, strategy.getNodeIx(node));
             }
         }
-        this.edgeIxMap = new HashMap<Edge,Integer>();
+        this.edgeIxMap = new HashMap<RuleEdge,Integer>();
         for (RuleEdge edge : this.edges) {
             assert !strategy.isEdgeFound(edge) : String.format(
                 "Edge %s is not fresh", edge);
@@ -114,7 +112,7 @@ class AnchorSearchItem extends AbstractSearchItem {
      * matched to an actual host graph node. This fails to hold for
      * {@link ProductNode}s that are not {@link VariableNode}s.
      */
-    private boolean isAnchorable(Node node) {
+    private boolean isAnchorable(RuleNode node) {
         return !(node instanceof ProductNode) || node instanceof VariableNode;
     }
 
@@ -123,7 +121,7 @@ class AnchorSearchItem extends AbstractSearchItem {
      * to an actual host graph edge. This fails to hold for {@link ArgumentEdge}s
      * and {@link OperatorEdge}s.
      */
-    private boolean isAnchorable(Edge edge) {
+    private boolean isAnchorable(RuleEdge edge) {
         return !(edge instanceof ArgumentEdge || edge instanceof OperatorEdge);
     }
 
@@ -145,12 +143,12 @@ class AnchorSearchItem extends AbstractSearchItem {
     private boolean allElementsMatched(Search search) {
         if (this.unmatched == null) {
             this.unmatched = new HashSet<Object>();
-            for (Map.Entry<Node,Integer> nodeEntry : this.nodeIxMap.entrySet()) {
+            for (Map.Entry<RuleNode,Integer> nodeEntry : this.nodeIxMap.entrySet()) {
                 if (search.getNode(nodeEntry.getValue()) == null) {
                     this.unmatched.add(nodeEntry.getKey());
                 }
             }
-            for (Map.Entry<Edge,Integer> edgeEntry : this.edgeIxMap.entrySet()) {
+            for (Map.Entry<RuleEdge,Integer> edgeEntry : this.edgeIxMap.entrySet()) {
                 if (search.getEdge(edgeEntry.getValue()) == null) {
                     this.unmatched.add(edgeEntry.getKey());
                 }
@@ -174,12 +172,12 @@ class AnchorSearchItem extends AbstractSearchItem {
      * Mapping from pre-matched nodes (in {@link #nodes}) to their indices in
      * the result.
      */
-    private Map<Node,Integer> nodeIxMap;
+    private Map<RuleNode,Integer> nodeIxMap;
     /**
      * Mapping from pre-matched edges (in {@link #edges}) to their indices in
      * the result.
      */
-    private Map<Edge,Integer> edgeIxMap;
+    private Map<RuleEdge,Integer> edgeIxMap;
     /**
      * Mapping from pre-matched variables (in {@link #vars}) to their indices
      * in the result.

@@ -17,8 +17,6 @@
 package groove.match;
 
 import groove.algebra.Algebra;
-import groove.graph.Edge;
-import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
@@ -142,7 +140,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
      * <code>true</code> if the node already has a result index. Callback method
      * from search items, during activation.
      */
-    boolean isNodeFound(Node node) {
+    boolean isNodeFound(RuleNode node) {
         return this.nodeIxMap.get(node) != null;
     }
 
@@ -151,7 +149,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
      * <code>true</code> if the edge already has a result index. Callback method
      * from search items, during activation.
      */
-    boolean isEdgeFound(Edge edge) {
+    boolean isEdgeFound(RuleEdge edge) {
         return this.edgeIxMap.get(edge) != null;
     }
 
@@ -320,7 +318,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
                 new TypeLabel[SearchPlanStrategy.this.varKeys.length];
             this.noMatches = false;
             if (anchorMap != null) {
-                for (Map.Entry<RuleNode,HostNode> nodeEntry : anchorMap.nodeMap().entrySet()) {
+                for (Map.Entry<RuleNode,? extends HostNode> nodeEntry : anchorMap.nodeMap().entrySet()) {
                     assert isNodeFound(nodeEntry.getKey());
                     int i = getNodeIx(nodeEntry.getKey());
                     this.nodeImages[i] =
@@ -337,7 +335,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
                 // anchorMap.nodeMap().size()) {
                 // noMatches = true;
                 // }
-                for (Map.Entry<RuleEdge,HostEdge> edgeEntry : anchorMap.edgeMap().entrySet()) {
+                for (Map.Entry<RuleEdge,? extends HostEdge> edgeEntry : anchorMap.edgeMap().entrySet()) {
                     assert isEdgeFound(edgeEntry.getKey());
                     int i = getEdgeIx(edgeEntry.getKey());
                     this.edgeImages[i] =
@@ -453,7 +451,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
                 }
             }
             if (isInjective() && !imageIsValueNode) {
-                Node oldImage = this.nodeImages[index];
+                HostNode oldImage = this.nodeImages[index];
                 if (oldImage != null) {
                     boolean removed = getUsedNodes().remove(oldImage);
                     assert removed : String.format(
@@ -487,7 +485,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         }
 
         /** Returns the current edge image at a given index. */
-        final Edge getEdge(int index) {
+        final HostEdge getEdge(int index) {
             return this.edgeImages[index];
         }
 
@@ -561,9 +559,9 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
          * Returns the set of nodes already used as images. This is needed for
          * the injectivity check, if any.
          */
-        private Set<Node> getUsedNodes() {
+        private Set<HostNode> getUsedNodes() {
             if (this.usedNodes == null) {
-                this.usedNodes = new HashSet<Node>();
+                this.usedNodes = new HashSet<HostNode>();
             }
             return this.usedNodes;
         }
@@ -599,7 +597,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
          * The set of non-value nodes already used as images, used for the
          * injectivity test.
          */
-        private Set<Node> usedNodes;
+        private Set<HostNode> usedNodes;
         /** */
         private final boolean noMatches;
         /** Search stack. */

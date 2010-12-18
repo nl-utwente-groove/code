@@ -17,10 +17,10 @@
 package groove.trans;
 
 import groove.graph.Edge;
-import groove.graph.GenericNodeEdgeHashMap;
-import groove.graph.GenericNodeEdgeMap;
+import groove.graph.ElementMap;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.TypeLabel;
@@ -50,9 +50,11 @@ public class DefaultHostGraph extends
      * Turns a given graph into a host graph,
      * by creating the appropriate types of nodes and edges.
      */
-    public <N extends Node,E extends Edge> DefaultHostGraph(Graph<N,?,E> graph) {
-        GenericNodeEdgeMap<N,HostNode,E,HostEdge> map =
-            new GenericNodeEdgeHashMap<N,HostNode,E,HostEdge>();
+    public <N extends Node,L extends Label,E extends Edge> DefaultHostGraph(
+            Graph<N,L,E> graph) {
+        ElementMap<N,L,E,HostNode,TypeLabel,HostEdge> map =
+            new ElementMap<N,L,E,HostNode,TypeLabel,HostEdge>(
+                HostFactory.instance());
         for (N node : graph.nodeSet()) {
             HostNode newNode = addNode(node.getNumber());
             map.putNode(node, newNode);

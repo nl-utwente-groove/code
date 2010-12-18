@@ -132,5 +132,5 @@ public class HostFactory implements ElementFactory<HostNode,TypeLabel,HostEdge> 
     private final static DefaultFactory NODE_FACTORY =
         DefaultFactory.instance();
     /** The factory used for creating labels. */
-    private final static TypeFactory LABEL_FACTORY = TypeFactory.INSTANCE;
+    private final static TypeFactory LABEL_FACTORY = TypeFactory.instance();
 }

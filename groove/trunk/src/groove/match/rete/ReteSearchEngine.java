@@ -16,13 +16,13 @@
  */
 package groove.match.rete;
 
-import groove.graph.DeltaStore;
 import groove.graph.Edge;
 import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.match.SearchEngine;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.Condition;
+import groove.trans.DeltaStore;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
 import groove.trans.Rule;

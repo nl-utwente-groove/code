@@ -263,7 +263,7 @@ public final class TypeLabel extends AbstractLabel {
         return kindDescriptors[labelKind];
     }
 
-    static private final TypeFactory factory = TypeFactory.INSTANCE;
+    static private final TypeFactory factory = TypeFactory.instance();
     /** Separator between label kind prefix and label text. */
     static public final char KIND_SEPARATOR = ':';
     /** Prefix indicating that a label is a node type. */

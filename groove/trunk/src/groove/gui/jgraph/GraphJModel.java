@@ -22,8 +22,6 @@ import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.GenericNodeEdgeHashMap;
-import groove.graph.GenericNodeEdgeMap;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
@@ -43,6 +41,7 @@ import groove.view.aspect.RuleAspect;
 import java.awt.Font;
 import java.awt.Rectangle;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -132,10 +131,10 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
         // add nodes from Graph to GraphModel
         initializeTransients();
         Set<N> addedNodeSet = new HashSet<N>(this.graph.nodeSet());
-        addedNodeSet.removeAll(this.toJCellMap.nodeMap().keySet());
+        addedNodeSet.removeAll(this.nodeJCellMap.keySet());
         addNodeSet(addedNodeSet);
         Set<E> addedEdgeSet = new HashSet<E>(this.graph.edgeSet());
-        addedEdgeSet.removeAll(this.toJCellMap.edgeMap().keySet());
+        addedEdgeSet.removeAll(this.edgeJCellMap.keySet());
         addEdgeSet(addedEdgeSet);
         doInsert();
         GraphProperties graphProperties =
@@ -154,7 +153,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      */
     public Set<Edge> getEdgesBetween(N source, N target) {
         Set<Edge> result = new HashSet<Edge>();
-        for (Map.Entry<E,JCell> cellEntry : this.toJCellMap.edgeMap().entrySet()) {
+        for (Map.Entry<E,? extends JCell> cellEntry : this.edgeJCellMap.entrySet()) {
             Object cell = cellEntry.getValue();
             if (cell instanceof GraphJEdge) {
                 @SuppressWarnings("unchecked")
@@ -214,7 +213,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      *         result.labels().contains(edge.label())
      */
     public JCell getJCell(E edge) {
-        return this.toJCellMap.getEdge(edge);
+        return this.edgeJCellMap.get(edge);
     }
 
     /**
@@ -224,18 +223,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      * @ensure result == null || result.getUserObject() == node
      */
     public GraphJVertex<N,E> getJVertex(N node) {
-        return this.toJCellMap.getNode(node);
-    }
-
-    /**
-     * Sets the layout of the elements in this graph model to the values
-     * provided by a given layout map.
-     */
-    public void applyLayout(LayoutMap<N,E> layoutMap) {
-        Map<Object,AttributeMap> attrMap =
-            layoutMap.afterInverse(this.toJCellMap).toJAttrMap();
-        edit(attrMap, null, null, null);
-        this.layoutableJCells.removeAll(attrMap.keySet());
+        return this.nodeJCellMap.get(node);
     }
 
     /** Stores the layout from the JModel back into the graph. */
@@ -283,11 +271,11 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
 
     /**
      * Creates a j-cell corresponding to a given node in the graph. Adds the
-     * j-cell to {@link #addedJCells}, and updates {@link #toJCellMap}.
+     * j-cell to {@link #addedJCells}, and updates {@link #nodeJCellMap}.
      */
     protected JCell addNode(N node) {
         GraphJVertex<N,E> jVertex = computeJVertex(node);
-        this.toJCellMap.putNode(node, jVertex);
+        this.nodeJCellMap.put(node, jVertex);
         // we add nodes in front of the list to get them in front of the display
         this.addedJCells.add(0, jVertex);
         return jVertex;
@@ -305,7 +293,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
             GraphJVertex<N,E> jVertex = getJVertex((N) edge.source());
             if (jVertex.addSelfEdge(edge)) {
                 // yes, the edge could be added here; we're done
-                this.toJCellMap.putEdge(edge, jVertex);
+                this.edgeJCellMap.put(edge, jVertex);
                 return jVertex;
             }
         }
@@ -328,7 +316,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
         if (!edge.label().isNodeType()) {
             // maybe a j-edge between this source and target is already in the
             // graph
-            for (Edge edgeBetween : getGraph().outEdgeSet(source)) {
+            for (E edgeBetween : getGraph().outEdgeSet(source)) {
                 if (edgeBetween.target().equals(target)) {
                     // see if this edge is appropriate
                     JCell jCell = getJCell(edgeBetween);
@@ -338,7 +326,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
                         if (isLayoutCompatible(jEdge, edge)
                             && jEdge.addEdge(edge)) {
                             // yes, the edge could be added here; we're done
-                            this.toJCellMap.putEdge(edge, jEdge);
+                            this.edgeJCellMap.put(edge, jEdge);
                             return jEdge;
                         }
                     }
@@ -347,7 +335,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
         }
         // none of the above: so create a new j-edge
         GraphJEdge<N,E> jEdge = computeJEdge(edge);
-        this.toJCellMap.putEdge(edge, jEdge);
+        this.edgeJCellMap.put(edge, jEdge);
         // put the edge at the end to make sure it goes to the back
         this.addedJCells.add(jEdge);
         GraphJVertex<N,E> sourceNode = getJVertex(source);
@@ -383,7 +371,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      */
     protected boolean isPotentialUnaryEdge(E edge) {
         return edge.source() == edge.target()
-            && this.layoutMap.getEdge(edge) == null;
+            && this.layoutMap.getLayout(edge) == null;
     }
 
     /**
@@ -395,8 +383,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      * @param edge the edge that is investigated for compatibility
      */
     protected boolean isLayoutCompatible(GraphJEdge<N,E> jEdge, E edge) {
-        JCellLayout edgeLayout = this.layoutMap.getEdge(edge);
-        JCellLayout jEdgeLayout = this.layoutMap.getEdge(jEdge.getEdge());
+        JCellLayout edgeLayout = this.layoutMap.getLayout(edge);
+        JCellLayout jEdgeLayout = this.layoutMap.getLayout(jEdge.getEdge());
         if (edgeLayout == null) {
             return jEdgeLayout == null;
         } else {
@@ -447,7 +435,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
     protected GraphJEdge<N,E> computeJEdge(E edge) {
         GraphJEdge<N,E> result = createJEdge(edge);
         result.getAttributes().applyMap(createJEdgeAttr(result));
-        JEdgeLayout layout = this.layoutMap.getEdge(edge);
+        JEdgeLayout layout = this.layoutMap.getLayout(edge);
         if (layout != null) {
             result.getAttributes().applyMap(layout.toJAttr());
         }
@@ -466,7 +454,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
         GraphJVertex<N,E> result = createJVertex(node);
         result.getAttributes().applyMap(createJVertexAttr(result));
         if (GraphConstants.isMoveable(result.getAttributes())) {
-            JVertexLayout layout = this.layoutMap.getNode(node);
+            JVertexLayout layout = this.layoutMap.getLayout(node);
             if (layout != null) {
                 result.getAttributes().applyMap(layout.toJAttr());
             } else {
@@ -622,7 +610,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      * information.
      */
     private int randomCoordinate() {
-        return randomGenerator.nextInt(this.toJCellMap.size() * 5 + 1);
+        return randomGenerator.nextInt((this.nodeJCellMap.size() + this.edgeJCellMap.size()) * 5 + 1);
     }
 
     /**
@@ -707,10 +695,14 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      */
     private final LayoutMap<N,E> layoutMap;
     /**
-     * Map from graph elements to JGraph cells.
+     * Map from graph nodes to JGraph cells.
      */
-    private final GenericNodeEdgeMap<N,GraphJVertex<N,E>,E,JCell> toJCellMap =
-        new GenericNodeEdgeHashMap<N,GraphJVertex<N,E>,E,JCell>();
+    private final Map<N,GraphJVertex<N,E>> nodeJCellMap =
+        new HashMap<N,GraphJVertex<N,E>>();
+    /**
+     * Map from graph edges to JGraph cells.
+     */
+    private final Map<E,JCell> edgeJCellMap = new HashMap<E,JCell>();
 
     /**
      * Set of GraphModel cells. Used in the process of constructing a

@@ -16,9 +16,7 @@
  */
 package groove.match;
 
-import groove.graph.Edge;
 import groove.graph.LabelStore;
-import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.match.SearchPlanStrategy.Search;
 import groove.trans.HostEdge;
@@ -97,7 +95,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         int result = 0;
         if (other instanceof NodeTypeSearchItem) {
             // compare first the edge labels, then the edge ends
-            Edge otherEdge = ((NodeTypeSearchItem) other).getEdge();
+            RuleEdge otherEdge = ((NodeTypeSearchItem) other).getEdge();
             result = getEdge().label().compareTo(otherEdge.label());
             if (result == 0) {
                 result = getEdge().source().compareTo(otherEdge.source());
@@ -238,7 +236,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         }
 
         /** Tests if the (uniquely determined) edge image can be used. */
-        private boolean isImageCorrect(Edge image) {
+        private boolean isImageCorrect(HostEdge image) {
             return this.host.containsEdge(image);
         }
 
@@ -440,14 +438,14 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         /** Indicates if the source is found before this item is invoked. */
         final private boolean sourceFound;
 
-        private final Node sourcePreMatch;
+        private final HostNode sourcePreMatch;
 
         /**
          * The pre-matched image for the edge source, if any. A value of
          * <code>null</code> means that no image is currently selected for the
          * source, or the source was pre-matched.
          */
-        Node sourceFind;
+        HostNode sourceFind;
         /**
          * Flag indicating the if sources of images returned by
          * {@link #initImages()} have to be checked against the found source
@@ -465,6 +463,6 @@ class NodeTypeSearchItem extends AbstractSearchItem {
          */
         private boolean setEdge;
         /** Image found by the latest call to {@link #find()}, if any. */
-        private Edge selected;
+        private HostEdge selected;
     }
 }

@@ -3,7 +3,7 @@ package groove.view.aspect;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
-import groove.graph.GraphToGraphMap;
+import groove.graph.ElementMap;
 import groove.view.aspect.AspectGraph.AspectFactory;
 
 /**
@@ -13,7 +13,12 @@ import groove.view.aspect.AspectGraph.AspectFactory;
  */
 public class PlainToAspectMap
         extends
-        GraphToGraphMap<DefaultNode,DefaultLabel,DefaultEdge,AspectNode,DefaultLabel,AspectEdge> {
+        ElementMap<DefaultNode,DefaultLabel,DefaultEdge,AspectNode,DefaultLabel,AspectEdge> {
+    /** Creates a fresh, empty map. */
+    public PlainToAspectMap() {
+        super(new AspectFactory());
+    }
+
     @Override
     public AspectFactory getFactory() {
         return new AspectFactory();

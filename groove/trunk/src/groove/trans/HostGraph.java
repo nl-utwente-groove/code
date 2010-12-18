@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.DeltaTarget;
 import groove.graph.Graph;
 import groove.graph.TypeLabel;
 

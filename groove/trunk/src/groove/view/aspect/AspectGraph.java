@@ -23,9 +23,10 @@ import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.ElementFactory;
+import groove.graph.ElementMap;
 import groove.graph.GraphInfo;
-import groove.graph.GraphToGraphMap;
 import groove.graph.Label;
+import groove.graph.Morphism;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.TypeLabel;
 import groove.trans.RuleLabel;
@@ -769,12 +770,11 @@ public class AspectGraph extends
         }
     }
 
-    private static class GraphToAspectMap
-            extends
-            GraphToGraphMap<AspectNode,DefaultLabel,AspectEdge,AspectNode,DefaultLabel,AspectEdge> {
-        @Override
-        public AspectFactory getFactory() {
-            return new AspectFactory();
+    private static class GraphToAspectMap extends
+            Morphism<AspectNode,DefaultLabel,AspectEdge> {
+        /** Constructs a new, empty map. */
+        public GraphToAspectMap() {
+            super(new AspectFactory());
         }
 
         @Override
@@ -785,10 +785,10 @@ public class AspectGraph extends
 
     private static class AspectToPlainMap
             extends
-            GraphToGraphMap<AspectNode,DefaultLabel,AspectEdge,DefaultNode,DefaultLabel,DefaultEdge> {
-        @Override
-        public DefaultFactory getFactory() {
-            return DefaultFactory.instance();
+            ElementMap<AspectNode,DefaultLabel,AspectEdge,DefaultNode,DefaultLabel,DefaultEdge> {
+        /** Constructs a new, empty map. */
+        public AspectToPlainMap() {
+            super(DefaultFactory.instance());
         }
 
         @Override

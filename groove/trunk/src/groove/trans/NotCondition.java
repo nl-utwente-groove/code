@@ -33,7 +33,7 @@ public class NotCondition extends AbstractCondition<CompositeMatch> {
      * Creates a negative condition that attempts to match a given graph, with
      * given root map.
      */
-    public NotCondition(RuleGraph target, RuleToRuleMap rootMap,
+    public NotCondition(RuleGraph target, RuleGraphMorphism rootMap,
             SystemProperties properties) {
         super(null, target, rootMap, properties);
     }
@@ -43,7 +43,7 @@ public class NotCondition extends AbstractCondition<CompositeMatch> {
      * pattern.
      */
     public NotCondition(RuleGraph pattern, SystemProperties properties) {
-        this(pattern, new RuleToRuleMap(), properties);
+        this(pattern, new RuleGraphMorphism(), properties);
     }
 
     /**

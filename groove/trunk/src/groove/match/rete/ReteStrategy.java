@@ -56,8 +56,8 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
     }
 
     @Override
-    public synchronized Iterator<RuleToHostMap> getMatchIter(HostGraph host,
-            RuleToHostMap anchorMap) {
+    public synchronized Iterator<RuleToHostMap> getMatchIter(
+            final HostGraph host, RuleToHostMap anchorMap) {
         Iterator<RuleToHostMap> result =
             (new ArrayList<RuleToHostMap>()).iterator();
         assert this.owner.getNetwork() != null;
@@ -82,7 +82,7 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
                             cc.getConflictSetIterator(anchorMap)) {
                             @Override
                             public RuleToHostMap toOuter(ReteMatch matchMap) {
-                                return matchMap.toRuleToHostMap();
+                                return matchMap.toRuleToHostMap(host.getFactory());
                             }
                         };
                 } else {
@@ -91,7 +91,7 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
                             cc.getConflictSetIterator()) {
                             @Override
                             public RuleToHostMap toOuter(ReteMatch matchMap) {
-                                return matchMap.toRuleToHostMap();
+                                return matchMap.toRuleToHostMap(host.getFactory());
                             }
                         };
                 }

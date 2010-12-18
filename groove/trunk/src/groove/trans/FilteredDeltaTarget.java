@@ -14,12 +14,10 @@
  * 
  * $Id: FilteredDeltaTarget.java,v 1.3 2008-01-30 09:32:51 iovka Exp $
  */
-package groove.graph;
+package groove.trans;
 
-import static groove.graph.DeltaApplier.EDGES_ONLY;
-import static groove.graph.DeltaApplier.NODES_ONLY;
-import groove.trans.HostEdge;
-import groove.trans.HostNode;
+import static groove.trans.DeltaApplier.EDGES_ONLY;
+import static groove.trans.DeltaApplier.NODES_ONLY;
 
 /**
  * A delta target that passes on calls of <code>add...</code> and

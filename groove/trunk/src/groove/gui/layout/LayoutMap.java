@@ -16,8 +16,8 @@
  */
 package groove.gui.layout;
 
-import groove.graph.GenericNodeEdgeHashMap;
-import groove.graph.GenericNodeEdgeMap;
+import groove.graph.Edge;
+import groove.graph.ElementMap;
 import groove.graph.Node;
 
 import java.awt.Point;
@@ -40,8 +40,7 @@ import org.jgraph.graph.VertexView;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class LayoutMap<N,E> extends
-        GenericNodeEdgeHashMap<N,JVertexLayout,E,JEdgeLayout> {
+public class LayoutMap<N extends Node,E extends Edge> {
     /**
      * Tests if a given object is a jgraph vertex, a jgraph vertex view or a
      * groove node.
@@ -49,6 +48,26 @@ public class LayoutMap<N,E> extends
     public static boolean isNode(Object key) {
         return (key instanceof DefaultGraphCell && !(key instanceof DefaultEdge))
             || (key instanceof VertexView) || (key instanceof Node);
+    }
+
+    /** Retrieves the layout information for a given node. */
+    public JVertexLayout getLayout(N node) {
+        return this.nodeMap.get(node);
+    }
+
+    /** Retrieves the layout information for a given edge. */
+    public JEdgeLayout getLayout(E edge) {
+        return this.edgeMap.get(edge);
+    }
+
+    /** Specialises the return type. */
+    public Map<N,JVertexLayout> nodeMap() {
+        return this.nodeMap;
+    }
+
+    /** Specialises the return type. */
+    public Map<E,JEdgeLayout> edgeMap() {
+        return this.edgeMap;
     }
 
     /**
@@ -174,10 +193,9 @@ public class LayoutMap<N,E> extends
      * information if it is not default (according to the layout information
      * itself, i.e., <code>{@link JCellLayout#isDefault}</code>.
      */
-    @Override
     public JVertexLayout putNode(N key, JVertexLayout layout) {
         if (!layout.isDefault()) {
-            return super.putNode(key, layout);
+            return this.nodeMap.put(key, layout);
         } else {
             return null;
         }
@@ -188,10 +206,9 @@ public class LayoutMap<N,E> extends
      * information if it is not default (according to the layout information
      * itself, i.e., <code>{@link JCellLayout#isDefault}</code>.
      */
-    @Override
     public JEdgeLayout putEdge(E key, JEdgeLayout layout) {
         if (!layout.isDefault()) {
-            return super.putEdge(key, layout);
+            return this.edgeMap.put(key, layout);
         } else {
             return null;
         }
@@ -218,21 +235,10 @@ public class LayoutMap<N,E> extends
     }
 
     /**
-     * Specialises the return type of the super method to {@link LayoutMap}.
+     * Composes the inverse of a given element map in front of this layout map.
      */
-    public <OtherN,OtherE> LayoutMap<OtherN,OtherE> after(
-            GenericNodeEdgeMap<OtherN,N,OtherE,E> other) {
-        // return (LayoutMap<OtherN, OtherE>) super.after(other);
-        LayoutMap<OtherN,OtherE> result = newInstance();
-        storeAfter(other, result);
-        return result;
-    }
-
-    /**
-     * Specialises the return type of the super method to {@link LayoutMap}.
-     */
-    public <OtherN,OtherE> LayoutMap<OtherN,OtherE> afterInverse(
-            GenericNodeEdgeMap<N,OtherN,E,OtherE> other) {
+    public <OtherN extends Node,OtherE extends Edge> LayoutMap<OtherN,OtherE> afterInverse(
+            ElementMap<N,?,E,OtherN,?,OtherE> other) {
         LayoutMap<OtherN,OtherE> result = newInstance();
         for (Map.Entry<N,JVertexLayout> layoutEntry : nodeMap().entrySet()) {
             OtherN trafoValue = other.getNode(layoutEntry.getKey());
@@ -250,32 +256,14 @@ public class LayoutMap<N,E> extends
     }
 
     /**
-     * Composes the inverse of a given node-edge map in front of this one, and
-     * stores the result in a map passed in as a parameter. Clears the other map
-     * first.
-     */
-    public <OtherNS,OtherES> void storeAfter(
-            GenericNodeEdgeMap<OtherNS,N,OtherES,E> other,
-            LayoutMap<OtherNS,OtherES> result) {
-        result.clear();
-        for (Map.Entry<OtherNS,N> trafoEntry : other.nodeMap().entrySet()) {
-            JVertexLayout layout = getNode(trafoEntry.getValue());
-            if (layout != null) {
-                result.putNode(trafoEntry.getKey(), layout);
-            }
-        }
-        for (Map.Entry<OtherES,E> trafoEntry : other.edgeMap().entrySet()) {
-            JEdgeLayout layout = getEdge(trafoEntry.getValue());
-            if (layout != null) {
-                result.putEdge(trafoEntry.getKey(), layout);
-            }
-        }
-    }
-
-    /**
      * Specialises the return type of the super method to {@link LayoutMap}.
      */
-    protected <OtherN,OtherE> LayoutMap<OtherN,OtherE> newInstance() {
+    protected <OtherN extends Node,OtherE extends Edge> LayoutMap<OtherN,OtherE> newInstance() {
         return new LayoutMap<OtherN,OtherE>();
     }
+
+    /** Mapping from node keys to <tt>NT</tt>s. */
+    private final Map<N,JVertexLayout> nodeMap = new HashMap<N,JVertexLayout>();
+    /** Mapping from edge keys to <tt>ET</tt>s. */
+    private final Map<E,JEdgeLayout> edgeMap = new HashMap<E,JEdgeLayout>();
 }

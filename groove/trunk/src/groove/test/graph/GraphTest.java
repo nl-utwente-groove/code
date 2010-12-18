@@ -286,14 +286,14 @@ public abstract class GraphTest<N extends Node,L extends Label,E extends Edge> {
 
     @Test
     final public void testOutEdgeSet() {
-        Set<Edge> abEdgeSet = new HashSet<Edge>();
+        Set<E> abEdgeSet = new HashSet<E>();
         abEdgeSet.add(this.aEdge);
         abEdgeSet.add(this.bEdge);
         assertEquals(abEdgeSet, this.graph.outEdgeSet(this.source));
-        assertEquals(new HashSet<Edge>(), this.graph.outEdgeSet(this.aTarget));
+        assertEquals(new HashSet<E>(), this.graph.outEdgeSet(this.aTarget));
         // these sets should be unmodifiable
-        Collection<Edge> bOutEdges =
-            (Collection<Edge>) this.graph.outEdgeSet(this.bTarget);
+        Collection<E> bOutEdges =
+            (Collection<E>) this.graph.outEdgeSet(this.bTarget);
         try {
             bOutEdges.add(this.aEdge);
             fail("Adding to outgoing edge set should not have been allowed");
@@ -301,26 +301,24 @@ public abstract class GraphTest<N extends Node,L extends Label,E extends Edge> {
             // proceed
         }
         // if we add an edge to the graph, that should be visible
-        Edge cEdge =
-            this.graph.addEdge(this.bTarget, this.cLabel, this.aTarget);
-        bOutEdges = new HashSet<Edge>();
+        E cEdge = this.graph.addEdge(this.bTarget, this.cLabel, this.aTarget);
+        bOutEdges = new HashSet<E>();
         bOutEdges.add(cEdge);
         assertEquals(bOutEdges, this.graph.outEdgeSet(this.bTarget));
     }
 
     @Test
     final public void testLabelEdgeSet() {
-        Set<Edge> aEdgeSet = new HashSet<Edge>();
+        Set<E> aEdgeSet = new HashSet<E>();
         aEdgeSet.add(this.aEdge);
-        Set<Edge> bEdgeSet = new HashSet<Edge>();
+        Set<E> bEdgeSet = new HashSet<E>();
         bEdgeSet.add(this.bEdge);
-        Set<Edge> cEdgeSet = new HashSet<Edge>();
+        Set<E> cEdgeSet = new HashSet<E>();
         assertEquals(aEdgeSet, this.graph.labelEdgeSet(this.aLabel));
         assertEquals(bEdgeSet, this.graph.labelEdgeSet(this.bLabel));
         assertEquals(cEdgeSet, this.graph.labelEdgeSet(this.cLabel));
         // if we add an edge to the graph, that should be visible
-        Edge cEdge =
-            this.graph.addEdge(this.bTarget, this.cLabel, this.aTarget);
+        E cEdge = this.graph.addEdge(this.bTarget, this.cLabel, this.aTarget);
         cEdgeSet.add(cEdge);
         assertEquals(cEdgeSet, this.graph.labelEdgeSet(this.cLabel));
     }

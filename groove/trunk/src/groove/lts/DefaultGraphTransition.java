@@ -21,15 +21,19 @@ import groove.control.CtrlTransition;
 import groove.graph.AbstractEdge;
 import groove.graph.AbstractGraph;
 import groove.graph.Element;
+import groove.graph.GraphMorphism;
 import groove.graph.Label;
-import groove.graph.NodeEdgeMap;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.trans.DefaultHostGraph;
+import groove.trans.HostEdge;
 import groove.trans.HostGraph;
+import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
+
+import java.util.Map;
 
 /**
  * Models a transition built upon a rule application
@@ -152,7 +156,7 @@ public class DefaultGraphTransition extends
      * This implementation reconstructs the rule application from the stored
      * footprint, and appends an isomorphism to the actual target if necessary.
      */
-    public NodeEdgeMap getMorphism() {
+    public HostGraphMorphism getMorphism() {
         if (this.morphism == null) {
             this.morphism = computeMorphism();
         }
@@ -163,23 +167,32 @@ public class DefaultGraphTransition extends
      * Constructs an underlying morphism for the transition from the stored
      * footprint.
      */
-    protected NodeEdgeMap computeMorphism() {
+    protected HostGraphMorphism computeMorphism() {
         RuleApplication appl = getEvent().newApplication(source().getGraph());
         if (isSymmetry()) {
             HostGraph derivedTarget = new DefaultHostGraph(appl.getTarget());
             HostGraph realTarget = new DefaultHostGraph(target().getGraph());
-            final NodeEdgeMap map =
+            final GraphMorphism iso =
                 DefaultIsoChecker.getInstance(true).getIsomorphism(
                     derivedTarget, realTarget);
-            assert map != null : "Can't reconstruct derivation from graph transition "
-                + this
+            assert iso != null : "Can't reconstruct derivation from graph transition "
+                + iso
                 + ": \n"
                 + AbstractGraph.toString(derivedTarget)
                 + " and \n"
                 + AbstractGraph.toString(realTarget)
                 + " \nnot isomorphic";
-            NodeEdgeMap iso = map;
-            return appl.getMorphism().then(iso);
+            HostGraphMorphism applMorph = appl.getMorphism();
+            HostGraphMorphism result = applMorph.newMap();
+            for (Map.Entry<HostNode,HostNode> nodeEntry : applMorph.nodeMap().entrySet()) {
+                HostNode target = (HostNode) iso.getNode(nodeEntry.getValue());
+                result.putNode(nodeEntry.getKey(), target);
+            }
+            for (Map.Entry<HostEdge,HostEdge> edgeEntry : applMorph.edgeMap().entrySet()) {
+                HostEdge target = (HostEdge) iso.getEdge(edgeEntry.getValue());
+                result.putEdge(edgeEntry.getKey(), target);
+            }
+            return result;
         } else {
             return appl.getMorphism();
         }
@@ -265,7 +278,7 @@ public class DefaultGraphTransition extends
      * The underlying morphism of this transition. Computed lazily (using the
      * footprint) using {@link #computeMorphism()}.
      */
-    private NodeEdgeMap morphism;
+    private HostGraphMorphism morphism;
     /** Flag indicating that the underlying morphism is a partial identity. */
     private final boolean symmetry;
 

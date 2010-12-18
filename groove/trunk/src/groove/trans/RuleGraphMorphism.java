@@ -16,8 +16,7 @@
  */
 package groove.trans;
 
-import groove.graph.ElementFactory;
-import groove.graph.GraphToGraphMap;
+import groove.graph.Morphism;
 
 /**
  * Default implementation of a generic node-edge-map. The implementation is
@@ -26,21 +25,21 @@ import groove.graph.GraphToGraphMap;
  * @author Arend Rensink
  * @version $Revision: 2754 $
  */
-public class RuleToRuleMap
-        extends
-        GraphToGraphMap<RuleNode,RuleLabel,RuleEdge,RuleNode,RuleLabel,RuleEdge> {
-    @Override
-    public RuleToRuleMap clone() {
-        return (RuleToRuleMap) super.clone();
+public class RuleGraphMorphism extends Morphism<RuleNode,RuleLabel,RuleEdge> {
+    /**
+     * Creates a new, empty map.
+     */
+    public RuleGraphMorphism() {
+        super(RuleFactory.instance());
     }
 
     @Override
-    public RuleToRuleMap newMap() {
-        return new RuleToRuleMap();
+    public RuleGraphMorphism clone() {
+        return (RuleGraphMorphism) super.clone();
     }
 
     @Override
-    public ElementFactory<RuleNode,RuleLabel,RuleEdge> getFactory() {
-        return RuleFactory.INSTANCE;
+    public RuleGraphMorphism newMap() {
+        return new RuleGraphMorphism();
     }
 }

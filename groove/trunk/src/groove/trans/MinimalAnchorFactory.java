@@ -17,9 +17,7 @@
 package groove.trans;
 
 import groove.control.CtrlPar;
-import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 
 import java.util.Arrays;
@@ -52,7 +50,7 @@ public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
     public Element[] newAnchors(SPORule rule) {
         Set<Element> anchors =
             new LinkedHashSet<Element>(Arrays.asList(rule.getEraserNodes()));
-        Set<Node> parameters = new LinkedHashSet<Node>();
+        Set<RuleNode> parameters = new LinkedHashSet<RuleNode>();
         if (rule.isTop()) {
             Set<RuleNode> hiddenPars = rule.getHiddenPars();
             if (hiddenPars != null) {
@@ -67,17 +65,17 @@ public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
         }
         anchors.addAll(parameters);
         // set of endpoints that we will remove again
-        Set<Node> removableEnds = new HashSet<Node>();
-        for (Edge lhsVarEdge : rule.getSimpleVarEdges()) {
+        Set<RuleNode> removableEnds = new HashSet<RuleNode>();
+        for (RuleEdge lhsVarEdge : rule.getSimpleVarEdges()) {
             anchors.add(lhsVarEdge);
             // if we have the edge in the anchors, its end nodes need not be
             // there
             removableEnds.add(lhsVarEdge.source());
             removableEnds.add(lhsVarEdge.target());
         }
-        for (Edge eraserEdge : rule.getEraserEdges()) {
-            Node source = eraserEdge.source();
-            Node target = eraserEdge.target();
+        for (RuleEdge eraserEdge : rule.getEraserEdges()) {
+            RuleNode source = eraserEdge.source();
+            RuleNode target = eraserEdge.target();
             if (!(anchors.contains(source) && anchors.contains(target))) {
                 anchors.add(eraserEdge);
                 // if we have the edge in the anchors, its end nodes need not be

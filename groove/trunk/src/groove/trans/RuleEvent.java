@@ -17,7 +17,6 @@
 package groove.trans;
 
 import groove.graph.Element;
-import groove.graph.MergeMap;
 import groove.graph.Node;
 import groove.lts.GraphTransitionStub;
 import groove.lts.MatchResult;

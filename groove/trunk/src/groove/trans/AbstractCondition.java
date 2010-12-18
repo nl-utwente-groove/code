@@ -54,9 +54,9 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * @param properties properties for matching the condition
      */
     protected AbstractCondition(RuleName name, RuleGraph target,
-            RuleToRuleMap rootMap, SystemProperties properties) {
+            RuleGraphMorphism rootMap, SystemProperties properties) {
         this.ground = (rootMap == null);
-        this.rootMap = this.ground ? new RuleToRuleMap() : rootMap;
+        this.rootMap = this.ground ? new RuleGraphMorphism() : rootMap;
         this.target = target;
         this.systemProperties = properties;
         this.name = name;
@@ -83,14 +83,14 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
         return this.labelStore;
     }
 
-    public RuleToRuleMap getRootMap() {
+    public RuleGraphMorphism getRootMap() {
         return this.rootMap;
     }
 
     public Set<LabelVar> getRootVars() {
         if (this.rootVars == null) {
             this.rootVars = new HashSet<LabelVar>();
-            for (Edge rootEdge : getRootMap().edgeMap().keySet()) {
+            for (RuleEdge rootEdge : getRootMap().edgeMap().keySet()) {
                 this.rootVars.addAll(VarSupport.getAllVars(rootEdge));
             }
         }
@@ -482,7 +482,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * The pattern map of this condition, i.e., the element map from the context
      * graph to the target graph.
      */
-    private final RuleToRuleMap rootMap;
+    private final RuleGraphMorphism rootMap;
 
     /** Set of all variables occurring in root elements. */
     private Set<LabelVar> rootVars;

@@ -258,7 +258,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
     boolean areStillEquivalent(HostNode n0, HostNode n1) {
         boolean equiv = true;
         // For all labels.
-        labelLoop: for (Label label : Util.binaryLabelSet(this.graph)) {
+        labelLoop: for (Label label : Util.getBinaryLabels(this.graph)) {
             // For all equivalence classes.
             for (EquivClass<HostNode> ec : this) {
                 Set<HostEdge> n0InterEc =

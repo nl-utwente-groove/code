@@ -18,7 +18,8 @@ package groove.view;
 
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
-import groove.graph.GraphToGraphMap;
+import groove.graph.ElementFactory;
+import groove.graph.ElementMap;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
@@ -27,6 +28,7 @@ import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -81,7 +83,27 @@ public interface View<Model> {
 
     /** Mapping from view graph elements to model graph elements. */
     abstract class ViewToModelMap<N extends Node,L extends Label,E extends Edge>
-            extends GraphToGraphMap<AspectNode,DefaultLabel,AspectEdge,N,L,E> {
-        // no extra functionality
+            extends ElementMap<AspectNode,DefaultLabel,AspectEdge,N,L,E> {
+        /**
+         * Creates a new map, on the basis of a given factory.
+         */
+        public ViewToModelMap(ElementFactory<N,L,E> factory) {
+            super(factory);
+        }
+
+        /** Specialises the return type. */
+        @SuppressWarnings("unchecked")
+        @Override
+        public Map<AspectNode,N> nodeMap() {
+            return (Map<AspectNode,N>) super.nodeMap();
+        }
+
+        /** Specialises the return type. */
+        @SuppressWarnings("unchecked")
+        @Override
+        public Map<AspectEdge,E> edgeMap() {
+            return (Map<AspectEdge,E>) super.edgeMap();
+        }
+
     }
 }

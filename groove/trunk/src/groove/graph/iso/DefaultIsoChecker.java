@@ -22,10 +22,9 @@ import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.GraphMorphism;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.NodeEdgeHashMap;
-import groove.graph.NodeEdgeMap;
 import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.util.Bag;
 import groove.util.Groove;
@@ -287,7 +286,7 @@ public class DefaultIsoChecker implements IsoChecker {
         // repeatedly look for the next isomorphism until one is found
         // that also maps the domain and codomain nodes correctly
         do {
-            NodeEdgeMap iso =
+            GraphMorphism iso =
                 computeIsomorphism(domCertifier, codCertifier, state);
             result = iso != null;
             if (result && domNodes != null) {
@@ -307,7 +306,7 @@ public class DefaultIsoChecker implements IsoChecker {
      * @param dom the first graph to be compared
      * @param cod the second graph to be compared
      */
-    public <N extends Node,L extends Label,E extends Edge> NodeEdgeMap getIsomorphism(
+    public <N extends Node,L extends Label,E extends Edge> GraphMorphism getIsomorphism(
             Graph<N,L,E> dom, Graph<N,L,E> cod) {
         return getIsomorphism(getCertifier(dom, true), getCertifier(cod, true),
             null);
@@ -323,15 +322,15 @@ public class DefaultIsoChecker implements IsoChecker {
      * @param cod the second graph to be compared
      * @param state the state for the iso checker
      */
-    public <N extends Node,L extends Label,E extends Edge> NodeEdgeMap getIsomorphism(
+    public <N extends Node,L extends Label,E extends Edge> GraphMorphism getIsomorphism(
             Graph<N,L,E> dom, Graph<N,L,E> cod, IsoCheckerState state) {
         return getIsomorphism(getCertifier(dom, true), getCertifier(cod, true),
             state);
     }
 
-    private NodeEdgeMap getIsomorphism(CertificateStrategy domCertifier,
+    private GraphMorphism getIsomorphism(CertificateStrategy domCertifier,
             CertificateStrategy codCertifier, IsoCheckerState state) {
-        NodeEdgeMap result =
+        GraphMorphism result =
             computeIsomorphism(domCertifier, codCertifier, state);
         if (result != null
             && result.nodeMap().size() != domCertifier.getGraph().nodeCount()) {
@@ -377,14 +376,14 @@ public class DefaultIsoChecker implements IsoChecker {
      *        compared
      */
     @SuppressWarnings("unchecked")
-    private NodeEdgeMap computeIsomorphism(CertificateStrategy domCertifier,
+    private GraphMorphism computeIsomorphism(CertificateStrategy domCertifier,
             CertificateStrategy codCertifier, IsoCheckerState state) {
         // make sure the graphs are of the same size
         if (domCertifier.getNodeCertificates().length != codCertifier.getNodeCertificates().length
             || domCertifier.getEdgeCertificates().length != codCertifier.getEdgeCertificates().length) {
             return null;
         }
-        NodeEdgeMap result;
+        GraphMorphism result;
         Set<Node> usedNodeImages;
 
         // Compute a new plan or restore the one from the state.
@@ -395,7 +394,7 @@ public class DefaultIsoChecker implements IsoChecker {
             usedNodeImages = state.usedNodeImages;
             result = state.result;
         } else {
-            result = new NodeEdgeHashMap();
+            result = new GraphMorphism();
             usedNodeImages = new HashSet<Node>();
             plan =
                 computePlan(domCertifier, codCertifier, result, usedNodeImages);
@@ -538,7 +537,7 @@ public class DefaultIsoChecker implements IsoChecker {
 
     private <N extends Node> List<IsoSearchItem> computePlan(
             CertificateStrategy domCertifier, CertificateStrategy codCertifier,
-            NodeEdgeMap resultMap, Set<Node> usedNodeImages) {
+            GraphMorphism resultMap, Set<Node> usedNodeImages) {
         Graph<?,?,?> dom = domCertifier.getGraph();
         List<IsoSearchItem> result = new ArrayList<IsoSearchItem>();
         PartitionMap<Edge> codPartitionMap = codCertifier.getEdgePartitionMap();
@@ -769,7 +768,7 @@ public class DefaultIsoChecker implements IsoChecker {
      * @return <code>true</code> if the key/value-pair was successfully added
      *         to <code>result</code>
      */
-    private boolean setEdge(Edge key, Edge value, NodeEdgeMap result,
+    private boolean setEdge(Edge key, Edge value, GraphMorphism result,
             Set<Node> connectedNodes, Set<Node> usedCodNodes) {
         if (!setNode(key.source(), value.source(), result, connectedNodes,
             usedCodNodes)) {
@@ -786,7 +785,7 @@ public class DefaultIsoChecker implements IsoChecker {
     /**
      * Inserts a node into the result mapping, testing if this is consistent.
      */
-    private boolean setNode(Node end, Node endImage, NodeEdgeMap result,
+    private boolean setNode(Node end, Node endImage, GraphMorphism result,
             Set<Node> connectedNodes, Set<Node> usedCodNodes) {
         Node oldEndImage = result.putNode(end, endImage);
         if (oldEndImage == null) {
@@ -863,7 +862,7 @@ public class DefaultIsoChecker implements IsoChecker {
         return result;
     }
 
-    private boolean checkIsomorphism(Graph<?,?,?> dom, NodeEdgeMap map) {
+    private boolean checkIsomorphism(Graph<?,?,?> dom, GraphMorphism map) {
         for (Edge edge : dom.edgeSet()) {
             if (edge.source() != edge.target()
                 && !map.edgeMap().containsKey(edge)) {
@@ -1105,7 +1104,7 @@ public class DefaultIsoChecker implements IsoChecker {
                 checker.getCertifier(graph1, true).getGraphCertificate());
             for (int i = 0; i < 1000; i++) {
                 DefaultGraph graph2 = new DefaultGraph();
-                NodeEdgeMap nodeMap = new NodeEdgeHashMap();
+                GraphMorphism nodeMap = new GraphMorphism();
                 for (DefaultNode node : graph1.nodeSet()) {
                     DefaultNode newNode = DefaultNode.createNode();
                     graph2.addNode(newNode);
@@ -1303,7 +1302,7 @@ public class DefaultIsoChecker implements IsoChecker {
         /** Array of target nodes in the order of the search plan. */
         Node[] targetImages = null;
         /** Result of the search. */
-        NodeEdgeMap result = null;
+        GraphMorphism result = null;
         /** Position in the search plan. */
         int i = 0;
 

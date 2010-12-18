@@ -46,24 +46,4 @@ public final class ShapeEdge extends groove.trans.HostEdge {
     public ShapeNode target() {
         return (ShapeNode) super.target();
     }
-
-    /**
-     * Creates a shape edge from a given source node, label and target node.
-     * To save space, a set of standard instances is kept internally, and
-     * consulted to return the same object whenever an edge is requested with
-     * the same end nodes and label text.
-     * @param source the source node of the new edge; should not be
-     *        <code>null</code>
-     * @param label for the new edge; should not be <code>null</code>
-     * @param target the target node of the new edge; should not be
-     *        <code>null</code>
-     * @return an edge based on <code>source</code>, <code>label</code> and
-     *         <code>target</code>
-     */
-    static public ShapeEdge createEdge(ShapeNode source, TypeLabel label,
-            ShapeNode target) {
-        return FACTORY.createEdge(source, label, target);
-    }
-
-    private static final ShapeFactory FACTORY = ShapeFactory.instance();
 }
