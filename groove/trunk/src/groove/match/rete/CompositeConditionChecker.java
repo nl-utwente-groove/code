@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
+ * Copyright 2003--2010 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -52,7 +52,7 @@ public class CompositeConditionChecker extends ConditionChecker {
     }
 
     @Override
-    public void receive(ReteMatch match, Action action) {
+    public void receive(ReteMatch match) {
         match.addDominoListener(this.conflictSetMatchDominoAdapter);
         ReteMatch actualPrefixMatchWithCorrectOwner =
             ReteMatch.copyContents(this.parent, match.getSpecialPrefix(), true);
@@ -61,8 +61,7 @@ public class CompositeConditionChecker extends ConditionChecker {
     }
 
     @Override
-    public void receive(DisconnectedSubgraphChecker antecedent,
-            ReteMatch match, Action action) {
+    public void receive(DisconnectedSubgraphChecker antecedent, ReteMatch match) {
         throw new UnsupportedOperationException();
     }
 

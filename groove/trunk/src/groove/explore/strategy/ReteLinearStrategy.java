@@ -1,5 +1,5 @@
 /*
- * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2010
  * University of Twente
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not

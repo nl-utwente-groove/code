@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
+ * Copyright 2003--2010 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -142,7 +142,7 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
      * Receives a matched edge/node during runtime from an EdgeChecker/NodeChecker antecedent
      * and passes along down the RETE network based on the rules of the algorithm.
      * 
-     * This method uses the {@link #receive(ReteNetworkNode, int, ReteMatch, Action)} variant
+     * This method uses the {@link #receive(ReteNetworkNode, int, ReteMatch)} variant
      * to do the actual job.
      * 
      * @param source The n-node that is calling this method.
@@ -162,7 +162,7 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
                 this.getOwner().isInjective()) : new ReteMatch(source,
                 (Node) mu, this.getOwner().isInjective());
         if (action == Action.ADD) {
-            this.receive(source, repeatIndex, sg, action);
+            this.receive(source, repeatIndex, sg);
         } else {
             TreeHashSet<ReteMatch> memory;
             if (getAntecedents().get(0) != getAntecedents().get(1)) {
@@ -183,7 +183,8 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
     }
 
     /**
-     * Receives a subgraph match of type {@link ReteMatch} from an antecedent
+     * Receives a new subgraph match (resulting from an ADD operation)
+     * of type {@link ReteMatch} from an antecedent
      * and passes along down the RETE network based on the rules of the algorithm.
      *  
      * @param source The n-node that is calling this method.
@@ -194,11 +195,10 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
      *        could be any value from 0 to k-1, which k is the number of 
      *        times <code>source</code> occurs in the list of antecedents. 
      *         
-     * @param subgraph The subgraph match found by <code>source</code>.
-     * @param action Determines if the match is added or removed.     
+     * @param subgraph The subgraph match found by <code>source</code>.     
      */
     public void receive(ReteNetworkNode source, int repeatIndex,
-            ReteMatch subgraph, Action action) {
+            ReteMatch subgraph) {
 
         TreeHashSet<ReteMatch> memory;
         TreeHashSet<ReteMatch> otherMemory;
@@ -214,14 +214,8 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
         otherMemory =
             (memory == this.leftMemory) ? this.rightMemory : this.leftMemory;
 
-        if (action == Action.ADD) {
-            //assert memory.indexOf(subgraph) == -1;
-            memory.add(subgraph);
-            subgraph.addContainerCollection(memory);
-        } else {
-            memory.remove(subgraph);
-            //assert memory.indexOf(subgraph) == -1;
-        }
+        memory.add(subgraph);
+        subgraph.addContainerCollection(memory);
         for (ReteMatch gOther : otherMemory) {
             ReteMatch left = (memory == this.leftMemory) ? subgraph : gOther;
             ReteMatch right = (left == subgraph) ? gOther : subgraph;
@@ -235,12 +229,12 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
                         (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
                     if (n instanceof SubgraphCheckerNode) {
                         ((SubgraphCheckerNode) n).receive(this,
-                            repeatedSuccessorIndex, combined, action);
+                            repeatedSuccessorIndex, combined);
                     } else if (n instanceof ConditionChecker) {
-                        ((ConditionChecker) n).receive(combined, action);
+                        ((ConditionChecker) n).receive(combined);
                     } else if (n instanceof DisconnectedSubgraphChecker) {
                         ((DisconnectedSubgraphChecker) n).receive(this,
-                            repeatedSuccessorIndex, combined, action);
+                            repeatedSuccessorIndex, combined);
                     }
                     previous = n;
                 }
@@ -267,16 +261,14 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
         int i = 0;
         for (; i < this.fastEqualityLookupTable.length; i++) {
             int[] equality = this.fastEqualityLookupTable[i];
+            //The equalities are guaranteed to work on edges because
+            //isolated nodes do not occur in connected components
             Node n1 =
-                (equality[1] == -1) ? (Node) leftUnits[equality[0]]
-                        : (equality[1] == 0)
-                                ? ((Edge) leftUnits[equality[0]]).source()
-                                : ((Edge) leftUnits[equality[0]]).target();
+                (equality[1] == 0) ? ((Edge) leftUnits[equality[0]]).source()
+                        : ((Edge) leftUnits[equality[0]]).target();
             Node n2 =
-                (equality[3] == -1) ? (Node) rightUnits[equality[2]]
-                        : (equality[3] == 0)
-                                ? ((Edge) rightUnits[equality[2]]).source()
-                                : ((Edge) rightUnits[equality[2]]).target();
+                (equality[3] == 0) ? ((Edge) rightUnits[equality[2]]).source()
+                        : ((Edge) rightUnits[equality[2]]).target();
 
             allEqualitiesSatisfied = n1.equals(n2);
 

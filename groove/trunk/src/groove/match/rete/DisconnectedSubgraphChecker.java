@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
+ * Copyright 2003--2010 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -113,7 +113,7 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
                 (Node) mu, this.getOwner().isInjective());
 
         if (action == Action.ADD) {
-            this.receive(source, repeatIndex, sg, action);
+            this.receive(source, repeatIndex, sg);
         } else {
             TreeHashSet<ReteMatch> memory = getPartialMatchesFor(source);
             if (memory.contains(sg)) {
@@ -137,12 +137,9 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
      *        could be any value from 0 to k-1, which k is the number of 
      *        times <code>source</code> occurs in the list of antecedents. 
      * @param match The match object found by <code>source</code>.
-     * @param action Determines if the match is added or removed.
      */
-    public void receive(ReteNetworkNode source, int repeatIndex,
-            ReteMatch match, Action action) {
-        assert action == Action.ADD;
-        produceAndSendDownNewMatches(source, repeatIndex, match, action);
+    public void receive(ReteNetworkNode source, int repeatIndex, ReteMatch match) {
+        produceAndSendDownNewMatches(source, repeatIndex, match);
     }
 
     /**
@@ -158,42 +155,35 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
      *        could be any value from 0 to k-1, which k is the number of 
      *        times <code>antecedent</code> occurs in the list of antecedents. 
      * @param m The newly received partial match
-     * @param action Determines if the match is added to removed from the network.
      */
     protected void produceAndSendDownNewMatches(ReteNetworkNode antecedent,
-            int repeatIndex, ReteMatch m, Action action) {
+            int repeatIndex, ReteMatch m) {
 
-        if (action == Action.ADD) {
-            TreeHashSet<ReteMatch> c = this.getPartialMatchesFor(antecedent);
-            if (c.isEmpty() || (repeatIndex == 0)) {
-                c.add(m);
-                m.addContainerCollection(c);
-            }
+        TreeHashSet<ReteMatch> c = this.getPartialMatchesFor(antecedent);
+        if (c.isEmpty() || (repeatIndex == 0)) {
+            c.add(m);
+            m.addContainerCollection(c);
+        }
 
-            List<ReteMatch> completeMatches =
-                this.makeWholeMatchesIfPossible(antecedent, repeatIndex, m);
+        List<ReteMatch> completeMatches =
+            this.makeWholeMatchesIfPossible(antecedent, repeatIndex, m);
 
-            if (completeMatches != null) {
-                for (ReteMatch completeMatch : completeMatches) {
-                    ReteNetworkNode previous = null;
-                    int repeatedSuccessorIndex = 0;
-                    for (ReteNetworkNode n : this.getSuccessors()) {
-                        repeatedSuccessorIndex =
-                            (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
-                        if (n instanceof ConditionChecker) {
-                            ((ConditionChecker) n).receive(this, completeMatch,
-                                action);
-                        } else if (n instanceof SubgraphCheckerNode) {
-                            ((SubgraphCheckerNode) n).receive(this,
-                                repeatedSuccessorIndex, completeMatch, action);
-                        }
-                        previous = n;
+        if (completeMatches != null) {
+            for (ReteMatch completeMatch : completeMatches) {
+                ReteNetworkNode previous = null;
+                int repeatedSuccessorIndex = 0;
+                for (ReteNetworkNode n : this.getSuccessors()) {
+                    repeatedSuccessorIndex =
+                        (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
+                    if (n instanceof ConditionChecker) {
+                        ((ConditionChecker) n).receive(this, completeMatch);
+                    } else if (n instanceof SubgraphCheckerNode) {
+                        ((SubgraphCheckerNode) n).receive(this,
+                            repeatedSuccessorIndex, completeMatch);
                     }
+                    previous = n;
                 }
             }
-        } else {
-            throw new RuntimeException(
-                "Removal should be performed through the domino system.");
         }
     }
 

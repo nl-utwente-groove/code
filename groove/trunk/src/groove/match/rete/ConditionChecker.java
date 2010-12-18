@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
+ * Copyright 2003--2010 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -331,32 +331,29 @@ public class ConditionChecker extends ReteNetworkNode implements
     /**
      * Receives a match of the subgraph representing the lhs of this n-node's
      * associated production rule and turns it into a LHS-to-HOST match and
-     * saves/removes it into/from the conflict set.
+     * saves it into the conflict set.
      *  
      * @param match The match object that is to added/removed to/from the conflict set.
-     * @param action Determines if the match is removed or is to be added.
      */
-    public void receive(ReteMatch match, Action action) {
+    public void receive(ReteMatch match) {
         ReteMatch m = new ReteMatch(this, this.getOwner().isInjective(), match);
-        updateConflictSet(m, action);
+        updateConflictSet(m, Action.ADD);
     }
 
     /**
      * Receives a match of the subgraph representing the disconnected LHS/target
      * of this n-node's {@link #condition} and turns it into a LHS-to-HOST match and
-     * saves/removes it into/from the conflict set.
+     * saves it into the conflict set.
      *  
      * This method is only called if the target of this node's {@link #condition}
      * is not a connected graph.
      * 
      * @param antecedent The antecedent that is calling this method. 
      * @param match The match that is to be added/removed to/from the conflict set.
-     * @param action Determines if the match is to be added or removed.
      */
-    public void receive(DisconnectedSubgraphChecker antecedent,
-            ReteMatch match, Action action) {
+    public void receive(DisconnectedSubgraphChecker antecedent, ReteMatch match) {
         ReteMatch m = new ReteMatch(this, this.getOwner().isInjective(), match);
-        updateConflictSet(m, action);
+        updateConflictSet(m, Action.ADD);
     }
 
     /**
