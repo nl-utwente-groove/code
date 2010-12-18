@@ -46,7 +46,10 @@ public class RuleName implements Comparable<RuleName> {
      */
     public RuleName(String name) {
         this.tokens = name.split("\\" + SEPARATOR);
-        this.parent = null;
+        int lastSeparator = name.lastIndexOf(SEPARATOR);
+        this.parent =
+            lastSeparator < 0 ? null : new RuleName(name.substring(0,
+                lastSeparator));
         this.text = name;
     }
 
