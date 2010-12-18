@@ -39,16 +39,18 @@ public final class DefaultLabel extends AbstractLabel {
 
     // ------------------------- OBJECT OVERRIDES ---------------------
 
-    /**
-     * Overrides the method to use the text index.
-     */
+    /* A LabelTree may mix labels of different kinds, therefore it is 
+     * better for now to keep to the default notion of equality
     @Override
     public boolean equals(Object obj) {
         boolean result = this == obj;
         // test that inequality of objects implies inequality of content
-        assert result == super.equals(obj);
+        assert result == super.equals(obj) : String.format(
+            "Distinct label objects of type %s and %s for label %s",
+            this.getClass().getName(), obj.getClass().getName(), text());
         return result;
     }
+    */
 
     /**
      * Returns the index of this default label.

@@ -20,9 +20,9 @@ import groove.algebra.Operation;
 import groove.graph.AbstractLabel;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
-import groove.rel.RegAut;
 import groove.rel.AutomatonCalculator;
 import groove.rel.LabelVar;
+import groove.rel.RegAut;
 import groove.rel.RegExpr;
 import groove.util.Groove;
 import groove.util.Property;
@@ -87,9 +87,8 @@ public class RuleLabel extends AbstractLabel {
     @Override
     public int getKind() {
         int result = super.getKind();
-        RegExpr expr = getRegExpr();
         if (isWildcard()) {
-            result = ((RegExpr.Wildcard) expr).getKind();
+            result = ((RegExpr.Wildcard) getMatchExpr()).getKind();
         } else if (isSharp() || isAtom()) {
             result = getTypeLabel().getKind();
         }
@@ -106,7 +105,7 @@ public class RuleLabel extends AbstractLabel {
         } else if (isArgument()) {
             result = "" + Groove.LC_PI + getArgument();
         } else {
-            result = getRegExpr().toString();
+            result = getMatchExpr().toString();
             // if the label is not binary, it means the regular expression
             // is preceded with a kind prefix that we have to strip off
             // in order to get the label text
@@ -119,9 +118,21 @@ public class RuleLabel extends AbstractLabel {
     }
 
     /**
+     * Indicates if this rule label can be matched, i.e.,
+     * it is not an argument or operator label.
+     * A label is matchable if and only if {@link #getMatchExpr()} returns
+     * a value different from {@code null}.
+     * @see #isArgument()
+     * @see #isOperator()
+     */
+    public boolean isMatchable() {
+        return this.regExpr != null;
+    }
+
+    /**
      * Returns the underlying regular expression.
      */
-    public RegExpr getRegExpr() {
+    public RegExpr getMatchExpr() {
         return this.regExpr;
     }
 
@@ -133,9 +144,9 @@ public class RuleLabel extends AbstractLabel {
      * used to match node type labels properly; non-{@code null}
      */
     public RegAut getAutomaton(LabelStore labelStore) {
-        if (getRegExpr() != null && this.automaton == null
+        if (isMatchable() && this.automaton == null
             || this.automaton.getLabelStore() != labelStore) {
-            this.automaton = calculator.compute(getRegExpr(), labelStore);
+            this.automaton = calculator.compute(getMatchExpr(), labelStore);
         }
         return this.automaton;
     }
@@ -153,7 +164,8 @@ public class RuleLabel extends AbstractLabel {
                     other.isOperator()
                         && getOperator().equals(other.getOperator());
             } else {
-                result = getRegExpr().equals(other.getRegExpr());
+                assert isMatchable();
+                result = getMatchExpr().equals(other.getMatchExpr());
             }
         }
         return result;
@@ -173,7 +185,7 @@ public class RuleLabel extends AbstractLabel {
      * <code>null</code> otherwise.
      */
     public String getAtomText() {
-        RegExpr expr = getRegExpr();
+        RegExpr expr = getMatchExpr();
         return expr instanceof RegExpr.Atom ? ((RegExpr.Atom) expr).text()
                 : null;
     }
@@ -186,7 +198,7 @@ public class RuleLabel extends AbstractLabel {
      * <code>null</code> otherwise.
      */
     public TypeLabel getTypeLabel() {
-        RegExpr expr = getRegExpr();
+        RegExpr expr = getMatchExpr();
         if (expr instanceof RegExpr.Atom) {
             return ((RegExpr.Atom) expr).toTypeLabel();
         } else if (expr instanceof RegExpr.Sharp) {
@@ -201,7 +213,7 @@ public class RuleLabel extends AbstractLabel {
      * {@link RegExpr.Empty}.
      */
     public boolean isEmpty() {
-        return getRegExpr() instanceof RegExpr.Empty;
+        return getMatchExpr() instanceof RegExpr.Empty;
     }
 
     /**
@@ -209,7 +221,7 @@ public class RuleLabel extends AbstractLabel {
      * {@link RegExpr.Sharp}.
      */
     public boolean isSharp() {
-        RegExpr regExpr = getRegExpr();
+        RegExpr regExpr = getMatchExpr();
         return regExpr == null ? false : regExpr.isSharp();
     }
 
@@ -219,7 +231,7 @@ public class RuleLabel extends AbstractLabel {
      * Returns {@code null} otherwise.
      */
     public TypeLabel getSharpLabel() {
-        RegExpr regExpr = getRegExpr();
+        RegExpr regExpr = getMatchExpr();
         return regExpr == null ? null : regExpr.getSharpLabel();
     }
 
@@ -228,7 +240,7 @@ public class RuleLabel extends AbstractLabel {
      * {@link RegExpr.Wildcard}.
      */
     public boolean isWildcard() {
-        RegExpr regExpr = getRegExpr();
+        RegExpr regExpr = getMatchExpr();
         return regExpr == null ? false : regExpr.isWildcard();
     }
 
@@ -237,7 +249,7 @@ public class RuleLabel extends AbstractLabel {
      * Returns <code>null</code> otherwise.
      */
     public LabelVar getWildcardId() {
-        RegExpr regExpr = getRegExpr();
+        RegExpr regExpr = getMatchExpr();
         return regExpr == null ? null : regExpr.getWildcardId();
     }
 
@@ -248,7 +260,7 @@ public class RuleLabel extends AbstractLabel {
      * Returns {@code -1} otherwise.
      */
     public int getWildcardKind() {
-        RegExpr regExpr = getRegExpr();
+        RegExpr regExpr = getMatchExpr();
         return regExpr == null ? null : regExpr.getWildcardKind();
     }
 
@@ -258,7 +270,7 @@ public class RuleLabel extends AbstractLabel {
      * Returns <code>null</code> in all other cases.
      */
     public Property<TypeLabel> getWildcardGuard() {
-        RegExpr regExpr = getRegExpr();
+        RegExpr regExpr = getMatchExpr();
         return regExpr == null ? null : regExpr.getWildcardGuard();
     }
 
@@ -276,7 +288,7 @@ public class RuleLabel extends AbstractLabel {
      * expression. Returns <code>null</code> otherwise.
      */
     public List<RegExpr> getChoiceOperands() {
-        RegExpr expr = getRegExpr();
+        RegExpr expr = getMatchExpr();
         if (expr instanceof RegExpr.Choice) {
             return ((RegExpr.Choice) expr).getOperands();
         }
@@ -297,7 +309,7 @@ public class RuleLabel extends AbstractLabel {
      * <code>null</code> in all other cases.
      */
     public List<RegExpr> getSeqOperands() {
-        RegExpr expr = getRegExpr();
+        RegExpr expr = getMatchExpr();
         if (expr instanceof RegExpr.Seq) {
             return ((RegExpr.Seq) expr).getOperands();
         }
@@ -318,7 +330,7 @@ public class RuleLabel extends AbstractLabel {
      * Returns <code>null</code> otherwise.
      */
     public RegExpr getStarOperand() {
-        RegExpr expr = getRegExpr();
+        RegExpr expr = getMatchExpr();
         if (expr instanceof RegExpr.Star) {
             return ((RegExpr.Star) expr).getOperand();
         }
@@ -339,7 +351,7 @@ public class RuleLabel extends AbstractLabel {
      * Returns <code>null</code> otherwise.
      */
     public RegExpr getPlusOperand() {
-        RegExpr expr = getRegExpr();
+        RegExpr expr = getMatchExpr();
         if (expr instanceof RegExpr.Plus) {
             return ((RegExpr.Plus) expr).getOperand();
         }
@@ -361,7 +373,7 @@ public class RuleLabel extends AbstractLabel {
      */
     public RuleLabel getInvLabel() {
         RuleLabel result = null;
-        RegExpr expr = getRegExpr();
+        RegExpr expr = getMatchExpr();
         if (expr instanceof RegExpr.Inv) {
             result = ((RegExpr.Inv) expr).getOperand().toLabel();
         }
@@ -382,7 +394,7 @@ public class RuleLabel extends AbstractLabel {
      * <code>null</code> in all other cases.
      */
     public RegExpr getNegOperand() {
-        RegExpr expr = getRegExpr();
+        RegExpr expr = getMatchExpr();
         if (expr instanceof RegExpr.Neg) {
             return ((RegExpr.Neg) expr).getOperand();
         }

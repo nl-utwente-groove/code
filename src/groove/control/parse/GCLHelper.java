@@ -206,9 +206,9 @@ public class GCLHelper {
     CtrlType checkType(MyTree typeTree) {
         CtrlType result;
         if (typeTree.getType() == GCLNewChecker.NODE) {
-            result = CtrlType.createNodeType();
+            result = CtrlType.getNodeType();
         } else {
-            result = CtrlType.createDataType(typeTree.getText());
+            result = CtrlType.getDataType(typeTree.getText());
         }
         typeTree.setCtrlType(result);
         return result;

@@ -244,7 +244,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         for (int i = 0; i < sig.size(); i++) {
             String parName = "arg" + (i + 1);
             String parTypeName = sig.get(i).getType().toString();
-            CtrlType parType = CtrlType.createType(parTypeName);
+            CtrlType parType = CtrlType.getType(parTypeName);
             CtrlVar var = new CtrlVar(parName, parType);
             CtrlPar.Var par;
             boolean inOnly = sig.get(i).isInOnly();

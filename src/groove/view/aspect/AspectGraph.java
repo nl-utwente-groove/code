@@ -28,7 +28,6 @@ import groove.graph.GraphToGraphMap;
 import groove.graph.Label;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.TypeLabel;
-import groove.rel.RegExpr;
 import groove.trans.RuleLabel;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
@@ -396,27 +395,24 @@ public class AspectGraph extends
             new HashMap<AspectEdge,AspectEdge>();
         for (AspectEdge edge : result.edgeSet()) {
             try {
-                Label label = edge.getModelLabel();
-                TypeLabel replacement = null;
-                if (label instanceof TypeLabel) {
-                    if (label.equals(oldLabel)) {
-                        replacement = newLabel;
+                Label edgeLabel = edge.getModelLabel();
+                String replacement = null;
+                if (edgeLabel instanceof TypeLabel) {
+                    if (edgeLabel.equals(oldLabel)) {
+                        replacement = TypeLabel.toPrefixedString(newLabel);
                     }
                 } else {
-                    assert label instanceof RuleLabel;
-                    RegExpr expr = ((RuleLabel) label).getRegExpr();
-                    if (expr != null) {
-                        RuleLabel ruleLabel =
-                            expr.relabel(oldLabel, newLabel).toLabel();
+                    RuleLabel oldEdgeLabel = (RuleLabel) edgeLabel;
+                    if (oldEdgeLabel.isMatchable()) {
                         replacement =
-                            RuleLabelParser.getInstance(false).unparse(
-                                ruleLabel);
+                            oldEdgeLabel.getMatchExpr().relabel(oldLabel,
+                                newLabel).toString();
                     }
                 }
                 if (replacement != null) {
                     AspectMap newData = edge.getAspectMap().clone();
                     newData.remove(TypeAspect.getInstance());
-                    newData.setText(TypeLabel.toPrefixedString(replacement));
+                    newData.setText(replacement);
                     oldToNew.put(edge,
                         createAspectEdge(edge.source(), edge.target(), newData));
                 }
