@@ -876,6 +876,12 @@ public class DefaultRuleView implements RuleView {
             Level sourceLevel = getLevel(edge.source());
             Level targetLevel = getLevel(edge.target());
             Level result = sourceLevel.max(targetLevel);
+            // if one of the end nodes is a NAC, it must be the max of the two
+            if (RuleAspect.inNAC(edge.source()) && !sourceLevel.equals(result)
+                || RuleAspect.inNAC(edge.target())
+                && !targetLevel.equals(result)) {
+                result = null;
+            }
             if (result == null) {
                 throw new FormatException(
                     "Source and target of edge %s have incompatible nesting",
@@ -959,7 +965,7 @@ public class DefaultRuleView implements RuleView {
                     computeEdgeImage(viewEdge, this.viewToRuleMap.nodeMap());
                 if (result != null) {
                     this.viewToRuleMap.putEdge(viewEdge, result);
-                    RegExpr labelExpr = result.label().getRegExpr();
+                    RegExpr labelExpr = result.label().getMatchExpr();
                     if (labelExpr != null) {
                         this.labelSet.addAll(labelExpr.getTypeLabels());
                     }
@@ -1974,15 +1980,14 @@ public class DefaultRuleView implements RuleView {
                 CtrlType varType;
                 AspectValue av = AttributeAspect.getAttributeValue(node);
                 if (av == null) {
-                    varType = CtrlType.createNodeType();
+                    varType = CtrlType.getNodeType();
                 } else if (AttributeAspect.VALUE.equals(av)) {
-                    throw new FormatException(
-                        "Untyped attribute cannot be used as parameter", node);
+                    varType = CtrlType.getAttrType();
                 } else if (AttributeAspect.PRODUCT.equals(av)) {
                     throw new FormatException(
                         "Product node cannot be used as parameter", node);
                 } else {
-                    varType = CtrlType.createDataType(av.getName());
+                    varType = CtrlType.getDataType(av.getName());
                 }
                 CtrlVar var = new CtrlVar("arg" + nr, varType);
                 boolean inOnly = parDir == Rule.PARAMETER_INPUT;

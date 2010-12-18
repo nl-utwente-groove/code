@@ -45,7 +45,7 @@ public class VarSupport {
     static public Set<LabelVar> getAllVars(Edge edge) {
         Set<LabelVar> result = Collections.emptySet();
         if (edge.label() instanceof RuleLabel) {
-            RegExpr expr = ((RuleLabel) edge.label()).getRegExpr();
+            RegExpr expr = ((RuleLabel) edge.label()).getMatchExpr();
             if (expr != null) {
                 result = expr.allVarSet();
             }
@@ -74,7 +74,7 @@ public class VarSupport {
     static public Set<LabelVar> getBoundVars(Edge edge) {
         Set<LabelVar> result = Collections.emptySet();
         if (edge.label() instanceof RuleLabel) {
-            RegExpr expr = ((RuleLabel) edge.label()).getRegExpr();
+            RegExpr expr = ((RuleLabel) edge.label()).getMatchExpr();
             if (expr != null) {
                 result = expr.boundVarSet();
             }

@@ -292,7 +292,7 @@ public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
         Set<? extends Label> result;
         Label label = getLabel(edge);
         if (label instanceof RuleLabel) {
-            result = ((RuleLabel) label).getRegExpr().getTypeLabels();
+            result = ((RuleLabel) label).getMatchExpr().getTypeLabels();
             if (result.isEmpty()) {
                 result = Collections.singleton(NO_LABEL);
             }

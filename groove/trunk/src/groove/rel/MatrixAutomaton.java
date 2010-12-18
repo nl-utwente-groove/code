@@ -271,7 +271,7 @@ public class MatrixAutomaton extends
                     new HashSet<LabelVar>(sourceAllVarSet);
                 Set<LabelVar> targetBoundVarSet =
                     new HashSet<LabelVar>(sourceBoundVarSet);
-                RegExpr expr = ((RuleLabel) outEdge.label()).getRegExpr();
+                RegExpr expr = ((RuleLabel) outEdge.label()).getMatchExpr();
                 targetAllVarSet.addAll(expr.allVarSet());
                 targetBoundVarSet.addAll(expr.boundVarSet());
                 if (allVarMap.containsKey(target)) {

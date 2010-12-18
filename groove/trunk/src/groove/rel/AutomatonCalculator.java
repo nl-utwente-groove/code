@@ -230,7 +230,7 @@ public class AutomatonCalculator implements RegExprCalculator<RegAut> {
         RuleLabel result;
         RuleLabel invLabel = label.getInvLabel();
         if (invLabel == null) {
-            result = label.getRegExpr().inv().toLabel();
+            result = label.getMatchExpr().inv().toLabel();
         } else {
             result = invLabel;
         }

@@ -25,6 +25,7 @@ import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
+import groove.rel.RegAut;
 import groove.rel.RegExpr;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -472,7 +473,7 @@ public class RuleDependencies {
                     presence = false;
                 } else {
                     affectedSet = positive;
-                    presence = !label.getRegExpr().isAcceptsEmptyWord();
+                    presence = !label.getMatchExpr().isAcceptsEmptyWord();
                 }
                 affectedSet.addAll(getMatchedLabels(label));
                 if (presence) {
@@ -571,12 +572,12 @@ public class RuleDependencies {
     private Set<TypeLabel> getMatchedLabels(RuleLabel label) {
         assert !label.isNeg();
         Set<TypeLabel> result = new HashSet<TypeLabel>();
-        RegExpr expr = label.getRegExpr();
-        if (label.getRegExpr() != null) {
-            for (Label autLabel : label.getAutomaton(this.labelStore).getAlphabet()) {
+        if (label.isMatchable()) {
+            RegAut labelAut = label.getAutomaton(this.labelStore);
+            for (Label autLabel : labelAut.getAlphabet()) {
                 result.add((TypeLabel) autLabel);
             }
-            if (expr.isAcceptsEmptyWord()) {
+            if (labelAut.isAcceptsEmptyWord()) {
                 result.add(ALL_LABEL);
             }
         }

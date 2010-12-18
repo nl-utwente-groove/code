@@ -218,7 +218,7 @@ public abstract class CtrlPar {
             this.node = ValueNode.createValueNode(repr);
             assert this.node != null;
             this.type =
-                CtrlType.createDataType(AlgebraRegister.getSignatureName(repr));
+                CtrlType.getDataType(AlgebraRegister.getSignatureName(repr));
         }
 
         /**
@@ -228,7 +228,7 @@ public abstract class CtrlPar {
             this.node = node;
             this.repr = node.getSymbol();
             this.type =
-                CtrlType.createDataType(AlgebraRegister.getSignatureName(node.getAlgebra()));
+                CtrlType.getDataType(AlgebraRegister.getSignatureName(node.getAlgebra()));
         }
 
         @Override

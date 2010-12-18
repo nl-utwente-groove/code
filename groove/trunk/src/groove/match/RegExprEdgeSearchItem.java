@@ -4,8 +4,8 @@ package groove.match;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.match.SearchPlanStrategy.Search;
-import groove.rel.RegAut;
 import groove.rel.LabelVar;
+import groove.rel.RegAut;
 import groove.rel.RegExpr;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
@@ -39,11 +39,11 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         this.boundNodes.add(edge.source());
         this.boundNodes.add(edge.target());
         RuleLabel label = edge.label();
-        assert label.getRegExpr() != null;
+        assert label.isMatchable();
         this.labelAutomaton = label.getAutomaton(labelStore);
-        this.edgeExpr = label.getRegExpr();
-        this.boundVars = label.getRegExpr().boundVarSet();
-        this.allVars = label.getRegExpr().allVarSet();
+        this.edgeExpr = label.getMatchExpr();
+        this.boundVars = label.getMatchExpr().boundVarSet();
+        this.allVars = label.getMatchExpr().allVarSet();
         this.neededVars = new HashSet<LabelVar>(this.allVars);
         this.neededVars.removeAll(this.boundVars);
     }

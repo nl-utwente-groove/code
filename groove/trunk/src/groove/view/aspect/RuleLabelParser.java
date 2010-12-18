@@ -21,7 +21,6 @@ import static groove.util.ExprParser.LCURLY_CHAR;
 import static groove.util.ExprParser.PLACEHOLDER;
 import static groove.util.ExprParser.RCURLY_CHAR;
 import static groove.util.ExprParser.SINGLE_QUOTE_CHAR;
-import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
 import groove.trans.RuleLabel;
 import groove.util.ExprParser;
@@ -147,24 +146,25 @@ public class RuleLabelParser implements LabelParser {
         return null;
     }
 
-    /** Returns a default label that parses to this RuleLabel. */
-    public TypeLabel unparse(RuleLabel label) {
-        TypeLabel result = null;
-        RegExpr expr = label.getRegExpr();
-        if (expr != null) {
-            String text;
+    /** 
+     * Returns a type label that parses to a given rule label.
+     * Returns {@code null} if the rule label is not matchable.
+     */
+    public String unparse(RuleLabel label) {
+        String result = null;
+        if (label.isMatchable()) {
+            RegExpr expr = label.getMatchExpr();
             if (expr.isNeg()) {
-                text =
+                result =
                     RegExpr.NEG_OPERATOR
                         + unparse(expr.getNegOperand().toLabel());
             } else if (expr.isEmpty() || this.certain) {
-                text = expr.toString();
+                result = expr.toString();
             } else if (expr.isAtom()) {
-                text = expr.getAtomText();
+                result = expr.getAtomText();
             } else {
-                text = LCURLY_CHAR + expr.toString() + RCURLY_CHAR;
+                result = LCURLY_CHAR + expr.toString() + RCURLY_CHAR;
             }
-            result = TypeLabel.createLabel(text);
         }
         return result;
     }

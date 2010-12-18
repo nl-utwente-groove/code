@@ -42,9 +42,13 @@ public class AspectNode extends AbstractNode implements AspectElement {
         return getNumber() ^ getClass().hashCode();
     }
 
+    /** 
+     * Use the same prefix as for default nodes, so the error messages
+     * remain understandable.
+     */
     @Override
     protected String getToStringPrefix() {
-        return "a";
+        return "n";
     }
 
     /**

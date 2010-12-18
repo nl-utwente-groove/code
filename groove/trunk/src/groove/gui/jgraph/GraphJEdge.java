@@ -228,9 +228,8 @@ public class GraphJEdge<N extends Node,E extends Edge> extends JEdge implements
     public Set<? extends Label> getListLabels(E edge) {
         Set<? extends Label> result;
         Label label = getLabel(edge);
-        if (label instanceof RuleLabel
-            && ((RuleLabel) label).getRegExpr() != null) {
-            result = ((RuleLabel) label).getRegExpr().getTypeLabels();
+        if (label instanceof RuleLabel && ((RuleLabel) label).isMatchable()) {
+            result = ((RuleLabel) label).getMatchExpr().getTypeLabels();
         } else {
             result = Collections.singleton(label);
         }
