@@ -228,12 +228,10 @@ public class GraphJEdge<N extends Node,E extends Edge> extends JEdge implements
     public Set<? extends Label> getListLabels(E edge) {
         Set<? extends Label> result;
         Label label = getLabel(edge);
-        if (label instanceof RuleLabel) {
+        if (label instanceof RuleLabel
+            && ((RuleLabel) label).getRegExpr() != null) {
             result = ((RuleLabel) label).getRegExpr().getTypeLabels();
         } else {
-            //            assert label instanceof TypeLabel
-            //                || label instanceof DerivationLabel : String.format(
-            //                "Unexpected label type %s", label.getClass().getName());
             result = Collections.singleton(label);
         }
         return result;
