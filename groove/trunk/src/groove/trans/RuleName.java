@@ -21,6 +21,7 @@
 package groove.trans;
 
 import groove.util.Groove;
+import groove.view.FormatException;
 
 import java.util.Arrays;
 
@@ -44,7 +45,7 @@ public class RuleName implements Comparable<RuleName> {
      * @require <tt>name != null</tt>
      */
     public RuleName(String name) {
-        this.tokens = new String[] {name};
+        this.tokens = name.split("\\" + SEPARATOR);
         this.parent = null;
         this.text = name;
     }
@@ -56,9 +57,14 @@ public class RuleName implements Comparable<RuleName> {
      * child).
      * @param parent the parent structured rule name
      * @param child the child rule name (without enclosing characters)
-     * @require <tt>child != null</tt>
+     * @throws FormatException if {@code child} contains forbidden symbols
      */
-    public RuleName(RuleName parent, String child) {
+    public RuleName(RuleName parent, String child) throws FormatException {
+        if (child.contains(SEPARATOR)) {
+            throw new FormatException(
+                "Rule name %s should not contain separator symbol %s", child,
+                SEPARATOR);
+        }
         int parentSize = parent == null ? 0 : parent.size();
         this.tokens = new String[parentSize + 1];
         if (parent != null) {

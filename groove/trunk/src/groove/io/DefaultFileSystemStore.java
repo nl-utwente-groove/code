@@ -23,6 +23,7 @@ import groove.gui.Options;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
+import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 import groove.view.aspect.AspectGraph;
 
@@ -832,7 +833,11 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      */
     private void loadRules() throws IOException {
         this.ruleMap.clear();
-        collectRules(this.file, null);
+        try {
+            collectRules(this.file, null);
+        } catch (FormatException e) {
+            throw new IOException(e.getMessage());
+        }
     }
 
     private void saveControl(String name, String program) throws IOException {
@@ -876,9 +881,10 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      * @param rulePath rule name prefix for the current directory (with respect
      *        to the global file)
      * @throws IOException if an error occurs while loading a rule graph
+     * @throws FormatException if there is a rule name with an error
      */
     private void collectRules(File directory, RuleName rulePath)
-        throws IOException {
+        throws IOException, FormatException {
         File[] files = directory.listFiles(RULE_FILTER);
         if (files == null) {
             throw new IOException(LOAD_ERROR + ": no files found at "
