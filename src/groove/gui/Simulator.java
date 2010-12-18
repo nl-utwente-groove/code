@@ -4648,8 +4648,10 @@ public class Simulator {
                 Collection<? extends Label> selectedLabels =
                     ((JCell) selection[0]).getListLabels();
                 if (selectedLabels.size() > 0) {
-                    this.oldLabel =
-                        (TypeLabel) selectedLabels.iterator().next();
+                    Label selectedLabel = selectedLabels.iterator().next();
+                    if (selectedLabel instanceof TypeLabel) {
+                        this.oldLabel = (TypeLabel) selectedLabel;
+                    }
                 }
             }
         }
@@ -4660,8 +4662,11 @@ public class Simulator {
             TreePath[] selection =
                 ((LabelTree) e.getSource()).getSelectionPaths();
             if (selection != null && selection.length > 0) {
-                this.oldLabel =
-                    (TypeLabel) ((LabelTree.LabelTreeNode) selection[0].getLastPathComponent()).getLabel();
+                Label selectedLabel =
+                    ((LabelTree.LabelTreeNode) selection[0].getLastPathComponent()).getLabel();
+                if (selectedLabel instanceof TypeLabel) {
+                    this.oldLabel = (TypeLabel) selectedLabel;
+                }
             }
         }
 
