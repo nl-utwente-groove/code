@@ -64,15 +64,5 @@ public class DefaultNode extends AbstractNode implements RuleNode, HostNode,
         return factory.createNode();
     }
 
-    /** Returns the highest default node node number. */
-    public static int getHighestNodeNr() {
-        return factory.getHighestNodeNr();
-    }
-
-    /** Returns the number of created nodes. */
-    public static int getNodeCount() {
-        return factory.getNodeCount();
-    }
-
     static private final DefaultFactory factory = DefaultFactory.instance();
 }

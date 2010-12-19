@@ -16,12 +16,7 @@ public class PlainToAspectMap
         ElementMap<DefaultNode,DefaultLabel,DefaultEdge,AspectNode,DefaultLabel,AspectEdge> {
     /** Creates a fresh, empty map. */
     public PlainToAspectMap() {
-        super(new AspectFactory());
-    }
-
-    @Override
-    public AspectFactory getFactory() {
-        return new AspectFactory();
+        super(AspectFactory.instance());
     }
 
     @Override

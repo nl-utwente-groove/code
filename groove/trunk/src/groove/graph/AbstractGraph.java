@@ -17,6 +17,7 @@
 package groove.graph;
 
 import groove.graph.iso.CertificateStrategy;
+import groove.graph.iso.PartitionRefiner;
 import groove.util.AbstractCacheHolder;
 import groove.util.Dispenser;
 import groove.util.Groove;
@@ -446,7 +447,7 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
      * @param strong if <code>true</code>, a strong certifier is returned.
      * @see CertificateStrategy#getStrength()
      */
-    public CertificateStrategy getCertifier(boolean strong) {
+    public CertificateStrategy<N,L,E> getCertifier(boolean strong) {
         return getCache().getCertifier(strong);
     }
 
@@ -568,8 +569,8 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
      * The current strategy for computing isomorphism certificates.
      * @see #getCertifier(boolean)
      */
-    static private CertificateStrategy certificateFactory =
-        new groove.graph.iso.PartitionRefiner(null);
+    static private CertificateStrategy<?,?,?> certificateFactory =
+        new PartitionRefiner<Node,Label,Edge>((Graph<Node,Label,Edge>) null);
 
     /**
      * Fixed empty graph.
@@ -583,7 +584,7 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
      * @see #getCertifier(boolean)
      */
     static public void setCertificateFactory(
-            CertificateStrategy certificateFactory) {
+            CertificateStrategy<?,?,?> certificateFactory) {
         AbstractGraph.certificateFactory = certificateFactory;
     }
 
@@ -591,7 +592,7 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
      * Returns the strategy for computing isomorphism certificates.
      * @return the strategy for computing isomorphism certificates
      */
-    static public CertificateStrategy getCertificateFactory() {
+    static public CertificateStrategy<?,?,?> getCertificateFactory() {
         return certificateFactory;
     }
 

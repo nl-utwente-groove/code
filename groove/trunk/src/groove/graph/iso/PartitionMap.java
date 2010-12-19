@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public class PartitionMap<E extends Element> {
     /** Adds a pair of certificate and graph element to the partition map. */
-    public void add(Certificate<E> certificate) {
+    public void add(Certificate<? extends E> certificate) {
         E elem = certificate.getElement();
         // retrieve the image of the certificate, if any
         SmallCollection<E> oldPartition = this.partitionMap.get(certificate);
@@ -75,8 +75,8 @@ public class PartitionMap<E extends Element> {
     }
 
     /** The actual mapping. */
-    private final Map<Certificate<E>,SmallCollection<E>> partitionMap =
-        new HashMap<Certificate<E>,SmallCollection<E>>();
+    private final Map<Certificate<? extends E>,SmallCollection<E>> partitionMap =
+        new HashMap<Certificate<? extends E>,SmallCollection<E>>();
     /** Flag indicating if the partition map contains non-singleton images. */
     private boolean oneToOne = true;
 }

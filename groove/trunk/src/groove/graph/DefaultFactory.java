@@ -78,8 +78,14 @@ public class DefaultFactory implements
         return result;
     }
 
+    @Override
+    public Morphism<DefaultNode,DefaultLabel,DefaultEdge> createMorphism() {
+        return new Morphism<DefaultNode,DefaultLabel,DefaultEdge>(this);
+    }
+
     /** Returns the highest default node node number. */
-    public int getHighestNodeNr() {
+    @Override
+    public int getMaxNodeNr() {
         return this.nodeStore.size();
     }
 
@@ -130,7 +136,7 @@ public class DefaultFactory implements
 
     /** Store and factory of canonical default nodes. */
     private final NodeStore<DefaultNode> nodeStore =
-        new NodeStore<DefaultNode>(NODE_PROTOTYPE);
+        new NodeStore<DefaultNode>(new DefaultNode(0));
     /**
      * The internal translation table from strings to standard (non-node type)
      * label indices.
@@ -167,11 +173,13 @@ public class DefaultFactory implements
 
     /** Returns the singleton instance of this factory. */
     public static DefaultFactory instance() {
-        return INSTANCE;
+        // initialise lazily to avoid initialisation circularities
+        if (instance == null) {
+            instance = new DefaultFactory();
+        }
+        return instance;
     }
 
-    /** Used only as a prototype for the store. */
-    private static final DefaultNode NODE_PROTOTYPE = new DefaultNode(0);
     /** Singleton instance of this factory. */
-    private final static DefaultFactory INSTANCE = new DefaultFactory();
+    private static DefaultFactory instance;
 }

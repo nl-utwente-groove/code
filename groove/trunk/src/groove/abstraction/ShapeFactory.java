@@ -64,7 +64,7 @@ public class ShapeFactory extends HostFactory {
     }
 
     @Override
-    public int getHighestNodeNr() {
+    public int getMaxNodeNr() {
         return this.nodeStore.size();
     }
 
@@ -82,6 +82,11 @@ public class ShapeFactory extends HostFactory {
     public void clear() {
         this.edgeSet.clear();
         this.nodeStore.clear();
+    }
+
+    @Override
+    public ShapeMorphism createMorphism() {
+        return new ShapeMorphism();
     }
 
     @Override
@@ -128,11 +133,15 @@ public class ShapeFactory extends HostFactory {
 
     /** Returns the singleton instance of this factory. */
     public static ShapeFactory instance() {
-        return INSTANCE;
+        // initialise lazily to avoid initialisation circularities
+        if (instance == null) {
+            instance = new ShapeFactory();
+        }
+        return instance;
     }
 
     /** Used only as a reference for the constructor. */
     private static final ShapeNode NODE_PROTOTYPE = new ShapeNode(0);
     /** Singleton instance of this factory. */
-    private final static ShapeFactory INSTANCE = new ShapeFactory();
+    private static ShapeFactory instance;
 }

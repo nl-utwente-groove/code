@@ -21,10 +21,11 @@ import groove.graph.AbstractGraph;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.trans.GraphGrammar;
+import groove.trans.HostEdge;
 import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.trans.SystemRecord;
 import groove.util.CollectionView;
 import groove.util.FilterIterator;
@@ -346,8 +347,8 @@ public class ProductGTS extends
         }
 
         /** The isomorphism checker of the state set. */
-        private final DefaultIsoChecker checker =
-            DefaultIsoChecker.getInstance(true);
+        private final IsoChecker<HostNode,HostEdge> checker =
+            IsoChecker.getInstance(true);
     }
 
     public Set<? extends GraphTransition> edgeSet() {

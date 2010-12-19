@@ -42,6 +42,17 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeLabel,TypeEdge> 
         return new TypeEdge(source, label, target);
     }
 
+    /** Type morphisms are not supported. */
+    @Override
+    public Morphism<TypeNode,TypeLabel,TypeEdge> createMorphism() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getMaxNodeNr() {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Yields the number of labels created in the course of the program.
      * @return Number of labels created

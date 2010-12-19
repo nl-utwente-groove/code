@@ -16,15 +16,12 @@
  */
 package groove.abstraction;
 
-import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.GraphMorphism;
 import groove.graph.TypeLabel;
 import groove.graph.iso.CertificateStrategy.Certificate;
-import groove.graph.iso.DefaultIsoChecker;
-import groove.graph.iso.DefaultIsoChecker.IsoCheckerState;
+import groove.graph.iso.IsoChecker;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
@@ -1467,10 +1464,12 @@ public final class Shape extends DefaultHostGraph {
      */
     public boolean isIsomorphicTo(Shape other) {
         boolean result = false;
-        IsoCheckerState state = new IsoCheckerState();
-        DefaultIsoChecker isoChecker = DefaultIsoChecker.getInstance(true);
-        GraphMorphism morphism =
-            isoChecker.getIsomorphism(this, other, state);
+        IsoChecker<HostNode,HostEdge> isoChecker =
+            IsoChecker.getInstance(true);
+        IsoChecker<HostNode,HostEdge>.IsoCheckerState<TypeLabel> state =
+            isoChecker.new IsoCheckerState<TypeLabel>();
+        ShapeMorphism morphism =
+            (ShapeMorphism) isoChecker.getIsomorphism(this, other, state);
         while (morphism != null) {
             // We found an isomorphism between the graph structures.
             // Check for the extra conditions.
@@ -1480,7 +1479,9 @@ public final class Shape extends DefaultHostGraph {
                 break;
             } else {
                 // Keep trying.
-                morphism = isoChecker.getIsomorphism(this, other, state);
+                morphism =
+                    (ShapeMorphism) isoChecker.getIsomorphism(this, other,
+                        state);
                 if (state.isPlanEmpty()) {
                     // We got the same morphism back. The check fails.
                     result = false;
@@ -1499,10 +1500,10 @@ public final class Shape extends DefaultHostGraph {
      * (2) they have the same outgoing and incoming edge multiplicities; and
      * (3) they have the same equivalence relation. 
      */
-    private boolean isValidIsomorphism(GraphMorphism morphism, Shape shape) {
+    private boolean isValidIsomorphism(ShapeMorphism morphism, Shape shape) {
         // First check the node multiplicities.
         boolean complyToNodeMult = true;
-        for (Entry<Node,? extends Node> nodeEntry : morphism.nodeMap().entrySet()) {
+        for (Entry<HostNode,HostNode> nodeEntry : morphism.nodeMap().entrySet()) {
             ShapeNode domNode = (ShapeNode) nodeEntry.getKey();
             ShapeNode codNode = (ShapeNode) nodeEntry.getValue();
             Multiplicity domNMult = this.getNodeMult(domNode);
@@ -1516,7 +1517,7 @@ public final class Shape extends DefaultHostGraph {
         // Now check the edge multiplicities.
         boolean complyToEdgeMult = true;
         if (complyToNodeMult) {
-            for (Entry<Edge,? extends Edge> edgeEntry : morphism.edgeMap().entrySet()) {
+            for (Entry<HostEdge,HostEdge> edgeEntry : morphism.edgeMap().entrySet()) {
                 ShapeEdge domEdge = (ShapeEdge) edgeEntry.getKey();
                 ShapeEdge codEdge = (ShapeEdge) edgeEntry.getValue();
                 // Outgoing multiplicities.
@@ -1546,7 +1547,7 @@ public final class Shape extends DefaultHostGraph {
                 for (EquivClass<ShapeNode> domEc : this.equivRel) {
                     ShapeNode codNode = null;
                     for (ShapeNode domNode : domEc) {
-                        codNode = (ShapeNode) morphism.getNode(domNode);
+                        codNode = morphism.getNode(domNode);
                         mappedCodEc.add(codNode);
                     }
                     EquivClass<ShapeNode> codEc =

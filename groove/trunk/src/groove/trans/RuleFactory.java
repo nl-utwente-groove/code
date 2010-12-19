@@ -16,7 +16,7 @@
  */
 package groove.trans;
 
-import groove.graph.DefaultNode;
+import groove.graph.DefaultFactory;
 import groove.graph.ElementFactory;
 
 /** Factory class for graph elements. */
@@ -28,7 +28,8 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleLabel,RuleEdge> 
 
     /** Creates a node with a given number. */
     public RuleNode createNode(int nr) {
-        return DefaultNode.createNode(nr);
+        this.maxNodeNr = Math.max(this.maxNodeNr, nr);
+        return defaultFactory.createNode(nr);
     }
 
     /** Creates a label with the given text. */
@@ -46,6 +47,19 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleLabel,RuleEdge> 
         return new RuleEdge(source, label, target);
     }
 
+    @Override
+    public RuleGraphMorphism createMorphism() {
+        return new RuleGraphMorphism();
+    }
+
+    @Override
+    public int getMaxNodeNr() {
+        return this.maxNodeNr;
+    }
+
+    /** The highest node number returned by this factory. */
+    private int maxNodeNr;
+
     /** Returns the singleton instance of this factory. */
     public static RuleFactory instance() {
         return INSTANCE;
@@ -53,4 +67,7 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleLabel,RuleEdge> 
 
     /** Singleton instance of this factory. */
     private final static RuleFactory INSTANCE = new RuleFactory();
+    /** Factory for default nodes. */
+    private final static DefaultFactory defaultFactory =
+        DefaultFactory.instance();
 }

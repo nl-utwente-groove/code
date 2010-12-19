@@ -357,7 +357,7 @@ public class AspectGraph extends
         if (!nodes.isEmpty() && nodes.last().getNumber() != nodeCount() - 1) {
             try {
                 result = new AspectGraph();
-                GraphToAspectMap elementMap = new GraphToAspectMap();
+                AspectGraphMorphism elementMap = new AspectGraphMorphism();
                 int nodeNr = 0;
                 for (AspectNode node : nodes) {
                     AspectNode image = result.addNode(nodeNr);
@@ -576,7 +576,7 @@ public class AspectGraph extends
 
     @Override
     public AspectFactory getFactory() {
-        return new AspectFactory();
+        return AspectFactory.instance();
     }
 
     /**
@@ -747,8 +747,14 @@ public class AspectGraph extends
     /** Factory for AspectGraph elements. */
     static class AspectFactory implements
             ElementFactory<AspectNode,DefaultLabel,AspectEdge> {
+        /** Private constructor to ensure singleton usage. */
+        private AspectFactory() {
+            // empty
+        }
+
         @Override
         public AspectNode createNode(int nr) {
+            this.maxNodeNr = Math.max(this.maxNodeNr, nr);
             return new AspectNode(nr);
         }
 
@@ -768,18 +774,39 @@ public class AspectGraph extends
                 AspectNode target) {
             throw new UnsupportedOperationException();
         }
-    }
 
-    private static class GraphToAspectMap extends
-            Morphism<AspectNode,DefaultLabel,AspectEdge> {
-        /** Constructs a new, empty map. */
-        public GraphToAspectMap() {
-            super(new AspectFactory());
+        @Override
+        public AspectGraphMorphism createMorphism() {
+            return new AspectGraphMorphism();
         }
 
         @Override
-        public GraphToAspectMap newMap() {
-            return new GraphToAspectMap();
+        public int getMaxNodeNr() {
+            return this.maxNodeNr;
+        }
+
+        /** The highest node number returned by this factory. */
+        private int maxNodeNr;
+
+        /** Returns the singleton instance of this class. */
+        static public AspectFactory instance() {
+            return INSTANCE;
+        }
+
+        /** The singleton instance of this class. */
+        static final private AspectFactory INSTANCE = new AspectFactory();
+    }
+
+    private static class AspectGraphMorphism extends
+            Morphism<AspectNode,DefaultLabel,AspectEdge> {
+        /** Constructs a new, empty map. */
+        public AspectGraphMorphism() {
+            super(AspectFactory.instance());
+        }
+
+        @Override
+        public AspectGraphMorphism newMap() {
+            return new AspectGraphMorphism();
         }
     }
 

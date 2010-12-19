@@ -16,13 +16,13 @@
  */
 package groove.io;
 
+import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.Node;
-import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.util.Groove;
 import groove.util.Pair;
@@ -235,6 +235,6 @@ public class DefaultGxl implements Xml<DefaultGraph> {
     /** Attribute name for node and edge identities. */
     static public final String LABEL_ATTR_NAME = "label";
     /** Private isomorphism checker, for testing purposes. */
-    static private final IsoChecker isoChecker =
-        DefaultIsoChecker.getInstance(true);
+    static private final IsoChecker<DefaultNode,DefaultEdge> isoChecker =
+        IsoChecker.getInstance(true);
 }

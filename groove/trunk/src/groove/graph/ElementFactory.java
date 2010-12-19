@@ -29,4 +29,10 @@ public interface ElementFactory<N extends Node,L extends Label,E extends Edge> {
 
     /** Creates an edge with the given source, label and target. */
     E createEdge(N source, L label, N target);
+
+    /** Creates a fresh morphism between the elements of this factory. */
+    Morphism<N,L,E> createMorphism();
+
+    /** Returns the maximum node number created by this factory. */
+    int getMaxNodeNr();
 }

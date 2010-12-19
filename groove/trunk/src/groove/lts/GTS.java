@@ -23,10 +23,10 @@ import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.CertificateStrategy.Certificate;
-import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
@@ -557,7 +557,7 @@ public class GTS extends
                 STATE_SET_ROOT_RESOLUTION);
             this.collapse = collapse;
             this.checker =
-                DefaultIsoChecker.getInstance(collapse == COLLAPSE_ISO_STRONG);
+                IsoChecker.getInstance(collapse == COLLAPSE_ISO_STRONG);
         }
 
         /**
@@ -614,7 +614,7 @@ public class GTS extends
                     }
                 }
             } else {
-                CertificateStrategy certifier =
+                CertificateStrategy<HostNode,TypeLabel,HostEdge> certifier =
                     this.checker.getCertifier(stateKey.getGraph(), true);
                 Object certificate = certifier.getGraphCertificate();
                 result = certificate.hashCode();
@@ -643,7 +643,7 @@ public class GTS extends
         }
 
         /** The isomorphism checker of the state set. */
-        private final DefaultIsoChecker checker;
+        private final IsoChecker<HostNode,HostEdge> checker;
         /** The value of the collapse property. */
         private final int collapse;
 

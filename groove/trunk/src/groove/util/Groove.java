@@ -24,9 +24,9 @@ import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.graph.LabelStore;
+import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.graph.GraphMorphism;
-import groove.graph.iso.DefaultIsoChecker;
+import groove.graph.iso.IsoChecker;
 import groove.gui.Exporter;
 import groove.gui.Exporter.StructuralFormat;
 import groove.io.Aut;
@@ -770,11 +770,11 @@ public class Groove {
      * @param target the second graph to be compared
      * @return an isomorphism from <code>source</code> to <code>target</code>,
      *         or <code>null</code> if
-     *         {@link DefaultIsoChecker#areIsomorphic(Graph, Graph)} fails.
+     *         {@link IsoChecker#areIsomorphic(Graph, Graph)} fails.
      */
-    static public <N extends Node,L extends Label,E extends Edge> GraphMorphism getIsomorphism(
+    static public <N extends Node,L extends Label,E extends Edge> Morphism<N,L,E> getIsomorphism(
             Graph<N,L,E> source, Graph<N,L,E> target) {
-        return DefaultIsoChecker.getInstance(true).getIsomorphism(source,
+        return IsoChecker.<N,E>getInstance(true).getIsomorphism(source,
             target);
     }
 

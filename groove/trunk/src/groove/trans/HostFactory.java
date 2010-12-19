@@ -18,7 +18,6 @@ package groove.trans;
 
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultFactory;
-import groove.graph.DefaultNode;
 import groove.graph.ElementFactory;
 import groove.graph.TypeFactory;
 import groove.graph.TypeLabel;
@@ -33,12 +32,14 @@ public class HostFactory implements ElementFactory<HostNode,TypeLabel,HostEdge> 
 
     /** Creates a fresh node. */
     public HostNode createNode() {
-        return DefaultNode.createNode();
+        this.maxNodeNr++;
+        return NODE_FACTORY.createNode(this.maxNodeNr);
     }
 
     /** Creates a node with a given number. */
     public HostNode createNode(int nr) {
-        return DefaultNode.createNode(nr);
+        this.maxNodeNr = Math.max(this.maxNodeNr, nr);
+        return NODE_FACTORY.createNode(nr);
     }
 
     /** Creates a label with the given text. */
@@ -64,8 +65,9 @@ public class HostFactory implements ElementFactory<HostNode,TypeLabel,HostEdge> 
     }
 
     /** Returns the highest default node node number. */
-    public int getHighestNodeNr() {
-        return NODE_FACTORY.getHighestNodeNr();
+    @Override
+    public int getMaxNodeNr() {
+        return NODE_FACTORY.getMaxNodeNr();
     }
 
     /** Returns the number of created nodes. */
@@ -91,12 +93,24 @@ public class HostFactory implements ElementFactory<HostNode,TypeLabel,HostEdge> 
     /** Clears the store of canonical edges. */
     public void clear() {
         this.edgeSet.clear();
+        this.maxNodeNr = -1;
+    }
+
+    @Override
+    public HostGraphMorphism createMorphism() {
+        return new HostGraphMorphism();
     }
 
     /** Creates a fresh mapping from rules to (this type of) host graph. */
     public RuleToHostMap createRuleToHostMap() {
         return new RuleToHostMap();
     }
+
+    /**
+     * The highest host node number known to this factory.
+     * Used to keep the host node numbers to a small range.  
+     */
+    private int maxNodeNr;
 
     /**
      * A identity map, mapping previously created instances of
