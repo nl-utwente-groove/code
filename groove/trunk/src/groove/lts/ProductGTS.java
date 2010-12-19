@@ -52,6 +52,7 @@ public class ProductGTS extends
      * Constructs a GTS from a (fixed) graph grammar.
      */
     public ProductGTS(GraphGrammar grammar) {
+        super();
         this.graphGrammar = grammar;
     }
 

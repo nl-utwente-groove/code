@@ -63,6 +63,14 @@ import java.util.TreeSet;
 public class AspectGraph extends
         NodeSetEdgeSetGraph<AspectNode,DefaultLabel,AspectEdge> implements
         Cloneable {
+
+    /**
+     * Creates an empty graph.
+     */
+    public AspectGraph() {
+        super();
+    }
+
     /**
      * Returns the list of format errors in this graph. If the list is empty,
      * the graph has no errors.

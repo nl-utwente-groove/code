@@ -138,7 +138,7 @@ public final class Shape extends DefaultHostGraph {
 
     /** Default constructor. Creates a shape from a concrete graph. */
     public Shape(HostGraph graph) {
-        super();
+        super(ShapeFactory.instance());
         this.graph = graph;
         this.nodeShaping = new HashMap<HostNode,ShapeNode>();
         this.edgeShaping = new HashMap<HostEdge,ShapeEdge>();
@@ -149,7 +149,9 @@ public final class Shape extends DefaultHostGraph {
         this.edgeSigSet = new HashSet<EdgeSignature>();
         this.frozenEdges = new HashSet<ShapeEdge>();
         this.frozen = false;
-        this.buildShape(false);
+        if (graph != null) {
+            this.buildShape(false);
+        }
     }
 
     /**
@@ -157,17 +159,7 @@ public final class Shape extends DefaultHostGraph {
      * method buildShapeFromShape should be called.
      */
     private Shape() {
-        super();
-        this.graph = null;
-        this.nodeShaping = new HashMap<HostNode,ShapeNode>();
-        this.edgeShaping = new HashMap<HostEdge,ShapeEdge>();
-        this.equivRel = new EquivRelation<ShapeNode>();
-        this.nodeMultMap = new HashMap<ShapeNode,Multiplicity>();
-        this.outEdgeMultMap = new HashMap<EdgeSignature,Multiplicity>();
-        this.inEdgeMultMap = new HashMap<EdgeSignature,Multiplicity>();
-        this.edgeSigSet = new HashSet<EdgeSignature>();
-        this.frozenEdges = new HashSet<ShapeEdge>();
-        this.frozen = false;
+        this((HostGraph) null);
     }
 
     /** Copying constructor. Clones all structures of the shape. */
@@ -453,7 +445,7 @@ public final class Shape extends DefaultHostGraph {
 
     @Override
     public ShapeFactory getFactory() {
-        return ShapeFactory.instance();
+        return (ShapeFactory) super.getFactory();
     }
 
     /**
@@ -1464,8 +1456,7 @@ public final class Shape extends DefaultHostGraph {
      */
     public boolean isIsomorphicTo(Shape other) {
         boolean result = false;
-        IsoChecker<HostNode,HostEdge> isoChecker =
-            IsoChecker.getInstance(true);
+        IsoChecker<HostNode,HostEdge> isoChecker = IsoChecker.getInstance(true);
         IsoChecker<HostNode,HostEdge>.IsoCheckerState<TypeLabel> state =
             isoChecker.new IsoCheckerState<TypeLabel>();
         ShapeMorphism morphism =

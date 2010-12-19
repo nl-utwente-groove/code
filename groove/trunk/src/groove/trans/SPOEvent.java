@@ -898,7 +898,7 @@ final public class SPOEvent extends
          * @return a fresh instance of {@link MergeMap}
          */
         private MergeMap createMergeMap() {
-            return new MergeMap();
+            return new MergeMap(getHostFactory());
         }
 
         /**

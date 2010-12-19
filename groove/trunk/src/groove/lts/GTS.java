@@ -82,28 +82,10 @@ public class GTS extends
      * Constructs a GTS from a (fixed) graph grammar.
      */
     public GTS(GraphGrammar grammar) {
+        super();
         grammar.testFixed(true);
         this.ruleSystem = grammar;
         // this.storeTransitions = storeTransitions;
-    }
-
-    /**
-     * Callback factory method to create and initialise the start graph of the
-     * GTS, on the basis of a given (non-{@code null}) graph. Creation is done using
-     * {@link #createStartState(HostGraph)}.
-     */
-    protected GraphState computeStartState(HostGraph startGraph) {
-        GraphState result = createStartState(startGraph);
-        // result.getGraph().setFixed();
-        return result;
-    }
-
-    /**
-     * Callback factory method to create the start graph of the GTS, on the
-     * basis of a given (non-{@code null}) graph.
-     */
-    protected GraphState createStartState(HostGraph startGraph) {
-        return new StartGraphState(getRecord(), startGraph);
     }
 
     /** This implementation specialises the return type to {@link GraphState}. */
@@ -113,6 +95,24 @@ public class GTS extends
             addState(this.startState);
         }
         return this.startState;
+    }
+
+    /**
+     * Callback factory method to create and initialise the start graph of the
+     * GTS, on the basis of a given (non-{@code null}) graph. Creation is done using
+     * {@link #createStartState(HostGraph)}.
+     */
+    protected GraphState computeStartState(HostGraph startGraph) {
+        GraphState result = createStartState(startGraph);
+        return result;
+    }
+
+    /**
+     * Callback factory method to create the start graph of the GTS, on the
+     * basis of a given (non-{@code null}) graph.
+     */
+    protected GraphState createStartState(HostGraph startGraph) {
+        return new StartGraphState(getRecord(), startGraph);
     }
 
     /**

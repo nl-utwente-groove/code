@@ -31,6 +31,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleLabel,RuleEdge> 
      * Constructs a new, empty rule graph.
      */
     public RuleGraph() {
+        super();
         // empty
     }
 

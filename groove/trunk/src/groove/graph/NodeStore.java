@@ -47,6 +47,23 @@ public class NodeStore<N extends Node> {
     public N createNode(int nr) {
         N result;
         assert nr >= 0;
+        if (nr >= this.nodes.length || this.nodes[nr] == null) {
+            addNode(result = this.factory.newNode(nr));
+        } else {
+            result = this.nodes[nr];
+        }
+        return result;
+    }
+
+    /** 
+     * Adds a canonical node to the store.
+     * This is only correct if a node with this number does not already
+     * exist, or is identical to the added node. 
+     */
+    public void addNode(N node) {
+        int nr = node.getNumber();
+        assert nr >= this.nodes.length || this.nodes[nr] == null
+            || node == this.nodes[nr];
         if (nr >= this.nodes.length) {
             int newSize =
                 Math.max((int) (this.nodes.length * GROWTH_FACTOR), nr + 1);
@@ -55,13 +72,11 @@ public class NodeStore<N extends Node> {
             System.arraycopy(this.nodes, 0, newNodes, 0, this.nodes.length);
             this.nodes = newNodes;
         }
-        result = this.nodes[nr];
-        if (result == null) {
-            result = this.nodes[nr] = this.factory.newNode(nr);
+        if (this.nodes[nr] == null) {
+            this.nodes[nr] = node;
             this.nextNodeNr = Math.max(this.nextNodeNr, nr);
             this.nodeCount++;
         }
-        return result;
     }
 
     /**

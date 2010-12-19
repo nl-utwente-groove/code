@@ -35,30 +35,8 @@ import java.util.Set;
 /** Mapping from rules to shapes, used in prematches and matches. */
 public class RuleToShapeMap extends RuleToHostMap implements Fixable {
     /** Creates an empty rule-to-shape match. */
-    public RuleToShapeMap() {
-        // empty map
-    }
-
-    /** 
-     * Copies a given rule-to-host-graph map into a rule-to-shape map.
-     * This is only valid if the images of the map that is passed in
-     * are actually {@link ShapeNode}s and {@link ShapeEdge}s.
-     */
-    public RuleToShapeMap(RuleToHostMap map) {
-        // copy the node entries
-        for (Map.Entry<RuleNode,? extends HostNode> nodeEntry : map.nodeMap().entrySet()) {
-            RuleNode ruleNode = nodeEntry.getKey();
-            ShapeNode shapeNode = (ShapeNode) nodeEntry.getValue();
-            putNode(ruleNode, shapeNode);
-        }
-        // copy the edge entries
-        for (Map.Entry<RuleEdge,? extends HostEdge> nodeEntry : map.edgeMap().entrySet()) {
-            RuleEdge ruleEdge = nodeEntry.getKey();
-            ShapeEdge shapeEdge = (ShapeEdge) nodeEntry.getValue();
-            putEdge(ruleEdge, shapeEdge);
-        }
-        // copy the valuation
-        putAllVar(map.getValuation());
+    public RuleToShapeMap(ShapeFactory factory) {
+        super(factory);
     }
 
     /** Specialises the return type. */
@@ -131,7 +109,7 @@ public class RuleToShapeMap extends RuleToHostMap implements Fixable {
     /** Tests if the map is not fixed and specialises the return type. */
     @Override
     public RuleToShapeMap newMap() {
-        return new RuleToShapeMap();
+        return new RuleToShapeMap(getFactory());
     }
 
     @Override

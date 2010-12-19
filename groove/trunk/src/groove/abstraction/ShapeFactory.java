@@ -21,6 +21,7 @@ import groove.graph.Node.Factory;
 import groove.graph.NodeStore;
 import groove.graph.TypeLabel;
 import groove.trans.HostFactory;
+import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleToHostMap;
 import groove.util.TreeHashSet;
@@ -85,13 +86,24 @@ public class ShapeFactory extends HostFactory {
     }
 
     @Override
+    public ShapeFactory newFactory(HostGraph graph) {
+        ShapeFactory result = new ShapeFactory();
+        Shape shape = (Shape) graph;
+        for (ShapeNode node : shape.nodeSet()) {
+            result.nodeStore.addNode(node);
+        }
+        result.edgeSet.addAll(shape.edgeSet());
+        return result;
+    }
+
+    @Override
     public ShapeMorphism createMorphism() {
-        return new ShapeMorphism();
+        return new ShapeMorphism(this);
     }
 
     @Override
     public RuleToHostMap createRuleToHostMap() {
-        return new RuleToShapeMap();
+        return new RuleToShapeMap(this);
     }
 
     /** Store and factory of canonical shape nodes. */

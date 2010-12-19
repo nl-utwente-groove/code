@@ -41,7 +41,7 @@ import java.util.TreeSet;
 public class CompositeEvent extends
         AbstractEvent<Rule,CompositeEvent.CompositeEventCache> {
     /**
-     * Creates a composite event on the basis of a given constituent event set.
+     * Creates a composite event on the basis of a given (nonempty) constituent event set.
      * @param rule the rule for which this is an event
      * @param eventSet ordered non-empty collection of constituent events. The
      *        order is assumed to be the prefix traversal order of the
@@ -51,6 +51,7 @@ public class CompositeEvent extends
     public CompositeEvent(Rule rule, Collection<SPOEvent> eventSet,
             boolean reuse) {
         super(reference, rule, reuse);
+        assert !eventSet.isEmpty();
         this.eventArray = new SPOEvent[eventSet.size()];
         eventSet.toArray(this.eventArray);
     }
@@ -143,7 +144,7 @@ public class CompositeEvent extends
     }
 
     public MergeMap getMergeMap() {
-        MergeMap result = new MergeMap();
+        MergeMap result = new MergeMap(this.eventArray[0].getHostFactory());
         for (RuleEvent event : this.eventArray) {
             for (Map.Entry<HostNode,? extends HostNode> mergeEntry : event.getMergeMap().nodeMap().entrySet()) {
                 result.putNode(mergeEntry.getKey(), mergeEntry.getValue());

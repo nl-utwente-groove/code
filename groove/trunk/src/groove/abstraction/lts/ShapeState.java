@@ -70,6 +70,9 @@ public class ShapeState extends AbstractGraphState {
         super(null);
         setCtrlState(ctrlState);
         this.shape = shape;
+        // renew the element factory, so we can start counting
+        // from the beginning
+        this.shape.renewFactory();
         this.shape.freeze();
         this.closed = false;
         this.nr = -1;

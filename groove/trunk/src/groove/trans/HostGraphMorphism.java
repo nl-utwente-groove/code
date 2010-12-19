@@ -24,13 +24,17 @@ import groove.graph.TypeLabel;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class HostGraphMorphism extends
-        Morphism<HostNode,TypeLabel,HostEdge> {
+public class HostGraphMorphism extends Morphism<HostNode,TypeLabel,HostEdge> {
     /**
      * Creates a new, empty map.
      */
-    public HostGraphMorphism() {
-        super(HostFactory.instance());
+    public HostGraphMorphism(HostFactory factory) {
+        super(factory);
+    }
+
+    @Override
+    public HostFactory getFactory() {
+        return (HostFactory) super.getFactory();
     }
 
     @Override
@@ -40,12 +44,11 @@ public class HostGraphMorphism extends
 
     @Override
     public HostGraphMorphism newMap() {
-        return new HostGraphMorphism();
+        return new HostGraphMorphism(getFactory());
     }
 
     @Override
-    public HostGraphMorphism then(
-            Morphism<HostNode,TypeLabel,HostEdge> other) {
+    public HostGraphMorphism then(Morphism<HostNode,TypeLabel,HostEdge> other) {
         return (HostGraphMorphism) super.then(other);
     }
 

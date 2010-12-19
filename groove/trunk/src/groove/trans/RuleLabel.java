@@ -20,7 +20,7 @@ import groove.algebra.Operation;
 import groove.graph.AbstractLabel;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
-import groove.rel.AutomatonCalculator;
+import groove.rel.RegAutCalculator;
 import groove.rel.LabelVar;
 import groove.rel.RegAut;
 import groove.rel.RegExpr;
@@ -431,8 +431,8 @@ public class RuleLabel extends AbstractLabel {
     private final int argNr;
 
     /** Calculator used to construct all the automata. */
-    static private final AutomatonCalculator calculator =
-        new AutomatonCalculator();
+    static private final RegAutCalculator calculator =
+        new RegAutCalculator();
     /** Number used for labels that are not argument labels. */
     public static final int INVALID_ARG_NR = -1;
 }

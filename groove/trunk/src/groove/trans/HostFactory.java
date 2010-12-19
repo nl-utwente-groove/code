@@ -56,7 +56,8 @@ public class HostFactory implements ElementFactory<HostNode,TypeLabel,HostEdge> 
         assert source != null : "Source node of default edge should not be null";
         assert target != null : "Target node of default edge should not be null";
         assert label != null : "Label of default edge should not be null";
-        HostEdge edge = new HostEdge(source, label, target, getEdgeCount());
+        this.maxEdgeNr++;
+        HostEdge edge = new HostEdge(source, label, target, this.maxEdgeNr);
         HostEdge result = this.edgeSet.put(edge);
         if (result == null) {
             result = edge;
@@ -96,21 +97,50 @@ public class HostFactory implements ElementFactory<HostNode,TypeLabel,HostEdge> 
         this.maxNodeNr = -1;
     }
 
+    /** 
+     * Constructs a new factory, initialised to (the elements of) a given graph.
+     */
+    public HostFactory newFactory(HostGraph graph) {
+        HostFactory result = new HostFactory();
+        result.initialise(graph);
+        return result;
+    }
+
+    /** 
+     * Initialises this factory to (the elements of) a given graph.
+     */
+    private void initialise(HostGraph graph) {
+        assert this.maxNodeNr < 0 && this.maxEdgeNr < 0;
+        for (HostNode node : graph.nodeSet()) {
+            this.maxNodeNr = Math.max(this.maxNodeNr, node.getNumber());
+        }
+        for (HostEdge edge : graph.edgeSet()) {
+            this.edgeSet.add(edge);
+            this.maxEdgeNr = Math.max(this.maxEdgeNr, edge.getNumber());
+        }
+    }
+
     @Override
     public HostGraphMorphism createMorphism() {
-        return new HostGraphMorphism();
+        return new HostGraphMorphism(this);
     }
 
     /** Creates a fresh mapping from rules to (this type of) host graph. */
     public RuleToHostMap createRuleToHostMap() {
-        return new RuleToHostMap();
+        return new RuleToHostMap(this);
     }
 
     /**
      * The highest host node number known to this factory.
      * Used to keep the host node numbers to a small range.  
      */
-    private int maxNodeNr;
+    private int maxNodeNr = -1;
+
+    /**
+     * The highest host edge number known to this factory.
+     * Used to keep the host edge numbers to a small range.  
+     */
+    private int maxEdgeNr = -1;
 
     /**
      * A identity map, mapping previously created instances of

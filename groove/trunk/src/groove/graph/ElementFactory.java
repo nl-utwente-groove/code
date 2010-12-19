@@ -33,6 +33,6 @@ public interface ElementFactory<N extends Node,L extends Label,E extends Edge> {
     /** Creates a fresh morphism between the elements of this factory. */
     Morphism<N,L,E> createMorphism();
 
-    /** Returns the maximum node number created by this factory. */
+    /** Returns the maximum node number known to this factory. */
     int getMaxNodeNr();
 }

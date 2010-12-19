@@ -18,6 +18,7 @@ package groove.trans;
 
 import groove.graph.Morphism;
 import groove.graph.TypeLabel;
+import groove.graph.algebra.ValueNode;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -35,8 +36,8 @@ public class MergeMap extends Morphism<HostNode,TypeLabel,HostEdge> {
     /**
      * Creates a global identity function.
      */
-    public MergeMap() {
-        super(HostFactory.instance());
+    public MergeMap(HostFactory factory) {
+        super(factory);
         this.mergeTargets = new HashSet<HostNode>();
     }
 
@@ -64,7 +65,7 @@ public class MergeMap extends Morphism<HostNode,TypeLabel,HostEdge> {
         HostNode valueImage = getNode(value);
         // if we are combining this merge map with another, if may occur
         // that the value is UNDEFINED, meaning we should rather remove the key
-        if (valueImage == UNDEFINED) {
+        if (valueImage == this.UNDEFINED) {
             removeNode(key);
         } else if (keyImage != valueImage) {
             if (keyImage == null) {
@@ -94,11 +95,6 @@ public class MergeMap extends Morphism<HostNode,TypeLabel,HostEdge> {
         } else {
             return super.mapEdge(key);
         }
-    }
-
-    @Override
-    public HostFactory getFactory() {
-        return HostFactory.instance();
     }
 
     /**
@@ -131,13 +127,13 @@ public class MergeMap extends Morphism<HostNode,TypeLabel,HostEdge> {
     public HostNode removeNode(HostNode key) {
         HostNode keyImage = getNode(key);
         if (keyImage != null) {
-            super.putNode(keyImage, UNDEFINED);
+            super.putNode(keyImage, this.UNDEFINED);
             // now redirect all pre-images of keyImage, if necessary
             if (this.mergeTargets.contains(keyImage)) {
                 // map all pre-images of keyImage to UNDEFINED
                 for (Map.Entry<HostNode,HostNode> entry : nodeMap().entrySet()) {
                     if (entry.getValue() == keyImage) {
-                        entry.setValue(UNDEFINED);
+                        entry.setValue(this.UNDEFINED);
                     }
                 }
                 this.mergeTargets.remove(keyImage);
@@ -168,7 +164,7 @@ public class MergeMap extends Morphism<HostNode,TypeLabel,HostEdge> {
         if (value == key) {
             return null;
         } else if (value == null) {
-            return UNDEFINED;
+            return this.UNDEFINED;
         } else {
             return value;
         }
@@ -185,7 +181,7 @@ public class MergeMap extends Morphism<HostNode,TypeLabel,HostEdge> {
     private HostNode internalToExternal(HostNode value, HostNode key) {
         if (value == null) {
             return key;
-        } else if (value == UNDEFINED) {
+        } else if (value == this.UNDEFINED) {
             return null;
         } else {
             return value;
@@ -194,7 +190,12 @@ public class MergeMap extends Morphism<HostNode,TypeLabel,HostEdge> {
 
     @Override
     public MergeMap newMap() {
-        return new MergeMap();
+        return new MergeMap(getFactory());
+    }
+
+    @Override
+    public HostFactory getFactory() {
+        return (HostFactory) super.getFactory();
     }
 
     /**
@@ -204,6 +205,5 @@ public class MergeMap extends Morphism<HostNode,TypeLabel,HostEdge> {
     private final Set<HostNode> mergeTargets;
 
     /** Internal representation of undefined. */
-    static public final HostNode UNDEFINED =
-        HostFactory.instance().createNode();
+    static private final HostNode UNDEFINED = ValueNode.DUMMY_NODE;
 }
