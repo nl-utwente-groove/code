@@ -23,7 +23,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
-import groove.trans.SystemRecord;
 
 /**
  * The graph transition system for abstract exploration. All states of this
@@ -67,21 +66,6 @@ public final class AGTS extends GTS {
             || (transition instanceof ShapeNextState) : "Type error : "
             + transition + " is not of type ShapeTransition or ShapeNextState.";
         super.addTransition(transition);
-    }
-
-    @Override
-    public GraphState startState() {
-        if (this.startState == null) {
-            this.startState = createStartState(getGrammar().getStartGraph());
-            addState(this.startState);
-        }
-        return this.startState;
-    }
-
-    @Override
-    protected SystemRecord createRecord() {
-        SystemRecord record = new SystemRecord(getGrammar(), true);
-        return record;
     }
 
     @Override

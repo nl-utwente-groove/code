@@ -37,8 +37,8 @@ public class RuleToHostMap extends
     /**
      * Creates an empty map with an empty valuation.
      */
-    public RuleToHostMap() {
-        super(HostFactory.instance());
+    public RuleToHostMap(HostFactory factory) {
+        super(factory);
         this.valuation = createValuation();
     }
 
@@ -125,7 +125,7 @@ public class RuleToHostMap extends
 
     @Override
     public RuleToHostMap newMap() {
-        return new RuleToHostMap();
+        return new RuleToHostMap(getFactory());
     }
 
     /** Specialises the return type. */

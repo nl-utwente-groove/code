@@ -30,9 +30,10 @@ import java.util.Set;
 public class NodeSetEdgeSetGraph<N extends Node,L extends Label,E extends Edge>
         extends AbstractGraph<N,L,E> implements Cloneable {
     /**
-     * Creates a new, empty graph.
+     * Creates a new, empty graph with a given element factory.
      */
     public NodeSetEdgeSetGraph() {
+        super();
         this.graphNodeSet = createNodeSet();
         this.graphEdgeSet = createEdgeSet();
     }
@@ -43,18 +44,9 @@ public class NodeSetEdgeSetGraph<N extends Node,L extends Label,E extends Edge>
      * @require graph != null
      */
     public NodeSetEdgeSetGraph(Graph<N,L,E> graph) {
+        super();
         this.graphNodeSet = createNodeSet(graph.nodeSet());
         this.graphEdgeSet = createEdgeSet(graph.edgeSet());
-    }
-
-    /**
-     * Constructs a clone of a given {@link NodeSetEdgeSetGraph}.
-     * @param graph the graph to be cloned
-     * @require graph != null
-     */
-    protected NodeSetEdgeSetGraph(NodeSetEdgeSetGraph<N,L,E> graph) {
-        this.graphNodeSet = createNodeSet(graph.graphNodeSet);
-        this.graphEdgeSet = createEdgeSet(graph.graphEdgeSet);
     }
 
     // ------------------------- COMMANDS ------------------------------

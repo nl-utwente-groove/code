@@ -69,11 +69,6 @@ public class MatrixAutomaton extends
     }
 
     @Override
-    public ElementFactory<RegNode,RuleLabel,RegEdge> getFactory() {
-        return RegFactory.instance();
-    }
-
-    @Override
     public RegNode getStartNode() {
         return this.start;
     }
@@ -119,6 +114,11 @@ public class MatrixAutomaton extends
         initNodeEdgeIndices();
         initNodeLabelEdgeMaps();
         initVarSets();
+    }
+
+    @Override
+    public ElementFactory<RegNode,RuleLabel,RegEdge> getFactory() {
+        return RegFactory.instance();
     }
 
     /**

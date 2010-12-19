@@ -19,6 +19,9 @@ public class StartGraphState extends AbstractGraphState {
         super(StateReference.newInstance(record));
         setFrozenGraph(getCache().computeFrozenGraph(graph));
         this.graph = getCache().getGraph();
+        // renew the element factory, so we can start counting
+        // from the beginning
+        this.graph.renewFactory();
         CtrlAut ctrlAut = record.getGrammar().getCtrlAut();
         if (ctrlAut != null) {
             setCtrlState(ctrlAut.getStart());
@@ -28,9 +31,6 @@ public class StartGraphState extends AbstractGraphState {
 
     @Override
     public DeltaHostGraph getGraph() {
-        if (this.graph == null) {
-            this.graph = getCache().getGraph();
-        }
         return this.graph;
     }
 
@@ -40,5 +40,5 @@ public class StartGraphState extends AbstractGraphState {
     }
 
     /** The stored graph. */
-    private DeltaHostGraph graph;
+    private final DeltaHostGraph graph;
 }

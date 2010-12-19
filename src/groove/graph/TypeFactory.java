@@ -42,7 +42,7 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeLabel,TypeEdge> 
         return new TypeEdge(source, label, target);
     }
 
-    /** Type morphisms are not supported. */
+    /** Type graph morphisms are not supported. */
     @Override
     public Morphism<TypeNode,TypeLabel,TypeEdge> createMorphism() {
         throw new UnsupportedOperationException();

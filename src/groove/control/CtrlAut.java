@@ -56,6 +56,7 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlLabel,CtrlTransition> {
      * The start state and final state are automatically initialised.
      */
     public CtrlAut() {
+        super();
         this.startState = addState();
         this.finalState = addState();
     }

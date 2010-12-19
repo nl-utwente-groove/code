@@ -25,7 +25,6 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.iso.IsoChecker;
 import groove.graph.iso.PartitionMap;
 import groove.io.DefaultGxl;
@@ -89,9 +88,7 @@ public abstract class GraphTest<N extends Node,L extends Label,E extends Edge> {
 
     public IsoChecker checker = IsoChecker.getInstance(true);
 
-    Graph<N,L,E> createGraph() {
-        return new NodeSetEdgeSetGraph();
-    }
+    abstract Graph<N,L,E> createGraph();
 
     /*
      * @see TestCase#setUp()

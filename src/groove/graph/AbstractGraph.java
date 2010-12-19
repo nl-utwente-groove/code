@@ -23,7 +23,6 @@ import groove.util.Dispenser;
 import groove.util.Groove;
 import groove.util.Pair;
 
-import java.lang.ref.Reference;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,8 +39,7 @@ import java.util.Set;
 public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edge>
         extends AbstractCacheHolder<GraphCache<N,L,E>> implements Graph<N,L,E> {
     /**
-     * This constructor polls the cache reference queue and calls
-     * {@link Reference#clear()} on all encountered references.
+     * Constructs an abstract graph with a given element factory
      */
     protected AbstractGraph() {
         super(null);
@@ -603,6 +601,7 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
          * The empty graph to which no elements can be added.
          */
         EmptyGraph() {
+            super();
             setFixed();
         }
 

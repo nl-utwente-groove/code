@@ -27,7 +27,7 @@ import groove.io.DefaultGxl;
 import groove.io.Xml;
 import groove.rel.RegAut;
 import groove.rel.RegAut.Result;
-import groove.rel.AutomatonCalculator;
+import groove.rel.RegAutCalculator;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
 import groove.trans.DefaultHostGraph;
@@ -62,7 +62,7 @@ public class AutomatonTest {
     /** Directory with test files (relative to the project) */
     static public final String GRAPH_TEST_DIR = "junit/graphs";
 
-    static final AutomatonCalculator calculator = new AutomatonCalculator();
+    static final RegAutCalculator calculator = new RegAutCalculator();
 
     static List<String> wordEmpty, wordA, wordB, wordAA, wordAB, wordBB,
             wordBA, wordABC, wordAAA, wordAAABCAAA;

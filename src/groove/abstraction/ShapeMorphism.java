@@ -28,6 +28,14 @@ import groove.trans.HostNode;
  * @version $Revision $
  */
 public class ShapeMorphism extends HostGraphMorphism {
+
+    /**
+     * Creates a shape morphism with a given element factory.
+     */
+    public ShapeMorphism(ShapeFactory factory) {
+        super(factory);
+    }
+
     @Override
     public ShapeMorphism clone() {
         return (ShapeMorphism) super.clone();
@@ -35,7 +43,7 @@ public class ShapeMorphism extends HostGraphMorphism {
 
     @Override
     public ShapeMorphism newMap() {
-        return new ShapeMorphism();
+        return new ShapeMorphism(getFactory());
     }
 
     @Override
@@ -80,6 +88,6 @@ public class ShapeMorphism extends HostGraphMorphism {
 
     @Override
     public ShapeFactory getFactory() {
-        return ShapeFactory.instance();
+        return (ShapeFactory) super.getFactory();
     }
 }

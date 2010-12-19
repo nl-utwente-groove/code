@@ -54,6 +54,9 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,TypeLabel,HostEdge>
      */
     private DeltaHostGraph(final DeltaHostGraph basis,
             final DeltaApplier delta, boolean copyData) {
+        super();
+        this.factory =
+            basis == null ? HostFactory.instance() : basis.getFactory();
         this.basis = basis;
         this.copyData = copyData;
         if (delta == null || delta instanceof DeltaStore
@@ -409,10 +412,25 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,TypeLabel,HostEdge>
         return edge instanceof HostEdge;
     }
 
+    /**
+     * Delta graphs should not renew their factory,
+     * as they are shared with the basis.
+     */
+    final public void renewFactory() {
+        if (this.factory == null) {
+            throw new UnsupportedOperationException();
+        } else {
+            this.factory = this.factory.newFactory(this);
+        }
+    }
+
     @Override
     public HostFactory getFactory() {
-        return HostFactory.instance();
+        return this.factory;
     }
+
+    /** The element factory of this host graph. */
+    private HostFactory factory;
 
     /** The fixed (possibly <code>null</code> basis of this graph. */
     DeltaHostGraph basis;

@@ -483,7 +483,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * Note that this is <i>not</i> the same kind of object as the matching.
      */
     protected HostGraphMorphism createMorphism() {
-        return new HostGraphMorphism();
+        return new HostGraphMorphism(getSource().getFactory());
     }
 
     /**

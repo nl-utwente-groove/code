@@ -119,4 +119,6 @@ public class ValueNode extends VariableNode implements HostNode {
         new HashMap<String,Map<Object,ValueNode>>();
     /** Maximum value node number */
     static private int valueNodeCount;
+    /** Single dummy node, used in e.g., MergeMap */
+    public static final ValueNode DUMMY_NODE = new ValueNode(0, null, null);
 }

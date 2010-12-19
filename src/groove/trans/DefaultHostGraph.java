@@ -36,7 +36,15 @@ public class DefaultHostGraph extends
      * Constructs an empty host graph.
      */
     public DefaultHostGraph() {
-        // empty
+        this(HostFactory.instance());
+    }
+
+    /**
+     * Constructs an empty host graph, with a given host factory.
+     */
+    protected DefaultHostGraph(HostFactory factory) {
+        super();
+        this.factory = factory;
     }
 
     /**
@@ -44,6 +52,7 @@ public class DefaultHostGraph extends
      */
     public DefaultHostGraph(HostGraph graph) {
         super(graph);
+        this.factory = graph.getFactory();
     }
 
     /** 
@@ -52,6 +61,7 @@ public class DefaultHostGraph extends
      */
     public <N extends Node,L extends Label,E extends Edge> DefaultHostGraph(
             Graph<N,L,E> graph) {
+        this();
         ElementMap<N,L,E,HostNode,TypeLabel,HostEdge> map =
             new ElementMap<N,L,E,HostNode,TypeLabel,HostEdge>(
                 HostFactory.instance());
@@ -78,7 +88,7 @@ public class DefaultHostGraph extends
 
     @Override
     public DefaultHostGraph newGraph() {
-        return new DefaultHostGraph();
+        return new DefaultHostGraph(getFactory());
     }
 
     @Override
@@ -91,8 +101,23 @@ public class DefaultHostGraph extends
         return edge instanceof HostEdge;
     }
 
+    /** 
+     * Refreshes the element factory of this graph, by replacing it with 
+     * the new factory obtained by calling {@link HostFactory#newFactory(HostGraph)}
+     * (with this graph as parameter).
+     */
+    final public void renewFactory() {
+        if (this.factory == null) {
+            throw new UnsupportedOperationException();
+        } else {
+            this.factory = this.factory.newFactory(this);
+        }
+    }
+
     @Override
     public HostFactory getFactory() {
-        return HostFactory.instance();
+        return this.factory;
     }
+
+    private HostFactory factory;
 }

@@ -39,7 +39,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AutomatonCalculator implements RegExprCalculator<RegAut> {
+public class RegAutCalculator implements RegExprCalculator<RegAut> {
     /**
      * Applies this calculator to a given regular expression, fixes the
      * resulting automaton and returns it.

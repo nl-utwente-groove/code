@@ -63,22 +63,4 @@ public class HostEdge extends AbstractEdge<HostNode,TypeLabel,HostNode> {
 
     /** The (unique) number of this edge. */
     private final int nr;
-
-    /**
-     * Creates a shape edge from a given source node, label and target node.
-     * To save space, a set of standard instances is kept internally, and
-     * consulted to return the same object whenever an edge is requested with
-     * the same end nodes and label text.
-     * @param source the source node of the new edge; should not be
-     *        <code>null</code>
-     * @param label for the new edge; should not be <code>null</code>
-     * @param target the target node of the new edge; should not be
-     *        <code>null</code>
-     * @return an edge based on <code>source</code>, <code>label</code> and
-     *         <code>target</code>
-     */
-    static public HostEdge createEdge(HostNode source, TypeLabel label,
-            HostNode target) {
-        return HostFactory.instance().createEdge(source, label, target);
-    }
 }

@@ -47,6 +47,7 @@ import java.util.TreeSet;
 public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> {
     /** Constructs a fresh type graph. */
     public TypeGraph() {
+        super();
         GraphInfo.setTypeRole(this);
     }
 
@@ -174,6 +175,11 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> 
     public void setFixed() {
         super.setFixed();
         this.labelStore.setFixed();
+    }
+
+    @Override
+    public TypeFactory getFactory() {
+        return TypeFactory.instance();
     }
 
     /**
@@ -629,11 +635,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> 
     @Override
     protected boolean isTypeCorrect(Edge edge) {
         return edge instanceof TypeEdge;
-    }
-
-    @Override
-    public TypeFactory getFactory() {
-        return TypeFactory.instance();
     }
 
     /** Label store permanently associated with this type graph. */

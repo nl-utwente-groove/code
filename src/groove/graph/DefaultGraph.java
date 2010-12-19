@@ -47,7 +47,7 @@ public class DefaultGraph extends
      * @ensure result.isEmpty()
      */
     public DefaultGraph() {
-        // we need an explicit empty constructor
+        super();
     }
 
     /**
@@ -57,6 +57,7 @@ public class DefaultGraph extends
      * @ensure result.equals(graph)
      */
     protected DefaultGraph(DefaultGraph graph) {
+        super();
         for (Map.Entry<DefaultNode,Set<DefaultEdge>> edgeEntry : graph.edgeMap.entrySet()) {
             this.edgeMap.put(edgeEntry.getKey(), new HashSet<DefaultEdge>(
                 edgeEntry.getValue()));
@@ -102,6 +103,11 @@ public class DefaultGraph extends
     }
 
     // ------------------------- COMMANDS ------------------------------
+
+    @Override
+    public DefaultFactory getFactory() {
+        return DefaultFactory.instance();
+    }
 
     public boolean addNode(DefaultNode node) {
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
@@ -174,11 +180,6 @@ public class DefaultGraph extends
             fireRemoveNode(node);
         }
         return result;
-    }
-
-    @Override
-    public ElementFactory<DefaultNode,DefaultLabel,DefaultEdge> getFactory() {
-        return DefaultFactory.instance();
     }
 
     /**
