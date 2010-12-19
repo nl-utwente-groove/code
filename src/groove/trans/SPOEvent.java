@@ -630,9 +630,7 @@ final public class SPOEvent extends
     private HostNode createNode() {
         DefaultApplication.freshNodeCount++;
         HostFactory record = getHostFactory();
-        HostNode result =
-            record == null ? DefaultNode.createNode() : record.createNode();
-        return result;
+        return record.createNode();
     }
 
     /**

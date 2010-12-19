@@ -18,7 +18,7 @@ package groove.explore.util;
 
 import groove.explore.DefaultScenario;
 import groove.graph.AbstractGraph;
-import groove.graph.iso.DefaultIsoChecker;
+import groove.graph.iso.IsoChecker;
 import groove.graph.iso.PartitionRefiner;
 import groove.lts.AbstractGraphState;
 import groove.lts.GTS;
@@ -223,15 +223,15 @@ public class ExplorationStatistics {
 
     /** Reports statistics on isomorphism checking. */
     private void reportIsomorphism() {
-        int predicted = DefaultIsoChecker.getTotalCheckCount();
-        int falsePos2 = DefaultIsoChecker.getDistinctSimCount();
+        int predicted = IsoChecker.getTotalCheckCount();
+        int falsePos2 = IsoChecker.getDistinctSimCount();
         int falsePos1 =
-            falsePos2 + DefaultIsoChecker.getDistinctSizeCount()
-                + DefaultIsoChecker.getDistinctCertsCount();
-        int equalGraphCount = DefaultIsoChecker.getEqualGraphsCount();
-        int equalCertsCount = DefaultIsoChecker.getEqualCertsCount();
-        int equalSimCount = DefaultIsoChecker.getEqualSimCount();
-        int intCertOverlap = DefaultIsoChecker.getIntCertOverlap();
+            falsePos2 + IsoChecker.getDistinctSizeCount()
+                + IsoChecker.getDistinctCertsCount();
+        int equalGraphCount = IsoChecker.getEqualGraphsCount();
+        int equalCertsCount = IsoChecker.getEqualCertsCount();
+        int equalSimCount = IsoChecker.getEqualSimCount();
+        int intCertOverlap = IsoChecker.getIntCertOverlap();
         printf("\n\tIsomorphism:\n\t\tPredicted:\t\t\t%d (-%d)%n", predicted,
             intCertOverlap);
         printf("\t\tFalse pos 1:\t\t%d (%s)%n", falsePos1,
@@ -281,7 +281,7 @@ public class ExplorationStatistics {
         long matching = SPORule.getMatchingTime();
         long running = DefaultScenario.getRunningTime();
         long overhead = total - running;
-        long isoChecking = DefaultIsoChecker.getTotalTime();
+        long isoChecking = IsoChecker.getTotalTime();
         long generateTime = MatchApplier.getGenerateTime();
         long building = generateTime - isoChecking;
         long measuring = Reporter.getReportTime();
@@ -302,10 +302,10 @@ public class ExplorationStatistics {
         println("\tIso checking:\t\t" + isoChecking + "\t"
             + percentage(isoChecking / (double) total));
         if (getVerbosity() == VerbosityOption.HIGH_VERBOSITY) {
-            long certifying = DefaultIsoChecker.getCertifyingTime();
-            long equalCheck = DefaultIsoChecker.getEqualCheckTime();
-            long certCheck = DefaultIsoChecker.getCertCheckTime();
-            long simCheck = DefaultIsoChecker.getSimCheckTime();
+            long certifying = IsoChecker.getCertifyingTime();
+            long equalCheck = IsoChecker.getEqualCheckTime();
+            long certCheck = IsoChecker.getCertCheckTime();
+            long simCheck = IsoChecker.getSimCheckTime();
             println("\t\tCertifying:\t\t" + certifying + "\t"
                 + percentage(certifying / (double) isoChecking));
             println("\t\tEquals check:\t" + equalCheck + "\t"

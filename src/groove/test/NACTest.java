@@ -148,8 +148,7 @@ public class NACTest {
 
         this.ruleNodes[graphNr] = new DefaultNode[nrNodes];
         for (int j = 0; j < nrNodes; j++) {
-            this.ruleNodes[graphNr][j] = DefaultNode.createNode();
-            res.addNode(this.ruleNodes[graphNr][j]);
+            this.ruleNodes[graphNr][j] = res.addNode();
         }
 
         int nrEdges = sources.length;
@@ -171,8 +170,7 @@ public class NACTest {
 
         this.stateNodes[graphNr] = new HostNode[nrNodes];
         for (int j = 0; j < nrNodes; j++) {
-            this.stateNodes[graphNr][j] = DefaultNode.createNode();
-            res.addNode(this.stateNodes[graphNr][j]);
+            this.stateNodes[graphNr][j] = res.addNode();
         }
 
         int nrEdges = sources.length;

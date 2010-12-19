@@ -17,6 +17,7 @@
 package groove.io;
 
 import groove.graph.DefaultEdge;
+import groove.graph.DefaultFactory;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
@@ -451,7 +452,7 @@ public class JaxbGxlIO implements GxlIO {
         if (charIx >= 0 && nodeId.charAt(charIx) == '-') {
             nodeNr = -nodeNr;
         }
-        return digitFound ? DefaultNode.createNode(nodeNr) : null;
+        return digitFound ? elementFactory.createNode(nodeNr) : null;
     }
 
     /**
@@ -461,7 +462,7 @@ public class JaxbGxlIO implements GxlIO {
      */
     private DefaultEdge createEdge(DefaultNode sourceNode, String label,
             DefaultNode targetNode) {
-        return DefaultEdge.createEdge(sourceNode, label, targetNode);
+        return elementFactory.createEdge(sourceNode, label, targetNode);
     }
 
     private void marshal(GraphType gxlGraph, OutputStream out)
@@ -515,6 +516,8 @@ public class JaxbGxlIO implements GxlIO {
         return instance;
     }
 
+    static private final DefaultFactory elementFactory =
+        DefaultFactory.instance();
     /** Singleton instance of the class. */
     static private final JaxbGxlIO instance = new JaxbGxlIO();
     /**

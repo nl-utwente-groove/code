@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.Parameters;
 import groove.graph.DefaultEdge;
-import groove.graph.DefaultLabel;
+import groove.graph.DefaultFactory;
 import groove.graph.DefaultNode;
 
 import java.util.HashSet;
@@ -51,13 +51,13 @@ public class TestMultiplicity {
         Set<DefaultNode> nodes = new HashSet<DefaultNode>(3);
         assertTrue(Multiplicity.getMultOf(0).equals(
             Multiplicity.getNodeSetMult(nodes)));
-        nodes.add(DefaultNode.createNode());
+        nodes.add(this.factory.createNode());
         assertTrue(Multiplicity.getMultOf(1).equals(
             Multiplicity.getNodeSetMult(nodes)));
-        nodes.add(DefaultNode.createNode());
+        nodes.add(this.factory.createNode());
         assertTrue(Multiplicity.getMultOf(2).equals(
             Multiplicity.getNodeSetMult(nodes)));
-        nodes.add(DefaultNode.createNode());
+        nodes.add(this.factory.createNode());
         assertTrue(Multiplicity.OMEGA.equals(Multiplicity.getNodeSetMult(nodes)));
     }
 
@@ -68,16 +68,16 @@ public class TestMultiplicity {
         Set<DefaultEdge> edges = new HashSet<DefaultEdge>(3);
         assertTrue(Multiplicity.getMultOf(0).equals(
             Multiplicity.getEdgeSetMult(edges)));
-        edges.add(DefaultEdge.createEdge(DefaultNode.createNode(),
-            DefaultLabel.createFreshLabel(), DefaultNode.createNode()));
+        edges.add(this.factory.createEdge(this.factory.createNode(),
+            this.factory.createFreshLabel(), this.factory.createNode()));
         assertTrue(Multiplicity.getMultOf(1).equals(
             Multiplicity.getEdgeSetMult(edges)));
-        edges.add(DefaultEdge.createEdge(DefaultNode.createNode(),
-            DefaultLabel.createFreshLabel(), DefaultNode.createNode()));
+        edges.add(this.factory.createEdge(this.factory.createNode(),
+            this.factory.createFreshLabel(), this.factory.createNode()));
         assertTrue(Multiplicity.getMultOf(2).equals(
             Multiplicity.getEdgeSetMult(edges)));
-        edges.add(DefaultEdge.createEdge(DefaultNode.createNode(),
-            DefaultLabel.createFreshLabel(), DefaultNode.createNode()));
+        edges.add(this.factory.createEdge(this.factory.createNode(),
+            this.factory.createFreshLabel(), this.factory.createNode()));
         assertTrue(Multiplicity.OMEGA.equals(Multiplicity.getEdgeSetMult(edges)));
     }
 
@@ -236,4 +236,5 @@ public class TestMultiplicity {
         assertTrue(three.overlaps(omega));
     }
 
+    private final DefaultFactory factory = DefaultFactory.instance();
 }

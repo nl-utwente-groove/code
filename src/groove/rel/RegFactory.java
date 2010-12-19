@@ -17,6 +17,7 @@
 package groove.rel;
 
 import groove.graph.ElementFactory;
+import groove.graph.Morphism;
 import groove.trans.RuleLabel;
 
 /**
@@ -26,6 +27,7 @@ import groove.trans.RuleLabel;
 public class RegFactory implements ElementFactory<RegNode,RuleLabel,RegEdge> {
     @Override
     public RegNode createNode(int nr) {
+        this.maxNodeNr = Math.max(this.maxNodeNr, nr);
         return new RegNode(nr);
     }
 
@@ -43,6 +45,19 @@ public class RegFactory implements ElementFactory<RegNode,RuleLabel,RegEdge> {
     public RegEdge createEdge(RegNode source, RuleLabel label, RegNode target) {
         return new RegEdge(source, label, target);
     }
+
+    @Override
+    public Morphism<RegNode,RuleLabel,RegEdge> createMorphism() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getMaxNodeNr() {
+        return this.maxNodeNr;
+    }
+
+    /** The highest node number returned by this factory. */
+    private int maxNodeNr;
 
     /** Returns the singleton instance of this factory. */
     public static RegFactory instance() {

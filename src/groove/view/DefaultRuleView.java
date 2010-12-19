@@ -22,7 +22,6 @@ import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.graph.AbstractGraph;
-import groove.graph.DefaultNode;
 import groove.graph.Element;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
@@ -370,7 +369,7 @@ public class DefaultRuleView implements RuleView {
      */
     private RuleNode computeNodeImage(AspectNode node) throws FormatException {
         if (getAttributeValue(node) == null) {
-            return DefaultNode.createNode(node.getNumber());
+            return ruleFactory.createNode(node.getNumber());
         } else {
             return DefaultRuleView.this.attributeFactory.createAttributeNode(node);
         }
@@ -425,7 +424,7 @@ public class DefaultRuleView implements RuleView {
      * Callback factory method for a binary edge.
      */
     RuleEdge createEdge(RuleNode source, RuleLabel label, RuleNode target) {
-        return new RuleEdge(source, label, target);
+        return ruleFactory.createEdge(source, label, target);
     }
 
     /**
@@ -453,6 +452,7 @@ public class DefaultRuleView implements RuleView {
     /** Rule properties set for this rule. */
     private SystemProperties systemProperties;
 
+    static private final RuleFactory ruleFactory = RuleFactory.instance();
     /** Label for merges (merger edges and merge embargoes) */
     static public final Label MERGE_LABEL = RegExpr.empty().toLabel();
     /** Debug flag for creating rules. */

@@ -20,14 +20,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultNode;
+import groove.graph.DefaultFactory;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
-import groove.graph.iso.DefaultIsoChecker;
+import groove.graph.iso.IsoChecker;
 import groove.graph.iso.PartitionMap;
 import groove.io.DefaultGxl;
 import groove.io.ExtensionFilter;
@@ -88,7 +87,7 @@ public abstract class GraphTest<N extends Node,L extends Label,E extends Edge> {
     public Graph<N,L,E> matchCod;
     public Graph<N,L,E>[] isoGraph = new Graph[ISO_GRAPH_COUNT];
 
-    public DefaultIsoChecker checker = DefaultIsoChecker.getInstance(true);
+    public IsoChecker checker = IsoChecker.getInstance(true);
 
     Graph<N,L,E> createGraph() {
         return new NodeSetEdgeSetGraph();
@@ -254,7 +253,7 @@ public abstract class GraphTest<N extends Node,L extends Label,E extends Edge> {
         Collection nodeSet = this.matchDom[0].nodeSet();
         assertEquals(3, nodeSet.size());
         try {
-            nodeSet.add(DefaultNode.createNode());
+            nodeSet.add(this.factory.createNode());
             fail("Addition to node set should not have been allowed");
         } catch (UnsupportedOperationException exc) {
             // proceed
@@ -271,8 +270,8 @@ public abstract class GraphTest<N extends Node,L extends Label,E extends Edge> {
         Collection edgeSet = this.matchDom[0].edgeSet();
         assertEquals(2, edgeSet.size());
         try {
-            edgeSet.add(DefaultEdge.createEdge(DefaultNode.createNode(), "",
-                DefaultNode.createNode()));
+            edgeSet.add(this.factory.createEdge(this.factory.createNode(), "",
+                this.factory.createNode()));
             fail("Addition to node set should not have been allowed");
         } catch (UnsupportedOperationException exc) {
             // proceed
@@ -492,4 +491,5 @@ public abstract class GraphTest<N extends Node,L extends Label,E extends Edge> {
     }
 
     private final DefaultGxl xml = new DefaultGxl();
+    private final DefaultFactory factory = DefaultFactory.instance();
 }

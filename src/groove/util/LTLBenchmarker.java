@@ -28,7 +28,7 @@ import groove.explore.strategy.OptimizedBoundedNestedDFSStrategy;
 import groove.explore.util.MatchApplier;
 import groove.explore.util.MatchSetCollector;
 import groove.graph.iso.Bisimulator;
-import groove.graph.iso.DefaultIsoChecker;
+import groove.graph.iso.IsoChecker;
 import groove.io.ExtensionFilter;
 import groove.io.SystemStore;
 import groove.io.SystemStoreFactory;
@@ -1188,15 +1188,15 @@ public class LTLBenchmarker extends CommandLineTool {
      * Reports statistics on isomorphism checking.
      */
     private void reportIsomorphism() {
-        int predicted = DefaultIsoChecker.getTotalCheckCount();
+        int predicted = IsoChecker.getTotalCheckCount();
         int distinctCount =
-            DefaultIsoChecker.getDistinctSizeCount()
-                + DefaultIsoChecker.getDistinctCertsCount()
-                + DefaultIsoChecker.getDistinctSimCount();
-        int equalGraphCount = DefaultIsoChecker.getEqualGraphsCount();
-        int equalCertsCount = DefaultIsoChecker.getEqualCertsCount();
-        int equalSimCount = DefaultIsoChecker.getEqualSimCount();
-        int intCertOverlap = DefaultIsoChecker.getIntCertOverlap();
+            IsoChecker.getDistinctSizeCount()
+                + IsoChecker.getDistinctCertsCount()
+                + IsoChecker.getDistinctSimCount();
+        int equalGraphCount = IsoChecker.getEqualGraphsCount();
+        int equalCertsCount = IsoChecker.getEqualCertsCount();
+        int equalSimCount = IsoChecker.getEqualSimCount();
+        int intCertOverlap = IsoChecker.getIntCertOverlap();
         println("\tIsomorphism:\tPredicted:\t" + predicted);
         println("\t\tFalse positives:\t" + distinctCount);
         println("\t\tFraction:\t"
@@ -1234,7 +1234,7 @@ public class LTLBenchmarker extends CommandLineTool {
         long matching = SPORule.getMatchingTime();
         long running = DefaultScenario.getRunningTime();
         long overhead = total - running;
-        long isoChecking = DefaultIsoChecker.getTotalTime();
+        long isoChecking = IsoChecker.getTotalTime();
         long building = MatchApplier.getGenerateTime() - isoChecking;
 
         // this calculation incorporates only transforming RuleMatches into
@@ -1261,10 +1261,10 @@ public class LTLBenchmarker extends CommandLineTool {
         println("\tIso checking:\t" + isoChecking + "\t"
             + percentage(isoChecking / (double) total));
         if (getVerbosity() == HIGH_VERBOSITY) {
-            long certifying = DefaultIsoChecker.getCertifyingTime();
-            long equalCheck = DefaultIsoChecker.getEqualCheckTime();
-            long certCheck = DefaultIsoChecker.getCertCheckTime();
-            long simCheck = DefaultIsoChecker.getSimCheckTime();
+            long certifying = IsoChecker.getCertifyingTime();
+            long equalCheck = IsoChecker.getEqualCheckTime();
+            long certCheck = IsoChecker.getCertCheckTime();
+            long simCheck = IsoChecker.getSimCheckTime();
             println("\t\tCertifying:\t" + certifying + "\t"
                 + percentage(certifying / (double) isoChecking));
             println("\t\tEquals check:\t" + equalCheck + "\t"

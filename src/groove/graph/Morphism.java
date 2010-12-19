@@ -23,8 +23,8 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class Morphism<N extends Node,L extends Label,E extends Edge>
-        extends ElementMap<N,L,E,N,L,E> {
+public class Morphism<N extends Node,L extends Label,E extends Edge> extends
+        ElementMap<N,L,E,N,L,E> {
     /**
      * Creates a morphism, based on a given element factory.
      */
@@ -47,7 +47,14 @@ abstract public class Morphism<N extends Node,L extends Label,E extends Edge>
     }
 
     @Override
-    abstract public Morphism<N,L,E> newMap();
+    public Morphism<N,L,E> newMap() {
+        return new Morphism<N,L,E>(getFactory());
+    }
+
+    @Override
+    public Morphism<N,L,E> clone() {
+        return (Morphism<N,L,E>) super.clone();
+    }
 
     /**
      * Constructs a morphism that is the concatenation of two morphisms.

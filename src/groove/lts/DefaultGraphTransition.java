@@ -21,9 +21,10 @@ import groove.control.CtrlTransition;
 import groove.graph.AbstractEdge;
 import groove.graph.AbstractGraph;
 import groove.graph.Element;
-import groove.graph.GraphMorphism;
 import groove.graph.Label;
-import groove.graph.iso.DefaultIsoChecker;
+import groove.graph.Morphism;
+import groove.graph.TypeLabel;
+import groove.graph.iso.IsoChecker;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
@@ -32,8 +33,6 @@ import groove.trans.HostNode;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
-
-import java.util.Map;
 
 /**
  * Models a transition built upon a rule application
@@ -172,8 +171,8 @@ public class DefaultGraphTransition extends
         if (isSymmetry()) {
             HostGraph derivedTarget = new DefaultHostGraph(appl.getTarget());
             HostGraph realTarget = new DefaultHostGraph(target().getGraph());
-            final GraphMorphism iso =
-                DefaultIsoChecker.getInstance(true).getIsomorphism(
+            final Morphism<HostNode,TypeLabel,HostEdge> iso =
+                IsoChecker.<HostNode,HostEdge>getInstance(true).getIsomorphism(
                     derivedTarget, realTarget);
             assert iso != null : "Can't reconstruct derivation from graph transition "
                 + iso
@@ -182,17 +181,7 @@ public class DefaultGraphTransition extends
                 + " and \n"
                 + AbstractGraph.toString(realTarget)
                 + " \nnot isomorphic";
-            HostGraphMorphism applMorph = appl.getMorphism();
-            HostGraphMorphism result = applMorph.newMap();
-            for (Map.Entry<HostNode,HostNode> nodeEntry : applMorph.nodeMap().entrySet()) {
-                HostNode target = (HostNode) iso.getNode(nodeEntry.getValue());
-                result.putNode(nodeEntry.getKey(), target);
-            }
-            for (Map.Entry<HostEdge,HostEdge> edgeEntry : applMorph.edgeMap().entrySet()) {
-                HostEdge target = (HostEdge) iso.getEdge(edgeEntry.getValue());
-                result.putEdge(edgeEntry.getKey(), target);
-            }
-            return result;
+            return appl.getMorphism().then(iso);
         } else {
             return appl.getMorphism();
         }

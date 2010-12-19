@@ -385,13 +385,16 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,TypeLabel,HostEdge>
     }
 
     @Override
-    public CertificateStrategy getCertifier(boolean strong) {
-        CertificateStrategy result =
+    public CertificateStrategy<HostNode,TypeLabel,HostEdge> getCertifier(
+            boolean strong) {
+        CertificateStrategy<HostNode,TypeLabel,HostEdge> result =
             this.certifier == null ? null : this.certifier.get();
         if (result == null || result.getStrength() != strong) {
             result =
                 AbstractGraph.getCertificateFactory().newInstance(this, strong);
-            this.certifier = new WeakReference<CertificateStrategy>(result);
+            this.certifier =
+                new WeakReference<CertificateStrategy<HostNode,TypeLabel,HostEdge>>(
+                    result);
         }
         return result;
     }
@@ -427,7 +430,7 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,TypeLabel,HostEdge>
     /** Mapping from labels to sets of edges with that label. */
     Map<TypeLabel,HostEdgeSet> labelEdgeMap;
     /** The certificate strategy of this graph, set on demand. */
-    private Reference<CertificateStrategy> certifier;
+    private Reference<CertificateStrategy<HostNode,TypeLabel,HostEdge>> certifier;
     /**
      * Flag indicating that data should be copied rather than shared in
      * {@link #getDataTarget(int)}.
