@@ -94,10 +94,10 @@ public class RuleToShapeMap extends RuleToHostMap implements Fixable {
         return (ShapeEdge) super.removeEdge(key);
     }
 
-    /** Tests if the map is not fixed and specialises the return type. */
+    /** Specialises the return type. */
     @Override
     public ShapeFactory getFactory() {
-        return ShapeFactory.instance();
+        return (ShapeFactory) super.getFactory();
     }
 
     /** Tests if the map is not fixed and specialises the return type. */
