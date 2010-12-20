@@ -20,7 +20,6 @@ import groove.graph.Label;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -88,11 +87,6 @@ public class AspectMap implements Iterable<AspectValue>, Comparable<AspectMap>,
     /** Returns the aspect value for a given aspect, if any. */
     public AspectValue get(Aspect key) {
         return this.aspectMap.get(key);
-    }
-
-    /** Returns the set of aspect values in this map. */
-    public Collection<AspectValue> values() {
-        return this.aspectMap.values();
     }
 
     /** Returns the number of aspect values in this map. */
@@ -179,22 +173,6 @@ public class AspectMap implements Iterable<AspectValue>, Comparable<AspectMap>,
                 setSingularValue(value, false);
             }
         }
-    }
-
-    /**
-     * Removes an aspect from the map. Returns the value stored for this aspect,
-     * if any.
-     * @param aspect the aspect to be removed.
-     */
-    public AspectValue remove(Aspect aspect) {
-        AspectValue result = this.aspectMap.remove(aspect);
-        if (result != null) {
-            this.declaredValues.remove(result);
-            if (result.equals(getSingularValue())) {
-                resetSingularValue();
-            }
-        }
-        return result;
     }
 
     /** Returns a clone of this map. */
@@ -347,11 +325,6 @@ public class AspectMap implements Iterable<AspectValue>, Comparable<AspectMap>,
     /** Returns the singular aspect value in this map, if any. */
     private AspectValue getSingularValue() {
         return this.singularValue;
-    }
-
-    /** Removes the singular value. */
-    private void resetSingularValue() {
-        this.singularValue = null;
     }
 
     /**
