@@ -24,8 +24,10 @@ import gov.nasa.ltl.trans.ParseErrorException;
 import groove.verify.BuchiLocation;
 import groove.verify.BuchiTransition;
 import groove.verify.DefaultBuchiLocation;
+import groove.view.FormatException;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,10 +36,13 @@ import java.util.Set;
  * @version $Revision $
  */
 public class NASABuchiGraph extends AbstractBuchiGraph {
-    private Map<Node,BuchiLocation> node2location;
+    private final Map<Node,BuchiLocation> node2location;
+    /** Set of already visited nodes. */
+    private final Set<Node> visitedNodes;
 
     private NASABuchiGraph() {
         this.node2location = new HashMap<Node,BuchiLocation>();
+        this.visitedNodes = new HashSet<Node>();
     }
 
     /**
@@ -53,7 +58,7 @@ public class NASABuchiGraph extends AbstractBuchiGraph {
         return false;
     }
 
-    public BuchiGraph newBuchiGraph(String formula) {
+    public BuchiGraph newBuchiGraph(String formula) throws FormatException {
         final BuchiGraph result = new NASABuchiGraph();
         try {
             Graph graph = LTL2Buchi.translate(formula);
@@ -62,9 +67,18 @@ public class NASABuchiGraph extends AbstractBuchiGraph {
             visitor.visitNode(init);
             result.addInitialLocation(getLocation(init));
         } catch (ParseErrorException e) {
-            e.printStackTrace();
+            throw new FormatException(e.getMessage());
         }
         return result;
+    }
+
+    /** 
+     * Indicates if a given node has already been visited.
+     * also sets the status to visited. 
+     */
+    private boolean isVisited(Node node) {
+        return !this.visitedNodes.add(node);
+
     }
 
     private BuchiLocation getLocation(Node node) {
@@ -100,16 +114,16 @@ public class NASABuchiGraph extends AbstractBuchiGraph {
         }
 
         public void visitNode(Node node) {
-            if (null == getLocation(node).outTransitions()) {
+            // only do something if the node has not already been visited
+            if (!isVisited(node)) {
+                BuchiLocation location = getLocation(node);
                 for (Edge edge : node.getOutgoingEdges()) {
                     visitEdge(edge);
                 }
                 if (node.getAttributes().getBoolean("accepting")) {
-                    getLocation(node).setAccepting();
-                    this.graph.addAcceptingLocation(getLocation(node));
+                    location.setAccepting();
+                    this.graph.addAcceptingLocation(location);
                 }
-            } else {
-                // this node has already been visited
             }
         }
 

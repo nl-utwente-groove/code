@@ -18,6 +18,7 @@ package groove.verify.ltl2ba;
 
 import groove.verify.BuchiLocation;
 import groove.verify.BuchiTransition;
+import groove.view.FormatException;
 
 import java.util.Set;
 
@@ -45,8 +46,9 @@ public interface BuchiGraph {
      * @param formula the formula for which to create an equivalent
      *        {@link BuchiGraph}
      * @return the {@link BuchiGraph}
+     * @throws FormatException if the formula contains (parsing) errors
      */
-    public BuchiGraph newBuchiGraph(String formula);
+    public BuchiGraph newBuchiGraph(String formula) throws FormatException;
 
     /**
      * Returns the set of initial locations.

@@ -271,7 +271,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         }
         Set<JCell> jCells = new HashSet<JCell>();
         for (GraphState counterExample : counterExamples) {
-            jCells.add(getJModel().getJCell(counterExample));
+            jCells.add(getJModel().getJVertex(counterExample));
         }
         getJModel().setEmphasized(jCells);
         return message;

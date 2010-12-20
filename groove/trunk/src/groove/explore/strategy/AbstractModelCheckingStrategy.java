@@ -17,13 +17,10 @@
  */
 package groove.explore.strategy;
 
-import gov.nasa.ltl.trans.LTL2Buchi;
-import gov.nasa.ltl.trans.ParseErrorException;
 import groove.explore.result.Acceptor;
 import groove.explore.result.Result;
 import groove.explore.util.RandomChooserInSequence;
 import groove.explore.util.RandomNewStateChooser;
-import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -40,8 +37,7 @@ import groove.verify.ltl2ba.LTL2BuchiGraph;
 import groove.verify.ltl2ba.LTL2BuchiLabel;
 import groove.verify.ltl2ba.LTL2BuchiTransition;
 import groove.verify.ltl2ba.NASABuchiGraph;
-import groove.verify.ltl2ba.NASABuchiLabel;
-import groove.verify.ltl2ba.NASABuchiTransition;
+import groove.view.FormatException;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -63,12 +59,6 @@ import rwth.i2.ltl2ba4j.model.ITransition;
  */
 public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
         implements ModelCheckingStrategy {
-    private final static int LTL2BA = 1;
-
-    private final static int NASABUCHI = 2;
-
-    private int LTL2BUCHI_METHOD = NASABUCHI;
-
     /** This implementation initialises the product automaton as well. */
     @Override
     public void prepare(GTS gts, GraphState state) {
@@ -92,25 +82,6 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
 
     public Result getResult() {
         return this.result;
-    }
-
-    /**
-     * Set the Buechi graph to use for model checking.
-     * @param buchiGraph the Buechi graph to use
-     */
-    public void setBuchiGraph(BuchiGraph buchiGraph) {
-        this.buchiGraph = buchiGraph;
-    }
-
-    /**
-     * Returns the Buechi graph that is used for model checking.
-     * @return the Buechi graph
-     */
-    public groove.verify.ltl2ba.BuchiGraph getBuchiGraph() {
-        if (null == this.buchiGraph) {
-            computeBuchiGraph(this.property);
-        }
-        return this.buchiGraph;
     }
 
     /**
@@ -232,12 +203,9 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
      * Initialise the data structures used during exploration.
      */
     public void setup() {
-        this.state2node = new HashMap<IState,Node>();
         // currentPath = new Stack<GraphTransition>();
         this.searchStack = new Stack<BuchiGraphState>();
         this.transitionStack = new Stack<ProductTransition>();
-
-        initializeProperty();
         assert (this.initialLocation != null) : "The property automaton should have an initial state";
         BuchiGraphState startState =
             new BuchiGraphState(this.productGTS.getRecord(),
@@ -293,46 +261,6 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
     }
 
     /**
-     * @param property the property for which the corresponding Buchi automaton
-     *        has to be generated.
-     */
-    protected void computeBuchiGraph(String property) {
-        try {
-            gov.nasa.ltl.graph.Graph ltlGraph =
-                LTL2Buchi.translate("!(" + property + ")");
-            ltlGraph.forAllNodes(new TransformNodeVisitor());
-            ltlGraph.forAllEdges(new TransformEdgeVisitor());
-            this.initialLocation =
-                getLocation(this.node2location, ltlGraph.getInit());
-        } catch (ParseErrorException pee) {
-            pee.printStackTrace();
-        }
-    }
-
-    /**
-     * @param nodeMap the mapping from ltl-nodes to NASABuechiLocations
-     * @return the
-     */
-    private BuchiLocation getLocation(
-            Map<gov.nasa.ltl.graph.Node,BuchiLocation> nodeMap,
-            gov.nasa.ltl.graph.Node node) {
-        if (nodeMap.containsKey(node)) {
-            return nodeMap.get(node);
-        } else {
-            BuchiLocation newLocation = null;
-            // if node is accepting
-            if (node.getAttributes().getBoolean("accepting")) {
-                newLocation = new DefaultBuchiLocation();
-                newLocation.setAccepting();
-            } else {
-                newLocation = new DefaultBuchiLocation();
-            }
-            nodeMap.put(node, newLocation);
-            return newLocation;
-        }
-    }
-
-    /**
      * Constructs the set of rule names for which the iterator contains a match.
      * @param graphTransitions a set of {@link groove.lts.GraphTransition}s
      * @return the set of rule names contained in the given
@@ -342,7 +270,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
             Set<? extends GraphTransition> graphTransitions) {
         Set<String> result = new HashSet<String>();
         for (GraphTransition nextTransition : graphTransitions) {
-            result.add(nextTransition.getEvent().getRule().getName().toString());
+            result.add(nextTransition.label().toString());
         }
         return result;
     }
@@ -444,36 +372,6 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
     }
 
     /**
-     * Initialise the property to be verified.
-     */
-    private void initializeProperty() {
-        assert (this.property != null) : "Property should have been set already.";
-
-        BuchiGraphFactory graphFactory = null;
-
-        switch (this.LTL2BUCHI_METHOD) {
-        case LTL2BA:
-            graphFactory =
-                BuchiGraphFactory.getInstance(LTL2BuchiGraph.getPrototype());
-            break;
-        case NASABUCHI:
-            // this is the default Buchi graph factory but nevertheless we set
-            // it explicitely
-            graphFactory =
-                BuchiGraphFactory.getInstance(NASABuchiGraph.getPrototype());
-            break;
-        default:
-            graphFactory = BuchiGraphFactory.getInstance();
-            break;
-        }
-
-        BuchiGraph buchiGraph =
-            graphFactory.newBuchiGraph("!(" + this.property + ")");
-        setBuchiGraph(buchiGraph);
-        this.initialLocation = buchiGraph.initialLocations().iterator().next();
-    }
-
-    /**
      * Returns the product GTS.
      * @return the product GTS
      */
@@ -548,7 +446,36 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
     }
 
     public void setProperty(String property) {
+        assert property != null;
         this.property = property;
+
+        BuchiGraphFactory graphFactory;
+
+        switch (LTL2BUCHI_METHOD) {
+        case LTL2BA:
+            graphFactory =
+                BuchiGraphFactory.getInstance(LTL2BuchiGraph.getPrototype());
+            break;
+        case NASABUCHI:
+            // this is the default Buchi graph factory but nevertheless we set
+            // it explicitely
+            graphFactory =
+                BuchiGraphFactory.getInstance(NASABuchiGraph.getPrototype());
+            break;
+        default:
+            graphFactory = BuchiGraphFactory.getInstance();
+            assert false;
+        }
+
+        try {
+            BuchiGraph buchiGraph =
+                graphFactory.newBuchiGraph("!(" + this.property + ")");
+            this.initialLocation =
+                buchiGraph.initialLocations().iterator().next();
+        } catch (FormatException e) {
+            throw new IllegalStateException(String.format(
+                "Property %s not parsed correctly", property), e);
+        }
     }
 
     /** The Buchi start graph-state of the system. */
@@ -559,52 +486,12 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
     protected BuchiGraphState atBuchiState;
     /** The transition by which the current Buchi graph-state is reached. */
     protected ProductTransition lastTransition;
-    /** A mapping from {@link IState}s to {@link Node}s. */
-    protected Map<IState,Node> state2node = new HashMap<IState,Node>();
-    /** A mapping from {@link gov.nasa.ltl.graph.Node}s to {@link BuchiLocation}s. */
-    protected Map<gov.nasa.ltl.graph.Node,BuchiLocation> node2location;
     /** State collector which randomly provides unexplored states. */
     protected RandomNewStateChooser collector = new RandomNewStateChooser();
 
     private String property;
-    private groove.verify.ltl2ba.BuchiGraph buchiGraph;
     private BuchiLocation initialLocation;
     private Stack<BuchiGraphState> searchStack;
     private Stack<ProductTransition> transitionStack;
     private Result result;
-
-    /**
-     * @author Harmen Kastenberg
-     * @version $Revision $
-     */
-    public class TransformNodeVisitor extends gov.nasa.ltl.graph.EmptyVisitor {
-        @Override
-        public void visitNode(gov.nasa.ltl.graph.Node node) {
-            getLocation(AbstractModelCheckingStrategy.this.node2location, node);
-        }
-    }
-
-    /**
-     * @author Harmen Kastenberg
-     * @version $Revision $
-     */
-    public class TransformEdgeVisitor extends gov.nasa.ltl.graph.EmptyVisitor {
-        @Override
-        public void visitEdge(gov.nasa.ltl.graph.Edge edge) {
-            BuchiLocation source =
-                getLocation(AbstractModelCheckingStrategy.this.node2location,
-                    edge.getSource());
-            BuchiLocation target =
-                getLocation(AbstractModelCheckingStrategy.this.node2location,
-                    edge.getNext());
-
-            String action = edge.getAction();
-            String guard = edge.getGuard();
-            NASABuchiLabel label = new NASABuchiLabel(action, guard);
-
-            NASABuchiTransition transition =
-                new NASABuchiTransition(source, label, target);
-            source.addTransition(transition);
-        }
-    }
 }

@@ -273,6 +273,7 @@ public class RelabelDialog {
     /** The text field where the renamed label is entered. */
     private JTextField newField;
 
+    /** Returns the label displaying the current error in the renaming (if any). */
     private JLabel getErrorLabel() {
         if (this.errorLabel == null) {
             JLabel result = this.errorLabel = new JLabel();

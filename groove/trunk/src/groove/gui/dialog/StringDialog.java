@@ -18,6 +18,8 @@ package groove.gui.dialog;
 
 import groove.gui.Options;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,7 +33,9 @@ import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -59,9 +63,12 @@ public class StringDialog {
      * is modal, this method returns only when the user closes the dialog. The
      * return value indicates if the properties have changed.
      * @param frame the frame on which the dialog is to be displayed
+     * @param parser if {@code true}, the property to be entered is an LTL
+     * property; otherwise it is a CTL property
      */
-    public String showDialog(Component frame) {
+    public String showDialog(Component frame, StringParser parser) {
         this.dialog = createDialog(frame);
+        this.parser = parser;
         if (this.title != null) {
             String[] storedValues = Options.getUserPrefs(this.title);
             this.history.clear();
@@ -91,8 +98,17 @@ public class StringDialog {
      */
     private JDialog createDialog(Component frame) {
         Object[] buttons = new Object[] {getOkButton(), getCancelButton()};
+        Object[] panels;
+        // add an error label if there is a parser
+        if (this.parser == null) {
+            panels = new Object[] {getChoiceBox()};
+        } else {
+            JPanel errorPanel = new JPanel(new BorderLayout());
+            errorPanel.add(getErrorLabel());
+            panels = new Object[] {getChoiceBox(), errorPanel};
+        }
         JOptionPane panel =
-            new JOptionPane(getChoiceBox(), JOptionPane.PLAIN_MESSAGE,
+            new JOptionPane(panels, JOptionPane.PLAIN_MESSAGE,
                 JOptionPane.OK_CANCEL_OPTION, null, buttons);
         JDialog result = panel.createDialog(frame, this.title);
         result.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
@@ -137,8 +153,24 @@ public class StringDialog {
     /** Reacts to a change in the editor. */
     private void processTextChange() {
         final String currentText = getEditor().getText();
-        getOkButton().setEnabled(!currentText.isEmpty());
+        String error = parse(currentText);
+        getOkButton().setEnabled(error == null && !currentText.isEmpty());
         getModel().setDirty(currentText);
+    }
+
+    /** Attempts to parse the given text as a property
+     * of the correct (LTL or CTL) kind.
+     * @param text the text to be parsed as a property
+     * @return an error if the text cannot be parsed, {@code null}
+     * if the property is syntactically correct
+     */
+    private String parse(String text) {
+        String result = null;
+        if (this.parser != null) {
+            result = this.parser.parse(text);
+            getErrorLabel().setText(result == null ? "" : result);
+        }
+        return result;
     }
 
     /** The choice box */
@@ -175,6 +207,19 @@ public class StringDialog {
     /** The CANCEL button on the option pane. */
     private JButton cancelButton;
 
+    /** Returns the label displaying the current error in entered string (if any). */
+    private JLabel getErrorLabel() {
+        if (this.errorLabel == null) {
+            JLabel result = this.errorLabel = new JLabel();
+            result.setForeground(Color.RED);
+            result.setMinimumSize(getOkButton().getPreferredSize());
+        }
+        return this.errorLabel;
+    }
+
+    /** Label displaying the current error in the renaming (if any). */
+    private JLabel errorLabel;
+
     /** The history list */
     private final List<String> history;
 
@@ -188,11 +233,14 @@ public class StringDialog {
      */
     private boolean setResult(Object resultObject) {
         this.result = resultObject == null ? null : resultObject.toString();
-        if (this.result != null && !this.result.isEmpty()) {
+        boolean ok =
+            this.result == null || !this.result.isEmpty()
+                && parse(this.result) == null;
+        if (this.result != null && ok) {
             this.history.remove(this.result);
             this.history.add(0, this.result);
         }
-        return this.result == null || !this.result.isEmpty();
+        return ok;
     }
 
     /**
@@ -203,6 +251,11 @@ public class StringDialog {
         return this.result;
     }
 
+    /**
+     * Flag indicating that the property is an LTL property.
+     * This affects the parse test.
+     */
+    private StringParser parser;
     /** The field in which to store the provided data */
     private String result;
 
@@ -217,7 +270,7 @@ public class StringDialog {
         StringDialog dialog = new StringDialog("Input a string");
         boolean stop = false;
         do {
-            dialog.showDialog(null);
+            dialog.showDialog(null, null);
             System.out.printf("Selected string: %s%n", dialog.getResult());
             stop = "stop".equals(dialog.getResult());
         } while (!stop);
@@ -415,5 +468,11 @@ public class StringDialog {
         public void windowOpened(WindowEvent e) {
             // do nothing
         }
+    }
+
+    /** Interface wrapping the functionality to check a string for parse errors. */
+    static public interface StringParser {
+        /** Parses a given string, and returns a message if there is an error.*/
+        String parse(String text);
     }
 }
