@@ -54,7 +54,10 @@ public abstract class AbstractLabel implements Cloneable, Label {
         if (result == 0) {
             result = boolToInt(obj.isFlag()) - boolToInt(isFlag());
         }
-        return text().compareTo(obj.text());
+        if (result == 0) {
+            result = text().compareTo(obj.text());
+        }
+        return result;
     }
 
     /**

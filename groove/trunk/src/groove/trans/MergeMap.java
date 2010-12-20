@@ -65,7 +65,7 @@ public class MergeMap extends Morphism<HostNode,TypeLabel,HostEdge> {
         HostNode valueImage = getNode(value);
         // if we are combining this merge map with another, if may occur
         // that the value is UNDEFINED, meaning we should rather remove the key
-        if (valueImage == this.UNDEFINED) {
+        if (valueImage == UNDEFINED) {
             removeNode(key);
         } else if (keyImage != valueImage) {
             if (keyImage == null) {
@@ -127,13 +127,13 @@ public class MergeMap extends Morphism<HostNode,TypeLabel,HostEdge> {
     public HostNode removeNode(HostNode key) {
         HostNode keyImage = getNode(key);
         if (keyImage != null) {
-            super.putNode(keyImage, this.UNDEFINED);
+            super.putNode(keyImage, UNDEFINED);
             // now redirect all pre-images of keyImage, if necessary
             if (this.mergeTargets.contains(keyImage)) {
                 // map all pre-images of keyImage to UNDEFINED
                 for (Map.Entry<HostNode,HostNode> entry : nodeMap().entrySet()) {
                     if (entry.getValue() == keyImage) {
-                        entry.setValue(this.UNDEFINED);
+                        entry.setValue(UNDEFINED);
                     }
                 }
                 this.mergeTargets.remove(keyImage);
@@ -164,7 +164,7 @@ public class MergeMap extends Morphism<HostNode,TypeLabel,HostEdge> {
         if (value == key) {
             return null;
         } else if (value == null) {
-            return this.UNDEFINED;
+            return UNDEFINED;
         } else {
             return value;
         }
@@ -181,7 +181,7 @@ public class MergeMap extends Morphism<HostNode,TypeLabel,HostEdge> {
     private HostNode internalToExternal(HostNode value, HostNode key) {
         if (value == null) {
             return key;
-        } else if (value == this.UNDEFINED) {
+        } else if (value == UNDEFINED) {
             return null;
         } else {
             return value;
