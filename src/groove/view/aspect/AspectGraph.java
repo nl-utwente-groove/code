@@ -29,6 +29,7 @@ import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.TypeLabel;
+import groove.rel.RegExpr;
 import groove.trans.RuleLabel;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
@@ -413,9 +414,11 @@ public class AspectGraph extends
                 } else {
                     RuleLabel oldEdgeLabel = (RuleLabel) edgeLabel;
                     if (oldEdgeLabel.isMatchable()) {
-                        replacement =
-                            oldEdgeLabel.getMatchExpr().relabel(oldLabel,
-                                newLabel).toString();
+                        RegExpr oldExpr = oldEdgeLabel.getMatchExpr();
+                        RegExpr newExpr = oldExpr.relabel(oldLabel, newLabel);
+                        if (newExpr != oldExpr) {
+                            replacement = newExpr.toString();
+                        }
                     }
                 }
                 if (replacement != null) {
