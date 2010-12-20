@@ -423,7 +423,6 @@ public class AspectGraph extends
                 }
                 if (replacement != null) {
                     AspectMap newData = edge.getAspectMap().clone();
-                    newData.remove(TypeAspect.getInstance());
                     newData.setText(replacement);
                     oldToNew.put(edge,
                         createAspectEdge(edge.source(), edge.target(), newData));
