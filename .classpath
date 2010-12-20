@@ -16,10 +16,10 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/groove/lib/src/ltl2ba4j.zip!/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/ltl2buchi.jar" sourcepath="lib/src/ltl2buchi.zip"/>
 	<classpathentry kind="lib" path="lib/rsyntaxtextarea.jar"/>
 	<classpathentry kind="lib" path="lib/antlr-3.2.jar" sourcepath="lib/src/antlr-3.2-src.zip"/>
 	<classpathentry kind="lib" path="lib/looks-2.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/layouts.jar"/>
+	<classpathentry kind="lib" path="lib/ltl2buchi.jar" sourcepath="lib/src/ltl2buchi-2010-12.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
