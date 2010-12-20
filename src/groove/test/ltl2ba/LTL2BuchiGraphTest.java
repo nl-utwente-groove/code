@@ -37,12 +37,12 @@ public class LTL2BuchiGraphTest {
      */
     public static void main(String args[]) {
         LTL2BuchiGraphTest test = new LTL2BuchiGraphTest();
-        //        test.testOrFormula();
-        //        test.testAndFormula();
-        //        test.testImplyFormula();
-        //        test.testNegationFormula();
-        //        test.testAndOrFormula();
-        //        test.testOrAndFormula();
+        test.testOrFormula();
+        test.testAndFormula();
+        test.testImplyFormula();
+        test.testNegationFormula();
+        test.testAndOrFormula();
+        test.testOrAndFormula();
         test.testFinallyFormula();
     }
 
