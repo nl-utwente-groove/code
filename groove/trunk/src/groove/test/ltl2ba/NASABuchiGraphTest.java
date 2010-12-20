@@ -36,12 +36,12 @@ public class NASABuchiGraphTest {
      */
     public static void main(String args[]) {
         NASABuchiGraphTest test = new NASABuchiGraphTest();
-        //        test.testOrFormula();
-        //        test.testAndFormula();
-        //        test.testImplyFormula();
-        //        test.testNegationFormula();
-        //        test.testAndOrFormula();
-        //        test.testOrAndFormula();
+        test.testOrFormula();
+        test.testAndFormula();
+        test.testImplyFormula();
+        test.testNegationFormula();
+        test.testAndOrFormula();
+        test.testOrAndFormula();
         test.testFinallyFormula();
     }
 
