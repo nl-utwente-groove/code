@@ -34,6 +34,9 @@ public interface GraphTransition extends Edge, MatchResult {
     /** Overrides the method to specialise the result type. */
     GraphState target();
 
+    /** Overrides the method to specialise the result type. */
+    DerivationLabel label();
+
     /** Returns the (possibly {@code null} control transition associated with this transition. */
     CtrlTransition getCtrlTransition();
 
