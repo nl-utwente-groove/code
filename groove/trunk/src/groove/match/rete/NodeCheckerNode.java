@@ -19,6 +19,7 @@ package groove.match.rete;
 import groove.graph.DefaultNode;
 import groove.graph.Element;
 import groove.graph.Node;
+import groove.trans.HostNode;
 import groove.util.Reporter;
 
 /**
@@ -50,15 +51,15 @@ public class NodeCheckerNode extends ReteNetworkNode {
     }
 
     /**
-     * Each object of type {@link NodeCheckerNode} has an associated {@link Node} object 
+     * Each object of type {@link NodeCheckerNode} has an associated {@link DefaultNode} object 
      * that will represent and binds to to isolated nodes of rules'
      * LHS during build-time and dynamically to all nodes of a host graph
      * (either injectively or non-injectively).
      * 
      * @return the node object associated with this checker
      */
-    public Node getNode() {
-        return (Node) this.pattern[0];
+    public DefaultNode getNode() {
+        return (DefaultNode) this.pattern[0];
     }
 
     /**
@@ -68,7 +69,7 @@ public class NodeCheckerNode extends ReteNetworkNode {
      * @param node The node in host graph that has been added or removed.
      * @param action Determines if the given <code>node</code> has been added or removed.
      */
-    public void receiveNode(Node node, Action action) {
+    public void receiveNode(HostNode node, Action action) {
         receiveNodeReporter.start();
         ReteNetworkNode previous = null;
         int repeatedSuccessorIndex = 0;

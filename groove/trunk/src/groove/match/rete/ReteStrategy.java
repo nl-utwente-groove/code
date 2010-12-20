@@ -16,11 +16,11 @@
  */
 package groove.match.rete;
 
-import groove.graph.Edge;
-import groove.graph.Node;
 import groove.match.AbstractMatchStrategy;
 import groove.trans.Condition;
+import groove.trans.HostEdge;
 import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.trans.RuleToHostMap;
 import groove.util.TransformIterator;
 
@@ -105,9 +105,9 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
     private synchronized boolean graphShapesEqual(HostGraph g1, HostGraph g2) {
         boolean result = true;
 
-        HashSet<Node> nodes = new HashSet<Node>(g1.nodeSet());
+        HashSet<HostNode> nodes = new HashSet<HostNode>(g1.nodeSet());
 
-        for (Node n : nodes) {
+        for (HostNode n : nodes) {
             result = g2.nodeSet().contains(n);
             if (!result) {
                 System.out.println("------------------------ReteStrategy.graph comparison failed.--------------------------");
@@ -119,8 +119,8 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         }
 
         if (result) {
-            nodes = new HashSet<Node>(g2.nodeSet());
-            for (Node n : nodes) {
+            nodes = new HashSet<HostNode>(g2.nodeSet());
+            for (HostNode n : nodes) {
                 result = g1.nodeSet().contains(n);
                 if (!result) {
                     System.out.println("------------------------ReteStrategy.graph comparison failed.--------------------------");
@@ -132,8 +132,8 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
             }
         }
         if (result) {
-            HashSet<Edge> edges = new HashSet<Edge>(g1.edgeSet());
-            for (Edge e : edges) {
+            HashSet<HostEdge> edges = new HashSet<HostEdge>(g1.edgeSet());
+            for (HostEdge e : edges) {
                 result = g2.edgeSet().contains(e);
                 if (!result) {
                     System.out.println("------------------------ReteStrategy.graph comparison failed.--------------------------");
@@ -146,8 +146,8 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         }
 
         if (result) {
-            HashSet<Edge> edges = new HashSet<Edge>(g2.edgeSet());
-            for (Edge e : edges) {
+            HashSet<HostEdge> edges = new HashSet<HostEdge>(g2.edgeSet());
+            for (HostEdge e : edges) {
                 result = g1.edgeSet().contains(e);
                 if (!result) {
                     System.out.println("------------------------ReteStrategy.graph comparison failed.--------------------------");

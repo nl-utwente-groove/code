@@ -16,9 +16,9 @@
  */
 package groove.match.rete;
 
-import groove.graph.Edge;
-import groove.graph.Node;
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
+import groove.trans.HostEdge;
+import groove.trans.HostNode;
 
 /**
  * A checker node which is the result of superimposing the
@@ -66,12 +66,12 @@ public class CompositeConditionChecker extends ConditionChecker {
     }
 
     @Override
-    public void receive(Edge mu, Action action) {
+    public void receive(HostEdge mu, Action action) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void receive(Node node, Action action) {
+    public void receive(HostNode node, Action action) {
         throw new UnsupportedOperationException();
     }
 

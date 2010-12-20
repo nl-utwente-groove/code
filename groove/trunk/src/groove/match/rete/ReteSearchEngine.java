@@ -16,15 +16,15 @@
  */
 package groove.match.rete;
 
-import groove.graph.Edge;
 import groove.graph.LabelStore;
-import groove.graph.Node;
 import groove.match.SearchEngine;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.Condition;
 import groove.trans.DeltaStore;
 import groove.trans.GraphGrammar;
+import groove.trans.HostEdge;
 import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
@@ -207,19 +207,19 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
             return;
         }
 
-        for (Node n : deltaStore.getRemovedNodeSet()) {
+        for (HostNode n : deltaStore.getRemovedNodeSet()) {
             this.network.update(n, Action.REMOVE);
         }
 
-        for (Edge e : deltaStore.getRemovedEdgeSet()) {
+        for (HostEdge e : deltaStore.getRemovedEdgeSet()) {
             this.network.update(e, Action.REMOVE);
         }
 
-        for (Node n : deltaStore.getAddedNodeSet()) {
+        for (HostNode n : deltaStore.getAddedNodeSet()) {
             this.network.update(n, Action.ADD);
         }
 
-        for (Edge e : deltaStore.getAddedEdgeSet()) {
+        for (HostEdge e : deltaStore.getAddedEdgeSet()) {
             this.network.update(e, Action.ADD);
         }
 

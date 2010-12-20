@@ -21,6 +21,8 @@ import groove.graph.Element;
 import groove.graph.Node;
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
 import groove.trans.Condition;
+import groove.trans.HostEdge;
+import groove.trans.HostNode;
 import groove.trans.RuleToHostMap;
 import groove.util.FilterIterator;
 import groove.util.HashBag;
@@ -323,7 +325,7 @@ public class ConditionChecker extends ReteNetworkNode implements
      * @param mu The edge in the host graph that needs to be added/removed to/from the conflict set.
      * @param action Indicates if the given edge is going to be added or removed from the network.
      */
-    public void receive(Edge mu, Action action) {
+    public void receive(HostEdge mu, Action action) {
         ReteMatch m = new ReteMatch(this, mu, this.getOwner().isInjective());
         updateConflictSet(m, action);
     }
@@ -365,7 +367,7 @@ public class ConditionChecker extends ReteNetworkNode implements
      *        the conflict set.
      * @param action Determines if the match is to be added or removed.
      */
-    public void receive(Node node, Action action) {
+    public void receive(HostNode node, Action action) {
         ReteMatch m = new ReteMatch(this, node, this.getOwner().isInjective());
         this.updateConflictSet(m, action);
     }
