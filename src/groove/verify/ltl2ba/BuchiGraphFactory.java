@@ -16,12 +16,13 @@
  */
 package groove.verify.ltl2ba;
 
+import groove.view.FormatException;
+
 /**
  * @author Harmen Kastenberg
  * @version $Revision $
  */
-public abstract class BuchiGraphFactory
-{
+public abstract class BuchiGraphFactory {
     /**
      * Default prototype class for creating Buchi graphs.
      */
@@ -32,8 +33,7 @@ public abstract class BuchiGraphFactory
      * 
      * @return the corresponding Buchi graph factory
      */
-    public static BuchiGraphFactory getInstance()
-    {
+    public static BuchiGraphFactory getInstance() {
         return getInstance(PROTOTYPE);
     }
 
@@ -44,13 +44,11 @@ public abstract class BuchiGraphFactory
      *          the prototype class for creating Buchi graphs
      * @return the correponding Buchi graph factory
      */
-    public static BuchiGraphFactory getInstance(final BuchiGraph prototype)
-    {
-        return new BuchiGraphFactory()
-        {
+    public static BuchiGraphFactory getInstance(final BuchiGraph prototype) {
+        return new BuchiGraphFactory() {
             @Override
             public BuchiGraph newBuchiGraph(String formula)
-            {
+                throws FormatException {
                 return prototype.newBuchiGraph(formula);
             }
         };
@@ -58,6 +56,8 @@ public abstract class BuchiGraphFactory
 
     /**
      * Create a new Buchi graph using a Buchi graph factory.
+     * @throws FormatException if the formula contains (parsing) errors
      */
-    public abstract BuchiGraph newBuchiGraph(String formula);
+    public abstract BuchiGraph newBuchiGraph(String formula)
+        throws FormatException;
 }

@@ -93,7 +93,10 @@ public class ModelCheckingScenario extends DefaultScenario {
         return (ModelCheckingStrategy) super.getStrategy();
     }
 
-    /** Sets the property to be model checked. */
+    /**
+     * Sets the property to be model checked.
+     * It is required that this can be parsed correctly.
+     */
     public void setProperty(String property) {
         this.property = property;
     }

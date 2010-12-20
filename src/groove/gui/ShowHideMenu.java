@@ -609,7 +609,7 @@ public class ShowHideMenu extends JMenu {
         public void actionPerformed(ActionEvent evt) {
             Graph<?,?,?> graph =
                 ((GraphJModel<?,?>) this.jgraph.getModel()).getGraph();
-            String exprText = exprDialog.showDialog(null);
+            String exprText = exprDialog.showDialog(null, null);
             if (exprText != null) {
                 try {
                     RegExpr expr = RegExpr.parse(exprText);
