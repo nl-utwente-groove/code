@@ -173,15 +173,31 @@ public abstract class TemporalFormula {
             }
         } else {
             assert (property instanceof Atom && property.getOperands().size() == 0) : "An atom should have 0 operands.";
+            String atomString = property.toString();
+            // trim angular brackets from the atom
+            if (atomString.indexOf('<') == 0) {
+                String trimmedAtomString;
+                try {
+                    trimmedAtomString =
+                        ExprParser.toTrimmed(atomString, '<', '>');
+                } catch (FormatException e) {
+                    trimmedAtomString = null;
+                }
+                if (trimmedAtomString == null) {
+                    return atomString;
+                } else {
+                    atomString = trimmedAtomString;
+                }
+            }
             boolean validAtom = false;
             for (RuleName nameLabel : atoms) {
                 String ruleName = nameLabel.toString();
-                if (property.toString().equals(ruleName)
-                    || (property.toString().startsWith(ruleName + "(") && property.toString().endsWith(
-                        ")"))
-                    || property.toString().equals(CTLStarFormula.TRUE)
-                    || property.toString().equals(CTLStarFormula.FALSE)) {
-                    validAtom |= true;
+                if (atomString.equals(ruleName)
+                    || (atomString.startsWith(ruleName + "(") && atomString.endsWith(")"))
+                    || atomString.equals(CTLStarFormula.TRUE)
+                    || atomString.equals(CTLStarFormula.FALSE)) {
+                    validAtom = true;
+                    break;
                 }
             }
             if (!validAtom) {

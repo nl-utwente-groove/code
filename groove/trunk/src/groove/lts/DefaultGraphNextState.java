@@ -16,7 +16,6 @@ package groove.lts;
 
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
-import groove.graph.Label;
 import groove.trans.DefaultApplication;
 import groove.trans.DeltaApplier;
 import groove.trans.DeltaHostGraph;
@@ -140,7 +139,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     /**
      * This implementation returns the rule name.
      */
-    public Label label() {
+    public DerivationLabel label() {
         return new DerivationLabel(getEvent(), this.addedNodes);
     }
 

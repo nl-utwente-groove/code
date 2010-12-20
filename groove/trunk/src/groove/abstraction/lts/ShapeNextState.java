@@ -18,7 +18,7 @@ package groove.abstraction.lts;
 
 import groove.abstraction.Shape;
 import groove.control.CtrlTransition;
-import groove.graph.Label;
+import groove.lts.DerivationLabel;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -101,7 +101,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
-    public Label label() {
+    public DerivationLabel label() {
         return this.transition.label();
     }
 

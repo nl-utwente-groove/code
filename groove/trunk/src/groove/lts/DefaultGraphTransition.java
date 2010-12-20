@@ -21,7 +21,6 @@ import groove.control.CtrlTransition;
 import groove.graph.AbstractEdge;
 import groove.graph.AbstractGraph;
 import groove.graph.Element;
-import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.TypeLabel;
 import groove.graph.iso.IsoChecker;
@@ -40,7 +39,7 @@ import groove.trans.RuleMatch;
  * @version $Revision$ $Date: 2008-03-05 16:50:10 $
  */
 public class DefaultGraphTransition extends
-        AbstractEdge<GraphState,Label,GraphState> implements
+        AbstractEdge<GraphState,DerivationLabel,GraphState> implements
         GraphTransitionStub, GraphTransition {
     /**
      * Constructs a GraphTransition on the basis of a given rule event, between

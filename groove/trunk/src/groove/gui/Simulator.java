@@ -5135,7 +5135,7 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getGrammarView() != null);
+            setEnabled(getGTS() != null);
         }
     }
 
