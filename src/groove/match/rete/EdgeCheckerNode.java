@@ -18,8 +18,9 @@ package groove.match.rete;
 
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultNode;
-import groove.graph.Edge;
 import groove.graph.Element;
+import groove.trans.HostEdge;
+import groove.trans.RuleEdge;
 import groove.util.Reporter;
 
 /**
@@ -37,7 +38,7 @@ public class EdgeCheckerNode extends ReteNetworkNode {
         Reporter.register(EdgeCheckerNode.class);
     /**
      * For collecting reports on the number of time the 
-     * {@link #receiveEdge(ReteNetworkNode, Edge, Action)} method is called.
+     * {@link #receiveEdge(ReteNetworkNode, HostEdge, Action)} method is called.
      */
     protected static final Reporter receiveEdgeReporter =
         reporter.register("receiveEdge(source, gEdge, action)");
@@ -48,7 +49,7 @@ public class EdgeCheckerNode extends ReteNetworkNode {
      * @param e The edge that is to be used as a sample edge that this edge-checker 
      *          must accept matches for.
      */
-    public EdgeCheckerNode(ReteNetwork network, Edge e) {
+    public EdgeCheckerNode(ReteNetwork network, RuleEdge e) {
         super(network);
         DefaultNode n1 = DefaultNode.createNode();
         DefaultNode n2 =
@@ -82,8 +83,8 @@ public class EdgeCheckerNode extends ReteNetworkNode {
      * @return <code>true</code> if the given edge show be handed over to this
      *          edge-checker by the root, <code>false</code> otherwise.
      */
-    public boolean canBeMappedToEdge(Edge e) {
-        Edge e1 = this.getEdge();
+    public boolean canBeMappedToEdge(HostEdge e) {
+        DefaultEdge e1 = this.getEdge();
         //condition 1: labels must match <-- commented out because we check this in the root
         //condition 2: if this is an edge checker for a loop then e should also be a loop
         return (!e1.source().equals(e1.target()) || (e.source().equals(e.target())));
@@ -100,8 +101,8 @@ public class EdgeCheckerNode extends ReteNetworkNode {
      *         they have the same shape, i.e. both the pattern of this edge-checker
      *         and <code>e</code> are loops or both are non-loops.
      */
-    public boolean canBeStaticallyMappedToEdge(Edge e) {
-        Edge e1 = this.getEdge();
+    public boolean canBeStaticallyMappedToEdge(RuleEdge e) {
+        DefaultEdge e1 = this.getEdge();
         //condition 1: labels must match
         //condition 2: if this is an edge checker for a loop then e should also be a loop and vice versa
         return e1.label().text().equals(e.label().text())
@@ -115,7 +116,7 @@ public class EdgeCheckerNode extends ReteNetworkNode {
      * @param gEdge the edge that has been added/removed
      * @param action whether the action is ADD or remove.
      */
-    public void receiveEdge(ReteNetworkNode source, groove.graph.Edge gEdge,
+    public void receiveEdge(ReteNetworkNode source, HostEdge gEdge,
             Action action) {
         receiveEdgeReporter.start();
         //Dynamically, an edge-checker
@@ -154,8 +155,8 @@ public class EdgeCheckerNode extends ReteNetworkNode {
     /**
      * @return the edge associated with this edge-checker
      */
-    public Edge getEdge() {
-        return (Edge) this.pattern[0];
+    public DefaultEdge getEdge() {
+        return (DefaultEdge) this.pattern[0];
     }
 
     @Override

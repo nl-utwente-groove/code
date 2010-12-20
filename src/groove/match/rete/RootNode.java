@@ -18,7 +18,8 @@ package groove.match.rete;
 
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.Node;
+import groove.trans.HostEdge;
+import groove.trans.HostNode;
 
 /**
  * @author Arash Jalali
@@ -56,27 +57,32 @@ public class RootNode extends ReteNetworkNode {
 
     /**
      * This is the method that is to be called for each single atomic update
-     * to the RETE network, i.e. a single node/edge creation/removal.
+     * to the RETE network, i.e. a single node creation/removal.
      * 
-     * @param elem The element that is added or deleted from the host graph.
-     * @param action Determined if the given element is deleted or added.
+     * @param elem The node that is added or deleted from the host graph.
+     * @param action Determined if the given node is deleted or added.
      */
-    public void receiveElement(Element elem, Action action) {
-
-        if (elem instanceof Node) {
-            for (ReteNetworkNode nnode : this.getSuccessors()) {
-                if (nnode instanceof NodeCheckerNode) {
-                    ((NodeCheckerNode) nnode).receiveNode((Node) elem, action);
-                }
+    public void receiveNode(HostNode elem, Action action) {
+        for (ReteNetworkNode nnode : this.getSuccessors()) {
+            if (nnode instanceof NodeCheckerNode) {
+                ((NodeCheckerNode) nnode).receiveNode(elem, action);
             }
-        } else if (elem instanceof Edge) {
-            for (ReteNetworkNode nnode : this.getSuccessors()) {
-                if (nnode instanceof EdgeCheckerNode) {
-                    if (((Edge) elem).label().text().equals(
-                        ((EdgeCheckerNode) nnode).getEdge().label().text())) {
-                        ((EdgeCheckerNode) nnode).receiveEdge(this,
-                            (Edge) elem, action);
-                    }
+        }
+    }
+
+    /**
+     * This is the method that is to be called for each single atomic update
+     * to the RETE network, i.e. a single edge creation/removal.
+     * 
+     * @param elem The edge that is added or deleted from the host graph.
+     * @param action Determined if the given edge is deleted or added.
+     */
+    public void receiveEdge(HostEdge elem, Action action) {
+        for (ReteNetworkNode nnode : this.getSuccessors()) {
+            if (nnode instanceof EdgeCheckerNode) {
+                if (((Edge) elem).label().text().equals(
+                    ((EdgeCheckerNode) nnode).getEdge().label().text())) {
+                    ((EdgeCheckerNode) nnode).receiveEdge(this, elem, action);
                 }
             }
         }

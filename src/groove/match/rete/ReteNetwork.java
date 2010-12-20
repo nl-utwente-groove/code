@@ -16,11 +16,9 @@
  */
 package groove.match.rete;
 
-import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.Node;
 import groove.gui.jgraph.ReteJModel;
 import groove.io.AspectGxl;
 import groove.io.LayedOutXml;
@@ -29,14 +27,16 @@ import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.AbstractCondition;
 import groove.trans.Condition;
 import groove.trans.GraphGrammar;
+import groove.trans.HostEdge;
 import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.trans.NotCondition;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
+import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleName;
 import groove.trans.RuleNode;
-import groove.trans.RuleGraphMorphism;
 import groove.util.TreeHashSet;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
@@ -409,7 +409,7 @@ public class ReteNetwork {
         return result;
     }
 
-    private Edge translate(RuleGraphMorphism translationMap, RuleEdge edge) {
+    private RuleEdge translate(RuleGraphMorphism translationMap, RuleEdge edge) {
         RuleEdge result = edge;
         if (translationMap != null) {
             RuleNode n1 = translate(translationMap, edge.source());
@@ -422,9 +422,9 @@ public class ReteNetwork {
     }
 
     private void mapEdgesAndNodes(StaticMap openList,
-            Collection<RuleEdge> edgeSet, Collection<? extends Node> nodeSet) {
+            Collection<RuleEdge> edgeSet, Collection<RuleNode> nodeSet) {
 
-        Collection<Node> mappedLHSNodes = new HashSet<Node>();
+        Collection<RuleNode> mappedLHSNodes = new HashSet<RuleNode>();
         //Adding the required edge-checkers if needed.
         for (RuleEdge e : edgeSet) {
             //TODO this call should be removed after all features of groove are implemented into RETE
@@ -445,7 +445,7 @@ public class ReteNetwork {
         //These are isolated nodes. We will use one node checker but each
         //will be represented by a separate static mapping in the open list.
         //This part is a deviation from the standard algorithm spec.        
-        for (Node n : nodeSet) {
+        for (RuleNode n : nodeSet) {
             if (!mappedLHSNodes.contains(n)) {
                 NodeCheckerNode nc = findNodeCheckerForNode(n);
                 ReteStaticMapping mapping =
@@ -522,7 +522,7 @@ public class ReteNetwork {
             Element[] oldElements = source.getElements();
             Element[] newElements = new Element[oldElements.length];
             for (int i = 0; i < newElements.length; i++) {
-                if (oldElements[i] instanceof Edge) {
+                if (oldElements[i] instanceof RuleEdge) {
                     newElements[i] =
                         translate(translationMap, (RuleEdge) oldElements[i]);
                 } else {
@@ -535,7 +535,7 @@ public class ReteNetwork {
         return result;
     }
 
-    private NodeCheckerNode findNodeCheckerForNode(Node n) {
+    private NodeCheckerNode findNodeCheckerForNode(RuleNode n) {
         if (this.nodeChecker == null) {
             this.nodeChecker = new NodeCheckerNode(this);
             this.root.addSuccessor(this.nodeChecker);
@@ -580,11 +580,11 @@ public class ReteNetwork {
     private ReteStaticMapping pickCheckerNodeConnectedTo(StaticMap openList,
             ReteStaticMapping g1) {
         ReteStaticMapping result = null;
-        Set<Node> nodes1 = g1.getLhsNodes();
+        Set<RuleNode> nodes1 = g1.getLhsNodes();
         for (ReteStaticMapping m : openList) {
             if (m != g1) {
-                Set<Node> nodes2 = m.getLhsNodes();
-                for (Node n : nodes1) {
+                Set<RuleNode> nodes2 = m.getLhsNodes();
+                for (RuleNode n : nodes1) {
                     if (nodes2.contains(n)) {
                         result = m;
                         break;
@@ -598,7 +598,7 @@ public class ReteNetwork {
         return result;
     }
 
-    private EdgeCheckerNode findEdgeCheckerForEdge(Edge e) {
+    private EdgeCheckerNode findEdgeCheckerForEdge(RuleEdge e) {
         EdgeCheckerNode result = null;
         for (ReteNetworkNode n : this.getRoot().getSuccessors()) {
             if (n instanceof EdgeCheckerNode) {
@@ -622,15 +622,27 @@ public class ReteNetwork {
     }
 
     /**
-     * updates the RETE state by receiving an element that is added or
+     * updates the RETE state by receiving a node that is added or
      * removed.
      * 
-     * @param e The graph element that has been added/removed to/from the 
+     * @param e The node that has been added/removed to/from the 
      *          host graph.
      * @param action Determines if the given element has been added or removed.
      */
-    public void update(Element e, Action action) {
-        this.getRoot().receiveElement(e, action);
+    public void update(HostNode e, Action action) {
+        this.getRoot().receiveNode(e, action);
+    }
+
+    /**
+     * updates the RETE state by receiving an edge that is added or
+     * removed.
+     * 
+     * @param e The edge that has been added/removed to/from the 
+     *          host graph.
+     * @param action Determines if the given element has been added or removed.
+     */
+    public void update(HostEdge e, Action action) {
+        this.getRoot().receiveEdge(e, action);
     }
 
     /**
@@ -694,18 +706,18 @@ public class ReteNetwork {
     }
 
     /**
-     * Initializes the RETE network by feeding all nodes and edges of a given
+     * Initialises the RETE network by feeding all nodes and edges of a given
      * host graph to it.
      *  
      * @param g The given host graph.
      */
     public void processGraph(HostGraph g) {
         this.getState().clearSubscribers();
-        for (Node n : g.nodeSet()) {
-            this.getRoot().receiveElement(n, Action.ADD);
+        for (HostNode n : g.nodeSet()) {
+            this.getRoot().receiveNode(n, Action.ADD);
         }
-        for (Edge e : g.edgeSet()) {
-            this.getRoot().receiveElement(e, Action.ADD);
+        for (HostEdge e : g.edgeSet()) {
+            this.getRoot().receiveEdge(e, Action.ADD);
         }
         this.getState().setHostGraph(g);
     }
@@ -754,7 +766,8 @@ public class ReteNetwork {
         // inside the <code>elements</code> array and the integer at index  1
         // is -1 for node element, 0 for the source of edge elements and 1
         // for the target of edge elements.
-        private HashMap<Node,int[]> nodeLookupMap = new HashMap<Node,int[]>();
+        private HashMap<RuleNode,int[]> nodeLookupMap =
+            new HashMap<RuleNode,int[]>();
 
         /**
          * 
@@ -765,14 +778,15 @@ public class ReteNetwork {
             this.nNode = reteNode;
             this.elements = mappedTo;
             for (int i = 0; i < this.elements.length; i++) {
-                if (this.elements[i] instanceof Edge) {
-                    Node n1 = ((Edge) this.elements[i]).source();
-                    Node n2 = ((Edge) this.elements[i]).target();
+                if (this.elements[i] instanceof RuleEdge) {
+                    RuleNode n1 = ((RuleEdge) this.elements[i]).source();
+                    RuleNode n2 = ((RuleEdge) this.elements[i]).target();
                     this.nodeLookupMap.put(n1, new int[] {i, 0});
                     this.nodeLookupMap.put(n2, new int[] {i, 1});
-                } else if (this.elements[i] instanceof Node) {
-                    this.nodeLookupMap.put((Node) this.elements[i], new int[] {
-                        i, -1});
+                } else {
+                    assert (this.elements[i] instanceof RuleNode);
+                    this.nodeLookupMap.put((RuleNode) this.elements[i],
+                        new int[] {i, -1});
                 }
             }
             assert reteNode.getPattern().length == mappedTo.length;
@@ -832,7 +846,7 @@ public class ReteNetwork {
         /** 
          * @return The set of LHS nodes in this mapping.
          */
-        public Set<Node> getLhsNodes() {
+        public Set<RuleNode> getLhsNodes() {
             return this.nodeLookupMap.keySet();
         }
 
@@ -846,7 +860,7 @@ public class ReteNetwork {
          * returns {@literal null} if <code>n</code> does not occur in the list of
          * elements of this mapping.
          */
-        public int[] locateNode(Node n) {
+        public int[] locateNode(RuleNode n) {
             return this.nodeLookupMap.get(n);
         }
 

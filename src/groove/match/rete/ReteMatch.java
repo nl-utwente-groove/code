@@ -38,14 +38,14 @@ import java.util.Set;
  * @version $Revision $
  */
 public class ReteMatch implements Comparable<ReteMatch> {
-
+    /** Host graph elements. */
     private Element[] units;
     /**
      * This is the set of nodes (host nodes) in this match.
      * It is only of use in injective matching so it will be
      * filled lazily if needed by the <code>getNodes</code> method.
      */
-    private Set<Node> nodes = null;
+    private Set<HostNode> nodes = null;
     /**
      * The origin determines the pattern (and the associated lookup table)
      * that this match is an instance of.
@@ -102,7 +102,7 @@ public class ReteMatch implements Comparable<ReteMatch> {
      * @param match The matched edge.
      * @param injective Determines if this is an injectively found match.
      */
-    public ReteMatch(ReteNetworkNode origin, Edge match, boolean injective) {
+    public ReteMatch(ReteNetworkNode origin, HostEdge match, boolean injective) {
         this(origin, injective);
         this.units[0] = match;
         this.hashCode = match.hashCode();
@@ -115,7 +115,7 @@ public class ReteMatch implements Comparable<ReteMatch> {
      * @param injective Determines if this is a match found by an 
      *        injective matcher.
      */
-    public ReteMatch(ReteNetworkNode origin, Node match, boolean injective) {
+    public ReteMatch(ReteNetworkNode origin, HostNode match, boolean injective) {
         this(origin, injective);
         this.units[0] = match;
         this.hashCode = match.hashCode();
@@ -154,22 +154,22 @@ public class ReteMatch implements Comparable<ReteMatch> {
 
     /**
      * @param n A RETE or LHS node. 
-     * @return The {@link Node} object in the host graph to which <code>n</code> is mapped.
+     * @return The {@link HostNode} object in the host graph to which <code>n</code> is mapped.
      */
-    public Node getNode(Node n) {
+    public HostNode getNode(Node n) {
         int[] index = this.getOrigin().getPatternLookupTable().getNode(n);
-        Node result = lookupNode(index);
+        HostNode result = lookupNode(index);
         return result;
     }
 
-    private Node lookupNode(int[] index) {
-        Node result = null;
+    private HostNode lookupNode(int[] index) {
+        HostNode result = null;
         if ((index != null) && (index[0] >= 0)) {
             result =
                 (index[1] != -1) ? ((index[1] == 0)
-                        ? ((Edge) this.units[index[0]]).source()
-                        : ((Edge) this.units[index[0]]).target())
-                        : (Node) this.units[index[0]];
+                        ? ((HostEdge) this.units[index[0]]).source()
+                        : ((HostEdge) this.units[index[0]]).target())
+                        : (HostNode) this.units[index[0]];
         }
         return result;
     }
@@ -178,18 +178,18 @@ public class ReteMatch implements Comparable<ReteMatch> {
      * @return The set of host-nodes of the match, i.e. nodes in the host graph
      * that this match covers.
      */
-    public Set<Node> getNodes() {
+    public Set<HostNode> getNodes() {
         if (this.nodes == null) {
-            this.nodes = new TreeHashSet<Node>();
+            this.nodes = new TreeHashSet<HostNode>();
             for (int i = 0; i < this.units.length; i++) {
-                if (this.units[i] instanceof Edge) {
-                    Edge e = (Edge) this.units[i];
+                if (this.units[i] instanceof HostEdge) {
+                    HostEdge e = (HostEdge) this.units[i];
                     this.nodes.add(e.source());
                     if (!e.source().equals(e.target())) {
                         this.nodes.add(e.target());
                     }
                 } else {
-                    this.nodes.add((Node) this.units[i]);
+                    this.nodes.add((HostNode) this.units[i]);
                 }
             }
         }
@@ -202,9 +202,9 @@ public class ReteMatch implements Comparable<ReteMatch> {
      * @return the host-Edge to which <code>e</code> is mapped, <code>null</code>
      * otherwise.
      */
-    public Edge getEdge(Edge e) {
+    public HostEdge getEdge(Edge e) {
         int index = this.getOrigin().getPatternLookupTable().getEdge(e);
-        return (index != -1) ? (Edge) this.units[index] : null;
+        return (index != -1) ? (HostEdge) this.units[index] : null;
     }
 
     /**
@@ -377,11 +377,12 @@ public class ReteMatch implements Comparable<ReteMatch> {
      * @return <code>true</code> if the intersection of s1 and s2 is empty,<code>false</code>
      * otherwise.
      */
-    public static boolean checkInjectiveOverlap(Set<Node> s1, Set<Node> s2) {
+    public static boolean checkInjectiveOverlap(Set<HostNode> s1,
+            Set<HostNode> s2) {
         boolean result = true;
-        Set<Node> largerNodes = s1.size() > s2.size() ? s1 : s2;
-        Set<Node> smallerNodes = (largerNodes == s1) ? s2 : s1;
-        for (Node n : smallerNodes) {
+        Set<HostNode> largerNodes = s1.size() > s2.size() ? s1 : s2;
+        Set<HostNode> smallerNodes = (largerNodes == s1) ? s2 : s1;
+        for (HostNode n : smallerNodes) {
             if (largerNodes.contains(n)) {
                 result = false;
                 break;

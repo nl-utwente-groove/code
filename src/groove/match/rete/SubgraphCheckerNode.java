@@ -20,6 +20,9 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
+import groove.trans.HostEdge;
+import groove.trans.HostNode;
+import groove.trans.RuleNode;
 import groove.util.TreeHashSet;
 
 import java.util.HashSet;
@@ -106,17 +109,17 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
 
     private void staticJoin(ReteStaticMapping leftMap,
             ReteStaticMapping rightMap) {
-        Set<Node> s1 = leftMap.getLhsNodes();
-        Set<Node> s2 = rightMap.getLhsNodes();
-        HashSet<Node> intersection = new HashSet<Node>();
-        for (Node n1 : s1) {
+        Set<RuleNode> s1 = leftMap.getLhsNodes();
+        Set<RuleNode> s2 = rightMap.getLhsNodes();
+        HashSet<RuleNode> intersection = new HashSet<RuleNode>();
+        for (RuleNode n1 : s1) {
             if (s2.contains(n1)) {
                 intersection.add(n1);
             }
         }
         this.fastEqualityLookupTable = new int[intersection.size()][4];
         int i = 0;
-        for (Node n : intersection) {
+        for (RuleNode n : intersection) {
             int[] a = leftMap.locateNode(n);
             this.fastEqualityLookupTable[i][0] = a[0];
             this.fastEqualityLookupTable[i][1] = a[1];
@@ -158,9 +161,9 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
     public void receive(ReteNetworkNode source, int repeatIndex, Element mu,
             Action action) {
         ReteMatch sg =
-            (mu instanceof Edge) ? new ReteMatch(source, (Edge) mu,
+            (mu instanceof Edge) ? new ReteMatch(source, (HostEdge) mu,
                 this.getOwner().isInjective()) : new ReteMatch(source,
-                (Node) mu, this.getOwner().isInjective());
+                (HostNode) mu, this.getOwner().isInjective());
         if (action == Action.ADD) {
             this.receive(source, repeatIndex, sg);
         } else {
@@ -255,20 +258,22 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
 
         Element[] leftUnits = left.getAllUnits();
         Element[] rightUnits = right.getAllUnits();
-        Set<Node> nodesLeft = (injective) ? left.getNodes() : null;
-        Set<Node> nodesRight = (injective) ? right.getNodes() : null;
+        Set<HostNode> nodesLeft = (injective) ? left.getNodes() : null;
+        Set<HostNode> nodesRight = (injective) ? right.getNodes() : null;
 
         int i = 0;
         for (; i < this.fastEqualityLookupTable.length; i++) {
             int[] equality = this.fastEqualityLookupTable[i];
             //The equalities are guaranteed to work on edges because
             //isolated nodes do not occur in connected components
-            Node n1 =
-                (equality[1] == 0) ? ((Edge) leftUnits[equality[0]]).source()
-                        : ((Edge) leftUnits[equality[0]]).target();
-            Node n2 =
-                (equality[3] == 0) ? ((Edge) rightUnits[equality[2]]).source()
-                        : ((Edge) rightUnits[equality[2]]).target();
+            HostNode n1 =
+                (equality[1] == 0)
+                        ? ((HostEdge) leftUnits[equality[0]]).source()
+                        : ((HostEdge) leftUnits[equality[0]]).target();
+            HostNode n2 =
+                (equality[3] == 0)
+                        ? ((HostEdge) rightUnits[equality[2]]).source()
+                        : ((HostEdge) rightUnits[equality[2]]).target();
 
             allEqualitiesSatisfied = n1.equals(n2);
 
@@ -368,9 +373,9 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
             }
         }
 
-        Set<Node> nodes1 = oneMapping.getLhsNodes();
-        Set<Node> sharedNodes = new HashSet<Node>();
-        for (Node n : otherMapping.getLhsNodes()) {
+        Set<RuleNode> nodes1 = oneMapping.getLhsNodes();
+        Set<RuleNode> sharedNodes = new HashSet<RuleNode>();
+        for (RuleNode n : otherMapping.getLhsNodes()) {
             if (nodes1.contains(n)) {
                 sharedNodes.add(n);
             }
@@ -383,7 +388,7 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
             Node leftMappedValue;
             Node rightMappedValue;
 
-            Set<Node> tempSharedNodes = sharedNodes;
+            Set<RuleNode> tempSharedNodes = sharedNodes;
 
             for (int j = 0; j < this.fastEqualityLookupTable.length; j++) {
                 int[] leftIndices =
