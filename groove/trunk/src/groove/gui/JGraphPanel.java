@@ -145,9 +145,9 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
             GraphJModel<Node,Edge> graphJModel =
                 (GraphJModel<Node,Edge>) getJModel();
             if (elem instanceof Node) {
-                cell = graphJModel.getJVertex((Node) elem);
+                cell = graphJModel.getJCellForNode((Node) elem);
             } else if (elem instanceof Edge) {
-                cell = graphJModel.getJCell((Edge) elem);
+                cell = graphJModel.getJCellForEdge((Edge) elem);
             }
             if (cell != null) {
                 if (cell instanceof GraphJEdge

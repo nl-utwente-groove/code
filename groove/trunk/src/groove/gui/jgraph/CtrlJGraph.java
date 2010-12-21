@@ -118,7 +118,7 @@ public class CtrlJGraph extends JGraph {
          */
         @Override
         protected Collection<?> getSuggestedRoots() {
-            return Collections.singleton(getModel().getJCell(
+            return Collections.singleton(getModel().getJCellForNode(
                 getModel().getGraph().getStart()));
         }
 

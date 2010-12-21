@@ -249,6 +249,7 @@ public class IsoChecker<N extends Node,E extends Edge> {
      * @param codNodes list of nodes (from the codomain) to compare 
      * in addition to the graphs themselves
      */
+    @SuppressWarnings("unchecked")
     private <L extends Label> boolean areCertEqual(
             CertificateStrategy<N,L,E> dom, CertificateStrategy<N,L,E> cod,
             N[] domNodes, N[] codNodes) {
@@ -265,19 +266,20 @@ public class IsoChecker<N extends Node,E extends Edge> {
         isoCertCheckReporter.restart();
         result = true;
         // map to store dom-to-cod node mapping
-        Map<Node,Node> nodeMap = new HashMap<Node,Node>();
+        Map<N,N> nodeMap = new HashMap<N,N>();
         int edgeCount = edgeCerts.length;
         for (int i = 0; result && i < edgeCount && edgeCerts[i] != null; i++) {
             Certificate<E> domEdgeCert = edgeCerts[i];
             SmallCollection<E> image = codPartitionMap.get(domEdgeCert);
             result = image != null && image.isSingleton();
             if (result) {
-                Edge edgeKey = domEdgeCert.getElement();
-                Edge edgeImage = image.getSingleton();
+                E edgeKey = domEdgeCert.getElement();
+                E edgeImage = image.getSingleton();
                 result =
-                    checkNodeMap(nodeMap, edgeKey.source(), edgeImage.source())
-                        && checkNodeMap(nodeMap, edgeKey.target(),
-                            edgeImage.target());
+                    checkNodeMap(nodeMap, (N) edgeKey.source(),
+                        (N) edgeImage.source())
+                        && checkNodeMap(nodeMap, (N) edgeKey.target(),
+                            (N) edgeImage.target());
             }
         }
         if (result && domNodes != null) {
@@ -849,9 +851,9 @@ public class IsoChecker<N extends Node,E extends Edge> {
      * @return {@code true} if the key is new or the image equals the
      * given image; {@code false} if the key is mapped to a different image
      */
-    private boolean checkNodeMap(Map<Node,Node> nodeMap, Node key, Node image) {
+    private boolean checkNodeMap(Map<N,N> nodeMap, N key, N image) {
         boolean result = true;
-        Node oldImage = nodeMap.get(key);
+        N oldImage = nodeMap.get(key);
         if (oldImage == null) {
             nodeMap.put(key, image);
         } else {
@@ -1142,8 +1144,7 @@ public class IsoChecker<N extends Node,E extends Edge> {
     private static void testIso(String name) {
         try {
             DefaultGraph graph1 = Groove.loadGraph(name);
-            IsoChecker<DefaultNode,DefaultEdge> checker =
-                getInstance(true);
+            IsoChecker<DefaultNode,DefaultEdge> checker = getInstance(true);
             System.out.printf("Graph certificate: %s%n",
                 checker.getCertifier(graph1, true).getGraphCertificate());
             for (int i = 0; i < 1000; i++) {
@@ -1233,8 +1234,7 @@ public class IsoChecker<N extends Node,E extends Edge> {
     /** Flag to switch assertions on, for debugging purposes. */
     static private final boolean ISO_ASSERT = false;
     /** Reporter instance for profiling IsoChecker methods. */
-    static public final Reporter reporter =
-        Reporter.register(IsoChecker.class);
+    static public final Reporter reporter = Reporter.register(IsoChecker.class);
     /** Handle for profiling {@link #areIsomorphic(Graph, Graph)}. */
     static public final Reporter areIsoReporter =
         reporter.register("areIsomorphic(Graph,Graph)");

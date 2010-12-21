@@ -123,7 +123,7 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                 for (Element errorObject : error.getElements()) {
                     JCell errorCell = null;
                     if (errorObject instanceof AspectNode) {
-                        errorCell = getJVertex((AspectNode) errorObject);
+                        errorCell = getJCellForNode((AspectNode) errorObject);
                     } else if (errorObject instanceof AspectEdge) {
                         errorCell = getJCell(errorObject);
                         if (errorCell instanceof GraphJEdge

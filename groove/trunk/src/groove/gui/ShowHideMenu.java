@@ -782,12 +782,12 @@ public class ShowHideMenu extends JMenu {
             GraphState state = jGraph.getModel().getActiveState();
             this.trace = new ArrayList<JCell>();
             while (state instanceof GraphNextState) {
-                this.trace.add(jGraph.getModel().getJCell(state));
-                this.trace.add(jGraph.getModel().getJCell(
+                this.trace.add(jGraph.getModel().getJCellForNode(state));
+                this.trace.add(jGraph.getModel().getJCellForEdge(
                     (GraphTransition) state));
                 state = ((GraphNextState) state).source();
             }
-            this.trace.add(jGraph.getModel().getJCell(state));
+            this.trace.add(jGraph.getModel().getJCellForNode(state));
             super.actionPerformed(evt);
         }
 

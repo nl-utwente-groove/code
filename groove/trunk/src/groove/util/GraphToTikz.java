@@ -73,7 +73,7 @@ public final class GraphToTikz {
         result.append(beginTikzFig());
 
         for (N node : graph.nodeSet()) {
-            GraphJVertex<N,E> vertex = model.getJVertex(node);
+            GraphJVertex<N,E> vertex = model.getJCellForNode(node);
             model.synchroniseLayout(vertex);
             JVertexLayout layout = null;
             if (layoutMap != null) {
@@ -90,7 +90,7 @@ public final class GraphToTikz {
             if (layoutMap != null) {
                 layout = layoutMap.getLayout(edge);
             }
-            JCell jCell = model.getJCell(edge);
+            JCell jCell = model.getJCellForEdge(edge);
             boolean isEmphasized = model.isEmphasized(jCell);
             boolean isGrayedOut = model.isGrayedOut(jCell);
             result.append(convertEdgeToTikzStr(jCell, layout, layoutMap,

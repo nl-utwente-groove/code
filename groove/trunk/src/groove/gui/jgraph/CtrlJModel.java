@@ -97,13 +97,13 @@ public class CtrlJModel extends GraphJModel<CtrlState,CtrlTransition> {
         this.activeTransition = trans;
         Set<JCell> changedCells = new HashSet<JCell>();
         if (trans != null) {
-            JCell jCell = getJCell(trans);
+            JCell jCell = getJCellForEdge(trans);
             assert jCell != null : String.format("No image for %s in jModel",
                 trans);
             changedCells.add(jCell);
         }
         if (result != null) {
-            JCell jCell = getJCell(result);
+            JCell jCell = getJCellForEdge(result);
             assert jCell != null : String.format("No image for %s in jModel",
                 result);
             changedCells.add(jCell);

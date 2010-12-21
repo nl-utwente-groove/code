@@ -196,9 +196,9 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
     @SuppressWarnings("unchecked")
     public final JCell getJCell(Element elem) {
         if (elem instanceof Node) {
-            return getJVertex((N) elem);
+            return getJCellForNode((N) elem);
         } else {
-            return getJCell((E) elem);
+            return getJCellForEdge((E) elem);
         }
     }
 
@@ -212,7 +212,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      *         || result instanceof JEdge &&
      *         result.labels().contains(edge.label())
      */
-    public JCell getJCell(E edge) {
+    public JCell getJCellForEdge(E edge) {
         return this.edgeJCellMap.get(edge);
     }
 
@@ -222,7 +222,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      * @return the JNode modelling node (if node is known)
      * @ensure result == null || result.getUserObject() == node
      */
-    public GraphJVertex<N,E> getJVertex(N node) {
+    public GraphJVertex<N,E> getJCellForNode(N node) {
         return this.nodeJCellMap.get(node);
     }
 
@@ -290,7 +290,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
     protected JCell addEdge(E edge) {
         if (isUnaryEdge(edge)) {
             @SuppressWarnings("unchecked")
-            GraphJVertex<N,E> jVertex = getJVertex((N) edge.source());
+            GraphJVertex<N,E> jVertex = getJCellForNode((N) edge.source());
             if (jVertex.addSelfEdge(edge)) {
                 // yes, the edge could be added here; we're done
                 this.edgeJCellMap.put(edge, jVertex);
@@ -319,7 +319,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
             for (E edgeBetween : getGraph().outEdgeSet(source)) {
                 if (edgeBetween.target().equals(target)) {
                     // see if this edge is appropriate
-                    JCell jCell = getJCell(edgeBetween);
+                    JCell jCell = getJCellForEdge(edgeBetween);
                     if (jCell instanceof GraphJEdge) {
                         @SuppressWarnings("unchecked")
                         GraphJEdge<N,E> jEdge = (GraphJEdge<N,E>) jCell;
@@ -338,9 +338,9 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
         this.edgeJCellMap.put(edge, jEdge);
         // put the edge at the end to make sure it goes to the back
         this.addedJCells.add(jEdge);
-        GraphJVertex<N,E> sourceNode = getJVertex(source);
+        GraphJVertex<N,E> sourceNode = getJCellForNode(source);
         assert sourceNode != null : "No vertex for source node of " + edge;
-        GraphJVertex<N,E> targetPort = getJVertex(target);
+        GraphJVertex<N,E> targetPort = getJCellForNode(target);
         assert targetPort != null : "No vertex for target node of " + edge;
         this.connections.connect(jEdge, sourceNode.getPort(),
             targetPort.getPort());

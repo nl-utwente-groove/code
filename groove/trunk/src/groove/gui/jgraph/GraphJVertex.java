@@ -244,7 +244,7 @@ public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
             result.append(edgeLabel);
             @SuppressWarnings("unchecked")
             GraphJVertex<N,E> oppositeVertex =
-                this.jModel.getJVertex((N) edge.target());
+                this.jModel.getJCellForNode((N) edge.target());
             Node actualTarget = oppositeVertex.getActualNode();
             if (actualTarget instanceof ValueNode) {
                 result.append(ASSIGN_TEXT);

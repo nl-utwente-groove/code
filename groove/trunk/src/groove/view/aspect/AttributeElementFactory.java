@@ -24,13 +24,13 @@ import groove.algebra.Algebra;
 import groove.algebra.AlgebraRegister;
 import groove.algebra.Operation;
 import groove.algebra.UnknownSymbolException;
-import groove.graph.Node;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.trans.RuleEdge;
+import groove.trans.RuleNode;
 import groove.trans.SystemProperties;
 import groove.view.FormatException;
 import groove.view.aspect.AttributeAspect.ConstantAspectValue;
@@ -196,8 +196,8 @@ public class AttributeElementFactory {
      * @throws FormatException if attribute-related errors are found in
      *         <code>graph</code>
      */
-    public RuleEdge createAttributeEdge(AspectEdge edge, Node source,
-            Node target) throws FormatException {
+    public RuleEdge createAttributeEdge(AspectEdge edge, RuleNode source,
+            RuleNode target) throws FormatException {
         RuleEdge result;
         AspectValue attributeValue = getAttributeValue(edge);
         if (attributeValue == null || source == target) {
@@ -230,8 +230,8 @@ public class AttributeElementFactory {
      * @throws FormatException if <code>edge</code> does not have a correct set
      *         of outgoing attribute edges in <code>graph</code>
      */
-    private OperatorEdge createOperatorEdge(Operation operator, Node source,
-            Node target) throws FormatException {
+    private OperatorEdge createOperatorEdge(Operation operator,
+            RuleNode source, RuleNode target) throws FormatException {
         assert operator != null : String.format(
             "Cannot create edge between %s and %s for empty operator", source,
             target);
@@ -259,8 +259,8 @@ public class AttributeElementFactory {
      * @return a fresh {@link ArgumentEdge}
      * @throws FormatException if one of the ends is <code>null</code>
      */
-    private ArgumentEdge createArgumentEdge(int argNumber, Node source,
-            Node target) throws FormatException {
+    private ArgumentEdge createArgumentEdge(int argNumber, RuleNode source,
+            RuleNode target) throws FormatException {
         if (source == null) {
             throw new FormatException("Source of '%d'-edge has no image",
                 argNumber);

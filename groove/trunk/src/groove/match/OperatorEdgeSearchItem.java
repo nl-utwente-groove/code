@@ -17,12 +17,12 @@
 package groove.match;
 
 import groove.algebra.Operation;
-import groove.graph.Node;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.match.SearchPlanStrategy.Search;
+import groove.trans.HostNode;
 import groove.trans.RuleNode;
 
 import java.util.Arrays;
@@ -190,7 +190,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
                 result = OperatorEdgeSearchItem.this.value.equals(outcome);
             } else if (OperatorEdgeSearchItem.this.targetFound
                 || this.targetPreMatch != null) {
-                Node targetFind = this.targetPreMatch;
+                HostNode targetFind = this.targetPreMatch;
                 if (targetFind == null) {
                     targetFind =
                         this.search.getNode(OperatorEdgeSearchItem.this.targetIx);
@@ -231,7 +231,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
             Object[] operands =
                 new Object[OperatorEdgeSearchItem.this.arguments.size()];
             for (int i = 0; i < OperatorEdgeSearchItem.this.arguments.size(); i++) {
-                Node operandImage =
+                HostNode operandImage =
                     this.search.getNode(OperatorEdgeSearchItem.this.argumentIxs[i]);
                 if (!(operandImage instanceof ValueNode)) {
                     // one of the arguments was not bound to a value
@@ -256,7 +256,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
         }
 
         /** The pre-matched target node, if any. */
-        private final Node targetPreMatch;
+        private final HostNode targetPreMatch;
 
         /** Flag to control debug printing. */
         static private final boolean PRINT = false;
