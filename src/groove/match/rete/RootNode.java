@@ -16,7 +16,6 @@
  */
 package groove.match.rete;
 
-import groove.graph.Edge;
 import groove.graph.Element;
 import groove.trans.HostEdge;
 import groove.trans.HostNode;
@@ -80,7 +79,7 @@ public class RootNode extends ReteNetworkNode {
     public void receiveEdge(HostEdge elem, Action action) {
         for (ReteNetworkNode nnode : this.getSuccessors()) {
             if (nnode instanceof EdgeCheckerNode) {
-                if (((Edge) elem).label().text().equals(
+                if (elem.label().text().equals(
                     ((EdgeCheckerNode) nnode).getEdge().label().text())) {
                     ((EdgeCheckerNode) nnode).receiveEdge(this, elem, action);
                 }

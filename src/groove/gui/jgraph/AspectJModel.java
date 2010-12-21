@@ -124,7 +124,7 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                     JCell errorCell = null;
                     if (errorObject instanceof AspectNode) {
                         errorCell = getJVertex((AspectNode) errorObject);
-                    } else if (errorObject instanceof Edge) {
+                    } else if (errorObject instanceof AspectEdge) {
                         errorCell = getJCell(errorObject);
                         if (errorCell instanceof GraphJEdge
                             && ((GraphJEdge<?,?>) errorCell).isDataEdgeSourceLabel()) {

@@ -16,7 +16,6 @@
  */
 package groove.match.rete;
 
-import groove.graph.Edge;
 import groove.graph.Element;
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
 import groove.trans.HostEdge;
@@ -109,7 +108,7 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
     public void receive(ReteNetworkNode source, int repeatIndex, Element mu,
             Action action) {
         ReteMatch sg =
-            (mu instanceof Edge) ? new ReteMatch(source, (HostEdge) mu,
+            (mu instanceof HostEdge) ? new ReteMatch(source, (HostEdge) mu,
                 this.getOwner().isInjective()) : new ReteMatch(source,
                 (HostNode) mu, this.getOwner().isInjective());
 

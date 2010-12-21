@@ -161,7 +161,7 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
     public void receive(ReteNetworkNode source, int repeatIndex, Element mu,
             Action action) {
         ReteMatch sg =
-            (mu instanceof Edge) ? new ReteMatch(source, (HostEdge) mu,
+            (mu instanceof HostEdge) ? new ReteMatch(source, (HostEdge) mu,
                 this.getOwner().isInjective()) : new ReteMatch(source,
                 (HostNode) mu, this.getOwner().isInjective());
         if (action == Action.ADD) {

@@ -16,9 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.Edge;
-import groove.graph.Node;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -47,18 +44,18 @@ public class CompositeMatch implements Match, Cloneable {
         return this.elementMap;
     }
 
-    public Collection<Edge> getEdgeValues() {
-        Set<Edge> result =
-            new HashSet<Edge>(getElementMap().edgeMap().values());
+    public Collection<HostEdge> getEdgeValues() {
+        Set<HostEdge> result =
+            new HashSet<HostEdge>(getElementMap().edgeMap().values());
         for (Match subMatch : this.subMatches) {
             result.addAll(subMatch.getEdgeValues());
         }
         return result;
     }
 
-    public Collection<Node> getNodeValues() {
-        Set<Node> result =
-            new HashSet<Node>(getElementMap().nodeMap().values());
+    public Collection<HostNode> getNodeValues() {
+        Set<HostNode> result =
+            new HashSet<HostNode>(getElementMap().nodeMap().values());
         for (Match subMatch : this.subMatches) {
             result.addAll(subMatch.getNodeValues());
         }

@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.Edge;
 import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
@@ -320,7 +319,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
             // result already contains an image for nodeKey
             // if it is not the same as the one we want to insert now,
             // stop the whole thing; otherwise we're fine
-            Edge oldImage = result.putEdge(key, image);
+            HostEdge oldImage = result.putEdge(key, image);
             if (oldImage != null && !oldImage.equals(image)) {
                 return null;
             }
@@ -350,7 +349,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * to an actual host graph edge. This fails to hold for {@link ArgumentEdge}
      * s and {@link OperatorEdge}s.
      */
-    boolean isAnchorable(Edge edge) {
+    boolean isAnchorable(RuleEdge edge) {
         return !(edge instanceof ArgumentEdge || edge instanceof OperatorEdge);
     }
 

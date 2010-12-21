@@ -69,7 +69,7 @@ public class NodeSetEdgeSetGraph<N extends Node,L extends Label,E extends Edge>
         if (removed) {
             Iterator<E> edgeIter = this.graphEdgeSet.iterator();
             while (edgeIter.hasNext()) {
-                Edge edge = edgeIter.next();
+                E edge = edgeIter.next();
                 if (edge.source().equals(node) || edge.target().equals(node)) {
                     edgeIter.remove();
                 }

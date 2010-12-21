@@ -345,15 +345,15 @@ public class ReteMatch implements Comparable<ReteMatch> {
                 int[] idx = lookup.getNode(n);
                 if (idx != null) {
                     Element e = this.units[idx[0]];
-                    if (e instanceof Node) {
+                    if (e instanceof HostNode) {
                         if (!e.equals(anchorMap.getNode(n))) {
                             result = false;
                             break;
                         }
                     } else {
-                        Node n1 =
-                            (idx[1] == 0) ? ((Edge) e).source()
-                                    : ((Edge) e).target();
+                        HostNode n1 =
+                            (idx[1] == 0) ? ((HostEdge) e).source()
+                                    : ((HostEdge) e).target();
                         if (!n1.equals(anchorMap.getNode(n))) {
                             result = false;
                             break;
