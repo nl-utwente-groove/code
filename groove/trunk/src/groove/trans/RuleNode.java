@@ -27,6 +27,6 @@ import groove.graph.algebra.ProductNode;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface RuleNode extends Node {
+public interface RuleNode extends Node, RuleElement {
     // no additional functionality
 }

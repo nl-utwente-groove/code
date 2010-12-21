@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.Element;
 import groove.lts.GraphTransitionStub;
 import groove.lts.MatchResult;
 
@@ -57,7 +56,7 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
      * Returns the anchor image at a given position.
      * This always refers to the anchor of the top level existential event. 
      */
-    public Element getAnchorImage(int i);
+    public HostElement getAnchorImage(int i);
 
     /** Returns the size of the anchor. */
     public int getAnchorSize();

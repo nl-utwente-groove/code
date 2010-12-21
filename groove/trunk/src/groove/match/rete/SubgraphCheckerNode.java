@@ -16,12 +16,12 @@
  */
 package groove.match.rete;
 
-import groove.graph.Edge;
-import groove.graph.Element;
-import groove.graph.Node;
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
 import groove.trans.HostEdge;
+import groove.trans.HostElement;
 import groove.trans.HostNode;
+import groove.trans.RuleEdge;
+import groove.trans.RuleElement;
 import groove.trans.RuleNode;
 import groove.util.TreeHashSet;
 
@@ -52,7 +52,7 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
      */
     private int[][] fastEqualityLookupTable;
 
-    private Element[] pattern;
+    private RuleElement[] pattern;
 
     //This flag indicates if the special prefix link of matches coming
     //the left antecedent should be copied for the combined matches
@@ -95,12 +95,12 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
 
     private void copyPatternsFromAntecedents() {
         assert this.getAntecedents().size() == 2;
-        Element[] leftAntecedentPattern =
+        RuleElement[] leftAntecedentPattern =
             this.getAntecedents().get(0).getPattern();
-        Element[] rightAntecedentPattern =
+        RuleElement[] rightAntecedentPattern =
             this.getAntecedents().get(1).getPattern();
         this.pattern =
-            new Element[leftAntecedentPattern.length
+            new RuleElement[leftAntecedentPattern.length
                 + rightAntecedentPattern.length];
         int i = 0;
         for (; i < leftAntecedentPattern.length; i++) {
@@ -163,8 +163,8 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
      *         
      * @param mu The graph element found by <code>source</code>.
      * @param action Determines if the match is added or removed.     */
-    public void receive(ReteNetworkNode source, int repeatIndex, Element mu,
-            Action action) {
+    public void receive(ReteNetworkNode source, int repeatIndex,
+            HostElement mu, Action action) {
         ReteMatch sg =
             (mu instanceof HostEdge) ? new ReteMatch(source, (HostEdge) mu,
                 this.getOwner().isInjective()) : new ReteMatch(source,
@@ -325,8 +325,8 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
         boolean allEqualitiesSatisfied = true;
         boolean injective = this.getOwner().isInjective();
 
-        Element[] leftUnits = left.getAllUnits();
-        Element[] rightUnits = right.getAllUnits();
+        HostElement[] leftUnits = left.getAllUnits();
+        HostElement[] rightUnits = right.getAllUnits();
         Set<HostNode> nodesLeft = (injective) ? left.getNodes() : null;
         Set<HostNode> nodesRight = (injective) ? right.getNodes() : null;
 
@@ -425,16 +425,16 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
         }
         boolean result = true;
 
-        Set<Edge> s1 = new HashSet<Edge>();
-        for (Element e : oneMapping.getElements()) {
-            if (e instanceof Edge) {
-                s1.add((Edge) e);
+        Set<RuleEdge> s1 = new HashSet<RuleEdge>();
+        for (RuleElement e : oneMapping.getElements()) {
+            if (e instanceof RuleEdge) {
+                s1.add((RuleEdge) e);
             }
         }
 
         //No shared edges
-        for (Element e : otherMapping.getElements()) {
-            if (e instanceof Edge) {
+        for (RuleElement e : otherMapping.getElements()) {
+            if (e instanceof RuleEdge) {
                 if (s1.contains(e)) {
                     result = false;
                     break;
@@ -454,8 +454,8 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
             ReteStaticMapping leftMapping = combinationChoices[i][0];
             ReteStaticMapping rightMapping = combinationChoices[i][1];
 
-            Node leftMappedValue;
-            Node rightMappedValue;
+            RuleNode leftMappedValue;
+            RuleNode rightMappedValue;
 
             Set<RuleNode> tempSharedNodes = sharedNodes;
 
@@ -470,21 +470,21 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
                 if (leftIndices[1] != -1) {
                     leftMappedValue =
                         (leftIndices[1] == 0)
-                                ? ((Edge) leftMapping.getElements()[leftIndices[0]]).source()
-                                : ((Edge) leftMapping.getElements()[leftIndices[0]]).target();
+                                ? ((RuleEdge) leftMapping.getElements()[leftIndices[0]]).source()
+                                : ((RuleEdge) leftMapping.getElements()[leftIndices[0]]).target();
                 } else {
                     leftMappedValue =
-                        (Node) leftMapping.getElements()[leftIndices[0]];
+                        (RuleNode) leftMapping.getElements()[leftIndices[0]];
                 }
 
                 if (rightIndices[1] != -1) {
                     rightMappedValue =
                         (rightIndices[1] == 0)
-                                ? ((Edge) rightMapping.getElements()[rightIndices[0]]).source()
-                                : ((Edge) rightMapping.getElements()[rightIndices[0]]).target();
+                                ? ((RuleEdge) rightMapping.getElements()[rightIndices[0]]).source()
+                                : ((RuleEdge) rightMapping.getElements()[rightIndices[0]]).target();
                 } else {
                     rightMappedValue =
-                        (Node) rightMapping.getElements()[rightIndices[0]];
+                        (RuleNode) rightMapping.getElements()[rightIndices[0]];
                 }
 
                 result = leftMappedValue.equals(rightMappedValue);
@@ -561,7 +561,7 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
     }
 
     @Override
-    public Element[] getPattern() {
+    public RuleElement[] getPattern() {
         return this.pattern;
     }
 

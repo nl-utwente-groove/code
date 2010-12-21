@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.Element;
 
 /**
  * Delta applier constructed from a frozen delta array. A frozen delta array is
@@ -28,12 +27,12 @@ import groove.graph.Element;
  */
 public class FrozenDeltaApplier implements DeltaApplier {
     /** Constructs an instance with a given array of elements. */
-    public FrozenDeltaApplier(Element[] elements) {
+    public FrozenDeltaApplier(HostElement[] elements) {
         this.elements = elements;
     }
 
     public void applyDelta(DeltaTarget target, int mode) {
-        for (Element elem : this.elements) {
+        for (HostElement elem : this.elements) {
             if (elem instanceof HostNode && mode != EDGES_ONLY) {
                 target.addNode((HostNode) elem);
             } else {
@@ -48,5 +47,5 @@ public class FrozenDeltaApplier implements DeltaApplier {
     }
 
     /** The frozen array of graph elements. */
-    private final Element[] elements;
+    private final HostElement[] elements;
 }

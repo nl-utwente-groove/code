@@ -16,12 +16,13 @@
  */
 package groove.match.rete;
 
-import groove.graph.Element;
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
 import groove.trans.Condition;
 import groove.trans.HostEdge;
+import groove.trans.HostElement;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
+import groove.trans.RuleElement;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
 import groove.util.FilterIterator;
@@ -50,7 +51,7 @@ public class ConditionChecker extends ReteNetworkNode implements
      * The array of elements in match records for this condition checker 
      * follow the same order as this pattern array. 
      */
-    protected Element[] pattern;
+    protected RuleElement[] pattern;
 
     /**
      * The tree-like multilevel index that might be made for faster retrieval of
@@ -136,7 +137,7 @@ public class ConditionChecker extends ReteNetworkNode implements
                 Arrays.copyOf(antecedent.getElements(),
                     antecedent.getElements().length);
         } else {
-            this.pattern = new Element[0];
+            this.pattern = new RuleElement[0];
         }
     }
 
@@ -495,7 +496,7 @@ public class ConditionChecker extends ReteNetworkNode implements
     }
 
     @Override
-    public Element[] getPattern() {
+    public RuleElement[] getPattern() {
         return this.pattern;
     }
 
@@ -512,35 +513,35 @@ public class ConditionChecker extends ReteNetworkNode implements
         /** Array of rule elements, determining the hierarchical order 
          * in which the conflict set of subcondition is stored. 
          */
-        protected Element[] rootSearchOrder;
+        protected RuleElement[] rootSearchOrder;
 
-        HashMap<Element,Object> root = new HashMap<Element,Object>();
+        HashMap<HostElement,Object> root = new HashMap<HostElement,Object>();
 
-        SearchTree(List<? extends Element> searchOrder) {
-            this.rootSearchOrder = new Element[searchOrder.size()];
+        SearchTree(List<? extends RuleElement> searchOrder) {
+            this.rootSearchOrder = new RuleElement[searchOrder.size()];
             this.rootSearchOrder = searchOrder.toArray(this.rootSearchOrder);
         }
 
         @SuppressWarnings("unchecked")
         Set<ReteMatch> getStorageFor(ReteMatch m) {
             Set<ReteMatch> result = null;
-            HashMap<Element,Object> leaf = this.root;
+            HashMap<HostElement,Object> leaf = this.root;
             for (int i = 0; i < this.rootSearchOrder.length - 1; i++) {
-                Element ei;
+                HostElement ei;
                 if (this.rootSearchOrder[i] instanceof RuleNode) {
                     ei = m.getNode((RuleNode) this.rootSearchOrder[i]);
                 } else {
                     ei = m.getEdge((RuleEdge) this.rootSearchOrder[i]);
                 }
-                HashMap<Element,Object> treeNode =
-                    (HashMap<Element,Object>) leaf.get(ei);
+                HashMap<HostElement,Object> treeNode =
+                    (HashMap<HostElement,Object>) leaf.get(ei);
                 if (treeNode == null) {
-                    treeNode = new HashMap<Element,Object>();
+                    treeNode = new HashMap<HostElement,Object>();
                     leaf.put(ei, treeNode);
                 }
                 leaf = treeNode;
             }
-            Element ei =
+            HostElement ei =
                 (this.rootSearchOrder[this.rootSearchOrder.length - 1] instanceof RuleNode)
                         ? m.getNode((RuleNode) this.rootSearchOrder[this.rootSearchOrder.length - 1])
                         : m.getEdge((RuleEdge) this.rootSearchOrder[this.rootSearchOrder.length - 1]);
@@ -556,23 +557,23 @@ public class ConditionChecker extends ReteNetworkNode implements
         @SuppressWarnings("unchecked")
         Set<ReteMatch> getStorageFor(RuleToHostMap anchorMap) {
             Set<ReteMatch> result = null;
-            HashMap<Element,Object> leaf = this.root;
+            HashMap<HostElement,Object> leaf = this.root;
             for (int i = 0; i < this.rootSearchOrder.length - 1; i++) {
-                Element ei;
+                HostElement ei;
                 if (this.rootSearchOrder[i] instanceof RuleNode) {
                     ei = anchorMap.nodeMap().get(this.rootSearchOrder[i]);
                 } else {
                     ei = anchorMap.edgeMap().get(this.rootSearchOrder[i]);
                 }
-                HashMap<Element,Object> treeNode =
-                    (HashMap<Element,Object>) leaf.get(ei);
+                HashMap<HostElement,Object> treeNode =
+                    (HashMap<HostElement,Object>) leaf.get(ei);
                 if (treeNode == null) {
-                    treeNode = new HashMap<Element,Object>();
+                    treeNode = new HashMap<HostElement,Object>();
                     leaf.put(ei, treeNode);
                 }
                 leaf = treeNode;
             }
-            Element ei =
+            HostElement ei =
                 (this.rootSearchOrder[this.rootSearchOrder.length - 1] instanceof RuleNode)
                         ? anchorMap.nodeMap().get(
                             this.rootSearchOrder[this.rootSearchOrder.length - 1])

@@ -16,13 +16,12 @@
  */
 package groove.match.rete;
 
-import groove.graph.Edge;
-import groove.graph.Element;
-import groove.graph.Node;
 import groove.trans.HostEdge;
+import groove.trans.HostElement;
 import groove.trans.HostFactory;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
+import groove.trans.RuleElement;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
 import groove.util.TreeHashSet;
@@ -30,8 +29,8 @@ import groove.util.TreeHashSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * @author Arash Jalali
@@ -39,7 +38,7 @@ import java.util.Map.Entry;
  */
 public class ReteMatch implements Comparable<ReteMatch> {
     /** Host graph elements. */
-    private Element[] units;
+    private HostElement[] units;
     /**
      * This is the set of nodes (host nodes) in this match.
      * It is only of use in injective matching so it will be
@@ -93,7 +92,7 @@ public class ReteMatch implements Comparable<ReteMatch> {
     public ReteMatch(ReteNetworkNode origin, boolean injective) {
         this.injective = injective;
         this.origin = origin;
-        this.units = new Element[origin.getPattern().length];
+        this.units = new HostElement[origin.getPattern().length];
     }
 
     /**
@@ -141,7 +140,7 @@ public class ReteMatch implements Comparable<ReteMatch> {
      * @return The array of all the match elements, i.e. elements of 
      * the host graph that are part of this match.
      */
-    public Element[] getAllUnits() {
+    public HostElement[] getAllUnits() {
         return this.units;
     }
 
@@ -156,7 +155,7 @@ public class ReteMatch implements Comparable<ReteMatch> {
      * @param n A RETE or LHS node. 
      * @return The {@link HostNode} object in the host graph to which <code>n</code> is mapped.
      */
-    public HostNode getNode(Node n) {
+    public HostNode getNode(RuleNode n) {
         int[] index = this.getOrigin().getPatternLookupTable().getNode(n);
         HostNode result = lookupNode(index);
         return result;
@@ -202,7 +201,7 @@ public class ReteMatch implements Comparable<ReteMatch> {
      * @return the host-Edge to which <code>e</code> is mapped, <code>null</code>
      * otherwise.
      */
-    public HostEdge getEdge(Edge e) {
+    public HostEdge getEdge(RuleEdge e) {
         int index = this.getOrigin().getPatternLookupTable().getEdge(e);
         return (index != -1) ? (HostEdge) this.units[index] : null;
     }
@@ -220,8 +219,8 @@ public class ReteMatch implements Comparable<ReteMatch> {
      * a negative integer if the this match is less than <code>m</code>.
      */
     public int compareTo(ReteMatch m) {
-        Element[] thisList = this.getAllUnits();
-        Element[] mList = m.getAllUnits();
+        HostElement[] thisList = this.getAllUnits();
+        HostElement[] mList = m.getAllUnits();
 
         int result = this.hashCode - m.hashCode;
         if (result == 0) {
@@ -284,8 +283,8 @@ public class ReteMatch implements Comparable<ReteMatch> {
     }
 
     private boolean compareToForEquality(ReteMatch m) {
-        Element[] thisList = this.getAllUnits();
-        Element[] mList = m.getAllUnits();
+        HostElement[] thisList = this.getAllUnits();
+        HostElement[] mList = m.getAllUnits();
         boolean result = true;
 
         int thisSize = this.size();
@@ -344,7 +343,7 @@ public class ReteMatch implements Comparable<ReteMatch> {
             for (RuleNode n : anchorMap.nodeMap().keySet()) {
                 int[] idx = lookup.getNode(n);
                 if (idx != null) {
-                    Element e = this.units[idx[0]];
+                    HostElement e = this.units[idx[0]];
                     if (e instanceof HostNode) {
                         if (!e.equals(anchorMap.getNode(n))) {
                             result = false;
@@ -465,12 +464,13 @@ public class ReteMatch implements Comparable<ReteMatch> {
     public static ReteMatch merge(ReteNetworkNode origin,
             ReteMatch[] subMatches, boolean injective) {
         ReteMatch result = new ReteMatch(origin, injective);
-        TreeHashSet<Node> nodes = (injective) ? new TreeHashSet<Node>() : null;
+        TreeHashSet<HostNode> nodes =
+            (injective) ? new TreeHashSet<HostNode>() : null;
 
         int k = 0;
         for (int i = 0; i < subMatches.length; i++) {
             if (injective) {
-                for (Node n : subMatches[i].getNodes()) {
+                for (HostNode n : subMatches[i].getNodes()) {
                     if (nodes.put(n) != null) {
                         return null;
                     }
@@ -510,7 +510,7 @@ public class ReteMatch implements Comparable<ReteMatch> {
         if (naive) {
             result.units = source.units;
         } else {
-            result.units = new Element[source.units.length];
+            result.units = new HostElement[source.units.length];
             for (int i = 0; i < result.units.length; i++) {
                 result.units[i] = source.units[i];
             }
@@ -608,9 +608,9 @@ public class ReteMatch implements Comparable<ReteMatch> {
         if (this.equivalentMap == null) {
             this.equivalentMap = factory.createRuleToHostMap();
 
-            Element[] pattern = this.getOrigin().getPattern();
+            RuleElement[] pattern = this.getOrigin().getPattern();
             for (int i = 0; i < this.units.length; i++) {
-                Element e = this.units[i];
+                HostElement e = this.units[i];
                 if (e instanceof HostNode) {
                     this.equivalentMap.putNode((RuleNode) pattern[i],
                         (HostNode) e);

@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.Element;
 import groove.util.DeltaSet;
 import groove.util.StackedSet;
 
@@ -251,7 +250,7 @@ public class DefaultDeltaApplier implements DeltaApplier {
     /**
      * Callback factory method for creating a new delta set.
      */
-    protected <E extends Element> DeltaSet<E> createDeltaSet(Set<E> lower,
+    protected <E extends HostElement> DeltaSet<E> createDeltaSet(Set<E> lower,
             Set<E> added, Set<E> removed) {
         return new DeltaSet<E>(lower, added, removed);
     }
@@ -259,7 +258,7 @@ public class DefaultDeltaApplier implements DeltaApplier {
     /**
      * Callback factory method for creating a new stacked set.
      */
-    protected <E extends Element> StackedSet<E> createStackedSet(
+    protected <E extends HostElement> StackedSet<E> createStackedSet(
             Set<? extends E> lower, Set<E> added, Set<E> removed) {
         return new StackedSet<E>(lower, added, removed);
     }

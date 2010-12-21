@@ -23,7 +23,8 @@ import groove.graph.TypeLabel;
  * Class that implements the edges of a host graph.
  * @author Arend Rensink
  */
-public class HostEdge extends AbstractEdge<HostNode,TypeLabel,HostNode> {
+public class HostEdge extends AbstractEdge<HostNode,TypeLabel,HostNode>
+        implements HostElement {
     /** Default constructor. */
     protected HostEdge(HostNode source, TypeLabel label, HostNode target, int nr) {
         super(source, label, target);

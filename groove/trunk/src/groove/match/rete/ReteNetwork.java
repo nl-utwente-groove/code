@@ -16,7 +16,6 @@
  */
 package groove.match.rete;
 
-import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.gui.jgraph.ReteJModel;
@@ -34,6 +33,7 @@ import groove.trans.HostNode;
 import groove.trans.NotCondition;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
+import groove.trans.RuleElement;
 import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleName;
@@ -436,7 +436,7 @@ public class ReteNetwork {
                 this.root.addSuccessor(edgeChecker);
             }
             ReteStaticMapping mapping =
-                new ReteStaticMapping(edgeChecker, new Element[] {e});
+                new ReteStaticMapping(edgeChecker, new RuleElement[] {e});
             openList.add(mapping);
             mappedLHSNodes.add(e.source());
             mappedLHSNodes.add(e.target());
@@ -449,7 +449,7 @@ public class ReteNetwork {
             if (!mappedLHSNodes.contains(n)) {
                 NodeCheckerNode nc = findNodeCheckerForNode(n);
                 ReteStaticMapping mapping =
-                    new ReteStaticMapping(nc, new Element[] {n});
+                    new ReteStaticMapping(nc, new RuleElement[] {n});
                 openList.add(mapping);
             }
         }
@@ -519,8 +519,8 @@ public class ReteNetwork {
             ReteStaticMapping source, RuleGraphMorphism translationMap) {
         ReteStaticMapping result = null;
         if (source != null) {
-            Element[] oldElements = source.getElements();
-            Element[] newElements = new Element[oldElements.length];
+            RuleElement[] oldElements = source.getElements();
+            RuleElement[] newElements = new RuleElement[oldElements.length];
             for (int i = 0; i < newElements.length; i++) {
                 if (oldElements[i] instanceof RuleEdge) {
                     newElements[i] =
@@ -770,8 +770,8 @@ public class ReteNetwork {
      */
     static class ReteStaticMapping {
         private ReteNetworkNode nNode;
-        //These are the (isolated) nodes and edges of some rule's LHS 
-        private Element[] elements;
+        /** These are the (isolated) nodes and edges of some rule's LHS. */
+        private RuleElement[] elements;
 
         //This is a quick look up map that says where each LHS-node 
         //is in the <code>elements</code> array. Each value
@@ -787,7 +787,8 @@ public class ReteNetwork {
          * @param reteNode The RETE n-node that is to be mapped to some rule's LHS element 
          * @param mappedTo the LHS elements the <code>reteNode</code> parameter is to be mapped to.
          */
-        public ReteStaticMapping(ReteNetworkNode reteNode, Element[] mappedTo) {
+        public ReteStaticMapping(ReteNetworkNode reteNode,
+                RuleElement[] mappedTo) {
             this.nNode = reteNode;
             this.elements = mappedTo;
             for (int i = 0; i < this.elements.length; i++) {
@@ -813,8 +814,8 @@ public class ReteNetwork {
                 suc.getAntecedents().get(0).equals(oneMap.getNNode()) ? oneMap
                         : otherMap;
             ReteStaticMapping right = (left == oneMap) ? otherMap : oneMap;
-            Element[] combinedElements =
-                new Element[left.getElements().length
+            RuleElement[] combinedElements =
+                new RuleElement[left.getElements().length
                     + right.getElements().length];
             int i = 0;
             for (; i < left.getElements().length; i++) {
@@ -832,15 +833,16 @@ public class ReteNetwork {
         public static ReteStaticMapping combine(List<ReteStaticMapping> maps,
                 DisconnectedSubgraphChecker suc) {
 
-            List<Element> tempElementsList = new ArrayList<Element>();
+            List<RuleElement> tempElementsList = new ArrayList<RuleElement>();
             for (int i = 0; i < maps.size(); i++) {
-                Element[] elems = maps.get(i).getElements();
+                RuleElement[] elems = maps.get(i).getElements();
                 for (int j = 0; j < elems.length; j++) {
                     tempElementsList.add(elems[j]);
                 }
             }
 
-            Element[] combinedElements = new Element[tempElementsList.size()];
+            RuleElement[] combinedElements =
+                new RuleElement[tempElementsList.size()];
             combinedElements = tempElementsList.toArray(combinedElements);
 
             ReteStaticMapping result =
@@ -852,7 +854,7 @@ public class ReteNetwork {
             return this.nNode;
         }
 
-        public Element[] getElements() {
+        public RuleElement[] getElements() {
             return this.elements;
         }
 

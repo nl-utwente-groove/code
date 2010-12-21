@@ -47,6 +47,7 @@ import groove.view.GraphView;
 import groove.view.RuleView;
 import groove.view.StoredGrammarView.TypeViewList;
 import groove.view.View;
+import groove.view.aspect.AspectElement;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.PlainToAspectMap;
 
@@ -224,10 +225,10 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         GraphInfo.setVersion(result, Version.GXL_VERSION);
         PlainToAspectMap plainToAspectMap = new PlainToAspectMap();
         this.graph = AspectGraph.newInstance(result, plainToAspectMap);
-        this.graphToModelMap = new HashMap<Element,JCell>();
+        this.graphToModelMap = new HashMap<AspectElement,JCell>();
         for (Map.Entry<Element,JCell> plainToModelEntry : plainToModelMap.entrySet()) {
             Element plainKey = plainToModelEntry.getKey();
-            Element aspectKey =
+            AspectElement aspectKey =
                 plainKey instanceof Node
                         ? plainToAspectMap.getNode((DefaultNode) plainKey)
                         : plainToAspectMap.getEdge((DefaultEdge) plainKey);
@@ -1433,7 +1434,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** The graph generated from the current editor content. */
     private AspectGraph graph;
     /** Mapping from elements in {@link #getAspectGraph()} to elements in {@link #getModel()}. */
-    private Map<Element,JCell> graphToModelMap;
+    private Map<AspectElement,JCell> graphToModelMap;
     /** Set of erroneous cells in the current editor model. */
     private Set<JCell> errorCells = new HashSet<JCell>();
     /** Mapping from error messages to the corresponding cells. */

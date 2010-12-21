@@ -17,12 +17,12 @@
 package groove.lts;
 
 import groove.control.CtrlCall;
-import groove.graph.Element;
 import groove.trans.DefaultApplication;
 import groove.trans.DeltaApplier;
 import groove.trans.DeltaHostGraph;
 import groove.trans.FrozenDeltaApplier;
 import groove.trans.HostEdge;
+import groove.trans.HostElement;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleEvent;
@@ -102,21 +102,6 @@ class StateCache {
         return this.delta;
     }
 
-    //
-    //    /** 
-    //     * Returns the delta of a given state.
-    //     */
-    //    private DeltaApplier computeDelta(AbstractGraphState state) {
-    //        DeltaApplier result;
-    //        Element[] frozenGraph = state.getFrozenGraph();
-    //        if (frozenGraph != null) {
-    //            result = new FrozenDeltaApplier(frozenGraph);
-    //        } else {
-    //            result = createDelta((DefaultGraphNextState) state);
-    //        }
-    //        return result;
-    //    }
-
     /**
      * Callback factory method for a rule application on the basis of this
      * state.
@@ -136,7 +121,7 @@ class StateCache {
      * to be a {@link DefaultGraphNextState}.
      */
     private DeltaHostGraph computeGraph() {
-        Element[] frozenGraph = this.state.getFrozenGraph();
+        HostElement[] frozenGraph = this.state.getFrozenGraph();
         DeltaHostGraph result;
         if (frozenGraph != null) {
             result =
@@ -205,8 +190,8 @@ class StateCache {
      * graph representation consists of all nodes and edges of the graph in a
      * single array.
      */
-    Element[] computeFrozenGraph(HostGraph graph) {
-        Element[] result = new Element[graph.size()];
+    HostElement[] computeFrozenGraph(HostGraph graph) {
+        HostElement[] result = new HostElement[graph.size()];
         int index = 0;
         for (HostNode node : graph.nodeSet()) {
             result[index] = node;

@@ -16,9 +16,9 @@
  */
 package groove.match.rete;
 
-import groove.graph.Element;
 import groove.trans.HostEdge;
 import groove.trans.HostNode;
+import groove.trans.RuleElement;
 
 /**
  * @author Arash Jalali
@@ -105,7 +105,7 @@ public class RootNode extends ReteNetworkNode {
     }
 
     @Override
-    public Element[] getPattern() {
+    public RuleElement[] getPattern() {
         // this method is not supposed to be called
         throw new UnsupportedOperationException();
     }

@@ -16,10 +16,11 @@
  */
 package groove.match.rete;
 
-import groove.graph.Element;
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
 import groove.trans.HostEdge;
+import groove.trans.HostElement;
 import groove.trans.HostNode;
+import groove.trans.RuleElement;
 import groove.util.TreeHashSet;
 
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ import java.util.List;
 public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
         StateSubscriber {
 
-    private Element[] pattern;
+    private RuleElement[] pattern;
 
     /**
      * Collection of partial matches separately kept based on the antecedent
@@ -65,7 +66,7 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
     }
 
     private void connectToAntecedents(List<ReteStaticMapping> antecedents) {
-        List<Element> tempPatternList = new ArrayList<Element>();
+        List<RuleElement> tempPatternList = new ArrayList<RuleElement>();
         //We sort the mappings based on the associated n-nodes 
         //so that those with the same n-node would be next to 
         //one another and so identically repeating antecedents
@@ -78,14 +79,14 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
             }
         });
         for (ReteStaticMapping ant : antecedents) {
-            Element[] pat = ant.getNNode().getPattern();
+            RuleElement[] pat = ant.getNNode().getPattern();
             for (int j = 0; j < pat.length; j++) {
                 tempPatternList.add(pat[j]);
             }
             this.addAntecedent(ant.getNNode());
             ant.getNNode().addSuccessor(this);
         }
-        this.pattern = new Element[tempPatternList.size()];
+        this.pattern = new RuleElement[tempPatternList.size()];
         tempPatternList.toArray(this.pattern);
     }
 
@@ -105,8 +106,8 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
      * @param mu The match object found by <code>source</code>.
      * @param action Determines if the match is added or removed.
      */
-    public void receive(ReteNetworkNode source, int repeatIndex, Element mu,
-            Action action) {
+    public void receive(ReteNetworkNode source, int repeatIndex,
+            HostElement mu, Action action) {
         ReteMatch sg =
             (mu instanceof HostEdge) ? new ReteMatch(source, (HostEdge) mu,
                 this.getOwner().isInjective()) : new ReteMatch(source,
@@ -298,7 +299,7 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
     }
 
     @Override
-    public Element[] getPattern() {
+    public RuleElement[] getPattern() {
         return this.pattern;
     }
 

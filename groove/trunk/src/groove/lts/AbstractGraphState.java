@@ -21,6 +21,7 @@ import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.graph.Element;
 import groove.graph.Graph;
+import groove.trans.HostElement;
 import groove.trans.HostNode;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
@@ -254,12 +255,12 @@ abstract public class AbstractGraphState extends
      * is no frozen representation.
      * @return All nodes and edges of the graph, or <code>null</code>
      */
-    Element[] getFrozenGraph() {
+    HostElement[] getFrozenGraph() {
         return this.frozenGraph;
     }
 
     /** Stores a frozen representation of the graph. */
-    void setFrozenGraph(Element[] frozenGraph) {
+    void setFrozenGraph(HostElement[] frozenGraph) {
         this.frozenGraph = frozenGraph;
         frozenGraphCount++;
     }
@@ -409,7 +410,7 @@ abstract public class AbstractGraphState extends
      * Slot to store a frozen graph representation. When filled, this provides a
      * faster way to reconstruct the graph of this state.
      */
-    private Element[] frozenGraph;
+    private HostElement[] frozenGraph;
     /**
      * The number of this Node.
      * 

@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.Element;
 import groove.util.CacheReference;
 
 import java.util.ArrayList;
@@ -65,7 +64,7 @@ public class CompositeEvent extends
     }
 
     @Override
-    public Element getAnchorImage(int i) {
+    public HostElement getAnchorImage(int i) {
         return this.eventArray[0].getAnchorImage(i);
     }
 
