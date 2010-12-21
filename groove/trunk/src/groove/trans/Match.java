@@ -16,8 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.Edge;
-import groove.graph.Node;
 
 import java.util.Collection;
 
@@ -29,8 +27,8 @@ import java.util.Collection;
  */
 public interface Match {
     /** Returns the (host graph) nodes used as images in the match. */
-    Collection<? extends Node> getNodeValues();
+    Collection<HostNode> getNodeValues();
 
     /** Returns the (host graph) edges used as images in the match. */
-    Collection<? extends Edge> getEdgeValues();
+    Collection<HostEdge> getEdgeValues();
 }

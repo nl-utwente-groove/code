@@ -21,7 +21,6 @@ import groove.graph.DefaultFactory;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
-import groove.graph.Edge;
 import groove.graph.ElementFactory;
 import groove.graph.ElementMap;
 import groove.graph.GraphInfo;
@@ -311,7 +310,7 @@ public class AspectGraph extends
      *         value, but is not a self-edge or contains more than one aspect
      *         value
      */
-    private AspectValue getNodeValue(Edge edge, AspectParser parser)
+    private AspectValue getNodeValue(DefaultEdge edge, AspectParser parser)
         throws FormatException {
         AspectValue result = null;
         String labelText = edge.label().text();

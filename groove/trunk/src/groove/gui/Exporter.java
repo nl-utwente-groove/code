@@ -16,11 +16,8 @@
  */
 package groove.gui;
 
-import groove.graph.DefaultNode;
-import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.Node;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.StateJGraph;
@@ -228,32 +225,20 @@ public class Exporter {
         private void convert(AspectGraph graph, PrintWriter writer) {
             this.writer = writer;
             this.indent = 0;
-            this.nodeMap = new HashMap<Node,Integer>();
-            this.edgeMap = new HashMap<Edge,Integer>();
+            this.nodeMap = new HashMap<AspectNode,Integer>();
+            this.edgeMap = new HashMap<AspectEdge,Integer>();
             println("(%s", GRAPH_KEYWORD);
             println("(%s", SUBGRAPH_KEYWORD);
             println("(%s (", LET_KEYWORD);
             int max = 0;
-            for (Node node : graph.nodeSet()) {
-                if (node instanceof DefaultNode) {
-                    int nr = ((DefaultNode) node).getNumber();
-                    max = Math.max(max, nr + 1);
-                    this.nodeMap.put(node, nr);
-                    println("(%s (%s %d))", nodeId(node), CREATE_NODE_KEYWORD,
-                        nr);
-                }
+            for (AspectNode node : graph.nodeSet()) {
+                int nr = node.getNumber();
+                max = Math.max(max, nr + 1);
+                this.nodeMap.put(node, nr);
+                println("(%s (%s %d))", nodeId(node), CREATE_NODE_KEYWORD, nr);
             }
-            for (Node node : graph.nodeSet()) {
-                if (!(node instanceof DefaultNode)) {
-                    int nr = max++;
-                    this.nodeMap.put(node, nr);
-                    println("(%s (%s %d))", nodeId(node), CREATE_NODE_KEYWORD,
-                        nr);
-                }
-            }
-
             int edgeCount = 0;
-            for (Edge edge : graph.edgeSet()) {
+            for (AspectEdge edge : graph.edgeSet()) {
                 if (!isNodeLabel(edge)) {
                     int nr = edgeCount;
                     edgeCount++;
@@ -332,7 +317,7 @@ public class Exporter {
 
                 Double x, y;
 
-                for (Node node : graph.nodeSet()) {
+                for (AspectNode node : graph.nodeSet()) {
                     JVertexLayout layout = layoutMap.nodeMap().get(node);
                     Rectangle2D r = layout.getBounds();
 
@@ -379,7 +364,7 @@ public class Exporter {
          * Returns an identifier for a node, using the underlying
          * {@link #nodeMap}.
          */
-        private String nodeId(Node node) {
+        private String nodeId(AspectNode node) {
             return "n" + this.nodeMap.get(node);
         }
 
@@ -387,12 +372,12 @@ public class Exporter {
          * Returns an identifier for an edge, using the underlying
          * {@link #edgeMap}.
          */
-        private String edgeId(Edge edge) {
+        private String edgeId(AspectEdge edge) {
             return "e" + this.edgeMap.get(edge);
         }
 
         /** Retrieves the edge label. */
-        private String label(Edge edge) {
+        private String label(AspectEdge edge) {
             return edge.label().text();
         }
 
@@ -401,7 +386,7 @@ public class Exporter {
         }
 
         /** Indicates if an edge should be regarded as a node label. */
-        private boolean isNodeLabel(Edge edge) {
+        private boolean isNodeLabel(AspectEdge edge) {
             return edge.source() == edge.target();
         }
 
@@ -471,12 +456,12 @@ public class Exporter {
          * Map from nodes to numbers built up during
          * {@link #convert(AspectGraph, PrintWriter)}.
          */
-        private Map<Node,Integer> nodeMap;
+        private Map<AspectNode,Integer> nodeMap;
         /**
          * Map from edges to numbers built up during
          * {@link #convert(AspectGraph, PrintWriter)}.
          */
-        private Map<Edge,Integer> edgeMap;
+        private Map<AspectEdge,Integer> edgeMap;
 
         /** Returns the singleton instance of this class. */
         public static Format getInstance() {

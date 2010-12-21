@@ -238,7 +238,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
             // there is a choice here to query the graph for its incident edge
             // set
             // which may be expensive if it hasn't yet been computed
-            Set<Edge> removedEdges = new HashSet<Edge>();
+            Set<HostEdge> removedEdges = new HashSet<HostEdge>();
             for (HostNode node : nodeSet) {
                 for (HostEdge edge : this.source.edgeSet(node)) {
                     if (removedEdges.add(edge)) {
@@ -298,7 +298,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * that isolated value nodes are removed from the graph.
      */
     private void registerErasure(HostEdge edge) {
-        Node target = edge.target();
+        HostNode target = edge.target();
         if (target instanceof ValueNode) {
             Set<HostEdge> edges = getValueNodeEdges((ValueNode) target);
             edges.remove(edge);

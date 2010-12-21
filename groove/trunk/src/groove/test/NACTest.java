@@ -19,7 +19,6 @@ package groove.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import groove.graph.DefaultNode;
-import groove.graph.Edge;
 import groove.graph.GraphProperties;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
@@ -283,9 +282,9 @@ public class NACTest {
         HostGraphMorphism derivMorph = deriv.getMorphism();
         assertEquals(this.g[0], deriv.getSource());
         assertEquals(null, derivMorph.getNode(this.stateNodes[0][2]));
-        Edge image = derivMorph.getEdge(this.stateEdges[0][0]);
+        HostEdge image = derivMorph.getEdge(this.stateEdges[0][0]);
         assertTrue(image != null);
-        Collection<? extends Edge> targetOutEdgeSet =
+        Collection<? extends HostEdge> targetOutEdgeSet =
             deriv.getTarget().outEdgeSet(
                 derivMorph.getNode(this.stateNodes[0][1]));
         assertEquals(2, targetOutEdgeSet.size());

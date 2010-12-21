@@ -537,13 +537,13 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,TypeLabel,HostEdge>
          * A second parameter determines if the set sets
          * in the map should be copied upon modification.
          */
-        final boolean addEdge(Edge elem, boolean refreshSource,
+        final boolean addEdge(HostEdge elem, boolean refreshSource,
                 boolean refreshTarget, boolean refreshLabel) {
-            boolean result = this.edgeSet.add((HostEdge) elem);
+            boolean result = this.edgeSet.add(elem);
             assert result;
             // adapt node-edge map
-            HostNode source = ((HostEdge) elem).source();
-            HostNode target = ((HostEdge) elem).target();
+            HostNode source = elem.source();
+            HostNode target = elem.target();
             addToMap(this.nodeEdgeMap, source, elem, refreshSource);
             if (source != target) {
                 addToMap(this.nodeEdgeMap, target, elem, refreshTarget);
@@ -551,8 +551,7 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,TypeLabel,HostEdge>
             // adapt label-edge map
             addToMap(this.nodeOutEdgeMap, source, elem, refreshSource);
             addToMap(this.nodeInEdgeMap, target, elem, refreshTarget);
-            addToMap(this.labelEdgeMap, ((HostEdge) elem).label(), elem,
-                refreshLabel);
+            addToMap(this.labelEdgeMap, elem.label(), elem, refreshLabel);
             return result;
         }
 
@@ -605,7 +604,7 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,TypeLabel,HostEdge>
          * @return the edgeset for the key, if the map was not {@code null}
          */
         private <T> HostEdgeSet addToMap(Map<T,HostEdgeSet> map, T key,
-                Edge edge, boolean refresh) {
+                HostEdge edge, boolean refresh) {
             HostEdgeSet result = null;
             if (map != null) {
                 result = map.get(key);
@@ -614,7 +613,7 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,TypeLabel,HostEdge>
                 } else if (result == null) {
                     map.put(key, result = createEdgeSet(null));
                 }
-                result.add((HostEdge) edge);
+                result.add(edge);
             }
             return result;
         }
@@ -623,7 +622,7 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,TypeLabel,HostEdge>
          * if the mapping is not {@code null}. 
          */
         private <T> HostEdgeSet removeEdgeFromMap(Map<T,HostEdgeSet> map,
-                T key, Edge edge, boolean refresh) {
+                T key, HostEdge edge, boolean refresh) {
             HostEdgeSet result = null;
             if (map != null) {
                 result = map.get(key);

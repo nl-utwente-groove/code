@@ -17,14 +17,14 @@
 package groove.lts;
 
 import groove.control.CtrlCall;
-import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.Node;
 import groove.trans.DefaultApplication;
 import groove.trans.DeltaApplier;
 import groove.trans.DeltaHostGraph;
 import groove.trans.FrozenDeltaApplier;
+import groove.trans.HostEdge;
 import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.TreeHashSet;
@@ -208,11 +208,11 @@ class StateCache {
     Element[] computeFrozenGraph(HostGraph graph) {
         Element[] result = new Element[graph.size()];
         int index = 0;
-        for (Node node : graph.nodeSet()) {
+        for (HostNode node : graph.nodeSet()) {
             result[index] = node;
             index++;
         }
-        for (Edge edge : graph.edgeSet()) {
+        for (HostEdge edge : graph.edgeSet()) {
             result[index] = edge;
             index++;
         }

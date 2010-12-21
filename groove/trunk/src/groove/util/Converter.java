@@ -18,7 +18,6 @@ package groove.util;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.gui.jgraph.EditorJModel;
 import groove.gui.jgraph.GraphJModel;
@@ -115,7 +114,7 @@ public class Converter {
 
     /** Reads in a graph from CADP .aut format. */
     static public <N extends Node> Map<String,N> autToGraph(InputStream reader,
-            Graph<N,? extends Label,? extends Edge> graph) throws IOException {
+            Graph<N,?,?> graph) throws IOException {
         Map<String,N> result = new HashMap<String,N>();
         BufferedReader in = new BufferedReader(new InputStreamReader(reader));
         int linenr = 0;

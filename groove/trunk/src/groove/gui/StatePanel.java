@@ -25,7 +25,6 @@ import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.LabelStore;
-import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
@@ -227,10 +226,10 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         assert match != null : "Match update should not be called with empty match";
         setJModel(getCurrentStateJModel());
         Set<Element> emphElems = new HashSet<Element>();
-        for (Node matchedNode : match.getNodeValues()) {
+        for (HostNode matchedNode : match.getNodeValues()) {
             emphElems.add(matchedNode);
         }
-        for (Edge matchedEdge : match.getEdgeValues()) {
+        for (HostEdge matchedEdge : match.getEdgeValues()) {
             emphElems.add(matchedEdge);
         }
         GraphJModel<?,?> currentModel = getJModel();

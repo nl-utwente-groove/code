@@ -32,7 +32,7 @@ public class EdgeContent<E extends Edge> extends JCellContent<E> {
     @Override
     public Collection<String> getLabelSet() {
         List<String> result = new ArrayList<String>();
-        for (Edge edge : this) {
+        for (E edge : this) {
             result.add(edge.label().text());
         }
         return result;
