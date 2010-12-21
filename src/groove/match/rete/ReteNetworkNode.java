@@ -127,6 +127,28 @@ public abstract class ReteNetworkNode {
     public abstract int size();
 
     /**
+     * Causes an n-node to bring it run-time state up to date by pulling down
+     * any unpropagated matches from antecedents. This will also cause
+     * this n-node to send these new updates to successors.
+     * 
+     * @return <code>true</code> if the update request has resulted in any
+     * new matches to be created, <code>false</code> otherwise.
+     */
+    public abstract boolean demandUpdate();
+
+    /**
+     * This method is called by an n-node's antecedent telling it
+     * to send down all its lazily kept matches to its successor and 
+     * force them to propagate their updates as well. 
+     */
+    public void forceFlush() {
+        demandUpdate();
+        for (ReteNetworkNode nnode : this.getSuccessors()) {
+            nnode.forceFlush();
+        }
+    }
+
+    /**
      * @param nnode A given n-node
      * @return <code>true</code> if the given n-node is a successor of this
      * n-node.
@@ -166,5 +188,4 @@ public abstract class ReteNetworkNode {
     public void addAntecedent(ReteNetworkNode nnode) {
         this.antecedents.add(nnode);
     }
-
 }

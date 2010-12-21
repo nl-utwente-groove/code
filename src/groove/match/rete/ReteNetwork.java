@@ -23,6 +23,7 @@ import groove.gui.jgraph.ReteJModel;
 import groove.io.AspectGxl;
 import groove.io.LayedOutXml;
 import groove.io.Xml;
+import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.AbstractCondition;
 import groove.trans.Condition;
@@ -37,7 +38,6 @@ import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleName;
 import groove.trans.RuleNode;
-import groove.util.TreeHashSet;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 import groove.view.aspect.AspectGraph;
@@ -73,8 +73,8 @@ public class ReteNetwork {
     private HashMap<Condition,ConditionChecker> conditionCheckerNodes =
         new HashMap<Condition,ConditionChecker>();
 
-    private TreeHashSet<CompositeConditionChecker> compositeConditionCheckerNodes =
-        new TreeHashSet<CompositeConditionChecker>();
+    private ArrayList<CompositeConditionChecker> compositeConditionCheckerNodes =
+        new ArrayList<CompositeConditionChecker>();
 
     private boolean injective = false;
 
@@ -507,8 +507,8 @@ public class ReteNetwork {
                 openList.remove(m2);
             }
             CompositeConditionChecker result =
-                new CompositeConditionChecker(this, positiveConditionChecker,
-                    openList.get(0));
+                new CompositeConditionChecker(this, nac,
+                    positiveConditionChecker, openList.get(0));
             this.compositeConditionCheckerNodes.add(result);
 
         }
@@ -713,11 +713,16 @@ public class ReteNetwork {
      */
     public void processGraph(HostGraph g) {
         this.getState().clearSubscribers();
+        ReteUpdateMode oldUpdateMode = this.getState().getUpdateMode();
+        this.getState().updateMode = ReteUpdateMode.NORMAL;
         for (HostNode n : g.nodeSet()) {
             this.getRoot().receiveNode(n, Action.ADD);
         }
         for (HostEdge e : g.edgeSet()) {
             this.getRoot().receiveEdge(e, Action.ADD);
+        }
+        if (oldUpdateMode == ReteUpdateMode.ONDEMAND) {
+            this.getState().setUpdateMode(oldUpdateMode);
         }
         this.getState().setHostGraph(g);
     }
@@ -744,6 +749,14 @@ public class ReteNetwork {
             throw new RuntimeException(String.format(
                 "Error while saving graph to '%s'", selectedFile), exc);
         }
+    }
+
+    /**     
+     * @return <code>true</code> if this network is currently in the
+     * on-demand mode of update propagation.
+     */
+    public boolean isInOnDemandMode() {
+        return this.getState().getUpdateMode() == ReteUpdateMode.ONDEMAND;
     }
 
     /**
@@ -918,10 +931,28 @@ public class ReteNetwork {
      * @version $Revision $
      */
     static class ReteState {
+        /**
+         *  The modes of update propagation in the RETE network.
+         */
+        public enum ReteUpdateMode {
+            /**
+             * In this mode all updates are immediately propagrated 
+             * down to the final condition-checker and production checker
+             * nodes.
+             */
+            NORMAL,
+            /**
+             * In this mode, update propagations are avoided as far as
+             * possible and are performed on an on-demand basis. 
+             */
+            ONDEMAND
+        }
+
         private ReteNetwork owner;
         private HostGraph hostGraph;
         private Set<StateSubscriber> subscribers =
             new HashSet<StateSubscriber>();
+        private ReteUpdateMode updateMode = ReteUpdateMode.ONDEMAND;
 
         protected ReteState(ReteNetwork owner) {
             this.owner = owner;
@@ -959,6 +990,21 @@ public class ReteNetwork {
 
         public HostGraph getHostGraph() {
             return this.hostGraph;
+        }
+
+        public void setUpdateMode(ReteUpdateMode newMode) {
+            if (newMode != this.updateMode) {
+                if (this.updateMode == ReteUpdateMode.ONDEMAND) {
+                    this.updateMode = newMode;
+                    this.owner.getRoot().forceFlush();
+                } else {
+                    this.updateMode = newMode;
+                }
+            }
+        }
+
+        public ReteUpdateMode getUpdateMode() {
+            return this.updateMode;
         }
     }
 

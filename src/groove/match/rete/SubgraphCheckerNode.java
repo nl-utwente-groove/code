@@ -37,7 +37,12 @@ import java.util.Set;
 public class SubgraphCheckerNode extends ReteNetworkNode implements
         StateSubscriber {
 
+    private TreeHashSet<ReteMatch> leftOnDemandBuffer =
+        new TreeHashSet<ReteMatch>();
     private TreeHashSet<ReteMatch> leftMemory = new TreeHashSet<ReteMatch>();
+
+    private TreeHashSet<ReteMatch> rightOnDemandBuffer =
+        new TreeHashSet<ReteMatch>();
     private TreeHashSet<ReteMatch> rightMemory = new TreeHashSet<ReteMatch>();
 
     /**
@@ -166,7 +171,8 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
                 (HostNode) mu, this.getOwner().isInjective());
         if (action == Action.ADD) {
             this.receive(source, repeatIndex, sg);
-        } else {
+        } else if (!this.getOwner().isInOnDemandMode()
+            || !unbufferMatch(source, repeatIndex, sg)) {
             TreeHashSet<ReteMatch> memory;
             if (getAntecedents().get(0) != getAntecedents().get(1)) {
                 memory =
@@ -185,10 +191,48 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
         }
     }
 
+    private boolean unbufferMatch(ReteNetworkNode source, int repeatIndex,
+            ReteMatch subgraph) {
+        TreeHashSet<ReteMatch> c;
+        assert !subgraph.isDeleted();
+        if (getAntecedents().get(0) != getAntecedents().get(1)) {
+            c =
+                (getAntecedents().get(0) == source) ? this.leftOnDemandBuffer
+                        : this.rightOnDemandBuffer;
+        } else {
+            c =
+                (repeatIndex == 0) ? this.leftOnDemandBuffer
+                        : this.rightOnDemandBuffer;
+        }
+
+        boolean result = c.remove(subgraph);
+        if (result) {
+            subgraph.removeContainerCollection(c);
+        }
+        return result;
+    }
+
+    private void bufferMatch(ReteNetworkNode source, int repeatIndex,
+            ReteMatch subgraph) {
+        TreeHashSet<ReteMatch> c;
+
+        if (getAntecedents().get(0) != getAntecedents().get(1)) {
+            c =
+                (getAntecedents().get(0) == source) ? this.leftOnDemandBuffer
+                        : this.rightOnDemandBuffer;
+        } else {
+            c =
+                (repeatIndex == 0) ? this.leftOnDemandBuffer
+                        : this.rightOnDemandBuffer;
+        }
+        c.add(subgraph);
+        subgraph.addContainerCollection(c);
+    }
+
     /**
      * Receives a new subgraph match (resulting from an ADD operation)
-     * of type {@link ReteMatch} from an antecedent
-     * and passes along down the RETE network based on the rules of the algorithm.
+     * of type {@link ReteMatch} from an antecedent. Whether it is immediately
+     * processed or buffered depends on the RETE network's update propagation mode.
      *  
      * @param source The n-node that is calling this method.
      * @param repeatIndex This parameter is basically a counter over repeating antecedents.
@@ -201,6 +245,31 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
      * @param subgraph The subgraph match found by <code>source</code>.     
      */
     public void receive(ReteNetworkNode source, int repeatIndex,
+            ReteMatch subgraph) {
+        if (this.getOwner().isInOnDemandMode()) {
+            bufferMatch(source, repeatIndex, subgraph);
+        } else {
+            receiveAndProcess(source, repeatIndex, subgraph);
+        }
+    }
+
+    /**
+     * Receives a new subgraph match (resulting from an ADD operation)
+     * of type {@link ReteMatch} from an antecedent and immediately
+     * processes the match for possible merge with already existing matches
+     * from the opposite side.
+     *  
+     * @param source The n-node that is calling this method.
+     * @param repeatIndex This parameter is basically a counter over repeating antecedents.
+     *        If <code>source</code> checks against more than one sub-component of this subgraph
+     *        , it will repeat in the list of antecedents. In such a case this
+     *        parameter specifies which of those components is calling this method, which
+     *        could be any value from 0 to k-1, which k is the number of 
+     *        times <code>source</code> occurs in the list of antecedents. 
+     *         
+     * @param subgraph The subgraph match found by <code>source</code>.     
+     */
+    protected void receiveAndProcess(ReteNetworkNode source, int repeatIndex,
             ReteMatch subgraph) {
 
         TreeHashSet<ReteMatch> memory;
@@ -480,7 +549,9 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
 
     @Override
     public void clear() {
+        this.leftOnDemandBuffer.clear();
         this.leftMemory.clear();
+        this.rightOnDemandBuffer.clear();
         this.rightMemory.clear();
     }
 
@@ -492,6 +563,34 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
     @Override
     public Element[] getPattern() {
         return this.pattern;
+    }
+
+    @Override
+    public boolean demandUpdate() {
+        for (ReteNetworkNode nnode : this.getAntecedents()) {
+            nnode.demandUpdate();
+        }
+        boolean result =
+            (this.leftOnDemandBuffer.size() + this.rightOnDemandBuffer.size()) > 0;
+
+        if (result) {
+            for (ReteMatch m : this.leftOnDemandBuffer) {
+                assert !m.isDeleted();
+                m.removeContainerCollection(this.leftOnDemandBuffer);
+                this.receiveAndProcess(m.getOrigin(), 0, m);
+            }
+            this.leftOnDemandBuffer.clear();
+            int repeatIndex =
+                (this.getAntecedents().get(0) != this.getAntecedents().get(1))
+                        ? 0 : 1;
+            for (ReteMatch m : this.rightOnDemandBuffer) {
+                assert !m.isDeleted();
+                m.removeContainerCollection(this.rightOnDemandBuffer);
+                this.receiveAndProcess(m.getOrigin(), repeatIndex, m);
+            }
+            this.rightOnDemandBuffer.clear();
+        }
+        return result;
     }
 
 }

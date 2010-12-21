@@ -21,14 +21,18 @@ import groove.graph.Element;
 import groove.graph.Node;
 import groove.trans.HostNode;
 import groove.util.Reporter;
+import groove.util.TreeHashSet;
+
+import java.util.List;
 
 /**
  * @author Arash Jalali
  * @version $Revision $
  */
-public class NodeCheckerNode extends ReteNetworkNode {
+public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber {
 
     private Element[] pattern = new Element[1];
+    private TreeHashSet<HostNode> ondemandBuffer = new TreeHashSet<HostNode>();
 
     /**
      * The reporter object for this class.
@@ -48,6 +52,7 @@ public class NodeCheckerNode extends ReteNetworkNode {
     public NodeCheckerNode(ReteNetwork network) {
         super(network);
         this.pattern[0] = DefaultNode.createNode();
+        this.getOwner().getState().subscribe(this);
     }
 
     /**
@@ -71,6 +76,18 @@ public class NodeCheckerNode extends ReteNetworkNode {
      */
     public void receiveNode(HostNode node, Action action) {
         receiveNodeReporter.start();
+        if (!this.getOwner().isInOnDemandMode()) {
+            sendDownReceivedNode(node, action);
+        } else if ((action == Action.REMOVE)
+            && !this.ondemandBuffer.contains(node)) {
+            sendDownReceivedNode(node, action);
+        } else {
+            bufferReceivedNode(node, action);
+        }
+        receiveNodeReporter.stop();
+    }
+
+    private void sendDownReceivedNode(HostNode node, Action action) {
         ReteNetworkNode previous = null;
         int repeatedSuccessorIndex = 0;
         for (ReteNetworkNode n : getSuccessors()) {
@@ -87,7 +104,14 @@ public class NodeCheckerNode extends ReteNetworkNode {
             }
             previous = n;
         }
-        receiveNodeReporter.stop();
+    }
+
+    private void bufferReceivedNode(HostNode node, Action action) {
+        if (action == Action.REMOVE) {
+            this.ondemandBuffer.remove(node);
+        } else {
+            this.ondemandBuffer.add(node);
+        }
     }
 
     @Override
@@ -111,4 +135,24 @@ public class NodeCheckerNode extends ReteNetworkNode {
         return this.pattern;
     }
 
+    @Override
+    public boolean demandUpdate() {
+        boolean result = this.ondemandBuffer.size() > 0;
+        for (HostNode n : this.ondemandBuffer) {
+            sendDownReceivedNode(n, Action.ADD);
+        }
+        this.ondemandBuffer.clear();
+        return result;
+    }
+
+    @Override
+    public void clear() {
+        this.ondemandBuffer.clear();
+    }
+
+    @Override
+    public List<? extends Object> initialize() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

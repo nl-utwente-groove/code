@@ -19,23 +19,34 @@ package groove.match.rete;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultNode;
 import groove.graph.Element;
+import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.trans.HostEdge;
 import groove.trans.RuleEdge;
 import groove.util.Reporter;
+import groove.util.TreeHashSet;
+
+import java.util.List;
 
 /**
  * @author Arash Jalali
  * @version $Revision $
  */
-public class EdgeCheckerNode extends ReteNetworkNode {
+public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber {
 
     private Element[] pattern = new Element[1];
+
+    /**
+     * This is where incoming edges are buffered lazily
+     * when the RETE network is working in on-demand mode.
+     */
+    private TreeHashSet<HostEdge> ondemandBuffer = new TreeHashSet<HostEdge>();
 
     /**
      * The reporter.
      */
     protected static final Reporter reporter =
         Reporter.register(EdgeCheckerNode.class);
+
     /**
      * For collecting reports on the number of time the 
      * {@link #receiveEdge(ReteNetworkNode, HostEdge, Action)} method is called.
@@ -57,6 +68,7 @@ public class EdgeCheckerNode extends ReteNetworkNode {
         this.pattern[0] = DefaultEdge.createEdge(n1, e.label().text(), n2);
         //This is just to fill up the lookup table
         getPatternLookupTable();
+        this.getOwner().getState().subscribe(this);
     }
 
     @Override
@@ -110,8 +122,12 @@ public class EdgeCheckerNode extends ReteNetworkNode {
     }
 
     /**
-     * Receives an edge that is sent from the root to see 
-     * if the edge label equals the label of the edge-checker itself.
+     * Receives an edge that is sent from the root and
+     * sends it down the RETE network or lazily buffers it
+     * depending on what update mode the RETE network is in.
+     * 
+     * For more info on the update mode see {@link ReteUpdateMode}
+     * 
      * @param source the RETE node that is actually calling this method.
      * @param gEdge the edge that has been added/removed
      * @param action whether the action is ADD or remove.
@@ -119,37 +135,45 @@ public class EdgeCheckerNode extends ReteNetworkNode {
     public void receiveEdge(ReteNetworkNode source, HostEdge gEdge,
             Action action) {
         receiveEdgeReporter.start();
-        //Dynamically, an edge-checker
-        // tests a g-edge ((v, \alpha(v)), (w, \alpha(w)), \beta(v, w)) 
-        // that is sent from the root if alpha(v) = u A alpha(w) =
-        // \mu \and beta(v, w) = $. Any g-edge that successfully 
-        // passes the test of an edge-checker is sent to all direct
-        // successor n-nodes of that edge-checker.             
-
-        //For groove since there are no node labels, we check the equality of edge labels
-        //and we check that the received edge is of the same "shape" as the associated edge
-        //of this edge-checker n-node, i.e. either both are unary (loop) edges or both are
-        //binary(non-loop) edges.
-
         if (this.canBeMappedToEdge(gEdge)) {
-            ReteNetworkNode previous = null;
-            int repeatedSuccessorIndex = 0;
-            for (ReteNetworkNode n : this.getSuccessors()) {
-                repeatedSuccessorIndex =
-                    (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
-                if (n instanceof SubgraphCheckerNode) {
-                    ((SubgraphCheckerNode) n).receive(this,
-                        repeatedSuccessorIndex, gEdge, action);
-                } else if (n instanceof ConditionChecker) {
-                    ((ConditionChecker) n).receive(gEdge, action);
-                } else if (n instanceof DisconnectedSubgraphChecker) {
-                    ((DisconnectedSubgraphChecker) n).receive(this,
-                        repeatedSuccessorIndex, gEdge, action);
-                }
-                previous = n;
+            if (!this.getOwner().isInOnDemandMode()) {
+                sendDownReceivedEdge(gEdge, action);
+            } else if ((action == Action.REMOVE)
+                && !this.ondemandBuffer.contains(gEdge)) {
+                sendDownReceivedEdge(gEdge, action);
+            } else {
+                bufferReceivedEdge(gEdge, action);
             }
         }
         receiveEdgeReporter.stop();
+    }
+
+    private void bufferReceivedEdge(HostEdge edge, Action action) {
+        if (action == Action.REMOVE) {
+            this.ondemandBuffer.remove(edge);
+        } else {
+            this.ondemandBuffer.add(edge);
+        }
+    }
+
+    private void sendDownReceivedEdge(HostEdge gEdge, Action action) {
+
+        ReteNetworkNode previous = null;
+        int repeatedSuccessorIndex = 0;
+        for (ReteNetworkNode n : this.getSuccessors()) {
+            repeatedSuccessorIndex =
+                (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
+            if (n instanceof SubgraphCheckerNode) {
+                ((SubgraphCheckerNode) n).receive(this, repeatedSuccessorIndex,
+                    gEdge, action);
+            } else if (n instanceof ConditionChecker) {
+                ((ConditionChecker) n).receive(gEdge, action);
+            } else if (n instanceof DisconnectedSubgraphChecker) {
+                ((DisconnectedSubgraphChecker) n).receive(this,
+                    repeatedSuccessorIndex, gEdge, action);
+            }
+            previous = n;
+        }
     }
 
     /**
@@ -183,6 +207,28 @@ public class EdgeCheckerNode extends ReteNetworkNode {
     @Override
     public Element[] getPattern() {
         return this.pattern;
+    }
+
+    @Override
+    public boolean demandUpdate() {
+        boolean result = this.ondemandBuffer.size() > 0;
+        for (HostEdge e : this.ondemandBuffer) {
+            sendDownReceivedEdge(e, Action.ADD);
+        }
+        this.ondemandBuffer.clear();
+        return result;
+    }
+
+    @Override
+    public void clear() {
+        this.ondemandBuffer.clear();
+
+    }
+
+    @Override
+    public List<? extends Object> initialize() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }
