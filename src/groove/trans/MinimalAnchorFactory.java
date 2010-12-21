@@ -17,7 +17,6 @@
 package groove.trans;
 
 import groove.control.CtrlPar;
-import groove.graph.Element;
 import groove.graph.algebra.ValueNode;
 
 import java.util.Arrays;
@@ -47,9 +46,9 @@ public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
      * that the rule's internal sets of <tt>lhsOnlyNodes</tt> etc. have been
      * initialised already.
      */
-    public Element[] newAnchors(SPORule rule) {
-        Set<Element> anchors =
-            new LinkedHashSet<Element>(Arrays.asList(rule.getEraserNodes()));
+    public RuleElement[] newAnchors(SPORule rule) {
+        Set<RuleElement> anchors =
+            new LinkedHashSet<RuleElement>(Arrays.asList(rule.getEraserNodes()));
         Set<RuleNode> parameters = new LinkedHashSet<RuleNode>();
         if (rule.isTop()) {
             Set<RuleNode> hiddenPars = rule.getHiddenPars();
@@ -86,7 +85,7 @@ public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
         }
         anchors.addAll(rule.getModifierEnds());
         // remove all constant data nodes
-        Iterator<Element> anchorIter = anchors.iterator();
+        Iterator<RuleElement> anchorIter = anchors.iterator();
         while (anchorIter.hasNext()) {
             if (anchorIter.next() instanceof ValueNode) {
                 anchorIter.remove();
@@ -95,7 +94,7 @@ public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
         // parameter anchors should never be removed
         removableEnds.removeAll(parameters);
         anchors.removeAll(removableEnds);
-        return anchors.toArray(new Element[anchors.size()]);
+        return anchors.toArray(new RuleElement[anchors.size()]);
     }
 
     /**

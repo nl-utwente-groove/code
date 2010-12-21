@@ -496,7 +496,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * creator edges (insofar they are not creator nodes), as well as root node
      * images.
      */
-    public Element[] anchor() {
+    public RuleElement[] anchor() {
         if (this.anchor == null) {
             // getTop().setAnchor(null);
             setAnchor(null);
@@ -510,10 +510,10 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @param parentAnchor the collection of anchors from the parent rule; may
      *        be <code>null</code> if this rule is the top rule.
      */
-    private void setAnchor(Collection<Element> parentAnchor) {
-        Collection<Element> myAnchor =
-            new TreeSet<Element>(Arrays.asList(computeNestedAnchor()));
-        this.anchor = myAnchor.toArray(new Element[myAnchor.size()]);
+    private void setAnchor(Collection<RuleElement> parentAnchor) {
+        Collection<RuleElement> myAnchor =
+            new TreeSet<RuleElement>(Arrays.asList(computeNestedAnchor()));
+        this.anchor = myAnchor.toArray(new RuleElement[myAnchor.size()]);
     }
 
     /**
@@ -521,7 +521,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * constructor. This implementation delegates to {@link #getAnchorFactory()}
      * .
      */
-    private Element[] computeNestedAnchor() {
+    private RuleElement[] computeNestedAnchor() {
         return anchorFactory.newAnchors(this);
     }
 
@@ -1300,7 +1300,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
      * The set of anchors of this rule.
      */
-    private Element[] anchor;
+    private RuleElement[] anchor;
     /**
      * The lhs edges that are not ruleMorph keys and are not anchors
      */

@@ -17,11 +17,10 @@
 package groove.match.rete;
 
 import groove.graph.DefaultEdge;
-import groove.graph.DefaultNode;
-import groove.graph.Element;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.trans.HostEdge;
 import groove.trans.RuleEdge;
+import groove.trans.RuleElement;
 import groove.util.Reporter;
 import groove.util.TreeHashSet;
 
@@ -33,7 +32,7 @@ import java.util.List;
  */
 public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber {
 
-    private Element[] pattern = new Element[1];
+    private RuleElement[] pattern = new RuleElement[1];
 
     /**
      * This is where incoming edges are buffered lazily
@@ -62,10 +61,8 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
      */
     public EdgeCheckerNode(ReteNetwork network, RuleEdge e) {
         super(network);
-        DefaultNode n1 = DefaultNode.createNode();
-        DefaultNode n2 =
-            (e.source().equals(e.target())) ? n1 : DefaultNode.createNode();
-        this.pattern[0] = DefaultEdge.createEdge(n1, e.label().text(), n2);
+        // TODO why not just use e?
+        this.pattern[0] = e;
         //This is just to fill up the lookup table
         getPatternLookupTable();
         this.getOwner().getState().subscribe(this);
@@ -205,7 +202,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
     }
 
     @Override
-    public Element[] getPattern() {
+    public RuleElement[] getPattern() {
         return this.pattern;
     }
 
@@ -230,5 +227,4 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
         // TODO Auto-generated method stub
         return null;
     }
-
 }

@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.Element;
 
 /**
  * Interface offering the functionality to extract anchors from a given graph
@@ -28,5 +27,5 @@ public interface AnchorFactory<R extends Rule> {
     /**
      * Factory method to create the anchors for a given rule.
      */
-    public Element[] newAnchors(R rule);
+    public RuleElement[] newAnchors(R rule);
 }

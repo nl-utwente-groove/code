@@ -16,7 +16,7 @@
  */
 package groove.match.rete;
 
-import groove.graph.Element;
+import groove.trans.RuleElement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +66,7 @@ public abstract class ReteNetworkNode {
     /**
      * @return The pattern of elements this n-node finds matches for.
      */
-    public abstract Element[] getPattern();
+    public abstract RuleElement[] getPattern();
 
     /**
      * @return The fast lookup table for the pattern.

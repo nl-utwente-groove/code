@@ -17,9 +17,9 @@
 package groove.match.rete;
 
 import groove.graph.DefaultNode;
-import groove.graph.Element;
 import groove.graph.Node;
 import groove.trans.HostNode;
+import groove.trans.RuleElement;
 import groove.util.Reporter;
 import groove.util.TreeHashSet;
 
@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber {
 
-    private Element[] pattern = new Element[1];
+    private RuleElement[] pattern = new RuleElement[1];
     private TreeHashSet<HostNode> ondemandBuffer = new TreeHashSet<HostNode>();
 
     /**
@@ -131,7 +131,7 @@ public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber 
     }
 
     @Override
-    public Element[] getPattern() {
+    public RuleElement[] getPattern() {
         return this.pattern;
     }
 

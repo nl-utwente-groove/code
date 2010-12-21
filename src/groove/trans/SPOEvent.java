@@ -17,7 +17,6 @@
 package groove.trans;
 
 import groove.graph.DefaultNode;
-import groove.graph.Element;
 import groove.graph.algebra.ValueNode;
 import groove.rel.LabelVar;
 import groove.util.CacheReference;
@@ -92,12 +91,12 @@ final public class SPOEvent extends
         // we don't use getAnchorImage() because the events are often
         // just created to look up a stored event; then we shouldn't spend too
         // much time on this one
-        Element[] anchorImage = getAnchorImage();
+        HostElement[] anchorImage = getAnchorImage();
         int MAX_HASHED_ANCHOR_COUNT = 10;
         int hashedAnchorCount =
             Math.min(anchorImage.length, MAX_HASHED_ANCHOR_COUNT);
         for (int i = 0; i < hashedAnchorCount; i++) {
-            Element elem = anchorImage[i];
+            HostElement elem = anchorImage[i];
             if (elem != null) {
                 result += elem.hashCode() << i;
             }
@@ -132,7 +131,7 @@ final public class SPOEvent extends
             result = EMPTY_NODE_ARRAY;
         } else {
             result = new HostNode[size];
-            Element[] anchorImage = getAnchorImage();
+            HostElement[] anchorImage = getAnchorImage();
             for (int i = 0; i < size; i++) {
                 int binding = getRule().getParBinding(i);
                 HostNode argument;
@@ -192,9 +191,9 @@ final public class SPOEvent extends
             return result;
         }
         // we have the same rule (so the other event is also a SPOEvent)
-        Element[] anchorImage = getAnchorImage();
+        HostElement[] anchorImage = getAnchorImage();
         // retrieve the other even't anchor image array
-        Element[] otherAnchorImage = ((SPOEvent) other).getAnchorImage();
+        HostElement[] otherAnchorImage = ((SPOEvent) other).getAnchorImage();
         // now compare the anchor images
         // find the first index in which the anchor images differ
         int upper = Math.min(anchorImage.length, otherAnchorImage.length);
@@ -238,7 +237,7 @@ final public class SPOEvent extends
     }
 
     @Override
-    public Element getAnchorImage(int i) {
+    public HostElement getAnchorImage(int i) {
         return getAnchorImage()[i];
     }
 
@@ -250,7 +249,7 @@ final public class SPOEvent extends
     /**
      * Returns the set of source elements that form the anchor image.
      */
-    Element[] getAnchorImage() {
+    HostElement[] getAnchorImage() {
         return this.anchorImage;
     }
 
@@ -258,10 +257,10 @@ final public class SPOEvent extends
      * Callback method to lazily compute the set of source elements that form
      * the anchor image.
      */
-    private Element[] computeAnchorImage(RuleToHostMap anchorMap) {
-        Element[] anchor = getRule().anchor();
+    private HostElement[] computeAnchorImage(RuleToHostMap anchorMap) {
+        RuleElement[] anchor = getRule().anchor();
         int anchorSize = anchor.length;
-        Element[] result = new Element[anchor.length];
+        HostElement[] result = new HostElement[anchor.length];
         for (int i = 0; i < anchorSize; i++) {
             if (anchor[i] instanceof RuleNode) {
                 result[i] = anchorMap.getNode((RuleNode) anchor[i]);
@@ -313,7 +312,7 @@ final public class SPOEvent extends
      */
     public boolean disables(RuleEvent other) {
         boolean result = false;
-        Set<Element> anchorImage = ((SPOEvent) other).getAnchorImageSet();
+        Set<HostElement> anchorImage = ((SPOEvent) other).getAnchorImageSet();
         Iterator<HostNode> nodeIter = getErasedNodes().iterator();
         while (!result && nodeIter.hasNext()) {
             result = anchorImage.contains(nodeIter.next());
@@ -328,11 +327,11 @@ final public class SPOEvent extends
     /**
      * Returns the set of source elements that form the anchor image.
      */
-    private Set<Element> getAnchorImageSet() {
+    private Set<HostElement> getAnchorImageSet() {
         if (this.anchorImageSet == null) {
             RuleToHostMap anchorMap = getAnchorMap();
             this.anchorImageSet =
-                new HashSet<Element>(anchorMap.nodeMap().values());
+                new HashSet<HostElement>(anchorMap.nodeMap().values());
             this.anchorImageSet.addAll(anchorMap.edgeMap().values());
         }
         return this.anchorImageSet;
@@ -672,11 +671,11 @@ final public class SPOEvent extends
     /**
      * The set of source elements that form the anchor image.
      */
-    private Set<Element> anchorImageSet;
+    private Set<HostElement> anchorImageSet;
     /**
      * The array of source elements that form the anchor image.
      */
-    private final Element[] anchorImage;
+    private final HostElement[] anchorImage;
     /**
      * The list of nodes created by {@link #createNode()}.
      */
@@ -746,12 +745,12 @@ final public class SPOEvent extends
          * edges and any variables on them.
          */
         private RuleToHostMap computeAnchorMap() {
-            Element[] anchor = getRule().anchor();
-            Element[] anchorImage = getAnchorImage();
+            RuleElement[] anchor = getRule().anchor();
+            HostElement[] anchorImage = getAnchorImage();
             RuleToHostMap result = createRuleToHostMap();
             for (int i = 0; i < anchor.length; i++) {
-                Element key = anchor[i];
-                Element image = anchorImage[i];
+                RuleElement key = anchor[i];
+                HostElement image = anchorImage[i];
                 if (key instanceof RuleEdge) {
                     // store the endpoints and the variable valuations for the
                     // edges

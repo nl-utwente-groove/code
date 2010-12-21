@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
+ * Copyright 2003--2010 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -16,24 +16,14 @@
  */
 package groove.trans;
 
-import groove.graph.AbstractEdge;
-import groove.graph.DefaultEdge;
-import groove.graph.algebra.ArgumentEdge;
-import groove.graph.algebra.OperatorEdge;
+import groove.graph.Element;
 
 /**
- * Supertype of all edges that may appear in a {@link RuleGraph}.
- * These are {@link DefaultEdge}s, {@link ArgumentEdge}s and
- * {@link OperatorEdge}s.
+ * Type of (node and edge) elements that may appear in a {@link HostGraph}.
+ * Super-interface of {@link HostNode}s and {@link HostEdge}s.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RuleEdge extends AbstractEdge<RuleNode,RuleLabel,RuleNode>
-        implements RuleElement {
-    /**
-     * Constructs a fresh rule edge
-     */
-    public RuleEdge(RuleNode source, RuleLabel label, RuleNode target) {
-        super(source, label, target);
-    }
+public interface HostElement extends Element {
+    // no added functionality
 }

@@ -16,9 +16,10 @@
  */
 package groove.match.rete;
 
-import groove.graph.Edge;
-import groove.graph.Element;
 import groove.graph.Node;
+import groove.trans.RuleEdge;
+import groove.trans.RuleElement;
+import groove.trans.RuleNode;
 
 import java.util.HashMap;
 
@@ -29,21 +30,23 @@ import java.util.HashMap;
  * @version $Revision $
  */
 public class LookupTable {
-    private HashMap<Element,int[]> table = new HashMap<Element,int[]>();
+    private HashMap<RuleElement,int[]> table = new HashMap<RuleElement,int[]>();
 
     /**
      * Creates a lookup table from the pattern of elements of a RETE node
      * @param nnode The RETE network node the pattern of which 
      */
     public LookupTable(ReteNetworkNode nnode) {
-        Element[] pattern = nnode.getPattern();
+        RuleElement[] pattern = nnode.getPattern();
         for (int i = 0; i < pattern.length; i++) {
-            if (pattern[i] instanceof Node) {
+            if (pattern[i] instanceof RuleNode) {
                 this.table.put(pattern[i], new int[] {i, -1});
-            } else if (pattern[i] instanceof Edge) {
+            } else if (pattern[i] instanceof RuleEdge) {
                 this.table.put(pattern[i], new int[] {i, 0});
-                this.table.put(((Edge) pattern[i]).source(), new int[] {i, 0});
-                this.table.put(((Edge) pattern[i]).target(), new int[] {i, 1});
+                this.table.put(((RuleEdge) pattern[i]).source(), new int[] {i,
+                    0});
+                this.table.put(((RuleEdge) pattern[i]).target(), new int[] {i,
+                    1});
             }
         }
     }
@@ -52,7 +55,7 @@ public class LookupTable {
      * @return the index with a match's array of match units if <code>e</code>
      * is defined in the lookup table, -1 if it's not.
      */
-    public int getEdge(Edge e) {
+    public int getEdge(RuleEdge e) {
         int[] res = this.table.get(e);
         if (res != null) {
             return res[0];

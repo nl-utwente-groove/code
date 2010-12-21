@@ -26,6 +26,6 @@ import groove.graph.algebra.ValueNode;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface HostNode extends Node {
+public interface HostNode extends Node, HostElement {
     // no additional functionality
 }
