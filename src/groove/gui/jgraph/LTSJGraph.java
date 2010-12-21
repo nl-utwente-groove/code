@@ -288,7 +288,7 @@ public class LTSJGraph extends JGraph {
         @Override
         protected Collection<?> getSuggestedRoots() {
             LTSJModel jModel = getModel();
-            return Collections.singleton(jModel.getJCell(jModel.getGraph().startState()));
+            return Collections.singleton(jModel.getJCellForNode(jModel.getGraph().startState()));
         }
 
         /**

@@ -16,7 +16,6 @@
  */
 package groove.match;
 
-import groove.graph.Node;
 import groove.rel.LabelVar;
 import groove.trans.AbstractCondition;
 import groove.trans.Condition;
@@ -24,8 +23,8 @@ import groove.trans.EdgeEmbargo;
 import groove.trans.MergeEmbargo;
 import groove.trans.NotCondition;
 import groove.trans.RuleEdge;
-import groove.trans.RuleNode;
 import groove.trans.RuleGraphMorphism;
+import groove.trans.RuleNode;
 import groove.trans.SystemProperties;
 
 import java.util.Collection;
@@ -109,7 +108,8 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
         List<AbstractSearchItem> plan =
             planData.getPlan(anchorNodes, anchorEdges);
         if (relevantNodes != null) {
-            Set<Node> unboundRelevantNodes = new HashSet<Node>(relevantNodes);
+            Set<RuleNode> unboundRelevantNodes =
+                new HashSet<RuleNode>(relevantNodes);
             Set<LabelVar> boundVars = new HashSet<LabelVar>();
             for (AbstractSearchItem item : plan) {
                 item.setRelevant(unboundRelevantNodes.removeAll(item.bindsNodes())

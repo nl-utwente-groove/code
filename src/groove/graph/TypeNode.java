@@ -78,12 +78,14 @@ public class TypeNode implements Node {
     public int compareTo(Element obj) {
         if (obj instanceof TypeNode) {
             return getNumber() - ((TypeNode) obj).getNumber();
-        } else if (obj instanceof Node) {
-            return getClass().toString().compareTo(obj.getClass().toString());
         } else {
-            assert obj instanceof Edge;
+            assert obj instanceof TypeEdge;
             // nodes come before edges with the node as source
-            return compareTo(((Edge) obj).source());
+            int result = compareTo(((TypeEdge) obj).source());
+            if (result == 0) {
+                result = -1;
+            }
+            return result;
         }
     }
 

@@ -222,7 +222,7 @@ public class GraphCache<N extends Node,L extends Label,E extends Edge> {
             // reuse the precomputed node-edge-map
             result = new HashMap<N,Set<E>>(this.nodeEdgeMap);
             for (Map.Entry<N,Set<E>> resultEntry : result.entrySet()) {
-                Node node = resultEntry.getKey();
+                N node = resultEntry.getKey();
                 Set<E> inEdges = createEdgeSet(null);
                 for (E edge : resultEntry.getValue()) {
                     if (edge.target().equals(node)) {

@@ -271,7 +271,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         }
         Set<JCell> jCells = new HashSet<JCell>();
         for (GraphState counterExample : counterExamples) {
-            jCells.add(getJModel().getJVertex(counterExample));
+            jCells.add(getJModel().getJCellForNode(counterExample));
         }
         getJModel().setEmphasized(jCells);
         return message;
@@ -340,7 +340,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
          */
         @Override
         public void closeUpdate(LTS lts, GraphState closed) {
-            JCell jCell = getJModel().getJCell(closed);
+            JCell jCell = getJModel().getJCellForNode(closed);
             // during automatic generation, we do not always have vertices for
             // all states
             if (jCell != null) {

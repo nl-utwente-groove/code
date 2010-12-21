@@ -19,7 +19,6 @@ package groove.view;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
-import groove.graph.Node;
 import groove.graph.TypeEdge;
 import groove.graph.TypeFactory;
 import groove.graph.TypeGraph;
@@ -127,7 +126,7 @@ public class DefaultTypeView implements TypeView {
         // mapping from view nodes to types
         Map<AspectNode,Label> viewTypeMap = new HashMap<AspectNode,Label>();
         // mapping from model nodes to types
-        Map<Node,Label> modelTypeMap = new HashMap<Node,Label>();
+        Map<TypeNode,Label> modelTypeMap = new HashMap<TypeNode,Label>();
         // mapping from types to model nodes
         Map<Label,TypeNode> typeNodeMap = new HashMap<Label,TypeNode>();
         // View-to-model element map

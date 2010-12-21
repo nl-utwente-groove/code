@@ -20,7 +20,6 @@ import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.graph.Label;
 import groove.graph.LabelStore;
-import groove.graph.Node;
 import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
@@ -485,7 +484,7 @@ public class RuleDependencies {
         // if the condition pattern is non-injective, it means merging is part
         // of the condition
         if (this.properties.isInjective()
-            || pattern.nodeMap().size() > new HashSet<Node>(
+            || pattern.nodeMap().size() > new HashSet<RuleNode>(
                 pattern.nodeMap().values()).size()) {
             positive.add(MERGE_LABEL);
         }
