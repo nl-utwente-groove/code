@@ -52,7 +52,7 @@ public class AspectMap implements Iterable<AspectValue>, Comparable<AspectMap>,
     }
 
     /** Constructs a copy of a given aspect map. */
-    public AspectMap(AspectMap other) {
+    private AspectMap(AspectMap other) {
         this.aspectMap.putAll(other.aspectMap);
         this.declaredValues.addAll(other.declaredValues);
         this.text = other.getText();

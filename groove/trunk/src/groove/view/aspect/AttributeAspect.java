@@ -483,17 +483,18 @@ public class AttributeAspect extends AbstractAspect {
      * @author Arend Rensink
      * @version $Revision $
      */
-    public class ConstantAspectValue extends ContentAspectValue<String> {
+    public class ConstantAspectValue extends AspectValue {
         /**
          * Constructs a new constant-containing aspect value.
          * @param name the aspect value name
          */
         public ConstantAspectValue(String name) throws FormatException {
-            super(getInstance(), name);
+            super(getInstance(), name, true);
         }
 
-        /** Creates an instance of a given nesting aspect value, with a given level. */
-        ConstantAspectValue(ConstantAspectValue original, String value) {
+        /** Constructs a value wrapping a data constant. */
+        private ConstantAspectValue(ConstantAspectValue original, String value)
+            throws FormatException {
             super(original, value);
         }
 
@@ -512,6 +513,16 @@ public class AttributeAspect extends AbstractAspect {
                     "Method called for unknown signature '%s'", getName());
                 return null;
             }
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder result = new StringBuilder(getName());
+            result.append(Aspect.VALUE_SEPARATOR);
+            if (getContent() != null && getContent().length() != 0) {
+                result.append(this.getContent());
+            }
+            return result.toString();
         }
     }
 }

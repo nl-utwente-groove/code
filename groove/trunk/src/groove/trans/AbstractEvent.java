@@ -16,7 +16,7 @@
  */
 package groove.trans;
 
-import groove.graph.Node;
+import groove.graph.algebra.ValueNode;
 import groove.lts.DefaultGraphTransition;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -49,19 +49,22 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
         return this.reuse;
     }
 
-    private String getLabelText(Node[] addedNodes) {
+    /** Returns a string showing this event as a rule call. */
+    public String getLabelText(HostNode[] addedNodes) {
         StringBuilder result = new StringBuilder();
         result.append(getRule().getTransitionLabel());
         if (getRule().getSystemProperties().isUseParameters()) {
             result.append('(');
             boolean first = true;
-            for (Node arg : getArguments(addedNodes)) {
+            for (HostNode arg : getArguments(addedNodes)) {
                 if (!first) {
                     result.append(',');
                 }
                 first = false;
                 if (arg == null) {
                     result.append('_');
+                } else if (arg instanceof ValueNode) {
+                    result.append(((ValueNode) arg).getSymbol());
                 } else {
                     result.append(arg);
                 }

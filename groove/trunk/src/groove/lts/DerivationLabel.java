@@ -18,7 +18,8 @@ package groove.lts;
 
 import groove.graph.AbstractLabel;
 import groove.graph.Label;
-import groove.graph.Node;
+import groove.trans.AbstractEvent;
+import groove.trans.HostNode;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 
@@ -28,7 +29,7 @@ public class DerivationLabel extends AbstractLabel implements Label {
      * Constructs a new label on the basis of a given rule event and list
      * of created nodes.
      */
-    public DerivationLabel(RuleEvent event, Node[] addedNodes) {
+    public DerivationLabel(RuleEvent event, HostNode[] addedNodes) {
         this.text = getLabelText(event, addedNodes);
     }
 
@@ -41,7 +42,7 @@ public class DerivationLabel extends AbstractLabel implements Label {
     }
 
     /** Constructs the label text. */
-    private String getLabelText(RuleEvent event, Node[] addedNodes) {
+    private String getLabelText(RuleEvent event, HostNode[] addedNodes) {
         StringBuilder result = new StringBuilder();
         Rule rule = event.getRule();
         boolean brackets =
@@ -49,24 +50,11 @@ public class DerivationLabel extends AbstractLabel implements Label {
         if (brackets) {
             result.append(BEGIN_CHAR);
         }
-        result.append(rule.getTransitionLabel());
         if (addedNodes == null) {
+            result.append(rule.getTransitionLabel());
             result.append(event.getAnchorImageString());
-        } else if (rule.getSystemProperties().isUseParameters()) {
-            result.append('(');
-            boolean first = true;
-            for (Node arg : event.getArguments(addedNodes)) {
-                if (!first) {
-                    result.append(',');
-                }
-                first = false;
-                if (arg == null) {
-                    result.append('_');
-                } else {
-                    result.append(arg);
-                }
-            }
-            result.append(')');
+        } else {
+            result.append(((AbstractEvent<?,?>) event).getLabelText(addedNodes));
         }
         if (brackets) {
             result.append(END_CHAR);

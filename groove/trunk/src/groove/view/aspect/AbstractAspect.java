@@ -174,7 +174,7 @@ public abstract class AbstractAspect extends Aspect {
      *         existing aspect value
      */
     protected AspectValue createValue(String name) throws FormatException {
-        return new AspectValue(this, name);
+        return new AspectValue(this, name, false);
     }
 
     /**

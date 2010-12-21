@@ -167,8 +167,7 @@ public class AspectParser {
      * text.
      * @param valueText string description of a new {@link AspectValue}
      * @param contentText string description for the new value's content;
-     *        <code>null</code> if the aspect value is not a
-     *        {@link ContentAspectValue}.
+     * may be {@code null}
      * @return the resulting aspect value
      * @throws FormatException if <code>valueText</code> is not a valid
      *         {@link AspectValue}, or the presence of content is not as it
@@ -183,13 +182,8 @@ public class AspectParser {
                     "Unknown aspect value '%s' (precede label text with ':' to avoid aspect parsing)",
                     valueText));
         } else if (contentText != null) {
-            if (value instanceof ContentAspectValue<?>) {
-                // use the value as a factory to get a correct instance
-                value = ((ContentAspectValue<?>) value).newValue(contentText);
-            } else {
-                throw new FormatException(String.format(
-                    "Aspect value '%s' cannot have content", valueText));
-            }
+            // use the value as a factory to get a correct instance
+            value = value.newValue(contentText);
         }
         return value;
     }

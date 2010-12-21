@@ -17,7 +17,6 @@
 package groove.trans;
 
 import groove.graph.Element;
-import groove.graph.Node;
 import groove.lts.GraphTransitionStub;
 import groove.lts.MatchResult;
 
@@ -47,7 +46,7 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
      * @param addedNodes the added nodes; if {@code null}, the creator
      * node images will be set to {@code null}
      */
-    public Node[] getArguments(Node[] addedNodes);
+    public HostNode[] getArguments(HostNode[] addedNodes);
 
     /**
      * Returns a string representation of the anchor image.
