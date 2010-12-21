@@ -194,6 +194,7 @@ public class ConditionChecker extends ReteNetworkNode implements
      */
     public Set<ReteMatch> getConflictSet() {
         assert this.conflictSetSearchTree == null;
+        demandUpdate();
         Set<ReteMatch> cs =
             this.isEmpty() ? this.oneEmptyMatch : this.conflictSet;
         Set<ReteMatch> result = cs;
@@ -215,7 +216,8 @@ public class ConditionChecker extends ReteNetworkNode implements
      * <code>false</code> otherwise.
      */
     protected boolean isInhibited(ReteMatch m) {
-        return this.inhibitionMap.contains(m);
+        boolean result = this.inhibitionMap.contains(m);
+        return result;
     }
 
     /**
@@ -224,7 +226,7 @@ public class ConditionChecker extends ReteNetworkNode implements
      */
     public Iterator<ReteMatch> getConflictSetIterator() {
         Iterator<ReteMatch> result;
-
+        demandUpdate();
         if (this.isEmpty()) {
             result = this.oneEmptyMatch.iterator();
         } else if (!this.inhibitionMap.isEmpty()
@@ -256,7 +258,7 @@ public class ConditionChecker extends ReteNetworkNode implements
     public Iterator<ReteMatch> getConflictSetIterator(
             final RuleToHostMap anchorMap) {
         Iterator<ReteMatch> result;
-
+        demandUpdate();
         if (this.isEmpty()) {
             result = this.oneEmptyMatch.iterator();
         } else if (!this.inhibitionMap.isEmpty()) {
@@ -584,6 +586,24 @@ public class ConditionChecker extends ReteNetworkNode implements
             result = (Set<ReteMatch>) o;
             return result;
         }
+    }
+
+    @Override
+    public boolean demandUpdate() {
+        boolean result = false;
+        if (!this.isEmpty()) {
+            for (ReteNetworkNode nnode : this.getAntecedents()) {
+                result = result || nnode.demandUpdate();
+            }
+        }
+        if (this.getSubConditionCheckers().size() > 0) {
+            for (ConditionChecker cc : this.getSubConditionCheckers()) {
+                if (cc instanceof CompositeConditionChecker) {
+                    cc.demandUpdate();
+                }
+            }
+        }
+        return result;
     }
 
 }

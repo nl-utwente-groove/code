@@ -65,6 +65,7 @@ public class ProductionNode extends ConditionChecker {
     @Override
     public Set<ReteMatch> getConflictSet() {
         Set<ReteMatch> result;
+        demandUpdate();
         if (this.getProductionRule().isModifying() || this.isEmpty()) {
             result = super.getConflictSet();
         } else {

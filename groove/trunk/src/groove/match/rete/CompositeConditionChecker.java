@@ -17,6 +17,7 @@
 package groove.match.rete;
 
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
+import groove.trans.NotCondition;
 import groove.trans.HostEdge;
 import groove.trans.HostNode;
 
@@ -45,10 +46,9 @@ public class CompositeConditionChecker extends ConditionChecker {
      * @param antecedent The antecedent subgraph-checker.
      */
     public CompositeConditionChecker(ReteNetwork network,
-            ConditionChecker parentConditionChecker,
+            NotCondition relatedNac, ConditionChecker parentConditionChecker,
             ReteStaticMapping antecedent) {
-        super(network, parentConditionChecker.getCondition(),
-            parentConditionChecker, antecedent);
+        super(network, relatedNac, parentConditionChecker, antecedent);
     }
 
     @Override

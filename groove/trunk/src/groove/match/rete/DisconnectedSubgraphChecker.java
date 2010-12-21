@@ -318,4 +318,13 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
         return null;
     }
 
+    @Override
+    public boolean demandUpdate() {
+        boolean result = false;
+        for (ReteNetworkNode nnode : this.getAntecedents()) {
+            result = result || nnode.demandUpdate();
+        }
+        return result;
+    }
+
 }

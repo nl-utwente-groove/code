@@ -109,4 +109,9 @@ public class RootNode extends ReteNetworkNode {
         // this method is not supposed to be called
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public boolean demandUpdate() {
+        return true;
+    }
 }

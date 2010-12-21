@@ -30,8 +30,8 @@ import groove.util.TreeHashSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * @author Arash Jalali
@@ -545,6 +545,14 @@ public class ReteMatch implements Comparable<ReteMatch> {
      */
     public void addContainerCollection(Collection<ReteMatch> c) {
         this.containerCollections.add(c);
+    }
+
+    /**
+     * Removes a given collection from the ones this match resides in.
+     * @param c The given collection.
+     */
+    public void removeContainerCollection(Collection<ReteMatch> c) {
+        this.containerCollections.remove(c);
     }
 
     /**
