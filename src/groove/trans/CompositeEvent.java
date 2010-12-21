@@ -17,7 +17,6 @@
 package groove.trans;
 
 import groove.graph.Element;
-import groove.graph.Node;
 import groove.util.CacheReference;
 
 import java.util.ArrayList;
@@ -261,7 +260,7 @@ public class CompositeEvent extends
     }
 
     @Override
-    public Node[] getArguments(Node[] addedNodes) {
+    public HostNode[] getArguments(HostNode[] addedNodes) {
         return this.eventArray[0].getArguments(addedNodes);
     }
 

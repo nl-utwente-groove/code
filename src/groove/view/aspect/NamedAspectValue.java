@@ -24,7 +24,7 @@ import groove.view.FormatException;
  * @author kramor
  * @version $Revision $
  */
-public class NamedAspectValue extends ContentAspectValue<String> {
+public class NamedAspectValue extends AspectValue {
     /**
      * Constructs a new nesting level-containing aspect value.
      * @param name the aspect value name
@@ -32,17 +32,17 @@ public class NamedAspectValue extends ContentAspectValue<String> {
      *         aspect value
      */
     public NamedAspectValue(Aspect aspect, String name) throws FormatException {
-        super(aspect, name);
+        super(aspect, name, true);
     }
 
-    /** Creates an instance of a given nesting aspect value, with a given level. */
-    NamedAspectValue(NamedAspectValue original, String level) {
+    /** Creates a value wrapping a given quantifier level name. */
+    private NamedAspectValue(NamedAspectValue original, String level)
+        throws FormatException {
         super(original, level);
     }
 
     @Override
-    public ContentAspectValue<String> newValue(String value)
-        throws FormatException {
+    public NamedAspectValue newValue(String value) throws FormatException {
         if (value.length() != 0) {
             if (!isValidFirstChar(value.charAt(0))) {
                 throw new FormatException(

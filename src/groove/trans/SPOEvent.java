@@ -18,7 +18,6 @@ package groove.trans;
 
 import groove.graph.DefaultNode;
 import groove.graph.Element;
-import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 import groove.rel.LabelVar;
 import groove.util.CacheReference;
@@ -126,19 +125,19 @@ final public class SPOEvent extends
      * @param addedNodes the added nodes; if {@code null}, the creator
      * node images will be set to {@code null}
      */
-    public Node[] getArguments(Node[] addedNodes) {
-        Node[] result;
+    public HostNode[] getArguments(HostNode[] addedNodes) {
+        HostNode[] result;
         int size = getRule().getSignature().size();
         if (size == 0) {
             result = EMPTY_NODE_ARRAY;
         } else {
-            result = new Node[size];
+            result = new HostNode[size];
             Element[] anchorImage = getAnchorImage();
             for (int i = 0; i < size; i++) {
                 int binding = getRule().getParBinding(i);
-                Node argument;
+                HostNode argument;
                 if (binding < anchorImage.length) {
-                    argument = (Node) anchorImage[binding];
+                    argument = (HostNode) anchorImage[binding];
                 } else if (addedNodes == null) {
                     argument = null;
                 } else {
@@ -358,8 +357,7 @@ final public class SPOEvent extends
      */
     @Override
     Set<HostNode> computeErasedNodes() {
-        Node[] eraserNodes = getRule().getEraserNodes();
-        if (eraserNodes.length == 0) {
+        if (getRule().getEraserNodes().length == 0) {
             return EMPTY_NODE_SET;
         } else {
             Set<HostNode> result = createNodeSet();
@@ -724,7 +722,7 @@ final public class SPOEvent extends
     static private final Set<HostNode> EMPTY_NODE_SET =
         Collections.<HostNode>emptySet();
     /** Global empty set of nodes. */
-    static private final Node[] EMPTY_NODE_ARRAY = new Node[0];
+    static private final HostNode[] EMPTY_NODE_ARRAY = new HostNode[0];
     /** Template reference to create empty caches. */
     static private final CacheReference<SPOEventCache> reference =
         CacheReference.<SPOEventCache>newInstance(false);

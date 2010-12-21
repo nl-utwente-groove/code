@@ -299,4 +299,132 @@ public class AspectEdge extends
      * The aspect information of the label, set at construction time.
      */
     private final AspectMap parseData;
+
+    /**
+     * Adds a declared aspect value to this edge.
+     * @throws FormatException if the added value conflicts with a previously
+     * declared or inferred one
+     */
+    public void addAspectValue(AspectValue value) throws FormatException {
+        if (!value.isEdgeValue()) {
+            throw new FormatException("Inappropriate edge aspect %s", value,
+                this);
+        }
+        if (value.getAspect() == NestingAspect.getInstance()
+            && !NestingAspect.NESTED.equals(value)) {
+            // this value is a named quantifier; see if we can add the
+            // name to an already declared rule role
+            if (hasRole()) {
+                this.declaredType =
+                    this.inferredType.newValue(value.getContent());
+            } else if (this.inferredType == null) {
+                // pretend this is a named reader aspect value
+                this.declaredType =
+                    RuleAspect.READER.newValue(value.getContent());
+                this.quantifierAsReader = true;
+            } else {
+                throw new FormatException("Conflicting edge aspects %s and %s",
+                    this.inferredType, value, this);
+            }
+        }
+        if (this.inferredType == null) {
+            this.declaredType = value;
+        } else if (this.quantifierAsReader) {
+            this.quantifierAsReader = false;
+            this.declaredType = value.newValue(this.declaredType.getContent());
+        } else {
+            throw new FormatException("Conflicting edge aspects %s and %s",
+                this.inferredType, value, this);
+        }
+        this.inferredType = this.declaredType;
+    }
+
+    /** Indicates if this edge represents a remark. */
+    public boolean isRemark() {
+        return RuleAspect.REMARK.equals(this.inferredType);
+    }
+
+    /** Indicates if this edge represents a remark. */
+    public boolean isAbstract() {
+        return TypeAspect.ABS.equals(this.inferredType);
+    }
+
+    /** Indicates if this edge represents a remark. */
+    public boolean isSubtype() {
+        return TypeAspect.SUB.equals(this.inferredType);
+    }
+
+    /** Indicates if this edge has a declared or inferred role in a rule. */
+    public boolean hasRole() {
+        return this.inferredType != null && !isRemark()
+            && this.inferredType.getAspect() == RuleAspect.getInstance();
+    }
+
+    /** Indicates if this edge is a "nested:at". */
+    public boolean isNestedAt() {
+        return this.inferredType != null
+            && this.inferredType.getAspect() == NestingAspect.getInstance()
+            && NestingAspect.AT_LABEL.equals(this.inferredType.getContent());
+    }
+
+    /** Indicates if this edge is a "nested:in". */
+    public boolean isNestedIn() {
+        return this.inferredType != null
+            && this.inferredType.getAspect() == NestingAspect.getInstance()
+            && NestingAspect.IN_LABEL.equals(this.inferredType.getContent());
+    }
+
+    /** Indicates if this is an argument edge. */
+    public boolean isArgument() {
+        return AttributeAspect.ARGUMENT.equals(this.inferredType);
+    }
+
+    /** Indicates if this is an operator edge. */
+    public boolean isOperator() {
+        return this.inferredType != null
+            && this.inferredType.getAspect() == AttributeAspect.getInstance();
+    }
+
+    /** 
+     * Returns the type of this aspect edge.
+     * This can take one of the following values:
+     * <ul>
+     * <li> {@link RuleAspect#REMARK}
+     * <li> A rule role, possibly with quantifier name, viz. one of
+     *      {@link RuleAspect#EMBARGO}, 
+     *      {@link RuleAspect#CREATOR}, 
+     *      {@link RuleAspect#ERASER}, 
+     *      {@link RuleAspect#READER} or
+     *      {@link RuleAspect#CNEW}
+     * <li> {@link NestingAspect#NESTED} (for "in" and "at" edges)
+     * <li> {@link TypeAspect#ABS}
+     * <li> {@link AttributeAspect#ARGUMENT}
+     * <li> A value satisfying {@link AttributeAspect#isDataValue(AspectValue)} with operator content
+     * </ul>
+     */
+    public AspectValue getType() {
+        return this.declaredType;
+    }
+
+    /**
+     * Returns the list of (plain) labels that should be put on this
+     * node in the plain graph view.
+     */
+    public DefaultLabel getPlainLabel() {
+        StringBuilder text = new StringBuilder();
+        if (getType() != null) {
+            text.append(getType().toString());
+        }
+        text.append(label().text());
+        return DefaultLabel.createLabel(text.toString());
+    }
+
+    /** The declared type of the aspect edge. */
+    private AspectValue declaredType;
+    /** The declared or inferred type of the aspect edge. */
+    private AspectValue inferredType;
+    /** Flag indicating we have interpreted a declared quantifier 
+     * as a substitute for a named reader aspect
+     */
+    private boolean quantifierAsReader;
 }

@@ -16,13 +16,15 @@
  */
 package groove.graph;
 
+import groove.util.Fixable;
+
 /**
  * Provides a partial implementation of the Label interface, consisting only of
  * a label text.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:57 $
  */
-public abstract class AbstractLabel implements Cloneable, Label {
+public abstract class AbstractLabel implements Cloneable, Label, Fixable {
     @Override
     public boolean isNodeType() {
         return getKind() == NODE_TYPE;
@@ -67,6 +69,23 @@ public abstract class AbstractLabel implements Cloneable, Label {
      */
     private int boolToInt(boolean bool) {
         return bool ? 1 : 0;
+    }
+
+    @Override
+    public void setFixed() {
+        hashCode();
+    }
+
+    @Override
+    public boolean isFixed() {
+        return this.hashCode != 0;
+    }
+
+    @Override
+    public void testFixed(boolean fixed) {
+        if (!fixed != isFixed()) {
+            throw new IllegalStateException();
+        }
     }
 
     /**

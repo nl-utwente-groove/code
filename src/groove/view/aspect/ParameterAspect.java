@@ -65,7 +65,7 @@ public class ParameterAspect extends AbstractAspect {
         if (value == null) {
             return null;
         } else {
-            Integer id = value.getContent();
+            Integer id = value.getNumber();
             return id == null ? 0 : id;
         }
     }
@@ -81,7 +81,7 @@ public class ParameterAspect extends AbstractAspect {
         if (value == null) {
             return null;
         } else {
-            return value.getContentString();
+            return value.getContent();
         }
     }
 
@@ -146,22 +146,22 @@ public class ParameterAspect extends AbstractAspect {
      * @author Arend Rensink
      * @version $Revision $
      */
-    public class ParameterAspectValue extends ContentAspectValue<Integer> {
+    public class ParameterAspectValue extends AspectValue {
         /** 
          * Constructs a new aspect value, for the {@link ParameterAspect}. 
          */
         public ParameterAspectValue(String name) throws FormatException {
-            super(ParameterAspect.getInstance(), name);
+            super(ParameterAspect.getInstance(), name, true);
         }
 
-        /** Creates an instance of a given nesting aspect value, with a given level. */
+        /** Constructs a value wrapping a given number (encoded as a string). */
         private ParameterAspectValue(ParameterAspectValue original,
-                Integer number) {
+                String number) throws FormatException {
             super(original, number);
         }
 
         @Override
-        public ContentAspectValue<Integer> newValue(String value)
+        public ParameterAspectValue newValue(String value)
             throws FormatException {
             if (value.length() == 0) {
                 return null;
@@ -172,20 +172,18 @@ public class ParameterAspect extends AbstractAspect {
                     PARAMETER_START_CHAR);
             }
             try {
-                int intValue = Integer.parseInt(value.substring(1));
-                return new ParameterAspectValue(this, intValue);
+                Integer.parseInt(value.substring(1));
+                return new ParameterAspectValue(this, value);
             } catch (NumberFormatException exc) {
                 throw new FormatException("Invalid parameter number", value);
             }
         }
 
-        @Override
-        public String getContentString() {
-            String result = super.getContentString();
-            if (result != null) {
-                result = PARAMETER_START_CHAR + result;
-            }
-            return result;
+        /** Returns the parameter number wrapped by this aspect value. */
+        public Integer getNumber() {
+            String content = getContent();
+            return content == null ? null
+                    : Integer.parseInt(content.substring(1));
         }
 
         /** Start character of parameter strings. */
