@@ -39,6 +39,7 @@ import groove.trans.MergeEmbargo;
 import groove.trans.NotCondition;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
+import groove.trans.RuleElement;
 import groove.trans.RuleFactory;
 import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
@@ -286,7 +287,7 @@ public class DefaultRuleView implements RuleView {
                     this.levelTree.initialise();
                     this.rule = computeRule();
                 } catch (FormatException exc) {
-                    Map<Element,Element> inverseMap =
+                    Map<RuleElement,AspectElement> inverseMap =
                         this.levelTree.getRuleToViewMap();
                     for (FormatError error : exc.getErrors()) {
                         this.ruleErrors.add(error.transfer(inverseMap));
@@ -980,8 +981,9 @@ public class DefaultRuleView implements RuleView {
         }
 
         /** Returns the inverse of the view-to-rule map. */
-        public final Map<Element,Element> getRuleToViewMap() {
-            Map<Element,Element> result = new HashMap<Element,Element>();
+        public final Map<RuleElement,AspectElement> getRuleToViewMap() {
+            Map<RuleElement,AspectElement> result =
+                new HashMap<RuleElement,AspectElement>();
             for (Map.Entry<AspectNode,? extends RuleNode> nodeEntry : this.viewToRuleMap.nodeMap().entrySet()) {
                 result.put(nodeEntry.getValue(), nodeEntry.getKey());
             }

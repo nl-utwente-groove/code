@@ -149,15 +149,24 @@ public class AspectNode extends AbstractNode implements AspectElement {
     private final AspectMap aspectMap;
 
     /**
+     * Sets the (declared) aspects for this node.
+     * @throws FormatException if the aspects are inconsistent
+     */
+    public void setAspects(AspectLabel label) throws FormatException {
+        assert !label.isEdgeOnly();
+        for (AspectValue aspect : label.getAspects()) {
+            addAspectValue(aspect);
+        }
+    }
+
+    /**
      * Adds a declared aspect value to this node.
      * @throws FormatException if the added value conflicts with a previously
      * declared one
      */
-    public void addAspectValue(AspectValue value) throws FormatException {
-        if (!value.isNodeValue()) {
-            throw new FormatException("Inappropriate node aspect %s", value,
-                this);
-        }
+    private void addAspectValue(AspectValue value) throws FormatException {
+        assert value.isNodeValue() : String.format(
+            "Inappropriate node aspect %s", value, this);
         if (value.getAspect() == ParameterAspect.getInstance()) {
             if (this.parameter == null) {
                 this.parameter = value;

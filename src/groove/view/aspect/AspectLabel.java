@@ -17,6 +17,7 @@
 package groove.view.aspect;
 
 import groove.graph.AbstractLabel;
+import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -70,9 +71,18 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
      * Consistency with existing values is not tested.
      * @param value the value to be added
      */
-    void addValue(AspectValue value) {
+    void addAspect(AspectValue value) throws FormatException {
         testFixed(false);
         this.aspects.add(value);
+        if (!value.isNodeValue()) {
+            this.edgeOnly = value;
+        } else if (!value.isEdgeValue()) {
+            this.nodeOnly = value;
+        }
+        if (this.nodeOnly != null && this.edgeOnly != null) {
+            throw new FormatException("Conflicting aspects %s and %s",
+                this.nodeOnly, this.edgeOnly);
+        }
     }
 
     /** Returns a clone of this map. */
@@ -115,17 +125,50 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
     }
 
     /** Returns the set of declared values in this aspect map. */
-    public final Collection<AspectValue> getValues() {
+    public final Collection<AspectValue> getAspects() {
         return Collections.unmodifiableCollection(this.aspects);
     }
 
     /** The mapping from aspects to (declared or inferred) aspect values. */
     private final List<AspectValue> aspects = new ArrayList<AspectValue>();
 
-    /** Sets the label text. */
-    void setInnerText(String text) {
+    /** 
+     * Indicates whether this label is only suited for edges.
+     * This is the case if either it contains an aspect that is not
+     * suited for nodes, or the label text is non-empty.
+     */
+    public final boolean isEdgeOnly() {
+        return this.edgeOnly != null || this.innerText != null
+            && this.innerText.length() > 0;
+    }
+
+    /** 
+     * Indicates whether this label is only suited for nodes.
+     * This is the case if either it contains an aspect that is not suited
+     * for edges, or if the label text is empty and the label is not edge-only.
+     */
+    public final boolean isNodeOnly() {
+        return this.nodeOnly != null || this.edgeOnly == null
+            && this.innerText != null && this.innerText.length() == 0;
+    }
+
+    /** Edge-only aspect value in this label, if any. */
+    private AspectValue edgeOnly;
+    /** Node-only aspect value in this label, if any. */
+    private AspectValue nodeOnly;
+
+    /** 
+     * Sets the label text to a non-{@code null} value.
+     * This fixes the label, so that no aspect values can be added any more. 
+     */
+    void setInnerText(String text) throws FormatException {
         testFixed(false);
         this.innerText = text;
+        if (text.length() > 0 && this.nodeOnly != null) {
+            throw new FormatException("Aspect %s cannot have label text %s",
+                this.nodeOnly, text);
+        }
+        setFixed();
     }
 
     /**

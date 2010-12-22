@@ -90,7 +90,7 @@ public class NewAspectParser {
             }
         }
         if (value != null) {
-            result.addValue(value);
+            result.addAspect(value);
         }
         if (value == null || value.isLast() || text.length() == 0) {
             result.setInnerText(text);

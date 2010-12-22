@@ -16,7 +16,6 @@
  */
 package groove.match.rete;
 
-import groove.graph.DefaultEdge;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.trans.HostEdge;
 import groove.trans.RuleEdge;
@@ -61,7 +60,6 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
      */
     public EdgeCheckerNode(ReteNetwork network, RuleEdge e) {
         super(network);
-        // TODO why not just use e?
         this.pattern[0] = e;
         //This is just to fill up the lookup table
         getPatternLookupTable();
@@ -93,7 +91,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
      *          edge-checker by the root, <code>false</code> otherwise.
      */
     public boolean canBeMappedToEdge(HostEdge e) {
-        DefaultEdge e1 = this.getEdge();
+        RuleEdge e1 = this.getEdge();
         //condition 1: labels must match <-- commented out because we check this in the root
         //condition 2: if this is an edge checker for a loop then e should also be a loop
         return (!e1.source().equals(e1.target()) || (e.source().equals(e.target())));
@@ -111,10 +109,10 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
      *         and <code>e</code> are loops or both are non-loops.
      */
     public boolean canBeStaticallyMappedToEdge(RuleEdge e) {
-        DefaultEdge e1 = this.getEdge();
+        RuleEdge e1 = this.getEdge();
         //condition 1: labels must match
         //condition 2: if this is an edge checker for a loop then e should also be a loop and vice versa
-        return e1.label().text().equals(e.label().text())
+        return e1.label().equals(e.label())
             && (e1.source().equals(e1.target()) == (e.source().equals(e.target())));
     }
 
@@ -176,8 +174,8 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
     /**
      * @return the edge associated with this edge-checker
      */
-    public DefaultEdge getEdge() {
-        return (DefaultEdge) this.pattern[0];
+    public RuleEdge getEdge() {
+        return (RuleEdge) this.pattern[0];
     }
 
     @Override
