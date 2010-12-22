@@ -208,10 +208,17 @@ public class AttributeAspect extends AbstractAspect {
     }
 
     /**
-     * Returns the aspect value corresponding to a given signature.
+     * Returns the aspect value corresponding to a given algebra.
      */
     public static AspectValue getAttributeValueFor(Algebra<?> algebra) {
-        return aspectValueMap.get(AlgebraRegister.getSignatureName(algebra));
+        return getAttributeValueFor(AlgebraRegister.getSignatureName(algebra));
+    }
+
+    /**
+     * Returns the aspect value corresponding to a given signature.
+     */
+    public static AspectValue getAttributeValueFor(String signature) {
+        return aspectValueMap.get(signature);
     }
 
     /**
