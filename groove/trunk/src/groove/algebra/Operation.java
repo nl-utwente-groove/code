@@ -20,7 +20,7 @@ public interface Operation {
     /**
      * Returns the string representation of this operation.
      */
-    public String getSymbol();
+    public String getName();
 
     /**
      * Returns the number of parameters of this operation.

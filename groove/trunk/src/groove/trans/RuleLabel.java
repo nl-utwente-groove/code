@@ -101,7 +101,7 @@ public class RuleLabel extends AbstractLabel {
     public String text() {
         String result;
         if (isOperator()) {
-            result = getOperator().getSymbol();
+            result = getOperator().getName();
         } else if (isArgument()) {
             result = "" + Groove.LC_PI + getArgument();
         } else {

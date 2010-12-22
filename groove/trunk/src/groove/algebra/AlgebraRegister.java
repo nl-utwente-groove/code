@@ -127,16 +127,24 @@ public class AlgebraRegister {
             throw new UnknownSymbolException(String.format(
                 "No algebra registered for signature '%s'", signatureName));
         }
-        Map<String,Operation> operations = this.operationsMap.get(algebra);
-        if (operations == null) {
-            operations = createOperationsMap(algebra);
-            this.operationsMap.put(algebra, operations);
-        }
-        Operation result = operations.get(operation);
+        Operation result = getOperations(algebra).get(operation);
         if (result == null) {
             throw new UnknownSymbolException(String.format(
                 "Operation '%s' does not occur in signature '%s'", operation,
                 signatureName));
+        }
+        return result;
+    }
+
+    /**
+     * Returns, for a given algebra, the corresponding mapping from
+     * method names to methods.
+     */
+    public Map<String,Operation> getOperations(Algebra<?> algebra) {
+        Map<String,Operation> result = this.operationsMap.get(algebra);
+        if (result == null) {
+            result = createOperationsMap(algebra);
+            this.operationsMap.put(algebra, result);
         }
         return result;
     }
@@ -242,7 +250,7 @@ public class AlgebraRegister {
 
     /** Returns the signature name for a given algebra. */
     static public String getSignatureName(Algebra<?> algebra) {
-        return getName(getSignature(algebra));
+        return getSignatureName(getSignature(algebra));
     }
 
     /**
@@ -273,7 +281,7 @@ public class AlgebraRegister {
     static public String getSignatureName(String value) {
         for (Class<? extends Signature> signature : signatureMap.values()) {
             if (isConstant(signature, value)) {
-                return getName(signature);
+                return getSignatureName(signature);
             }
         }
         return null;
@@ -296,10 +304,10 @@ public class AlgebraRegister {
     /**
      * Tests if a string represents a constant in a given signature.
      */
-    static public boolean isConstant(Class<? extends Signature> signature,
+    static private boolean isConstant(Class<? extends Signature> signature,
             String value) {
         Method isValueMethod = getIsValueMethod(signature);
-        String signatureName = getName(signature);
+        String signatureName = getSignatureName(signature);
         try {
             return (Boolean) isValueMethod.invoke(
                 getInstance().getImplementation(signatureName), value);
@@ -317,7 +325,7 @@ public class AlgebraRegister {
      */
     static private void addSignature(Class<? extends Signature> signature)
         throws IllegalArgumentException {
-        String signatureName = getName(signature);
+        String signatureName = getSignatureName(signature);
         int sigModifiers = signature.getModifiers();
         if (Modifier.isInterface(sigModifiers)
             || !Modifier.isAbstract(sigModifiers)) {
@@ -361,7 +369,7 @@ public class AlgebraRegister {
      * be the first part of the interface name, after which only
      * {@link #SIGNATURE_SUFFIX} follows.
      */
-    static public String getName(Class<? extends Signature> signature)
+    static public String getSignatureName(Class<? extends Signature> signature)
         throws IllegalArgumentException {
         String interfaceName = signature.getName();
         // take off qualification
@@ -534,13 +542,13 @@ public class AlgebraRegister {
             return this.returnType;
         }
 
-        public String getSymbol() {
+        public String getName() {
             return this.method.getName();
         }
 
         @Override
         public String toString() {
-            return getSymbol();
+            return getName();
         }
 
         private final Algebra<?> algebra;
