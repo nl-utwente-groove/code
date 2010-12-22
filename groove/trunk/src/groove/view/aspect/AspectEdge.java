@@ -16,6 +16,7 @@
  */
 package groove.view.aspect;
 
+import groove.algebra.Operator;
 import groove.graph.AbstractEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
@@ -301,25 +302,63 @@ public class AspectEdge extends
     private final AspectMap parseData;
 
     /**
-     * Adds a declared aspect value to this edge.
+     * Sets the (declared) aspects for this edge.
+     * @throws FormatException if the aspects are inconsistent
+     */
+    public void setAspects(AspectLabel label) throws FormatException {
+        assert !label.isNodeOnly();
+        for (AspectValue aspect : label.getAspects()) {
+            addAspectValue(aspect, true);
+        }
+        this.label = label;
+    }
+
+    /**
+     * Adds a declared or inferred aspect value to this edge.
+     * @param value the aspect value
+     * @param declared indicates if the value is declared or inferred
      * @throws FormatException if the added value conflicts with a previously
      * declared or inferred one
      */
-    public void addAspectValue(AspectValue value) throws FormatException {
-        if (!value.isEdgeValue()) {
-            throw new FormatException("Inappropriate edge aspect %s", value,
-                this);
+    private void addAspectValue(AspectValue value, boolean declared)
+        throws FormatException {
+        assert value.isEdgeValue();
+        if (value.getAspect() == TypeAspect.getInstance()) {
+            assert TypeAspect.PATH.equals(value)
+                || TypeAspect.EMPTY.equals(value);
+            if (this.labelMode == null) {
+                this.labelMode = value;
+            } else {
+                throw new FormatException("Conflicting edge aspects %s and %s",
+                    this.labelMode, value, this);
+                // actually this should not happen since both of these
+                // aspects are specified to be the last in a label
+            }
+        } else {
+            addAspectType(value, declared);
         }
+    }
+
+    /**
+     * Sets the declared or inferred aspect type for this edge.
+     * @param value the aspect value; must determine a type
+     * @param declared indicates if the value is declared or inferred
+     * @throws FormatException if the added value conflicts with a previously
+     * declared or inferred one
+     */
+    private void addAspectType(AspectValue value, boolean declared)
+        throws FormatException {
+        assert value.isEdgeValue();
         if (value.getAspect() == NestingAspect.getInstance()
             && !NestingAspect.NESTED.equals(value)) {
             // this value is a named quantifier; see if we can add the
             // name to an already declared rule role
             if (hasRole()) {
-                this.declaredType =
+                this.inferredType =
                     this.inferredType.newValue(value.getContent());
             } else if (this.inferredType == null) {
                 // pretend this is a named reader aspect value
-                this.declaredType =
+                this.inferredType =
                     RuleAspect.READER.newValue(value.getContent());
                 this.quantifierAsReader = true;
             } else {
@@ -328,15 +367,17 @@ public class AspectEdge extends
             }
         }
         if (this.inferredType == null) {
-            this.declaredType = value;
+            this.inferredType = value;
         } else if (this.quantifierAsReader) {
             this.quantifierAsReader = false;
-            this.declaredType = value.newValue(this.declaredType.getContent());
+            this.inferredType = value.newValue(this.declaredType.getContent());
         } else {
             throw new FormatException("Conflicting edge aspects %s and %s",
                 this.inferredType, value, this);
         }
-        this.inferredType = this.declaredType;
+        if (declared) {
+            this.declaredType = this.inferredType;
+        }
     }
 
     /** Indicates if this edge represents a remark. */
@@ -364,25 +405,40 @@ public class AspectEdge extends
     public boolean isNestedAt() {
         return this.inferredType != null
             && this.inferredType.getAspect() == NestingAspect.getInstance()
-            && NestingAspect.AT_LABEL.equals(this.inferredType.getContent());
+            && NestingAspect.AT_LABEL.equals(this.label.getInnerText());
     }
 
     /** Indicates if this edge is a "nested:in". */
     public boolean isNestedIn() {
         return this.inferredType != null
             && this.inferredType.getAspect() == NestingAspect.getInstance()
-            && NestingAspect.IN_LABEL.equals(this.inferredType.getContent());
+            && NestingAspect.IN_LABEL.equals(this.label.getInnerText());
     }
 
     /** Indicates if this is an argument edge. */
     public boolean isArgument() {
-        return AttributeAspect.ARGUMENT.equals(this.inferredType);
+        return this.argumentNr >= 0;
+    }
+
+    /**
+     * Returns the argument number, if this is an argument edge. 
+     * @return a non-negative number if and only if this is an argument edge 
+     */
+    public int getArgument() {
+        return this.argumentNr;
     }
 
     /** Indicates if this is an operator edge. */
     public boolean isOperator() {
-        return this.inferredType != null
-            && this.inferredType.getAspect() == AttributeAspect.getInstance();
+        return this.operator != null;
+    }
+
+    /** 
+     * Returns an algebraic operator, if this is an operator edge.
+     * @return a non-{@code null} object if and only if this is an operator edge
+     */
+    public Operator getOperator() {
+        return this.operator;
     }
 
     /** 
@@ -419,12 +475,23 @@ public class AspectEdge extends
         return DefaultLabel.createLabel(text.toString());
     }
 
+    /** TODO Temporary instance variable; eventually this should be 
+     * replaced by #label().
+     */
+    private AspectLabel label;
     /** The declared type of the aspect edge. */
     private AspectValue declaredType;
     /** The declared or inferred type of the aspect edge. */
     private AspectValue inferredType;
-    /** Flag indicating we have interpreted a declared quantifier 
+    /** The parser mode of the label (either TypeAspect#PATH or TypeAspect#EMPTY). */
+    private AspectValue labelMode;
+    /** 
+     * Flag indicating we have interpreted a declared quantifier aspect
      * as a substitute for a named reader aspect
      */
     private boolean quantifierAsReader;
+    /** Argument number, if this is an argument edge. */
+    private int argumentNr = -1;
+    /** Algebraic operator, if this is an operator edge. */
+    private Operator operator = null;
 }
