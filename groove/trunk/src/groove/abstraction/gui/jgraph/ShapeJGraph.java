@@ -245,7 +245,7 @@ public class ShapeJGraph extends JGraph {
         facade.setIgnoresUnconnectedCells(false);
         JGraphFastOrganicLayout layout = new JGraphFastOrganicLayout();
         layout.setForceConstant(100.0);
-        layout.setInitialTemp(25.0);
+        layout.setInitialTemp(5.0);
         layout.run(facade);
         Map<?,?> nested = facade.createNestedMap(true, true);
         this.getGraphLayoutCache().edit(nested);

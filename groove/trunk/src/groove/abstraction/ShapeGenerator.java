@@ -19,6 +19,7 @@ package groove.abstraction;
 import groove.abstraction.lts.AGTS;
 import groove.explore.Exploration;
 import groove.explore.encode.Serialized;
+import groove.lts.GraphState;
 import groove.trans.GraphGrammar;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -83,6 +84,10 @@ public final class ShapeGenerator {
             System.out.println("States: " + this.getStateCount());
             System.out.println("Transitions: " + this.getTransitionCount());
             System.out.println("Final states: " + this.getFinalStatesCount());
+            for (GraphState finalState : this.gts.getResultStates()) {
+                Shape finalShape = (Shape) finalState.getGraph();
+                System.out.println(finalShape.toString());
+            }
         }
     }
 
