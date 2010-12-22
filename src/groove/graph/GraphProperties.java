@@ -223,9 +223,9 @@ public class GraphProperties extends Properties {
      */
     public String setRemark(String remark) {
         if (remark == null) {
-            return (String) remove(TRANSITION_LABEL_KEY);
+            return (String) remove(REMARK_KEY);
         } else {
-            return (String) super.setProperty(TRANSITION_LABEL_KEY, remark);
+            return (String) super.setProperty(REMARK_KEY, remark);
         }
     }
 
