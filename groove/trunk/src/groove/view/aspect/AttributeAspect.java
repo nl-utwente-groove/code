@@ -18,7 +18,6 @@ package groove.view.aspect;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraRegister;
-import groove.algebra.Operation;
 import groove.algebra.Operator;
 import groove.algebra.UnknownSymbolException;
 import groove.graph.Element;
@@ -31,10 +30,8 @@ import groove.trans.RuleLabel;
 import groove.util.Groove;
 import groove.view.FormatException;
 
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Graph aspect dealing with primitive data types (attributes). Relevant
@@ -46,93 +43,6 @@ public class AttributeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
     private AttributeAspect() {
         super(ATTRIBUTE_ASPECT_NAME);
-    }
-
-    /**
-     * Checks if the context of an attribute-valued aspect node in an aspect
-     * graph is correct, in the following sense. For a {@link #PRODUCT} node,
-     * correctness means all incident edges are outgoing, and the
-     * {@link #ARGUMENT} edges are numbered in the range <code>0..arity</code>,
-     * where <code>arity</code> is the number of arguments expected by the
-     * outgoing operation edges. For a {@link #VALUE} node, correctness means
-     * all incident edges are incoming, and of equal type if they are operation
-     * edges.
-     */
-    @Override
-    public void checkNode(AspectNode node, AspectGraph graph)
-        throws FormatException {
-        AspectValue value = getAttributeValue(node);
-        Set<? extends AspectEdge> edges = graph.edgeSet(node);
-        if (PRODUCT.equals(value)) {
-            int arity = 0;
-            BitSet arguments = new BitSet();
-            for (AspectEdge edge : edges) {
-                if (!edge.source().equals(node)) {
-                    throw new FormatException(
-                        "Product node '%s' has incoming edge '%s'", node, edge);
-                }
-                AspectValue edgeValue = getAttributeValue(edge);
-                if (edgeValue == null && !NestingAspect.isMetaElement(edge)) {
-                    throw new FormatException(
-                        "Product node '%s' has non-attribute edge '%s'", node,
-                        edge);
-                } else if (ARGUMENT.equals(edgeValue)) {
-                    // label is know to represent a natural number
-                    int nr = Integer.parseInt(edge.label().text());
-                    arity = Math.max(arity, nr + 1);
-                    if (arguments.get(nr)) {
-                        throw new FormatException(
-                            "Duplicate argument edge index '%d'", nr);
-                    }
-                    arguments.set(nr);
-                }
-            }
-            if (arguments.cardinality() != arity) {
-                throw new FormatException(
-                    "Argument edge indices %s do not constitute valid range",
-                    arguments);
-            }
-            for (AspectEdge edge : edges) {
-                Operator operation = getOperation(edge);
-                if (operation != null && operation.getArity() != arity) {
-                    throw new FormatException(
-                        "Operation '%s' is incompatible with product node arity %d",
-                        operation, arity);
-                }
-            }
-        } else {
-            // the value is VALUE; try to establish the algebra
-            String type = VALUE.equals(value) ? null : value.getName();
-            for (AspectEdge edge : edges) {
-                if (!NestingAspect.isMetaElement(edge)) {
-                    // we don't check for outgoing non-attribute edges
-                    // since these may be injectivity constraints
-                    // real outgoing edges can never be matched, but that's a
-                    // type error
-
-                    // if edge edge represents a constant or operator,
-                    // establish its (result) type
-                    AspectValue edgeValue = getAttributeValue(edge);
-                    if (edgeValue != null && !ARGUMENT.equals(edgeValue)) {
-                        Operator operation = getOperation(edge);
-                        String edgeType =
-                            operation == null ? edgeValue.getName()
-                                    : operation.getResultType();
-                        if (type == null) {
-                            type = edgeType;
-                        } else if (!type.equals(edgeType)) {
-                            throw new FormatException(
-                                "Incompatible types '%s' and '%s' for value node %s",
-                                type, edgeType, node);
-                        }
-                    } else if (edge.source().equals(node)) {
-                        throw new FormatException(
-                            "Non-algebra label %s on value node %s",
-                            edge.label(), node);
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -170,11 +80,11 @@ public class AttributeAspect extends AbstractAspect {
 
     /**
      * Returns the attribute aspect value associated with a given aspect
-     * element. Convenience method for {@link AspectElement#getValue(Aspect)}
-     * with {@link #getInstance()} as parameter.
+     * element.
      */
     public static AspectValue getAttributeValue(AspectElement elem) {
-        return elem.getValue(getInstance());
+        AspectValue type = elem.getType();
+        return type != null && type.getAspect() == getInstance() ? type : null;
     }
 
     /**
@@ -192,19 +102,6 @@ public class AttributeAspect extends AbstractAspect {
      */
     static public boolean isDataElement(AspectElement elem) {
         return isDataValue(getAttributeValue(elem));
-    }
-
-    /** Tests if an aspect map contains a data type aspect. */
-    public static boolean hasDataValue(AspectMap aspectMap) {
-        AspectValue value = aspectMap.get(getInstance());
-        return value == null ? false : isDataValue(value);
-    }
-
-    /**
-     * Tests if a given aspect element is an attribute-related node.
-     */
-    static public boolean isAttributeNode(AspectElement elem) {
-        return elem instanceof AspectNode && getAttributeValue(elem) != null;
     }
 
     /**
@@ -240,8 +137,8 @@ public class AttributeAspect extends AbstractAspect {
         } else if (elem instanceof ArgumentEdge) {
             return ARGUMENT;
         } else if (elem instanceof OperatorEdge) {
-            Operation operation = ((OperatorEdge) elem).getOperation();
-            return getAttributeValueFor(operation.getAlgebra());
+            Operator operation = ((OperatorEdge) elem).getOperator();
+            return getAttributeValueFor(operation.getSignature());
         } else {
             return null;
         }
@@ -270,37 +167,7 @@ public class AttributeAspect extends AbstractAspect {
      * Tests if an edge encodes an algebra constant.
      */
     public static boolean isConstant(AspectEdge edge) {
-        boolean result =
-            hasDataValue(edge.getAspectMap()) && edge.source() == edge.target();
-        //        if (edgeValue != null && !ARGUMENT.equals(edgeValue)) {
-        //            OperationLabelParser parser =
-        //                (OperationLabelParser) edgeValue.getLabelParser();
-        //            // assert parser != null : String.format(
-        //            // "Can't find parser for edge '%s'", edge.label());
-        //            result = parser != null && parser.isConstant(edge.label().text());
-        //        }
-        return result;
-    }
-
-    /**
-     * Extracts an algebra operation from an aspect edge. Returns
-     * <code>null</code> if the edge is not a (valid) operation edge.
-     */
-    public static Operator getOperation(AspectEdge edge) {
-        Operator result = null;
-        AspectValue edgeValue = getAttributeValue(edge);
-        if (edgeValue != null && !ARGUMENT.equals(edgeValue)) {
-            OperationLabelParser parser =
-                (OperationLabelParser) edgeValue.getLabelParser();
-            if (parser != null) {
-                try {
-                    result = parser.getOperation(edge.label().text());
-                } catch (FormatException exc) {
-                    // no valid operation
-                }
-            }
-        }
-        return result;
+        throw new UnsupportedOperationException();
     }
 
     /**

@@ -273,7 +273,7 @@ public class Transform {
             // Set info about how to store the instance graph and then store it
             aig.getInfo().setFile(f + File.separator + instanceName);
             aig.getInfo().setName(instanceName);
-            aig.getInfo().setRole(Groove.GRAPH_ROLE);
+            aig.getInfo().setRole(Groove.HOST_ROLE);
 
             grammar.putGraph(aig);
 

@@ -210,7 +210,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> 
                     sharpNodes.add(node);
                 }
                 TypeNode type = getTypeNode(label);
-                if (type.isAbstract()) {
+                if (type != null && type.isAbstract()) {
                     abstractElems.add(node);
                 }
                 if (isNodeType(label)) {

@@ -21,17 +21,13 @@ import groove.algebra.Operator;
 import groove.algebra.UnknownSymbolException;
 import groove.graph.AbstractEdge;
 import groove.graph.DefaultLabel;
-import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
 import groove.trans.RuleLabel;
-import groove.view.FormatError;
+import groove.util.Fixable;
+import groove.util.Groove;
 import groove.view.FormatException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Edge enriched with aspect data. Aspect edge labels are interpreted as
@@ -39,314 +35,167 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectEdge extends
-        AbstractEdge<AspectNode,DefaultLabel,AspectNode> implements
-        AspectElement {
+public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
+        implements AspectElement, Fixable {
     /**
-     * Constructs a new edge, with source and target node, label, and aspect
-     * values as given.
+     * Constructs a new edge.
      * @param source the source node for this edge
+     * @param label the label for this edge
      * @param target the target node for this edge
-     * @param parseData the aspect values for this edge.
-     * @throws FormatException if the aspect values of <code>parseData</code>
-     *         are inconsistent with those of the source or target nodes
+     * @param graphRole the role of the graph in which this edge occurs
      */
-    AspectEdge(AspectNode source, AspectNode target, AspectMap parseData)
-        throws FormatException {
-        super(source, DefaultLabel.createLabel(parseData.getText()), target);
-        this.parseData = parseData;
+    AspectEdge(AspectNode source, AspectLabel label, AspectNode target,
+            String graphRole) {
+        super(source, label, target);
+        this.graphRole = graphRole;
     }
 
-    /** 
-     * Initialises and checks all aspect value-related properties.
-     * This method should always be called immediately after the constructor. 
-     * @throws FormatException if there are aspect-related errors.
+    @Override
+    public void setFixed() throws FormatException {
+        if (!isFixed()) {
+            try {
+                setAspects(label());
+                inferAspects();
+                checkRole();
+                if (isForRule()) {
+                    this.ruleLabel = createRuleLabel();
+                    this.typeLabel = null;
+                } else {
+                    this.ruleLabel = null;
+                    this.typeLabel = createTypeLabel();
+                }
+                target().inferInAspect(this);
+                source().inferOutAspect(this);
+                if (isForRule() && !isMeta()) {
+                    checkRegExprs();
+                }
+            } finally {
+                // whatever happened, this edge is now fixed
+                this.fixed = true;
+            }
+        }
+    }
+
+    /**
+     * Checks for the presence and consistency of a rule role aspect.
      */
-    public void initAspects() throws FormatException {
-        for (AspectValue value : this.parseData.getDeclaredValues()) {
-            if (!value.isEdgeValue()) {
+    private void checkRole() throws FormatException {
+        if (isForRule()) {
+            if (isAbstract() || isSubtype()) {
                 throw new FormatException(
-                    "Aspect value '%s' cannot be used on edges", value, this);
-            }
-        }
-        addInferences();
-        testLabel();
-    }
-
-    /**
-     * Adds values to the aspect map of an edge that are inferred from source
-     * and target nodes.
-     * @throws FormatException if an explicitly declared aspect value is
-     *         overruled
-     */
-    private void addInferences() throws FormatException {
-        AspectMap sourceData = source().getAspectMap();
-        AspectMap targetData = target().getAspectMap();
-        for (Aspect aspect : Aspect.getAllAspects()) {
-            try {
-                AspectValue edgeValue = this.parseData.get(aspect);
-                AspectValue sourceValue = sourceData.get(aspect);
-                AspectValue sourceInference =
-                    sourceValue == null ? null : sourceValue.sourceToEdge();
-                AspectValue targetValue = targetData.get(aspect);
-                AspectValue targetInference =
-                    targetValue == null ? null : targetValue.targetToEdge();
-                AspectValue result =
-                    aspect.getMax(edgeValue, sourceInference, targetInference);
-                if (result != null && !result.equals(edgeValue)) {
-                    this.parseData.addInferredValue(result);
+                    "Edge aspect %s not allowed in rules", getRole(), this);
+            } else if (!hasRole()) {
+                if (!AspectNode.conflictsWithRole(getType())) {
+                    setRole(RuleAspect.READER);
                 }
-            } catch (FormatException e) {
-                throw e.extend(this);
-            }
-        }
-    }
-
-    /**
-     * Tests if the parsed edge label is allowed by all inferred aspects.
-     * @throws FormatException if there is an aspect whose value for this edge
-     *         is incompatible with the edge label
-     * @see Aspect#testLabel(DefaultLabel, AspectValue, AspectValue)
-     */
-    private void testLabel() throws FormatException {
-        List<FormatError> errors = new ArrayList<FormatError>();
-        for (AspectValue declaredAspectValue : getDeclaredValues()) {
-            Aspect aspect = declaredAspectValue.getAspect();
-            AspectValue inferredValue = getAspectMap().get(aspect);
-            try {
-                aspect.testLabel(label(), declaredAspectValue, inferredValue);
-            } catch (FormatException e) {
-                for (FormatError error : e.getErrors()) {
-                    errors.add(error.extend(this));
+            } else if (hasType()
+                && getType().getAspect() == NestingAspect.getInstance()
+                && !NestingAspect.NESTED.equals(getType())) {
+                // backward compatibility to take care of edges such as
+                // exists=q:del:a rather than del=q:a or 
+                // exists=q:a rather than use=q:a
+                assert getType().getContent() != null;
+                // this value is a named quantifier; see if we can add the
+                // name to an already declared rule role
+                if (getRole().getContent() != null) {
+                    throw new FormatException(
+                        "Duplicate quantifier names in %s and %s", getRole(),
+                        getType(), this);
+                } else {
+                    setRole(getRole().newValue(getType().getContent()));
+                    setType(null);
                 }
+            } else if (AspectNode.conflictsWithRole(getType())) {
+                throw new FormatException("Conflicting edge aspects %s and %s",
+                    getRole(), getType(), this);
+            }
+        } else if (hasRole()) {
+            throw new FormatException("Edge aspect %s only allowed in rules",
+                getRole(), this);
+        }
+    }
+
+    /**
+     * Tests if regular expression usage does not go beyond what is allowed.
+     * In particular, regular expressions cannot be erasers or creators.
+     * @throws FormatException if a wrong usage is detected 
+     */
+    private void checkRegExprs() throws FormatException {
+        // this is called after the rule label has been computed
+        RuleLabel ruleLabel = this.ruleLabel;
+        boolean simple =
+            ruleLabel.isAtom() || ruleLabel.isSharp() || ruleLabel.isWildcard();
+        if (!simple && ruleLabel.isMatchable()) {
+            if (RuleAspect.isCreator(this) && !ruleLabel.isEmpty()) {
+                throw new FormatException(
+                    "Regular expression label %s not allowed in creators",
+                    ruleLabel, this);
+            } else if (RuleAspect.isEraser(this)) {
+                throw new FormatException(
+                    "Regular expression label %s not allowed in erasers",
+                    ruleLabel, this);
             }
         }
-        if (!errors.isEmpty()) {
-            throw new FormatException(errors);
-        }
     }
 
-    public AspectValue getValue(Aspect aspect) {
-        AspectValue result = getAspectMap().get(aspect);
-        if (result == null) {
-            result = aspect.getDefaultValue();
-        }
-        return result;
-    }
-
-    public Collection<AspectValue> getDeclaredValues() {
-        return this.parseData.getDeclaredValues();
-    }
-
-    /**
-     * Returns the map from aspects to aspect values for this edge, lazily
-     * creating it first.
-     */
-    public AspectMap getAspectMap() {
-        return this.parseData;
-    }
-
-    /**
-     * Returns the plain text label for the aspect edge.
-     */
-    public String getPlainText() {
-        return this.parseData.toString();
-    }
-
-    /**
-     * Returns the label that this edge gets, when compiled to a model edge.
-     * Convenience method for {@code getAspectMap().toModelLabel()}
-     * @throws FormatException if the label contains a format error
-     */
-    public Label getModelLabel() throws FormatException {
-        Label result;
-        try {
-            result = getAspectMap().toModelLabel();
-        } catch (FormatException exc) {
-            throw new FormatException(exc.getMessage(), this, this.source());
-        }
-        if (result != null && !result.isBinary() && !source().equals(target())) {
-            throw new FormatException(
-                "%s label '%s' should only occur on nodes",
-                TypeLabel.getDescriptor(result.getKind()), result, this,
-                this.source());
-        }
-        return result;
-    }
-
-    /**
-     * Includes the hash code of the associated aspect values.
-     */
     @Override
-    protected int computeHashCode() {
-        int result = super.computeHashCode();
-        for (Aspect aspect : Aspect.getAllAspects()) {
-            AspectValue value = getValue(aspect);
-            if (value != null) {
-                result += value.hashCode();
-            }
-        }
-        return result;
+    public boolean isFixed() {
+        return this.fixed;
     }
 
-    /**
-     * Tests equality of type, ends and aspect values.
-     */
     @Override
-    public boolean equals(Object obj) {
-        return isTypeEqual(obj) && isEndEqual((Edge) obj)
-            && isLabelEqual((Edge) obj) && isAspectEqual((AspectEdge) obj);
+    public void testFixed(boolean fixed) {
+        if (fixed != isFixed()) {
+            throw new IllegalStateException(String.format(
+                "Incorrect fixation of %s", this));
+        }
     }
-
-    /**
-     * Tests if the object is an {@link AspectEdge}.
-     */
-    @Override
-    protected boolean isTypeEqual(Object obj) {
-        return obj instanceof AspectEdge;
-    }
-
-    /** Tests if the aspect map of this edge equals that of the other. */
-    protected boolean isAspectEqual(AspectEdge other) {
-        for (Aspect aspect : Aspect.getAllAspects()) {
-            if (getValue(aspect) != other.getValue(aspect)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Checks if the edge can be displayed as a node label.
-     * @return true, if the label is a node type label or a flag;
-     *         false, otherwise.
-     */
-    @Override
-    public boolean isBinary() {
-        boolean result = true;
-        try {
-            Label modelLabel = getModelLabel();
-            if (modelLabel != null) {
-                result = modelLabel.isBinary();
-            }
-        } catch (FormatException e1) {
-            // do nothing
-        }
-        return result;
-    }
-
-    /**
-     * This implementation makes sure that edges with node type labels are
-     * ordered before other edges.
-     */
-    @Override
-    protected int compareToEdge(Edge obj) {
-        assert obj instanceof AspectEdge : String.format(
-            "Can't compare aspect edge '%s' to non-aspect edge '%s'", this, obj);
-        AspectEdge other = (AspectEdge) obj;
-        int result;
-        // first compare the source, then the aspects,
-        // label, then the target
-        result = source().compareTo(other.source());
-        if (result == 0) {
-            result = (other.isNodeType() ? 1 : 0) - (isNodeType() ? 1 : 0);
-        }
-        if (result == 0) {
-            result = (other.isFlag() ? 1 : 0) - (isFlag() ? 1 : 0);
-        }
-        if (result == 0) {
-            result = getAspectMap().compareTo(other.getAspectMap());
-        }
-        if (result == 0) {
-            result = label().compareTo(other.label());
-        }
-        if (result == 0) {
-            result = target().compareTo(other.target());
-        }
-        return result;
-    }
-
-    /** Tests if this aspect edge stands for a node type. */
-    @Override
-    public boolean isNodeType() {
-        boolean result = false;
-        try {
-            Label modelLabel = getModelLabel();
-            result = modelLabel != null && modelLabel.isNodeType();
-        } catch (FormatException e) {
-            // do nothing
-        }
-        return result;
-    }
-
-    /** Tests if this aspect edge stands for a flag. */
-    @Override
-    public boolean isFlag() {
-        boolean result = false;
-        try {
-            Label modelLabel = getModelLabel();
-            result = modelLabel != null && modelLabel.isFlag();
-        } catch (FormatException e) {
-            // do nothing
-        }
-        return result;
-    }
-
-    /**
-     * This implementation defers to {@link #getPlainText()}
-     */
-    @Override
-    protected String getLabelText() {
-        return getPlainText();
-    }
-
-    /**
-     * The aspect information of the label, set at construction time.
-     */
-    private final AspectMap parseData;
 
     /**
      * Sets the (declared) aspects for this edge from the edge label.
-     * TODO eventually to be replaced by code in the constructor
      * @throws FormatException if the aspects are inconsistent
      */
-    public void setAspects(AspectLabel label) throws FormatException {
+    private void setAspects(AspectLabel label) throws FormatException {
         assert !label.isNodeOnly();
         for (AspectValue aspect : label.getAspects()) {
-            addAspectValue(aspect, true);
+            declareAspect(aspect);
         }
-        this.label = label;
     }
 
     /** 
-     * Adds aspect inference from an end node to this edge.
-     * Inference exists for rule roles and nesting. 
+     * Infers aspects from the end nodes of this edge.
+     * Inference exists for rule roles, remarks and nesting. 
      */
-    public void inferAspects(AspectNode node) throws FormatException {
-        AspectValue nodeType = node.getType();
-        if (nodeType == null) {
-            return;
-        }
-        if (nodeType.getAspect() == RuleAspect.getInstance()) {
-            addAspectValue(nodeType, false);
-        } else if (nodeType.getAspect() == NestingAspect.getInstance()) {
-            addAspectValue(NestingAspect.NESTED, false);
+    private void inferAspects() throws FormatException {
+        if (source().isRemark() || target().isRemark()) {
+            addAspectType(RuleAspect.REMARK, false);
+        } else if (source().isQuantifier() || target().isQuantifier()) {
+            addAspectType(NestingAspect.NESTED, false);
+        } else {
+            if (source().hasRole()
+                && !RuleAspect.READER.equals(source().getRole())) {
+                addAspectRole(source().getRole(), false);
+            }
+            if (target().hasRole()
+                && !RuleAspect.READER.equals(target().getRole())) {
+                addAspectRole(target().getRole(), false);
+            }
         }
     }
 
     /**
      * Adds a declared or inferred aspect value to this edge.
      * @param value the aspect value
-     * @param declared indicates if the value is declared or inferred
      * @throws FormatException if the added value conflicts with a previously
      * declared or inferred one
      */
-    private void addAspectValue(AspectValue value, boolean declared)
-        throws FormatException {
+    private void declareAspect(AspectValue value) throws FormatException {
         assert value.isEdgeValue();
-        if (value.getAspect() == TypeAspect.getInstance()) {
+        if (value.getAspect() == TypeAspect.getInstance()
+            && !TypeAspect.SUB.equals(value)) {
             assert TypeAspect.PATH.equals(value)
-                || TypeAspect.EMPTY.equals(value);
+                || TypeAspect.EMPTY.equals(value) : String.format(
+                "Unexpected aspect %s", value);
             if (this.labelMode == null) {
                 this.labelMode = value;
             } else {
@@ -355,8 +204,31 @@ public class AspectEdge extends
                 // actually this should not happen since both of these
                 // aspects are specified to be the last in a label
             }
+        } else if (AspectNode.isRole(value)) {
+            addAspectRole(value, true);
         } else {
-            addAspectType(value, declared);
+            addAspectType(value, true);
+        }
+    }
+
+    /**
+     * Sets the declared or inferred aspect type for this edge.
+     * @param value the aspect value; must determine a type
+     * @param declared indicates if the value is declared or inferred
+     * @throws FormatException if the added value conflicts with a previously
+     * declared or inferred one
+     */
+    private void addAspectRole(AspectValue value, boolean declared)
+        throws FormatException {
+        if (!declared && AspectNode.conflictsWithRole(getType())) {
+            // do nothing
+        } else if (getRole() == null) {
+            setRole(value);
+        } else if (declared
+            || !value.equals(getRole())
+            && !(RuleAspect.EMBARGO.equals(getRole()) && RuleAspect.ERASER.equals(value))) {
+            throw new FormatException("Conflicting edge aspects %s and %s",
+                getRole(), value, this);
         }
     }
 
@@ -372,9 +244,9 @@ public class AspectEdge extends
         assert value.isEdgeValue();
         // Compute the inferred type, if no errors are found
         AspectValue inferredType = null;
-        if (getType() == null) {
+        if (!hasType()) {
             inferredType = value;
-            String innerText = this.label.getInnerText();
+            String innerText = getInnerText();
             // in some cases the label text has to be parsed
             // depending on the aspect value
             if (NestingAspect.NESTED.equals(value)
@@ -405,74 +277,56 @@ public class AspectEdge extends
         } else if (!declared && value.equals(getType())) {
             // the existing type is taken to be at least as precise
             inferredType = getType();
-        } else if (value.getAspect() == NestingAspect.getInstance()
-            && !NestingAspect.NESTED.equals(value)) {
-            // backward compatibility to take care of edges such as
-            // exists=q:del:a rather than del=q:a or 
-            // exists=q:a rather than use=q:a
-            assert value.getContent() != null;
-            // this value is a named quantifier; see if we can add the
-            // name to an already declared rule role
-            if (hasRole() && getType().getContent() == null) {
-                inferredType = getType().newValue(value.getContent());
-            } else if (getType() == null) {
-                // pretend this is a named reader aspect value
-                inferredType = RuleAspect.READER.newValue(value.getContent());
-                this.quantifierAsReader = true;
-            }
-        } else if (value.getAspect() == RuleAspect.getInstance()) {
-            if (this.quantifierAsReader && value.getContent() == null) {
-                this.quantifierAsReader = false;
-                inferredType = value.newValue(getType().getContent());
-            } else if (!declared && RuleAspect.EMBARGO.equals(getType())
-                && RuleAspect.ERASER.equals(value)) {
-                // special case: we can have embargo edges to eraser nodes
-                inferredType = getType();
-            }
         }
         if (inferredType == null) {
             throw new FormatException("Conflicting edge aspects %s and %s",
-                this.inferredType, value, this);
+                getType(), value, this);
         }
-        this.inferredType = inferredType;
-        if (declared) {
-            this.declaredType = inferredType;
-        }
+        setType(inferredType);
     }
 
     /** Indicates if this edge represents a remark. */
     public boolean isRemark() {
-        return RuleAspect.REMARK.equals(this.inferredType);
+        return RuleAspect.REMARK.equals(getType());
     }
 
     /** Indicates if this edge represents a remark. */
     public boolean isAbstract() {
-        return TypeAspect.ABS.equals(this.inferredType);
+        return TypeAspect.ABS.equals(getType());
     }
 
     /** Indicates if this edge represents a remark. */
     public boolean isSubtype() {
-        return TypeAspect.SUB.equals(this.inferredType);
+        return TypeAspect.SUB.equals(getType());
     }
 
     /** Indicates if this edge has a declared or inferred role in a rule. */
     public boolean hasRole() {
-        return this.inferredType != null && !isRemark()
-            && this.inferredType.getAspect() == RuleAspect.getInstance();
+        return getRole() != null;
+    }
+
+    public AspectValue getRole() {
+        return this.role;
+    }
+
+    /** Setter for the aspect role. */
+    private void setRole(AspectValue role) {
+        assert AspectNode.isRole(role);
+        this.role = role;
     }
 
     /** Indicates if this edge is a "nested:at". */
     public boolean isNestedAt() {
-        return this.inferredType != null
-            && this.inferredType.getAspect() == NestingAspect.getInstance()
-            && NestingAspect.AT_LABEL.equals(this.label.getInnerText());
+        return hasType()
+            && getType().getAspect() == NestingAspect.getInstance()
+            && NestingAspect.AT_LABEL.equals(getInnerText());
     }
 
     /** Indicates if this edge is a "nested:in". */
     public boolean isNestedIn() {
-        return this.inferredType != null
-            && this.inferredType.getAspect() == NestingAspect.getInstance()
-            && NestingAspect.IN_LABEL.equals(this.label.getInnerText());
+        return hasType()
+            && getType().getAspect() == NestingAspect.getInstance()
+            && NestingAspect.IN_LABEL.equals(getInnerText());
     }
 
     /** Indicates if this is an argument edge. */
@@ -501,6 +355,11 @@ public class AspectEdge extends
         return this.operator;
     }
 
+    @Override
+    public boolean hasType() {
+        return getType() != null;
+    }
+
     /** 
      * Returns the type of this aspect edge.
      * This can take one of the following values:
@@ -515,16 +374,56 @@ public class AspectEdge extends
      * <li> {@link NestingAspect#NESTED} (for "in" and "at" edges)
      * <li> {@link TypeAspect#ABS}
      * <li> {@link AttributeAspect#ARGUMENT}
-     * <li> A value satisfying {@link AttributeAspect#isDataValue(AspectValue)} with operator content
+     * <li> A value satisfying {@link AttributeAspect#isDataValue(AspectValue)}
      * </ul>
      */
+    @Override
     public AspectValue getType() {
-        return this.declaredType;
+        return this.type;
+    }
+
+    /** Setter for the aspect type. */
+    private void setType(AspectValue type) {
+        assert type == null || AspectNode.isType(type);
+        this.type = type;
+    }
+
+    /** An aspect node is a meta-element if it is a nesting edge or remark. */
+    @Override
+    public boolean isMeta() {
+        return isNestedAt() || isNestedIn() || isRemark();
+    }
+
+    /** Tests if this edge has the same aspect type as another aspect element. */
+    public boolean equalsAspects(AspectElement other) {
+        boolean result =
+            hasType() ? getType().equals(other.getType()) : !other.hasType();
+        if (result) {
+            result =
+                hasRole() ? getRole().equals(other.getRole())
+                        : !other.hasRole();
+        }
+        if (result && other instanceof AspectEdge) {
+            AspectValue otherMode = ((AspectEdge) other).labelMode;
+            result =
+                this.labelMode == null ? otherMode == null
+                        : this.labelMode.equals(otherMode);
+        }
+        return result;
+    }
+
+    /** 
+     * Returns the label parsing mode of this edge.
+     * @return {@link TypeAspect#EMPTY}, {@link TypeAspect#PATH},
+     * or {@code null}
+     */
+    AspectValue getLabelMode() {
+        return this.labelMode;
     }
 
     /** Returns the inner text of this label, i.e., the label text without preceding aspects. */
-    public String getInnerText() {
-        return this.label.getInnerText();
+    String getInnerText() {
+        return label().getInnerText();
     }
 
     /**
@@ -532,7 +431,37 @@ public class AspectEdge extends
      * edge in the plain graph view.
      */
     public DefaultLabel getPlainLabel() {
-        return DefaultLabel.createLabel(this.label.toString());
+        return DefaultLabel.createLabel(label().toString());
+    }
+
+    /**
+     * Returns the label of this edge as it should be displayed. 
+     * This is either the type edge, or the rule edge, or (if neither are defined)
+     * a default edge constructed from the inner text of the aspect label.
+     */
+    public Label getDisplayLabel() {
+        Label result = null;
+        if (isForRule()) {
+            result = getRuleLabel();
+        } else {
+            result = getTypeLabel();
+        }
+        if (result == null) {
+            result = DefaultLabel.createLabel(getInnerText());
+        }
+        return result;
+    }
+
+    /** Returns the (possibly {@code null}) type label of this edge. */
+    public RuleLabel getRuleLabel() {
+        testFixed(true);
+        return this.ruleLabel;
+    }
+
+    /** Returns the (possibly {@code null}) rule label of this edge. */
+    public TypeLabel getTypeLabel() {
+        testFixed(true);
+        return this.typeLabel;
     }
 
     /** 
@@ -540,14 +469,19 @@ public class AspectEdge extends
      * @return a type label generated from the aspects on this edge, or {@code null}
      * if the edge does not give rise to a type label.
      */
-    public TypeLabel createTypeLabel() {
-        TypeLabel result = null;
-        if (getType() == null && !TypeAspect.PATH.equals(this.labelMode)) {
+    private TypeLabel createTypeLabel() throws FormatException {
+        TypeLabel result;
+        if (isRemark()) {
+            result = null;
+        } else if (!hasRole() && !TypeAspect.PATH.equals(this.labelMode)) {
             if (TypeAspect.EMPTY.equals(this.labelMode)) {
-                result = TypeLabel.createLabel(this.label.getInnerText());
+                result = TypeLabel.createLabel(getInnerText());
             } else {
-                result = TypeLabel.createTypedLabel(this.label.getInnerText());
+                result = TypeLabel.createTypedLabel(getInnerText());
             }
+        } else {
+            throw new FormatException(
+                "Edge label '%s' is only allowed in rules", label(), this);
         }
         return result;
     }
@@ -557,39 +491,41 @@ public class AspectEdge extends
      * @return a type label generated from the aspects on this edge, or {@code null}
      * if the edge does not give rise to a type label.
      */
-    public RuleLabel createRuleLabel(AlgebraRegister register)
-        throws FormatException {
+    private RuleLabel createRuleLabel() throws FormatException {
         RuleLabel result = null;
-        if (getType() == null || hasRole()) {
-            if (TypeAspect.EMPTY.equals(this.labelMode)) {
-                result = new RuleLabel(this.label.getInnerText());
-            } else {
-                result =
-                    new RuleLabel(RegExpr.parse(this.label.getInnerText()));
-            }
-        } else if (isArgument()) {
+        if (isArgument()) {
             return new RuleLabel(getArgument());
         } else if (isOperator()) {
-            return new RuleLabel(getOperator().getOperation(register));
+            return new RuleLabel(getOperator());
+        } else if (hasRole()) {
+            if (TypeAspect.EMPTY.equals(this.labelMode)) {
+                result = new RuleLabel(getInnerText());
+            } else {
+                result = new RuleLabel(RegExpr.parse(getInnerText()));
+            }
         }
         return result;
     }
 
-    /** TODO Temporary instance variable; eventually this should be 
-     * replaced by #label().
-     */
-    private AspectLabel label;
-    /** The declared type of the aspect edge. */
-    private AspectValue declaredType;
+    /** Indicates if this is supposed to be a rule element. */
+    private boolean isForRule() {
+        return Groove.RULE_ROLE.equals(this.graphRole);
+    }
+
+    /** The graph role for this element. */
+    private final String graphRole;
+    /** Flag indicating if this edge has been fully computed. */
+    private boolean fixed;
+    /** The (possibly {@code null}) type label modelled by this edge. */
+    private TypeLabel typeLabel;
+    /** The (possibly {@code null}) rule label modelled by this edge. */
+    private RuleLabel ruleLabel;
     /** The declared or inferred type of the aspect edge. */
-    private AspectValue inferredType;
+    private AspectValue type;
+    /** The declared or inferred role of the aspect edge. */
+    private AspectValue role;
     /** The parser mode of the label (either TypeAspect#PATH or TypeAspect#EMPTY). */
     private AspectValue labelMode;
-    /** 
-     * Flag indicating we have interpreted a declared quantifier aspect
-     * as a substitute for a named reader aspect
-     */
-    private boolean quantifierAsReader;
     /** Argument number, if this is an argument edge. */
     private int argumentNr = -1;
     /** Algebraic operator, if this is an operator edge. */

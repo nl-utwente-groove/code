@@ -16,7 +16,6 @@
  */
 package groove.view.aspect;
 
-import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.view.FormatException;
@@ -30,46 +29,6 @@ public class TypeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
     private TypeAspect() {
         super(TYPE_ASPECT_NAME);
-    }
-
-    @Override
-    public void checkEdge(AspectEdge edge, AspectGraph graph)
-        throws FormatException {
-        if (!GraphInfo.hasTypeRole(graph)) {
-            if (isSubtype(edge)) {
-                throw new FormatException(
-                    "%s-prefixed edges only allowed in type graphs", SUB_NAME,
-                    edge);
-            } else if (isAbstract(edge)) {
-                throw new FormatException(
-                    "%s-prefixed edges only allowed in type graphs", ABS_NAME,
-                    edge);
-            }
-        }
-    }
-
-    /** Indicates if a given aspect edge is an abstract edge. */
-    public static boolean isAbstract(AspectElement elem) {
-        AspectValue value = elem.getValue(getInstance());
-        return ABS.equals(value);
-    }
-
-    /** Indicates if a given aspect edge is a subtype edge. */
-    public static boolean isSubtype(AspectEdge edge) {
-        AspectValue value = edge.getValue(getInstance());
-        return SUB.equals(value);
-    }
-
-    /** Indicates if a given aspect edge stands for a path. */
-    public static boolean isPath(AspectEdge edge) {
-        AspectValue value = edge.getValue(getInstance());
-        return PATH.equals(value);
-    }
-
-    /** Indicates if a given aspect edge has an empty aspect value. */
-    public static boolean isEmpty(AspectEdge edge) {
-        AspectValue value = edge.getValue(getInstance());
-        return EMPTY.equals(value);
     }
 
     /**

@@ -87,16 +87,16 @@ public class Groove {
     public static final String SAMPLE_DIR = WORKING_DIR + FILE_SEPARATOR
         + "samples";
 
-    /** Tests if a given role string equals {@link #GRAPH_ROLE}. */
+    /** Tests if a given role string equals {@link #HOST_ROLE}. */
     static public boolean isGraphRole(String role) {
-        return GRAPH_ROLE.equals(role);
+        return HOST_ROLE.equals(role);
     }
 
     /**
      * Role value indicating that a graph represents an ordinary graph.
      * @see GraphInfo#getRole()
      */
-    static public final String GRAPH_ROLE = "graph";
+    static public final String HOST_ROLE = "graph";
 
     /** Tests if a given role string equals {@link #RULE_ROLE}. */
     static public boolean isRuleRole(String role) {

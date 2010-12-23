@@ -16,7 +16,7 @@
  */
 package groove.graph.algebra;
 
-import groove.algebra.Operation;
+import groove.algebra.Operator;
 import groove.trans.RuleEdge;
 import groove.trans.RuleLabel;
 
@@ -25,7 +25,7 @@ import groove.trans.RuleLabel;
  * application of algebra operations on tuples of data values. The source- node
  * should be an instance of {@link groove.graph.algebra.ProductNode} and the
  * target-node should be an instance of {@link groove.graph.algebra.VariableNode}.
- * 
+ * AREND this can probably be merged with {@link RuleEdge}
  * @author Harmen Kastenberg
  * @version $Revision$
  */
@@ -33,13 +33,13 @@ public class OperatorEdge extends RuleEdge {
     /**
      * Constructs an edge for a given operation.
      * @param source the product node that is the source of the edge
+     * @param label the rule label; must satisfy {@link RuleLabel#isOperator()}
      * @param target the target node for the edge
-     * @param operation the associated operation
      */
-    public OperatorEdge(ProductNode source, VariableNode target,
-            Operation operation) {
-        super(source, new RuleLabel(operation), target);
-        this.operation = operation;
+    public OperatorEdge(ProductNode source, RuleLabel label, VariableNode target) {
+        super(source, label, target);
+        assert label.isOperator();
+        this.operator = label.getOperator();
     }
 
     @Override
@@ -57,27 +57,10 @@ public class OperatorEdge extends RuleEdge {
      * <code>ProductEdge</code>.
      * @return the <code>operation</code> of this <code>ProductEdge</code>
      */
-    public Operation getOperation() {
-        return this.operation;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof OperatorEdge)) {
-            return false;
-        } else {
-            OperatorEdge other = (OperatorEdge) object;
-            if (!source().equals(other.source())) {
-                return false;
-            } else if (!target().equals(other.target())) {
-                return false;
-            } else if (!getOperation().equals(other.getOperation())) {
-                return false;
-            }
-        }
-        return true;
+    public Operator getOperator() {
+        return this.operator;
     }
 
     /** The operation represented by this edge. */
-    private final Operation operation;
+    private final Operator operator;
 }

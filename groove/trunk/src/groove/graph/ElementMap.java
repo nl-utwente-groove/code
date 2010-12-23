@@ -187,12 +187,13 @@ public class ElementMap<SN extends Node,SL extends Label,SE extends Edge,TN exte
         return edgeMap().containsValue(elem);
     }
 
-    /** Returns the image of a label under this map.
-      * This implementation acts as the identity function. 
+    /** 
+      * Returns the image of a label under this map.
+      * This implementation calls {@link ElementFactory#createLabel(String)}
+      * with as parameter {@link Label#toString()} called on the parameter.
       */
-    @SuppressWarnings("unchecked")
     public TL mapLabel(SL label) {
-        return (TL) label;
+        return this.factory.createLabel(label.toString());
     }
 
     /**
@@ -206,7 +207,10 @@ public class ElementMap<SN extends Node,SL extends Label,SE extends Edge,TN exte
     public TE mapEdge(SE key) {
         TE result = getEdge(key);
         if (result == null) {
-            putEdge(key, result = createImage(key));
+            result = createImage(key);
+            if (result != null) {
+                putEdge(key, result);
+            }
         }
         return result;
     }

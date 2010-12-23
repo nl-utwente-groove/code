@@ -33,7 +33,6 @@ import groove.util.Converter;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectValue;
 import groove.view.aspect.AttributeAspect;
-import groove.view.aspect.TypeAspect;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -224,8 +223,8 @@ public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
             // use special node label prefixes to indicate edge role
             if (edge instanceof AspectEdge && !this.jModel.isShowAspects()) {
                 AspectEdge aspectEdge = (AspectEdge) edge;
-                AspectValue edgeRole = AspectJModel.role(aspectEdge);
-                AspectValue sourceRole = AspectJModel.role(aspectEdge.source());
+                AspectValue edgeRole = aspectEdge.getRole();
+                AspectValue sourceRole = aspectEdge.source().getRole();
                 if (edgeRole != null && !edgeRole.equals(sourceRole)) {
                     result.append(TypeLabel.toHtmlString(edgeLabel, edgeRole));
                 }
@@ -236,7 +235,7 @@ public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
             if (edgeLabel instanceof RuleLabel
                 && !(((RuleLabel) edgeLabel).isSharp() || ((RuleLabel) edgeLabel).isAtom())
                 || edge instanceof AspectEdge
-                && TypeAspect.isAbstract((AspectEdge) edge)) {
+                && ((AspectEdge) edge).isAbstract()) {
                 result = Converter.ITALIC_TAG.on(result);
             }
         } else {

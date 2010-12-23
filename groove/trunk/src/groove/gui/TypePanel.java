@@ -394,6 +394,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
                 TypeView oldTypeView = getGrammarView().getTypeView(oldName);
                 AspectGraph newType = oldTypeView.getView().clone();
                 GraphInfo.setName(newType, newName);
+                newType.setFixed();
                 getSimulator().doAddType(newType);
                 getNameListModel().addType(newName, false, false);
                 getNameListModel().selectMostAppropriateType();

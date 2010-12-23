@@ -401,7 +401,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     SearchEngine<? extends MatchStrategy<RuleToHostMap>> getMatcherFactory() {
         //return groove.match.ConditionSearchPlanFactory.getInstance();
         return groove.match.SearchEngineFactory.getInstance().getEngine(
-            getSystemProperties().isInjective());
+            getSystemProperties());
     }
 
     /**

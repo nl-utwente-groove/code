@@ -260,24 +260,6 @@ public abstract class AbstractAspect extends Aspect {
      * This default implementation never throws the exception.
      */
     @Override
-    public void checkEdge(AspectEdge edge, AspectGraph graph)
-        throws FormatException {
-        // empty
-    }
-
-    /**
-     * This default implementation never throws the exception.
-     */
-    @Override
-    public void checkNode(AspectNode node, AspectGraph graph)
-        throws FormatException {
-        // empty
-    }
-
-    /**
-     * This default implementation never throws the exception.
-     */
-    @Override
     public void testLabel(DefaultLabel label, AspectValue declaredValue,
             AspectValue inferredValue) throws FormatException {
         // does nothing

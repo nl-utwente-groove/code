@@ -28,8 +28,6 @@ import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
-import groove.view.aspect.AspectValue;
-import groove.view.aspect.RuleAspect;
 import groove.view.aspect.TypeAspect;
 
 import java.util.Collections;
@@ -52,6 +50,7 @@ public class DefaultTypeView implements TypeView {
      * @see GraphInfo#getName(Graph)
      */
     public DefaultTypeView(AspectGraph view) {
+        view.testFixed(true);
         this.view = view;
         String name = GraphInfo.getName(view);
         this.name = name == null ? "" : name;
@@ -133,9 +132,8 @@ public class DefaultTypeView implements TypeView {
         ViewToTypeMap elementMap = new ViewToTypeMap();
         // collect node type edges and build the view type map
         for (AspectEdge viewEdge : view.edgeSet()) {
-            Label modelLabel = viewEdge.getModelLabel();
+            TypeLabel modelLabel = viewEdge.getTypeLabel();
             if (modelLabel != null && modelLabel.isNodeType()) {
-                assert modelLabel instanceof TypeLabel;
                 AspectNode viewSource = viewEdge.source();
                 TypeNode oldTypeNode = elementMap.getNode(viewSource);
                 if (oldTypeNode != null) {
@@ -147,9 +145,7 @@ public class DefaultTypeView implements TypeView {
                 viewTypeMap.put(viewSource, modelLabel);
                 TypeNode typeNode = typeNodeMap.get(modelLabel);
                 if (typeNode == null) {
-                    typeNode =
-                        new TypeNode(viewSource.getNumber(),
-                            (TypeLabel) modelLabel);
+                    typeNode = new TypeNode(viewSource.getNumber(), modelLabel);
                     model.addNode(typeNode);
                     typeNodeMap.put(modelLabel, typeNode);
                     modelTypeMap.put(typeNode, modelLabel);
@@ -163,7 +159,7 @@ public class DefaultTypeView implements TypeView {
         Iterator<AspectNode> untypedNodeIter = untypedNodes.iterator();
         while (untypedNodeIter.hasNext()) {
             AspectNode viewNode = untypedNodeIter.next();
-            if (RuleAspect.isRemark(viewNode)) {
+            if (viewNode.isRemark()) {
                 untypedNodeIter.remove();
             } else {
                 // add a node anyhow, to ensure all edge ends have images
@@ -187,7 +183,7 @@ public class DefaultTypeView implements TypeView {
         // add subtype relations to the model
         for (AspectEdge viewEdge : view.edgeSet()) {
             try {
-                if (TypeAspect.isSubtype(viewEdge)) {
+                if (viewEdge.isSubtype()) {
                     model.addSubtype(elementMap.getNode(viewEdge.target()),
                         elementMap.getNode(viewEdge.source()));
                 }
@@ -217,14 +213,14 @@ public class DefaultTypeView implements TypeView {
      * @throws FormatException if the presence of the edge signifies an error
      */
     private void checkViewNode(AspectNode viewNode) throws FormatException {
-        for (AspectValue value : viewNode.getAspectMap()) {
-            if (isVirtualValue(value)) {
-                return;
-            }
-            if (!isAllowedValue(value)) {
-                throw new FormatException(
-                    "Node aspect value '%s' not allowed in type graphs", value);
-            }
+        if (viewNode.isRemark()) {
+            return;
+        }
+        if (viewNode.hasType()
+            && viewNode.getType().getAspect() != TypeAspect.getInstance()) {
+            throw new FormatException(
+                "Node aspect value '%s' not allowed in type graphs",
+                viewNode.getType());
         }
     }
 
@@ -235,14 +231,14 @@ public class DefaultTypeView implements TypeView {
      */
     private void processViewEdge(TypeGraph model, ViewToTypeMap elementMap,
             AspectEdge viewEdge) throws FormatException {
-        for (AspectValue value : viewEdge.getAspectMap()) {
-            if (isVirtualValue(value)) {
-                return;
-            }
-            if (!isAllowedValue(value)) {
-                throw new FormatException(
-                    "Edge aspect value '%s' not allowed in type graphs", value);
-            }
+        if (viewEdge.isRemark()) {
+            return;
+        }
+        if (viewEdge.hasType()
+            && viewEdge.getType().getAspect() != TypeAspect.getInstance()) {
+            throw new FormatException(
+                "Edge aspect value '%s' not allowed in type graphs",
+                viewEdge.getType());
         }
         TypeNode modelSource = elementMap.getNode(viewEdge.source());
         assert modelSource != null : String.format(
@@ -253,29 +249,15 @@ public class DefaultTypeView implements TypeView {
             "Target of view edge '%s' not in element map %s",
             viewEdge.source(), elementMap);
         // register subtype edges
-        if (!TypeAspect.isSubtype(viewEdge)) {
-            Label modelLabel = viewEdge.getModelLabel();
+        if (!viewEdge.isSubtype()) {
+            TypeLabel modelLabel = viewEdge.getTypeLabel();
             TypeEdge modelEdge =
-                model.addEdge(modelSource, (TypeLabel) modelLabel, modelTarget);
-            if (TypeAspect.isAbstract(viewEdge)) {
+                model.addEdge(modelSource, modelLabel, modelTarget);
+            if (viewEdge.isAbstract()) {
                 modelEdge.setAbstract();
             }
             elementMap.putEdge(viewEdge, modelEdge);
         }
-    }
-
-    /**
-     * Tests if a certain non-virtual aspect value is allowed in a type view.
-     */
-    private boolean isAllowedValue(AspectValue value) {
-        return value.getAspect() instanceof TypeAspect;
-    }
-
-    /**
-     * Tests if a certain aspect value causes a graph element to be virtual.
-     */
-    private boolean isVirtualValue(AspectValue value) {
-        return RuleAspect.REMARK.equals(value);
     }
 
     /** The name of the view. */

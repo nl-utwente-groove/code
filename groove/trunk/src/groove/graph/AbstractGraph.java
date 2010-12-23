@@ -155,6 +155,12 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
         return isCacheCollectable();
     }
 
+    /** 
+     * Note that, though the signature retains the throws class
+     * in order for subclasses to be able to throw exceptions,
+     * this implementation itself never does so.
+     * Hence it may be put in a try-catch context without risk.
+     */
     public void setFixed() {
         if (!isFixed()) {
             setCacheCollectable();

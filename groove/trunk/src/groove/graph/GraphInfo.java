@@ -504,7 +504,7 @@ public class GraphInfo<N extends Node,E extends Edge> {
     /**
      * Convenience method to test whether the role of a graph is <i>graph</i>.
      * @see #getRole()
-     * @see Groove#GRAPH_ROLE
+     * @see Groove#HOST_ROLE
      */
     public static boolean hasGraphRole(Graph<?,?,?> graph) {
         return Groove.isGraphRole(getRole(graph));
@@ -531,10 +531,10 @@ public class GraphInfo<N extends Node,E extends Edge> {
     /**
      * Convenience method to set the role of a graph to <i>graph</i>.
      * @see #setRole(String)
-     * @see Groove#GRAPH_ROLE
+     * @see Groove#HOST_ROLE
      */
     public static void setGraphRole(Graph<?,?,?> graph) {
-        setRole(graph, Groove.GRAPH_ROLE);
+        setRole(graph, Groove.HOST_ROLE);
     }
 
     /**
@@ -596,7 +596,7 @@ public class GraphInfo<N extends Node,E extends Edge> {
      */
     public static final String FILE_KEY = "file";
     /**
-     * Key for graph role. The value should be one of {@link Groove#GRAPH_ROLE},
+     * Key for graph role. The value should be one of {@link Groove#HOST_ROLE},
      * {@link Groove#RULE_ROLE} or {@link Groove#TYPE_ROLE}.
      */
     public static final String ROLE_KEY = "type";

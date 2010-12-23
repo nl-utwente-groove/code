@@ -37,97 +37,6 @@ public class NestingAspect extends AbstractAspect {
         super(NESTING_ASPECT_NAME);
     }
 
-    /**
-     * Tests whether the nesting value of an aspect edge is correct in the
-     * context of the edge.
-     */
-    @Override
-    public void checkEdge(AspectEdge edge, AspectGraph graph)
-        throws FormatException {
-        if (isLevelEdge(edge)) {
-            // source nodes should be non-meta with only this level edge
-            if (isMetaElement(edge.source())) {
-                throw new FormatException(
-                    "Level edge '%s' should not have meta-node as source", edge);
-            }
-            for (AspectEdge outEdge : graph.outEdgeSet(edge.source())) {
-                if (isMetaElement(outEdge) && !outEdge.equals(edge)) {
-                    throw new FormatException("Ambiguous level edges at '%s'",
-                        edge.source());
-                }
-            }
-            // target nodes should be meta
-            if (!isMetaElement(edge.target())) {
-                throw new FormatException(
-                    "Level edge '%s' should have a meta-node as target", edge);
-            }
-        } else if (isParentEdge(edge)) {
-            // source and target nodes should be inversely universal and
-            // existential
-            if (!isMetaElement(edge.source())) {
-                throw new FormatException(
-                    "Parent edge '%s' should have a meta-node as source", edge);
-            }
-            if (!isMetaElement(edge.target())) {
-                throw new FormatException(
-                    "Parent edge '%s' should have a meta-node as target", edge);
-            }
-            if (isExists(edge.source()) == isExists(edge.target())) {
-                throw new FormatException(
-                    "Parent edge '%s' should be between distinct quantifiers",
-                    edge);
-            }
-        } else if (isExists(edge) || isForall(edge)) {
-            // source and target nodes should be inversely universal and
-            // existential
-            if (isMetaElement(edge.source())) {
-                throw new FormatException(
-                    "Quantified edge '%s' has a meta-node as source", edge);
-            }
-            if (isMetaElement(edge.target())) {
-                throw new FormatException(
-                    "Quantified edge '%s' has a meta-node as target", edge);
-            }
-            AspectValue value = getNestingValue(edge);
-            if (!(value instanceof NamedAspectValue)
-                || ((NamedAspectValue) value).getContent() == null) {
-                throw new FormatException(
-                    "Quantified edge '%s' has empty level name", edge);
-            }
-        }
-    }
-
-    @Override
-    public void checkNode(AspectNode node, AspectGraph graph)
-        throws FormatException {
-        Set<? extends AspectEdge> outEdgeSet = graph.outEdgeSet(node);
-        if (outEdgeSet.size() > 1) {
-            throw new FormatException("Meta-node '%s' has ambiguous parentage",
-                node);
-        } else if (outEdgeSet.isEmpty() && isExists(node)) {
-            throw new FormatException(
-                "Top level meta-node '%s' should be universal", node);
-        } else if (!outEdgeSet.isEmpty()) {
-            AspectNode parent = outEdgeSet.iterator().next().target();
-            if (isExists(node) == isExists(parent)) {
-                throw new FormatException(
-                    "Child and parent meta-nodes '%s' and '%s' should have distinct quantifiers",
-                    node, parent);
-            }
-        }
-        // test for cyclic parentage
-        Set<AspectNode> parents = new HashSet<AspectNode>();
-        parents.add(node);
-        while (!outEdgeSet.isEmpty()) {
-            AspectNode current = outEdgeSet.iterator().next().target();
-            if (!parents.add(current)) {
-                throw new FormatException("Parent edge cycle starting at %s",
-                    node);
-            }
-            outEdgeSet = graph.outEdgeSet(current);
-        }
-    }
-
     @Override
     protected AspectValue createValue(String name) throws FormatException {
         AspectValue result;
@@ -148,108 +57,28 @@ public class NestingAspect extends AbstractAspect {
     }
 
     /**
-     * Returns the nesting aspect value associated with a given aspect element.
-     * Convenience method for {@link AspectElement#getValue(Aspect)} with
-     * {@link #getInstance()} as parameter.
-     */
-    public static AspectValue getNestingValue(AspectElement elem) {
-        return elem.getValue(getInstance());
-    }
-
-    /**
-     * Determine whether a certain AspectElement is a meta element with respect
-     * to rule nesting. The element is assumed to be checked (see
-     * {@link #checkNode(AspectNode, AspectGraph)} and
-     * {@link #checkEdge(AspectEdge, AspectGraph)}).
-     * @param element the element to test
-     * @return <code>true</code> if the element is a meta element wrt rule
-     *         nesting, <code>false</code> if not
-     */
-    public static boolean isMetaElement(AspectElement element) {
-        AspectValue value = getNestingValue(element);
-        if ((element instanceof AspectNode) && value != null) {
-            // Nodes with an aspect are automatically a Meta Element
-            return true;
-        }
-        if (element instanceof AspectEdge) {
-            // If it is a meta edge, its source should be a meta node
-            return isMetaElement(((AspectEdge) element).target());
-        }
-        return false;
-    }
-
-    /**
-     * Determine whether a certain AspectElement is a Level-indicating edge. The
-     * element is assumed to be checked (see
-     * {@link #checkNode(AspectNode, AspectGraph)} and
-     * {@link #checkEdge(AspectEdge, AspectGraph)}).
-     */
-    public static boolean isLevelEdge(AspectEdge element) {
-        AspectValue value = getNestingValue(element);
-        return value != null && value.equals(NESTED)
-            && element.label().text().equals(AT_LABEL);
-    }
-
-    /**
-     * Determine whether a certain AspectElement is a parent-indicating edge.
-     * The element is assumed to be checked (see
-     * {@link #checkNode(AspectNode, AspectGraph)} and
-     * {@link #checkEdge(AspectEdge, AspectGraph)}).
-     */
-    public static boolean isParentEdge(AspectEdge element) {
-        AspectValue value = getNestingValue(element);
-        return value != null && value.equals(NESTED)
-            && element.label().text().equals(IN_LABEL);
-    }
-
-    /**
      * Determine whether an aspect edge carries the {@link #FORALL} or
-     * {@link #FORALL_POS} nesting value. The element is assumed to be checked
-     * (see {@link #checkNode(AspectNode, AspectGraph)} and
-     * {@link #checkEdge(AspectEdge, AspectGraph)}).
+     * {@link #FORALL_POS} nesting value.
      */
     public static boolean isForall(AspectElement element) {
-        return FORALL.equals(getNestingValue(element))
-            || FORALL_POS.equals(getNestingValue(element));
+        return FORALL.equals(element.getType())
+            || FORALL_POS.equals(element.getType());
     }
 
     /**
      * Determine whether an aspect edge carries the {@link #FORALL_POS} nesting
-     * value. The element is assumed to be checked (see
-     * {@link #checkNode(AspectNode, AspectGraph)} and
-     * {@link #checkEdge(AspectEdge, AspectGraph)}).
+     * value.
      */
     public static boolean isPositive(AspectElement element) {
-        return FORALL_POS.equals(getNestingValue(element));
+        return FORALL_POS.equals(element.getType());
     }
 
     /**
      * Determine whether an aspect edge carries the {@link #EXISTS} nesting
-     * value. The element is assumed to be checked (see
-     * {@link #checkNode(AspectNode, AspectGraph)} and
-     * {@link #checkEdge(AspectEdge, AspectGraph)}).
+     * value.
      */
     public static boolean isExists(AspectElement element) {
-        return EXISTS.equals(getNestingValue(element));
-    }
-
-    /**
-     * Returns the name of a nesting level identified by a given aspect element.
-     * The name is either stored in the nesting aspect value or in the rule 
-     * aspect value.
-     * @return the name of the nesting level identified by {@code element}, or
-     *         {@code null} if {@code element} does not contain a named level.
-     */
-    public static String getLevelName(AspectElement element) {
-        String result = null;
-        AspectValue value = getNestingValue(element);
-        if (value instanceof NamedAspectValue) {
-            result = ((NamedAspectValue) value).getContent();
-        }
-        if (result == null) {
-            result = RuleAspect.getName(element);
-        }
-        return result;
+        return EXISTS.equals(element.getType());
     }
 
     /** The name of the nesting aspect */

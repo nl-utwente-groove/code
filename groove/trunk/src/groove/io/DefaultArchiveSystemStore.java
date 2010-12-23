@@ -454,7 +454,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         throws IOException {
         this.graphMap.clear();
         this.graphMap.putAll(loadObjects(file, graphs, STATE_FILTER,
-            Groove.GRAPH_ROLE));
+            Groove.HOST_ROLE));
     }
 
     /**

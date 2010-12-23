@@ -315,7 +315,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
     private void mergeNodes(DeltaTarget target) {
         // delete the merged nodes
         MergeMap mergeMap = getMergeMap();
-        Set<HostEdge> addedEdges = new HashSet<HostEdge>();
+        Set<HostEdge> renamedEdges = new HashSet<HostEdge>();
         Set<HostEdge> erasedEdges = getErasedEdges();
         for (HostNode mergedElem : mergeMap.nodeMap().keySet()) {
             removeNode(target, mergedElem);
@@ -332,7 +332,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
                         && (erasedEdges.contains(image) || !this.source.containsEdge(image))) {
                         // maybe we added the edge already, due to another
                         // merged node
-                        if (addedEdges.add(image)) {
+                        if (renamedEdges.add(image)) {
                             addEdge(target, image);
                         }
                     } else {
@@ -341,24 +341,9 @@ public class DefaultApplication implements RuleApplication, Derivation {
                 }
             }
         }
-        // // removeNodeSet(target, mergeMap.keySet());
-        // Set<Edge> erasedEdges = getErasedEdges();
-        // for (Edge sourceEdge : source.edgeSet()) {
-        // if (!erasedEdges.contains(sourceEdge)) {
-        // Edge image = mergeMap.mapEdge(sourceEdge);
-        // if (image != sourceEdge) {
-        // target.removeEdge(sourceEdge);
-        // // if the edge is in the source and not erased, it is also already
-        // // in the target, so we do not have to add it
-        // if (image != null
-        // && (erasedEdges.contains(image) || !source.containsElement(image))) {
-        // addEdge(target, image);
-        // } else {
-        // registerErasure(sourceEdge);
-        // }
-        // }
-        // }
-        // }
+        if (!renamedEdges.isEmpty()) {
+            getRenamedEdges().addAll(renamedEdges);
+        }
         removeIsolatedValueNodes(target);
     }
 
@@ -378,11 +363,15 @@ public class DefaultApplication implements RuleApplication, Derivation {
      * @param target the target to which to apply the changes
      */
     protected void createEdges(DeltaTarget target) {
+        // don't build the renamed edge set if that was not done already
+        Set<HostEdge> renamedEdges = this.renamedEdges;
         // first add the (pre-computed) simple creator edge images
         for (HostEdge image : getEvent().getSimpleCreatedEdges()) {
-            // only add if not already in the source or just erased
-            if (!this.source.containsEdge(image)
-                || getErasedEdges().contains(image)) {
+            // only add if not already in the source or renamed, or just erased
+            boolean existing =
+                this.source.containsEdge(image) || renamedEdges != null
+                    && renamedEdges.contains(image);
+            if (!existing || getErasedEdges().contains(image)) {
                 addEdge(target, image);
             }
         }
@@ -596,6 +585,16 @@ public class DefaultApplication implements RuleApplication, Derivation {
     }
 
     /**
+     * Returns the set of edges that were renamed due to node mergers.
+     */
+    private Set<HostEdge> getRenamedEdges() {
+        if (this.renamedEdges == null) {
+            this.renamedEdges = new HashSet<HostEdge>();
+        }
+        return this.renamedEdges;
+    }
+
+    /**
      * Matching from the rule's lhs to the source graph.
      */
     protected final Rule rule;
@@ -648,6 +647,11 @@ public class DefaultApplication implements RuleApplication, Derivation {
     private Set<ValueNode> removedValueNodes;
     /** The set of edges (to be) erased by this rule applications. */
     private Set<HostEdge> erasedEdges;
+    /** 
+     * Set of edges that were already in the source graph but were changed
+     * in the target because of node mergers.
+     */
+    private Set<HostEdge> renamedEdges;
 
     /**
      * Returns the number of nodes that were created during rule application.

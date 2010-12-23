@@ -115,7 +115,7 @@ public class AlgebraRegister {
     }
 
     /**
-     * Returns the method associated with a certain signature name and operation
+     * Returns the operation associated with a certain signature name and operation
      * name.
      * @throws UnknownSymbolException if the signature name does not exist, or
      *         the operation name does not occur in the signature.
@@ -134,6 +134,15 @@ public class AlgebraRegister {
                 signatureName));
         }
         return result;
+    }
+
+    /**
+     * Returns the method associated with a certain operator.
+     */
+    public Operation getOperation(Operator operator) {
+        Algebra<?> algebra = getImplementation(operator.getSignature());
+        assert algebra != null;
+        return getOperations(algebra).get(operator.getName());
     }
 
     /**

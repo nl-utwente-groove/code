@@ -16,6 +16,7 @@
  */
 package groove.match;
 
+import groove.algebra.AlgebraRegister;
 import groove.algebra.Operation;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
@@ -44,9 +45,9 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
      * ends have already been matched (in the search plan) before this one.
      * @param edge the edge to be matched
      */
-    public OperatorEdgeSearchItem(OperatorEdge edge) {
+    public OperatorEdgeSearchItem(OperatorEdge edge, AlgebraRegister register) {
         this.edge = edge;
-        this.operation = edge.getOperation();
+        this.operation = register.getOperation(edge.getOperator());
         this.arguments = edge.source().getArguments();
         this.target = edge.target();
         this.neededNodes = new HashSet<RuleNode>(this.arguments);
@@ -138,7 +139,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
 
     /** The product edge for which we seek an image. */
     final OperatorEdge edge;
-    /** The operation of the product edge. */
+    /** The operation determined by the product edge. */
     final Operation operation;
     /** List of operands of the product edge's source node. */
     final List<VariableNode> arguments;

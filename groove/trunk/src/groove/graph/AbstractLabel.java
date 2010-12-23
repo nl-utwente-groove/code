@@ -83,7 +83,7 @@ public abstract class AbstractLabel implements Cloneable, Label, Fixable {
 
     @Override
     public void testFixed(boolean fixed) {
-        if (!fixed != isFixed()) {
+        if (fixed != isFixed()) {
             throw new IllegalStateException();
         }
     }

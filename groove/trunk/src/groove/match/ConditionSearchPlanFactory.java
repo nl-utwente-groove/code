@@ -16,6 +16,7 @@
  */
 package groove.match;
 
+import groove.algebra.AlgebraRegister;
 import groove.rel.LabelVar;
 import groove.trans.AbstractCondition;
 import groove.trans.Condition;
@@ -41,13 +42,16 @@ import java.util.Set;
  */
 public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     /**
-     * Private constructor. This is a singleton class; get the instance through
-     * {@link #getInstance(boolean)}.
+     * Private constructor. Get the instance through
+     * {@link #getInstance(boolean,String)}.
      * @param injective if <code>true</code>, the factory produces injective
      *        matchers only
+     * @param algebraFamily the name of the set of algebras to be used in
+     * data value manipulation
+     * @see AlgebraRegister#getInstance(String)
      */
-    private ConditionSearchPlanFactory(boolean injective) {
-        super(injective, false);
+    private ConditionSearchPlanFactory(boolean injective, String algebraFamily) {
+        super(injective, false, algebraFamily);
     }
 
     /**
@@ -117,7 +121,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
             }
         }
         SearchPlanStrategy result =
-            new SearchPlanStrategy(condition.getTarget(), plan, isInjective());
+            new SearchPlanStrategy(condition.getTarget(), plan, this.injective);
         if (PRINT) {
             System.out.print(String.format(
                 "%nPlan for %s, prematched nodes %s, prematched edges %s:%n    %s",
@@ -127,17 +131,23 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
         return result;
     }
 
-    /** Returns the singleton instance of this factory class. */
-    static public ConditionSearchPlanFactory getInstance(boolean injective) {
-        return injective ? injectiveInstance : nonInjectiveInstance;
+    /** Returns an instance of this factory class.
+     * @param injective if <code>true</code>, the factory produces injective
+     *        matchers only
+     * @param algebraFamily the name of the set of algebras to be used in
+     * data value manipulation
+     * @see AlgebraRegister#getInstance(String)
+     */
+    static public ConditionSearchPlanFactory getInstance(boolean injective,
+            String algebraFamily) {
+        if (instance == null || instance.injective != injective
+            || instance.algebraFamily.equals(algebraFamily)) {
+            instance = new ConditionSearchPlanFactory(injective, algebraFamily);
+        }
+        return instance;
     }
 
-    /** Instance of this factory for non-injective matchings. */
-    static private final ConditionSearchPlanFactory nonInjectiveInstance =
-        new ConditionSearchPlanFactory(false);
-    /** The fixed, singleton instance of this factory for injective matchings. */
-    static private final ConditionSearchPlanFactory injectiveInstance =
-        new ConditionSearchPlanFactory(true);
+    static private ConditionSearchPlanFactory instance;
 
     /** Flag to control search plan printing. */
     static private final boolean PRINT = false;

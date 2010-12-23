@@ -20,113 +20,93 @@ import static groove.view.aspect.Aspect.CONTENT_ASSIGN;
 import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
 import groove.algebra.AlgebraRegister;
 import groove.algebra.UnknownSymbolException;
-import groove.graph.Graph;
-import groove.graph.GraphInfo;
+import groove.graph.DefaultLabel;
 import groove.graph.TypeLabel;
-import groove.rel.RegExpr;
 import groove.util.ExprParser;
 import groove.view.FormatException;
-import groove.view.aspect.AttributeAspect.ConstantAspectValue;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Class that is responsible for recognising aspects from edge labels.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 2929 $
  */
 public class AspectParser {
     /**
-     * Constructs a parser for a given aspect graph.
+     * Converts a plain label to an aspect label.
+     * @param label the plain label to start from
+     * @return an aspect label, in which the aspect prefixes of {@code label}
+     * have been parsed into aspect values.
+     * @throws FormatException if there were parse errors in {@code label}
      */
-    public AspectParser(Graph<?,?,?> graph) {
-        this.rule = GraphInfo.hasRuleRole(graph);
-        this.convertToCurly = this.rule && GraphInfo.getVersion(graph) == null;
+    public AspectLabel parse(DefaultLabel label) throws FormatException {
+        AspectLabel result = new AspectLabel();
+        try {
+            parse(label.text(), result);
+        } catch (FormatException exc) {
+            throw new FormatException("%s in '%s'", exc.getMessage(), label);
+        }
+        return result;
     }
 
     /**
-     * Extracts the aspect information from a plain label text.
-     * @param text the text to start from
-     * @return an object containing information about the aspect value, the
-     *         possible end marker, and the possible actual label text present
-     *         in <code>plainText</code>
-     * @throws FormatException if <code>plainText</code> contains an apparent
-     *         aspect value that is not recognised by
-     *         {@link AspectValue#getValue(String)}.
+     * Recursively parses a string into an aspect label passed in as a parameter.
+     * @param text the text to be parsed
+     * @param result the aspect label to receive the result
+     * @throws FormatException if there were parse errors in {@code text}
      */
-    public AspectMap parse(String text) throws FormatException {
-        List<AspectValue> aspectValues = new ArrayList<AspectValue>();
-        boolean edgeOnly = false;
-        int nextIndex = aspectEnd(text);
-        while (nextIndex >= 0) {
-            // look for the next aspect value between prevIndex and nextIndex
-            String valueText = text.substring(0, nextIndex);
-            boolean end;
-            try {
-                String contentText;
-                int assignIndex = valueText.indexOf(CONTENT_ASSIGN);
-                if (assignIndex < 0) {
-                    contentText = null;
-                } else {
-                    contentText =
-                        valueText.substring(assignIndex
-                            + CONTENT_ASSIGN.length());
-                    valueText = valueText.substring(0, assignIndex);
-                }
-                AspectValue value = parseValue(valueText, contentText);
-                aspectValues.add(value);
-                end = value.isLast();
-                edgeOnly |= !value.isNodeValue();
-            } catch (FormatException exc) {
-                throw new FormatException("%s in '%s'", exc.getMessage(), text);
+    private void parse(String text, AspectLabel result) throws FormatException {
+        AspectValue value = null;
+        String valueText = nextValue(text);
+        if (valueText != null) {
+            text = text.substring(valueText.length() + 1);
+            // parse the value text into a value
+            String contentText;
+            int assignIndex = valueText.indexOf(CONTENT_ASSIGN);
+            if (assignIndex < 0) {
+                contentText = null;
+            } else {
+                contentText =
+                    valueText.substring(assignIndex + CONTENT_ASSIGN.length());
+                valueText = valueText.substring(0, assignIndex);
             }
-            text = text.substring(nextIndex + 1);
-            nextIndex = end ? -1 : aspectEnd(text);
-        }
-        if (edgeOnly || text.length() > 0) {
-            if (this.convertToCurly) {
-                text = toCurly(text);
-            }
-        } else if (aspectValues.isEmpty()) {
-            throw new FormatException(
-                "Empty label not allowed (prefix with ':')");
-        } else {
-            text = null;
-        }
-        AspectMap result = new AspectMap(this.rule);
-        for (AspectValue value : aspectValues) {
+            value = parseValue(valueText, contentText);
             // test if this should be a data constant
-            if (AttributeAspect.isDataValue(value) && text != null) {
+            if (AttributeAspect.isDataValue(value) && text.length() > 0) {
                 String signature = value.getName();
                 try {
                     if (AlgebraRegister.isConstant(signature, text)) {
-                        value = ((ConstantAspectValue) value).newValue(text);
-                        text = null;
+                        value = value.newValue(text);
+                        text = "";
                     } else if (!ExprParser.isIdentifier(text)) {
                         throw new FormatException(
                             "Signature '%s' does not have constant %s",
                             signature, text);
                     }
                 } catch (UnknownSymbolException e) {
+                    // this can't happen, as the data values are valid signatures
                     assert false : String.format(
                         "Method called for unknown signature '%s'", signature);
-                    // do nothing
                 }
             }
-            result.addDeclaredValue(value);
         }
-        result.setText(text);
-        return result;
+        if (value != null) {
+            result.addAspect(value);
+        }
+        if (value == null || value.isLast() || text.length() == 0) {
+            result.setInnerText(text);
+            result.setFixed();
+        } else {
+            // recursively call the method with the remainder of the text
+            parse(text, result);
+        }
     }
 
     /** 
-     * Determines if the remaining label text still starts with an aspect value.
-     * @return the index of the end of the next aspect value in {@code text},
-     * or {@code -1} if there is no next aspect value 
+     * Determines the next aspect value.
+     * @return the next aspect value in {@code text},
+     * or {@code null} if there is no next aspect value 
      */
-    private int aspectEnd(String text) {
+    private String nextValue(String text) {
         int result = text.indexOf(VALUE_SEPARATOR);
         if (result > 0) {
             if (!Character.isLetter(text.charAt(0))
@@ -134,32 +114,11 @@ public class AspectParser {
                 result = -1;
             }
         }
-        return result;
-    }
-
-    /**
-     * Converts a given text to curly-bracketed regular expression format, if it
-     * is an unquoted regular expression. If it is a quoted atom, removes the
-     * quotes.
-     */
-    private String toCurly(String text) {
-        try {
-            RegExpr expr = RegExpr.parse(text);
-            if (expr.isAtom()) {
-                text = expr.getAtomText();
-            } else if (expr.isEmpty()) {
-                // do nothing
-            } else if (expr.isNeg()) {
-                text =
-                    RegExpr.NEG_OPERATOR
-                        + toCurly(expr.getNegOperand().toString());
-            } else {
-                text = ExprParser.LCURLY_CHAR + text + ExprParser.RCURLY_CHAR;
-            }
-        } catch (FormatException exc) {
-            // the text should be treated as an atom; do nothing
+        if (result < 0) {
+            return null;
+        } else {
+            return text.substring(0, result);
         }
-        return text;
     }
 
     /**
@@ -188,46 +147,10 @@ public class AspectParser {
         return value;
     }
 
-    /** Indicates that this parser works for a rule. */
-    private final boolean rule;
-    /**
-     * Indicates that label text should be converted to curly-bracketed format.
-     */
-    private final boolean convertToCurly;
-
-    /**
-     * Turns an aspect value into a string that can be read by
-     * {@link #parse(String)}.
-     */
-    static public String toString(AspectValue value) {
-        String result;
-        if (value instanceof ConstantAspectValue) {
-            result = value.getName() + VALUE_SEPARATOR;
-            String content = ((ConstantAspectValue) value).getContent();
-            if (content != null) {
-                result += content;
-            }
-        } else {
-            result = value.toString() + VALUE_SEPARATOR;
-        }
-        return result;
+    /** Yields a predefined label for a given graph role. */
+    public static AspectParser getInstance() {
+        return instance;
     }
 
-    /**
-     * Converts a collection of aspect values plus an actual label text into a
-     * string that can be parsed back.
-     */
-    static public StringBuilder toString(Collection<AspectValue> values,
-            StringBuilder labelText) {
-        StringBuilder result = new StringBuilder();
-        for (AspectValue value : values) {
-            result.append(AspectParser.toString(value));
-        }
-        //        if (labelText.length() == 0
-        //            || labelText.indexOf("" + VALUE_SEPARATOR) >= 0) {
-        //            result.append(VALUE_SEPARATOR);
-        //        }
-        result.append(labelText);
-        return result;
-    }
+    static private final AspectParser instance = new AspectParser();
 }

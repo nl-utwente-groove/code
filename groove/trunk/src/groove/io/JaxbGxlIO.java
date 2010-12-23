@@ -199,7 +199,7 @@ public class JaxbGxlIO implements GxlIO {
         String name = GraphInfo.getName(graph);
         gxlGraph.setId(name == null ? DEFAULT_GRAPH_NAME : name);
         String role = GraphInfo.getRole(graph);
-        gxlGraph.setRole(role == null ? Groove.GRAPH_ROLE : role);
+        gxlGraph.setRole(role == null ? Groove.HOST_ROLE : role);
         List<GraphElementType> nodesEdges = gxlGraph.getNodeOrEdgeOrRel();
         // add the nodes
         Map<Node,NodeType> nodeMap = new HashMap<Node,NodeType>();

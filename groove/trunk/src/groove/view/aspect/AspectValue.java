@@ -125,8 +125,7 @@ public class AspectValue implements Comparable<AspectValue> {
     }
 
     /**
-     * Indicates if this aspect value must be the last in a sequence. This is
-     * the case if and only if it has a label parser.
+     * Indicates if this aspect value must be the last in a sequence. 
      */
     public final boolean isLast() {
         return this.labelParser != null;
