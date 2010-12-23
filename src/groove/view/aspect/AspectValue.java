@@ -21,7 +21,6 @@ import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
 import groove.view.FormatException;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,7 +48,6 @@ public class AspectValue implements Comparable<AspectValue> {
         this.name = name;
         this.prototype = allowsContent;
         this.content = null;
-        this.incompatibles = new HashSet<AspectValue>();
     }
 
     /**
@@ -64,12 +62,7 @@ public class AspectValue implements Comparable<AspectValue> {
         }
         this.aspect = original.getAspect();
         this.name = original.getName();
-        this.incompatibles = original.getIncompatibles();
-        this.sourceToEdge = original.sourceToEdge();
-        this.targetToEdge = original.targetToEdge();
-        this.edgeToSource = original.edgeToSource();
-        this.edgeToTarget = original.edgeToTarget();
-        this.labelParser = original.getLabelParser();
+        this.last = original.isLast();
         this.content = content;
         this.prototype = false;
     }
@@ -128,150 +121,14 @@ public class AspectValue implements Comparable<AspectValue> {
      * Indicates if this aspect value must be the last in a sequence. 
      */
     public final boolean isLast() {
-        return this.labelParser != null;
-    }
-
-    /**
-     * Returns the label parser of this aspect value, if any.
-     */
-    public final LabelParser getLabelParser() {
-        return this.labelParser;
+        return this.last;
     }
 
     /**
      * Assigns a label parser to this aspect value.
      */
-    final void setLabelParser(LabelParser labelParser) {
-        this.labelParser = labelParser;
-    }
-
-    /**
-     * Returns the inferred edge value for an {@link AspectEdge} in case the
-     * source node has this value.
-     */
-    public AspectValue sourceToEdge() {
-        return this.sourceToEdge;
-    }
-
-    /**
-     * Sets an inferred edge value for an {@link AspectEdge} in case the source
-     * node has this value.
-     */
-    void setSourceToEdge(AspectValue inferredValue) {
-        assert inferredValue.getAspect() == getAspect() : String.format(
-            "Inferred value %s should be of same aspect as premisse %s",
-            inferredValue, this);
-        this.sourceToEdge = inferredValue;
-    }
-
-    /**
-     * Returns the inferred edge value for an {@link AspectEdge} in case the
-     * target node has this value.
-     */
-    public AspectValue targetToEdge() {
-        return this.targetToEdge;
-    }
-
-    /**
-     * Sets an inferred edge value for an {@link AspectEdge} in case the target
-     * node has this value.
-     */
-    void setTargetToEdge(AspectValue inferredValue) {
-        assert inferredValue.getAspect() == getAspect() : String.format(
-            "Inferred value %s should be of same aspect as premisse %s",
-            inferredValue, this);
-        this.targetToEdge = inferredValue;
-    }
-
-    /**
-     * Returns the inferred value for the source {@link AspectNode} of an edge
-     * with this value.
-     */
-    public AspectValue edgeToSource() {
-        return this.edgeToSource;
-    }
-
-    /**
-     * Sets an inferred value for the source {@link AspectNode} of an edge with
-     * this value.
-     */
-    void setEdgeToSource(AspectValue inferredValue) {
-        assert inferredValue.getAspect() == getAspect() : String.format(
-            "Inferred value %s should be of same aspect as premisse %s",
-            inferredValue, this);
-        this.edgeToSource = inferredValue;
-    }
-
-    /**
-     * Returns the inferred value for the target {@link AspectNode} of an edge
-     * with this value.
-     */
-    public AspectValue edgeToTarget() {
-        return this.edgeToTarget;
-    }
-
-    /**
-     * Sets an inferred value for the target {@link AspectNode} of an edge with
-     * this value.
-     */
-    void setEdgeToTarget(AspectValue inferredValue) {
-        assert inferredValue.getAspect() == getAspect() : String.format(
-            "Inferred value %s should be of same aspect as premisse %s",
-            inferredValue, this);
-        this.edgeToTarget = inferredValue;
-    }
-
-    /**
-     * Indicates if another aspect value (of another aspect) is incompatible
-     * with this one.
-     */
-    public boolean isCompatible(AspectValue other) {
-        return other == null || !this.incompatibles.contains(other)
-            && !other.incompatibles.contains(this);
-    }
-
-    /**
-     * Adds an incompatibility with a value of another aspect.
-     * @param other the incompatible value
-     */
-    void setIncompatible(AspectValue other) {
-        assert other.getAspect() != getAspect() : String.format(
-            "Incompatible values %s and %s are of the same aspect", this, other);
-        this.incompatibles.add(other);
-    }
-
-    /**
-     * Adds an incompatibility with all values of another aspect.
-     * @param other the incompatible aspect
-     */
-    void setIncompatible(Aspect other) {
-        for (AspectValue value : other.getValues()) {
-            setIncompatible(value);
-        }
-    }
-
-    /**
-     * Returns the set of aspect values incompatible with this one.
-     */
-    Set<AspectValue> getIncompatibles() {
-        return this.incompatibles;
-    }
-
-    /**
-     * Indicates if this aspect value is singular. Being singular means that the
-     * value automatically removes all others.
-     * @return {@code true} if the aspect value is singular
-     */
-    final boolean isSingular() {
-        return this.singular;
-    }
-
-    /**
-     * Sets the aspect value to singular.
-     * @see #isSingular()
-     */
-    final void setSingular() {
-        this.singular = true;
+    final void setLast(boolean last) {
+        this.last = last;
     }
 
     /** Indicates if this aspect value may occur on nodes. */
@@ -338,39 +195,8 @@ public class AspectValue implements Comparable<AspectValue> {
     private final String content;
     /** Flag indicating if this value may be used as a prototype. */
     private final boolean prototype;
-    // /** Flag indicating if this aspect value can have free text as label. */
-    // private final boolean freeText;
-    /**
-     * Inferred edge aspect value (of the same aspect) if this value is in the
-     * source node.
-     */
-    private AspectValue sourceToEdge;
-    /**
-     * Inferred edge aspect value (of the same aspect) if this value is in the
-     * target node.
-     */
-    private AspectValue targetToEdge;
-    /**
-     * Inferred source node aspect value (of the same aspect) if this value is
-     * in an edge.
-     */
-    private AspectValue edgeToSource;
-    /**
-     * Inferred target node aspect value (of the same aspect) if this value is
-     * in an edge.
-     */
-    private AspectValue edgeToTarget;
-    /**
-     * Set of aspect values, possibly of other aspects, that are incompatible
-     * with this one.
-     */
-    private final Set<AspectValue> incompatibles;
-    /** Optional label parser of this aspect value. */
-    private LabelParser labelParser;
-    /**
-     * Flag indicating if this aspect value is singular, meaning that
-     */
-    private boolean singular;
+    /** Flag indicatign that this aspect is always the last in a label. */
+    private boolean last;
 
     /**
      * Returns the aspect value associated with a given name, if any. Returns

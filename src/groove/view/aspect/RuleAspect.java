@@ -33,59 +33,6 @@ public class RuleAspect extends AbstractAspect {
     }
 
     /**
-     * This implementation considers {@link #EMBARGO} to be more demanding than
-     * {@link #ERASER}, and {@link #REMARK} to be more demanding than any other
-     * rule aspect value.
-     */
-    @Override
-    protected AspectValue getMaxValue(AspectValue value1, AspectValue value2)
-        throws FormatException {
-        if (EMBARGO.equals(value1) && ERASER.equals(value2)) {
-            return EMBARGO;
-        } else if (EMBARGO.equals(value2) && ERASER.equals(value1)) {
-            return EMBARGO;
-        } else if (REMARK.equals(value1) || REMARK.equals(value2)) {
-            return REMARK;
-        } else {
-            return super.getMaxValue(value1, value2);
-        }
-    }
-
-    //
-    //    @Override
-    //    public void checkEdge(AspectEdge edge, AspectGraph graph)
-    //        throws FormatException {
-    //        if (isEraser(edge)) {
-    //            RuleLabel label = (RuleLabel) edge.getModelLabel();
-    //            if (!(label.isAtom() || label.isSharp() || label.isWildcard())) {
-    //                throw new FormatException(
-    //                    "Eraser label %s should be wildcard or atom", label, edge);
-    //            }
-    //        } else if (isCreator(edge)) {
-    //            RuleLabel label = (RuleLabel) edge.getModelLabel();
-    //            if (!(label.isAtom() || label.isWildcard() || label.isEmpty())) {
-    //                throw new FormatException(
-    //                    "Creator label %s should be named wildcard, merger or atom",
-    //                    label, edge);
-    //            }
-    //        }
-    //        // test for merge edges between creator nodes
-    //        if (isMerger(edge)) {
-    //            AspectNode creatorEnd = null;
-    //            if (isCreator(edge.source())) {
-    //                creatorEnd = edge.source();
-    //            } else if (isCreator(edge.target())) {
-    //                creatorEnd = edge.target();
-    //            }
-    //            if (creatorEnd != null) {
-    //                throw new FormatException(
-    //                    "Merge edge '%s' with creator end node '%s' not allowed",
-    //                    edge, creatorEnd);
-    //            }
-    //        }
-    //    }
-
-    /**
      * Returns a {@link NamedAspectValue} with the given name.
      * @param name the name content
      * @throws FormatException if <code>name</code> is not correctly formatted
@@ -226,27 +173,7 @@ public class RuleAspect extends AbstractAspect {
             CNEW = instance.addValue(CNEW_NAME);
             READER = instance.addValue(READER_NAME);
             REMARK = instance.addValue(REMARK_NAME);
-            // ERASER.setLabelParser(EraserParser.getInstance());
-            // CREATOR.setLabelParser(CreatorParser.getInstance());
-            // EMBARGO.setLabelParser(RegExprLabelParser.getInstance());
-            // CNEW.setLabelParser(CreatorParser.getInstance());
-            // READER.setLabelParser(RegExprLabelParser.getInstance());
-            REMARK.setLabelParser(FreeLabelParser.getInstance());
-            // RULE = null; //new RuleAspectValue(); // currently not added to
-            // values!
-            instance.setDefaultValue(READER);
-            CREATOR.setSourceToEdge(CREATOR);
-            CREATOR.setTargetToEdge(CREATOR);
-            ERASER.setSourceToEdge(ERASER);
-            ERASER.setTargetToEdge(ERASER);
-            CNEW.setSourceToEdge(CNEW);
-            CNEW.setTargetToEdge(CNEW);
-            EMBARGO.setSourceToEdge(EMBARGO);
-            EMBARGO.setTargetToEdge(EMBARGO);
-            REMARK.setSourceToEdge(REMARK);
-            REMARK.setTargetToEdge(REMARK);
-            // remark is a singular value
-            REMARK.setSingular();
+            REMARK.setLast(true);
         } catch (FormatException exc) {
             throw new Error("Aspect '" + RULE_ASPECT_NAME
                 + "' cannot be initialised due to name conflict", exc);

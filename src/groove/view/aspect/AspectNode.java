@@ -371,9 +371,14 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     }
 
     /** Indicates if this represents a variable or value node. */
-    public boolean isDataValue() {
-        return getType() != null && !isProduct()
+    public boolean hasDataType() {
+        return hasType() && !isProduct()
             && getType().getAspect() == AttributeAspect.getInstance();
+    }
+
+    /** Returns the type of this aspect node, if it is a data type. */
+    public AspectValue getDataType() {
+        return hasDataType() ? getType() : null;
     }
 
     /** Indicates if this represents a rule parameter. */

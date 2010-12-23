@@ -372,7 +372,7 @@ public class DefaultRuleView implements RuleView {
     private RuleNode computeNodeImage(AspectNode node) throws FormatException {
         if (node.isProduct()) {
             return new ProductNode(node.getNumber(), node.getArgNodes().size());
-        } else if (node.isDataValue()) {
+        } else if (node.hasDataType()) {
             return DefaultRuleView.this.attributeFactory.createValueNode(node);
         } else {
             return ruleFactory.createNode(node.getNumber());
@@ -1932,14 +1932,11 @@ public class DefaultRuleView implements RuleView {
                     getSystemProperties() != null
                         && getSystemProperties().isUseControl();
                 CtrlType varType;
-                AspectValue av = AttributeAspect.getAttributeValue(node);
+                AspectValue av = node.getDataType();
                 if (av == null) {
                     varType = CtrlType.getNodeType();
                 } else if (AttributeAspect.VALUE.equals(av)) {
                     varType = CtrlType.getAttrType();
-                } else if (AttributeAspect.PRODUCT.equals(av)) {
-                    throw new FormatException(
-                        "Product node cannot be used as parameter", node);
                 } else {
                     varType = CtrlType.getDataType(av.getName());
                 }
