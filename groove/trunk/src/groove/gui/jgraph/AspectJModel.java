@@ -25,7 +25,6 @@ import static groove.gui.jgraph.JAttr.RULE_EDGE_EMPH_CHANGE;
 import static groove.gui.jgraph.JAttr.RULE_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.RULE_NODE_EMPH_CHANGE;
 import static groove.gui.jgraph.JAttr.SUBTYPE_EDGE_ATTR;
-import static groove.view.aspect.AttributeAspect.getAttributeValue;
 import static groove.view.aspect.RuleAspect.CNEW;
 import static groove.view.aspect.RuleAspect.CREATOR;
 import static groove.view.aspect.RuleAspect.EMBARGO;
@@ -154,7 +153,7 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                 role = RuleAspect.READER;
             }
             result = RULE_NODE_ATTR.get(role).clone();
-            if (getAttributeValue(node) != null) {
+            if (node.hasDataType()) {
                 result.applyMap(getJVertexDataAttr());
             }
         }
@@ -168,7 +167,7 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             result.applyMap(SUBTYPE_EDGE_ATTR);
         } else if (edge.isAbstract()) {
             result.applyMap(ABSTRACT_EDGE_ATTR);
-        } else if (edge.isMeta()) {
+        } else if (edge.isNestedAt() || edge.isNestedIn()) {
             result.applyMap(NESTING_EDGE_ATTR);
         } else {
             result.applyMap(RULE_EDGE_ATTR.get(edge.getRole()));

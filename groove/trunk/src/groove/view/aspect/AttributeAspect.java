@@ -21,12 +21,10 @@ import groove.algebra.AlgebraRegister;
 import groove.algebra.Operator;
 import groove.algebra.UnknownSymbolException;
 import groove.graph.Element;
-import groove.graph.TypeLabel;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
-import groove.trans.RuleLabel;
 import groove.util.Groove;
 import groove.view.FormatException;
 
@@ -43,22 +41,6 @@ public class AttributeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
     private AttributeAspect() {
         super(ATTRIBUTE_ASPECT_NAME);
-    }
-
-    /**
-     * This implementation considers any of the signature values to be more
-     * demanding than {@link #VALUE}.
-     */
-    @Override
-    protected AspectValue getMaxValue(AspectValue value1, AspectValue value2)
-        throws FormatException {
-        if (VALUE.equals(value1) && algebraMap.containsKey(value2)) {
-            return value2;
-        } else if (VALUE.equals(value2) && algebraMap.containsKey(value1)) {
-            return value1;
-        } else {
-            return super.getMaxValue(value1, value2);
-        }
     }
 
     /** Creates a {@link ConstantAspectValue} for algebra aspects. */
@@ -79,29 +61,11 @@ public class AttributeAspect extends AbstractAspect {
     }
 
     /**
-     * Returns the attribute aspect value associated with a given aspect
-     * element.
-     */
-    public static AspectValue getAttributeValue(AspectElement elem) {
-        AspectValue type = elem.getType();
-        return type != null && type.getAspect() == getInstance() ? type : null;
-    }
-
-    /**
      * Tests if a given aspect value corresponds to a data type; i.e., if it is
      * not equal to {@link #ARGUMENT}, {@link #VALUE} or {@link #PRODUCT}
      */
     static public boolean isDataValue(AspectValue value) {
         return algebraMap.containsKey(value);
-    }
-
-    /**
-     * Tests if a given aspect element carries an {@link AttributeAspect} value
-     * that corresponds to a data type.
-     * @see #isDataValue(AspectValue)
-     */
-    static public boolean isDataElement(AspectElement elem) {
-        return isDataValue(getAttributeValue(elem));
     }
 
     /**
@@ -160,7 +124,7 @@ public class AttributeAspect extends AbstractAspect {
             throw new IllegalStateException(String.format(
                 "Duplicate algebra %s", algebra));
         }
-        value.setLabelParser(new OperationLabelParser(algebra));
+        value.setLast(true);
     }
 
     /**
@@ -210,146 +174,17 @@ public class AttributeAspect extends AbstractAspect {
     static {
         try {
             ARGUMENT = instance.addEdgeValue(ARGUMENT_NAME);
-            ARGUMENT.setLabelParser(NumberLabelParser.INSTANCE);
+            ARGUMENT.setLast(true);
             VALUE = instance.addNodeValue(VALUE_NAME);
             PRODUCT = instance.addNodeValue(PRODUCT_NAME);
             for (String signatureName : AlgebraRegister.getSignatureNames()) {
                 AspectValue value = instance.addValue(signatureName);
-                value.setEdgeToTarget(VALUE);
                 addSignature(signatureName, value);
             }
-            ARGUMENT.setEdgeToSource(PRODUCT);
-            ARGUMENT.setEdgeToTarget(VALUE);
-            // incompatibilities
-            instance.setIncompatible(RuleAspect.CREATOR);
-            instance.setIncompatible(RuleAspect.CNEW);
-            instance.setIncompatible(RuleAspect.ERASER);
-            instance.setIncompatible(NestingAspect.getInstance());
         } catch (FormatException exc) {
             throw new Error("Aspect '" + ATTRIBUTE_ASPECT_NAME
                 + "' cannot be initialised due to name conflict", exc);
         }
-    }
-
-    /**
-     * Parser that turns a string into a default label, after testing the string
-     * for correct formatting using a callback method that can be overridden by
-     * subclasses.
-     */
-    private static class NumberLabelParser extends
-            AbstractLabelParser<RuleLabel> {
-        /** Empty constructor for the singleton instance. */
-        private NumberLabelParser() {
-            // Empty
-        }
-
-        @Override
-        protected String getExceptionText(String text) {
-            try {
-                Integer.parseInt(text);
-                // if this succeeds, the problem was a negative number
-                return String.format("String '%s' is a negative number", text);
-            } catch (NumberFormatException exc) {
-                return String.format(
-                    "String '%s' cannot be parsed as a number", text);
-            }
-        }
-
-        @Override
-        protected boolean isCorrect(String text) {
-            try {
-                return Integer.parseInt(text) >= 0;
-            } catch (NumberFormatException exc) {
-                return false;
-            }
-        }
-
-        /** Construct a {@link RuleLabel}. */
-        @Override
-        protected RuleLabel createLabel(String text) {
-            return new RuleLabel(TypeLabel.createLabel(text));
-        }
-
-        public static final NumberLabelParser INSTANCE =
-            new NumberLabelParser();
-    }
-
-    /**
-     * Class that attempts to parse a string as the operation of a given
-     * algebra, and returns the result as a DefaultLabel if successful.
-     */
-    private static class OperationLabelParser extends
-            AbstractLabelParser<RuleLabel> {
-        /** Constructs an instance of this parser class for a given algebra. */
-        OperationLabelParser(String signature) {
-            this.signature = signature;
-        }
-
-        /**
-         * This implementation tests if the text corresponds to an operation of
-         * the associated algebra.
-         */
-        @Override
-        protected boolean isCorrect(String text) {
-            try {
-                if (isConstant(text)) {
-                    return true;
-                } else {
-                    getOperation(text);
-                    return true;
-                }
-            } catch (FormatException e) {
-                return false;
-            }
-        }
-
-        /**
-         * This implementation tests if the text corresponds to an operation of
-         * the associated algebra.
-         */
-        @Override
-        protected String getExceptionText(String text) {
-            try {
-                getOperation(text);
-                return "";
-            } catch (FormatException exc) {
-                return exc.getMessage();
-            }
-        }
-
-        @Override
-        protected RuleLabel createLabel(String text) {
-            return new RuleLabel(TypeLabel.createLabel(text));
-        }
-
-        /**
-         * Tests if a certain string is a constant of the signature wrapped in
-         * this parser.
-         */
-        public boolean isConstant(String text) {
-            try {
-                return AlgebraRegister.isConstant(this.signature, text);
-            } catch (UnknownSymbolException e) {
-                return false;
-            }
-        }
-
-        /**
-         * Extracts an operation of this algebra from a given string, if the
-         * string indeed represents such an operation.
-         * @throws FormatException if <code>text</code> does not represent an
-         *         operation of this algebra.
-         */
-        public Operator getOperation(String text) throws FormatException {
-            try {
-                return AlgebraRegister.getOperator(this.signature, text);
-            } catch (UnknownSymbolException exc) {
-                throw new FormatException(exc.getMessage());
-            }
-        }
-
-        /** The algebra that should understand the operation. */
-        private final String signature;
     }
 
     /**

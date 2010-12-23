@@ -78,7 +78,7 @@ public class AttributeElementFactory {
 
     /**
      * Creates a {@link VariableNode} corresponding to a given aspect node 
-     * satisfying {@link AspectNode#isDataValue()}. This is either a
+     * satisfying {@link AspectNode#hasDataType()}. This is either a
      * true variable node (if the original node has no outgoing edges), or a
      * {@link ValueNode} whose value depends on the label of the node's
      * self-edge.

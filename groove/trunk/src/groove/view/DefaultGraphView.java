@@ -231,7 +231,7 @@ public class DefaultGraphView implements GraphView {
         // include the node in the model if it is not virtual
         if (nodeInModel) {
             HostNode nodeImage = null;
-            if (viewNode.isDataValue()) {
+            if (viewNode.hasDataType()) {
                 nodeImage =
                     (ValueNode) this.attributeFactory.createValueNode(viewNode);
                 model.addNode(nodeImage);

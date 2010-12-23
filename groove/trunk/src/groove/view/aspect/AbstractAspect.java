@@ -16,7 +16,6 @@
  */
 package groove.view.aspect;
 
-import groove.graph.DefaultLabel;
 import groove.view.FormatException;
 
 import java.util.Collections;
@@ -132,37 +131,6 @@ public abstract class AbstractAspect extends Aspect {
         return this.name;
     }
 
-    /** This default implementation returns <code>null</code> always. */
-    @Override
-    final public AspectValue getDefaultValue() {
-        return this.defaultValue;
-    }
-
-    /**
-     * Sets a certain aspect value as default.
-     * @param value the aspect value to be set as default
-     * @throws IllegalArgumentException if <code>name</code> is not the name of
-     *         an aspect value of this aspect, or if it cannot be used both for
-     *         nodes and edges.
-     * @see #getDefaultValue()
-     */
-    protected void setDefaultValue(AspectValue value) {
-        if (this.defaultValue != null) {
-            throw new IllegalArgumentException("Default value already set, to "
-                + this.defaultValue);
-        }
-        if (!value.getAspect().equals(this)) {
-            throw new IllegalArgumentException("Aspect value "
-                + value.getName() + " does not belong to aspect " + this);
-        }
-        if (!this.allValues.contains(value)) {
-            throw new IllegalArgumentException(
-                "Prospective default aspect value " + this.name
-                    + " not a legal node and edge value");
-        }
-        this.defaultValue = value;
-    }
-
     /**
      * Factory method for aspect values. This implementation returns an
      * {@link AspectValue}.
@@ -175,58 +143,6 @@ public abstract class AbstractAspect extends Aspect {
      */
     protected AspectValue createValue(String name) throws FormatException {
         return new AspectValue(this, name, false);
-    }
-
-    /**
-     * Method to test the validity of an aspect value for use as a node value.
-     * The method does nothing, but throws an exception if the aspect value may
-     * not be used for nodes.
-     * @param nodeValue the node aspect value to be tested
-     */
-    protected void testNodeValue(AspectValue nodeValue) {
-        if (!this.nodeValues.contains(nodeValue)) {
-            throw new IllegalArgumentException("Aspect value " + nodeValue
-                + " may not be used for nodes");
-        }
-    }
-
-    /**
-     * Method to test the validity of an aspect value for use as an edge value.
-     * The method does nothing, but throws an exception if the aspect value may
-     * not be used for edges.
-     * @param edgeValue the edge aspect value to be tested
-     */
-    protected void testEdgeValue(AspectValue edgeValue) {
-        if (!this.edgeValues.contains(edgeValue)) {
-            throw new IllegalArgumentException("Aspect value '" + edgeValue
-                + "' may not be used for edges");
-        }
-    }
-
-    /**
-     * Compares a number of aspect values and returns the most demanding, i.e.,
-     * the value that overrules the others. Throws a {@link FormatException} if
-     * there is no preference. <code>null</code> values are disregarded.
-     * @param values the values to be compared
-     * @return a value from <code>values</code> such that for all others, either
-     *         they are <code>null</code> or
-     *         <code>result = getMax(result, other)</code>
-     * @throws FormatException if <code>getMax(value1, value2)</code> throws an
-     *         exception for two non-<code>null</code> elements of
-     *         <code>values</code>
-     */
-    @Override
-    final public AspectValue getMax(AspectValue... values)
-        throws FormatException {
-        AspectValue result = null;
-        for (AspectValue value : values) {
-            if (result == null) {
-                result = value;
-            } else if (value != null) {
-                result = getMaxValue(result, value);
-            }
-        }
-        return result;
     }
 
     /**
@@ -257,37 +173,6 @@ public abstract class AbstractAspect extends Aspect {
     }
 
     /**
-     * This default implementation never throws the exception.
-     */
-    @Override
-    public void testLabel(DefaultLabel label, AspectValue declaredValue,
-            AspectValue inferredValue) throws FormatException {
-        // does nothing
-    }
-
-    /**
-     * Adds an incompatibility between all (currently registered) values of this
-     * aspect and all values of another aspect.
-     * @param other the incompatible aspect
-     */
-    void setIncompatible(Aspect other) {
-        for (AspectValue value : getValues()) {
-            value.setIncompatible(other);
-        }
-    }
-
-    /**
-     * Adds an incompatibility between all (currently registered) values of this
-     * aspect and a given value of another aspect.
-     * @param value the incompatible aspect value
-     */
-    void setIncompatible(AspectValue value) {
-        for (AspectValue myValue : getValues()) {
-            myValue.setIncompatible(value);
-        }
-    }
-
-    /**
      * The name of this aspect.
      */
     private final String name;
@@ -304,28 +189,4 @@ public abstract class AbstractAspect extends Aspect {
      * @invariant allValues = nodeValues \cup edgeValues
      */
     private final Set<AspectValue> allValues = new HashSet<AspectValue>();
-    /**
-     * The default aspect value, if any.
-     */
-    private AspectValue defaultValue;
-    // /** Source inference rules, as a mapping from edge aspect values to node
-    // aspect values. */
-    // private final Map<AspectValue,AspectValue> sourceInference = new
-    // HashMap<AspectValue,AspectValue>();
-    // /** Target inference rules, as a mapping from edge aspect values to node
-    // aspect values. */
-    // private final Map<AspectValue,AspectValue> targetInference = new
-    // HashMap<AspectValue,AspectValue>();
-    //
-    // /** Returns a parser that turns a string into a regular expression label.
-    // */
-    // static LabelParser getRegExprLabelParser() {
-    // return REG_EXPR_PARSER;
-    // }
-    //
-    // /**
-    // * Instance of the regular expression parser.
-    // */
-    // static private final LabelParser REG_EXPR_PARSER =
-    // RegExprLabelParser.getInstance(false);
 }

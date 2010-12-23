@@ -16,8 +16,6 @@
  */
 package groove.view.aspect;
 
-import groove.graph.Label;
-import groove.graph.TypeLabel;
 import groove.view.FormatException;
 
 /**
@@ -68,44 +66,15 @@ public class TypeAspect extends AbstractAspect {
     static {
         try {
             PATH = instance.addEdgeValue(PATH_NAME);
-            PATH.setLabelParser(RuleLabelParser.getInstance(true));
+            PATH.setLast(true);
             SUB = instance.addEdgeValue(SUB_NAME);
-            SUB.setLabelParser(EmptyLabelParser.getInstance());
-            SUB.setIncompatible(RuleAspect.getInstance());
+            SUB.setLast(true);
             ABS = instance.addEdgeValue(ABS_NAME);
-            ABS.setIncompatible(RuleAspect.getInstance());
             EMPTY = instance.addEdgeValue(EMPTY_NAME);
-            EMPTY.setLabelParser(FreeLabelParser.getInstance());
-            // incompatibilities
-            instance.setIncompatible(NestingAspect.getInstance());
+            EMPTY.setLast(true);
         } catch (FormatException exc) {
             throw new Error("Aspect '" + TYPE_ASPECT_NAME
                 + "' cannot be initialised due to name conflict", exc);
         }
-    }
-
-    /** Parser that only accepts empty labels. */
-    static private class EmptyLabelParser implements LabelParser {
-        /** Private constructor for this singleton class. */
-        private EmptyLabelParser() {
-            // empty constructor
-        }
-
-        @Override
-        public Label parse(String text) throws FormatException {
-            if (text.length() > 0) {
-                throw new FormatException(
-                    "Only empty label text allowed for '%s'-label", SUB);
-            }
-            return TypeLabel.createLabel(text);
-        }
-
-        /** Returns the singleton instance of this class. */
-        static public EmptyLabelParser getInstance() {
-            return instance;
-        }
-
-        /** Singleton instance of this class. */
-        static private EmptyLabelParser instance = new EmptyLabelParser();
     }
 }

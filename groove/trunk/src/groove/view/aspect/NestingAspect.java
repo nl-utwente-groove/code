@@ -16,7 +16,6 @@
  */
 package groove.view.aspect;
 
-import groove.graph.DefaultLabel;
 import groove.view.FormatException;
 
 import java.util.HashSet;
@@ -121,12 +120,6 @@ public class NestingAspect extends AbstractAspect {
             FORALL = instance.addValue(FORALL_NAME);
             FORALL_POS = instance.addNodeValue(FORALL_POS_NAME);
             NESTED = instance.addEdgeValue(NESTED_NAME);
-            EXISTS.setSourceToEdge(NESTED);
-            EXISTS.setTargetToEdge(NESTED);
-            FORALL.setSourceToEdge(NESTED);
-            FORALL.setTargetToEdge(NESTED);
-            FORALL_POS.setSourceToEdge(NESTED);
-            FORALL_POS.setTargetToEdge(NESTED);
         } catch (FormatException exc) {
             throw new Error("Aspect '" + NESTING_ASPECT_NAME
                 + "' cannot be initialised due to name conflict", exc);
@@ -146,39 +139,6 @@ public class NestingAspect extends AbstractAspect {
         ALLOWED_LABELS.add(IN_LABEL);
         ALLOWED_LABELS.add(AT_LABEL);
         ALLOWED_LABELS.add(TOP_LABEL);
-        NESTED.setLabelParser(new NestingLabelParser());
-    }
-
-    /**
-     * Parser that establishes whether a nesting edge label is a known label.
-     */
-    private static class NestingLabelParser extends
-            AbstractLabelParser<DefaultLabel> {
-        /** Empty constructor with the correct visibility. */
-        NestingLabelParser() {
-            // empty
-        }
-
-        /**
-         * This implementation tests if the text is among the known labels.
-         * @see #ALLOWED_LABELS
-         */
-        @Override
-        protected boolean isCorrect(String text) {
-            return ALLOWED_LABELS.contains(text);
-        }
-
-        @Override
-        protected String getExceptionText(String text) {
-            return String.format(
-                "Label '%s' on nesting edge should be one of %s", text,
-                ALLOWED_LABELS);
-        }
-
-        @Override
-        protected DefaultLabel createLabel(String text) {
-            return DefaultLabel.createLabel(text);
-        }
-
+        NESTED.setLast(true);
     }
 }

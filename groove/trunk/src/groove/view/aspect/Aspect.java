@@ -16,10 +16,6 @@
  */
 package groove.view.aspect;
 
-import groove.graph.DefaultLabel;
-import groove.util.Groove;
-import groove.view.FormatException;
-
 import java.util.Set;
 
 /**
@@ -51,37 +47,6 @@ public abstract class Aspect {
      */
     abstract Set<AspectValue> getEdgeValues();
 
-    /**
-     * Returns the default aspect value, if any.
-     */
-    abstract AspectValue getDefaultValue();
-
-    /**
-     * Returns the maximum value for a number of aspect values. All values
-     * should be values of this aspect. The maximum if the most demanding value,
-     * in the sense dictated by the particular aspect.
-     * @param values the aspect values to be compared; there should be at least
-     *        one.
-     * @return the maximum of <code>values</code>
-     * @throws IllegalArgumentException if <code>values.length == 0</code>
-     * @throws FormatException if the values are incompatible
-     */
-    abstract AspectValue getMax(AspectValue... values) throws FormatException;
-
-    /**
-     * Tests if an edge label is allowed, given a declared and an inferred
-     * aspect value for this aspect.
-     * @param label the label to be tested
-     * @param declaredValue the declared aspect value; should be a value of this
-     *        aspect
-     * @param inferredValue the inferred aspect value; should be a value of this
-     *        aspect
-     * @throws FormatException if the label is not correct, given the aspect
-     *         values
-     */
-    abstract void testLabel(DefaultLabel label, AspectValue declaredValue,
-            AspectValue inferredValue) throws FormatException;
-
     /** Returns the array of all known aspects. */
     static public Aspect[] getAllAspects() {
         if (allAspects == null) {
@@ -98,18 +63,15 @@ public abstract class Aspect {
      * label. When the separator occurs twice in direct succession, this denotes
      * the end of the aspect prefix.
      */
-    public static final char VALUE_SEPARATOR = Groove.getXMLProperty(
-        "label.aspect.separator").charAt(0);
+    public static final char VALUE_SEPARATOR = ':';
     /**
      * String used to separate the name and content of aspect values.
      */
-    public static final String CONTENT_ASSIGN =
-        Groove.getXMLProperty("label.content.assign");
+    public static final String CONTENT_ASSIGN = "=";
     /**
      * String used to separate substrings within the content of an aspect value.
      */
-    public static final String CONTENT_SEPARATOR =
-        Groove.getXMLProperty("label.content.separator");
+    public static final String CONTENT_SEPARATOR = "/";
     /**
      * Array of all known aspects.
      */
