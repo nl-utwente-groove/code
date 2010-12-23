@@ -34,7 +34,6 @@ import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.trans.RuleLabel;
-import groove.view.FormatException;
 import groove.view.aspect.AspectEdge;
 
 import java.awt.geom.Point2D;
@@ -528,16 +527,14 @@ public final class GraphToTikz {
             GraphJEdge<N,E> edge, StringBuilder s) {
         E e = edge.getEdge();
         if (e instanceof AspectEdge) {
-            try {
-                if (((AspectEdge) e).getModelLabel() instanceof RuleLabel) {
-                    // We have a regular expression on the label, make it italic.
-                    s.append(encloseCurly(encloseItalicStyle(escapeSpecialChars(edge.getText()))));
-                } else {
-                    // This is a normal AspectEdge.
-                    s.append(encloseCurly(escapeSpecialChars(edge.getText())));
-                }
-            } catch (FormatException except) {
-                // Don't export a graph with errors...
+            RuleLabel ruleLabel = ((AspectEdge) e).getRuleLabel();
+            if (ruleLabel != null && ruleLabel.isMatchable()
+                && !ruleLabel.isAtom() && !ruleLabel.isSharp()) {
+                // We have a regular expression on the label, make it italic.
+                s.append(encloseCurly(encloseItalicStyle(escapeSpecialChars(edge.getText()))));
+            } else {
+                // This is a normal AspectEdge.
+                s.append(encloseCurly(escapeSpecialChars(edge.getText())));
             }
         } else {
             s.append(encloseCurly(escapeSpecialChars(edge.getText())));

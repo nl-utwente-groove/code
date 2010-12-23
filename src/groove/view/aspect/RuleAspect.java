@@ -16,8 +16,6 @@
  */
 package groove.view.aspect;
 
-import groove.graph.Label;
-import groove.trans.RuleLabel;
 import groove.util.Groove;
 import groove.view.FormatException;
 
@@ -53,38 +51,39 @@ public class RuleAspect extends AbstractAspect {
         }
     }
 
-    @Override
-    public void checkEdge(AspectEdge edge, AspectGraph graph)
-        throws FormatException {
-        if (isEraser(edge)) {
-            RuleLabel label = (RuleLabel) edge.getModelLabel();
-            if (!(label.isAtom() || label.isSharp() || label.isWildcard())) {
-                throw new FormatException(
-                    "Eraser label %s should be wildcard or atom", label, edge);
-            }
-        } else if (isCreator(edge)) {
-            RuleLabel label = (RuleLabel) edge.getModelLabel();
-            if (!(label.isAtom() || label.isWildcard() || label.isEmpty())) {
-                throw new FormatException(
-                    "Creator label %s should be named wildcard, merger or atom",
-                    label, edge);
-            }
-        }
-        // test for merge edges between creator nodes
-        if (isMerger(edge)) {
-            AspectNode creatorEnd = null;
-            if (isCreator(edge.source())) {
-                creatorEnd = edge.source();
-            } else if (isCreator(edge.target())) {
-                creatorEnd = edge.target();
-            }
-            if (creatorEnd != null) {
-                throw new FormatException(
-                    "Merge edge '%s' with creator end node '%s' not allowed",
-                    edge, creatorEnd);
-            }
-        }
-    }
+    //
+    //    @Override
+    //    public void checkEdge(AspectEdge edge, AspectGraph graph)
+    //        throws FormatException {
+    //        if (isEraser(edge)) {
+    //            RuleLabel label = (RuleLabel) edge.getModelLabel();
+    //            if (!(label.isAtom() || label.isSharp() || label.isWildcard())) {
+    //                throw new FormatException(
+    //                    "Eraser label %s should be wildcard or atom", label, edge);
+    //            }
+    //        } else if (isCreator(edge)) {
+    //            RuleLabel label = (RuleLabel) edge.getModelLabel();
+    //            if (!(label.isAtom() || label.isWildcard() || label.isEmpty())) {
+    //                throw new FormatException(
+    //                    "Creator label %s should be named wildcard, merger or atom",
+    //                    label, edge);
+    //            }
+    //        }
+    //        // test for merge edges between creator nodes
+    //        if (isMerger(edge)) {
+    //            AspectNode creatorEnd = null;
+    //            if (isCreator(edge.source())) {
+    //                creatorEnd = edge.source();
+    //            } else if (isCreator(edge.target())) {
+    //                creatorEnd = edge.target();
+    //            }
+    //            if (creatorEnd != null) {
+    //                throw new FormatException(
+    //                    "Merge edge '%s' with creator end node '%s' not allowed",
+    //                    edge, creatorEnd);
+    //            }
+    //        }
+    //    }
 
     /**
      * Returns a {@link NamedAspectValue} with the given name.
@@ -102,38 +101,10 @@ public class RuleAspect extends AbstractAspect {
     }
 
     /**
-     * Returns the name content of the rule aspect value of a given, aspect
-     * element, if it is a {@link NamedAspectValue}.
-     * @param elem the aspect element to retrieve the name from
-     * @return the name in <code>value</code>, or <code>null</code> if
-     *         <code>value</code> is not a {@link NamedAspectValue}.
-     */
-    static public String getName(AspectElement elem) {
-        String result = null;
-        AspectValue value = elem.getValue(getInstance());
-        if (value instanceof NamedAspectValue) {
-            result = ((NamedAspectValue) value).getContent();
-            if (result != null && result.length() == 0) {
-                result = null;
-            }
-        }
-        return result;
-    }
-
-    /**
      * Returns the singleton instance of this aspect.
      */
     public static RuleAspect getInstance() {
         return instance;
-    }
-
-    /**
-     * Returns the rule aspect value associated with a given aspect element.
-     * Convenience method for {@link AspectElement#getValue(Aspect)} with
-     * {@link #getInstance()} as parameter.
-     */
-    public static AspectValue getRuleValue(AspectElement elem) {
-        return elem.getValue(getInstance());
     }
 
     /**
@@ -147,8 +118,8 @@ public class RuleAspect extends AbstractAspect {
      *         {@link #ERASER}.
      */
     public static boolean inLHS(AspectElement element) {
-        AspectValue role = getRuleValue(element);
-        return (READER.equals(role) || ERASER.equals(role)) && hasRole(element);
+        AspectValue type = element.getRole();
+        return READER.equals(type) || ERASER.equals(type);
     }
 
     /**
@@ -162,17 +133,8 @@ public class RuleAspect extends AbstractAspect {
      *         {@link #CREATOR}.
      */
     public static boolean inRHS(AspectElement element) {
-        AspectValue role = getRuleValue(element);
-        return (READER.equals(role) || CREATOR.equals(role) || CNEW.equals(role))
-            && hasRole(element);
-    }
-
-    /**
-     * Tests if a given element has no rule aspect value, and no other aspect
-     * values that prevent it from being interpreted as reader.
-     */
-    private static boolean hasRole(AspectElement element) {
-        return !NestingAspect.isMetaElement(element);
+        AspectValue role = element.getRole();
+        return READER.equals(role) || CREATOR.equals(role) || CNEW.equals(role);
     }
 
     /**
@@ -184,8 +146,7 @@ public class RuleAspect extends AbstractAspect {
      *         {@link RuleAspect} value that equals {@link #EMBARGO}.
      */
     public static boolean inNAC(AspectElement element) {
-        return hasRole(element) && (EMBARGO.equals(getRuleValue(element)))
-            || isCNEW(element);
+        return EMBARGO.equals(element.getRole()) || isCNEW(element);
     }
 
     /**
@@ -196,8 +157,7 @@ public class RuleAspect extends AbstractAspect {
      *         {@link RuleAspect} value that equals {@link #CREATOR}.
      */
     public static boolean isCreator(AspectElement element) {
-        return hasRole(element) && CREATOR.equals(getRuleValue(element))
-            || isCNEW(element);
+        return CREATOR.equals(element.getRole()) || isCNEW(element);
     }
 
     /**
@@ -205,7 +165,7 @@ public class RuleAspect extends AbstractAspect {
      * if there is an aspect value in the element which equals EMBARGOCREATOR.
      */
     public static boolean isCNEW(AspectElement element) {
-        return hasRole(element) && CNEW.equals(getRuleValue(element));
+        return CNEW.equals(element.getRole());
     }
 
     /**
@@ -216,50 +176,7 @@ public class RuleAspect extends AbstractAspect {
      *         {@link RuleAspect} value that equals {@link #ERASER}.
      */
     public static boolean isEraser(AspectElement element) {
-        return hasRole(element) && ERASER.equals(getRuleValue(element));
-    }
-
-    /**
-     * Tests if a given aspect edge is a merger. This is the case if it is a
-     * creator with a merge label.
-     * @param edge the edge to be tested
-     * @return <code>true</code> if <code>edge</code> is a merger
-     */
-    public static boolean isMerger(AspectEdge edge) {
-        boolean result = false;
-        if (isCreator(edge)) {
-            try {
-                Label modelLabel = edge.getModelLabel();
-                result =
-                    (modelLabel instanceof RuleLabel)
-                        && ((RuleLabel) modelLabel).isEmpty();
-            } catch (FormatException exc) {
-                // do nothing
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Convenience method to test if a given aspectual element stands for an
-     * actual rule element. If not, this means that it provides information
-     * <i>about</i> the rule.
-     */
-    public static boolean inRule(AspectElement elem) {
-        // JHK: Nesting Meta-nodes and edges are not in the rule
-        return hasRole(elem) && (inLHS(elem) || inRHS(elem) || inNAC(elem));
-    }
-
-    /**
-     * Tests if a given aspect element is a remark. This is the case if there is
-     * an aspect value in the element which equals {@link #REMARK}.
-     * @param element the element to be tested
-     * @return <code>true</code> if <code>element</code> contains a
-     *         {@link RuleAspect} value that equals {@link #REMARK}.
-     */
-    public static boolean isRemark(AspectElement element) {
-        AspectValue role = getRuleValue(element);
-        return (REMARK.equals(role));
+        return ERASER.equals(element.getRole());
     }
 
     /**
@@ -291,8 +208,6 @@ public class RuleAspect extends AbstractAspect {
         Groove.getXMLProperty("label.embargocreator.prefix");
     /** The embargo creator aspect value. */
     public static final AspectValue CNEW;
-    /** The total number of roles. */
-    public static final int VALUE_COUNT;
     /** Name of the remark aspect value. */
     public static final String REMARK_NAME =
         Groove.getXMLProperty("label.remark.prefix");
@@ -332,9 +247,6 @@ public class RuleAspect extends AbstractAspect {
             REMARK.setTargetToEdge(REMARK);
             // remark is a singular value
             REMARK.setSingular();
-            // incompatibilities
-            // instance.setIncompatible(NestingAspect.getInstance());
-            VALUE_COUNT = instance.getValues().size();
         } catch (FormatException exc) {
             throw new Error("Aspect '" + RULE_ASPECT_NAME
                 + "' cannot be initialised due to name conflict", exc);

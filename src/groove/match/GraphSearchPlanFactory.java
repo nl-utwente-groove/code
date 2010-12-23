@@ -16,6 +16,7 @@
  */
 package groove.match;
 
+import groove.algebra.AlgebraRegister;
 import groove.graph.DefaultNode;
 import groove.graph.Label;
 import groove.graph.LabelStore;
@@ -30,6 +31,7 @@ import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
 import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
+import groove.trans.SystemProperties;
 import groove.util.Bag;
 import groove.util.HashBag;
 
@@ -64,9 +66,12 @@ public class GraphSearchPlanFactory {
      * @param ignoreNeg if <code>true</code>, the factory produces matchings
      *        that do not regard the negated edges
      */
-    GraphSearchPlanFactory(boolean injective, boolean ignoreNeg) {
+    GraphSearchPlanFactory(boolean injective, boolean ignoreNeg,
+            String algebraFamily) {
         this.injective = injective;
         this.ignoreNeg = ignoreNeg;
+        this.algebraFamily = algebraFamily;
+        this.algebraRegister = AlgebraRegister.getInstance(algebraFamily);
     }
 
     /**
@@ -95,35 +100,22 @@ public class GraphSearchPlanFactory {
         return result;
     }
 
-    /** Indicates if the matchers this factory produces are injective. */
-    public final boolean isInjective() {
-        return this.injective;
-    }
-
-    /**
-     * Indicates if the matchers this factory produces ignore negations in the
-     * host graph.
+    /** 
+     * Name of the algebra family to be used for algebraic operations.
+     * If {@code null}, the default will be used.
+     * @see AlgebraRegister#getInstance(String)
      */
-    public final boolean isIgnoreNeg() {
-        return this.ignoreNeg;
-    }
-
+    final String algebraFamily;
+    /** The (pre-initialised) register determined by {@link #algebraFamily}. */
+    final AlgebraRegister algebraRegister;
     /** Flag indicating if this factory creates injective matchings. */
-    private final boolean injective;
+    final boolean injective;
 
     /**
      * Flag indicating if this factory creates matchings that ignore negations
      * in the source graph.
      */
     final boolean ignoreNeg;
-
-    /**
-     * Returns the default instance of this factory class, which matches
-     * non-injectively.
-     */
-    static public GraphSearchPlanFactory getInstance() {
-        return getInstance(false, false);
-    }
 
     /**
      * Returns an instance of this factory class.
@@ -134,20 +126,42 @@ public class GraphSearchPlanFactory {
      */
     static public GraphSearchPlanFactory getInstance(boolean injective,
             boolean ignoreNeg) {
-        return instances[injective ? 1 : 0][ignoreNeg ? 1 : 0];
+        return getInstance(injective, ignoreNeg,
+            AlgebraRegister.DEFAULT_ALGEBRAS);
+    }
+
+    /** 
+     * Returns an instance of this factory class.
+     * @param properties object determining several parameters of the search,
+     * such as the injectivity and the algebra family.
+     */
+    static public GraphSearchPlanFactory getInstance(SystemProperties properties) {
+        return getInstance(properties.isInjective(), false,
+            properties.getAlgebraFamily());
+    }
+
+    /** 
+     * Returns an instance of this factory class.
+     * @param injective if <code>true</code>, the factory produces injective
+     *        matchers.
+     * @param ignoreNeg if <code>true</code>, the factory produces matchings
+     *        that do not regard the negated edges
+     * @param algebraFamily the family of algebras used for the data operations;
+     * non-{@code null}
+     */
+    static public GraphSearchPlanFactory getInstance(boolean injective,
+            boolean ignoreNeg, String algebraFamily) {
+        if (instance == null || instance.injective != injective
+            || instance.ignoreNeg != ignoreNeg
+            || !algebraFamily.equals(instance.algebraFamily)) {
+            instance =
+                new GraphSearchPlanFactory(injective, ignoreNeg, algebraFamily);
+        }
+        return instance;
     }
 
     /** The fixed, singleton instance of this factory. */
-    static private final GraphSearchPlanFactory[][] instances =
-        new GraphSearchPlanFactory[2][2];
-    static {
-        for (int injective = 0; injective <= 1; injective++) {
-            for (int ignoreNeg = 0; ignoreNeg <= 1; ignoreNeg++) {
-                instances[injective][ignoreNeg] =
-                    new GraphSearchPlanFactory(injective == 1, ignoreNeg == 1);
-            }
-        }
-    }
+    static private GraphSearchPlanFactory instance;
 
     /**
      * Internal class to collect the data necessary to create a plan and to
@@ -350,7 +364,9 @@ public class GraphSearchPlanFactory {
             } else if (label.isWildcard()) {
                 result = new WildcardEdgeSearchItem(edge);
             } else if (label.isOperator()) {
-                result = new OperatorEdgeSearchItem((OperatorEdge) edge);
+                result =
+                    new OperatorEdgeSearchItem((OperatorEdge) edge,
+                        GraphSearchPlanFactory.this.algebraRegister);
             } else if (!label.isArgument()) {
                 result = new RegExprEdgeSearchItem(edge, this.labelStore);
             }

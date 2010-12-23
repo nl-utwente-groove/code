@@ -21,7 +21,6 @@ import groove.algebra.Algebra;
 import groove.algebra.AlgebraRegister;
 import groove.trans.HostNode;
 import groove.view.aspect.Aspect;
-import groove.view.aspect.AttributeAspect;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -77,8 +76,7 @@ public class ValueNode extends VariableNode implements HostNode {
      */
     @Override
     public String toString() {
-        String algebraName =
-            AttributeAspect.getAttributeValueFor(getAlgebra()).getName();
+        String algebraName = getAlgebra().getName();
         return algebraName + CONTENT_SEPARATOR + getSymbol();
     }
 

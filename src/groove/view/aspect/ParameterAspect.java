@@ -55,55 +55,15 @@ public class ParameterAspect extends AbstractAspect {
     }
 
     /**
-     * Helper function to get the parameter number of an aspect node.
-     * Returns <code>0</code> if the node has an anonymous parameter,
-     * and <code>null</code> if the node has no parameter aspect value.
-     */
-    public static Integer getParNumber(AspectNode node) {
-        ParameterAspectValue value =
-            (ParameterAspectValue) node.getValue(getInstance());
-        if (value == null) {
-            return null;
-        } else {
-            Integer id = value.getNumber();
-            return id == null ? 0 : id;
-        }
-    }
-
-    /**
-     * Helper function to get the string representation of the parameter number of an aspect node.
-     * Returns <code>null</code> if the node has no parameter aspect value, or the
-     * aspect value has no content.
-     */
-    public static String getParString(AspectNode node) {
-        ParameterAspectValue value =
-            (ParameterAspectValue) node.getValue(getInstance());
-        if (value == null) {
-            return null;
-        } else {
-            return value.getContent();
-        }
-    }
-
-    /**
-     * Returns the rule aspect value associated with a given aspect element.
-     * Convenience method for {@link AspectElement#getValue(Aspect)} with
-     * {@link #getInstance()} as parameter.
-     */
-    public static AspectValue getParameterValue(AspectElement elem) {
-        return elem.getValue(getInstance());
-    }
-
-    /**
      * Gets the type of a given parameter, i.e. whether it may be used as 
      * input, output or both in the control language.
      * @param elem the AspectElement to check the type for 
      * @return Rule.PARAMETER_INPUT || Rule.PARAMETER_OUTPUT || Rule.PARAMETER_BOTH
      */
-    public static int getParameterType(AspectElement elem) {
-        AspectValue param = getParameterValue(elem);
+    public static int getParameterType(AspectNode elem) {
+        AspectValue param = elem.getParameter();
         if (param != null) {
-            String paramString = param.toString();
+            String paramString = param.getName();
             if (paramString.startsWith(PAR_IN_NAME)) {
                 return Rule.PARAMETER_INPUT;
             } else if (paramString.startsWith(PAR_OUT_NAME)) {

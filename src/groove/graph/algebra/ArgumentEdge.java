@@ -23,15 +23,19 @@ import groove.trans.RuleLabel;
  * Instances of this class are edges between
  * {@link groove.graph.algebra.ProductNode}s and
  * {@link groove.graph.algebra.VariableNode}s.
- * 
+ * AREND this can probably be merged with {@link RuleEdge}
  * @author Harmen Kastenberg
  * @version $Revision 1.0$ $Date: 2008-03-13 14:43:00 $
  */
 public class ArgumentEdge extends RuleEdge {
-    /** Constructs a fresh edge. */
-    public ArgumentEdge(ProductNode source, int number, VariableNode target) {
-        super(source, new RuleLabel(number), target);
-        this.number = number;
+    /** Constructs a fresh edge.
+      * @param label the rule label; must satisfy {@link RuleLabel#isArgument()}
+     */
+    public ArgumentEdge(ProductNode source, RuleLabel label, VariableNode target) {
+        super(source, label, target);
+        assert label.isArgument();
+        this.number = label.getArgument();
+        source.setArgument(this.number, target);
     }
 
     @Override

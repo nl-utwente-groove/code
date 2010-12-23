@@ -16,13 +16,13 @@
  */
 package groove.trans;
 
-import groove.algebra.Operation;
+import groove.algebra.Operator;
 import groove.graph.AbstractLabel;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
-import groove.rel.RegAutCalculator;
 import groove.rel.LabelVar;
 import groove.rel.RegAut;
+import groove.rel.RegAutCalculator;
 import groove.rel.RegExpr;
 import groove.util.Groove;
 import groove.util.Property;
@@ -78,7 +78,7 @@ public class RuleLabel extends AbstractLabel {
     }
 
     /** Constructs a label based on a given algebraic operator. */
-    public RuleLabel(Operation operator) {
+    public RuleLabel(Operator operator) {
         this.argNr = INVALID_ARG_NR;
         this.regExpr = null;
         this.operator = operator;
@@ -407,7 +407,7 @@ public class RuleLabel extends AbstractLabel {
     }
 
     /** Returns the operator wrapped in this label, if any. */
-    public Operation getOperator() {
+    public Operator getOperator() {
         return this.operator;
     }
 
@@ -426,13 +426,12 @@ public class RuleLabel extends AbstractLabel {
     /** An automaton constructed lazily for the regular expression. */
     private RegAut automaton;
     /** The wrapped operator, if any. */
-    private final Operation operator;
+    private final Operator operator;
     /** The argument number wrapped by this label, if any. */
     private final int argNr;
 
     /** Calculator used to construct all the automata. */
-    static private final RegAutCalculator calculator =
-        new RegAutCalculator();
+    static private final RegAutCalculator calculator = new RegAutCalculator();
     /** Number used for labels that are not argument labels. */
     public static final int INVALID_ARG_NR = -1;
 }

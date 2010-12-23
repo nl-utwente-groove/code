@@ -17,26 +17,16 @@
 package groove.gui;
 
 import groove.graph.Graph;
-import groove.graph.GraphInfo;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.StateJGraph;
-import groove.gui.layout.JVertexLayout;
-import groove.gui.layout.LayoutMap;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.util.Converter;
-import groove.util.ExprParser;
 import groove.util.Groove;
-import groove.view.aspect.Aspect;
-import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
-import groove.view.aspect.AspectNode;
-import groove.view.aspect.AspectValue;
-import groove.view.aspect.RuleAspect;
 
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -46,9 +36,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
@@ -143,7 +131,6 @@ public class Exporter {
             this.formats.add(TikzFormat.getInstance());
             this.formats.add(KthFormat.getInstance());
             this.formats.add(FsmFormat.getInstance());
-            this.formats.add(LispFormat.getInstance());
         }
         return this.formats;
     }
@@ -201,296 +188,6 @@ public class Exporter {
 
         /** The singleton instance of this class. */
         private static final Format instance = new FsmFormat();
-    }
-
-    /** Singleton class implementing the Lisp export format. */
-    private static class LispFormat implements Format {
-        /** Empty constructor to ensure singleton usage of the class. */
-        private LispFormat() {
-            // empty
-        }
-
-        public ExtensionFilter getFilter() {
-            return this.lispFilter;
-        }
-
-        public void export(JGraph jGraph, File file) throws IOException {
-            PrintWriter writer = new PrintWriter(new FileWriter(file));
-            convert(AspectGraph.newInstance(jGraph.getModel().toPlainGraph()),
-                writer);
-            writer.close();
-        }
-
-        /** Writes a graph to a writer in the required format. */
-        private void convert(AspectGraph graph, PrintWriter writer) {
-            this.writer = writer;
-            this.indent = 0;
-            this.nodeMap = new HashMap<AspectNode,Integer>();
-            this.edgeMap = new HashMap<AspectEdge,Integer>();
-            println("(%s", GRAPH_KEYWORD);
-            println("(%s", SUBGRAPH_KEYWORD);
-            println("(%s (", LET_KEYWORD);
-            int max = 0;
-            for (AspectNode node : graph.nodeSet()) {
-                int nr = node.getNumber();
-                max = Math.max(max, nr + 1);
-                this.nodeMap.put(node, nr);
-                println("(%s (%s %d))", nodeId(node), CREATE_NODE_KEYWORD, nr);
-            }
-            int edgeCount = 0;
-            for (AspectEdge edge : graph.edgeSet()) {
-                if (!isNodeLabel(edge)) {
-                    int nr = edgeCount;
-                    edgeCount++;
-                    this.edgeMap.put(edge, nr);
-                    println("(%s (%s %s %s))", edgeId(edge),
-                        CREATE_EDGE_KEYWORD, nodeId(edge.source()),
-                        nodeId(edge.target()));
-                }
-            }
-            println(")");
-
-            // definitions are done; now add labels
-            // for (AspectEdge edge: graph.edgeSet()) {
-            // String id = isNodeLabel(edge) ? nodeId(edge.source()) :
-            // edgeId(edge);
-            // println("(%s (%s %s) %s)", ADD_LABEL_KEYWORD, LIST_KEYWORD, id,
-            // label(edge));
-            // }
-
-            // add edge roles
-            // chr: the loops are redundant, which is inefficient but better for
-            // readability
-            Aspect currentAspect;
-            StringBuffer currentLabel;
-            for (AspectEdge edge : graph.edgeSet()) {
-                String id =
-                    isNodeLabel(edge) ? nodeId(edge.source()) : edgeId(edge);
-                currentLabel = new StringBuffer();
-                for (AspectValue value : edge.getAspectMap()) {
-                    currentAspect = value.getAspect();
-                    // only rule aspects can be outputted for now.
-                    // this will very soon change to something like (defun
-                    // set-aspect (list-of-ids aspect aspect-name) ...).
-                    if (currentAspect instanceof RuleAspect) {
-                        println("(%s-%s (%s %s) (%s-%s))", SET_PREFIX,
-                            currentAspect, LIST_KEYWORD, id, currentAspect,
-                            value.getName());
-                    } else {
-                        currentLabel.append(value.getName());
-                    }
-                }
-
-                if (currentLabel.length() > 0) {
-                    currentLabel.append(":");
-                }
-
-                currentLabel.append(label(edge));
-
-                println("(%s (%s %s) %s)", ADD_LABEL_KEYWORD, LIST_KEYWORD, id,
-                    quote(currentLabel.toString()));
-            }
-
-            // add node roles
-            for (AspectNode node : graph.nodeSet()) {
-                for (AspectValue value : node.getAspectMap()) {
-                    currentAspect = value.getAspect();
-
-                    if (currentAspect instanceof RuleAspect) {
-                        println("(%s-%s (%s %s) (%s-%s))", SET_PREFIX,
-                            currentAspect, LIST_KEYWORD, nodeId(node),
-                            currentAspect, value.getName());
-                    }
-                }
-            }
-
-            // if we have layout information, export it
-            if (GraphInfo.hasLayoutMap(graph)) {
-                LayoutMap<AspectNode,AspectEdge> layoutMap =
-                    GraphInfo.getLayoutMap(graph);
-
-                // lists of coordinates seen so far
-                ArrayList<Double> xlist = new ArrayList<Double>();
-                ArrayList<Double> ylist = new ArrayList<Double>();
-
-                double epsilon = 10; // grid size
-
-                Double x, y;
-
-                for (AspectNode node : graph.nodeSet()) {
-                    JVertexLayout layout = layoutMap.nodeMap().get(node);
-                    Rectangle2D r = layout.getBounds();
-
-                    x = Double.valueOf(r.getCenterX());
-                    y = Double.valueOf(r.getCenterY());
-
-                    // check whether current node is
-                    // aligned on the grid with the ones seen so far
-                    for (Double val : xlist) {
-                        if (Math.abs((val.doubleValue() - x.doubleValue())) < epsilon) {
-                            x = val;
-                            break;
-                        }
-                    }
-
-                    for (Double val : ylist) {
-                        if (Math.abs((val.doubleValue() - y.doubleValue())) < epsilon) {
-                            y = val;
-                            break;
-                        }
-                    }
-
-                    // if the coordinate differs more than grid-size
-                    // from the ones seen so far add it as a new coordinate to
-                    // the list
-                    if (!xlist.contains(x)) {
-                        xlist.add(x);
-                    }
-                    if (!ylist.contains(y)) {
-                        ylist.add(y);
-                    }
-
-                    // output coordinates of the current node
-                    println("(%s %s (%s %s %s))", ADD_POSITION, nodeId(node),
-                        LIST_KEYWORD, x.toString(), y.toString());
-                }
-            }
-            println(")))");
-            assert this.indent == 0 : String.format(
-                "Conversion ended at indentation level %d", this.indent);
-        }
-
-        /**
-         * Returns an identifier for a node, using the underlying
-         * {@link #nodeMap}.
-         */
-        private String nodeId(AspectNode node) {
-            return "n" + this.nodeMap.get(node);
-        }
-
-        /**
-         * Returns an identifier for an edge, using the underlying
-         * {@link #edgeMap}.
-         */
-        private String edgeId(AspectEdge edge) {
-            return "e" + this.edgeMap.get(edge);
-        }
-
-        /** Retrieves the edge label. */
-        private String label(AspectEdge edge) {
-            return edge.label().text();
-        }
-
-        private String quote(String aString) {
-            return ExprParser.toQuoted(aString, ExprParser.DOUBLE_QUOTE_CHAR);
-        }
-
-        /** Indicates if an edge should be regarded as a node label. */
-        private boolean isNodeLabel(AspectEdge edge) {
-            return edge.source() == edge.target();
-        }
-
-        /** Prints a line to a writer, taking care of indentation. */
-        private void println(String line, Object... args) {
-            // chr: The following code will break if we get
-            // wrong indentation counts (closes > opens).
-            // char[] spaces = new char[INDENT_COUNT * indent];
-            // Arrays.fill(spaces, ' ');
-
-            // wrong indentation is acceptable, therefore use
-            // a loop that simply terminates if i < 0
-            for (int i = 0; i < this.indent * INDENT_COUNT; i++) {
-                this.writer.print(' ');
-            }
-
-            // chr: take care of escape characters
-            // and quotes to handle labels like:
-            // String s = "\"(\"";
-            String text = String.format(line, args);
-            this.writer.println(text);
-            int opens = 0;
-            int closes = 0;
-            int escape = 0;
-            boolean ignore = false;
-            for (char c : text.toCharArray()) {
-                if (escape > 0) {
-                    escape++;
-                }
-                if (escape == 3) {
-                    escape = 0;
-                }
-                if (c == '\\') {
-                    escape++;
-                }
-                if (c == '\"' && (escape == 0)) {
-                    ignore = !ignore;
-                }
-                if (!ignore && (escape == 0)) {
-                    if (c == '(') {
-                        opens++;
-                    } else if (c == ')') {
-                        closes++;
-                    }
-                }
-            }
-            this.indent += opens - closes;
-        }
-
-        /**
-         * The writer used in the current
-         * {@link #convert(AspectGraph, PrintWriter)} invocation.
-         */
-        private PrintWriter writer;
-        /**
-         * The indentation level of the current
-         * {@link #convert(AspectGraph, PrintWriter)} invocation.
-         */
-        private int indent;
-        /**
-         * Extension filter used for exporting graphs in lisp format.
-         */
-        private final ExtensionFilter lispFilter = Groove.getFilter(
-            "Lisp layout files", Groove.LISP_EXTENSION, true);
-
-        /**
-         * Map from nodes to numbers built up during
-         * {@link #convert(AspectGraph, PrintWriter)}.
-         */
-        private Map<AspectNode,Integer> nodeMap;
-        /**
-         * Map from edges to numbers built up during
-         * {@link #convert(AspectGraph, PrintWriter)}.
-         */
-        private Map<AspectEdge,Integer> edgeMap;
-
-        /** Returns the singleton instance of this class. */
-        public static Format getInstance() {
-            return instance;
-        }
-
-        /** The singleton instance of this class. */
-        private static final Format instance = new LispFormat();
-
-        /** Number of indentation positions per indent level. */
-        private static int INDENT_COUNT = 4;
-        /** Lisp function for graphs. */
-        private static final String GRAPH_KEYWORD = "graph";
-        /** Lisp function for subgraphs. */
-        private static final String SUBGRAPH_KEYWORD = "sub-graph";
-        /** Lisp let function. */
-        private static final String LET_KEYWORD = "let*";
-        /** Lisp function for node creation. */
-        private static final String CREATE_NODE_KEYWORD = "create-node";
-        /** Lisp function for edge creation. */
-        private static final String CREATE_EDGE_KEYWORD = "create-edge";
-        /** Lisp function for creating lists. */
-        private static final String LIST_KEYWORD = "list";
-        /** Lisp function for adding labels. */
-        private static final String ADD_LABEL_KEYWORD = "add-label";
-        /** Lisp function for setting rule roles. */
-        private static final String SET_PREFIX = "set";
-        /** Lisp function for adding positions for nodes. */
-        private static final String ADD_POSITION = "add-position";
     }
 
     /** Class implementing the JPG export format. */

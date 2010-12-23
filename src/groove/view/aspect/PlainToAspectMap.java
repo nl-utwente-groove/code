@@ -13,14 +13,17 @@ import groove.view.aspect.AspectGraph.AspectFactory;
  */
 public class PlainToAspectMap
         extends
-        ElementMap<DefaultNode,DefaultLabel,DefaultEdge,AspectNode,DefaultLabel,AspectEdge> {
+        ElementMap<DefaultNode,DefaultLabel,DefaultEdge,AspectNode,AspectLabel,AspectEdge> {
     /** Creates a fresh, empty map. */
-    public PlainToAspectMap() {
-        super(AspectFactory.instance());
+    public PlainToAspectMap(String graphRole) {
+        super(AspectFactory.instance(graphRole));
+        this.graphRole = graphRole;
     }
 
     @Override
     public PlainToAspectMap newMap() {
-        return new PlainToAspectMap();
+        return new PlainToAspectMap(this.graphRole);
     }
+
+    private final String graphRole;
 }

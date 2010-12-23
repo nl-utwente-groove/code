@@ -16,13 +16,15 @@
  */
 package groove.view.aspect;
 
+import groove.algebra.Operator;
 import groove.graph.AbstractNode;
 import groove.graph.DefaultLabel;
 import groove.util.Fixable;
+import groove.util.Groove;
 import groove.view.FormatException;
+import groove.view.aspect.ParameterAspect.ParameterAspectValue;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,9 +36,9 @@ import java.util.Set;
  */
 public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     /** Constructs an aspect node with a given number. */
-    AspectNode(int nr) {
+    AspectNode(int nr, String graphRole) {
         super(nr);
-        this.aspectMap = new AspectMap(true);
+        this.graphRole = graphRole;
     }
 
     /**
@@ -63,128 +65,61 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
      */
     @Override
     public boolean equals(Object obj) {
-        return obj != null && obj.getClass().equals(getClass())
+        return this == obj || obj != null && obj.getClass().equals(getClass())
             && ((AspectNode) obj).getNumber() == getNumber();
     }
 
-    /**
-     * Adds an aspect value to the node, or updates an existing value.
-     * @param value the aspect value to be added
-     * @throws FormatException if the node already has a value for
-     *         <code>value.getAspect()</code>
-     */
-    public void addInferredValue(AspectValue value) throws FormatException {
-        try {
-            getAspectMap().addInferredValue(value);
-        } catch (FormatException e) {
-            throw e.extend(this);
-        }
-    }
-
-    /**
-     * Adds an aspect value to the node.
-     * @param value the aspect value to be added
-     * @throws FormatException if the node already has a value for
-     *         <code>value.getAspect()</code>
-     */
-    public void addDeclaredValue(AspectValue value) throws FormatException {
-        try {
-            getAspectMap().addDeclaredValue(value);
-        } catch (FormatException e) {
-            throw e.extend(this);
-        }
-    }
-
-    public AspectValue getValue(Aspect aspect) {
-        AspectValue result = getAspectMap().get(aspect);
-        if (result == null) {
-            result = aspect.getDefaultValue();
-        }
-        return result;
-    }
-
-    public Collection<AspectValue> getDeclaredValues() {
-        return getAspectMap().getDeclaredValues();
-    }
-
-    /**
-     * Returns the value for a given aspect for an edge that has this node as
-     * its source, in case the node's own value gives a way to predict this.
-     * @param aspect the aspect for which a value is to be inferred
-     * @return an aspect value for an edge that has this node as its source, or
-     *         <code>null</code> if no value can be inferred.
-     */
-    public AspectValue getSourceToEdgeValue(Aspect aspect) {
-        AspectValue ownValue = getValue(aspect);
-        if (ownValue == null) {
-            return null;
-        } else {
-            return ownValue.sourceToEdge();
-        }
-    }
-
-    /**
-     * Returns the value for a given aspect for an edge that has this node as
-     * its target, in case the node's own value gives a way to predict this.
-     * @param aspect the aspect for which a value is to be inferred
-     * @return an aspect value for an edge that has this node as its target, or
-     *         <code>null</code> if no value can be inferred.
-     */
-    public AspectValue getTargetToEdgeValue(Aspect aspect) {
-        AspectValue ownValue = getValue(aspect);
-        if (ownValue == null) {
-            return null;
-        } else {
-            return ownValue.targetToEdge();
-        }
-    }
-
-    /**
-     * Returns the map from aspects to aspect values for this edge.
-     */
-    public AspectMap getAspectMap() {
-        return this.aspectMap;
-    }
-
-    /**
-     * The internal map from aspects to corresponding values.
-     */
-    private final AspectMap aspectMap;
-
     @Override
     public void setFixed() throws FormatException {
-        // check for correctness of product node signatures.
-        if (!isFixed() && isProduct()) {
-            if (this.argNodes == null) {
-                throw new FormatException("Product node has no arguments", this);
-            }
-            int arity = this.argNodes.size();
-            boolean argsOk = true;
-            List<String> argTypes = new ArrayList<String>();
-            for (int i = 0; i < arity; i++) {
-                AspectNode argNode = this.argNodes.get(i);
-                if (argNode == null) {
-                    throw new FormatException("Missing product argument %d", i,
-                        this);
+        if (!isFixed()) {
+            setNodeLabelsFixed();
+            try {
+                if (isProduct()) {
+                    testSignature();
                 }
-                AspectValue argNodeType = argNode.getType();
-                if (argNodeType == null) {
-                    argsOk = false;
-                } else {
-                    argTypes.add(argNodeType.getName());
-                }
+            } finally {
+                this.allFixed = true;
             }
-            if (this.operatorEdge != null && argsOk) {
-                List<String> opTypes =
-                    this.operatorEdge.getOperator().getParameterTypes();
-                if (!argTypes.equals(opTypes)) {
-                    throw new FormatException(
-                        "Product node signature %s differs from signature %s of %s",
-                        argTypes, opTypes, this.operatorEdge.label(), this);
+        }
+    }
+
+    /**
+     * Checks for the correctness of product node signatures.
+     */
+    private void testSignature() throws FormatException {
+        if (this.argNodes == null) {
+            throw new FormatException("Product node has no arguments", this);
+        }
+        int arity = this.argNodes.size();
+        boolean argsOk = true;
+        List<String> argTypes = new ArrayList<String>();
+        for (int i = 0; i < arity; i++) {
+            AspectNode argNode = this.argNodes.get(i);
+            if (argNode == null) {
+                throw new FormatException("Missing product argument %d", i,
+                    this);
+            }
+            AspectValue argNodeType = argNode.getType();
+            if (argNodeType == null) {
+                argsOk = false;
+            } else {
+                argTypes.add(argNodeType.getName());
+            }
+        }
+        if (this.operatorEdge != null && argsOk) {
+            Operator operator = this.operatorEdge.getOperator();
+            this.operatorEdge.target().setDataType(operator.getResultType());
+            List<String> opTypes = operator.getParameterTypes();
+            if (opTypes.size() != arity) {
+                throw new FormatException(
+                    "Product node arity %d conflicts with operator %s", arity,
+                    operator, this);
+            } else {
+                for (int i = 0; i < arity; i++) {
+                    this.argNodes.get(i).setDataType(opTypes.get(i));
                 }
             }
         }
-        this.allFixed = true;
     }
 
     @Override
@@ -200,7 +135,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     }
 
     /**
-     * Sets the (declared) aspects for this node.
+     * Adds a node label to this node, and processes the resulting aspects.
      * @throws FormatException if the aspects are inconsistent
      */
     public void setAspects(AspectLabel label) throws FormatException {
@@ -216,6 +151,37 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         }
     }
 
+    /** 
+     * Concludes the processing of the node labels.
+     * Afterwards {@link #setAspects(AspectLabel)} should not be called
+     * any more.
+     */
+    private void setNodeLabelsFixed() throws FormatException {
+        if (!this.nodeLabelsFixed) {
+            try {
+                if (isForRule()) {
+                    if (!hasRole()) {
+                        if (!conflictsWithRole(getType())) {
+                            setRole(RuleAspect.READER);
+                        }
+                    } else if (conflictsWithRole(getType())) {
+                        throw new FormatException(
+                            "Conflicting node aspects %s and %s", getRole(),
+                            getType(), this);
+                    }
+                } else {
+                    if (hasRole()) {
+                        throw new FormatException(
+                            "Node aspect %s only allowed in rules", getRole(),
+                            this);
+                    }
+                }
+            } finally {
+                this.nodeLabelsFixed = true;
+            }
+        }
+    }
+
     /**
      * Adds a declared aspect value to this node.
      * @throws FormatException if the added value conflicts with a previously
@@ -224,27 +190,32 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     private void addAspectValue(AspectValue value) throws FormatException {
         assert value.isNodeValue() : String.format(
             "Inappropriate node aspect %s", value, this);
-        if (value.getAspect() == ParameterAspect.getInstance()) {
+        if (isRole(value)) {
+            if (hasRole()) {
+                throw new FormatException("Conflicting node aspects %s and %s",
+                    getRole(), value, this);
+            } else if (value.getContent() != null) {
+                throw new FormatException(
+                    "Node role %s should not have quantifier name", value, this);
+            } else {
+                setRole(value);
+            }
+        } else if (isType(value)) {
+            // aspect value represents a node type
+            if (hasType()) {
+                throw new FormatException("Conflicting node aspects %s and %s",
+                    getType(), value, this);
+            } else {
+                setType(value);
+            }
+        } else if (value.getAspect() == ParameterAspect.getInstance()) {
             if (this.parameter == null) {
-                this.parameter = value;
+                this.parameter = (ParameterAspectValue) value;
             } else {
                 throw new FormatException(
                     "Conflicting parameter aspects %s and %s", this.parameter,
                     value, this);
             }
-        } else {
-            // aspect value represents a node type
-            if (this.type == null) {
-                this.type = value;
-            } else {
-                throw new FormatException("Conflicting node aspects %s and %s",
-                    this.type, value, this);
-            }
-        }
-        if (value.getAspect() == RuleAspect.getInstance()
-            && value.getContent() != null) {
-            throw new FormatException(
-                "Node role %s should not have quantifier name", value, this);
         }
     }
 
@@ -255,25 +226,24 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     public void inferInAspect(AspectEdge edge) throws FormatException {
         assert edge.target() == this;
         testFixed(false);
-        this.nodeLabelsFixed = true;
+        setNodeLabelsFixed();
         if ((edge.isNestedAt() || edge.isNestedIn()) && !isQuantifier()) {
             throw new FormatException(
                 "Target node of %s-edge should be quantifier", edge.label(),
                 this);
-        } else if (edge.isArgument() && !AttributeAspect.isDataValue(getType())) {
-            throw new FormatException(
-                "Target node of %s-edge should be typed data node",
-                edge.label(), this);
-        } else if (edge.isOperator()) {
-            AspectValue resultType =
-                AttributeAspect.getAttributeValueFor(edge.getOperator().getResultType());
-            if (getType() == null || AttributeAspect.VALUE.equals(getType())) {
-                this.type = resultType;
-            } else if (!resultType.equals(getType())) {
-                throw new FormatException(
-                    "Target node type %s conflicts with result type of %s-edge",
-                    getType(), edge.label(), this);
-            }
+        }
+    }
+
+    /** Attempts to set the aspect type of this node to a given data type. */
+    private void setDataType(String typeName) throws FormatException {
+        AspectValue newType = AttributeAspect.getAttributeValueFor(typeName);
+        assert AttributeAspect.VALUE.equals(newType)
+            || AttributeAspect.isDataValue(newType);
+        if (AttributeAspect.VALUE.equals(getType())) {
+            setType(newType);
+        } else if (!newType.equals(getType())) {
+            throw new FormatException("Conflicting (inferred) types %s and %s",
+                getType().getName(), newType.getName(), this);
         }
     }
 
@@ -284,22 +254,23 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     public void inferOutAspect(AspectEdge edge) throws FormatException {
         assert edge.source() == this;
         testFixed(false);
-        this.nodeLabelsFixed = true;
+        setNodeLabelsFixed();
+        AspectLabel edgeLabel = edge.label();
         if (edge.isNestedAt()) {
-            if (edge.getLabelText().equals(NestingAspect.AT_LABEL)) {
-                if (getType() != null && !hasRuleRole()) {
+            if (edge.getInnerText().equals(NestingAspect.AT_LABEL)) {
+                if (!hasRole()) {
                     throw new FormatException(
                         "Source node of %s-edge should be rule element",
-                        edge.label(), this);
+                        edgeLabel, this);
                 }
                 this.nestingLevel = edge.target();
             }
         } else if (edge.isNestedIn()) {
-            assert edge.getLabelText().equals(NestingAspect.IN_LABEL);
+            assert edge.getInnerText().equals(NestingAspect.IN_LABEL);
             if (!isQuantifier()) {
                 throw new FormatException(
-                    "Source node of %s-edge should be quantifier",
-                    edge.label(), this);
+                    "Source node of %s-edge should be quantifier", edgeLabel,
+                    this);
             } else {
                 // collect collective nesting grandparents to test for circularity
                 Set<AspectNode> grandparents = new HashSet<AspectNode>();
@@ -315,75 +286,94 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
                 this.nestingParent = edge.target();
             }
         } else if (edge.isArgument()) {
-            if (getType() == null) {
-                this.type = AttributeAspect.PRODUCT;
+            if (!hasType()) {
+                setType(AttributeAspect.PRODUCT);
             } else if (!isProduct()) {
                 throw new FormatException(
-                    "Source node of %s-edge should be product node",
-                    edge.label(), this);
+                    "Source node of %s-edge should be product node", edgeLabel,
+                    this);
             } else {
                 if (this.argNodes == null) {
                     this.argNodes = new ArrayList<AspectNode>();
                 }
                 // extend the list if necessary
-                while (this.argNodes.size() < edge.getArgument()) {
+                while (this.argNodes.size() <= edge.getArgument()) {
                     this.argNodes.add(null);
                 }
                 if (this.argNodes.get(edge.getArgument()) != null) {
                     throw new FormatException("Duplicate %s-edge",
                         edge.label(), this);
                 }
-                this.argNodes.add(edge.getArgument(), edge.target());
+                this.argNodes.set(edge.getArgument(), edge.target());
             }
         } else if (edge.isOperator()) {
-            if (getType() == null) {
-                this.type = AttributeAspect.PRODUCT;
+            if (!hasType()) {
+                setType(AttributeAspect.PRODUCT);
             } else if (!isProduct()) {
                 throw new FormatException(
-                    "Source node of %s-edge should be product node",
-                    edge.label(), this);
+                    "Source node of %s-edge should be product node", edgeLabel,
+                    this);
             } else if (this.operatorEdge == null) {
                 this.operatorEdge = edge;
             } else if (!this.operatorEdge.getOperator().getParameterTypes().equals(
                 edge.getOperator().getParameterTypes())) {
                 throw new FormatException(
                     "Conflicting operator signatures for %s and %s",
-                    this.operatorEdge.label(), edge.label(), this);
+                    this.operatorEdge.label(), edgeLabel, this);
+            }
+        } else if (edge.isAbstract() && edge.getTypeLabel().isNodeType()) {
+            if (!hasType()) {
+                setType(TypeAspect.ABS);
+            } else if (!isAbstract()) {
+                throw new FormatException(
+                    "Conflicting aspect %s on abstract %s-type node",
+                    getType(), edgeLabel, this);
             }
         }
     }
 
     /** Indicates if this node represents a remark. */
     public boolean isRemark() {
-        return this.type != null && RuleAspect.REMARK.equals(this.type);
+        return getType() != null && RuleAspect.REMARK.equals(getType());
     }
 
     /** Indicates if this node represents a quantifier. */
     public boolean isQuantifier() {
-        return this.type != null
-            && this.type.getAspect() == NestingAspect.getInstance();
+        return getType() != null
+            && getType().getAspect() == NestingAspect.getInstance();
     }
 
     /** Indicates if this represents an abstract type node. */
     public boolean isAbstract() {
-        return this.type != null && TypeAspect.ABS.equals(this.type);
+        return getType() != null && TypeAspect.ABS.equals(getType());
     }
 
     /** Indicates if this node has a declared role. */
-    public boolean hasRuleRole() {
-        return this.type != null && !isRemark()
-            && this.type.getAspect() == RuleAspect.getInstance();
+    public boolean hasRole() {
+        return getRole() != null;
+    }
+
+    /** Returns the role of this node. */
+    public AspectValue getRole() {
+        return this.role;
+    }
+
+    /** Changes the (aspect) type of this node. */
+    private void setRole(AspectValue role) {
+        assert isRole(role) : String.format("Aspect %s is not a valid role",
+            role);
+        this.role = role;
     }
 
     /** Indicates if this represents a product node. */
     public boolean isProduct() {
-        return this.type != null && AttributeAspect.PRODUCT.equals(this.type);
+        return getType() != null && AttributeAspect.PRODUCT.equals(this.type);
     }
 
     /** Indicates if this represents a variable or value node. */
     public boolean isDataValue() {
-        return this.type != null && !isProduct()
-            && this.type.getAspect() == AttributeAspect.getInstance();
+        return getType() != null && !isProduct()
+            && getType().getAspect() == AttributeAspect.getInstance();
     }
 
     /** Indicates if this represents a rule parameter. */
@@ -392,8 +382,12 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     }
 
     /** Returns the parameter aspect of this node, if any. */
-    public AspectValue getParameter() {
+    public ParameterAspectValue getParameter() {
         return this.parameter;
+    }
+
+    public boolean hasType() {
+        return getType() != null;
     }
 
     /** 
@@ -405,12 +399,6 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
      *      {@link NestingAspect#EXISTS}, 
      *      {@link NestingAspect#FORALL} or
      *      {@link NestingAspect#FORALL_POS}
-     * <li> A rule role (without a quantifier name), viz. one of
-     *      {@link RuleAspect#EMBARGO}, 
-     *      {@link RuleAspect#CREATOR}, 
-     *      {@link RuleAspect#ERASER}, 
-     *      {@link RuleAspect#READER} or
-     *      {@link RuleAspect#CNEW}
      * <li> {@link TypeAspect#ABS}
      * <li> {@link AttributeAspect#PRODUCT} or {@link AttributeAspect#VALUE}
      * <li> A value satisfying {@link AttributeAspect#isDataValue(AspectValue)}, possibly with a constant content
@@ -418,6 +406,26 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
      */
     public AspectValue getType() {
         return this.type;
+    }
+
+    /** Changes the (aspect) type of this node. */
+    private void setType(AspectValue type) {
+        assert isType(type) : String.format("Aspect %s is not a valid role",
+            this.role);
+        this.type = type;
+    }
+
+    /** An aspect node is a meta-element if it is a quantifier or remark. */
+    @Override
+    public boolean isMeta() {
+        return isQuantifier() || isRemark();
+    }
+
+    /**
+     * Returns the list of node labels added to this node.
+     */
+    public List<AspectLabel> getNodeLabels() {
+        return this.nodeLabels;
     }
 
     /**
@@ -433,10 +441,20 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     }
 
     /** 
+     * If this is a product node, returns the list of
+     * argument nodes reached by outgoing argument edges.
+     * @return an ordered list of argument nodes, or {@code null} if {@link #isProduct()} is {@code false}
+     */
+    public List<AspectNode> getArgNodes() {
+        testFixed(true);
+        return this.argNodes;
+    }
+
+    /** 
      * Retrieves the nesting level of this aspect node.
      * Only non-{@code null} if this node is an untyped or rule node. 
      */
-    AspectNode getNestingLevel() {
+    public AspectNode getNestingLevel() {
         return this.nestingLevel;
     }
 
@@ -444,10 +462,16 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
      * Retrieves the parent of this node in the nesting hierarchy.
      * Only non-{@code null} if this node is a quantifier node. 
      */
-    AspectNode getNestingParent() {
+    public AspectNode getNestingParent() {
         return this.nestingParent;
     }
 
+    /** Indicates if this is supposed to be a rule element. */
+    private boolean isForRule() {
+        return Groove.RULE_ROLE.equals(this.graphRole);
+    }
+
+    private final String graphRole;
     /** The list of aspect labels defining node aspects. */
     private List<AspectLabel> nodeLabels = new ArrayList<AspectLabel>();
     /**
@@ -458,10 +482,12 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     private boolean nodeLabelsFixed;
     /** Indicates that the entire node is fixed. */
     private boolean allFixed;
+    /** The role of the aspect node. */
+    private AspectValue role;
     /** The type of the aspect node. */
     private AspectValue type;
     /** The parameter aspect of this node, if any. */
-    private AspectValue parameter;
+    private ParameterAspectValue parameter;
     /** The aspect node representing the nesting level of this node. */
     private AspectNode nestingLevel;
     /** The aspect node representing the parent of this node in the nesting
@@ -472,43 +498,29 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     /** The operator of an outgoing operator edge. */
     private AspectEdge operatorEdge;
 
-    /** A quantifier as occurring on an aspect node. */
-    public static class Quantifier {
-        /** 
-         * Creates a new, possibly named quantifier.
-         * @param existential if {@code true}, this is an existential
-         * quantifier, otherwise it is a universal
-         * @param positive if {@code true}, this is a positive universal.
-         * Cannot be {@code true} if {@code existential} is {@code true}
-         * @param name the (possibly {@code null}) name of this quantifier
-         */
-        public Quantifier(boolean existential, boolean positive, String name) {
-            assert !(existential && positive);
-            this.name = name;
-            this.existential = existential;
-            this.positive = positive;
-        }
+    /** Determines if a certain aspect value is a role. */
+    static boolean isRole(AspectValue role) {
+        return RuleAspect.CREATOR.equals(role)
+            || RuleAspect.ERASER.equals(role)
+            || RuleAspect.EMBARGO.equals(role)
+            || RuleAspect.READER.equals(role) || RuleAspect.CNEW.equals(role);
+    }
 
-        /** Returns the (possibly {@code null} name of this quantifier. */
-        public String getName() {
-            return this.name;
-        }
+    /** Determines if a certain aspect value is a type. */
+    static boolean isType(AspectValue type) {
+        return RuleAspect.REMARK.equals(type) || TypeAspect.ABS.equals(type)
+            || TypeAspect.SUB.equals(type)
+            || type.getAspect() == NestingAspect.getInstance()
+            || type.getAspect() == AttributeAspect.getInstance();
+    }
 
-        /** Indicates if this quantifier is existential. If not, it is universal. */
-        public boolean isExistential() {
-            return this.existential;
-        }
-
-        /** Indicates if this quantifier is a positive universal. */
-        public boolean isPositive() {
-            return this.positive;
-        }
-
-        /** If {@code true}, this quantifier is existential, otherwise it is universal. */
-        private final boolean existential;
-        /** The (possibly {@code null}) name of this quantifier. */
-        private final String name;
-        /** if {@code true}, this quantifier is a positive universal. */
-        private final boolean positive;
+    /**
+     * Determines a conflict relation between aspect values used as types
+     * and the presence of a role.
+     */
+    static boolean conflictsWithRole(AspectValue type) {
+        assert type == null || isType(type);
+        return type != null
+            && (type.getAspect() != AttributeAspect.getInstance());
     }
 }

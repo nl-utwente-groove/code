@@ -19,6 +19,7 @@ package groove.test.abstraction;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import groove.abstraction.Materialisation;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.Parameters;
@@ -222,8 +223,10 @@ public class TestShape {
 
         } catch (IOException e) {
             e.printStackTrace();
+            fail();
         } catch (FormatException e) {
             e.printStackTrace();
+            fail();
         }
     }
 

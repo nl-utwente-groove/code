@@ -31,16 +31,18 @@ import java.util.List;
  */
 public class AspectLabel extends AbstractLabel implements Cloneable {
     /**
-     * Constructs an empty aspect map.
+     * Constructs an initially empty label.
      */
     public AspectLabel() {
         // empty
     }
 
-    /** Constructs a copy of a given aspect map. */
+    /** Constructs an as yet unfixed copy of a given aspect label. */
     private AspectLabel(AspectLabel other) {
         this.aspects.addAll(other.aspects);
         this.innerText = other.innerText;
+        this.edgeOnly = other.edgeOnly;
+        this.nodeOnly = other.nodeOnly;
     }
 
     @Override
@@ -85,7 +87,7 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
         }
     }
 
-    /** Returns a clone of this map. */
+    /** Returns an as yet unfixed clone of this label. */
     @Override
     public AspectLabel clone() {
         return new AspectLabel(this);
@@ -181,5 +183,4 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
 
     /** Label text; may be {@code null} if the associated element is a node. */
     private String innerText;
-    /** Pre-computed hash code; if not 0, the label is fixed. */
 }

@@ -21,6 +21,7 @@ import groove.trans.Condition;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
 import groove.trans.RuleNode;
+import groove.trans.SystemProperties;
 
 import java.util.Collection;
 
@@ -33,57 +34,40 @@ import java.util.Collection;
  * @version $Revision $
  */
 public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
+    private final SystemProperties properties;
+    private final boolean injective;
+    private final boolean ignoreNeg;
 
-    private boolean injective = false;
-    private boolean ignoreNeg = false;
-
-    static private final SearchPlanEngine[][] instances =
-        new SearchPlanEngine[2][2];
-
-    static {
-        for (int injective = 0; injective <= 1; injective++) {
-            for (int ignoreNeg = 0; ignoreNeg <= 1; ignoreNeg++) {
-                instances[injective][ignoreNeg] =
-                    new SearchPlanEngine(injective == 1, ignoreNeg == 1);
-            }
-        }
-    }
+    static private SearchPlanEngine instance;
 
     /**
      * Factory method for creating a search engine that uses Search Plan for matching.
      * 
-     * @param injective Determines if the desired engine should perform matching injectively. 
-     * @return An instance of the SearchPlan engine
-     */
-    public static SearchPlanEngine getInstance(boolean injective) {
-        return getInstance(injective, false);
-    }
-
-    /**
-     * Factory method for creating a search engine that uses Search Plan for matching.
-     * 
-     * @param injective Determines if the matching should be done injectively.
-     * @param ignoreNeg See the documentation for the <code>ignoreNeg</code> parameter of the 
-     *                  {@link GraphSearchPlanFactory#getInstance()} method.
+     * @param properties system properties determining some choices in the engine,
+     * such as injectivity of the matching.
      * @return An instance of the SearchPlan matching engine
      */
-    public static SearchPlanEngine getInstance(boolean injective,
-            boolean ignoreNeg) {
-        return instances[injective ? 1 : 0][ignoreNeg ? 1 : 0];
+    public static SearchPlanEngine getInstance(SystemProperties properties) {
+        if (instance == null || instance.getProperties() != properties) {
+            instance = new SearchPlanEngine(properties);
+        }
+        return instance;
     }
 
-    private SearchPlanEngine(boolean injective, boolean ignoreNeg) {
-        this.injective = injective;
-        this.ignoreNeg = ignoreNeg;
+    private SearchPlanEngine(SystemProperties properties) {
+        this.properties = properties;
+        this.injective = properties.isInjective();
+        this.ignoreNeg = false;
     }
 
     @Override
     public SearchPlanStrategy createMatcher(Condition condition,
             Collection<RuleNode> anchorNodes, Collection<RuleEdge> anchorEdges,
             Collection<RuleNode> relevantNodes) {
-        return ConditionSearchPlanFactory.getInstance(
-            condition.getSystemProperties().isInjective()).createMatcher(
-            condition, anchorNodes, anchorEdges, relevantNodes);
+        SystemProperties properties = condition.getSystemProperties();
+        return ConditionSearchPlanFactory.getInstance(properties.isInjective(),
+            properties.getAlgebraFamily()).createMatcher(condition,
+            anchorNodes, anchorEdges, relevantNodes);
     }
 
     @Override
@@ -105,4 +89,8 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
         return this.injective;
     }
 
+    /** Returns the system properties associated with this engine. */
+    public SystemProperties getProperties() {
+        return this.properties;
+    }
 }

@@ -723,7 +723,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      * corresponding AspectGraphs
      */
     private void loadGraphs() throws IOException {
-        collectObjects(this.graphMap, STATE_FILTER, Groove.GRAPH_ROLE);
+        collectObjects(this.graphMap, STATE_FILTER, Groove.HOST_ROLE);
     }
 
     /**

@@ -36,7 +36,6 @@ import groove.gui.layout.LayoutMap;
 import groove.trans.RuleLabel;
 import groove.util.Groove;
 import groove.view.aspect.AspectEdge;
-import groove.view.aspect.RuleAspect;
 
 import java.awt.Font;
 import java.awt.Rectangle;
@@ -250,7 +249,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
     @Override
     public DefaultGraph toPlainGraph() {
         DefaultGraph result = super.toPlainGraph();
-        GraphInfo.setRole(result, Groove.GRAPH_ROLE);
+        GraphInfo.setRole(result, Groove.HOST_ROLE);
         return result;
     }
 
@@ -357,7 +356,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
         } else if (edge instanceof AspectEdge) {
             result =
                 !edge.isBinary() || isPotentialUnaryEdge(edge)
-                    && RuleAspect.isRemark((AspectEdge) edge);
+                    && ((AspectEdge) edge).isRemark();
         } else {
             result = !edge.label().isBinary();
         }

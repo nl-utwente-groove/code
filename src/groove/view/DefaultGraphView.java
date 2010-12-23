@@ -16,11 +16,9 @@
  */
 package groove.view;
 
-import static groove.view.aspect.AttributeAspect.getAttributeValue;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.Label;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.OperatorEdge;
@@ -35,11 +33,7 @@ import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
-import groove.view.aspect.AspectValue;
-import groove.view.aspect.AttributeAspect;
 import groove.view.aspect.AttributeElementFactory;
-import groove.view.aspect.RuleAspect;
-import groove.view.aspect.TypeAspect;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -61,6 +55,7 @@ public class DefaultGraphView implements GraphView {
      * @see GraphInfo#getName(Graph)
      */
     public DefaultGraphView(AspectGraph view, SystemProperties properties) {
+        view.testFixed(true);
         this.view = view;
         this.attributeFactory = createAttributeFactory(properties);
         // we fix the view; is it conceptually right to do that here?
@@ -165,11 +160,7 @@ public class DefaultGraphView implements GraphView {
         ViewToHostMap elementMap = new ViewToHostMap();
         // copy the nodes from view to model
         for (AspectNode viewNode : view.nodeSet()) {
-            try {
-                processViewNode(model, elementMap, viewNode);
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
-            }
+            processViewNode(model, elementMap, viewNode);
         }
         // copy the edges from view to model
         for (AspectEdge viewEdge : view.edgeSet()) {
@@ -233,45 +224,21 @@ public class DefaultGraphView implements GraphView {
     /**
      * Processes the information in a view node by updating the model and
      * element map.
-     * @throws FormatException if the presence of the node signifies an error
      */
     private void processViewNode(HostGraph model, ViewToHostMap elementMap,
-            AspectNode viewNode) throws FormatException {
-        FormatError error = null;
-        boolean nodeInModel = true;
-        for (AspectValue value : viewNode.getAspectMap()) {
-            if (isVirtualValue(value)) {
-                nodeInModel = false;
-            } else if (!isAllowedValue(value)) {
-                error =
-                    new FormatError(
-                        "Node aspect value '%s' not allowed in graphs", value,
-                        viewNode);
-            }
-        }
+            AspectNode viewNode) {
+        boolean nodeInModel = !viewNode.isRemark();
         // include the node in the model if it is not virtual
         if (nodeInModel) {
             HostNode nodeImage = null;
-            try {
+            if (viewNode.isDataValue()) {
                 nodeImage =
-                    (ValueNode) this.attributeFactory.createAttributeNode(viewNode);
-            } catch (FormatException exc) {
-                error = new FormatError(exc.getErrors().get(0), viewNode);
-            }
-            if (nodeImage == null) {
-                nodeImage = model.addNode(viewNode.getNumber());
-            } else if (isAllowedNode(nodeImage)) {
+                    (ValueNode) this.attributeFactory.createValueNode(viewNode);
                 model.addNode(nodeImage);
             } else {
-                error =
-                    new FormatError(
-                        "Node aspect value '%s' not allowed in graphs",
-                        getAttributeValue(viewNode), viewNode);
+                nodeImage = model.addNode(viewNode.getNumber());
             }
             elementMap.putNode(viewNode, nodeImage);
-        }
-        if (error != null) {
-            throw new FormatException(error);
         }
     }
 
@@ -282,19 +249,8 @@ public class DefaultGraphView implements GraphView {
      */
     private void processViewEdge(HostGraph model, ViewToHostMap elementMap,
             AspectEdge viewEdge) throws FormatException {
-        if (AttributeAspect.isConstant(viewEdge)
-            || viewEdge.getModelLabel() == null) {
+        if (viewEdge.isRemark()) {
             return;
-        }
-        for (AspectValue value : viewEdge.getAspectMap()) {
-            if (isVirtualValue(value)) {
-                return;
-            }
-            if (!isAllowedValue(value)) {
-                throw new FormatException(
-                    "Edge aspect value '%s' not allowed in graphs", value,
-                    viewEdge);
-            }
         }
         HostNode modelSource = elementMap.getNode(viewEdge.source());
         assert modelSource != null : String.format(
@@ -304,50 +260,12 @@ public class DefaultGraphView implements GraphView {
         assert modelTarget != null : String.format(
             "Target of '%s' is not in element map %s", viewEdge.target(),
             elementMap);
-        // create an image for the view edge
-        if (this.attributeFactory.createAttributeEdge(viewEdge, null, null) != null) {
-            throw new FormatException(
-                "Edge aspect value '%s' not allowed in graphs",
-                getAttributeValue(viewEdge), viewEdge);
-        }
-        Label modelLabel = viewEdge.getModelLabel();
-        assert modelLabel instanceof TypeLabel : String.format(
-            "Label %s is of type %s rather %s", modelLabel,
-            modelLabel.getClass().getName(), TypeLabel.class.getName());
-        if (((TypeLabel) modelLabel).isDataType()) {
-            throw new FormatException(
-                "Data type label '%s' not allowed in graphs", modelLabel,
-                viewEdge);
-        }
+        TypeLabel modelLabel = viewEdge.getTypeLabel();
+        assert !modelLabel.isDataType();
         HostEdge modelEdge =
-            model.addEdge(modelSource, (TypeLabel) modelLabel, modelTarget);
-        this.labelSet.add((TypeLabel) modelLabel);
+            model.addEdge(modelSource, modelLabel, modelTarget);
+        this.labelSet.add(modelLabel);
         elementMap.putEdge(viewEdge, modelEdge);
-    }
-
-    /**
-     * Tests if a certain attribute node is of the type allowed in graphs.
-     */
-    private boolean isAllowedNode(HostNode node) {
-        return node instanceof ValueNode;
-    }
-
-    /**
-     * Tests if a certain non-virtual aspect value is allowed in a graph view.
-     */
-    private boolean isAllowedValue(AspectValue value) {
-        return value.getAspect() instanceof AttributeAspect
-            && !value.equals(AttributeAspect.PRODUCT)
-            && !value.equals(AttributeAspect.ARGUMENT)
-            || value.getAspect() instanceof TypeAspect
-            && !value.equals(TypeAspect.SUB) && !value.equals(TypeAspect.ABS);
-    }
-
-    /**
-     * Tests if a certain aspect value causes a graph element to be virtual.
-     */
-    private boolean isVirtualValue(AspectValue value) {
-        return RuleAspect.REMARK.equals(value);
     }
 
     /**

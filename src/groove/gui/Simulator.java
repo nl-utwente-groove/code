@@ -688,6 +688,7 @@ public class Simulator {
             properties.setEnabled(!properties.isEnabled());
             AspectGraph newRuleGraph = ruleGraph.clone();
             GraphInfo.setProperties(newRuleGraph, properties);
+            newRuleGraph.setFixed();
             doAddRule(rule.getRuleName(), newRuleGraph);
         }
     }
@@ -3181,6 +3182,7 @@ public class Simulator {
                     if (newGraphName != null) {
                         AspectGraph newGraph = oldGraphView.getView().clone();
                         GraphInfo.setName(newGraph, newGraphName);
+                        newGraph.setFixed();
                         doAddGraph(newGraph);
                     }
                 }
@@ -3233,9 +3235,13 @@ public class Simulator {
                     newRuleName =
                         askNewRuleName("Select new rule name", rule.getName(),
                             true);
-                    if (newRuleName != null
-                        && doAddRule(newRuleName, oldRuleGraph.clone())) {
-                        savedRule = newRuleName;
+                    if (newRuleName != null) {
+                        AspectGraph newRuleGraph = oldRuleGraph.clone();
+                        GraphInfo.setName(newRuleGraph, newRuleName.toString());
+                        newRuleGraph.setFixed();
+                        if (doAddRule(newRuleName, newRuleGraph)) {
+                            savedRule = newRuleName;
+                        }
                     }
                 }
                 // select last copied rule

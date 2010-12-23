@@ -223,7 +223,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         DefaultGraph result = getModel().toPlainGraph(plainToModelMap);
         GraphInfo.setRole(result, getRole(false));
         GraphInfo.setVersion(result, Version.GXL_VERSION);
-        PlainToAspectMap plainToAspectMap = new PlainToAspectMap();
+        PlainToAspectMap plainToAspectMap =
+            new PlainToAspectMap(getRole(false));
         this.graph = AspectGraph.newInstance(result, plainToAspectMap);
         this.graphToModelMap = new HashMap<AspectElement,JCell>();
         for (Map.Entry<Element,JCell> plainToModelEntry : plainToModelMap.entrySet()) {
@@ -652,7 +653,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /**
-     * Sets the edit role to {@link Groove#GRAPH_ROLE} or
+     * Sets the edit role to {@link Groove#HOST_ROLE} or
      * {@link Groove#RULE_ROLE}.
      * @param roleIndex the edit role to be set; if <code>null</code>, it is set
      *        to {@link #GRAPH_INDEX}.
@@ -2485,15 +2486,15 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     static final Map<String,Integer> roleIndexMap =
         new HashMap<String,Integer>();
     {
-        roleIndexMap.put(Groove.GRAPH_ROLE, GRAPH_INDEX);
+        roleIndexMap.put(Groove.HOST_ROLE, GRAPH_INDEX);
         roleIndexMap.put(Groove.RULE_ROLE, RULE_INDEX);
         roleIndexMap.put(Groove.TYPE_ROLE, TYPE_INDEX);
     }
-    private static final String[] roles = {Groove.GRAPH_ROLE, Groove.RULE_ROLE,
+    private static final String[] roles = {Groove.HOST_ROLE, Groove.RULE_ROLE,
         Groove.TYPE_ROLE};
     /**
      * Property name of the edit type of the editor. The edit type is the kind
-     * of object being edited. Possible values are {@link Groove#GRAPH_ROLE},
+     * of object being edited. Possible values are {@link Groove#HOST_ROLE},
      * {@link Groove#RULE_ROLE} and {@link Groove#RULE_ROLE}.
      */
     static public final String ROLE_PROPERTY = "type";

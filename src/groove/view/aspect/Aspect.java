@@ -69,26 +69,6 @@ public abstract class Aspect {
     abstract AspectValue getMax(AspectValue... values) throws FormatException;
 
     /**
-     * Tests the local correctness of a given aspect node, in terms of its
-     * context in an aspect graph. It is guaranteed that the node has a value of
-     * this aspect.
-     * @param node the node to be tested for correctness
-     * @param graph aspect graph in which the node occurs
-     */
-    abstract void checkNode(AspectNode node, AspectGraph graph)
-        throws FormatException;
-
-    /**
-     * Tests the local correctness of a given aspect edge, in terms of its
-     * context in an aspect graph. It is guaranteed that the edge has a value of
-     * this aspect.
-     * @param edge the edge to be tested for correctness
-     * @param graph aspect graph in which the node occurs
-     */
-    abstract void checkEdge(AspectEdge edge, AspectGraph graph)
-        throws FormatException;
-
-    /**
      * Tests if an edge label is allowed, given a declared and an inferred
      * aspect value for this aspect.
      * @param label the label to be tested
@@ -118,8 +98,8 @@ public abstract class Aspect {
      * label. When the separator occurs twice in direct succession, this denotes
      * the end of the aspect prefix.
      */
-    public static final char VALUE_SEPARATOR =
-        Groove.getXMLProperty("label.aspect.separator").charAt(0);
+    public static final char VALUE_SEPARATOR = Groove.getXMLProperty(
+        "label.aspect.separator").charAt(0);
     /**
      * String used to separate the name and content of aspect values.
      */

@@ -18,6 +18,7 @@ package groove.match;
 
 import groove.match.rete.ReteSearchEngine;
 import groove.trans.RuleToHostMap;
+import groove.trans.SystemProperties;
 
 /**
  * This is a factory class generating search engines. This is where
@@ -73,37 +74,25 @@ public class SearchEngineFactory {
      * The factory method returning the currently used search engine
      * in GROOVE. Currently supporting the Search Plan engine and
      * the RETE engine.
-     * 
-     * @param injective injective <code>true</code> if the desired engine is to do injective matching,
-     * <code>false</code> otherwise.
-     * @param ignoreNeg this parameter is currently ignored by the factory.
+     * @param properties system properties determining some of the choices in
+     * the matching, such as the algebra register and injectivity
      * @return the currently active engine that matches based on 
      *         the requirements specified in the parameters.
      */
     public SearchEngine<? extends AbstractMatchStrategy<RuleToHostMap>> getEngine(
-            boolean injective, boolean ignoreNeg) {
+            SystemProperties properties) {
         SearchEngine<? extends AbstractMatchStrategy<RuleToHostMap>> result =
             null;
         switch (this.getCurrentEngineType()) {
         case SEARCH_PLAN:
-            result = SearchPlanEngine.getInstance(injective, ignoreNeg);
+            result = SearchPlanEngine.getInstance(properties);
             break;
         case RETE:
-            result = ReteSearchEngine.getInstance(injective, ignoreNeg);
+            result =
+                ReteSearchEngine.getInstance(properties.isInjective(), false);
         }
         return result;
 
-    }
-
-    /**    
-     * @param injective <code>true</code> if the desired engine is to do injective matching,
-     * <code>false</code> otherwise.
-     * @return the currently active search engine that matches the injectivity requirements
-     * as expressed by the parameter <code>injective</code>.
-     */
-    public SearchEngine<? extends AbstractMatchStrategy<RuleToHostMap>> getEngine(
-            boolean injective) {
-        return this.getEngine(injective, false);
     }
 
     /**

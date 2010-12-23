@@ -16,8 +16,6 @@
  */
 package groove.view.aspect;
 
-import java.util.Collection;
-
 import groove.graph.Element;
 
 /**
@@ -26,25 +24,28 @@ import groove.graph.Element;
  * @version $Revision$
  */
 public interface AspectElement extends Element {
-    /**
-     * Returns, for a given aspect, the value associated with this element. This
-     * can be a declared value, an inferred value, or the aspect's default
-     * value.
-     * @param aspect the aspect for which we want to know the value
-     * @return the aspect value this element has for <code>aspect</code>, or
-     *         <code>aspect.getDefaultValue()</code> if there is no explicit
-     *         value
-     * 
-     */
-    AspectValue getValue(Aspect aspect);
+    /** Indicates if the aspect type of this element is for an abstract type. */
+    boolean isAbstract();
 
-    /**
-     * Returns the list of all explicitly declared aspect values.
-     */
-    Collection<AspectValue> getDeclaredValues();
+    /** Indicates if the aspect type of this element is a remark. */
+    boolean isRemark();
 
-    /**
-     * Returns a mapping from aspects to corresponding aspect values.
+    /** 
+     * Indicates if this is a meta-element,
+     * i.e., an element that does not actually represent anything in the
+     * underlying rule or graph.
      */
-    AspectMap getAspectMap();
+    boolean isMeta();
+
+    /** Indicates if this element has a rule role. */
+    boolean hasRole();
+
+    /** Returns the rule role of this element, if any. */
+    AspectValue getRole();
+
+    /** Indicates if an aspect type is set for this element. */
+    boolean hasType();
+
+    /** Returns the aspect type of this element, if any. */
+    AspectValue getType();
 }
