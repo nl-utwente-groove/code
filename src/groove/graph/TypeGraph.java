@@ -16,11 +16,10 @@
  */
 package groove.graph;
 
-import groove.algebra.Algebra;
-import groove.algebra.Algebras;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
+import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.rel.MatrixAutomaton;
 import groove.trans.DefaultHostGraph;
@@ -241,14 +240,17 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> 
         }
         for (N node : (Set<N>) model.nodeSet()) {
             if (!nodeTypeMap.containsKey(node)) {
+                String signature = null;
                 if (node instanceof VariableNode) {
-                    Algebra<?> algebra = ((VariableNode) node).getAlgebra();
-                    if (algebra != null) {
-                        String signature = Algebras.getSigName(algebra);
-                        nodeTypeMap.put(node,
-                            TypeLabel.createLabel(signature, Label.NODE_TYPE));
-                    }
+                    signature = ((VariableNode) node).getSignature();
+                } else if (node instanceof ValueNode) {
+                    signature = ((ValueNode) node).getSignature();
                 } else if (node instanceof ProductNode) {
+                    untypedNodes.remove(node);
+                }
+                if (signature != null) {
+                    nodeTypeMap.put(node,
+                        TypeLabel.createLabel(signature, Label.NODE_TYPE));
                     untypedNodes.remove(node);
                 }
             }

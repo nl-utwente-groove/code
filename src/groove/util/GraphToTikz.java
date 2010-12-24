@@ -1106,7 +1106,7 @@ public final class GraphToTikz {
             styles.add(BASIC_NODE_STYLE);
         }
 
-        if (node.isValueNode()) {
+        if (node.isValueNode() || node.isVariableNode()) {
             styles.add(ATTRIBUTE_NODE_STYLE);
         } else if (node.isProductNode()) {
             styles.add(PRODUCT_NODE_STYLE);

@@ -45,16 +45,18 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
      * ends have already been matched (in the search plan) before this one.
      * @param edge the edge to be matched
      */
-    public OperatorEdgeSearchItem(OperatorEdge edge, AlgebraFamily register) {
+    public OperatorEdgeSearchItem(OperatorEdge edge, AlgebraFamily family) {
         this.edge = edge;
-        this.operation = register.getOperation(edge.getOperator());
+        this.operation = family.getOperation(edge.getOperator());
         this.arguments = edge.source().getArguments();
         this.target = edge.target();
         this.neededNodes = new HashSet<RuleNode>(this.arguments);
-        if (this.target instanceof ValueNode) {
+        if (this.target.getConstant() != null) {
             this.boundNodes = Collections.<RuleNode>emptySet();
             this.neededNodes.add(this.target);
-            this.value = ((ValueNode) this.target).getValue();
+            this.value =
+                family.getValue(edge.getOperator().getResultType(),
+                    this.target.getConstant());
         } else {
             this.boundNodes = Collections.<RuleNode>singleton(this.target);
             this.value = null;

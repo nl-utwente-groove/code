@@ -1472,14 +1472,11 @@ abstract public class RegExpr { // implements VarSetSupport {
             }
             String prefix = expr.substring(0, index);
             // derive the type of labels the wildcard should match
-            int kind = Label.BINARY;
-            int separatorPos = prefix.length() - 1;
-            if (separatorPos >= 0) {
-                kind = TypeLabel.getPrefixKind(prefix);
-                if (kind < 0) {
-                    throw error;
-                }
+            Pair<Integer,String> parsedPrefix = TypeLabel.splitKind(prefix);
+            if (parsedPrefix.two().length() > 0) {
+                throw error;
             }
+            int kind = parsedPrefix.one();
             // parse the identifier and constraint expression
             String identifier = null;
             LabelConstraint constraint = new LabelConstraint(kind);

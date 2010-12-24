@@ -20,6 +20,7 @@ import static groove.view.aspect.Aspect.CONTENT_SEPARATOR;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Algebras;
+import groove.graph.AbstractNode;
 import groove.trans.HostNode;
 import groove.view.aspect.Aspect;
 
@@ -32,7 +33,15 @@ import java.util.Map;
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-02-12 15:15:32 $
  */
-public class ValueNode extends VariableNode implements HostNode {
+public class ValueNode extends AbstractNode implements HostNode {
+    /** Constructor for the unique dummy node. */
+    private ValueNode() {
+        super(Integer.MAX_VALUE);
+        this.algebra = null;
+        this.signature = null;
+        this.value = null;
+    }
+
     /**
      * Constructs a (numbered) node for a given algebra and value of that
      * algebra.
@@ -43,15 +52,18 @@ public class ValueNode extends VariableNode implements HostNode {
      * @param value the value to create a graph node for; non-null
      */
     private ValueNode(int nr, Algebra<?> algebra, Object value) {
-        super(-Math.abs(nr), algebra);
+        super(-Math.abs(nr));
+        this.algebra = algebra;
+        this.signature = Algebras.getSigName(algebra);
         this.value = value;
-        assert (value == null) == (algebra == null);
+        assert algebra != null && value != null;
     }
 
     /**
      * Returns the (non-null) algebra value this value node is representing.
      */
     public Object getValue() {
+        assert this != DUMMY_NODE;
         return this.value;
     }
 
@@ -72,8 +84,7 @@ public class ValueNode extends VariableNode implements HostNode {
     }
 
     /**
-     * This methods returns an indication of the variable if there is no
-     * associated algebra, or a description of the value otherwise.
+     * This methods returns a description of the value.
      */
     @Override
     public String toString() {
@@ -81,8 +92,36 @@ public class ValueNode extends VariableNode implements HostNode {
         return algebraName + CONTENT_SEPARATOR + getSymbol();
     }
 
+    /** Superseded by the reimplemented {@link #toString()} method. */
+    @Override
+    protected String getToStringPrefix() {
+        throw new UnsupportedOperationException();
+    }
+
     /**
-     * The operation represented by this value node (non-null).
+     * Returns the algebra to which the value node
+     * belongs.
+     */
+    public Algebra<?> getAlgebra() {
+        assert this != DUMMY_NODE;
+        return this.algebra;
+    }
+
+    /**
+     * Returns the signature to which the value node
+     * belongs.
+     */
+    public String getSignature() {
+        assert this != DUMMY_NODE;
+        return this.signature;
+    }
+
+    /** The signature name of this value node. */
+    private final String signature;
+    /** The algebra of this value node. */
+    private final Algebra<?> algebra;
+    /**
+     * The constant represented by this value node (non-null).
      */
     private final Object value;
 
@@ -119,5 +158,5 @@ public class ValueNode extends VariableNode implements HostNode {
     /** Maximum value node number */
     static private int valueNodeCount;
     /** Single dummy node, used in e.g., MergeMap */
-    public static final ValueNode DUMMY_NODE = new ValueNode(0, null, null);
+    public static final ValueNode DUMMY_NODE = new ValueNode();
 }

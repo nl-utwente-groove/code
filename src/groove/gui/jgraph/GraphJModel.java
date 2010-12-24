@@ -27,6 +27,7 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.gui.Options;
 import groove.gui.layout.JCellLayout;
@@ -265,7 +266,11 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
         Node modelNode = ((GraphJVertex<N,E>) root).getActualNode();
         assert modelNode != null : String.format(
             "JModel node '%s' does not have underlying graph node", root);
-        return graph.addNode(modelNode.getNumber());
+        if (modelNode instanceof DefaultNode) {
+            return (DefaultNode) modelNode;
+        } else {
+            return graph.addNode();
+        }
     }
 
     /**
@@ -573,7 +578,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      */
     protected AttributeMap createJVertexAttr(N node) {
         AttributeMap result = (AttributeMap) this.defaultNodeAttr.clone();
-        if (node instanceof VariableNode) {
+        if (node instanceof VariableNode || node instanceof ValueNode) {
             result.applyMap(getJVertexDataAttr());
         }
         return result;

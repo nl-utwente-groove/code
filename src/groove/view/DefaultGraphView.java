@@ -16,6 +16,8 @@
  */
 package groove.view;
 
+import groove.algebra.Algebra;
+import groove.algebra.AlgebraFamily;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
@@ -33,7 +35,8 @@ import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
-import groove.view.aspect.AttributeElementFactory;
+import groove.view.aspect.AspectValue;
+import groove.view.aspect.AttributeAspect;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -57,9 +60,7 @@ public class DefaultGraphView implements GraphView {
     public DefaultGraphView(AspectGraph view, SystemProperties properties) {
         view.testFixed(true);
         this.view = view;
-        this.attributeFactory = createAttributeFactory(properties);
-        // we fix the view; is it conceptually right to do that here?
-        view.setFixed();
+        this.algebraFamily = getFamily(properties);
         String name = GraphInfo.getName(view);
         this.name = name == null ? "" : name;
     }
@@ -97,9 +98,9 @@ public class DefaultGraphView implements GraphView {
      * Changes the system properties under which the model is to be created.
      */
     public void setProperties(SystemProperties properties) {
-        AttributeElementFactory newFactory = createAttributeFactory(properties);
-        if (!newFactory.equals(this.attributeFactory)) {
-            this.attributeFactory = newFactory;
+        AlgebraFamily newFamily = getFamily(properties);
+        if (!newFamily.equals(this.algebraFamily)) {
+            this.algebraFamily = newFamily;
             invalidate();
         }
     }
@@ -117,6 +118,20 @@ public class DefaultGraphView implements GraphView {
     public Set<TypeLabel> getLabels() {
         initialise();
         return this.labelSet;
+    }
+
+    /** 
+     * Extracts the algebra family from a (possibly {@code null}) properties
+     * object.
+     */
+    private AlgebraFamily getFamily(SystemProperties properties) {
+        AlgebraFamily result;
+        if (properties == null) {
+            result = AlgebraFamily.getInstance();
+        } else {
+            result = AlgebraFamily.getInstance(properties.getAlgebraFamily());
+        }
+        return result;
     }
 
     /** Constructs the model and associated data structures from the view. */
@@ -141,12 +156,6 @@ public class DefaultGraphView implements GraphView {
         this.model = null;
         this.viewToModelMap = null;
         this.labelSet = null;
-    }
-
-    /** Factory method. */
-    private AttributeElementFactory createAttributeFactory(
-            SystemProperties properties) {
-        return new AttributeElementFactory(this.view, properties);
     }
 
     /**
@@ -232,8 +241,13 @@ public class DefaultGraphView implements GraphView {
         if (nodeInModel) {
             HostNode nodeImage = null;
             if (viewNode.hasDataType()) {
+                AspectValue dataType = viewNode.getDataType();
+                assert !AttributeAspect.VALUE.equals(dataType);
+                Algebra<?> nodeAlgebra =
+                    this.algebraFamily.getAlgebra(dataType.getName());
                 nodeImage =
-                    (ValueNode) this.attributeFactory.createValueNode(viewNode);
+                    ValueNode.createValueNode(nodeAlgebra,
+                        nodeAlgebra.getValue(dataType.getContent()));
                 model.addNode(nodeImage);
             } else {
                 nodeImage = model.addNode(viewNode.getNumber());
@@ -290,7 +304,7 @@ public class DefaultGraphView implements GraphView {
     /** Set of labels occurring in this graph. */
     private Set<TypeLabel> labelSet;
     /** The attribute element factory for this view. */
-    private AttributeElementFactory attributeFactory;
+    private AlgebraFamily algebraFamily;
     /** Optional type graph for this aspect graph. */
     private TypeGraph type;
 

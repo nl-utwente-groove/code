@@ -70,8 +70,7 @@ public class GraphSearchPlanFactory {
             String algebraFamily) {
         this.injective = injective;
         this.ignoreNeg = ignoreNeg;
-        this.algebraFamily = algebraFamily;
-        this.algebraRegister = AlgebraFamily.getInstance(algebraFamily);
+        this.algebraFamily = AlgebraFamily.getInstance(algebraFamily);
     }
 
     /**
@@ -101,13 +100,11 @@ public class GraphSearchPlanFactory {
     }
 
     /** 
-     * Name of the algebra family to be used for algebraic operations.
+     * The algebra family to be used for algebraic operations.
      * If {@code null}, the default will be used.
      * @see AlgebraFamily#getInstance(String)
      */
-    final String algebraFamily;
-    /** The (pre-initialised) register determined by {@link #algebraFamily}. */
-    final AlgebraFamily algebraRegister;
+    final AlgebraFamily algebraFamily;
     /** Flag indicating if this factory creates injective matchings. */
     final boolean injective;
 
@@ -126,8 +123,7 @@ public class GraphSearchPlanFactory {
      */
     static public GraphSearchPlanFactory getInstance(boolean injective,
             boolean ignoreNeg) {
-        return getInstance(injective, ignoreNeg,
-            AlgebraFamily.DEFAULT_ALGEBRAS);
+        return getInstance(injective, ignoreNeg, AlgebraFamily.DEFAULT_ALGEBRAS);
     }
 
     /** 
@@ -146,16 +142,17 @@ public class GraphSearchPlanFactory {
      *        matchers.
      * @param ignoreNeg if <code>true</code>, the factory produces matchings
      *        that do not regard the negated edges
-     * @param algebraFamily the family of algebras used for the data operations;
+     * @param algebraFamilyName name of the family of algebras used for the data operations;
      * non-{@code null}
      */
     static public GraphSearchPlanFactory getInstance(boolean injective,
-            boolean ignoreNeg, String algebraFamily) {
+            boolean ignoreNeg, String algebraFamilyName) {
         if (instance == null || instance.injective != injective
             || instance.ignoreNeg != ignoreNeg
-            || !algebraFamily.equals(instance.algebraFamily)) {
+            || !algebraFamilyName.equals(instance.algebraFamily.getName())) {
             instance =
-                new GraphSearchPlanFactory(injective, ignoreNeg, algebraFamily);
+                new GraphSearchPlanFactory(injective, ignoreNeg,
+                    algebraFamilyName);
         }
         return instance;
     }
@@ -273,6 +270,7 @@ public class GraphSearchPlanFactory {
                 AbstractSearchItem nodeItem = createNodeSearchItem(node);
                 if (nodeItem != null) {
                     assert !(node instanceof VariableNode)
+                        || ((VariableNode) node).getConstant() != null
                         || anchorNodes.contains(node) : String.format(
                         "Variable node '%s' should be among anchors %s", node,
                         anchorNodes);
@@ -366,7 +364,7 @@ public class GraphSearchPlanFactory {
             } else if (label.isOperator()) {
                 result =
                     new OperatorEdgeSearchItem((OperatorEdge) edge,
-                        GraphSearchPlanFactory.this.algebraRegister);
+                        GraphSearchPlanFactory.this.algebraFamily);
             } else if (!label.isArgument()) {
                 result = new RegExprEdgeSearchItem(edge, this.labelStore);
             }
@@ -377,8 +375,9 @@ public class GraphSearchPlanFactory {
          * Callback factory method for creating a node search item.
          */
         protected AbstractSearchItem createNodeSearchItem(RuleNode node) {
-            if (node instanceof ValueNode) {
-                return new ValueNodeSearchItem((ValueNode) node);
+            if (node instanceof VariableNode) {
+                return new ValueNodeSearchItem((VariableNode) node,
+                    GraphSearchPlanFactory.this.algebraFamily);
             } else if (node instanceof DefaultNode) {
                 return new NodeSearchItem(node);
             } else {
@@ -675,7 +674,6 @@ public class GraphSearchPlanFactory {
          * <li> {@link NegatedSearchItem}s
          * <li> {@link OperatorEdgeSearchItem}s
          * <li> {@link ValueNodeSearchItem}s
-         * <li> {@link VariableNodeSearchItem}s
          * <li> {@link AnchorSearchItem}s
          * </ul>
          */

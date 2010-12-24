@@ -16,10 +16,8 @@
  */
 package groove.graph.algebra;
 
-import groove.algebra.Algebra;
-
-import java.util.HashMap;
-import java.util.Map;
+import groove.graph.AbstractNode;
+import groove.trans.RuleNode;
 
 /**
  * Class of nullary product nodes, used to represent attribute variables in
@@ -27,13 +25,15 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision: 1768 $ $Date: 2008-02-12 15:15:32 $
  */
-public class VariableNode extends ProductNode {
+public class VariableNode extends AbstractNode implements RuleNode {
     /**
-     * Constructs a (numbered) variable node.
+     * Constructs a (numbered) variable node,
+     * with an optional signature and an optional constant symbol.
      */
-    VariableNode(int nr, Algebra<?> algebra) {
-        super(nr, 0);
-        this.algebra = algebra;
+    public VariableNode(int nr, String signature, String constant) {
+        super(nr);
+        this.signature = signature;
+        this.constant = constant;
     }
 
     /**
@@ -41,70 +41,49 @@ public class VariableNode extends ProductNode {
      */
     @Override
     public String toString() {
-        return "x" + getNumber();
+        if (this.constant == null) {
+            return "x" + getNumber();
+        } else {
+            return this.constant;
+        }
     }
 
-    /**
-     * Modifies the super result by testing whether this is actually a variable
-     * node.
-     */
+    /** Superseded by the reimplemented {@link #toString()} method. */
     @Override
-    protected int computeHashCode() {
-        // note that we can't take the algebra into account,
-        // as it is not yet set at the time we compute the hash code
-        return super.computeHashCode() * 3;
+    protected String getToStringPrefix() {
+        throw new UnsupportedOperationException();
     }
 
-    /** Also tests for equality of the algebras. */
+    /** Nodes are now not canonical, so we need to test for the numbers and classes. */
     @Override
     public boolean equals(Object obj) {
-        return super.equals(obj)
-            && this.algebra == ((VariableNode) obj).algebra;
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof VariableNode)) {
+            return false;
+        }
+        VariableNode other = (VariableNode) obj;
+        return getNumber() == other.getNumber();
     }
 
     /**
-     * Method returning the (possibly null) algebra to which the variable node
+     * Method returning the (possibly null) signature to which the variable node
      * belongs.
      */
-    public Algebra<?> getAlgebra() {
-        return this.algebra;
+    public String getSignature() {
+        return this.signature;
+    }
+
+    /**
+     * Method returning the (possibly null) constant symbol of the variable node.
+     */
+    public String getConstant() {
+        return this.constant;
     }
 
     /** The signature name of this variable node, if any. */
-    private final Algebra<?> algebra;
-
-    /**
-     * Returns a new, untyped variable node, with a given number but without
-     * predefined value. Reuses a previously created variable node with the same
-     * number, if any.
-     */
-    static public VariableNode createVariableNode(int nr) {
-        return createVariableNode(nr, null);
-    }
-
-    /**
-     * Returns a new, typed variable node, with a given number but without
-     * predefined value. Reuses a previously created variable node with the same
-     * number, if any.
-     */
-    static public VariableNode createVariableNode(int nr, Algebra<?> algebra) {
-        Map<Integer,VariableNode> store =
-            algebra == null ? generalNodeStore : algebraNodeStore.get(algebra);
-        if (store == null) {
-            algebraNodeStore.put(algebra, store =
-                new HashMap<Integer,VariableNode>());
-        }
-        VariableNode result = store.get(nr);
-        if (result == null) {
-            store.put(nr, result = new VariableNode(nr, algebra));
-        }
-        return result;
-    }
-
-    /** Store of previously created variable nodes without associated algebra. */
-    static private final Map<Integer,VariableNode> generalNodeStore =
-        new HashMap<Integer,VariableNode>();
-    /** Store of previously created variable nodes per algebra. */
-    static private final Map<Algebra<?>,Map<Integer,VariableNode>> algebraNodeStore =
-        new HashMap<Algebra<?>,Map<Integer,VariableNode>>();
+    private final String signature;
+    /** Optional constant symbol. */
+    private final String constant;
 }
