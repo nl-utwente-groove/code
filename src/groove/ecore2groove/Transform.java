@@ -16,7 +16,7 @@
  */
 package groove.ecore2groove;
 
-import groove.algebra.AlgebraRegister;
+import groove.algebra.AlgebraFamily;
 import groove.graph.DefaultGraph;
 import groove.graph.GraphInfo;
 import groove.io.SystemStore;
@@ -204,7 +204,7 @@ public class Transform {
         typeNames.add("EcoreTypes");
         sp.setTypeNames(typeNames);
         if (mh.isBigAlgebra()) {
-            sp.setAlgebra(AlgebraRegister.BIG_ALGEBRAS);
+            sp.setAlgebra(AlgebraFamily.BIG_ALGEBRAS);
         }
         grammar.putProperties(sp);
 

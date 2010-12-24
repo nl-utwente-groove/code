@@ -519,6 +519,14 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
             || type.getAspect() == AttributeAspect.getInstance();
     }
 
+    /** Determines if a certain aspect value is a type. */
+    static boolean isQuantifier(AspectValue type) {
+        assert type == null || isType(type);
+        return NestingAspect.EXISTS.equals(type)
+            || NestingAspect.FORALL.equals(type)
+            || NestingAspect.FORALL_POS.equals(type);
+    }
+
     /**
      * Determines a conflict relation between aspect values used as types
      * and the presence of a role.
@@ -526,6 +534,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     static boolean conflictsWithRole(AspectValue type) {
         assert type == null || isType(type);
         return type != null
-            && (type.getAspect() != AttributeAspect.getInstance());
+            && (type.getAspect() != AttributeAspect.getInstance())
+            && !isQuantifier(type);
     }
 }

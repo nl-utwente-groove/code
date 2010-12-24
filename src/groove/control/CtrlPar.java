@@ -16,7 +16,7 @@
  */
 package groove.control;
 
-import groove.algebra.AlgebraRegister;
+import groove.algebra.Algebras;
 import groove.graph.algebra.ValueNode;
 import groove.trans.RuleNode;
 
@@ -217,8 +217,7 @@ public abstract class CtrlPar {
             this.repr = repr;
             this.node = ValueNode.createValueNode(repr);
             assert this.node != null;
-            this.type =
-                CtrlType.getDataType(AlgebraRegister.getSignatureName(repr));
+            this.type = CtrlType.getDataType(Algebras.getSigNameFor(repr));
         }
 
         /**
@@ -228,7 +227,7 @@ public abstract class CtrlPar {
             this.node = node;
             this.repr = node.getSymbol();
             this.type =
-                CtrlType.getDataType(AlgebraRegister.getSignatureName(node.getAlgebra()));
+                CtrlType.getDataType(Algebras.getSigName(node.getAlgebra()));
         }
 
         @Override

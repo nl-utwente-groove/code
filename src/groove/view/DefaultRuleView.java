@@ -444,8 +444,6 @@ public class DefaultRuleView implements RuleView {
     private SystemProperties systemProperties;
 
     static private final RuleFactory ruleFactory = RuleFactory.instance();
-    /** Label for merges (merger edges and merge embargoes) */
-    static public final Label MERGE_LABEL = RegExpr.empty().toLabel();
     /** Debug flag for creating rules. */
     static private final boolean TO_RULE_DEBUG = false;
 
@@ -1158,6 +1156,7 @@ public class DefaultRuleView implements RuleView {
             this.nacEdgeSet = new HashSet<RuleEdge>();
             this.typableNodes = new HashSet<RuleNode>();
             this.typableEdges = new HashSet<RuleEdge>();
+            this.mergerMap = computeMergerMap();
             Set<FormatError> errors = new TreeSet<FormatError>();
             for (Map.Entry<AspectNode,? extends RuleNode> viewNodeEntry : this.viewToLevelMap.nodeMap().entrySet()) {
                 try {
@@ -1182,6 +1181,21 @@ public class DefaultRuleView implements RuleView {
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
             }
+        }
+
+        /** Collects the set of merger edges on this level. */
+        private Map<AspectEdge,RuleEdge> computeMergerMap() {
+            Map<AspectEdge,RuleEdge> result =
+                new HashMap<AspectEdge,RuleEdge>();
+            for (Map.Entry<AspectEdge,? extends RuleEdge> edgeEntry : this.viewToLevelMap.edgeMap().entrySet()) {
+                AspectEdge viewEdge = edgeEntry.getKey();
+                RuleEdge ruleEdge = edgeEntry.getValue();
+                if (RuleAspect.isCreator(viewEdge)
+                    && ruleEdge.label().isEmpty()) {
+                    result.put(viewEdge, ruleEdge);
+                }
+            }
+            return result;
         }
 
         /**
@@ -1235,7 +1249,8 @@ public class DefaultRuleView implements RuleView {
                     this.nacEdgeSet.add(lhsEdge);
                 }
             }
-            if (RuleAspect.inRHS(viewEdge) && !lhsEdge.label().isEmpty()) {
+            if (RuleAspect.inRHS(viewEdge)
+                && !this.mergerMap.containsKey(viewEdge)) {
                 this.typableEdges.add(lhsEdge);
                 RuleEdge rhsEdge =
                     computeEdgeImage(viewEdge, this.rhsMap.nodeMap());
@@ -1326,11 +1341,29 @@ public class DefaultRuleView implements RuleView {
          */
         private RuleNode getRepresentative(AspectNode node)
             throws FormatException {
-            SortedSet<AspectNode> cell = getPartition().get(node);
-            assert cell != null : String.format(
-                "Partition %s does not contain cell for '%s'", getPartition(),
-                node);
-            return this.viewToLevelMap.getNode(cell.first());
+            // if there are no mergers, each node is its own representative
+            // unless one of the top level calculated its partition
+            boolean needsPartition =
+                hasPartition() || !this.mergerMap.isEmpty()
+                    || this.parent != null && this.parent.hasPartition();
+            if (needsPartition) {
+                SortedSet<AspectNode> cell = getPartition().get(node);
+                assert cell != null : String.format(
+                    "Partition %s does not contain cell for '%s'",
+                    getPartition(), node);
+                return this.viewToLevelMap.getNode(cell.first());
+            } else {
+                return this.viewToLevelMap.getNode(node);
+            }
+        }
+
+        /** 
+         * Indicates that the partition has been created.
+         * This means that all sublevels should do the same, even if there
+         * are no further mergers there.
+         */
+        private boolean hasPartition() {
+            return this.partition != null;
         }
 
         /**
@@ -1370,15 +1403,12 @@ public class DefaultRuleView implements RuleView {
                 }
             }
             // now merge nodes whenever there is a merger
-            for (Map.Entry<AspectEdge,RuleEdge> edgeEntry : this.viewToLevelMap.edgeMap().entrySet()) {
-                if (RuleAspect.isCreator(edgeEntry.getKey())
-                    && edgeEntry.getValue().label().isEmpty()) {
-                    SortedSet<AspectNode> newCell = new TreeSet<AspectNode>();
-                    newCell.addAll(result.get(edgeEntry.getKey().source()));
-                    newCell.addAll(result.get(edgeEntry.getKey().target()));
-                    for (AspectNode node : newCell) {
-                        result.put(node, newCell);
-                    }
+            for (AspectEdge merger : this.mergerMap.keySet()) {
+                SortedSet<AspectNode> newCell = new TreeSet<AspectNode>();
+                newCell.addAll(result.get(merger.source()));
+                newCell.addAll(result.get(merger.target()));
+                for (AspectNode node : newCell) {
+                    result.put(node, newCell);
                 }
             }
             return result;
@@ -1548,22 +1578,17 @@ public class DefaultRuleView implements RuleView {
             }
             // Merged equal types are not caught, so we have to
             // check them for sharpness separately
-            for (Map.Entry<AspectEdge,RuleEdge> edgeEntry : this.viewToLevelMap.edgeMap().entrySet()) {
-                RuleEdge edge = edgeEntry.getValue();
+            for (Map.Entry<AspectEdge,RuleEdge> mergerEntry : this.mergerMap.entrySet()) {
+                RuleEdge edge = mergerEntry.getValue();
                 RuleNode source = edge.source();
                 Label sourceType = lhsTyping.getType(source);
                 RuleNode target = edge.target();
                 Label targetType = lhsTyping.getType(target);
-                if (RuleAspect.isCreator(edgeEntry.getKey())
-                    && edgeEntry.getValue().label().isEmpty()
-                    && sourceType.equals(targetType)) {
-                    // this is a merger edge with equal source and target types
-                    if (!lhsTyping.isSharp(source)
-                        && !lhsTyping.isSharp(target)) {
-                        errors.add(new FormatError(
-                            "One of the merged types '%s' or '%s' should be sharp",
-                            sourceType, targetType, edge));
-                    }
+                if (sourceType.equals(targetType) && !lhsTyping.isSharp(source)
+                    && !lhsTyping.isSharp(target)) {
+                    errors.add(new FormatError(
+                        "One of the merged types '%s' or '%s' should be sharp",
+                        sourceType, targetType, edge));
                 }
             }
             // check for creation of abstract elements
@@ -1825,6 +1850,8 @@ public class DefaultRuleView implements RuleView {
         private RuleGraph lhs;
         /** The right hand side graph of the rule. */
         private RuleGraph rhs;
+        /** The set of mergers on this level. */
+        private Map<AspectEdge,RuleEdge> mergerMap;
         /** Set of all (lhs and rhs) typable nodes. */
         private Set<RuleNode> typableNodes;
         /** Set of all (lhs and rhs) typable edges. */

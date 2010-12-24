@@ -17,7 +17,7 @@
 package groove.graph;
 
 import groove.algebra.Algebra;
-import groove.algebra.AlgebraRegister;
+import groove.algebra.Algebras;
 import groove.util.Converter;
 import groove.util.ExprParser;
 import groove.view.FormatException;
@@ -68,8 +68,7 @@ public final class TypeLabel extends AbstractLabel {
 
     /** Indicates if this label stands for a data type. */
     public boolean isDataType() {
-        return isNodeType()
-            && AlgebraRegister.getSignatureNames().contains(text());
+        return isNodeType() && Algebras.getSigNames().contains(text());
     }
 
     /** The label text. */
@@ -190,7 +189,7 @@ public final class TypeLabel extends AbstractLabel {
 
     /** Creates a data type label for a given algebra. */
     public static TypeLabel createDataType(Algebra<?> algebra) {
-        return createLabel(AlgebraRegister.getSignatureName(algebra), NODE_TYPE);
+        return createLabel(Algebras.getSigName(algebra), NODE_TYPE);
     }
 
     /**

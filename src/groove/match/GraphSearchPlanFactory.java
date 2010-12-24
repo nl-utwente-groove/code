@@ -16,7 +16,7 @@
  */
 package groove.match;
 
-import groove.algebra.AlgebraRegister;
+import groove.algebra.AlgebraFamily;
 import groove.graph.DefaultNode;
 import groove.graph.Label;
 import groove.graph.LabelStore;
@@ -71,7 +71,7 @@ public class GraphSearchPlanFactory {
         this.injective = injective;
         this.ignoreNeg = ignoreNeg;
         this.algebraFamily = algebraFamily;
-        this.algebraRegister = AlgebraRegister.getInstance(algebraFamily);
+        this.algebraRegister = AlgebraFamily.getInstance(algebraFamily);
     }
 
     /**
@@ -103,11 +103,11 @@ public class GraphSearchPlanFactory {
     /** 
      * Name of the algebra family to be used for algebraic operations.
      * If {@code null}, the default will be used.
-     * @see AlgebraRegister#getInstance(String)
+     * @see AlgebraFamily#getInstance(String)
      */
     final String algebraFamily;
     /** The (pre-initialised) register determined by {@link #algebraFamily}. */
-    final AlgebraRegister algebraRegister;
+    final AlgebraFamily algebraRegister;
     /** Flag indicating if this factory creates injective matchings. */
     final boolean injective;
 
@@ -127,7 +127,7 @@ public class GraphSearchPlanFactory {
     static public GraphSearchPlanFactory getInstance(boolean injective,
             boolean ignoreNeg) {
         return getInstance(injective, ignoreNeg,
-            AlgebraRegister.DEFAULT_ALGEBRAS);
+            AlgebraFamily.DEFAULT_ALGEBRAS);
     }
 
     /** 

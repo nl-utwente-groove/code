@@ -17,7 +17,7 @@
 package groove.view.aspect;
 
 import groove.algebra.Algebra;
-import groove.algebra.AlgebraRegister;
+import groove.algebra.Algebras;
 import groove.algebra.Operator;
 import groove.algebra.UnknownSymbolException;
 import groove.graph.Element;
@@ -46,7 +46,7 @@ public class AttributeAspect extends AbstractAspect {
     /** Creates a {@link ConstantAspectValue} for algebra aspects. */
     @Override
     protected AspectValue createValue(String name) throws FormatException {
-        if (AlgebraRegister.getSignatureNames().contains(name)) {
+        if (Algebras.getSigNames().contains(name)) {
             return new ConstantAspectValue(name);
         } else {
             return super.createValue(name);
@@ -72,7 +72,7 @@ public class AttributeAspect extends AbstractAspect {
      * Returns the aspect value corresponding to a given algebra.
      */
     public static AspectValue getAttributeValueFor(Algebra<?> algebra) {
-        return getAttributeValueFor(AlgebraRegister.getSignatureName(algebra));
+        return getAttributeValueFor(Algebras.getSigName(algebra));
     }
 
     /**
@@ -177,7 +177,7 @@ public class AttributeAspect extends AbstractAspect {
             ARGUMENT.setLast(true);
             VALUE = instance.addNodeValue(VALUE_NAME);
             PRODUCT = instance.addNodeValue(PRODUCT_NAME);
-            for (String signatureName : AlgebraRegister.getSignatureNames()) {
+            for (String signatureName : Algebras.getSigNames()) {
                 AspectValue value = instance.addValue(signatureName);
                 addSignature(signatureName, value);
             }
@@ -211,7 +211,7 @@ public class AttributeAspect extends AbstractAspect {
         public ConstantAspectValue newValue(String value)
             throws FormatException {
             try {
-                if (AlgebraRegister.isConstant(getName(), value)) {
+                if (Algebras.isConstant(getName(), value)) {
                     return new ConstantAspectValue(this, value);
                 } else {
                     throw new FormatException(

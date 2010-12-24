@@ -18,8 +18,7 @@ package groove.view.aspect;
 
 import static groove.view.aspect.Aspect.CONTENT_ASSIGN;
 import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
-import groove.algebra.AlgebraRegister;
-import groove.algebra.UnknownSymbolException;
+import groove.algebra.Algebras;
 import groove.graph.DefaultLabel;
 import groove.graph.TypeLabel;
 import groove.util.ExprParser;
@@ -73,19 +72,16 @@ public class AspectParser {
             // test if this should be a data constant
             if (AttributeAspect.isDataValue(value) && text.length() > 0) {
                 String signature = value.getName();
-                try {
-                    if (AlgebraRegister.isConstant(signature, text)) {
-                        value = value.newValue(text);
-                        text = "";
-                    } else if (!ExprParser.isIdentifier(text)) {
-                        throw new FormatException(
-                            "Signature '%s' does not have constant %s",
-                            signature, text);
-                    }
-                } catch (UnknownSymbolException e) {
-                    // this can't happen, as the data values are valid signatures
-                    assert false : String.format(
-                        "Method called for unknown signature '%s'", signature);
+                String sigForConstant = Algebras.getSigNameFor(text);
+                if (signature.equals(sigForConstant)) {
+                    value = value.newValue(text);
+                    text = "";
+                } else if (sigForConstant != null) {
+                    throw new FormatException("Value %s belongs to type %s",
+                        text, signature);
+                } else if (!ExprParser.isIdentifier(text)) {
+                    throw new FormatException(
+                        "Type '%s' does not have value %s", signature, text);
                 }
             }
         }

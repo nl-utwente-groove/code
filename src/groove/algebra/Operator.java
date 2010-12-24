@@ -25,7 +25,7 @@ public class Operator {
     Operator(Method method) throws IllegalArgumentException {
         Type[] methodParameterTypes = method.getGenericParameterTypes();
         this.signature =
-            AlgebraRegister.getSignatureName((Class<? extends Signature>) method.getDeclaringClass());
+            Algebras.getSigName((Class<? extends Signature>) method.getDeclaringClass());
         this.arity = methodParameterTypes.length;
         this.name = method.getName();
         this.parameterTypes = new ArrayList<String>();
@@ -84,12 +84,6 @@ public class Operator {
     public String toString() {
         return this.returnType + ":" + this.name
             + Groove.toString(this.parameterTypes.toArray(), "(", ")", ",");
-    }
-
-    /** Looks up the implementation of this operator in a given algebra register. */
-    public Operation getOperation(AlgebraRegister register) {
-        Algebra<?> algebra = register.getImplementation(getSignature());
-        return register.getOperations(algebra).get(getName());
     }
 
     private final String signature;

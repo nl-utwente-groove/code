@@ -16,7 +16,7 @@
  */
 package groove.control;
 
-import groove.algebra.AlgebraRegister;
+import groove.algebra.Algebras;
 import groove.view.aspect.AttributeAspect;
 
 import java.util.HashMap;
@@ -116,7 +116,7 @@ public class CtrlType {
         new HashMap<String,CtrlType>();
     static {
         // initialise the data type map
-        for (String signature : AlgebraRegister.getSignatureNames()) {
+        for (String signature : Algebras.getSigNames()) {
             dataTypeMap.put(signature, new CtrlType(signature));
         }
     }

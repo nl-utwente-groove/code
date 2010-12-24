@@ -16,7 +16,7 @@
  */
 package groove.view.aspect;
 
-import groove.algebra.AlgebraRegister;
+import groove.algebra.Algebras;
 import groove.algebra.Operator;
 import groove.algebra.UnknownSymbolException;
 import groove.graph.AbstractEdge;
@@ -25,6 +25,7 @@ import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
 import groove.trans.RuleLabel;
+import groove.util.ExprParser;
 import groove.util.Fixable;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -84,13 +85,10 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
             if (isAbstract() || isSubtype()) {
                 throw new FormatException(
                     "Edge aspect %s not allowed in rules", getRole(), this);
-            } else if (!hasRole()) {
-                if (!AspectNode.conflictsWithRole(getType())) {
-                    setRole(RuleAspect.READER);
-                }
-            } else if (hasType()
-                && getType().getAspect() == NestingAspect.getInstance()
-                && !NestingAspect.NESTED.equals(getType())) {
+            } else if (!hasRole() && !AspectNode.conflictsWithRole(getType())) {
+                setRole(RuleAspect.READER);
+            }
+            if (hasRole() && hasType() && AspectNode.isQuantifier(getType())) {
                 // backward compatibility to take care of edges such as
                 // exists=q:del:a rather than del=q:a or 
                 // exists=q:a rather than use=q:a
@@ -105,7 +103,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
                     setRole(getRole().newValue(getType().getContent()));
                     setType(null);
                 }
-            } else if (AspectNode.conflictsWithRole(getType())) {
+            } else if (hasRole() && AspectNode.conflictsWithRole(getType())) {
                 throw new FormatException("Conflicting edge aspects %s and %s",
                     getRole(), getType(), this);
             }
@@ -224,9 +222,13 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
             // do nothing
         } else if (getRole() == null) {
             setRole(value);
-        } else if (declared
-            || !value.equals(getRole())
-            && !(RuleAspect.EMBARGO.equals(getRole()) && RuleAspect.ERASER.equals(value))) {
+        } else if (RuleAspect.EMBARGO.equals(getRole())
+            && RuleAspect.ERASER.equals(value)) {
+            // do nothing
+        } else if (RuleAspect.EMBARGO.equals(value)
+            && RuleAspect.ERASER.equals(getRole())) {
+            setRole(value);
+        } else if (declared || !value.equals(getRole())) {
             throw new FormatException("Conflicting edge aspects %s and %s",
                 getRole(), value, this);
         }
@@ -267,7 +269,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
             } else if (AttributeAspect.isDataValue(value)) {
                 try {
                     this.operator =
-                        AlgebraRegister.getOperator(value.getName(), innerText);
+                        Algebras.getOperator(value.getName(), innerText);
                 } catch (UnknownSymbolException e) {
                     throw new FormatException(
                         "Label '%s' is not an operator of type %s", innerText,
@@ -394,6 +396,13 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
         return isNestedAt() || isNestedIn() || isRemark();
     }
 
+    /** Indicates that this is a creator element with a merge label ("="). */
+    public boolean isMerger() {
+        testFixed(true);
+        return hasRole() && getRole() == RuleAspect.CREATOR
+            && getRuleLabel().isEmpty();
+    }
+
     /** Tests if this edge has the same aspect type as another aspect element. */
     public boolean equalsAspects(AspectElement other) {
         boolean result =
@@ -492,19 +501,41 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
      * if the edge does not give rise to a type label.
      */
     private RuleLabel createRuleLabel() throws FormatException {
-        RuleLabel result = null;
+        RuleLabel result;
         if (isArgument()) {
-            return new RuleLabel(getArgument());
+            result = new RuleLabel(getArgument());
         } else if (isOperator()) {
-            return new RuleLabel(getOperator());
+            result = new RuleLabel(getOperator());
         } else if (hasRole()) {
             if (TypeAspect.EMPTY.equals(this.labelMode)) {
                 result = new RuleLabel(getInnerText());
             } else {
-                result = new RuleLabel(RegExpr.parse(getInnerText()));
+                result = new RuleLabel(parse(getInnerText()));
             }
+        } else {
+            assert isMeta();
+            result = null;
         }
         return result;
+    }
+
+    /** 
+     * Parses a given string as a regular expression,
+     * taking potential curly braces into account.
+     */
+    private RegExpr parse(String text) throws FormatException {
+        if (text.startsWith(RegExpr.NEG_OPERATOR)) {
+            RegExpr innerExpr =
+                parse(text.substring(RegExpr.NEG_OPERATOR.length()));
+            return new RegExpr.Neg(innerExpr);
+        } else {
+            if (text.startsWith("" + ExprParser.LCURLY)) {
+                text =
+                    ExprParser.toTrimmed(text, ExprParser.LCURLY,
+                        ExprParser.RCURLY);
+            }
+            return RegExpr.parse(text);
+        }
     }
 
     /** Indicates if this is supposed to be a rule element. */

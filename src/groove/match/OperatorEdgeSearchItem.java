@@ -16,7 +16,7 @@
  */
 package groove.match;
 
-import groove.algebra.AlgebraRegister;
+import groove.algebra.AlgebraFamily;
 import groove.algebra.Operation;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
@@ -45,7 +45,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
      * ends have already been matched (in the search plan) before this one.
      * @param edge the edge to be matched
      */
-    public OperatorEdgeSearchItem(OperatorEdge edge, AlgebraRegister register) {
+    public OperatorEdgeSearchItem(OperatorEdge edge, AlgebraFamily register) {
         this.edge = edge;
         this.operation = register.getOperation(edge.getOperator());
         this.arguments = edge.source().getArguments();
