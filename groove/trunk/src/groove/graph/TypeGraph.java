@@ -17,7 +17,7 @@
 package groove.graph;
 
 import groove.algebra.Algebra;
-import groove.algebra.AlgebraRegister;
+import groove.algebra.Algebras;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
@@ -244,8 +244,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> 
                 if (node instanceof VariableNode) {
                     Algebra<?> algebra = ((VariableNode) node).getAlgebra();
                     if (algebra != null) {
-                        String signature =
-                            AlgebraRegister.getSignatureName(algebra);
+                        String signature = Algebras.getSigName(algebra);
                         nodeTypeMap.put(node,
                             TypeLabel.createLabel(signature, Label.NODE_TYPE));
                     }

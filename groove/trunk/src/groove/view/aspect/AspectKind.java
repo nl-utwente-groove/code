@@ -17,6 +17,8 @@
 package groove.view.aspect;
 
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Distinguishes the aspects that can be found in a plain graph representation
@@ -29,26 +31,26 @@ public enum AspectKind {
     REMARK("rem"),
 
     // rule roles
+    /** Indicates an unmodified element. */
+    READER("use"),
     /** Indicates an element to be deleted. */
     ERASER("del"),
     /** Indicates an element to be created. */
     CREATOR("new"),
-    /** Indicates an unmodified element. */
-    READER("use"),
     /** Indicates a forbidden element. */
     EMBARGO("not"),
 
     // data types
     /** Indicates a data value of unknown type. */
     ATTR("attr"),
-    /** Indicates a string value or operator. */
-    STRING("string"),
     /** Indicates a boolean value or operator. */
     BOOL("bool"),
     /** Indicates an integer value or operator. */
     INT("int"),
     /** Indicates a floating-point value or operator. */
     REAL("real"),
+    /** Indicates a string value or operator. */
+    STRING("string"),
 
     // auxiliary attribute-related aspects
     /** Indicates an argument edge. */
@@ -91,6 +93,85 @@ public enum AspectKind {
         return this.name;
     }
 
+    /** 
+     * Indicates if this aspect is among the set of roles.
+     * @see #roles 
+     */
+    public boolean isRole() {
+        return roles.contains(this);
+    }
+
+    /** 
+     * Indicates if this aspect is among the set of NAC elements.
+     * @see #nac 
+     */
+    public boolean isNAC() {
+        return nac.contains(this);
+    }
+
+    /** 
+     * Indicates if this aspect is among the set of LHS element.
+     * @see #lhs 
+     */
+    public boolean isLHS() {
+        return lhs.contains(this);
+    }
+
+    /** 
+     * Indicates if this aspect is among the set of RHS elements.
+     * @see #rhs 
+     */
+    public boolean isRHS() {
+        return rhs.contains(this);
+    }
+
+    /** 
+     * Indicates if this aspect is among the set of type aspects.
+     * @see #types 
+     */
+    public boolean isType() {
+        return types.contains(this);
+    }
+
+    /** 
+     * Indicates if this aspect is among the set of data aspects.
+     * @see #data 
+     */
+    public boolean isData() {
+        return data.contains(this);
+    }
+
+    /** 
+     * Indicates if this aspect is among the set of meta-aspects.
+     * @see #meta 
+     */
+    public boolean isMeta() {
+        return meta.contains(this);
+    }
+
+    /** 
+     * Indicates if this aspect is among the set of quantifiers.
+     * @see #quantifier 
+     */
+    public boolean isQuantifier() {
+        return quantifier.contains(this);
+    }
+
+    /** Indicates that this aspect kind is allowed to appear on edges. */
+    public boolean isForEdge() {
+        return !nodeOnly.contains(this);
+    }
+
+    /** Indicates that this aspect kind is allowed to appear on nodes. */
+    public boolean isForNode() {
+        return !edgeOnly.contains(this);
+    }
+
+    /** Indicates that this aspect kind is always the last on a label. */
+    public boolean isLast() {
+        return !series.contains(this);
+    }
+
     private final String name;
 
     /** 
@@ -98,12 +179,19 @@ public enum AspectKind {
      * name, or {@code null} if there is no such aspect kind.
      */
     public static AspectKind parse(String name) {
+        return aspectMap.get(name);
+    }
+
+    /** Static mapping from all aspect names to aspects. */
+    private static final Map<String,AspectKind> aspectMap =
+        new HashMap<String,AspectKind>();
+
+    static {
+        // initialise the aspect map
         for (AspectKind aspect : EnumSet.allOf(AspectKind.class)) {
-            if (aspect.toString().equals(name)) {
-                return aspect;
-            }
+            AspectKind oldAspect = aspectMap.put(aspect.toString(), aspect);
+            assert oldAspect == null;
         }
-        return null;
     }
 
     /** Set of role aspects. */
@@ -124,4 +212,16 @@ public enum AspectKind {
     /** Set of meta-aspects, i.e., which do not reflect real graph structure. */
     public static EnumSet<AspectKind> meta = EnumSet.of(FORALL, FORALL_POS,
         EXISTS, NESTED, REMARK);
+    /** Set of quantifier aspects, i.e., which do not reflect real graph structure. */
+    public static EnumSet<AspectKind> quantifier = EnumSet.of(FORALL,
+        FORALL_POS, EXISTS);
+
+    /** Set of all aspects that can be used <i>only</i> on nodes. */
+    public static EnumSet<AspectKind> nodeOnly = EnumSet.of(ATTR, PRODUCT);
+    /** Set of all aspects that can be used <i>only</i> on edges. */
+    public static EnumSet<AspectKind> edgeOnly = EnumSet.of(ARGUMENT,
+        PARAMETER, SUBTYPE, PATH, LITERAL, NESTED);
+    /** Set of aspects that may be followed by others, when used in an edge label. */
+    public static EnumSet<AspectKind> series = EnumSet.of(READER, ERASER,
+        CREATOR, EMBARGO, FORALL, FORALL_POS, EXISTS);
 }

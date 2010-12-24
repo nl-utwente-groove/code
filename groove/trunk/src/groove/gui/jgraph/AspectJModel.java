@@ -39,7 +39,6 @@ import groove.graph.Node;
 import groove.gui.Options;
 import groove.trans.RuleLabel;
 import groove.util.Converter;
-import groove.util.Groove;
 import groove.view.FormatError;
 import groove.view.View;
 import groove.view.aspect.AspectEdge;
@@ -293,12 +292,6 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             this.role = node.getRole();
         }
 
-        /** Specialises the return type. */
-        @Override
-        public AspectNode getNode() {
-            return super.getNode();
-        }
-
         /**
          * This implementation return's the model node of {@link #getNode()}.
          * @see #getModelNode(AspectNode)
@@ -315,13 +308,11 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         @Override
         StringBuilder getNodeDescription() {
             StringBuilder res = super.getNodeDescription();
-            if (this.role.equals(getNode().getType())) {
+            if (this.role != null) {
                 Converter.toUppercase(res, false);
                 res.insert(0, " ");
                 res.insert(0, ROLE_NAMES.get(this.role));
-                if (this.role.equals(getNode().getType())) {
-                    res.append("<br>" + ROLE_DESCRIPTIONS.get(this.role));
-                }
+                res.append("<br>" + ROLE_DESCRIPTIONS.get(this.role));
             }
             return res;
         }
@@ -499,7 +490,7 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         @Override
         StringBuilder getEdgeDescription() {
             StringBuilder result = super.getEdgeDescription();
-            if (this.role != null && this.role.equals(getEdge().getRole())) {
+            if (this.role != null) {
                 result.append("<br>" + ROLE_DESCRIPTIONS.get(this.role));
             }
             return result;
@@ -508,7 +499,7 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         @Override
         StringBuilder getEdgeKindDescription() {
             StringBuilder result = super.getEdgeKindDescription();
-            if (Groove.RULE_ROLE.equals(getRole())) {
+            if (this.role != null) {
                 Converter.toUppercase(result, false);
                 result.insert(0, " ");
                 result.insert(0, ROLE_NAMES.get(this.role));
@@ -598,11 +589,6 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             return super.isDataEdgeSourceLabel()
                 && getEdge().equalsAspects(getSourceNode())
                 && !getSourceNode().isRemark();
-        }
-
-        @Override
-        public String getRole() {
-            return this.role.getName();
         }
 
         private final AspectValue role;

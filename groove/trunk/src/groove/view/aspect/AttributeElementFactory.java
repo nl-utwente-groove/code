@@ -17,7 +17,7 @@
 package groove.view.aspect;
 
 import groove.algebra.Algebra;
-import groove.algebra.AlgebraRegister;
+import groove.algebra.AlgebraFamily;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.trans.SystemProperties;
@@ -37,7 +37,7 @@ public class AttributeElementFactory {
      * @param graph the aspect graph for which the attribute elements are to be
      *        created
      * @param properties source of the algebra family to be used; if
-     *        <code>null</code>, the {@link AlgebraRegister#DEFAULT_ALGEBRAS} is
+     *        <code>null</code>, the {@link AlgebraFamily#DEFAULT_ALGEBRAS} is
      *        used.
      * @see SystemProperties#getAlgebraFamily()
      */
@@ -45,9 +45,9 @@ public class AttributeElementFactory {
             SystemProperties properties) {
         this.graph = graph;
         String registerName =
-            properties == null ? AlgebraRegister.DEFAULT_ALGEBRAS
+            properties == null ? AlgebraFamily.DEFAULT_ALGEBRAS
                     : properties.getAlgebraFamily();
-        this.register = AlgebraRegister.getInstance(registerName);
+        this.register = AlgebraFamily.getInstance(registerName);
     }
 
     //
@@ -90,7 +90,7 @@ public class AttributeElementFactory {
         String constant = dataType.getContent();
         Algebra<?> algebra = null;
         if (!AttributeAspect.VALUE.equals(dataType)) {
-            algebra = this.register.getImplementation(dataType.getName());
+            algebra = this.register.getAlgebra(dataType.getName());
             assert algebra != null;
         }
         if (constant == null) {
@@ -239,5 +239,5 @@ public class AttributeElementFactory {
     /** Aspect graph on which this factory works. */
     private final AspectGraph graph;
     /** Algebra registry to use in creating the algebra values and operations. */
-    private final AlgebraRegister register;
+    private final AlgebraFamily register;
 }

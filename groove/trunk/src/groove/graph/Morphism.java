@@ -56,6 +56,12 @@ public class Morphism<N extends Node,L extends Label,E extends Edge> extends
         return (Morphism<N,L,E>) super.clone();
     }
 
+    /** This implementation is the identity on labels. */
+    @Override
+    public L mapLabel(L label) {
+        return label;
+    }
+
     /**
      * Constructs a morphism that is the concatenation of two morphisms.
      * @param other the second argument of concatenation

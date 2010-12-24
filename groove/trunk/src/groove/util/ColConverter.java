@@ -17,7 +17,7 @@
 package groove.util;
 
 import groove.algebra.Algebra;
-import groove.algebra.AlgebraRegister;
+import groove.algebra.AlgebraFamily;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
@@ -75,7 +75,7 @@ public class ColConverter {
         HostGraph result = new DefaultHostGraph();
         System.out.printf("Converting %s%n", inFile.getCanonicalPath());
         BufferedReader reader = new BufferedReader(new FileReader(inFile));
-        Algebra<?> intAlgebra = AlgebraRegister.getInstance().getAlgebra("0");
+        Algebra<?> intAlgebra = AlgebraFamily.getInstance().getAlgebraFor("0");
         TypeLabel valueLabel = TypeLabel.createLabel("value");
         for (String nextLine = reader.readLine(); nextLine != null; nextLine =
             reader.readLine()) {

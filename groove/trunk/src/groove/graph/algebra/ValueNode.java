@@ -18,7 +18,8 @@ package groove.graph.algebra;
 
 import static groove.view.aspect.Aspect.CONTENT_SEPARATOR;
 import groove.algebra.Algebra;
-import groove.algebra.AlgebraRegister;
+import groove.algebra.AlgebraFamily;
+import groove.algebra.Algebras;
 import groove.trans.HostNode;
 import groove.view.aspect.Aspect;
 
@@ -66,8 +67,8 @@ public class ValueNode extends VariableNode implements HostNode {
      * consisting of the signature name followed by a separator and the value symbol.
      */
     public String getLabelText() {
-        return AlgebraRegister.getSignatureName(getAlgebra())
-            + Aspect.VALUE_SEPARATOR + getSymbol();
+        return Algebras.getSigName(getAlgebra()) + Aspect.VALUE_SEPARATOR
+            + getSymbol();
     }
 
     /**
@@ -108,7 +109,7 @@ public class ValueNode extends VariableNode implements HostNode {
      * Chooses a value from the default algebras.
      */
     static public ValueNode createValueNode(String value) {
-        Algebra<?> alg = AlgebraRegister.getInstance().getAlgebra(value);
+        Algebra<?> alg = AlgebraFamily.getInstance().getAlgebraFor(value);
         return createValueNode(alg, alg.getValue(value));
     }
 

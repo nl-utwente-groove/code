@@ -817,16 +817,16 @@ public class ExprParser {
     /**
      * Left bracket character allowed as atom delimiter
      */
-    static public final char LCURLY_CHAR = '{';
+    static public final char LCURLY = '{';
     /**
      * Right bracket character allowed as atom delimiter
      */
-    static public final char RCURLY_CHAR = '}';
+    static public final char RCURLY = '}';
 
     /** Pair of round brackets, to control parsing. */
     static public final char[] ROUND_BRACKETS = {LPAR_CHAR, RPAR_CHAR};
     /** Pair of curly brackets, to control parsing. */
-    static private final char[] CURLY_BRACKETS = {LCURLY_CHAR, RCURLY_CHAR};
+    static private final char[] CURLY_BRACKETS = {LCURLY, RCURLY};
     /** Pair of square brackets, to control parsing. */
     static private final char[] SQUARE_BRACKETS = {'[', ']'};
     /** Pair of angle brackets, to control parsing. */

@@ -1,6 +1,6 @@
 package groove.trans;
 
-import groove.algebra.AlgebraRegister;
+import groove.algebra.AlgebraFamily;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.util.Fixable;
@@ -281,12 +281,12 @@ public class SystemProperties extends java.util.Properties implements Fixable {
 
     /** 
      * Returns the selected algebra family.
-     * @return the selected algebra family, or {@link AlgebraRegister#DEFAULT_ALGEBRAS}
+     * @return the selected algebra family, or {@link AlgebraFamily#DEFAULT_ALGEBRAS}
      * if none is selected. 
      */
     public String getAlgebraFamily() {
         String result = getProperty(ALGEBRA_KEY);
-        return result == null ? AlgebraRegister.DEFAULT_ALGEBRAS : result;
+        return result == null ? AlgebraFamily.DEFAULT_ALGEBRAS : result;
     }
 
     /**
@@ -689,8 +689,8 @@ public class SystemProperties extends java.util.Properties implements Fixable {
             ALGEBRA_KEY,
             new Property.Choice<String>(
                 "Algebra family that should be used in simulation (empty for default)",
-                AlgebraRegister.DEFAULT_ALGEBRAS,
-                AlgebraRegister.POINT_ALGEBRAS, AlgebraRegister.BIG_ALGEBRAS));
+                AlgebraFamily.DEFAULT_ALGEBRAS,
+                AlgebraFamily.POINT_ALGEBRAS, AlgebraFamily.BIG_ALGEBRAS));
         defaultKeys.put(INJECTIVE_KEY, new Property.IsBoolean(
             "Flag controlling if matches should be injective", true));
         defaultKeys.put(

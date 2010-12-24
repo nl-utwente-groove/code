@@ -16,7 +16,7 @@
  */
 package groove.match;
 
-import groove.algebra.AlgebraRegister;
+import groove.algebra.AlgebraFamily;
 import groove.rel.LabelVar;
 import groove.trans.AbstractCondition;
 import groove.trans.Condition;
@@ -48,7 +48,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
      *        matchers only
      * @param algebraFamily the name of the set of algebras to be used in
      * data value manipulation
-     * @see AlgebraRegister#getInstance(String)
+     * @see AlgebraFamily#getInstance(String)
      */
     private ConditionSearchPlanFactory(boolean injective, String algebraFamily) {
         super(injective, false, algebraFamily);
@@ -136,7 +136,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
      *        matchers only
      * @param algebraFamily the name of the set of algebras to be used in
      * data value manipulation
-     * @see AlgebraRegister#getInstance(String)
+     * @see AlgebraFamily#getInstance(String)
      */
     static public ConditionSearchPlanFactory getInstance(boolean injective,
             String algebraFamily) {
