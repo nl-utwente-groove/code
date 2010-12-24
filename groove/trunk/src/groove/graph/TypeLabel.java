@@ -16,10 +16,10 @@
  */
 package groove.graph;
 
-import groove.algebra.Algebra;
 import groove.algebra.Algebras;
 import groove.util.Converter;
 import groove.util.ExprParser;
+import groove.util.Pair;
 import groove.view.FormatException;
 import groove.view.aspect.AspectValue;
 import groove.view.aspect.RuleAspect;
@@ -187,18 +187,11 @@ public final class TypeLabel extends AbstractLabel {
         return getPrefix(label.getKind()) + label.text();
     }
 
-    /** Creates a data type label for a given algebra. */
-    public static TypeLabel createDataType(Algebra<?> algebra) {
-        return createLabel(Algebras.getSigName(algebra), NODE_TYPE);
-    }
-
     /**
      * Returns the textual prefix belonging to a given label kind.
-     * This method is the inverse of {@link #getPrefixKind(String)}.
      * @return the label type corresponding to {@code labelType}, including the
      *         {@link #KIND_SEPARATOR} where necessary; {@code null} if {@code
      *         labelType} is not a valid label type.
-     * @see #getPrefixKind(String)
      */
     public static String getPrefix(int labelKind) {
         switch (labelKind) {
@@ -214,44 +207,25 @@ public final class TypeLabel extends AbstractLabel {
     }
 
     /** 
-     * Extracts the label prefix from a given label text.
-     * The prefix is either {@link #NODE_TYPE_PREFIX} or 
-     * {@link #FLAG_PREFIX}, followed by {@link #KIND_SEPARATOR});
-     * or {@code null} if there is no type prefix.
-     * @see #getPrefix(int)
-     */
-    public static String getPrefix(String label) {
-        if (label.startsWith(getPrefix(NODE_TYPE))) {
-            return getPrefix(NODE_TYPE);
-        } else if (label.startsWith(getPrefix(FLAG))) {
-            return getPrefix(FLAG);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Determines the label type, based on a given prefix.
-     * This method is the inverse of {@link #getPrefix(int)}.
-     * @param prefix the tested prefix; should not include
-     *        {@link #KIND_SEPARATOR}
-     * @return one of {@link #BINARY}, {@link #NODE_TYPE} or {@link #FLAG}, or a
-     *         negative number if {@code prefix} is not a known label type
-     * @see #getKind()
+     * Splits a given string into a label kind indicator and the remainder
+     * of the string. The label kind is determined by testing the string for
+     * the corresponding prefix. The original text equals 
+     * {@code result.two()+getPrefix(result.one())}.
      * @see #getPrefix(int)
      * @see #NODE_TYPE_PREFIX
      * @see #FLAG_PREFIX
      */
-    static public int getPrefixKind(String prefix) {
-        if (prefix.length() == 0) {
-            return BINARY;
-        } else if (prefix.equals(getPrefix(NODE_TYPE))) {
-            return NODE_TYPE;
-        } else if (prefix.equals(getPrefix(FLAG))) {
-            return FLAG;
+    static public Pair<Integer,String> splitKind(String text) {
+        int kind;
+        if (text.startsWith(getPrefix(NODE_TYPE))) {
+            kind = NODE_TYPE;
+        } else if (text.startsWith(getPrefix(FLAG))) {
+            kind = FLAG;
         } else {
-            return -1;
+            kind = BINARY;
         }
+        return new Pair<Integer,String>(kind,
+            text.substring(getPrefix(kind).length()));
     }
 
     /**

@@ -16,7 +16,6 @@
  */
 package groove.match;
 
-import groove.algebra.Algebra;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
@@ -431,26 +430,28 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
 
         /** Sets the node image for the node key with a given index. */
         final boolean putNode(int index, HostNode image) {
+            RuleNode nodeKey = SearchPlanStrategy.this.nodeKeys[index];
             assert this.nodeAnchors[index] == null : String.format(
-                "Assignment %s=%s replaces pre-matched image %s",
-                SearchPlanStrategy.this.nodeKeys[index], image,
-                this.nodeAnchors[index]);
-            // value nodes only matched by value nodes without algebra or of the
-            // same algebra
-            boolean imageIsValueNode = image instanceof ValueNode;
-            boolean keyIsVariableNode =
-                SearchPlanStrategy.this.nodeKeys[index] instanceof VariableNode;
-            if (imageIsValueNode != keyIsVariableNode) {
-                return false;
-            } else if (keyIsVariableNode) {
-                Algebra<?> keyAlgebra =
-                    ((VariableNode) SearchPlanStrategy.this.nodeKeys[index]).getAlgebra();
-                if (keyAlgebra != null
-                    && !((ValueNode) image).getAlgebra().equals(keyAlgebra)) {
+                "Assignment %s=%s replaces pre-matched image %s", nodeKey,
+                image, this.nodeAnchors[index]);
+            boolean keyIsVariableNode = nodeKey instanceof VariableNode;
+            if (image instanceof ValueNode) {
+                // value nodes only matched by value nodes without signature or of the
+                // same signature
+                if (!keyIsVariableNode) {
                     return false;
+                } else {
+                    String keySignature =
+                        ((VariableNode) nodeKey).getSignature();
+                    if (keySignature != null
+                        && !((ValueNode) image).getSignature().equals(
+                            keySignature)) {
+                        return false;
+                    }
                 }
-            }
-            if (isInjective() && !imageIsValueNode) {
+            } else if (keyIsVariableNode) {
+                return false;
+            } else if (isInjective()) {
                 HostNode oldImage = this.nodeImages[index];
                 if (oldImage != null) {
                     boolean removed = getUsedNodes().remove(oldImage);

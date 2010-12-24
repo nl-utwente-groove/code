@@ -38,8 +38,9 @@ public class AlgebraFamily {
      *         signature
      * @throws IllegalStateException if there are signatures without algebras
      */
-    private AlgebraFamily(Set<Algebra<?>> algebras)
+    private AlgebraFamily(String name, Set<Algebra<?>> algebras)
         throws IllegalArgumentException, IllegalStateException {
+        this.name = name;
         for (Algebra<?> algebra : algebras) {
             setImplementation(algebra);
         }
@@ -76,11 +77,27 @@ public class AlgebraFamily {
         }
     }
 
+    /** Returns the name of this algebra family. */
+    public final String getName() {
+        return this.name;
+    }
+
     /**
      * Returns the algebra class registered for a given named signature, if any.
      */
     public Algebra<?> getAlgebra(String sigName) {
         return this.algebraMap.get(sigName);
+    }
+
+    /** 
+     * Returns the value for a given constant.
+     * @param signature the signature of which this is a constant
+     * @param constant the string representation of the constant.
+     * @return the value {@code constant} (in the appropriate algebra)
+     * @see #getAlgebraFor(String)
+     */
+    public Object getValue(String signature, String constant) {
+        return getAlgebra(signature).getValue(constant);
     }
 
     /**
@@ -200,6 +217,8 @@ public class AlgebraFamily {
         return this.algebraMap.toString();
     }
 
+    /** The algebra family name. */
+    private final String name;
     /** A map from signature names to algebras registered for that name. */
     private final Map<String,Algebra<?>> algebraMap =
         new TreeMap<String,Algebra<?>>();
@@ -242,21 +261,22 @@ public class AlgebraFamily {
         defaultAlgebraFamily.add(BoolAlgebra.instance);
         defaultAlgebraFamily.add(StringAlgebra.instance);
         defaultAlgebraFamily.add(JavaDoubleAlgebra.instance);
-        defaultFamily = new AlgebraFamily(defaultAlgebraFamily);
+        defaultFamily =
+            new AlgebraFamily(DEFAULT_ALGEBRAS, defaultAlgebraFamily);
         familyMap.put(DEFAULT_ALGEBRAS, defaultFamily);
         Set<Algebra<?>> pointAlgebraFamily = new HashSet<Algebra<?>>();
         pointAlgebraFamily.add(IntPointAlgebra.instance);
         pointAlgebraFamily.add(BoolPointAlgebra.instance);
         pointAlgebraFamily.add(StringPointAlgebra.instance);
         pointAlgebraFamily.add(RealPointAlgebra.instance);
-        pointFamily = new AlgebraFamily(pointAlgebraFamily);
+        pointFamily = new AlgebraFamily(POINT_ALGEBRAS, pointAlgebraFamily);
         familyMap.put(POINT_ALGEBRAS, pointFamily);
         Set<Algebra<?>> bigAlgebraFamily = new HashSet<Algebra<?>>();
         bigAlgebraFamily.add(BigIntAlgebra.instance);
         bigAlgebraFamily.add(BoolAlgebra.instance);
         bigAlgebraFamily.add(StringAlgebra.instance);
         bigAlgebraFamily.add(BigDoubleAlgebra.instance);
-        bigFamily = new AlgebraFamily(bigAlgebraFamily);
+        bigFamily = new AlgebraFamily(POINT_ALGEBRAS, bigAlgebraFamily);
         familyMap.put(BIG_ALGEBRAS, bigFamily);
     }
 

@@ -28,6 +28,7 @@ import groove.graph.Label;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ProductNode;
+import groove.graph.algebra.VariableNode;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
 import groove.rel.VarSupport;
@@ -57,7 +58,6 @@ import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectValue;
 import groove.view.aspect.AttributeAspect;
-import groove.view.aspect.AttributeElementFactory;
 import groove.view.aspect.NestingAspect;
 import groove.view.aspect.ParameterAspect;
 import groove.view.aspect.RuleAspect;
@@ -264,7 +264,6 @@ public class DefaultRuleView implements RuleView {
      * {@link #initialise()}.
      */
     private void invalidate() {
-        this.attributeFactory = null;
         this.rule = null;
         this.ruleErrors = null;
         this.levelTree = null;
@@ -273,9 +272,7 @@ public class DefaultRuleView implements RuleView {
     /** Initialises the derived data structures. */
     private void initialise() {
         // only do something if there is something to be done
-        if (this.attributeFactory == null) {
-            this.attributeFactory =
-                new AttributeElementFactory(getView(), getSystemProperties());
+        if (this.ruleErrors == null) {
             this.ruleErrors = new ArrayList<FormatError>();
             if (this.viewErrors != null) {
                 this.ruleErrors.addAll(this.viewErrors);
@@ -373,7 +370,13 @@ public class DefaultRuleView implements RuleView {
         if (node.isProduct()) {
             return new ProductNode(node.getNumber(), node.getArgNodes().size());
         } else if (node.hasDataType()) {
-            return DefaultRuleView.this.attributeFactory.createValueNode(node);
+            AspectValue dataType = node.getDataType();
+            if (AttributeAspect.VALUE.equals(dataType)) {
+                return new VariableNode(node.getNumber(), null, null);
+            } else {
+                return new VariableNode(node.getNumber(), dataType.getName(),
+                    dataType.getContent());
+            }
         } else {
             return ruleFactory.createNode(node.getNumber());
         }
@@ -430,8 +433,6 @@ public class DefaultRuleView implements RuleView {
      * view errors.
      */
     private final List<FormatError> viewErrors;
-    /** The attribute element factory for this view. */
-    private AttributeElementFactory attributeFactory;
     /** The graph for this view, if any. */
     private TypeGraph type;
     /** The level tree for this rule view. */

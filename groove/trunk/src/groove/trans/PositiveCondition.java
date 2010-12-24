@@ -19,7 +19,6 @@ package groove.trans;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
-import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.view.FormatError;
 import groove.view.FormatException;
@@ -52,8 +51,8 @@ abstract public class PositiveCondition<M extends Match> extends
      * @param properties properties for matching the condition; may be
      *        <code>null</code>
      */
-    PositiveCondition(RuleName name, RuleGraph target, RuleGraphMorphism rootMap,
-            SystemProperties properties) {
+    PositiveCondition(RuleName name, RuleGraph target,
+            RuleGraphMorphism rootMap, SystemProperties properties) {
         super(name, target, rootMap, properties);
     }
 
@@ -106,10 +105,11 @@ abstract public class PositiveCondition<M extends Match> extends
         this.unresolvedProductNodes = new HashMap<ProductNode,BitSet>();
         // test if product nodes have the required arguments
         for (RuleNode node : getTarget().nodeSet()) {
-            if (node instanceof VariableNode && !(node instanceof ValueNode)) {
+            if (node instanceof VariableNode
+                && ((VariableNode) node).getConstant() == null) {
                 boolean hasIncomingNonAttributeEdge = false;
                 for (RuleEdge edge : getTarget().inEdgeSet(node)) {
-                    if (edge.getClass().equals(RuleEdge.class)) {
+                    if (edge.label().isMatchable()) {
                         hasIncomingNonAttributeEdge = true;
                     }
                 }

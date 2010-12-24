@@ -170,7 +170,7 @@ public class NewAspect {
 
     /** Throws an exception if this aspect does not allow numbered instances. */
     private void checkNumberKind() throws UnsupportedOperationException {
-        if (!(this.kind == AspectKind.ARGUMENT || this.kind == AspectKind.PARAMETER)) {
+        if (!(this.kind == AspectKind.ARGUMENT || this.kind == AspectKind.PARAM_BI)) {
             throw new UnsupportedOperationException(
                 "Numbered instances are not allowed for this aspect");
         }

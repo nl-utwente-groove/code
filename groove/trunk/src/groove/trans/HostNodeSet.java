@@ -16,9 +16,7 @@
  */
 package groove.trans;
 
-import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
-import groove.graph.algebra.VariableNode;
 import groove.util.TreeHashSet;
 
 import java.util.Collection;
@@ -74,16 +72,6 @@ final public class HostNodeSet extends TreeHashSet<HostNode> {
                 "Value node number '%s' too high to ensure correctness of NodeSet implementation",
                 nr);
             nr += VALUE_NODE_BASE;
-        } else if (key instanceof VariableNode) {
-            assert nr < MAX_VARIABLE_NODE_NR : String.format(
-                "Variable node number '%s' too high to ensure correctness of NodeSet implementation",
-                nr);
-            nr += VARIABLE_NODE_BASE;
-        } else if (key instanceof ProductNode) {
-            assert nr < MAX_PRODUCT_NODE_NR : String.format(
-                "Product node number '%s' too high to ensure correctness of NodeSet implementation",
-                nr);
-            nr += PRODUCT_NODE_BASE;
         } else {
             assert nr < MAX_DEFAULT_NODE_NR : String.format(
                 "Default node number '%s' too high to ensure correctness of NodeSet implementation",

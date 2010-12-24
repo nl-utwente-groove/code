@@ -98,14 +98,14 @@ public class GraphJEdge<N extends Node,E extends Edge> extends JEdge implements
      * Indicates if this edge has a value node target and can be used as a label
      * on its source node. This is the case if
      * {@link GraphJModel#isShowValueNodes()} holds, and
-     * {@link GraphJVertex#hasValue()} holds for the target node. Callback
+     * {@link GraphJVertex#isValueNode()} holds for the target node. Callback
      * method from {@link #isSourceLabel()}.
      */
     public boolean isDataEdgeSourceLabel() {
         boolean result = !this.jModel.isShowValueNodes();
         if (result) {
             result =
-                getTargetVertex().hasValue()
+                getTargetVertex().isValueNode()
                     || getTargetVertex().isDataTypeNode();
         }
         return result;

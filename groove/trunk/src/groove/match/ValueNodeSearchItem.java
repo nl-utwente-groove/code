@@ -16,7 +16,9 @@
  */
 package groove.match;
 
+import groove.algebra.AlgebraFamily;
 import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.match.SearchPlanStrategy.Search;
 import groove.trans.RuleNode;
 
@@ -34,9 +36,14 @@ class ValueNodeSearchItem extends AbstractSearchItem {
      * itself.
      * @param node the node to be matched
      */
-    public ValueNodeSearchItem(ValueNode node) {
+    public ValueNodeSearchItem(VariableNode node, AlgebraFamily family) {
         this.node = node;
         this.boundNodes = Collections.<RuleNode>singleton(node);
+        assert node.getConstant() != null;
+        Object value = family.getValue(node.getSignature(), node.getConstant());
+        this.image =
+            ValueNode.createValueNode(family.getAlgebra(node.getSignature()),
+                value);
     }
 
     public ValueNodeRecord getRecord(SearchPlanStrategy.Search matcher) {
@@ -69,7 +76,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
     }
 
     /** Returns the value node we are looking up. */
-    public ValueNode getNode() {
+    public VariableNode getNode() {
         return this.node;
     }
 
@@ -80,7 +87,9 @@ class ValueNodeSearchItem extends AbstractSearchItem {
     /** Singleton set consisting of <code>node</code>. */
     private final Collection<RuleNode> boundNodes;
     /** The (constant) variable node to be matched. */
-    final ValueNode node;
+    final VariableNode node;
+    /** The constant value of the variable node, if any. */
+    final ValueNode image;
     //    /** The value node that represents the value of the constant. */
     //    final ValueNode nodeImage;
     /** The index of the value node (in the result. */
@@ -106,7 +115,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         @Override
         boolean set() {
             return this.search.putNode(ValueNodeSearchItem.this.nodeIx,
-                ValueNodeSearchItem.this.node);
+                ValueNodeSearchItem.this.image);
         }
 
         @Override

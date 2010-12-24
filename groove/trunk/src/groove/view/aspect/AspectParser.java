@@ -106,7 +106,7 @@ public class AspectParser {
         int result = text.indexOf(VALUE_SEPARATOR);
         if (result > 0) {
             if (!Character.isLetter(text.charAt(0))
-                || TypeLabel.getPrefix(text) != null) {
+                || !TypeLabel.splitKind(text).two().equals(text)) {
                 result = -1;
             }
         }

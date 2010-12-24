@@ -59,8 +59,12 @@ public enum AspectKind {
     PRODUCT("prod"),
 
     // rule parameters
-    /** Indicates a rule parameter. */
-    PARAMETER("par"),
+    /** Indicates a bidirectional rule parameter. */
+    PARAM_BI("par"),
+    /** Indicates an input rule parameter. */
+    PARAM_IN("parin"),
+    /** Indicates an output rule parameter. */
+    PARAM_OUT("parout"),
 
     // type-related aspects
     /** Indicates an abstract type. */
@@ -150,6 +154,14 @@ public enum AspectKind {
     }
 
     /** 
+     * Indicates if this aspect is among the set of parameter aspects.
+     * @see #params 
+     */
+    public boolean isParam() {
+        return params.contains(this);
+    }
+
+    /** 
      * Indicates if this aspect is among the set of quantifiers.
      * @see #quantifier 
      */
@@ -212,6 +224,9 @@ public enum AspectKind {
     /** Set of meta-aspects, i.e., which do not reflect real graph structure. */
     public static EnumSet<AspectKind> meta = EnumSet.of(FORALL, FORALL_POS,
         EXISTS, NESTED, REMARK);
+    /** Set of parameter aspects. */
+    public static EnumSet<AspectKind> params = EnumSet.of(PARAM_BI, PARAM_IN,
+        PARAM_OUT);
     /** Set of quantifier aspects, i.e., which do not reflect real graph structure. */
     public static EnumSet<AspectKind> quantifier = EnumSet.of(FORALL,
         FORALL_POS, EXISTS);
@@ -219,8 +234,8 @@ public enum AspectKind {
     /** Set of all aspects that can be used <i>only</i> on nodes. */
     public static EnumSet<AspectKind> nodeOnly = EnumSet.of(ATTR, PRODUCT);
     /** Set of all aspects that can be used <i>only</i> on edges. */
-    public static EnumSet<AspectKind> edgeOnly = EnumSet.of(ARGUMENT,
-        PARAMETER, SUBTYPE, PATH, LITERAL, NESTED);
+    public static EnumSet<AspectKind> edgeOnly = EnumSet.of(ARGUMENT, PARAM_BI,
+        SUBTYPE, PATH, LITERAL, NESTED);
     /** Set of aspects that may be followed by others, when used in an edge label. */
     public static EnumSet<AspectKind> series = EnumSet.of(READER, ERASER,
         CREATOR, EMBARGO, FORALL, FORALL_POS, EXISTS);

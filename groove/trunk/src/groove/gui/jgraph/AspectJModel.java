@@ -353,7 +353,7 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
          * node.
          */
         boolean isAllowedNodeLabel(AspectEdge dataEdge) {
-            boolean result = !dataEdge.isBinary() || !dataEdge.isMeta();
+            boolean result = !dataEdge.isBinary() || dataEdge.isMeta();
             if (!result) {
                 // test for equal rule roles
                 AspectValue edgeRole = dataEdge.getRole();
@@ -577,7 +577,7 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
          */
         @Override
         public boolean isListable() {
-            return super.isListable() && getEdge().isMeta();
+            return super.isListable() && !getEdge().isMeta();
         }
 
         /**
