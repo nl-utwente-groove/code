@@ -17,6 +17,17 @@
 
 package groove.view;
 
+import static groove.view.aspect.AspectKind.ADDER;
+import static groove.view.aspect.AspectKind.CREATOR;
+import static groove.view.aspect.AspectKind.ERASER;
+import static groove.view.aspect.AspectKind.EXISTS;
+import static groove.view.aspect.AspectKind.FORALL;
+import static groove.view.aspect.AspectKind.FORALL_POS;
+import static groove.view.aspect.AspectKind.PARAM_BI;
+import static groove.view.aspect.AspectKind.PARAM_IN;
+import static groove.view.aspect.AspectKind.PARAM_OUT;
+import static groove.view.aspect.AspectKind.PRODUCT;
+import static groove.view.aspect.AspectKind.UNTYPED;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
@@ -55,12 +66,8 @@ import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectElement;
 import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
-import groove.view.aspect.AspectValue;
-import groove.view.aspect.AttributeAspect;
-import groove.view.aspect.NestingAspect;
-import groove.view.aspect.ParameterAspect;
-import groove.view.aspect.RuleAspect;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -367,15 +374,16 @@ public class DefaultRuleView implements RuleView {
      *         way in <code>context</code>
      */
     private RuleNode computeNodeImage(AspectNode node) throws FormatException {
-        if (node.isProduct()) {
+        AspectKind nodeAttrKind = node.getAttrKind();
+        if (nodeAttrKind == PRODUCT) {
             return new ProductNode(node.getNumber(), node.getArgNodes().size());
-        } else if (node.hasDataType()) {
-            AspectValue dataType = node.getDataType();
-            if (AttributeAspect.VALUE.equals(dataType)) {
+        } else if (nodeAttrKind.isData()) {
+            if (nodeAttrKind == UNTYPED) {
                 return new VariableNode(node.getNumber(), null, null);
             } else {
-                return new VariableNode(node.getNumber(), dataType.getName(),
-                    dataType.getContent());
+                return new VariableNode(node.getNumber(),
+                    nodeAttrKind.getName(),
+                    (String) node.getAttrAspect().getContent());
             }
         } else {
             return ruleFactory.createNode(node.getNumber());
@@ -466,7 +474,7 @@ public class DefaultRuleView implements RuleView {
          *        <code>null</code> for an implicit level
          */
         public LevelIndex(AspectNode levelNode) {
-            assert levelNode == null || levelNode.isQuantifier();
+            assert levelNode == null || levelNode.getKind().isQuantifier();
             this.levelNode = levelNode;
         }
 
@@ -497,7 +505,7 @@ public class DefaultRuleView implements RuleView {
          */
         public String getName() {
             String levelName =
-                isImplicit() ? null : this.levelNode.getType().getContent();
+                isImplicit() ? null : this.levelNode.getLevelName();
             if (levelName == null) {
                 return DefaultRuleView.this.getName()
                     + (isTopLevel() ? ""
@@ -576,7 +584,8 @@ public class DefaultRuleView implements RuleView {
                 // it's an implicit level
                 return !isTopLevel() && this.parent.isExistential();
             } else {
-                return NestingAspect.isForall(this.levelNode);
+                AspectKind nodeKind = this.levelNode.getKind();
+                return nodeKind == FORALL || nodeKind == FORALL_POS;
             }
         }
 
@@ -587,7 +596,8 @@ public class DefaultRuleView implements RuleView {
                 // it's an implicit level
                 return isTopLevel() || this.parent.isUniversal();
             } else {
-                return NestingAspect.isExists(this.levelNode);
+                AspectKind nodeKind = this.levelNode.getKind();
+                return nodeKind == EXISTS;
             }
         }
 
@@ -601,11 +611,10 @@ public class DefaultRuleView implements RuleView {
 
         /**
          * Indicates, for a universal level, if the level is positive.
-         * @see NestingAspect#isPositive(groove.view.aspect.AspectElement)
          */
         public boolean isPositive() {
             return isImplicit() ? this.index.size() == 1
-                    : NestingAspect.isPositive(this.levelNode);
+                    : this.levelNode.getKind() == FORALL_POS;
         }
 
         @Override
@@ -661,7 +670,8 @@ public class DefaultRuleView implements RuleView {
                 new HashMap<LevelIndex,Set<LevelIndex>>();
             metaNodeTree.put(this.topLevelIndex, createChildren());
             for (AspectNode node : getView().nodeSet()) {
-                if (node.isQuantifier()) {
+                AspectKind nodeKind = node.getKind();
+                if (nodeKind.isQuantifier()) {
                     LevelIndex nodeLevel = getIndex(node);
                     metaNodeTree.put(nodeLevel, createChildren());
                     // look for the parent level
@@ -671,7 +681,7 @@ public class DefaultRuleView implements RuleView {
                     // edge and points to the parent level node
                     AspectNode parentNode = node.getNestingParent();
                     if (parentNode == null) {
-                        if (NestingAspect.isForall(node)) {
+                        if (nodeKind == FORALL || nodeKind == FORALL_POS) {
                             parentLevel = this.topLevelIndex;
                         } else {
                             // create an artificial intermediate level to
@@ -734,14 +744,14 @@ public class DefaultRuleView implements RuleView {
          * Lazily creates and returns a level index for a given level meta-node.
          * @param levelNode the level node for which a level is to be created;
          *        should satisfy
-         *        {@link AspectNode#isMeta()}
+         *        {@link AspectKind#isQuantifier()}
          */
         private LevelIndex getIndex(AspectNode levelNode) {
             LevelIndex result = this.metaIndexMap.get(levelNode);
             if (result == null) {
                 this.metaIndexMap.put(levelNode, result =
                     new LevelIndex(levelNode));
-                String name = levelNode.getType().getContent();
+                String name = levelNode.getLevelName();
                 if (name != null && name.length() > 0) {
                     this.nameIndexMap.put(name, result);
                 }
@@ -762,7 +772,7 @@ public class DefaultRuleView implements RuleView {
             Set<FormatError> errors = new TreeSet<FormatError>();
             // add nodes to nesting data structures
             for (AspectNode node : getView().nodeSet()) {
-                if (!node.isMeta()) {
+                if (!node.getKind().isMeta()) {
                     try {
                         Level level = getLevel(node);
                         level.addNode(node, getNodeImage(node));
@@ -773,7 +783,7 @@ public class DefaultRuleView implements RuleView {
             }
             // add edges to nesting data structures
             for (AspectEdge edge : getView().edgeSet()) {
-                if (!edge.isMeta()) {
+                if (!edge.getKind().isMeta()) {
                     try {
                         Level level = getLevel(edge);
                         RuleEdge edgeImage = getEdgeImage(edge);
@@ -798,7 +808,7 @@ public class DefaultRuleView implements RuleView {
          * Returns the quantification level of a given aspect rule node.
          * @param node the node for which the quantification level is
          *        determined; must fail to satisfy
-         *        {@link AspectNode#isMeta()}
+         *        {@link AspectKind#isMeta()}
          * @return the level for {@code node}; non-null
          */
         private Level getLevel(AspectNode node) {
@@ -824,15 +834,15 @@ public class DefaultRuleView implements RuleView {
          * Returns the quantification level of a given aspect rule edge.
          * @param edge the edge for which the quantification level is
          *        determined; must fail to satisfy 
-         *        {@link AspectEdge#isMeta()}
+         *        {@link AspectKind#isMeta()}
          */
         private Level getLevel(AspectEdge edge) throws FormatException {
             Level sourceLevel = getLevel(edge.source());
             Level targetLevel = getLevel(edge.target());
             Level result = sourceLevel.max(targetLevel);
             // if one of the end nodes is a NAC, it must be the max of the two
-            if (RuleAspect.inNAC(edge.source()) && !sourceLevel.equals(result)
-                || RuleAspect.inNAC(edge.target())
+            if (edge.source().getKind().inNAC() && !sourceLevel.equals(result)
+                || edge.target().getKind().inNAC()
                 && !targetLevel.equals(result)) {
                 result = null;
             }
@@ -841,7 +851,7 @@ public class DefaultRuleView implements RuleView {
                     "Source and target of edge %s have incompatible nesting",
                     edge);
             }
-            String levelName = edge.getRole().getContent();
+            String levelName = edge.getLevelName();
             if (levelName != null) {
                 LevelIndex edgeLevelIndex = this.nameIndexMap.get(levelName);
                 if (edgeLevelIndex == null) {
@@ -1058,7 +1068,7 @@ public class DefaultRuleView implements RuleView {
                 for (Level sublevel : this.children) {
                     sublevel.addEdge(viewEdge, ruleEdge);
                 }
-            } else if (!RuleAspect.inNAC(viewEdge) && ruleEdge.isNodeType()) {
+            } else if (!viewEdge.getKind().inNAC() && ruleEdge.isNodeType()) {
                 // add type edges to all sublevels
                 for (Level sublevel : this.children) {
                     sublevel.addParentType(ruleEdge);
@@ -1108,7 +1118,9 @@ public class DefaultRuleView implements RuleView {
          * @param elem the element about which the question is asked
          */
         private boolean isForThisLevel(AspectElement elem) {
-            return this.index.isExistential() || !RuleAspect.isCreator(elem);
+            AspectKind kind = elem.getKind();
+            return this.index.isExistential()
+                || !(kind == CREATOR || kind == ADDER);
         }
 
         /**
@@ -1122,13 +1134,13 @@ public class DefaultRuleView implements RuleView {
          * @param elem the element about which the question is asked
          */
         private boolean isForNextLevel(AspectElement elem) {
-            assert !elem.isMeta();
+            AspectKind kind = elem.getKind();
+            assert !kind.isMeta();
             boolean result = false;
             if (elem instanceof AspectNode) {
                 // we need to push non-attribute nodes down in injective mode
                 // to be able to compare images of nodes at different levels
-                result =
-                    isInjective() && RuleAspect.inLHS(elem) && !elem.hasType();
+                result = isInjective() && elem.getKind().inLHS();
             } else {
                 // we need to push down edges that bind wildcards
                 // to ensure the bound value is known at sublevels
@@ -1141,7 +1153,7 @@ public class DefaultRuleView implements RuleView {
             if (!result) {
                 result =
                     this.index.isUniversal()
-                        && (RuleAspect.isEraser(elem) || RuleAspect.isCreator(elem));
+                        && (kind == ERASER || kind == CREATOR || kind == ADDER);
             }
             return result;
         }
@@ -1191,7 +1203,8 @@ public class DefaultRuleView implements RuleView {
             for (Map.Entry<AspectEdge,? extends RuleEdge> edgeEntry : this.viewToLevelMap.edgeMap().entrySet()) {
                 AspectEdge viewEdge = edgeEntry.getKey();
                 RuleEdge ruleEdge = edgeEntry.getValue();
-                if (RuleAspect.isCreator(viewEdge)
+                AspectKind kind = viewEdge.getKind();
+                if ((kind == CREATOR || kind == ADDER)
                     && ruleEdge.label().isEmpty()) {
                     result.put(viewEdge, ruleEdge);
                 }
@@ -1206,20 +1219,21 @@ public class DefaultRuleView implements RuleView {
         private boolean processNode(AspectNode viewNode, RuleNode lhsNode)
             throws FormatException {
             boolean result = true;
-            if (RuleAspect.inLHS(viewNode) || RuleAspect.inNAC(viewNode)) {
+            AspectKind nodeKind = viewNode.getKind();
+            if (nodeKind.inLHS() || nodeKind.inNAC()) {
                 RuleNode oldLhsNode = this.lhsMap.putNode(viewNode, lhsNode);
                 assert oldLhsNode == null || oldLhsNode.equals(lhsNode) : String.format(
                     "Old and new LHS images '%s' and '%s' should be the same",
                     oldLhsNode, lhsNode);
                 result = oldLhsNode == null;
-                if (RuleAspect.inLHS(viewNode)) {
+                if (nodeKind.inLHS()) {
                     this.lhs.addNode(lhsNode);
                     this.typableNodes.add(lhsNode);
                 } else {
                     this.nacNodeSet.add(lhsNode);
                 }
             }
-            if (RuleAspect.inRHS(viewNode)) {
+            if (nodeKind.inRHS()) {
                 this.typableNodes.add(lhsNode);
                 RuleNode rhsNode = getRepresentative(viewNode);
                 RuleNode oldRhsNode = this.rhsMap.putNode(viewNode, rhsNode);
@@ -1228,7 +1242,7 @@ public class DefaultRuleView implements RuleView {
                     oldRhsNode, lhsNode);
                 result &= oldRhsNode == null;
                 this.rhs.addNode(rhsNode);
-                if (RuleAspect.inLHS(viewNode)) {
+                if (nodeKind.inLHS()) {
                     this.ruleMorph.putNode(lhsNode, rhsNode);
                 } else {
                     if (isRhsAsNac()) {
@@ -1241,17 +1255,17 @@ public class DefaultRuleView implements RuleView {
 
         private void processEdge(AspectEdge viewEdge, RuleEdge lhsEdge)
             throws FormatException {
-            if (RuleAspect.inLHS(viewEdge) || RuleAspect.inNAC(viewEdge)) {
+            AspectKind edgeKind = viewEdge.getKind();
+            if (edgeKind.inLHS() || edgeKind.inNAC()) {
                 this.lhsMap.putEdge(viewEdge, lhsEdge);
-                if (RuleAspect.inLHS(viewEdge)) {
+                if (edgeKind.inLHS()) {
                     this.typableEdges.add(lhsEdge);
                     this.lhs.addEdge(lhsEdge);
                 } else {
                     this.nacEdgeSet.add(lhsEdge);
                 }
             }
-            if (RuleAspect.inRHS(viewEdge)
-                && !this.mergerMap.containsKey(viewEdge)) {
+            if (edgeKind.inRHS() && !this.mergerMap.containsKey(viewEdge)) {
                 this.typableEdges.add(lhsEdge);
                 RuleEdge rhsEdge =
                     computeEdgeImage(viewEdge, this.rhsMap.nodeMap());
@@ -1260,13 +1274,13 @@ public class DefaultRuleView implements RuleView {
                     this.rhsMap);
                 this.rhsMap.putEdge(viewEdge, rhsEdge);
                 this.rhs.addEdge(rhsEdge);
-                if (RuleAspect.inLHS(viewEdge)) {
+                if (edgeKind.inLHS()) {
                     this.ruleMorph.putEdge(lhsEdge, rhsEdge);
                 } else if (isRhsAsNac()) {
                     this.nacEdgeSet.add(lhsEdge);
                 } else if (isCheckCreatorEdges()
-                    && RuleAspect.inLHS(viewEdge.source())
-                    && RuleAspect.inLHS(viewEdge.target())) {
+                    && viewEdge.source().getKind().inLHS()
+                    && viewEdge.target().getKind().inLHS()) {
                     this.nacEdgeSet.add(lhsEdge);
                 }
             }
@@ -1476,7 +1490,7 @@ public class DefaultRuleView implements RuleView {
                 new HashMap<RuleNode,Set<TypeLabel>>(this.parentTypeMap);
             for (Map.Entry<AspectEdge,RuleEdge> lhsEdgeEntry : this.lhsMap.edgeMap().entrySet()) {
                 RuleEdge typeEdge = lhsEdgeEntry.getValue();
-                if (RuleAspect.inLHS(lhsEdgeEntry.getKey())
+                if (lhsEdgeEntry.getKey().getKind().inLHS()
                     && typeEdge.label().isNodeType()) {
                     // add the type to the parent types
                     Set<TypeLabel> parentTypes =
@@ -1903,8 +1917,8 @@ public class DefaultRuleView implements RuleView {
             // add nodes to nesting data structures
             for (AspectNode node : getView().nodeSet()) {
                 // check if the node is a parameter
-                if (node.hasParameter()) {
-                    Integer nr = node.getParameter().getNumber();
+                if (node.hasParam()) {
+                    Integer nr = (Integer) node.getParam().getContent();
                     if (nr != null) {
                         parCount = Math.max(parCount, nr);
                         try {
@@ -1943,13 +1957,14 @@ public class DefaultRuleView implements RuleView {
                     "Parameter '%d' only allowed on top existential level", nr,
                     node);
             }
-            int parDir = ParameterAspect.getParameterType(node);
+            AspectKind nodeKind = node.getKind();
+            AspectKind paramKind = node.getParamKind();
             if (nr == 0) {
-                if (parDir != Rule.PARAMETER_BOTH) {
+                if (paramKind != PARAM_BI) {
                     throw new FormatException(
                         "Anchor node cannot be input or output", node);
                 }
-                if (!RuleAspect.inLHS(node)) {
+                if (!nodeKind.inLHS()) {
                     throw new FormatException("Anchor node must be in LHS",
                         node);
                 }
@@ -1960,17 +1975,17 @@ public class DefaultRuleView implements RuleView {
                     getSystemProperties() != null
                         && getSystemProperties().isUseControl();
                 CtrlType varType;
-                AspectValue av = node.getDataType();
-                if (av == null) {
+                AspectKind attrKind = node.getAttrKind();
+                if (!attrKind.isData()) {
                     varType = CtrlType.getNodeType();
-                } else if (AttributeAspect.VALUE.equals(av)) {
+                } else if (attrKind == UNTYPED) {
                     varType = CtrlType.getAttrType();
                 } else {
-                    varType = CtrlType.getDataType(av.getName());
+                    varType = CtrlType.getDataType(attrKind.getName());
                 }
                 CtrlVar var = new CtrlVar("arg" + nr, varType);
-                boolean inOnly = parDir == Rule.PARAMETER_INPUT;
-                boolean outOnly = parDir == Rule.PARAMETER_OUTPUT;
+                boolean inOnly = paramKind == PARAM_IN;
+                boolean outOnly = paramKind == PARAM_OUT;
                 if (inOnly && !hasControl) {
                     throw new FormatException(
                         "Parameter '%d' is a required input, but no control is in use",
@@ -1978,10 +1993,10 @@ public class DefaultRuleView implements RuleView {
                 }
                 RuleNode nodeImage;
                 boolean creator;
-                if (RuleAspect.inLHS(node)) {
+                if (nodeKind.inLHS()) {
                     nodeImage = level.getLhsMap().getNode(node);
                     creator = false;
-                } else if (RuleAspect.inRHS(node)) {
+                } else if (nodeKind.inRHS()) {
                     if (inOnly) {
                         throw new FormatException(
                             "Creator node cannot be used as input parameter",

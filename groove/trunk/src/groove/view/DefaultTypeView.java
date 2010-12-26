@@ -16,6 +16,8 @@
  */
 package groove.view;
 
+import static groove.view.aspect.AspectKind.ABSTRACT;
+import static groove.view.aspect.AspectKind.SUBTYPE;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
@@ -28,7 +30,6 @@ import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
-import groove.view.aspect.TypeAspect;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -118,10 +119,6 @@ public class DefaultTypeView implements TypeView {
         throws FormatException {
         Set<FormatError> errors = new TreeSet<FormatError>(view.getErrors());
         TypeGraph model = new TypeGraph();
-        // first check the nodes for allowed aspect values
-        for (AspectNode viewNode : view.nodeSet()) {
-            checkViewNode(viewNode);
-        }
         // mapping from view nodes to types
         Map<AspectNode,Label> viewTypeMap = new HashMap<AspectNode,Label>();
         // mapping from model nodes to types
@@ -159,7 +156,7 @@ public class DefaultTypeView implements TypeView {
         Iterator<AspectNode> untypedNodeIter = untypedNodes.iterator();
         while (untypedNodeIter.hasNext()) {
             AspectNode viewNode = untypedNodeIter.next();
-            if (viewNode.isRemark()) {
+            if (viewNode.getKind().isMeta()) {
                 untypedNodeIter.remove();
             } else {
                 // add a node anyhow, to ensure all edge ends have images
@@ -174,16 +171,12 @@ public class DefaultTypeView implements TypeView {
         }
         // copy the edges from view to model
         for (AspectEdge viewEdge : view.edgeSet()) {
-            try {
-                processViewEdge(model, elementMap, viewEdge);
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
-            }
+            processViewEdge(model, elementMap, viewEdge);
         }
         // add subtype relations to the model
         for (AspectEdge viewEdge : view.edgeSet()) {
             try {
-                if (viewEdge.isSubtype()) {
+                if (viewEdge.getKind() == SUBTYPE) {
                     model.addSubtype(elementMap.getNode(viewEdge.target()),
                         elementMap.getNode(viewEdge.source()));
                 }
@@ -209,37 +202,11 @@ public class DefaultTypeView implements TypeView {
     }
 
     /**
-     * Checks if the aspect values in a view node are legal
-     * @throws FormatException if the presence of the edge signifies an error
-     */
-    private void checkViewNode(AspectNode viewNode) throws FormatException {
-        if (viewNode.isRemark()) {
-            return;
-        }
-        if (viewNode.hasType()
-            && viewNode.getType().getAspect() != TypeAspect.getInstance()) {
-            throw new FormatException(
-                "Node aspect value '%s' not allowed in type graphs",
-                viewNode.getType());
-        }
-    }
-
-    /**
      * Processes the information in a view edge by updating the model, element
      * map and subtypes.
-     * @throws FormatException if the presence of the edge signifies an error
      */
     private void processViewEdge(TypeGraph model, ViewToTypeMap elementMap,
-            AspectEdge viewEdge) throws FormatException {
-        if (viewEdge.isRemark()) {
-            return;
-        }
-        if (viewEdge.hasType()
-            && viewEdge.getType().getAspect() != TypeAspect.getInstance()) {
-            throw new FormatException(
-                "Edge aspect value '%s' not allowed in type graphs",
-                viewEdge.getType());
-        }
+            AspectEdge viewEdge) {
         TypeNode modelSource = elementMap.getNode(viewEdge.source());
         assert modelSource != null : String.format(
             "Source of view edge '%s' not in element map %s",
@@ -249,11 +216,11 @@ public class DefaultTypeView implements TypeView {
             "Target of view edge '%s' not in element map %s",
             viewEdge.source(), elementMap);
         // register subtype edges
-        if (!viewEdge.isSubtype()) {
+        if (viewEdge.getKind() != SUBTYPE) {
             TypeLabel modelLabel = viewEdge.getTypeLabel();
             TypeEdge modelEdge =
                 model.addEdge(modelSource, modelLabel, modelTarget);
-            if (viewEdge.isAbstract()) {
+            if (viewEdge.getKind() == ABSTRACT) {
                 modelEdge.setAbstract();
             }
             elementMap.putEdge(viewEdge, modelEdge);

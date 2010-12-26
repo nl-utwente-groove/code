@@ -16,6 +16,7 @@
  */
 package groove.view;
 
+import static groove.view.aspect.AspectKind.UNTYPED;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.graph.Element;
@@ -34,9 +35,9 @@ import groove.trans.SystemProperties;
 import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
-import groove.view.aspect.AspectValue;
-import groove.view.aspect.AttributeAspect;
+import groove.view.aspect.NewAspect;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -236,18 +237,18 @@ public class DefaultGraphView implements GraphView {
      */
     private void processViewNode(HostGraph model, ViewToHostMap elementMap,
             AspectNode viewNode) {
-        boolean nodeInModel = !viewNode.isRemark();
         // include the node in the model if it is not virtual
-        if (nodeInModel) {
+        if (!viewNode.getKind().isMeta()) {
             HostNode nodeImage = null;
-            if (viewNode.hasDataType()) {
-                AspectValue dataType = viewNode.getDataType();
-                assert !AttributeAspect.VALUE.equals(dataType);
+            AspectKind attrType = viewNode.getAttrKind();
+            if (attrType.isData()) {
+                assert attrType != UNTYPED;
                 Algebra<?> nodeAlgebra =
-                    this.algebraFamily.getAlgebra(dataType.getName());
+                    this.algebraFamily.getAlgebra(attrType.getName());
+                NewAspect dataType = viewNode.getAttrAspect();
                 nodeImage =
                     ValueNode.createValueNode(nodeAlgebra,
-                        nodeAlgebra.getValue(dataType.getContent()));
+                        nodeAlgebra.getValue((String) dataType.getContent()));
                 model.addNode(nodeImage);
             } else {
                 nodeImage = model.addNode(viewNode.getNumber());
@@ -263,7 +264,7 @@ public class DefaultGraphView implements GraphView {
      */
     private void processViewEdge(HostGraph model, ViewToHostMap elementMap,
             AspectEdge viewEdge) throws FormatException {
-        if (viewEdge.isRemark()) {
+        if (viewEdge.getKind().isMeta()) {
             return;
         }
         HostNode modelSource = elementMap.getNode(viewEdge.source());

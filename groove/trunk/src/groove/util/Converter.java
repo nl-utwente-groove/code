@@ -16,6 +16,7 @@
  */
 package groove.util;
 
+import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
@@ -25,7 +26,6 @@ import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.view.aspect.AspectGraph;
-import groove.view.aspect.RuleAspect;
 
 import java.awt.Color;
 import java.io.BufferedReader;
@@ -38,6 +38,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.jgraph.graph.GraphConstants;
 
 /**
  * Performs conversions to and from groove.graph.Graph.
@@ -408,7 +410,7 @@ public class Converter {
     public static final HTMLTag red = createColorTag(Colors.findColor("red"));
     /** Remark color tag. */
     public static final HTMLTag remark =
-        createColorTag(JAttr.RULE_COLOR.get(RuleAspect.REMARK));
+        createColorTag(GraphConstants.getForeground(JAttr.RULE_NODE_ATTR.get(REMARK)));
 
     /**
      * Class that allows some handling of HTML text.

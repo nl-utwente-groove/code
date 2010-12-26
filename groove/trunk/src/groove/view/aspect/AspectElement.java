@@ -17,35 +17,46 @@
 package groove.view.aspect;
 
 import groove.graph.Element;
+import groove.util.Fixable;
 
 /**
- * Extension of the {@link Element} interface with support for {@link Aspect}s.
+ * Extension of the {@link Element} interface with support for {@link NewAspect}s.
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface AspectElement extends Element {
-    /** Indicates if the aspect type of this element is for an abstract type. */
-    boolean isAbstract();
-
-    /** Indicates if the aspect type of this element is a remark. */
-    boolean isRemark();
+public interface AspectElement extends Element, Fixable {
+    /** 
+     * Returns the main aspect of this element, if any.
+     * At all times, the return value is guaranteed to be valid for the kind of graph.
+     * When the graph is fixed, the return value is guaranteed to be non-{@code null}. 
+     */
+    NewAspect getAspect();
 
     /** 
-     * Indicates if this is a meta-element,
-     * i.e., an element that does not actually represent anything in the
-     * underlying rule or graph.
+     * Returns the main aspect kind of this element, if any.
+     * At all times, the return value is guaranteed to be valid for the kind of graph.
+     * The return value is guaranteed to be non-{@code null}. 
+     * Convenience method for {@code getType().getKind()}.
+     * @see #getAspect()
      */
-    boolean isMeta();
+    AspectKind getKind();
 
-    /** Indicates if this element has a rule role. */
-    boolean hasRole();
+    /** 
+     * Indicates if this element has an attribute-related aspect.
+     * @see #getAttrAspect()
+     */
+    boolean hasAttrAspect();
 
-    /** Returns the rule role of this element, if any. */
-    AspectValue getRole();
+    /** 
+     * Returns the attribute-related aspect of this element, if any. 
+     */
+    NewAspect getAttrAspect();
 
-    /** Indicates if an aspect type is set for this element. */
-    boolean hasType();
-
-    /** Returns the aspect type of this element, if any. */
-    AspectValue getType();
+    /** 
+     * Returns the kind of attribute-related aspect for this element, if any.
+     * The return value is guaranteed to be valid for the kind of graph,
+     * and if not {@link AspectKind#NONE}, to satisfy {@link AspectKind#isAttrKind()}
+     * @see #getAttrAspect()
+     */
+    AspectKind getAttrKind();
 }

@@ -17,9 +17,8 @@
 package groove.gui.jgraph;
 
 import groove.graph.Label;
-import groove.view.aspect.Aspect;
-import groove.view.aspect.AspectValue;
-import groove.view.aspect.NestingAspect;
+import groove.view.aspect.AspectKind;
+import groove.view.aspect.AspectLabel;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -29,6 +28,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
+import java.util.EnumSet;
 import java.util.EventObject;
 import java.util.LinkedList;
 import java.util.List;
@@ -286,12 +286,12 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         /** The existing aspect prefixes. */
         private final List<String> prefixes = new LinkedList<String>();
         {
-            for (String name : AspectValue.getValueNames()) {
-                this.prefixes.add(name + Aspect.VALUE_SEPARATOR);
+            for (AspectKind aspectKind : EnumSet.allOf(AspectKind.class)) {
+                this.prefixes.add(aspectKind.getAspect().toString());
             }
             // add the special edge labels
-            this.prefixes.add(NestingAspect.AT_LABEL);
-            this.prefixes.add(NestingAspect.IN_LABEL);
+            this.prefixes.add(AspectLabel.AT_LABEL);
+            this.prefixes.add(AspectLabel.IN_LABEL);
         }
 
         private class CompletionTask implements Runnable {

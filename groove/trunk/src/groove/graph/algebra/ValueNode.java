@@ -16,13 +16,12 @@
  */
 package groove.graph.algebra;
 
-import static groove.view.aspect.Aspect.CONTENT_SEPARATOR;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Algebras;
 import groove.graph.AbstractNode;
 import groove.trans.HostNode;
-import groove.view.aspect.Aspect;
+import groove.view.aspect.AspectParser;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -75,21 +74,12 @@ public class ValueNode extends AbstractNode implements HostNode {
         return getAlgebra().getSymbol(getValue());
     }
 
-    /** Returns the label text for this value node,
-     * consisting of the signature name followed by a separator and the value symbol.
-     */
-    public String getLabelText() {
-        return Algebras.getSigName(getAlgebra()) + Aspect.VALUE_SEPARATOR
-            + getSymbol();
-    }
-
     /**
      * This methods returns a description of the value.
      */
     @Override
     public String toString() {
-        String algebraName = getAlgebra().getName();
-        return algebraName + CONTENT_SEPARATOR + getSymbol();
+        return getAlgebra().getName() + AspectParser.SEPARATOR + getSymbol();
     }
 
     /** Superseded by the reimplemented {@link #toString()} method. */

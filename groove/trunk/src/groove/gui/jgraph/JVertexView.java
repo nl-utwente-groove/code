@@ -531,8 +531,11 @@ public class JVertexView extends VertexView {
         int height = (int) bounds.getHeight();
         g.setColor(GraphConstants.getLineColor(getAttributes()));
         // repaint the standard border to erase it
-        JAttr.DEFAULT_BORDER.paintBorder(this.jGraph, g, x, y, width, height);
-        JAttr.EMPH_BORDER.paintBorder(this.jGraph, g, x, y, width, height);
+        Border defaultBorder =
+            GraphConstants.getBorder(JAttr.DEFAULT_NODE_ATTR);
+        defaultBorder.paintBorder(this.jGraph, g, x, y, width, height);
+        Border emphBorder = GraphConstants.getBorder(JAttr.EMPH_NODE_CHANGE);
+        emphBorder.paintBorder(this.jGraph, g, x, y, width, height);
         g.setColor(previousColor);
     }
 

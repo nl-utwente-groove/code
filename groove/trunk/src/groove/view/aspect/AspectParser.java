@@ -16,8 +16,6 @@
  */
 package groove.view.aspect;
 
-import static groove.view.aspect.Aspect.CONTENT_ASSIGN;
-import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
 import groove.algebra.Algebras;
 import groove.graph.DefaultLabel;
 import groove.graph.TypeLabel;
@@ -54,27 +52,27 @@ public class AspectParser {
      * @throws FormatException if there were parse errors in {@code text}
      */
     private void parse(String text, AspectLabel result) throws FormatException {
-        AspectValue value = null;
+        NewAspect value = null;
         String valueText = nextValue(text);
         if (valueText != null) {
             text = text.substring(valueText.length() + 1);
             // parse the value text into a value
             String contentText;
-            int assignIndex = valueText.indexOf(CONTENT_ASSIGN);
+            int assignIndex = valueText.indexOf(ASSIGN);
             if (assignIndex < 0) {
                 contentText = null;
             } else {
                 contentText =
-                    valueText.substring(assignIndex + CONTENT_ASSIGN.length());
+                    valueText.substring(assignIndex + ASSIGN.length());
                 valueText = valueText.substring(0, assignIndex);
             }
             value = parseValue(valueText, contentText);
             // test if this should be a data constant
-            if (AttributeAspect.isDataValue(value) && text.length() > 0) {
-                String signature = value.getName();
+            if (value.getKind().isTypedData() && text.length() > 0) {
+                String signature = value.getKind().getName();
                 String sigForConstant = Algebras.getSigNameFor(text);
                 if (signature.equals(sigForConstant)) {
-                    value = value.newValue(text);
+                    value = value.newInstance(text);
                     text = "";
                 } else if (sigForConstant != null) {
                     throw new FormatException("Value %s belongs to type %s",
@@ -88,7 +86,7 @@ public class AspectParser {
         if (value != null) {
             result.addAspect(value);
         }
-        if (value == null || value.isLast() || text.length() == 0) {
+        if (value == null || value.getKind().isLast() || text.length() == 0) {
             result.setInnerText(text);
             result.setFixed();
         } else {
@@ -103,7 +101,7 @@ public class AspectParser {
      * or {@code null} if there is no next aspect value 
      */
     private String nextValue(String text) {
-        int result = text.indexOf(VALUE_SEPARATOR);
+        int result = text.indexOf(SEPARATOR);
         if (result > 0) {
             if (!Character.isLetter(text.charAt(0))
                 || !TypeLabel.splitKind(text).two().equals(text)) {
@@ -120,28 +118,34 @@ public class AspectParser {
     /**
      * Returns the aspect value obtained by parsing a given value and content
      * text.
-     * @param valueText string description of a new {@link AspectValue}
+     * @param name string description of a new {@link NewAspect}
      * @param contentText string description for the new value's content;
      * may be {@code null}
      * @return the resulting aspect value
      * @throws FormatException if <code>valueText</code> is not a valid
-     *         {@link AspectValue}, or the presence of content is not as it
+     *         {@link NewAspect}, or the presence of content is not as it
      *         should be.
      */
-    private AspectValue parseValue(String valueText, String contentText)
+    private NewAspect parseValue(String name, String contentText)
         throws FormatException {
-        AspectValue value = AspectValue.getValue(valueText);
+        NewAspect value = NewAspect.getAspect(name);
         if (value == null) {
             throw new FormatException(
                 String.format(
                     "Unknown aspect value '%s' (precede label text with ':' to avoid aspect parsing)",
-                    valueText));
+                    name));
         } else if (contentText != null) {
             // use the value as a factory to get a correct instance
-            value = value.newValue(contentText);
+            value = value.newInstance(contentText);
         }
         return value;
     }
+
+    /** Separator between aspect name and associated content. */
+    static public final String ASSIGN = "=";
+
+    /** Separator between aspect prefix and main label text. */
+    static public final String SEPARATOR = ":";
 
     /** Yields a predefined label for a given graph role. */
     public static AspectParser getInstance() {

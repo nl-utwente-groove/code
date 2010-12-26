@@ -21,9 +21,9 @@ import groove.graph.TypeLabel;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Label storing a set of aspect values and an inner text.
@@ -64,7 +64,7 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
     @Override
     public String toString() {
         StringBuffer result = new StringBuffer();
-        for (AspectValue value : this.aspects) {
+        for (NewAspect value : this.aspects) {
             result.append(value.toString());
         }
         // append the label text, if any
@@ -79,12 +79,12 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
      * Consistency with existing values is not tested.
      * @param value the value to be added
      */
-    void addAspect(AspectValue value) throws FormatException {
+    void addAspect(NewAspect value) throws FormatException {
         testFixed(false);
         this.aspects.add(value);
-        if (!value.isNodeValue()) {
+        if (!value.getKind().isForNode()) {
             this.edgeOnly = value;
-        } else if (!value.isEdgeValue()) {
+        } else if (!value.getKind().isForEdge()) {
             this.nodeOnly = value;
         }
         if (this.nodeOnly != null && this.edgeOnly != null) {
@@ -132,13 +132,13 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
         return result;
     }
 
-    /** Returns the set of declared values in this aspect map. */
-    public final Collection<AspectValue> getAspects() {
-        return Collections.unmodifiableCollection(this.aspects);
+    /** Returns the list of aspects in this label. */
+    public List<NewAspect> getAspects() {
+        return this.aspects;
     }
 
     /** The mapping from aspects to (declared or inferred) aspect values. */
-    private final List<AspectValue> aspects = new ArrayList<AspectValue>();
+    private final List<NewAspect> aspects = new ArrayList<NewAspect>();
 
     /** 
      * Indicates whether this label is only suited for edges.
@@ -161,9 +161,9 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
     }
 
     /** Edge-only aspect value in this label, if any. */
-    private AspectValue edgeOnly;
+    private NewAspect edgeOnly;
     /** Node-only aspect value in this label, if any. */
-    private AspectValue nodeOnly;
+    private NewAspect nodeOnly;
 
     /** 
      * Sets the label text to a non-{@code null} value.
@@ -189,4 +189,16 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
 
     /** Label text; may be {@code null} if the associated element is a node. */
     private String innerText;
+
+    /** Label used for parent edges (between quantifier nodes). */
+    public static final String IN_LABEL = "in";
+    /** Label used for level edges (from rule nodes to quantifier nodes). */
+    public static final String AT_LABEL = "at";
+    /** The set of all allowed nesting labels. */
+    static final Set<String> ALLOWED_LABELS = new HashSet<String>();
+
+    static {
+        ALLOWED_LABELS.add(IN_LABEL);
+        ALLOWED_LABELS.add(AT_LABEL);
+    }
 }

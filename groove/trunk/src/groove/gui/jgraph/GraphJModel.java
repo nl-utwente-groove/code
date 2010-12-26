@@ -17,6 +17,7 @@
 
 package groove.gui.jgraph;
 
+import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
@@ -361,7 +362,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
         } else if (edge instanceof AspectEdge) {
             result =
                 !edge.isBinary() || isPotentialUnaryEdge(edge)
-                    && ((AspectEdge) edge).isRemark();
+                    && ((AspectEdge) edge).getKind() == REMARK;
         } else {
             result = !edge.label().isBinary();
         }
@@ -775,9 +776,6 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
 
     static {
         DATA_NODE_ATTR = new AttributeMap();
-        if (JAttr.DATA_BACKGROUND != null) {
-            GraphConstants.setBackground(DATA_NODE_ATTR, JAttr.DATA_BACKGROUND);
-        }
         if (JAttr.DATA_FONT != null) {
             GraphConstants.setFont(DATA_NODE_ATTR, JAttr.DATA_FONT);
         }

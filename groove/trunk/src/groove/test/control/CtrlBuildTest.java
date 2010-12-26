@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import groove.control.CtrlAut;
 import groove.control.CtrlCall;
 import groove.control.CtrlFactory;
@@ -329,7 +330,7 @@ public class CtrlBuildTest {
             assertEquals(edgeCount, result.edgeCount());
         } catch (FormatException e) {
             System.err.printf("Errors in %s:%n%s%n", name, e.getMessage());
-            assertTrue(false);
+            fail();
         }
         return result;
     }
