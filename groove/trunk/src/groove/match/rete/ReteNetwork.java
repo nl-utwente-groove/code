@@ -16,6 +16,7 @@
  */
 package groove.match.rete;
 
+import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.gui.jgraph.ReteJModel;
@@ -52,6 +53,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * @author Arash Jalali
@@ -456,6 +458,63 @@ public class ReteNetwork {
     }
 
     /**
+     * Prepares an bijective mapping between a the nodes of given rule graph and an 
+     * isomorphic copy of it which has new node numbers.
+     * 
+     * @param source The graph to be replicated with new node numbers 
+     * @return The mapping from the nodes of the <code>source</code>
+     *         to the newly made/numbered nodes. 
+     */
+    private RuleGraphMorphism createRuleMorphismForCloning(RuleGraph source) {
+        RuleGraphMorphism result = new RuleGraphMorphism();
+        for (RuleNode n : source.nodeSet()) {
+            result.nodeMap().put(n, DefaultNode.createNode());
+        }
+        return result;
+    }
+
+    /**
+     * Generates an isomorphic copy of a given rule graph based on a bijective
+     * node map. 
+     * 
+     * @param source The rule graph to be copied
+     * @param nodeMapping A bijection between nodes of <code>source</code>
+     * and the nodes of the expected result of this method.
+     *  
+     * @return A graph isomorphic to <code>source</code> whose node set
+     * is equal to the range of <code>nodeMapping</code>.
+     * 
+     */
+    private RuleGraph copyAndRenumberNodes(RuleGraph source,
+            RuleGraphMorphism nodeMapping) {
+        RuleGraph result = new RuleGraph();
+        for (RuleNode n : source.nodeSet()) {
+            result.addNode(nodeMapping.getNode(n));
+        }
+        for (RuleEdge e : source.edgeSet()) {
+            result.addEdge(translate(nodeMapping, e));
+        }
+        return result;
+    }
+
+    /**
+     * Makes a copy of a Nac condition's rootMap given a node renumbering 
+     * for the nac's target.  
+     * 
+     * @param sourceRootMap The root map to be copied
+     * @param nodeMapping The node renumbering map  
+     */
+    private RuleGraphMorphism copyRootMap(RuleGraphMorphism sourceRootMap,
+            RuleGraphMorphism nodeMapping) {
+        RuleGraphMorphism result = new RuleGraphMorphism();
+        for (Entry<RuleNode,RuleNode> sourceEntry : sourceRootMap.nodeMap().entrySet()) {
+            result.nodeMap().put(sourceEntry.getKey(),
+                nodeMapping.getNode(sourceEntry.getValue()));
+        }
+        return result;
+    }
+
+    /**
      * Creates composite subgraph-checkers for each NAC sub-condition
      * all the way down to a CompositeConditionChecker corresponding to
      * each NAC sub-condition of the condition represented by
@@ -480,16 +539,26 @@ public class ReteNetwork {
         for (NotCondition nac : nacs) {
             byPassList.clear();
             openList.clear();
+
+            //we need to renumber the nodes in the nac's target
+            //to avoid in any mix-up in the join-equalities
+            //of the entailing composite subgraph checkers.
+            RuleGraphMorphism nodeRenumberingMapping =
+                createRuleMorphismForCloning(nac.getTarget());
+            RuleGraph newNacGraph =
+                copyAndRenumberNodes(nac.getTarget(), nodeRenumberingMapping);
+            RuleGraphMorphism newRootMap =
+                copyRootMap(nac.getRootMap(), nodeRenumberingMapping);
+
             ReteStaticMapping m1 =
-                duplicateAndTranslateMapping(lastSubgraphMapping,
-                    nac.getRootMap());
+                duplicateAndTranslateMapping(lastSubgraphMapping, newRootMap);
             if (m1 != null) {
                 byPassList.add(m1);
                 openList.add(m1);
             }
 
-            mapEdgesAndNodes(openList, nac.getTarget().edgeSet(),
-                nac.getTarget().nodeSet());
+            mapEdgesAndNodes(openList, newNacGraph.edgeSet(),
+                newNacGraph.nodeSet());
             if (m1 == null) {
                 m1 = openList.get(0);
             }
@@ -954,7 +1023,7 @@ public class ReteNetwork {
         private HostGraph hostGraph;
         private Set<StateSubscriber> subscribers =
             new HashSet<StateSubscriber>();
-        private ReteUpdateMode updateMode = ReteUpdateMode.ONDEMAND;
+        private ReteUpdateMode updateMode = ReteUpdateMode.NORMAL;
 
         protected ReteState(ReteNetwork owner) {
             this.owner = owner;

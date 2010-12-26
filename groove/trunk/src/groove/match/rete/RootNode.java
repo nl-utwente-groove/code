@@ -79,9 +79,12 @@ public class RootNode extends ReteNetworkNode {
     public void receiveEdge(HostEdge elem, Action action) {
         for (ReteNetworkNode nnode : this.getSuccessors()) {
             if (nnode instanceof EdgeCheckerNode) {
-                if (elem.label().text().equals(
-                    ((EdgeCheckerNode) nnode).getEdge().label().text())) {
+                if (elem.label().equals(
+                    ((EdgeCheckerNode) nnode).getEdge().label())) {
                     ((EdgeCheckerNode) nnode).receiveEdge(this, elem, action);
+                } else {
+                    assert !elem.label().equals(
+                        ((EdgeCheckerNode) nnode).getEdge().label());
                 }
             }
         }

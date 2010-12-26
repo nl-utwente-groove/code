@@ -94,6 +94,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
         RuleEdge e1 = this.getEdge();
         //condition 1: labels must match <-- commented out because we check this in the root
         //condition 2: if this is an edge checker for a loop then e should also be a loop
+        assert e.label().equals(e1.label());
         return (!e1.source().equals(e1.target()) || (e.source().equals(e.target())));
     }
 
@@ -207,10 +208,12 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
     @Override
     public boolean demandUpdate() {
         boolean result = this.ondemandBuffer.size() > 0;
-        for (HostEdge e : this.ondemandBuffer) {
-            sendDownReceivedEdge(e, Action.ADD);
+        if (this.getOwner().isInOnDemandMode()) {
+            for (HostEdge e : this.ondemandBuffer) {
+                sendDownReceivedEdge(e, Action.ADD);
+            }
+            this.ondemandBuffer.clear();
         }
-        this.ondemandBuffer.clear();
         return result;
     }
 

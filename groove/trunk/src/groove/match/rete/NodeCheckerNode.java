@@ -57,7 +57,7 @@ public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber 
 
     /**
      * Each object of type {@link NodeCheckerNode} has an associated {@link DefaultNode} object 
-     * that will represent and binds to to isolated nodes of rules'
+     * that will represent and binds to isolated nodes of rules'
      * LHS during build-time and dynamically to all nodes of a host graph
      * (either injectively or non-injectively).
      * 
@@ -138,10 +138,12 @@ public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber 
     @Override
     public boolean demandUpdate() {
         boolean result = this.ondemandBuffer.size() > 0;
-        for (HostNode n : this.ondemandBuffer) {
-            sendDownReceivedNode(n, Action.ADD);
+        if (this.getOwner().isInOnDemandMode()) {
+            for (HostNode n : this.ondemandBuffer) {
+                sendDownReceivedNode(n, Action.ADD);
+            }
+            this.ondemandBuffer.clear();
         }
-        this.ondemandBuffer.clear();
         return result;
     }
 

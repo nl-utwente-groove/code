@@ -132,7 +132,9 @@ public abstract class ReteNetworkNode {
      * this n-node to send these new updates to successors.
      * 
      * @return <code>true</code> if the update request has resulted in any
-     * new matches to be created, <code>false</code> otherwise.
+     * new matches to be created, <code>false</code> otherwise. The result will
+     * also be <code>false</code> the RETE network is not in on-demand 
+     * update propagation mode. See {@link ReteNetwork#isInOnDemandMode()} 
      */
     public abstract boolean demandUpdate();
 

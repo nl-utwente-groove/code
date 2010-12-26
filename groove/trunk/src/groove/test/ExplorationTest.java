@@ -94,6 +94,19 @@ public class ExplorationTest {
             79, 108, 12);
     }
 
+    /** Tests the Car Platooning example without the rule that uses 
+     *  regular expressions
+     */
+    @Test
+    public void testCarPlatooning() {
+        testExploration("car-platooning-no-reg-exp.gps", "start-03", "bfs",
+            268, 561);
+        testExploration("car-platooning-no-reg-exp.gps", "start-03", "dfs",
+            268, 561);
+        testExploration("car-platooning-no-reg-exp.gps", "start-03", "rete",
+            268, 561);
+    }
+
     /** Tests the ferryman sample. */
     @Test
     public void testFerryman() {

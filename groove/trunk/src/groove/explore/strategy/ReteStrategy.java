@@ -80,9 +80,6 @@ public class ReteStrategy extends AbstractStrategy {
             groove.match.rete.ReteSearchEngine.createFreshInstance(
                 gts.getGrammar().getProperties().isInjective(), false);
         this.rete.setUp(gts.getGrammar());
-        if (SAVE_RETE) {
-            this.rete.getNetwork().save("e:\\temp", gts.getGrammar().getName());
-        }
         this.rete.initializeState(gts.startState().getGraph());
         this.oldType = SearchEngineFactory.getInstance().getCurrentEngineType();
         SearchEngineFactory.getInstance().setCurrentEngineType(EngineType.RETE);
@@ -185,8 +182,6 @@ public class ReteStrategy extends AbstractStrategy {
 
     private ReteSearchEngine rete;
 
-    /** Debug flag */
-    private static final boolean SAVE_RETE = false;
     /**
      * The reporter object
      */
