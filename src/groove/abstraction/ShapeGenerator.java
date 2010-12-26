@@ -73,21 +73,21 @@ public final class ShapeGenerator {
                 new Serialized("final"), 0);
         try {
             exploration.play(this.gts, null);
+            if (exploration.isInterrupted()) {
+                new Exception().printStackTrace();
+            }
+            if (fromMain) {
+                System.out.println("States: " + this.getStateCount());
+                System.out.println("Transitions: " + this.getTransitionCount());
+                System.out.println("Final states: "
+                    + this.getFinalStatesCount());
+                for (GraphState finalState : this.gts.getResultStates()) {
+                    Shape finalShape = (Shape) finalState.getGraph();
+                    System.out.println(finalShape.toString());
+                }
+            }
         } catch (FormatException e) {
             e.printStackTrace();
-        }
-
-        if (exploration.isInterrupted()) {
-            new Exception().printStackTrace();
-        }
-        if (fromMain) {
-            System.out.println("States: " + this.getStateCount());
-            System.out.println("Transitions: " + this.getTransitionCount());
-            System.out.println("Final states: " + this.getFinalStatesCount());
-            for (GraphState finalState : this.gts.getResultStates()) {
-                Shape finalShape = (Shape) finalState.getGraph();
-                System.out.println(finalShape.toString());
-            }
         }
     }
 

@@ -21,8 +21,7 @@ import groove.util.Converter;
 import groove.util.ExprParser;
 import groove.util.Pair;
 import groove.view.FormatException;
-import groove.view.aspect.AspectValue;
-import groove.view.aspect.RuleAspect;
+import groove.view.aspect.AspectKind;
 
 /**
  * Labels encapsulating node or edge types.
@@ -165,16 +164,21 @@ public final class TypeLabel extends AbstractLabel {
      * type and is set to italic if the label is a flag; colours and
      * prefixes are used to indicate the role.
      */
-    public static String toHtmlString(Label edgeLabel, AspectValue edgeRole) {
+    public static String toHtmlString(Label edgeLabel, AspectKind edgeRole) {
         String result = toHtmlString(edgeLabel);
-        if (RuleAspect.ERASER.equals(edgeRole)) {
+        switch (edgeRole) {
+        case ERASER:
             result = Converter.blue.on("- " + result);
-        } else if (RuleAspect.CREATOR.equals(edgeRole)) {
+            break;
+        case CREATOR:
             result = Converter.green.on("+ " + result);
-        } else if (RuleAspect.EMBARGO.equals(edgeRole)) {
+            break;
+        case EMBARGO:
             result = Converter.red.on("! " + result);
-        } else if (RuleAspect.REMARK.equals(edgeRole)) {
+            break;
+        case REMARK:
             result = Converter.remark.on("// " + result);
+            break;
         }
         return result;
     }

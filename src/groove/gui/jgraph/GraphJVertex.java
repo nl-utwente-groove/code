@@ -30,8 +30,8 @@ import groove.lts.GraphState;
 import groove.trans.RuleLabel;
 import groove.util.Converter;
 import groove.view.aspect.AspectEdge;
-import groove.view.aspect.AspectValue;
-import groove.view.aspect.AttributeAspect;
+import groove.view.aspect.AspectKind;
+import groove.view.aspect.NewAspect;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -224,10 +224,11 @@ public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
             // use special node label prefixes to indicate edge role
             if (edge instanceof AspectEdge && !this.jModel.isShowAspects()) {
                 AspectEdge aspectEdge = (AspectEdge) edge;
-                AspectValue edgeRole = aspectEdge.getRole();
-                AspectValue sourceRole = aspectEdge.source().getRole();
-                if (edgeRole != null && !edgeRole.equals(sourceRole)) {
-                    result.append(TypeLabel.toHtmlString(edgeLabel, edgeRole));
+                NewAspect edgeAspect = aspectEdge.getAspect();
+                NewAspect sourceAspect = aspectEdge.source().getAspect();
+                if (edgeAspect != null && !edgeAspect.equals(sourceAspect)) {
+                    result.append(TypeLabel.toHtmlString(edgeLabel,
+                        edgeAspect.getKind()));
                 }
             }
             if (result.length() == 0) {
@@ -236,7 +237,7 @@ public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
             if (edgeLabel instanceof RuleLabel
                 && !(((RuleLabel) edgeLabel).isSharp() || ((RuleLabel) edgeLabel).isAtom())
                 || edge instanceof AspectEdge
-                && ((AspectEdge) edge).isAbstract()) {
+                && ((AspectEdge) edge).getKind() == AspectKind.ABSTRACT) {
                 result = Converter.ITALIC_TAG.on(result);
             }
         } else {
@@ -310,8 +311,7 @@ public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
         Collection<String> result = new ArrayList<String>();
         if (isValueNode()) {
             Label symbol = getValueLabel();
-            String prefix =
-                AttributeAspect.getAttributeValueFor(getSignature()).getPrefix();
+            String prefix = NewAspect.getAspect(getSignature()).toString();
             result.add(prefix + symbol);
         }
         for (E edge : getSelfEdges()) {

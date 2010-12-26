@@ -16,6 +16,8 @@
  */
 package groove.view.aspect;
 
+import static groove.view.aspect.AspectParser.ASSIGN;
+import static groove.view.aspect.AspectParser.SEPARATOR;
 import groove.algebra.Algebras;
 import groove.algebra.UnknownSymbolException;
 import groove.view.FormatException;
@@ -31,6 +33,8 @@ import java.util.Map;
  * @version $Revision $
  */
 public enum AspectKind {
+    /** Default aspect, if none is specified. */
+    NONE("none"),
     /** Used for comments/documentation. */
     REMARK("rem"),
 
@@ -41,12 +45,14 @@ public enum AspectKind {
     ERASER("del", ContentKind.LEVEL),
     /** Indicates an element to be created. */
     CREATOR("new", ContentKind.LEVEL),
+    /** Indicates an element to be created if not yet present. */
+    ADDER("add", ContentKind.LEVEL),
     /** Indicates a forbidden element. */
     EMBARGO("not", ContentKind.LEVEL),
 
     // data types
     /** Indicates a data value of unknown type. */
-    ATTR("attr"),
+    UNTYPED("attr"),
     /** Indicates a boolean value or operator. */
     BOOL("bool", ContentKind.BOOL_LITERAL),
     /** Indicates an integer value or operator. */
@@ -79,7 +85,7 @@ public enum AspectKind {
     // label-related aspects
     /** Indicates that the remainder of the label is a regular expression. */
     PATH("path"),
-    /** Indicates that the remainder of the label is a literal. */
+    /** Indicates that the remainder of the label is to be taken as literal text. */
     LITERAL(""),
 
     // quantifier-related aspects
@@ -101,7 +107,11 @@ public enum AspectKind {
     private AspectKind(String name, ContentKind contentKind) {
         this.name = name;
         this.contentKind = contentKind;
-        this.aspect = new NewAspect(this, contentKind);
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 
     /** Returns the name of this aspect kind. */
@@ -119,6 +129,9 @@ public enum AspectKind {
 
     /** Returns a (prototypical) aspect of this kind. */
     public NewAspect getAspect() {
+        if (this.aspect == null) {
+            this.aspect = new NewAspect(this, this.contentKind);
+        }
         return this.aspect;
     }
 
@@ -131,10 +144,10 @@ public enum AspectKind {
     }
 
     /** 
-     * Indicates if this aspect is among the set of NAC elements.
+     * Indicates if this aspect is among the set of NAC (non-LHS) elements.
      * @see #nac 
      */
-    public boolean isNAC() {
+    public boolean inNAC() {
         return nac.contains(this);
     }
 
@@ -142,7 +155,7 @@ public enum AspectKind {
      * Indicates if this aspect is among the set of LHS element.
      * @see #lhs 
      */
-    public boolean isLHS() {
+    public boolean inLHS() {
         return lhs.contains(this);
     }
 
@@ -150,20 +163,20 @@ public enum AspectKind {
      * Indicates if this aspect is among the set of RHS elements.
      * @see #rhs 
      */
-    public boolean isRHS() {
+    public boolean inRHS() {
         return rhs.contains(this);
     }
 
     /** 
-     * Indicates if this aspect is among the set of type aspects.
-     * @see #types 
+     * Indicates if this aspect is among the set of typed data aspects.
+     * @see #data 
      */
-    public boolean isType() {
-        return types.contains(this);
+    public boolean isTypedData() {
+        return isData() && this != UNTYPED;
     }
 
     /** 
-     * Indicates if this aspect is among the set of data aspects.
+     * Indicates if this aspect is among the set of (typed or untyped) data aspects.
      * @see #data 
      */
     public boolean isData() {
@@ -188,10 +201,18 @@ public enum AspectKind {
 
     /** 
      * Indicates if this aspect is among the set of quantifiers.
-     * @see #quantifier 
+     * @see #quantifiers 
      */
     public boolean isQuantifier() {
-        return quantifier.contains(this);
+        return quantifiers.contains(this);
+    }
+
+    /** 
+     * Indicates if this aspect is attribute related.
+     * @see #attributers 
+     */
+    public boolean isAttrKind() {
+        return attributers.contains(this);
     }
 
     /** Indicates that this aspect kind is allowed to appear on edges. */
@@ -206,12 +227,12 @@ public enum AspectKind {
 
     /** Indicates that this aspect kind is always the last on a label. */
     public boolean isLast() {
-        return !series.contains(this);
+        return this.contentKind != ContentKind.LEVEL;
     }
 
     private final ContentKind contentKind;
     private final String name;
-    private final NewAspect aspect;
+    private NewAspect aspect;
 
     /** 
      * Returns the aspect kind corresponding to a certain non-{@code null}
@@ -234,20 +255,18 @@ public enum AspectKind {
     }
 
     /** Set of role aspects. */
-    public static EnumSet<AspectKind> roles = EnumSet.of(ERASER, CREATOR,
-        READER, EMBARGO);
-    /** Set of role aspects appearing in NACs. */
-    public static EnumSet<AspectKind> nac = EnumSet.of(READER, EMBARGO);
+    public static EnumSet<AspectKind> roles = EnumSet.of(ERASER, ADDER,
+        CREATOR, READER, EMBARGO);
+    /** Set of role aspects appearing (only) in NACs. */
+    public static EnumSet<AspectKind> nac = EnumSet.of(EMBARGO, ADDER);
     /** Set of role aspects appearing in LHSs. */
     public static EnumSet<AspectKind> lhs = EnumSet.of(READER, ERASER);
     /** Set of role aspects appearing in RHSs. */
-    public static EnumSet<AspectKind> rhs = EnumSet.of(READER, CREATOR);
+    public static EnumSet<AspectKind> rhs = EnumSet.of(READER, CREATOR, ADDER);
     /** Set of typed data aspects. */
-    public static EnumSet<AspectKind> types = EnumSet.of(ATTR, STRING, BOOL,
-        INT, REAL);
     /** Set of data aspects, typed or untyped. */
-    public static EnumSet<AspectKind> data =
-        EnumSet.of(STRING, BOOL, INT, REAL);
+    public static EnumSet<AspectKind> data = EnumSet.of(UNTYPED, STRING, BOOL,
+        INT, REAL);
     /** Set of meta-aspects, i.e., which do not reflect real graph structure. */
     public static EnumSet<AspectKind> meta = EnumSet.of(FORALL, FORALL_POS,
         EXISTS, NESTED, REMARK);
@@ -255,17 +274,18 @@ public enum AspectKind {
     public static EnumSet<AspectKind> params = EnumSet.of(PARAM_BI, PARAM_IN,
         PARAM_OUT);
     /** Set of quantifier aspects, i.e., which do not reflect real graph structure. */
-    public static EnumSet<AspectKind> quantifier = EnumSet.of(FORALL,
+    public static EnumSet<AspectKind> quantifiers = EnumSet.of(FORALL,
         FORALL_POS, EXISTS);
+    /** Set of attribute-related aspects. */
+    public static EnumSet<AspectKind> attributers = EnumSet.of(PRODUCT,
+        ARGUMENT, UNTYPED, STRING, INT, BOOL, REAL);
 
     /** Set of all aspects that can be used <i>only</i> on nodes. */
-    public static EnumSet<AspectKind> nodeOnly = EnumSet.of(ATTR, PRODUCT);
+    public static EnumSet<AspectKind> nodeOnly = EnumSet.of(UNTYPED, PRODUCT,
+        PARAM_BI, PARAM_IN, PARAM_OUT);
     /** Set of all aspects that can be used <i>only</i> on edges. */
-    public static EnumSet<AspectKind> edgeOnly = EnumSet.of(ARGUMENT, PARAM_BI,
-        SUBTYPE, PATH, LITERAL, NESTED);
-    /** Set of aspects that may be followed by others, when used in an edge label. */
-    public static EnumSet<AspectKind> series = EnumSet.of(READER, ERASER,
-        CREATOR, EMBARGO, FORALL, FORALL_POS, EXISTS);
+    public static EnumSet<AspectKind> edgeOnly = EnumSet.of(ARGUMENT, SUBTYPE,
+        PATH, LITERAL, NESTED);
 
     /** Type of content that can be wrapped inside an aspect. */
     enum ContentKind {
@@ -311,7 +331,7 @@ public enum AspectKind {
         /** 
          * String constant, used in a typed value aspect. 
          */
-        STRING_LITERAL,
+        STRING_LITERAL("string"),
         /** 
          * Boolean constant, used in a typed value aspect. 
          */
@@ -341,7 +361,8 @@ public enum AspectKind {
                 try {
                     result = Integer.parseInt(text.substring(1));
                 } catch (NumberFormatException exc) {
-                    throw new FormatException("Invalid parameter number ", text);
+                    throw new FormatException("Invalid parameter number %s",
+                        text);
                 }
                 return result;
             }
@@ -358,9 +379,10 @@ public enum AspectKind {
             Integer parseContent(String text) throws FormatException {
                 int result;
                 try {
-                    result = Integer.parseInt(text.substring(1));
+                    result = Integer.parseInt(text);
                 } catch (NumberFormatException exc) {
-                    throw new FormatException("Invalid argument number ", text);
+                    throw new FormatException("Invalid argument number %s",
+                        text);
                 }
                 return result;
             }
@@ -418,8 +440,6 @@ public enum AspectKind {
 
         private final String signature;
 
-        static private final char SEPARATOR = ':';
-        static private final char ASSIGN = '=';
         static private final EnumSet<ContentKind> literals = EnumSet.of(
             STRING_LITERAL, BOOL_LITERAL, INT_LITERAL, REAL_LITERAL);
     }

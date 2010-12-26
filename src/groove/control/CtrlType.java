@@ -16,8 +16,8 @@
  */
 package groove.control;
 
+import static groove.view.aspect.AspectKind.UNTYPED;
 import groove.algebra.Algebras;
-import groove.view.aspect.AttributeAspect;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -105,7 +105,7 @@ public class CtrlType {
     /** The name of the node type. */
     static public final String NODE_TYPE_NAME = "node";
     /** The name of the (general) attribute type. */
-    static public final String ATTR_TYPE_NAME = AttributeAspect.VALUE_NAME;
+    static public final String ATTR_TYPE_NAME = UNTYPED.getName();
     /** The singleton node type. */
     private static final CtrlType nodeTypeInstance = new CtrlType(
         NODE_TYPE_NAME);

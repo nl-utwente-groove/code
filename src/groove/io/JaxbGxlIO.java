@@ -16,6 +16,8 @@
  */
 package groove.io;
 
+import static groove.view.aspect.AspectKind.ABSTRACT;
+import static groove.view.aspect.AspectKind.SUBTYPE;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultFactory;
 import groove.graph.DefaultGraph;
@@ -36,7 +38,6 @@ import groove.util.Pair;
 import groove.util.Version;
 import groove.view.FormatError;
 import groove.view.FormatException;
-import groove.view.aspect.TypeAspect;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -229,7 +230,7 @@ public class JaxbGxlIO implements GxlIO {
                 gxlEdge.setTo(nodeMap.get(node));
                 AttrType labelAttr = this.factory.createAttrType();
                 labelAttr.setName(LABEL_ATTR_NAME);
-                labelAttr.setString(((ValueNode) node).getLabelText());
+                labelAttr.setString(((ValueNode) node).toString());
                 gxlEdge.getAttr().add(labelAttr);
                 nodesEdges.add(gxlEdge);
             }
@@ -531,6 +532,7 @@ public class JaxbGxlIO implements GxlIO {
     @SuppressWarnings("unused")
     static private final String LAYOUT_ATTR_NAME = "layout";
     /** Subtype label. */
-    static private final String ABSTRACT_PREFIX = TypeAspect.ABS.getPrefix();
-    static private final String SUBTYPE_PREFIX = TypeAspect.SUB.getPrefix();
+    static private final String ABSTRACT_PREFIX =
+        ABSTRACT.getAspect().toString();
+    static private final String SUBTYPE_PREFIX = SUBTYPE.getAspect().toString();
 }
