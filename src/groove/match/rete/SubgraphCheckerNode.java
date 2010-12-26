@@ -567,30 +567,32 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
 
     @Override
     public boolean demandUpdate() {
-        for (ReteNetworkNode nnode : this.getAntecedents()) {
-            nnode.demandUpdate();
-        }
-        boolean result =
-            (this.leftOnDemandBuffer.size() + this.rightOnDemandBuffer.size()) > 0;
+        boolean result = false;
+        if (this.getOwner().isInOnDemandMode()) {
+            for (ReteNetworkNode nnode : this.getAntecedents()) {
+                nnode.demandUpdate();
+            }
+            result =
+                (this.leftOnDemandBuffer.size() + this.rightOnDemandBuffer.size()) > 0;
 
-        if (result) {
-            for (ReteMatch m : this.leftOnDemandBuffer) {
-                assert !m.isDeleted();
-                m.removeContainerCollection(this.leftOnDemandBuffer);
-                this.receiveAndProcess(m.getOrigin(), 0, m);
+            if (result) {
+                for (ReteMatch m : this.leftOnDemandBuffer) {
+                    assert !m.isDeleted();
+                    m.removeContainerCollection(this.leftOnDemandBuffer);
+                    this.receiveAndProcess(m.getOrigin(), 0, m);
+                }
+                this.leftOnDemandBuffer.clear();
+                int repeatIndex =
+                    (this.getAntecedents().get(0) != this.getAntecedents().get(
+                        1)) ? 0 : 1;
+                for (ReteMatch m : this.rightOnDemandBuffer) {
+                    assert !m.isDeleted();
+                    m.removeContainerCollection(this.rightOnDemandBuffer);
+                    this.receiveAndProcess(m.getOrigin(), repeatIndex, m);
+                }
+                this.rightOnDemandBuffer.clear();
             }
-            this.leftOnDemandBuffer.clear();
-            int repeatIndex =
-                (this.getAntecedents().get(0) != this.getAntecedents().get(1))
-                        ? 0 : 1;
-            for (ReteMatch m : this.rightOnDemandBuffer) {
-                assert !m.isDeleted();
-                m.removeContainerCollection(this.rightOnDemandBuffer);
-                this.receiveAndProcess(m.getOrigin(), repeatIndex, m);
-            }
-            this.rightOnDemandBuffer.clear();
         }
         return result;
     }
-
 }

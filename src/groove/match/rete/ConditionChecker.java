@@ -21,6 +21,7 @@ import groove.trans.Condition;
 import groove.trans.HostEdge;
 import groove.trans.HostElement;
 import groove.trans.HostNode;
+import groove.trans.NotCondition;
 import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
 import groove.trans.RuleNode;
@@ -88,6 +89,13 @@ public class ConditionChecker extends ReteNetworkNode implements
      * of {@link #condition}.
      */
     protected List<ConditionChecker> subConditionCheckers;
+
+    /**
+     * Helps to quickly determine if the condition associated
+     * with this condition-checker has nac subconditions.
+     */
+    protected boolean hasNacSubconditions = false;
+
     private Set<ReteMatch> oneEmptyMatch;
 
     /**
@@ -100,7 +108,6 @@ public class ConditionChecker extends ReteNetworkNode implements
         super(network);
         this.condition = c;
         this.getOwner().getState().subscribe(this);
-        //this.mapToLHS = new InferentialNodeEdgeHashMap(false);
         this.parent = parentConditionChecker;
         makeRootSearchOrder(c);
         this.subConditionCheckers = new ArrayList<ConditionChecker>();
@@ -144,6 +151,9 @@ public class ConditionChecker extends ReteNetworkNode implements
     private void addSubConditionChecker(ConditionChecker cc) {
         if (!this.subConditionCheckers.contains(cc)) {
             this.subConditionCheckers.add(cc);
+            if (cc instanceof CompositeConditionChecker) {
+                this.hasNacSubconditions = true;
+            }
         }
     }
 
@@ -219,6 +229,14 @@ public class ConditionChecker extends ReteNetworkNode implements
     protected boolean isInhibited(ReteMatch m) {
         boolean result = this.inhibitionMap.contains(m);
         return result;
+    }
+
+    /**
+     * @return <code>true</code> if the condition associated with this
+     * condition-checker has any subconditions of type {@link NotCondition}. 
+     */
+    public boolean hasNacs() {
+        return this.hasNacSubconditions;
     }
 
     /**
@@ -418,11 +436,12 @@ public class ConditionChecker extends ReteNetworkNode implements
     protected void addMatchToConflictSet(ReteMatch m) {
         Collection<ReteMatch> c;
         if (this.conflictSetSearchTree == null) {
-            assert !this.conflictSet.contains(m);
+
             c = this.conflictSet;
         } else {
             c = this.conflictSetSearchTree.getStorageFor(m);
         }
+        assert !c.contains(m);
         c.add(m);
         m.addContainerCollection(c);
     }
@@ -435,14 +454,13 @@ public class ConditionChecker extends ReteNetworkNode implements
         assert m != null;
         Collection<ReteMatch> c;
         if (this.conflictSetSearchTree == null) {
-            assert !this.conflictSet.contains(m);
             c = this.conflictSet;
         } else {
             c = this.conflictSetSearchTree.getStorageFor(m);
         }
-
+        assert c.contains(m);
         c.remove(m);
-        assert !this.conflictSet.contains(m);
+        assert !c.contains(m);
     }
 
     /**
@@ -592,15 +610,18 @@ public class ConditionChecker extends ReteNetworkNode implements
     @Override
     public boolean demandUpdate() {
         boolean result = false;
-        if (!this.isEmpty()) {
-            for (ReteNetworkNode nnode : this.getAntecedents()) {
-                result = result || nnode.demandUpdate();
+        if (this.getOwner().isInOnDemandMode()) {
+            if (!this.isEmpty()) {
+                for (ReteNetworkNode nnode : this.getAntecedents()) {
+                    result = result || nnode.demandUpdate();
+                }
             }
-        }
-        if (this.getSubConditionCheckers().size() > 0) {
-            for (ConditionChecker cc : this.getSubConditionCheckers()) {
-                if (cc instanceof CompositeConditionChecker) {
-                    cc.demandUpdate();
+
+            if (this.hasNacs()) {
+                for (ConditionChecker cc : this.getSubConditionCheckers()) {
+                    if (cc instanceof CompositeConditionChecker) {
+                        cc.demandUpdate();
+                    }
                 }
             }
         }

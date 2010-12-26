@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="rule" id="ldb-ld">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n1"/>
+        <node id="n0"/>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>new:ld</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>del:ldb</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n0">
+            <attr name="label">
+                <string>del:ack</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n1">
+            <attr name="label">
+                <string>new:flws</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n1">
+            <attr name="label">
+                <string>del:bldr</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

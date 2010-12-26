@@ -29,8 +29,8 @@ import groove.util.TreeHashSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * @author Arash Jalali
@@ -279,6 +279,8 @@ public class ReteMatch implements Comparable<ReteMatch> {
         } else {
             result = false;
         }
+        assert (this.hashCode() == m.hashCode())
+            || !this.compareToForEquality(m);
         return result;
     }
 
@@ -334,7 +336,8 @@ public class ReteMatch implements Comparable<ReteMatch> {
         boolean result = true;
         for (Entry<RuleEdge,? extends HostEdge> m : anchorMap.edgeMap().entrySet()) {
             int i = lookup.getEdge(m.getKey());
-            if ((i == -1) || (!this.units[i].equals(m.getValue()))) {
+            assert i != -1;
+            if (!this.units[i].equals(m.getValue())) {
                 result = false;
                 break;
             }
@@ -342,25 +345,21 @@ public class ReteMatch implements Comparable<ReteMatch> {
         if (result) {
             for (RuleNode n : anchorMap.nodeMap().keySet()) {
                 int[] idx = lookup.getNode(n);
-                if (idx != null) {
-                    HostElement e = this.units[idx[0]];
-                    if (e instanceof HostNode) {
-                        if (!e.equals(anchorMap.getNode(n))) {
-                            result = false;
-                            break;
-                        }
-                    } else {
-                        HostNode n1 =
-                            (idx[1] == 0) ? ((HostEdge) e).source()
-                                    : ((HostEdge) e).target();
-                        if (!n1.equals(anchorMap.getNode(n))) {
-                            result = false;
-                            break;
-                        }
+                assert idx != null;
+                HostElement e = this.units[idx[0]];
+                if (e instanceof HostNode) {
+                    if (!e.equals(anchorMap.getNode(n))) {
+                        result = false;
+                        break;
                     }
                 } else {
-                    result = false;
-                    break;
+                    HostNode n1 =
+                        (idx[1] == 0) ? ((HostEdge) e).source()
+                                : ((HostEdge) e).target();
+                    if (!n1.equals(anchorMap.getNode(n))) {
+                        result = false;
+                        break;
+                    }
                 }
 
             }
