@@ -41,8 +41,8 @@ import java.util.Stack;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DeltaHostGraph extends AbstractGraph<HostNode,TypeLabel,HostEdge>
-        implements HostGraph {
+public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
+        HostGraph {
     /**
      * Constructs a graph with a given basis and delta The basis may be
      * <code>null</code>, meaning that it is the empty graph.
@@ -121,7 +121,7 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,TypeLabel,HostEdge>
     }
 
     @Override
-    public HostEdge addEdge(HostNode source, TypeLabel label, HostNode target) {
+    public HostEdge addEdge(HostNode source, Label label, HostNode target) {
         throw new UnsupportedOperationException();
     }
 
@@ -388,15 +388,14 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,TypeLabel,HostEdge>
     }
 
     @Override
-    public CertificateStrategy<HostNode,TypeLabel,HostEdge> getCertifier(
-            boolean strong) {
-        CertificateStrategy<HostNode,TypeLabel,HostEdge> result =
+    public CertificateStrategy<HostNode,HostEdge> getCertifier(boolean strong) {
+        CertificateStrategy<HostNode,HostEdge> result =
             this.certifier == null ? null : this.certifier.get();
         if (result == null || result.getStrength() != strong) {
             result =
                 AbstractGraph.getCertificateFactory().newInstance(this, strong);
             this.certifier =
-                new WeakReference<CertificateStrategy<HostNode,TypeLabel,HostEdge>>(
+                new WeakReference<CertificateStrategy<HostNode,HostEdge>>(
                     result);
         }
         return result;
@@ -408,7 +407,7 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,TypeLabel,HostEdge>
     }
 
     @Override
-    protected boolean isTypeCorrect(Edge edge) {
+    protected boolean isTypeCorrect(Edge<?> edge) {
         return edge instanceof HostEdge;
     }
 
@@ -448,7 +447,7 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,TypeLabel,HostEdge>
     /** Mapping from labels to sets of edges with that label. */
     Map<TypeLabel,HostEdgeSet> labelEdgeMap;
     /** The certificate strategy of this graph, set on demand. */
-    private Reference<CertificateStrategy<HostNode,TypeLabel,HostEdge>> certifier;
+    private Reference<CertificateStrategy<HostNode,HostEdge>> certifier;
     /**
      * Flag indicating that data should be copied rather than shared in
      * {@link #getDataTarget(int)}.

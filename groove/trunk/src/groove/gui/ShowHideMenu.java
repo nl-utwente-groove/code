@@ -607,7 +607,7 @@ public class ShowHideMenu extends JMenu {
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            Graph<?,?,?> graph =
+            Graph<?,?> graph =
                 ((GraphJModel<?,?>) this.jgraph.getModel()).getGraph();
             String exprText = exprDialog.showDialog(null, null);
             if (exprText != null) {
@@ -639,14 +639,14 @@ public class ShowHideMenu extends JMenu {
 
         @Override
         protected boolean isInvolved(JCell cell) {
-            Set<? extends Edge> edgesInCell;
+            Set<? extends Edge<?>> edgesInCell;
             if (cell instanceof GraphJEdge) {
                 edgesInCell = ((GraphJEdge<?,?>) cell).getEdges();
             } else {
                 edgesInCell = ((GraphJVertex<?,?>) cell).getSelfEdges();
             }
             boolean edgeFound = false;
-            Iterator<? extends Edge> edgeInCellIter = edgesInCell.iterator();
+            Iterator<? extends Edge<?>> edgeInCellIter = edgesInCell.iterator();
             while (!edgeFound && edgeInCellIter.hasNext()) {
                 edgeFound = this.elementSet.contains(edgeInCellIter.next());
             }

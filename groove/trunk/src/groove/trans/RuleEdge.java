@@ -28,8 +28,8 @@ import groove.graph.algebra.OperatorEdge;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RuleEdge extends AbstractEdge<RuleNode,RuleLabel,RuleNode>
-        implements RuleElement {
+public class RuleEdge extends AbstractEdge<RuleNode,RuleLabel> implements
+        RuleElement {
     /**
      * Constructs a fresh rule edge
      */

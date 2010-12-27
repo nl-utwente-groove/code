@@ -23,12 +23,12 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Morphism<N extends Node,L extends Label,E extends Edge> extends
-        ElementMap<N,L,E,N,L,E> {
+public class Morphism<N extends Node,E extends Edge<N>> extends
+        ElementMap<N,E,N,E> {
     /**
      * Creates a morphism, based on a given element factory.
      */
-    public Morphism(ElementFactory<N,L,E> factory) {
+    public Morphism(ElementFactory<N,E> factory) {
         super(factory);
     }
 
@@ -47,18 +47,18 @@ public class Morphism<N extends Node,L extends Label,E extends Edge> extends
     }
 
     @Override
-    public Morphism<N,L,E> newMap() {
-        return new Morphism<N,L,E>(getFactory());
+    public Morphism<N,E> newMap() {
+        return new Morphism<N,E>(getFactory());
     }
 
     @Override
-    public Morphism<N,L,E> clone() {
-        return (Morphism<N,L,E>) super.clone();
+    public Morphism<N,E> clone() {
+        return (Morphism<N,E>) super.clone();
     }
 
     /** This implementation is the identity on labels. */
     @Override
-    public L mapLabel(L label) {
+    public Label mapLabel(Label label) {
         return label;
     }
 
@@ -66,8 +66,8 @@ public class Morphism<N extends Node,L extends Label,E extends Edge> extends
      * Constructs a morphism that is the concatenation of two morphisms.
      * @param other the second argument of concatenation
      */
-    public Morphism<N,L,E> then(Morphism<N,L,E> other) {
-        Morphism<N,L,E> result = newMap();
+    public Morphism<N,E> then(Morphism<N,E> other) {
+        Morphism<N,E> result = newMap();
         for (Map.Entry<N,N> entry : nodeMap().entrySet()) {
             N image = other.getNode(entry.getValue());
             if (image != null) {
@@ -92,8 +92,8 @@ public class Morphism<N extends Node,L extends Label,E extends Edge> extends
      * @returns the result of the concatenation, or {@code null} if
      * this does not exist.
      */
-    public Morphism<N,L,E> inverseThen(Morphism<N,L,E> other) {
-        Morphism<N,L,E> result = newMap();
+    public Morphism<N,E> inverseThen(Morphism<N,E> other) {
+        Morphism<N,E> result = newMap();
         construct: {
             for (Map.Entry<N,N> entry : nodeMap().entrySet()) {
                 N image = other.getNode(entry.getKey());

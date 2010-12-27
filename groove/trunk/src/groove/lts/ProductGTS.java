@@ -44,9 +44,8 @@ import java.util.Set;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class ProductGTS extends
-        AbstractGraph<GraphState,DerivationLabel,GraphTransition> implements
-        LTS {
+public class ProductGTS extends AbstractGraph<GraphState,GraphTransition>
+        implements LTS {
 
     /**
      * Constructs a GTS from a (fixed) graph grammar.
@@ -391,7 +390,7 @@ public class ProductGTS extends
     }
 
     @Override
-    public boolean containsEdge(Edge elem) {
+    public boolean containsEdge(Edge<?> elem) {
         assert elem instanceof ProductTransition;
         return containsTransition((ProductTransition) elem);
     }

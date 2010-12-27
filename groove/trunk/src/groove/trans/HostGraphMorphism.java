@@ -17,14 +17,13 @@
 package groove.trans;
 
 import groove.graph.Morphism;
-import groove.graph.TypeLabel;
 
 /**
  * Mappings from elements of one host graph to those of another.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class HostGraphMorphism extends Morphism<HostNode,TypeLabel,HostEdge> {
+public class HostGraphMorphism extends Morphism<HostNode,HostEdge> {
     /**
      * Creates a new, empty map.
      */
@@ -48,13 +47,12 @@ public class HostGraphMorphism extends Morphism<HostNode,TypeLabel,HostEdge> {
     }
 
     @Override
-    public HostGraphMorphism then(Morphism<HostNode,TypeLabel,HostEdge> other) {
+    public HostGraphMorphism then(Morphism<HostNode,HostEdge> other) {
         return (HostGraphMorphism) super.then(other);
     }
 
     @Override
-    public HostGraphMorphism inverseThen(
-            Morphism<HostNode,TypeLabel,HostEdge> other) {
+    public HostGraphMorphism inverseThen(Morphism<HostNode,HostEdge> other) {
         return (HostGraphMorphism) super.inverseThen(other);
     }
 }

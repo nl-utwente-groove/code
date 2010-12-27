@@ -18,7 +18,6 @@ package groove.test.graph;
 
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
-import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 
 /**
@@ -26,8 +25,7 @@ import groove.graph.DefaultNode;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class DefaultGraphTest extends
-        GraphTest<DefaultNode,DefaultLabel,DefaultEdge> {
+public class DefaultGraphTest extends GraphTest<DefaultNode,DefaultEdge> {
 
     @Override
     DefaultGraph createGraph() {

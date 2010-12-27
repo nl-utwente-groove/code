@@ -27,8 +27,7 @@ import java.util.Set;
  * and target nodes and edge label.
  * @version $Revision$ $Date: 2008-01-30 09:32:52 $
  */
-public interface Graph<N extends Node,L extends Label,E extends Edge> extends
-        Fixable {
+public interface Graph<N extends Node,E extends Edge<N>> extends Fixable {
     /**
      * Returns the set of nodes of this graph. The return value is an
      * unmodifiable view of the underlying node set, which is <i>not</i>
@@ -126,7 +125,7 @@ public interface Graph<N extends Node,L extends Label,E extends Edge> extends
      * Tests whether this graph contains a given edge.
      * @param edge the edge of which the presence is tested.
      */
-    boolean containsEdge(Edge edge);
+    boolean containsEdge(Edge<?> edge);
 
     // -------------------- Commands -----------------
 
@@ -162,12 +161,12 @@ public interface Graph<N extends Node,L extends Label,E extends Edge> extends
      * but aliased nodes and edges.
      * @ensure <tt>resultnodeSet().equals(this.nodeSet()) && result.edgeSet().equals(this.edgeSet()</tt>
      */
-    Graph<N,L,E> clone();
+    Graph<N,E> clone();
 
     /**
      * Factory method: returns a fresh, empty graph.
      */
-    Graph<N,L,E> newGraph();
+    Graph<N,E> newGraph();
 
     /**
      * Generates a fresh node and adds it to this graph.
@@ -210,7 +209,7 @@ public interface Graph<N extends Node,L extends Label,E extends Edge> extends
      *         labelled <tt>label</tt>
      * @see Graph#addEdge(Edge)
      */
-    E addEdge(N source, L label, N target);
+    E addEdge(N source, Label label, N target);
 
     /**
      * Adds a node to this graph. This is allowed only if the graph is not
@@ -405,5 +404,5 @@ public interface Graph<N extends Node,L extends Label,E extends Edge> extends
     boolean removeNodeSetWithoutCheck(Collection<? extends N> nodeSet);
 
     /** Returns the element factory used for elements of this graph. */
-    ElementFactory<N,L,E> getFactory();
+    ElementFactory<N,E> getFactory();
 }

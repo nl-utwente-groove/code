@@ -18,7 +18,6 @@ package groove.graph.iso;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 import groove.util.TreeHashSet;
@@ -44,8 +43,8 @@ import java.util.TreeMap;
  * @author Arend Rensink
  * @version $Revision: 1529 $
  */
-public class PaigeTarjanMcKay<N extends Node,L extends Label,E extends Edge>
-        extends CertificateStrategy<N,L,E> {
+public class PaigeTarjanMcKay<N extends Node,E extends Edge<N>> extends
+        CertificateStrategy<N,E> {
     /**
      * Constructs a new bisimulation strategy, on the basis of a given graph.
      * The strategy checks for isomorphism weakly, meaning that it might yield
@@ -53,7 +52,7 @@ public class PaigeTarjanMcKay<N extends Node,L extends Label,E extends Edge>
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
      */
-    public PaigeTarjanMcKay(Graph<N,L,E> graph) {
+    public PaigeTarjanMcKay(Graph<N,E> graph) {
         this(graph, true);
     }
 
@@ -64,15 +63,15 @@ public class PaigeTarjanMcKay<N extends Node,L extends Label,E extends Edge>
      * @param strong if <code>true</code>, the strategy puts more effort into
      *        getting distinct certificates.
      */
-    public PaigeTarjanMcKay(Graph<N,L,E> graph, boolean strong) {
+    public PaigeTarjanMcKay(Graph<N,E> graph, boolean strong) {
         super(graph);
         this.strong = strong;
     }
 
     @Override
-    public <N1 extends Node,L1 extends Label,E1 extends Edge> PaigeTarjanMcKay<N1,L1,E1> newInstance(
-            Graph<N1,L1,E1> graph, boolean strong) {
-        return new PaigeTarjanMcKay<N1,L1,E1>(graph, strong);
+    public <N1 extends Node,E1 extends Edge<N1>> PaigeTarjanMcKay<N1,E1> newInstance(
+            Graph<N1,E1> graph, boolean strong) {
+        return new PaigeTarjanMcKay<N1,E1>(graph, strong);
     }
 
     /**
@@ -322,7 +321,7 @@ public class PaigeTarjanMcKay<N extends Node,L extends Label,E extends Edge>
     }
 
     @Override
-    EdgeCertificate<E> createEdge2Certificate(E edge,
+    EdgeCertificate<N,E> createEdge2Certificate(E edge,
             NodeCertificate<N> source, NodeCertificate<N> target) {
         return new MyEdge2Cert(edge, (MyNodeCert) source, (MyNodeCert) target);
     }
@@ -652,7 +651,7 @@ public class PaigeTarjanMcKay<N extends Node,L extends Label,E extends Edge>
         private final ValueNode node;
     }
 
-    private class MyEdge1Cert implements EdgeCertificate<E> {
+    private class MyEdge1Cert implements EdgeCertificate<N,E> {
         MyEdge1Cert(E edge, MyNodeCert sourceCert) {
             this.edge = edge;
             this.sourceCert = sourceCert;

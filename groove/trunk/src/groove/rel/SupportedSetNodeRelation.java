@@ -62,7 +62,7 @@ public class SupportedSetNodeRelation extends SetNodeRelation implements
     }
 
     @Override
-    protected Entry createEntry(Edge edge) {
+    protected Entry createEntry(Edge<?> edge) {
         return new MyEntry(edge);
     }
 
@@ -90,7 +90,7 @@ public class SupportedSetNodeRelation extends SetNodeRelation implements
     private Set<Element> allSupport = new HashSet<Element>();
 
     static private class MyEntry extends Entry {
-        public MyEntry(Edge edge) {
+        public MyEntry(Edge<?> edge) {
             super(edge);
             this.support.add(edge);
         }

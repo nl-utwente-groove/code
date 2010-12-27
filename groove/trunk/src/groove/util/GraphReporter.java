@@ -94,7 +94,7 @@ public class GraphReporter extends CommandLineTool {
      * Does the actual reporting for a given graph. The report depends on the
      * parameters of this reporter, and is sent to the standard output.
      */
-    public void report(Graph<?,?,?> graph) {
+    public void report(Graph<?,?> graph) {
         // count the labels
         println(getReport(graph).toString());
     }
@@ -104,11 +104,11 @@ public class GraphReporter extends CommandLineTool {
      * parameters of this reporter, and is returned in the form of a
      * StringBuilder.
      */
-    public StringBuilder getReport(Graph<?,?,?> graph) {
+    public StringBuilder getReport(Graph<?,?> graph) {
         StringBuilder result = new StringBuilder();
         // count the labels
         Bag<Label> labels = new TreeBag<Label>();
-        for (Edge edge : graph.edgeSet()) {
+        for (Edge<?> edge : graph.edgeSet()) {
             labels.add(edge.label());
         }
         for (Map.Entry<Label,? extends Bag.Multiplicity> labelEntry : labels.multiplicityMap().entrySet()) {

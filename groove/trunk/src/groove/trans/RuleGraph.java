@@ -26,7 +26,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleLabel,RuleEdge> {
+public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
     /**
      * Constructs a new, empty rule graph.
      */

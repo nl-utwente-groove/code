@@ -17,21 +17,21 @@
 package groove.graph;
 
 /** Factory class for graph elements. */
-public interface ElementFactory<N extends Node,L extends Label,E extends Edge> {
+public interface ElementFactory<N extends Node,E extends Edge<N>> {
     /** Creates a node with a given number. */
     N createNode(int nr);
 
     /** Creates a label with the given text. */
-    L createLabel(String text);
+    Label createLabel(String text);
 
     /** Creates an edge with the given source, label text and target. */
     E createEdge(N source, String text, N target);
 
     /** Creates an edge with the given source, label and target. */
-    E createEdge(N source, L label, N target);
+    E createEdge(N source, Label label, N target);
 
     /** Creates a fresh morphism between the elements of this factory. */
-    Morphism<N,L,E> createMorphism();
+    Morphism<N,E> createMorphism();
 
     /** Returns the maximum node number known to this factory. */
     int getMaxNodeNr();

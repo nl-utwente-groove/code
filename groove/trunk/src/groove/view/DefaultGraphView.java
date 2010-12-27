@@ -33,11 +33,11 @@ import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.SystemProperties;
 import groove.util.Pair;
+import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
-import groove.view.aspect.Aspect;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -310,8 +310,7 @@ public class DefaultGraphView implements GraphView {
     private TypeGraph type;
 
     /** Mapping from aspect graph to type graph. */
-    public static class ViewToHostMap extends
-            ViewToModelMap<HostNode,TypeLabel,HostEdge> {
+    public static class ViewToHostMap extends ViewToModelMap<HostNode,HostEdge> {
         /**
          * Creates a new, empty map.
          */

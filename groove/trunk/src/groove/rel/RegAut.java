@@ -43,7 +43,7 @@ import java.util.Set;
  * <li> Atoms
  * </ul>
  */
-public interface RegAut extends Graph<RegNode,RuleLabel,RegEdge> {
+public interface RegAut extends Graph<RegNode,RegEdge> {
     /** Returns the start node of the automaton. */
     RegNode getStartNode();
 

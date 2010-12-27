@@ -36,8 +36,8 @@ import java.util.Set;
  * stored as a Set in the user object. In the latter case, toString() the user
  * object is the empty string.
  */
-public class GraphJEdge<N extends Node,E extends Edge> extends JEdge implements
-        GraphJCell<N,E> {
+public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
+        implements GraphJCell<N,E> {
     /**
      * Constructs a model edge based on a graph edge. The graph edge is required
      * to have at least arity two; yet we cannot rely on it being a binary
@@ -49,11 +49,10 @@ public class GraphJEdge<N extends Node,E extends Edge> extends JEdge implements
      *         edge.source(), target() == edge.target()
      * @throws IllegalArgumentException if <code>edge.endCount() < 2</code>
      */
-    @SuppressWarnings("unchecked")
     GraphJEdge(GraphJModel<N,E> jModel, E edge) {
         this.jModel = jModel;
-        this.source = (N) edge.source();
-        this.target = (N) edge.target();
+        this.source = edge.source();
+        this.target = edge.target();
         getUserObject().add(edge);
     }
 
@@ -179,7 +178,7 @@ public class GraphJEdge<N extends Node,E extends Edge> extends JEdge implements
      * implementation this is the same as {@link #getEdge()}.
      * @see #getEdge()
      */
-    Edge getActualEdge() {
+    Edge<?> getActualEdge() {
         return getEdge();
     }
 

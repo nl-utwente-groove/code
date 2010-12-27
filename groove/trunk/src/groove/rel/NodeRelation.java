@@ -46,7 +46,7 @@ public interface NodeRelation extends Cloneable {
      * @return <tt>true</tt> if the pair was actually added, <tt>false</tt> if
      *         it was already in the relation.
      */
-    boolean addRelated(Edge edge);
+    boolean addRelated(Edge<?> edge);
 
     /** 
      * Adds a relation from a given node to itself.
@@ -115,7 +115,7 @@ public interface NodeRelation extends Cloneable {
         }
 
         /** Constructs an entry from a given edge. */
-        public Entry(Edge edge) {
+        public Entry(Edge<?> edge) {
             this(edge.source(), edge.target());
         }
 

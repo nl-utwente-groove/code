@@ -28,6 +28,7 @@ import groove.graph.ElementFactory;
 import groove.graph.ElementMap;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
+import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.TypeLabel;
@@ -59,9 +60,8 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AspectGraph extends
-        NodeSetEdgeSetGraph<AspectNode,AspectLabel,AspectEdge> implements
-        Cloneable {
+public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
+        implements Cloneable {
 
     /**
      * Creates an empty graph, with a given graph role.
@@ -542,8 +542,7 @@ public class AspectGraph extends
     private static final AspectGraph factory = new AspectGraph(HOST);
 
     /** Factory for AspectGraph elements. */
-    static class AspectFactory implements
-            ElementFactory<AspectNode,AspectLabel,AspectEdge> {
+    static class AspectFactory implements ElementFactory<AspectNode,AspectEdge> {
         /** Private constructor to ensure singleton usage. */
         private AspectFactory(GraphRole graphRole) {
             this.graphRole = graphRole;
@@ -567,9 +566,10 @@ public class AspectGraph extends
         }
 
         @Override
-        public AspectEdge createEdge(AspectNode source, AspectLabel label,
+        public AspectEdge createEdge(AspectNode source, Label label,
                 AspectNode target) {
-            return new AspectEdge(source, label, target, this.graphRole);
+            return new AspectEdge(source, (AspectLabel) label, target,
+                this.graphRole);
         }
 
         @Override
@@ -605,7 +605,7 @@ public class AspectGraph extends
     }
 
     private static class AspectGraphMorphism extends
-            Morphism<AspectNode,AspectLabel,AspectEdge> {
+            Morphism<AspectNode,AspectEdge> {
         /** Constructs a new, empty map. */
         public AspectGraphMorphism(GraphRole graphRole) {
             super(AspectFactory.instance(graphRole));
@@ -621,9 +621,8 @@ public class AspectGraph extends
         private final GraphRole graphRole;
     }
 
-    private static class AspectToPlainMap
-            extends
-            ElementMap<AspectNode,AspectLabel,AspectEdge,DefaultNode,DefaultLabel,DefaultEdge> {
+    private static class AspectToPlainMap extends
+            ElementMap<AspectNode,AspectEdge,DefaultNode,DefaultEdge> {
         /** Constructs a new, empty map. */
         public AspectToPlainMap() {
             super(DefaultFactory.instance());

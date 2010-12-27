@@ -20,7 +20,6 @@ import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 import groove.util.IntSet;
@@ -34,21 +33,21 @@ import groove.util.TreeIntSet;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class Bisimulator<N extends Node,L extends Label,E extends Edge> extends
-        CertificateStrategy<N,L,E> {
+public class Bisimulator<N extends Node,E extends Edge<N>> extends
+        CertificateStrategy<N,E> {
     /**
      * Constructs a new bisimulation strategy, on the basis of a given graph.
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
      */
-    public Bisimulator(Graph<N,L,E> graph) {
+    public Bisimulator(Graph<N,E> graph) {
         super(graph);
     }
 
     @Override
-    public <N1 extends Node,L1 extends Label,E1 extends Edge> CertificateStrategy<N1,L1,E1> newInstance(
-            Graph<N1,L1,E1> graph, boolean strong) {
-        return new Bisimulator<N1,L1,E1>(graph);
+    public <N1 extends Node,E1 extends Edge<N1>> CertificateStrategy<N1,E1> newInstance(
+            Graph<N1,E1> graph, boolean strong) {
+        return new Bisimulator<N1,E1>(graph);
     }
 
     /**
@@ -86,7 +85,7 @@ public class Bisimulator<N extends Node,L extends Label,E extends Edge> extends
             certStore.clear(nodeCertCount);
             // first compute the new edge certificates
             for (int i = 0; i < this.edge2CertCount; i++) {
-                Certificate<E> edgeCert = (MyEdge2Cert<E>) this.edgeCerts[i];
+                Certificate<E> edgeCert = (MyEdge2Cert<N,E>) this.edgeCerts[i];
                 certificateValue += edgeCert.setNewValue();
             }
             // now compute the new node certificates
@@ -146,7 +145,7 @@ public class Bisimulator<N extends Node,L extends Label,E extends Edge> extends
             // give them a chance to get their hash code right
             int edgeCount = this.edgeCerts.length;
             for (int i = this.edge2CertCount; i < edgeCount; i++) {
-                ((MyEdge2Cert<E>) this.edgeCerts[i]).setNewValue();
+                ((MyEdge2Cert<N,E>) this.edgeCerts[i]).setNewValue();
             }
         }
         recordIterateCount(iterateCount);
@@ -174,16 +173,16 @@ public class Bisimulator<N extends Node,L extends Label,E extends Edge> extends
     }
 
     @Override
-    EdgeCertificate<E> createEdge1Certificate(E edge,
+    EdgeCertificate<N,E> createEdge1Certificate(E edge,
             CertificateStrategy.NodeCertificate<N> source) {
-        return new MyEdge1Cert<E>(edge, (MyNodeCert<N>) source);
+        return new MyEdge1Cert<N,E>(edge, (MyNodeCert<N>) source);
     }
 
     @Override
-    EdgeCertificate<E> createEdge2Certificate(E edge,
+    EdgeCertificate<N,E> createEdge2Certificate(E edge,
             CertificateStrategy.NodeCertificate<N> source,
             CertificateStrategy.NodeCertificate<N> target) {
-        return new MyEdge2Cert<E>(edge, (MyNodeCert<N>) source,
+        return new MyEdge2Cert<N,E>(edge, (MyNodeCert<N>) source,
             (MyNodeCert<N>) target);
     }
 
@@ -404,8 +403,8 @@ public class Bisimulator<N extends Node,L extends Label,E extends Edge> extends
      * @author Arend Rensink
      * @version $Revision$
      */
-    static private class MyEdge2Cert<E extends Edge> extends Certificate<E>
-            implements EdgeCertificate<E> {
+    static private class MyEdge2Cert<N extends Node,E extends Edge<N>> extends
+            Certificate<E> implements EdgeCertificate<N,E> {
         /**
          * Constructs a certificate for a binary edge.
          * @param edge The target certificate node
@@ -438,7 +437,7 @@ public class Bisimulator<N extends Node,L extends Label,E extends Edge> extends
         @Override
         public boolean equals(Object obj) {
             if (obj instanceof MyEdge2Cert) {
-                MyEdge2Cert<?> other = (MyEdge2Cert<?>) obj;
+                MyEdge2Cert<?,?> other = (MyEdge2Cert<?,?>) obj;
                 if (this.value != other.value
                     || this.labelIndex != other.labelIndex
                     || this.source.value != other.source.value) {
@@ -494,8 +493,8 @@ public class Bisimulator<N extends Node,L extends Label,E extends Edge> extends
      * @author Arend Rensink
      * @version $Revision$
      */
-    static private class MyEdge1Cert<E extends Edge> extends Certificate<E>
-            implements EdgeCertificate<E> {
+    static private class MyEdge1Cert<N extends Node,E extends Edge<N>> extends
+            Certificate<E> implements EdgeCertificate<N,E> {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
         public MyEdge1Cert(E edge, MyNodeCert<?> source) {
             super(edge);
@@ -519,8 +518,8 @@ public class Bisimulator<N extends Node,L extends Label,E extends Edge> extends
          */
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof MyEdge1Cert<?>) {
-                MyEdge1Cert<?> other = (MyEdge1Cert<?>) obj;
+            if (obj instanceof MyEdge1Cert<?,?>) {
+                MyEdge1Cert<?,?> other = (MyEdge1Cert<?,?>) obj;
                 return (this.value == other.value && this.labelIndex == other.labelIndex);
             } else {
                 return false;

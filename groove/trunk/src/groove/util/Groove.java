@@ -21,7 +21,6 @@ import groove.calc.GraphCalculator;
 import groove.graph.DefaultGraph;
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.Morphism;
 import groove.graph.Node;
@@ -551,7 +550,7 @@ public class Groove {
      * @param filename the intended filename
      * @throws IOException if saving ran into problems
      */
-    static public File saveGraph(Graph<?,?,?> graph, String filename)
+    static public File saveGraph(Graph<?,?> graph, String filename)
         throws IOException {
         if (!createStateFilter().hasExtension(filename)) {
             filename = createGxlFilter().addExtension(filename);
@@ -568,7 +567,7 @@ public class Groove {
      * @param file the intended file
      * @throws IOException if saving ran into problems
      */
-    static public void saveGraph(Graph<?,?,?> graph, File file)
+    static public void saveGraph(Graph<?,?> graph, File file)
         throws IOException {
         gxlGraphLoader.marshalGraph(graph, file);
     }
@@ -582,7 +581,7 @@ public class Groove {
      * @return <code>true</code> if the format was known
      * @throws IOException if saving ran into problems
      */
-    static public boolean exportGraph(Graph<?,?,?> graph, String filename)
+    static public boolean exportGraph(Graph<?,?> graph, String filename)
         throws IOException {
         for (StructuralFormat exportFormat : new Exporter().getStructuralFormats()) {
             if (exportFormat.getFilter().hasExtension(filename)) {
@@ -738,8 +737,8 @@ public class Groove {
      *         or <code>null</code> if
      *         {@link IsoChecker#areIsomorphic(Graph, Graph)} fails.
      */
-    static public <N extends Node,L extends Label,E extends Edge> Morphism<N,L,E> getIsomorphism(
-            Graph<N,L,E> source, Graph<N,L,E> target) {
+    static public <N extends Node,E extends Edge<N>> Morphism<N,E> getIsomorphism(
+            Graph<N,E> source, Graph<N,E> target) {
         return IsoChecker.<N,E>getInstance(true).getIsomorphism(source, target);
     }
 

@@ -20,18 +20,16 @@ import groove.graph.Edge;
 import groove.graph.ElementMap;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
-import groove.graph.TypeLabel;
 
 /**
  * Class providing a default implementation of {@link HostGraph}s.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DefaultHostGraph extends
-        NodeSetEdgeSetGraph<HostNode,TypeLabel,HostEdge> implements HostGraph {
+public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
+        implements HostGraph {
     /**
      * Constructs an empty host graph.
      */
@@ -59,21 +57,17 @@ public class DefaultHostGraph extends
      * Turns a given graph into a host graph,
      * by creating the appropriate types of nodes and edges.
      */
-    public <N extends Node,L extends Label,E extends Edge> DefaultHostGraph(
-            Graph<N,L,E> graph) {
+    public <N extends Node,E extends Edge<N>> DefaultHostGraph(Graph<N,E> graph) {
         this();
-        ElementMap<N,L,E,HostNode,TypeLabel,HostEdge> map =
-            new ElementMap<N,L,E,HostNode,TypeLabel,HostEdge>(
-                HostFactory.instance());
+        ElementMap<N,E,HostNode,HostEdge> map =
+            new ElementMap<N,E,HostNode,HostEdge>(HostFactory.instance());
         for (N node : graph.nodeSet()) {
             HostNode newNode = addNode(node.getNumber());
             map.putNode(node, newNode);
         }
         for (E edge : graph.edgeSet()) {
-            @SuppressWarnings("unchecked")
-            HostNode sourceImage = map.getNode((N) edge.source());
-            @SuppressWarnings("unchecked")
-            HostNode targetImage = map.getNode((N) edge.target());
+            HostNode sourceImage = map.getNode(edge.source());
+            HostNode targetImage = map.getNode(edge.target());
             HostEdge edgeImage =
                 addEdge(sourceImage, edge.label().text(), targetImage);
             map.putEdge(edge, edgeImage);
@@ -97,7 +91,7 @@ public class DefaultHostGraph extends
     }
 
     @Override
-    protected boolean isTypeCorrect(Edge edge) {
+    protected boolean isTypeCorrect(Edge<?> edge) {
         return edge instanceof HostEdge;
     }
 

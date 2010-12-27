@@ -17,6 +17,7 @@
 package groove.trans;
 
 import groove.graph.ElementMap;
+import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.rel.LabelVar;
 import groove.rel.VarMap;
@@ -32,8 +33,7 @@ import java.util.Map;
  * @version $Revision$
  */
 public class RuleToHostMap extends
-        ElementMap<RuleNode,RuleLabel,RuleEdge,HostNode,TypeLabel,HostEdge>
-        implements VarMap {
+        ElementMap<RuleNode,RuleEdge,HostNode,HostEdge> implements VarMap {
     /**
      * Creates an empty map with an empty valuation.
      */
@@ -48,19 +48,20 @@ public class RuleToHostMap extends
      * @see #getVar(LabelVar)
      */
     @Override
-    public TypeLabel mapLabel(RuleLabel label) {
+    public TypeLabel mapLabel(Label label) {
+        RuleLabel ruleLabel = (RuleLabel) label;
         TypeLabel result;
-        if (label.isWildcard()) {
-            LabelVar var = label.getWildcardId();
+        if (ruleLabel.isWildcard()) {
+            LabelVar var = ruleLabel.getWildcardId();
             if (var == null) {
                 throw new IllegalArgumentException(String.format(
-                    "Label %s cannot be mapped", label));
+                    "Label %s cannot be mapped", ruleLabel));
             } else {
                 result = getVar(var);
             }
         } else {
-            assert label.isSharp() || label.isAtom();
-            result = label.getTypeLabel();
+            assert ruleLabel.isSharp() || ruleLabel.isAtom();
+            result = ruleLabel.getTypeLabel();
         }
         return result;
     }
@@ -85,8 +86,7 @@ public class RuleToHostMap extends
      * Also copies the other's valuation, if any.
      */
     @Override
-    public void putAll(
-            ElementMap<RuleNode,RuleLabel,RuleEdge,HostNode,TypeLabel,HostEdge> other) {
+    public void putAll(ElementMap<RuleNode,RuleEdge,HostNode,HostEdge> other) {
         super.putAll(other);
         if (other instanceof RuleToHostMap) {
             putAllVar(((RuleToHostMap) other).getValuation());

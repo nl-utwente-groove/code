@@ -32,7 +32,7 @@ public interface GxlIO {
     /**
      * Saves a graph to an output stream.
      */
-    public abstract void saveGraph(Graph<?,?,?> graph, OutputStream out)
+    public abstract void saveGraph(Graph<?,?> graph, OutputStream out)
         throws IOException;
 
     /**

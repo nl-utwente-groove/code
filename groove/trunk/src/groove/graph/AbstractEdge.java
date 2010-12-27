@@ -21,18 +21,18 @@ package groove.graph;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class AbstractEdge<SN extends Node,L extends Label,TN extends Node>
-        implements Edge {
+public abstract class AbstractEdge<N extends Node,L extends Label> implements
+        Edge<N> {
     /**
      * Creates an edge with a given source node and label.
      */
-    protected AbstractEdge(SN source, L label, TN target) {
+    protected AbstractEdge(N source, L label, N target) {
         this.source = source;
         this.label = label;
         this.target = target;
     }
 
-    public TN target() {
+    public N target() {
         return this.target;
     }
 
@@ -50,7 +50,7 @@ public abstract class AbstractEdge<SN extends Node,L extends Label,TN extends No
         return label().text();
     }
 
-    public SN source() {
+    public N source() {
         return this.source;
     }
 
@@ -63,7 +63,7 @@ public abstract class AbstractEdge<SN extends Node,L extends Label,TN extends No
      * <code>this</code>.
      */
     @Override
-    public AbstractEdge<SN,L,TN> clone() {
+    public AbstractEdge<N,L> clone() {
         return this;
     }
 
@@ -106,7 +106,7 @@ public abstract class AbstractEdge<SN extends Node,L extends Label,TN extends No
         if (obj instanceof Node) {
             result = compareToNode((Node) obj);
         } else {
-            result = compareToEdge((Edge) obj);
+            result = compareToEdge((Edge<?>) obj);
         }
         return result;
     }
@@ -114,7 +114,7 @@ public abstract class AbstractEdge<SN extends Node,L extends Label,TN extends No
     /**
      * Compares this edge to another edge.
      */
-    protected int compareToEdge(Edge other) {
+    protected int compareToEdge(Edge<?> other) {
         int result;
         result = source().compareTo(other.source());
         if (result != 0) {
@@ -152,8 +152,8 @@ public abstract class AbstractEdge<SN extends Node,L extends Label,TN extends No
      */
     @Override
     public boolean equals(Object obj) {
-        return isTypeEqual(obj) && isEndEqual((Edge) obj)
-            && isLabelEqual((Edge) obj);
+        return isTypeEqual(obj) && isEndEqual((Edge<?>) obj)
+            && isLabelEqual((Edge<?>) obj);
     }
 
     // -------------------- Object and related methods --------------------
@@ -161,7 +161,7 @@ public abstract class AbstractEdge<SN extends Node,L extends Label,TN extends No
     /**
      * Improves the testing for end point equality.
      */
-    protected boolean isEndEqual(Edge other) {
+    protected boolean isEndEqual(Edge<?> other) {
         return (this.source.equals(other.source()))
             && this.target.equals(other.target());
     }
@@ -183,7 +183,7 @@ public abstract class AbstractEdge<SN extends Node,L extends Label,TN extends No
      * equal end points as another. Callback method from {@link #equals(Object)}
      * .
      */
-    protected boolean isLabelEqual(Edge other) {
+    protected boolean isLabelEqual(Edge<?> other) {
         return label().equals(other.label());
     }
 
@@ -205,14 +205,14 @@ public abstract class AbstractEdge<SN extends Node,L extends Label,TN extends No
     /**
      * The source node of this edge.
      */
-    protected final SN source;
+    protected final N source;
     /**
      * The label of this edge.
      * @invariant label != null
      */
     protected final L label;
     /** The target node of this edge. */
-    protected final TN target;
+    protected final N target;
     /** The pre-computed hash code. */
     private int hashCode;
 

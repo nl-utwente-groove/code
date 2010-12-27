@@ -27,7 +27,7 @@ import groove.trans.RuleMatch;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface GraphTransition extends Edge, MatchResult {
+public interface GraphTransition extends Edge<GraphState>, MatchResult {
     /** Overrides the method to specialise the result type. */
     GraphState source();
 

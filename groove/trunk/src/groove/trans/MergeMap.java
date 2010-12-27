@@ -17,7 +17,6 @@
 package groove.trans;
 
 import groove.graph.Morphism;
-import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 
 import java.util.HashSet;
@@ -32,7 +31,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class MergeMap extends Morphism<HostNode,TypeLabel,HostEdge> {
+public class MergeMap extends Morphism<HostNode,HostEdge> {
     /**
      * Creates a global identity function.
      */

@@ -18,13 +18,14 @@ package groove.trans;
 
 import groove.graph.DefaultFactory;
 import groove.graph.ElementFactory;
+import groove.graph.Label;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.VariableNode;
 
 /** Factory class for graph elements. */
-public class RuleFactory implements ElementFactory<RuleNode,RuleLabel,RuleEdge> {
+public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
     /** Private constructor. */
     private RuleFactory() {
         // empty
@@ -47,15 +48,17 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleLabel,RuleEdge> 
     }
 
     /** Creates an edge with the given source, label and target. */
-    public RuleEdge createEdge(RuleNode source, RuleLabel label, RuleNode target) {
-        if (label.isArgument()) {
-            return new ArgumentEdge((ProductNode) source, label,
+    @Override
+    public RuleEdge createEdge(RuleNode source, Label label, RuleNode target) {
+        RuleLabel ruleLabel = (RuleLabel) label;
+        if (ruleLabel.isArgument()) {
+            return new ArgumentEdge((ProductNode) source, ruleLabel,
                 (VariableNode) target);
-        } else if (label.isOperator()) {
-            return new OperatorEdge((ProductNode) source, label,
+        } else if (ruleLabel.isOperator()) {
+            return new OperatorEdge((ProductNode) source, ruleLabel,
                 (VariableNode) target);
         } else {
-            return new RuleEdge(source, label, target);
+            return new RuleEdge(source, ruleLabel, target);
         }
     }
 

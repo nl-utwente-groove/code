@@ -249,8 +249,7 @@ public class DefaultTypeView implements TypeView {
     private ViewToTypeMap elementMap;
 
     /** Mapping from type graph elements to rule graph elements. */
-    public static class ViewToTypeMap extends
-            ViewToModelMap<TypeNode,TypeLabel,TypeEdge> {
+    public static class ViewToTypeMap extends ViewToModelMap<TypeNode,TypeEdge> {
         /**
          * Creates a new, empty map.
          */

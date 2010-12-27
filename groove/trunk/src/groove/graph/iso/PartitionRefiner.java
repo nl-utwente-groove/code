@@ -19,7 +19,6 @@ package groove.graph.iso;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 import groove.util.TreeHashSet;
@@ -37,8 +36,8 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision: 1529 $
  */
-public class PartitionRefiner<N extends Node,L extends Label,E extends Edge>
-        extends CertificateStrategy<N,L,E> {
+public class PartitionRefiner<N extends Node,E extends Edge<N>> extends
+        CertificateStrategy<N,E> {
     /**
      * Constructs a new bisimulation strategy, on the basis of a given graph.
      * The strategy checks for isomorphism weakly, meaning that it might yield
@@ -46,7 +45,7 @@ public class PartitionRefiner<N extends Node,L extends Label,E extends Edge>
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
      */
-    public PartitionRefiner(Graph<N,L,E> graph) {
+    public PartitionRefiner(Graph<N,E> graph) {
         this(graph, false);
     }
 
@@ -57,15 +56,15 @@ public class PartitionRefiner<N extends Node,L extends Label,E extends Edge>
      * @param strong if <code>true</code>, the strategy puts more effort into
      *        getting distinct certificates.
      */
-    public PartitionRefiner(Graph<N,L,E> graph, boolean strong) {
+    public PartitionRefiner(Graph<N,E> graph, boolean strong) {
         super(graph);
         this.strong = strong;
     }
 
     @Override
-    public <N1 extends Node,L1 extends Label,E1 extends Edge> CertificateStrategy<N1,L1,E1> newInstance(
-            Graph<N1,L1,E1> graph, boolean strong) {
-        return new PartitionRefiner<N1,L1,E1>(graph, strong);
+    public <N1 extends Node,E1 extends Edge<N1>> CertificateStrategy<N1,E1> newInstance(
+            Graph<N1,E1> graph, boolean strong) {
+        return new PartitionRefiner<N1,E1>(graph, strong);
     }
 
     /**
@@ -167,7 +166,7 @@ public class PartitionRefiner<N extends Node,L extends Label,E extends Edge>
         // give them a chance to get their value right
         int edgeCount = this.edgeCerts.length;
         for (int i = this.edge2CertCount; i < edgeCount; i++) {
-            ((MyEdge1Cert<?>) this.edgeCerts[i]).setNewValue();
+            ((MyEdge1Cert<?,?>) this.edgeCerts[i]).setNewValue();
         }
     }
 
@@ -176,7 +175,7 @@ public class PartitionRefiner<N extends Node,L extends Label,E extends Edge>
      */
     private void advanceEdgeCerts() {
         for (int i = 0; i < this.edge2CertCount; i++) {
-            MyEdge2Cert<?> edgeCert = (MyEdge2Cert<?>) this.edgeCerts[i];
+            MyEdge2Cert<?,?> edgeCert = (MyEdge2Cert<?,?>) this.edgeCerts[i];
             this.graphCertificate += edgeCert.setNewValue();
         }
     }
@@ -286,14 +285,14 @@ public class PartitionRefiner<N extends Node,L extends Label,E extends Edge>
     }
 
     @Override
-    MyEdge1Cert<E> createEdge1Certificate(E edge, NodeCertificate<N> source) {
-        return new MyEdge1Cert<E>(edge, (MyNodeCert<N>) source);
+    MyEdge1Cert<N,E> createEdge1Certificate(E edge, NodeCertificate<N> source) {
+        return new MyEdge1Cert<N,E>(edge, (MyNodeCert<N>) source);
     }
 
     @Override
-    MyEdge2Cert<E> createEdge2Certificate(E edge, NodeCertificate<N> source,
+    MyEdge2Cert<N,E> createEdge2Certificate(E edge, NodeCertificate<N> source,
             NodeCertificate<N> target) {
-        return new MyEdge2Cert<E>(edge, (MyNodeCert<N>) source,
+        return new MyEdge2Cert<N,E>(edge, (MyNodeCert<N>) source,
             (MyNodeCert<N>) target);
     }
 
@@ -659,8 +658,8 @@ public class PartitionRefiner<N extends Node,L extends Label,E extends Edge>
      * @author Arend Rensink
      * @version $Revision: 1529 $
      */
-    static class MyEdge2Cert<E extends Edge> extends MyCert<E> implements
-            EdgeCertificate<E> {
+    static class MyEdge2Cert<N extends Node,E extends Edge<N>> extends
+            MyCert<E> implements EdgeCertificate<N,E> {
         /**
          * Constructs a certificate for a binary edge.
          * @param edge The target certificate node
@@ -693,7 +692,7 @@ public class PartitionRefiner<N extends Node,L extends Label,E extends Edge>
         @Override
         public boolean equals(Object obj) {
             if (obj instanceof MyEdge2Cert) {
-                MyEdge2Cert<?> other = (MyEdge2Cert<?>) obj;
+                MyEdge2Cert<?,?> other = (MyEdge2Cert<?,?>) obj;
                 if (this.value != other.value
                     || this.labelIndex != other.labelIndex
                     || !this.source.equals(other.source)) {
@@ -762,8 +761,8 @@ public class PartitionRefiner<N extends Node,L extends Label,E extends Edge>
      * @author Arend Rensink
      * @version $Revision: 1529 $
      */
-    static class MyEdge1Cert<E extends Edge> extends MyCert<E> implements
-            EdgeCertificate<E> {
+    static class MyEdge1Cert<N extends Node,E extends Edge<N>> extends
+            MyCert<E> implements EdgeCertificate<N,E> {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
         public MyEdge1Cert(E edge, MyNodeCert<?> source) {
             super(edge);
@@ -788,7 +787,7 @@ public class PartitionRefiner<N extends Node,L extends Label,E extends Edge>
         @Override
         public boolean equals(Object obj) {
             if (obj instanceof MyEdge1Cert) {
-                MyEdge1Cert<?> other = (MyEdge1Cert<?>) obj;
+                MyEdge1Cert<?,?> other = (MyEdge1Cert<?,?>) obj;
                 return (this.value == other.value && this.labelIndex == other.labelIndex);
             } else {
                 return false;

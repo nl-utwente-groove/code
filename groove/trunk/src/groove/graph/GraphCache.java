@@ -33,13 +33,13 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphCache<N extends Node,L extends Label,E extends Edge> {
+public class GraphCache<N extends Node,E extends Edge<N>> {
     /**
      * Constructs a dynamic graph cache for a given graph.
      * @param graph the graph for which the cache is to be created.
      * @see #GraphCache(AbstractGraph,boolean)
      */
-    public GraphCache(AbstractGraph<N,L,E> graph) {
+    public GraphCache(AbstractGraph<N,E> graph) {
         this(graph, true);
     }
 
@@ -55,7 +55,7 @@ public class GraphCache<N extends Node,L extends Label,E extends Edge> {
      * @param graph the graph for which the cache is to be created.
      * @param dynamic switch to indicate if caching should be dynamic
      */
-    public GraphCache(AbstractGraph<N,L,E> graph, boolean dynamic) {
+    public GraphCache(AbstractGraph<N,E> graph, boolean dynamic) {
         this.graph = graph;
         this.dynamic = dynamic;
         if (Groove.GATHER_STATISTICS) {
@@ -126,10 +126,10 @@ public class GraphCache<N extends Node,L extends Label,E extends Edge> {
      * Returns the label-to-edge mapping
      * @see #computeLabelEdgeMap()
      */
-    public Map<L,? extends Set<? extends E>> getLabelEdgeMap() {
-        Map<L,? extends Set<? extends E>> result = this.labelEdgeMap;
+    public Map<Label,? extends Set<? extends E>> getLabelEdgeMap() {
+        Map<Label,? extends Set<? extends E>> result = this.labelEdgeMap;
         if (result == null) {
-            Map<L,Set<E>> newMaps = computeLabelEdgeMap();
+            Map<Label,Set<E>> newMaps = computeLabelEdgeMap();
             if (storeData()) {
                 this.labelEdgeMap = newMaps;
             }
@@ -196,8 +196,8 @@ public class GraphCache<N extends Node,L extends Label,E extends Edge> {
      * Computes and returns a mapping from labels to
      * sets of edges.
      */
-    private Map<L,Set<E>> computeLabelEdgeMap() {
-        Map<L,Set<E>> result = new HashMap<L,Set<E>>();
+    private Map<Label,Set<E>> computeLabelEdgeMap() {
+        Map<Label,Set<E>> result = new HashMap<Label,Set<E>>();
         for (E edge : this.graph.edgeSet()) {
             addToLabelEdgeMap(result, edge);
         }
@@ -296,13 +296,12 @@ public class GraphCache<N extends Node,L extends Label,E extends Edge> {
      * @param currentMap the array to be updated
      * @param edge the edge to be added
      */
-    @SuppressWarnings("unchecked")
-    private void addToLabelEdgeMap(Map<L,Set<E>> currentMap, E edge) {
+    private void addToLabelEdgeMap(Map<Label,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
             Set<E> labelEdgeSet = currentMap.get(edge.label());
             if (labelEdgeSet == null) {
                 labelEdgeSet = createSmallEdgeSet();
-                currentMap.put((L) edge.label(), labelEdgeSet);
+                currentMap.put(edge.label(), labelEdgeSet);
             }
             labelEdgeSet.add(edge);
         }
@@ -313,7 +312,7 @@ public class GraphCache<N extends Node,L extends Label,E extends Edge> {
      * @param currentMap the array to be updated
      * @param edge the edge to be removed
      */
-    private void removeFromLabelEdgeMap(Map<L,Set<E>> currentMap, E edge) {
+    private void removeFromLabelEdgeMap(Map<Label,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
             Set<E> labelEdgeSet = currentMap.get(edge.label());
             if (labelEdgeSet != null) {
@@ -327,10 +326,9 @@ public class GraphCache<N extends Node,L extends Label,E extends Edge> {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be added
      */
-    @SuppressWarnings("unchecked")
     private void addToNodeInEdgeMap(Map<N,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
-            addToNodeEdgeMap(currentMap, (N) edge.target(), edge);
+            addToNodeEdgeMap(currentMap, edge.target(), edge);
         }
     }
 
@@ -339,10 +337,9 @@ public class GraphCache<N extends Node,L extends Label,E extends Edge> {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be added
      */
-    @SuppressWarnings("unchecked")
     private void addToNodeOutEdgeMap(Map<N,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
-            addToNodeEdgeMap(currentMap, (N) edge.source(), edge);
+            addToNodeEdgeMap(currentMap, edge.source(), edge);
         }
     }
 
@@ -351,11 +348,10 @@ public class GraphCache<N extends Node,L extends Label,E extends Edge> {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be added
      */
-    @SuppressWarnings("unchecked")
     private void addToNodeEdgeMap(Map<N,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
-            addToNodeEdgeMap(currentMap, (N) edge.source(), edge);
-            addToNodeEdgeMap(currentMap, (N) edge.target(), edge);
+            addToNodeEdgeMap(currentMap, edge.source(), edge);
+            addToNodeEdgeMap(currentMap, edge.target(), edge);
         }
     }
 
@@ -469,7 +465,7 @@ public class GraphCache<N extends Node,L extends Label,E extends Edge> {
     /**
      * The graph on which the cache works.
      */
-    protected final AbstractGraph<N,L,E> graph;
+    protected final AbstractGraph<N,E> graph;
     /**
      * Switch to indicate that the cache is dynamic.
      */
@@ -478,7 +474,7 @@ public class GraphCache<N extends Node,L extends Label,E extends Edge> {
      * An array of label-to-edge mappings, indexed by arity of the edges - 1.
      * Initially set to <tt>null</tt>.
      */
-    private Map<L,Set<E>> labelEdgeMap;
+    private Map<Label,Set<E>> labelEdgeMap;
     /**
      * A node-to-incoming-edge mapping.
      */
@@ -522,8 +518,8 @@ public class GraphCache<N extends Node,L extends Label,E extends Edge> {
      * {@link AbstractGraph#getCertificateFactory()}. If the underlying graph is
      * fixed (see {@link Graph#isFixed()}, the strategy is cached.
      */
-    protected CertificateStrategy<N,L,E> getCertifier(boolean strong) {
-        CertificateStrategy<N,L,E> result;
+    protected CertificateStrategy<N,E> getCertifier(boolean strong) {
+        CertificateStrategy<N,E> result;
         if (hasCertifier(strong)) {
             result = this.certificateStrategy;
         } else {
@@ -540,7 +536,7 @@ public class GraphCache<N extends Node,L extends Label,E extends Edge> {
     /**
      * Returns the graph for which the cache is maintained.
      */
-    public AbstractGraph<N,L,E> getGraph() {
+    public AbstractGraph<N,E> getGraph() {
         return this.graph;
     }
 
@@ -550,5 +546,5 @@ public class GraphCache<N extends Node,L extends Label,E extends Edge> {
      * The certificate strategy set for the graph. Initially set to
      * <tt>null</tt>.
      */
-    private CertificateStrategy<N,L,E> certificateStrategy;
+    private CertificateStrategy<N,E> certificateStrategy;
 }

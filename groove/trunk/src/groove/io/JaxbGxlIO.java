@@ -78,7 +78,7 @@ public class JaxbGxlIO implements GxlIO {
     /**
      * Saves a graph to an output stream.
      */
-    public void saveGraph(Graph<?,?,?> graph, OutputStream out)
+    public void saveGraph(Graph<?,?> graph, OutputStream out)
         throws IOException {
         GraphInfo.setVersion(graph, Version.GXL_VERSION);
         GraphType gxlGraph = graphToGxl(graph);
@@ -193,7 +193,7 @@ public class JaxbGxlIO implements GxlIO {
      * to prefixed form.
      * If the graph is a {@link TypeGraph}, subtype edges are also added.
      */
-    private GraphType graphToGxl(Graph<?,?,?> graph) {
+    private GraphType graphToGxl(Graph<?,?> graph) {
         GraphType gxlGraph = this.factory.createGraphType();
         gxlGraph.setEdgeids(false);
         gxlGraph.setEdgemode(EdgemodeType.DIRECTED);
@@ -236,7 +236,7 @@ public class JaxbGxlIO implements GxlIO {
             }
         }
         // add the edges
-        for (Edge edge : graph.edgeSet()) {
+        for (Edge<?> edge : graph.edgeSet()) {
             // create an xml element for this edge
             String prefixedLabel = TypeLabel.toPrefixedString(edge.label());
             if (edge instanceof TypeEdge && ((TypeEdge) edge).isAbstract()) {
@@ -256,9 +256,9 @@ public class JaxbGxlIO implements GxlIO {
                 labelStore.getDirectSubtypeMap();
             for (Map.Entry<TypeLabel,Set<TypeLabel>> subtypeEntry : subtypeMap.entrySet()) {
                 for (TypeLabel subtype : subtypeEntry.getValue()) {
-                    for (Edge subtypeEdge : graph.labelEdgeSet(subtype)) {
+                    for (Edge<?> subtypeEdge : graph.labelEdgeSet(subtype)) {
                         Label supertype = subtypeEntry.getKey();
-                        for (Edge supertypeEdge : graph.labelEdgeSet(supertype)) {
+                        for (Edge<?> supertypeEdge : graph.labelEdgeSet(supertype)) {
                             nodesEdges.add(createGxlEdge(nodeMap,
                                 subtypeEdge.source(), SUBTYPE_PREFIX,
                                 supertypeEdge.source()));

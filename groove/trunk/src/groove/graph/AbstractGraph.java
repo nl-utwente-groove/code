@@ -36,8 +36,8 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edge>
-        extends AbstractCacheHolder<GraphCache<N,L,E>> implements Graph<N,L,E> {
+public abstract class AbstractGraph<N extends Node,E extends Edge<N>> extends
+        AbstractCacheHolder<GraphCache<N,E>> implements Graph<N,E> {
     /**
      * Constructs an abstract graph with a given element factory
      */
@@ -65,7 +65,7 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
     /**
      * Defers the containment question to {@link #edgeSet()}
      */
-    public boolean containsEdge(Edge elem) {
+    public boolean containsEdge(Edge<?> elem) {
         assert isTypeCorrect(elem);
         return edgeSet().contains(elem);
     }
@@ -247,7 +247,7 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
     /** 
      * Tests if an edge is of the correct type to be included in this graph.
      */
-    protected boolean isTypeCorrect(Edge edge) {
+    protected boolean isTypeCorrect(Edge<?> edge) {
         return true;
     }
 
@@ -274,7 +274,7 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
      * @param target the target node of the new edge
      * @return the freshly binary created edge
      */
-    final protected E createEdge(N source, L label, N target) {
+    final protected E createEdge(N source, Label label, N target) {
         return getFactory().createEdge(source, label, target);
     }
 
@@ -304,7 +304,7 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
     /**
      * Creates its result using {@link #createEdge(Node, Label, Node)}.
      */
-    public E addEdge(N source, L label, N target) {
+    public E addEdge(N source, Label label, N target) {
         E result = createEdge(source, label, target);
         addEdge(result);
         return result;
@@ -343,13 +343,12 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
      * {@link #addEdgeWithoutCheck(Edge)} for the actual addition of
      * the edge and its incident nodes.
      */
-    @SuppressWarnings("unchecked")
     public boolean addEdge(E edge) {
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
         boolean added = !containsEdge(edge);
         if (added) {
-            addNode((N) edge.source());
-            addNode((N) edge.target());
+            addNode(edge.source());
+            addNode(edge.target());
             addEdgeWithoutCheck(edge);
         }
         return added;
@@ -404,21 +403,18 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
             // compute edge replacements and add new edges
             for (E edge : new HashSet<E>(edgeSet(from))) {
                 boolean changed = false;
-                @SuppressWarnings("unchecked")
-                N source = (N) edge.source();
+                N source = edge.source();
                 if (source.equals(from)) {
                     source = to;
                     changed = true;
                 }
-                @SuppressWarnings("unchecked")
-                N target = (N) edge.target();
+                N target = edge.target();
                 if (target.equals(from)) {
                     target = to;
                     changed = true;
                 }
                 if (changed) {
-                    @SuppressWarnings("unchecked")
-                    L label = (L) edge.label();
+                    Label label = edge.label();
                     E newEdge = createEdge(source, label, target);
                     addEdgeWithoutCheck(newEdge);
                     removeEdge(edge);
@@ -434,7 +430,7 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
 
     /** This should return a <i>modifiable</i> clone of the graph. */
     @Override
-    public abstract AbstractGraph<N,L,E> clone();
+    public abstract AbstractGraph<N,E> clone();
 
     /**
      * Tests if the certificate strategy (of the correct strength) is currently instantiated.
@@ -451,7 +447,7 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
      * @param strong if <code>true</code>, a strong certifier is returned.
      * @see CertificateStrategy#getStrength()
      */
-    public CertificateStrategy<N,L,E> getCertifier(boolean strong) {
+    public CertificateStrategy<N,E> getCertifier(boolean strong) {
         return getCache().getCertifier(strong);
     }
 
@@ -468,7 +464,7 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
 
     /** The default is not to create any graph elements. */
     @Override
-    public ElementFactory<N,L,E> getFactory() {
+    public ElementFactory<N,E> getFactory() {
         throw new UnsupportedOperationException();
     }
 
@@ -488,7 +484,7 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
      * @param edgeSet the set of edges to be partitioned
      * @return The set of maximal connected subsets of <code>elementSet</code>
      */
-    static public <N extends Node,E extends Edge> Set<Pair<Set<N>,Set<E>>> getConnectedSets(
+    static public <N extends Node,E extends Edge<N>> Set<Pair<Set<N>,Set<E>>> getConnectedSets(
             Collection<N> nodeSet, Collection<E> edgeSet) {
         // mapping from nodes of elementSet to sets of connected elements
         Map<Element,Pair<Set<N>,Set<E>>> resultMap =
@@ -533,7 +529,7 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
 
     /** Returns an empty graph. */
     @SuppressWarnings("unchecked")
-    static public <N extends Node,L extends Label,E extends Edge> AbstractGraph<N,L,E> emptyGraph() {
+    static public <N extends Node,E extends Edge<N>> AbstractGraph<N,E> emptyGraph() {
         return EMPTY_GRAPH;
     }
 
@@ -551,7 +547,7 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
      * @param graph the graph to be described
      * @return a textual description of <tt>graph</tt>
      */
-    public static String toString(Graph<?,?,?> graph) {
+    public static String toString(Graph<?,?> graph) {
         StringBuffer result = new StringBuffer();
         result.append(graph.getInfo());
         result.append(String.format("Nodes: %s%n", graph.nodeSet()));
@@ -573,8 +569,8 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
      * The current strategy for computing isomorphism certificates.
      * @see #getCertifier(boolean)
      */
-    static private CertificateStrategy<?,?,?> certificateFactory =
-        new PartitionRefiner<Node,Label,Edge>((Graph<Node,Label,Edge>) null);
+    static private CertificateStrategy<?,?> certificateFactory =
+        new PartitionRefiner<Node,Edge<Node>>((Graph<Node,Edge<Node>>) null);
 
     /**
      * Fixed empty graph.
@@ -588,7 +584,7 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
      * @see #getCertifier(boolean)
      */
     static public void setCertificateFactory(
-            CertificateStrategy<?,?,?> certificateFactory) {
+            CertificateStrategy<?,?> certificateFactory) {
         AbstractGraph.certificateFactory = certificateFactory;
     }
 
@@ -596,13 +592,13 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
      * Returns the strategy for computing isomorphism certificates.
      * @return the strategy for computing isomorphism certificates
      */
-    static public CertificateStrategy<?,?,?> getCertificateFactory() {
+    static public CertificateStrategy<?,?> getCertificateFactory() {
         return certificateFactory;
     }
 
     /** Fixed empty graphs, used for the constant <tt>{@link #EMPTY_GRAPH}</tt>. */
-    private static class EmptyGraph<N extends Node,L extends Label,E extends Edge>
-            extends AbstractGraph<N,L,E> implements Cloneable {
+    private static class EmptyGraph<N extends Node,E extends Edge<N>> extends
+            AbstractGraph<N,E> implements Cloneable {
         /**
          * The empty graph to which no elements can be added.
          */
@@ -622,12 +618,12 @@ public abstract class AbstractGraph<N extends Node,L extends Label,E extends Edg
         }
 
         @Override
-        public EmptyGraph<N,L,E> clone() {
-            return new EmptyGraph<N,L,E>();
+        public EmptyGraph<N,E> clone() {
+            return new EmptyGraph<N,E>();
         }
 
-        public EmptyGraph<N,L,E> newGraph() {
-            return new EmptyGraph<N,L,E>();
+        public EmptyGraph<N,E> newGraph() {
+            return new EmptyGraph<N,E>();
         }
 
         public boolean addNode(N node) {

@@ -27,12 +27,12 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class ElementMap<SN extends Node,SL extends Label,SE extends Edge,TN extends Node,TL extends Label,TE extends Edge>
+public class ElementMap<SN extends Node,SE extends Edge<SN>,TN extends Node,TE extends Edge<TN>>
         implements Cloneable {
     /**
      * Constructs an empty map.
      */
-    public ElementMap(ElementFactory<TN,TL,TE> factory) {
+    public ElementMap(ElementFactory<TN,TE> factory) {
         this.nodeMap = createNodeMap();
         this.edgeMap = createEdgeMap();
         this.factory = factory;
@@ -98,7 +98,7 @@ public class ElementMap<SN extends Node,SL extends Label,SE extends Edge,TN exte
      * Copies the information from a given element map to this one.
      * @param other the element map to be copied
      */
-    public void putAll(ElementMap<SN,SL,SE,TN,TL,TE> other) {
+    public void putAll(ElementMap<SN,SE,TN,TE> other) {
         this.nodeMap.putAll(other.nodeMap());
         this.edgeMap.putAll(other.edgeMap());
     }
@@ -131,8 +131,8 @@ public class ElementMap<SN extends Node,SL extends Label,SE extends Edge,TN exte
     @Override
     public boolean equals(Object obj) {
         return (obj instanceof ElementMap)
-            && nodeMap().equals(((ElementMap<?,?,?,?,?,?>) obj).nodeMap())
-            && edgeMap().equals(((ElementMap<?,?,?,?,?,?>) obj).edgeMap());
+            && nodeMap().equals(((ElementMap<?,?,?,?>) obj).nodeMap())
+            && edgeMap().equals(((ElementMap<?,?,?,?>) obj).edgeMap());
     }
 
     /**
@@ -192,7 +192,7 @@ public class ElementMap<SN extends Node,SL extends Label,SE extends Edge,TN exte
       * This implementation calls {@link ElementFactory#createLabel(String)}
       * with as parameter {@link Label#toString()} called on the parameter.
       */
-    public TL mapLabel(SL label) {
+    public Label mapLabel(Label label) {
         return this.factory.createLabel(label.toString());
     }
 
@@ -221,18 +221,15 @@ public class ElementMap<SN extends Node,SL extends Label,SE extends Edge,TN exte
      * the map contains images for the key's end nodes.
      */
     protected TE createImage(SE key) {
-        @SuppressWarnings("unchecked")
-        TN sourceImage = getNode((SN) key.source());
+        TN sourceImage = getNode(key.source());
         if (sourceImage == null) {
             return null;
         }
-        @SuppressWarnings("unchecked")
-        TL labelImage = mapLabel((SL) key.label());
+        Label labelImage = mapLabel(key.label());
         if (labelImage == null) {
             return null;
         }
-        @SuppressWarnings("unchecked")
-        TN targetImage = getNode((SN) key.target());
+        TN targetImage = getNode(key.target());
         if (targetImage == null) {
             return null;
         } else {
@@ -241,7 +238,7 @@ public class ElementMap<SN extends Node,SL extends Label,SE extends Edge,TN exte
     }
 
     /** Returns a factory for target graph elements. */
-    public ElementFactory<TN,TL,TE> getFactory() {
+    public ElementFactory<TN,TE> getFactory() {
         return this.factory;
     }
 
@@ -263,8 +260,8 @@ public class ElementMap<SN extends Node,SL extends Label,SE extends Edge,TN exte
      * Returns a deep copy of the node and edge maps.
      */
     @Override
-    public ElementMap<SN,SL,SE,TN,TL,TE> clone() {
-        ElementMap<SN,SL,SE,TN,TL,TE> result = newMap();
+    public ElementMap<SN,SE,TN,TE> clone() {
+        ElementMap<SN,SE,TN,TE> result = newMap();
         result.putAll(this);
         return result;
     }
@@ -273,8 +270,8 @@ public class ElementMap<SN extends Node,SL extends Label,SE extends Edge,TN exte
      * Factory method for this type of map.
      * Returns a fresh map of the type of this map.
      */
-    public ElementMap<SN,SL,SE,TN,TL,TE> newMap() {
-        return new ElementMap<SN,SL,SE,TN,TL,TE>(getFactory());
+    public ElementMap<SN,SE,TN,TE> newMap() {
+        return new ElementMap<SN,SE,TN,TE>(getFactory());
     }
 
     /**
@@ -299,5 +296,5 @@ public class ElementMap<SN extends Node,SL extends Label,SE extends Edge,TN exte
     private final Map<SN,TN> nodeMap;
     /** Mapping from edge keys to <tt>ET</tt>s. */
     private final Map<SE,TE> edgeMap;
-    private final ElementFactory<TN,TL,TE> factory;
+    private final ElementFactory<TN,TE> factory;
 }

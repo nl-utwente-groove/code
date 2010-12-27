@@ -24,7 +24,7 @@ import groove.graph.Node;
  * @author Arend Rensink
  * @version $Revision$
  */
-interface GraphJCell<N extends Node,E extends Edge> extends JCell {
+interface GraphJCell<N extends Node,E extends Edge<N>> extends JCell {
     /**
      * Specialises the return type.
      */

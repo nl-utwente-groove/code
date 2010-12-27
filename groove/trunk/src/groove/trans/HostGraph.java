@@ -17,7 +17,6 @@
 package groove.trans;
 
 import groove.graph.Graph;
-import groove.graph.TypeLabel;
 
 /**
  * Graph type used for graphs under transformation.
@@ -25,8 +24,7 @@ import groove.graph.TypeLabel;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface HostGraph extends Graph<HostNode,TypeLabel,HostEdge>,
-        DeltaTarget {
+public interface HostGraph extends Graph<HostNode,HostEdge>, DeltaTarget {
     @Override
     HostGraph newGraph();
 

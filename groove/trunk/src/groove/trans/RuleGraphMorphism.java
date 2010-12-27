@@ -25,7 +25,7 @@ import groove.graph.Morphism;
  * @author Arend Rensink
  * @version $Revision: 2754 $
  */
-public class RuleGraphMorphism extends Morphism<RuleNode,RuleLabel,RuleEdge> {
+public class RuleGraphMorphism extends Morphism<RuleNode,RuleEdge> {
     /**
      * Creates a new, empty map.
      */

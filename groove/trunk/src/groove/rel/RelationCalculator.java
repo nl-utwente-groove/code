@@ -43,7 +43,7 @@ public class RelationCalculator extends LTSAdapter implements
      * Creates a relation calculator based on a given graph. The relation
      * factory will be set to a {@link SetNodeRelation} over that graph.
      */
-    public RelationCalculator(Graph<?,?,?> graph) {
+    public RelationCalculator(Graph<?,?> graph) {
         this(graph, new SetNodeRelation());
     }
 
@@ -51,7 +51,7 @@ public class RelationCalculator extends LTSAdapter implements
      * Creates a relation calculator based on a given graph and 
      * relation factory.
      */
-    public RelationCalculator(Graph<?,?,?> graph, NodeRelation factory) {
+    public RelationCalculator(Graph<?,?> graph, NodeRelation factory) {
         this.factory = factory;
         this.graph = graph;
     }
@@ -153,14 +153,14 @@ public class RelationCalculator extends LTSAdapter implements
      */
     public NodeRelation computeWildcard(RegExpr.Wildcard expr) {
         NodeRelation result = getFactory().newInstance();
-        for (Edge edge : this.graph.edgeSet()) {
+        for (Edge<?> edge : this.graph.edgeSet()) {
             result.addRelated(edge);
         }
         return result;
     }
 
     /** Returns the graph on which this calculator is based. */
-    public Graph<?,?,?> getGraph() {
+    public Graph<?,?> getGraph() {
         return this.graph;
     }
 
@@ -194,44 +194,44 @@ public class RelationCalculator extends LTSAdapter implements
 
     private NodeRelation createRelation(Label label) {
         NodeRelation result = getFactory().newInstance();
-        Set<Edge> edges = getEdgeSet(label);
+        Set<Edge<?>> edges = getEdgeSet(label);
         if (edges != null) {
-            for (Edge edge : edges) {
+            for (Edge<?> edge : edges) {
                 result.addRelated(edge);
             }
         }
         return result;
     }
 
-    private Set<Edge> getEdgeSet(Label label) {
+    private Set<Edge<?>> getEdgeSet(Label label) {
         if (this.labelEdgeMap == null) {
             this.labelEdgeMap = computeLabelEdgeMap();
         }
         return this.labelEdgeMap.get(label.text());
     }
 
-    private Map<String,Set<Edge>> computeLabelEdgeMap() {
-        Map<String,Set<Edge>> result = new HashMap<String,Set<Edge>>();
-        for (Edge edge : this.graph.edgeSet()) {
+    private Map<String,Set<Edge<?>>> computeLabelEdgeMap() {
+        Map<String,Set<Edge<?>>> result = new HashMap<String,Set<Edge<?>>>();
+        for (Edge<?> edge : this.graph.edgeSet()) {
             addToLabelEdgeMap(edge, result);
         }
         return result;
     }
 
     /** Adds an edge to a given label-edge-set-map. */
-    private void addToLabelEdgeMap(Edge edge, Map<String,Set<Edge>> result) {
+    private void addToLabelEdgeMap(Edge<?> edge, Map<String,Set<Edge<?>>> result) {
         String text = edge.label().text();
-        Set<Edge> edges = result.get(text);
+        Set<Edge<?>> edges = result.get(text);
         if (edges == null) {
-            result.put(text, edges = new HashSet<Edge>());
+            result.put(text, edges = new HashSet<Edge<?>>());
         }
         edges.add(edge);
     }
 
     /** Mapping from label test to sets of edges. */
-    private Map<String,Set<Edge>> labelEdgeMap;
+    private Map<String,Set<Edge<?>>> labelEdgeMap;
     /** The graph from which relations are to be computed. */
-    private final Graph<?,?,?> graph;
+    private final Graph<?,?> graph;
     /** Factory for creating relations. */
     private final NodeRelation factory;
 }
