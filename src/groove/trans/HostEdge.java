@@ -28,6 +28,9 @@ public class HostEdge extends AbstractEdge<HostNode,TypeLabel,HostNode>
     /** Default constructor. */
     protected HostEdge(HostNode source, TypeLabel label, HostNode target, int nr) {
         super(source, label, target);
+        assert source.equals(target) || label.isBinary() : String.format(
+            "Can't create %s label %s between distinct nodes %s and %s",
+            label.getKind().getName(false), label, source, target);
         this.nr = nr;
     }
 

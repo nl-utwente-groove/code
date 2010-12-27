@@ -19,7 +19,7 @@ package groove.view.aspect;
 import groove.algebra.Algebras;
 import groove.graph.DefaultLabel;
 import groove.graph.GraphRole;
-import groove.graph.TypeLabel;
+import groove.graph.LabelKind;
 import groove.util.ExprParser;
 import groove.view.FormatException;
 
@@ -114,7 +114,7 @@ public class AspectParser {
         int result = text.indexOf(SEPARATOR);
         if (result > 0) {
             if (!Character.isLetter(text.charAt(0))
-                || !TypeLabel.splitKind(text).two().equals(text)) {
+                || !LabelKind.parse(text).two().equals(text)) {
                 result = -1;
             }
         }

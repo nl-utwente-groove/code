@@ -321,7 +321,7 @@ public enum AspectKind {
                     EXISTS));
                 allowedEdgeKinds.put(role, EnumSet.of(REMARK, READER, ERASER,
                     CREATOR, ADDER, EMBARGO, BOOL, INT, REAL, STRING, ARGUMENT,
-                    PATH, LITERAL, NESTED));
+                    PATH, LITERAL, FORALL, FORALL_POS, EXISTS, NESTED));
                 break;
             case TYPE:
                 allowedNodeKinds.put(role, EnumSet.of(NONE, REMARK, ABSTRACT));

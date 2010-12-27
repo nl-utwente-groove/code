@@ -4,7 +4,7 @@
 package groove.util;
 
 import groove.algebra.StringAlgebra;
-import groove.graph.Label;
+import groove.graph.LabelKind;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
@@ -76,7 +76,7 @@ public class AntlrGrapher {
             String token = this.tokens[i];
             if (ExprParser.isIdentifier(token)) {
                 TypeLabel typeLabel =
-                    TypeLabel.createLabel(token, Label.NODE_TYPE);
+                    TypeLabel.createLabel(token, LabelKind.NODE_TYPE);
                 TypeNode tokenNode = result.addNode(typeLabel);
                 try {
                     result.addSubtype(topNode, tokenNode);
@@ -131,7 +131,7 @@ public class AntlrGrapher {
         HostNode result = graph.addNode();
         int tokenType = tree.getType();
         graph.addEdge(result,
-            TypeLabel.createLabel(this.tokens[tokenType], Label.NODE_TYPE),
+            TypeLabel.createLabel(this.tokens[tokenType], LabelKind.NODE_TYPE),
             result);
         if (this.textTypes.get(tokenType) && tree.getText() != null) {
             ValueNode nameNode =
@@ -159,18 +159,18 @@ public class AntlrGrapher {
     public final static TypeLabel TEXT_LABEL = TypeLabel.createLabel("text");
     /** Flag to be used for the first child. */
     public final static TypeLabel FIRST_FLAG = TypeLabel.createLabel("first",
-        Label.FLAG);
+        LabelKind.FLAG);
     /** Flag to be used for the last child. */
     public final static TypeLabel LAST_FLAG = TypeLabel.createLabel("last",
-        Label.FLAG);
+        LabelKind.FLAG);
     /** Flag to be used for a childless token node. */
     public final static TypeLabel LEAF_FLAG = TypeLabel.createLabel("leaf",
-        Label.FLAG);
+        LabelKind.FLAG);
     /** Type of the (abstract) top node. */
     public final static TypeLabel TOP_TYPE = TypeLabel.createLabel("TOP$",
-        Label.NODE_TYPE);
+        LabelKind.NODE_TYPE);
     /** String type label. */
     private final static TypeLabel STRING_TYPE = TypeLabel.createLabel(
-        "string", Label.NODE_TYPE);
+        "string", LabelKind.NODE_TYPE);
     /** Subtype edge label. */
 }

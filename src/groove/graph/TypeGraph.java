@@ -250,7 +250,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> 
                 }
                 if (signature != null) {
                     nodeTypeMap.put(node,
-                        TypeLabel.createLabel(signature, Label.NODE_TYPE));
+                        TypeLabel.createLabel(signature, LabelKind.NODE_TYPE));
                     untypedNodes.remove(node);
                 }
             }
@@ -292,7 +292,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> 
                 continue;
             }
             TypeEdge typeEdge = null;
-            if (edgeType instanceof RuleLabel) {
+            if (edgeType instanceof RuleLabel
+                && !((RuleLabel) edgeType).isAtom()) {
                 RuleLabel ruleEdgeType = (RuleLabel) edgeType;
                 if (ruleEdgeType.getWildcardId() != null) {
                     errors.add(new FormatError(
@@ -326,14 +327,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> 
                     }
                 }
             } else if (edgeType.isFlag()) {
-                typeEdge = getTypeEdge(sourceType, (TypeLabel) edgeType);
+                typeEdge = getTypeEdge(sourceType, getActualType(edgeType));
                 if (typeEdge == null) {
                     errors.add(new FormatError(
                         "%s-node '%s' has unknown flag '%s'", sourceType,
                         source, edgeType));
                 }
             } else if (edgeType.isBinary()) {
-                typeEdge = getTypeEdge(sourceType, (TypeLabel) edgeType);
+                typeEdge = getTypeEdge(sourceType, getActualType(edgeType));
                 if (typeEdge == null) {
                     errors.add(new FormatError(
                         "%s-node '%s' has unknown edge '%s'", sourceType,
@@ -606,13 +607,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> 
                 HostNode source = typeNodeMap.get(connectEntry.getKey());
                 HostNode target = typeNodeMap.get(targetType);
                 result.addEdge(source,
-                    MatrixAutomaton.getDummyLabel(Label.BINARY), target);
+                    MatrixAutomaton.getDummyLabel(LabelKind.BINARY), target);
             }
         }
         for (Label flaggedType : flaggedNodes) {
             HostNode source = typeNodeMap.get(flaggedType);
-            result.addEdge(source, MatrixAutomaton.getDummyLabel(Label.FLAG),
-                source);
+            result.addEdge(source,
+                MatrixAutomaton.getDummyLabel(LabelKind.FLAG), source);
         }
         this.saturationNodeMap = typeNodeMap;
         this.saturation = result;

@@ -18,7 +18,7 @@ package groove.view.aspect;
 
 import groove.graph.AbstractLabel;
 import groove.graph.GraphRole;
-import groove.graph.TypeLabel;
+import groove.graph.LabelKind;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -55,8 +55,8 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
     }
 
     @Override
-    public int getKind() {
-        return TypeLabel.splitKind(getInnerText()).one();
+    public LabelKind getKind() {
+        return LabelKind.parse(getInnerText()).one();
     }
 
     /**

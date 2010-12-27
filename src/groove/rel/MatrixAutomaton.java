@@ -19,7 +19,7 @@ package groove.rel;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.ElementFactory;
-import groove.graph.Label;
+import groove.graph.LabelKind;
 import groove.graph.LabelStore;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.TypeLabel;
@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -202,7 +204,7 @@ public class MatrixAutomaton extends
                 derivedLabels =
                     new HashSet<TypeLabel>(
                         this.labelStore.getLabels(label.getWildcardKind()));
-                derivedLabels.add(DUMMY_LABELS[label.getWildcardKind()]);
+                derivedLabels.add(DUMMY_LABELS.get(label.getWildcardKind()));
             } else if (label.isAtom()) {
                 derivedLabels =
                     this.labelStore.getSubtypes(label.getTypeLabel());
@@ -803,22 +805,21 @@ public class MatrixAutomaton extends
     /** Returns the dummy label for a given label kind.
      *  The dummy labels can be used to match wildcards in case there is no proper match for them. 
      */
-    static public TypeLabel getDummyLabel(int kind) {
-        return DUMMY_LABELS[kind];
+    static public TypeLabel getDummyLabel(LabelKind kind) {
+        return DUMMY_LABELS.get(kind);
     }
 
     /** 
      * Array of dummy labels for each label kind.
      * Can be used to match wildcards in case there is no proper match for them. 
      */
-    private static final TypeLabel[] DUMMY_LABELS = new TypeLabel[3];
+    private static final Map<LabelKind,TypeLabel> DUMMY_LABELS =
+        new EnumMap<LabelKind,TypeLabel>(LabelKind.class);
     static {
-        DUMMY_LABELS[Label.NODE_TYPE] =
-            TypeLabel.createLabel(DUMMY_LABEL_TEXT, Label.NODE_TYPE);
-        DUMMY_LABELS[Label.BINARY] =
-            TypeLabel.createLabel(DUMMY_LABEL_TEXT, Label.BINARY);
-        DUMMY_LABELS[Label.FLAG] =
-            TypeLabel.createLabel(DUMMY_LABEL_TEXT, Label.FLAG);
+        for (LabelKind kind : EnumSet.allOf(LabelKind.class)) {
+            DUMMY_LABELS.put(kind,
+                TypeLabel.createLabel(DUMMY_LABEL_TEXT, kind));
+        }
     }
 
     /**

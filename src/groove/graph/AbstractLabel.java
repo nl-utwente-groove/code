@@ -27,22 +27,22 @@ import groove.util.Fixable;
 public abstract class AbstractLabel implements Cloneable, Label, Fixable {
     @Override
     public boolean isNodeType() {
-        return getKind() == NODE_TYPE;
+        return getKind() == LabelKind.NODE_TYPE;
     }
 
     @Override
     public boolean isFlag() {
-        return getKind() == FLAG;
+        return getKind() == LabelKind.FLAG;
     }
 
     @Override
     public boolean isBinary() {
-        return getKind() == BINARY;
+        return getKind() == LabelKind.BINARY;
     }
 
     /** Labels are binary by default. */
-    public int getKind() {
-        return BINARY;
+    public LabelKind getKind() {
+        return LabelKind.BINARY;
     }
 
     /**
@@ -151,11 +151,6 @@ public abstract class AbstractLabel implements Cloneable, Label, Fixable {
     }
 
     private int hashCode;
-
-    /** Tests if a label kind is valid. */
-    public static boolean isValidKind(int kind) {
-        return kind == BINARY || kind == NODE_TYPE || kind == FLAG;
-    }
 
     /** Mask to distinguish (the hash code of) node type labels. */
     static private final int NODE_TYPE_MASK = 0xAAAA;

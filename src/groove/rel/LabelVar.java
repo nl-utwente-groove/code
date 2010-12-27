@@ -16,13 +16,12 @@
  */
 package groove.rel;
 
-import groove.graph.Label;
+import groove.graph.LabelKind;
 
 /**
  * Encodes a label variable (which may occur in a wildcard expression).
  * Essentially consists of a name and a kind, corresponding to the
- * label kind ({@link Label#NODE_TYPE}, {@link Label#BINARY} or {@link Label#FLAG} 
- * of the allowed values.
+ * label kind of the allowed values.
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -30,10 +29,9 @@ public class LabelVar {
     /**
      * Constructs a label variable from a given name and kind.
      * @param name name of the label variable; non-{@code null}
-     * @param kind kind of the label variable. Allowed values are 
-     * {@link Label#NODE_TYPE}, {@link Label#BINARY} or {@link Label#FLAG}.
+     * @param kind kind of the label variable.
      */
-    public LabelVar(String name, int kind) {
+    public LabelVar(String name, LabelKind kind) {
         super();
         this.name = name;
         this.kind = kind;
@@ -46,9 +44,8 @@ public class LabelVar {
 
     /** 
      * Returns the kind of this label variable.
-     * @return one of {@link Label#NODE_TYPE}, {@link Label#BINARY} or {@link Label#FLAG}.
      */
-    public final int getKind() {
+    public final LabelKind getKind() {
         return this.kind;
     }
 
@@ -61,7 +58,7 @@ public class LabelVar {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + this.kind;
+        result = prime * result + this.kind.hashCode();
         result =
             prime * result + ((this.name == null) ? 0 : this.name.hashCode());
         return result;
@@ -95,5 +92,5 @@ public class LabelVar {
     /** The name of the label variable. */
     private final String name;
     /** The kind of the label variable. */
-    private final int kind;
+    private final LabelKind kind;
 }

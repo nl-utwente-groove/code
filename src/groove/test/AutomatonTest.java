@@ -20,15 +20,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import groove.graph.Label;
+import groove.graph.LabelKind;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.io.DefaultGxl;
 import groove.io.Xml;
+import groove.rel.LabelVar;
 import groove.rel.RegAut;
 import groove.rel.RegAut.Result;
 import groove.rel.RegAutCalculator;
-import groove.rel.LabelVar;
 import groove.rel.RegExpr;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
@@ -529,7 +529,7 @@ public class AutomatonTest {
             addRelated(result, nC3, new String[] {"x", "val"}, nI3);
             addRelated(result, nC4, new String[] {"x", "val"}, nI3);
             assertEquals(result, aut.getMatches(testGraph, null, null,
-                Collections.singletonMap(new LabelVar("x", Label.BINARY),
+                Collections.singletonMap(new LabelVar("x", LabelKind.BINARY),
                     TypeLabel.createLabel("val"))));
             aut = createAutomaton("?x.?x.3");
             result.clear();
@@ -550,7 +550,7 @@ public class AutomatonTest {
             addRelated(result, nList, new String[] {"x", "last", "y", "in"},
                 nC4);
             assertEquals(result, aut.getMatches(testGraph, null, null,
-                Collections.singletonMap(new LabelVar("y", Label.BINARY),
+                Collections.singletonMap(new LabelVar("y", LabelKind.BINARY),
                     TypeLabel.createLabel("in"))));
         } catch (FormatException exc) {
             fail("Regular expression parse error: " + exc.getMessage());
@@ -617,7 +617,7 @@ public class AutomatonTest {
             HostNode image) {
         Map<LabelVar,TypeLabel> idMap = new HashMap<LabelVar,TypeLabel>();
         for (int i = 0; i < ids.length; i += 2) {
-            idMap.put(new LabelVar(ids[i], Label.BINARY),
+            idMap.put(new LabelVar(ids[i], LabelKind.BINARY),
                 TypeLabel.createLabel(ids[i + 1]));
         }
         result.add(new Result(key, image, idMap));

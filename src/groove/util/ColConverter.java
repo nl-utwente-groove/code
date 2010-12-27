@@ -18,7 +18,7 @@ package groove.util;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
-import groove.graph.Label;
+import groove.graph.LabelKind;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.io.ExtensionFilter;
@@ -104,7 +104,8 @@ public class ColConverter {
 
     private static HostNode addNode(HostGraph result, String id) {
         HostNode node = result.addNode(Integer.parseInt(id));
-        result.addEdge(node, TypeLabel.createLabel("i" + id, Label.FLAG), node);
+        result.addEdge(node, TypeLabel.createLabel("i" + id, LabelKind.FLAG),
+            node);
         return node;
     }
 
