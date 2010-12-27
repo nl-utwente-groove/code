@@ -20,6 +20,7 @@ import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.GraphInfo;
+import groove.graph.GraphRole;
 import groove.match.rete.CompositeConditionChecker;
 import groove.match.rete.ConditionChecker;
 import groove.match.rete.DisconnectedSubgraphChecker;
@@ -31,7 +32,6 @@ import groove.match.rete.ReteNetworkNode;
 import groove.match.rete.RootNode;
 import groove.match.rete.SubgraphCheckerNode;
 import groove.trans.RuleElement;
-import groove.util.Groove;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,7 +60,7 @@ public class ReteJModel extends GraphJModel<DefaultNode,DefaultEdge> {
         this.graph = new DefaultGraph();
         GraphInfo<DefaultNode,DefaultEdge> info =
             new GraphInfo<DefaultNode,DefaultEdge>();
-        info.setRole(Groove.HOST_ROLE);
+        info.setRole(GraphRole.HOST);
         this.graph.setInfo(info);
         DefaultNode rootNode = DefaultNode.createNode();
         this.map.put(this.network.getRoot(), rootNode);
@@ -171,8 +171,8 @@ public class ReteJModel extends GraphJModel<DefaultNode,DefaultEdge> {
                 source));
             for (int i = 0; i < ((ProductionNode) nnode).getPattern().length; i++) {
                 RuleElement e = ((ProductionNode) nnode).getPattern()[i];
-                result.add(DefaultEdge.createEdge(source, "--" + i + " "
-                    + e.toString(), source));
+                result.add(DefaultEdge.createEdge(source,
+                    "--" + i + " " + e.toString(), source));
             }
         } else if (nnode instanceof ConditionChecker) {
             result.add(DefaultEdge.createEdge(source, "- Condition Checker "
@@ -180,8 +180,8 @@ public class ReteJModel extends GraphJModel<DefaultNode,DefaultEdge> {
                 source));
             for (int i = 0; i < ((ConditionChecker) nnode).getPattern().length; i++) {
                 RuleElement e = ((ConditionChecker) nnode).getPattern()[i];
-                result.add(DefaultEdge.createEdge(source, "--" + i + " "
-                    + e.toString(), source));
+                result.add(DefaultEdge.createEdge(source,
+                    "--" + i + " " + e.toString(), source));
             }
         }
         DefaultEdge[] res = new DefaultEdge[result.size()];
