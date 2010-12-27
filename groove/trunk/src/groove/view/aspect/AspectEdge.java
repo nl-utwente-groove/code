@@ -32,13 +32,13 @@ import groove.algebra.Operator;
 import groove.algebra.UnknownSymbolException;
 import groove.graph.AbstractEdge;
 import groove.graph.DefaultLabel;
+import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
 import groove.trans.RuleLabel;
 import groove.util.ExprParser;
 import groove.util.Fixable;
-import groove.util.Groove;
 import groove.view.FormatException;
 
 /**
@@ -57,7 +57,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
      * @param graphRole the role of the graph in which this edge occurs
      */
     AspectEdge(AspectNode source, AspectLabel label, AspectNode target,
-            String graphRole) {
+            GraphRole graphRole) {
         super(source, label, target);
         this.graphRole = graphRole;
     }
@@ -69,7 +69,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
                 setAspects(label());
                 inferAspects();
                 checkAspects();
-                if (isForRule()) {
+                if (this.graphRole == GraphRole.RULE) {
                     this.ruleLabel = createRuleLabel();
                     this.typeLabel = null;
                 } else {
@@ -78,7 +78,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
                 }
                 target().inferInAspect(this);
                 source().inferOutAspect(this);
-                if (isForRule() && !getKind().isMeta()) {
+                if (this.graphRole == GraphRole.RULE && !getKind().isMeta()) {
                     checkRegExprs();
                 }
             } finally {
@@ -93,7 +93,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
      * type and attribute aspects.
      */
     private void checkAspects() throws FormatException {
-        if (isForRule()) {
+        if (this.graphRole == GraphRole.RULE) {
             if (getKind() == ABSTRACT || getKind() == SUBTYPE) {
                 throw new FormatException(
                     "Edge aspect %s not allowed in rules", getAspect(), this);
@@ -158,7 +158,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
      */
     private void setAspects(AspectLabel label) throws FormatException {
         assert !label.isNodeOnly();
-        for (NewAspect aspect : label.getAspects()) {
+        for (Aspect aspect : label.getAspects()) {
             declareAspect(aspect);
         }
     }
@@ -183,7 +183,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
             if (targetKind.isRole() && targetKind != READER) {
                 targetRole = targetKind;
             }
-            NewAspect inferredAspect;
+            Aspect inferredAspect;
             if (sourceRole == null) {
                 inferredAspect = target().getAspect();
             } else if (targetRole == null) {
@@ -212,9 +212,9 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
      * @throws FormatException if the added value conflicts with a previously
      * declared or inferred one
      */
-    private void declareAspect(NewAspect value) throws FormatException {
+    private void declareAspect(Aspect value) throws FormatException {
         AspectKind kind = value.getKind();
-        assert kind.isForEdge();
+        assert kind.isForEdge(this.graphRole);
         if (kind == PATH || kind == LITERAL) {
             setLabelMode(value);
         } else if (kind.isAttrKind()) {
@@ -232,7 +232,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
             result = getAttrAspect().equals(other.getAttrAspect());
         }
         if (result && other instanceof AspectEdge) {
-            NewAspect otherMode = ((AspectEdge) other).getLabelMode();
+            Aspect otherMode = ((AspectEdge) other).getLabelMode();
             result = getLabelMode().equals(otherMode);
         }
         return result;
@@ -258,7 +258,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
      */
     public Label getDisplayLabel() {
         Label result = null;
-        if (isForRule()) {
+        if (this.graphRole == GraphRole.RULE) {
             result = getRuleLabel();
         } else {
             result = getTypeLabel();
@@ -346,13 +346,8 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
         }
     }
 
-    /** Indicates if this is supposed to be a rule element. */
-    private boolean isForRule() {
-        return Groove.RULE_ROLE.equals(this.graphRole);
-    }
-
     /** Setter for the aspect type. */
-    private void setAspect(NewAspect aspect) throws FormatException {
+    private void setAspect(Aspect aspect) throws FormatException {
         AspectKind kind = aspect.getKind();
         assert !kind.isAttrKind() && kind != AspectKind.PATH
             && kind != AspectKind.LITERAL;
@@ -397,7 +392,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
     }
 
     @Override
-    public NewAspect getAspect() {
+    public Aspect getAspect() {
         return this.aspect;
     }
 
@@ -440,7 +435,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
     }
 
     /** Setter for the aspect type. */
-    private void setAttrAspect(NewAspect type) throws FormatException {
+    private void setAttrAspect(Aspect type) throws FormatException {
         AspectKind kind = type.getKind();
         assert kind == AspectKind.NONE || kind.isAttrKind();
         assert this.attr == null;
@@ -461,7 +456,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
     }
 
     @Override
-    public NewAspect getAttrAspect() {
+    public Aspect getAttrAspect() {
         return this.attr;
     }
 
@@ -502,7 +497,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
     }
 
     /** Setter for the label mode. */
-    private void setLabelMode(NewAspect type) throws FormatException {
+    private void setLabelMode(Aspect type) throws FormatException {
         AspectKind kind = type.getKind();
         assert kind == NONE || kind == PATH || kind == LITERAL;
         if (this.labelMode == null) {
@@ -519,7 +514,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
      * Retrieves the label mode of this edge.
      * This is either {@link AspectKind#NONE}, {@link AspectKind#PATH} or {@link AspectKind#LITERAL}.
      */
-    public NewAspect getLabelMode() {
+    public Aspect getLabelMode() {
         return this.labelMode;
     }
 
@@ -537,7 +532,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
     }
 
     /** The graph role for this element. */
-    private final String graphRole;
+    private final GraphRole graphRole;
     /** Flag indicating if this edge has been fully computed. */
     private boolean fixed;
     /** The (possibly {@code null}) type label modelled by this edge. */
@@ -545,11 +540,11 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
     /** The (possibly {@code null}) rule label modelled by this edge. */
     private RuleLabel ruleLabel;
     /** The declared or inferred type of the aspect edge. */
-    private NewAspect aspect;
+    private Aspect aspect;
     /** An optional attribute-related aspect. */
-    private NewAspect attr;
+    private Aspect attr;
     /** The parser mode of the label (either TypeAspect#PATH or TypeAspect#EMPTY). */
-    private NewAspect labelMode;
+    private Aspect labelMode;
     /** The quantifier level name, if any. */
     private String levelName;
     /** Argument number, if this is an argument edge. */

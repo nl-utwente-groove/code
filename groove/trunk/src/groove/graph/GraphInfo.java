@@ -17,7 +17,6 @@
 package groove.graph;
 
 import groove.gui.layout.LayoutMap;
-import groove.util.Groove;
 import groove.util.Version;
 import groove.view.FormatError;
 
@@ -220,10 +219,10 @@ public class GraphInfo<N extends Node,E extends Edge> {
     /**
      * Returns the role of the graph, if any.
      * @return a role stored in the info object, or <code>null</code>
-     * @see #setRole(String)
+     * @see #setRole(GraphRole)
      */
-    public String getRole() {
-        return (String) this.data.get(ROLE_KEY);
+    public GraphRole getRole() {
+        return hasRole() ? GraphRole.roles.get(this.data.get(ROLE_KEY)) : null;
     }
 
     /**
@@ -232,11 +231,11 @@ public class GraphInfo<N extends Node,E extends Edge> {
      * value. If the value is <code>null</code>, the key is removed altogether.
      * @see #getRole()
      */
-    public void setRole(String role) {
+    public void setRole(GraphRole role) {
         if (role == null) {
             this.data.remove(ROLE_KEY);
         } else {
-            this.data.put(ROLE_KEY, role);
+            this.data.put(ROLE_KEY, role.toString());
         }
     }
 
@@ -468,9 +467,9 @@ public class GraphInfo<N extends Node,E extends Edge> {
      * Convenience method to retrieve the role of a graph.
      * @return the stored role of the graph; <code>null</code> if no role is
      *         stored
-     * @see #setRole(String)
+     * @see #setRole(GraphRole)
      */
-    public static <N extends Node,E extends Edge> String getRole(
+    public static <N extends Node,E extends Edge> GraphRole getRole(
             Graph<N,?,E> graph) {
         GraphInfo<N,E> graphInfo = graph.getInfo();
         if (graphInfo == null) {
@@ -482,10 +481,10 @@ public class GraphInfo<N extends Node,E extends Edge> {
 
     /**
      * Convenience method to set the role of a graph.
-     * @see #setRole(String)
+     * @see #setRole(GraphRole)
      */
     public static <N extends Node,E extends Edge> void setRole(
-            Graph<N,?,E> graph, String role) {
+            Graph<N,?,E> graph, GraphRole role) {
         GraphInfo<N,E> info = getInfo(graph, role != null);
         if (info != null) {
             info.setRole(role);
@@ -495,55 +494,55 @@ public class GraphInfo<N extends Node,E extends Edge> {
     /**
      * Convenience method to test whether the role of a graph is <i>rule</i>.
      * @see #getRole()
-     * @see Groove#RULE_ROLE
+     * @see GraphRole#RULE
      */
     public static boolean hasRuleRole(Graph<?,?,?> graph) {
-        return Groove.isRuleRole(getRole(graph));
+        return getRole(graph) == GraphRole.RULE;
     }
 
     /**
      * Convenience method to test whether the role of a graph is <i>graph</i>.
      * @see #getRole()
-     * @see Groove#HOST_ROLE
+     * @see GraphRole#HOST
      */
-    public static boolean hasGraphRole(Graph<?,?,?> graph) {
-        return Groove.isGraphRole(getRole(graph));
+    public static boolean hasHostRole(Graph<?,?,?> graph) {
+        return getRole(graph) == GraphRole.HOST;
     }
 
     /**
      * Convenience method to test whether the role of a graph is <i> type</i>.
      * @see #getRole()
-     * @see Groove#TYPE_ROLE
+     * @see GraphRole#TYPE
      */
     public static boolean hasTypeRole(Graph<?,?,?> graph) {
-        return Groove.isTypeRole(getRole(graph));
+        return getRole(graph) == GraphRole.TYPE;
     }
 
     /**
      * Convenience method to set the role of a graph to <i>rule</i>.
-     * @see #setRole(String)
-     * @see Groove#RULE_ROLE
+     * @see #setRole(GraphRole)
+     * @see GraphRole#RULE
      */
     public static void setRuleRole(Graph<?,?,?> graph) {
-        setRole(graph, Groove.RULE_ROLE);
+        setRole(graph, GraphRole.RULE);
     }
 
     /**
      * Convenience method to set the role of a graph to <i>graph</i>.
-     * @see #setRole(String)
-     * @see Groove#HOST_ROLE
+     * @see #setRole(GraphRole)
+     * @see GraphRole#HOST
      */
-    public static void setGraphRole(Graph<?,?,?> graph) {
-        setRole(graph, Groove.HOST_ROLE);
+    public static void setHostRole(Graph<?,?,?> graph) {
+        setRole(graph, GraphRole.HOST);
     }
 
     /**
      * Convenience method to set the role of a graph to <i>type</i>.
-     * @see #setRole(String)
-     * @see Groove#TYPE_ROLE
+     * @see #setRole(GraphRole)
+     * @see GraphRole#TYPE
      */
     public static void setTypeRole(Graph<?,?,?> graph) {
-        setRole(graph, Groove.TYPE_ROLE);
+        setRole(graph, GraphRole.TYPE);
     }
 
     /**
@@ -596,8 +595,7 @@ public class GraphInfo<N extends Node,E extends Edge> {
      */
     public static final String FILE_KEY = "file";
     /**
-     * Key for graph role. The value should be one of {@link Groove#HOST_ROLE},
-     * {@link Groove#RULE_ROLE} or {@link Groove#TYPE_ROLE}.
+     * Key for graph role. The value should be a role name out of {@link GraphRole}.
      */
     public static final String ROLE_KEY = "type";
     /**

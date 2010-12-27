@@ -17,6 +17,7 @@
 package groove.view.aspect;
 
 import groove.graph.AbstractLabel;
+import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
 import groove.view.FormatException;
 
@@ -32,14 +33,15 @@ import java.util.Set;
  */
 public class AspectLabel extends AbstractLabel implements Cloneable {
     /**
-     * Constructs an initially empty label.
+     * Constructs an initially empty label, for a graph with a particular role.
      */
-    public AspectLabel() {
-        // empty
+    public AspectLabel(GraphRole role) {
+        this.role = role;
     }
 
     /** Constructs an as yet unfixed copy of a given aspect label. */
     private AspectLabel(AspectLabel other) {
+        this.role = other.role;
         this.aspects.addAll(other.aspects);
         this.innerText = other.innerText;
         this.edgeOnly = other.edgeOnly;
@@ -64,7 +66,7 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
     @Override
     public String toString() {
         StringBuffer result = new StringBuffer();
-        for (NewAspect value : this.aspects) {
+        for (Aspect value : this.aspects) {
             result.append(value.toString());
         }
         // append the label text, if any
@@ -79,12 +81,18 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
      * Consistency with existing values is not tested.
      * @param value the value to be added
      */
-    void addAspect(NewAspect value) throws FormatException {
+    void addAspect(Aspect value) throws FormatException {
         testFixed(false);
         this.aspects.add(value);
-        if (!value.getKind().isForNode()) {
+        boolean notForNode = !value.getKind().isForNode(this.role);
+        boolean notForEdge = !value.getKind().isForEdge(this.role);
+        if (notForNode) {
+            if (notForEdge) {
+                throw new FormatException("Aspect %s not allowed", value,
+                    this.role);
+            }
             this.edgeOnly = value;
-        } else if (!value.getKind().isForEdge()) {
+        } else if (notForEdge) {
             this.nodeOnly = value;
         }
         if (this.nodeOnly != null && this.edgeOnly != null) {
@@ -133,12 +141,12 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
     }
 
     /** Returns the list of aspects in this label. */
-    public List<NewAspect> getAspects() {
+    public List<Aspect> getAspects() {
         return this.aspects;
     }
 
     /** The mapping from aspects to (declared or inferred) aspect values. */
-    private final List<NewAspect> aspects = new ArrayList<NewAspect>();
+    private final List<Aspect> aspects = new ArrayList<Aspect>();
 
     /** 
      * Indicates whether this label is only suited for edges.
@@ -161,9 +169,9 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
     }
 
     /** Edge-only aspect value in this label, if any. */
-    private NewAspect edgeOnly;
+    private Aspect edgeOnly;
     /** Node-only aspect value in this label, if any. */
-    private NewAspect nodeOnly;
+    private Aspect nodeOnly;
 
     /** 
      * Sets the label text to a non-{@code null} value.
@@ -189,6 +197,9 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
 
     /** Label text; may be {@code null} if the associated element is a node. */
     private String innerText;
+
+    /** The graph role for which this label is intended to be used. */
+    private final GraphRole role;
 
     /** Label used for parent edges (between quantifier nodes). */
     public static final String IN_LABEL = "in";

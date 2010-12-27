@@ -20,7 +20,7 @@ import groove.graph.Element;
 import groove.util.Fixable;
 
 /**
- * Extension of the {@link Element} interface with support for {@link NewAspect}s.
+ * Extension of the {@link Element} interface with support for {@link Aspect}s.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -30,7 +30,7 @@ public interface AspectElement extends Element, Fixable {
      * At all times, the return value is guaranteed to be valid for the kind of graph.
      * When the graph is fixed, the return value is guaranteed to be non-{@code null}. 
      */
-    NewAspect getAspect();
+    Aspect getAspect();
 
     /** 
      * Returns the main aspect kind of this element, if any.
@@ -50,7 +50,7 @@ public interface AspectElement extends Element, Fixable {
     /** 
      * Returns the attribute-related aspect of this element, if any. 
      */
-    NewAspect getAttrAspect();
+    Aspect getAttrAspect();
 
     /** 
      * Returns the kind of attribute-related aspect for this element, if any.

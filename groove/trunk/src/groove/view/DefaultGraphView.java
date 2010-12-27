@@ -37,7 +37,7 @@ import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
-import groove.view.aspect.NewAspect;
+import groove.view.aspect.Aspect;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -245,7 +245,7 @@ public class DefaultGraphView implements GraphView {
                 assert attrType != UNTYPED;
                 Algebra<?> nodeAlgebra =
                     this.algebraFamily.getAlgebra(attrType.getName());
-                NewAspect dataType = viewNode.getAttrAspect();
+                Aspect dataType = viewNode.getAttrAspect();
                 nodeImage =
                     ValueNode.createValueNode(nodeAlgebra,
                         nodeAlgebra.getValue((String) dataType.getContent()));

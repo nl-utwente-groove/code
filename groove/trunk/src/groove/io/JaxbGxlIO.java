@@ -26,6 +26,7 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
+import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.Node;
@@ -33,7 +34,6 @@ import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
-import groove.util.Groove;
 import groove.util.Pair;
 import groove.util.Version;
 import groove.view.FormatError;
@@ -199,8 +199,8 @@ public class JaxbGxlIO implements GxlIO {
         gxlGraph.setEdgemode(EdgemodeType.DIRECTED);
         String name = GraphInfo.getName(graph);
         gxlGraph.setId(name == null ? DEFAULT_GRAPH_NAME : name);
-        String role = GraphInfo.getRole(graph);
-        gxlGraph.setRole(role == null ? Groove.HOST_ROLE : role);
+        GraphRole role = GraphInfo.getRole(graph);
+        gxlGraph.setRole(role.toString());
         List<GraphElementType> nodesEdges = gxlGraph.getNodeOrEdgeOrRel();
         // add the nodes
         Map<Node,NodeType> nodeMap = new HashMap<Node,NodeType>();
@@ -274,7 +274,7 @@ public class JaxbGxlIO implements GxlIO {
                 gxlGraph.setId(info.getName());
             }
             if (info.hasRole()) {
-                gxlGraph.setRole(info.getRole());
+                gxlGraph.setRole(info.getRole().toString());
             }
             // add the graph attributes, if any
             List<AttrType> graphAttrs = gxlGraph.getAttr();
@@ -425,7 +425,9 @@ public class JaxbGxlIO implements GxlIO {
             GraphInfo.setProperties(graph, properties);
         }
         GraphInfo.setName(graph, gxlGraph.getId());
-        GraphInfo.setRole(graph, gxlGraph.getRole());
+        String roleName = gxlGraph.getRole();
+        GraphInfo.setRole(graph,
+            GraphRole.roles.get(roleName == null ? GraphRole.HOST : roleName));
         // MdM - GraphInfo.setLayoutMap(graph, layoutMap);
         return new Pair<DefaultGraph,Map<String,DefaultNode>>(graph, nodeIds);
     }

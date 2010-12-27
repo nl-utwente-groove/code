@@ -30,9 +30,9 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class NewAspect {
+public class Aspect {
     /** Creates a prototype (i.e., empty) aspect for a given aspect kind. */
-    NewAspect(AspectKind kind, ContentKind contentKind) {
+    Aspect(AspectKind kind, ContentKind contentKind) {
         this.aspectKind = kind;
         this.contentKind = contentKind;
         this.prototype = true;
@@ -40,7 +40,7 @@ public class NewAspect {
     }
 
     /** Creates a new aspect, wrapping either a number or a text. */
-    private NewAspect(AspectKind kind, ContentKind contentKind, Object content) {
+    private Aspect(AspectKind kind, ContentKind contentKind, Object content) {
         this.aspectKind = kind;
         this.contentKind = contentKind;
         this.content = content;
@@ -71,7 +71,7 @@ public class NewAspect {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        NewAspect other = (NewAspect) obj;
+        Aspect other = (Aspect) obj;
         if (this.aspectKind != other.aspectKind) {
             return false;
         }
@@ -98,12 +98,12 @@ public class NewAspect {
      * @throws FormatException if the text cannot be correctly parsed as content
      * for this aspect
      */
-    public NewAspect newInstance(String text) throws FormatException {
+    public Aspect newInstance(String text) throws FormatException {
         if (!this.prototype) {
             throw new UnsupportedOperationException(
                 "New aspects can only be created from prototypes");
         }
-        return new NewAspect(this.aspectKind, this.contentKind,
+        return new Aspect(this.aspectKind, this.contentKind,
             this.contentKind.parseContent(text));
     }
 
@@ -137,13 +137,13 @@ public class NewAspect {
     private final Object content;
 
     /** Returns the prototypical aspect for a given aspect name. */
-    public static NewAspect getAspect(String name) {
+    public static Aspect getAspect(String name) {
         return aspectNameMap.get(name);
     }
 
     /** Mapping from aspect names to canonical aspects (with that name). */
-    private final static Map<String,NewAspect> aspectNameMap =
-        new HashMap<String,NewAspect>();
+    private final static Map<String,Aspect> aspectNameMap =
+        new HashMap<String,Aspect>();
 
     static {
         for (AspectKind kind : EnumSet.allOf(AspectKind.class)) {

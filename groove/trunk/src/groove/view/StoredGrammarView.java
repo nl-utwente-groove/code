@@ -206,7 +206,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     @Override
     public void setStartGraph(AspectGraph startGraph) {
         assert startGraph != null;
-        if (!GraphInfo.hasGraphRole(startGraph)) {
+        if (!GraphInfo.hasHostRole(startGraph)) {
             throw new IllegalArgumentException(String.format(
                 "Prospective start graph '%s' is not a graph", startGraph));
         }

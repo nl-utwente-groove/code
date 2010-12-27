@@ -36,7 +36,6 @@ import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.trans.RuleLabel;
-import groove.util.Groove;
 import groove.view.aspect.AspectEdge;
 
 import java.awt.Font;
@@ -251,7 +250,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
     @Override
     public DefaultGraph toPlainGraph() {
         DefaultGraph result = super.toPlainGraph();
-        GraphInfo.setRole(result, Groove.HOST_ROLE);
+        GraphInfo.setRole(result, GraphInfo.getRole(getGraph()));
         return result;
     }
 

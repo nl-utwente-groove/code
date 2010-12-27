@@ -1591,7 +1591,7 @@ public class Simulator {
                             if (GraphInfo.hasRuleRole(errorGraph)) {
                                 panel = getRulePanel();
                                 setRule(new RuleName(name));
-                            } else if (GraphInfo.hasGraphRole(errorGraph)) {
+                            } else if (GraphInfo.hasHostRole(errorGraph)) {
                                 panel = getStatePanel();
                                 getStateList().setSelectedValue(name, true);
                             } else if (GraphInfo.hasTypeRole(errorGraph)) {
@@ -4389,7 +4389,7 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             DefaultGraph newGraph = new DefaultGraph();
-            GraphInfo.setGraphRole(newGraph);
+            GraphInfo.setHostRole(newGraph);
             handleEditGraph(newGraph, true);
         }
 

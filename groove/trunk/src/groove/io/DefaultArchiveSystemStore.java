@@ -20,6 +20,7 @@ import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.GraphInfo;
+import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
 import groove.gui.layout.LayoutMap;
 import groove.trans.RuleName;
@@ -454,7 +455,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         throws IOException {
         this.graphMap.clear();
         this.graphMap.putAll(loadObjects(file, graphs, STATE_FILTER,
-            Groove.HOST_ROLE));
+            GraphRole.HOST));
     }
 
     /**
@@ -464,7 +465,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         throws IOException {
         this.ruleMap.clear();
         for (Map.Entry<String,AspectGraph> entry : loadObjects(file, rules,
-            RULE_FILTER, Groove.RULE_ROLE).entrySet()) {
+            RULE_FILTER, GraphRole.RULE).entrySet()) {
             RuleName name = createRuleName(entry.getKey());
             GraphInfo.setName(entry.getValue(), name.toString());
             this.ruleMap.put(name, entry.getValue());
@@ -495,7 +496,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         throws IOException {
         this.typeMap.clear();
         this.typeMap.putAll(loadObjects(file, graphs, TYPE_FILTER,
-            Groove.TYPE_ROLE));
+            GraphRole.TYPE));
     }
 
     /**
@@ -508,7 +509,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
      * @param role the role to set for the loaded objects
      */
     private Map<String,AspectGraph> loadObjects(ZipFile file,
-            Map<String,ZipEntry> graphs, ExtensionFilter filter, String role)
+            Map<String,ZipEntry> graphs, ExtensionFilter filter, GraphRole role)
         throws IOException {
         Map<String,AspectGraph> result = new HashMap<String,AspectGraph>();
         for (Map.Entry<String,ZipEntry> graphEntry : graphs.entrySet()) {
