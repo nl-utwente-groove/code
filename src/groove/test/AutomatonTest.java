@@ -102,10 +102,10 @@ public class AutomatonTest {
         for (HostEdge testEdge : testGraph.edgeSet()) {
             testStore.addLabel(testEdge.label());
         }
-        testStore.addLabel(TypeLabel.createLabel("A"));
-        testStore.addLabel(TypeLabel.createLabel("B"));
-        testStore.addLabel(TypeLabel.createLabel("C"));
-        testStore.addLabel(TypeLabel.createLabel("D"));
+        testStore.addLabel(TypeLabel.createBinaryLabel("A"));
+        testStore.addLabel(TypeLabel.createBinaryLabel("B"));
+        testStore.addLabel(TypeLabel.createBinaryLabel("C"));
+        testStore.addLabel(TypeLabel.createBinaryLabel("D"));
         nList = getNode("List");
         nC1 = getNode("n1");
         nC2 = getNode("n2");
@@ -530,7 +530,7 @@ public class AutomatonTest {
             addRelated(result, nC4, new String[] {"x", "val"}, nI3);
             assertEquals(result, aut.getMatches(testGraph, null, null,
                 Collections.singletonMap(new LabelVar("x", LabelKind.BINARY),
-                    TypeLabel.createLabel("val"))));
+                    TypeLabel.createBinaryLabel("val"))));
             aut = createAutomaton("?x.?x.3");
             result.clear();
             addRelated(result, nI3, new String[] {"x", "3"}, nI3);
@@ -551,7 +551,7 @@ public class AutomatonTest {
                 nC4);
             assertEquals(result, aut.getMatches(testGraph, null, null,
                 Collections.singletonMap(new LabelVar("y", LabelKind.BINARY),
-                    TypeLabel.createLabel("in"))));
+                    TypeLabel.createBinaryLabel("in"))));
         } catch (FormatException exc) {
             fail("Regular expression parse error: " + exc.getMessage());
         }
@@ -600,7 +600,7 @@ public class AutomatonTest {
 
     protected static HostNode getNode(String selfLabel) {
         Collection<? extends HostEdge> edgeSet =
-            testGraph.labelEdgeSet(TypeLabel.createLabel(selfLabel));
+            testGraph.labelEdgeSet(TypeLabel.createBinaryLabel(selfLabel));
         if (edgeSet == null || edgeSet.isEmpty()) {
             return null;
         } else {
@@ -618,7 +618,7 @@ public class AutomatonTest {
         Map<LabelVar,TypeLabel> idMap = new HashMap<LabelVar,TypeLabel>();
         for (int i = 0; i < ids.length; i += 2) {
             idMap.put(new LabelVar(ids[i], LabelKind.BINARY),
-                TypeLabel.createLabel(ids[i + 1]));
+                TypeLabel.createBinaryLabel(ids[i + 1]));
         }
         result.add(new Result(key, image, idMap));
     }

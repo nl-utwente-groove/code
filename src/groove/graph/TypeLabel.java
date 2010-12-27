@@ -57,6 +57,12 @@ public final class TypeLabel extends AbstractLabel {
         return this.text;
     }
 
+    /** Returns the prefixed text. */
+    @Override
+    public String toString() {
+        return getKind().getPrefix() + text();
+    }
+
     @Override
     public LabelKind getKind() {
         return this.kind;
@@ -73,14 +79,25 @@ public final class TypeLabel extends AbstractLabel {
     private final LabelKind kind;
 
     /**
+     * Returns a default or node type label, depending on the prefix in the
+     * input string.
+     * @param prefixedText text of the label, possibly prefixed with a label
+     * kind
+     * @return a label with label type determined by the prefix
+     */
+    public static TypeLabel createLabel(String prefixedText) {
+        return factory.createLabel(prefixedText);
+    }
+
+    /**
      * Returns the unique representative of a {@link TypeLabel} for a given
      * string. The string is used as-is, and is guaranteed to equal the text of
      * the resulting label. The returned label is binary.
      * @param text the text of the label; non-null
      * @return an existing or new label with the given text; non-null
      */
-    public static TypeLabel createLabel(String text) {
-        return factory.createLabel(text, LabelKind.BINARY);
+    public static TypeLabel createBinaryLabel(String text) {
+        return factory.createLabel(LabelKind.BINARY, text);
     }
 
     /**
@@ -88,47 +105,36 @@ public final class TypeLabel extends AbstractLabel {
      * string and label kind, while optionally testing if this label is legal. 
      * The string is used as-is, and is guaranteed to
      * equal the text of the resulting label.
-     * @param text the text of the label; non-null
      * @param kind kind of label to be created
+     * @param text the text of the label; non-null
      * @param test if {@code true}, a {@link groove.view.FormatException} may be thrown
      * if {@code text} does not satisfy the requirements of {@code kind}-labels.
      * @return an existing or new label with the given text and kind; non-null
-     * @see #createLabel(String, LabelKind)
+     * @see #createLabel(LabelKind, String)
      * @throws FormatException if {@code text} does not satisfy the constraints
      * for labels of kind {@code kind}
      */
-    public static TypeLabel createLabel(String text, LabelKind kind,
+    public static TypeLabel createLabel(LabelKind kind, String text,
             boolean test) throws FormatException {
         if (test && kind != LabelKind.BINARY && !ExprParser.isIdentifier(text)) {
             throw new FormatException(
                 "%s label '%s' is not a valid identifier", kind.getName(true),
                 text);
         }
-        return createLabel(text, kind);
+        return createLabel(kind, text);
     }
 
     /**
      * Returns the unique representative of a {@link TypeLabel} for a given
      * string and label kind. The string is used as-is, and is guaranteed to
      * equal the text of the resulting label.
-     * @param text the text of the label; non-null
      * @param kind kind of label to be created
+     * @param text the text of the label; non-null
      * @return an existing or new label with the given text and kind; non-null
      * @see #getKind()
      */
-    public static TypeLabel createLabel(String text, LabelKind kind) {
-        return factory.createLabel(text, kind);
-    }
-
-    /**
-     * Returns a default or node type label, depending on the prefix in the
-     * input string.
-     * @param prefixedText text of the label, possibly prefixed with a label
-     * kind
-     * @return a label with label type determined by the prefix
-     */
-    public static TypeLabel createTypedLabel(String prefixedText) {
-        return factory.createLabel(prefixedText);
+    public static TypeLabel createLabel(LabelKind kind, String text) {
+        return factory.createLabel(kind, text);
     }
 
     /**

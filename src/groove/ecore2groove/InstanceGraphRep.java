@@ -20,6 +20,7 @@ import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.GraphInfo;
+import groove.graph.LabelKind;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -274,7 +275,8 @@ public class InstanceGraphRep {
             // When the value is an EEnum, the flag for the value needs to be
             // added as well
             if (attributeType.eClass().getName().equals("EEnum")) {
-                String flagLabel = "flag:" + target.toString();
+                String flagLabel =
+                    LabelKind.FLAG.getPrefix() + target.toString();
                 this.ig.addEdge(datatypeNode, flagLabel, datatypeNode);
             }
         }

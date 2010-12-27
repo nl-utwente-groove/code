@@ -79,10 +79,10 @@ public interface JCell extends GraphCell, Serializable {
     public abstract String getToolTipText();
 
     /** Pseudo-label for cells with an empty list label set. */
-    static public final TypeLabel NO_LABEL = TypeLabel.createLabel("\u0000",
-        LabelKind.NODE_TYPE);
+    static public final TypeLabel NO_LABEL = TypeLabel.createLabel(LabelKind.NODE_TYPE,
+        "\u0000");
     /** Pseudo-label for subtype edges. */
     static public final RuleLabel SUBTYPE_LABEL = new RuleLabel(
-        TypeLabel.createLabel("\u0001", LabelKind.NODE_TYPE));
+        TypeLabel.createLabel(LabelKind.NODE_TYPE, "\u0001"));
 
 }

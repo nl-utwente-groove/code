@@ -818,7 +818,7 @@ public class MatrixAutomaton extends
     static {
         for (LabelKind kind : EnumSet.allOf(LabelKind.class)) {
             DUMMY_LABELS.put(kind,
-                TypeLabel.createLabel(DUMMY_LABEL_TEXT, kind));
+                TypeLabel.createLabel(kind, DUMMY_LABEL_TEXT));
         }
     }
 

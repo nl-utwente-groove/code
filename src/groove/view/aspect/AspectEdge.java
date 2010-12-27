@@ -316,9 +316,9 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
             result = null;
         } else if (!getKind().isRole() && getLabelKind() != PATH) {
             if (getLabelKind() == LITERAL) {
-                result = TypeLabel.createLabel(getInnerText());
+                result = TypeLabel.createBinaryLabel(getInnerText());
             } else {
-                result = TypeLabel.createTypedLabel(getInnerText());
+                result = TypeLabel.createLabel(getInnerText());
             }
         } else {
             throw new FormatException(

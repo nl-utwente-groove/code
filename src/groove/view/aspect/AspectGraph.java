@@ -161,32 +161,42 @@ public class AspectGraph extends
         Map<DefaultEdge,AspectLabel> edgeDataMap =
             new HashMap<DefaultEdge,AspectLabel>();
         for (DefaultEdge edge : graph.edgeSet()) {
-            try {
-                AspectLabel label = labelParser.parse(edge.label());
-                if (label.isNodeOnly()) {
-                    AspectNode sourceImage = elementMap.getNode(edge.source());
-                    sourceImage.setAspects(label);
-                } else if (edge.source().equals(edge.target())
-                    || label.isBinary()) {
-                    edgeDataMap.put(edge, label);
+            AspectLabel label = labelParser.parse(edge.label());
+            if (label.isNodeOnly()) {
+                AspectNode sourceImage = elementMap.getNode(edge.source());
+                if (label.hasErrors()) {
+                    for (FormatError error : label.getErrors()) {
+                        errors.add(error.extend(sourceImage));
+                    }
                 } else {
-                    throw new FormatException("%s %s must be a node label",
-                        label.getKind().getName(true), label);
+                    try {
+                        sourceImage.setAspects(label);
+                    } catch (FormatException e) {
+                        for (FormatError error : e.getErrors()) {
+                            errors.add(error.extend(sourceImage));
+                        }
+                    }
                 }
-            } catch (FormatException e) {
-                // we can't trace the error to the aspect graph element,
-                // as the aspect graph element has not yet been created
-                e.extend(edge);
-                errors.addAll(e.getErrors());
+            } else {
+                edgeDataMap.put(edge, label);
             }
         }
         // Now iterate over the remaining edges
         for (Map.Entry<DefaultEdge,AspectLabel> entry : edgeDataMap.entrySet()) {
             DefaultEdge edge = entry.getKey();
+            AspectLabel label = entry.getValue();
             AspectEdge edgeImage =
-                result.addEdge(elementMap.getNode(edge.source()),
-                    entry.getValue(), elementMap.getNode(edge.target()));
+                result.addEdge(elementMap.getNode(edge.source()), label,
+                    elementMap.getNode(edge.target()));
             elementMap.putEdge(edge, edgeImage);
+            // signal an error only now, so the edge is already in the result graph
+            for (FormatError error : label.getErrors()) {
+                errors.add(error.extend(edgeImage));
+            }
+            if (!edge.source().equals(edge.target()) && !label.isBinary()) {
+                errors.add(new FormatError("%s %s must be a node label",
+                    label.getKind().getName(true), label, edgeImage));
+            }
         }
         GraphInfo.transfer(graph, result, elementMap);
         result.addErrors(errors);
@@ -310,12 +320,11 @@ public class AspectGraph extends
             AspectLabel edgeLabel = edge.label();
             if (replacement != null) {
                 graphChanged = true;
-                try {
-                    AspectLabel newEdgeLabel = edgeLabel.clone();
-                    newEdgeLabel.setInnerText(replacement);
+                AspectLabel newEdgeLabel = edgeLabel.clone();
+                newEdgeLabel.setInnerText(replacement);
+                newEdgeLabel.setFixed();
+                if (!newEdgeLabel.hasErrors()) {
                     edgeLabel = newEdgeLabel;
-                } catch (FormatException e) {
-                    // do nothing with this label
                 }
             }
             DefaultNode sourceImage = elementMap.getNode(edge.source());

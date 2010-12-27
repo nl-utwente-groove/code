@@ -231,8 +231,8 @@ public class StringDialog {
      * selection of the choice box.
      * Also adds the result to the history.
      */
-    private boolean setResult(Object resultObject) {
-        this.result = resultObject == null ? null : resultObject.toString();
+    private boolean setResult(String resultObject) {
+        this.result = resultObject;
         boolean ok =
             this.result == null || !this.result.isEmpty()
                 && parse(this.result) == null;

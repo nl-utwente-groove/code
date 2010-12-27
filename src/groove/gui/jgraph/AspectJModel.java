@@ -31,12 +31,12 @@ import groove.trans.RuleLabel;
 import groove.util.Converter;
 import groove.view.FormatError;
 import groove.view.View;
+import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectLabel;
 import groove.view.aspect.AspectNode;
-import groove.view.aspect.Aspect;
 
 import java.awt.Font;
 import java.util.ArrayList;
@@ -402,14 +402,6 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             return result;
         }
 
-        /**
-         * This implementation adds an edge aspect prefix.
-         */
-        @Override
-        public String getPlainLabel(AspectEdge edge) {
-            return edge.label().text();
-        }
-
         @Override
         public Label getLabel(AspectEdge edge) {
             return edge.getDisplayLabel();
@@ -517,14 +509,6 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             }
             result.append(super.getLine(edge));
             return result;
-        }
-
-        /**
-         * This implementation adds node and edge aspects.
-         */
-        @Override
-        public String getPlainLabel(AspectEdge edge) {
-            return edge.toString();
         }
 
         /**

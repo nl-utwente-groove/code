@@ -301,11 +301,11 @@ public class LabelStoreTest {
 
     private LabelStore store1;
     private LabelStore store2;
-    private final TypeLabel typeA = TypeLabel.createLabel("A", LabelKind.NODE_TYPE);
-    private final TypeLabel typeB = TypeLabel.createLabel("B", LabelKind.NODE_TYPE);
-    private final TypeLabel typeC = TypeLabel.createLabel("C", LabelKind.NODE_TYPE);
-    private final TypeLabel typeD = TypeLabel.createLabel("D", LabelKind.NODE_TYPE);
-    private final TypeLabel a = TypeLabel.createLabel("a");
-    private final TypeLabel b = TypeLabel.createLabel("b");
-    private final TypeLabel c = TypeLabel.createLabel("c");
+    private final TypeLabel typeA = TypeLabel.createLabel(LabelKind.NODE_TYPE, "A");
+    private final TypeLabel typeB = TypeLabel.createLabel(LabelKind.NODE_TYPE, "B");
+    private final TypeLabel typeC = TypeLabel.createLabel(LabelKind.NODE_TYPE, "C");
+    private final TypeLabel typeD = TypeLabel.createLabel(LabelKind.NODE_TYPE, "D");
+    private final TypeLabel a = TypeLabel.createBinaryLabel("a");
+    private final TypeLabel b = TypeLabel.createBinaryLabel("b");
+    private final TypeLabel c = TypeLabel.createBinaryLabel("c");
 }

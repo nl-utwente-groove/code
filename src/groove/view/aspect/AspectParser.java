@@ -43,15 +43,15 @@ public class AspectParser {
      * @param label the plain label to start from
      * @return an aspect label, in which the aspect prefixes of {@code label}
      * have been parsed into aspect values.
-     * @throws FormatException if there were parse errors in {@code label}
      */
-    public AspectLabel parse(DefaultLabel label) throws FormatException {
+    public AspectLabel parse(DefaultLabel label) {
         AspectLabel result = new AspectLabel(this.role);
         try {
             parse(label.text(), result);
         } catch (FormatException exc) {
-            throw new FormatException("%s in '%s'", exc.getMessage(), label);
+            result.addError("%s in '%s'", exc.getMessage(), label);
         }
+        result.setFixed();
         return result;
     }
 
@@ -98,7 +98,6 @@ public class AspectParser {
         }
         if (value == null || value.getKind().isLast() || text.length() == 0) {
             result.setInnerText(text);
-            result.setFixed();
         } else {
             // recursively call the method with the remainder of the text
             parse(text, result);

@@ -287,7 +287,10 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         private final List<String> prefixes = new LinkedList<String>();
         {
             for (AspectKind aspectKind : EnumSet.allOf(AspectKind.class)) {
-                this.prefixes.add(aspectKind.getAspect().toString());
+                String prefix = aspectKind.getPrefix();
+                if (prefix.length() > 0) {
+                    this.prefixes.add(prefix);
+                }
             }
             // add the special edge labels
             this.prefixes.add(AspectLabel.AT_LABEL);

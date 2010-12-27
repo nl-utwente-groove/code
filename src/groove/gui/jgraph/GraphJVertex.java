@@ -194,8 +194,8 @@ public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
         // add signature label for typed variable nodes
         if (getSignature() != null) {
             result.add(new StringBuilder(
-                TypeLabel.toHtmlString(TypeLabel.createLabel(getSignature(),
-                    LabelKind.NODE_TYPE))));
+                TypeLabel.toHtmlString(TypeLabel.createLabel(
+                    LabelKind.NODE_TYPE, getSignature()))));
         }
         for (E edge : getSelfEdges()) {
             if (!this.jModel.isFiltering(getLabel(edge))) {
@@ -253,7 +253,7 @@ public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
                 result.append(((ValueNode) actualTarget).getSymbol());
             } else {
                 result.append(TYPE_TEXT);
-                result.append(((TypeNode) actualTarget).getType());
+                result.append(((TypeNode) actualTarget).getType().text());
             }
             result = Converter.toHtml(result);
         }
@@ -279,7 +279,8 @@ public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
             result.addAll(getListLabels(edge));
         }
         if (getSignature() != null) {
-            result.add(TypeLabel.createLabel(getSignature(), LabelKind.NODE_TYPE));
+            result.add(TypeLabel.createLabel(LabelKind.NODE_TYPE,
+                getSignature()));
         } else if (getSelfEdges().isEmpty()) {
             result.add(NO_LABEL);
         }
@@ -316,17 +317,9 @@ public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
             result.add(prefix + symbol);
         }
         for (E edge : getSelfEdges()) {
-            result.add(getPlainLabel(edge));
+            result.add(edge.toString());
         }
         return result;
-    }
-
-    /**
-     * This implementation calls {@link TypeLabel#toPrefixedString(Label)} on
-     * the edge label.
-     */
-    public String getPlainLabel(E edge) {
-        return TypeLabel.toPrefixedString(edge.label());
     }
 
     /**
@@ -474,7 +467,7 @@ public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
      */
     TypeLabel getValueLabel() {
         if (getActualNode() instanceof ValueNode) {
-            return TypeLabel.createLabel(((ValueNode) getActualNode()).getSymbol());
+            return TypeLabel.createBinaryLabel(((ValueNode) getActualNode()).getSymbol());
         } else {
             return null;
         }

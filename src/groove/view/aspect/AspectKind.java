@@ -37,7 +37,12 @@ import java.util.Set;
  */
 public enum AspectKind {
     /** Default aspect, if none is specified. */
-    NONE("none"),
+    NONE("none") {
+        @Override
+        public String getPrefix() {
+            return "";
+        }
+    },
     /** Used for comments/documentation. */
     REMARK("rem"),
 
@@ -120,6 +125,15 @@ public enum AspectKind {
     /** Returns the name of this aspect kind. */
     public String getName() {
         return this.name;
+    }
+
+    /**
+     * Returns the prefix of this aspect kind,
+     * i.e., the text (including separator) by which a plain text
+     * label is recognised to have this aspect.
+     */
+    public String getPrefix() {
+        return getName() + SEPARATOR;
     }
 
     /** 
@@ -324,7 +338,8 @@ public enum AspectKind {
                     PATH, LITERAL, FORALL, FORALL_POS, EXISTS, NESTED));
                 break;
             case TYPE:
-                allowedNodeKinds.put(role, EnumSet.of(NONE, REMARK, ABSTRACT));
+                allowedNodeKinds.put(role,
+                    EnumSet.of(NONE, REMARK, INT, BOOL, REAL, STRING, ABSTRACT));
                 allowedEdgeKinds.put(role,
                     EnumSet.of(NONE, REMARK, ABSTRACT, SUBTYPE));
             }
@@ -474,9 +489,9 @@ public enum AspectKind {
          */
         String toString(AspectKind aspect, Object content) {
             if (content == null) {
-                return aspect.getName() + SEPARATOR;
+                return aspect.getPrefix();
             } else if (literals.contains(this)) {
-                return aspect.getName() + SEPARATOR + content;
+                return aspect.getPrefix() + content;
             } else {
                 return aspect.getName() + ASSIGN + content + SEPARATOR;
             }
