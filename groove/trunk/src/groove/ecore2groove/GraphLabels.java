@@ -16,6 +16,9 @@
  */
 package groove.ecore2groove;
 
+import groove.graph.LabelKind;
+import groove.view.aspect.AspectKind;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,12 +38,12 @@ public class GraphLabels {
 
     private static final String DOLLAR = "$";
 
-    private static final String BOOL_PREFIX = "bool:";
-    private static final String FLAG_PREFIX = "flag:";
-    private static final String INT_PREFIX = "int:";
-    private static final String REAL_PREFIX = "real:";
-    private static final String STRING_PREFIX = "string:";
-    private static final String TYPE_PREFIX = "type:";
+    private static final String BOOL_PREFIX = AspectKind.BOOL.getPrefix();
+    private static final String INT_PREFIX = AspectKind.INT.getPrefix();
+    private static final String REAL_PREFIX = AspectKind.REAL.getPrefix();
+    private static final String STRING_PREFIX = AspectKind.STRING.getPrefix();
+    private static final String FLAG_PREFIX = LabelKind.FLAG.getPrefix();
+    private static final String TYPE_PREFIX = LabelKind.NODE_TYPE.getPrefix();
 
     private static final Set<String> boolTypes = new HashSet<String>();
     private static final Set<String> intTypes = new HashSet<String>();

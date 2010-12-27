@@ -19,7 +19,6 @@ package groove.gui.jgraph;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.TypeLabel;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.trans.RuleLabel;
@@ -237,22 +236,15 @@ public class GraphJEdge<N extends Node,E extends Edge> extends JEdge implements
     }
 
     /**
-     * This implementation calls {@link #getPlainLabel(Edge)} on all edges in
+     * This implementation calls {@link #toString()} on all edge labels in
      * {@link #getUserObject()}.
      */
     public Collection<String> getPlainLabels() {
         List<String> result = new ArrayList<String>();
         for (E edge : getUserObject()) {
-            result.add(getPlainLabel(edge));
+            result.add(edge.label().toString());
         }
         return result;
-    }
-
-    /**
-     * This implementation calls {@link TypeLabel#toPrefixedString(Label)}.
-     */
-    public String getPlainLabel(E edge) {
-        return TypeLabel.toPrefixedString(edge.label());
     }
 
     /** Specialises the return type of the method. */

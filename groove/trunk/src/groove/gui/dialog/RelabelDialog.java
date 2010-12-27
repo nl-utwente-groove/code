@@ -127,7 +127,7 @@ public class RelabelDialog {
         String text = getNewField().getText();
         if (text.length() > 0) {
             int labelType = getNewTypeCombobox().getSelectedIndex();
-            result = TypeLabel.createLabel(text, LabelKind.getKind(labelType));
+            result = TypeLabel.createLabel(LabelKind.getKind(labelType), text);
             TypeLabel oldLabel = getOldLabel();
             if (this.existingLabels.getLabels().contains(result)) {
                 if (result.equals(oldLabel)) {

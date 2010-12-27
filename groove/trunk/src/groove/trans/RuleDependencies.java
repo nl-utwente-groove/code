@@ -50,17 +50,17 @@ public class RuleDependencies {
     static private final String MERGE_LABEL_TEXT = "'node merge";
     /** Label for merges (merger edges and merge embargoes) */
     static private final TypeLabel MERGE_LABEL =
-        TypeLabel.createLabel(MERGE_LABEL_TEXT);
+        TypeLabel.createBinaryLabel(MERGE_LABEL_TEXT);
     /** Label text for merges (merger edges and merge embargoes) */
     static private final String ALL_LABEL_TEXT = "'all labels";
     /** Label for merges (merger edges and merge embargoes) */
     static private final TypeLabel ALL_LABEL =
-        TypeLabel.createLabel(ALL_LABEL_TEXT);
+        TypeLabel.createBinaryLabel(ALL_LABEL_TEXT);
     /** Label text indicating an isolated node. */
     static private final String ANY_NODE_TEXT = "'any node";
     /** Label to indicate that a condition or rule contains an isolated node. */
     static private final TypeLabel ANY_NODE =
-        TypeLabel.createLabel(ANY_NODE_TEXT);
+        TypeLabel.createBinaryLabel(ANY_NODE_TEXT);
 
     /**
      * Analyzes and prints the dependencies of a given graph grammar.

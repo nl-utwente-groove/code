@@ -68,7 +68,7 @@ public class ShapeJVertex extends DefaultGraphCell {
         Set<TypeLabel> labels = Util.getNodeLabels(this.shape, this.node);
         for (TypeLabel label : labels) {
             result.append(Converter.HTML_LINEBREAK);
-            result.append(label.toString());
+            result.append(label.text());
         }
         return HTML_TAG.on(result).toString();
     }

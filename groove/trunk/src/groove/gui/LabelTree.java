@@ -1229,19 +1229,19 @@ public class LabelTree extends JTree implements GraphModelListener,
                     int separatorIndex = dataRow.indexOf(' ');
                     if (separatorIndex < 0) {
                         Label keyType =
-                            TypeLabel.createLabel(dataRow, LabelKind.NODE_TYPE);
+                            TypeLabel.createLabel(LabelKind.NODE_TYPE, dataRow);
                         if (!draggedLabels.containsKey(keyType)) {
                             draggedLabels.put(keyType, new HashSet<Label>());
                         }
                     } else {
                         Label keyType =
                             TypeLabel.createLabel(
-                                dataRow.substring(0, separatorIndex),
-                                LabelKind.NODE_TYPE);
+                                LabelKind.NODE_TYPE,
+                                dataRow.substring(0, separatorIndex));
                         Label valueType =
                             TypeLabel.createLabel(
-                                dataRow.substring(separatorIndex + 1),
-                                LabelKind.NODE_TYPE);
+                                LabelKind.NODE_TYPE,
+                                dataRow.substring(separatorIndex + 1));
                         Set<Label> values = draggedLabels.get(keyType);
                         if (values == null) {
                             draggedLabels.put(keyType, values =

@@ -111,11 +111,11 @@ public class AntWorld {
     }
 
     static private final Label TURN_COUNT_LABEL =
-        TypeLabel.createLabel("turnCount");
+        TypeLabel.createBinaryLabel("turnCount");
     static private final Label FIELD_COUNT_LABEL =
-        TypeLabel.createLabel("fieldCount");
+        TypeLabel.createBinaryLabel("fieldCount");
     static private final Label ANT_COUNT_LABEL =
-        TypeLabel.createLabel("antCount");
+        TypeLabel.createBinaryLabel("antCount");
     static private final Label RING_COUNT_LABEL =
-        TypeLabel.createLabel("ringCount");
+        TypeLabel.createBinaryLabel("ringCount");
 }

@@ -21,11 +21,11 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeLabel,TypeEdge> 
     /** Creates a label with the given kind-prefixed text. */
     public TypeLabel createLabel(String text) {
         Pair<LabelKind,String> parsedLabel = LabelKind.parse(text);
-        return createLabel(parsedLabel.two(), parsedLabel.one());
+        return createLabel(parsedLabel.one(), parsedLabel.two());
     }
 
     /** Returns a label with the given text and label kind. */
-    public TypeLabel createLabel(String text, LabelKind kind) {
+    public TypeLabel createLabel(LabelKind kind, String text) {
         assert text != null : "Label text of type label should not be null";
         return newLabel(text, kind);
     }

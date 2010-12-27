@@ -296,7 +296,7 @@ public class NACTest {
     }
 
     private TypeLabel createTypeLabel(String text) {
-        TypeLabel result = TypeLabel.createLabel(text);
+        TypeLabel result = TypeLabel.createBinaryLabel(text);
         this.labelStore.addLabel(result);
         return result;
     }

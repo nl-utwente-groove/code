@@ -766,13 +766,13 @@ public class GraphSearchPlanFactory {
             this.priorities = new HashMap<Label,Integer>();
             if (rare != null) {
                 for (int i = 0; i < rare.size(); i++) {
-                    Label label = TypeLabel.createTypedLabel(rare.get(i));
+                    Label label = TypeLabel.createLabel(rare.get(i));
                     this.priorities.put(label, rare.size() - i);
                 }
             }
             if (common != null) {
                 for (int i = 0; i < common.size(); i++) {
-                    Label label = TypeLabel.createTypedLabel(common.get(i));
+                    Label label = TypeLabel.createLabel(common.get(i));
                     this.priorities.put(label, i - common.size());
                 }
             }

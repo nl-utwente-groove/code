@@ -250,7 +250,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> 
                 }
                 if (signature != null) {
                     nodeTypeMap.put(node,
-                        TypeLabel.createLabel(signature, LabelKind.NODE_TYPE));
+                        TypeLabel.createLabel(LabelKind.NODE_TYPE, signature));
                     untypedNodes.remove(node);
                 }
             }

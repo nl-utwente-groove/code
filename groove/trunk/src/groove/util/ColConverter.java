@@ -76,7 +76,7 @@ public class ColConverter {
         System.out.printf("Converting %s%n", inFile.getCanonicalPath());
         BufferedReader reader = new BufferedReader(new FileReader(inFile));
         Algebra<?> intAlgebra = AlgebraFamily.getInstance().getAlgebraFor("0");
-        TypeLabel valueLabel = TypeLabel.createLabel("value");
+        TypeLabel valueLabel = TypeLabel.createBinaryLabel("value");
         for (String nextLine = reader.readLine(); nextLine != null; nextLine =
             reader.readLine()) {
             if (DEBUG) {
@@ -104,13 +104,13 @@ public class ColConverter {
 
     private static HostNode addNode(HostGraph result, String id) {
         HostNode node = result.addNode(Integer.parseInt(id));
-        result.addEdge(node, TypeLabel.createLabel("i" + id, LabelKind.FLAG),
+        result.addEdge(node, TypeLabel.createLabel(LabelKind.FLAG, "i" + id),
             node);
         return node;
     }
 
     private static final ExtensionFilter colFilter = new ExtensionFilter(
         "DIMACS graph format", ".col");
-    private static final TypeLabel LABEL = TypeLabel.createLabel("n");
+    private static final TypeLabel LABEL = TypeLabel.createBinaryLabel("n");
     private static final boolean DEBUG = false;
 }

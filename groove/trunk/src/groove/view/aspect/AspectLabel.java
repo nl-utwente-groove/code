@@ -19,7 +19,7 @@ package groove.view.aspect;
 import groove.graph.AbstractLabel;
 import groove.graph.GraphRole;
 import groove.graph.LabelKind;
-import groove.view.FormatException;
+import groove.view.FormatError;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -81,23 +81,23 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
      * Consistency with existing values is not tested.
      * @param value the value to be added
      */
-    void addAspect(Aspect value) throws FormatException {
+    void addAspect(Aspect value) {
         testFixed(false);
         this.aspects.add(value);
         boolean notForNode = !value.getKind().isForNode(this.role);
         boolean notForEdge = !value.getKind().isForEdge(this.role);
         if (notForNode) {
             if (notForEdge) {
-                throw new FormatException("Aspect %s not allowed", value,
-                    this.role);
+                addError("Aspect %s not allowed", value, this.role);
+            } else {
+                this.edgeOnly = value;
             }
-            this.edgeOnly = value;
         } else if (notForEdge) {
             this.nodeOnly = value;
         }
         if (this.nodeOnly != null && this.edgeOnly != null) {
-            throw new FormatException("Conflicting aspects %s and %s",
-                this.nodeOnly, this.edgeOnly);
+            addError("Conflicting aspects %s and %s", this.nodeOnly,
+                this.edgeOnly);
         }
     }
 
@@ -177,12 +177,11 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
      * Sets the label text to a non-{@code null} value.
      * This fixes the label, so that no aspect values can be added any more. 
      */
-    void setInnerText(String text) throws FormatException {
+    void setInnerText(String text) {
         testFixed(false);
         this.innerText = text;
         if (text.length() > 0 && this.nodeOnly != null) {
-            throw new FormatException("Aspect %s cannot have label text %s",
-                this.nodeOnly, text);
+            addError("Aspect %s cannot have label text %s", this.nodeOnly, text);
         }
         setFixed();
     }
@@ -200,6 +199,27 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
 
     /** The graph role for which this label is intended to be used. */
     private final GraphRole role;
+
+    /** Adds an error to the errors of this label. */
+    void addError(String message, Object... args) {
+        testFixed(false);
+        this.errors.add(new FormatError(message, args));
+    }
+
+    /** Indicates if there are any errors in this label. */
+    public boolean hasErrors() {
+        testFixed(true);
+        return !this.errors.isEmpty();
+    }
+
+    /** Returns the (possibly empty) list of errors in this label. */
+    public List<FormatError> getErrors() {
+        testFixed(true);
+        return this.errors;
+    }
+
+    /** List of errors detected while building this label. */
+    private final List<FormatError> errors = new ArrayList<FormatError>();
 
     /** Label used for parent edges (between quantifier nodes). */
     public static final String IN_LABEL = "in";

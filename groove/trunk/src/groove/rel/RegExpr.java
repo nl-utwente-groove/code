@@ -521,7 +521,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             default:
                 // default atoms
                 // skip any node type or flag prefix
-                text = TypeLabel.createTypedLabel(text).text();
+                text = TypeLabel.createLabel(text).text();
                 boolean correct = true;
                 int i;
                 for (i = 0; correct && i < text.length(); i++) {
@@ -1615,7 +1615,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                 this.textList = textList;
                 this.labelSet = new HashSet<TypeLabel>();
                 for (String text : textList) {
-                    this.labelSet.add(TypeLabel.createLabel(text, this.kind));
+                    this.labelSet.add(TypeLabel.createLabel(this.kind, text));
                 }
                 this.negated = negated;
             }
@@ -1774,7 +1774,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                     "Sharp operator '%s' must be preceded by '%s'",
                     getOperator(), LabelKind.NODE_TYPE.getPrefix());
             }
-            return newInstance(TypeLabel.createLabel(text, LabelKind.NODE_TYPE, true));
+            return newInstance(TypeLabel.createLabel(LabelKind.NODE_TYPE, text, true));
         }
 
         /** Returns a {@link Wildcard} with a given identifier. */
@@ -1907,7 +1907,7 @@ abstract public class RegExpr { // implements VarSetSupport {
 
         /** Constructs a default label from this atom. */
         public TypeLabel toTypeLabel() {
-            return TypeLabel.createTypedLabel(text());
+            return TypeLabel.createLabel(text());
         }
 
         /**
