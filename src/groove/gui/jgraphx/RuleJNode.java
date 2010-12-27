@@ -18,9 +18,8 @@ package groove.gui.jgraphx;
 
 import groove.gui.layout.LayoutMap;
 import groove.view.aspect.AspectEdge;
+import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
-import groove.view.aspect.AspectValue;
-import groove.view.aspect.RuleAspect;
 
 import java.awt.geom.Rectangle2D;
 import java.util.HashSet;
@@ -62,10 +61,10 @@ public class RuleJNode extends mxCell {
     }
 
     private void setStyle() {
-        AspectValue nodeType = this.ruleNode.getType();
-        if (RuleAspect.CREATOR.equals(nodeType)) {
+        AspectKind nodeKind = this.ruleNode.getKind();
+        if (nodeKind.isCreator()) {
             this.setStyle(JGraphXStyles.CREATOR_NODE_STYLE);
-        } else if (RuleAspect.ERASER.equals(nodeType)) {
+        } else if (nodeKind.isEraser()) {
             this.setStyle(JGraphXStyles.ERASER_NODE_STYLE);
         } else {
             this.setStyle(JGraphXStyles.READER_NODE_STYLE);
