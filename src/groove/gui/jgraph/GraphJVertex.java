@@ -316,7 +316,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
             result.add(prefix + symbol);
         }
         for (E edge : getSelfEdges()) {
-            result.add(edge.toString());
+            result.add(edge.label().toString());
         }
         return result;
     }
