@@ -18,6 +18,7 @@ package groove.trans;
 
 import groove.algebra.Operator;
 import groove.graph.AbstractLabel;
+import groove.graph.LabelKind;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.rel.LabelVar;
@@ -85,8 +86,8 @@ public class RuleLabel extends AbstractLabel {
     }
 
     @Override
-    public int getKind() {
-        int result = super.getKind();
+    public LabelKind getKind() {
+        LabelKind result = super.getKind();
         if (isWildcard()) {
             result = ((RegExpr.Wildcard) getMatchExpr()).getKind();
         } else if (isSharp() || isAtom()) {
@@ -106,13 +107,7 @@ public class RuleLabel extends AbstractLabel {
             result = "" + Groove.LC_PI + getArgument();
         } else {
             result = getMatchExpr().toString();
-            // if the label is not binary, it means the regular expression
-            // is preceded with a kind prefix that we have to strip off
-            // in order to get the label text
-            if (!isBinary()) {
-                result =
-                    result.substring(TypeLabel.getPrefix(getKind()).length());
-            }
+            result = LabelKind.parse(result).two();
         }
         return result;
     }
@@ -259,7 +254,7 @@ public class RuleLabel extends AbstractLabel {
      * matches against.
      * Returns {@code -1} otherwise.
      */
-    public int getWildcardKind() {
+    public LabelKind getWildcardKind() {
         RegExpr regExpr = getMatchExpr();
         return regExpr == null ? null : regExpr.getWildcardKind();
     }

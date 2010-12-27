@@ -172,10 +172,11 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      */
     public RegAut computeAtom(Atom expr) {
         RegAut result = createAutomaton();
-        assert this.labelStore.getLabels().contains(expr.toTypeLabel()) : String.format(
-            "Unknown label %s", expr.toTypeLabel());
-        result.addEdge(result.getStartNode(), expr.toLabel(),
-            result.getEndNode());
+        // if this is an unknown label, don't add the edge
+        if (this.labelStore.getLabels().contains(expr.toTypeLabel())) {
+            result.addEdge(result.getStartNode(), expr.toLabel(),
+                result.getEndNode());
+        }
         return result;
     }
 

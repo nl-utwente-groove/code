@@ -20,6 +20,7 @@ import static groove.util.Converter.ITALIC_TAG;
 import groove.control.CtrlState;
 import groove.graph.Edge;
 import groove.graph.Label;
+import groove.graph.LabelKind;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
@@ -29,9 +30,9 @@ import groove.graph.algebra.VariableNode;
 import groove.lts.GraphState;
 import groove.trans.RuleLabel;
 import groove.util.Converter;
+import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
-import groove.view.aspect.Aspect;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -194,7 +195,7 @@ public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
         if (getSignature() != null) {
             result.add(new StringBuilder(
                 TypeLabel.toHtmlString(TypeLabel.createLabel(getSignature(),
-                    Label.NODE_TYPE))));
+                    LabelKind.NODE_TYPE))));
         }
         for (E edge : getSelfEdges()) {
             if (!this.jModel.isFiltering(getLabel(edge))) {
@@ -278,7 +279,7 @@ public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
             result.addAll(getListLabels(edge));
         }
         if (getSignature() != null) {
-            result.add(TypeLabel.createLabel(getSignature(), Label.NODE_TYPE));
+            result.add(TypeLabel.createLabel(getSignature(), LabelKind.NODE_TYPE));
         } else if (getSelfEdges().isEmpty()) {
             result.add(NO_LABEL);
         }

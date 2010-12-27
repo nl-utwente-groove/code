@@ -1,5 +1,9 @@
 package groove.graph;
 
+import groove.util.Pair;
+
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,18 +20,12 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeLabel,TypeEdge> 
 
     /** Creates a label with the given kind-prefixed text. */
     public TypeLabel createLabel(String text) {
-        int kind = TypeLabel.BINARY;
-        if (text.startsWith(TypeLabel.getPrefix(TypeLabel.NODE_TYPE))) {
-            kind = TypeLabel.NODE_TYPE;
-        } else if (text.startsWith(TypeLabel.getPrefix(TypeLabel.FLAG))) {
-            kind = TypeLabel.FLAG;
-        }
-        String actualText = text.substring(TypeLabel.getPrefix(kind).length());
-        return createLabel(actualText, kind);
+        Pair<LabelKind,String> parsedLabel = LabelKind.parse(text);
+        return createLabel(parsedLabel.two(), parsedLabel.one());
     }
 
     /** Returns a label with the given text and label kind. */
-    public TypeLabel createLabel(String text, int kind) {
+    public TypeLabel createLabel(String text, LabelKind kind) {
         assert text != null : "Label text of type label should not be null";
         return newLabel(text, kind);
     }
@@ -59,7 +57,7 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeLabel,TypeEdge> 
      */
     public int getLabelCount() {
         int result = 0;
-        for (Map<?,?> map : this.labelMaps) {
+        for (Map<?,?> map : this.labelMaps.values()) {
             result += map.size();
         }
         return result;
@@ -71,9 +69,8 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeLabel,TypeEdge> 
      * @param text the label text being looked up
      * @return the (reused or new) label object.
      */
-    private TypeLabel newLabel(String text, int kind) {
-        assert TypeLabel.isValidKind(kind);
-        Map<String,TypeLabel> labelMap = this.labelMaps[kind];
+    private TypeLabel newLabel(String text, LabelKind kind) {
+        Map<String,TypeLabel> labelMap = this.labelMaps.get(kind);
         TypeLabel result = labelMap.get(text);
         if (result == null) {
             int index = labelMap.size();
@@ -89,11 +86,11 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeLabel,TypeEdge> 
      * The internal translation table from strings to standard (non-node type)
      * label indices.
      */
-    @SuppressWarnings("unchecked")
-    private final Map<String,TypeLabel>[] labelMaps = new HashMap[3];
+    private final Map<LabelKind,Map<String,TypeLabel>> labelMaps =
+        new EnumMap<LabelKind,Map<String,TypeLabel>>(LabelKind.class);
     {
-        for (int i = 0; i < this.labelMaps.length; i++) {
-            this.labelMaps[i] = new HashMap<String,TypeLabel>();
+        for (LabelKind kind : EnumSet.allOf(LabelKind.class)) {
+            this.labelMaps.put(kind, new HashMap<String,TypeLabel>());
         }
     }
 

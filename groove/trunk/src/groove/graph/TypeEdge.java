@@ -27,6 +27,9 @@ public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel,TypeNode> {
      */
     public TypeEdge(TypeNode source, TypeLabel label, TypeNode target) {
         super(source, label, target);
+        assert source.equals(target) || label.isBinary() : String.format(
+            "Can't create %s label %s between distinct nodes %s and %s",
+            label.getKind().getName(false), label, source, target);
     }
 
     /** Indicates if this edge type is abstract. */

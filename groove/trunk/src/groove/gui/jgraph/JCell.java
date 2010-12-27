@@ -17,6 +17,7 @@
 package groove.gui.jgraph;
 
 import groove.graph.Label;
+import groove.graph.LabelKind;
 import groove.graph.TypeLabel;
 import groove.trans.RuleLabel;
 
@@ -79,9 +80,9 @@ public interface JCell extends GraphCell, Serializable {
 
     /** Pseudo-label for cells with an empty list label set. */
     static public final TypeLabel NO_LABEL = TypeLabel.createLabel("\u0000",
-        Label.NODE_TYPE);
+        LabelKind.NODE_TYPE);
     /** Pseudo-label for subtype edges. */
     static public final RuleLabel SUBTYPE_LABEL = new RuleLabel(
-        TypeLabel.createLabel("\u0001", Label.NODE_TYPE));
+        TypeLabel.createLabel("\u0001", LabelKind.NODE_TYPE));
 
 }

@@ -23,6 +23,7 @@ import static groove.util.ExprParser.PLACEHOLDER;
 import static groove.util.ExprParser.RPAR_CHAR;
 import static groove.util.ExprParser.SINGLE_QUOTE_CHAR;
 import groove.graph.Label;
+import groove.graph.LabelKind;
 import groove.graph.TypeLabel;
 import groove.trans.RuleLabel;
 import groove.util.ExprParser;
@@ -124,11 +125,11 @@ abstract public class RegExpr { // implements VarSetSupport {
      * If this is a {@link RegExpr.Wildcard}, returns the kind of label
      * the wildcard matches against; otherwise returns {@code -1}.
      */
-    public int getWildcardKind() {
+    public LabelKind getWildcardKind() {
         if (this instanceof Wildcard) {
             return ((Wildcard) this).getKind();
         } else {
-            return -1;
+            return null;
         }
     }
 
@@ -1384,7 +1385,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         public String toString() {
             StringBuilder result = new StringBuilder();
             if (this.guard != null) {
-                result.append(this.guard.getTypePrefix());
+                result.append(this.guard.getKind().getPrefix());
             }
             result.append(super.toString());
             if (getIdentifier() != null) {
@@ -1407,7 +1408,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             }
             result.append(getSymbol());
             if (this.guard != null) {
-                String type = TypeLabel.getPrefix(this.guard.kind);
+                String type = this.guard.kind.getPrefix();
                 if (!type.isEmpty()) {
                     result.append(" ");
                     result.append(type.subSequence(0, type.length() - 1));
@@ -1428,7 +1429,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         /** Returns the kind of labels accepted by this wildcard. */
-        public int getKind() {
+        public LabelKind getKind() {
             return getGuard().getKind();
         }
 
@@ -1472,11 +1473,11 @@ abstract public class RegExpr { // implements VarSetSupport {
             }
             String prefix = expr.substring(0, index);
             // derive the type of labels the wildcard should match
-            Pair<Integer,String> parsedPrefix = TypeLabel.splitKind(prefix);
+            Pair<LabelKind,String> parsedPrefix = LabelKind.parse(prefix);
             if (parsedPrefix.two().length() > 0) {
                 throw error;
             }
-            int kind = parsedPrefix.one();
+            LabelKind kind = parsedPrefix.one();
             // parse the identifier and constraint expression
             String identifier = null;
             LabelConstraint constraint = new LabelConstraint(kind);
@@ -1601,7 +1602,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             /** Constructs a new constraint.
              * @param kind The kind of labels tested for; only labels of this type can ever satisfy the constraint
              */
-            LabelConstraint(int kind) {
+            LabelConstraint(LabelKind kind) {
                 this.kind = kind;
             }
 
@@ -1675,13 +1676,8 @@ abstract public class RegExpr { // implements VarSetSupport {
             }
 
             /** Returns the kind of labels accepted by this constraint. */
-            public int getKind() {
+            public LabelKind getKind() {
                 return this.kind;
-            }
-
-            /** Returns the wildcard prefix dictated by the label type of this constraint. */
-            public String getTypePrefix() {
-                return TypeLabel.getPrefix(this.kind);
             }
 
             /** The list of strings indicating the labels to be matched. */
@@ -1691,7 +1687,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             /** Flag indicating if we are testing for absence or presence. */
             private boolean negated;
             /** The type of label we are testing for. See {@link Label#getKind()} */
-            private final int kind;
+            private final LabelKind kind;
         }
     }
 
@@ -1752,7 +1748,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          */
         @Override
         public String toString() {
-            return TypeLabel.getPrefix(Label.NODE_TYPE) + super.toString()
+            return LabelKind.NODE_TYPE.getPrefix() + super.toString()
                 + getTypeLabel();
         }
 
@@ -1769,16 +1765,16 @@ abstract public class RegExpr { // implements VarSetSupport {
                 return null;
             }
             // separate the expression into operator and text
-            String prefix = expr.substring(0, index);
+            Pair<LabelKind,String> parsedExpr =
+                LabelKind.parse(expr.substring(0, index));
             String text = expr.substring(index + 1);
-            String nodeTypePrefix = TypeLabel.getPrefix(Label.NODE_TYPE);
-            if (!prefix.equals(nodeTypePrefix)) {
+            if (parsedExpr.one() != LabelKind.NODE_TYPE
+                || parsedExpr.two().length() != 0) {
                 throw new FormatException(
                     "Sharp operator '%s' must be preceded by '%s'",
-                    getOperator(), nodeTypePrefix);
+                    getOperator(), LabelKind.NODE_TYPE.getPrefix());
             }
-            return newInstance(TypeLabel.createLabel(text, Label.NODE_TYPE,
-                true));
+            return newInstance(TypeLabel.createLabel(text, LabelKind.NODE_TYPE, true));
         }
 
         /** Returns a {@link Wildcard} with a given identifier. */

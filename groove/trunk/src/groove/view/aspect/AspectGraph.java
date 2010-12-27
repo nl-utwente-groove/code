@@ -166,8 +166,12 @@ public class AspectGraph extends
                 if (label.isNodeOnly()) {
                     AspectNode sourceImage = elementMap.getNode(edge.source());
                     sourceImage.setAspects(label);
-                } else {
+                } else if (edge.source().equals(edge.target())
+                    || label.isBinary()) {
                     edgeDataMap.put(edge, label);
+                } else {
+                    throw new FormatException("%s %s must be a node label",
+                        label.getKind().getName(true), label);
                 }
             } catch (FormatException e) {
                 // we can't trace the error to the aspect graph element,

@@ -16,7 +16,7 @@
  */
 package groove.gui.dialog;
 
-import groove.graph.Label;
+import groove.graph.LabelKind;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.util.Converter;
@@ -28,6 +28,7 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.EnumSet;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -90,9 +91,10 @@ public class RelabelDialog {
      */
     private void propagateSelection() {
         TypeLabel selection = (TypeLabel) getOldField().getSelectedItem();
-        getOldTypeLabel().setText(LABEL_TYPE_TEXT[selection.getKind()]);
+        getOldTypeLabel().setText(selection.getKind().getName(true));
         //        getOldTypeCombobox().setSelectedIndex(selection.getType());
-        getNewTypeCombobox().setSelectedIndex(selection.getKind());
+        getNewTypeCombobox().setSelectedIndex(
+            LabelKind.getIndex(selection.getKind()));
         //        getNewTypeCheckbox().setSelected(selection.isNodeType());
         getNewField().setText(selection.text());
         getNewField().setSelectionStart(0);
@@ -125,7 +127,7 @@ public class RelabelDialog {
         String text = getNewField().getText();
         if (text.length() > 0) {
             int labelType = getNewTypeCombobox().getSelectedIndex();
-            result = TypeLabel.createLabel(text, labelType);
+            result = TypeLabel.createLabel(text, LabelKind.getKind(labelType));
             TypeLabel oldLabel = getOldLabel();
             if (this.existingLabels.getLabels().contains(result)) {
                 if (result.equals(oldLabel)) {
@@ -290,7 +292,7 @@ public class RelabelDialog {
     private JLabel getOldTypeLabel() {
         if (this.oldTypeLabel == null) {
             final JLabel result = this.oldTypeLabel = new JLabel();
-            result.setText(LABEL_TYPE_TEXT[getOldLabel().getKind()]);
+            result.setText(getOldLabel().getKind().getName(true));
             result.setPreferredSize(getNewTypeCombobox().getPreferredSize());
             result.setBorder(new EtchedBorder());
             result.setEnabled(true);
@@ -306,10 +308,10 @@ public class RelabelDialog {
     private JComboBox getNewTypeCombobox() {
         if (this.newTypeChoice == null) {
             final JComboBox result = this.newTypeChoice = new JComboBox();
-            for (int i = 0; i < LABEL_TYPE_TEXT.length; i++) {
-                result.addItem(LABEL_TYPE_TEXT[i]);
+            for (LabelKind kind : EnumSet.allOf(LabelKind.class)) {
+                result.addItem(kind.getName(true));
             }
-            result.setSelectedIndex(getOldLabel().getKind());
+            result.setSelectedIndex(LabelKind.getIndex(getOldLabel().getKind()));
             result.setEnabled(true);
             result.setFocusable(false);
             result.addActionListener(new ActionListener() {
@@ -317,11 +319,11 @@ public class RelabelDialog {
                 public void actionPerformed(ActionEvent e) {
                     Font font = getNewField().getFont();
                     int fontProperty;
-                    switch (result.getSelectedIndex()) {
-                    case Label.NODE_TYPE:
+                    switch (LabelKind.getKind(result.getSelectedIndex())) {
+                    case NODE_TYPE:
                         fontProperty = Font.BOLD;
                         break;
-                    case Label.FLAG:
+                    case FLAG:
                         fontProperty = Font.ITALIC;
                         break;
                     default:
@@ -351,13 +353,6 @@ public class RelabelDialog {
     static private String OLD_TEXT = "Old label:";
     /** Text of replace label on dialog */
     static private String NEW_TEXT = "New label: ";
-
-    static private String[] LABEL_TYPE_TEXT = new String[3];
-    {
-        LABEL_TYPE_TEXT[Label.BINARY] = "Binary";
-        LABEL_TYPE_TEXT[Label.NODE_TYPE] = "Node Type";
-        LABEL_TYPE_TEXT[Label.FLAG] = "Flag";
-    }
 
     /**
      * Action listener that closes the dialog and sets the option pane's value
