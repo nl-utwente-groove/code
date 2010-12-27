@@ -23,7 +23,6 @@ import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.CertificateStrategy.Certificate;
@@ -55,8 +54,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GTS extends
-        AbstractGraph<GraphState,DerivationLabel,GraphTransition> implements
+public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         LTS {
     /**
      * The number of transitions generated but not added (due to overlapping
@@ -614,7 +612,7 @@ public class GTS extends
                     }
                 }
             } else {
-                CertificateStrategy<HostNode,TypeLabel,HostEdge> certifier =
+                CertificateStrategy<HostNode,HostEdge> certifier =
                     this.checker.getCertifier(stateKey.getGraph(), true);
                 Object certificate = certifier.getGraphCertificate();
                 result = certificate.hashCode();

@@ -437,8 +437,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
                 newGrayedOut.add(targetCell);
             }
         }
-        Set<Edge> newEdges =
-            new HashSet<Edge>(newStateJModel.getGraph().edgeSet());
+        Set<Edge<?>> newEdges =
+            new HashSet<Edge<?>>(newStateJModel.getGraph().edgeSet());
         for (Map.Entry<HostEdge,HostEdge> entry : derivationMap.edgeMap().entrySet()) {
             JCell sourceCell = oldStateJModel.getJCell(entry.getKey());
             AttributeMap sourceAttributes = sourceCell.getAttributes();
@@ -465,7 +465,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
             newEdges.remove(entry.getValue());
         }
         // new edges should be shown, including their source and target vertex
-        for (Edge newEdge : newEdges) {
+        for (Edge<?> newEdge : newEdges) {
             JCell targetCell = newStateJModel.getJCell(newEdge);
             if (targetCell instanceof JEdge) {
                 newGrayedOut.remove(((JEdge) targetCell).getSourceVertex());

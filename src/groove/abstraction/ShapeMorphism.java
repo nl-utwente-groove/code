@@ -17,7 +17,6 @@
 package groove.abstraction;
 
 import groove.graph.Morphism;
-import groove.graph.TypeLabel;
 import groove.trans.HostEdge;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
@@ -47,12 +46,12 @@ public class ShapeMorphism extends HostGraphMorphism {
     }
 
     @Override
-    public ShapeMorphism then(Morphism<HostNode,TypeLabel,HostEdge> other) {
+    public ShapeMorphism then(Morphism<HostNode,HostEdge> other) {
         return (ShapeMorphism) super.then(other);
     }
 
     @Override
-    public ShapeMorphism inverseThen(Morphism<HostNode,TypeLabel,HostEdge> other) {
+    public ShapeMorphism inverseThen(Morphism<HostNode,HostEdge> other) {
         return (ShapeMorphism) super.inverseThen(other);
     }
 

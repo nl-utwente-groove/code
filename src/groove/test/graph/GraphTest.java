@@ -46,7 +46,7 @@ import org.junit.Test;
  * @version $Revision$
  */
 @SuppressWarnings("all")
-public abstract class GraphTest<N extends Node,L extends Label,E extends Edge> {
+public abstract class GraphTest<N extends Node,E extends Edge<N>> {
     static public final String MATCH_DOM_NAME = "match-dom-";
     static public final String MATCH_COD_NAME = "match-cod";
     static public final String ISO_GRAPH_NAME = "iso-";
@@ -62,15 +62,15 @@ public abstract class GraphTest<N extends Node,L extends Label,E extends Edge> {
      * The graph upon which most tests are done. It has three nodes, one of
      * which has an a-edge to another and a b-edge to the third.
      */
-    public Graph<N,L,E> graph;
+    public Graph<N,E> graph;
     /** An empty graph of the same type as {@code graph}. */
-    public Graph<N,L,E> newGraph;
+    public Graph<N,E> newGraph;
     /** An a-label */
-    public L aLabel;
+    public Label aLabel;
     /** A b-label */
-    public L bLabel;
+    public Label bLabel;
     /** A c-label */
-    public L cLabel;
+    public Label cLabel;
     /** The a-edge of <tt>graph</tt>. */
     public E aEdge;
     /** The b-edge of <tt>graph</tt>. */
@@ -82,13 +82,13 @@ public abstract class GraphTest<N extends Node,L extends Label,E extends Edge> {
     /** The target node of <tt>bEdge</tt>. */
     public N bTarget;
 
-    public Graph<N,L,E>[] matchDom = new Graph[MATCH_DOM_COUNT];
-    public Graph<N,L,E> matchCod;
-    public Graph<N,L,E>[] isoGraph = new Graph[ISO_GRAPH_COUNT];
+    public Graph<N,E>[] matchDom = new Graph[MATCH_DOM_COUNT];
+    public Graph<N,E> matchCod;
+    public Graph<N,E>[] isoGraph = new Graph[ISO_GRAPH_COUNT];
 
     public IsoChecker checker = IsoChecker.getInstance(true);
 
-    abstract Graph<N,L,E> createGraph();
+    abstract Graph<N,E> createGraph();
 
     /*
      * @see TestCase#setUp()
@@ -123,8 +123,8 @@ public abstract class GraphTest<N extends Node,L extends Label,E extends Edge> {
         this.bTarget = (N) this.bEdge.target();
     }
 
-    protected Graph<N,L,E> loadGraph(File file) {
-        Graph<N,L,E> result = createGraph();
+    protected Graph<N,E> loadGraph(File file) {
+        Graph<N,E> result = createGraph();
         try {
             Graph graph = this.xml.unmarshalGraph(file);
             result.addNodeSet(graph.nodeSet());
@@ -233,7 +233,7 @@ public abstract class GraphTest<N extends Node,L extends Label,E extends Edge> {
         Iterator<? extends N> nodeIter = this.matchDom[0].nodeSet().iterator();
         N sourceNode = nodeIter.next();
         N targetNode = nodeIter.next();
-        L label = this.graph.getFactory().createLabel("test");
+        Label label = this.graph.getFactory().createLabel("test");
         E newEdge = this.matchDom[0].addEdge(sourceNode, label, targetNode);
         newEdge.source().equals(sourceNode);
         newEdge.target().equals(targetNode);

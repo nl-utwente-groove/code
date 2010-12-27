@@ -21,16 +21,16 @@ package groove.graph;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface Edge extends Element {
+public interface Edge<N extends Node> extends Element {
     /**
      * Returns the source node of this edge.
      */
-    public Node source();
+    public N source();
 
     /**
      * Returns the target node of this edge.
      */
-    public Node target();
+    public N target();
 
     /**
      * Returns the label of this edge. The label can never be <tt>null</tt>.

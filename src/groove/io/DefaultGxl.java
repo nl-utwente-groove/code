@@ -111,8 +111,8 @@ public class DefaultGxl implements Xml<DefaultGraph> {
     /**
      * This implementation works by delegating to a {@link GxlIO}.
      */
-    public <N extends Node,E extends Edge> void marshalGraph(
-            Graph<N,?,E> graph, File file) throws IOException {
+    public <N extends Node,E extends Edge<N>> void marshalGraph(
+            Graph<N,E> graph, File file) throws IOException {
         // create parent dirs if necessary
         File parent = file.getParentFile();
         if (parent != null && !parent.exists()) {

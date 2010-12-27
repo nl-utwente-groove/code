@@ -22,7 +22,6 @@ import groove.graph.AbstractEdge;
 import groove.graph.AbstractGraph;
 import groove.graph.Element;
 import groove.graph.Morphism;
-import groove.graph.TypeLabel;
 import groove.graph.iso.IsoChecker;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
@@ -39,7 +38,7 @@ import groove.trans.RuleMatch;
  * @version $Revision$ $Date: 2008-03-05 16:50:10 $
  */
 public class DefaultGraphTransition extends
-        AbstractEdge<GraphState,DerivationLabel,GraphState> implements
+        AbstractEdge<GraphState,DerivationLabel> implements
         GraphTransitionStub, GraphTransition {
     /**
      * Constructs a GraphTransition on the basis of a given rule event, between
@@ -170,7 +169,7 @@ public class DefaultGraphTransition extends
         if (isSymmetry()) {
             HostGraph derivedTarget = new DefaultHostGraph(appl.getTarget());
             HostGraph realTarget = new DefaultHostGraph(target().getGraph());
-            final Morphism<HostNode,TypeLabel,HostEdge> iso =
+            final Morphism<HostNode,HostEdge> iso =
                 IsoChecker.<HostNode,HostEdge>getInstance(true).getIsomorphism(
                     derivedTarget, realTarget);
             assert iso != null : "Can't reconstruct derivation from graph transition "

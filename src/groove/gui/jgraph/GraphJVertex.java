@@ -49,7 +49,7 @@ import java.util.TreeSet;
  * retrieve the user object as a Node. Also provides a single default port for
  * the graph cell, and a convenience method to retrieve it.
  */
-public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
+public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
         implements GraphJCell<N,E> {
     /**
      * Constructs a jnode on top of a graph node.
@@ -244,9 +244,8 @@ public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
         } else {
             // this is a binary edge displayed as a node label
             result.append(edgeLabel);
-            @SuppressWarnings("unchecked")
             GraphJVertex<N,E> oppositeVertex =
-                this.jModel.getJCellForNode((N) edge.target());
+                this.jModel.getJCellForNode(edge.target());
             Node actualTarget = oppositeVertex.getActualNode();
             if (actualTarget instanceof ValueNode) {
                 result.append(ASSIGN_TEXT);
@@ -540,7 +539,7 @@ public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
      * @param edge the edge to be removed
      * @ensure ! edges().contains(edge)
      */
-    public void removeSelfEdge(Edge edge) {
+    public void removeSelfEdge(Edge<?> edge) {
         getUserObject().remove(edge);
     }
 

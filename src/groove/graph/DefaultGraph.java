@@ -29,9 +29,8 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:51 $
  */
-public class DefaultGraph extends
-        AbstractGraph<DefaultNode,DefaultLabel,DefaultEdge> implements
-        Cloneable {
+public class DefaultGraph extends AbstractGraph<DefaultNode,DefaultEdge>
+        implements Cloneable {
     /**
      * Constructs a prototype object of this class, to be used as a factory for
      * new (default) graphs.
@@ -70,7 +69,7 @@ public class DefaultGraph extends
     }
 
     @Override
-    public boolean containsEdge(Edge edge) {
+    public boolean containsEdge(Edge<?> edge) {
         Set<DefaultEdge> edgeSet = this.edgeMap.get(edge.source());
         return edgeSet != null && edgeSet.contains(edge);
     }

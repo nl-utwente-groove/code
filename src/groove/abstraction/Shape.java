@@ -1457,8 +1457,8 @@ public final class Shape extends DefaultHostGraph {
     public boolean isIsomorphicTo(Shape other) {
         boolean result = false;
         IsoChecker<HostNode,HostEdge> isoChecker = IsoChecker.getInstance(true);
-        IsoChecker<HostNode,HostEdge>.IsoCheckerState<TypeLabel> state =
-            isoChecker.new IsoCheckerState<TypeLabel>();
+        IsoChecker<HostNode,HostEdge>.IsoCheckerState state =
+            isoChecker.new IsoCheckerState();
         ShapeMorphism morphism =
             (ShapeMorphism) isoChecker.getIsomorphism(this, other, state);
         while (morphism != null) {

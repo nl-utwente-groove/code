@@ -2024,8 +2024,7 @@ public class DefaultRuleView implements RuleView {
     }
 
     /** Mapping from aspect graph elements to rule graph elements. */
-    public static class ViewToRuleMap extends
-            ViewToModelMap<RuleNode,RuleLabel,RuleEdge> {
+    public static class ViewToRuleMap extends ViewToModelMap<RuleNode,RuleEdge> {
         /**
          * Creates a new, empty map.
          */

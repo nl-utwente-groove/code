@@ -27,7 +27,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class EdgeContent<E extends Edge> extends JCellContent<E> {
+public class EdgeContent<E extends Edge<?>> extends JCellContent<E> {
     /** This implementation returns the labels of the edges. */
     @Override
     public Collection<String> getLabelSet() {

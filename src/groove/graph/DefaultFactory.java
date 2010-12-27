@@ -22,8 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /** Factory class for graph elements. */
-public class DefaultFactory implements
-        ElementFactory<DefaultNode,DefaultLabel,DefaultEdge> {
+public class DefaultFactory implements ElementFactory<DefaultNode,DefaultEdge> {
     /** Private constructor. */
     protected DefaultFactory() {
         // empty
@@ -64,13 +63,14 @@ public class DefaultFactory implements
     }
 
     @Override
-    public DefaultEdge createEdge(DefaultNode source, DefaultLabel label,
+    public DefaultEdge createEdge(DefaultNode source, Label label,
             DefaultNode target) {
         assert source != null : "Source node of default edge should not be null";
         assert target != null : "Target node of default edge should not be null";
-        assert label != null : "Label of default edge should not be null";
+        assert label instanceof DefaultLabel : "Label of default edge should not be null";
         DefaultEdge edge =
-            new DefaultEdge(source, label, target, getEdgeCount());
+            new DefaultEdge(source, (DefaultLabel) label, target,
+                getEdgeCount());
         DefaultEdge result = this.edgeSet.put(edge);
         if (result == null) {
             result = edge;
@@ -79,8 +79,8 @@ public class DefaultFactory implements
     }
 
     @Override
-    public Morphism<DefaultNode,DefaultLabel,DefaultEdge> createMorphism() {
-        return new Morphism<DefaultNode,DefaultLabel,DefaultEdge>(this);
+    public Morphism<DefaultNode,DefaultEdge> createMorphism() {
+        return new Morphism<DefaultNode,DefaultEdge>(this);
     }
 
     /** Returns the highest default node node number. */

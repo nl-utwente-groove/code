@@ -46,8 +46,8 @@ import java.util.Set;
  * An implementation of regular automata that also keeps track of the valuation
  * of the variables.
  */
-public class MatrixAutomaton extends
-        NodeSetEdgeSetGraph<RegNode,RuleLabel,RegEdge> implements RegAut {
+public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
+        implements RegAut {
     /**
      * Creates an automaton with a given start and end node, which does not
      * accept the empty word.
@@ -119,7 +119,7 @@ public class MatrixAutomaton extends
     }
 
     @Override
-    public ElementFactory<RegNode,RuleLabel,RegEdge> getFactory() {
+    public ElementFactory<RegNode,RegEdge> getFactory() {
         return RegFactory.instance();
     }
 
@@ -474,7 +474,7 @@ public class MatrixAutomaton extends
     }
 
     @Override
-    protected boolean isTypeCorrect(Edge edge) {
+    protected boolean isTypeCorrect(Edge<?> edge) {
         boolean result =
             edge instanceof RegEdge && edge.label() instanceof RuleLabel;
         if (result) {

@@ -16,11 +16,9 @@
  */
 package groove.view;
 
-import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.ElementFactory;
 import groove.graph.ElementMap;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.view.aspect.AspectEdge;
@@ -52,7 +50,7 @@ public interface View<Model> {
      * @return the mapping from view to model elements; empty if the view
      *         contains errors.
      */
-    ViewToModelMap<?,?,?> getMap();
+    ViewToModelMap<?,?> getMap();
 
     /**
      * Returns the (non-<code>null</code>) name of the underlying model.
@@ -82,12 +80,12 @@ public interface View<Model> {
     List<FormatError> getErrors();
 
     /** Mapping from view graph elements to model graph elements. */
-    abstract class ViewToModelMap<N extends Node,L extends Label,E extends Edge>
-            extends ElementMap<AspectNode,DefaultLabel,AspectEdge,N,L,E> {
+    abstract class ViewToModelMap<N extends Node,E extends Edge<N>> extends
+            ElementMap<AspectNode,AspectEdge,N,E> {
         /**
          * Creates a new map, on the basis of a given factory.
          */
-        public ViewToModelMap(ElementFactory<N,L,E> factory) {
+        public ViewToModelMap(ElementFactory<N,E> factory) {
             super(factory);
         }
 

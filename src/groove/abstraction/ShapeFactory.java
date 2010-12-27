@@ -17,6 +17,7 @@
 package groove.abstraction;
 
 import groove.graph.DefaultEdge;
+import groove.graph.Label;
 import groove.graph.Node.Factory;
 import groove.graph.NodeStore;
 import groove.graph.TypeLabel;
@@ -49,14 +50,13 @@ public class ShapeFactory extends HostFactory {
     }
 
     @Override
-    public ShapeEdge createEdge(HostNode source, TypeLabel label,
-            HostNode target) {
+    public ShapeEdge createEdge(HostNode source, Label label, HostNode target) {
         assert source instanceof ShapeNode : "Source node should be ShapeNode";
         assert target instanceof ShapeNode : "Target node should be ShapeNode";
-        assert label != null : "Label should not be null";
+        assert label instanceof TypeLabel : "Label should not be null";
         ShapeEdge edge =
-            new ShapeEdge((ShapeNode) source, label, (ShapeNode) target,
-                getEdgeCount());
+            new ShapeEdge((ShapeNode) source, (TypeLabel) label,
+                (ShapeNode) target, getEdgeCount());
         ShapeEdge result = this.edgeSet.put(edge);
         if (result == null) {
             result = edge;

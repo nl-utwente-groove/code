@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /** Factory creating type nodes and edges. */
-public class TypeFactory implements ElementFactory<TypeNode,TypeLabel,TypeEdge> {
+public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
     private TypeFactory() {
         // empty
     }
@@ -36,13 +36,13 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeLabel,TypeEdge> 
     }
 
     @Override
-    public TypeEdge createEdge(TypeNode source, TypeLabel label, TypeNode target) {
-        return new TypeEdge(source, label, target);
+    public TypeEdge createEdge(TypeNode source, Label label, TypeNode target) {
+        return new TypeEdge(source, (TypeLabel) label, target);
     }
 
     /** Type graph morphisms are not supported. */
     @Override
-    public Morphism<TypeNode,TypeLabel,TypeEdge> createMorphism() {
+    public Morphism<TypeNode,TypeEdge> createMorphism() {
         throw new UnsupportedOperationException();
     }
 

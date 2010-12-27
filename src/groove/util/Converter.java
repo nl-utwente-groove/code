@@ -55,7 +55,7 @@ public class Converter {
     }
 
     /** Writes a graph in FSM format to a print writer. */
-    static public void graphToFsm(Graph<?,?,?> graph, PrintWriter writer) {
+    static public void graphToFsm(Graph<?,?> graph, PrintWriter writer) {
         // mapping from nodes of graphs to integers
         Map<Node,Integer> nodeMap = new HashMap<Node,Integer>();
         writer.println("NodeNumber(0)");
@@ -67,14 +67,14 @@ public class Converter {
             nr++;
         }
         writer.println("---");
-        for (Edge edge : graph.edgeSet()) {
+        for (Edge<?> edge : graph.edgeSet()) {
             writer.println(nodeMap.get(edge.source()) + " "
                 + nodeMap.get(edge.target()) + " " + "\"" + edge.label() + "\"");
         }
     }
 
     /** Writes a graph in CADP .aut format to a print writer. */
-    static public void graphToAut(Graph<?,?,?> graph, PrintWriter writer) {
+    static public void graphToAut(Graph<?,?> graph, PrintWriter writer) {
         // collect the node numbers, to be able to number them consecutively
         int nodeCount = graph.nodeCount();
         // list marking which node numbers have been used
@@ -102,7 +102,7 @@ public class Converter {
         }
         writer.printf("des (%d, %d, %d)%n", 0, graph.edgeCount(),
             graph.nodeCount());
-        for (Edge edge : graph.edgeSet()) {
+        for (Edge<?> edge : graph.edgeSet()) {
             String format;
             if (edge.label().text().indexOf(',') >= 0) {
                 format = "(%d,\"%s\",%d)%n";
@@ -116,7 +116,7 @@ public class Converter {
 
     /** Reads in a graph from CADP .aut format. */
     static public <N extends Node> Map<String,N> autToGraph(InputStream reader,
-            Graph<N,?,?> graph) throws IOException {
+            Graph<N,?> graph) throws IOException {
         Map<String,N> result = new HashMap<String,N>();
         BufferedReader in = new BufferedReader(new InputStreamReader(reader));
         int linenr = 0;
@@ -158,7 +158,7 @@ public class Converter {
     }
 
     /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
-    static public <N extends Node,E extends Edge> void graphToTikz(
+    static public <N extends Node,E extends Edge<N>> void graphToTikz(
             JGraph graph, PrintWriter writer) {
         JModel model = graph.getModel();
         GraphJModel<?,?> graphModel;

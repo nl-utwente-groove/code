@@ -55,8 +55,8 @@ public class Aut implements Xml<DefaultGraph> {
         file.delete();
     }
 
-    public <N extends Node,E extends Edge> void marshalGraph(
-            Graph<N,?,E> graph, File file) throws IOException {
+    public <N extends Node,E extends Edge<N>> void marshalGraph(
+            Graph<N,E> graph, File file) throws IOException {
         PrintWriter out = new PrintWriter(file);
         Converter.graphToAut(graph, out);
         out.close();

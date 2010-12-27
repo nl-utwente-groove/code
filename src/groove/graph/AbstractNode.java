@@ -98,7 +98,7 @@ abstract public class AbstractNode implements Node, Cloneable {
                     getClass().getName().compareTo(obj.getClass().getName());
             }
         } else if (obj instanceof Edge) {
-            result = compareTo(((Edge) obj).source());
+            result = compareTo(((Edge<?>) obj).source());
             if (result == 0) {
                 // nodes come before edges with the same source
                 result = -1;

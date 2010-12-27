@@ -33,8 +33,8 @@ public class AspectGxl implements Xml<AspectGraph> {
      * inner marshaller.
      * @see AspectGraph#toPlainGraph()
      */
-    public <N extends Node,E extends Edge> void marshalGraph(
-            Graph<N,?,E> graph, File file) throws IOException {
+    public <N extends Node,E extends Edge<N>> void marshalGraph(
+            Graph<N,E> graph, File file) throws IOException {
         assert graph instanceof AspectGraph;
         this.marshaller.marshalGraph(((AspectGraph) graph).toPlainGraph(), file);
     }

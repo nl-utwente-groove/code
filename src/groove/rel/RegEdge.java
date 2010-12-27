@@ -23,7 +23,7 @@ import groove.trans.RuleLabel;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RegEdge extends AbstractEdge<RegNode,RuleLabel,RegNode> {
+public class RegEdge extends AbstractEdge<RegNode,RuleLabel> {
     /**
      * Creates an edge between the given end points.
      */

@@ -20,7 +20,6 @@ import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 import groove.util.Reporter;
@@ -39,9 +38,9 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract public class CertificateStrategy<N extends Node,L extends Label,E extends Edge> {
+abstract public class CertificateStrategy<N extends Node,E extends Edge<N>> {
     @SuppressWarnings("unchecked")
-    CertificateStrategy(Graph<N,L,E> graph) {
+    CertificateStrategy(Graph<N,E> graph) {
         this.graph = graph;
         // the graph may be null if a prototype is being constructed.
         if (graph != null) {
@@ -56,7 +55,7 @@ abstract public class CertificateStrategy<N extends Node,L extends Label,E exten
      * Returns the underlying graph for which this is the certificate strategy.
      * @return the underlying graph
      */
-    public Graph<N,L,E> getGraph() {
+    public Graph<N,E> getGraph() {
         return this.graph;
     }
 
@@ -195,14 +194,13 @@ abstract public class CertificateStrategy<N extends Node,L extends Label,E exten
      * into the certificate edge map.
      */
     private void initEdgeCert(E edge) {
-        @SuppressWarnings("unchecked")
-        N source = (N) edge.source();
+        N source = edge.source();
         NodeCertificate<N> sourceCert = getNodeCert(source);
         assert sourceCert != null : "Edge source of " + edge + " not found in "
             + this.otherNodeCertMap + "; so not in the node set "
             + this.graph.nodeSet() + " of " + this.graph;
         if (source == edge.target()) {
-            EdgeCertificate<E> edge1Cert =
+            EdgeCertificate<N,E> edge1Cert =
                 createEdge1Certificate(edge, sourceCert);
             this.edgeCerts[this.edgeCerts.length - this.edge1CertCount - 1] =
                 edge1Cert;
@@ -211,14 +209,12 @@ abstract public class CertificateStrategy<N extends Node,L extends Label,E exten
                 "%s unary and %s binary edges do not equal %s edges",
                 this.edge1CertCount, this.edge2CertCount, this.edgeCerts.length);
         } else {
-            @SuppressWarnings("unchecked")
-            N target = (N) edge.target();
-            NodeCertificate<N> targetCert = getNodeCert(target);
+            NodeCertificate<N> targetCert = getNodeCert(edge.target());
             assert targetCert != null : "Edge target of " + edge
                 + " not found in " + this.otherNodeCertMap
                 + "; so not in the node set " + this.graph.nodeSet() + " of "
                 + this.graph;
-            EdgeCertificate<E> edge2Cert =
+            EdgeCertificate<N,E> edge2Cert =
                 createEdge2Certificate(edge, sourceCert, targetCert);
             this.edgeCerts[this.edge2CertCount] = edge2Cert;
             this.edge2CertCount++;
@@ -232,10 +228,10 @@ abstract public class CertificateStrategy<N extends Node,L extends Label,E exten
 
     abstract NodeCertificate<N> createNodeCertificate(N node);
 
-    abstract EdgeCertificate<E> createEdge1Certificate(E edge,
+    abstract EdgeCertificate<N,E> createEdge1Certificate(E edge,
             groove.graph.iso.CertificateStrategy.NodeCertificate<N> source);
 
-    abstract EdgeCertificate<E> createEdge2Certificate(E edge,
+    abstract EdgeCertificate<N,E> createEdge2Certificate(E edge,
             groove.graph.iso.CertificateStrategy.NodeCertificate<N> source,
             groove.graph.iso.CertificateStrategy.NodeCertificate<N> target);
 
@@ -260,7 +256,7 @@ abstract public class CertificateStrategy<N extends Node,L extends Label,E exten
                 this.certificateMap.put(nodeCert.getElement(), nodeCert);
             }
             // add the edge certificates to the certificate map
-            for (EdgeCertificate<E> edgeCert : this.edgeCerts) {
+            for (EdgeCertificate<N,E> edgeCert : this.edgeCerts) {
                 this.certificateMap.put(edgeCert.getElement(), edgeCert);
             }
         }
@@ -346,8 +342,8 @@ abstract public class CertificateStrategy<N extends Node,L extends Label,E exten
      * @return a fresh certificate strategy for <tt>graph</tt>
      * @see #getStrength()
      */
-    abstract public <N1 extends Node,L1 extends Label,E1 extends Edge> CertificateStrategy<N1,L1,E1> newInstance(
-            Graph<N1,L1,E1> graph, boolean strong);
+    abstract public <N1 extends Node,E1 extends Edge<N1>> CertificateStrategy<N1,E1> newInstance(
+            Graph<N1,E1> graph, boolean strong);
 
     /** 
      * Returns the strength of the strategy:
@@ -356,7 +352,7 @@ abstract public class CertificateStrategy<N extends Node,L extends Label,E exten
     abstract public boolean getStrength();
 
     /** The graph for which certificates are to be computed. */
-    private final Graph<N,L,E> graph;
+    private final Graph<N,E> graph;
 
     /** The pre-computed graph certificate, if any. */
     long graphCertificate;
@@ -378,7 +374,7 @@ abstract public class CertificateStrategy<N extends Node,L extends Label,E exten
      * {@link #edge2CertCount} certificates for binary edges, followed by 
      * {@link #edge1CertCount} certificates for unary edges.
      */
-    EdgeCertificate<E>[] edgeCerts;
+    EdgeCertificate<N,E>[] edgeCerts;
     /** The number of binary edge certificates in {@link #edgeCerts}. */
     int edge2CertCount;
     /** The number of unary edge certificates in {@link #edgeCerts}. */
@@ -453,8 +449,8 @@ abstract public class CertificateStrategy<N extends Node,L extends Label,E exten
     }
 
     /** Specialised certificate for edges. */
-    static public interface EdgeCertificate<E extends Edge> extends
-            Certificate<E> {
+    static public interface EdgeCertificate<N extends Node,E extends Edge<N>>
+            extends Certificate<E> {
         // no added functionality
     }
 }

@@ -27,8 +27,8 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class NodeSetEdgeSetGraph<N extends Node,L extends Label,E extends Edge>
-        extends AbstractGraph<N,L,E> implements Cloneable {
+public class NodeSetEdgeSetGraph<N extends Node,E extends Edge<N>> extends
+        AbstractGraph<N,E> implements Cloneable {
     /**
      * Creates a new, empty graph with a given element factory.
      */
@@ -43,7 +43,7 @@ public class NodeSetEdgeSetGraph<N extends Node,L extends Label,E extends Edge>
      * @param graph the graph to be cloned
      * @require graph != null
      */
-    public NodeSetEdgeSetGraph(Graph<N,L,E> graph) {
+    public NodeSetEdgeSetGraph(Graph<N,E> graph) {
         super();
         this.graphNodeSet = createNodeSet(graph.nodeSet());
         this.graphEdgeSet = createEdgeSet(graph.edgeSet());
@@ -131,14 +131,13 @@ public class NodeSetEdgeSetGraph<N extends Node,L extends Label,E extends Edge>
     // ------------- general methods (see AbstractGraph) ----------
 
     @Override
-    public NodeSetEdgeSetGraph<N,L,E> clone() {
-        NodeSetEdgeSetGraph<N,L,E> result =
-            new NodeSetEdgeSetGraph<N,L,E>(this);
+    public NodeSetEdgeSetGraph<N,E> clone() {
+        NodeSetEdgeSetGraph<N,E> result = new NodeSetEdgeSetGraph<N,E>(this);
         return result;
     }
 
-    public NodeSetEdgeSetGraph<N,L,E> newGraph() {
-        return new NodeSetEdgeSetGraph<N,L,E>();
+    public NodeSetEdgeSetGraph<N,E> newGraph() {
+        return new NodeSetEdgeSetGraph<N,E>();
     }
 
     public Set<? extends E> edgeSet() {

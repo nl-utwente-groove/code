@@ -26,7 +26,6 @@ import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
@@ -59,7 +58,7 @@ import org.jgraph.graph.GraphConstants;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphJModel<N extends Node,E extends Edge> extends JModel {
+public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
     /**
      * Creates a new GraphJModel instance on top of a given Graph, with given
      * node and edge attributes, and an indication whether self-edges should be
@@ -71,7 +70,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      *        labels are used to display self edges.
      * @require graph != null, nodeAttr != null, edgeAttr != null;
      */
-    protected GraphJModel(Graph<N,?,E> graph, AttributeMap defaultNodeAttr,
+    protected GraphJModel(Graph<N,E> graph, AttributeMap defaultNodeAttr,
             AttributeMap defaultEdgeAttr, Options options) {
         // the model is to store attributes
         super(defaultNodeAttr, defaultEdgeAttr, options);
@@ -89,7 +88,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      * @param graph the underlying Graph
      * @require graph != null;
      */
-    GraphJModel(Graph<N,?,E> graph, Options options) {
+    GraphJModel(Graph<N,E> graph, Options options) {
         this(graph, JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, options);
     }
 
@@ -97,7 +96,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      * Constructor for a dummy (empty) model.
      */
     GraphJModel() {
-        this(AbstractGraph.<N,Label,E>emptyGraph(), null);
+        this(AbstractGraph.<N,E>emptyGraph(), null);
     }
 
     /**
@@ -117,7 +116,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      * Returns the underlying Graph of this GraphModel.
      * @ensure result != null
      */
-    public Graph<N,?,E> getGraph() {
+    public Graph<N,E> getGraph() {
         return this.graph;
     }
 
@@ -151,8 +150,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
     /**
      * Returns the set of graph edges between two given graph nodes.
      */
-    public Set<Edge> getEdgesBetween(N source, N target) {
-        Set<Edge> result = new HashSet<Edge>();
+    public Set<E> getEdgesBetween(N source, N target) {
+        Set<E> result = new HashSet<E>();
         for (Map.Entry<E,? extends JCell> cellEntry : this.edgeJCellMap.entrySet()) {
             Object cell = cellEntry.getValue();
             if (cell instanceof GraphJEdge) {
@@ -212,7 +211,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      *         || result instanceof JEdge &&
      *         result.labels().contains(edge.label())
      */
-    public JCell getJCellForEdge(E edge) {
+    public JCell getJCellForEdge(Edge<?> edge) {
         return this.edgeJCellMap.get(edge);
     }
 
@@ -222,7 +221,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      * @return the JNode modelling node (if node is known)
      * @ensure result == null || result.getUserObject() == node
      */
-    public GraphJVertex<N,E> getJCellForNode(N node) {
+    public GraphJVertex<N,E> getJCellForNode(Node node) {
         return this.nodeJCellMap.get(node);
     }
 
@@ -293,8 +292,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      */
     protected JCell addEdge(E edge) {
         if (isUnaryEdge(edge)) {
-            @SuppressWarnings("unchecked")
-            GraphJVertex<N,E> jVertex = getJCellForNode((N) edge.source());
+            GraphJVertex<N,E> jVertex = getJCellForNode(edge.source());
             if (jVertex.addSelfEdge(edge)) {
                 // yes, the edge could be added here; we're done
                 this.edgeJCellMap.put(edge, jVertex);
@@ -312,10 +310,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      * will be a new j-edge.
      */
     private GraphJEdge<N,E> addBinaryEdge(E edge) {
-        @SuppressWarnings("unchecked")
-        N source = (N) edge.source();
-        @SuppressWarnings("unchecked")
-        N target = (N) edge.target();
+        N source = edge.source();
+        N target = edge.target();
         // don't do this for node types, as they need to be typeset in bold
         if (!edge.label().isNodeType()) {
             // maybe a j-edge between this source and target is already in the
@@ -691,7 +687,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      * The underlying Graph of this GraphModel.
      * @invariant graph != null
      */
-    private final Graph<N,?,E> graph;
+    private final Graph<N,E> graph;
     /**
      * The layout map for the underlying graph. It maps {@link Element}s to
      * {@link JCellLayout}s. This is set to an empty map if the graph is not a
@@ -741,8 +737,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      * all self-edges without explicit layout information will be treated as node
      * labels.
      */
-    static public <N extends Node,E extends Edge> GraphJModel<N,E> newInstance(
-            Graph<N,?,E> graph, Options options, boolean forEditor) {
+    static public <N extends Node,E extends Edge<N>> GraphJModel<N,E> newInstance(
+            Graph<N,E> graph, Options options, boolean forEditor) {
         GraphJModel<N,E> result =
             new GraphJModel<N,E>(graph, JAttr.DEFAULT_NODE_ATTR,
                 JAttr.DEFAULT_EDGE_ATTR, options);
@@ -762,8 +758,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends JModel {
      * @param graph the underlying Graph
      * @param options display options
      */
-    static public <N extends Node,E extends Edge> GraphJModel<N,E> newInstance(
-            Graph<N,?,E> graph, Options options) {
+    static public <N extends Node,E extends Edge<N>> GraphJModel<N,E> newInstance(
+            Graph<N,E> graph, Options options) {
         return newInstance(graph, options, false);
     }
 

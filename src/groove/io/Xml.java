@@ -31,15 +31,15 @@ import java.net.URL;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface Xml<G extends Graph<?,?,?>> {
+public interface Xml<G extends Graph<?,?>> {
     /**
      * Writes a graph to an output stream, in XML format.
      * @param graph the graph to be marshalled
      * @param file the file to write to
      * @throws IOException if an error occurred during file output
      */
-    public <N extends Node,E extends Edge> void marshalGraph(
-            Graph<N,?,E> graph, File file) throws IOException;
+    public <N extends Node,E extends Edge<N>> void marshalGraph(
+            Graph<N,E> graph, File file) throws IOException;
 
     /**
      * Converts an XML URL into a graph, and returns the graph.

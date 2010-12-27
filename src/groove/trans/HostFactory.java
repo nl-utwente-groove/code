@@ -19,12 +19,13 @@ package groove.trans;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultFactory;
 import groove.graph.ElementFactory;
+import groove.graph.Label;
 import groove.graph.TypeFactory;
 import groove.graph.TypeLabel;
 import groove.util.TreeHashSet;
 
 /** Factory class for graph elements. */
-public class HostFactory implements ElementFactory<HostNode,TypeLabel,HostEdge> {
+public class HostFactory implements ElementFactory<HostNode,HostEdge> {
     /** Private constructor. */
     protected HostFactory() {
         // empty
@@ -52,12 +53,13 @@ public class HostFactory implements ElementFactory<HostNode,TypeLabel,HostEdge> 
         return createEdge(source, createLabel(text), target);
     }
 
-    public HostEdge createEdge(HostNode source, TypeLabel label, HostNode target) {
+    public HostEdge createEdge(HostNode source, Label label, HostNode target) {
         assert source != null : "Source node of default edge should not be null";
         assert target != null : "Target node of default edge should not be null";
-        assert label != null : "Label of default edge should not be null";
+        assert label instanceof TypeLabel : "Label of default edge should not be null";
         this.maxEdgeNr++;
-        HostEdge edge = new HostEdge(source, label, target, this.maxEdgeNr);
+        HostEdge edge =
+            new HostEdge(source, (TypeLabel) label, target, this.maxEdgeNr);
         HostEdge result = this.edgeSet.put(edge);
         if (result == null) {
             result = edge;

@@ -88,8 +88,8 @@ public class LayedOutXml implements Xml<DefaultGraph> {
     }
 
     /** First marshals the graph; then the layout map if there is one. */
-    public <N extends Node,E extends Edge> void marshalGraph(
-            Graph<N,?,E> graph, File file) throws IOException {
+    public <N extends Node,E extends Edge<N>> void marshalGraph(
+            Graph<N,E> graph, File file) throws IOException {
         // deleteVariants(file);
         if (GraphInfo.hasLayoutMap(graph)) {
             this.marshaller.marshalGraph(graph, file);

@@ -40,7 +40,7 @@ public class SetNodeRelation implements NodeRelation {
         return addRelated(createEntry(node));
     }
 
-    public boolean addRelated(Edge edge) {
+    public boolean addRelated(Edge<?> edge) {
         return addRelated(createEntry(edge));
     }
 
@@ -182,7 +182,7 @@ public class SetNodeRelation implements NodeRelation {
     /**
      * Factory method: constructs an entry from an edge.
      */
-    protected Entry createEntry(Edge edge) {
+    protected Entry createEntry(Edge<?> edge) {
         return new Entry(edge.source(), edge.target());
     }
 

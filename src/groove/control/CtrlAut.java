@@ -50,7 +50,7 @@ import java.util.TreeSet;
  * </ul>
  * @author Arend Rensink
  */
-public class CtrlAut extends AbstractGraph<CtrlState,CtrlLabel,CtrlTransition> {
+public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
     /**
      * Constructs a new control automaton.
      * The start state and final state are automatically initialised.

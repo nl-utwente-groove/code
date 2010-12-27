@@ -23,29 +23,29 @@ package groove.graph;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphMorphism extends Morphism<Node,Label,Edge> {
+public class DefaultMorphism extends Morphism<DefaultNode,DefaultEdge> {
     /** Constructs an empty morphism. */
-    public GraphMorphism() {
-        super(null);
+    public DefaultMorphism() {
+        super(DefaultFactory.instance());
     }
 
     @Override
-    public GraphMorphism clone() {
-        return (GraphMorphism) super.clone();
+    public DefaultMorphism clone() {
+        return (DefaultMorphism) super.clone();
     }
 
     @Override
-    public GraphMorphism newMap() {
-        return new GraphMorphism();
+    public DefaultMorphism newMap() {
+        return new DefaultMorphism();
     }
 
     @Override
-    public GraphMorphism then(Morphism<Node,Label,Edge> other) {
-        return (GraphMorphism) super.then(other);
+    public DefaultMorphism then(Morphism<DefaultNode,DefaultEdge> other) {
+        return (DefaultMorphism) super.then(other);
     }
 
     @Override
-    public GraphMorphism inverseThen(Morphism<Node,Label,Edge> other) {
-        return (GraphMorphism) super.inverseThen(other);
+    public DefaultMorphism inverseThen(Morphism<DefaultNode,DefaultEdge> other) {
+        return (DefaultMorphism) super.inverseThen(other);
     }
 }

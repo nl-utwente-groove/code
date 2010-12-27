@@ -355,13 +355,13 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         // store the changed layout information in that Groove graph
         if (getModel() instanceof GraphJModel) {
             @SuppressWarnings("unchecked")
-            GraphJModel<Node,Edge> graphJModel =
-                (GraphJModel<Node,Edge>) getModel();
+            GraphJModel<Node,Edge<Node>> graphJModel =
+                (GraphJModel<Node,Edge<Node>>) getModel();
             for (Object jCell : evt.getChange().getChanged()) {
                 if (jCell instanceof GraphJCell) {
                     @SuppressWarnings("unchecked")
-                    GraphJCell<Node,Edge> graphJCell =
-                        (GraphJCell<Node,Edge>) jCell;
+                    GraphJCell<Node,Edge<Node>> graphJCell =
+                        (GraphJCell<Node,Edge<Node>>) jCell;
                     graphJModel.synchroniseLayout(graphJCell);
                 }
             }

@@ -1123,7 +1123,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                 JCell errorCell = this.graphToModelMap.get(errorObject);
                 if (errorCell == null && errorObject instanceof Edge) {
                     errorCell =
-                        this.graphToModelMap.get(((Edge) errorObject).source());
+                        this.graphToModelMap.get(((Edge<?>) errorObject).source());
                 }
                 if (errorCell != null) {
                     this.errorCells.add(errorCell);

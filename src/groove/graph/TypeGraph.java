@@ -43,7 +43,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> {
+public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     /** Constructs a fresh type graph. */
     public TypeGraph() {
         super();
@@ -124,7 +124,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> 
 
     /** Adds the label as well as the edge. */
     @Override
-    public TypeEdge addEdge(TypeNode source, TypeLabel label, TypeNode target) {
+    public TypeEdge addEdge(TypeNode source, Label label, TypeNode target) {
         TypeEdge result = super.addEdge(source, label, target);
         this.labelStore.addLabel(result.label());
         return result;
@@ -191,8 +191,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> 
      * @throws FormatException report of typing errors
      */
     @SuppressWarnings("unchecked")
-    public <N extends Node,E extends Edge> Typing<N,E> getTyping(
-            Graph<N,?,E> model, Map<N,Set<TypeLabel>> parentTypeMap)
+    public <N extends Node,E extends Edge<N>> Typing<N,E> getTyping(
+            Graph<N,E> model, Map<N,Set<TypeLabel>> parentTypeMap)
         throws FormatException {
         Map<N,TypeLabel> nodeTypeMap = new HashMap<N,TypeLabel>();
         Set<N> sharpNodes = new HashSet<N>();
@@ -200,8 +200,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> 
         Set<FormatError> errors = new TreeSet<FormatError>();
         // detect node types
         Set<N> untypedNodes = new HashSet<N>(model.nodeSet());
-        for (Edge edge : model.edgeSet()) {
-            N node = (N) edge.source();
+        for (Edge<N> edge : model.edgeSet()) {
+            N node = edge.source();
             TypeLabel label = getActualType(edge.label());
             if (label != null && label.isNodeType()) {
                 if (edge.label() instanceof RuleLabel
@@ -375,8 +375,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> 
      * @return the typing of the model
      * @throws FormatException a report of the errors found during typing
      */
-    public <N extends Node,E extends Edge> Typing<N,E> checkTyping(
-            Graph<N,?,E> model) throws FormatException {
+    public <N extends Node,E extends Edge<N>> Typing<N,E> checkTyping(
+            Graph<N,E> model) throws FormatException {
         return getTyping(model, Collections.<N,Set<TypeLabel>>emptyMap());
     }
 
@@ -635,7 +635,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> 
     }
 
     @Override
-    protected boolean isTypeCorrect(Edge edge) {
+    protected boolean isTypeCorrect(Edge<?> edge) {
         return edge instanceof TypeEdge;
     }
 
@@ -648,7 +648,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeLabel,TypeEdge> 
      * Class encoding the typing information discovered for a graph in
      * {@link TypeGraph#getTyping(Graph, Map)}.
      */
-    public static class Typing<N extends Node,E extends Edge> {
+    public static class Typing<N extends Node,E extends Edge<N>> {
         private Typing(Map<N,TypeLabel> nodeTypeMap, Set<N> sharpNodes,
                 Set<Element> abstractElems) {
             this.nodeTypeMap = nodeTypeMap;

@@ -25,8 +25,7 @@ import java.util.Collection;
  * graph.Graph with a start (i.e., initial) initial state.
  * @version $Revision$ $Date: 2008-01-30 09:32:20 $
  */
-public interface LTS extends
-        groove.graph.Graph<GraphState,DerivationLabel,GraphTransition> {
+public interface LTS extends groove.graph.Graph<GraphState,GraphTransition> {
     /** The text of the self-edge label that indicates a start state. */
     public static final String START_LABEL_TEXT = "start";
     /** The text of the self-edge label that indicates an open state. */

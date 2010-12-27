@@ -47,8 +47,8 @@ import groove.view.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel,AspectNode>
-        implements AspectElement, Fixable {
+public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
+        AspectElement, Fixable {
     /**
      * Constructs a new edge.
      * @param source the source node for this edge

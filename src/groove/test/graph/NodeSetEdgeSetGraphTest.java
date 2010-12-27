@@ -18,7 +18,6 @@ package groove.test.graph;
 
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultFactory;
-import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.ElementFactory;
 import groove.graph.NodeSetEdgeSetGraph;
@@ -28,14 +27,13 @@ import groove.graph.NodeSetEdgeSetGraph;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class NodeSetEdgeSetGraphTest extends
-        GraphTest<DefaultNode,DefaultLabel,DefaultEdge> {
+public class NodeSetEdgeSetGraphTest extends GraphTest<DefaultNode,DefaultEdge> {
 
     @Override
-    NodeSetEdgeSetGraph<DefaultNode,DefaultLabel,DefaultEdge> createGraph() {
-        return new NodeSetEdgeSetGraph<DefaultNode,DefaultLabel,DefaultEdge>() {
+    NodeSetEdgeSetGraph<DefaultNode,DefaultEdge> createGraph() {
+        return new NodeSetEdgeSetGraph<DefaultNode,DefaultEdge>() {
             @Override
-            public ElementFactory<DefaultNode,DefaultLabel,DefaultEdge> getFactory() {
+            public ElementFactory<DefaultNode,DefaultEdge> getFactory() {
                 return DefaultFactory.instance();
             }
         };

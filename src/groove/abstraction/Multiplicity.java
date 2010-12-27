@@ -146,7 +146,7 @@ public final class Multiplicity {
      * Returns the multiplicity of the set of edges given, bounded by the edge
      * multiplicity bound (\mu) set in the Parameters class. 
      */
-    public static Multiplicity getEdgeSetMult(Set<? extends Edge> edges) {
+    public static Multiplicity getEdgeSetMult(Set<? extends Edge<?>> edges) {
         int setSize = edges.size();
         int edgesMultBound = Parameters.getEdgeMultBound();
         return getMult(setSize, edgesMultBound);

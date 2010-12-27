@@ -63,7 +63,7 @@ public class LayoutIO {
     }
 
     /** Writes a layout map in the correct format to a given output stream. */
-    public <N extends Node,E extends Edge> void writeLayout(
+    public <N extends Node,E extends Edge<N>> void writeLayout(
             LayoutMap<N,E> layoutMap, OutputStream out) {
         // if there is layout information, create a file for it
         PrintWriter layoutWriter = new PrintWriter(out);
@@ -166,8 +166,9 @@ public class LayoutIO {
      * array description and node map.
      * @param version for version 2, the layout position info has changed
      */
-    private Edge putEdgeLayout(LayoutMap<DefaultNode,DefaultEdge> layoutMap,
-            String[] parts, Map<String,DefaultNode> nodeMap, int version)
+    private DefaultEdge putEdgeLayout(
+            LayoutMap<DefaultNode,DefaultEdge> layoutMap, String[] parts,
+            Map<String,DefaultNode> nodeMap, int version)
         throws FormatException {
         if (parts.length < 7) {
             throw new FormatException("Incomplete edge layout line");
@@ -389,7 +390,7 @@ public class LayoutIO {
     /**
      * Converts a graph edge plus layout information to a string.
      */
-    private String toString(Edge edge, JEdgeLayout layout) {
+    private String toString(Edge<?> edge, JEdgeLayout layout) {
         StringBuffer result = new StringBuffer();
         result.append(EDGE_PREFIX + " ");
         result.append(edge.source() + " ");
