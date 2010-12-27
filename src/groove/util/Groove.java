@@ -21,7 +21,6 @@ import groove.calc.GraphCalculator;
 import groove.graph.DefaultGraph;
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.Morphism;
@@ -86,39 +85,6 @@ public class Groove {
     /** The default sample directory. */
     public static final String SAMPLE_DIR = WORKING_DIR + FILE_SEPARATOR
         + "samples";
-
-    /** Tests if a given role string equals {@link #HOST_ROLE}. */
-    static public boolean isGraphRole(String role) {
-        return HOST_ROLE.equals(role);
-    }
-
-    /**
-     * Role value indicating that a graph represents an ordinary graph.
-     * @see GraphInfo#getRole()
-     */
-    static public final String HOST_ROLE = "graph";
-
-    /** Tests if a given role string equals {@link #RULE_ROLE}. */
-    static public boolean isRuleRole(String role) {
-        return RULE_ROLE.equals(role);
-    }
-
-    /**
-     * Role value indicating that a graph represents a rule.
-     * @see GraphInfo#getRole()
-     */
-    static public final String RULE_ROLE = "rule";
-
-    /** Tests if a given role string equals {@link #TYPE_ROLE}. */
-    static public boolean isTypeRole(String role) {
-        return TYPE_ROLE.equals(role);
-    }
-
-    /**
-     * Role value indicating that a graph represents a type.
-     * @see GraphInfo#getRole()
-     */
-    static public final String TYPE_ROLE = "type";
 
     /** Extension for GXL (Graph eXchange Language) files. */
     public static final String GXL_EXTENSION = ".gxl";
@@ -774,8 +740,7 @@ public class Groove {
      */
     static public <N extends Node,L extends Label,E extends Edge> Morphism<N,L,E> getIsomorphism(
             Graph<N,L,E> source, Graph<N,L,E> target) {
-        return IsoChecker.<N,E>getInstance(true).getIsomorphism(source,
-            target);
+        return IsoChecker.<N,E>getInstance(true).getIsomorphism(source, target);
     }
 
     /**

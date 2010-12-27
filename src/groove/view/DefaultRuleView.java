@@ -17,9 +17,6 @@
 
 package groove.view;
 
-import static groove.view.aspect.AspectKind.ADDER;
-import static groove.view.aspect.AspectKind.CREATOR;
-import static groove.view.aspect.AspectKind.ERASER;
 import static groove.view.aspect.AspectKind.EXISTS;
 import static groove.view.aspect.AspectKind.FORALL;
 import static groove.view.aspect.AspectKind.FORALL_POS;
@@ -1119,8 +1116,7 @@ public class DefaultRuleView implements RuleView {
          */
         private boolean isForThisLevel(AspectElement elem) {
             AspectKind kind = elem.getKind();
-            return this.index.isExistential()
-                || !(kind == CREATOR || kind == ADDER);
+            return this.index.isExistential() || !kind.isCreator();
         }
 
         /**
@@ -1153,7 +1149,7 @@ public class DefaultRuleView implements RuleView {
             if (!result) {
                 result =
                     this.index.isUniversal()
-                        && (kind == ERASER || kind == CREATOR || kind == ADDER);
+                        && (kind.isEraser() || kind.isCreator());
             }
             return result;
         }
@@ -1204,8 +1200,7 @@ public class DefaultRuleView implements RuleView {
                 AspectEdge viewEdge = edgeEntry.getKey();
                 RuleEdge ruleEdge = edgeEntry.getValue();
                 AspectKind kind = viewEdge.getKind();
-                if ((kind == CREATOR || kind == ADDER)
-                    && ruleEdge.label().isEmpty()) {
+                if (kind.isCreator() && ruleEdge.label().isEmpty()) {
                     result.put(viewEdge, ruleEdge);
                 }
             }

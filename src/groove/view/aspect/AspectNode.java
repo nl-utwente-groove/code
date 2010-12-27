@@ -24,8 +24,8 @@ import static groove.view.aspect.AspectKind.UNTYPED;
 import groove.algebra.Operator;
 import groove.graph.AbstractNode;
 import groove.graph.DefaultLabel;
+import groove.graph.GraphRole;
 import groove.util.Fixable;
-import groove.util.Groove;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ import java.util.Set;
  */
 public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     /** Constructs an aspect node with a given number. */
-    AspectNode(int nr, String graphRole) {
+    AspectNode(int nr, GraphRole graphRole) {
         super(nr);
         this.graphRole = graphRole;
     }
@@ -103,7 +103,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
                 throw new FormatException("Missing product argument %d", i,
                     this);
             }
-            NewAspect argNodeType = argNode.getAspect();
+            Aspect argNodeType = argNode.getAspect();
             if (argNodeType == null) {
                 argsOk = false;
             } else {
@@ -146,7 +146,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         assert !label.isEdgeOnly();
         testFixed(false);
         this.nodeLabels.add(label);
-        for (NewAspect aspect : label.getAspects()) {
+        for (Aspect aspect : label.getAspects()) {
             addAspectValue(aspect);
         }
     }
@@ -157,7 +157,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
      * any more.
      */
     private void checkAspects() throws FormatException {
-        if (isForRule()) {
+        if (this.graphRole == GraphRole.RULE) {
             // rule nodes that are not explicitly typed must be readers
             if (!hasAspect()) {
                 setAspect(READER.getAspect());
@@ -178,10 +178,10 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
      * @throws FormatException if the added value conflicts with a previously
      * declared one
      */
-    private void addAspectValue(NewAspect value) throws FormatException {
+    private void addAspectValue(Aspect value) throws FormatException {
         AspectKind kind = value.getKind();
-        assert kind.isForNode() : String.format("Inappropriate node aspect %s",
-            value, this);
+        assert kind.isForNode(this.graphRole) : String.format(
+            "Inappropriate node aspect %s", value, this);
         if (kind.isAttrKind()) {
             if (hasAttrAspect()) {
                 throw new FormatException("Conflicting node aspects %s and %s",
@@ -226,7 +226,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
 
     /** Attempts to set the aspect type of this node to a given data type. */
     private void setDataType(String typeName) throws FormatException {
-        NewAspect newType = NewAspect.getAspect(typeName);
+        Aspect newType = Aspect.getAspect(typeName);
         assert newType.getKind().isTypedData();
         setAttrAspect(newType);
     }
@@ -327,7 +327,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     }
 
     /** Sets or specialises the attribute aspect of this node. */
-    private void setAttrAspect(NewAspect newAttr) throws FormatException {
+    private void setAttrAspect(Aspect newAttr) throws FormatException {
         AspectKind attrKind = newAttr.getKind();
         assert attrKind == NONE || attrKind.isAttrKind() : String.format(
             "Aspect %s is not attribute-related", newAttr);
@@ -349,7 +349,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     }
 
     /** Returns the parameter aspect of this node, if any. */
-    public NewAspect getAttrAspect() {
+    public Aspect getAttrAspect() {
         return this.attr;
     }
 
@@ -375,14 +375,14 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     }
 
     /** Changes the (aspect) type of this node. */
-    private void setParam(NewAspect type) {
+    private void setParam(Aspect type) {
         assert type.getKind() == NONE || type.getKind().isParam() : String.format(
             "Aspect %s is not a parameter", type);
         this.param = type;
     }
 
     /** Returns the parameter aspect of this node, if any. */
-    public NewAspect getParam() {
+    public Aspect getParam() {
         return this.param;
     }
 
@@ -404,7 +404,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     }
 
     /** Changes the (aspect) type of this node. */
-    private void setAspect(NewAspect type) {
+    private void setAspect(Aspect type) {
         assert !type.getKind().isAttrKind() && !type.getKind().isParam() : String.format(
             "Aspect %s is not a valid node type", type);
         this.aspect = type;
@@ -413,7 +413,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     /** 
      * Returns the aspect that determines the kind of this node.
      */
-    public NewAspect getAspect() {
+    public Aspect getAspect() {
         return this.aspect;
     }
 
@@ -459,22 +459,17 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         }
     }
 
-    /** Indicates if this is supposed to be a rule element. */
-    private boolean isForRule() {
-        return Groove.RULE_ROLE.equals(this.graphRole);
-    }
-
-    private final String graphRole;
+    private final GraphRole graphRole;
     /** The list of aspect labels defining node aspects. */
     private List<AspectLabel> nodeLabels = new ArrayList<AspectLabel>();
     /** Indicates that the entire node is fixed. */
     private boolean allFixed;
     /** The type of the aspect node. */
-    private NewAspect aspect;
+    private Aspect aspect;
     /** The attribute-related aspect. */
-    private NewAspect attr;
+    private Aspect attr;
     /** The parameter aspect of this node, if any. */
-    private NewAspect param;
+    private Aspect param;
     /** The aspect node representing the nesting level of this node. */
     private AspectNode nestingLevel;
     /** The aspect node representing the parent of this node in the nesting

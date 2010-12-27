@@ -18,6 +18,7 @@ package groove.io;
 
 import groove.graph.DefaultGraph;
 import groove.graph.GraphInfo;
+import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
 import groove.gui.Options;
 import groove.trans.RuleName;
@@ -723,7 +724,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      * corresponding AspectGraphs
      */
     private void loadGraphs() throws IOException {
-        collectObjects(this.graphMap, STATE_FILTER, Groove.HOST_ROLE);
+        collectObjects(this.graphMap, STATE_FILTER, GraphRole.HOST);
     }
 
     /**
@@ -731,7 +732,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      * corresponding AspectGraphs
      */
     private void loadTypes() throws IOException {
-        collectObjects(this.typeMap, TYPE_FILTER, Groove.TYPE_ROLE);
+        collectObjects(this.typeMap, TYPE_FILTER, GraphRole.TYPE);
     }
 
     /**
@@ -740,7 +741,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      * @see GraphInfo#getRole()
      */
     private void collectObjects(Map<String,AspectGraph> result,
-            ExtensionFilter filter, String role) throws IOException {
+            ExtensionFilter filter, GraphRole role) throws IOException {
         result.clear();
         File[] files = this.file.listFiles(filter);
         // read in production rules
@@ -909,7 +910,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                      * For backward compatibility, we set the role and name of
                      * the rule graph
                      */
-                    GraphInfo.setRole(plainGraph, Groove.RULE_ROLE);
+                    GraphInfo.setRole(plainGraph, GraphRole.RULE);
                     GraphInfo.setName(plainGraph, ruleName.toString());
                     AspectGraph ruleGraph = AspectGraph.newInstance(plainGraph);
                     /* Store the rule graph */

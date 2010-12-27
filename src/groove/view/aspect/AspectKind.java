@@ -20,11 +20,14 @@ import static groove.view.aspect.AspectParser.ASSIGN;
 import static groove.view.aspect.AspectParser.SEPARATOR;
 import groove.algebra.Algebras;
 import groove.algebra.UnknownSymbolException;
+import groove.graph.GraphRole;
 import groove.view.FormatException;
 
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Distinguishes the aspects that can be found in a plain graph representation
@@ -46,7 +49,7 @@ public enum AspectKind {
     /** Indicates an element to be created. */
     CREATOR("new", ContentKind.LEVEL),
     /** Indicates an element to be created if not yet present. */
-    ADDER("add", ContentKind.LEVEL),
+    ADDER("cnew", ContentKind.LEVEL),
     /** Indicates a forbidden element. */
     EMBARGO("not", ContentKind.LEVEL),
 
@@ -128,9 +131,9 @@ public enum AspectKind {
     }
 
     /** Returns a (prototypical) aspect of this kind. */
-    public NewAspect getAspect() {
+    public Aspect getAspect() {
         if (this.aspect == null) {
-            this.aspect = new NewAspect(this, this.contentKind);
+            this.aspect = new Aspect(this, this.contentKind);
         }
         return this.aspect;
     }
@@ -165,6 +168,22 @@ public enum AspectKind {
      */
     public boolean inRHS() {
         return rhs.contains(this);
+    }
+
+    /** 
+     * Indicates if this element is in the LHS but not the RHS. 
+     * Convenience method for {@code inLHS() && !inRHS()}.
+     */
+    public boolean isEraser() {
+        return inLHS() && !inRHS();
+    }
+
+    /** 
+     * Indicates if this element is in the RHS but not the LHS. 
+     * Convenience method for {@code inRHS() && !inLHS()}.
+     */
+    public boolean isCreator() {
+        return inRHS() && !inLHS();
     }
 
     /** 
@@ -215,14 +234,14 @@ public enum AspectKind {
         return attributers.contains(this);
     }
 
-    /** Indicates that this aspect kind is allowed to appear on edges. */
-    public boolean isForEdge() {
-        return !nodeOnly.contains(this);
+    /** Indicates that this aspect kind is allowed to appear on edges of a particular graph kind. */
+    public boolean isForEdge(GraphRole role) {
+        return allowedEdgeKinds.get(role).contains(this);
     }
 
-    /** Indicates that this aspect kind is allowed to appear on nodes. */
-    public boolean isForNode() {
-        return !edgeOnly.contains(this);
+    /** Indicates that this aspect kind is allowed to appear on nodes of a particular graph kind. */
+    public boolean isForNode(GraphRole role) {
+        return allowedNodeKinds.get(role).contains(this);
     }
 
     /** Indicates that this aspect kind is always the last on a label. */
@@ -232,7 +251,7 @@ public enum AspectKind {
 
     private final ContentKind contentKind;
     private final String name;
-    private NewAspect aspect;
+    private Aspect aspect;
 
     /** 
      * Returns the aspect kind corresponding to a certain non-{@code null}
@@ -280,12 +299,37 @@ public enum AspectKind {
     public static EnumSet<AspectKind> attributers = EnumSet.of(PRODUCT,
         ARGUMENT, UNTYPED, STRING, INT, BOOL, REAL);
 
-    /** Set of all aspects that can be used <i>only</i> on nodes. */
-    public static EnumSet<AspectKind> nodeOnly = EnumSet.of(UNTYPED, PRODUCT,
-        PARAM_BI, PARAM_IN, PARAM_OUT);
-    /** Set of all aspects that can be used <i>only</i> on edges. */
-    public static EnumSet<AspectKind> edgeOnly = EnumSet.of(ARGUMENT, SUBTYPE,
-        PATH, LITERAL, NESTED);
+    /** Mapping from graph roles to the node aspects allowed therein. */
+    public static EnumMap<GraphRole,Set<AspectKind>> allowedNodeKinds =
+        new EnumMap<GraphRole,Set<AspectKind>>(GraphRole.class);
+    /** Mapping from graph roles to the edge aspects allowed therein. */
+    public static EnumMap<GraphRole,Set<AspectKind>> allowedEdgeKinds =
+        new EnumMap<GraphRole,Set<AspectKind>>(GraphRole.class);
+
+    static {
+        for (GraphRole role : EnumSet.allOf(GraphRole.class)) {
+            switch (role) {
+            case HOST:
+                allowedNodeKinds.put(role,
+                    EnumSet.of(NONE, REMARK, INT, BOOL, REAL, STRING));
+                allowedEdgeKinds.put(role, EnumSet.of(NONE, REMARK, LITERAL));
+                break;
+            case RULE:
+                allowedNodeKinds.put(role, EnumSet.of(REMARK, READER, ERASER,
+                    CREATOR, ADDER, EMBARGO, UNTYPED, BOOL, INT, REAL, STRING,
+                    PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, FORALL, FORALL_POS,
+                    EXISTS));
+                allowedEdgeKinds.put(role, EnumSet.of(REMARK, READER, ERASER,
+                    CREATOR, ADDER, EMBARGO, BOOL, INT, REAL, STRING, ARGUMENT,
+                    PATH, LITERAL, NESTED));
+                break;
+            case TYPE:
+                allowedNodeKinds.put(role, EnumSet.of(NONE, REMARK, ABSTRACT));
+                allowedEdgeKinds.put(role,
+                    EnumSet.of(NONE, REMARK, ABSTRACT, SUBTYPE));
+            }
+        }
+    }
 
     /** Type of content that can be wrapped inside an aspect. */
     enum ContentKind {

@@ -4,6 +4,7 @@ import groove.graph.DefaultEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.ElementMap;
+import groove.graph.GraphRole;
 import groove.view.aspect.AspectGraph.AspectFactory;
 
 /**
@@ -15,7 +16,7 @@ public class PlainToAspectMap
         extends
         ElementMap<DefaultNode,DefaultLabel,DefaultEdge,AspectNode,AspectLabel,AspectEdge> {
     /** Creates a fresh, empty map. */
-    public PlainToAspectMap(String graphRole) {
+    public PlainToAspectMap(GraphRole graphRole) {
         super(AspectFactory.instance(graphRole));
         this.graphRole = graphRole;
     }
@@ -25,5 +26,5 @@ public class PlainToAspectMap
         return new PlainToAspectMap(this.graphRole);
     }
 
-    private final String graphRole;
+    private final GraphRole graphRole;
 }

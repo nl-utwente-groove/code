@@ -170,6 +170,9 @@ public final class TypeLabel extends AbstractLabel {
         case ERASER:
             result = Converter.blue.on("- " + result);
             break;
+        case ADDER:
+            result = Converter.green.on("+! " + result);
+            break;
         case CREATOR:
             result = Converter.green.on("+ " + result);
             break;

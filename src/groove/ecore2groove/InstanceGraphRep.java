@@ -341,7 +341,7 @@ public class InstanceGraphRep {
      * @return the instance graph
      */
     public DefaultGraph getInstanceGraph() {
-        GraphInfo.setGraphRole(this.ig);
+        GraphInfo.setHostRole(this.ig);
         return this.ig;
     }
 

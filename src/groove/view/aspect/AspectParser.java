@@ -18,9 +18,14 @@ package groove.view.aspect;
 
 import groove.algebra.Algebras;
 import groove.graph.DefaultLabel;
+import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
 import groove.util.ExprParser;
 import groove.view.FormatException;
+
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
 
 /**
  * Class that is responsible for recognising aspects from edge labels.
@@ -28,6 +33,11 @@ import groove.view.FormatException;
  * @version $Revision: 2929 $
  */
 public class AspectParser {
+    /** Creates an aspect parser for a particular graph role. */
+    private AspectParser(GraphRole role) {
+        this.role = role;
+    }
+
     /**
      * Converts a plain label to an aspect label.
      * @param label the plain label to start from
@@ -36,7 +46,7 @@ public class AspectParser {
      * @throws FormatException if there were parse errors in {@code label}
      */
     public AspectLabel parse(DefaultLabel label) throws FormatException {
-        AspectLabel result = new AspectLabel();
+        AspectLabel result = new AspectLabel(this.role);
         try {
             parse(label.text(), result);
         } catch (FormatException exc) {
@@ -52,7 +62,7 @@ public class AspectParser {
      * @throws FormatException if there were parse errors in {@code text}
      */
     private void parse(String text, AspectLabel result) throws FormatException {
-        NewAspect value = null;
+        Aspect value = null;
         String valueText = nextValue(text);
         if (valueText != null) {
             text = text.substring(valueText.length() + 1);
@@ -118,17 +128,17 @@ public class AspectParser {
     /**
      * Returns the aspect value obtained by parsing a given value and content
      * text.
-     * @param name string description of a new {@link NewAspect}
+     * @param name string description of a new {@link Aspect}
      * @param contentText string description for the new value's content;
      * may be {@code null}
      * @return the resulting aspect value
      * @throws FormatException if <code>valueText</code> is not a valid
-     *         {@link NewAspect}, or the presence of content is not as it
+     *         {@link Aspect}, or the presence of content is not as it
      *         should be.
      */
-    private NewAspect parseValue(String name, String contentText)
+    private Aspect parseValue(String name, String contentText)
         throws FormatException {
-        NewAspect value = NewAspect.getAspect(name);
+        Aspect value = Aspect.getAspect(name);
         if (value == null) {
             throw new FormatException(
                 String.format(
@@ -141,16 +151,26 @@ public class AspectParser {
         return value;
     }
 
+    /** The graph role of this aspect parser. */
+    private final GraphRole role;
+
     /** Separator between aspect name and associated content. */
     static public final String ASSIGN = "=";
 
     /** Separator between aspect prefix and main label text. */
     static public final String SEPARATOR = ":";
 
-    /** Yields a predefined label for a given graph role. */
-    public static AspectParser getInstance() {
-        return instance;
+    /** Yields a predefined label parser for a given graph role. */
+    public static AspectParser getInstance(GraphRole role) {
+        return instances.get(role);
     }
 
-    static private final AspectParser instance = new AspectParser();
+    static private final Map<GraphRole,AspectParser> instances =
+        new EnumMap<GraphRole,AspectParser>(GraphRole.class);
+
+    static {
+        for (GraphRole role : EnumSet.allOf(GraphRole.class)) {
+            instances.put(role, new AspectParser(role));
+        }
+    }
 }

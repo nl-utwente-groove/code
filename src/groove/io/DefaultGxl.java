@@ -70,7 +70,7 @@ public class DefaultGxl implements Xml<DefaultGraph> {
                 if (Groove.isRuleURL(url)) {
                     GraphInfo.setRuleRole(resultGraph);
                 } else {
-                    GraphInfo.setGraphRole(resultGraph);
+                    GraphInfo.setHostRole(resultGraph);
                 }
             }
             // note: don't set the name,
@@ -165,7 +165,7 @@ public class DefaultGxl implements Xml<DefaultGraph> {
                 if (Groove.isRuleURL(url)) {
                     GraphInfo.setRuleRole(resultGraph);
                 } else {
-                    GraphInfo.setGraphRole(resultGraph);
+                    GraphInfo.setHostRole(resultGraph);
                 }
             }
             // note: don't set the name,

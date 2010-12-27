@@ -36,7 +36,7 @@ import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectLabel;
 import groove.view.aspect.AspectNode;
-import groove.view.aspect.NewAspect;
+import groove.view.aspect.Aspect;
 
 import java.awt.Font;
 import java.util.ArrayList;
@@ -345,7 +345,7 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         }
 
         /** Returns an HTML-formatted line describing a given quantifier value. */
-        private StringBuilder getQuantifierLine(NewAspect nesting) {
+        private StringBuilder getQuantifierLine(Aspect nesting) {
             StringBuilder result = new StringBuilder();
             AspectKind kind = nesting.getKind();
             if (kind == AspectKind.FORALL) {
@@ -370,7 +370,7 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         public StringBuilder getLine(AspectEdge edge) {
             StringBuilder result = new StringBuilder();
             if (isShowAspects()) {
-                for (NewAspect aspect : edge.label().getAspects()) {
+                for (Aspect aspect : edge.label().getAspects()) {
                     result.append(aspect);
                 }
             }
@@ -505,7 +505,7 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         public StringBuilder getLine(AspectEdge edge) {
             StringBuilder result = new StringBuilder();
             if (isShowAspects()) {
-                for (NewAspect aspect : edge.label().getAspects()) {
+                for (Aspect aspect : edge.label().getAspects()) {
                     result.append(aspect);
                 }
             } else if (this.aspect.isRole()) {

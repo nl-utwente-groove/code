@@ -20,6 +20,7 @@ import groove.control.CtrlTransition;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
+import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.jgraph.CtrlJModel;
@@ -66,7 +67,7 @@ public final class GraphToTikz {
         boolean showBackground =
             model.getOptions().getValue(Options.SHOW_BACKGROUND_OPTION) == 1
                     ? true : false;
-        String role = GraphInfo.getRole(graph);
+        GraphRole role = GraphInfo.getRole(graph);
         StringBuilder result = new StringBuilder();
 
         result.append(beginTikzFig());
@@ -114,7 +115,7 @@ public final class GraphToTikz {
     private static <N extends Node,E extends Edge> StringBuilder convertNodeToTikzStr(
             GraphJVertex<N,E> node, JVertexLayout layout,
             boolean showBackground, boolean isEmphasized, boolean isGrayedOut,
-            String role) {
+            GraphRole role) {
 
         StringBuilder result = new StringBuilder();
 
@@ -171,7 +172,7 @@ public final class GraphToTikz {
      */
     private static <N extends Node,E extends Edge> StringBuilder convertEdgeToTikzStr(
             JCell cell, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
-            boolean isEmphasized, boolean isGrayedOut, String role) {
+            boolean isEmphasized, boolean isGrayedOut, GraphRole role) {
 
         if (cell instanceof GraphJEdge) {
             @SuppressWarnings("unchecked")
@@ -195,7 +196,7 @@ public final class GraphToTikz {
      */
     private static <N extends Node,E extends Edge> StringBuilder convertEdgeToTikzStr(
             GraphJEdge<N,E> edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
-            boolean isEmphasized, boolean isGrayedOut, String role) {
+            boolean isEmphasized, boolean isGrayedOut, GraphRole role) {
 
         StringBuilder result = new StringBuilder();
 
@@ -1055,7 +1056,7 @@ public final class GraphToTikz {
      */
     private static <N extends Node,E extends Edge> String convertStyles(
             GraphJVertex<N,E> node, boolean showBackground,
-            boolean isEmphasized, boolean isGrayedOut, String role) {
+            boolean isEmphasized, boolean isGrayedOut, GraphRole role) {
 
         if (node instanceof CtrlJModel.StateJVertex) {
             // Node from control automaton.
@@ -1071,9 +1072,9 @@ public final class GraphToTikz {
 
         // If we got to this point we have either a node from a rule,
         // a state graph or a type graph.
-        boolean isRule = Groove.isRuleRole(role);
-        boolean isGraph = Groove.isGraphRole(role);
-        boolean isType = Groove.isTypeRole(role);
+        boolean isRule = role == GraphRole.RULE;
+        boolean isGraph = role == GraphRole.HOST;
+        boolean isType = role == GraphRole.TYPE;
         ArrayList<String> styles = new ArrayList<String>();
         Collection<String> allLabels = node.getPlainLabels();
 
@@ -1220,16 +1221,18 @@ public final class GraphToTikz {
      */
     private static <N extends Node,E extends Edge> ArrayList<String> convertStyles(
             GraphJEdge<N,E> edge, boolean isEmphasized, boolean isGrayedOut,
-            String role) {
+            GraphRole role) {
 
         if (edge instanceof TransitionJEdge) {
             return convertStyles((TransitionJEdge) edge, isEmphasized,
                 isGrayedOut);
         }
-        boolean isRule = Groove.isRuleRole(role);
-        boolean isType = Groove.isTypeRole(role);
+        boolean isRule = role == GraphRole.RULE;
+        boolean isType = role == GraphRole.TYPE;
         ArrayList<String> styles = new ArrayList<String>();
 
+        // To EDUARDO: this must be wrong, as GraphJEdge.role just returns a 
+        // string description of the edge, and has nothing to do with rule aspects
         if (edge.getRole().equals(DEL)) {
             styles.add(ERASER_EDGE_STYLE);
             styles.add(ERASER_LABEL_STYLE);

@@ -31,7 +31,7 @@ import groove.trans.RuleLabel;
 import groove.util.Converter;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
-import groove.view.aspect.NewAspect;
+import groove.view.aspect.Aspect;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -224,8 +224,8 @@ public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
             // use special node label prefixes to indicate edge role
             if (edge instanceof AspectEdge && !this.jModel.isShowAspects()) {
                 AspectEdge aspectEdge = (AspectEdge) edge;
-                NewAspect edgeAspect = aspectEdge.getAspect();
-                NewAspect sourceAspect = aspectEdge.source().getAspect();
+                Aspect edgeAspect = aspectEdge.getAspect();
+                Aspect sourceAspect = aspectEdge.source().getAspect();
                 if (edgeAspect != null && !edgeAspect.equals(sourceAspect)) {
                     result.append(TypeLabel.toHtmlString(edgeLabel,
                         edgeAspect.getKind()));
@@ -311,7 +311,7 @@ public class GraphJVertex<N extends Node,E extends Edge> extends JVertex
         Collection<String> result = new ArrayList<String>();
         if (isValueNode()) {
             Label symbol = getValueLabel();
-            String prefix = NewAspect.getAspect(getSignature()).toString();
+            String prefix = Aspect.getAspect(getSignature()).toString();
             result.add(prefix + symbol);
         }
         for (E edge : getSelfEdges()) {

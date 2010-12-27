@@ -18,6 +18,7 @@ package groove.gui;
 
 import groove.graph.DefaultGraph;
 import groove.graph.GraphInfo;
+import groove.graph.GraphRole;
 import groove.view.StoredGrammarView.TypeViewList;
 import groove.view.aspect.AspectGraph;
 
@@ -122,20 +123,20 @@ abstract public class EditorDialog {
     /**
      * Creates and returns the tool bar.
      */
-    private JToolBar createToolBar(String role) {
+    private JToolBar createToolBar(GraphRole role) {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
         toolbar.add(createOkButton());
         toolbar.add(createCancelButton());
         toolbar.addSeparator();
-        switch (Editor.roleIndexMap.get(role)) {
-        case Editor.GRAPH_INDEX:
+        switch (role) {
+        case HOST:
             toolbar.add(this.editor.getGraphRoleButton());
             break;
-        case Editor.RULE_INDEX:
+        case RULE:
             toolbar.add(this.editor.getRuleRoleButton());
             break;
-        case Editor.TYPE_INDEX:
+        case TYPE:
             toolbar.add(this.editor.getTypeRoleButton());
         }
         if (this.editor.getType() != null) {
@@ -198,8 +199,9 @@ abstract public class EditorDialog {
             int confirm =
                 JOptionPane.showConfirmDialog(
                     this.parent,
-                    String.format("Use edited %s?", this.editor.getRole(false)),
-                    null, JOptionPane.YES_NO_CANCEL_OPTION);
+                    String.format("Use edited %s?",
+                        this.editor.getRoleName(false)), null,
+                    JOptionPane.YES_NO_CANCEL_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
                 this.ok = true;
                 dispose();

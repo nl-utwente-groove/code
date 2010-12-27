@@ -12,6 +12,9 @@
  */
 package groove.gui;
 
+import static groove.graph.GraphRole.HOST;
+import static groove.graph.GraphRole.RULE;
+import static groove.graph.GraphRole.TYPE;
 import static groove.gui.Options.HELP_MENU_NAME;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
@@ -20,6 +23,7 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
+import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.TypeGraph;
 import groove.gui.dialog.AboutBox;
@@ -67,6 +71,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -190,12 +195,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         if (graph == null) {
             setModel(new EditorJModel(this));
         } else {
+            // set the model afresh to make sure everything gets updated properly
+            setRole(GraphInfo.getRole(graph));
             // don't set the errors, now as they will be computed again anyway
             // setErrors(GraphInfo.getErrors(graph));
             getModel().replace(
                 GraphJModel.newInstance(graph, getOptions(), true));
-            // set the model afresh to make sure everything gets updated properly
-            setRole(roleIndexMap.get(GraphInfo.getRole(graph)));
             setModel(getModel());
         }
     }
@@ -221,10 +226,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     private void setAspectGraph() {
         Map<Element,JCell> plainToModelMap = new HashMap<Element,JCell>();
         DefaultGraph result = getModel().toPlainGraph(plainToModelMap);
-        GraphInfo.setRole(result, getRole(false));
+        GraphInfo.setRole(result, getRole());
         GraphInfo.setVersion(result, Version.GXL_VERSION);
-        PlainToAspectMap plainToAspectMap =
-            new PlainToAspectMap(getRole(false));
+        PlainToAspectMap plainToAspectMap = new PlainToAspectMap(getRole());
         this.graph = AspectGraph.newInstance(result, plainToAspectMap);
         this.graphToModelMap = new HashMap<AspectElement,JCell>();
         for (Map.Entry<Element,JCell> plainToModelEntry : plainToModelMap.entrySet()) {
@@ -319,9 +323,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * We listen to the {@link #ROLE_PROPERTY}.
      */
     public void propertyChange(PropertyChangeEvent evt) {
-        getGraphRoleButton().setSelected(getRoleIndex() == GRAPH_INDEX);
-        getRuleRoleButton().setSelected(getRoleIndex() == RULE_INDEX);
-        getTypeRoleButton().setSelected(getRoleIndex() == TYPE_INDEX);
+        getGraphRoleButton().setSelected(getRole() == HOST);
+        getRuleRoleButton().setSelected(getRole() == RULE);
+        getTypeRoleButton().setSelected(getRole() == TYPE);
         // we need to refresh because the errors may have changed
         updateStatus();
         updateTitle();
@@ -632,8 +636,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * Indicates if we are editing a rule or a graph.
      * @return <code>true</code> if we are editing a graph.
      */
-    private int getRoleIndex() {
-        return this.roleIndex;
+    private GraphRole getRole() {
+        return this.graphRole;
     }
 
     /**
@@ -641,34 +645,31 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * capitalised on demand.
      * @param upper if <code>true</code>, the first letter is capitalised
      */
-    String getRole(boolean upper) {
-        String role = roles[getRoleIndex()];
+    String getRoleName(boolean upper) {
+        String roleName = getRole().toString();
         if (upper) {
-            char[] result = role.toCharArray();
+            char[] result = roleName.toCharArray();
             result[0] = Character.toUpperCase(result[0]);
             return String.valueOf(result);
         } else {
-            return role;
+            return roleName;
         }
     }
 
     /**
-     * Sets the edit role to {@link Groove#HOST_ROLE} or
-     * {@link Groove#RULE_ROLE}.
-     * @param roleIndex the edit role to be set; if <code>null</code>, it is set
-     *        to {@link #GRAPH_INDEX}.
+     * Sets the edit role to a given graph role.
+     * @param role the edit role to be set.
      * @return <code>true</code> if the edit type was actually changed;
      *         <code>false</code> if it was already equal to <code>role</code>
      */
-    boolean setRole(int roleIndex) {
-        int oldRoleIndex = this.roleIndex;
-        boolean result = roleIndex != oldRoleIndex;
+    boolean setRole(GraphRole role) {
+        GraphRole oldRole = this.graphRole;
+        boolean result = role != oldRole;
         // set the value if it has changed
         if (result) {
-            this.roleIndex = roleIndex;
+            this.graphRole = role;
             // fire change only if there was a previous value
-            getChangeSupport().firePropertyChange(ROLE_PROPERTY, oldRoleIndex,
-                roleIndex);
+            getChangeSupport().firePropertyChange(ROLE_PROPERTY, oldRole, role);
         }
         return result;
     }
@@ -717,7 +718,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     protected void updateTitle() {
         String modelName = getModelName();
         if (modelName == null) {
-            modelName = TITLE[getRoleIndex()];
+            modelName = TITLE.get(getRole());
         }
         String title =
             (this.currentGraphModified ? MODIFIED_INDICATOR : "") + modelName
@@ -1047,7 +1048,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         Map<String,Property<String>> keys =
             new LinkedHashMap<String,Property<String>>(
                 GraphProperties.DEFAULT_USER_KEYS);
-        if (getRoleIndex() != RULE_INDEX) {
+        if (getRole() != RULE) {
             keys.remove(GraphProperties.CONFLUENT_KEY);
             keys.remove(GraphProperties.PRIORITY_KEY);
             keys.remove(GraphProperties.ENABLED_KEY);
@@ -1256,7 +1257,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             JLabel errorLabel =
                 new JLabel(String.format(
                     "Incomplete preview due to syntax errors in edited %s",
-                    getRole(false)));
+                    getRoleName(false)));
             errorLabel.setForeground(Color.RED);
             previewContent.add(errorLabel, BorderLayout.SOUTH);
             if (okOption == null) {
@@ -1274,7 +1275,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                 previewPane, propertiesDialog)});
         JDialog dialog =
             previewPane.createDialog(getFrame(),
-                String.format("%s preview", getRole(true)));
+                String.format("%s preview", getRoleName(true)));
         dialog.setSize(this.previewSize);
         dialog.setResizable(true);
         dialog.setVisible(true);
@@ -1442,7 +1443,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     private Map<FormatError,JCell> errorCellMap =
         new HashMap<FormatError,JCell>();
     /** Index of the currently set editor role */
-    private int roleIndex = -1;
+    private GraphRole graphRole;
     /** Type view against which the edited graph is checked. */
     private TypeViewList typeViewList;
     /** Type against which the edited graph is checked. */
@@ -2053,7 +2054,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
-            if (!setRole(GRAPH_INDEX)) {
+            if (!setRole(HOST)) {
                 // only do a preview if the type was not changed (on the second
                 // click)
                 handlePreview(null);
@@ -2089,7 +2090,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
-            if (!setRole(RULE_INDEX)) {
+            if (!setRole(RULE)) {
                 // only do a preview if the type was not changed (on the second
                 // click)
                 handlePreview(null);
@@ -2127,7 +2128,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                     Options.OK_BUTTON);
             } else {
                 super.actionPerformed(evt);
-                if (!setRole(TYPE_INDEX)) {
+                if (!setRole(TYPE)) {
                     // only do a preview if the type was not changed (on the
                     // second click)
                     handlePreview(null);
@@ -2270,7 +2271,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             int result;
             resetChoosableFileFilters();
             setAcceptAllFileFilterUsed(false);
-            setFilters(getRoleIndex());
+            setFilters(getRole());
             if (getCurrentFile() != null) {
                 setCurrentDirectory(getCurrentFile().getParentFile());
                 rescanCurrentDirectory();
@@ -2285,17 +2286,17 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         /**
          * Sets the file filter to one that accepts the given role.
          */
-        private void setFilters(int roleIndex) {
+        private void setFilters(GraphRole roleIndex) {
             resetChoosableFileFilters();
-            for (FileFilter filter : this.filters) {
+            for (FileFilter filter : this.filters.values()) {
                 addChoosableFileFilter(filter);
             }
             FileFilter defaultFilter = null;
-            if (getRoleIndex() == GRAPH_INDEX && this.lastSaveFilter != null
-                && getFilterRole(this.lastSaveFilter) == GRAPH_INDEX) {
+            if (getRole() == HOST && this.lastSaveFilter != null
+                && getFilterRole(this.lastSaveFilter) == HOST) {
                 defaultFilter = this.lastSaveFilter;
             } else {
-                defaultFilter = this.filters[roleIndex];
+                defaultFilter = this.filters.get(roleIndex);
             }
             setFileFilter(defaultFilter);
         }
@@ -2331,7 +2332,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                         boolean result =
                             isAcceptDirectories() && file.isDirectory();
                         if (!result) {
-                            for (ExtensionFilter filter : MyFileChooser.this.filters) {
+                            for (ExtensionFilter filter : MyFileChooser.this.filters.values()) {
                                 if (filter.acceptExtension(file)) {
                                     result = true;
                                     break;
@@ -2357,7 +2358,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                     @Override
                     public String stripExtension(String fileName) {
                         File file = new File(fileName);
-                        for (ExtensionFilter filter : MyFileChooser.this.filters) {
+                        for (ExtensionFilter filter : MyFileChooser.this.filters.values()) {
                             if (filter.acceptExtension(file)) {
                                 return filter.stripExtension(fileName);
                             }
@@ -2413,20 +2414,27 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
          */
         private ExtensionFilter typeFilter;
 
-        /** Array of extension filters, ordered by role index. */
-        private final ExtensionFilter[] filters = {getStateFilter(),
-            getRuleFilter(), getTypeFilter(), getGxlFilter()};
+        /** Map of graph roles to extension filters. */
+        private final Map<GraphRole,ExtensionFilter> filters =
+            new HashMap<GraphRole,ExtensionFilter>();
+        {
+            this.filters.put(HOST, getStateFilter());
+            this.filters.put(RULE, getRuleFilter());
+            this.filters.put(TYPE, getTypeFilter());
+            // add the GXL filter without association to a graph role
+            this.filters.put(null, getGxlFilter());
+        }
 
         /**
          * Returns the role for which a given extension filter acts.
          * @param filter the filter for which the role should be returned
-         * @return the role for {@code filter}; {@link #GRAPH_INDEX} if {@code
+         * @return the role for {@code filter}; {@link #HOST} if {@code
          *         filter} is {@code null}
          */
-        private int getFilterRole(FileFilter filter) {
-            Integer result = this.filterRoleMap.get(filter);
+        private GraphRole getFilterRole(FileFilter filter) {
+            GraphRole result = this.filterRoleMap.get(filter);
             if (result == null) {
-                result = GRAPH_INDEX;
+                result = HOST;
             }
             return result;
         }
@@ -2435,13 +2443,13 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
          * Mapping from file filters to the corresponding role of the saved
          * graph.
          */
-        private final Map<FileFilter,Integer> filterRoleMap =
-            new LinkedHashMap<FileFilter,Integer>();
+        private final Map<FileFilter,GraphRole> filterRoleMap =
+            new LinkedHashMap<FileFilter,GraphRole>();
         {
-            this.filterRoleMap.put(getStateFilter(), GRAPH_INDEX);
-            this.filterRoleMap.put(getRuleFilter(), RULE_INDEX);
-            this.filterRoleMap.put(getTypeFilter(), TYPE_INDEX);
-            this.filterRoleMap.put(getGxlFilter(), GRAPH_INDEX);
+            this.filterRoleMap.put(getStateFilter(), HOST);
+            this.filterRoleMap.put(getRuleFilter(), RULE);
+            this.filterRoleMap.put(getTypeFilter(), TYPE);
+            this.filterRoleMap.put(getGxlFilter(), HOST);
         }
     }
 
@@ -2467,7 +2475,14 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** The name of the editor application. */
     public static final String EDITOR_NAME = "Groove Editor";
 
-    private static final String[] TITLE = {"New Graph", "New Rule", "New Type"};
+    private static final Map<GraphRole,String> TITLE =
+        new EnumMap<GraphRole,String>(GraphRole.class);
+
+    static {
+        TITLE.put(HOST, "New Graph");
+        TITLE.put(RULE, "New Rule");
+        TITLE.put(TYPE, "New Type");
+    }
 
     /** The indication displayed in the frame title for a modified graph. */
     public static final String MODIFIED_INDICATOR = "> ";
@@ -2476,26 +2491,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     private static final Dimension DEFAULT_PREVIEW_SIZE = new Dimension(500,
         500);
 
-    /** Index of the graph role. */
-    static final int GRAPH_INDEX = 0;
-    /** Index of the rule role. */
-    static final int RULE_INDEX = 1;
-    /** Index of the type role. */
-    static final int TYPE_INDEX = 2;
-    /** Mapping from roles to role indices. */
-    static final Map<String,Integer> roleIndexMap =
-        new HashMap<String,Integer>();
-    {
-        roleIndexMap.put(Groove.HOST_ROLE, GRAPH_INDEX);
-        roleIndexMap.put(Groove.RULE_ROLE, RULE_INDEX);
-        roleIndexMap.put(Groove.TYPE_ROLE, TYPE_INDEX);
-    }
-    private static final String[] roles = {Groove.HOST_ROLE, Groove.RULE_ROLE,
-        Groove.TYPE_ROLE};
     /**
      * Property name of the edit type of the editor. The edit type is the kind
-     * of object being edited. Possible values are {@link Groove#HOST_ROLE},
-     * {@link Groove#RULE_ROLE} and {@link Groove#RULE_ROLE}.
+     * of object being edited. Values are of type {@link GraphRole}.
      */
     static public final String ROLE_PROPERTY = "type";
 }

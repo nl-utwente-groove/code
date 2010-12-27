@@ -19,11 +19,11 @@ package groove.ecore2groove;
 import groove.algebra.AlgebraFamily;
 import groove.graph.DefaultGraph;
 import groove.graph.GraphInfo;
+import groove.graph.GraphRole;
 import groove.io.SystemStore;
 import groove.io.SystemStoreFactory;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
-import groove.util.Groove;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
@@ -273,7 +273,7 @@ public class Transform {
             // Set info about how to store the instance graph and then store it
             aig.getInfo().setFile(f + File.separator + instanceName);
             aig.getInfo().setName(instanceName);
-            aig.getInfo().setRole(Groove.HOST_ROLE);
+            aig.getInfo().setRole(GraphRole.HOST);
 
             grammar.putGraph(aig);
 

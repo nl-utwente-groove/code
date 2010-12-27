@@ -16,6 +16,9 @@
  */
 package groove.view.aspect;
 
+import static groove.graph.GraphRole.HOST;
+import static groove.graph.GraphRole.RULE;
+import static groove.graph.GraphRole.TYPE;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultFactory;
 import groove.graph.DefaultGraph;
@@ -24,12 +27,12 @@ import groove.graph.DefaultNode;
 import groove.graph.ElementFactory;
 import groove.graph.ElementMap;
 import groove.graph.GraphInfo;
+import groove.graph.GraphRole;
 import groove.graph.Morphism;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
 import groove.trans.SystemProperties;
-import groove.util.Groove;
 import groove.view.DefaultGraphView;
 import groove.view.DefaultRuleView;
 import groove.view.DefaultTypeView;
@@ -42,6 +45,7 @@ import groove.view.View;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +66,7 @@ public class AspectGraph extends
     /**
      * Creates an empty graph, with a given graph role.
      */
-    private AspectGraph(String graphRole) {
+    private AspectGraph(GraphRole graphRole) {
         super();
         GraphInfo.setRole(this, graphRole);
     }
@@ -141,8 +145,9 @@ public class AspectGraph extends
      */
     public AspectGraph fromPlainGraph(DefaultGraph graph,
             PlainToAspectMap elementMap) {
-        AspectGraph result = new AspectGraph(GraphInfo.getRole(graph));
-        AspectParser labelParser = AspectParser.getInstance();
+        GraphRole role = GraphInfo.getRole(graph);
+        AspectGraph result = new AspectGraph(role);
+        AspectParser labelParser = AspectParser.getInstance(role);
         List<FormatError> errors = new ArrayList<FormatError>();
         assert elementMap != null && elementMap.isEmpty();
         // first do the nodes;
@@ -165,6 +170,9 @@ public class AspectGraph extends
                     edgeDataMap.put(edge, label);
                 }
             } catch (FormatException e) {
+                // we can't trace the error to the aspect graph element,
+                // as the aspect graph element has not yet been created
+                e.extend(edge);
                 errors.addAll(e.getErrors());
             }
         }
@@ -360,11 +368,11 @@ public class AspectGraph extends
      *        is to be constructed
      * @return the resulting state graph view (non-null)
      * @throws IllegalStateException if the aspect graph role is not
-     *         {@link Groove#HOST_ROLE}
+     *         {@link GraphRole#HOST}
      */
     public GraphView toGraphView(SystemProperties properties)
         throws IllegalStateException {
-        if (!GraphInfo.hasGraphRole(this)) {
+        if (!GraphInfo.hasHostRole(this)) {
             throw new IllegalStateException(
                 "Aspect graph does not represent a graph");
         }
@@ -392,7 +400,7 @@ public class AspectGraph extends
      *        graph is to be constructed
      * @return the resulting type graph view (non-null)
      * @throws IllegalStateException if the aspect graph role is not
-     *         {@link Groove#TYPE_ROLE}
+     *         {@link GraphRole#TYPE}
      */
     public TypeView toTypeView(SystemProperties properties)
         throws IllegalStateException {
@@ -421,7 +429,7 @@ public class AspectGraph extends
      *        to be constructed
      * @return the resulting rule view (non-null)
      * @throws IllegalStateException if the aspect graph role is not
-     *         {@link Groove#RULE_ROLE}
+     *         {@link GraphRole#RULE}
      */
     public RuleView toRuleView(SystemProperties properties)
         throws IllegalStateException {
@@ -518,14 +526,13 @@ public class AspectGraph extends
     /**
      * The static instance serving as a factory.
      */
-    private static final AspectGraph factory =
-        new AspectGraph(Groove.HOST_ROLE);
+    private static final AspectGraph factory = new AspectGraph(HOST);
 
     /** Factory for AspectGraph elements. */
     static class AspectFactory implements
             ElementFactory<AspectNode,AspectLabel,AspectEdge> {
         /** Private constructor to ensure singleton usage. */
-        private AspectFactory(String graphRole) {
+        private AspectFactory(GraphRole graphRole) {
             this.graphRole = graphRole;
         }
 
@@ -566,35 +573,28 @@ public class AspectGraph extends
         private int maxNodeNr;
 
         /** The graph role of the created elements. */
-        private final String graphRole;
+        private final GraphRole graphRole;
 
         /** Returns the singleton instance of this class. */
-        static public AspectFactory instance(String graphRole) {
-            if (Groove.RULE_ROLE.equals(graphRole)) {
-                return RULE_INSTANCE;
-            } else if (Groove.HOST_ROLE.equals(graphRole)) {
-                return HOST_INSTANCE;
-            } else if (Groove.TYPE_ROLE.equals(graphRole)) {
-                return TYPE_INSTANCE;
-            }
-            throw new IllegalArgumentException();
+        static public AspectFactory instance(GraphRole graphRole) {
+            return factoryMap.get(graphRole);
         }
 
-        /** The rule element-producing instance of this class. */
-        static final private AspectFactory RULE_INSTANCE = new AspectFactory(
-            Groove.RULE_ROLE);
-        /** The type element-producing instance of this class. */
-        static final private AspectFactory TYPE_INSTANCE = new AspectFactory(
-            Groove.TYPE_ROLE);
-        /** The host element-producing instance of this class. */
-        static final private AspectFactory HOST_INSTANCE = new AspectFactory(
-            Groove.HOST_ROLE);
+        /** Mapping from graph rules to element-producting factories. */
+        static private Map<GraphRole,AspectFactory> factoryMap =
+            new EnumMap<GraphRole,AspectFactory>(GraphRole.class);
+
+        static {
+            factoryMap.put(RULE, new AspectFactory(RULE));
+            factoryMap.put(HOST, new AspectFactory(HOST));
+            factoryMap.put(TYPE, new AspectFactory(TYPE));
+        }
     }
 
     private static class AspectGraphMorphism extends
             Morphism<AspectNode,AspectLabel,AspectEdge> {
         /** Constructs a new, empty map. */
-        public AspectGraphMorphism(String graphRole) {
+        public AspectGraphMorphism(GraphRole graphRole) {
             super(AspectFactory.instance(graphRole));
             this.graphRole = graphRole;
         }
@@ -605,7 +605,7 @@ public class AspectGraph extends
         }
 
         /** The graph role of the created elements. */
-        private final String graphRole;
+        private final GraphRole graphRole;
     }
 
     private static class AspectToPlainMap
