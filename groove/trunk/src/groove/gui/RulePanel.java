@@ -97,8 +97,8 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements
         if (grammar != null) {
             for (RuleName ruleName : grammar.getRuleNames()) {
                 AspectJModel jModel =
-                    AspectJModel.newInstance(grammar.getRuleView(ruleName),
-                        getOptions());
+                    AspectJModel.newInstance(
+                        grammar.getRuleView(ruleName).getView(), getOptions());
                 this.ruleJModelMap.put(ruleName, jModel);
             }
             newLabelStore = grammar.getLabelStore();

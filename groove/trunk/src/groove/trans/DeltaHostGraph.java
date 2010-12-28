@@ -23,7 +23,6 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.graph.iso.CertificateStrategy;
-import groove.view.aspect.AspectGraph;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -438,7 +437,7 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
     }
 
     @Override
-    public AspectGraph toAspectGraph() {
+    public HostToAspectMap toAspectGraph() {
         return clone().toAspectGraph();
     }
 

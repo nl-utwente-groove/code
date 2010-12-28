@@ -166,7 +166,7 @@ public class Converter {
         // node labels
         if (model instanceof EditorJModel) {
             graphModel =
-                GraphJModel.newInstance(model.toPlainGraph(),
+                GraphJModel.newInstance(((EditorJModel) model).toPlainGraph(),
                     model.getOptions());
             graphModel.setShowVertexLabels();
         } else {

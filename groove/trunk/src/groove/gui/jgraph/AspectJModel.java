@@ -63,9 +63,9 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     /**
      * Creates a new aspect model instance on top of a given aspectual view.
      */
-    AspectJModel(View<?> view, Options options) {
-        super(view.getView(), options);
-        this.view = view;
+    AspectJModel(AspectGraph graph, Options options) {
+        super(graph, options);
+        this.view = graph.toView();
     }
 
     /** Constructor for a dummy model. */
@@ -210,11 +210,11 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      * Creates a new aspect model instance on top of a given aspectual view.
      * Returns {@link #EMPTY_ASPECT_JMODEL} if the view is <code>null</code>.
      */
-    static public AspectJModel newInstance(View<?> view, Options options) {
-        if (view == null) {
+    static public AspectJModel newInstance(AspectGraph graph, Options options) {
+        if (graph == null) {
             return EMPTY_ASPECT_JMODEL;
         } else {
-            AspectJModel result = new AspectJModel(view, options);
+            AspectJModel result = new AspectJModel(graph, options);
             result.reload();
             return result;
         }

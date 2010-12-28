@@ -16,8 +16,14 @@
  */
 package groove.trans;
 
+import static groove.graph.GraphRole.HOST;
+import groove.graph.ElementMap;
 import groove.graph.Graph;
+import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectLabel;
+import groove.view.aspect.AspectNode;
+import groove.view.aspect.AspectParser;
 
 /**
  * Graph type used for graphs under transformation.
@@ -36,5 +42,32 @@ public interface HostGraph extends Graph<HostNode,HostEdge>, DeltaTarget {
     HostFactory getFactory();
 
     /** Converts this host graph to an equivalent aspect graph representation. */
-    AspectGraph toAspectGraph();
+    HostToAspectMap toAspectGraph();
+
+    /** 
+     * Mapping from the elements of a host graph to those of a corresponding
+     * aspect graph. For convenience, the aspect graph is bundled in with the map.  
+     */
+    public class HostToAspectMap extends
+            ElementMap<HostNode,HostEdge,AspectNode,AspectEdge> {
+        /**
+         * Creates a new, empty map.
+         */
+        public HostToAspectMap(AspectGraph aspectGraph) {
+            super(new AspectGraph.AspectFactory(HOST) {
+                @Override
+                public AspectLabel createLabel(String text) {
+                    return AspectParser.getInstance(HOST).parse(text);
+                }
+            });
+            this.aspectGraph = aspectGraph;
+        }
+
+        /** Returns the target aspect graph of this mapping. */
+        public AspectGraph getAspectGraph() {
+            return this.aspectGraph;
+        }
+
+        private final AspectGraph aspectGraph;
+    }
 }

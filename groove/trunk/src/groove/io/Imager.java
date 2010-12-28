@@ -27,7 +27,6 @@ import groove.gui.jgraph.JModel;
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
 import groove.util.Groove;
-import groove.view.View;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Dimension;
@@ -175,9 +174,10 @@ public class Imager extends CommandLineTool {
                         new File(
                             outFileParent,
                             new ExtensionFilter(imageFormat).addExtension(outFileName));
-                    DefaultGraph graph = graphLoader.unmarshalGraph(inFile);
+                    DefaultGraph plainGraph =
+                        graphLoader.unmarshalGraph(inFile);
 
-                    if (graph.size() == 0) {
+                    if (plainGraph.size() == 0) {
                         // fix to skip empty graphs and rules, since
                         // they cause a nullpointer
                         printlnMedium("Skpping empty graph " + inFile);
@@ -186,14 +186,16 @@ public class Imager extends CommandLineTool {
 
                     JModel model;
                     if (isEditorView()) {
-                        GraphInfo.setRole(graph, null);
-                        model = GraphJModel.newInstance(graph, new Options());
+                        GraphInfo.setRole(plainGraph, null);
+                        model =
+                            GraphJModel.newInstance(plainGraph, new Options());
                     } else {
-                        View<?> view = AspectGraph.newInstance(graph).toView();
+                        AspectGraph aspectGraph =
+                            AspectGraph.newInstance(plainGraph);
                         Options options = new Options();
                         options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(
                             false);
-                        model = AspectJModel.newInstance(view, options);
+                        model = AspectJModel.newInstance(aspectGraph, options);
                     }
 
                     JGraph jGraph = new JGraph(model, false);

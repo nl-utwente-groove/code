@@ -230,7 +230,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
     private AspectJModel getTypeJModel(TypeView graph) {
         AspectJModel result = this.typeJModelMap.get(graph);
         if (result == null) {
-            result = AspectJModel.newInstance(graph, getOptions());
+            result = AspectJModel.newInstance(graph.getView(), getOptions());
             this.typeJModelMap.put(graph, result);
         }
         return result;

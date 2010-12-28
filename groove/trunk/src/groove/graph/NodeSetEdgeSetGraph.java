@@ -47,6 +47,9 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends Edge<N>> extends
         super();
         this.graphNodeSet = createNodeSet(graph.nodeSet());
         this.graphEdgeSet = createEdgeSet(graph.edgeSet());
+        if (graph.getInfo() != null) {
+            setInfo(graph.getInfo().clone());
+        }
     }
 
     // ------------------------- COMMANDS ------------------------------

@@ -81,7 +81,7 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
      * Consistency with existing values is not tested.
      * @param value the value to be added
      */
-    void addAspect(Aspect value) {
+    public void addAspect(Aspect value) {
         testFixed(false);
         this.aspects.add(value);
         boolean notForNode = !value.getKind().isForNode(this.role);
@@ -177,7 +177,7 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
      * Sets the label text to a non-{@code null} value.
      * This fixes the label, so that no aspect values can be added any more. 
      */
-    void setInnerText(String text) {
+    public void setInnerText(String text) {
         testFixed(false);
         this.innerText = text;
         if (text.length() > 0 && this.nodeOnly != null) {
