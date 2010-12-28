@@ -16,7 +16,7 @@
  */
 package groove.abstraction;
 
-import groove.graph.DefaultNode;
+import groove.trans.DefaultHostNode;
 
 /**
  * Class that implements the nodes of a shape.
@@ -25,7 +25,7 @@ import groove.graph.DefaultNode;
  * 
  * @author Eduardo Zambon
  */
-public final class ShapeNode extends DefaultNode {
+public final class ShapeNode extends DefaultHostNode {
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------

@@ -36,7 +36,7 @@ public class NodeStore<N extends Node> {
 
     /** Returns the node with the first currently unused node number. */
     public N createNode() {
-        return createNode(nextNodeNr());
+        return createNode(getNextNodeNr());
     }
 
     /**
@@ -59,23 +59,33 @@ public class NodeStore<N extends Node> {
      * Adds a canonical node to the store.
      * This is only correct if a node with this number does not already
      * exist, or is identical to the added node. 
+     * @throws IllegalArgumentException if a different node with the same number 
+     * is already in the store
+     * @return {@code true} if the store changed as a result of this operation
      */
-    public void addNode(N node) {
+    @SuppressWarnings("unchecked")
+    public boolean addNode(Node node) throws IllegalArgumentException {
         int nr = node.getNumber();
-        assert nr >= this.nodes.length || this.nodes[nr] == null
-            || node == this.nodes[nr];
+        if (nr < this.nodes.length && this.nodes[nr] != null
+            && node != this.nodes[nr]) {
+            throw new IllegalArgumentException(String.format(
+                "Duplicate nodes %s and %s with the same number %d", node,
+                this.nodes[nr], nr));
+        }
         if (nr >= this.nodes.length) {
             int newSize =
                 Math.max((int) (this.nodes.length * GROWTH_FACTOR), nr + 1);
-            @SuppressWarnings("unchecked")
             N[] newNodes = (N[]) new Node[newSize];
             System.arraycopy(this.nodes, 0, newNodes, 0, this.nodes.length);
             this.nodes = newNodes;
         }
         if (this.nodes[nr] == null) {
-            this.nodes[nr] = node;
-            this.nextNodeNr = Math.max(this.nextNodeNr, nr);
+            this.nodes[nr] = (N) node;
             this.nodeCount++;
+            this.maxNodeNr = Math.max(this.maxNodeNr, nr);
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -87,13 +97,6 @@ public class NodeStore<N extends Node> {
         return this.nodeCount;
     }
 
-    /**
-     * Returns the maximum node number created.
-     */
-    public int size() {
-        return this.nextNodeNr;
-    }
-
     /** 
      * Resets the node store.
      * Nodes created after calling this method will not be compatible
@@ -103,18 +106,26 @@ public class NodeStore<N extends Node> {
         Arrays.fill(this.nodes, null);
         this.nodeCount = 0;
         this.nextNodeNr = 0;
+        this.maxNodeNr = -1;
     }
 
     /**
-     * Returns the next free node number, according to the static counter.
-     * @return the next node-number
+     * Returns the next free node number.
      */
-    private int nextNodeNr() {
+    public int getNextNodeNr() {
         while (this.nextNodeNr < this.nodes.length
             && this.nodes[this.nextNodeNr] != null) {
             this.nextNodeNr++;
         }
         return this.nextNodeNr;
+    }
+
+    /** Returns the highest node number in the store.
+     * @return the highest number of a node in the store, or {@code -1} if
+     * the store is empty.
+     */
+    public int getMaxNodeNr() {
+        return this.maxNodeNr;
     }
 
     /**
@@ -126,6 +137,11 @@ public class NodeStore<N extends Node> {
      * First (potentially) fresh node number available.
      */
     private int nextNodeNr;
+
+    /**
+     * Highest node number in the store.
+     */
+    private int maxNodeNr = -1;
 
     /** The prototype object used to create new nodes from. */
     private final Factory<N> factory;

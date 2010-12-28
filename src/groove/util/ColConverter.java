@@ -72,7 +72,7 @@ public class ColConverter {
 
     /** Reads a .col file and returns the corresponding graph. */
     private static HostGraph convert(File inFile) throws IOException {
-        HostGraph result = new DefaultHostGraph();
+        DefaultHostGraph result = new DefaultHostGraph();
         System.out.printf("Converting %s%n", inFile.getCanonicalPath());
         BufferedReader reader = new BufferedReader(new FileReader(inFile));
         Algebra<?> intAlgebra = AlgebraFamily.getInstance().getAlgebraFor("0");
@@ -86,9 +86,8 @@ public class ColConverter {
             if (fragments[0].equals("n")) {
                 HostNode node = addNode(result, fragments[1]);
                 ValueNode valueNode =
-                    ValueNode.createValueNode(intAlgebra,
+                    result.addNode(intAlgebra,
                         intAlgebra.getValue(fragments[2]));
-                result.addNode(valueNode);
                 result.addEdge(node, valueLabel, valueNode);
             } else if (fragments[0].equals("e")) {
                 HostNode source = addNode(result, fragments[1]);

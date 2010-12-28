@@ -50,9 +50,10 @@ public class ProductGTS extends AbstractGraph<GraphState,GraphTransition>
     /**
      * Constructs a GTS from a (fixed) graph grammar.
      */
-    public ProductGTS(GraphGrammar grammar) {
+    public ProductGTS(GTS gts) {
         super();
-        this.graphGrammar = grammar;
+        this.gts = gts;
+        this.graphGrammar = gts.getGrammar();
     }
 
     @Override
@@ -150,7 +151,7 @@ public class ProductGTS extends AbstractGraph<GraphState,GraphTransition>
      * @return the freshly created system-record for this gts.
      */
     protected SystemRecord createRecord() {
-        return new SystemRecord(getGrammar());
+        return new SystemRecord(this.gts);
     }
 
     /**
@@ -282,6 +283,7 @@ public class ProductGTS extends AbstractGraph<GraphState,GraphTransition>
         return nodeCount() - this.closedCount;
     }
 
+    private final GTS gts;
     private final GraphGrammar graphGrammar;
     private BuchiGraphState startState;
     private final TreeHashSet<BuchiGraphState> stateSet =
@@ -435,7 +437,7 @@ public class ProductGTS extends AbstractGraph<GraphState,GraphTransition>
 
     @Override
     public ProductGTS newGraph() {
-        return new ProductGTS(this.graphGrammar);
+        return new ProductGTS(this.gts);
     }
 
     @Override

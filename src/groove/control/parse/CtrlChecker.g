@@ -1,7 +1,7 @@
-tree grammar GCLNewChecker;
+tree grammar CtrlChecker;
 
 options {
-	tokenVocab=GCLNew;
+	tokenVocab=Ctrl;
 	output=AST;
 	rewrite=true;
 	ASTLabelType=MyTree;
@@ -12,6 +12,7 @@ package groove.control.parse;
 import groove.control.*;
 import groove.trans.Rule;
 import groove.trans.SPORule;
+import groove.algebra.AlgebraFamily;
 import java.util.LinkedList;
 import java.util.Stack;
 import java.util.HashSet;
@@ -20,7 +21,7 @@ import java.util.HashMap;
 
 @members{
     /** Helper class to convert AST trees to namespace. */
-    private GCLHelper helper;
+    private CtrlHelper helper;
     
     public void displayRecognitionError(String[] tokenNames,
                                         RecognitionException e) {
@@ -38,8 +39,8 @@ import java.util.HashMap;
      * with a (presumably empty) namespace.
      * @return the resulting syntax tree
      */
-    public MyTree run(MyTree tree, NamespaceNew namespace) throws RecognitionException {
-        this.helper = new GCLHelper(this, namespace);
+    public MyTree run(MyTree tree, Namespace namespace, AlgebraFamily family) throws RecognitionException {
+        this.helper = new CtrlHelper(this, namespace, family);
         MyTreeAdaptor treeAdaptor = new MyTreeAdaptor();
         setTreeAdaptor(treeAdaptor);
         setTreeNodeStream(treeAdaptor.createTreeNodeStream(tree));

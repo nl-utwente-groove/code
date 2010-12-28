@@ -898,7 +898,7 @@ public class LTLBenchmarker extends CommandLineTool {
      */
     public ProductGTS getProductGTS() {
         if (productGTS == null) {
-            productGTS = new ProductGTS(getGrammar());
+            productGTS = new ProductGTS(getGTS());
         }
         return productGTS;
     }
@@ -1165,11 +1165,11 @@ public class LTLBenchmarker extends CommandLineTool {
      * Reports on the graph data.
      */
     private void reportGraphElementStatistics() {
-        printf("\tDefault nodes:\t%d%n", HostFactory.instance().getNodeCount());
-        printf("\tDefault labels:\t%d%n",
-            HostFactory.instance().getLabelCount());
+        HostFactory factory = getGTS().getRecord().getFactory();
+        printf("\tDefault nodes:\t%d%n", factory.getNodeCount());
+        printf("\tDefault labels:\t%d%n", factory.getLabelCount());
         printf("\tFresh nodes:\t%d%n", DefaultApplication.getFreshNodeCount());
-        printf("\tFresh edges:\t%d%n", HostFactory.instance().getEdgeCount());
+        printf("\tFresh edges:\t%d%n", factory.getEdgeCount());
         double nodeAvg =
             (double) getStatisticsListener().getNodeCount()
                 / getProductGTS().nodeCount();

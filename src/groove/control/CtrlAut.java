@@ -205,7 +205,7 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
 
     /** Constructs a copy of this automaton. */
     public CtrlAut copy() {
-        CtrlAut result = new CtrlAut();
+        CtrlAut result = newGraph();
         Map<CtrlState,CtrlState> stateMap = new HashMap<CtrlState,CtrlState>();
         stateMap.put(getStart(), result.getStart());
         stateMap.put(getFinal(), result.getFinal());
@@ -347,7 +347,7 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
 
     /** Computes the quotient of this automaton, based on a given state partition. */
     private CtrlAut computeQuotient(Map<CtrlState,Set<CtrlState>> partition) {
-        CtrlAut result = new CtrlAut();
+        CtrlAut result = newGraph();
         Map<Set<CtrlState>,CtrlState> stateMap =
             new HashMap<Set<CtrlState>,CtrlState>();
         for (Set<CtrlState> cell : partition.values()) {

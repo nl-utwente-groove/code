@@ -75,7 +75,7 @@ public class DefaultGraphView implements GraphView {
         return this.view;
     }
 
-    public HostGraph toModel() throws FormatException {
+    public DefaultHostGraph toModel() throws FormatException {
         initialise();
         if (this.model == null) {
             throw new FormatException(getErrors());
@@ -140,7 +140,7 @@ public class DefaultGraphView implements GraphView {
         // first test if there is something to be done
         if (this.errors == null) {
             this.labelSet = new HashSet<TypeLabel>();
-            Pair<HostGraph,ViewToHostMap> modelPlusMap =
+            Pair<DefaultHostGraph,ViewToHostMap> modelPlusMap =
                 computeModel(this.view);
             this.model = modelPlusMap.one();
             this.viewToModelMap = modelPlusMap.two();
@@ -163,11 +163,11 @@ public class DefaultGraphView implements GraphView {
      * Computes a fresh model from a given aspect graph, together with a mapping
      * from the aspect graph's node to the (fresh) graph nodes.
      */
-    private Pair<HostGraph,ViewToHostMap> computeModel(AspectGraph view) {
+    private Pair<DefaultHostGraph,ViewToHostMap> computeModel(AspectGraph view) {
         Set<FormatError> errors = new TreeSet<FormatError>(view.getErrors());
-        HostGraph model = createGraph();
+        DefaultHostGraph model = createGraph();
         // we need to record the view-to-model element map for layout transfer
-        ViewToHostMap elementMap = new ViewToHostMap();
+        ViewToHostMap elementMap = new ViewToHostMap(HostFactory.newInstance());
         // copy the nodes from view to model
         for (AspectNode viewNode : view.nodeSet()) {
             processViewNode(model, elementMap, viewNode);
@@ -228,15 +228,15 @@ public class DefaultGraphView implements GraphView {
         GraphInfo.transfer(view, model, elementMap);
         GraphInfo.setErrors(model, errors);
         model.setFixed();
-        return new Pair<HostGraph,ViewToHostMap>(model, elementMap);
+        return new Pair<DefaultHostGraph,ViewToHostMap>(model, elementMap);
     }
 
     /**
      * Processes the information in a view node by updating the model and
      * element map.
      */
-    private void processViewNode(HostGraph model, ViewToHostMap elementMap,
-            AspectNode viewNode) {
+    private void processViewNode(DefaultHostGraph model,
+            ViewToHostMap elementMap, AspectNode viewNode) {
         // include the node in the model if it is not virtual
         if (!viewNode.getKind().isMeta()) {
             HostNode nodeImage = null;
@@ -247,7 +247,8 @@ public class DefaultGraphView implements GraphView {
                     this.algebraFamily.getAlgebra(attrType.getName());
                 Aspect dataType = viewNode.getAttrAspect();
                 nodeImage =
-                    ValueNode.createValueNode(nodeAlgebra,
+                    model.getFactory().createNode(viewNode.getNumber(),
+                        nodeAlgebra,
                         nodeAlgebra.getValue((String) dataType.getContent()));
                 model.addNode(nodeImage);
             } else {
@@ -286,7 +287,7 @@ public class DefaultGraphView implements GraphView {
     /**
      * Returns the graph factory used to construct the model.
      */
-    private HostGraph createGraph() {
+    private DefaultHostGraph createGraph() {
         return new DefaultHostGraph();
     }
 
@@ -295,7 +296,7 @@ public class DefaultGraphView implements GraphView {
     /** The view represented by this object. */
     private final AspectGraph view;
     /** The graph model that is being viewed. */
-    private HostGraph model;
+    private DefaultHostGraph model;
     /**
      * List of errors in the view that prevent the model from being constructed.
      */
@@ -314,13 +315,18 @@ public class DefaultGraphView implements GraphView {
         /**
          * Creates a new, empty map.
          */
-        public ViewToHostMap() {
-            super(HostFactory.instance());
+        public ViewToHostMap(HostFactory factory) {
+            super(factory);
         }
 
         @Override
         public ViewToHostMap newMap() {
-            return new ViewToHostMap();
+            return new ViewToHostMap(getFactory());
+        }
+
+        @Override
+        public HostFactory getFactory() {
+            return (HostFactory) super.getFactory();
         }
     }
 }

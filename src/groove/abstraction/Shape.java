@@ -16,6 +16,7 @@
  */
 package groove.abstraction;
 
+import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -136,9 +137,9 @@ public final class Shape extends DefaultHostGraph {
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** Default constructor. Creates a shape from a concrete graph. */
-    public Shape(HostGraph graph) {
-        super(ShapeFactory.instance());
+    /** Creates a shape from a concrete graph, with a given element factory. */
+    private Shape(HostGraph graph, ShapeFactory factory) {
+        super(factory);
         this.graph = graph;
         this.nodeShaping = new HashMap<HostNode,ShapeNode>();
         this.edgeShaping = new HashMap<HostEdge,ShapeEdge>();
@@ -154,12 +155,17 @@ public final class Shape extends DefaultHostGraph {
         }
     }
 
+    /** Default constructor. Creates a shape from a concrete graph. */
+    public Shape(HostGraph graph) {
+        this(graph, ShapeFactory.newInstance());
+    }
+
     /**
      * Empty constructor. After creating an object with this constructor
-     * method buildShapeFromShape should be called.
+     * method {@link #buildShapeFromShape(Shape)} should be called.
      */
-    private Shape() {
-        this((HostGraph) null);
+    private Shape(ShapeFactory factory) {
+        this(null, factory);
     }
 
     /** Copying constructor. Clones all structures of the shape. */
@@ -272,7 +278,6 @@ public final class Shape extends DefaultHostGraph {
     @Override
     public boolean addNode(HostNode node) {
         assert !this.isFrozen();
-        assert node instanceof ShapeNode : "Invalid node type!";
         boolean added = super.addNode(node);
         if (added) {
             ShapeNode nodeS = (ShapeNode) node;
@@ -289,26 +294,23 @@ public final class Shape extends DefaultHostGraph {
     @Override
     public boolean addEdgeWithoutCheck(HostEdge edge) {
         assert !this.isFrozen();
-        assert edge instanceof ShapeEdge : "Invalid edge type!";
-        ShapeEdge edgeS = (ShapeEdge) edge;
-        boolean added = super.addEdgeWithoutCheck(edgeS);
-        if (added) {
-            if (edgeS.isBinary()) {
-                Multiplicity zero = Multiplicity.getMultOf(0);
-                Multiplicity one = Multiplicity.getMultOf(1);
+        boolean added = super.addEdgeWithoutCheck(edge);
+        if (added && edge.isBinary()) {
+            ShapeEdge edgeS = (ShapeEdge) edge;
+            Multiplicity zero = Multiplicity.getMultOf(0);
+            Multiplicity one = Multiplicity.getMultOf(1);
 
-                // Outgoing multiplicity.
-                EdgeSignature outEs = this.getEdgeOutSignature(edgeS);
-                Multiplicity outMult = this.getEdgeSigOutMult(outEs);
-                if (outMult.equals(zero)) {
-                    this.setEdgeOutMult(outEs, one);
-                }
-                // Incoming multiplicity.
-                EdgeSignature inEs = this.getEdgeInSignature(edgeS);
-                Multiplicity inMult = this.getEdgeSigInMult(inEs);
-                if (inMult.equals(zero)) {
-                    this.setEdgeInMult(inEs, one);
-                }
+            // Outgoing multiplicity.
+            EdgeSignature outEs = this.getEdgeOutSignature(edgeS);
+            Multiplicity outMult = this.getEdgeSigOutMult(outEs);
+            if (outMult.equals(zero)) {
+                this.setEdgeOutMult(outEs, one);
+            }
+            // Incoming multiplicity.
+            EdgeSignature inEs = this.getEdgeInSignature(edgeS);
+            Multiplicity inMult = this.getEdgeSigInMult(inEs);
+            if (inMult.equals(zero)) {
+                this.setEdgeInMult(inEs, one);
             }
         }
         return added;
@@ -318,10 +320,9 @@ public final class Shape extends DefaultHostGraph {
     @Override
     public boolean removeNode(HostNode node) {
         assert !this.isFrozen();
-        assert node instanceof ShapeNode;
-        ShapeNode nodeS = (ShapeNode) node;
         assert this.nodeSet().contains(node);
 
+        ShapeNode nodeS = (ShapeNode) node;
         // Remove entry from node multiplicity map.
         this.nodeMultMap.remove(nodeS);
 
@@ -1441,7 +1442,7 @@ public final class Shape extends DefaultHostGraph {
     /** Normalise the shape object and returns the newly modified shape. */
     public Shape normalise() {
         assert !this.isFrozen();
-        Shape normalisedShape = new Shape();
+        Shape normalisedShape = new Shape(getFactory());
         normalisedShape.buildShapeFromShape(this);
         return normalisedShape;
     }
@@ -1612,6 +1613,18 @@ public final class Shape extends DefaultHostGraph {
             }
         }
         this.cleanEdgeSigSet();
+    }
+
+    @Override
+    protected boolean isTypeCorrect(Node node) {
+        return node instanceof ShapeNode
+            && !getFactory().addNode((ShapeNode) node);
+    }
+
+    @Override
+    protected boolean isTypeCorrect(Edge<?> edge) {
+        return edge instanceof ShapeEdge
+            && !getFactory().addEdge((ShapeEdge) edge);
     }
 
 }

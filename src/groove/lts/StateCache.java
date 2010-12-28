@@ -20,7 +20,6 @@ import groove.control.CtrlCall;
 import groove.trans.DefaultApplication;
 import groove.trans.DeltaApplier;
 import groove.trans.DeltaHostGraph;
-import groove.trans.FrozenDeltaApplier;
 import groove.trans.HostEdge;
 import groove.trans.HostElement;
 import groove.trans.HostGraph;
@@ -117,16 +116,15 @@ class StateCache {
     }
 
     /**
-     * Compute the graph from the information in the state. The state is assumed
-     * to be a {@link DefaultGraphNextState}.
+     * Compute the graph from the information in the state.
      */
     private DeltaHostGraph computeGraph() {
         HostElement[] frozenGraph = this.state.getFrozenGraph();
         DeltaHostGraph result;
         if (frozenGraph != null) {
             result =
-                this.graphFactory.newGraph(null, new FrozenDeltaApplier(
-                    frozenGraph));
+                this.graphFactory.newGraph(frozenGraph,
+                    this.record.getFactory());
         } else if (!(this.state instanceof GraphNextState)) {
             throw new IllegalStateException(
                 "Underlying state does not have information to reconstruct the graph");

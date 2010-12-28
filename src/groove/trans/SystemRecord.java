@@ -1,6 +1,7 @@
 /* $Id$ */
 package groove.trans;
 
+import groove.lts.GTS;
 import groove.util.TreeHashSet;
 
 import java.util.Collection;
@@ -9,7 +10,7 @@ import java.util.Set;
 
 /**
  * Usage instance of a given rule system. Stores information gathered during
- * rule application. An instance has an associated rule system, for which it
+ * rule application. An instance has an associated transition system, for which it
  * creates fresh node identities (to ensure deterministic and consecutive node
  * numbers) and maintains a map of rule events (to save space and time).
  * @author Arend Rensink
@@ -36,16 +37,26 @@ public class SystemRecord {
      * @throws IllegalStateException if the grammar is not fixed according to
      *         {@link GraphGrammar#testFixed(boolean)}.
      */
-    public SystemRecord(final GraphGrammar grammar)
-        throws IllegalStateException {
+    public SystemRecord(GTS gts) throws IllegalStateException {
+        this.gts = gts;
+        GraphGrammar grammar = gts.getGrammar();
         grammar.testFixed(true);
-        this.grammar = grammar;
         this.checkIso = grammar.getProperties().isCheckIsomorphism();
+    }
+
+    /** Returns the transition system of which this is the record. */
+    public GTS getGTS() {
+        return this.gts;
     }
 
     /** Returns the stored rule system on which the derivations are based. */
     public GraphGrammar getGrammar() {
-        return this.grammar;
+        return getGTS().getGrammar();
+    }
+
+    /** Returns the host factory associated with the GTS. */
+    public HostFactory getFactory() {
+        return getGTS().getHostFactory();
     }
 
     /**
@@ -126,7 +137,7 @@ public class SystemRecord {
      */
     protected RuleDependencies getDependencies() {
         if (this.dependencies == null) {
-            this.dependencies = new RuleDependencies(this.grammar);
+            this.dependencies = new RuleDependencies(getGrammar());
         }
         return this.dependencies;
     }
@@ -136,9 +147,9 @@ public class SystemRecord {
      */
     private RuleDependencies dependencies;
     /**
-     * The associated rule system.
+     * The associated transition system.
      */
-    private final GraphGrammar grammar;
+    private final GTS gts;
     /**
      * Identity map for events that have been encountered during exploration.
      * Events are stored only if {@link #isReuseEvents()} is set.

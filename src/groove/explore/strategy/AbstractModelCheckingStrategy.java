@@ -67,7 +67,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
                 "Model checking should start at initial state");
         }
         super.prepare(gts, state);
-        setProductGTS(new ProductGTS(gts.getGrammar()));
+        setProductGTS(new ProductGTS(gts));
         setup();
     }
 

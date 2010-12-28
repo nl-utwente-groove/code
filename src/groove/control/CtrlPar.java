@@ -16,6 +16,7 @@
  */
 package groove.control;
 
+import groove.algebra.Algebra;
 import groove.algebra.Algebras;
 import groove.graph.algebra.ValueNode;
 import groove.trans.RuleNode;
@@ -213,21 +214,10 @@ public abstract class CtrlPar {
          * constant value
          * @param repr String representation of this constant
          */
-        public Const(String repr) {
-            this.repr = repr;
-            this.node = ValueNode.createValueNode(repr);
-            assert this.node != null;
+        public Const(Algebra<?> algebra, String repr) {
+            this.algebra = algebra;
+            this.value = algebra.getValue(repr);
             this.type = CtrlType.getDataType(Algebras.getSigNameFor(repr));
-        }
-
-        /**
-         * Constructs a constant argument 
-         */
-        public Const(ValueNode node) {
-            this.node = node;
-            this.repr = node.getSymbol();
-            this.type =
-                CtrlType.getDataType(Algebras.getSigName(node.getAlgebra()));
         }
 
         @Override
@@ -238,20 +228,17 @@ public abstract class CtrlPar {
                 return false;
             }
             Const other = (Const) obj;
-            return getConstRepr().equals(other.getConstRepr());
+            return getValue().equals(other.getValue());
         }
 
-        /** 
-         * Returns the value node for this constant.
-         * Is {@code null} for a virtual argument.
-         */
-        public ValueNode getConstNode() {
-            return this.node;
+        /** Returns the value of this constant. */
+        public Algebra<?> getAlgebra() {
+            return this.algebra;
         }
 
-        /** Returns the string representation of this constant. */
-        public String getConstRepr() {
-            return this.repr;
+        /** Returns the value of this constant. */
+        public Object getValue() {
+            return this.value;
         }
 
         @Override
@@ -261,7 +248,7 @@ public abstract class CtrlPar {
 
         @Override
         public int hashCode() {
-            return getConstRepr().hashCode();
+            return getValue().hashCode();
         }
 
         @Override
@@ -281,13 +268,12 @@ public abstract class CtrlPar {
 
         @Override
         public String toString() {
-            return this.repr;
+            return this.algebra.getSymbol(this.value);
         }
 
-        /** The string representation of this constant. */
-        private final String repr;
-        /** The value node representing the constant; may be {@code null}. */
-        private final ValueNode node;
+        private final Algebra<?> algebra;
+        /** The value of this constant. */
+        private final Object value;
         /** The type of the constant. */
         private final CtrlType type;
     }

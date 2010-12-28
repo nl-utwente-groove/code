@@ -1,7 +1,7 @@
-tree grammar GCLNewBuilder;
+tree grammar CtrlBuilder;
 
 options {
-	tokenVocab=GCLNew;
+	tokenVocab=Ctrl;
 	output=AST;
 	rewrite=true;
 	ASTLabelType=MyTree;
@@ -19,13 +19,13 @@ import java.util.HashSet;
     /** Builder for control automata. */
     private CtrlFactory builder;
     /** Namespace used for building the automaton. */
-    private NamespaceNew namespace;
+    private Namespace namespace;
 
     /**
      * Runs the builder on a given, checked syntax tree.
      */
-    public CtrlAut run(MyTree tree, NamespaceNew namespace) throws RecognitionException {
-        this.builder = new CtrlFactory();
+    public CtrlAut run(MyTree tree, Namespace namespace) throws RecognitionException {
+        this.builder = CtrlFactory.instance();
         this.namespace = namespace;
         MyTreeAdaptor treeAdaptor = new MyTreeAdaptor();
         setTreeAdaptor(treeAdaptor);

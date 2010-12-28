@@ -16,84 +16,36 @@
  */
 package groove.abstraction;
 
-import groove.graph.DefaultEdge;
 import groove.graph.Label;
 import groove.graph.Node.Factory;
 import groove.graph.NodeStore;
 import groove.graph.TypeLabel;
 import groove.trans.HostFactory;
-import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleToHostMap;
-import groove.util.TreeHashSet;
 
 /** Factory class for graph elements. */
 public class ShapeFactory extends HostFactory {
     /** Private constructor. */
     private ShapeFactory() {
-        // empty
+        super();
     }
 
     @Override
     public ShapeNode createNode() {
-        return this.nodeStore.createNode();
+        return (ShapeNode) super.createNode();
     }
 
     @Override
     public ShapeNode createNode(int nr) {
-        return this.nodeStore.createNode(nr);
+        return (ShapeNode) super.createNode(nr);
     }
 
     @Override
-    public ShapeEdge createEdge(HostNode source, String text, HostNode target) {
-        return createEdge(source, createLabel(text), target);
-    }
-
-    @Override
-    public ShapeEdge createEdge(HostNode source, Label label, HostNode target) {
-        assert source instanceof ShapeNode : "Source node should be ShapeNode";
-        assert target instanceof ShapeNode : "Target node should be ShapeNode";
-        assert label instanceof TypeLabel : "Label should not be null";
-        ShapeEdge edge =
-            new ShapeEdge((ShapeNode) source, (TypeLabel) label,
-                (ShapeNode) target, getEdgeCount());
-        ShapeEdge result = this.edgeSet.put(edge);
-        if (result == null) {
-            result = edge;
-        }
-        return result;
-    }
-
-    @Override
-    public int getMaxNodeNr() {
-        return this.nodeStore.size();
-    }
-
-    @Override
-    public int getNodeCount() {
-        return this.nodeStore.getNodeCount();
-    }
-
-    @Override
-    public int getEdgeCount() {
-        return this.edgeSet.size();
-    }
-
-    @Override
-    public void clear() {
-        this.edgeSet.clear();
-        this.nodeStore.clear();
-    }
-
-    @Override
-    public ShapeFactory newFactory(HostGraph graph) {
-        ShapeFactory result = new ShapeFactory();
-        Shape shape = (Shape) graph;
-        for (ShapeNode node : shape.nodeSet()) {
-            result.nodeStore.addNode(node);
-        }
-        result.edgeSet.addAll(shape.edgeSet());
-        return result;
+    protected ShapeEdge createEdge(HostNode source, Label label,
+            HostNode target, int nr) {
+        return new ShapeEdge((ShapeNode) source, (TypeLabel) label,
+            (ShapeNode) target, nr);
     }
 
     @Override
@@ -106,54 +58,21 @@ public class ShapeFactory extends HostFactory {
         return new RuleToShapeMap(this);
     }
 
-    /** Store and factory of canonical shape nodes. */
-    private NodeStore<ShapeNode> nodeStore = new NodeStore<ShapeNode>(
-        new Factory<ShapeNode>() {
+    @Override
+    protected NodeStore<ShapeNode> createNodeStore() {
+        return new NodeStore<ShapeNode>(new Factory<ShapeNode>() {
             @Override
             public ShapeNode newNode(int nr) {
                 return NODE_PROTOTYPE.newNode(nr);
             }
         });
-
-    // ------------------------------------------------------------------------
-    // Static Fields
-    // ------------------------------------------------------------------------
-
-    /**
-     * A identity map, mapping previously created instances of
-     * {@link DefaultEdge} to themselves. Used to ensure that edge objects are
-     * reused.
-     */
-    private final TreeHashSet<ShapeEdge> edgeSet =
-        new TreeHashSet<ShapeEdge>() {
-            /**
-             * As {@link DefaultEdge}s test equality by object identity,
-             * we need to weaken the set's equality test.
-             */
-            @Override
-            final protected boolean areEqual(ShapeEdge o1, ShapeEdge o2) {
-                return o1.source().equals(o2.source())
-                    && o1.target().equals(o2.target())
-                    && o1.label().equals(o2.label());
-            }
-
-            @Override
-            final protected boolean allEqual() {
-                return false;
-            }
-        };
+    }
 
     /** Returns the singleton instance of this factory. */
-    public static ShapeFactory instance() {
-        // initialise lazily to avoid initialisation circularities
-        if (instance == null) {
-            instance = new ShapeFactory();
-        }
-        return instance;
+    public static ShapeFactory newInstance() {
+        return new ShapeFactory();
     }
 
     /** Used only as a reference for the constructor. */
     private static final ShapeNode NODE_PROTOTYPE = new ShapeNode(0);
-    /** Singleton instance of this factory. */
-    private static ShapeFactory instance;
 }

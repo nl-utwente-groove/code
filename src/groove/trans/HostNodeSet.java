@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.algebra.ValueNode;
 import groove.util.TreeHashSet;
 
 import java.util.Collection;
@@ -37,10 +36,6 @@ final public class HostNodeSet extends TreeHashSet<HostNode> {
     /** Constructs an empty set. */
     public HostNodeSet() {
         this(DEFAULT_CAPACITY);
-        // super(DefaultNode.getNodeCount(), HASHCODE_EQUATOR);
-        // super(NODE_SET_RESOLUTION, DefaultNode.getNodeCount(),
-        // HASHCODE_EQUATOR);
-        // super(NODE_SET_RESOLUTION, HASHCODE_EQUATOR);
     }
 
     /** Constructs a copy of an existing set. */
@@ -61,41 +56,43 @@ final public class HostNodeSet extends TreeHashSet<HostNode> {
 
     @Override
     protected boolean areEqual(HostNode newKey, HostNode oldKey) {
+        assert newKey.equals(oldKey);
         return true;
     }
 
     @Override
     protected int getCode(HostNode key) {
         int nr = key.getNumber();
-        if (key instanceof ValueNode) {
-            assert nr < MAX_VALUE_NODE_NR : String.format(
-                "Value node number '%s' too high to ensure correctness of NodeSet implementation",
-                nr);
-            nr += VALUE_NODE_BASE;
-        } else {
-            assert nr < MAX_DEFAULT_NODE_NR : String.format(
-                "Default node number '%s' too high to ensure correctness of NodeSet implementation",
-                nr);
-        }
+        //        if (key instanceof ValueNode) {
+        //            assert nr < MAX_VALUE_NODE_NR : String.format(
+        //                "Value node number '%s' too high to ensure correctness of NodeSet implementation",
+        //                nr);
+        //            nr += VALUE_NODE_BASE;
+        //        } else {
+        //            assert nr < MAX_DEFAULT_NODE_NR : String.format(
+        //                "Default node number '%s' too high to ensure correctness of NodeSet implementation",
+        //                nr);
+        //        }
         return nr;
     }
 
-    /** Maximum number of default nodes. */
-    static private final long MAX_DEFAULT_NODE_NR = 0x80000000L;
-    /** Maximum number of product nodes. */
-    static private final long MAX_PRODUCT_NODE_NR = 0x10000000L;
-    /** Maximum number of variable nodes. */
-    static private final long MAX_VARIABLE_NODE_NR = 0x10000000L;
-    /** Maximum number of value nodes. */
-    static private final long MAX_VALUE_NODE_NR = 0x60000000L;
-    /** Offset added to product node numbers, to keep them distinct. */
-    static private final int PRODUCT_NODE_BASE = (int) MAX_DEFAULT_NODE_NR;
-    /** Offset added to variable node numbers, to keep them distinct. */
-    static private final int VARIABLE_NODE_BASE = PRODUCT_NODE_BASE
-        + (int) MAX_PRODUCT_NODE_NR;
-    /** Offset added to value node numbers, to keep them distinct. */
-    static private final int VALUE_NODE_BASE = VARIABLE_NODE_BASE
-        + (int) MAX_VARIABLE_NODE_NR;
+    //
+    //    /** Maximum number of default nodes. */
+    //    static private final long MAX_DEFAULT_NODE_NR = 0x80000000L;
+    //    /** Maximum number of product nodes. */
+    //    static private final long MAX_PRODUCT_NODE_NR = 0x10000000L;
+    //    /** Maximum number of variable nodes. */
+    //    static private final long MAX_VARIABLE_NODE_NR = 0x10000000L;
+    //    /** Maximum number of value nodes. */
+    //    static private final long MAX_VALUE_NODE_NR = 0x60000000L;
+    //    /** Offset added to product node numbers, to keep them distinct. */
+    //    static private final int PRODUCT_NODE_BASE = (int) MAX_DEFAULT_NODE_NR;
+    //    /** Offset added to variable node numbers, to keep them distinct. */
+    //    static private final int VARIABLE_NODE_BASE = PRODUCT_NODE_BASE
+    //        + (int) MAX_PRODUCT_NODE_NR;
+    //    /** Offset added to value node numbers, to keep them distinct. */
+    //    static private final int VALUE_NODE_BASE = VARIABLE_NODE_BASE
+    //        + (int) MAX_VARIABLE_NODE_NR;
     /** The resolution of the tree for a node set. */
     static private final int NODE_RESOLUTION = 4;
 }

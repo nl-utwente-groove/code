@@ -32,7 +32,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface GenericGrammarView<GV extends View<HostGraph>,RV extends RuleView,TV extends View<TypeGraph>,CV> {
+public interface GenericGrammarView<GV extends View<? extends HostGraph>,RV extends RuleView,TV extends View<TypeGraph>,CV> {
     /** Returns the name of the rule system. */
     public String getName();
 

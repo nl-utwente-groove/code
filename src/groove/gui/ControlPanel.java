@@ -18,7 +18,7 @@ package groove.gui;
 
 import groove.control.ControlView;
 import groove.control.CtrlAut;
-import groove.control.parse.GCLTokenMaker;
+import groove.control.parse.CtrlTokenMaker;
 import groove.gui.jgraph.CtrlJGraph;
 import groove.io.SystemStore;
 import groove.lts.GTS;
@@ -418,7 +418,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         public ControlTextArea() {
             super(new RSyntaxDocument("gcl"));
             // RSyntaxDocument document = new RSyntaxDocument("gcl");
-            ((RSyntaxDocument) getDocument()).setSyntaxStyle(new GCLTokenMaker());
+            ((RSyntaxDocument) getDocument()).setSyntaxStyle(new CtrlTokenMaker());
             // setDocument(document);
             setBackground(DISABLED_COLOUR);
             this.changeListener = new DocumentListener() {

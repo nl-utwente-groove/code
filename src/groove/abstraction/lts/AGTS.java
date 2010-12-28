@@ -21,8 +21,9 @@ import groove.graph.GraphCache;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.trans.DefaultHostGraph;
 import groove.trans.GraphGrammar;
-import groove.trans.HostGraph;
+import groove.util.TreeHashSet;
 
 /**
  * The graph transition system for abstract exploration. All states of this
@@ -40,9 +41,6 @@ public final class AGTS extends GTS {
     public AGTS(GraphGrammar grammar) {
         super(grammar);
         this.getRecord().setCheckIso(true);
-        this.stateSet = new ShapeStateSet(this.getCollapse());
-        // This adds the start state.
-        this.startState();
     }
 
     // ------------------------------------------------------------------------
@@ -74,15 +72,27 @@ public final class AGTS extends GTS {
     }
 
     @Override
+    protected TreeHashSet<GraphState> createStateSet() {
+        return new ShapeStateSet(getCollapse());
+    }
+
+    @Override
     protected GraphCache<?,?> createCache() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    protected ShapeState createStartState(HostGraph startGraph) {
-        Shape shape = new Shape(startGraph);
+    protected DefaultHostGraph createStartGraph(DefaultHostGraph startGraph) {
+        Shape result = new Shape(startGraph);
+        result.setFixed();
+        return result;
+    }
+
+    @Override
+    protected ShapeState createStartState(DefaultHostGraph startGraph) {
         ShapeState result =
-            new ShapeState(shape, getGrammar().getCtrlAut().getStart());
+            new ShapeState((Shape) startGraph,
+                getGrammar().getCtrlAut().getStart());
         return result;
     }
 

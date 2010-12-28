@@ -16,7 +16,14 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.DefaultEdge;
+import groove.graph.DefaultGraph;
+import groove.graph.DefaultNode;
+import groove.graph.Element;
+import groove.graph.GraphInfo;
 import groove.gui.Editor;
+import groove.gui.layout.JEdgeLayout;
+import groove.gui.layout.LayoutMap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,7 +34,6 @@ import java.util.Set;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.ConnectionSet;
-import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
 
@@ -71,7 +77,7 @@ public class EditorJModel extends JModel {
         List<?> rootCells = jModel.getRoots();
         // first do the nodes
         for (Object jCell : rootCells) {
-            if (!(jCell instanceof DefaultEdge)) {
+            if (!(jCell instanceof org.jgraph.graph.DefaultEdge)) {
                 assert jCell instanceof GraphJVertex;
                 GraphJVertex<?,?> jVertex = (GraphJVertex<?,?>) jCell;
                 // create node image and attributes
@@ -84,7 +90,7 @@ public class EditorJModel extends JModel {
         }
         // now do the edges
         for (Object jCell : rootCells) {
-            if (jCell instanceof DefaultEdge) {
+            if (jCell instanceof org.jgraph.graph.DefaultEdge) {
                 assert jCell instanceof GraphJEdge;
                 GraphJEdge<?,?> jEdge = (GraphJEdge<?,?>) jCell;
                 // create edge image and attributes
@@ -115,6 +121,74 @@ public class EditorJModel extends JModel {
         }
         setProperties(jModel.getProperties());
         setName(jModel.getName());
+    }
+
+    /** 
+     * Converts this model to a plain Groove graph.
+     * @see #toPlainGraph(Map)
+     */
+    @Override
+    public DefaultGraph toPlainGraph() {
+        Map<Element,JCell> dummyMap = new HashMap<Element,JCell>();
+        return toPlainGraph(dummyMap);
+    }
+
+    /**
+     * Converts this j-model to a plain groove graph. Layout information is also
+     * transferred. A plain graph is one in which the nodes and edges are
+     * {@link DefaultNode}s and {@link DefaultEdge}s, and all further
+     * information is in the labels.
+     * @param elementMap receives the mapping from elements of the new graph
+     * to root cells of this model
+     */
+    @Override
+    public DefaultGraph toPlainGraph(Map<Element,JCell> elementMap) {
+        DefaultGraph result = new DefaultGraph();
+        LayoutMap<DefaultNode,DefaultEdge> layoutMap =
+            new LayoutMap<DefaultNode,DefaultEdge>();
+        Map<JVertex,DefaultNode> nodeMap = new HashMap<JVertex,DefaultNode>();
+
+        // Create nodes
+        for (Object root : getRoots()) {
+            if (root instanceof JVertex) {
+                DefaultNode node = addFreshNode(result, ((JVertex) root));
+                nodeMap.put((JVertex) root, node);
+                elementMap.put(node, (JVertex) root);
+                layoutMap.putNode(node, ((JVertex) root).getAttributes());
+                for (String label : ((JVertex) root).getPlainLabels()) {
+                    result.addEdge(node, label, node);
+                }
+            }
+        }
+
+        // Create Edges
+        for (Object root : getRoots()) {
+            if (root instanceof JEdge) {
+                JEdge jEdge = (JEdge) root;
+                DefaultNode source = nodeMap.get(jEdge.getSourceVertex());
+                DefaultNode target = nodeMap.get(jEdge.getTargetVertex());
+                assert target != null : "Edge with empty target: " + root;
+                assert source != null : "Edge with empty source: " + root;
+                AttributeMap edgeAttr = jEdge.getAttributes();
+                // test if the edge attributes are default
+                boolean attrIsDefault =
+                    JEdgeLayout.newInstance(edgeAttr).isDefault();
+                // parse edge text into label set
+                for (String label : jEdge.getPlainLabels()) {
+                    DefaultEdge edge = result.addEdge(source, label, target);
+                    // add layout information if there is anything to be noted
+                    // about the edge
+                    if (!attrIsDefault) {
+                        layoutMap.putEdge(edge, edgeAttr);
+                    }
+                    elementMap.put(edge, jEdge);
+                }
+            }
+        }
+        GraphInfo.setLayoutMap(result, layoutMap);
+        GraphInfo.setProperties(result, getProperties());
+        GraphInfo.setName(result, getName());
+        return result;
     }
 
     /**

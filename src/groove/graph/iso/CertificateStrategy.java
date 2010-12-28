@@ -121,7 +121,6 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge<N>> {
         int edgeCount = getGraph().edgeCount();
         this.nodeCerts = new NodeCertificate[nodeCount];
         this.edgeCerts = new EdgeCertificate[edgeCount];
-        this.otherNodeCertMap = new HashMap<ValueNode,NodeCertificate<N>>();
         // create the edge certificates
         for (N node : getGraph().nodeSet()) {
             initNodeCert(node);
@@ -159,17 +158,10 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge<N>> {
     private void putNodeCert(NodeCertificate<N> nodeCert) {
         N node = nodeCert.getElement();
         int nodeNr = node.getNumber();
-        if (node instanceof ValueNode) {
-            Object oldObject =
-                this.otherNodeCertMap.put((ValueNode) node, nodeCert);
-            assert oldObject == null : "Certificate node " + nodeCert + " for "
-                + node + " seems to override " + oldObject;
-        } else {
-            assert nodeNr < this.defaultNodeCerts.length : String.format(
-                "Node nr %d higher than maximum %d", nodeNr,
-                this.defaultNodeCerts.length);
-            this.defaultNodeCerts[nodeNr] = nodeCert;
-        }
+        assert nodeNr < this.defaultNodeCerts.length : String.format(
+            "Node nr %d higher than maximum %d", nodeNr,
+            this.defaultNodeCerts.length);
+        this.defaultNodeCerts[nodeNr] = nodeCert;
     }
 
     /**
@@ -179,11 +171,7 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge<N>> {
     NodeCertificate<N> getNodeCert(final N node) {
         NodeCertificate<N> result;
         int nodeNr = node.getNumber();
-        if (node instanceof ValueNode) {
-            result = this.otherNodeCertMap.get(node);
-        } else {
-            result = this.defaultNodeCerts[nodeNr];
-        }
+        result = this.defaultNodeCerts[nodeNr];
         assert result != null : String.format(
             "Could not find certificate for %s", node);
         return result;
@@ -196,9 +184,8 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge<N>> {
     private void initEdgeCert(E edge) {
         N source = edge.source();
         NodeCertificate<N> sourceCert = getNodeCert(source);
-        assert sourceCert != null : "Edge source of " + edge + " not found in "
-            + this.otherNodeCertMap + "; so not in the node set "
-            + this.graph.nodeSet() + " of " + this.graph;
+        assert sourceCert != null : String.format(
+            "No source certifiate found for %s", edge);
         if (source == edge.target()) {
             EdgeCertificate<N,E> edge1Cert =
                 createEdge1Certificate(edge, sourceCert);
@@ -210,10 +197,8 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge<N>> {
                 this.edge1CertCount, this.edge2CertCount, this.edgeCerts.length);
         } else {
             NodeCertificate<N> targetCert = getNodeCert(edge.target());
-            assert targetCert != null : "Edge target of " + edge
-                + " not found in " + this.otherNodeCertMap
-                + "; so not in the node set " + this.graph.nodeSet() + " of "
-                + this.graph;
+            assert targetCert != null : String.format(
+                "No target certifiate found for %s", edge);
             EdgeCertificate<N,E> edge2Cert =
                 createEdge2Certificate(edge, sourceCert, targetCert);
             this.edgeCerts[this.edge2CertCount] = edge2Cert;
@@ -379,9 +364,6 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge<N>> {
     int edge2CertCount;
     /** The number of unary edge certificates in {@link #edgeCerts}. */
     int edge1CertCount;
-    /** Map from {@link ValueNode}s to node certificates. */
-    Map<ValueNode,NodeCertificate<N>> otherNodeCertMap;
-
     /** Array for storing default node certificates. */
     private final NodeCertificate<N>[] defaultNodeCerts;
 

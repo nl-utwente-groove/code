@@ -25,7 +25,7 @@ import groove.control.CtrlAut;
 import groove.control.CtrlCall;
 import groove.control.CtrlFactory;
 import groove.control.CtrlLabel;
-import groove.control.CtrlParser;
+import groove.control.CtrlLoader;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlTransition;
 import groove.io.ExtensionFilter;
@@ -52,7 +52,7 @@ public class CtrlBuildTest {
     private static final ExtensionFilter CONTROL_FILTER =
         Groove.createControlFilter();
 
-    private final CtrlParser parser = CtrlParser.getInstance();
+    private final CtrlLoader parser = CtrlLoader.getInstance();
     private GraphGrammar testGrammar;
     {
         try {
@@ -91,7 +91,7 @@ public class CtrlBuildTest {
     /** Tests the default automaton construction. */
     @Test
     public void testDefaultAut() {
-        CtrlAut aut = CtrlFactory.getInstance().buildDefault(this.prioGrammar);
+        CtrlAut aut = CtrlFactory.instance().buildDefault(this.prioGrammar);
         assertEquals(2, aut.nodeCount());
         assertEquals(7, aut.edgeCount());
         SPORule m3 = (SPORule) this.prioGrammar.getRule("m3");

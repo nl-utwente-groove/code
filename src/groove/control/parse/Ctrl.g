@@ -1,4 +1,4 @@
-grammar GCLNew;
+grammar Ctrl;
 
 options {
 	output=AST;
@@ -28,14 +28,15 @@ import java.util.LinkedList;
 @header {
 package groove.control.parse;
 import groove.control.*;
+import groove.algebra.AlgebraFamily;
 import java.util.LinkedList;
 }
 
 @members {
     /** Lexer for the GCL language. */
-    private static GCLNewLexer lexer = new GCLNewLexer(null);
+    private static CtrlLexer lexer = new CtrlLexer(null);
     /** Helper class to convert AST trees to namespace. */
-    private GCLHelper helper;
+    private CtrlHelper helper;
     
     public void displayRecognitionError(String[] tokenNames,
                                         RecognitionException e) {
@@ -53,8 +54,8 @@ import java.util.LinkedList;
      * with a (presumably empty) namespace.
      * @return the resulting syntax tree
      */
-    public MyTree run(CharStream input, NamespaceNew namespace) throws RecognitionException {
-        this.helper = new GCLHelper(this, namespace);
+    public MyTree run(CharStream input, Namespace namespace, AlgebraFamily family) throws RecognitionException {
+        this.helper = new CtrlHelper(this, namespace, family);
         lexer.setCharStream(input);
         setTokenStream(new CommonTokenStream(lexer));
         setTreeAdaptor(new MyTreeAdaptor());
