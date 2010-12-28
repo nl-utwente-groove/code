@@ -22,13 +22,16 @@ import groove.graph.AbstractGraph;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Graph;
+import groove.graph.GraphInfo;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.graph.iso.IsoChecker;
+import groove.trans.DefaultHostGraph;
 import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
+import groove.trans.HostFactory;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.SystemRecord;
@@ -82,42 +85,71 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     public GTS(GraphGrammar grammar) {
         super();
         grammar.testFixed(true);
-        this.ruleSystem = grammar;
-        // this.storeTransitions = storeTransitions;
+        this.grammar = grammar;
+        this.record = new SystemRecord(this);
     }
 
-    /** This implementation specialises the return type to {@link GraphState}. */
-    public GraphState startState() {
-        if (this.startState == null) {
-            this.startState = computeStartState(getGrammar().getStartGraph());
-            addState(this.startState);
-        }
-        return this.startState;
+    /** Initialises the start state and corresponding host factory. */
+    protected void initialise() {
+        assert this.hostFactory == null && this.startState == null;
+        DefaultHostGraph startGraph =
+            createStartGraph(this.grammar.getStartGraph());
+        this.hostFactory = startGraph.getFactory();
+        this.startState = createStartState(startGraph);
+        addState(this.startState);
     }
 
-    /**
-     * Callback factory method to create and initialise the start graph of the
-     * GTS, on the basis of a given (non-{@code null}) graph. Creation is done using
-     * {@link #createStartState(HostGraph)}.
+    /** 
+     * Returns a copy of the given graph with a fresh element factory.
+     * The resulting graph will be used as start graph state.
      */
-    protected GraphState computeStartState(HostGraph startGraph) {
-        GraphState result = createStartState(startGraph);
+    protected DefaultHostGraph createStartGraph(DefaultHostGraph startGraph) {
+        HostFactory factory = HostFactory.newInstance();
+        DefaultHostGraph result = new DefaultHostGraph(factory);
+        for (HostNode node : startGraph.nodeSet()) {
+            factory.addNode(node);
+            result.addNode(node);
+        }
+        for (HostEdge edge : startGraph.edgeSet()) {
+            factory.addEdge(edge);
+            result.addEdge(edge);
+        }
+        result.setInfo(GraphInfo.getInfo(startGraph, true).clone());
+        result.setFixed();
         return result;
     }
 
-    /**
-     * Callback factory method to create the start graph of the GTS, on the
-     * basis of a given (non-{@code null}) graph.
+    /** 
+     * Creates the start state for this GTS.
+     * Makes sure that the start state graph has a fresh factory.
      */
-    protected GraphState createStartState(HostGraph startGraph) {
-        return new StartGraphState(getRecord(), startGraph);
+    protected GraphState createStartState(DefaultHostGraph startGraph) {
+        return new StartGraphState(this.record, startGraph);
+    }
+
+    public GraphState startState() {
+        if (this.startState == null) {
+            initialise();
+        }
+        return this.startState;
     }
 
     /**
      * Returns the rule system underlying this GTS.
      */
     public GraphGrammar getGrammar() {
-        return this.ruleSystem;
+        return this.grammar;
+    }
+
+    /** 
+     * Returns the host element factory associated with this GTS.
+     * This is taken from the start state graph. 
+     */
+    public HostFactory getHostFactory() {
+        if (this.hostFactory == null) {
+            initialise();
+        }
+        return this.hostFactory;
     }
 
     public Collection<GraphState> getFinalStates() {
@@ -301,15 +333,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      * Returns the (fixed) derivation record for this GTS.
      */
     public final SystemRecord getRecord() {
-        if (this.record == null) {
-            this.record = createRecord();
-        }
         return this.record;
-    }
-
-    /** Callback method to create a derivation data store for this GTS. */
-    protected SystemRecord createRecord() {
-        return new SystemRecord(getGrammar());
     }
 
     /**
@@ -475,7 +499,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
 
     @Override
     public GTS newGraph() {
-        return new GTS(this.ruleSystem);
+        return new GTS(this.grammar);
     }
 
     @Override
@@ -515,9 +539,11 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      * The rule system generating this LTS.
      * @invariant <tt>ruleSystem != null</tt>
      */
-    private final GraphGrammar ruleSystem;
+    private final GraphGrammar grammar;
+    /** Unique factory for host elements, associated with this GTS. */
+    private HostFactory hostFactory;
     /** The set of states of the GTS. */
-    protected TreeHashSet<GraphState> stateSet;
+    private TreeHashSet<GraphState> stateSet;
 
     /**
      * Set of states that have not yet been extended.
@@ -528,7 +554,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     private final Set<GraphState> resultStates = new HashSet<GraphState>();
 
     /** The system record for this GTS. */
-    private SystemRecord record;
+    private final SystemRecord record;
     /**
      * The number of closed states in the GTS.
      */

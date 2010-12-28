@@ -248,12 +248,11 @@ public class ExplorationStatistics {
 
     /** Reports on the graph data. */
     private void reportGraphElementStatistics() {
-        printf("\n\tDefault nodes:\t%d%n",
-            HostFactory.instance().getNodeCount());
-        printf("\tDefault labels:\t%d%n",
-            HostFactory.instance().getLabelCount());
+        HostFactory factory = this.gts.getHostFactory();
+        printf("\n\tDefault nodes:\t%d%n", factory.getNodeCount());
+        printf("\tDefault labels:\t%d%n", factory.getLabelCount());
         printf("\tFresh nodes:\t%d%n", DefaultApplication.getFreshNodeCount());
-        printf("\tFresh edges:\t%d%n", HostFactory.instance().getEdgeCount());
+        printf("\tFresh edges:\t%d%n", factory.getEdgeCount());
         double nodeAvg =
             (double) this.statisticsListener.getNodeCount()
                 / this.gts.nodeCount();

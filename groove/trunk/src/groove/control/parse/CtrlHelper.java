@@ -16,6 +16,7 @@
  */
 package groove.control.parse;
 
+import groove.algebra.AlgebraFamily;
 import groove.control.CtrlCall;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
@@ -41,10 +42,12 @@ import org.antlr.runtime.tree.Tree;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class GCLHelper {
+public class CtrlHelper {
     /** Constructs a helper object for a given parser and namespace. */
-    public GCLHelper(BaseRecognizer recogniser, NamespaceNew namespace) {
+    public CtrlHelper(BaseRecognizer recogniser, Namespace namespace,
+            AlgebraFamily family) {
         this.namespace = namespace;
+        this.algebraFamily = family;
     }
 
     /** Closes the current variable scope. */
@@ -92,7 +95,7 @@ public class GCLHelper {
         }
     }
 
-    /** Creates a new tree with a {@link GCLNewParser#ID} token at the root,
+    /** Creates a new tree with a {@link CtrlParser#ID} token at the root,
      * of which the text is the concatenation of the children of the given tree.
      */
     CommonTree toRuleName(List<?> children) {
@@ -105,7 +108,7 @@ public class GCLHelper {
             builder.append(((CommonToken) token).getText());
         }
         result = builder.toString();
-        return new MyTree(new CommonToken(GCLNewParser.ID, result));
+        return new MyTree(new CommonToken(CtrlParser.ID, result));
     }
 
     /** 
@@ -116,7 +119,7 @@ public class GCLHelper {
      */
     boolean declareFunction(Tree functionTree) {
         boolean result = false;
-        assert functionTree.getType() == GCLNewParser.FUNCTION
+        assert functionTree.getType() == CtrlParser.FUNCTION
             && functionTree.getChildCount() == 2;
         String name = functionTree.getChild(0).getText();
         if (this.namespace.hasRule(name)) {
@@ -146,7 +149,7 @@ public class GCLHelper {
 
     /** Reorders the functions according to their dependencies. */
     void reorderFunctions(MyTree functionsTree) {
-        assert functionsTree.getType() == GCLNewChecker.FUNCTIONS;
+        assert functionsTree.getType() == CtrlChecker.FUNCTIONS;
         int functionsCount = functionsTree.getChildCount();
         Map<String,MyTree> functionMap = new HashMap<String,MyTree>();
         for (int i = 0; i < functionsCount; i++) {
@@ -205,7 +208,7 @@ public class GCLHelper {
      */
     CtrlType checkType(MyTree typeTree) {
         CtrlType result;
-        if (typeTree.getType() == GCLNewChecker.NODE) {
+        if (typeTree.getType() == CtrlChecker.NODE) {
             result = CtrlType.getNodeType();
         } else {
             result = CtrlType.getDataType(typeTree.getText());
@@ -244,7 +247,7 @@ public class GCLHelper {
     CtrlPar checkVarArg(MyTree argTree) {
         CtrlPar result = null;
         int childCount = argTree.getChildCount();
-        assert argTree.getType() == GCLNewChecker.ARG && childCount > 0
+        assert argTree.getType() == CtrlChecker.ARG && childCount > 0
             && childCount <= 2;
         boolean isOutArg = childCount == 2;
         CtrlVar var = checkVar(argTree.getChild(childCount - 1), !isOutArg);
@@ -256,7 +259,7 @@ public class GCLHelper {
     }
 
     CtrlPar checkDontCareArg(MyTree argTree) {
-        assert argTree.getType() == GCLNewChecker.ARG
+        assert argTree.getType() == CtrlChecker.ARG
             && argTree.getChildCount() == 1;
         CtrlPar result = new CtrlPar.Wild();
         argTree.setCtrlPar(result);
@@ -264,16 +267,19 @@ public class GCLHelper {
     }
 
     CtrlPar checkConstArg(MyTree argTree) {
-        assert argTree.getType() == GCLNewChecker.ARG
+        assert argTree.getType() == CtrlChecker.ARG
             && argTree.getChildCount() == 1;
-        CtrlPar result = new CtrlPar.Const(argTree.getChild(0).getText());
+        String constant = argTree.getChild(0).getText();
+        CtrlPar result =
+            new CtrlPar.Const(this.algebraFamily.getAlgebraFor(constant),
+                constant);
         argTree.setCtrlPar(result);
         return result;
     }
 
     CtrlCall checkCall(MyTree callTree) {
         int childCount = callTree.getChildCount();
-        assert callTree.getType() == GCLNewChecker.CALL && childCount >= 1;
+        assert callTree.getType() == CtrlChecker.CALL && childCount >= 1;
         CtrlCall result = null;
         testArgs: {
             String name = callTree.getChild(0).getText();
@@ -410,11 +416,13 @@ public class GCLHelper {
     }
 
     /** Namespace to enter the declared functions. */
-    private final NamespaceNew namespace;
+    private final Namespace namespace;
+    /** The algebra family to be used for constant arguments. */
+    private final AlgebraFamily algebraFamily;
     /** Flag indicating that errors were found during the current run. */
     private final List<String> errors = new ArrayList<String>();
     /** The symbol table holding the local variable declarations. */
-    private final NewSymbolTable symbolTable = new NewSymbolTable();
+    private final SymbolTable symbolTable = new SymbolTable();
     private final Map<String,Set<String>> dependencyMap =
         new HashMap<String,Set<String>>();
     /** Set of currently initialised variables. */

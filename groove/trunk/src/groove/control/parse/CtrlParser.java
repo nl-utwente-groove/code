@@ -1,6 +1,8 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNew.g 2010-11-28 11:13:35
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 Ctrl.g 2010-12-28 09:29:26
 
 package groove.control.parse;
+
+import groove.algebra.AlgebraFamily;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +30,7 @@ import org.antlr.runtime.tree.RewriteRuleTokenStream;
 import org.antlr.runtime.tree.TreeAdaptor;
 
 @SuppressWarnings("all")
-public class GCLNewParser extends Parser {
+public class CtrlParser extends Parser {
     public static final String[] tokenNames = new String[] {"<invalid>",
         "<EOR>", "<DOWN>", "<UP>", "ARG", "ARGS", "BLOCK", "CALL", "DO_WHILE",
         "DO_UNTIL", "FUNCTION", "FUNCTIONS", "PROGRAM", "VAR", "LCURLY",
@@ -101,11 +103,11 @@ public class GCLNewParser extends Parser {
     // delegates
     // delegators
 
-    public GCLNewParser(TokenStream input) {
+    public CtrlParser(TokenStream input) {
         this(input, new RecognizerSharedState());
     }
 
-    public GCLNewParser(TokenStream input, RecognizerSharedState state) {
+    public CtrlParser(TokenStream input, RecognizerSharedState state) {
         super(input, state);
 
     }
@@ -121,17 +123,17 @@ public class GCLNewParser extends Parser {
     }
 
     public String[] getTokenNames() {
-        return GCLNewParser.tokenNames;
+        return CtrlParser.tokenNames;
     }
 
     public String getGrammarFileName() {
-        return "GCLNew.g";
+        return "Ctrl.g";
     }
 
     /** Lexer for the GCL language. */
-    private static GCLNewLexer lexer = new GCLNewLexer(null);
+    private static CtrlLexer lexer = new CtrlLexer(null);
     /** Helper class to convert AST trees to namespace. */
-    private GCLHelper helper;
+    private CtrlHelper helper;
 
     public void displayRecognitionError(String[] tokenNames,
             RecognitionException e) {
@@ -149,9 +151,9 @@ public class GCLNewParser extends Parser {
      * with a (presumably empty) namespace.
      * @return the resulting syntax tree
      */
-    public MyTree run(CharStream input, NamespaceNew namespace)
-        throws RecognitionException {
-        this.helper = new GCLHelper(this, namespace);
+    public MyTree run(CharStream input, Namespace namespace,
+            AlgebraFamily family) throws RecognitionException {
+        this.helper = new CtrlHelper(this, namespace, family);
         lexer.setCharStream(input);
         setTokenStream(new CommonTokenStream(lexer));
         setTreeAdaptor(new MyTreeAdaptor());
@@ -167,33 +169,33 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "program"
-    // GCLNew.g:67:1: program : ( function | stat )* -> ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) ) ;
-    public final GCLNewParser.program_return program()
+    // Ctrl.g:68:1: program : ( function | stat )* -> ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) ) ;
+    public final CtrlParser.program_return program()
         throws RecognitionException {
-        GCLNewParser.program_return retval = new GCLNewParser.program_return();
+        CtrlParser.program_return retval = new CtrlParser.program_return();
         retval.start = this.input.LT(1);
 
         CommonTree root_0 = null;
 
-        GCLNewParser.function_return function1 = null;
+        CtrlParser.function_return function1 = null;
 
-        GCLNewParser.stat_return stat2 = null;
+        CtrlParser.stat_return stat2 = null;
 
         RewriteRuleSubtreeStream stream_stat =
             new RewriteRuleSubtreeStream(this.adaptor, "rule stat");
         RewriteRuleSubtreeStream stream_function =
             new RewriteRuleSubtreeStream(this.adaptor, "rule function");
         try {
-            // GCLNew.g:68:3: ( ( function | stat )* -> ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) ) )
-            // GCLNew.g:68:5: ( function | stat )*
+            // Ctrl.g:69:3: ( ( function | stat )* -> ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) ) )
+            // Ctrl.g:69:5: ( function | stat )*
             {
-                // GCLNew.g:68:5: ( function | stat )*
+                // Ctrl.g:69:5: ( function | stat )*
                 loop1: do {
                     int alt1 = 3;
                     alt1 = this.dfa1.predict(this.input);
                     switch (alt1) {
                     case 1:
-                        // GCLNew.g:68:6: function
+                        // Ctrl.g:69:6: function
                     {
                         pushFollow(FOLLOW_function_in_program110);
                         function1 = function();
@@ -209,7 +211,7 @@ public class GCLNewParser extends Parser {
                     }
                         break;
                     case 2:
-                        // GCLNew.g:68:15: stat
+                        // Ctrl.g:69:15: stat
                     {
                         pushFollow(FOLLOW_stat_in_program112);
                         stat2 = stat();
@@ -231,7 +233,7 @@ public class GCLNewParser extends Parser {
                 } while (true);
 
                 // AST REWRITE
-                // elements: function, stat
+                // elements: stat, function
                 // token labels: 
                 // rule labels: retval
                 // token list labels: 
@@ -244,9 +246,9 @@ public class GCLNewParser extends Parser {
                             "rule retval", retval != null ? retval.tree : null);
 
                     root_0 = (CommonTree) this.adaptor.nil();
-                    // 69:5: -> ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) )
+                    // 70:5: -> ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) )
                     {
-                        // GCLNew.g:69:8: ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) )
+                        // Ctrl.g:70:8: ^( PROGRAM ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) )
                         {
                             CommonTree root_1 = (CommonTree) this.adaptor.nil();
                             root_1 =
@@ -254,7 +256,7 @@ public class GCLNewParser extends Parser {
                                     (CommonTree) this.adaptor.create(PROGRAM,
                                         "PROGRAM"), root_1);
 
-                            // GCLNew.g:69:18: ^( FUNCTIONS ( function )* )
+                            // Ctrl.g:70:18: ^( FUNCTIONS ( function )* )
                             {
                                 CommonTree root_2 =
                                     (CommonTree) this.adaptor.nil();
@@ -263,7 +265,7 @@ public class GCLNewParser extends Parser {
                                         (CommonTree) this.adaptor.create(
                                             FUNCTIONS, "FUNCTIONS"), root_2);
 
-                                // GCLNew.g:69:30: ( function )*
+                                // Ctrl.g:70:30: ( function )*
                                 while (stream_function.hasNext()) {
                                     this.adaptor.addChild(root_2,
                                         stream_function.nextTree());
@@ -273,7 +275,7 @@ public class GCLNewParser extends Parser {
 
                                 this.adaptor.addChild(root_1, root_2);
                             }
-                            // GCLNew.g:69:41: ^( BLOCK ( stat )* )
+                            // Ctrl.g:70:41: ^( BLOCK ( stat )* )
                             {
                                 CommonTree root_2 =
                                     (CommonTree) this.adaptor.nil();
@@ -282,7 +284,7 @@ public class GCLNewParser extends Parser {
                                         (CommonTree) this.adaptor.create(BLOCK,
                                             "BLOCK"), root_2);
 
-                                // GCLNew.g:69:49: ( stat )*
+                                // Ctrl.g:70:49: ( stat )*
                                 while (stream_stat.hasNext()) {
                                     this.adaptor.addChild(root_2,
                                         stream_stat.nextTree());
@@ -334,16 +336,16 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "block"
-    // GCLNew.g:72:1: block : LCURLY ( stat )* RCURLY -> ^( BLOCK ( stat )* ) ;
-    public final GCLNewParser.block_return block() throws RecognitionException {
-        GCLNewParser.block_return retval = new GCLNewParser.block_return();
+    // Ctrl.g:73:1: block : LCURLY ( stat )* RCURLY -> ^( BLOCK ( stat )* ) ;
+    public final CtrlParser.block_return block() throws RecognitionException {
+        CtrlParser.block_return retval = new CtrlParser.block_return();
         retval.start = this.input.LT(1);
 
         CommonTree root_0 = null;
 
         Token LCURLY3 = null;
         Token RCURLY5 = null;
-        GCLNewParser.stat_return stat4 = null;
+        CtrlParser.stat_return stat4 = null;
 
         CommonTree LCURLY3_tree = null;
         CommonTree RCURLY5_tree = null;
@@ -354,8 +356,8 @@ public class GCLNewParser extends Parser {
         RewriteRuleSubtreeStream stream_stat =
             new RewriteRuleSubtreeStream(this.adaptor, "rule stat");
         try {
-            // GCLNew.g:73:2: ( LCURLY ( stat )* RCURLY -> ^( BLOCK ( stat )* ) )
-            // GCLNew.g:73:4: LCURLY ( stat )* RCURLY
+            // Ctrl.g:74:2: ( LCURLY ( stat )* RCURLY -> ^( BLOCK ( stat )* ) )
+            // Ctrl.g:74:4: LCURLY ( stat )* RCURLY
             {
                 LCURLY3 =
                     (Token) match(this.input, LCURLY, FOLLOW_LCURLY_in_block150);
@@ -366,13 +368,13 @@ public class GCLNewParser extends Parser {
                     stream_LCURLY.add(LCURLY3);
                 }
 
-                // GCLNew.g:73:11: ( stat )*
+                // Ctrl.g:74:11: ( stat )*
                 loop2: do {
                     int alt2 = 2;
                     alt2 = this.dfa2.predict(this.input);
                     switch (alt2) {
                     case 1:
-                        // GCLNew.g:73:11: stat
+                        // Ctrl.g:74:11: stat
                     {
                         pushFollow(FOLLOW_stat_in_block152);
                         stat4 = stat();
@@ -416,9 +418,9 @@ public class GCLNewParser extends Parser {
                             "rule retval", retval != null ? retval.tree : null);
 
                     root_0 = (CommonTree) this.adaptor.nil();
-                    // 73:24: -> ^( BLOCK ( stat )* )
+                    // 74:24: -> ^( BLOCK ( stat )* )
                     {
-                        // GCLNew.g:73:27: ^( BLOCK ( stat )* )
+                        // Ctrl.g:74:27: ^( BLOCK ( stat )* )
                         {
                             CommonTree root_1 = (CommonTree) this.adaptor.nil();
                             root_1 =
@@ -426,7 +428,7 @@ public class GCLNewParser extends Parser {
                                     (CommonTree) this.adaptor.create(BLOCK,
                                         "BLOCK"), root_1);
 
-                            // GCLNew.g:73:35: ( stat )*
+                            // Ctrl.g:74:35: ( stat )*
                             while (stream_stat.hasNext()) {
                                 this.adaptor.addChild(root_1,
                                     stream_stat.nextTree());
@@ -475,11 +477,10 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "function"
-    // GCLNew.g:75:1: function : FUNCTION ID LPAR RPAR block ;
-    public final GCLNewParser.function_return function()
+    // Ctrl.g:76:1: function : FUNCTION ID LPAR RPAR block ;
+    public final CtrlParser.function_return function()
         throws RecognitionException {
-        GCLNewParser.function_return retval =
-            new GCLNewParser.function_return();
+        CtrlParser.function_return retval = new CtrlParser.function_return();
         retval.start = this.input.LT(1);
 
         CommonTree root_0 = null;
@@ -488,7 +489,7 @@ public class GCLNewParser extends Parser {
         Token ID7 = null;
         Token LPAR8 = null;
         Token RPAR9 = null;
-        GCLNewParser.block_return block10 = null;
+        CtrlParser.block_return block10 = null;
 
         CommonTree FUNCTION6_tree = null;
         CommonTree ID7_tree = null;
@@ -496,8 +497,8 @@ public class GCLNewParser extends Parser {
         CommonTree RPAR9_tree = null;
 
         try {
-            // GCLNew.g:76:3: ( FUNCTION ID LPAR RPAR block )
-            // GCLNew.g:76:5: FUNCTION ID LPAR RPAR block
+            // Ctrl.g:77:3: ( FUNCTION ID LPAR RPAR block )
+            // Ctrl.g:77:5: FUNCTION ID LPAR RPAR block
             {
                 root_0 = (CommonTree) this.adaptor.nil();
 
@@ -580,9 +581,9 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "stat"
-    // GCLNew.g:80:1: stat : ( block | ALAP stat | WHILE LPAR cond RPAR stat | UNTIL LPAR cond RPAR stat | DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) ) | IF LPAR cond RPAR stat ( ( ELSE )=> ELSE stat )? | TRY stat ( ( ELSE )=> ELSE stat )? | CHOICE stat ( ( OR )=> OR stat )+ | expr SEMI | var_decl SEMI );
-    public final GCLNewParser.stat_return stat() throws RecognitionException {
-        GCLNewParser.stat_return retval = new GCLNewParser.stat_return();
+    // Ctrl.g:81:1: stat : ( block | ALAP stat | WHILE LPAR cond RPAR stat | UNTIL LPAR cond RPAR stat | DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) ) | IF LPAR cond RPAR stat ( ( ELSE )=> ELSE stat )? | TRY stat ( ( ELSE )=> ELSE stat )? | CHOICE stat ( ( OR )=> OR stat )+ | expr SEMI | var_decl SEMI );
+    public final CtrlParser.stat_return stat() throws RecognitionException {
+        CtrlParser.stat_return retval = new CtrlParser.stat_return();
         retval.start = this.input.LT(1);
 
         CommonTree root_0 = null;
@@ -611,41 +612,41 @@ public class GCLNewParser extends Parser {
         Token OR47 = null;
         Token SEMI50 = null;
         Token SEMI52 = null;
-        GCLNewParser.block_return block11 = null;
+        CtrlParser.block_return block11 = null;
 
-        GCLNewParser.stat_return stat13 = null;
+        CtrlParser.stat_return stat13 = null;
 
-        GCLNewParser.cond_return cond16 = null;
+        CtrlParser.cond_return cond16 = null;
 
-        GCLNewParser.stat_return stat18 = null;
+        CtrlParser.stat_return stat18 = null;
 
-        GCLNewParser.cond_return cond21 = null;
+        CtrlParser.cond_return cond21 = null;
 
-        GCLNewParser.stat_return stat23 = null;
+        CtrlParser.stat_return stat23 = null;
 
-        GCLNewParser.stat_return stat25 = null;
+        CtrlParser.stat_return stat25 = null;
 
-        GCLNewParser.cond_return cond28 = null;
+        CtrlParser.cond_return cond28 = null;
 
-        GCLNewParser.cond_return cond32 = null;
+        CtrlParser.cond_return cond32 = null;
 
-        GCLNewParser.cond_return cond36 = null;
+        CtrlParser.cond_return cond36 = null;
 
-        GCLNewParser.stat_return stat38 = null;
+        CtrlParser.stat_return stat38 = null;
 
-        GCLNewParser.stat_return stat40 = null;
+        CtrlParser.stat_return stat40 = null;
 
-        GCLNewParser.stat_return stat42 = null;
+        CtrlParser.stat_return stat42 = null;
 
-        GCLNewParser.stat_return stat44 = null;
+        CtrlParser.stat_return stat44 = null;
 
-        GCLNewParser.stat_return stat46 = null;
+        CtrlParser.stat_return stat46 = null;
 
-        GCLNewParser.stat_return stat48 = null;
+        CtrlParser.stat_return stat48 = null;
 
-        GCLNewParser.expr_return expr49 = null;
+        CtrlParser.expr_return expr49 = null;
 
-        GCLNewParser.var_decl_return var_decl51 = null;
+        CtrlParser.var_decl_return var_decl51 = null;
 
         CommonTree ALAP12_tree = null;
         CommonTree WHILE14_tree = null;
@@ -686,12 +687,12 @@ public class GCLNewParser extends Parser {
         RewriteRuleSubtreeStream stream_stat =
             new RewriteRuleSubtreeStream(this.adaptor, "rule stat");
         try {
-            // GCLNew.g:81:2: ( block | ALAP stat | WHILE LPAR cond RPAR stat | UNTIL LPAR cond RPAR stat | DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) ) | IF LPAR cond RPAR stat ( ( ELSE )=> ELSE stat )? | TRY stat ( ( ELSE )=> ELSE stat )? | CHOICE stat ( ( OR )=> OR stat )+ | expr SEMI | var_decl SEMI )
+            // Ctrl.g:82:2: ( block | ALAP stat | WHILE LPAR cond RPAR stat | UNTIL LPAR cond RPAR stat | DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) ) | IF LPAR cond RPAR stat ( ( ELSE )=> ELSE stat )? | TRY stat ( ( ELSE )=> ELSE stat )? | CHOICE stat ( ( OR )=> OR stat )+ | expr SEMI | var_decl SEMI )
             int alt7 = 10;
             alt7 = this.dfa7.predict(this.input);
             switch (alt7) {
             case 1:
-                // GCLNew.g:81:4: block
+                // Ctrl.g:82:4: block
             {
                 root_0 = (CommonTree) this.adaptor.nil();
 
@@ -709,7 +710,7 @@ public class GCLNewParser extends Parser {
             }
                 break;
             case 2:
-                // GCLNew.g:82:4: ALAP stat
+                // Ctrl.g:83:4: ALAP stat
             {
                 root_0 = (CommonTree) this.adaptor.nil();
 
@@ -738,7 +739,7 @@ public class GCLNewParser extends Parser {
             }
                 break;
             case 3:
-                // GCLNew.g:83:4: WHILE LPAR cond RPAR stat
+                // Ctrl.g:84:4: WHILE LPAR cond RPAR stat
             {
                 root_0 = (CommonTree) this.adaptor.nil();
 
@@ -787,7 +788,7 @@ public class GCLNewParser extends Parser {
             }
                 break;
             case 4:
-                // GCLNew.g:84:4: UNTIL LPAR cond RPAR stat
+                // Ctrl.g:85:4: UNTIL LPAR cond RPAR stat
             {
                 root_0 = (CommonTree) this.adaptor.nil();
 
@@ -836,7 +837,7 @@ public class GCLNewParser extends Parser {
             }
                 break;
             case 5:
-                // GCLNew.g:85:4: DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) )
+                // Ctrl.g:86:4: DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) )
             {
                 DO24 = (Token) match(this.input, DO, FOLLOW_DO_in_stat248);
                 if (this.state.failed) {
@@ -856,7 +857,7 @@ public class GCLNewParser extends Parser {
                 if (this.state.backtracking == 0) {
                     stream_stat.add(stat25.getTree());
                 }
-                // GCLNew.g:86:4: ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) )
+                // Ctrl.g:87:4: ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) )
                 int alt3 = 2;
                 int LA3_0 = this.input.LA(1);
 
@@ -876,7 +877,7 @@ public class GCLNewParser extends Parser {
                 }
                 switch (alt3) {
                 case 1:
-                    // GCLNew.g:86:6: WHILE LPAR cond RPAR
+                    // Ctrl.g:87:6: WHILE LPAR cond RPAR
                 {
                     WHILE26 =
                         (Token) match(this.input, WHILE,
@@ -917,7 +918,7 @@ public class GCLNewParser extends Parser {
                     }
 
                     // AST REWRITE
-                    // elements: WHILE, stat, cond, stat
+                    // elements: cond, stat, WHILE, stat
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -931,9 +932,9 @@ public class GCLNewParser extends Parser {
                                         : null);
 
                         root_0 = (CommonTree) this.adaptor.nil();
-                        // 86:27: -> ^( BLOCK stat ^( WHILE cond stat ) )
+                        // 87:27: -> ^( BLOCK stat ^( WHILE cond stat ) )
                         {
-                            // GCLNew.g:86:30: ^( BLOCK stat ^( WHILE cond stat ) )
+                            // Ctrl.g:87:30: ^( BLOCK stat ^( WHILE cond stat ) )
                             {
                                 CommonTree root_1 =
                                     (CommonTree) this.adaptor.nil();
@@ -944,7 +945,7 @@ public class GCLNewParser extends Parser {
 
                                 this.adaptor.addChild(root_1,
                                     stream_stat.nextTree());
-                                // GCLNew.g:86:43: ^( WHILE cond stat )
+                                // Ctrl.g:87:43: ^( WHILE cond stat )
                                 {
                                     CommonTree root_2 =
                                         (CommonTree) this.adaptor.nil();
@@ -970,7 +971,7 @@ public class GCLNewParser extends Parser {
                 }
                     break;
                 case 2:
-                    // GCLNew.g:87:6: UNTIL LPAR cond RPAR
+                    // Ctrl.g:88:6: UNTIL LPAR cond RPAR
                 {
                     UNTIL30 =
                         (Token) match(this.input, UNTIL,
@@ -1011,7 +1012,7 @@ public class GCLNewParser extends Parser {
                     }
 
                     // AST REWRITE
-                    // elements: cond, UNTIL, stat, stat
+                    // elements: stat, cond, UNTIL, stat
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -1025,9 +1026,9 @@ public class GCLNewParser extends Parser {
                                         : null);
 
                         root_0 = (CommonTree) this.adaptor.nil();
-                        // 87:27: -> ^( BLOCK stat ^( UNTIL cond stat ) )
+                        // 88:27: -> ^( BLOCK stat ^( UNTIL cond stat ) )
                         {
-                            // GCLNew.g:87:30: ^( BLOCK stat ^( UNTIL cond stat ) )
+                            // Ctrl.g:88:30: ^( BLOCK stat ^( UNTIL cond stat ) )
                             {
                                 CommonTree root_1 =
                                     (CommonTree) this.adaptor.nil();
@@ -1038,7 +1039,7 @@ public class GCLNewParser extends Parser {
 
                                 this.adaptor.addChild(root_1,
                                     stream_stat.nextTree());
-                                // GCLNew.g:87:43: ^( UNTIL cond stat )
+                                // Ctrl.g:88:43: ^( UNTIL cond stat )
                                 {
                                     CommonTree root_2 =
                                         (CommonTree) this.adaptor.nil();
@@ -1069,7 +1070,7 @@ public class GCLNewParser extends Parser {
             }
                 break;
             case 6:
-                // GCLNew.g:89:5: IF LPAR cond RPAR stat ( ( ELSE )=> ELSE stat )?
+                // Ctrl.g:90:5: IF LPAR cond RPAR stat ( ( ELSE )=> ELSE stat )?
             {
                 root_0 = (CommonTree) this.adaptor.nil();
 
@@ -1112,12 +1113,12 @@ public class GCLNewParser extends Parser {
                 if (this.state.backtracking == 0) {
                     this.adaptor.addChild(root_0, stat38.getTree());
                 }
-                // GCLNew.g:89:31: ( ( ELSE )=> ELSE stat )?
+                // Ctrl.g:90:31: ( ( ELSE )=> ELSE stat )?
                 int alt4 = 2;
                 alt4 = this.dfa4.predict(this.input);
                 switch (alt4) {
                 case 1:
-                    // GCLNew.g:89:33: ( ELSE )=> ELSE stat
+                    // Ctrl.g:90:33: ( ELSE )=> ELSE stat
                 {
                     ELSE39 =
                         (Token) match(this.input, ELSE, FOLLOW_ELSE_in_stat341);
@@ -1143,7 +1144,7 @@ public class GCLNewParser extends Parser {
             }
                 break;
             case 7:
-                // GCLNew.g:90:5: TRY stat ( ( ELSE )=> ELSE stat )?
+                // Ctrl.g:91:5: TRY stat ( ( ELSE )=> ELSE stat )?
             {
                 root_0 = (CommonTree) this.adaptor.nil();
 
@@ -1166,12 +1167,12 @@ public class GCLNewParser extends Parser {
                 if (this.state.backtracking == 0) {
                     this.adaptor.addChild(root_0, stat42.getTree());
                 }
-                // GCLNew.g:90:15: ( ( ELSE )=> ELSE stat )?
+                // Ctrl.g:91:15: ( ( ELSE )=> ELSE stat )?
                 int alt5 = 2;
                 alt5 = this.dfa5.predict(this.input);
                 switch (alt5) {
                 case 1:
-                    // GCLNew.g:90:17: ( ELSE )=> ELSE stat
+                    // Ctrl.g:91:17: ( ELSE )=> ELSE stat
                 {
                     ELSE43 =
                         (Token) match(this.input, ELSE, FOLLOW_ELSE_in_stat366);
@@ -1197,7 +1198,7 @@ public class GCLNewParser extends Parser {
             }
                 break;
             case 8:
-                // GCLNew.g:91:5: CHOICE stat ( ( OR )=> OR stat )+
+                // Ctrl.g:92:5: CHOICE stat ( ( OR )=> OR stat )+
             {
                 root_0 = (CommonTree) this.adaptor.nil();
 
@@ -1222,14 +1223,14 @@ public class GCLNewParser extends Parser {
                 if (this.state.backtracking == 0) {
                     this.adaptor.addChild(root_0, stat46.getTree());
                 }
-                // GCLNew.g:91:18: ( ( OR )=> OR stat )+
+                // Ctrl.g:92:18: ( ( OR )=> OR stat )+
                 int cnt6 = 0;
                 loop6: do {
                     int alt6 = 2;
                     alt6 = this.dfa6.predict(this.input);
                     switch (alt6) {
                     case 1:
-                        // GCLNew.g:91:20: ( OR )=> OR stat
+                        // Ctrl.g:92:20: ( OR )=> OR stat
                     {
                         OR47 =
                             (Token) match(this.input, OR, FOLLOW_OR_in_stat391);
@@ -1268,7 +1269,7 @@ public class GCLNewParser extends Parser {
             }
                 break;
             case 9:
-                // GCLNew.g:92:4: expr SEMI
+                // Ctrl.g:93:4: expr SEMI
             {
                 root_0 = (CommonTree) this.adaptor.nil();
 
@@ -1291,7 +1292,7 @@ public class GCLNewParser extends Parser {
             }
                 break;
             case 10:
-                // GCLNew.g:93:4: var_decl SEMI
+                // Ctrl.g:94:4: var_decl SEMI
             {
                 root_0 = (CommonTree) this.adaptor.nil();
 
@@ -1347,17 +1348,17 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "cond"
-    // GCLNew.g:96:1: cond : cond_atom ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom ) ;
-    public final GCLNewParser.cond_return cond() throws RecognitionException {
-        GCLNewParser.cond_return retval = new GCLNewParser.cond_return();
+    // Ctrl.g:97:1: cond : cond_atom ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom ) ;
+    public final CtrlParser.cond_return cond() throws RecognitionException {
+        CtrlParser.cond_return retval = new CtrlParser.cond_return();
         retval.start = this.input.LT(1);
 
         CommonTree root_0 = null;
 
         Token BAR54 = null;
-        GCLNewParser.cond_atom_return cond_atom53 = null;
+        CtrlParser.cond_atom_return cond_atom53 = null;
 
-        GCLNewParser.cond_atom_return cond_atom55 = null;
+        CtrlParser.cond_atom_return cond_atom55 = null;
 
         CommonTree BAR54_tree = null;
         RewriteRuleTokenStream stream_BAR =
@@ -1365,8 +1366,8 @@ public class GCLNewParser extends Parser {
         RewriteRuleSubtreeStream stream_cond_atom =
             new RewriteRuleSubtreeStream(this.adaptor, "rule cond_atom");
         try {
-            // GCLNew.g:97:2: ( cond_atom ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom ) )
-            // GCLNew.g:97:4: cond_atom ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom )
+            // Ctrl.g:98:2: ( cond_atom ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom ) )
+            // Ctrl.g:98:4: cond_atom ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom )
             {
                 pushFollow(FOLLOW_cond_atom_in_cond424);
                 cond_atom53 = cond_atom();
@@ -1378,7 +1379,7 @@ public class GCLNewParser extends Parser {
                 if (this.state.backtracking == 0) {
                     stream_cond_atom.add(cond_atom53.getTree());
                 }
-                // GCLNew.g:98:4: ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom )
+                // Ctrl.g:99:4: ( ( BAR cond_atom )+ -> ^( CHOICE cond_atom ( cond_atom )+ ) | -> cond_atom )
                 int alt9 = 2;
                 int LA9_0 = this.input.LA(1);
 
@@ -1398,9 +1399,9 @@ public class GCLNewParser extends Parser {
                 }
                 switch (alt9) {
                 case 1:
-                    // GCLNew.g:98:6: ( BAR cond_atom )+
+                    // Ctrl.g:99:6: ( BAR cond_atom )+
                 {
-                    // GCLNew.g:98:6: ( BAR cond_atom )+
+                    // Ctrl.g:99:6: ( BAR cond_atom )+
                     int cnt8 = 0;
                     loop8: do {
                         int alt8 = 2;
@@ -1412,7 +1413,7 @@ public class GCLNewParser extends Parser {
 
                         switch (alt8) {
                         case 1:
-                            // GCLNew.g:98:7: BAR cond_atom
+                            // Ctrl.g:99:7: BAR cond_atom
                         {
                             BAR54 =
                                 (Token) match(this.input, BAR,
@@ -1468,9 +1469,9 @@ public class GCLNewParser extends Parser {
                                         : null);
 
                         root_0 = (CommonTree) this.adaptor.nil();
-                        // 98:23: -> ^( CHOICE cond_atom ( cond_atom )+ )
+                        // 99:23: -> ^( CHOICE cond_atom ( cond_atom )+ )
                         {
-                            // GCLNew.g:98:26: ^( CHOICE cond_atom ( cond_atom )+ )
+                            // Ctrl.g:99:26: ^( CHOICE cond_atom ( cond_atom )+ )
                             {
                                 CommonTree root_1 =
                                     (CommonTree) this.adaptor.nil();
@@ -1501,7 +1502,7 @@ public class GCLNewParser extends Parser {
                 }
                     break;
                 case 2:
-                    // GCLNew.g:99:6: 
+                    // Ctrl.g:100:6: 
                 {
 
                     // AST REWRITE
@@ -1519,7 +1520,7 @@ public class GCLNewParser extends Parser {
                                         : null);
 
                         root_0 = (CommonTree) this.adaptor.nil();
-                        // 99:6: -> cond_atom
+                        // 100:6: -> cond_atom
                         {
                             this.adaptor.addChild(root_0,
                                 stream_cond_atom.nextTree());
@@ -1567,22 +1568,21 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "cond_atom"
-    // GCLNew.g:103:1: cond_atom : ( TRUE | call );
-    public final GCLNewParser.cond_atom_return cond_atom()
+    // Ctrl.g:104:1: cond_atom : ( TRUE | call );
+    public final CtrlParser.cond_atom_return cond_atom()
         throws RecognitionException {
-        GCLNewParser.cond_atom_return retval =
-            new GCLNewParser.cond_atom_return();
+        CtrlParser.cond_atom_return retval = new CtrlParser.cond_atom_return();
         retval.start = this.input.LT(1);
 
         CommonTree root_0 = null;
 
         Token TRUE56 = null;
-        GCLNewParser.call_return call57 = null;
+        CtrlParser.call_return call57 = null;
 
         CommonTree TRUE56_tree = null;
 
         try {
-            // GCLNew.g:104:2: ( TRUE | call )
+            // Ctrl.g:105:2: ( TRUE | call )
             int alt10 = 2;
             int LA10_0 = this.input.LA(1);
 
@@ -1602,7 +1602,7 @@ public class GCLNewParser extends Parser {
             }
             switch (alt10) {
             case 1:
-                // GCLNew.g:104:4: TRUE
+                // Ctrl.g:105:4: TRUE
             {
                 root_0 = (CommonTree) this.adaptor.nil();
 
@@ -1619,7 +1619,7 @@ public class GCLNewParser extends Parser {
             }
                 break;
             case 2:
-                // GCLNew.g:104:11: call
+                // Ctrl.g:105:11: call
             {
                 root_0 = (CommonTree) this.adaptor.nil();
 
@@ -1670,17 +1670,17 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "expr"
-    // GCLNew.g:106:1: expr : expr2 ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 ) ;
-    public final GCLNewParser.expr_return expr() throws RecognitionException {
-        GCLNewParser.expr_return retval = new GCLNewParser.expr_return();
+    // Ctrl.g:107:1: expr : expr2 ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 ) ;
+    public final CtrlParser.expr_return expr() throws RecognitionException {
+        CtrlParser.expr_return retval = new CtrlParser.expr_return();
         retval.start = this.input.LT(1);
 
         CommonTree root_0 = null;
 
         Token BAR59 = null;
-        GCLNewParser.expr2_return expr258 = null;
+        CtrlParser.expr2_return expr258 = null;
 
-        GCLNewParser.expr2_return expr260 = null;
+        CtrlParser.expr2_return expr260 = null;
 
         CommonTree BAR59_tree = null;
         RewriteRuleTokenStream stream_BAR =
@@ -1688,8 +1688,8 @@ public class GCLNewParser extends Parser {
         RewriteRuleSubtreeStream stream_expr2 =
             new RewriteRuleSubtreeStream(this.adaptor, "rule expr2");
         try {
-            // GCLNew.g:107:2: ( expr2 ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 ) )
-            // GCLNew.g:107:4: expr2 ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 )
+            // Ctrl.g:108:2: ( expr2 ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 ) )
+            // Ctrl.g:108:4: expr2 ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 )
             {
                 pushFollow(FOLLOW_expr2_in_expr488);
                 expr258 = expr2();
@@ -1701,7 +1701,7 @@ public class GCLNewParser extends Parser {
                 if (this.state.backtracking == 0) {
                     stream_expr2.add(expr258.getTree());
                 }
-                // GCLNew.g:108:4: ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 )
+                // Ctrl.g:109:4: ( ( BAR expr2 )+ -> ^( CHOICE expr2 ( expr2 )+ ) | -> expr2 )
                 int alt12 = 2;
                 int LA12_0 = this.input.LA(1);
 
@@ -1721,9 +1721,9 @@ public class GCLNewParser extends Parser {
                 }
                 switch (alt12) {
                 case 1:
-                    // GCLNew.g:108:6: ( BAR expr2 )+
+                    // Ctrl.g:109:6: ( BAR expr2 )+
                 {
-                    // GCLNew.g:108:6: ( BAR expr2 )+
+                    // Ctrl.g:109:6: ( BAR expr2 )+
                     int cnt11 = 0;
                     loop11: do {
                         int alt11 = 2;
@@ -1735,7 +1735,7 @@ public class GCLNewParser extends Parser {
 
                         switch (alt11) {
                         case 1:
-                            // GCLNew.g:108:7: BAR expr2
+                            // Ctrl.g:109:7: BAR expr2
                         {
                             BAR59 =
                                 (Token) match(this.input, BAR,
@@ -1791,9 +1791,9 @@ public class GCLNewParser extends Parser {
                                         : null);
 
                         root_0 = (CommonTree) this.adaptor.nil();
-                        // 108:19: -> ^( CHOICE expr2 ( expr2 )+ )
+                        // 109:19: -> ^( CHOICE expr2 ( expr2 )+ )
                         {
-                            // GCLNew.g:108:22: ^( CHOICE expr2 ( expr2 )+ )
+                            // Ctrl.g:109:22: ^( CHOICE expr2 ( expr2 )+ )
                             {
                                 CommonTree root_1 =
                                     (CommonTree) this.adaptor.nil();
@@ -1824,7 +1824,7 @@ public class GCLNewParser extends Parser {
                 }
                     break;
                 case 2:
-                    // GCLNew.g:109:6: 
+                    // Ctrl.g:110:6: 
                 {
 
                     // AST REWRITE
@@ -1842,7 +1842,7 @@ public class GCLNewParser extends Parser {
                                         : null);
 
                         root_0 = (CommonTree) this.adaptor.nil();
-                        // 109:6: -> expr2
+                        // 110:6: -> expr2
                         {
                             this.adaptor.addChild(root_0,
                                 stream_expr2.nextTree());
@@ -1890,9 +1890,9 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "expr2"
-    // GCLNew.g:113:1: expr2 : (e= expr_atom ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | ASTERISK -> ^( STAR $e) | -> $e) | SHARP expr_atom -> ^( ALAP expr_atom ) );
-    public final GCLNewParser.expr2_return expr2() throws RecognitionException {
-        GCLNewParser.expr2_return retval = new GCLNewParser.expr2_return();
+    // Ctrl.g:114:1: expr2 : (e= expr_atom ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | ASTERISK -> ^( STAR $e) | -> $e) | SHARP expr_atom -> ^( ALAP expr_atom ) );
+    public final CtrlParser.expr2_return expr2() throws RecognitionException {
+        CtrlParser.expr2_return retval = new CtrlParser.expr2_return();
         retval.start = this.input.LT(1);
 
         CommonTree root_0 = null;
@@ -1900,9 +1900,9 @@ public class GCLNewParser extends Parser {
         Token PLUS61 = null;
         Token ASTERISK62 = null;
         Token SHARP63 = null;
-        GCLNewParser.expr_atom_return e = null;
+        CtrlParser.expr_atom_return e = null;
 
-        GCLNewParser.expr_atom_return expr_atom64 = null;
+        CtrlParser.expr_atom_return expr_atom64 = null;
 
         CommonTree PLUS61_tree = null;
         CommonTree ASTERISK62_tree = null;
@@ -1916,7 +1916,7 @@ public class GCLNewParser extends Parser {
         RewriteRuleSubtreeStream stream_expr_atom =
             new RewriteRuleSubtreeStream(this.adaptor, "rule expr_atom");
         try {
-            // GCLNew.g:114:3: (e= expr_atom ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | ASTERISK -> ^( STAR $e) | -> $e) | SHARP expr_atom -> ^( ALAP expr_atom ) )
+            // Ctrl.g:115:3: (e= expr_atom ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | ASTERISK -> ^( STAR $e) | -> $e) | SHARP expr_atom -> ^( ALAP expr_atom ) )
             int alt14 = 2;
             int LA14_0 = this.input.LA(1);
 
@@ -1936,7 +1936,7 @@ public class GCLNewParser extends Parser {
             }
             switch (alt14) {
             case 1:
-                // GCLNew.g:114:5: e= expr_atom ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | ASTERISK -> ^( STAR $e) | -> $e)
+                // Ctrl.g:115:5: e= expr_atom ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | ASTERISK -> ^( STAR $e) | -> $e)
             {
                 pushFollow(FOLLOW_expr_atom_in_expr2539);
                 e = expr_atom();
@@ -1948,7 +1948,7 @@ public class GCLNewParser extends Parser {
                 if (this.state.backtracking == 0) {
                     stream_expr_atom.add(e.getTree());
                 }
-                // GCLNew.g:115:5: ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | ASTERISK -> ^( STAR $e) | -> $e)
+                // Ctrl.g:116:5: ( PLUS -> ^( BLOCK $e ^( STAR $e) ) | ASTERISK -> ^( STAR $e) | -> $e)
                 int alt13 = 3;
                 switch (this.input.LA(1)) {
                 case PLUS: {
@@ -1978,7 +1978,7 @@ public class GCLNewParser extends Parser {
 
                 switch (alt13) {
                 case 1:
-                    // GCLNew.g:115:7: PLUS
+                    // Ctrl.g:116:7: PLUS
                 {
                     PLUS61 =
                         (Token) match(this.input, PLUS, FOLLOW_PLUS_in_expr2547);
@@ -2007,9 +2007,9 @@ public class GCLNewParser extends Parser {
                                 "rule e", e != null ? e.tree : null);
 
                         root_0 = (CommonTree) this.adaptor.nil();
-                        // 115:12: -> ^( BLOCK $e ^( STAR $e) )
+                        // 116:12: -> ^( BLOCK $e ^( STAR $e) )
                         {
-                            // GCLNew.g:115:15: ^( BLOCK $e ^( STAR $e) )
+                            // Ctrl.g:116:15: ^( BLOCK $e ^( STAR $e) )
                             {
                                 CommonTree root_1 =
                                     (CommonTree) this.adaptor.nil();
@@ -2020,7 +2020,7 @@ public class GCLNewParser extends Parser {
 
                                 this.adaptor.addChild(root_1,
                                     stream_e.nextTree());
-                                // GCLNew.g:115:26: ^( STAR $e)
+                                // Ctrl.g:116:26: ^( STAR $e)
                                 {
                                     CommonTree root_2 =
                                         (CommonTree) this.adaptor.nil();
@@ -2045,7 +2045,7 @@ public class GCLNewParser extends Parser {
                 }
                     break;
                 case 2:
-                    // GCLNew.g:116:7: ASTERISK
+                    // Ctrl.g:117:7: ASTERISK
                 {
                     ASTERISK62 =
                         (Token) match(this.input, ASTERISK,
@@ -2075,9 +2075,9 @@ public class GCLNewParser extends Parser {
                                 "rule e", e != null ? e.tree : null);
 
                         root_0 = (CommonTree) this.adaptor.nil();
-                        // 116:16: -> ^( STAR $e)
+                        // 117:16: -> ^( STAR $e)
                         {
-                            // GCLNew.g:116:19: ^( STAR $e)
+                            // Ctrl.g:117:19: ^( STAR $e)
                             {
                                 CommonTree root_1 =
                                     (CommonTree) this.adaptor.nil();
@@ -2099,7 +2099,7 @@ public class GCLNewParser extends Parser {
                 }
                     break;
                 case 3:
-                    // GCLNew.g:117:7: 
+                    // Ctrl.g:118:7: 
                 {
 
                     // AST REWRITE
@@ -2120,7 +2120,7 @@ public class GCLNewParser extends Parser {
                                 "rule e", e != null ? e.tree : null);
 
                         root_0 = (CommonTree) this.adaptor.nil();
-                        // 117:7: -> $e
+                        // 118:7: -> $e
                         {
                             this.adaptor.addChild(root_0, stream_e.nextTree());
 
@@ -2136,7 +2136,7 @@ public class GCLNewParser extends Parser {
             }
                 break;
             case 2:
-                // GCLNew.g:119:5: SHARP expr_atom
+                // Ctrl.g:120:5: SHARP expr_atom
             {
                 SHARP63 =
                     (Token) match(this.input, SHARP, FOLLOW_SHARP_in_expr2603);
@@ -2172,9 +2172,9 @@ public class GCLNewParser extends Parser {
                             "rule retval", retval != null ? retval.tree : null);
 
                     root_0 = (CommonTree) this.adaptor.nil();
-                    // 119:21: -> ^( ALAP expr_atom )
+                    // 120:21: -> ^( ALAP expr_atom )
                     {
-                        // GCLNew.g:119:24: ^( ALAP expr_atom )
+                        // Ctrl.g:120:24: ^( ALAP expr_atom )
                         {
                             CommonTree root_1 = (CommonTree) this.adaptor.nil();
                             root_1 =
@@ -2228,11 +2228,10 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "expr_atom"
-    // GCLNew.g:122:1: expr_atom : ( ANY | OTHER | LPAR expr RPAR | call );
-    public final GCLNewParser.expr_atom_return expr_atom()
+    // Ctrl.g:123:1: expr_atom : ( ANY | OTHER | LPAR expr RPAR | call );
+    public final CtrlParser.expr_atom_return expr_atom()
         throws RecognitionException {
-        GCLNewParser.expr_atom_return retval =
-            new GCLNewParser.expr_atom_return();
+        CtrlParser.expr_atom_return retval = new CtrlParser.expr_atom_return();
         retval.start = this.input.LT(1);
 
         CommonTree root_0 = null;
@@ -2241,9 +2240,9 @@ public class GCLNewParser extends Parser {
         Token OTHER66 = null;
         Token LPAR67 = null;
         Token RPAR69 = null;
-        GCLNewParser.expr_return expr68 = null;
+        CtrlParser.expr_return expr68 = null;
 
-        GCLNewParser.call_return call70 = null;
+        CtrlParser.call_return call70 = null;
 
         CommonTree ANY65_tree = null;
         CommonTree OTHER66_tree = null;
@@ -2251,7 +2250,7 @@ public class GCLNewParser extends Parser {
         CommonTree RPAR69_tree = null;
 
         try {
-            // GCLNew.g:123:2: ( ANY | OTHER | LPAR expr RPAR | call )
+            // Ctrl.g:124:2: ( ANY | OTHER | LPAR expr RPAR | call )
             int alt15 = 4;
             switch (this.input.LA(1)) {
             case ANY: {
@@ -2283,7 +2282,7 @@ public class GCLNewParser extends Parser {
 
             switch (alt15) {
             case 1:
-                // GCLNew.g:123:4: ANY
+                // Ctrl.g:124:4: ANY
             {
                 root_0 = (CommonTree) this.adaptor.nil();
 
@@ -2300,7 +2299,7 @@ public class GCLNewParser extends Parser {
             }
                 break;
             case 2:
-                // GCLNew.g:124:4: OTHER
+                // Ctrl.g:125:4: OTHER
             {
                 root_0 = (CommonTree) this.adaptor.nil();
 
@@ -2318,7 +2317,7 @@ public class GCLNewParser extends Parser {
             }
                 break;
             case 3:
-                // GCLNew.g:125:4: LPAR expr RPAR
+                // Ctrl.g:126:4: LPAR expr RPAR
             {
                 root_0 = (CommonTree) this.adaptor.nil();
 
@@ -2346,7 +2345,7 @@ public class GCLNewParser extends Parser {
             }
                 break;
             case 4:
-                // GCLNew.g:126:4: call
+                // Ctrl.g:127:4: call
             {
                 root_0 = (CommonTree) this.adaptor.nil();
 
@@ -2397,24 +2396,24 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "call"
-    // GCLNew.g:129:1: call : rule_name ( arg_list )? -> ^( CALL rule_name ( arg_list )? ) ;
-    public final GCLNewParser.call_return call() throws RecognitionException {
-        GCLNewParser.call_return retval = new GCLNewParser.call_return();
+    // Ctrl.g:130:1: call : rule_name ( arg_list )? -> ^( CALL rule_name ( arg_list )? ) ;
+    public final CtrlParser.call_return call() throws RecognitionException {
+        CtrlParser.call_return retval = new CtrlParser.call_return();
         retval.start = this.input.LT(1);
 
         CommonTree root_0 = null;
 
-        GCLNewParser.rule_name_return rule_name71 = null;
+        CtrlParser.rule_name_return rule_name71 = null;
 
-        GCLNewParser.arg_list_return arg_list72 = null;
+        CtrlParser.arg_list_return arg_list72 = null;
 
         RewriteRuleSubtreeStream stream_arg_list =
             new RewriteRuleSubtreeStream(this.adaptor, "rule arg_list");
         RewriteRuleSubtreeStream stream_rule_name =
             new RewriteRuleSubtreeStream(this.adaptor, "rule rule_name");
         try {
-            // GCLNew.g:130:2: ( rule_name ( arg_list )? -> ^( CALL rule_name ( arg_list )? ) )
-            // GCLNew.g:130:4: rule_name ( arg_list )?
+            // Ctrl.g:131:2: ( rule_name ( arg_list )? -> ^( CALL rule_name ( arg_list )? ) )
+            // Ctrl.g:131:4: rule_name ( arg_list )?
             {
                 pushFollow(FOLLOW_rule_name_in_call658);
                 rule_name71 = rule_name();
@@ -2426,7 +2425,7 @@ public class GCLNewParser extends Parser {
                 if (this.state.backtracking == 0) {
                     stream_rule_name.add(rule_name71.getTree());
                 }
-                // GCLNew.g:130:14: ( arg_list )?
+                // Ctrl.g:131:14: ( arg_list )?
                 int alt16 = 2;
                 int LA16_0 = this.input.LA(1);
 
@@ -2435,7 +2434,7 @@ public class GCLNewParser extends Parser {
                 }
                 switch (alt16) {
                 case 1:
-                    // GCLNew.g:130:14: arg_list
+                    // Ctrl.g:131:14: arg_list
                 {
                     pushFollow(FOLLOW_arg_list_in_call660);
                     arg_list72 = arg_list();
@@ -2467,9 +2466,9 @@ public class GCLNewParser extends Parser {
                             "rule retval", retval != null ? retval.tree : null);
 
                     root_0 = (CommonTree) this.adaptor.nil();
-                    // 131:4: -> ^( CALL rule_name ( arg_list )? )
+                    // 132:4: -> ^( CALL rule_name ( arg_list )? )
                     {
-                        // GCLNew.g:131:7: ^( CALL rule_name ( arg_list )? )
+                        // Ctrl.g:132:7: ^( CALL rule_name ( arg_list )? )
                         {
                             CommonTree root_1 = (CommonTree) this.adaptor.nil();
                             root_1 =
@@ -2479,7 +2478,7 @@ public class GCLNewParser extends Parser {
 
                             this.adaptor.addChild(root_1,
                                 stream_rule_name.nextTree());
-                            // GCLNew.g:131:24: ( arg_list )?
+                            // Ctrl.g:132:24: ( arg_list )?
                             if (stream_arg_list.hasNext()) {
                                 this.adaptor.addChild(root_1,
                                     stream_arg_list.nextTree());
@@ -2528,11 +2527,10 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "rule_name"
-    // GCLNew.g:134:1: rule_name : ids+= ID ( DOT ids+= ID )* ->;
-    public final GCLNewParser.rule_name_return rule_name()
+    // Ctrl.g:135:1: rule_name : ids+= ID ( DOT ids+= ID )* ->;
+    public final CtrlParser.rule_name_return rule_name()
         throws RecognitionException {
-        GCLNewParser.rule_name_return retval =
-            new GCLNewParser.rule_name_return();
+        CtrlParser.rule_name_return retval = new CtrlParser.rule_name_return();
         retval.start = this.input.LT(1);
 
         CommonTree root_0 = null;
@@ -2549,8 +2547,8 @@ public class GCLNewParser extends Parser {
             new RewriteRuleTokenStream(this.adaptor, "token DOT");
 
         try {
-            // GCLNew.g:136:3: (ids+= ID ( DOT ids+= ID )* ->)
-            // GCLNew.g:136:5: ids+= ID ( DOT ids+= ID )*
+            // Ctrl.g:137:3: (ids+= ID ( DOT ids+= ID )* ->)
+            // Ctrl.g:137:5: ids+= ID ( DOT ids+= ID )*
             {
                 ids = (Token) match(this.input, ID, FOLLOW_ID_in_rule_name691);
                 if (this.state.failed) {
@@ -2565,7 +2563,7 @@ public class GCLNewParser extends Parser {
                 }
                 list_ids.add(ids);
 
-                // GCLNew.g:136:13: ( DOT ids+= ID )*
+                // Ctrl.g:137:13: ( DOT ids+= ID )*
                 loop17: do {
                     int alt17 = 2;
                     int LA17_0 = this.input.LA(1);
@@ -2576,7 +2574,7 @@ public class GCLNewParser extends Parser {
 
                     switch (alt17) {
                     case 1:
-                        // GCLNew.g:136:14: DOT ids+= ID
+                        // Ctrl.g:137:14: DOT ids+= ID
                     {
                         DOT73 =
                             (Token) match(this.input, DOT,
@@ -2625,7 +2623,7 @@ public class GCLNewParser extends Parser {
                             "rule retval", retval != null ? retval.tree : null);
 
                     root_0 = (CommonTree) this.adaptor.nil();
-                    // 137:5: ->
+                    // 138:5: ->
                     {
                         this.adaptor.addChild(root_0,
                             this.helper.toRuleName(list_ids));
@@ -2668,11 +2666,10 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "var_decl"
-    // GCLNew.g:140:1: var_decl : var_type ID ( COMMA ID )* -> ^( VAR var_type ( ID )+ ) ;
-    public final GCLNewParser.var_decl_return var_decl()
+    // Ctrl.g:141:1: var_decl : var_type ID ( COMMA ID )* -> ^( VAR var_type ( ID )+ ) ;
+    public final CtrlParser.var_decl_return var_decl()
         throws RecognitionException {
-        GCLNewParser.var_decl_return retval =
-            new GCLNewParser.var_decl_return();
+        CtrlParser.var_decl_return retval = new CtrlParser.var_decl_return();
         retval.start = this.input.LT(1);
 
         CommonTree root_0 = null;
@@ -2680,7 +2677,7 @@ public class GCLNewParser extends Parser {
         Token ID75 = null;
         Token COMMA76 = null;
         Token ID77 = null;
-        GCLNewParser.var_type_return var_type74 = null;
+        CtrlParser.var_type_return var_type74 = null;
 
         CommonTree ID75_tree = null;
         CommonTree COMMA76_tree = null;
@@ -2692,8 +2689,8 @@ public class GCLNewParser extends Parser {
         RewriteRuleSubtreeStream stream_var_type =
             new RewriteRuleSubtreeStream(this.adaptor, "rule var_type");
         try {
-            // GCLNew.g:141:2: ( var_type ID ( COMMA ID )* -> ^( VAR var_type ( ID )+ ) )
-            // GCLNew.g:141:4: var_type ID ( COMMA ID )*
+            // Ctrl.g:142:2: ( var_type ID ( COMMA ID )* -> ^( VAR var_type ( ID )+ ) )
+            // Ctrl.g:142:4: var_type ID ( COMMA ID )*
             {
                 pushFollow(FOLLOW_var_type_in_var_decl720);
                 var_type74 = var_type();
@@ -2713,7 +2710,7 @@ public class GCLNewParser extends Parser {
                     stream_ID.add(ID75);
                 }
 
-                // GCLNew.g:141:16: ( COMMA ID )*
+                // Ctrl.g:142:16: ( COMMA ID )*
                 loop18: do {
                     int alt18 = 2;
                     int LA18_0 = this.input.LA(1);
@@ -2724,7 +2721,7 @@ public class GCLNewParser extends Parser {
 
                     switch (alt18) {
                     case 1:
-                        // GCLNew.g:141:17: COMMA ID
+                        // Ctrl.g:142:17: COMMA ID
                     {
                         COMMA76 =
                             (Token) match(this.input, COMMA,
@@ -2755,7 +2752,7 @@ public class GCLNewParser extends Parser {
                 } while (true);
 
                 // AST REWRITE
-                // elements: var_type, ID
+                // elements: ID, var_type
                 // token labels: 
                 // rule labels: retval
                 // token list labels: 
@@ -2768,9 +2765,9 @@ public class GCLNewParser extends Parser {
                             "rule retval", retval != null ? retval.tree : null);
 
                     root_0 = (CommonTree) this.adaptor.nil();
-                    // 141:28: -> ^( VAR var_type ( ID )+ )
+                    // 142:28: -> ^( VAR var_type ( ID )+ )
                     {
-                        // GCLNew.g:141:31: ^( VAR var_type ( ID )+ )
+                        // Ctrl.g:142:31: ^( VAR var_type ( ID )+ )
                         {
                             CommonTree root_1 = (CommonTree) this.adaptor.nil();
                             root_1 =
@@ -2831,11 +2828,10 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "var_type"
-    // GCLNew.g:144:1: var_type : ( NODE | BOOL | STRING | INT | REAL );
-    public final GCLNewParser.var_type_return var_type()
+    // Ctrl.g:145:1: var_type : ( NODE | BOOL | STRING | INT | REAL );
+    public final CtrlParser.var_type_return var_type()
         throws RecognitionException {
-        GCLNewParser.var_type_return retval =
-            new GCLNewParser.var_type_return();
+        CtrlParser.var_type_return retval = new CtrlParser.var_type_return();
         retval.start = this.input.LT(1);
 
         CommonTree root_0 = null;
@@ -2845,8 +2841,8 @@ public class GCLNewParser extends Parser {
         CommonTree set78_tree = null;
 
         try {
-            // GCLNew.g:145:2: ( NODE | BOOL | STRING | INT | REAL )
-            // GCLNew.g:
+            // Ctrl.g:146:2: ( NODE | BOOL | STRING | INT | REAL )
+            // Ctrl.g:
             {
                 root_0 = (CommonTree) this.adaptor.nil();
 
@@ -2903,11 +2899,10 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "arg_list"
-    // GCLNew.g:152:1: arg_list : LPAR ( arg ( COMMA arg )* )? RPAR -> ^( ARGS ( arg )* ) ;
-    public final GCLNewParser.arg_list_return arg_list()
+    // Ctrl.g:153:1: arg_list : LPAR ( arg ( COMMA arg )* )? RPAR -> ^( ARGS ( arg )* ) ;
+    public final CtrlParser.arg_list_return arg_list()
         throws RecognitionException {
-        GCLNewParser.arg_list_return retval =
-            new GCLNewParser.arg_list_return();
+        CtrlParser.arg_list_return retval = new CtrlParser.arg_list_return();
         retval.start = this.input.LT(1);
 
         CommonTree root_0 = null;
@@ -2915,9 +2910,9 @@ public class GCLNewParser extends Parser {
         Token LPAR79 = null;
         Token COMMA81 = null;
         Token RPAR83 = null;
-        GCLNewParser.arg_return arg80 = null;
+        CtrlParser.arg_return arg80 = null;
 
-        GCLNewParser.arg_return arg82 = null;
+        CtrlParser.arg_return arg82 = null;
 
         CommonTree LPAR79_tree = null;
         CommonTree COMMA81_tree = null;
@@ -2931,8 +2926,8 @@ public class GCLNewParser extends Parser {
         RewriteRuleSubtreeStream stream_arg =
             new RewriteRuleSubtreeStream(this.adaptor, "rule arg");
         try {
-            // GCLNew.g:153:2: ( LPAR ( arg ( COMMA arg )* )? RPAR -> ^( ARGS ( arg )* ) )
-            // GCLNew.g:153:4: LPAR ( arg ( COMMA arg )* )? RPAR
+            // Ctrl.g:154:2: ( LPAR ( arg ( COMMA arg )* )? RPAR -> ^( ARGS ( arg )* ) )
+            // Ctrl.g:154:4: LPAR ( arg ( COMMA arg )* )? RPAR
             {
                 LPAR79 =
                     (Token) match(this.input, LPAR, FOLLOW_LPAR_in_arg_list783);
@@ -2943,7 +2938,7 @@ public class GCLNewParser extends Parser {
                     stream_LPAR.add(LPAR79);
                 }
 
-                // GCLNew.g:153:9: ( arg ( COMMA arg )* )?
+                // Ctrl.g:154:9: ( arg ( COMMA arg )* )?
                 int alt20 = 2;
                 int LA20_0 = this.input.LA(1);
 
@@ -2952,7 +2947,7 @@ public class GCLNewParser extends Parser {
                 }
                 switch (alt20) {
                 case 1:
-                    // GCLNew.g:153:10: arg ( COMMA arg )*
+                    // Ctrl.g:154:10: arg ( COMMA arg )*
                 {
                     pushFollow(FOLLOW_arg_in_arg_list786);
                     arg80 = arg();
@@ -2964,7 +2959,7 @@ public class GCLNewParser extends Parser {
                     if (this.state.backtracking == 0) {
                         stream_arg.add(arg80.getTree());
                     }
-                    // GCLNew.g:153:14: ( COMMA arg )*
+                    // Ctrl.g:154:14: ( COMMA arg )*
                     loop19: do {
                         int alt19 = 2;
                         int LA19_0 = this.input.LA(1);
@@ -2975,7 +2970,7 @@ public class GCLNewParser extends Parser {
 
                         switch (alt19) {
                         case 1:
-                            // GCLNew.g:153:15: COMMA arg
+                            // Ctrl.g:154:15: COMMA arg
                         {
                             COMMA81 =
                                 (Token) match(this.input, COMMA,
@@ -3034,9 +3029,9 @@ public class GCLNewParser extends Parser {
                             "rule retval", retval != null ? retval.tree : null);
 
                     root_0 = (CommonTree) this.adaptor.nil();
-                    // 154:4: -> ^( ARGS ( arg )* )
+                    // 155:4: -> ^( ARGS ( arg )* )
                     {
-                        // GCLNew.g:154:7: ^( ARGS ( arg )* )
+                        // Ctrl.g:155:7: ^( ARGS ( arg )* )
                         {
                             CommonTree root_1 = (CommonTree) this.adaptor.nil();
                             root_1 =
@@ -3044,7 +3039,7 @@ public class GCLNewParser extends Parser {
                                     (CommonTree) this.adaptor.create(ARGS,
                                         "ARGS"), root_1);
 
-                            // GCLNew.g:154:14: ( arg )*
+                            // Ctrl.g:155:14: ( arg )*
                             while (stream_arg.hasNext()) {
                                 this.adaptor.addChild(root_1,
                                     stream_arg.nextTree());
@@ -3093,9 +3088,9 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "arg"
-    // GCLNew.g:157:1: arg : ( OUT ID -> ^( ARG OUT ID ) | ID -> ^( ARG ID ) | DONT_CARE -> ^( ARG DONT_CARE ) | literal -> ^( ARG literal ) );
-    public final GCLNewParser.arg_return arg() throws RecognitionException {
-        GCLNewParser.arg_return retval = new GCLNewParser.arg_return();
+    // Ctrl.g:158:1: arg : ( OUT ID -> ^( ARG OUT ID ) | ID -> ^( ARG ID ) | DONT_CARE -> ^( ARG DONT_CARE ) | literal -> ^( ARG literal ) );
+    public final CtrlParser.arg_return arg() throws RecognitionException {
+        CtrlParser.arg_return retval = new CtrlParser.arg_return();
         retval.start = this.input.LT(1);
 
         CommonTree root_0 = null;
@@ -3104,7 +3099,7 @@ public class GCLNewParser extends Parser {
         Token ID85 = null;
         Token ID86 = null;
         Token DONT_CARE87 = null;
-        GCLNewParser.literal_return literal88 = null;
+        CtrlParser.literal_return literal88 = null;
 
         CommonTree OUT84_tree = null;
         CommonTree ID85_tree = null;
@@ -3119,7 +3114,7 @@ public class GCLNewParser extends Parser {
         RewriteRuleSubtreeStream stream_literal =
             new RewriteRuleSubtreeStream(this.adaptor, "rule literal");
         try {
-            // GCLNew.g:158:2: ( OUT ID -> ^( ARG OUT ID ) | ID -> ^( ARG ID ) | DONT_CARE -> ^( ARG DONT_CARE ) | literal -> ^( ARG literal ) )
+            // Ctrl.g:159:2: ( OUT ID -> ^( ARG OUT ID ) | ID -> ^( ARG ID ) | DONT_CARE -> ^( ARG DONT_CARE ) | literal -> ^( ARG literal ) )
             int alt21 = 4;
             switch (this.input.LA(1)) {
             case OUT: {
@@ -3155,7 +3150,7 @@ public class GCLNewParser extends Parser {
 
             switch (alt21) {
             case 1:
-                // GCLNew.g:158:4: OUT ID
+                // Ctrl.g:159:4: OUT ID
             {
                 OUT84 = (Token) match(this.input, OUT, FOLLOW_OUT_in_arg820);
                 if (this.state.failed) {
@@ -3174,7 +3169,7 @@ public class GCLNewParser extends Parser {
                 }
 
                 // AST REWRITE
-                // elements: ID, OUT
+                // elements: OUT, ID
                 // token labels: 
                 // rule labels: retval
                 // token list labels: 
@@ -3187,9 +3182,9 @@ public class GCLNewParser extends Parser {
                             "rule retval", retval != null ? retval.tree : null);
 
                     root_0 = (CommonTree) this.adaptor.nil();
-                    // 158:11: -> ^( ARG OUT ID )
+                    // 159:11: -> ^( ARG OUT ID )
                     {
-                        // GCLNew.g:158:14: ^( ARG OUT ID )
+                        // Ctrl.g:159:14: ^( ARG OUT ID )
                         {
                             CommonTree root_1 = (CommonTree) this.adaptor.nil();
                             root_1 =
@@ -3210,7 +3205,7 @@ public class GCLNewParser extends Parser {
             }
                 break;
             case 2:
-                // GCLNew.g:159:4: ID
+                // Ctrl.g:160:4: ID
             {
                 ID86 = (Token) match(this.input, ID, FOLLOW_ID_in_arg837);
                 if (this.state.failed) {
@@ -3234,9 +3229,9 @@ public class GCLNewParser extends Parser {
                             "rule retval", retval != null ? retval.tree : null);
 
                     root_0 = (CommonTree) this.adaptor.nil();
-                    // 159:7: -> ^( ARG ID )
+                    // 160:7: -> ^( ARG ID )
                     {
-                        // GCLNew.g:159:10: ^( ARG ID )
+                        // Ctrl.g:160:10: ^( ARG ID )
                         {
                             CommonTree root_1 = (CommonTree) this.adaptor.nil();
                             root_1 =
@@ -3256,7 +3251,7 @@ public class GCLNewParser extends Parser {
             }
                 break;
             case 3:
-                // GCLNew.g:160:4: DONT_CARE
+                // Ctrl.g:161:4: DONT_CARE
             {
                 DONT_CARE87 =
                     (Token) match(this.input, DONT_CARE,
@@ -3282,9 +3277,9 @@ public class GCLNewParser extends Parser {
                             "rule retval", retval != null ? retval.tree : null);
 
                     root_0 = (CommonTree) this.adaptor.nil();
-                    // 160:14: -> ^( ARG DONT_CARE )
+                    // 161:14: -> ^( ARG DONT_CARE )
                     {
-                        // GCLNew.g:160:17: ^( ARG DONT_CARE )
+                        // Ctrl.g:161:17: ^( ARG DONT_CARE )
                         {
                             CommonTree root_1 = (CommonTree) this.adaptor.nil();
                             root_1 =
@@ -3305,7 +3300,7 @@ public class GCLNewParser extends Parser {
             }
                 break;
             case 4:
-                // GCLNew.g:161:4: literal
+                // Ctrl.g:162:4: literal
             {
                 pushFollow(FOLLOW_literal_in_arg863);
                 literal88 = literal();
@@ -3332,9 +3327,9 @@ public class GCLNewParser extends Parser {
                             "rule retval", retval != null ? retval.tree : null);
 
                     root_0 = (CommonTree) this.adaptor.nil();
-                    // 161:12: -> ^( ARG literal )
+                    // 162:12: -> ^( ARG literal )
                     {
-                        // GCLNew.g:161:15: ^( ARG literal )
+                        // Ctrl.g:162:15: ^( ARG literal )
                         {
                             CommonTree root_1 = (CommonTree) this.adaptor.nil();
                             root_1 =
@@ -3388,10 +3383,10 @@ public class GCLNewParser extends Parser {
     };
 
     // $ANTLR start "literal"
-    // GCLNew.g:164:1: literal : ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT );
-    public final GCLNewParser.literal_return literal()
+    // Ctrl.g:165:1: literal : ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT );
+    public final CtrlParser.literal_return literal()
         throws RecognitionException {
-        GCLNewParser.literal_return retval = new GCLNewParser.literal_return();
+        CtrlParser.literal_return retval = new CtrlParser.literal_return();
         retval.start = this.input.LT(1);
 
         CommonTree root_0 = null;
@@ -3401,8 +3396,8 @@ public class GCLNewParser extends Parser {
         CommonTree set89_tree = null;
 
         try {
-            // GCLNew.g:165:2: ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT )
-            // GCLNew.g:
+            // Ctrl.g:166:2: ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT )
+            // Ctrl.g:
             {
                 root_0 = (CommonTree) this.adaptor.nil();
 
@@ -3451,12 +3446,12 @@ public class GCLNewParser extends Parser {
 
     // $ANTLR end "literal"
 
-    // $ANTLR start synpred1_GCLNew
-    public final void synpred1_GCLNew_fragment() throws RecognitionException {
-        // GCLNew.g:89:33: ( ELSE )
-        // GCLNew.g:89:34: ELSE
+    // $ANTLR start synpred1_Ctrl
+    public final void synpred1_Ctrl_fragment() throws RecognitionException {
+        // Ctrl.g:90:33: ( ELSE )
+        // Ctrl.g:90:34: ELSE
         {
-            match(this.input, ELSE, FOLLOW_ELSE_in_synpred1_GCLNew336);
+            match(this.input, ELSE, FOLLOW_ELSE_in_synpred1_Ctrl336);
             if (this.state.failed) {
                 return;
             }
@@ -3464,14 +3459,14 @@ public class GCLNewParser extends Parser {
         }
     }
 
-    // $ANTLR end synpred1_GCLNew
+    // $ANTLR end synpred1_Ctrl
 
-    // $ANTLR start synpred2_GCLNew
-    public final void synpred2_GCLNew_fragment() throws RecognitionException {
-        // GCLNew.g:90:17: ( ELSE )
-        // GCLNew.g:90:18: ELSE
+    // $ANTLR start synpred2_Ctrl
+    public final void synpred2_Ctrl_fragment() throws RecognitionException {
+        // Ctrl.g:91:17: ( ELSE )
+        // Ctrl.g:91:18: ELSE
         {
-            match(this.input, ELSE, FOLLOW_ELSE_in_synpred2_GCLNew361);
+            match(this.input, ELSE, FOLLOW_ELSE_in_synpred2_Ctrl361);
             if (this.state.failed) {
                 return;
             }
@@ -3479,14 +3474,14 @@ public class GCLNewParser extends Parser {
         }
     }
 
-    // $ANTLR end synpred2_GCLNew
+    // $ANTLR end synpred2_Ctrl
 
-    // $ANTLR start synpred3_GCLNew
-    public final void synpred3_GCLNew_fragment() throws RecognitionException {
-        // GCLNew.g:91:20: ( OR )
-        // GCLNew.g:91:21: OR
+    // $ANTLR start synpred3_Ctrl
+    public final void synpred3_Ctrl_fragment() throws RecognitionException {
+        // Ctrl.g:92:20: ( OR )
+        // Ctrl.g:92:21: OR
         {
-            match(this.input, OR, FOLLOW_OR_in_synpred3_GCLNew386);
+            match(this.input, OR, FOLLOW_OR_in_synpred3_Ctrl386);
             if (this.state.failed) {
                 return;
             }
@@ -3494,15 +3489,15 @@ public class GCLNewParser extends Parser {
         }
     }
 
-    // $ANTLR end synpred3_GCLNew
+    // $ANTLR end synpred3_Ctrl
 
     // Delegated rules
 
-    public final boolean synpred1_GCLNew() {
+    public final boolean synpred1_Ctrl() {
         this.state.backtracking++;
         int start = this.input.mark();
         try {
-            synpred1_GCLNew_fragment(); // can never throw exception
+            synpred1_Ctrl_fragment(); // can never throw exception
         } catch (RecognitionException re) {
             System.err.println("impossible: " + re);
         }
@@ -3513,11 +3508,11 @@ public class GCLNewParser extends Parser {
         return success;
     }
 
-    public final boolean synpred3_GCLNew() {
+    public final boolean synpred3_Ctrl() {
         this.state.backtracking++;
         int start = this.input.mark();
         try {
-            synpred3_GCLNew_fragment(); // can never throw exception
+            synpred3_Ctrl_fragment(); // can never throw exception
         } catch (RecognitionException re) {
             System.err.println("impossible: " + re);
         }
@@ -3528,11 +3523,11 @@ public class GCLNewParser extends Parser {
         return success;
     }
 
-    public final boolean synpred2_GCLNew() {
+    public final boolean synpred2_Ctrl() {
         this.state.backtracking++;
         int start = this.input.mark();
         try {
-            synpred2_GCLNew_fragment(); // can never throw exception
+            synpred2_Ctrl_fragment(); // can never throw exception
         } catch (RecognitionException re) {
             System.err.println("impossible: " + re);
         }
@@ -3593,7 +3588,7 @@ public class GCLNewParser extends Parser {
         }
 
         public String getDescription() {
-            return "()* loopback of 68:5: ( function | stat )*";
+            return "()* loopback of 69:5: ( function | stat )*";
         }
     }
 
@@ -3640,7 +3635,7 @@ public class GCLNewParser extends Parser {
         }
 
         public String getDescription() {
-            return "()* loopback of 73:11: ( stat )*";
+            return "()* loopback of 74:11: ( stat )*";
         }
     }
 
@@ -3689,7 +3684,7 @@ public class GCLNewParser extends Parser {
         }
 
         public String getDescription() {
-            return "80:1: stat : ( block | ALAP stat | WHILE LPAR cond RPAR stat | UNTIL LPAR cond RPAR stat | DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) ) | IF LPAR cond RPAR stat ( ( ELSE )=> ELSE stat )? | TRY stat ( ( ELSE )=> ELSE stat )? | CHOICE stat ( ( OR )=> OR stat )+ | expr SEMI | var_decl SEMI );";
+            return "81:1: stat : ( block | ALAP stat | WHILE LPAR cond RPAR stat | UNTIL LPAR cond RPAR stat | DO stat ( WHILE LPAR cond RPAR -> ^( BLOCK stat ^( WHILE cond stat ) ) | UNTIL LPAR cond RPAR -> ^( BLOCK stat ^( UNTIL cond stat ) ) ) | IF LPAR cond RPAR stat ( ( ELSE )=> ELSE stat )? | TRY stat ( ( ELSE )=> ELSE stat )? | CHOICE stat ( ( OR )=> OR stat )+ | expr SEMI | var_decl SEMI );";
         }
     }
 
@@ -3737,7 +3732,7 @@ public class GCLNewParser extends Parser {
         }
 
         public String getDescription() {
-            return "89:31: ( ( ELSE )=> ELSE stat )?";
+            return "90:31: ( ( ELSE )=> ELSE stat )?";
         }
 
         public int specialStateTransition(int s, IntStream _input)
@@ -3751,7 +3746,7 @@ public class GCLNewParser extends Parser {
                 int index4_1 = input.index();
                 input.rewind();
                 s = -1;
-                if ((synpred1_GCLNew())) {
+                if ((synpred1_Ctrl())) {
                     s = 34;
                 }
 
@@ -3765,8 +3760,8 @@ public class GCLNewParser extends Parser {
                 }
                 break;
             }
-            if (GCLNewParser.this.state.backtracking > 0) {
-                GCLNewParser.this.state.failed = true;
+            if (CtrlParser.this.state.backtracking > 0) {
+                CtrlParser.this.state.failed = true;
                 return -1;
             }
             NoViableAltException nvae =
@@ -3820,7 +3815,7 @@ public class GCLNewParser extends Parser {
         }
 
         public String getDescription() {
-            return "90:15: ( ( ELSE )=> ELSE stat )?";
+            return "91:15: ( ( ELSE )=> ELSE stat )?";
         }
 
         public int specialStateTransition(int s, IntStream _input)
@@ -3834,7 +3829,7 @@ public class GCLNewParser extends Parser {
                 int index5_1 = input.index();
                 input.rewind();
                 s = -1;
-                if ((synpred2_GCLNew())) {
+                if ((synpred2_Ctrl())) {
                     s = 34;
                 }
 
@@ -3848,8 +3843,8 @@ public class GCLNewParser extends Parser {
                 }
                 break;
             }
-            if (GCLNewParser.this.state.backtracking > 0) {
-                GCLNewParser.this.state.failed = true;
+            if (CtrlParser.this.state.backtracking > 0) {
+                CtrlParser.this.state.failed = true;
                 return -1;
             }
             NoViableAltException nvae =
@@ -3903,7 +3898,7 @@ public class GCLNewParser extends Parser {
         }
 
         public String getDescription() {
-            return "()+ loopback of 91:18: ( ( OR )=> OR stat )+";
+            return "()+ loopback of 92:18: ( ( OR )=> OR stat )+";
         }
 
         public int specialStateTransition(int s, IntStream _input)
@@ -3917,7 +3912,7 @@ public class GCLNewParser extends Parser {
                 int index6_19 = input.index();
                 input.rewind();
                 s = -1;
-                if ((synpred3_GCLNew())) {
+                if ((synpred3_Ctrl())) {
                     s = 34;
                 }
 
@@ -3931,8 +3926,8 @@ public class GCLNewParser extends Parser {
                 }
                 break;
             }
-            if (GCLNewParser.this.state.backtracking > 0) {
-                GCLNewParser.this.state.failed = true;
+            if (CtrlParser.this.state.backtracking > 0) {
+                CtrlParser.this.state.failed = true;
                 return -1;
             }
             NoViableAltException nvae =
@@ -4126,11 +4121,11 @@ public class GCLNewParser extends Parser {
         new long[] {0x0000000000000002L});
     public static final BitSet FOLLOW_set_in_literal0 = new BitSet(
         new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_ELSE_in_synpred1_GCLNew336 = new BitSet(
+    public static final BitSet FOLLOW_ELSE_in_synpred1_Ctrl336 = new BitSet(
         new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_ELSE_in_synpred2_GCLNew361 = new BitSet(
+    public static final BitSet FOLLOW_ELSE_in_synpred2_Ctrl361 = new BitSet(
         new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_OR_in_synpred3_GCLNew386 = new BitSet(
+    public static final BitSet FOLLOW_OR_in_synpred3_Ctrl386 = new BitSet(
         new long[] {0x0000000000000002L});
 
 }

@@ -14,18 +14,19 @@
  * 
  * $Id: DefaultNode.java,v 1.17 2008-02-19 10:35:31 fladder Exp $
  */
-package groove.graph;
+package groove.trans;
 
-import groove.trans.RuleNode;
+import groove.graph.AbstractNode;
+import groove.graph.Node;
 
 /**
- * Default implementation of a graph node. Default nodes have numbers, but node
- * equality is determined by object identity and not by node number.
+ * Default nodes used in host graphs.
+ * Node equality is determined by object identity and not by node number.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 2936 $
  */
-public class DefaultNode extends AbstractNode implements RuleNode,
-        Node.Factory<DefaultNode> {
+public class DefaultHostNode extends AbstractNode implements HostNode,
+        Node.Factory<DefaultHostNode> {
     /**
      * Constructs a fresh node, with an explicitly given number. Note that node
      * equality is determined by identity, but it is assumed that never two
@@ -33,16 +34,14 @@ public class DefaultNode extends AbstractNode implements RuleNode,
      * using one of the <code>createNode</code> methods in preference to this
      * constructor.
      * @param nr the number for this node
-     * @see #createNode()
-     * @see #createNode(int)
      */
-    protected DefaultNode(int nr) {
+    protected DefaultHostNode(int nr) {
         super(nr);
     }
 
     /** Factory constructor. */
-    public DefaultNode newNode(int nr) {
-        return new DefaultNode(nr);
+    public DefaultHostNode newNode(int nr) {
+        return new DefaultHostNode(nr);
     }
 
     /**
@@ -52,16 +51,4 @@ public class DefaultNode extends AbstractNode implements RuleNode,
     public String getToStringPrefix() {
         return "n";
     }
-
-    /** Default method that uses the DefaultNode constructor. */
-    static public DefaultNode createNode(int nr) {
-        return factory.createNode(nr);
-    }
-
-    /** Returns the node with the first currently unused node number. */
-    static public DefaultNode createNode() {
-        return factory.createNode();
-    }
-
-    static private final DefaultFactory factory = DefaultFactory.instance();
 }

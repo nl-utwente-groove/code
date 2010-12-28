@@ -17,7 +17,6 @@
 package groove.view.aspect;
 
 import groove.algebra.Algebras;
-import groove.graph.DefaultLabel;
 import groove.graph.GraphRole;
 import groove.graph.LabelKind;
 import groove.util.ExprParser;
@@ -40,16 +39,16 @@ public class AspectParser {
 
     /**
      * Converts a plain label to an aspect label.
-     * @param label the plain label to start from
+     * @param text the plain label text to start from
      * @return an aspect label, in which the aspect prefixes of {@code label}
      * have been parsed into aspect values.
      */
-    public AspectLabel parse(DefaultLabel label) {
+    public AspectLabel parse(String text) {
         AspectLabel result = new AspectLabel(this.role);
         try {
-            parse(label.text(), result);
+            parse(text, result);
         } catch (FormatException exc) {
-            result.addError("%s in '%s'", exc.getMessage(), label);
+            result.addError("%s in '%s'", exc.getMessage(), text);
         }
         result.setFixed();
         return result;

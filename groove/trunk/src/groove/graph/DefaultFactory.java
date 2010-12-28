@@ -86,7 +86,7 @@ public class DefaultFactory implements ElementFactory<DefaultNode,DefaultEdge> {
     /** Returns the highest default node node number. */
     @Override
     public int getMaxNodeNr() {
-        return this.nodeStore.size();
+        return this.nodeStore.getMaxNodeNr();
     }
 
     /** Returns the number of created nodes. */

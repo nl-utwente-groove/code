@@ -17,6 +17,7 @@
 package groove.trans;
 
 import groove.graph.Graph;
+import groove.view.aspect.AspectGraph;
 
 /**
  * Graph type used for graphs under transformation.
@@ -31,13 +32,9 @@ public interface HostGraph extends Graph<HostNode,HostEdge>, DeltaTarget {
     @Override
     HostGraph clone();
 
-    /** 
-     * Refreshes the element factory of this graph, by replacing it with 
-     * the new factory obtained by calling {@link HostFactory#newFactory(HostGraph)}
-     * (with this graph as parameter).
-     */
-    void renewFactory();
-
     @Override
     HostFactory getFactory();
+
+    /** Converts this host graph to an equivalent aspect graph representation. */
+    AspectGraph toAspectGraph();
 }

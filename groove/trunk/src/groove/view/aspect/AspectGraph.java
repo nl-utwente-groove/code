@@ -161,7 +161,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
         Map<DefaultEdge,AspectLabel> edgeDataMap =
             new HashMap<DefaultEdge,AspectLabel>();
         for (DefaultEdge edge : graph.edgeSet()) {
-            AspectLabel label = labelParser.parse(edge.label());
+            AspectLabel label = labelParser.parse(edge.label().text());
             if (label.isNodeOnly()) {
                 AspectNode sourceImage = elementMap.getNode(edge.source());
                 if (label.hasErrors()) {
@@ -536,15 +536,21 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
         return factory.fromPlainGraph(plainGraph, elementMap);
     }
 
+    /** Creates an empty aspect graph, with a given graph role. */
+    public static AspectGraph newInstance(GraphRole role) {
+        return new AspectGraph(role);
+    }
+
     /**
      * The static instance serving as a factory.
      */
     private static final AspectGraph factory = new AspectGraph(HOST);
 
     /** Factory for AspectGraph elements. */
-    static class AspectFactory implements ElementFactory<AspectNode,AspectEdge> {
+    public static class AspectFactory implements
+            ElementFactory<AspectNode,AspectEdge> {
         /** Private constructor to ensure singleton usage. */
-        private AspectFactory(GraphRole graphRole) {
+        protected AspectFactory(GraphRole graphRole) {
             this.graphRole = graphRole;
         }
 
@@ -593,7 +599,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
             return factoryMap.get(graphRole);
         }
 
-        /** Mapping from graph rules to element-producting factories. */
+        /** Mapping from graph rules to element-producing factories. */
         static private Map<GraphRole,AspectFactory> factoryMap =
             new EnumMap<GraphRole,AspectFactory>(GraphRole.class);
 

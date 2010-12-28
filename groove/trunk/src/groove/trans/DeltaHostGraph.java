@@ -23,6 +23,7 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.graph.iso.CertificateStrategy;
+import groove.view.aspect.AspectGraph;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -44,20 +45,33 @@ import java.util.Stack;
 public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
         HostGraph {
     /**
-     * Constructs a graph with a given basis and delta The basis may be
-     * <code>null</code>, meaning that it is the empty graph.
-     * @param basis the basis for the new delta graph; possibly
-     *        <code>null</code>
+     * Constructs a graph with an empty basis and a delta determining
+     * the elements of the graph.
+     * @param delta the delta determining the initial graph
+     * @param factory the factory for new graph elements
+     * @param copyData if <code>true</code>, the data structures will be
+     *        copied from one graph to the next; otherwise, they will be reused
+     */
+    private DeltaHostGraph(HostElement[] delta, HostFactory factory,
+            boolean copyData) {
+        this.factory = factory;
+        this.basis = null;
+        this.copyData = copyData;
+        this.delta = new FrozenDeltaApplier(delta);
+        setFixed();
+    }
+
+    /**
+     * Constructs a graph with a given (non-{@code null}) basis and delta.
+     * @param basis the (non-{@code null}) basis for the new delta graph
      * @param delta the delta with respect to the basis; non-<code>null</code>
      * @param copyData if <code>true</code>, the data structures will be
      *        copied from one graph to the next; otherwise, they will be reused
      */
     private DeltaHostGraph(final DeltaHostGraph basis,
             final DeltaApplier delta, boolean copyData) {
-        super();
-        this.factory =
-            basis == null ? HostFactory.instance() : basis.getFactory();
         this.basis = basis;
+        this.factory = basis.getFactory();
         this.copyData = copyData;
         if (delta == null || delta instanceof DeltaStore
             || delta instanceof FrozenDeltaApplier) {
@@ -94,12 +108,17 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
      * Since the result should be modifiable, returns a {@link DefaultGraph}.
      */
     public HostGraph newGraph() {
-        return new DefaultHostGraph();
+        return new DefaultHostGraph(getFactory());
     }
 
     /** Creates a new delta graph from a given basis and delta applier. */
     public DeltaHostGraph newGraph(DeltaHostGraph graph, DeltaApplier applier) {
         return new DeltaHostGraph(graph, applier, this.copyData);
+    }
+
+    /** Creates a new delta graph from a given element array. */
+    public DeltaHostGraph newGraph(HostElement[] elements, HostFactory factory) {
+        return new DeltaHostGraph(elements, factory, this.copyData);
     }
 
     /**
@@ -403,29 +422,24 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
 
     @Override
     protected boolean isTypeCorrect(Node node) {
-        return node instanceof HostNode;
+        return node instanceof HostNode
+            && !getFactory().addNode((HostNode) node);
     }
 
     @Override
     protected boolean isTypeCorrect(Edge<?> edge) {
-        return edge instanceof HostEdge;
-    }
-
-    /**
-     * Delta graphs should not renew their factory,
-     * as they are shared with the basis.
-     */
-    final public void renewFactory() {
-        if (this.factory == null) {
-            throw new UnsupportedOperationException();
-        } else {
-            this.factory = this.factory.newFactory(this);
-        }
+        return edge instanceof HostEdge
+            && !getFactory().addEdge((HostEdge) edge);
     }
 
     @Override
     public HostFactory getFactory() {
         return this.factory;
+    }
+
+    @Override
+    public AspectGraph toAspectGraph() {
+        return clone().toAspectGraph();
     }
 
     /** The element factory of this host graph. */
@@ -462,12 +476,12 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
      * {@link ConcurrentModificationException}s during matching.
      */
     static private final boolean ALIAS_SETS = true;
-    /** Factory instance of this class. */
-    static private final DeltaHostGraph copyInstance = new DeltaHostGraph(null,
-        null, true);
-    /** Factory instance of this class. */
+    /** Factory instance of this class, in which data is copied. */
+    static private final DeltaHostGraph copyInstance = new DeltaHostGraph(
+        (HostElement[]) null, null, true);
+    /** Factory instance of this class, in which data is aliased. */
     static private final DeltaHostGraph swingInstance = new DeltaHostGraph(
-        null, null, false);
+        (HostElement[]) null, null, false);
 
     /**
      * Returns a fixed factory instance of the {@link DeltaHostGraph} class,

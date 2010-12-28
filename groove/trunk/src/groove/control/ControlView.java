@@ -76,7 +76,7 @@ public class ControlView {
     /** The most recently computed control automaton. */
     private CtrlAut lastAut;
     /** The control parser. */
-    private final CtrlParser parser = CtrlParser.getInstance();
+    private final CtrlLoader parser = CtrlLoader.getInstance();
 
     /**
      * Saves the program to the given OutputStream.

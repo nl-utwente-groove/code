@@ -16,7 +16,7 @@
  */
 package groove.control;
 
-import groove.control.parse.NamespaceNew;
+import groove.control.parse.Namespace;
 import groove.trans.Rule;
 import groove.trans.RuleSystem;
 import groove.trans.SPORule;
@@ -40,6 +40,11 @@ import java.util.TreeSet;
  * @version $Revision $
  */
 public class CtrlFactory {
+    /** Private constructor for the singleton instance. */
+    private CtrlFactory() {
+        // empty
+    }
+
     /** 
      * Closes a given control automaton under the <i>as long as possible</i>
      * operator.
@@ -56,7 +61,7 @@ public class CtrlFactory {
     }
 
     /** Factory method for a rule or function call. */
-    public CtrlAut buildCall(CtrlCall call, NamespaceNew namespace) {
+    public CtrlAut buildCall(CtrlCall call, Namespace namespace) {
         assert !call.isOmega();
         if (call.isRule()) {
             return buildRuleCall(call);
@@ -67,7 +72,7 @@ public class CtrlFactory {
 
     /** Factory method for a rule call. */
     private CtrlAut buildRuleCall(CtrlCall call) {
-        CtrlAut result = new CtrlAut();
+        CtrlAut result = createCtrlAut();
         CtrlState middle = result.addState();
         // convert the call arguments using the context
         result.addTransition(result.getStart(), createLabel(call), middle);
@@ -76,7 +81,7 @@ public class CtrlFactory {
     }
 
     /** Factory method for a function call. */
-    private CtrlAut buildFunctionCall(CtrlCall call, NamespaceNew namespace) {
+    private CtrlAut buildFunctionCall(CtrlCall call, Namespace namespace) {
         String name = call.getFunction();
         CtrlAut result = namespace.getFunctionBody(name);
         List<CtrlPar.Var> sig = namespace.getSig(name);
@@ -124,19 +129,19 @@ public class CtrlFactory {
     }
 
     /** Builds an automation for an {@code any}-call. */
-    public CtrlAut buildAny(NamespaceNew namespace) {
+    public CtrlAut buildAny(Namespace namespace) {
         return buildGroupCall(namespace.getAllRules(), namespace);
     }
 
     /** Builds an automation for an {@code other}-call. */
-    public CtrlAut buildOther(NamespaceNew namespace) {
+    public CtrlAut buildOther(Namespace namespace) {
         Set<String> unusedRules = new HashSet<String>(namespace.getAllRules());
         unusedRules.removeAll(namespace.getUsedRules());
         return buildGroupCall(unusedRules, namespace);
     }
 
     /** Builds an automation for a choice between a set of rules. */
-    private CtrlAut buildGroupCall(Set<String> ruleNames, NamespaceNew namespace) {
+    private CtrlAut buildGroupCall(Set<String> ruleNames, Namespace namespace) {
         CtrlAut result = null;
         for (String ruleName : ruleNames) {
             CtrlAut callAut =
@@ -406,7 +411,7 @@ public class CtrlFactory {
 
     /** Factory method for immediate, unconditional success. */
     public CtrlAut buildTrue() {
-        CtrlAut result = new CtrlAut();
+        CtrlAut result = createCtrlAut();
         result.addTransition(result.getStart(), createOmegaLabel(),
             result.getFinal());
         return result;
@@ -580,7 +585,7 @@ public class CtrlFactory {
 
     /** Builds the default control automaton for a set of rules. */
     public CtrlAut buildDefault(RuleSystem rules) {
-        CtrlAut result = new CtrlAut();
+        CtrlAut result = createCtrlAut();
         CtrlState start = result.getStart();
         CtrlState end = result.getFinal();
         Map<Integer,Set<Rule>> ruleMap = rules.getRuleMap();
@@ -603,13 +608,18 @@ public class CtrlFactory {
         return result;
     }
 
-    /** Returns the singleton instance of this factory class. */
-    public static CtrlFactory getInstance() {
-        return instance;
+    /** Constructs an empty control automaton. */
+    private CtrlAut createCtrlAut() {
+        return new CtrlAut();
     }
 
-    /** The singleton instance of this factory. */
-    private static final CtrlFactory instance = new CtrlFactory();
+    /** Returns the singleton instance of this class. */
+    public static CtrlFactory instance() {
+        return INSTANCE;
+    }
+
+    /** The singleton instance of this class. */
+    private static final CtrlFactory INSTANCE = new CtrlFactory();
     /** Constant empty set of guard rule names. */
     private static final Collection<CtrlCall> EMPTY_GUARD =
         Collections.<CtrlCall>emptyList();

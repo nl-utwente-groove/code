@@ -19,6 +19,7 @@ package groove.calc;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.Condition;
+import groove.trans.DefaultHostGraph;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
 
@@ -122,7 +123,7 @@ public interface GraphCalculator {
      *         the grammar properties
      * @see GraphGrammar#testConsistent()
      */
-    public GraphCalculator newInstance(HostGraph basis)
+    public GraphCalculator newInstance(DefaultHostGraph basis)
         throws IllegalArgumentException;
 
     /**

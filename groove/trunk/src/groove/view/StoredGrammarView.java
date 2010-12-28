@@ -24,8 +24,8 @@ import groove.graph.LabelStore;
 import groove.graph.TypeGraph;
 import groove.io.SystemStore;
 import groove.io.SystemStoreFactory;
+import groove.trans.DefaultHostGraph;
 import groove.trans.GraphGrammar;
-import groove.trans.HostGraph;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
@@ -404,7 +404,7 @@ public class StoredGrammarView implements GrammarView, Observer {
                 }
             }
         } else if (ALWAYS_CONTROL) {
-            result.setCtrlAut(CtrlFactory.getInstance().buildDefault(result));
+            result.setCtrlAut(CtrlFactory.instance().buildDefault(result));
         }
         // set properties
         result.setProperties(getProperties());
@@ -419,7 +419,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         } else {
             List<FormatError> startGraphErrors;
             try {
-                HostGraph startGraph = getStartGraphView().toModel();
+                DefaultHostGraph startGraph = getStartGraphView().toModel();
                 result.setStartGraph(startGraph);
                 startGraphErrors = GraphInfo.getErrors(startGraph);
             } catch (FormatException exc) {

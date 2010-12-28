@@ -17,10 +17,10 @@
 package groove.view;
 
 import groove.graph.TypeGraph;
-import groove.trans.HostGraph;
+import groove.trans.DefaultHostGraph;
 
 /** Specialised view interface for models that are type graphs. */
-public interface GraphView extends View<HostGraph> {
+public interface GraphView extends View<DefaultHostGraph> {
     /** Changes the type graph under against which the model should be tested. */
     public void setType(TypeGraph type);
 }

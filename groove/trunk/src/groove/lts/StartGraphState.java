@@ -19,9 +19,6 @@ public class StartGraphState extends AbstractGraphState {
         super(StateReference.newInstance(record));
         setFrozenGraph(getCache().computeFrozenGraph(graph));
         this.graph = getCache().getGraph();
-        // renew the element factory, so we can start counting
-        // from the beginning
-        this.graph.renewFactory();
         CtrlAut ctrlAut = record.getGrammar().getCtrlAut();
         if (ctrlAut != null) {
             setCtrlState(ctrlAut.getStart());

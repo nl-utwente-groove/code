@@ -16,6 +16,7 @@
  */
 package groove.match;
 
+import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
@@ -32,18 +33,14 @@ import java.util.Collections;
  */
 class ValueNodeSearchItem extends AbstractSearchItem {
     /**
-     * Creates a search item for a value node. The image is always the node
-     * itself.
+     * Creates a search item for a value node.
      * @param node the node to be matched
      */
     public ValueNodeSearchItem(VariableNode node, AlgebraFamily family) {
         this.node = node;
         this.boundNodes = Collections.<RuleNode>singleton(node);
+        this.algebra = family.getAlgebra(node.getSignature());
         assert node.getConstant() != null;
-        Object value = family.getValue(node.getSignature(), node.getConstant());
-        this.image =
-            ValueNode.createValueNode(family.getAlgebra(node.getSignature()),
-                value);
     }
 
     public ValueNodeRecord getRecord(SearchPlanStrategy.Search matcher) {
@@ -88,10 +85,8 @@ class ValueNodeSearchItem extends AbstractSearchItem {
     private final Collection<RuleNode> boundNodes;
     /** The (constant) variable node to be matched. */
     final VariableNode node;
-    /** The constant value of the variable node, if any. */
-    final ValueNode image;
-    //    /** The value node that represents the value of the constant. */
-    //    final ValueNode nodeImage;
+    /** The algebra family in which the value is to be created. */
+    final Algebra<?> algebra;
     /** The index of the value node (in the result. */
     int nodeIx;
 
@@ -106,6 +101,11 @@ class ValueNodeSearchItem extends AbstractSearchItem {
          */
         ValueNodeRecord(Search search) {
             super(search);
+            Algebra<?> algebra = ValueNodeSearchItem.this.algebra;
+            this.image =
+                search.getHost().getFactory().createNode(
+                    algebra,
+                    algebra.getValue(ValueNodeSearchItem.this.node.getConstant()));
         }
 
         /**
@@ -115,7 +115,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         @Override
         boolean set() {
             return this.search.putNode(ValueNodeSearchItem.this.nodeIx,
-                ValueNodeSearchItem.this.image);
+                this.image);
         }
 
         @Override
@@ -127,5 +127,8 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         public String toString() {
             return ValueNodeSearchItem.this.toString();
         }
+
+        /** The constant value of the variable node, if any. */
+        final ValueNode image;
     }
 }

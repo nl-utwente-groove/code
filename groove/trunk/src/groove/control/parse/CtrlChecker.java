@@ -1,7 +1,8 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNewChecker.g 2010-11-28 11:13:36
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 CtrlChecker.g 2010-12-28 09:29:27
 
 package groove.control.parse;
 
+import groove.algebra.AlgebraFamily;
 import groove.control.CtrlAut;
 
 import java.util.List;
@@ -20,7 +21,7 @@ import org.antlr.runtime.tree.TreeParser;
 import org.antlr.runtime.tree.TreeRuleReturnScope;
 
 @SuppressWarnings("all")
-public class GCLNewChecker extends TreeParser {
+public class CtrlChecker extends TreeParser {
     public static final String[] tokenNames = new String[] {"<invalid>",
         "<EOR>", "<DOWN>", "<UP>", "ARG", "ARGS", "BLOCK", "CALL", "DO_WHILE",
         "DO_UNTIL", "FUNCTION", "FUNCTIONS", "PROGRAM", "VAR", "LCURLY",
@@ -93,11 +94,11 @@ public class GCLNewChecker extends TreeParser {
     // delegates
     // delegators
 
-    public GCLNewChecker(TreeNodeStream input) {
+    public CtrlChecker(TreeNodeStream input) {
         this(input, new RecognizerSharedState());
     }
 
-    public GCLNewChecker(TreeNodeStream input, RecognizerSharedState state) {
+    public CtrlChecker(TreeNodeStream input, RecognizerSharedState state) {
         super(input, state);
 
     }
@@ -113,15 +114,15 @@ public class GCLNewChecker extends TreeParser {
     }
 
     public String[] getTokenNames() {
-        return GCLNewChecker.tokenNames;
+        return CtrlChecker.tokenNames;
     }
 
     public String getGrammarFileName() {
-        return "GCLNewChecker.g";
+        return "CtrlChecker.g";
     }
 
     /** Helper class to convert AST trees to namespace. */
-    private GCLHelper helper;
+    private CtrlHelper helper;
 
     public void displayRecognitionError(String[] tokenNames,
             RecognitionException e) {
@@ -139,9 +140,9 @@ public class GCLNewChecker extends TreeParser {
      * with a (presumably empty) namespace.
      * @return the resulting syntax tree
      */
-    public MyTree run(MyTree tree, NamespaceNew namespace)
+    public MyTree run(MyTree tree, Namespace namespace, AlgebraFamily family)
         throws RecognitionException {
-        this.helper = new GCLHelper(this, namespace);
+        this.helper = new CtrlHelper(this, namespace, family);
         MyTreeAdaptor treeAdaptor = new MyTreeAdaptor();
         setTreeAdaptor(treeAdaptor);
         setTreeNodeStream(treeAdaptor.createTreeNodeStream(tree));
@@ -157,11 +158,10 @@ public class GCLNewChecker extends TreeParser {
     };
 
     // $ANTLR start "program"
-    // GCLNewChecker.g:50:1: program : ^( PROGRAM functions block ) ;
-    public final GCLNewChecker.program_return program()
+    // CtrlChecker.g:51:1: program : ^( PROGRAM functions block ) ;
+    public final CtrlChecker.program_return program()
         throws RecognitionException {
-        GCLNewChecker.program_return retval =
-            new GCLNewChecker.program_return();
+        CtrlChecker.program_return retval = new CtrlChecker.program_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -170,15 +170,15 @@ public class GCLNewChecker extends TreeParser {
         MyTree _last = null;
 
         MyTree PROGRAM1 = null;
-        GCLNewChecker.functions_return functions2 = null;
+        CtrlChecker.functions_return functions2 = null;
 
-        GCLNewChecker.block_return block3 = null;
+        CtrlChecker.block_return block3 = null;
 
         MyTree PROGRAM1_tree = null;
 
         try {
-            // GCLNewChecker.g:51:3: ( ^( PROGRAM functions block ) )
-            // GCLNewChecker.g:51:6: ^( PROGRAM functions block )
+            // CtrlChecker.g:52:3: ( ^( PROGRAM functions block ) )
+            // CtrlChecker.g:52:6: ^( PROGRAM functions block )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -242,11 +242,11 @@ public class GCLNewChecker extends TreeParser {
     };
 
     // $ANTLR start "functions"
-    // GCLNewChecker.g:54:1: functions : ^( FUNCTIONS ( function )* ) ;
-    public final GCLNewChecker.functions_return functions()
+    // CtrlChecker.g:55:1: functions : ^( FUNCTIONS ( function )* ) ;
+    public final CtrlChecker.functions_return functions()
         throws RecognitionException {
-        GCLNewChecker.functions_return retval =
-            new GCLNewChecker.functions_return();
+        CtrlChecker.functions_return retval =
+            new CtrlChecker.functions_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -255,13 +255,13 @@ public class GCLNewChecker extends TreeParser {
         MyTree _last = null;
 
         MyTree FUNCTIONS4 = null;
-        GCLNewChecker.function_return function5 = null;
+        CtrlChecker.function_return function5 = null;
 
         MyTree FUNCTIONS4_tree = null;
 
         try {
-            // GCLNewChecker.g:55:3: ( ^( FUNCTIONS ( function )* ) )
-            // GCLNewChecker.g:55:5: ^( FUNCTIONS ( function )* )
+            // CtrlChecker.g:56:3: ( ^( FUNCTIONS ( function )* ) )
+            // CtrlChecker.g:56:5: ^( FUNCTIONS ( function )* )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -277,7 +277,7 @@ public class GCLNewChecker extends TreeParser {
                     }
                     if (this.input.LA(1) == Token.DOWN) {
                         match(this.input, Token.DOWN, null);
-                        // GCLNewChecker.g:55:17: ( function )*
+                        // CtrlChecker.g:56:17: ( function )*
                         loop1: do {
                             int alt1 = 2;
                             int LA1_0 = this.input.LA(1);
@@ -288,7 +288,7 @@ public class GCLNewChecker extends TreeParser {
 
                             switch (alt1) {
                             case 1:
-                                // GCLNewChecker.g:55:17: function
+                                // CtrlChecker.g:56:17: function
                             {
                                 _last = (MyTree) this.input.LT(1);
                                 pushFollow(FOLLOW_function_in_functions79);
@@ -347,11 +347,10 @@ public class GCLNewChecker extends TreeParser {
     };
 
     // $ANTLR start "function"
-    // GCLNewChecker.g:59:1: function : ^( FUNCTION ID block ) ;
-    public final GCLNewChecker.function_return function()
+    // CtrlChecker.g:60:1: function : ^( FUNCTION ID block ) ;
+    public final CtrlChecker.function_return function()
         throws RecognitionException {
-        GCLNewChecker.function_return retval =
-            new GCLNewChecker.function_return();
+        CtrlChecker.function_return retval = new CtrlChecker.function_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -361,14 +360,14 @@ public class GCLNewChecker extends TreeParser {
 
         MyTree FUNCTION6 = null;
         MyTree ID7 = null;
-        GCLNewChecker.block_return block8 = null;
+        CtrlChecker.block_return block8 = null;
 
         MyTree FUNCTION6_tree = null;
         MyTree ID7_tree = null;
 
         try {
-            // GCLNewChecker.g:60:3: ( ^( FUNCTION ID block ) )
-            // GCLNewChecker.g:60:5: ^( FUNCTION ID block )
+            // CtrlChecker.g:61:3: ( ^( FUNCTION ID block ) )
+            // CtrlChecker.g:61:5: ^( FUNCTION ID block )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -433,9 +432,9 @@ public class GCLNewChecker extends TreeParser {
     };
 
     // $ANTLR start "block"
-    // GCLNewChecker.g:67:1: block returns [ CtrlAut aut ] : ^( BLOCK ( stat )* ) ;
-    public final GCLNewChecker.block_return block() throws RecognitionException {
-        GCLNewChecker.block_return retval = new GCLNewChecker.block_return();
+    // CtrlChecker.g:68:1: block returns [ CtrlAut aut ] : ^( BLOCK ( stat )* ) ;
+    public final CtrlChecker.block_return block() throws RecognitionException {
+        CtrlChecker.block_return retval = new CtrlChecker.block_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -444,13 +443,13 @@ public class GCLNewChecker extends TreeParser {
         MyTree _last = null;
 
         MyTree BLOCK9 = null;
-        GCLNewChecker.stat_return stat10 = null;
+        CtrlChecker.stat_return stat10 = null;
 
         MyTree BLOCK9_tree = null;
 
         try {
-            // GCLNewChecker.g:68:3: ( ^( BLOCK ( stat )* ) )
-            // GCLNewChecker.g:68:5: ^( BLOCK ( stat )* )
+            // CtrlChecker.g:69:3: ( ^( BLOCK ( stat )* ) )
+            // CtrlChecker.g:69:5: ^( BLOCK ( stat )* )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -468,7 +467,7 @@ public class GCLNewChecker extends TreeParser {
 
                     if (this.input.LA(1) == Token.DOWN) {
                         match(this.input, Token.DOWN, null);
-                        // GCLNewChecker.g:70:8: ( stat )*
+                        // CtrlChecker.g:71:8: ( stat )*
                         loop2: do {
                             int alt2 = 2;
                             int LA2_0 = this.input.LA(1);
@@ -485,7 +484,7 @@ public class GCLNewChecker extends TreeParser {
 
                             switch (alt2) {
                             case 1:
-                                // GCLNewChecker.g:70:8: stat
+                                // CtrlChecker.g:71:8: stat
                             {
                                 _last = (MyTree) this.input.LT(1);
                                 pushFollow(FOLLOW_stat_in_block179);
@@ -544,9 +543,9 @@ public class GCLNewChecker extends TreeParser {
     };
 
     // $ANTLR start "stat"
-    // GCLNewChecker.g:75:1: stat : ( block | var_decl | ^( ALAP stat ) | ^( WHILE stat stat ) | ^( UNTIL stat stat ) | ^( TRY stat ( stat )? ) | ^( IF stat stat ( stat )? ) | ^( CHOICE stat ( stat )* ) | ^( STAR stat ) | rule | ANY | OTHER | TRUE );
-    public final GCLNewChecker.stat_return stat() throws RecognitionException {
-        GCLNewChecker.stat_return retval = new GCLNewChecker.stat_return();
+    // CtrlChecker.g:76:1: stat : ( block | var_decl | ^( ALAP stat ) | ^( WHILE stat stat ) | ^( UNTIL stat stat ) | ^( TRY stat ( stat )? ) | ^( IF stat stat ( stat )? ) | ^( CHOICE stat ( stat )* ) | ^( STAR stat ) | rule | ANY | OTHER | TRUE );
+    public final CtrlChecker.stat_return stat() throws RecognitionException {
+        CtrlChecker.stat_return retval = new CtrlChecker.stat_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -564,37 +563,37 @@ public class GCLNewChecker extends TreeParser {
         MyTree ANY34 = null;
         MyTree OTHER35 = null;
         MyTree TRUE36 = null;
-        GCLNewChecker.block_return block11 = null;
+        CtrlChecker.block_return block11 = null;
 
-        GCLNewChecker.var_decl_return var_decl12 = null;
+        CtrlChecker.var_decl_return var_decl12 = null;
 
-        GCLNewChecker.stat_return stat14 = null;
+        CtrlChecker.stat_return stat14 = null;
 
-        GCLNewChecker.stat_return stat16 = null;
+        CtrlChecker.stat_return stat16 = null;
 
-        GCLNewChecker.stat_return stat17 = null;
+        CtrlChecker.stat_return stat17 = null;
 
-        GCLNewChecker.stat_return stat19 = null;
+        CtrlChecker.stat_return stat19 = null;
 
-        GCLNewChecker.stat_return stat20 = null;
+        CtrlChecker.stat_return stat20 = null;
 
-        GCLNewChecker.stat_return stat22 = null;
+        CtrlChecker.stat_return stat22 = null;
 
-        GCLNewChecker.stat_return stat23 = null;
+        CtrlChecker.stat_return stat23 = null;
 
-        GCLNewChecker.stat_return stat25 = null;
+        CtrlChecker.stat_return stat25 = null;
 
-        GCLNewChecker.stat_return stat26 = null;
+        CtrlChecker.stat_return stat26 = null;
 
-        GCLNewChecker.stat_return stat27 = null;
+        CtrlChecker.stat_return stat27 = null;
 
-        GCLNewChecker.stat_return stat29 = null;
+        CtrlChecker.stat_return stat29 = null;
 
-        GCLNewChecker.stat_return stat30 = null;
+        CtrlChecker.stat_return stat30 = null;
 
-        GCLNewChecker.stat_return stat32 = null;
+        CtrlChecker.stat_return stat32 = null;
 
-        GCLNewChecker.rule_return rule33 = null;
+        CtrlChecker.rule_return rule33 = null;
 
         MyTree ALAP13_tree = null;
         MyTree WHILE15_tree = null;
@@ -608,7 +607,7 @@ public class GCLNewChecker extends TreeParser {
         MyTree TRUE36_tree = null;
 
         try {
-            // GCLNewChecker.g:76:3: ( block | var_decl | ^( ALAP stat ) | ^( WHILE stat stat ) | ^( UNTIL stat stat ) | ^( TRY stat ( stat )? ) | ^( IF stat stat ( stat )? ) | ^( CHOICE stat ( stat )* ) | ^( STAR stat ) | rule | ANY | OTHER | TRUE )
+            // CtrlChecker.g:77:3: ( block | var_decl | ^( ALAP stat ) | ^( WHILE stat stat ) | ^( UNTIL stat stat ) | ^( TRY stat ( stat )? ) | ^( IF stat stat ( stat )? ) | ^( CHOICE stat ( stat )* ) | ^( STAR stat ) | rule | ANY | OTHER | TRUE )
             int alt6 = 13;
             switch (this.input.LA(1)) {
             case BLOCK: {
@@ -672,7 +671,7 @@ public class GCLNewChecker extends TreeParser {
 
             switch (alt6) {
             case 1:
-                // GCLNewChecker.g:76:5: block
+                // CtrlChecker.g:77:5: block
             {
                 _last = (MyTree) this.input.LT(1);
                 pushFollow(FOLLOW_block_in_stat209);
@@ -692,7 +691,7 @@ public class GCLNewChecker extends TreeParser {
             }
                 break;
             case 2:
-                // GCLNewChecker.g:77:5: var_decl
+                // CtrlChecker.g:78:5: var_decl
             {
                 _last = (MyTree) this.input.LT(1);
                 pushFollow(FOLLOW_var_decl_in_stat215);
@@ -712,7 +711,7 @@ public class GCLNewChecker extends TreeParser {
             }
                 break;
             case 3:
-                // GCLNewChecker.g:78:5: ^( ALAP stat )
+                // CtrlChecker.g:79:5: ^( ALAP stat )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -748,7 +747,7 @@ public class GCLNewChecker extends TreeParser {
             }
                 break;
             case 4:
-                // GCLNewChecker.g:79:5: ^( WHILE stat stat )
+                // CtrlChecker.g:80:5: ^( WHILE stat stat )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -796,7 +795,7 @@ public class GCLNewChecker extends TreeParser {
             }
                 break;
             case 5:
-                // GCLNewChecker.g:85:5: ^( UNTIL stat stat )
+                // CtrlChecker.g:86:5: ^( UNTIL stat stat )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -844,7 +843,7 @@ public class GCLNewChecker extends TreeParser {
             }
                 break;
             case 6:
-                // GCLNewChecker.g:91:5: ^( TRY stat ( stat )? )
+                // CtrlChecker.g:92:5: ^( TRY stat ( stat )? )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -869,7 +868,7 @@ public class GCLNewChecker extends TreeParser {
                     if (_first_1 == null) {
                         _first_1 = stat22.tree;
                     }
-                    // GCLNewChecker.g:94:8: ( stat )?
+                    // CtrlChecker.g:95:8: ( stat )?
                     int alt3 = 2;
                     int LA3_0 = this.input.LA(1);
 
@@ -881,7 +880,7 @@ public class GCLNewChecker extends TreeParser {
                     }
                     switch (alt3) {
                     case 1:
-                        // GCLNewChecker.g:94:10: stat
+                        // CtrlChecker.g:95:10: stat
                     {
                         this.helper.nextBranch();
                         _last = (MyTree) this.input.LT(1);
@@ -919,7 +918,7 @@ public class GCLNewChecker extends TreeParser {
             }
                 break;
             case 7:
-                // GCLNewChecker.g:99:5: ^( IF stat stat ( stat )? )
+                // CtrlChecker.g:100:5: ^( IF stat stat ( stat )? )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -951,7 +950,7 @@ public class GCLNewChecker extends TreeParser {
                     if (_first_1 == null) {
                         _first_1 = stat26.tree;
                     }
-                    // GCLNewChecker.g:103:8: ( stat )?
+                    // CtrlChecker.g:104:8: ( stat )?
                     int alt4 = 2;
                     int LA4_0 = this.input.LA(1);
 
@@ -963,7 +962,7 @@ public class GCLNewChecker extends TreeParser {
                     }
                     switch (alt4) {
                     case 1:
-                        // GCLNewChecker.g:103:10: stat
+                        // CtrlChecker.g:104:10: stat
                     {
                         this.helper.nextBranch();
                         _last = (MyTree) this.input.LT(1);
@@ -1001,7 +1000,7 @@ public class GCLNewChecker extends TreeParser {
             }
                 break;
             case 8:
-                // GCLNewChecker.g:108:5: ^( CHOICE stat ( stat )* )
+                // CtrlChecker.g:109:5: ^( CHOICE stat ( stat )* )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -1027,7 +1026,7 @@ public class GCLNewChecker extends TreeParser {
                     if (_first_1 == null) {
                         _first_1 = stat29.tree;
                     }
-                    // GCLNewChecker.g:111:8: ( stat )*
+                    // CtrlChecker.g:112:8: ( stat )*
                     loop5: do {
                         int alt5 = 2;
                         int LA5_0 = this.input.LA(1);
@@ -1042,7 +1041,7 @@ public class GCLNewChecker extends TreeParser {
 
                         switch (alt5) {
                         case 1:
-                            // GCLNewChecker.g:111:10: stat
+                            // CtrlChecker.g:112:10: stat
                         {
                             this.helper.nextBranch();
                             _last = (MyTree) this.input.LT(1);
@@ -1083,7 +1082,7 @@ public class GCLNewChecker extends TreeParser {
             }
                 break;
             case 9:
-                // GCLNewChecker.g:116:5: ^( STAR stat )
+                // CtrlChecker.g:117:5: ^( STAR stat )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -1122,7 +1121,7 @@ public class GCLNewChecker extends TreeParser {
             }
                 break;
             case 10:
-                // GCLNewChecker.g:121:5: rule
+                // CtrlChecker.g:122:5: rule
             {
                 _last = (MyTree) this.input.LT(1);
                 pushFollow(FOLLOW_rule_in_stat612);
@@ -1142,7 +1141,7 @@ public class GCLNewChecker extends TreeParser {
             }
                 break;
             case 11:
-                // GCLNewChecker.g:122:5: ANY
+                // CtrlChecker.g:123:5: ANY
             {
                 _last = (MyTree) this.input.LT(1);
                 ANY34 = (MyTree) match(this.input, ANY, FOLLOW_ANY_in_stat618);
@@ -1160,7 +1159,7 @@ public class GCLNewChecker extends TreeParser {
             }
                 break;
             case 12:
-                // GCLNewChecker.g:124:5: OTHER
+                // CtrlChecker.g:125:5: OTHER
             {
                 _last = (MyTree) this.input.LT(1);
                 OTHER35 =
@@ -1179,7 +1178,7 @@ public class GCLNewChecker extends TreeParser {
             }
                 break;
             case 13:
-                // GCLNewChecker.g:126:5: TRUE
+                // CtrlChecker.g:127:5: TRUE
             {
                 _last = (MyTree) this.input.LT(1);
                 TRUE36 =
@@ -1217,9 +1216,9 @@ public class GCLNewChecker extends TreeParser {
     };
 
     // $ANTLR start "rule"
-    // GCLNewChecker.g:129:1: rule : ^( CALL ID ( ^( ARGS ( arg )* ) )? ) ;
-    public final GCLNewChecker.rule_return rule() throws RecognitionException {
-        GCLNewChecker.rule_return retval = new GCLNewChecker.rule_return();
+    // CtrlChecker.g:130:1: rule : ^( CALL ID ( ^( ARGS ( arg )* ) )? ) ;
+    public final CtrlChecker.rule_return rule() throws RecognitionException {
+        CtrlChecker.rule_return retval = new CtrlChecker.rule_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -1230,15 +1229,15 @@ public class GCLNewChecker extends TreeParser {
         MyTree CALL37 = null;
         MyTree ID38 = null;
         MyTree ARGS39 = null;
-        GCLNewChecker.arg_return arg40 = null;
+        CtrlChecker.arg_return arg40 = null;
 
         MyTree CALL37_tree = null;
         MyTree ID38_tree = null;
         MyTree ARGS39_tree = null;
 
         try {
-            // GCLNewChecker.g:131:3: ( ^( CALL ID ( ^( ARGS ( arg )* ) )? ) )
-            // GCLNewChecker.g:131:5: ^( CALL ID ( ^( ARGS ( arg )* ) )? )
+            // CtrlChecker.g:132:3: ( ^( CALL ID ( ^( ARGS ( arg )* ) )? ) )
+            // CtrlChecker.g:132:5: ^( CALL ID ( ^( ARGS ( arg )* ) )? )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -1258,7 +1257,7 @@ public class GCLNewChecker extends TreeParser {
                     if (_first_1 == null) {
                         _first_1 = ID38;
                     }
-                    // GCLNewChecker.g:131:15: ( ^( ARGS ( arg )* ) )?
+                    // CtrlChecker.g:132:15: ( ^( ARGS ( arg )* ) )?
                     int alt8 = 2;
                     int LA8_0 = this.input.LA(1);
 
@@ -1267,7 +1266,7 @@ public class GCLNewChecker extends TreeParser {
                     }
                     switch (alt8) {
                     case 1:
-                        // GCLNewChecker.g:131:16: ^( ARGS ( arg )* )
+                        // CtrlChecker.g:132:16: ^( ARGS ( arg )* )
                     {
                         _last = (MyTree) this.input.LT(1);
                         {
@@ -1283,7 +1282,7 @@ public class GCLNewChecker extends TreeParser {
                             }
                             if (this.input.LA(1) == Token.DOWN) {
                                 match(this.input, Token.DOWN, null);
-                                // GCLNewChecker.g:131:23: ( arg )*
+                                // CtrlChecker.g:132:23: ( arg )*
                                 loop7: do {
                                     int alt7 = 2;
                                     int LA7_0 = this.input.LA(1);
@@ -1294,7 +1293,7 @@ public class GCLNewChecker extends TreeParser {
 
                                     switch (alt7) {
                                     case 1:
-                                        // GCLNewChecker.g:131:23: arg
+                                        // CtrlChecker.g:132:23: arg
                                     {
                                         _last = (MyTree) this.input.LT(1);
                                         pushFollow(FOLLOW_arg_in_rule668);
@@ -1367,11 +1366,10 @@ public class GCLNewChecker extends TreeParser {
     };
 
     // $ANTLR start "var_decl"
-    // GCLNewChecker.g:134:1: var_decl : ^( VAR type ( ID )+ ) ;
-    public final GCLNewChecker.var_decl_return var_decl()
+    // CtrlChecker.g:135:1: var_decl : ^( VAR type ( ID )+ ) ;
+    public final CtrlChecker.var_decl_return var_decl()
         throws RecognitionException {
-        GCLNewChecker.var_decl_return retval =
-            new GCLNewChecker.var_decl_return();
+        CtrlChecker.var_decl_return retval = new CtrlChecker.var_decl_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -1381,14 +1379,14 @@ public class GCLNewChecker extends TreeParser {
 
         MyTree VAR41 = null;
         MyTree ID43 = null;
-        GCLNewChecker.type_return type42 = null;
+        CtrlChecker.type_return type42 = null;
 
         MyTree VAR41_tree = null;
         MyTree ID43_tree = null;
 
         try {
-            // GCLNewChecker.g:135:2: ( ^( VAR type ( ID )+ ) )
-            // GCLNewChecker.g:135:4: ^( VAR type ( ID )+ )
+            // CtrlChecker.g:136:2: ( ^( VAR type ( ID )+ ) )
+            // CtrlChecker.g:136:4: ^( VAR type ( ID )+ )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -1412,7 +1410,7 @@ public class GCLNewChecker extends TreeParser {
                     if (_first_1 == null) {
                         _first_1 = type42.tree;
                     }
-                    // GCLNewChecker.g:137:7: ( ID )+
+                    // CtrlChecker.g:138:7: ( ID )+
                     int cnt9 = 0;
                     loop9: do {
                         int alt9 = 2;
@@ -1424,7 +1422,7 @@ public class GCLNewChecker extends TreeParser {
 
                         switch (alt9) {
                         case 1:
-                            // GCLNewChecker.g:137:9: ID
+                            // CtrlChecker.g:138:9: ID
                         {
                             _last = (MyTree) this.input.LT(1);
                             ID43 =
@@ -1487,9 +1485,9 @@ public class GCLNewChecker extends TreeParser {
     };
 
     // $ANTLR start "type"
-    // GCLNewChecker.g:143:1: type : ( NODE | BOOL | STRING | INT | REAL );
-    public final GCLNewChecker.type_return type() throws RecognitionException {
-        GCLNewChecker.type_return retval = new GCLNewChecker.type_return();
+    // CtrlChecker.g:144:1: type : ( NODE | BOOL | STRING | INT | REAL );
+    public final CtrlChecker.type_return type() throws RecognitionException {
+        CtrlChecker.type_return retval = new CtrlChecker.type_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -1510,7 +1508,7 @@ public class GCLNewChecker extends TreeParser {
         MyTree REAL48_tree = null;
 
         try {
-            // GCLNewChecker.g:144:3: ( NODE | BOOL | STRING | INT | REAL )
+            // CtrlChecker.g:145:3: ( NODE | BOOL | STRING | INT | REAL )
             int alt10 = 5;
             switch (this.input.LA(1)) {
             case NODE: {
@@ -1542,7 +1540,7 @@ public class GCLNewChecker extends TreeParser {
 
             switch (alt10) {
             case 1:
-                // GCLNewChecker.g:144:5: NODE
+                // CtrlChecker.g:145:5: NODE
             {
                 _last = (MyTree) this.input.LT(1);
                 NODE44 =
@@ -1561,7 +1559,7 @@ public class GCLNewChecker extends TreeParser {
             }
                 break;
             case 2:
-                // GCLNewChecker.g:145:5: BOOL
+                // CtrlChecker.g:146:5: BOOL
             {
                 _last = (MyTree) this.input.LT(1);
                 BOOL45 =
@@ -1580,7 +1578,7 @@ public class GCLNewChecker extends TreeParser {
             }
                 break;
             case 3:
-                // GCLNewChecker.g:146:5: STRING
+                // CtrlChecker.g:147:5: STRING
             {
                 _last = (MyTree) this.input.LT(1);
                 STRING46 =
@@ -1599,7 +1597,7 @@ public class GCLNewChecker extends TreeParser {
             }
                 break;
             case 4:
-                // GCLNewChecker.g:147:5: INT
+                // CtrlChecker.g:148:5: INT
             {
                 _last = (MyTree) this.input.LT(1);
                 INT47 = (MyTree) match(this.input, INT, FOLLOW_INT_in_type773);
@@ -1617,7 +1615,7 @@ public class GCLNewChecker extends TreeParser {
             }
                 break;
             case 5:
-                // GCLNewChecker.g:148:5: REAL
+                // CtrlChecker.g:149:5: REAL
             {
                 _last = (MyTree) this.input.LT(1);
                 REAL48 =
@@ -1656,9 +1654,9 @@ public class GCLNewChecker extends TreeParser {
     };
 
     // $ANTLR start "arg"
-    // GCLNewChecker.g:151:1: arg : ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) ) ;
-    public final GCLNewChecker.arg_return arg() throws RecognitionException {
-        GCLNewChecker.arg_return retval = new GCLNewChecker.arg_return();
+    // CtrlChecker.g:152:1: arg : ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) ) ;
+    public final CtrlChecker.arg_return arg() throws RecognitionException {
+        CtrlChecker.arg_return retval = new CtrlChecker.arg_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -1670,7 +1668,7 @@ public class GCLNewChecker extends TreeParser {
         MyTree OUT50 = null;
         MyTree ID51 = null;
         MyTree DONT_CARE52 = null;
-        GCLNewChecker.literal_return literal53 = null;
+        CtrlChecker.literal_return literal53 = null;
 
         MyTree ARG49_tree = null;
         MyTree OUT50_tree = null;
@@ -1678,8 +1676,8 @@ public class GCLNewChecker extends TreeParser {
         MyTree DONT_CARE52_tree = null;
 
         try {
-            // GCLNewChecker.g:152:2: ( ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) ) )
-            // GCLNewChecker.g:152:4: ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) )
+            // CtrlChecker.g:153:2: ( ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) ) )
+            // CtrlChecker.g:153:4: ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -1693,7 +1691,7 @@ public class GCLNewChecker extends TreeParser {
                         _first_0 = ARG49;
                     }
                     match(this.input, Token.DOWN, null);
-                    // GCLNewChecker.g:153:7: ( ( OUT )? ID | DONT_CARE | literal )
+                    // CtrlChecker.g:154:7: ( ( OUT )? ID | DONT_CARE | literal )
                     int alt12 = 3;
                     switch (this.input.LA(1)) {
                     case ID:
@@ -1722,9 +1720,9 @@ public class GCLNewChecker extends TreeParser {
 
                     switch (alt12) {
                     case 1:
-                        // GCLNewChecker.g:153:9: ( OUT )? ID
+                        // CtrlChecker.g:154:9: ( OUT )? ID
                     {
-                        // GCLNewChecker.g:153:9: ( OUT )?
+                        // CtrlChecker.g:154:9: ( OUT )?
                         int alt11 = 2;
                         int LA11_0 = this.input.LA(1);
 
@@ -1733,7 +1731,7 @@ public class GCLNewChecker extends TreeParser {
                         }
                         switch (alt11) {
                         case 1:
-                            // GCLNewChecker.g:153:9: OUT
+                            // CtrlChecker.g:154:9: OUT
                         {
                             _last = (MyTree) this.input.LT(1);
                             OUT50 =
@@ -1773,7 +1771,7 @@ public class GCLNewChecker extends TreeParser {
                     }
                         break;
                     case 2:
-                        // GCLNewChecker.g:154:9: DONT_CARE
+                        // CtrlChecker.g:155:9: DONT_CARE
                     {
                         _last = (MyTree) this.input.LT(1);
                         DONT_CARE52 =
@@ -1794,7 +1792,7 @@ public class GCLNewChecker extends TreeParser {
                     }
                         break;
                     case 3:
-                        // GCLNewChecker.g:155:9: literal
+                        // CtrlChecker.g:156:9: literal
                     {
                         _last = (MyTree) this.input.LT(1);
                         pushFollow(FOLLOW_literal_in_arg842);
@@ -1848,11 +1846,10 @@ public class GCLNewChecker extends TreeParser {
     };
 
     // $ANTLR start "literal"
-    // GCLNewChecker.g:160:1: literal : ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT );
-    public final GCLNewChecker.literal_return literal()
+    // CtrlChecker.g:161:1: literal : ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT );
+    public final CtrlChecker.literal_return literal()
         throws RecognitionException {
-        GCLNewChecker.literal_return retval =
-            new GCLNewChecker.literal_return();
+        CtrlChecker.literal_return retval = new CtrlChecker.literal_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -1865,8 +1862,8 @@ public class GCLNewChecker extends TreeParser {
         MyTree set54_tree = null;
 
         try {
-            // GCLNewChecker.g:161:3: ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT )
-            // GCLNewChecker.g:
+            // CtrlChecker.g:162:3: ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT )
+            // CtrlChecker.g:
             {
                 _last = (MyTree) this.input.LT(1);
                 set54 = (MyTree) this.input.LT(1);

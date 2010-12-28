@@ -42,7 +42,7 @@ public class GraphGrammar extends RuleSystem {
      *         gts().edgeSet().size() == 0, getStartGraph().equals(startGraph),
      *         <tt>getName().equals(name)</tt>
      */
-    public GraphGrammar(RuleSystem ruleSystem, HostGraph startGraph) {
+    public GraphGrammar(RuleSystem ruleSystem, DefaultHostGraph startGraph) {
         super(ruleSystem);
         this.startGraph = startGraph;
     }
@@ -74,7 +74,7 @@ public class GraphGrammar extends RuleSystem {
      * @return the start graph of this GraphGrammar
      * @ensure <tt>result != null</tt>
      */
-    public HostGraph getStartGraph() {
+    public DefaultHostGraph getStartGraph() {
         if (this.startGraph == null) {
             setStartGraph(createGraph());
         }
@@ -96,7 +96,7 @@ public class GraphGrammar extends RuleSystem {
      * @throws IllegalStateException if the grammar is already fixed
      * @see #isFixed()
      */
-    public void setStartGraph(HostGraph startGraph)
+    public void setStartGraph(DefaultHostGraph startGraph)
         throws IllegalStateException {
         testFixed(false);
         this.startGraph = startGraph;
@@ -167,14 +167,14 @@ public class GraphGrammar extends RuleSystem {
     }
 
     /** Callback factory method to create the start graph. */
-    private HostGraph createGraph() {
-        return new DefaultHostGraph(HostFactory.instance());
+    private DefaultHostGraph createGraph() {
+        return new DefaultHostGraph();
     }
 
     /**
      * The start graph of this graph grammar.
      */
-    private HostGraph startGraph;
+    private DefaultHostGraph startGraph;
     /**
      * The control automaton of this grammar; <code>null</code> if there is
      * none.

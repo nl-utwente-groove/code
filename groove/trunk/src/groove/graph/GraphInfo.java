@@ -33,8 +33,7 @@ import java.util.Map;
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-01-30 09:32:57 $
  */
-public class GraphInfo<N extends Node,E extends Edge<N>> {
-
+public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
     /** Constructs a copy of an existing information object. */
     public GraphInfo(GraphInfo<?,?> info) {
         this.data = new HashMap<String,Object>(info.getData());
@@ -251,6 +250,13 @@ public class GraphInfo<N extends Node,E extends Edge<N>> {
             this.data.put(PROPERTIES_KEY,
                 new GraphProperties(other.getProperties(false)));
         }
+    }
+
+    @Override
+    public GraphInfo<N,E> clone() {
+        GraphInfo<N,E> result = new GraphInfo<N,E>();
+        result.load(this);
+        return result;
     }
 
     @Override

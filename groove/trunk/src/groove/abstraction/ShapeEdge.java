@@ -17,10 +17,11 @@
 package groove.abstraction;
 
 import groove.graph.TypeLabel;
+import groove.trans.HostEdge;
 
 /**
  * Class that implements the edges of a shape.
- * This class is essentially a DefaultEdge and it was created just to improve
+ * This class is essentially a {@link HostEdge} and it was created just to improve
  * the code readability.
  * 
  * @author Eduardo Zambon

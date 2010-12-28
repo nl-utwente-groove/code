@@ -23,6 +23,7 @@ import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.match.SearchPlanStrategy.Search;
+import groove.trans.HostFactory;
 import groove.trans.HostNode;
 import groove.trans.RuleNode;
 
@@ -143,6 +144,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
     final OperatorEdge edge;
     /** The operation determined by the product edge. */
     final Operation operation;
+    /** The factory needed to create value nodes for the calculated outcomes. */
     /** List of operands of the product edge's source node. */
     final List<VariableNode> arguments;
     /** The target node of the product edge. */
@@ -174,6 +176,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
             super(search);
             this.targetPreMatch =
                 search.getNodeAnchor(OperatorEdgeSearchItem.this.targetIx);
+            this.factory = search.getHost().getFactory();
         }
 
         @Override
@@ -201,7 +204,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
                 result = ((ValueNode) targetFind).getValue().equals(outcome);
             } else {
                 ValueNode targetImage =
-                    ValueNode.createValueNode(
+                    this.factory.createNode(
                         OperatorEdgeSearchItem.this.operation.getResultAlgebra(),
                         outcome);
                 result =
@@ -260,7 +263,8 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
 
         /** The pre-matched target node, if any. */
         private final HostNode targetPreMatch;
-
+        /** The factory for creating value nodes for the outcomes. */
+        private final HostFactory factory;
         /** Flag to control debug printing. */
         static private final boolean PRINT = false;
     }

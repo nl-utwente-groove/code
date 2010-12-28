@@ -16,11 +16,12 @@
  */
 package groove.control;
 
-import groove.control.parse.GCLNewBuilder;
-import groove.control.parse.GCLNewChecker;
-import groove.control.parse.GCLNewParser;
+import groove.algebra.AlgebraFamily;
+import groove.control.parse.CtrlBuilder;
+import groove.control.parse.CtrlChecker;
+import groove.control.parse.CtrlParser;
 import groove.control.parse.MyTree;
-import groove.control.parse.NamespaceNew;
+import groove.control.parse.Namespace;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.trans.SPORule;
@@ -38,7 +39,7 @@ import org.antlr.runtime.RecognitionException;
 /**
  * Wrapper for the new ANTLR control parser and builder.
  */
-public class CtrlParser {
+public class CtrlLoader {
     /**
      * Returns the control automaton for a given control program (given as string) and grammar. 
      */
@@ -63,11 +64,18 @@ public class CtrlParser {
     public CtrlAut runStream(CharStream inputStream, GraphGrammar grammar)
         throws FormatException {
         try {
-            NamespaceNew namespace = new NamespaceNew();
+            Namespace namespace = new Namespace();
             for (Rule rule : grammar.getRules()) {
                 namespace.addRule((SPORule) rule);
             }
-            MyTree tree = this.parser.run(inputStream, namespace);
+            AlgebraFamily family;
+            if (grammar.getProperties() == null) {
+                family = AlgebraFamily.getInstance();
+            } else {
+                family =
+                    AlgebraFamily.getInstance(grammar.getProperties().getAlgebraFamily());
+            }
+            MyTree tree = this.parser.run(inputStream, namespace, family);
             if (DEBUG) {
                 System.out.printf("Parse tree: %s%n", tree.toStringTree());
                 //                ASTFrame frame = new ASTFrame("checker result", tree);
@@ -78,7 +86,7 @@ public class CtrlParser {
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
             }
-            tree = this.checker.run(tree, namespace);
+            tree = this.checker.run(tree, namespace, family);
             errors = this.checker.getErrors();
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
@@ -90,11 +98,11 @@ public class CtrlParser {
     }
 
     /** The parser object. */
-    private final GCLNewParser parser = new GCLNewParser(null);
+    private final CtrlParser parser = new CtrlParser(null);
     /** The parser object. */
-    private final GCLNewChecker checker = new GCLNewChecker(null);
+    private final CtrlChecker checker = new CtrlChecker(null);
     /** The parser object. */
-    private final GCLNewBuilder builder = new GCLNewBuilder(null);
+    private final CtrlBuilder builder = new CtrlBuilder(null);
 
     /** Call with [grammarfile] [controlfile]* */
     public static void main(String[] args) {
@@ -114,11 +122,11 @@ public class CtrlParser {
     }
 
     /** Returns the singleton instance of the control parser. */
-    public static CtrlParser getInstance() {
+    public static CtrlLoader getInstance() {
         return instance;
     }
 
-    private static final CtrlParser instance = new CtrlParser();
+    private static final CtrlLoader instance = new CtrlLoader();
     private static final boolean DEBUG = false;
 
 }

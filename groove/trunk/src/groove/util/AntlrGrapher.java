@@ -93,7 +93,7 @@ public class AntlrGrapher {
 
     /** Returns the graph representing a given AST. */
     public HostGraph getGraph(CommonTree tree) {
-        HostGraph result = new DefaultHostGraph();
+        DefaultHostGraph result = new DefaultHostGraph();
         Map<CommonTree,HostNode> treeNodeMap =
             new HashMap<CommonTree,HostNode>();
         treeNodeMap.put(tree, createNode(result, tree));
@@ -127,7 +127,7 @@ public class AntlrGrapher {
         return result;
     }
 
-    private HostNode createNode(HostGraph graph, CommonTree tree) {
+    private HostNode createNode(DefaultHostGraph graph, CommonTree tree) {
         HostNode result = graph.addNode();
         int tokenType = tree.getType();
         graph.addEdge(result,
@@ -135,8 +135,7 @@ public class AntlrGrapher {
             result);
         if (this.textTypes.get(tokenType) && tree.getText() != null) {
             ValueNode nameNode =
-                ValueNode.createValueNode(StringAlgebra.instance,
-                    tree.getText());
+                graph.addNode(StringAlgebra.instance, tree.getText());
             graph.addEdge(result, TEXT_LABEL, nameNode);
         }
         return result;
@@ -152,23 +151,26 @@ public class AntlrGrapher {
     private static final String TOKEN_NAMES = "tokenNames";
 
     /** Default label to be used for child edges. */
-    public final static TypeLabel CHILD_LABEL = TypeLabel.createBinaryLabel("child");
+    public final static TypeLabel CHILD_LABEL =
+        TypeLabel.createBinaryLabel("child");
     /** Default label to be used for next edges. */
-    public final static TypeLabel NEXT_LABEL = TypeLabel.createBinaryLabel("next");
+    public final static TypeLabel NEXT_LABEL =
+        TypeLabel.createBinaryLabel("next");
     /** Default label to be used for text edges. */
-    public final static TypeLabel TEXT_LABEL = TypeLabel.createBinaryLabel("text");
+    public final static TypeLabel TEXT_LABEL =
+        TypeLabel.createBinaryLabel("text");
     /** Flag to be used for the first child. */
-    public final static TypeLabel FIRST_FLAG = TypeLabel.createLabel(LabelKind.FLAG,
-        "first");
+    public final static TypeLabel FIRST_FLAG = TypeLabel.createLabel(
+        LabelKind.FLAG, "first");
     /** Flag to be used for the last child. */
-    public final static TypeLabel LAST_FLAG = TypeLabel.createLabel(LabelKind.FLAG,
-        "last");
+    public final static TypeLabel LAST_FLAG = TypeLabel.createLabel(
+        LabelKind.FLAG, "last");
     /** Flag to be used for a childless token node. */
-    public final static TypeLabel LEAF_FLAG = TypeLabel.createLabel(LabelKind.FLAG,
-        "leaf");
+    public final static TypeLabel LEAF_FLAG = TypeLabel.createLabel(
+        LabelKind.FLAG, "leaf");
     /** Type of the (abstract) top node. */
-    public final static TypeLabel TOP_TYPE = TypeLabel.createLabel(LabelKind.NODE_TYPE,
-        "TOP$");
+    public final static TypeLabel TOP_TYPE = TypeLabel.createLabel(
+        LabelKind.NODE_TYPE, "TOP$");
     /** String type label. */
     private final static TypeLabel STRING_TYPE = TypeLabel.createLabel(
         LabelKind.NODE_TYPE, "string");

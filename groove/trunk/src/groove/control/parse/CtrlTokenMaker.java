@@ -37,7 +37,7 @@ import org.fife.ui.rsyntaxtextarea.TokenMap;
  * @version 0.1
  */
 @SuppressWarnings("all")
-public class GCLTokenMaker extends AbstractTokenMaker {
+public class CtrlTokenMaker extends AbstractTokenMaker {
 
     protected final String operators = "+-*/%!=<>^&|?:";
 
@@ -59,7 +59,7 @@ public class GCLTokenMaker extends AbstractTokenMaker {
     /**
      * Constructor.
      */
-    public GCLTokenMaker() {
+    public CtrlTokenMaker() {
         super(); // Initializes tokensToHighlight.
     }
 

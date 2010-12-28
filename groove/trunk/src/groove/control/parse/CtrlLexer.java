@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNew.g 2010-11-28 11:13:36
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 Ctrl.g 2010-12-28 09:29:27
 
 package groove.control.parse;
 
@@ -14,7 +14,7 @@ import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.RecognizerSharedState;
 
 @SuppressWarnings("all")
-public class GCLNewLexer extends Lexer {
+public class CtrlLexer extends Lexer {
     public static final int REAL_LIT = 48;
     public static final int FUNCTION = 10;
     public static final int DO_UNTIL = 9;
@@ -77,21 +77,21 @@ public class GCLNewLexer extends Lexer {
     // delegates
     // delegators
 
-    public GCLNewLexer() {
+    public CtrlLexer() {
         ;
     }
 
-    public GCLNewLexer(CharStream input) {
+    public CtrlLexer(CharStream input) {
         this(input, new RecognizerSharedState());
     }
 
-    public GCLNewLexer(CharStream input, RecognizerSharedState state) {
+    public CtrlLexer(CharStream input, RecognizerSharedState state) {
         super(input, state);
 
     }
 
     public String getGrammarFileName() {
-        return "GCLNew.g";
+        return "Ctrl.g";
     }
 
     // $ANTLR start "ALAP"
@@ -99,8 +99,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = ALAP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:174:10: ( 'alap' )
-            // GCLNew.g:174:12: 'alap'
+            // Ctrl.g:175:10: ( 'alap' )
+            // Ctrl.g:175:12: 'alap'
             {
                 match("alap");
 
@@ -119,8 +119,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = ANY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:175:9: ( 'any' )
-            // GCLNew.g:175:11: 'any'
+            // Ctrl.g:176:9: ( 'any' )
+            // Ctrl.g:176:11: 'any'
             {
                 match("any");
 
@@ -139,8 +139,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = BOOL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:176:10: ( 'bool' )
-            // GCLNew.g:176:12: 'bool'
+            // Ctrl.g:177:10: ( 'bool' )
+            // Ctrl.g:177:12: 'bool'
             {
                 match("bool");
 
@@ -159,8 +159,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = CHOICE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:177:10: ( 'choice' )
-            // GCLNew.g:177:12: 'choice'
+            // Ctrl.g:178:10: ( 'choice' )
+            // Ctrl.g:178:12: 'choice'
             {
                 match("choice");
 
@@ -179,8 +179,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = DO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:178:10: ( 'do' )
-            // GCLNew.g:178:12: 'do'
+            // Ctrl.g:179:10: ( 'do' )
+            // Ctrl.g:179:12: 'do'
             {
                 match("do");
 
@@ -199,8 +199,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = ELSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:179:10: ( 'else' )
-            // GCLNew.g:179:12: 'else'
+            // Ctrl.g:180:10: ( 'else' )
+            // Ctrl.g:180:12: 'else'
             {
                 match("else");
 
@@ -219,8 +219,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = FALSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:180:10: ( 'false' )
-            // GCLNew.g:180:12: 'false'
+            // Ctrl.g:181:10: ( 'false' )
+            // Ctrl.g:181:12: 'false'
             {
                 match("false");
 
@@ -239,8 +239,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = FUNCTION;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:181:10: ( 'function' )
-            // GCLNew.g:181:12: 'function'
+            // Ctrl.g:182:10: ( 'function' )
+            // Ctrl.g:182:12: 'function'
             {
                 match("function");
 
@@ -259,8 +259,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = IF;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:182:10: ( 'if' )
-            // GCLNew.g:182:12: 'if'
+            // Ctrl.g:183:10: ( 'if' )
+            // Ctrl.g:183:12: 'if'
             {
                 match("if");
 
@@ -279,8 +279,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = INT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:183:10: ( 'int' )
-            // GCLNew.g:183:12: 'int'
+            // Ctrl.g:184:10: ( 'int' )
+            // Ctrl.g:184:12: 'int'
             {
                 match("int");
 
@@ -299,8 +299,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = NODE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:184:10: ( 'node' )
-            // GCLNew.g:184:12: 'node'
+            // Ctrl.g:185:10: ( 'node' )
+            // Ctrl.g:185:12: 'node'
             {
                 match("node");
 
@@ -319,8 +319,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = OR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:185:10: ( 'or' )
-            // GCLNew.g:185:12: 'or'
+            // Ctrl.g:186:10: ( 'or' )
+            // Ctrl.g:186:12: 'or'
             {
                 match("or");
 
@@ -339,8 +339,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = OTHER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:186:10: ( 'other' )
-            // GCLNew.g:186:12: 'other'
+            // Ctrl.g:187:10: ( 'other' )
+            // Ctrl.g:187:12: 'other'
             {
                 match("other");
 
@@ -359,8 +359,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = OUT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:187:10: ( 'out' )
-            // GCLNew.g:187:12: 'out'
+            // Ctrl.g:188:10: ( 'out' )
+            // Ctrl.g:188:12: 'out'
             {
                 match("out");
 
@@ -379,8 +379,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = REAL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:188:10: ( 'real' )
-            // GCLNew.g:188:12: 'real'
+            // Ctrl.g:189:10: ( 'real' )
+            // Ctrl.g:189:12: 'real'
             {
                 match("real");
 
@@ -399,8 +399,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = STAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:189:10: ( 'string' )
-            // GCLNew.g:189:12: 'string'
+            // Ctrl.g:190:10: ( 'string' )
+            // Ctrl.g:190:12: 'string'
             {
                 match("string");
 
@@ -419,8 +419,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:190:10: ( 'star' )
-            // GCLNew.g:190:12: 'star'
+            // Ctrl.g:191:10: ( 'star' )
+            // Ctrl.g:191:12: 'star'
             {
                 match("star");
 
@@ -439,8 +439,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = TRY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:191:10: ( 'try' )
-            // GCLNew.g:191:12: 'try'
+            // Ctrl.g:192:10: ( 'try' )
+            // Ctrl.g:192:12: 'try'
             {
                 match("try");
 
@@ -459,8 +459,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = TRUE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:192:10: ( 'true' )
-            // GCLNew.g:192:12: 'true'
+            // Ctrl.g:193:10: ( 'true' )
+            // Ctrl.g:193:12: 'true'
             {
                 match("true");
 
@@ -479,8 +479,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = UNTIL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:193:10: ( 'until' )
-            // GCLNew.g:193:12: 'until'
+            // Ctrl.g:194:10: ( 'until' )
+            // Ctrl.g:194:12: 'until'
             {
                 match("until");
 
@@ -499,8 +499,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = WHILE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:194:10: ( 'while' )
-            // GCLNew.g:194:12: 'while'
+            // Ctrl.g:195:10: ( 'while' )
+            // Ctrl.g:195:12: 'while'
             {
                 match("while");
 
@@ -519,8 +519,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = INT_LIT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:197:3: ( IntegerNumber )
-            // GCLNew.g:197:5: IntegerNumber
+            // Ctrl.g:198:3: ( IntegerNumber )
+            // Ctrl.g:198:5: IntegerNumber
             {
                 mIntegerNumber();
 
@@ -537,7 +537,7 @@ public class GCLNewLexer extends Lexer {
     // $ANTLR start "IntegerNumber"
     public final void mIntegerNumber() throws RecognitionException {
         try {
-            // GCLNew.g:202:3: ( '0' | '1' .. '9' ( '0' .. '9' )* )
+            // Ctrl.g:203:3: ( '0' | '1' .. '9' ( '0' .. '9' )* )
             int alt2 = 2;
             int LA2_0 = this.input.LA(1);
 
@@ -553,17 +553,17 @@ public class GCLNewLexer extends Lexer {
             }
             switch (alt2) {
             case 1:
-                // GCLNew.g:202:5: '0'
+                // Ctrl.g:203:5: '0'
             {
                 match('0');
 
             }
                 break;
             case 2:
-                // GCLNew.g:203:5: '1' .. '9' ( '0' .. '9' )*
+                // Ctrl.g:204:5: '1' .. '9' ( '0' .. '9' )*
             {
                 matchRange('1', '9');
-                // GCLNew.g:203:14: ( '0' .. '9' )*
+                // Ctrl.g:204:14: ( '0' .. '9' )*
                 loop1: do {
                     int alt1 = 2;
                     int LA1_0 = this.input.LA(1);
@@ -574,7 +574,7 @@ public class GCLNewLexer extends Lexer {
 
                     switch (alt1) {
                     case 1:
-                        // GCLNew.g:203:15: '0' .. '9'
+                        // Ctrl.g:204:15: '0' .. '9'
                     {
                         matchRange('0', '9');
 
@@ -601,8 +601,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = REAL_LIT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:207:3: ( NonIntegerNumber )
-            // GCLNew.g:207:5: NonIntegerNumber
+            // Ctrl.g:208:3: ( NonIntegerNumber )
+            // Ctrl.g:208:5: NonIntegerNumber
             {
                 mNonIntegerNumber();
 
@@ -619,7 +619,7 @@ public class GCLNewLexer extends Lexer {
     // $ANTLR start "NonIntegerNumber"
     public final void mNonIntegerNumber() throws RecognitionException {
         try {
-            // GCLNew.g:212:5: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* | '.' ( '0' .. '9' )+ )
+            // Ctrl.g:213:5: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* | '.' ( '0' .. '9' )+ )
             int alt6 = 2;
             int LA6_0 = this.input.LA(1);
 
@@ -635,9 +635,9 @@ public class GCLNewLexer extends Lexer {
             }
             switch (alt6) {
             case 1:
-                // GCLNew.g:212:9: ( '0' .. '9' )+ '.' ( '0' .. '9' )*
+                // Ctrl.g:213:9: ( '0' .. '9' )+ '.' ( '0' .. '9' )*
             {
-                // GCLNew.g:212:9: ( '0' .. '9' )+
+                // Ctrl.g:213:9: ( '0' .. '9' )+
                 int cnt3 = 0;
                 loop3: do {
                     int alt3 = 2;
@@ -649,7 +649,7 @@ public class GCLNewLexer extends Lexer {
 
                     switch (alt3) {
                     case 1:
-                        // GCLNew.g:212:10: '0' .. '9'
+                        // Ctrl.g:213:10: '0' .. '9'
                     {
                         matchRange('0', '9');
 
@@ -668,7 +668,7 @@ public class GCLNewLexer extends Lexer {
                 } while (true);
 
                 match('.');
-                // GCLNew.g:212:27: ( '0' .. '9' )*
+                // Ctrl.g:213:27: ( '0' .. '9' )*
                 loop4: do {
                     int alt4 = 2;
                     int LA4_0 = this.input.LA(1);
@@ -679,7 +679,7 @@ public class GCLNewLexer extends Lexer {
 
                     switch (alt4) {
                     case 1:
-                        // GCLNew.g:212:28: '0' .. '9'
+                        // Ctrl.g:213:28: '0' .. '9'
                     {
                         matchRange('0', '9');
 
@@ -694,10 +694,10 @@ public class GCLNewLexer extends Lexer {
             }
                 break;
             case 2:
-                // GCLNew.g:213:9: '.' ( '0' .. '9' )+
+                // Ctrl.g:214:9: '.' ( '0' .. '9' )+
             {
                 match('.');
-                // GCLNew.g:213:13: ( '0' .. '9' )+
+                // Ctrl.g:214:13: ( '0' .. '9' )+
                 int cnt5 = 0;
                 loop5: do {
                     int alt5 = 2;
@@ -709,7 +709,7 @@ public class GCLNewLexer extends Lexer {
 
                     switch (alt5) {
                     case 1:
-                        // GCLNew.g:213:15: '0' .. '9'
+                        // Ctrl.g:214:15: '0' .. '9'
                     {
                         matchRange('0', '9');
 
@@ -742,11 +742,11 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = STRING_LIT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:218:3: ( QUOTE ( EscapeSequence | ~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE )
-            // GCLNew.g:218:5: QUOTE ( EscapeSequence | ~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE
+            // Ctrl.g:219:3: ( QUOTE ( EscapeSequence | ~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE )
+            // Ctrl.g:219:5: QUOTE ( EscapeSequence | ~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE
             {
                 mQUOTE();
-                // GCLNew.g:219:5: ( EscapeSequence | ~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )*
+                // Ctrl.g:220:5: ( EscapeSequence | ~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )*
                 loop7: do {
                     int alt7 = 3;
                     int LA7_0 = this.input.LA(1);
@@ -762,14 +762,14 @@ public class GCLNewLexer extends Lexer {
 
                     switch (alt7) {
                     case 1:
-                        // GCLNew.g:219:7: EscapeSequence
+                        // Ctrl.g:220:7: EscapeSequence
                     {
                         mEscapeSequence();
 
                     }
                         break;
                     case 2:
-                        // GCLNew.g:220:7: ~ ( BSLASH | QUOTE | '\\r' | '\\n' )
+                        // Ctrl.g:221:7: ~ ( BSLASH | QUOTE | '\\r' | '\\n' )
                     {
                         if ((this.input.LA(1) >= '\u0000' && this.input.LA(1) <= '\t')
                             || (this.input.LA(1) >= '\u000B' && this.input.LA(1) <= '\f')
@@ -808,12 +808,12 @@ public class GCLNewLexer extends Lexer {
     // $ANTLR start "EscapeSequence"
     public final void mEscapeSequence() throws RecognitionException {
         try {
-            // GCLNew.g:227:3: ( BSLASH ( QUOTE BSLASH ) )
-            // GCLNew.g:227:5: BSLASH ( QUOTE BSLASH )
+            // Ctrl.g:228:3: ( BSLASH ( QUOTE BSLASH ) )
+            // Ctrl.g:228:5: BSLASH ( QUOTE BSLASH )
             {
                 mBSLASH();
-                // GCLNew.g:228:5: ( QUOTE BSLASH )
-                // GCLNew.g:228:7: QUOTE BSLASH
+                // Ctrl.g:229:5: ( QUOTE BSLASH )
+                // Ctrl.g:229:7: QUOTE BSLASH
                 {
                     mQUOTE();
                     mBSLASH();
@@ -833,8 +833,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:233:5: ( ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )* )
-            // GCLNew.g:233:7: ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )*
+            // Ctrl.g:234:5: ( ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )* )
+            // Ctrl.g:234:7: ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )*
             {
                 if ((this.input.LA(1) >= 'A' && this.input.LA(1) <= 'Z')
                     || (this.input.LA(1) >= 'a' && this.input.LA(1) <= 'z')) {
@@ -847,7 +847,7 @@ public class GCLNewLexer extends Lexer {
                     throw mse;
                 }
 
-                // GCLNew.g:233:27: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )*
+                // Ctrl.g:234:27: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )*
                 loop8: do {
                     int alt8 = 2;
                     int LA8_0 = this.input.LA(1);
@@ -859,7 +859,7 @@ public class GCLNewLexer extends Lexer {
 
                     switch (alt8) {
                     case 1:
-                        // GCLNew.g:
+                        // Ctrl.g:
                     {
                         if (this.input.LA(1) == '-'
                             || (this.input.LA(1) >= '0' && this.input.LA(1) <= '9')
@@ -898,8 +898,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = AMP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:235:11: ( '&' )
-            // GCLNew.g:235:13: '&'
+            // Ctrl.g:236:11: ( '&' )
+            // Ctrl.g:236:13: '&'
             {
                 match('&');
 
@@ -918,8 +918,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = DOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:236:11: ( '.' )
-            // GCLNew.g:236:13: '.'
+            // Ctrl.g:237:11: ( '.' )
+            // Ctrl.g:237:13: '.'
             {
                 match('.');
 
@@ -938,8 +938,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = NOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:237:11: ( '!' )
-            // GCLNew.g:237:13: '!'
+            // Ctrl.g:238:11: ( '!' )
+            // Ctrl.g:238:13: '!'
             {
                 match('!');
 
@@ -958,8 +958,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = BAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:238:11: ( '|' )
-            // GCLNew.g:238:13: '|'
+            // Ctrl.g:239:11: ( '|' )
+            // Ctrl.g:239:13: '|'
             {
                 match('|');
 
@@ -978,8 +978,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = SHARP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:239:11: ( '#' )
-            // GCLNew.g:239:13: '#'
+            // Ctrl.g:240:11: ( '#' )
+            // Ctrl.g:240:13: '#'
             {
                 match('#');
 
@@ -998,8 +998,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = PLUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:240:11: ( '+' )
-            // GCLNew.g:240:13: '+'
+            // Ctrl.g:241:11: ( '+' )
+            // Ctrl.g:241:13: '+'
             {
                 match('+');
 
@@ -1018,8 +1018,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = ASTERISK;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:241:11: ( '*' )
-            // GCLNew.g:241:13: '*'
+            // Ctrl.g:242:11: ( '*' )
+            // Ctrl.g:242:13: '*'
             {
                 match('*');
 
@@ -1038,8 +1038,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = DONT_CARE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:242:11: ( '_' )
-            // GCLNew.g:242:13: '_'
+            // Ctrl.g:243:11: ( '_' )
+            // Ctrl.g:243:13: '_'
             {
                 match('_');
 
@@ -1058,8 +1058,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = MINUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:243:11: ( '-' )
-            // GCLNew.g:243:13: '-'
+            // Ctrl.g:244:11: ( '-' )
+            // Ctrl.g:244:13: '-'
             {
                 match('-');
 
@@ -1078,8 +1078,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = QUOTE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:244:11: ( '\"' )
-            // GCLNew.g:244:13: '\"'
+            // Ctrl.g:245:11: ( '\"' )
+            // Ctrl.g:245:13: '\"'
             {
                 match('\"');
 
@@ -1098,8 +1098,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = BSLASH;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:245:11: ( '\\\\' )
-            // GCLNew.g:245:13: '\\\\'
+            // Ctrl.g:246:11: ( '\\\\' )
+            // Ctrl.g:246:13: '\\\\'
             {
                 match('\\');
 
@@ -1118,8 +1118,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = COMMA;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:246:11: ( ',' )
-            // GCLNew.g:246:13: ','
+            // Ctrl.g:247:11: ( ',' )
+            // Ctrl.g:247:13: ','
             {
                 match(',');
 
@@ -1138,8 +1138,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = SEMI;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:247:11: ( ';' )
-            // GCLNew.g:247:13: ';'
+            // Ctrl.g:248:11: ( ';' )
+            // Ctrl.g:248:13: ';'
             {
                 match(';');
 
@@ -1158,8 +1158,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = LPAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:248:11: ( '(' )
-            // GCLNew.g:248:13: '('
+            // Ctrl.g:249:11: ( '(' )
+            // Ctrl.g:249:13: '('
             {
                 match('(');
 
@@ -1178,8 +1178,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = RPAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:249:11: ( ')' )
-            // GCLNew.g:249:13: ')'
+            // Ctrl.g:250:11: ( ')' )
+            // Ctrl.g:250:13: ')'
             {
                 match(')');
 
@@ -1198,8 +1198,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = LCURLY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:250:11: ( '{' )
-            // GCLNew.g:250:13: '{'
+            // Ctrl.g:251:11: ( '{' )
+            // Ctrl.g:251:13: '{'
             {
                 match('{');
 
@@ -1218,8 +1218,8 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = RCURLY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:251:11: ( '}' )
-            // GCLNew.g:251:13: '}'
+            // Ctrl.g:252:11: ( '}' )
+            // Ctrl.g:252:13: '}'
             {
                 match('}');
 
@@ -1238,12 +1238,12 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:253:12: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // GCLNew.g:253:14: '/*' ( options {greedy=false; } : . )* '*/'
+            // Ctrl.g:254:12: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // Ctrl.g:254:14: '/*' ( options {greedy=false; } : . )* '*/'
             {
                 match("/*");
 
-                // GCLNew.g:253:19: ( options {greedy=false; } : . )*
+                // Ctrl.g:254:19: ( options {greedy=false; } : . )*
                 loop9: do {
                     int alt9 = 2;
                     int LA9_0 = this.input.LA(1);
@@ -1263,7 +1263,7 @@ public class GCLNewLexer extends Lexer {
 
                     switch (alt9) {
                     case 1:
-                        // GCLNew.g:253:47: .
+                        // Ctrl.g:254:47: .
                     {
                         matchAny();
 
@@ -1294,12 +1294,12 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:254:12: ( '//' ( options {greedy=false; } : . )* '\\n' )
-            // GCLNew.g:254:14: '//' ( options {greedy=false; } : . )* '\\n'
+            // Ctrl.g:255:12: ( '//' ( options {greedy=false; } : . )* '\\n' )
+            // Ctrl.g:255:14: '//' ( options {greedy=false; } : . )* '\\n'
             {
                 match("//");
 
-                // GCLNew.g:254:19: ( options {greedy=false; } : . )*
+                // Ctrl.g:255:19: ( options {greedy=false; } : . )*
                 loop10: do {
                     int alt10 = 2;
                     int LA10_0 = this.input.LA(1);
@@ -1312,7 +1312,7 @@ public class GCLNewLexer extends Lexer {
 
                     switch (alt10) {
                     case 1:
-                        // GCLNew.g:254:47: .
+                        // Ctrl.g:255:47: .
                     {
                         matchAny();
 
@@ -1342,10 +1342,10 @@ public class GCLNewLexer extends Lexer {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // GCLNew.g:256:5: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // GCLNew.g:256:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // Ctrl.g:257:5: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // Ctrl.g:257:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-                // GCLNew.g:256:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+                // Ctrl.g:257:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
                 int cnt11 = 0;
                 loop11: do {
                     int alt11 = 2;
@@ -1357,7 +1357,7 @@ public class GCLNewLexer extends Lexer {
 
                     switch (alt11) {
                     case 1:
-                        // GCLNew.g:
+                        // Ctrl.g:
                     {
                         if ((this.input.LA(1) >= '\t' && this.input.LA(1) <= '\n')
                             || this.input.LA(1) == '\r'
@@ -1398,320 +1398,320 @@ public class GCLNewLexer extends Lexer {
     // $ANTLR end "WS"
 
     public void mTokens() throws RecognitionException {
-        // GCLNew.g:1:8: ( ALAP | ANY | BOOL | CHOICE | DO | ELSE | FALSE | FUNCTION | IF | INT | NODE | OR | OTHER | OUT | REAL | STAR | STRING | TRY | TRUE | UNTIL | WHILE | INT_LIT | REAL_LIT | STRING_LIT | ID | AMP | DOT | NOT | BAR | SHARP | PLUS | ASTERISK | DONT_CARE | MINUS | QUOTE | BSLASH | COMMA | SEMI | LPAR | RPAR | LCURLY | RCURLY | ML_COMMENT | SL_COMMENT | WS )
+        // Ctrl.g:1:8: ( ALAP | ANY | BOOL | CHOICE | DO | ELSE | FALSE | FUNCTION | IF | INT | NODE | OR | OTHER | OUT | REAL | STAR | STRING | TRY | TRUE | UNTIL | WHILE | INT_LIT | REAL_LIT | STRING_LIT | ID | AMP | DOT | NOT | BAR | SHARP | PLUS | ASTERISK | DONT_CARE | MINUS | QUOTE | BSLASH | COMMA | SEMI | LPAR | RPAR | LCURLY | RCURLY | ML_COMMENT | SL_COMMENT | WS )
         int alt12 = 45;
         alt12 = this.dfa12.predict(this.input);
         switch (alt12) {
         case 1:
-            // GCLNew.g:1:10: ALAP
+            // Ctrl.g:1:10: ALAP
         {
             mALAP();
 
         }
             break;
         case 2:
-            // GCLNew.g:1:15: ANY
+            // Ctrl.g:1:15: ANY
         {
             mANY();
 
         }
             break;
         case 3:
-            // GCLNew.g:1:19: BOOL
+            // Ctrl.g:1:19: BOOL
         {
             mBOOL();
 
         }
             break;
         case 4:
-            // GCLNew.g:1:24: CHOICE
+            // Ctrl.g:1:24: CHOICE
         {
             mCHOICE();
 
         }
             break;
         case 5:
-            // GCLNew.g:1:31: DO
+            // Ctrl.g:1:31: DO
         {
             mDO();
 
         }
             break;
         case 6:
-            // GCLNew.g:1:34: ELSE
+            // Ctrl.g:1:34: ELSE
         {
             mELSE();
 
         }
             break;
         case 7:
-            // GCLNew.g:1:39: FALSE
+            // Ctrl.g:1:39: FALSE
         {
             mFALSE();
 
         }
             break;
         case 8:
-            // GCLNew.g:1:45: FUNCTION
+            // Ctrl.g:1:45: FUNCTION
         {
             mFUNCTION();
 
         }
             break;
         case 9:
-            // GCLNew.g:1:54: IF
+            // Ctrl.g:1:54: IF
         {
             mIF();
 
         }
             break;
         case 10:
-            // GCLNew.g:1:57: INT
+            // Ctrl.g:1:57: INT
         {
             mINT();
 
         }
             break;
         case 11:
-            // GCLNew.g:1:61: NODE
+            // Ctrl.g:1:61: NODE
         {
             mNODE();
 
         }
             break;
         case 12:
-            // GCLNew.g:1:66: OR
+            // Ctrl.g:1:66: OR
         {
             mOR();
 
         }
             break;
         case 13:
-            // GCLNew.g:1:69: OTHER
+            // Ctrl.g:1:69: OTHER
         {
             mOTHER();
 
         }
             break;
         case 14:
-            // GCLNew.g:1:75: OUT
+            // Ctrl.g:1:75: OUT
         {
             mOUT();
 
         }
             break;
         case 15:
-            // GCLNew.g:1:79: REAL
+            // Ctrl.g:1:79: REAL
         {
             mREAL();
 
         }
             break;
         case 16:
-            // GCLNew.g:1:84: STAR
+            // Ctrl.g:1:84: STAR
         {
             mSTAR();
 
         }
             break;
         case 17:
-            // GCLNew.g:1:89: STRING
+            // Ctrl.g:1:89: STRING
         {
             mSTRING();
 
         }
             break;
         case 18:
-            // GCLNew.g:1:96: TRY
+            // Ctrl.g:1:96: TRY
         {
             mTRY();
 
         }
             break;
         case 19:
-            // GCLNew.g:1:100: TRUE
+            // Ctrl.g:1:100: TRUE
         {
             mTRUE();
 
         }
             break;
         case 20:
-            // GCLNew.g:1:105: UNTIL
+            // Ctrl.g:1:105: UNTIL
         {
             mUNTIL();
 
         }
             break;
         case 21:
-            // GCLNew.g:1:111: WHILE
+            // Ctrl.g:1:111: WHILE
         {
             mWHILE();
 
         }
             break;
         case 22:
-            // GCLNew.g:1:117: INT_LIT
+            // Ctrl.g:1:117: INT_LIT
         {
             mINT_LIT();
 
         }
             break;
         case 23:
-            // GCLNew.g:1:125: REAL_LIT
+            // Ctrl.g:1:125: REAL_LIT
         {
             mREAL_LIT();
 
         }
             break;
         case 24:
-            // GCLNew.g:1:134: STRING_LIT
+            // Ctrl.g:1:134: STRING_LIT
         {
             mSTRING_LIT();
 
         }
             break;
         case 25:
-            // GCLNew.g:1:145: ID
+            // Ctrl.g:1:145: ID
         {
             mID();
 
         }
             break;
         case 26:
-            // GCLNew.g:1:148: AMP
+            // Ctrl.g:1:148: AMP
         {
             mAMP();
 
         }
             break;
         case 27:
-            // GCLNew.g:1:152: DOT
+            // Ctrl.g:1:152: DOT
         {
             mDOT();
 
         }
             break;
         case 28:
-            // GCLNew.g:1:156: NOT
+            // Ctrl.g:1:156: NOT
         {
             mNOT();
 
         }
             break;
         case 29:
-            // GCLNew.g:1:160: BAR
+            // Ctrl.g:1:160: BAR
         {
             mBAR();
 
         }
             break;
         case 30:
-            // GCLNew.g:1:164: SHARP
+            // Ctrl.g:1:164: SHARP
         {
             mSHARP();
 
         }
             break;
         case 31:
-            // GCLNew.g:1:170: PLUS
+            // Ctrl.g:1:170: PLUS
         {
             mPLUS();
 
         }
             break;
         case 32:
-            // GCLNew.g:1:175: ASTERISK
+            // Ctrl.g:1:175: ASTERISK
         {
             mASTERISK();
 
         }
             break;
         case 33:
-            // GCLNew.g:1:184: DONT_CARE
+            // Ctrl.g:1:184: DONT_CARE
         {
             mDONT_CARE();
 
         }
             break;
         case 34:
-            // GCLNew.g:1:194: MINUS
+            // Ctrl.g:1:194: MINUS
         {
             mMINUS();
 
         }
             break;
         case 35:
-            // GCLNew.g:1:200: QUOTE
+            // Ctrl.g:1:200: QUOTE
         {
             mQUOTE();
 
         }
             break;
         case 36:
-            // GCLNew.g:1:206: BSLASH
+            // Ctrl.g:1:206: BSLASH
         {
             mBSLASH();
 
         }
             break;
         case 37:
-            // GCLNew.g:1:213: COMMA
+            // Ctrl.g:1:213: COMMA
         {
             mCOMMA();
 
         }
             break;
         case 38:
-            // GCLNew.g:1:219: SEMI
+            // Ctrl.g:1:219: SEMI
         {
             mSEMI();
 
         }
             break;
         case 39:
-            // GCLNew.g:1:224: LPAR
+            // Ctrl.g:1:224: LPAR
         {
             mLPAR();
 
         }
             break;
         case 40:
-            // GCLNew.g:1:229: RPAR
+            // Ctrl.g:1:229: RPAR
         {
             mRPAR();
 
         }
             break;
         case 41:
-            // GCLNew.g:1:234: LCURLY
+            // Ctrl.g:1:234: LCURLY
         {
             mLCURLY();
 
         }
             break;
         case 42:
-            // GCLNew.g:1:241: RCURLY
+            // Ctrl.g:1:241: RCURLY
         {
             mRCURLY();
 
         }
             break;
         case 43:
-            // GCLNew.g:1:248: ML_COMMENT
+            // Ctrl.g:1:248: ML_COMMENT
         {
             mML_COMMENT();
 
         }
             break;
         case 44:
-            // GCLNew.g:1:259: SL_COMMENT
+            // Ctrl.g:1:259: SL_COMMENT
         {
             mSL_COMMENT();
 
         }
             break;
         case 45:
-            // GCLNew.g:1:270: WS
+            // Ctrl.g:1:270: WS
         {
             mWS();
 

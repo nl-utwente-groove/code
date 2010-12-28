@@ -37,6 +37,7 @@ public class HostEdgeSet extends TreeHashSet<HostEdge> {
 
     @Override
     protected boolean areEqual(HostEdge newKey, HostEdge oldKey) {
+        assert newKey.equals(oldKey);
         return true;
     }
 

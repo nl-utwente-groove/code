@@ -33,7 +33,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class NamespaceNew {
+public class Namespace {
     /**
      * Adds a function name to the set of declared functions.
      * @return {@code true} if the function name is new.
@@ -101,7 +101,7 @@ public class NamespaceNew {
     }
 
     /** Returns the set of all used rules,
-     * i.e., all rules for which {@link NamespaceNew#useRule(String)}
+     * i.e., all rules for which {@link Namespace#useRule(String)}
      * has been invoked.
      */
     public Set<String> getUsedRules() {

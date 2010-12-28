@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 GCLNewBuilder.g 2010-11-28 11:13:36
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 CtrlBuilder.g 2010-12-28 09:29:27
 
 package groove.control.parse;
 
@@ -19,7 +19,7 @@ import org.antlr.runtime.tree.TreeParser;
 import org.antlr.runtime.tree.TreeRuleReturnScope;
 
 @SuppressWarnings("all")
-public class GCLNewBuilder extends TreeParser {
+public class CtrlBuilder extends TreeParser {
     public static final String[] tokenNames = new String[] {"<invalid>",
         "<EOR>", "<DOWN>", "<UP>", "ARG", "ARGS", "BLOCK", "CALL", "DO_WHILE",
         "DO_UNTIL", "FUNCTION", "FUNCTIONS", "PROGRAM", "VAR", "LCURLY",
@@ -92,11 +92,11 @@ public class GCLNewBuilder extends TreeParser {
     // delegates
     // delegators
 
-    public GCLNewBuilder(TreeNodeStream input) {
+    public CtrlBuilder(TreeNodeStream input) {
         this(input, new RecognizerSharedState());
     }
 
-    public GCLNewBuilder(TreeNodeStream input, RecognizerSharedState state) {
+    public CtrlBuilder(TreeNodeStream input, RecognizerSharedState state) {
         super(input, state);
 
     }
@@ -112,24 +112,24 @@ public class GCLNewBuilder extends TreeParser {
     }
 
     public String[] getTokenNames() {
-        return GCLNewBuilder.tokenNames;
+        return CtrlBuilder.tokenNames;
     }
 
     public String getGrammarFileName() {
-        return "GCLNewBuilder.g";
+        return "CtrlBuilder.g";
     }
 
     /** Builder for control automata. */
     private CtrlFactory builder;
     /** Namespace used for building the automaton. */
-    private NamespaceNew namespace;
+    private Namespace namespace;
 
     /**
      * Runs the builder on a given, checked syntax tree.
      */
-    public CtrlAut run(MyTree tree, NamespaceNew namespace)
+    public CtrlAut run(MyTree tree, Namespace namespace)
         throws RecognitionException {
-        this.builder = new CtrlFactory();
+        this.builder = CtrlFactory.instance();
         this.namespace = namespace;
         MyTreeAdaptor treeAdaptor = new MyTreeAdaptor();
         setTreeAdaptor(treeAdaptor);
@@ -147,11 +147,10 @@ public class GCLNewBuilder extends TreeParser {
     };
 
     // $ANTLR start "program"
-    // GCLNewBuilder.g:37:1: program returns [ CtrlAut aut ] : ^( PROGRAM functions block ) ;
-    public final GCLNewBuilder.program_return program()
+    // CtrlBuilder.g:37:1: program returns [ CtrlAut aut ] : ^( PROGRAM functions block ) ;
+    public final CtrlBuilder.program_return program()
         throws RecognitionException {
-        GCLNewBuilder.program_return retval =
-            new GCLNewBuilder.program_return();
+        CtrlBuilder.program_return retval = new CtrlBuilder.program_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -160,15 +159,15 @@ public class GCLNewBuilder extends TreeParser {
         MyTree _last = null;
 
         MyTree PROGRAM1 = null;
-        GCLNewBuilder.functions_return functions2 = null;
+        CtrlBuilder.functions_return functions2 = null;
 
-        GCLNewBuilder.block_return block3 = null;
+        CtrlBuilder.block_return block3 = null;
 
         MyTree PROGRAM1_tree = null;
 
         try {
-            // GCLNewBuilder.g:38:3: ( ^( PROGRAM functions block ) )
-            // GCLNewBuilder.g:38:5: ^( PROGRAM functions block )
+            // CtrlBuilder.g:38:3: ( ^( PROGRAM functions block ) )
+            // CtrlBuilder.g:38:5: ^( PROGRAM functions block )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -234,11 +233,11 @@ public class GCLNewBuilder extends TreeParser {
     };
 
     // $ANTLR start "functions"
-    // GCLNewBuilder.g:42:1: functions : ^( FUNCTIONS ( function )* ) ;
-    public final GCLNewBuilder.functions_return functions()
+    // CtrlBuilder.g:42:1: functions : ^( FUNCTIONS ( function )* ) ;
+    public final CtrlBuilder.functions_return functions()
         throws RecognitionException {
-        GCLNewBuilder.functions_return retval =
-            new GCLNewBuilder.functions_return();
+        CtrlBuilder.functions_return retval =
+            new CtrlBuilder.functions_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -247,13 +246,13 @@ public class GCLNewBuilder extends TreeParser {
         MyTree _last = null;
 
         MyTree FUNCTIONS4 = null;
-        GCLNewBuilder.function_return function5 = null;
+        CtrlBuilder.function_return function5 = null;
 
         MyTree FUNCTIONS4_tree = null;
 
         try {
-            // GCLNewBuilder.g:43:3: ( ^( FUNCTIONS ( function )* ) )
-            // GCLNewBuilder.g:43:5: ^( FUNCTIONS ( function )* )
+            // CtrlBuilder.g:43:3: ( ^( FUNCTIONS ( function )* ) )
+            // CtrlBuilder.g:43:5: ^( FUNCTIONS ( function )* )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -269,7 +268,7 @@ public class GCLNewBuilder extends TreeParser {
                     }
                     if (this.input.LA(1) == Token.DOWN) {
                         match(this.input, Token.DOWN, null);
-                        // GCLNewBuilder.g:43:17: ( function )*
+                        // CtrlBuilder.g:43:17: ( function )*
                         loop1: do {
                             int alt1 = 2;
                             int LA1_0 = this.input.LA(1);
@@ -280,7 +279,7 @@ public class GCLNewBuilder extends TreeParser {
 
                             switch (alt1) {
                             case 1:
-                                // GCLNewBuilder.g:43:17: function
+                                // CtrlBuilder.g:43:17: function
                             {
                                 _last = (MyTree) this.input.LT(1);
                                 pushFollow(FOLLOW_function_in_functions86);
@@ -337,11 +336,10 @@ public class GCLNewBuilder extends TreeParser {
     };
 
     // $ANTLR start "function"
-    // GCLNewBuilder.g:45:1: function : ^( FUNCTION ID block ) ;
-    public final GCLNewBuilder.function_return function()
+    // CtrlBuilder.g:45:1: function : ^( FUNCTION ID block ) ;
+    public final CtrlBuilder.function_return function()
         throws RecognitionException {
-        GCLNewBuilder.function_return retval =
-            new GCLNewBuilder.function_return();
+        CtrlBuilder.function_return retval = new CtrlBuilder.function_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -351,14 +349,14 @@ public class GCLNewBuilder extends TreeParser {
 
         MyTree FUNCTION6 = null;
         MyTree ID7 = null;
-        GCLNewBuilder.block_return block8 = null;
+        CtrlBuilder.block_return block8 = null;
 
         MyTree FUNCTION6_tree = null;
         MyTree ID7_tree = null;
 
         try {
-            // GCLNewBuilder.g:46:3: ( ^( FUNCTION ID block ) )
-            // GCLNewBuilder.g:46:5: ^( FUNCTION ID block )
+            // CtrlBuilder.g:46:3: ( ^( FUNCTION ID block ) )
+            // CtrlBuilder.g:46:5: ^( FUNCTION ID block )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -424,9 +422,9 @@ public class GCLNewBuilder extends TreeParser {
     };
 
     // $ANTLR start "block"
-    // GCLNewBuilder.g:50:1: block returns [ CtrlAut aut ] : ^( BLOCK ( stat )* ) ;
-    public final GCLNewBuilder.block_return block() throws RecognitionException {
-        GCLNewBuilder.block_return retval = new GCLNewBuilder.block_return();
+    // CtrlBuilder.g:50:1: block returns [ CtrlAut aut ] : ^( BLOCK ( stat )* ) ;
+    public final CtrlBuilder.block_return block() throws RecognitionException {
+        CtrlBuilder.block_return retval = new CtrlBuilder.block_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -435,13 +433,13 @@ public class GCLNewBuilder extends TreeParser {
         MyTree _last = null;
 
         MyTree BLOCK9 = null;
-        GCLNewBuilder.stat_return stat10 = null;
+        CtrlBuilder.stat_return stat10 = null;
 
         MyTree BLOCK9_tree = null;
 
         try {
-            // GCLNewBuilder.g:51:3: ( ^( BLOCK ( stat )* ) )
-            // GCLNewBuilder.g:51:5: ^( BLOCK ( stat )* )
+            // CtrlBuilder.g:51:3: ( ^( BLOCK ( stat )* ) )
+            // CtrlBuilder.g:51:5: ^( BLOCK ( stat )* )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -459,7 +457,7 @@ public class GCLNewBuilder extends TreeParser {
 
                     if (this.input.LA(1) == Token.DOWN) {
                         match(this.input, Token.DOWN, null);
-                        // GCLNewBuilder.g:53:8: ( stat )*
+                        // CtrlBuilder.g:53:8: ( stat )*
                         loop2: do {
                             int alt2 = 2;
                             int LA2_0 = this.input.LA(1);
@@ -476,7 +474,7 @@ public class GCLNewBuilder extends TreeParser {
 
                             switch (alt2) {
                             case 1:
-                                // GCLNewBuilder.g:53:10: stat
+                                // CtrlBuilder.g:53:10: stat
                             {
                                 _last = (MyTree) this.input.LT(1);
                                 pushFollow(FOLLOW_stat_in_block151);
@@ -537,9 +535,9 @@ public class GCLNewBuilder extends TreeParser {
     };
 
     // $ANTLR start "stat"
-    // GCLNewBuilder.g:59:1: stat returns [ CtrlAut aut ] : ( block | var_decl | ^( ALAP s= stat ) | ^( WHILE c= stat s= stat ) | ^( UNTIL c= stat s= stat ) | ^( TRY s1= stat (s2= stat )? ) | ^( IF c= stat s1= stat (s2= stat )? ) | ^( CHOICE s1= stat (s2= stat )* ) | ^( STAR s= stat ) | rule | ANY | OTHER | TRUE );
-    public final GCLNewBuilder.stat_return stat() throws RecognitionException {
-        GCLNewBuilder.stat_return retval = new GCLNewBuilder.stat_return();
+    // CtrlBuilder.g:59:1: stat returns [ CtrlAut aut ] : ( block | var_decl | ^( ALAP s= stat ) | ^( WHILE c= stat s= stat ) | ^( UNTIL c= stat s= stat ) | ^( TRY s1= stat (s2= stat )? ) | ^( IF c= stat s1= stat (s2= stat )? ) | ^( CHOICE s1= stat (s2= stat )* ) | ^( STAR s= stat ) | rule | ANY | OTHER | TRUE );
+    public final CtrlBuilder.stat_return stat() throws RecognitionException {
+        CtrlBuilder.stat_return retval = new CtrlBuilder.stat_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -557,19 +555,19 @@ public class GCLNewBuilder extends TreeParser {
         MyTree ANY21 = null;
         MyTree OTHER22 = null;
         MyTree TRUE23 = null;
-        GCLNewBuilder.stat_return s = null;
+        CtrlBuilder.stat_return s = null;
 
-        GCLNewBuilder.stat_return c = null;
+        CtrlBuilder.stat_return c = null;
 
-        GCLNewBuilder.stat_return s1 = null;
+        CtrlBuilder.stat_return s1 = null;
 
-        GCLNewBuilder.stat_return s2 = null;
+        CtrlBuilder.stat_return s2 = null;
 
-        GCLNewBuilder.block_return block11 = null;
+        CtrlBuilder.block_return block11 = null;
 
-        GCLNewBuilder.var_decl_return var_decl12 = null;
+        CtrlBuilder.var_decl_return var_decl12 = null;
 
-        GCLNewBuilder.rule_return rule20 = null;
+        CtrlBuilder.rule_return rule20 = null;
 
         MyTree ALAP13_tree = null;
         MyTree WHILE14_tree = null;
@@ -583,7 +581,7 @@ public class GCLNewBuilder extends TreeParser {
         MyTree TRUE23_tree = null;
 
         try {
-            // GCLNewBuilder.g:60:3: ( block | var_decl | ^( ALAP s= stat ) | ^( WHILE c= stat s= stat ) | ^( UNTIL c= stat s= stat ) | ^( TRY s1= stat (s2= stat )? ) | ^( IF c= stat s1= stat (s2= stat )? ) | ^( CHOICE s1= stat (s2= stat )* ) | ^( STAR s= stat ) | rule | ANY | OTHER | TRUE )
+            // CtrlBuilder.g:60:3: ( block | var_decl | ^( ALAP s= stat ) | ^( WHILE c= stat s= stat ) | ^( UNTIL c= stat s= stat ) | ^( TRY s1= stat (s2= stat )? ) | ^( IF c= stat s1= stat (s2= stat )? ) | ^( CHOICE s1= stat (s2= stat )* ) | ^( STAR s= stat ) | rule | ANY | OTHER | TRUE )
             int alt6 = 13;
             switch (this.input.LA(1)) {
             case BLOCK: {
@@ -647,7 +645,7 @@ public class GCLNewBuilder extends TreeParser {
 
             switch (alt6) {
             case 1:
-                // GCLNewBuilder.g:60:5: block
+                // CtrlBuilder.g:60:5: block
             {
                 _last = (MyTree) this.input.LT(1);
                 pushFollow(FOLLOW_block_in_stat196);
@@ -668,7 +666,7 @@ public class GCLNewBuilder extends TreeParser {
             }
                 break;
             case 2:
-                // GCLNewBuilder.g:62:5: var_decl
+                // CtrlBuilder.g:62:5: var_decl
             {
                 _last = (MyTree) this.input.LT(1);
                 pushFollow(FOLLOW_var_decl_in_stat208);
@@ -689,7 +687,7 @@ public class GCLNewBuilder extends TreeParser {
             }
                 break;
             case 3:
-                // GCLNewBuilder.g:64:5: ^( ALAP s= stat )
+                // CtrlBuilder.g:64:5: ^( ALAP s= stat )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -727,7 +725,7 @@ public class GCLNewBuilder extends TreeParser {
             }
                 break;
             case 4:
-                // GCLNewBuilder.g:66:5: ^( WHILE c= stat s= stat )
+                // CtrlBuilder.g:66:5: ^( WHILE c= stat s= stat )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -777,7 +775,7 @@ public class GCLNewBuilder extends TreeParser {
             }
                 break;
             case 5:
-                // GCLNewBuilder.g:68:5: ^( UNTIL c= stat s= stat )
+                // CtrlBuilder.g:68:5: ^( UNTIL c= stat s= stat )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -827,7 +825,7 @@ public class GCLNewBuilder extends TreeParser {
             }
                 break;
             case 6:
-                // GCLNewBuilder.g:70:5: ^( TRY s1= stat (s2= stat )? )
+                // CtrlBuilder.g:70:5: ^( TRY s1= stat (s2= stat )? )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -850,7 +848,7 @@ public class GCLNewBuilder extends TreeParser {
                     if (_first_1 == null) {
                         _first_1 = s1.tree;
                     }
-                    // GCLNewBuilder.g:70:19: (s2= stat )?
+                    // CtrlBuilder.g:70:19: (s2= stat )?
                     int alt3 = 2;
                     int LA3_0 = this.input.LA(1);
 
@@ -862,7 +860,7 @@ public class GCLNewBuilder extends TreeParser {
                     }
                     switch (alt3) {
                     case 1:
-                        // GCLNewBuilder.g:70:20: s2= stat
+                        // CtrlBuilder.g:70:20: s2= stat
                     {
                         _last = (MyTree) this.input.LT(1);
                         pushFollow(FOLLOW_stat_in_stat292);
@@ -901,7 +899,7 @@ public class GCLNewBuilder extends TreeParser {
             }
                 break;
             case 7:
-                // GCLNewBuilder.g:72:5: ^( IF c= stat s1= stat (s2= stat )? )
+                // CtrlBuilder.g:72:5: ^( IF c= stat s1= stat (s2= stat )? )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -932,7 +930,7 @@ public class GCLNewBuilder extends TreeParser {
                     if (_first_1 == null) {
                         _first_1 = s1.tree;
                     }
-                    // GCLNewBuilder.g:72:25: (s2= stat )?
+                    // CtrlBuilder.g:72:25: (s2= stat )?
                     int alt4 = 2;
                     int LA4_0 = this.input.LA(1);
 
@@ -944,7 +942,7 @@ public class GCLNewBuilder extends TreeParser {
                     }
                     switch (alt4) {
                     case 1:
-                        // GCLNewBuilder.g:72:26: s2= stat
+                        // CtrlBuilder.g:72:26: s2= stat
                     {
                         _last = (MyTree) this.input.LT(1);
                         pushFollow(FOLLOW_stat_in_stat321);
@@ -984,7 +982,7 @@ public class GCLNewBuilder extends TreeParser {
             }
                 break;
             case 8:
-                // GCLNewBuilder.g:74:5: ^( CHOICE s1= stat (s2= stat )* )
+                // CtrlBuilder.g:74:5: ^( CHOICE s1= stat (s2= stat )* )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -1009,7 +1007,7 @@ public class GCLNewBuilder extends TreeParser {
                         _first_1 = s1.tree;
                     }
                     retval.aut = (s1 != null ? s1.aut : null);
-                    // GCLNewBuilder.g:77:8: (s2= stat )*
+                    // CtrlBuilder.g:77:8: (s2= stat )*
                     loop5: do {
                         int alt5 = 2;
                         int LA5_0 = this.input.LA(1);
@@ -1024,7 +1022,7 @@ public class GCLNewBuilder extends TreeParser {
 
                         switch (alt5) {
                         case 1:
-                            // GCLNewBuilder.g:77:10: s2= stat
+                            // CtrlBuilder.g:77:10: s2= stat
                         {
                             _last = (MyTree) this.input.LT(1);
                             pushFollow(FOLLOW_stat_in_stat372);
@@ -1065,7 +1063,7 @@ public class GCLNewBuilder extends TreeParser {
             }
                 break;
             case 9:
-                // GCLNewBuilder.g:81:5: ^( STAR s= stat )
+                // CtrlBuilder.g:81:5: ^( STAR s= stat )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -1103,7 +1101,7 @@ public class GCLNewBuilder extends TreeParser {
             }
                 break;
             case 10:
-                // GCLNewBuilder.g:83:5: rule
+                // CtrlBuilder.g:83:5: rule
             {
                 _last = (MyTree) this.input.LT(1);
                 pushFollow(FOLLOW_rule_in_stat424);
@@ -1127,7 +1125,7 @@ public class GCLNewBuilder extends TreeParser {
             }
                 break;
             case 11:
-                // GCLNewBuilder.g:85:5: ANY
+                // CtrlBuilder.g:85:5: ANY
             {
                 _last = (MyTree) this.input.LT(1);
                 ANY21 = (MyTree) match(this.input, ANY, FOLLOW_ANY_in_stat436);
@@ -1145,7 +1143,7 @@ public class GCLNewBuilder extends TreeParser {
             }
                 break;
             case 12:
-                // GCLNewBuilder.g:87:5: OTHER
+                // CtrlBuilder.g:87:5: OTHER
             {
                 _last = (MyTree) this.input.LT(1);
                 OTHER22 =
@@ -1164,7 +1162,7 @@ public class GCLNewBuilder extends TreeParser {
             }
                 break;
             case 13:
-                // GCLNewBuilder.g:90:5: TRUE
+                // CtrlBuilder.g:90:5: TRUE
             {
                 _last = (MyTree) this.input.LT(1);
                 TRUE23 =
@@ -1203,9 +1201,9 @@ public class GCLNewBuilder extends TreeParser {
     };
 
     // $ANTLR start "rule"
-    // GCLNewBuilder.g:94:1: rule : ^( CALL ID ( ^( ARGS ( arg )* ) )? ) ;
-    public final GCLNewBuilder.rule_return rule() throws RecognitionException {
-        GCLNewBuilder.rule_return retval = new GCLNewBuilder.rule_return();
+    // CtrlBuilder.g:94:1: rule : ^( CALL ID ( ^( ARGS ( arg )* ) )? ) ;
+    public final CtrlBuilder.rule_return rule() throws RecognitionException {
+        CtrlBuilder.rule_return retval = new CtrlBuilder.rule_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -1216,15 +1214,15 @@ public class GCLNewBuilder extends TreeParser {
         MyTree CALL24 = null;
         MyTree ID25 = null;
         MyTree ARGS26 = null;
-        GCLNewBuilder.arg_return arg27 = null;
+        CtrlBuilder.arg_return arg27 = null;
 
         MyTree CALL24_tree = null;
         MyTree ID25_tree = null;
         MyTree ARGS26_tree = null;
 
         try {
-            // GCLNewBuilder.g:95:3: ( ^( CALL ID ( ^( ARGS ( arg )* ) )? ) )
-            // GCLNewBuilder.g:95:5: ^( CALL ID ( ^( ARGS ( arg )* ) )? )
+            // CtrlBuilder.g:95:3: ( ^( CALL ID ( ^( ARGS ( arg )* ) )? ) )
+            // CtrlBuilder.g:95:5: ^( CALL ID ( ^( ARGS ( arg )* ) )? )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -1244,7 +1242,7 @@ public class GCLNewBuilder extends TreeParser {
                     if (_first_1 == null) {
                         _first_1 = ID25;
                     }
-                    // GCLNewBuilder.g:95:15: ( ^( ARGS ( arg )* ) )?
+                    // CtrlBuilder.g:95:15: ( ^( ARGS ( arg )* ) )?
                     int alt8 = 2;
                     int LA8_0 = this.input.LA(1);
 
@@ -1253,7 +1251,7 @@ public class GCLNewBuilder extends TreeParser {
                     }
                     switch (alt8) {
                     case 1:
-                        // GCLNewBuilder.g:95:16: ^( ARGS ( arg )* )
+                        // CtrlBuilder.g:95:16: ^( ARGS ( arg )* )
                     {
                         _last = (MyTree) this.input.LT(1);
                         {
@@ -1269,7 +1267,7 @@ public class GCLNewBuilder extends TreeParser {
                             }
                             if (this.input.LA(1) == Token.DOWN) {
                                 match(this.input, Token.DOWN, null);
-                                // GCLNewBuilder.g:95:23: ( arg )*
+                                // CtrlBuilder.g:95:23: ( arg )*
                                 loop7: do {
                                     int alt7 = 2;
                                     int LA7_0 = this.input.LA(1);
@@ -1280,7 +1278,7 @@ public class GCLNewBuilder extends TreeParser {
 
                                     switch (alt7) {
                                     case 1:
-                                        // GCLNewBuilder.g:95:23: arg
+                                        // CtrlBuilder.g:95:23: arg
                                     {
                                         _last = (MyTree) this.input.LT(1);
                                         pushFollow(FOLLOW_arg_in_rule488);
@@ -1352,11 +1350,10 @@ public class GCLNewBuilder extends TreeParser {
     };
 
     // $ANTLR start "var_decl"
-    // GCLNewBuilder.g:98:1: var_decl : ^( VAR type ( ID )+ ) ;
-    public final GCLNewBuilder.var_decl_return var_decl()
+    // CtrlBuilder.g:98:1: var_decl : ^( VAR type ( ID )+ ) ;
+    public final CtrlBuilder.var_decl_return var_decl()
         throws RecognitionException {
-        GCLNewBuilder.var_decl_return retval =
-            new GCLNewBuilder.var_decl_return();
+        CtrlBuilder.var_decl_return retval = new CtrlBuilder.var_decl_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -1366,14 +1363,14 @@ public class GCLNewBuilder extends TreeParser {
 
         MyTree VAR28 = null;
         MyTree ID30 = null;
-        GCLNewBuilder.type_return type29 = null;
+        CtrlBuilder.type_return type29 = null;
 
         MyTree VAR28_tree = null;
         MyTree ID30_tree = null;
 
         try {
-            // GCLNewBuilder.g:99:2: ( ^( VAR type ( ID )+ ) )
-            // GCLNewBuilder.g:99:4: ^( VAR type ( ID )+ )
+            // CtrlBuilder.g:99:2: ( ^( VAR type ( ID )+ ) )
+            // CtrlBuilder.g:99:4: ^( VAR type ( ID )+ )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -1397,7 +1394,7 @@ public class GCLNewBuilder extends TreeParser {
                     if (_first_1 == null) {
                         _first_1 = type29.tree;
                     }
-                    // GCLNewBuilder.g:99:16: ( ID )+
+                    // CtrlBuilder.g:99:16: ( ID )+
                     int cnt9 = 0;
                     loop9: do {
                         int alt9 = 2;
@@ -1409,7 +1406,7 @@ public class GCLNewBuilder extends TreeParser {
 
                         switch (alt9) {
                         case 1:
-                            // GCLNewBuilder.g:99:16: ID
+                            // CtrlBuilder.g:99:16: ID
                         {
                             _last = (MyTree) this.input.LT(1);
                             ID30 =
@@ -1470,9 +1467,9 @@ public class GCLNewBuilder extends TreeParser {
     };
 
     // $ANTLR start "type"
-    // GCLNewBuilder.g:102:1: type : ( NODE | BOOL | STRING | INT | REAL );
-    public final GCLNewBuilder.type_return type() throws RecognitionException {
-        GCLNewBuilder.type_return retval = new GCLNewBuilder.type_return();
+    // CtrlBuilder.g:102:1: type : ( NODE | BOOL | STRING | INT | REAL );
+    public final CtrlBuilder.type_return type() throws RecognitionException {
+        CtrlBuilder.type_return retval = new CtrlBuilder.type_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -1485,8 +1482,8 @@ public class GCLNewBuilder extends TreeParser {
         MyTree set31_tree = null;
 
         try {
-            // GCLNewBuilder.g:103:3: ( NODE | BOOL | STRING | INT | REAL )
-            // GCLNewBuilder.g:
+            // CtrlBuilder.g:103:3: ( NODE | BOOL | STRING | INT | REAL )
+            // CtrlBuilder.g:
             {
                 _last = (MyTree) this.input.LT(1);
                 set31 = (MyTree) this.input.LT(1);
@@ -1527,9 +1524,9 @@ public class GCLNewBuilder extends TreeParser {
     };
 
     // $ANTLR start "arg"
-    // GCLNewBuilder.g:106:1: arg : ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) ) ;
-    public final GCLNewBuilder.arg_return arg() throws RecognitionException {
-        GCLNewBuilder.arg_return retval = new GCLNewBuilder.arg_return();
+    // CtrlBuilder.g:106:1: arg : ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) ) ;
+    public final CtrlBuilder.arg_return arg() throws RecognitionException {
+        CtrlBuilder.arg_return retval = new CtrlBuilder.arg_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -1541,7 +1538,7 @@ public class GCLNewBuilder extends TreeParser {
         MyTree OUT33 = null;
         MyTree ID34 = null;
         MyTree DONT_CARE35 = null;
-        GCLNewBuilder.literal_return literal36 = null;
+        CtrlBuilder.literal_return literal36 = null;
 
         MyTree ARG32_tree = null;
         MyTree OUT33_tree = null;
@@ -1549,8 +1546,8 @@ public class GCLNewBuilder extends TreeParser {
         MyTree DONT_CARE35_tree = null;
 
         try {
-            // GCLNewBuilder.g:107:2: ( ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) ) )
-            // GCLNewBuilder.g:107:4: ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) )
+            // CtrlBuilder.g:107:2: ( ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) ) )
+            // CtrlBuilder.g:107:4: ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -1564,7 +1561,7 @@ public class GCLNewBuilder extends TreeParser {
                         _first_0 = ARG32;
                     }
                     match(this.input, Token.DOWN, null);
-                    // GCLNewBuilder.g:107:11: ( ( OUT )? ID | DONT_CARE | literal )
+                    // CtrlBuilder.g:107:11: ( ( OUT )? ID | DONT_CARE | literal )
                     int alt11 = 3;
                     switch (this.input.LA(1)) {
                     case ID:
@@ -1593,9 +1590,9 @@ public class GCLNewBuilder extends TreeParser {
 
                     switch (alt11) {
                     case 1:
-                        // GCLNewBuilder.g:107:13: ( OUT )? ID
+                        // CtrlBuilder.g:107:13: ( OUT )? ID
                     {
-                        // GCLNewBuilder.g:107:13: ( OUT )?
+                        // CtrlBuilder.g:107:13: ( OUT )?
                         int alt10 = 2;
                         int LA10_0 = this.input.LA(1);
 
@@ -1604,7 +1601,7 @@ public class GCLNewBuilder extends TreeParser {
                         }
                         switch (alt10) {
                         case 1:
-                            // GCLNewBuilder.g:107:13: OUT
+                            // CtrlBuilder.g:107:13: OUT
                         {
                             _last = (MyTree) this.input.LT(1);
                             OUT33 =
@@ -1643,7 +1640,7 @@ public class GCLNewBuilder extends TreeParser {
                     }
                         break;
                     case 2:
-                        // GCLNewBuilder.g:107:23: DONT_CARE
+                        // CtrlBuilder.g:107:23: DONT_CARE
                     {
                         _last = (MyTree) this.input.LT(1);
                         DONT_CARE35 =
@@ -1663,7 +1660,7 @@ public class GCLNewBuilder extends TreeParser {
                     }
                         break;
                     case 3:
-                        // GCLNewBuilder.g:107:35: literal
+                        // CtrlBuilder.g:107:35: literal
                     {
                         _last = (MyTree) this.input.LT(1);
                         pushFollow(FOLLOW_literal_in_arg573);
@@ -1716,11 +1713,10 @@ public class GCLNewBuilder extends TreeParser {
     };
 
     // $ANTLR start "literal"
-    // GCLNewBuilder.g:110:1: literal : ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT );
-    public final GCLNewBuilder.literal_return literal()
+    // CtrlBuilder.g:110:1: literal : ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT );
+    public final CtrlBuilder.literal_return literal()
         throws RecognitionException {
-        GCLNewBuilder.literal_return retval =
-            new GCLNewBuilder.literal_return();
+        CtrlBuilder.literal_return retval = new CtrlBuilder.literal_return();
         retval.start = this.input.LT(1);
 
         MyTree root_0 = null;
@@ -1733,8 +1729,8 @@ public class GCLNewBuilder extends TreeParser {
         MyTree set37_tree = null;
 
         try {
-            // GCLNewBuilder.g:111:3: ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT )
-            // GCLNewBuilder.g:
+            // CtrlBuilder.g:111:3: ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT )
+            // CtrlBuilder.g:
             {
                 _last = (MyTree) this.input.LT(1);
                 set37 = (MyTree) this.input.LT(1);
