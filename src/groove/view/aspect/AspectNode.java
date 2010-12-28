@@ -147,7 +147,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         testFixed(false);
         this.nodeLabels.add(label);
         for (Aspect aspect : label.getAspects()) {
-            addAspectValue(aspect);
+            addAspect(aspect);
         }
     }
 
@@ -178,7 +178,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
      * @throws FormatException if the added value conflicts with a previously
      * declared one
      */
-    private void addAspectValue(Aspect value) throws FormatException {
+    private void addAspect(Aspect value) throws FormatException {
         AspectKind kind = value.getKind();
         assert kind.isForNode(this.graphRole) : String.format(
             "Inappropriate node aspect %s", value, this);

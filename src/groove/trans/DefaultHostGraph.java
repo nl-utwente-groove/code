@@ -18,7 +18,6 @@ package groove.trans;
 
 import static groove.graph.GraphRole.HOST;
 import groove.algebra.Algebra;
-import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.ElementMap;
 import groove.graph.Graph;
@@ -27,14 +26,11 @@ import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.algebra.ValueNode;
 import groove.view.FormatException;
+import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectLabel;
 import groove.view.aspect.AspectNode;
-import groove.view.aspect.AspectParser;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Class providing a default implementation of {@link HostGraph}s.
@@ -141,57 +137,42 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
         return this.factory;
     }
 
-    public AspectGraph toAspectGraph() {
-        AspectGraph result = AspectGraph.newInstance(HOST);
-        int maxNodeNr = -1;
-        // we have to renumber the value nodes; just store them separately for now
-        Set<ValueNode> valueNodeSet = new HashSet<ValueNode>();
-        HostToAspectMap elementMap = new HostToAspectMap();
+    public HostToAspectMap toAspectGraph() {
+        AspectGraph targetGraph = AspectGraph.newInstance(HOST);
+        HostToAspectMap result = new HostToAspectMap(targetGraph);
         for (HostNode node : nodeSet()) {
-            if (node instanceof DefaultNode) {
-                maxNodeNr = Math.max(maxNodeNr, node.getNumber());
-                AspectNode nodeImage = result.addNode(node.getNumber());
-                elementMap.putNode(node, nodeImage);
-            } else {
-                assert node instanceof ValueNode;
-                valueNodeSet.add((ValueNode) node);
+            AspectNode nodeImage = targetGraph.addNode(node.getNumber());
+            result.putNode(node, nodeImage);
+            if (node instanceof ValueNode) {
+                // add the appropriate value aspect to the node
+                ValueNode valueNode = (ValueNode) node;
+                AspectLabel label = new AspectLabel(HOST);
+                try {
+                    label.addAspect(Aspect.getAspect(valueNode.getSignature()).newInstance(
+                        valueNode.getSymbol()));
+                    label.setInnerText("");
+                    assert !label.hasErrors();
+                    nodeImage.setAspects(label);
+                } catch (FormatException e) {
+                    // this is sure not to raise an exception
+                    assert false;
+                }
             }
-        }
-        // now add images of the value nodes
-        for (ValueNode node : valueNodeSet) {
-            // number them high enough
-            // (value nodes have negative numbers)
-            int nr = maxNodeNr - node.getNumber();
-            AspectNode nodeImage = result.addNode(nr);
-            // add the value information as aspect to the node
-            AspectLabel label =
-                AspectParser.getInstance(HOST).parse(
-                    node.getSignature() + AspectParser.SEPARATOR
-                        + node.getSymbol());
-            assert !label.hasErrors();
-            try {
-                nodeImage.setAspects(label);
-            } catch (FormatException e) {
-                // this is sure not to raise an exception
-                assert false;
-            }
-            elementMap.putNode(node, nodeImage);
         }
         // add edge images
         for (HostEdge edge : edgeSet()) {
-            AspectEdge edgeImage = elementMap.mapEdge(edge);
+            AspectEdge edgeImage = result.mapEdge(edge);
             try {
                 edgeImage.setFixed();
             } catch (FormatException e) {
                 // this is sure not to raise an exception
                 assert false;
             }
-            result.addEdge(edgeImage);
+            targetGraph.addEdge(edgeImage);
         }
         // now fix the nodes, insofar this was not achieved
         // by fixing the edges
-
-        for (AspectNode node : elementMap.nodeMap().values()) {
+        for (AspectNode node : result.nodeMap().values()) {
             try {
                 node.setFixed();
             } catch (FormatException e) {
@@ -199,38 +180,11 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
                 assert false;
             }
         }
-        GraphInfo.transfer(this, result, elementMap);
-        result.setFixed();
+        GraphInfo.transfer(this, targetGraph, result);
+        targetGraph.setFixed();
         return result;
     }
 
-    private HostFactory factory;
-
-    /** 
-     * A factory that knows how to create AspectLabels (and hence how to
-     * map AspectEdges). 
-     */
-    private class AspectFactory extends AspectGraph.AspectFactory {
-        /**
-         * Constructs a new factory.
-         */
-        public AspectFactory() {
-            super(HOST);
-        }
-
-        @Override
-        public AspectLabel createLabel(String text) {
-            return AspectParser.getInstance(HOST).parse(text);
-        }
-    }
-
-    private class HostToAspectMap extends
-            ElementMap<HostNode,HostEdge,AspectNode,AspectEdge> {
-        /**
-         * Creates a new, empty map.
-         */
-        public HostToAspectMap() {
-            super(new AspectFactory());
-        }
-    }
+    /** The element factory of this host graph. */
+    private final HostFactory factory;
 }
