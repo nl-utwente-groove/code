@@ -16,6 +16,7 @@
  */
 package groove.view.aspect;
 
+import static groove.graph.GraphRole.RULE;
 import static groove.view.aspect.AspectKind.ABSTRACT;
 import static groove.view.aspect.AspectKind.ARGUMENT;
 import static groove.view.aspect.AspectKind.EMBARGO;
@@ -59,6 +60,8 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     AspectEdge(AspectNode source, AspectLabel label, AspectNode target,
             GraphRole graphRole) {
         super(source, label, target);
+        assert label.getInnerText() != null;
+        assert graphRole.inGrammar();
         this.graphRole = graphRole;
     }
 
@@ -69,7 +72,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
                 setAspects(label());
                 inferAspects();
                 checkAspects();
-                if (this.graphRole == GraphRole.RULE) {
+                if (this.graphRole == RULE) {
                     this.ruleLabel = createRuleLabel();
                     this.typeLabel = null;
                 } else {
@@ -78,7 +81,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
                 }
                 target().inferInAspect(this);
                 source().inferOutAspect(this);
-                if (this.graphRole == GraphRole.RULE && !getKind().isMeta()) {
+                if (this.graphRole == RULE && !getKind().isMeta()) {
                     checkRegExprs();
                 }
             } finally {
@@ -93,7 +96,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
      * type and attribute aspects.
      */
     private void checkAspects() throws FormatException {
-        if (this.graphRole == GraphRole.RULE) {
+        if (this.graphRole == RULE) {
             if (getKind() == ABSTRACT || getKind() == SUBTYPE) {
                 throw new FormatException(
                     "Edge aspect %s not allowed in rules", getAspect(), this);
@@ -258,7 +261,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
      */
     public Label getDisplayLabel() {
         Label result = null;
-        if (this.graphRole == GraphRole.RULE) {
+        if (this.graphRole == RULE) {
             result = getRuleLabel();
         } else {
             result = getTypeLabel();

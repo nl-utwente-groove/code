@@ -16,13 +16,13 @@
  */
 package groove.ecore2groove;
 
+import static groove.graph.GraphRole.RULE;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
-import groove.graph.GraphInfo;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.emf.common.util.EList;
@@ -43,8 +43,7 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 public class ConstraintRules {
 
     private ModelHandler mh;
-    private HashSet<DefaultGraph> constraintRules;
-    private HashMap<DefaultGraph,String> ruleNames;
+    private List<DefaultGraph> constraintRules;
 
     /**
      * Constructor method that calls methods to create constraint rules for
@@ -53,8 +52,7 @@ public class ConstraintRules {
      */
     public ConstraintRules(ModelHandler mh) {
         this.mh = mh;
-        this.constraintRules = new HashSet<DefaultGraph>();
-        this.ruleNames = new HashMap<DefaultGraph,String>();
+        this.constraintRules = new ArrayList<DefaultGraph>();
 
         eClassConstraints(mh.getEClasses());
         eEnumConstraints(mh.getEEnums());
@@ -166,17 +164,13 @@ public class ConstraintRules {
      */
     private void addCyclicityConstraint() {
         // Cyclicity constraint
-        DefaultGraph constraintRule = new DefaultGraph();
         String name = "constraint - global - cyclicity";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode node = constraintRule.addNode();
 
         constraintRule.addEdge(node, this.mh.getEClassType(), node);
         constraintRule.addEdge(node, "path:(?.flag:containment.val)+", node);
-
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
     }
 
     /**
@@ -185,9 +179,8 @@ public class ConstraintRules {
      */
     private void addOneContainerConstraint() {
         // Not zero container
-        DefaultGraph constraintRule = new DefaultGraph();
         String name = "constraint - global - noContainer";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
         DefaultLabel eclassLabel =
             DefaultLabel.createLabel(this.mh.getEClassType());
         DefaultLabel notFlagLabel = DefaultLabel.createLabel("not:flag:root");
@@ -203,13 +196,9 @@ public class ConstraintRules {
         constraintRule.addEdge(contRefNode, "flag:containment", contRefNode);
         constraintRule.addEdge(contRefNode, "val", eclassNode);
 
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
-
         // Not many containers
-        constraintRule = new DefaultGraph();
+        constraintRule = createRuleGraph(name);
         name = "constraint - global - manyContainers";
-        this.ruleNames.put(constraintRule, name);
 
         eclassNode = constraintRule.addNode();
         DefaultNode refNode1 = constraintRule.addNode();
@@ -226,9 +215,6 @@ public class ConstraintRules {
         constraintRule.addEdge(refNode1, unequalLabel, refNode2);
         constraintRule.addEdge(refNode1, regExprLabel, eclassNode);
         constraintRule.addEdge(refNode2, regExprLabel, eclassNode);
-
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
     }
 
     /**
@@ -237,9 +223,8 @@ public class ConstraintRules {
      */
     private void addRootConstraint() {
         // Not two root elements constraint rule
-        DefaultGraph constraintRule = new DefaultGraph();
         String name = "constraint - global - manyRoot";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode node1 = constraintRule.addNode();
         DefaultNode node2 = constraintRule.addNode();
@@ -255,13 +240,9 @@ public class ConstraintRules {
         constraintRule.addEdge(node2, flagLabel, node2);
         constraintRule.addEdge(node1, unequalLabel, node2);
 
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
-
         // Not zero root elements constraint rule
-        constraintRule = new DefaultGraph();
+        constraintRule = createRuleGraph(name);
         name = "constraint - global - noRoot";
-        this.ruleNames.put(constraintRule, name);
 
         DefaultNode eclassNode = constraintRule.addNode();
 
@@ -271,15 +252,11 @@ public class ConstraintRules {
         constraintRule.addEdge(eclassNode, flagLabel, eclassNode);
         constraintRule.addEdge(eclassNode, notLabel, eclassNode);
 
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
-
         // No container for root constraint rule, only when there are
         // EReferences in the model
         if (this.mh.getEReferences().size() != 0) {
-            constraintRule = new DefaultGraph();
+            constraintRule = createRuleGraph(name);
             name = "constraint - global - rootContainer";
-            this.ruleNames.put(constraintRule, name);
 
             eclassNode = constraintRule.addNode();
             DefaultNode refNode = constraintRule.addNode();
@@ -293,9 +270,6 @@ public class ConstraintRules {
             constraintRule.addEdge(eclassNode, flagLabel, eclassNode);
             constraintRule.addEdge(refNode, refLabel, refNode);
             constraintRule.addEdge(refNode, regExprLabel, eclassNode);
-
-            GraphInfo.setRuleRole(constraintRule);
-            this.constraintRules.add(constraintRule);
         }
     }
 
@@ -306,11 +280,10 @@ public class ConstraintRules {
     private void addContainmentConstraint(EReference eReference) {
         // There must be a containment flag for containment references
         // constraint
-        DefaultGraph constraintRule = new DefaultGraph();
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eReference)
                 + " - noContainmentFlag";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode node = constraintRule.addNode();
 
@@ -321,9 +294,6 @@ public class ConstraintRules {
 
         constraintRule.addEdge(node, refLabel, node);
         constraintRule.addEdge(node, notContLabel, node);
-
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
     }
 
     /**
@@ -334,11 +304,10 @@ public class ConstraintRules {
 
         // There must be a containment flag for not-containment references
         // constraint
-        DefaultGraph constraintRule = new DefaultGraph();
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eReference)
                 + " - containmentFlag";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode node = constraintRule.addNode();
 
@@ -348,9 +317,6 @@ public class ConstraintRules {
 
         constraintRule.addEdge(node, refLabel, node);
         constraintRule.addEdge(node, contLabel, node);
-
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
     }
 
     /**
@@ -359,11 +325,10 @@ public class ConstraintRules {
      */
     private void addOrderedConstraint(EStructuralFeature eFeature) {
         // Not two tail constraint rule
-        DefaultGraph constraintRule = new DefaultGraph();
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eFeature)
                 + " - ordered not two tail";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode sourceNode = constraintRule.addNode();
         DefaultNode featureNode1 = constraintRule.addNode();
@@ -395,15 +360,11 @@ public class ConstraintRules {
         constraintRule.addEdge(featureNode1, nextLabel, notFeatureNode1);
         constraintRule.addEdge(featureNode2, nextLabel, notFeatureNode2);
 
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
-
         // Not two head constraint rule
-        constraintRule = new DefaultGraph();
+        constraintRule = createRuleGraph(name);
         name =
             "constraint - " + GraphLabels.getLabelNoType(eFeature)
                 + " - ordered not two head";
-        this.ruleNames.put(constraintRule, name);
 
         sourceNode = constraintRule.addNode();
         featureNode1 = constraintRule.addNode();
@@ -426,15 +387,11 @@ public class ConstraintRules {
         constraintRule.addEdge(notFeatureNode1, nextLabel, featureNode1);
         constraintRule.addEdge(notFeatureNode2, nextLabel, featureNode2);
 
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
-
         // Not two in constraint rule
-        constraintRule = new DefaultGraph();
+        constraintRule = createRuleGraph(name);
         name =
             "constraint - " + GraphLabels.getLabelNoType(eFeature)
                 + " - ordered not two in";
-        this.ruleNames.put(constraintRule, name);
 
         sourceNode = constraintRule.addNode();
         featureNode1 = constraintRule.addNode();
@@ -452,15 +409,11 @@ public class ConstraintRules {
         constraintRule.addEdge(featureNode1, nextLabel, featureNode3);
         constraintRule.addEdge(featureNode2, nextLabel, featureNode3);
 
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
-
         // Not two out constraint rule
-        constraintRule = new DefaultGraph();
+        constraintRule = createRuleGraph(name);
         name =
             "constraint - " + GraphLabels.getLabelNoType(eFeature)
                 + " - ordered not two out";
-        this.ruleNames.put(constraintRule, name);
 
         sourceNode = constraintRule.addNode();
         featureNode1 = constraintRule.addNode();
@@ -478,15 +431,11 @@ public class ConstraintRules {
         constraintRule.addEdge(featureNode3, nextLabel, featureNode1);
         constraintRule.addEdge(featureNode3, nextLabel, featureNode2);
 
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
-
         // Not circular constraint rule
-        constraintRule = new DefaultGraph();
+        constraintRule = createRuleGraph(name);
         name =
             "constraint - " + GraphLabels.getLabelNoType(eFeature)
                 + " - ordered not circular";
-        this.ruleNames.put(constraintRule, name);
 
         sourceNode = constraintRule.addNode();
         featureNode1 = constraintRule.addNode();
@@ -497,9 +446,6 @@ public class ConstraintRules {
         constraintRule.addEdge(featureNode1, featureLabel, featureNode1);
         constraintRule.addEdge(sourceNode, nameLabel, featureNode1);
         constraintRule.addEdge(featureNode1, nextPlusLabel, featureNode1);
-
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
     }
 
     /**
@@ -507,7 +453,10 @@ public class ConstraintRules {
      * @param eReference the EReference
      */
     private void addEkeysConstraint(EReference eReference) {
-        DefaultGraph constraintRule = new DefaultGraph();
+        String name =
+            "constraint - " + GraphLabels.getLabelNoType(eReference)
+                + " - ekeys";
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode sourceNode = constraintRule.addNode();
         DefaultNode refNode1 = constraintRule.addNode();
@@ -565,13 +514,6 @@ public class ConstraintRules {
             }
 
         }
-
-        String name =
-            "constraint - " + GraphLabels.getLabelNoType(eReference)
-                + " - ekeys";
-        this.ruleNames.put(constraintRule, name);
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
     }
 
     /**
@@ -620,10 +562,9 @@ public class ConstraintRules {
         }
 
         // Create the constraint rule now
-        DefaultGraph constraintRule = new DefaultGraph();
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eAttribute) + " - id";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         // Add the common part to the constraint rule
         DefaultNode contEClassNode = constraintRule.addNode();
@@ -660,9 +601,6 @@ public class ConstraintRules {
         } else {
             addDataTypeCheck(constraintRule, eAttribute, contNode1, contNode2);
         }
-
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
     }
 
     /**
@@ -708,11 +646,10 @@ public class ConstraintRules {
             return;
         }
 
-        DefaultGraph constraintRule = new DefaultGraph();
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eAttribute)
                 + " - validValues";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode attrNode = constraintRule.addNode();
         DefaultNode datatypeNode = constraintRule.addNode();
@@ -759,9 +696,6 @@ public class ConstraintRules {
         constraintRule.addEdge(compare3Node, arg2Label, bool2Node);
         constraintRule.addEdge(compare3Node, orLabel, bool3Node);
 
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
-
     }
 
     /**
@@ -778,11 +712,10 @@ public class ConstraintRules {
             return;
         }
 
-        DefaultGraph constraintRule = new DefaultGraph();
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eAttribute)
                 + " - unchangeable";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode attrNode = constraintRule.addNode();
         DefaultNode datatypeNode = constraintRule.addNode();
@@ -813,9 +746,6 @@ public class ConstraintRules {
         constraintRule.addEdge(compareNode, arg1Label, datatypeNode);
         constraintRule.addEdge(compareNode, arg2Label, defaultValNode);
         constraintRule.addEdge(compareNode, compareLabel, boolNode);
-
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
     }
 
     /**
@@ -825,11 +755,10 @@ public class ConstraintRules {
     private void addOppositeConstraint(EReference eReference) {
         // Add constraint that there must be an out- and incoming
         // opposite edge
-        DefaultGraph constraintRule = new DefaultGraph();
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eReference)
                 + " - opposite";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode refNode = constraintRule.addNode();
 
@@ -841,15 +770,11 @@ public class ConstraintRules {
         constraintRule.addEdge(refNode, refLabel, refNode);
         constraintRule.addEdge(refNode, regExprLabel, refNode);
 
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
-
         // Add constraint that there may not be two outgoing opposite edges
-        constraintRule = new DefaultGraph();
         name =
             "constraint - " + GraphLabels.getLabelNoType(eReference)
                 + " - not two opposite";
-        this.ruleNames.put(constraintRule, name);
+        constraintRule = createRuleGraph(name);
 
         refNode = constraintRule.addNode();
         DefaultNode erefNode1 = constraintRule.addNode();
@@ -868,9 +793,6 @@ public class ConstraintRules {
         constraintRule.addEdge(refNode, oppositeLabel, erefNode1);
         constraintRule.addEdge(refNode, oppositeLabel, erefNode2);
         constraintRule.addEdge(erefNode1, unequalLabel, erefNode2);
-
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
     }
 
     /**
@@ -879,11 +801,10 @@ public class ConstraintRules {
      */
     private void addLowerBoundConstraint(EStructuralFeature eFeature) {
         int lowerBound = eFeature.getLowerBound();
-        DefaultGraph constraintRule = new DefaultGraph();
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eFeature)
                 + " - lowerBound";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode sourceNode = constraintRule.addNode();
         Vector<DefaultNode> featureNodes = new Vector<DefaultNode>();
@@ -914,9 +835,6 @@ public class ConstraintRules {
                     featureNodes.get(j));
             }
         }
-
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
     }
 
     /**
@@ -928,11 +846,10 @@ public class ConstraintRules {
         if (upperBound == -1) {
             return;
         }
-        DefaultGraph constraintRule = new DefaultGraph();
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eFeature)
                 + " - upperBound";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode sourceNode = constraintRule.addNode();
         Vector<DefaultNode> featureNodes = new Vector<DefaultNode>();
@@ -961,9 +878,6 @@ public class ConstraintRules {
                     featureNodes.get(j));
             }
         }
-
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
     }
 
     /**
@@ -983,11 +897,10 @@ public class ConstraintRules {
             return;
         }
 
-        DefaultGraph constraintRule = new DefaultGraph();
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eAttribute)
                 + " - unique";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode sourceNode = constraintRule.addNode();
         DefaultNode targetNode = constraintRule.addNode();
@@ -1012,9 +925,6 @@ public class ConstraintRules {
         constraintRule.addEdge(refNode1, unequalLabel, refNode2);
         constraintRule.addEdge(refNode1, valLabel, targetNode);
         constraintRule.addEdge(refNode2, valLabel, targetNode);
-
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
     }
 
     /**
@@ -1024,11 +934,10 @@ public class ConstraintRules {
      * @require eAttribute.eAttributeType is EEnum
      */
     private void addUniqueEnumAttrConstraint(EAttribute eAttribute) {
-        DefaultGraph constraintRule = new DefaultGraph();
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eAttribute)
                 + " - unique";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode sourceNode = constraintRule.addNode();
         DefaultNode attrNode1 = constraintRule.addNode();
@@ -1061,9 +970,6 @@ public class ConstraintRules {
         constraintRule.addEdge(targetNode1, lookLabel, targetNode1);
         constraintRule.addEdge(targetNode2, matchLabel, targetNode2);
 
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
-
     }
 
     /**
@@ -1071,11 +977,10 @@ public class ConstraintRules {
      * @param eReference the EReference
      */
     private void addUniqueRefConstraint(EReference eReference) {
-        DefaultGraph constraintRule = new DefaultGraph();
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eReference)
                 + " - unique";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode sourceNode = constraintRule.addNode();
         DefaultNode targetNode = constraintRule.addNode();
@@ -1101,10 +1006,6 @@ public class ConstraintRules {
         constraintRule.addEdge(refNode1, valLabel, targetNode);
         constraintRule.addEdge(refNode2, valLabel, targetNode);
         constraintRule.addEdge(refNode1, unequalLabel, refNode2);
-
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
-
     }
 
     /**
@@ -1113,11 +1014,10 @@ public class ConstraintRules {
      * @param eStructuralFeature the EStructuralFeature
      */
     private void addNoContainerConstraint(EStructuralFeature eStructuralFeature) {
-        DefaultGraph constraintRule = new DefaultGraph();
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eStructuralFeature)
                 + " - noContainer";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode featureNode = constraintRule.addNode();
         DefaultNode containerNode = constraintRule.addNode();
@@ -1134,9 +1034,6 @@ public class ConstraintRules {
         constraintRule.addEdge(containerNode, containerLabel, containerNode);
         constraintRule.addEdge(containerNode, notLabel, containerNode);
         constraintRule.addEdge(containerNode, nameLabel, featureNode);
-
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
     }
 
     /**
@@ -1146,11 +1043,10 @@ public class ConstraintRules {
      */
     private void addManyContainerConstraint(
             EStructuralFeature eStructuralFeature) {
-        DefaultGraph constraintRule = new DefaultGraph();
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eStructuralFeature)
                 + " - manyContainers";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode featureNode = constraintRule.addNode();
         DefaultNode containerNode1 = constraintRule.addNode();
@@ -1170,9 +1066,6 @@ public class ConstraintRules {
         constraintRule.addEdge(containerNode1, nameLabel, featureNode);
         constraintRule.addEdge(containerNode2, nameLabel, featureNode);
         constraintRule.addEdge(containerNode1, unequalLabel, containerNode2);
-
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
     }
 
     /**
@@ -1180,11 +1073,10 @@ public class ConstraintRules {
      * @param eStructuralFeature the EStructuralFeature
      */
     private void addNoValConstraint(EStructuralFeature eStructuralFeature) {
-        DefaultGraph constraintRule = new DefaultGraph();
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eStructuralFeature)
                 + " - noVal";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode featureNode = constraintRule.addNode();
         DefaultNode targetNode = constraintRule.addNode();
@@ -1200,9 +1092,6 @@ public class ConstraintRules {
         constraintRule.addEdge(targetNode, targetLabel, targetNode);
         constraintRule.addEdge(targetNode, notLabel, targetNode);
         constraintRule.addEdge(featureNode, valLabel, targetNode);
-
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
     }
 
     /**
@@ -1222,11 +1111,10 @@ public class ConstraintRules {
             targetString = GraphLabels.getLabel(eStructuralFeature.getEType());
         }
 
-        DefaultGraph constraintRule = new DefaultGraph();
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eStructuralFeature)
                 + " - manyVals";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode featureNode = constraintRule.addNode();
         DefaultNode targetNode1 = constraintRule.addNode();
@@ -1244,9 +1132,6 @@ public class ConstraintRules {
         constraintRule.addEdge(featureNode, valLabel, targetNode1);
         constraintRule.addEdge(featureNode, valLabel, targetNode2);
         constraintRule.addEdge(targetNode1, unequalLabel, targetNode2);
-
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
     }
 
     /**
@@ -1254,11 +1139,9 @@ public class ConstraintRules {
      * @param eEnum the EEnum
      */
     private void addNoIncValConstraint(EEnum eEnum) {
-        DefaultGraph constraintRule = new DefaultGraph();
-
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eEnum) + " - noIncVal";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode enumNode = constraintRule.addNode();
         DefaultNode attrNode = constraintRule.addNode();
@@ -1275,9 +1158,6 @@ public class ConstraintRules {
         constraintRule.addEdge(attrNode, notLabel, attrNode);
         constraintRule.addEdge(attrNode, valLabel, enumNode);
 
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
-
     }
 
     /**
@@ -1285,12 +1165,10 @@ public class ConstraintRules {
      * @param eEnum the EEnum
      */
     private void addManyIncValConstraint(EEnum eEnum) {
-        DefaultGraph constraintRule = new DefaultGraph();
-
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eEnum)
                 + " - manyIncVal";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode enumNode = constraintRule.addNode();
         DefaultNode attrNode1 = constraintRule.addNode();
@@ -1311,9 +1189,6 @@ public class ConstraintRules {
         constraintRule.addEdge(attrNode1, regExprLabel, enumNode);
         constraintRule.addEdge(attrNode2, regExprLabel, enumNode);
 
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
-
     }
 
     /**
@@ -1321,21 +1196,16 @@ public class ConstraintRules {
      * @param eEnum the EEnum
      */
     private void addNoLiteralsConstraint(EEnum eEnum) {
-        DefaultGraph constraintRule = new DefaultGraph();
-
-        String name1 =
+        String name =
             "constraint - " + GraphLabels.getLabelNoType(eEnum)
                 + " - noLiteral";
-        this.ruleNames.put(constraintRule, name1);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode node = addEnumNode(constraintRule, eEnum);
         for (EEnumLiteral eEnumLiteral : eEnum.getELiterals()) {
             String labelText = GraphLabels.getLabel(eEnumLiteral);
             constraintRule.addEdge(node, "not:" + labelText, node);
         }
-
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
     }
 
     /**
@@ -1345,12 +1215,10 @@ public class ConstraintRules {
     private void addManyLiteralsConstraint(EEnum eEnum) {
 
         if (eEnum.getELiterals().size() > 1) {
-            DefaultGraph constraintRule = new DefaultGraph();
-
             String name =
                 "constraint - " + GraphLabels.getLabelNoType(eEnum)
                     + " - manyLiterals";
-            this.ruleNames.put(constraintRule, name);
+            DefaultGraph constraintRule = createRuleGraph(name);
 
             DefaultNode node = addEnumNode(constraintRule, eEnum);
             StringBuilder regExpr = new StringBuilder();
@@ -1372,9 +1240,6 @@ public class ConstraintRules {
             String regExprStr = "path:" + regExpr.toString();
 
             constraintRule.addEdge(node, regExprStr, node);
-
-            GraphInfo.setRuleRole(constraintRule);
-            this.constraintRules.add(constraintRule);
         }
 
     }
@@ -1384,11 +1249,10 @@ public class ConstraintRules {
      * @param eClass the EClass
      */
     private void addAbstractConstraint(EClass eClass) {
-        DefaultGraph constraintRule = new DefaultGraph();
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eClass)
                 + " - abstract";
-        this.ruleNames.put(constraintRule, name);
+        DefaultGraph constraintRule = createRuleGraph(name);
 
         DefaultNode node = addClassNode(constraintRule, eClass);
 
@@ -1399,9 +1263,6 @@ public class ConstraintRules {
                 constraintRule.addEdge(node, subClassLabel, node);
             }
         }
-
-        GraphInfo.setRuleRole(constraintRule);
-        this.constraintRules.add(constraintRule);
     }
 
     /**
@@ -1574,20 +1435,14 @@ public class ConstraintRules {
      * Get the constraint rules created by this class
      * @return the constraint rules
      */
-    public HashSet<DefaultGraph> getConstraints() {
+    public List<DefaultGraph> getConstraints() {
         return this.constraintRules;
     }
 
-    /**
-     * Given a constraint rule, return the name of this rule
-     * @param constraintRule the constraint rule
-     * @return the name of the constraint rule
-     */
-    public String getName(DefaultGraph constraintRule) {
-        if (this.ruleNames.containsKey(constraintRule)) {
-            return this.ruleNames.get(constraintRule);
-        } else {
-            return "";
-        }
+    private DefaultGraph createRuleGraph(String name) {
+        DefaultGraph result = new DefaultGraph(name);
+        result.setRole(RULE);
+        this.constraintRules.add(result);
+        return result;
     }
 }

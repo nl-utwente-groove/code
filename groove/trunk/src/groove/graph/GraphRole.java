@@ -26,12 +26,20 @@ import java.util.Map;
  * @version $Revision $
  */
 public enum GraphRole {
+    /** Unspecified graph role. */
+    NONE("none"),
     /** Host graph role. */
     HOST("graph"),
     /** Rule graph role. */
     RULE("rule"),
     /** Type graph role. */
-    TYPE("type");
+    TYPE("type"),
+    /** LTS graph role. */
+    LTS("lts"),
+    /** RETE graph role. */
+    RETE("rete"),
+    /** Control automaton role. */
+    CTRL("control");
 
     private GraphRole(String name) {
         this.name = name;
@@ -40,6 +48,14 @@ public enum GraphRole {
     @Override
     public String toString() {
         return this.name;
+    }
+
+    /** 
+     * Indicates if this is a grammar-related role.
+     * @see #grammarRoles 
+     */
+    public boolean inGrammar() {
+        return grammarRoles.contains(this);
     }
 
     private final String name;
@@ -52,4 +68,8 @@ public enum GraphRole {
             roles.put(role.toString(), role);
         }
     }
+
+    /** Set of roles that are part of the grammar. */
+    public static final EnumSet<GraphRole> grammarRoles = EnumSet.of(HOST,
+        RULE, TYPE);
 }

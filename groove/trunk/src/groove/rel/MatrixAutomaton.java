@@ -55,6 +55,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
      * to predict the matching of wildcards).
      */
     public MatrixAutomaton(RegNode start, RegNode end, LabelStore labelStore) {
+        super("automaton");
         this.start = start;
         this.end = end;
         this.labelStore = labelStore;

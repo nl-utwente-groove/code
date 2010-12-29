@@ -34,7 +34,7 @@ public class EdgeEmbargo extends NotCondition {
      */
     public EdgeEmbargo(RuleGraph graph, RuleEdge embargoEdge,
             SystemProperties properties) {
-        super(graph.newGraph(), properties);
+        super(graph.newGraph(graph.getName() + "-!" + embargoEdge), properties);
         this.embargoEdge = embargoEdge;
         RuleNode sourceImage = addRoot(embargoEdge.source());
         RuleNode targetImage = addRoot(embargoEdge.target());

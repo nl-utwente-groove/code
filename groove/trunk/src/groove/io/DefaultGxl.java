@@ -65,14 +65,6 @@ public class DefaultGxl implements Xml<DefaultGraph> {
                     priorityName.getPriority());
             }
 
-            // set graph role if necessary
-            if (GraphInfo.getRole(resultGraph) == null) {
-                if (Groove.isRuleURL(url)) {
-                    GraphInfo.setRuleRole(resultGraph);
-                } else {
-                    GraphInfo.setHostRole(resultGraph);
-                }
-            }
             // note: don't set the name,
             // there is no general scheme to derive it from the URL
             return resultGraph;
@@ -158,15 +150,6 @@ public class DefaultGxl implements Xml<DefaultGraph> {
             if (priorityName.hasPriority()) {
                 GraphInfo.getProperties(resultGraph, true).setPriority(
                     priorityName.getPriority());
-            }
-
-            // set graph role if necessary
-            if (GraphInfo.getRole(resultGraph) == null) {
-                if (Groove.isRuleURL(url)) {
-                    GraphInfo.setRuleRole(resultGraph);
-                } else {
-                    GraphInfo.setHostRole(resultGraph);
-                }
             }
             // note: don't set the name,
             // there is no general scheme to derive it from the URL

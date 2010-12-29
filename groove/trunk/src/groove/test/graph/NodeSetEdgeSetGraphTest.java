@@ -30,8 +30,8 @@ import groove.graph.NodeSetEdgeSetGraph;
 public class NodeSetEdgeSetGraphTest extends GraphTest<DefaultNode,DefaultEdge> {
 
     @Override
-    NodeSetEdgeSetGraph<DefaultNode,DefaultEdge> createGraph() {
-        return new NodeSetEdgeSetGraph<DefaultNode,DefaultEdge>() {
+    NodeSetEdgeSetGraph<DefaultNode,DefaultEdge> createGraph(String name) {
+        return new NodeSetEdgeSetGraph<DefaultNode,DefaultEdge>(name) {
             @Override
             public ElementFactory<DefaultNode,DefaultEdge> getFactory() {
                 return DefaultFactory.instance();

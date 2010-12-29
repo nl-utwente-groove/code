@@ -30,7 +30,6 @@ import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.graph.AbstractGraph;
 import groove.graph.Element;
-import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
 import groove.graph.TypeGraph;
@@ -104,8 +103,7 @@ public class DefaultRuleView implements RuleView {
      */
     public DefaultRuleView(AspectGraph graph, SystemProperties properties) {
         graph.testFixed(true);
-        String name = GraphInfo.getName(graph);
-        this.name = name == null ? null : new RuleName(name);
+        this.name = new RuleName(graph.getName());
         this.systemProperties = properties;
         this.graph = graph;
         this.viewErrors =
@@ -422,8 +420,8 @@ public class DefaultRuleView implements RuleView {
      * Callback method to create a graph that can serve as LHS or RHS of a rule.
      * @see #getView()
      */
-    RuleGraph createGraph() {
-        return new RuleGraph();
+    RuleGraph createGraph(String name) {
+        return new RuleGraph(name);
     }
 
     /**
@@ -1156,8 +1154,8 @@ public class DefaultRuleView implements RuleView {
 
         private void processView() throws FormatException {
             // initialise the rule data structures
-            this.lhs = createGraph();
-            this.rhs = createGraph();
+            this.lhs = createGraph(getName() + "-" + getIndex() + "-lhs");
+            this.rhs = createGraph(getName() + "-" + getIndex() + "-rhs");
             this.ruleMorph = createMorphism();
             this.lhsMap = new ViewToRuleMap();
             this.rhsMap = new ViewToRuleMap();
@@ -1541,7 +1539,7 @@ public class DefaultRuleView implements RuleView {
                 Collection<RuleEdge> edgeSet,
                 Map<RuleNode,Set<TypeLabel>> parentTypeMap)
             throws FormatException {
-            RuleGraph graph = createGraph();
+            RuleGraph graph = createGraph(getName() + "-type");
             graph.addNodeSet(nodeSet);
             graph.addEdgeSet(edgeSet);
             getType().getTyping(graph, parentTypeMap);
@@ -1746,7 +1744,9 @@ public class DefaultRuleView implements RuleView {
          * @see #toRule()
          */
         private NotCondition createNAC(RuleGraph context) {
-            return new NotCondition(context.newGraph(), getSystemProperties());
+            return new NotCondition(
+                context.newGraph(context.getName() + "-nac"),
+                getSystemProperties());
         }
 
         /**

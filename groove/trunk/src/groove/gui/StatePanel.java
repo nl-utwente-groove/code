@@ -178,8 +178,11 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     }
 
     public synchronized void startSimulationUpdate(GTS gts) {
+        // clear the states from the aspect and model maps
+        for (HostToAspectMap aspectMap : this.stateToAspectMap.values()) {
+            this.graphToJModel.remove(aspectMap.getAspectGraph());
+        }
         this.stateToAspectMap.clear();
-        this.graphToJModel.clear();
         // only change the displayed model if we are currently displaying a
         // state
         if (this.selectedGraph == null) {
@@ -265,8 +268,13 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     @Override
     public void valueChanged(ListSelectionEvent e) {
         assert e.getSource() == getStateList();
-        if (getStateList().getSelectedIndices().length == 1) {
-            setGraphModel((String) getStateList().getSelectedValue());
+        int[] selection = getStateList().getSelectedIndices();
+        if (selection.length == 1) {
+            if (selection[0] == 0) {
+                setStateModel(this.simulator.getCurrentState());
+            } else {
+                setGraphModel((String) getStateList().getSelectedValue());
+            }
         }
     }
 
@@ -274,7 +282,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * Changes the display to the graph with a given name, if there is such a
      * graph in the current grammar.
      */
-    public void setGraphModel(String graphName) {
+    private void setGraphModel(String graphName) {
         GraphView graphView =
             this.simulator.getGrammarView().getGraphView(graphName);
         if (graphView != null && graphName != this.selectedGraph) {
@@ -287,11 +295,13 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     }
 
     /** Changes the display to a given state. */
-    public void setStateModel(GraphState state) {
+    private void setStateModel(GraphState state) {
         this.selectedGraph = null;
         this.selectedState = state;
-        setJModel(getAspectJModel(state));
-        setEnabled(true);
+        if (state != null) {
+            setJModel(getAspectJModel(state));
+            setEnabled(true);
+        }
         refreshStatus();
     }
 
@@ -346,7 +356,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         HostToAspectMap aspectMap = this.stateToAspectMap.get(state);
         if (aspectMap == null) {
             this.stateToAspectMap.put(state, aspectMap =
-                state.getGraph().toAspectGraph());
+                state.getGraph().toAspectMap());
         }
         AspectGraph aspectGraph = aspectMap.getAspectGraph();
         AspectJModel result = this.graphToJModel.get(aspectGraph);

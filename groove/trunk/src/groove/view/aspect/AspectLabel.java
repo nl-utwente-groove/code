@@ -36,6 +36,7 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
      * Constructs an initially empty label, for a graph with a particular role.
      */
     public AspectLabel(GraphRole role) {
+        assert role.inGrammar();
         this.role = role;
     }
 
@@ -59,6 +60,14 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
         return LabelKind.parse(getInnerText()).one();
     }
 
+    @Override
+    public void setFixed() {
+        if (this.innerText == null) {
+            this.innerText = "";
+        }
+        super.setFixed();
+    }
+
     /**
      * Reconstructs the original plain label text from the list of aspect
      * values, the end flag, and the actual label text.
@@ -71,7 +80,7 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
         }
         // append the label text, if any
         if (this.innerText != null) {
-            result.append(this.innerText);
+            result.append(getInnerText());
         }
         return result.toString();
     }
@@ -179,6 +188,8 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
      */
     public void setInnerText(String text) {
         testFixed(false);
+        assert this.innerText == null : String.format(
+            "Inner text already set to '%s'", this.innerText);
         this.innerText = text;
         if (text.length() > 0 && this.nodeOnly != null) {
             addError("Aspect %s cannot have label text %s", this.nodeOnly, text);
@@ -187,10 +198,12 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
     }
 
     /**
-     * Returns the label text of this aspect map. The label text may be {@code
-     * null} if the associated aspect element is a node.
+     * Returns the label text of this aspect label.
+     * Calling this method fixes the label.
+     * Guaranteed to be non-{@code null}.
      */
     String getInnerText() {
+        setFixed();
         return this.innerText;
     }
 

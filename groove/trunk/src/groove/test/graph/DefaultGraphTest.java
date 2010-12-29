@@ -28,8 +28,8 @@ import groove.graph.DefaultNode;
 public class DefaultGraphTest extends GraphTest<DefaultNode,DefaultEdge> {
 
     @Override
-    DefaultGraph createGraph() {
-        return new DefaultGraph();
+    DefaultGraph createGraph(String name) {
+        return new DefaultGraph(name);
     }
 
 }

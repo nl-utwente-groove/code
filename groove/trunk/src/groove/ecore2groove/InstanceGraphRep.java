@@ -16,10 +16,10 @@
  */
 package groove.ecore2groove;
 
+import static groove.graph.GraphRole.HOST;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
-import groove.graph.GraphInfo;
 import groove.graph.LabelKind;
 
 import java.util.HashMap;
@@ -44,9 +44,9 @@ import org.eclipse.emf.ecore.EStructuralFeature;
  */
 public class InstanceGraphRep {
 
-    private ModelHandler mh;
+    private final ModelHandler mh;
 
-    private DefaultGraph ig = new DefaultGraph();
+    private final DefaultGraph ig;
 
     private Map<EObject,DefaultNode> iClassToNodeMap =
         new HashMap<EObject,DefaultNode>();
@@ -57,10 +57,13 @@ public class InstanceGraphRep {
     /**
      * Constructor method, given a ModelHandler with an Ecore metamodel and 
      * instance model loaded, creates an instance graph representation.
+     * @param name name of the instance graph
      * @param m the ModelHandler
      */
-    public InstanceGraphRep(ModelHandler m) {
+    public InstanceGraphRep(String name, ModelHandler m) {
         this.mh = m;
+        this.ig = new DefaultGraph(name);
+        this.ig.setRole(HOST);
         // First add instances of of classes to graph, then features
         addClasses(this.mh.getiClasses());
         addStructuralFeatures(this.mh.getiClasses());
@@ -343,7 +346,6 @@ public class InstanceGraphRep {
      * @return the instance graph
      */
     public DefaultGraph getInstanceGraph() {
-        GraphInfo.setHostRole(this.ig);
         return this.ig;
     }
 

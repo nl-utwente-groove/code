@@ -64,11 +64,12 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
         implements Cloneable {
 
     /**
-     * Creates an empty graph, with a given graph role.
+     * Creates an empty graph, with a given name and graph role.
      */
-    private AspectGraph(GraphRole graphRole) {
-        super();
-        GraphInfo.setRole(this, graphRole);
+    private AspectGraph(String name, GraphRole graphRole) {
+        super(name);
+        assert graphRole.inGrammar();
+        this.role = graphRole;
     }
 
     /**
@@ -125,8 +126,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
      */
     public AspectGraph fromPlainGraph(DefaultGraph graph) {
         // map from original graph elements to aspect graph elements
-        PlainToAspectMap elementMap =
-            new PlainToAspectMap(graph.getInfo().getRole());
+        PlainToAspectMap elementMap = new PlainToAspectMap(graph.getRole());
         return fromPlainGraph(graph, elementMap);
     }
 
@@ -145,8 +145,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
      */
     public AspectGraph fromPlainGraph(DefaultGraph graph,
             PlainToAspectMap elementMap) {
-        GraphRole role = GraphInfo.getRole(graph);
-        AspectGraph result = new AspectGraph(role);
+        GraphRole role = graph.getRole();
+        AspectGraph result = new AspectGraph(graph.getName(), role);
         AspectParser labelParser = AspectParser.getInstance(role);
         List<FormatError> errors = new ArrayList<FormatError>();
         assert elementMap != null && elementMap.isEmpty();
@@ -243,7 +243,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
      * @see #toPlainGraph()
      */
     private DefaultGraph createPlainGraph() {
-        return new DefaultGraph();
+        DefaultGraph result = new DefaultGraph(getName());
+        result.setRole(getRole());
+        return result;
     }
 
     /** 
@@ -256,9 +258,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
         SortedSet<AspectNode> nodes = new TreeSet<AspectNode>(nodeSet());
         if (!nodes.isEmpty() && nodes.last().getNumber() != nodeCount() - 1) {
             try {
-                result = new AspectGraph(getInfo().getRole());
+                result = newGraph(getName());
                 AspectGraphMorphism elementMap =
-                    new AspectGraphMorphism(getInfo().getRole());
+                    new AspectGraphMorphism(getRole());
                 int nodeNr = 0;
                 for (AspectNode node : nodes) {
                     AspectNode image = result.addNode(nodeNr);
@@ -342,6 +344,15 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
         }
     }
 
+    /**
+     * Returns the role of this default graph.
+     * The role is set at construction time.
+     */
+    @Override
+    public final GraphRole getRole() {
+        return this.role;
+    }
+
     @Override
     public void setFixed() {
         List<FormatError> errors = new ArrayList<FormatError>();
@@ -361,6 +372,43 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
         }
         addErrors(errors);
         super.setFixed();
+    }
+
+    @Override
+    public AspectGraph newGraph(String name) {
+        return new AspectGraph(name, getRole());
+    }
+
+    /**
+     * Copies this aspect graph to one with the same nodes, edges and graph
+     * info. The result is not fixed.
+     */
+    @Override
+    public AspectGraph clone() {
+        AspectGraph result = newGraph(getName());
+        result.addNodeSet(nodeSet());
+        result.addEdgeSetWithoutCheck(edgeSet());
+        GraphInfo.transfer(this, result, null);
+        result.addErrors(getErrors());
+        return result;
+    }
+
+    /** 
+     * Clones this aspect graph while giving it a different name.
+     * This graph is required to be fixed, and the resulting graph
+     * will be fixed as well.
+     * @param name the new graph name; non-{@code null}
+     */
+    public AspectGraph rename(String name) {
+        AspectGraph result = clone();
+        result.setName(name);
+        result.setFixed();
+        return result;
+    }
+
+    @Override
+    public AspectFactory getFactory() {
+        return AspectFactory.instance(getRole());
     }
 
     /** 
@@ -385,16 +433,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
      */
     public GraphView toGraphView(SystemProperties properties)
         throws IllegalStateException {
-        if (!GraphInfo.hasHostRole(this)) {
+        if (getRole() != HOST) {
             throw new IllegalStateException(
                 "Aspect graph does not represent a graph");
         }
         boolean refreshView = this.graphView == null;
         if (!refreshView) {
-            String myName = GraphInfo.getName(this);
             String viewName = this.graphView.getName();
-            refreshView =
-                myName == null ? viewName != null : !myName.equals(viewName);
+            refreshView = !getName().equals(viewName);
         }
         if (refreshView) {
             this.graphView = new DefaultGraphView(this, properties);
@@ -417,16 +463,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
      */
     public TypeView toTypeView(SystemProperties properties)
         throws IllegalStateException {
-        if (!GraphInfo.hasTypeRole(this)) {
+        if (getRole() != TYPE) {
             throw new IllegalStateException(
                 String.format("Aspect graph does not represent a type graph"));
         }
         boolean refreshView = this.typeView == null;
         if (!refreshView) {
-            String myName = GraphInfo.getName(this);
             String viewName = this.typeView.getName();
-            refreshView =
-                myName == null ? viewName != null : !myName.equals(viewName);
+            refreshView = !getName().equals(viewName);
         }
         if (refreshView) {
             this.typeView = new DefaultTypeView(this);
@@ -446,16 +490,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
      */
     public RuleView toRuleView(SystemProperties properties)
         throws IllegalStateException {
-        if (!GraphInfo.hasRuleRole(this)) {
+        if (this.getRole() != RULE) {
             throw new IllegalStateException(
                 "Aspect graph does not represent a rule graph");
         }
         boolean refreshView = this.ruleView == null;
         if (!refreshView) {
-            String myName = GraphInfo.getName(this);
             String viewName = this.ruleView.getName();
-            refreshView =
-                myName == null ? viewName != null : !myName.equals(viewName);
+            refreshView = !getName().equals(viewName);
         }
         if (refreshView) {
             this.ruleView = new DefaultRuleView(this, properties);
@@ -472,15 +514,19 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
      * @see #toRuleView(SystemProperties)
      */
     public View<?> toView() {
-        if (GraphInfo.hasRuleRole(this)) {
+        switch (getRole()) {
+        case RULE:
             return toRuleView(null);
-        } else if (GraphInfo.hasTypeRole(this)) {
+        case TYPE:
             return toTypeView(null);
-        } else {
+        case HOST:
             return toGraphView(null);
         }
+        assert false;
+        return null;
     }
 
+    private final GraphRole role;
     /** Auxiliary object for converting this aspect graph to a type graph. */
     private TypeView typeView;
 
@@ -489,26 +535,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
 
     /** Auxiliary object for converting this aspect graph to a rule. */
     private RuleView ruleView;
-
-    /**
-     * Copies this aspect graph to one with the same nodes, edges and graph
-     * info.
-     */
-    @Override
-    public AspectGraph clone() {
-        AspectGraph result = new AspectGraph(getInfo().getRole());
-        GraphInfo.transfer(this, result, null);
-        result.addNodeSet(nodeSet());
-        result.addEdgeSetWithoutCheck(edgeSet());
-        GraphInfo.transfer(this, result, null);
-        result.addErrors(getErrors());
-        return result;
-    }
-
-    @Override
-    public AspectFactory getFactory() {
-        return AspectFactory.instance(getInfo().getRole());
-    }
 
     /**
      * Creates an aspect graph from a given (plain) graph. Convenience method
@@ -536,15 +562,20 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
         return factory.fromPlainGraph(plainGraph, elementMap);
     }
 
+    /** Creates an empty named aspect graph, with a given graph role. */
+    public static AspectGraph newInstance(String name, GraphRole role) {
+        return new AspectGraph(name, role);
+    }
+
     /** Creates an empty aspect graph, with a given graph role. */
     public static AspectGraph newInstance(GraphRole role) {
-        return new AspectGraph(role);
+        return newInstance(NO_NAME, role);
     }
 
     /**
      * The static instance serving as a factory.
      */
-    private static final AspectGraph factory = new AspectGraph(HOST);
+    private static final AspectGraph factory = new AspectGraph(NO_NAME, HOST);
 
     /** Factory for AspectGraph elements. */
     public static class AspectFactory implements
@@ -615,6 +646,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
         /** Constructs a new, empty map. */
         public AspectGraphMorphism(GraphRole graphRole) {
             super(AspectFactory.instance(graphRole));
+            assert graphRole.inGrammar();
             this.graphRole = graphRole;
         }
 

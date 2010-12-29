@@ -16,6 +16,8 @@
  */
 package groove.graph;
 
+import static groove.graph.GraphRole.NONE;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -30,10 +32,11 @@ import java.util.Set;
 public class NodeSetEdgeSetGraph<N extends Node,E extends Edge<N>> extends
         AbstractGraph<N,E> implements Cloneable {
     /**
-     * Creates a new, empty graph with a given element factory.
+     * Creates a new, named empty graph.
+     * @param name name of the new graph
      */
-    public NodeSetEdgeSetGraph() {
-        super();
+    public NodeSetEdgeSetGraph(String name) {
+        super(name);
         this.graphNodeSet = createNodeSet();
         this.graphEdgeSet = createEdgeSet();
     }
@@ -44,7 +47,7 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends Edge<N>> extends
      * @require graph != null
      */
     public NodeSetEdgeSetGraph(Graph<N,E> graph) {
-        super();
+        super(graph.getName());
         this.graphNodeSet = createNodeSet(graph.nodeSet());
         this.graphEdgeSet = createEdgeSet(graph.edgeSet());
         if (graph.getInfo() != null) {
@@ -139,8 +142,8 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends Edge<N>> extends
         return result;
     }
 
-    public NodeSetEdgeSetGraph<N,E> newGraph() {
-        return new NodeSetEdgeSetGraph<N,E>();
+    public NodeSetEdgeSetGraph<N,E> newGraph(String name) {
+        return new NodeSetEdgeSetGraph<N,E>(getName());
     }
 
     public Set<? extends E> edgeSet() {
@@ -149,6 +152,11 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends Edge<N>> extends
 
     public Set<? extends N> nodeSet() {
         return Collections.unmodifiableSet(this.graphNodeSet);
+    }
+
+    @Override
+    public GraphRole getRole() {
+        return NONE;
     }
 
     /**

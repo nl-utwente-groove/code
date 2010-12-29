@@ -46,10 +46,13 @@ import java.util.Set;
 abstract public class AbstractGraphState extends
         AbstractCacheHolder<StateCache> implements GraphState {
     /**
-     * Constructs a an abstract graph state, with a given control location.
+     * Constructs a an abstract graph state.
+     * @param number the number of the state; required to be non-negative
      */
-    public AbstractGraphState(CacheReference<StateCache> reference) {
+    public AbstractGraphState(CacheReference<StateCache> reference, int number) {
         super(reference);
+        assert number >= 0;
+        this.nr = number;
         stateCount++;
     }
 
@@ -337,30 +340,7 @@ abstract public class AbstractGraphState extends
      *         <code>false</code> at the time of calling
      */
     public int getNumber() {
-        if (!hasNumber()) {
-            throw new IllegalStateException("State number not set");
-        }
         return this.nr;
-    }
-
-    /**
-     * Sets the state number. This method should be called only once, with a
-     * non-negative number.
-     * @throws IllegalStateException if {@link #hasNumber()} returns
-     *         <code>true</code>
-     * @throws IllegalArgumentException if <code>nr</code> is illegal (i.e.,
-     *         negative)
-     */
-    public void setNumber(int nr) {
-        if (hasNumber()) {
-            throw new IllegalStateException(String.format(
-                "State number already set to %s", this.nr));
-        }
-        if (nr < 0) {
-            throw new IllegalArgumentException(String.format(
-                "Illegal state number %s", nr));
-        }
-        this.nr = nr;
     }
 
     /** Returns the system record associated with this state. */
@@ -416,7 +396,7 @@ abstract public class AbstractGraphState extends
      * 
      * @invariant nr < nrNodes
      */
-    protected int nr = -1;
+    private final int nr;
 
     /** Returns the total number of fixed delta graphs. */
     static public int getFrozenGraphCount() {

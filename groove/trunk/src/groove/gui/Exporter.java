@@ -17,6 +17,7 @@
 package groove.gui;
 
 import groove.graph.Graph;
+import groove.gui.jgraph.EditorJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.StateJGraph;
@@ -167,7 +168,13 @@ public class Exporter {
         }
 
         public void export(JGraph jGraph, File file) throws IOException {
-            export(jGraph.getModel().toPlainGraph(), file);
+            Graph<?,?> graph;
+            if (jGraph.getModel() instanceof GraphJModel) {
+                graph = ((GraphJModel<?,?>) jGraph.getModel()).getGraph();
+            } else {
+                graph = ((EditorJModel) jGraph.getModel()).toPlainGraph();
+            }
+            export(graph, file);
         }
 
         public void export(Graph<?,?> graph, File file) throws IOException {
@@ -323,7 +330,7 @@ public class Exporter {
             if (jGraph.getModel() instanceof GraphJModel) {
                 graph = ((GraphJModel<?,?>) jGraph.getModel()).getGraph();
             } else {
-                graph = jGraph.getModel().toPlainGraph();
+                graph = ((EditorJModel) jGraph.getModel()).toPlainGraph();
             }
             export(graph, file);
         }

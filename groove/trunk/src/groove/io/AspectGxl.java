@@ -4,7 +4,6 @@ package groove.io;
 import groove.graph.DefaultGraph;
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.GraphInfo;
 import groove.graph.Node;
 import groove.view.aspect.AspectGraph;
 
@@ -52,7 +51,7 @@ public class AspectGxl implements Xml<AspectGraph> {
      */
     public AspectGraph unmarshalGraph(URL url) throws IOException {
         DefaultGraph plainGraph = this.marshaller.unmarshalGraph(url);
-        GraphInfo.setName(plainGraph, extractName(url.getPath()));
+        plainGraph.setName(extractName(url.getPath()));
         return AspectGraph.newInstance(plainGraph);
     }
 
@@ -64,7 +63,7 @@ public class AspectGxl implements Xml<AspectGraph> {
      */
     public AspectGraph unmarshalGraph(File file) throws IOException {
         DefaultGraph plainGraph = this.marshaller.unmarshalGraph(file);
-        GraphInfo.setName(plainGraph, extractName(file.toString()));
+        plainGraph.setName(extractName(file.toString()));
         return AspectGraph.newInstance(plainGraph);
     }
 

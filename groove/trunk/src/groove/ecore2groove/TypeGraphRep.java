@@ -16,12 +16,12 @@
  */
 package groove.ecore2groove;
 
+import static groove.graph.GraphRole.TYPE;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultFactory;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
-import groove.graph.GraphInfo;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,9 +43,9 @@ import org.eclipse.emf.ecore.EReference;
  */
 public class TypeGraphRep {
 
-    private ModelHandler mh;
-    private DefaultGraph tg = new DefaultGraph();
-    private DefaultGraph ecoreTG = new DefaultGraph();
+    private final ModelHandler mh;
+    private final DefaultGraph tg;
+    private final DefaultGraph ecoreTG;
 
     private DefaultNode eClassNode;
     private DefaultNode eReferenceNode;
@@ -69,10 +69,15 @@ public class TypeGraphRep {
      * Constructor method. given a handle to a ModelHandler, create a type
      * graph representation of the Ecore meta model that was loaded by the
      * ModelHandler. 
+     * @param name TODO
      * @param m the ModelHandler.
      */
-    public TypeGraphRep(ModelHandler m) {
+    public TypeGraphRep(String name, ModelHandler m) {
         this.mh = m;
+        this.tg = new DefaultGraph(name);
+        this.tg.setRole(TYPE);
+        this.ecoreTG = new DefaultGraph("EcoreTypes");
+        this.ecoreTG.setRole(TYPE);
 
         addEcoreTypes();
 
@@ -107,7 +112,8 @@ public class TypeGraphRep {
         this.ecoreTG.addEdge(this.eReferenceNode, CONT_LABEL,
             this.eReferenceNode);
         this.ecoreTG.addEdge(this.eAttributeNode, ABS_VAL_LABEL, this.eEnumNode);
-        this.ecoreTG.addEdge(this.eReferenceNode, ABS_VAL_LABEL, this.eClassNode);
+        this.ecoreTG.addEdge(this.eReferenceNode, ABS_VAL_LABEL,
+            this.eClassNode);
         this.ecoreTG.addEdge(this.eClassNode, ABS_WILDCARD_LABEL,
             this.eReferenceNode);
     }
@@ -341,7 +347,6 @@ public class TypeGraphRep {
      */
     public DefaultGraph getTypeGraph() {
         // Create aspect graph from type graph to store
-        GraphInfo.setTypeRole(this.tg);
         return this.tg;
     }
 
@@ -352,7 +357,6 @@ public class TypeGraphRep {
      */
     public DefaultGraph getEcoreTypeGraph() {
         // Create aspect graph from type graph to store
-        GraphInfo.setTypeRole(this.ecoreTG);
         return this.ecoreTG;
     }
 

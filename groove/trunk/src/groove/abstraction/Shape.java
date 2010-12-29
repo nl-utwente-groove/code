@@ -139,7 +139,7 @@ public final class Shape extends DefaultHostGraph {
 
     /** Creates a shape from a concrete graph, with a given element factory. */
     private Shape(HostGraph graph, ShapeFactory factory) {
-        super(factory);
+        super(graph == null ? "shape" : graph.getName(), factory);
         this.graph = graph;
         this.nodeShaping = new HashMap<HostNode,ShapeNode>();
         this.edgeShaping = new HashMap<HostEdge,ShapeEdge>();

@@ -16,8 +16,8 @@ t * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  */
 package groove.io;
 
+import static groove.graph.GraphRole.RULE;
 import groove.graph.DefaultGraph;
-import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
 import groove.gui.Options;
@@ -341,7 +341,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      */
     private PutGraphEdit doPutGraph(AspectGraph graph) throws IOException {
         testInit();
-        String name = GraphInfo.getName(graph);
+        String name = graph.getName();
         this.marshaller.marshalGraph(graph.toPlainGraph(),
             createGraphFile(name));
         AspectGraph oldGraph = this.graphMap.put(name, graph);
@@ -388,7 +388,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      */
     private PutRuleEdit doPutRule(AspectGraph rule) throws IOException {
         testInit();
-        RuleName name = new RuleName(GraphInfo.getName(rule));
+        RuleName name = new RuleName(rule.getName());
         this.marshaller.marshalGraph(rule.toPlainGraph(), createRuleFile(name));
         AspectGraph oldRule = this.ruleMap.put(name, rule);
         return new PutRuleEdit(oldRule, rule);
@@ -412,7 +412,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      */
     private PutTypeEdit doPutType(AspectGraph type) throws IOException {
         testInit();
-        String name = GraphInfo.getName(type);
+        String name = type.getName();
         this.marshaller.marshalGraph(type.toPlainGraph(), createTypeFile(name));
         AspectGraph oldType = this.typeMap.put(name, type);
         return new PutTypeEdit(oldType, type);
@@ -442,7 +442,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         AspectGraph graph = this.graphMap.remove(oldName);
         if (graph != null) {
             this.marshaller.deleteGraph(createGraphFile(oldName));
-            GraphInfo.setName(graph, newName);
+            graph = graph.rename(newName);
             AspectGraph oldGraph = this.graphMap.put(newName, graph);
             this.marshaller.marshalGraph(graph.toPlainGraph(),
                 createGraphFile(newName));
@@ -480,7 +480,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         AspectGraph rule = this.ruleMap.remove(oldRuleName);
         if (rule != null) {
             this.marshaller.deleteGraph(createRuleFile(oldRuleName));
-            GraphInfo.setName(rule, newName);
+            rule = rule.rename(newName);
             AspectGraph oldRule = this.ruleMap.put(newRuleName, rule);
             this.marshaller.marshalGraph(rule.toPlainGraph(),
                 createRuleFile(newRuleName));
@@ -520,7 +520,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         if (type != null) {
             oldType = this.typeMap.put(newName, type);
             this.marshaller.deleteGraph(createTypeFile(oldName));
-            GraphInfo.setName(type, newName);
+            type = type.rename(newName);
             this.marshaller.marshalGraph(type.toPlainGraph(),
                 createTypeFile(newName));
             edited = true;
@@ -738,7 +738,6 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     /**
      * Collects all aspect graphs from the {@link #file} directory with a given
      * extension, and a given role.
-     * @see GraphInfo#getRole()
      */
     private void collectObjects(Map<String,AspectGraph> result,
             ExtensionFilter filter, GraphRole role) throws IOException {
@@ -754,8 +753,8 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                  * For backward compatibility, we set the role and name of the
                  * graph
                  */
-                GraphInfo.setRole(plainGraph, role);
-                GraphInfo.setName(plainGraph, graphName);
+                plainGraph.setRole(role);
+                plainGraph.setName(graphName);
                 AspectGraph graph = AspectGraph.newInstance(plainGraph);
                 /* Store the graph */
                 Object oldEntry = result.put(graphName, graph);
@@ -910,8 +909,8 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                      * For backward compatibility, we set the role and name of
                      * the rule graph
                      */
-                    GraphInfo.setRole(plainGraph, GraphRole.RULE);
-                    GraphInfo.setName(plainGraph, ruleName.toString());
+                    plainGraph.setRole(RULE);
+                    plainGraph.setName(ruleName.toString());
                     AspectGraph ruleGraph = AspectGraph.newInstance(plainGraph);
                     /* Store the rule graph */
                     AspectGraph oldRule = this.ruleMap.put(ruleName, ruleGraph);
@@ -1309,7 +1308,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         @Override
         public void redo() throws CannotRedoException {
             super.redo();
-            doDeleteGraph(GraphInfo.getName(this.graph));
+            doDeleteGraph(this.graph.getName());
             notifyObservers(this);
         }
 
@@ -1348,7 +1347,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         @Override
         public void redo() throws CannotRedoException {
             super.redo();
-            doDeleteRule(new RuleName(GraphInfo.getName(this.rule)));
+            doDeleteRule(new RuleName(this.rule.getName()));
             notifyObservers(this);
         }
 
@@ -1394,7 +1393,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                 if (this.newProps != null) {
                     doPutProperties(this.newProps);
                 }
-                doDeleteType(GraphInfo.getName(this.type));
+                doDeleteType(this.type.getName());
             } catch (IOException exc) {
                 throw new CannotUndoException();
             }
@@ -1725,7 +1724,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         public void undo() throws CannotUndoException {
             super.undo();
             if (this.oldGraph == null) {
-                doDeleteGraph(GraphInfo.getName(this.newGraph));
+                doDeleteGraph(this.newGraph.getName());
             } else {
                 try {
                     doPutGraph(this.oldGraph);
@@ -1776,7 +1775,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         public void undo() throws CannotUndoException {
             super.undo();
             if (this.oldType == null) {
-                doDeleteType(GraphInfo.getName(this.newType));
+                doDeleteType(this.newType.getName());
             } else {
                 try {
                     doPutType(this.oldType);
@@ -1827,7 +1826,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         public void undo() throws CannotUndoException {
             super.undo();
             if (this.oldRule == null) {
-                doDeleteRule(new RuleName(GraphInfo.getName(this.newRule)));
+                doDeleteRule(new RuleName(this.newRule.getName()));
             } else {
                 try {
                     doPutRule(this.oldRule);

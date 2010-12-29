@@ -125,8 +125,8 @@ public class MatchApplier implements RuleEventApplier {
             addedNodes = getCreatedNodes(event, source.getGraph());
         }
 
-        return new DefaultGraphNextState((AbstractGraphState) source, event,
-            addedNodes);
+        return new DefaultGraphNextState(this.gts.nodeCount(),
+            (AbstractGraphState) source, event, addedNodes);
     }
 
     /**

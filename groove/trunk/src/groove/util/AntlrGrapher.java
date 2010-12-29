@@ -64,7 +64,7 @@ public class AntlrGrapher {
 
     /** Returns the type graph for this parser. */
     public TypeGraph getType() {
-        TypeGraph result = new TypeGraph();
+        TypeGraph result = new TypeGraph("type");
         TypeNode topNode = result.addNode(TOP_TYPE);
         result.addEdge(topNode, CHILD_LABEL, topNode);
         result.addEdge(topNode, NEXT_LABEL, topNode);
@@ -93,7 +93,7 @@ public class AntlrGrapher {
 
     /** Returns the graph representing a given AST. */
     public HostGraph getGraph(CommonTree tree) {
-        DefaultHostGraph result = new DefaultHostGraph();
+        DefaultHostGraph result = new DefaultHostGraph("ast");
         Map<CommonTree,HostNode> treeNodeMap =
             new HashMap<CommonTree,HostNode>();
         treeNodeMap.put(tree, createNode(result, tree));

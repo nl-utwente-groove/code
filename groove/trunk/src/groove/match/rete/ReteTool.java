@@ -16,17 +16,10 @@
  */
 package groove.match.rete;
 
-import groove.graph.GraphInfo;
-import groove.gui.jgraph.ReteJModel;
-import groove.io.AspectGxl;
-import groove.io.LayedOutXml;
-import groove.io.Xml;
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
 import groove.view.StoredGrammarView;
-import groove.view.aspect.AspectGraph;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -75,25 +68,11 @@ public class ReteTool extends CommandLineTool {
     }
 
     private void doSaveReteNetwork() {
-        AspectGraph graph =
-            AspectGraph.newInstance((new ReteJModel(new ReteNetwork(
-                getGrammarView(), false))).getGraph());
         String name = "RETE-" + getGrammarView().getName();
-        GraphInfo.setName(graph, name);
         String filePath =
             (this.saveNetworkOption.outputFilePath != null)
-                    ? this.saveNetworkOption.outputFilePath : name + ".gst";
-        doSaveGraph(graph, new File(filePath));
-    }
-
-    void doSaveGraph(AspectGraph graph, File selectedFile) {
-        try {
-            Xml<AspectGraph> graphLoader = new AspectGxl(new LayedOutXml());
-            graphLoader.marshalGraph(graph, selectedFile);
-        } catch (IOException exc) {
-            throw new RuntimeException(String.format(
-                "Error while saving graph to '%s'", selectedFile), exc);
-        }
+                    ? this.saveNetworkOption.outputFilePath : name;
+        new ReteNetwork(getGrammarView(), false).save(filePath, name);
     }
 
     private StoredGrammarView loadGrammar(String path) {

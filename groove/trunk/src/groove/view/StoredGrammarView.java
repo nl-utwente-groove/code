@@ -16,6 +16,7 @@
  */
 package groove.view;
 
+import static groove.graph.GraphRole.HOST;
 import groove.control.ControlView;
 import groove.control.CtrlFactory;
 import groove.graph.DefaultGraph;
@@ -206,7 +207,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     @Override
     public void setStartGraph(AspectGraph startGraph) {
         assert startGraph != null;
-        if (!GraphInfo.hasHostRole(startGraph)) {
+        if (startGraph.getRole() != HOST) {
             throw new IllegalArgumentException(String.format(
                 "Prospective start graph '%s' is not a graph", startGraph));
         }
@@ -667,7 +668,7 @@ public class StoredGrammarView implements GrammarView, Observer {
             if (this.errors.isEmpty() && this.model == null) {
                 // There are no errors in each of the views, try to compose the
                 // type graph.
-                this.model = new TypeGraph();
+                this.model = new TypeGraph("combined type");
                 for (TypeView view : this.typeViewMap.values()) {
                     try {
                         this.model.add(view.toModel());

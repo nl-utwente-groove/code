@@ -16,13 +16,12 @@
  */
 package groove.match.rete;
 
+import groove.graph.DefaultEdge;
+import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Graph;
-import groove.graph.GraphInfo;
-import groove.gui.jgraph.ReteJModel;
-import groove.io.AspectGxl;
-import groove.io.LayedOutXml;
-import groove.io.Xml;
+import groove.graph.GraphRole;
+import groove.io.DefaultGxl;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.AbstractCondition;
@@ -39,9 +38,9 @@ import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleName;
 import groove.trans.RuleNode;
+import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
-import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,15 +51,16 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * @author Arash Jalali
  * @version $Revision $
  */
 public class ReteNetwork {
-
+    private final String grammarName;
     private RootNode root;
 
     //Every RETE network in GROOVE will have at most one node-checker.
@@ -91,6 +91,7 @@ public class ReteNetwork {
     * @param enableInjectivity specifies if matching should be injectively
     */
     public ReteNetwork(StoredGrammarView grammarView, boolean enableInjectivity) {
+        this.grammarName = grammarView.getName();
         this.injective = enableInjectivity;
         this.root = new RootNode(this);
         this.state = new ReteState(this);
@@ -116,6 +117,7 @@ public class ReteNetwork {
      *        injective matching.
      */
     public ReteNetwork(GraphGrammar g, boolean enableInjectivity) {
+        this.grammarName = g.getName();
         this.injective = enableInjectivity;
         this.root = new RootNode(this);
         this.state = new ReteState(this);
@@ -487,7 +489,7 @@ public class ReteNetwork {
      */
     private RuleGraph copyAndRenumberNodes(RuleGraph source,
             RuleGraphMorphism nodeMapping) {
-        RuleGraph result = new RuleGraph();
+        RuleGraph result = new RuleGraph(source.getName());
         for (RuleNode n : source.nodeSet()) {
             result.addNode(nodeMapping.getNode(n));
         }
@@ -796,27 +798,154 @@ public class ReteNetwork {
         this.getState().setHostGraph(g);
     }
 
+    /** Creates and returns a graph showing the structure of this RETE network. */
+    public DefaultGraph toPlainGraph() {
+        DefaultGraph graph = new DefaultGraph(this.grammarName + "-rete");
+        graph.setRole(GraphRole.RETE);
+        Map<ReteNetworkNode,DefaultNode> map =
+            new HashMap<ReteNetworkNode,DefaultNode>();
+        DefaultNode rootNode = graph.addNode();
+        map.put(this.getRoot(), rootNode);
+        graph.addEdge(rootNode, "ROOT", rootNode);
+        addChildren(graph, map, this.getRoot());
+        addSubConditionEdges(graph, map);
+        return graph;
+    }
+
+    private void addSubConditionEdges(DefaultGraph graph,
+            Map<ReteNetworkNode,DefaultNode> map) {
+        for (ConditionChecker cc : this.getConditonCheckerNodes()) {
+            ConditionChecker parent = cc.getParent();
+            if (parent != null) {
+                String l = "subcondition";
+                graph.addEdge(map.get(cc), l, map.get(parent));
+            }
+        }
+
+        for (CompositeConditionChecker cc : this.getCompositeConditonCheckerNodes()) {
+            ConditionChecker parent = cc.getParent();
+            if (parent != null) {
+                String l = "NAC";
+                graph.addEdge(map.get(cc), l, map.get(parent));
+            }
+        }
+    }
+
+    private void addChildren(DefaultGraph graph,
+            Map<ReteNetworkNode,DefaultNode> map, ReteNetworkNode nnode) {
+        DefaultNode jNode = map.get(nnode);
+        boolean navigate;
+        if (jNode != null) {
+            ReteNetworkNode previous = null;
+            int repeatCounter = 0;
+            for (ReteNetworkNode childNNode : nnode.getSuccessors()) {
+                repeatCounter =
+                    (previous == childNNode) ? repeatCounter + 1 : 0;
+                navigate = false;
+                DefaultNode childJNode = map.get(childNNode);
+                if (childJNode == null) {
+                    childJNode = graph.addNode();
+                    DefaultEdge[] flags =
+                        makeNNodeLabels(childNNode, childJNode);
+                    for (DefaultEdge f : flags) {
+                        graph.addEdge(f);
+                    }
+                    map.put(childNNode, childJNode);
+                    navigate = true;
+                }
+
+                if (childNNode instanceof SubgraphCheckerNode) {
+                    if (childNNode.getAntecedents().get(0) != childNNode.getAntecedents().get(
+                        1)) {
+                        if (nnode == childNNode.getAntecedents().get(0)) {
+                            graph.addEdge(jNode, "left", childJNode);
+                        } else {
+                            graph.addEdge(jNode, "right", childJNode);
+                        }
+                    } else {
+                        graph.addEdge(jNode, "left", childJNode);
+                        graph.addEdge(jNode, "right", childJNode);
+                    }
+                } else if ((childNNode instanceof ConditionChecker)
+                    && (repeatCounter > 0)) {
+                    graph.addEdge(jNode, "receive_" + repeatCounter, childJNode);
+                } else {
+                    graph.addEdge(jNode, "receive", childJNode);
+                }
+
+                if (navigate) {
+                    addChildren(graph, map, childNNode);
+                }
+                previous = childNNode;
+            }
+        }
+    }
+
+    private DefaultEdge[] makeNNodeLabels(ReteNetworkNode nnode,
+            DefaultNode source) {
+        ArrayList<DefaultEdge> result = new ArrayList<DefaultEdge>();
+        if (nnode instanceof RootNode) {
+            result.add(DefaultEdge.createEdge(source, "ROOT", source));
+        } else if (nnode instanceof NodeCheckerNode) {
+            result.add(DefaultEdge.createEdge(source, "Node Checker", source));
+            result.add(DefaultEdge.createEdge(source,
+                ((NodeCheckerNode) nnode).getNode().toString(), source));
+        } else if (nnode instanceof EdgeCheckerNode) {
+            result.add(DefaultEdge.createEdge(source, "Edge Checker", source));
+            result.add(DefaultEdge.createEdge(source,
+                ((EdgeCheckerNode) nnode).getEdge().toString(), source));
+        } else if (nnode instanceof SubgraphCheckerNode) {
+            String[] lines = nnode.toString().split("\n");
+            //result.add(new DefaultFlag(source, "- Subgraph Checker"));
+            for (String s : lines) {
+                result.add(DefaultEdge.createEdge(source, s, source));
+            }
+        } else if (nnode instanceof DisconnectedSubgraphChecker) {
+            result.add(DefaultEdge.createEdge(source,
+                "DisconnectedSubgraphChecker", source));
+        } else if (nnode instanceof ProductionNode) {
+            result.add(DefaultEdge.createEdge(source, "- Production Node "
+                + (((ConditionChecker) nnode).isIndexed() ? "(idx)" : "()"),
+                source));
+            result.add(DefaultEdge.createEdge(source, "-"
+                + ((ProductionNode) nnode).getCondition().getName().toString(),
+                source));
+            for (int i = 0; i < ((ProductionNode) nnode).getPattern().length; i++) {
+                RuleElement e = ((ProductionNode) nnode).getPattern()[i];
+                result.add(DefaultEdge.createEdge(source,
+                    "--" + i + " " + e.toString(), source));
+            }
+        } else if (nnode instanceof ConditionChecker) {
+            result.add(DefaultEdge.createEdge(source, "- Condition Checker "
+                + (((ConditionChecker) nnode).isIndexed() ? "(idx)" : "()"),
+                source));
+            for (int i = 0; i < ((ConditionChecker) nnode).getPattern().length; i++) {
+                RuleElement e = ((ConditionChecker) nnode).getPattern()[i];
+                result.add(DefaultEdge.createEdge(source,
+                    "--" + i + " " + e.toString(), source));
+            }
+        }
+        DefaultEdge[] res = new DefaultEdge[result.size()];
+        return result.toArray(res);
+    }
+
     /**
      * Saves the RETE network's shape into a GST file.
      * 
-     * @param filePath the path of the directory that would contain the saved file
-     * @param fileName the file name to use for saving, without the .gst extension 
+     * @param filePath the name of the saved file. If no extension is given,
+     * a <tt>.gxl</tt> extension is added.
+     * @param name the name of the network
      */
-    public void save(String filePath, String fileName) {
-        AspectGraph graph =
-            AspectGraph.newInstance((new ReteJModel(this)).getGraph());
-        String name = fileName + ".gst";
-        GraphInfo.setName(graph, name);
-        doSaveGraph(graph, new File(filePath + "\\" + name));
-    }
-
-    void doSaveGraph(AspectGraph graph, File selectedFile) {
+    public void save(String filePath, String name) {
+        DefaultGraph graph = toPlainGraph();
+        graph.setName(name);
+        File file = new File(Groove.createGxlFilter().addExtension(filePath));
         try {
-            Xml<AspectGraph> graphLoader = new AspectGxl(new LayedOutXml());
-            graphLoader.marshalGraph(graph, selectedFile);
+            DefaultGxl graphLoader = new DefaultGxl();
+            graphLoader.marshalGraph(graph, file);
         } catch (IOException exc) {
             throw new RuntimeException(String.format(
-                "Error while saving graph to '%s'", selectedFile), exc);
+                "Error while saving graph to '%s'", file), exc);
         }
     }
 

@@ -18,8 +18,6 @@ package groove.ecore2groove;
 
 import groove.algebra.AlgebraFamily;
 import groove.graph.DefaultGraph;
-import groove.graph.GraphInfo;
-import groove.graph.GraphRole;
 import groove.io.SystemStore;
 import groove.io.SystemStoreFactory;
 import groove.trans.RuleName;
@@ -160,8 +158,12 @@ public class Transform {
 
         // Create TypeGraph
         start = new Date().getTime(); // timing
-        TypeGraphRep tgr = new TypeGraphRep(mh);
         String modelName = mh.getModelName();
+        // Set info about how to store type graph
+        if (modelName.equals("EcoreTypes")) {
+            modelName = modelName + "_";
+        }
+        TypeGraphRep tgr = new TypeGraphRep(modelName, mh);
         System.out.println("Created type graphs: " + modelName + " ("
             + (new Date().getTime() - start) + " ms)"); //print duration
 
@@ -177,14 +179,8 @@ public class Transform {
         AspectGraph atg = AspectGraph.newInstance(tgr.getTypeGraph());
         AspectGraph ecoreatg = AspectGraph.newInstance(tgr.getEcoreTypeGraph());
 
-        // Set info about how to store type graph
-        if (modelName.equals("EcoreTypes")) {
-            modelName = modelName + "_";
-        }
         atg.getInfo().setFile(f + File.separator + modelName + ".gty");
-        atg.getInfo().setName(modelName);
         ecoreatg.getInfo().setFile(f + File.separator + "EcoreTypes.gty");
-        ecoreatg.getInfo().setName("EcoreTypes");
 
         // Store type graphs, but first delete the old ones
         Set<String> typeGraphsToDelete = new HashSet<String>();
@@ -233,16 +229,12 @@ public class Transform {
             try {
                 arg = AspectGraph.newInstance(constraintRule);
             } catch (Exception e) {
-                System.out.println("Error with: "
-                    + constraints.getName(constraintRule));
+                System.out.println("Error with: " + constraintRule.getName());
                 e.printStackTrace();
                 continue;
             }
-            String name = constraints.getName(constraintRule);
+            String name = constraintRule.getName();
             arg.getInfo().setFile(f + File.separator + name + ".gty");
-            arg.getInfo().setName(name);
-
-            GraphInfo.setRuleRole(arg);
             arg.getInfo().getProperties(true).setPriority(50);
             grammar.putRule(arg);
 
@@ -264,7 +256,7 @@ public class Transform {
                 + (new Date().getTime() - start) + " ms)");
 
             start = new Date().getTime();
-            InstanceGraphRep igr = new InstanceGraphRep(mh);
+            InstanceGraphRep igr = new InstanceGraphRep(instanceName, mh);
             System.out.println("Created instance graph: " + instanceName + " ("
                 + (new Date().getTime() - start) + " ms)");
 
@@ -272,8 +264,6 @@ public class Transform {
 
             // Set info about how to store the instance graph and then store it
             aig.getInfo().setFile(f + File.separator + instanceName);
-            aig.getInfo().setName(instanceName);
-            aig.getInfo().setRole(GraphRole.HOST);
 
             grammar.putGraph(aig);
 

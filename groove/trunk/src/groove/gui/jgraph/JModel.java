@@ -16,26 +16,19 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
-import groove.graph.Element;
-import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
 import groove.gui.Options;
-import groove.gui.layout.JEdgeLayout;
-import groove.gui.layout.LayoutMap;
 import groove.util.ObservableSet;
 
 import java.awt.Color;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.SwingUtilities;
@@ -67,12 +60,13 @@ abstract public class JModel extends DefaultGraphModel {
      * possibly showing node identities.
      * @param defaultNodeAttr the default node attributes for this model
      * @param defaultEdgeAttr the default node attributes for this model
+     * @param options the (possibly {@code null}) options object
      */
     public JModel(AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr,
             Options options) {
         this.defaultNodeAttr = defaultNodeAttr;
         this.defaultEdgeAttr = defaultEdgeAttr;
-        this.options = options;
+        this.options = options == null ? new Options() : options;
     }
 
     /**
@@ -197,72 +191,6 @@ abstract public class JModel extends DefaultGraphModel {
                 result++;
             }
         }
-        return result;
-    }
-
-    /** 
-     * Converts this model to a plain Groove graph.
-     * @see #toPlainGraph(Map)
-     */
-    public DefaultGraph toPlainGraph() {
-        Map<Element,JCell> dummyMap = new HashMap<Element,JCell>();
-        return toPlainGraph(dummyMap);
-    }
-
-    /**
-     * Converts this j-model to a plain groove graph. Layout information is also
-     * transferred. A plain graph is one in which the nodes and edges are
-     * {@link DefaultNode}s and {@link DefaultEdge}s, and all further
-     * information is in the labels.
-     * @param elementMap receives the mapping from elements of the new graph
-     * to root cells of this model
-     */
-    public DefaultGraph toPlainGraph(Map<Element,JCell> elementMap) {
-        DefaultGraph result = new DefaultGraph();
-        LayoutMap<DefaultNode,DefaultEdge> layoutMap =
-            new LayoutMap<DefaultNode,DefaultEdge>();
-        Map<JVertex,DefaultNode> nodeMap = new HashMap<JVertex,DefaultNode>();
-
-        // Create nodes
-        for (Object root : getRoots()) {
-            if (root instanceof JVertex) {
-                DefaultNode node = addFreshNode(result, ((JVertex) root));
-                nodeMap.put((JVertex) root, node);
-                elementMap.put(node, (JVertex) root);
-                layoutMap.putNode(node, ((JVertex) root).getAttributes());
-                for (String label : ((JVertex) root).getPlainLabels()) {
-                    result.addEdge(node, label, node);
-                }
-            }
-        }
-
-        // Create Edges
-        for (Object root : getRoots()) {
-            if (root instanceof JEdge) {
-                JEdge jEdge = (JEdge) root;
-                DefaultNode source = nodeMap.get(jEdge.getSourceVertex());
-                DefaultNode target = nodeMap.get(jEdge.getTargetVertex());
-                assert target != null : "Edge with empty target: " + root;
-                assert source != null : "Edge with empty source: " + root;
-                AttributeMap edgeAttr = jEdge.getAttributes();
-                // test if the edge attributes are default
-                boolean attrIsDefault =
-                    JEdgeLayout.newInstance(edgeAttr).isDefault();
-                // parse edge text into label set
-                for (String label : jEdge.getPlainLabels()) {
-                    DefaultEdge edge = result.addEdge(source, label, target);
-                    // add layout information if there is anything to be noted
-                    // about the edge
-                    if (!attrIsDefault) {
-                        layoutMap.putEdge(edge, edgeAttr);
-                    }
-                    elementMap.put(edge, jEdge);
-                }
-            }
-        }
-        GraphInfo.setLayoutMap(result, layoutMap);
-        GraphInfo.setProperties(result, getProperties());
-        GraphInfo.setName(result, getName());
         return result;
     }
 
@@ -509,9 +437,9 @@ abstract public class JModel extends DefaultGraphModel {
      * <code>null</code> if the options are not set (i.e., <code>null</code>).
      * @param option the name of the option
      */
-    protected boolean getOptionValue(String option) {
-        return this.options != null && this.options.getItem(option).isEnabled()
-            && this.options.isSelected(option);
+    public boolean getOptionValue(String option) {
+        return getOptions().getItem(option).isEnabled()
+            && getOptions().isSelected(option);
     }
 
     /**
@@ -575,7 +503,7 @@ abstract public class JModel extends DefaultGraphModel {
      * {@link Color#WHITE} if the options demand this.
      */
     protected void maybeResetBackground(AttributeMap attributes) {
-        if (!this.options.isSelected(Options.SHOW_BACKGROUND_OPTION)) {
+        if (!getOptionValue(Options.SHOW_BACKGROUND_OPTION)) {
             GraphConstants.setBackground(attributes, Color.WHITE);
         }
     }

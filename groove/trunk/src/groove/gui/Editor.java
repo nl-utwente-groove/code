@@ -196,7 +196,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             setModel(new EditorJModel(this));
         } else {
             // set the model afresh to make sure everything gets updated properly
-            setRole(GraphInfo.getRole(graph));
+            setRole(graph.getRole());
             // don't set the errors, now as they will be computed again anyway
             // setErrors(GraphInfo.getErrors(graph));
             getModel().replace(
@@ -226,7 +226,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     private void setAspectGraph() {
         Map<Element,JCell> plainToModelMap = new HashMap<Element,JCell>();
         DefaultGraph result = getModel().toPlainGraph(plainToModelMap);
-        GraphInfo.setRole(result, getRole());
         GraphInfo.setVersion(result, Version.GXL_VERSION);
         PlainToAspectMap plainToAspectMap = new PlainToAspectMap(getRole());
         this.graph = AspectGraph.newInstance(result, plainToAspectMap);
@@ -415,7 +414,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         AspectJModel previewedModel = showPreviewDialog(toView(), okOption);
         if (previewedModel != null) {
             // setSelectInsertedCells(false);
-            DefaultGraph plainGraph = previewedModel.toPlainGraph();
+            DefaultGraph plainGraph = previewedModel.getGraph().toPlainGraph();
             setErrors(GraphInfo.getErrors(plainGraph));
             getModel().replace(
                 GraphJModel.newInstance(plainGraph, getOptions(), true));
@@ -636,7 +635,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * Indicates if we are editing a rule or a graph.
      * @return <code>true</code> if we are editing a graph.
      */
-    private GraphRole getRole() {
+    public GraphRole getRole() {
         return this.graphRole;
     }
 
@@ -663,6 +662,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      *         <code>false</code> if it was already equal to <code>role</code>
      */
     boolean setRole(GraphRole role) {
+        assert role.inGrammar();
         GraphRole oldRole = this.graphRole;
         boolean result = role != oldRole;
         // set the value if it has changed
@@ -688,15 +688,14 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /**
-     * Returns the current name of the editor model. The name may be
-     * <tt>null</tt> if the model is anonymous.
+     * Returns the current name of the editor model.
      * @see EditorJModel#getName()
      */
     protected String getModelName() {
         if (getModel() != null) {
             return getModel().getName();
         } else {
-            return null;
+            return "";
         }
     }
 
@@ -717,7 +716,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      */
     protected void updateTitle() {
         String modelName = getModelName();
-        if (modelName == null) {
+        if (modelName.length() == 0) {
             modelName = TITLE.get(getRole());
         }
         String title =
@@ -1364,21 +1363,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** Returns the jgraph component of this editor. */
     EditorJGraph getJGraph() {
         return this.jgraph;
-    }
-
-    JGraph getAspectJGraph() {
-        AspectJModel model =
-            AspectJModel.newInstance(getAspectGraph(), getOptions());
-        JGraph jGraph = createJGraph(model);
-        jGraph.setModel(model);
-        // Ugly hack to prevent clipping of the image. We set the jGraph size
-        // to twice its normal size. This does not affect the final size of
-        // the exported figure, hence it can be considered harmless... ;P
-        Dimension oldPrefSize = jGraph.getPreferredSize();
-        Dimension newPrefSize =
-            new Dimension(oldPrefSize.width * 2, oldPrefSize.height * 2);
-        jGraph.setSize(newPrefSize);
-        return jGraph;
     }
 
     /**

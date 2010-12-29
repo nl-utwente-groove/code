@@ -20,7 +20,6 @@ import static groove.graph.LabelKind.NODE_TYPE;
 import static groove.view.aspect.AspectKind.ABSTRACT;
 import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.SUBTYPE;
-import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.TypeEdge;
 import groove.graph.TypeFactory;
@@ -48,17 +47,14 @@ import java.util.Set;
 public class DefaultTypeView implements TypeView {
     /**
      * Constructs an instance from a given aspect graph.
-     * @see GraphInfo#getName(Graph)
      */
     public DefaultTypeView(AspectGraph view) {
         view.testFixed(true);
         this.view = view;
-        String name = GraphInfo.getName(view);
-        this.name = name == null ? "" : name;
     }
 
     public String getName() {
-        return this.name;
+        return this.view.getName();
     }
 
     @Override
@@ -103,7 +99,7 @@ public class DefaultTypeView implements TypeView {
             return;
         }
         this.errors = new ArrayList<FormatError>(this.view.getErrors());
-        this.model = new TypeGraph();
+        this.model = new TypeGraph(getName());
         this.elementMap = new ViewToTypeMap();
         // collect primitive type nodes
         for (AspectNode viewNode : this.view.nodeSet()) {
@@ -225,8 +221,6 @@ public class DefaultTypeView implements TypeView {
         }
     }
 
-    /** The name of the view. */
-    private final String name;
     /** The view represented by this object. */
     private final AspectGraph view;
     /** The graph model that is being viewed. */

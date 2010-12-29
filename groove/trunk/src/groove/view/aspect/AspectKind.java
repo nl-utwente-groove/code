@@ -78,11 +78,11 @@ public enum AspectKind {
 
     // rule parameters
     /** Indicates a bidirectional rule parameter. */
-    PARAM_BI("par", ContentKind.PARAMETER),
+    PARAM_BI("par", ContentKind.PARAM),
     /** Indicates an input rule parameter. */
-    PARAM_IN("parin", ContentKind.PARAMETER),
+    PARAM_IN("parin", ContentKind.PARAM),
     /** Indicates an output rule parameter. */
-    PARAM_OUT("parout", ContentKind.PARAMETER),
+    PARAM_OUT("parout", ContentKind.PARAM),
 
     // type-related aspects
     /** Indicates an abstract type. */
@@ -342,12 +342,17 @@ public enum AspectKind {
                     EnumSet.of(NONE, REMARK, INT, BOOL, REAL, STRING, ABSTRACT));
                 allowedEdgeKinds.put(role,
                     EnumSet.of(NONE, REMARK, ABSTRACT, SUBTYPE));
+                break;
+            default:
+                assert !role.inGrammar();
+                allowedNodeKinds.put(role, EnumSet.noneOf(AspectKind.class));
+                allowedEdgeKinds.put(role, EnumSet.noneOf(AspectKind.class));
             }
         }
     }
 
     /** Type of content that can be wrapped inside an aspect. */
-    enum ContentKind {
+    public enum ContentKind {
         /** No content. */
         NONE,
         /** Quantifier level name. */
@@ -407,15 +412,14 @@ public enum AspectKind {
          * Parameter number, starting with a dollar sign.
          * The content is a non-negative value of type {@link Integer}. 
          */
-        PARAMETER {
+        PARAM {
             @Override
             Integer parseContent(String text) throws FormatException {
                 int result;
-                if (text.length() == 0
-                    || text.charAt(0) != PARAMETER_START_CHAR) {
+                if (text.length() == 0 || text.charAt(0) != PARAM_START_CHAR) {
                     throw new FormatException(
                         "Parameter number '%s' should start with '%c'", text,
-                        PARAMETER_START_CHAR);
+                        PARAM_START_CHAR);
                 }
                 try {
                     result = Integer.parseInt(text.substring(1));
@@ -425,9 +429,6 @@ public enum AspectKind {
                 }
                 return result;
             }
-
-            /** Start character of parameter strings. */
-            static private final char PARAMETER_START_CHAR = '$';
         },
         /** 
          * Argument number.
@@ -492,6 +493,9 @@ public enum AspectKind {
                 return aspect.getPrefix();
             } else if (literals.contains(this)) {
                 return aspect.getPrefix() + content;
+            } else if (this == PARAM) {
+                return aspect.getName() + ASSIGN + PARAM_START_CHAR + content
+                    + SEPARATOR;
             } else {
                 return aspect.getName() + ASSIGN + content + SEPARATOR;
             }
@@ -501,5 +505,8 @@ public enum AspectKind {
 
         static private final EnumSet<ContentKind> literals = EnumSet.of(
             STRING_LITERAL, BOOL_LITERAL, INT_LITERAL, REAL_LITERAL);
+
+        /** Start character of parameter strings. */
+        static public final char PARAM_START_CHAR = '$';
     }
 }

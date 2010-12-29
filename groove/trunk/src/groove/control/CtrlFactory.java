@@ -72,7 +72,7 @@ public class CtrlFactory {
 
     /** Factory method for a rule call. */
     private CtrlAut buildRuleCall(CtrlCall call) {
-        CtrlAut result = createCtrlAut();
+        CtrlAut result = createCtrlAut(call.getName());
         CtrlState middle = result.addState();
         // convert the call arguments using the context
         result.addTransition(result.getStart(), createLabel(call), middle);
@@ -86,7 +86,7 @@ public class CtrlFactory {
         CtrlAut result = namespace.getFunctionBody(name);
         List<CtrlPar.Var> sig = namespace.getSig(name);
         assert sig.isEmpty() : "Function parameters not yet implemented";
-        return result.copy();
+        return result.clone();
     }
 
     /**
@@ -411,7 +411,7 @@ public class CtrlFactory {
 
     /** Factory method for immediate, unconditional success. */
     public CtrlAut buildTrue() {
-        CtrlAut result = createCtrlAut();
+        CtrlAut result = createCtrlAut("true");
         result.addTransition(result.getStart(), createOmegaLabel(),
             result.getFinal());
         return result;
@@ -585,7 +585,7 @@ public class CtrlFactory {
 
     /** Builds the default control automaton for a set of rules. */
     public CtrlAut buildDefault(RuleSystem rules) {
-        CtrlAut result = createCtrlAut();
+        CtrlAut result = createCtrlAut("control");
         CtrlState start = result.getStart();
         CtrlState end = result.getFinal();
         Map<Integer,Set<Rule>> ruleMap = rules.getRuleMap();
@@ -609,8 +609,8 @@ public class CtrlFactory {
     }
 
     /** Constructs an empty control automaton. */
-    private CtrlAut createCtrlAut() {
-        return new CtrlAut();
+    private CtrlAut createCtrlAut(String name) {
+        return new CtrlAut(name);
     }
 
     /** Returns the singleton instance of this class. */

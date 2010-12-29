@@ -88,7 +88,7 @@ public abstract class GraphTest<N extends Node,E extends Edge<N>> {
 
     public IsoChecker checker = IsoChecker.getInstance(true);
 
-    abstract Graph<N,E> createGraph();
+    abstract Graph<N,E> createGraph(String name);
 
     /*
      * @see TestCase#setUp()
@@ -103,7 +103,7 @@ public abstract class GraphTest<N extends Node,E extends Edge<N>> {
             this.isoGraph[i] = loadGraph(testFile(ISO_GRAPH_NAME + i));
         }
         this.graph = this.matchDom[0];
-        this.newGraph = this.graph.newGraph();
+        this.newGraph = this.graph.newGraph("newGraph");
         this.aLabel = this.graph.getFactory().createLabel("a");
         this.bLabel = this.graph.getFactory().createLabel("b");
         this.cLabel = this.graph.getFactory().createLabel("c");
@@ -124,7 +124,7 @@ public abstract class GraphTest<N extends Node,E extends Edge<N>> {
     }
 
     protected Graph<N,E> loadGraph(File file) {
-        Graph<N,E> result = createGraph();
+        Graph<N,E> result = createGraph(file.getName());
         try {
             Graph graph = this.xml.unmarshalGraph(file);
             result.addNodeSet(graph.nodeSet());
@@ -203,7 +203,7 @@ public abstract class GraphTest<N extends Node,E extends Edge<N>> {
 
     @Test
     final public void testNewGraph() {
-        Graph newGraph = this.matchDom[0].newGraph();
+        Graph newGraph = this.matchDom[0].newGraph("new graph 0");
         assertEquals(0, newGraph.nodeCount());
         assertEquals(0, newGraph.edgeCount());
         assertFalse(newGraph.isFixed());
@@ -333,7 +333,7 @@ public abstract class GraphTest<N extends Node,E extends Edge<N>> {
         assertFalse(this.graph.isEmpty());
         this.graph.removeNodeSet(new HashSet<N>(this.graph.nodeSet()));
         assertTrue(this.graph.isEmpty());
-        assertTrue(this.graph.newGraph().isEmpty());
+        assertTrue(this.graph.newGraph("new").isEmpty());
     }
 
     @Test
@@ -341,7 +341,7 @@ public abstract class GraphTest<N extends Node,E extends Edge<N>> {
         assertFalse(this.graph.isFixed());
         this.graph.setFixed();
         assertTrue(this.graph.isFixed());
-        assertFalse(this.graph.newGraph().isFixed());
+        assertFalse(this.graph.newGraph("new").isFixed());
     }
 
     @Test

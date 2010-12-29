@@ -21,11 +21,11 @@ import groove.lts.AbstractGraphState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.GraphTransitionStub;
+import groove.lts.ProductGTS;
 import groove.lts.ProductTransition;
 import groove.lts.StateReference;
 import groove.trans.HostGraph;
 import groove.trans.RuleEvent;
-import groove.trans.SystemRecord;
 import groove.util.TransformIterator;
 import groove.util.TransformSet;
 
@@ -71,14 +71,14 @@ public class BuchiGraphState extends AbstractGraphState {
 
     /**
      * Constructor.
-     * @param record the {@link SystemRecord} for this state
+     * @param gts the transition system to which this state shall belong
      * @param state the system-state component
      * @param buchiLocation the Buchi-location component
      * @param parent the parent state
      */
-    public BuchiGraphState(SystemRecord record, GraphState state,
+    public BuchiGraphState(ProductGTS gts, GraphState state,
             BuchiLocation buchiLocation, BuchiGraphState parent) {
-        super(StateReference.newInstance(record));
+        super(StateReference.newInstance(gts.getRecord()), gts.nodeCount());
         this.state = state;
         this.buchiLocation = buchiLocation;
         this.colour = ModelChecking.NO_COLOUR;

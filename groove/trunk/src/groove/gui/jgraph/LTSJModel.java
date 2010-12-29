@@ -56,7 +56,7 @@ public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
     }
 
     /** Constructs a dummy, empty model. */
-    protected LTSJModel() {
+    private LTSJModel() {
         // empty
     }
 

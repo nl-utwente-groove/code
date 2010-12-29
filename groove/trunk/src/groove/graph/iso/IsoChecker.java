@@ -1133,7 +1133,7 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
             System.out.printf("Graph certificate: %s%n",
                 checker.getCertifier(graph1, true).getGraphCertificate());
             for (int i = 0; i < 1000; i++) {
-                DefaultGraph graph2 = new DefaultGraph();
+                DefaultGraph graph2 = new DefaultGraph(name);
                 DefaultMorphism nodeMap = new DefaultMorphism();
                 for (DefaultNode node : graph1.nodeSet()) {
                     DefaultNode newNode = graph2.addNode();

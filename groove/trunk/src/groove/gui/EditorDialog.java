@@ -16,8 +16,6 @@
  */
 package groove.gui;
 
-import groove.graph.DefaultGraph;
-import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.view.StoredGrammarView.TypeViewList;
 import groove.view.aspect.AspectGraph;
@@ -49,7 +47,7 @@ abstract public class EditorDialog {
      *        checked
      * @throws HeadlessException -
      */
-    public EditorDialog(JFrame owner, Options options, DefaultGraph graph,
+    public EditorDialog(JFrame owner, Options options, AspectGraph graph,
             TypeViewList typeView) throws HeadlessException {
         this.parent = owner;
         this.oldJMenuBar = this.parent.getJMenuBar();
@@ -65,9 +63,9 @@ abstract public class EditorDialog {
             }
         };
         this.editor.setTypeView(typeView);
-        this.editor.setPlainGraph(graph);
+        this.editor.setPlainGraph(graph.toPlainGraph());
         this.newContentPane =
-            this.editor.createContentPanel(createToolBar(GraphInfo.getRole(graph)));
+            this.editor.createContentPanel(createToolBar(graph.getRole()));
     }
 
     /** Starts the dialog. */
@@ -138,6 +136,9 @@ abstract public class EditorDialog {
             break;
         case TYPE:
             toolbar.add(this.editor.getTypeRoleButton());
+            break;
+        default:
+            assert false;
         }
         if (this.editor.getType() != null) {
             toolbar.add(this.editor.getPreviewTypeAction());
