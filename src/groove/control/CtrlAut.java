@@ -16,7 +16,9 @@
  */
 package groove.control;
 
+import static groove.graph.GraphRole.CTRL;
 import groove.graph.AbstractGraph;
+import groove.graph.GraphRole;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
 import groove.view.FormatException;
@@ -54,16 +56,22 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
     /**
      * Constructs a new control automaton.
      * The start state and final state are automatically initialised.
+     * @param name the name of the control automaton
      */
-    public CtrlAut() {
-        super();
+    public CtrlAut(String name) {
+        super(name);
         this.startState = addState();
         this.finalState = addState();
     }
 
     @Override
-    public CtrlAut newGraph() {
-        return new CtrlAut();
+    public GraphRole getRole() {
+        return CTRL;
+    }
+
+    @Override
+    public CtrlAut newGraph(String name) {
+        return new CtrlAut(getName());
     }
 
     @Override
@@ -88,7 +96,27 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
 
     @Override
     public CtrlAut clone() {
-        throw new UnsupportedOperationException();
+        CtrlAut result = newGraph(getName());
+        Map<CtrlState,CtrlState> stateMap = new HashMap<CtrlState,CtrlState>();
+        stateMap.put(getStart(), result.getStart());
+        stateMap.put(getFinal(), result.getFinal());
+        for (CtrlState state : nodeSet()) {
+            CtrlState image;
+            if (state.equals(getStart())) {
+                image = result.getStart();
+            } else if (state.equals(getFinal())) {
+                image = result.getFinal();
+            } else {
+                image = result.addState();
+            }
+            image.setBoundVars(state.getBoundVars());
+            stateMap.put(state, image);
+        }
+        for (CtrlTransition trans : edgeSet()) {
+            result.addTransition(stateMap.get(trans.source()), trans.label(),
+                stateMap.get(trans.target()));
+        }
+        return result;
     }
 
     /** Adds a control transition to this automaton. */
@@ -201,31 +229,6 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
     private CtrlTransition createTransition(CtrlState source, CtrlLabel label,
             CtrlState target) {
         return new CtrlTransition(source, label, target);
-    }
-
-    /** Constructs a copy of this automaton. */
-    public CtrlAut copy() {
-        CtrlAut result = newGraph();
-        Map<CtrlState,CtrlState> stateMap = new HashMap<CtrlState,CtrlState>();
-        stateMap.put(getStart(), result.getStart());
-        stateMap.put(getFinal(), result.getFinal());
-        for (CtrlState state : nodeSet()) {
-            CtrlState image;
-            if (state.equals(getStart())) {
-                image = result.getStart();
-            } else if (state.equals(getFinal())) {
-                image = result.getFinal();
-            } else {
-                image = result.addState();
-            }
-            image.setBoundVars(state.getBoundVars());
-            stateMap.put(state, image);
-        }
-        for (CtrlTransition trans : edgeSet()) {
-            result.addTransition(stateMap.get(trans.source()), trans.label(),
-                stateMap.get(trans.target()));
-        }
-        return result;
     }
 
     /** 
@@ -347,7 +350,7 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
 
     /** Computes the quotient of this automaton, based on a given state partition. */
     private CtrlAut computeQuotient(Map<CtrlState,Set<CtrlState>> partition) {
-        CtrlAut result = newGraph();
+        CtrlAut result = newGraph(getName());
         Map<Set<CtrlState>,CtrlState> stateMap =
             new HashMap<Set<CtrlState>,CtrlState>();
         for (Set<CtrlState> cell : partition.values()) {

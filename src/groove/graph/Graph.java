@@ -164,9 +164,10 @@ public interface Graph<N extends Node,E extends Edge<N>> extends Fixable {
     Graph<N,E> clone();
 
     /**
-     * Factory method: returns a fresh, empty graph.
+     * Factory method: returns a fresh, empty graph with a new name.
+     * @param name the (non-{@code null}) name of the new graph.
      */
-    Graph<N,E> newGraph();
+    Graph<N,E> newGraph(String name);
 
     /**
      * Generates a fresh node and adds it to this graph.
@@ -405,4 +406,19 @@ public interface Graph<N extends Node,E extends Edge<N>> extends Fixable {
 
     /** Returns the element factory used for elements of this graph. */
     ElementFactory<N,E> getFactory();
+
+    /** 
+     * Sets a new (non-{@code null}) name of this graph.
+     * Only allowed if the graph is not fixed.
+     */
+    void setName(String name);
+
+    /** Returns the (non-{@code null}) name of this graph. */
+    String getName();
+
+    /** Returns the (non-{@code null}) role of this graph. */
+    GraphRole getRole();
+
+    /** Default name for graphs. */
+    public final String NO_NAME = "nameless graph";
 }

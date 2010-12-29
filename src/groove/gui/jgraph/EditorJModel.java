@@ -52,6 +52,7 @@ public class EditorJModel extends JModel {
     public EditorJModel(Editor editor) {
         super(editor.getOptions());
         this.editor = editor;
+        setName("");
         JModel jModel = editor.getModel();
         if (jModel != null) {
             replace(jModel);
@@ -127,7 +128,6 @@ public class EditorJModel extends JModel {
      * Converts this model to a plain Groove graph.
      * @see #toPlainGraph(Map)
      */
-    @Override
     public DefaultGraph toPlainGraph() {
         Map<Element,JCell> dummyMap = new HashMap<Element,JCell>();
         return toPlainGraph(dummyMap);
@@ -141,21 +141,21 @@ public class EditorJModel extends JModel {
      * @param elementMap receives the mapping from elements of the new graph
      * to root cells of this model
      */
-    @Override
     public DefaultGraph toPlainGraph(Map<Element,JCell> elementMap) {
-        DefaultGraph result = new DefaultGraph();
+        DefaultGraph result = new DefaultGraph(getName());
         LayoutMap<DefaultNode,DefaultEdge> layoutMap =
             new LayoutMap<DefaultNode,DefaultEdge>();
         Map<JVertex,DefaultNode> nodeMap = new HashMap<JVertex,DefaultNode>();
 
         // Create nodes
         for (Object root : getRoots()) {
-            if (root instanceof JVertex) {
-                DefaultNode node = addFreshNode(result, ((JVertex) root));
-                nodeMap.put((JVertex) root, node);
-                elementMap.put(node, (JVertex) root);
-                layoutMap.putNode(node, ((JVertex) root).getAttributes());
-                for (String label : ((JVertex) root).getPlainLabels()) {
+            if (root instanceof EditableJVertex) {
+                EditableJVertex jVertex = (EditableJVertex) root;
+                DefaultNode node = addFreshNode(result, jVertex);
+                nodeMap.put(jVertex, node);
+                elementMap.put(node, jVertex);
+                layoutMap.putNode(node, jVertex.getAttributes());
+                for (String label : jVertex.getPlainLabels()) {
                     result.addEdge(node, label, node);
                 }
             }
@@ -187,7 +187,7 @@ public class EditorJModel extends JModel {
         }
         GraphInfo.setLayoutMap(result, layoutMap);
         GraphInfo.setProperties(result, getProperties());
-        GraphInfo.setName(result, getName());
+        result.setRole(this.editor.getRole());
         return result;
     }
 

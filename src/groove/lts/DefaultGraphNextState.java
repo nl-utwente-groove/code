@@ -37,10 +37,11 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     /**
      * Constructs a successor state on the basis of a given parent state and
      * rule application, and a given control location.
+     * @param number the number of the state; required to be positive
      */
-    public DefaultGraphNextState(AbstractGraphState source, RuleEvent event,
-            HostNode[] addedNodes) {
-        super(source.getCacheReference());
+    public DefaultGraphNextState(int number, AbstractGraphState source,
+            RuleEvent event, HostNode[] addedNodes) {
+        super(source.getCacheReference(), number);
         this.source = source;
         this.event = event;
         this.addedNodes = addedNodes;

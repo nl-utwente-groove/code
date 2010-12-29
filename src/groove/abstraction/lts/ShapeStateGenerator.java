@@ -84,7 +84,8 @@ public final class ShapeStateGenerator implements RuleEventApplier {
         for (Shape target : targets) {
             GraphTransition trans;
             ShapeNextState newState =
-                new ShapeNextState(target, (ShapeState) source, event);
+                new ShapeNextState(getGTS().nodeCount(), target,
+                    (ShapeState) source, event);
             ShapeState oldState = (ShapeState) getGTS().addState(newState);
             if (oldState != null) {
                 // The state was not added as an equivalent state existed.

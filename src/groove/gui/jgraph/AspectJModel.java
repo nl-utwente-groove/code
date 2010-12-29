@@ -21,7 +21,6 @@ import static groove.gui.jgraph.JAttr.RULE_EDGE_EMPH_CHANGE;
 import static groove.gui.jgraph.JAttr.RULE_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.RULE_NODE_EMPH_CHANGE;
 import static groove.view.aspect.AspectKind.REMARK;
-import groove.graph.DefaultGraph;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Label;
@@ -69,7 +68,7 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     }
 
     /** Constructor for a dummy model. */
-    AspectJModel() {
+    private AspectJModel() {
         this.view = null;
     }
 
@@ -77,16 +76,6 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     @Override
     public AspectGraph getGraph() {
         return (AspectGraph) super.getGraph();
-    }
-
-    /**
-     * This implementation directly computes the plain graph from the underlying
-     * aspect graph
-     * @see #getGraph()
-     */
-    @Override
-    public DefaultGraph toPlainGraph() {
-        return getGraph().toPlainGraph();
     }
 
     @Override
@@ -309,11 +298,10 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                 result.add(0, getQuantifierLine(getNode().getAspect()));
             }
             // adds a parameter string if the node is a rule parameter
-            if (getNode().hasParam()) {
-                String parString = (String) getNode().getParam().getContent();
-                if (parString != null && parString.length() > 0) {
-                    result.add(new StringBuilder(parString));
-                }
+            if (getNode().hasParam() && getNode().getParam().hasContent()) {
+                Integer paramNr = (Integer) getNode().getParam().getContent();
+                result.add(new StringBuilder(""
+                    + AspectKind.ContentKind.PARAM_START_CHAR + paramNr));
             }
             return result;
         }

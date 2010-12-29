@@ -72,7 +72,7 @@ public class ColConverter {
 
     /** Reads a .col file and returns the corresponding graph. */
     private static HostGraph convert(File inFile) throws IOException {
-        DefaultHostGraph result = new DefaultHostGraph();
+        DefaultHostGraph result = new DefaultHostGraph("graph");
         System.out.printf("Converting %s%n", inFile.getCanonicalPath());
         BufferedReader reader = new BufferedReader(new FileReader(inFile));
         Algebra<?> intAlgebra = AlgebraFamily.getInstance().getAlgebraFor("0");

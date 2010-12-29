@@ -16,6 +16,8 @@
  */
 package groove.trans;
 
+import static groove.graph.GraphRole.RULE;
+import groove.graph.GraphRole;
 import groove.graph.NodeSetEdgeSetGraph;
 
 import java.util.Set;
@@ -29,10 +31,10 @@ import java.util.Set;
 public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
     /**
      * Constructs a new, empty rule graph.
+     * @param name the name of the new rule graph
      */
-    public RuleGraph() {
-        super();
-        // empty
+    public RuleGraph(String name) {
+        super(name);
     }
 
     /**
@@ -43,13 +45,18 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
     }
 
     @Override
+    public GraphRole getRole() {
+        return RULE;
+    }
+
+    @Override
     public RuleGraph clone() {
         return new RuleGraph(this);
     }
 
     @Override
-    public RuleGraph newGraph() {
-        return new RuleGraph();
+    public RuleGraph newGraph(String name) {
+        return new RuleGraph(getName());
     }
 
     @SuppressWarnings("unchecked")

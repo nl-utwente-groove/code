@@ -22,6 +22,7 @@ import groove.graph.Edge;
 import groove.graph.ElementMap;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
+import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.algebra.ValueNode;
@@ -41,16 +42,18 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
         implements HostGraph {
     /**
      * Constructs an empty host graph.
+     * @param name name of the new host graph.
      */
-    public DefaultHostGraph() {
-        this(HostFactory.newInstance());
+    public DefaultHostGraph(String name) {
+        this(name, HostFactory.newInstance());
     }
 
     /**
      * Constructs an empty host graph, with a given host factory.
+     * @param name name of the new host graph
      */
-    public DefaultHostGraph(HostFactory factory) {
-        super();
+    public DefaultHostGraph(String name, HostFactory factory) {
+        super(name);
         this.factory = factory;
     }
 
@@ -67,7 +70,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
      * by creating the appropriate types of nodes and edges.
      */
     public <N extends Node,E extends Edge<N>> DefaultHostGraph(Graph<N,E> graph) {
-        this();
+        this(graph.getName());
         ElementMap<N,E,HostNode,HostEdge> map =
             new ElementMap<N,E,HostNode,HostEdge>(getFactory());
         for (N node : graph.nodeSet()) {
@@ -99,12 +102,17 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
         return new DefaultHostGraph(this);
     }
 
+    @Override
+    public GraphRole getRole() {
+        return HOST;
+    }
+
     /**
      * Returns a copy of this graph, which uses a given factory.
      * Also makes sure the elements already in this graph are known to the factory. 
      */
     public DefaultHostGraph clone(HostFactory factory) {
-        DefaultHostGraph result = new DefaultHostGraph(factory);
+        DefaultHostGraph result = new DefaultHostGraph(getName(), factory);
         for (HostNode node : nodeSet()) {
             factory.addNode(node);
             result.addNode(node);
@@ -118,8 +126,8 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
     }
 
     @Override
-    public DefaultHostGraph newGraph() {
-        return new DefaultHostGraph(getFactory());
+    public DefaultHostGraph newGraph(String name) {
+        return new DefaultHostGraph(getName(), getFactory());
     }
 
     @Override
@@ -137,8 +145,8 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
         return this.factory;
     }
 
-    public HostToAspectMap toAspectGraph() {
-        AspectGraph targetGraph = AspectGraph.newInstance(HOST);
+    public HostToAspectMap toAspectMap() {
+        AspectGraph targetGraph = AspectGraph.newInstance(getName(), HOST);
         HostToAspectMap result = new HostToAspectMap(targetGraph);
         for (HostNode node : nodeSet()) {
             AspectNode nodeImage = targetGraph.addNode(node.getNumber());

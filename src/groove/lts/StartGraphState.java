@@ -13,10 +13,10 @@ import groove.trans.SystemRecord;
  */
 public class StartGraphState extends AbstractGraphState {
     /**
-     * Creates a start state based on a given system record and start graph
+     * Creates a start state based on a given system record and start graph.
      */
     public StartGraphState(SystemRecord record, HostGraph graph) {
-        super(StateReference.newInstance(record));
+        super(StateReference.newInstance(record), 0);
         setFrozenGraph(getCache().computeFrozenGraph(graph));
         this.graph = getCache().getGraph();
         CtrlAut ctrlAut = record.getGrammar().getCtrlAut();

@@ -36,10 +36,12 @@ import java.net.URL;
  */
 public class Aut implements Xml<DefaultGraph> {
     public DefaultGraph unmarshalGraph(URL url) throws IOException {
-        DefaultGraph resultGraph = createGraph();
+        String name = extractName(url.getPath());
+        DefaultGraph result = createGraph(name);
         InputStream in = url.openStream();
+        Converter.autToGraph(in, result);
         in.close();
-        return resultGraph;
+        return result;
     }
 
     /** backwards compatibility method */
@@ -62,8 +64,19 @@ public class Aut implements Xml<DefaultGraph> {
         out.close();
     }
 
+    /**
+     * Extracts a graph name from a location (given as a string) by regarding
+     * the string as a file and returning the name part, without extension.
+     * @param location string description of the location a graph was marshalled
+     *        from
+     * @return graph name extracted from <code>location</code>; non-null
+     */
+    private String extractName(String location) {
+        return ExtensionFilter.getPureName(new File(location));
+    }
+
     /** Callback factory method to create the underlying graph. */
-    private DefaultGraph createGraph() {
-        return new DefaultGraph();
+    private DefaultGraph createGraph(String name) {
+        return new DefaultGraph(name);
     }
 }

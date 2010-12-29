@@ -16,9 +16,11 @@
  */
 package groove.trans;
 
+import static groove.graph.GraphRole.HOST;
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultGraph;
 import groove.graph.Edge;
+import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
@@ -46,13 +48,15 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
     /**
      * Constructs a graph with an empty basis and a delta determining
      * the elements of the graph.
+     * @param name the name of the graph
      * @param delta the delta determining the initial graph
      * @param factory the factory for new graph elements
      * @param copyData if <code>true</code>, the data structures will be
      *        copied from one graph to the next; otherwise, they will be reused
      */
-    private DeltaHostGraph(HostElement[] delta, HostFactory factory,
-            boolean copyData) {
+    private DeltaHostGraph(String name, HostElement[] delta,
+            HostFactory factory, boolean copyData) {
+        super(name);
         this.factory = factory;
         this.basis = null;
         this.copyData = copyData;
@@ -62,13 +66,15 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
 
     /**
      * Constructs a graph with a given (non-{@code null}) basis and delta.
+     * @param name the name of the graph
      * @param basis the (non-{@code null}) basis for the new delta graph
      * @param delta the delta with respect to the basis; non-<code>null</code>
      * @param copyData if <code>true</code>, the data structures will be
      *        copied from one graph to the next; otherwise, they will be reused
      */
-    private DeltaHostGraph(final DeltaHostGraph basis,
+    private DeltaHostGraph(String name, final DeltaHostGraph basis,
             final DeltaApplier delta, boolean copyData) {
+        super(name);
         this.basis = basis;
         this.factory = basis.getFactory();
         this.copyData = copyData;
@@ -95,6 +101,11 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
         setFixed();
     }
 
+    @Override
+    public GraphRole getRole() {
+        return HOST;
+    }
+
     /**
      * Since the result should be modifiable, returns a {@link DefaultHostGraph}.
      */
@@ -106,18 +117,25 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
     /**
      * Since the result should be modifiable, returns a {@link DefaultGraph}.
      */
-    public HostGraph newGraph() {
-        return new DefaultHostGraph(getFactory());
+    public HostGraph newGraph(String name) {
+        return new DefaultHostGraph(name, getFactory());
     }
 
-    /** Creates a new delta graph from a given basis and delta applier. */
-    public DeltaHostGraph newGraph(DeltaHostGraph graph, DeltaApplier applier) {
-        return new DeltaHostGraph(graph, applier, this.copyData);
+    /** 
+     * Creates a new delta graph from a given basis and delta applier. 
+     * @param name the name of the new graph
+     */
+    public DeltaHostGraph newGraph(String name, DeltaHostGraph graph,
+            DeltaApplier applier) {
+        return new DeltaHostGraph(name, graph, applier, this.copyData);
     }
 
-    /** Creates a new delta graph from a given element array. */
-    public DeltaHostGraph newGraph(HostElement[] elements, HostFactory factory) {
-        return new DeltaHostGraph(elements, factory, this.copyData);
+    /** Creates a new delta graph from a given element array. 
+     * @param name the name of the new graph
+     */
+    public DeltaHostGraph newGraph(String name, HostElement[] elements,
+            HostFactory factory) {
+        return new DeltaHostGraph(name, elements, factory, this.copyData);
     }
 
     /**
@@ -437,8 +455,8 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
     }
 
     @Override
-    public HostToAspectMap toAspectGraph() {
-        return clone().toAspectGraph();
+    public HostToAspectMap toAspectMap() {
+        return clone().toAspectMap();
     }
 
     /** The element factory of this host graph. */
@@ -477,10 +495,10 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
     static private final boolean ALIAS_SETS = true;
     /** Factory instance of this class, in which data is copied. */
     static private final DeltaHostGraph copyInstance = new DeltaHostGraph(
-        (HostElement[]) null, null, true);
+        "copy prototype", (HostElement[]) null, null, true);
     /** Factory instance of this class, in which data is aliased. */
     static private final DeltaHostGraph swingInstance = new DeltaHostGraph(
-        (HostElement[]) null, null, false);
+        "swing prototype", (HostElement[]) null, null, false);
 
     /**
      * Returns a fixed factory instance of the {@link DeltaHostGraph} class,

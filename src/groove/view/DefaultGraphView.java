@@ -20,7 +20,6 @@ import static groove.view.aspect.AspectKind.UNTYPED;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.graph.Element;
-import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
@@ -56,18 +55,15 @@ import java.util.TreeSet;
 public class DefaultGraphView implements GraphView {
     /**
      * Constructs an instance from a given aspect graph view.
-     * @see GraphInfo#getName(Graph)
      */
     public DefaultGraphView(AspectGraph view, SystemProperties properties) {
         view.testFixed(true);
         this.view = view;
         this.algebraFamily = getFamily(properties);
-        String name = GraphInfo.getName(view);
-        this.name = name == null ? "" : name;
     }
 
     public String getName() {
-        return this.name;
+        return this.view.getName();
     }
 
     @Override
@@ -165,7 +161,7 @@ public class DefaultGraphView implements GraphView {
      */
     private Pair<DefaultHostGraph,ViewToHostMap> computeModel(AspectGraph view) {
         Set<FormatError> errors = new TreeSet<FormatError>(view.getErrors());
-        DefaultHostGraph model = createGraph();
+        DefaultHostGraph model = createGraph(view.getName());
         // we need to record the view-to-model element map for layout transfer
         ViewToHostMap elementMap = new ViewToHostMap(HostFactory.newInstance());
         // copy the nodes from view to model
@@ -287,12 +283,10 @@ public class DefaultGraphView implements GraphView {
     /**
      * Returns the graph factory used to construct the model.
      */
-    private DefaultHostGraph createGraph() {
-        return new DefaultHostGraph();
+    private DefaultHostGraph createGraph(String name) {
+        return new DefaultHostGraph(name);
     }
 
-    /** The name of the view. */
-    private final String name;
     /** The view represented by this object. */
     private final AspectGraph view;
     /** The graph model that is being viewed. */

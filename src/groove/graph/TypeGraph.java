@@ -16,6 +16,7 @@
  */
 package groove.graph;
 
+import static groove.graph.GraphRole.TYPE;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
@@ -44,10 +45,16 @@ import java.util.TreeSet;
  * @version $Revision $
  */
 public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
-    /** Constructs a fresh type graph. */
-    public TypeGraph() {
-        super();
-        GraphInfo.setTypeRole(this);
+    /** Constructs a fresh type graph. 
+     * @param name the (non-{@code null}) name of the type graph 
+     */
+    public TypeGraph(String name) {
+        super(name);
+    }
+
+    @Override
+    public GraphRole getRole() {
+        return TYPE;
     }
 
     /** 
@@ -148,14 +155,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
 
     @Override
     public TypeGraph clone() {
-        TypeGraph result = new TypeGraph();
+        TypeGraph result = new TypeGraph(getName());
         result.add(this);
         return result;
     }
 
     @Override
-    public TypeGraph newGraph() {
-        return new TypeGraph();
+    public TypeGraph newGraph(String name) {
+        return new TypeGraph(getName());
     }
 
     @Override
@@ -561,7 +568,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
      */
     private void initSaturation() {
         testFixed(true);
-        HostGraph result = new DefaultHostGraph();
+        HostGraph result = new DefaultHostGraph(getName());
         Map<TypeLabel,HostNode> typeNodeMap = new HashMap<TypeLabel,HostNode>();
         /* Inverse subtyping-saturated set of flag-bearing node types. */
         Set<TypeLabel> flaggedNodes = new HashSet<TypeLabel>();

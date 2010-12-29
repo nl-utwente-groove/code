@@ -33,7 +33,7 @@ import groove.view.aspect.AspectParser;
  */
 public interface HostGraph extends Graph<HostNode,HostEdge>, DeltaTarget {
     @Override
-    HostGraph newGraph();
+    HostGraph newGraph(String name);
 
     @Override
     HostGraph clone();
@@ -42,7 +42,7 @@ public interface HostGraph extends Graph<HostNode,HostEdge>, DeltaTarget {
     HostFactory getFactory();
 
     /** Converts this host graph to an equivalent aspect graph representation. */
-    HostToAspectMap toAspectGraph();
+    HostToAspectMap toAspectMap();
 
     /** 
      * Mapping from the elements of a host graph to those of a corresponding

@@ -16,9 +16,8 @@
  */
 package groove.gui;
 
+import static groove.graph.GraphRole.TYPE;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
-import groove.graph.DefaultGraph;
-import groove.graph.GraphInfo;
 import groove.graph.LabelStore;
 import groove.gui.JTypeNameList.CheckBoxListModel;
 import groove.gui.jgraph.AspectJModel;
@@ -154,7 +153,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
      * @param fresh if <code>true</code>, the name for the edited type should be
      *        fresh
      */
-    private void handleEditType(final DefaultGraph type, final boolean fresh) {
+    private void handleEditType(final AspectGraph type, final boolean fresh) {
         final String oldSelectedType = getSelectedType();
         EditorDialog dialog =
             new EditorDialog(getSimulator().getFrame(), getOptions(), type,
@@ -163,10 +162,9 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
                 public void finish() {
                     String typeName =
                         getSimulator().askNewTypeName("Select type graph name",
-                            GraphInfo.getName(type), fresh);
+                            type.getName(), fresh);
                     if (typeName != null) {
-                        AspectGraph newType = getAspectGraph();
-                        GraphInfo.setName(newType, typeName);
+                        AspectGraph newType = getAspectGraph().rename(typeName);
                         getSimulator().doAddType(newType);
                         if (oldSelectedType != null
                             & !typeName.equals(oldSelectedType)) {
@@ -392,9 +390,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
                     oldName, true);
             if (newName != null) {
                 TypeView oldTypeView = getGrammarView().getTypeView(oldName);
-                AspectGraph newType = oldTypeView.getView().clone();
-                GraphInfo.setName(newType, newName);
-                newType.setFixed();
+                AspectGraph newType = oldTypeView.getView().rename(newName);
                 getSimulator().doAddType(newType);
                 getNameListModel().addType(newName, false, false);
                 getNameListModel().selectMostAppropriateType();
@@ -536,8 +532,8 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         }
 
         public void actionPerformed(ActionEvent e) {
-            final DefaultGraph initType =
-                getGrammarView().getTypeView(getSelectedType()).getView().toPlainGraph();
+            final AspectGraph initType =
+                getGrammarView().getTypeView(getSelectedType()).getView();
             handleEditType(initType, false);
         }
 
@@ -572,9 +568,8 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            final DefaultGraph initType = new DefaultGraph();
-            GraphInfo.setTypeRole(initType);
-            GraphInfo.setName(initType, Groove.DEFAULT_TYPE_NAME);
+            final AspectGraph initType =
+                AspectGraph.newInstance(Groove.DEFAULT_TYPE_NAME, TYPE);
             handleEditType(initType, true);
         }
 

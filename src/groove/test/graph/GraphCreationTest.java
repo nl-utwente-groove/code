@@ -48,7 +48,7 @@ public class GraphCreationTest extends TestCase {
 
     @Override
     protected void setUp() {
-        this.g = new DefaultGraph();
+        this.g = new DefaultGraph("g");
 
         for (int i = 0; i < NR_NODES_TOTAL; i++) {
             this.n[i] = DefaultNode.createNode();
@@ -72,7 +72,7 @@ public class GraphCreationTest extends TestCase {
     }
 
     public void testCreateEqualAndCompare() {
-        Graph g2 = new DefaultGraph();
+        Graph g2 = new DefaultGraph("g2");
 
         for (int i = NR_NODES_IN_GRAPH - 1; i >= 0; i--) {
             assertTrue(!this.g.equals(g2));

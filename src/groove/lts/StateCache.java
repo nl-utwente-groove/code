@@ -123,7 +123,7 @@ class StateCache {
         DeltaHostGraph result;
         if (frozenGraph != null) {
             result =
-                this.graphFactory.newGraph(frozenGraph,
+                this.graphFactory.newGraph(this.state.toString(), frozenGraph,
                     this.record.getFactory());
         } else if (!(this.state instanceof GraphNextState)) {
             throw new IllegalStateException(
@@ -147,9 +147,12 @@ class StateCache {
             // from ancestor to this one
             result = (DeltaHostGraph) backward.getGraph();
             for (DefaultGraphNextState forward : stateChain) {
-                result = this.graphFactory.newGraph(result, forward.getDelta());
+                result =
+                    this.graphFactory.newGraph(state.toString(), result,
+                        forward.getDelta());
             }
-            result = this.graphFactory.newGraph(result, getDelta());
+            result =
+                this.graphFactory.newGraph(state.toString(), result, getDelta());
             // If the state is closed, then we are reconstructing the graph
             // for the second time at least; see if we should freeze it
             if (getState().isClosed() && isFreezeGraph(depth)) {

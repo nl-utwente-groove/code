@@ -90,7 +90,7 @@ public class NACTest {
     /** The setup is as in the paper */
     @Before
     public void setUp() throws FormatException {
-        RuleGraph protREGraph = new RuleGraph();
+        RuleGraph protREGraph = new RuleGraph("protREGraph");
         int[] lhsSrc = {0};
         String[] lhsLab = {"a"};
         int[] lhsTgt = {1};
@@ -123,7 +123,7 @@ public class NACTest {
                 new RuleLabel("c"), this.ruleNodes[0][0]),
                 SystemProperties.getInstance());
 
-        RuleGraph protGraph = new RuleGraph();
+        RuleGraph protGraph = new RuleGraph("protGraph");
         int[] g0Src = {1, 1, 2};
         String[] g0Lab = {"b", "a", "c"};
         int[] g0Tgt = {0, 2, 1};
@@ -143,7 +143,7 @@ public class NACTest {
     private RuleGraph setUpRuleGraph(RuleGraph prototype, int graphNr,
             int nrNodes, int[] sources, String[] labels, int[] targets)
         throws FormatException {
-        RuleGraph res = prototype.newGraph();
+        RuleGraph res = prototype.newGraph("test rule");
 
         this.ruleNodes[graphNr] = new DefaultNode[nrNodes];
         for (int j = 0; j < nrNodes; j++) {
@@ -165,7 +165,7 @@ public class NACTest {
 
     private HostGraph setUpHostGraph(RuleGraph prototype, int graphNr,
             int nrNodes, int[] sources, String[] labels, int[] targets) {
-        HostGraph res = new DefaultHostGraph();
+        HostGraph res = new DefaultHostGraph("graph");
 
         this.stateNodes[graphNr] = new HostNode[nrNodes];
         for (int j = 0; j < nrNodes; j++) {

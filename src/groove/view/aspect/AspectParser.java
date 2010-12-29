@@ -34,6 +34,7 @@ import java.util.Map;
 public class AspectParser {
     /** Creates an aspect parser for a particular graph role. */
     private AspectParser(GraphRole role) {
+        assert role.inGrammar();
         this.role = role;
     }
 
@@ -168,7 +169,9 @@ public class AspectParser {
 
     static {
         for (GraphRole role : EnumSet.allOf(GraphRole.class)) {
-            instances.put(role, new AspectParser(role));
+            if (role.inGrammar()) {
+                instances.put(role, new AspectParser(role));
+            }
         }
     }
 }

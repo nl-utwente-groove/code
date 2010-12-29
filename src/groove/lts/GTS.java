@@ -23,6 +23,7 @@ import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
+import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 import groove.graph.iso.CertificateStrategy;
@@ -83,7 +84,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      * Constructs a GTS from a (fixed) graph grammar.
      */
     public GTS(GraphGrammar grammar) {
-        super();
+        super(grammar.getName() + "-gts");
         grammar.testFixed(true);
         this.grammar = grammar;
         this.record = new SystemRecord(this);
@@ -105,7 +106,8 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      */
     protected DefaultHostGraph createStartGraph(DefaultHostGraph startGraph) {
         HostFactory factory = HostFactory.newInstance();
-        DefaultHostGraph result = new DefaultHostGraph(factory);
+        DefaultHostGraph result =
+            new DefaultHostGraph(startGraph.getName(), factory);
         for (HostNode node : startGraph.nodeSet()) {
             factory.addNode(node);
             result.addNode(node);
@@ -369,7 +371,6 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         // see if isomorphic graph is already in the LTS
         GraphState result = getStateSet().put(newState);
         if (result == null) {
-            ((AbstractGraphState) newState).setNumber(nodeCount() - 1);
             fireAddNode(newState);
         }
         return result;
@@ -471,7 +472,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      */
     public DefaultGraph toPlainGraph(boolean showFinal, boolean showStart,
             boolean showOpen, boolean showNames) {
-        DefaultGraph result = new DefaultGraph();
+        DefaultGraph result = new DefaultGraph(getName());
         Map<GraphState,DefaultNode> nodeMap =
             new HashMap<GraphState,DefaultNode>();
         for (GraphState state : nodeSet()) {
@@ -498,7 +499,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     }
 
     @Override
-    public GTS newGraph() {
+    public GTS newGraph(String name) {
         return new GTS(this.grammar);
     }
 
@@ -527,6 +528,11 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     @Override
     public GTS clone() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public GraphRole getRole() {
+        return GraphRole.LTS;
     }
 
     /**

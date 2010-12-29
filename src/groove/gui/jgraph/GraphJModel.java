@@ -18,7 +18,6 @@
 package groove.gui.jgraph;
 
 import static groove.view.aspect.AspectKind.REMARK;
-import groove.graph.AbstractGraph;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
@@ -96,7 +95,9 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
      * Constructor for a dummy (empty) model.
      */
     GraphJModel() {
-        this(AbstractGraph.<N,E>emptyGraph(), null);
+        super(JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, null);
+        this.graph = null;
+        this.layoutMap = null;
     }
 
     /**
@@ -107,7 +108,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
     public String getName() {
         String result = super.getName();
         if (result == null) {
-            result = GraphInfo.getName(getGraph());
+            result = getGraph().getName();
         }
         return result;
     }
@@ -141,10 +142,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
         if (graphProperties != null) {
             setProperties(graphProperties);
         }
-        String name = GraphInfo.getName(this.graph);
-        if (name != null) {
-            setName(name);
-        }
+        setName(this.graph.getName());
     }
 
     /**
@@ -241,16 +239,6 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
             currentLayout.putNode(((GraphJVertex<N,E>) jCell).getNode(),
                 jCell.getAttributes());
         }
-    }
-
-    /**
-     * This method also sets the role of the resulting graph.
-     */
-    @Override
-    public DefaultGraph toPlainGraph() {
-        DefaultGraph result = super.toPlainGraph();
-        GraphInfo.setRole(result, GraphInfo.getRole(getGraph()));
-        return result;
     }
 
     @Override

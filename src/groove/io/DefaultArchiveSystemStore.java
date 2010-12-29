@@ -467,7 +467,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         for (Map.Entry<String,AspectGraph> entry : loadObjects(file, rules,
             RULE_FILTER, GraphRole.RULE).entrySet()) {
             RuleName name = createRuleName(entry.getKey());
-            GraphInfo.setName(entry.getValue(), name.toString());
+            entry.getValue().setName(name.toString());
             this.ruleMap.put(name, entry.getValue());
         }
     }
@@ -523,8 +523,8 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
                  * For backward compatibility, we set the role and name of the
                  * graph.
                  */
-                GraphInfo.setRole(plainGraph, role);
-                GraphInfo.setName(plainGraph, graphName);
+                plainGraph.setRole(role);
+                plainGraph.setName(graphName);
                 addLayout(file, graphEntry.getKey(), plainGraph,
                     plainGraphAndMap.two());
                 AspectGraph graph = AspectGraph.newInstance(plainGraph);

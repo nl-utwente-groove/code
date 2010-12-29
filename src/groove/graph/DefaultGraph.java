@@ -16,6 +16,8 @@
  */
 package groove.graph;
 
+import static groove.graph.GraphRole.NONE;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,15 +40,16 @@ public class DefaultGraph extends AbstractGraph<DefaultNode,DefaultEdge>
      *         used for its <tt>newGraph()</tt> method.
      */
     static public DefaultGraph getPrototype() {
-        return new DefaultGraph();
+        return new DefaultGraph(NO_NAME);
     }
 
     /**
      * Constructs a new, empty Graph.
      * @ensure result.isEmpty()
+     * @param name the (non-{@code null}) name of the graph.
      */
-    public DefaultGraph() {
-        super();
+    public DefaultGraph(String name) {
+        super(name);
     }
 
     /**
@@ -56,7 +59,7 @@ public class DefaultGraph extends AbstractGraph<DefaultNode,DefaultEdge>
      * @ensure result.equals(graph)
      */
     protected DefaultGraph(DefaultGraph graph) {
-        super();
+        super(graph.getName());
         for (Map.Entry<DefaultNode,Set<DefaultEdge>> edgeEntry : graph.edgeMap.entrySet()) {
             this.edgeMap.put(edgeEntry.getKey(), new HashSet<DefaultEdge>(
                 edgeEntry.getValue()));
@@ -97,8 +100,8 @@ public class DefaultGraph extends AbstractGraph<DefaultNode,DefaultEdge>
         return result;
     }
 
-    public DefaultGraph newGraph() {
-        return new DefaultGraph();
+    public DefaultGraph newGraph(String name) {
+        return new DefaultGraph(getName());
     }
 
     // ------------------------- COMMANDS ------------------------------
@@ -182,10 +185,31 @@ public class DefaultGraph extends AbstractGraph<DefaultNode,DefaultEdge>
     }
 
     /**
+     * Returns the role of this default graph.
+     * If not set explicitly, the role is {@code NONE}.
+     * @see #setRole(GraphRole)
+     */
+    public final GraphRole getRole() {
+        return this.role;
+    }
+
+    /**
+     * Changes the role of this default graph.
+     * This is only allowed if the graph is not yet fixed.
+     * @param role the new role of the graph
+     */
+    public final void setRole(GraphRole role) {
+        this.role = role;
+    }
+
+    /**
      * Map from the nodes of this graph to the corresponding sets of outgoing
      * edges.
      * @invariant <tt>edgeMap: DefaultNode -> 2^DefaultEdge</tt>
      */
     private final Map<DefaultNode,Set<DefaultEdge>> edgeMap =
         new HashMap<DefaultNode,Set<DefaultEdge>>();
+
+    /** The role of this default graph. */
+    private GraphRole role = NONE;
 }

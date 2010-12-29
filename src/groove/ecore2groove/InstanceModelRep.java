@@ -181,8 +181,7 @@ public class InstanceModelRep {
         }
 
         // Create a new instance model
-        this.instanceModel =
-            mh.createModel(this.instanceGraph.getInfo().getName());
+        this.instanceModel = mh.createModel(this.instanceGraph.getName());
         EList<EObject> contents = this.instanceModel.getContents();
 
         // Add instance of root to the contents of the instance model

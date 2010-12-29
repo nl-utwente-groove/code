@@ -92,7 +92,7 @@ public final class AGTS extends GTS {
     protected ShapeState createStartState(DefaultHostGraph startGraph) {
         ShapeState result =
             new ShapeState((Shape) startGraph,
-                getGrammar().getCtrlAut().getStart());
+                getGrammar().getCtrlAut().getStart(), 0);
         return result;
     }
 

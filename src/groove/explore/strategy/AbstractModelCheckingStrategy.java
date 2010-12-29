@@ -208,8 +208,8 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
         this.transitionStack = new Stack<ProductTransition>();
         assert (this.initialLocation != null) : "The property automaton should have an initial state";
         BuchiGraphState startState =
-            new BuchiGraphState(this.productGTS.getRecord(),
-                getGTS().startState(), this.initialLocation, null);
+            new BuchiGraphState(this.productGTS, getGTS().startState(),
+                this.initialLocation, null);
         setStartBuchiState(startState);
         this.productGTS.setStartState(startState);
     }
@@ -358,11 +358,11 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
             // graph-state component of the source Buchi graph-state and the
             // target
             // Buchi-location
-            return new BuchiGraphState(getProductGTS().getRecord(),
-                source.getGraphState(), targetLocation, source);
+            return new BuchiGraphState(getProductGTS(), source.getGraphState(),
+                targetLocation, source);
         } else {
-            return new BuchiGraphState(getProductGTS().getRecord(),
-                transition.target(), targetLocation, source);
+            return new BuchiGraphState(getProductGTS(), transition.target(),
+                targetLocation, source);
         }
     }
 

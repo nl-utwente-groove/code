@@ -20,6 +20,7 @@ import groove.explore.result.Acceptor;
 import groove.graph.AbstractGraph;
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.iso.IsoChecker;
 import groove.trans.GraphGrammar;
@@ -51,7 +52,7 @@ public class ProductGTS extends AbstractGraph<GraphState,GraphTransition>
      * Constructs a GTS from a (fixed) graph grammar.
      */
     public ProductGTS(GTS gts) {
-        super();
+        super(gts.getName());
         this.gts = gts;
         this.graphGrammar = gts.getGrammar();
     }
@@ -97,7 +98,6 @@ public class ProductGTS extends AbstractGraph<GraphState,GraphTransition>
     public BuchiGraphState addState(BuchiGraphState newState) {
         // reporter.start(ADD_STATE);
         // see if isomorphic graph is already in the GTS
-        ((AbstractGraphState) newState).setNumber(nodeCount());
         BuchiGraphState result = this.stateSet.put(newState);
         // new states are first considered open
         if (result == null) {
@@ -283,6 +283,11 @@ public class ProductGTS extends AbstractGraph<GraphState,GraphTransition>
         return nodeCount() - this.closedCount;
     }
 
+    @Override
+    public GraphRole getRole() {
+        return GraphRole.LTS;
+    }
+
     private final GTS gts;
     private final GraphGrammar graphGrammar;
     private BuchiGraphState startState;
@@ -436,7 +441,7 @@ public class ProductGTS extends AbstractGraph<GraphState,GraphTransition>
     }
 
     @Override
-    public ProductGTS newGraph() {
+    public ProductGTS newGraph(String name) {
         return new ProductGTS(this.gts);
     }
 

@@ -39,11 +39,14 @@ import java.util.Set;
 public abstract class AbstractGraph<N extends Node,E extends Edge<N>> extends
         AbstractCacheHolder<GraphCache<N,E>> implements Graph<N,E> {
     /**
-     * Constructs an abstract graph with a given element factory
+     * Constructs an abstract named graph.
+     * @param name the (non-{@code null}) name of the graph.
      */
-    protected AbstractGraph() {
+    protected AbstractGraph(String name) {
         super(null);
         modifiableGraphCount++;
+        assert name != null;
+        this.name = name;
     }
 
     public int nodeCount() {
@@ -468,8 +471,20 @@ public abstract class AbstractGraph<N extends Node,E extends Edge<N>> extends
         throw new UnsupportedOperationException();
     }
 
+    public void setName(String name) {
+        assert !isFixed();
+        assert name != null;
+        this.name = name;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    private String name = NO_NAME;
+
     /**
-     * Map in which varies kinds of data can be stored.
+     * Map in which various kinds of data can be stored.
      */
     private GraphInfo<N,E> graphInfo;
 
@@ -527,12 +542,6 @@ public abstract class AbstractGraph<N extends Node,E extends Edge<N>> extends
         return new HashSet<Pair<Set<N>,Set<E>>>(resultMap.values());
     }
 
-    /** Returns an empty graph. */
-    @SuppressWarnings("unchecked")
-    static public <N extends Node,E extends Edge<N>> AbstractGraph<N,E> emptyGraph() {
-        return EMPTY_GRAPH;
-    }
-
     /**
      * Returns the number of graphs created and never fixed.
      * @return the number of graphs created and never fixed
@@ -573,12 +582,6 @@ public abstract class AbstractGraph<N extends Node,E extends Edge<N>> extends
         new PartitionRefiner<Node,Edge<Node>>((Graph<Node,Edge<Node>>) null);
 
     /**
-     * Fixed empty graph.
-     */
-    @SuppressWarnings("all")
-    static public final EmptyGraph EMPTY_GRAPH = new EmptyGraph();
-
-    /**
      * Changes the strategy for computing isomorphism certificates.
      * @param certificateFactory the new strategy
      * @see #getCertifier(boolean)
@@ -594,54 +597,5 @@ public abstract class AbstractGraph<N extends Node,E extends Edge<N>> extends
      */
     static public CertificateStrategy<?,?> getCertificateFactory() {
         return certificateFactory;
-    }
-
-    /** Fixed empty graphs, used for the constant <tt>{@link #EMPTY_GRAPH}</tt>. */
-    private static class EmptyGraph<N extends Node,E extends Edge<N>> extends
-            AbstractGraph<N,E> implements Cloneable {
-        /**
-         * The empty graph to which no elements can be added.
-         */
-        EmptyGraph() {
-            super();
-            setFixed();
-        }
-
-        public boolean addEdgeWithoutCheck(E edge) {
-            throw new UnsupportedOperationException(
-                "Can't add element to fixed empty graph");
-        }
-
-        public boolean removeNodeWithoutCheck(N node) {
-            throw new UnsupportedOperationException(
-                "Can't remove element from fixed empty graph");
-        }
-
-        @Override
-        public EmptyGraph<N,E> clone() {
-            return new EmptyGraph<N,E>();
-        }
-
-        public EmptyGraph<N,E> newGraph() {
-            return new EmptyGraph<N,E>();
-        }
-
-        public boolean addNode(N node) {
-            throw new UnsupportedOperationException(
-                "Can't add element to fixed empty graph");
-        }
-
-        public Set<? extends E> edgeSet() {
-            return Collections.emptySet();
-        }
-
-        public Set<? extends N> nodeSet() {
-            return Collections.emptySet();
-        }
-
-        public boolean removeEdge(E edge) {
-            throw new UnsupportedOperationException(
-                "Can't remove element from fixed empty graph");
-        }
     }
 }

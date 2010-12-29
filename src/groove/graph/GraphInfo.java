@@ -135,33 +135,6 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
         this.data.put(LAYOUT_KEY, layoutMap);
     }
 
-    /** Tests if this info object has a value for the {@link #NAME_KEY}. */
-    public boolean hasName() {
-        return this.data.get(NAME_KEY) != null;
-    }
-
-    /**
-     * Returns the name associated with the graph, if any.
-     * @return a name stored in the info object, or <code>null</code>
-     * @see #setName(String)
-     */
-    public String getName() {
-        return (String) this.data.get(NAME_KEY);
-    }
-
-    /**
-     * Sets the name (key {@link #NAME_KEY}) in this info object to a certain
-     * value. If the value is <code>null</code>, the key is removed altogether.
-     * @see #getName()
-     */
-    public void setName(String name) {
-        if (name == null) {
-            this.data.remove(NAME_KEY);
-        } else {
-            this.data.put(NAME_KEY, name);
-        }
-    }
-
     /** Tests if this info object has a value for the {@link #PROPERTIES_KEY}. */
     public boolean hasProperties() {
         return this.data.get(PROPERTIES_KEY) != null;
@@ -209,34 +182,6 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
     public void newProperties(GraphProperties properties) {
         GraphProperties result = new GraphProperties(properties);
         this.data.put(PROPERTIES_KEY, result);
-    }
-
-    /** Tests if this info object has a value for the {@link #ROLE_KEY}. */
-    public boolean hasRole() {
-        return this.data.get(ROLE_KEY) != null;
-    }
-
-    /**
-     * Returns the role of the graph, if any.
-     * @return a role stored in the info object, or <code>null</code>
-     * @see #setRole(GraphRole)
-     */
-    public GraphRole getRole() {
-        return hasRole() ? GraphRole.roles.get(this.data.get(ROLE_KEY)) : null;
-    }
-
-    /**
-     * 
-     * Sets the role (key {@link #ROLE_KEY}) in this info object to a certain
-     * value. If the value is <code>null</code>, the key is removed altogether.
-     * @see #getRole()
-     */
-    public void setRole(GraphRole role) {
-        if (role == null) {
-            this.data.remove(ROLE_KEY);
-        } else {
-            this.data.put(ROLE_KEY, role.toString());
-        }
     }
 
     /**
@@ -389,34 +334,6 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
     }
 
     /**
-     * Convenience method to retrieve the name of a graph.
-     * @return the stored name of the graph; <code>null</code> if no name is
-     *         stored
-     * @see #getName()
-     */
-    public static <N extends Node,E extends Edge<N>> String getName(
-            Graph<N,E> graph) {
-        GraphInfo<N,E> graphInfo = graph.getInfo();
-        if (graphInfo == null) {
-            return null;
-        } else {
-            return graphInfo.getName();
-        }
-    }
-
-    /**
-     * Convenience method to set the name of a graph.
-     * @see #setName(String)
-     */
-    public static <N extends Node,E extends Edge<N>> void setName(
-            Graph<N,E> graph, String name) {
-        GraphInfo<N,E> info = getInfo(graph, name != null);
-        if (info != null) {
-            info.setName(name);
-        }
-    }
-
-    /**
      * Convenience method to retrieve the properties map from a graph, creating
      * it is necessary if any.
      * @param graph the graph to retrieve the properties from
@@ -471,88 +388,6 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
     }
 
     /**
-     * Convenience method to retrieve the role of a graph.
-     * @return the stored role of the graph; <code>null</code> if no role is
-     *         stored
-     * @see #setRole(GraphRole)
-     */
-    public static <N extends Node,E extends Edge<N>> GraphRole getRole(
-            Graph<N,E> graph) {
-        GraphInfo<N,E> graphInfo = graph.getInfo();
-        if (graphInfo == null) {
-            return null;
-        } else {
-            return graphInfo.getRole();
-        }
-    }
-
-    /**
-     * Convenience method to set the role of a graph.
-     * @see #setRole(GraphRole)
-     */
-    public static <N extends Node,E extends Edge<N>> void setRole(
-            Graph<N,E> graph, GraphRole role) {
-        GraphInfo<N,E> info = getInfo(graph, role != null);
-        if (info != null) {
-            info.setRole(role);
-        }
-    }
-
-    /**
-     * Convenience method to test whether the role of a graph is <i>rule</i>.
-     * @see #getRole()
-     * @see GraphRole#RULE
-     */
-    public static boolean hasRuleRole(Graph<?,?> graph) {
-        return getRole(graph) == GraphRole.RULE;
-    }
-
-    /**
-     * Convenience method to test whether the role of a graph is <i>graph</i>.
-     * @see #getRole()
-     * @see GraphRole#HOST
-     */
-    public static boolean hasHostRole(Graph<?,?> graph) {
-        return getRole(graph) == GraphRole.HOST;
-    }
-
-    /**
-     * Convenience method to test whether the role of a graph is <i> type</i>.
-     * @see #getRole()
-     * @see GraphRole#TYPE
-     */
-    public static boolean hasTypeRole(Graph<?,?> graph) {
-        return getRole(graph) == GraphRole.TYPE;
-    }
-
-    /**
-     * Convenience method to set the role of a graph to <i>rule</i>.
-     * @see #setRole(GraphRole)
-     * @see GraphRole#RULE
-     */
-    public static void setRuleRole(Graph<?,?> graph) {
-        setRole(graph, GraphRole.RULE);
-    }
-
-    /**
-     * Convenience method to set the role of a graph to <i>graph</i>.
-     * @see #setRole(GraphRole)
-     * @see GraphRole#HOST
-     */
-    public static void setHostRole(Graph<?,?> graph) {
-        setRole(graph, GraphRole.HOST);
-    }
-
-    /**
-     * Convenience method to set the role of a graph to <i>type</i>.
-     * @see #setRole(GraphRole)
-     * @see GraphRole#TYPE
-     */
-    public static void setTypeRole(Graph<?,?> graph) {
-        setRole(graph, GraphRole.TYPE);
-    }
-
-    /**
      * Transfers all available graph information from one graph to another,
      * modulo a given element map. The element map may be null if the node and
      * edge identities of source and target coincide.
@@ -601,14 +436,6 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
      * Key for storage file.
      */
     public static final String FILE_KEY = "file";
-    /**
-     * Key for graph role. The value should be a role name out of {@link GraphRole}.
-     */
-    public static final String ROLE_KEY = "type";
-    /**
-     * Key for graph name.
-     */
-    public static final String NAME_KEY = "name";
     /**
      * Key for graph properties.
      */

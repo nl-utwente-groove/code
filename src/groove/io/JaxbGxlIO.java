@@ -197,10 +197,8 @@ public class JaxbGxlIO implements GxlIO {
         GraphType gxlGraph = this.factory.createGraphType();
         gxlGraph.setEdgeids(false);
         gxlGraph.setEdgemode(EdgemodeType.DIRECTED);
-        String name = GraphInfo.getName(graph);
-        gxlGraph.setId(name == null ? DEFAULT_GRAPH_NAME : name);
-        GraphRole role = GraphInfo.getRole(graph);
-        gxlGraph.setRole(role.toString());
+        gxlGraph.setId(graph.getName());
+        gxlGraph.setRole(graph.getRole().toString());
         List<GraphElementType> nodesEdges = gxlGraph.getNodeOrEdgeOrRel();
         // add the nodes
         Map<Node,NodeType> nodeMap = new HashMap<Node,NodeType>();
@@ -270,12 +268,8 @@ public class JaxbGxlIO implements GxlIO {
         // add the graph info
         GraphInfo<?,?> info = GraphInfo.getInfo(graph, false);
         if (info != null) {
-            if (info.hasName()) {
-                gxlGraph.setId(info.getName());
-            }
-            if (info.hasRole()) {
-                gxlGraph.setRole(info.getRole().toString());
-            }
+            gxlGraph.setId(graph.getName());
+            gxlGraph.setRole(graph.getRole().toString());
             // add the graph attributes, if any
             List<AttrType> graphAttrs = gxlGraph.getAttr();
             GraphProperties properties = info.getProperties(false);
@@ -339,7 +333,7 @@ public class JaxbGxlIO implements GxlIO {
             GraphType gxlGraph) throws FormatException {
 
         // Initialize the new objects to be created.
-        DefaultGraph graph = createGraph();
+        DefaultGraph graph = createGraph(gxlGraph.getId());
         Map<String,DefaultNode> nodeIds = new HashMap<String,DefaultNode>();
         // MdM - LayoutMap<Node,Edge> layoutMap = new LayoutMap();
 
@@ -424,10 +418,9 @@ public class JaxbGxlIO implements GxlIO {
         if (!properties.isEmpty()) {
             GraphInfo.setProperties(graph, properties);
         }
-        GraphInfo.setName(graph, gxlGraph.getId());
         String roleName = gxlGraph.getRole();
-        GraphInfo.setRole(graph,
-            GraphRole.roles.get(roleName == null ? GraphRole.HOST : roleName));
+        graph.setRole(roleName == null ? GraphRole.HOST
+                : GraphRole.roles.get(roleName));
         // MdM - GraphInfo.setLayoutMap(graph, layoutMap);
         return new Pair<DefaultGraph,Map<String,DefaultNode>>(graph, nodeIds);
     }
@@ -489,8 +482,8 @@ public class JaxbGxlIO implements GxlIO {
         }
     }
 
-    private DefaultGraph createGraph() {
-        return new DefaultGraph();
+    private DefaultGraph createGraph(String name) {
+        return new DefaultGraph(name);
     }
 
     /** Reusable context for JAXB (un)marshalling. */
@@ -523,11 +516,6 @@ public class JaxbGxlIO implements GxlIO {
         DefaultFactory.instance();
     /** Singleton instance of the class. */
     static private final JaxbGxlIO instance = new JaxbGxlIO();
-    /**
-     * The name of graphs whose name is not explicitly included in the graph
-     * info.
-     */
-    static private final String DEFAULT_GRAPH_NAME = "graph";
     /** Attribute name for node and edge identities. */
     static private final String LABEL_ATTR_NAME = "label";
     /** Attribute name for layout information. */

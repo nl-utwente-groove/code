@@ -65,9 +65,8 @@ public final class GraphToTikz {
         Graph<N,E> graph = model.getGraph();
         LayoutMap<N,E> layoutMap = GraphInfo.getLayoutMap(graph);
         boolean showBackground =
-            model.getOptions().getValue(Options.SHOW_BACKGROUND_OPTION) == 1
-                    ? true : false;
-        GraphRole role = GraphInfo.getRole(graph);
+            model.getOptionValue(Options.SHOW_BACKGROUND_OPTION);
+        GraphRole role = graph.getRole();
         StringBuilder result = new StringBuilder();
 
         result.append(beginTikzFig());
@@ -109,7 +108,7 @@ public final class GraphToTikz {
      * @param showBackground flag to indicate if the node should be filled.
      * @param isEmphasized flag that indicates if the node is emphasized.
      * @param isGrayedOut flag that indicates if the node is grayed out.
-     * @param role the role of the containing graph (see {@link GraphInfo#getRole()})
+     * @param role the role of the containing graph
      * @return a StringBuilder filled with the Tikz string.
      */
     private static <N extends Node,E extends Edge<N>> StringBuilder convertNodeToTikzStr(
@@ -166,7 +165,7 @@ public final class GraphToTikz {
      * @param layoutMap the layout information associated with the graph.
      * @param isEmphasized flag that indicates if the edge is emphasized.
      * @param isGrayedOut flag that indicates if the edge is grayed out.
-     * @param role the role of the containing graph (see {@link GraphInfo#getRole()})
+     * @param role the role of the containing graph
      * @return a StringBuilder filled with the Tikz string if the JCell could
      *         cast into a valid sub-type or an empty StringBuilder otherwise.
      */
@@ -191,7 +190,7 @@ public final class GraphToTikz {
      * @param layoutMap the layout information associated with the graph.
      * @param isEmphasized flag that indicates if the edge is emphasized.
      * @param isGrayedOut flag that indicates if the edge is grayed out.
-     * @param role the role of the containing graph (see {@link GraphInfo#getRole()})
+     * @param role the role of the containing graph
      * @return a StringBuilder filled with the Tikz string.
      */
     private static <N extends Node,E extends Edge<N>> StringBuilder convertEdgeToTikzStr(
@@ -1051,7 +1050,7 @@ public final class GraphToTikz {
      * @param showBackground flag to indicate if the node should be filled.
      * @param isEmphasized flag that indicates if the node is emphasized.
      * @param isGrayedOut flag that indicates if the node is grayed out.
-     * @param role the role of the containing graph (see {@link GraphInfo#getRole()})
+     * @param role the role of the containing graph
      * @return a string with all the Tikz styles to be used.
      */
     private static <N extends Node,E extends Edge<N>> String convertStyles(
@@ -1215,7 +1214,7 @@ public final class GraphToTikz {
      * @param edge the edge to be analysed.
      * @param isEmphasized flag that indicates if the edge is emphasized.
      * @param isGrayedOut flag that indicates if the edge is grayed out.
-     * @param role the role of the containing graph (see {@link GraphInfo#getRole()})
+     * @param role the role of the containing graph
      * @return an array of size two. The first string is the edge style and the
      *         second one is the label style.
      */

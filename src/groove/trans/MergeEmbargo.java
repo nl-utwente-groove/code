@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-
 /**
  * A specialised NAC that enforces an injectivity constraint. Merge embargoes
  * are treated separately to allow performance optimisation by early enforcement
@@ -36,7 +35,8 @@ public class MergeEmbargo extends NotCondition {
      */
     public MergeEmbargo(RuleGraph source, RuleNode node1, RuleNode node2,
             SystemProperties properties) {
-        super(source.newGraph(), properties);
+        super(source.newGraph(source.getName() + "-" + node1 + "!=" + node2),
+            properties);
         this.node1 = node1;
         this.node2 = node2;
         RuleNode codNode = getTarget().addNode();

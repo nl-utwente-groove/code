@@ -1035,7 +1035,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * the creator edges and their endpoints.
      */
     private RuleGraph computeCreatorGraph() {
-        RuleGraph result = rhs().newGraph();
+        RuleGraph result = rhs().newGraph(getName() + "(creators)");
         result.addNodeSet(Arrays.asList(getCreatorNodes()));
         result.addEdgeSet(Arrays.asList(getCreatorEdges()));
         return result;
@@ -1141,7 +1141,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @see #getAnchorGraph()
      */
     private RuleGraph computeAnchorGraph() {
-        RuleGraph result = lhs().newGraph();
+        RuleGraph result = lhs().newGraph(getName() + "(anchors)");
         for (Element elem : anchor()) {
             if (elem instanceof RuleNode) {
                 result.addNode((RuleNode) elem);

@@ -61,18 +61,19 @@ public class ShapeState extends AbstractGraphState {
     // ------------------------------------------------------------------------
 
     /**
-     * Constructs an state with the given shape and with an empty set of
+     * Constructs a numbered state with the given shape and with an empty set of
      * transitions.
+     * @param number the number of the state; required to be non-negative
      */
-    public ShapeState(Shape shape, CtrlState ctrlState) {
+    public ShapeState(Shape shape, CtrlState ctrlState, int number) {
         // We don't have a cache reference, so just pass null to the
         // super constructor.
-        super(null);
+        super(null, number);
         setCtrlState(ctrlState);
-        this.shape = shape;
+        this.shape = shape.clone();
+        this.shape.setName(toString());
         this.shape.freeze();
         this.closed = false;
-        this.nr = -1;
     }
 
     // ------------------------------------------------------------------------
@@ -81,6 +82,7 @@ public class ShapeState extends AbstractGraphState {
 
     @Override
     public Shape getGraph() {
+        assert this.shape.isFrozen();
         return this.shape;
     }
 

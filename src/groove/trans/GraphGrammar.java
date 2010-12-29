@@ -168,7 +168,7 @@ public class GraphGrammar extends RuleSystem {
 
     /** Callback factory method to create the start graph. */
     private DefaultHostGraph createGraph() {
-        return new DefaultHostGraph();
+        return new DefaultHostGraph("start");
     }
 
     /**

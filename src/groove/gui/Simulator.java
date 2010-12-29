@@ -16,6 +16,8 @@
  */
 package groove.gui;
 
+import static groove.graph.GraphRole.HOST;
+import static groove.graph.GraphRole.RULE;
 import static groove.gui.Options.DELETE_RULE_OPTION;
 import static groove.gui.Options.HELP_MENU_NAME;
 import static groove.gui.Options.OPTIONS_MENU_NAME;
@@ -71,14 +73,16 @@ import groove.gui.dialog.PropertiesDialog;
 import groove.gui.dialog.RelabelDialog;
 import groove.gui.dialog.StringDialog;
 import groove.gui.dialog.VersionErrorDialog;
-import groove.gui.jgraph.GraphJModel;
+import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.io.AspectGxl;
 import groove.io.Aut;
 import groove.io.DefaultFileSystemStore;
+import groove.io.DefaultGxl;
 import groove.io.ExtensionFilter;
 import groove.io.FileFilterAction;
 import groove.io.Grammar_1_0_Action;
@@ -463,19 +467,19 @@ public class Simulator {
      * @param graph the graph to be edited.
      * @param fresh flag indicating if the name for the graph should be fresh
      */
-    void handleEditGraph(final DefaultGraph graph, final boolean fresh) {
+    void handleEditGraph(final AspectGraph graph, final boolean fresh) {
         EditorDialog dialog =
             new EditorDialog(getFrame(), getOptions(), graph, getTypeView()) {
                 @Override
                 public void finish() {
-                    String oldGraphName = GraphInfo.getName(graph);
+                    String oldGraphName = graph.getName();
                     String newGraphName =
                         askNewGraphName("Select graph name",
                             oldGraphName == null ? NEW_GRAPH_NAME
                                     : oldGraphName, fresh);
                     if (newGraphName != null) {
-                        AspectGraph newGraph = getAspectGraph();
-                        GraphInfo.setName(newGraph, newGraphName);
+                        AspectGraph newGraph =
+                            getAspectGraph().rename(newGraphName);
                         if (doAddGraph(newGraph)
                             && confirmLoadStartState(newGraphName)) {
                             doLoadStartGraph(newGraphName);
@@ -547,8 +551,7 @@ public class Simulator {
             } else {
                 getGrammarStore().putGraph(graph);
                 result = true;
-                if (GraphInfo.getName(graph).equals(
-                    getGrammarView().getStartGraphName())) {
+                if (graph.getName().equals(getGrammarView().getStartGraphName())) {
                     updateGrammar();
                 } else {
                     refresh();
@@ -557,8 +560,8 @@ public class Simulator {
             result = true;
         } catch (IOException exc) {
             showErrorDialog(
-                String.format("Error while saving graph '%s'",
-                    GraphInfo.getName(graph)), exc);
+                String.format("Error while saving graph '%s'", graph.getName()),
+                exc);
         }
         return result;
     }
@@ -566,21 +569,20 @@ public class Simulator {
     /**
      * Saves an aspect graph as a rule under a given name, and puts the rule
      * into the current grammar view.
-     * @param ruleName the name of the new rule
      * @param ruleAsGraph the new rule, given as an aspect graph
      * @return <code>true</code> if saving the rule has succeeded
      */
-    boolean doAddRule(RuleName ruleName, AspectGraph ruleAsGraph) {
+    boolean doAddRule(AspectGraph ruleAsGraph) {
         boolean result = false;
         try {
-            GraphInfo.setName(ruleAsGraph, ruleName.toString());
             getGrammarStore().putRule(ruleAsGraph);
             ruleAsGraph.invalidateView();
             updateGrammar();
             result = true;
         } catch (IOException exc) {
             showErrorDialog(
-                String.format("Error while saving rule '%s'", ruleName), exc);
+                String.format("Error while saving rule '%s'",
+                    ruleAsGraph.getName()), exc);
         } catch (UnsupportedOperationException u) {
             showErrorDialog("Current grammar is read-only", u);
         }
@@ -602,7 +604,7 @@ public class Simulator {
             } else {
                 getGrammarStore().putType(typeGraph);
                 if (getGrammarView().getActiveTypeNames().contains(
-                    GraphInfo.getName(typeGraph))) {
+                    typeGraph.getName())) {
                     updateGrammar();
                 } else {
                     // otherwise, we only need to update the type panel
@@ -613,7 +615,7 @@ public class Simulator {
         } catch (IOException exc) {
             showErrorDialog(
                 String.format("Error while saving type graph '%s'",
-                    GraphInfo.getName(typeGraph)), exc);
+                    typeGraph.getName()), exc);
         }
         return result;
     }
@@ -689,7 +691,7 @@ public class Simulator {
             AspectGraph newRuleGraph = ruleGraph.clone();
             GraphInfo.setProperties(newRuleGraph, properties);
             newRuleGraph.setFixed();
-            doAddRule(rule.getRuleName(), newRuleGraph);
+            doAddRule(newRuleGraph);
         }
     }
 
@@ -1006,7 +1008,7 @@ public class Simulator {
      * graph, uses the renamed graph again as start graph.
      */
     void doRenameGraph(AspectGraph graph, String newName) {
-        String oldName = GraphInfo.getName(graph);
+        String oldName = graph.getName();
         // test now if this is the start state, before it is deleted from the
         // grammar
         String startGraphName = getGrammarView().getStartGraphName();
@@ -1024,7 +1026,7 @@ public class Simulator {
         } catch (IOException exc) {
             showErrorDialog(
                 String.format("Error while renaming graph '%s'",
-                    GraphInfo.getName(graph)), exc);
+                    graph.getName()), exc);
         }
     }
 
@@ -1032,14 +1034,13 @@ public class Simulator {
      * Renames one of the rule in the grammar.
      */
     void doRenameRule(AspectGraph graph, String newName) {
-        String oldName = GraphInfo.getName(graph);
+        String oldName = graph.getName();
         try {
             getGrammarStore().renameRule(oldName, newName);
             updateGrammar();
         } catch (IOException exc) {
             showErrorDialog(
-                String.format("Error while renaming rule '%s'",
-                    GraphInfo.getName(graph)), exc);
+                String.format("Error while renaming rule '%s'", oldName), exc);
         }
     }
 
@@ -1048,7 +1049,7 @@ public class Simulator {
      */
     boolean doRenameType(AspectGraph graph, String newName) {
         boolean result = false;
-        String oldName = GraphInfo.getName(graph);
+        String oldName = graph.getName();
         // test now if this is the type graph, before it is deleted from the
         // grammar
         boolean isTypeGraph =
@@ -1064,8 +1065,8 @@ public class Simulator {
             result = true;
         } catch (IOException exc) {
             showErrorDialog(
-                String.format("Error while renaming type graph '%s'",
-                    GraphInfo.getName(graph)), exc);
+                String.format("Error while renaming type graph '%s'", oldName),
+                exc);
         }
         return result;
     }
@@ -1148,17 +1149,6 @@ public class Simulator {
         }
     }
 
-    /** Saves a given graph to a given file. */
-    void doSaveGraph(AspectGraph graph, File selectedFile) {
-        try {
-            this.graphLoader.marshalGraph(graph, selectedFile);
-        } catch (IOException exc) {
-            showErrorDialog(
-                String.format("Error while saving graph to '%s'", selectedFile),
-                exc);
-        }
-    }
-
     /** Saves a given system properties object. */
     void doSaveProperties(SystemProperties newProperties) {
         try {
@@ -1216,7 +1206,7 @@ public class Simulator {
         if (this.autFilter.accept(file)) {
             return this.autLoader;
         } else {
-            return this.graphLoader;
+            return this.aspectLoader;
         }
     }
 
@@ -1587,16 +1577,22 @@ public class Simulator {
                         AspectGraph errorGraph = error.getGraph();
                         if (errorGraph != null) {
                             JGraphPanel<?> panel = null;
-                            String name = GraphInfo.getName(errorGraph);
-                            if (GraphInfo.hasRuleRole(errorGraph)) {
+                            String name = errorGraph.getName();
+                            switch (errorGraph.getRole()) {
+                            case RULE:
                                 panel = getRulePanel();
                                 setRule(new RuleName(name));
-                            } else if (GraphInfo.hasHostRole(errorGraph)) {
+                                break;
+                            case HOST:
                                 panel = getStatePanel();
                                 getStateList().setSelectedValue(name, true);
-                            } else if (GraphInfo.hasTypeRole(errorGraph)) {
+                                break;
+                            case TYPE:
                                 panel = getTypePanel();
                                 getTypePanel().setSelectedType(name);
+                                break;
+                            default:
+                                assert false;
                             }
                             // select the error cell and switch to the panel
                             if (panel != null) {
@@ -2767,10 +2763,15 @@ public class Simulator {
         new LinkedHashSet<ExtensionFilter>();
 
     /**
-     * The graph loader used for saving graphs (states and LTS).
+     * The graph loader used for saving aspect graphs.
      */
-    private final Xml<AspectGraph> graphLoader = new AspectGxl(
+    private final Xml<AspectGraph> aspectLoader = new AspectGxl(
         new LayedOutXml());
+
+    /**
+     * The graph loader used for saving arbitrary graphs.
+     */
+    private final DefaultGxl graphLoader = new DefaultGxl();
 
     /**
      * The graph loader used for graphs in .aut format
@@ -3180,10 +3181,7 @@ public class Simulator {
                         askNewGraphName("Select new graph name", oldGraphName,
                             true);
                     if (newGraphName != null) {
-                        AspectGraph newGraph = oldGraphView.getView().clone();
-                        GraphInfo.setName(newGraph, newGraphName);
-                        newGraph.setFixed();
-                        doAddGraph(newGraph);
+                        doAddGraph(oldGraphView.getView().rename(newGraphName));
                     }
                 }
             }
@@ -3236,10 +3234,9 @@ public class Simulator {
                         askNewRuleName("Select new rule name", rule.getName(),
                             true);
                     if (newRuleName != null) {
-                        AspectGraph newRuleGraph = oldRuleGraph.clone();
-                        GraphInfo.setName(newRuleGraph, newRuleName.toString());
-                        newRuleGraph.setFixed();
-                        if (doAddRule(newRuleName, newRuleGraph)) {
+                        AspectGraph newRuleGraph =
+                            oldRuleGraph.rename(newRuleName.toString());
+                        if (doAddRule(newRuleGraph)) {
                             savedRule = newRuleName;
                         }
                     }
@@ -3419,8 +3416,8 @@ public class Simulator {
          * panel.
          */
         public void actionPerformed(ActionEvent e) {
-            GraphJModel<?,?> stateModel = getStatePanel().getJModel();
-            handleEditGraph(stateModel.toPlainGraph(), false);
+            AspectJModel stateModel = getStatePanel().getJModel();
+            handleEditGraph(stateModel.getGraph(), false);
         }
     }
 
@@ -3526,7 +3523,7 @@ public class Simulator {
                     // of grammar updates.
                     RuleName ruleName = ruleViews[i].getRuleName();
                     getGrammarStore().deleteRule(ruleName);
-                    GraphInfo.setName(ruleGraphs[i], ruleName.toString());
+                    ruleGraphs[i].setName(ruleName.toString());
                     try {
                         getGrammarStore().putRule(ruleGraphs[i]);
                         ruleGraphs[i].invalidateView();
@@ -3598,16 +3595,18 @@ public class Simulator {
             final String ruleName = getCurrentRule().getName();
             EditorDialog dialog =
                 new EditorDialog(getFrame(), getOptions(),
-                    getCurrentRule().getView().toPlainGraph(), getTypeView()) {
+                    getCurrentRule().getView(), getTypeView()) {
                     @Override
                     public void finish() {
                         if (confirmAbandon(false)) {
-                            AspectGraph ruleAsAspectGraph = getAspectGraph();
                             RuleName newRuleName =
                                 askNewRuleName("Name for edited rule",
                                     ruleName, false);
                             if (newRuleName != null) {
-                                doAddRule(newRuleName, ruleAsAspectGraph);
+                                AspectGraph ruleAsAspectGraph =
+                                    getAspectGraph().rename(
+                                        newRuleName.toString());
+                                doAddRule(ruleAsAspectGraph);
                             }
                         }
                     }
@@ -3983,11 +3982,10 @@ public class Simulator {
                 try {
                     File ruleFile = getRuleFileChooser().getSelectedFile();
                     AspectGraph ruleGraph = unmarshalGraph(ruleFile);
-                    RuleName ruleName =
-                        new RuleName(GraphInfo.getName(ruleGraph));
+                    RuleName ruleName = new RuleName(ruleGraph.getName());
                     if (getGrammarView().getRuleView(ruleName) == null
                         || confirmOverwriteRule(ruleName)) {
-                        if (doAddRule(ruleName, ruleGraph)) {
+                        if (doAddRule(ruleGraph)) {
                             setRule(ruleName);
                         }
                     }
@@ -4388,8 +4386,7 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            DefaultGraph newGraph = new DefaultGraph();
-            GraphInfo.setHostRole(newGraph);
+            AspectGraph newGraph = AspectGraph.newInstance(HOST);
             handleEditGraph(newGraph, true);
         }
 
@@ -4424,8 +4421,7 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(false)) {
-                DefaultGraph newRule = new DefaultGraph();
-                GraphInfo.setRuleRole(newRule);
+                AspectGraph newRule = AspectGraph.newInstance(RULE);
                 EditorDialog dialog =
                     new EditorDialog(getFrame(), getOptions(), newRule,
                         getTypeView()) {
@@ -4434,9 +4430,9 @@ public class Simulator {
                             final RuleName ruleName =
                                 askNewRuleName(null, NEW_RULE_NAME, true);
                             if (ruleName != null) {
-                                AspectGraph newRule = getAspectGraph();
-                                GraphInfo.setName(newRule, ruleName.toString());
-                                if (doAddRule(ruleName, getAspectGraph())) {
+                                AspectGraph newRule =
+                                    getAspectGraph().rename(ruleName.toString());
+                                if (doAddRule(newRule)) {
                                     setRule(ruleName);
                                 }
                             }
@@ -4895,8 +4891,6 @@ public class Simulator {
 
     /**
      * Action to save the state or LTS as a graph.
-     * @see Simulator#doAddGraph(AspectGraph)
-     * @see Simulator#doSaveGraph(AspectGraph, File)
      */
     private class SaveGraphAction extends RefreshableAction {
         /** Constructs an instance of the action. */
@@ -4906,12 +4900,18 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            AspectGraph graph =
-                AspectGraph.newInstance(getGraphPanel().getJModel().toPlainGraph());
-            boolean isState = (getGraphPanel() != getLtsPanel());
-            ExtensionFilter filter =
-                isState ? Simulator.this.stateFilter : Simulator.this.gxlFilter;
-            String name = isState ? GraphInfo.getName(graph) : LTS_FILE_NAME;
+            JModel jModel = getGraphPanel().getJModel();
+            if (getGraphPanel() == getLtsPanel()) {
+                actionForLTS(((LTSJModel) jModel).getGraph());
+            } else {
+                assert getGraphPanel() == getStatePanel();
+                actionForState(((AspectJModel) jModel).getGraph());
+            }
+        }
+
+        private void actionForState(AspectGraph graph) {
+            ExtensionFilter filter = Simulator.this.stateFilter;
+            String name = graph.getName();
             getStateFileChooser().setFileFilter(filter);
             getStateFileChooser().setSelectedFile(new File(name));
             File selectedFile =
@@ -4920,12 +4920,47 @@ public class Simulator {
             // now save, if so required
             if (selectedFile != null) {
                 name = filter.stripExtension(selectedFile.getName());
-                GraphInfo.setName(graph, name);
-                if (isState && isFileInStore(selectedFile, getGrammarStore())) {
+                graph = graph.rename(name);
+                if (isFileInStore(selectedFile, getGrammarStore())) {
                     doAddGraph(graph);
                 } else {
-                    doSaveGraph(graph, selectedFile);
+                    doSaveState(graph, selectedFile);
                 }
+            }
+        }
+
+        /** Saves a given graph to a given file. */
+        private void doSaveState(AspectGraph graph, File selectedFile) {
+            try {
+                Simulator.this.aspectLoader.marshalGraph(graph, selectedFile);
+            } catch (IOException exc) {
+                showErrorDialog(String.format(
+                    "Error while saving graph to '%s'", selectedFile), exc);
+            }
+        }
+
+        private void actionForLTS(GTS gts) {
+            ExtensionFilter filter = Simulator.this.gxlFilter;
+            getStateFileChooser().setFileFilter(Simulator.this.gxlFilter);
+            getStateFileChooser().setSelectedFile(new File(LTS_FILE_NAME));
+            File selectedFile =
+                ExtensionFilter.showSaveDialog(getStateFileChooser(),
+                    getFrame(), null);
+            // now save, if so required
+            if (selectedFile != null) {
+                String name = filter.stripExtension(selectedFile.getName());
+                gts.setName(name);
+                doSaveGTS(gts, selectedFile);
+            }
+        }
+
+        /** Saves a given graph to a given file. */
+        private void doSaveGTS(GTS gts, File selectedFile) {
+            try {
+                Simulator.this.graphLoader.marshalGraph(gts, selectedFile);
+            } catch (IOException exc) {
+                showErrorDialog(String.format("Error while saving LTS to '%s'",
+                    selectedFile), exc);
             }
         }
 
