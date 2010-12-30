@@ -242,7 +242,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     }
 
     /** Returns the inner text of this label, i.e., the label text without preceding aspects. */
-    String getInnerText() {
+    public String getInnerText() {
         return label().getInnerText();
     }
 

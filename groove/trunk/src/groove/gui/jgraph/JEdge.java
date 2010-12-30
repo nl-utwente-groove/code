@@ -81,13 +81,6 @@ abstract public class JEdge extends DefaultEdge implements JCell {
         return sourceVertex.isVisible() && targetVertex.isVisible();
     }
 
-    /**
-     * This implementation always returns <code>true</code>.
-     */
-    public boolean isListable() {
-        return true;
-    }
-
     @Override
     public JCellContent<?> getUserObject() {
         if (!this.userObjectSet) {

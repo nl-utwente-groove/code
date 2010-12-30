@@ -213,6 +213,8 @@ public class Converter {
                 text.replace(i, i + 1, HTML_LINEBREAK);
                 i += HTML_LINEBREAK.length() - 1;
                 break;
+            case Groove.LC_PI:
+                text.replace(i, i + 1, HTML_PI);
             }
         }
         return text;
@@ -343,6 +345,8 @@ public class Converter {
     static public final String HTML_LAMBDA = "&#955;"; // &lambda;
     /** HTML tau symbol. */
     static public final String HTML_TAU = "&#932;"; // &tau;
+    /** HTML pi symbol. */
+    static public final String HTML_PI = "&#960;"; // &pi;
     /** HTML epsilon symbol. */
     static public final String HTML_EPSILON = "&#949;"; // &epsilon;
     /** HTML times symbol. */

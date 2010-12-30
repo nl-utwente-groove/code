@@ -16,6 +16,7 @@
  */
 package groove.util;
 
+import static groove.view.aspect.AspectKind.PRODUCT;
 import groove.control.CtrlTransition;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -23,6 +24,7 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.gui.Options;
+import groove.gui.jgraph.AspectJModel.AspectJVertex;
 import groove.gui.jgraph.CtrlJModel;
 import groove.gui.jgraph.CtrlJModel.TransitionJEdge;
 import groove.gui.jgraph.GraphJEdge;
@@ -36,6 +38,7 @@ import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.trans.RuleLabel;
 import groove.view.aspect.AspectEdge;
+import groove.view.aspect.AspectKind;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -1106,9 +1109,13 @@ public final class GraphToTikz {
             styles.add(BASIC_NODE_STYLE);
         }
 
-        if (node.isValueNode() || node.isVariableNode()) {
+        AspectKind attrKind =
+            node instanceof AspectJVertex
+                    ? ((AspectJVertex) node).getNode().getAttrKind()
+                    : AspectKind.NONE;
+        if (attrKind.isData()) {
             styles.add(ATTRIBUTE_NODE_STYLE);
-        } else if (node.isProductNode()) {
+        } else if (attrKind == PRODUCT) {
             styles.add(PRODUCT_NODE_STYLE);
         } else if (isRule) {
             for (String label : allLabels) {

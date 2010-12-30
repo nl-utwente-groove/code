@@ -51,9 +51,6 @@ public interface JCell extends GraphCell, Serializable {
     /** Indicates if the cell is currently visible in the j-model. */
     public boolean isVisible();
 
-    /** Indicates if the cell should be registered in the label list. */
-    public boolean isListable();
-
     /**
      * Returns the set of labels to be associated with this cell in a label
      * list.
@@ -79,8 +76,8 @@ public interface JCell extends GraphCell, Serializable {
     public abstract String getToolTipText();
 
     /** Pseudo-label for cells with an empty list label set. */
-    static public final TypeLabel NO_LABEL = TypeLabel.createLabel(LabelKind.NODE_TYPE,
-        "\u0000");
+    static public final TypeLabel NO_LABEL = TypeLabel.createLabel(
+        LabelKind.NODE_TYPE, "\u0000");
     /** Pseudo-label for subtype edges. */
     static public final RuleLabel SUBTYPE_LABEL = new RuleLabel(
         TypeLabel.createLabel(LabelKind.NODE_TYPE, "\u0001"));

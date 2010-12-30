@@ -25,6 +25,7 @@ import static groove.gui.jgraph.JAttr.LTS_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.LTS_OPEN_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.LTS_RESULT_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.LTS_START_NODE_ATTR;
+import groove.control.CtrlState;
 import groove.graph.Label;
 import groove.gui.Options;
 import groove.lts.DerivationLabel;
@@ -38,6 +39,7 @@ import groove.util.Groove;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jgraph.graph.AttributeMap;
@@ -514,6 +516,17 @@ public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
          */
         public boolean isFinal() {
             return getGraph().isFinal(getNode());
+        }
+
+        @Override
+        public List<StringBuilder> getLines() {
+            List<StringBuilder> result = super.getLines();
+            CtrlState ctrlState = getNode().getCtrlState();
+            if (ctrlState.getAut().getProgram() != null) {
+                result.add(new StringBuilder("ctrl: "
+                    + Converter.toHtml(ctrlState.toString())));
+            }
+            return result;
         }
 
         /**

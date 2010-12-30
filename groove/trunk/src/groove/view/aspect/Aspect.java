@@ -115,7 +115,7 @@ public class Aspect {
     /** 
      * Indicates if this aspect wraps a text. 
      */
-    public boolean hasContent() throws UnsupportedOperationException {
+    public boolean hasContent() {
         return this.content != null;
     }
 
@@ -123,8 +123,16 @@ public class Aspect {
      * Returns the text wrapped by this aspect, or {@code null} if it does
      * not wrap a text. 
      */
-    public Object getContent() throws UnsupportedOperationException {
+    public Object getContent() {
         return this.content;
+    }
+
+    /** 
+     * Returns a string description of the aspect content, 
+     * or the empty string if the aspect has no content
+     */
+    public String getContentString() {
+        return this.contentKind.toString(getContent());
     }
 
     /** Flag indicating that this aspect is a prototype. */

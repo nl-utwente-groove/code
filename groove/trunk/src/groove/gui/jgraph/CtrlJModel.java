@@ -263,13 +263,13 @@ public class CtrlJModel extends GraphJModel<CtrlState,CtrlTransition> {
 
         /** Indicates if this jVertex represents the start state of the control automaton. */
         public boolean isStart() {
-            return ((CtrlJModel) getGraphJModel()).getGraph().getStart().equals(
+            return ((CtrlJModel) getJModel()).getGraph().getStart().equals(
                 getNode());
         }
 
         /** Indicates if this jVertex represents the start state of the control automaton. */
         public boolean isFinal() {
-            return ((CtrlJModel) getGraphJModel()).getGraph().getFinal().equals(
+            return ((CtrlJModel) getJModel()).getGraph().getFinal().equals(
                 getNode());
         }
     }

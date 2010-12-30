@@ -356,7 +356,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
 
     /** Indicates if this represents a rule parameter. */
     public boolean hasAttrAspect() {
-        return this.attr != null;
+        return this.attr != null && this.attr.getKind() != NONE;
     }
 
     @Override
