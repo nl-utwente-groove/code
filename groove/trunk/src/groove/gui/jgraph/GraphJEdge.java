@@ -19,13 +19,11 @@ package groove.gui.jgraph;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.trans.RuleLabel;
 import groove.util.Converter;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -65,7 +63,8 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
      */
     @Override
     public boolean isVisible() {
-        boolean result = super.isVisible() && !isSourceLabel() && !isFiltered();
+        boolean result =
+            super.isVisible() && !isSourceLabel() && !getLines().isEmpty();
         if (result && !this.jModel.isShowUnfilteredEdges()) {
             result =
                 getSourceVertex().isVisible()
@@ -82,24 +81,6 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
     public boolean isSourceLabel() {
         return this.jModel.isShowVertexLabels()
             && this.jModel.isPotentialUnaryEdge(getEdge());
-    }
-
-    /** Indicates if this edge is filtered (and therefore invisible). */
-    boolean isFiltered() {
-        boolean result;
-        // we don't want vacuous filtering: there should be at least one
-        // filtered label
-        Collection<? extends Label> listLabels = getListLabels();
-        if (listLabels.isEmpty()) {
-            result = false;
-        } else {
-            result = true;
-            Iterator<? extends Label> listLabelIter = listLabels.iterator();
-            while (result && listLabelIter.hasNext()) {
-                result = this.jModel.isFiltering(listLabelIter.next());
-            }
-        }
-        return result;
     }
 
     /**
@@ -148,20 +129,23 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
         return getUserObject().iterator().next();
     }
 
-    /** This implementation delegates to {@link Edge#label()}. */
-    public Label getLabel(E edge) {
-        return edge.label();
-    }
-
     /**
      * This implementation calls {@link #getLine(Edge)} on all edges in
-     * {@link #getUserObject()} that are not being filtered by the model
+     * {@link #getEdges()} that are not being filtered by the model
      * according to {@link JModel#isFiltering(Label)}.
      */
     public List<StringBuilder> getLines() {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
-        for (E edge : getUserObject()) {
-            if (!this.jModel.isFiltering(getLabel(edge))) {
+        for (E edge : getEdges()) {
+            // only add edges that have an unfiltered label
+            boolean visible = false;
+            for (Label label : getListLabels(edge)) {
+                if (!this.jModel.isFiltering(label)) {
+                    visible = true;
+                    break;
+                }
+            }
+            if (visible) {
                 result.add(getLine(edge));
             }
         }
@@ -178,38 +162,24 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
 
     /**
      * This implementation calls {@link #getListLabels(Edge)} on all edges in
-     * {@link #getUserObject()}.
+     * {@link #getEdges()}.
      */
     public Collection<? extends Label> getListLabels() {
         List<Label> result = new ArrayList<Label>();
-        for (E edge : getUserObject()) {
+        for (E edge : getEdges()) {
             result.addAll(getListLabels(edge));
         }
         return result;
     }
 
-    /** This implementation delegates to {@link Edge#label()}. */
+    /** Returns the listable labels on a given edge. */
     public Set<? extends Label> getListLabels(E edge) {
-        Set<? extends Label> result;
-        Label label = getLabel(edge);
-        if (label instanceof RuleLabel && ((RuleLabel) label).isMatchable()) {
-            result = ((RuleLabel) label).getMatchExpr().getTypeLabels();
-        } else {
-            result = Collections.singleton(label);
-        }
-        return result;
+        return Collections.singleton(getLabel(edge));
     }
 
-    /**
-     * This implementation calls {@link #toString()} on all edge labels in
-     * {@link #getUserObject()}.
-     */
-    public Collection<String> getPlainLabels() {
-        List<String> result = new ArrayList<String>();
-        for (E edge : getUserObject()) {
-            result.add(edge.label().toString());
-        }
-        return result;
+    /** This implementation delegates to {@link Edge#label()}. */
+    public Label getLabel(E edge) {
+        return edge.label();
     }
 
     /** Specialises the return type of the method. */
@@ -226,8 +196,7 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
 
     /**
      * This implementation does nothing: setting the user object directly is not
-     * the right way to go about it. Instead use <code>{@link #addEdge}</code>
-     * and <code>{@link #removeEdge}</code>.
+     * the right way to go about it. Instead use <code>{@link #addEdge}.
      */
     @Override
     public void setUserObject(Object value) {
@@ -246,20 +215,7 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
      * @ensure if <tt>result</tt> then <tt>getEdgeSet().contains(edge)</tt>
      */
     public boolean addEdge(E edge) {
-        boolean thisIsRegExpr = getEdge().label() instanceof RuleLabel;
-        boolean edgeIsRegExpr = edge.label() instanceof RuleLabel;
-        boolean result = (thisIsRegExpr == edgeIsRegExpr);
-        if (result) {
-            getUserObject().add(edge);
-        }
-        return true;
-    }
-
-    /**
-     * Adds an edge to the set underlying graph edges.
-     */
-    public void removeEdge(E edge) {
-        getUserObject().remove(edge);
+        return getUserObject().add(edge);
     }
 
     @Override
@@ -276,20 +232,6 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
             result.append(Converter.ITALIC_TAG.on(targetIdentity));
         }
         return result;
-    }
-
-    /** This implementation recognises argument and operation edges. */
-    @Override
-    StringBuilder getEdgeKindDescription() {
-        return new StringBuilder("Edge");
-    }
-
-    /**
-     * Method to get the role of the edge.
-     * @return a string description of the role of the edge
-     */
-    public String getRole() {
-        return "Edge";
     }
 
     /** Underlying {@link JModel} of this edge. */

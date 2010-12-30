@@ -47,8 +47,7 @@ import org.jgraph.graph.PortView;
  */
 public class EditorJGraph extends JGraph {
     /**
-     * Constructs an editor j-graph with an initially empty {@link EditorJModel}
-     * .
+     * Constructs an editor j-graph with an initially empty {@link EditorJModel}.
      * @param editor the editor to which this j-graph is
      *        associated
      * @since june2005
@@ -94,7 +93,7 @@ public class EditorJGraph extends JGraph {
     }
 
     /**
-     * This implementation returns a {@link EditorMarqueeHandler}. (non-Javadoc)
+     * This implementation returns a {@link EditorMarqueeHandler}.
      * @see groove.gui.jgraph.JGraph#createMarqueeHandler()
      */
     @Override
@@ -104,7 +103,7 @@ public class EditorJGraph extends JGraph {
 
     /**
      * Adds a j-vertex to the j-graph, and positions it at a given point. The
-     * point is in screen coorinates
+     * point is in screen coordinates
      * @param screenPoint the intended central point for the new j-vertex
      */
     void addVertex(Point2D screenPoint) {
@@ -207,15 +206,15 @@ public class EditorJGraph extends JGraph {
     }
 
     /**
-     * Flag to indicate creating a node will immediately start aditing the node
+     * Flag to indicate creating a node will immediately start editing the node
      * label
      */
-    private boolean startEditingNewNode = false;
+    private final boolean startEditingNewNode = false;
     /**
-     * Flag to indicate creating an edge will immediately start aditing the edge
+     * Flag to indicate creating an edge will immediately start editing the edge
      * label
      */
-    private boolean startEditingNewEdge = true;
+    private final boolean startEditingNewEdge = true;
     /**
      * The editor component in which this j-graph is placed.
      */

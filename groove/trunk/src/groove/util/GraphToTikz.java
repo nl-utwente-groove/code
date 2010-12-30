@@ -16,6 +16,7 @@
  */
 package groove.util;
 
+import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.PRODUCT;
 import groove.control.CtrlTransition;
 import groove.graph.Edge;
@@ -24,6 +25,7 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.gui.Options;
+import groove.gui.jgraph.AspectJModel.AspectJEdge;
 import groove.gui.jgraph.AspectJModel.AspectJVertex;
 import groove.gui.jgraph.CtrlJModel;
 import groove.gui.jgraph.CtrlJModel.TransitionJEdge;
@@ -43,7 +45,6 @@ import groove.view.aspect.AspectKind;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Locale;
@@ -1074,58 +1075,52 @@ public final class GraphToTikz {
 
         // If we got to this point we have either a node from a rule,
         // a state graph or a type graph.
-        boolean isRule = role == GraphRole.RULE;
-        boolean isGraph = role == GraphRole.HOST;
-        boolean isType = role == GraphRole.TYPE;
         ArrayList<String> styles = new ArrayList<String>();
-        Collection<String> allLabels = node.getPlainLabels();
 
-        boolean isAbstract = false;
-        for (String label : allLabels) {
-            if (label.contains(ABS_COL)) {
-                isAbstract = true;
-                break;
-            }
-        }
-
-        if (isRule && allLabels.contains(DEL_COL)) {
+        AspectKind nodeKind =
+            node instanceof AspectJVertex
+                    ? ((AspectJVertex) node).getNode().getKind() : NONE;
+        switch (nodeKind) {
+        case ERASER:
             // Eraser node
             styles.add(ERASER_NODE_STYLE);
-        } else if (isRule && allLabels.contains(NEW_COL)) {
+            break;
+        case CREATOR:
             // Creator node
             styles.add(CREATOR_NODE_STYLE);
-        } else if (isRule && allLabels.contains(NOT_COL)) {
+            break;
+        case EMBARGO:
             // Embargo node
             styles.add(EMBARGO_NODE_STYLE);
-        } else if ((isRule || isGraph) && allLabels.contains(REM_COL)) {
+            break;
+        case REMARK:
             // Remark node
             styles.add(REMARK_NODE_STYLE);
-        } else if (isType && isAbstract) {
+            break;
+        case ABSTRACT:
             // Abstract type node
             styles.add(ABS_NODE_STYLE);
-        } else if (isGrayedOut) {
-            styles.add(THIN_NODE_STYLE);
-        } else {
-            styles.add(BASIC_NODE_STYLE);
+            break;
+        case EXISTS:
+        case FORALL:
+        case FORALL_POS:
+            styles.add(QUANTIFIER_NODE_STYLE);
+            break;
+        default:
+            if (isGrayedOut) {
+                styles.add(THIN_NODE_STYLE);
+            } else {
+                styles.add(BASIC_NODE_STYLE);
+            }
         }
 
         AspectKind attrKind =
             node instanceof AspectJVertex
-                    ? ((AspectJVertex) node).getNode().getAttrKind()
-                    : AspectKind.NONE;
+                    ? ((AspectJVertex) node).getNode().getAttrKind() : NONE;
         if (attrKind.isData()) {
             styles.add(ATTRIBUTE_NODE_STYLE);
         } else if (attrKind == PRODUCT) {
             styles.add(PRODUCT_NODE_STYLE);
-        } else if (isRule) {
-            for (String label : allLabels) {
-                if (label.contains(FORALL) || label.contains(EXISTS + ":")
-                    || label.contains(FORALLX) || label.contains(EXISTS + "=")) {
-                    styles.add(QUANTIFIER_NODE_STYLE);
-                    break;
-                }
-            }
-
         }
 
         if (isEmphasized) {
@@ -1233,51 +1228,43 @@ public final class GraphToTikz {
             return convertStyles((TransitionJEdge) edge, isEmphasized,
                 isGrayedOut);
         }
-        boolean isRule = role == GraphRole.RULE;
-        boolean isType = role == GraphRole.TYPE;
         ArrayList<String> styles = new ArrayList<String>();
 
-        // To EDUARDO: this must be wrong, as GraphJEdge.role just returns a 
-        // string description of the edge, and has nothing to do with rule aspects
-        if (edge.getRole().equals(DEL)) {
+        AspectKind edgeKind =
+            edge instanceof AspectJEdge
+                    ? ((AspectJEdge) edge).getEdge().getKind() : NONE;
+        switch (edgeKind) {
+        case ERASER:
             styles.add(ERASER_EDGE_STYLE);
             styles.add(ERASER_LABEL_STYLE);
-        } else if (edge.getRole().equals(NEW)) {
+            break;
+        case CREATOR:
             styles.add(CREATOR_EDGE_STYLE);
             styles.add(CREATOR_LABEL_STYLE);
-        } else if (edge.getRole().equals(NOT)) {
+            break;
+        case EMBARGO:
             styles.add(EMBARGO_EDGE_STYLE);
             styles.add(EMBARGO_LABEL_STYLE);
-        } else if (edge.getRole().equals(REM)) {
+            break;
+        case REMARK:
             styles.add(REMARK_EDGE_STYLE);
             styles.add(REMARK_LABEL_STYLE);
-        } else { // role == "use"
-            if (isType && edge.getPlainLabels().contains(SUB)) {
-                styles.add(INHERITANCE_EDGE_STYLE);
-                styles.add(INHERITANCE_LABEL_STYLE);
-            } else if (isType
-                && edge.getPlainLabels().iterator().next().contains(ABS_COL)) {
-                styles.add(ABS_EDGE_STYLE);
-                styles.add(ABS_LABEL_STYLE);
-            } else {
-                styles.add(BASIC_EDGE_STYLE);
-                styles.add(BASIC_LABEL_STYLE);
-            }
-        }
-
-        // Quantification edges.
-        if (isRule) {
-            Collection<String> col = new ArrayList<String>();
-            col.addAll(edge.getSourceVertex().getPlainLabels());
-            col.addAll(edge.getTargetVertex().getPlainLabels());
-            for (String label : col) {
-                if (label.contains(EXISTS + ":")
-                    || label.contains(EXISTS + "=") || label.contains(FORALL)
-                    || label.contains(FORALLX)) {
-                    styles.set(0, QUANTIFIER_EDGE_STYLE);
-                    styles.set(1, BASIC_LABEL_STYLE);
-                }
-            }
+            break;
+        case SUBTYPE:
+            styles.add(INHERITANCE_EDGE_STYLE);
+            styles.add(INHERITANCE_LABEL_STYLE);
+            break;
+        case ABSTRACT:
+            styles.add(ABS_EDGE_STYLE);
+            styles.add(ABS_LABEL_STYLE);
+            break;
+        case NESTED:
+            styles.set(0, QUANTIFIER_EDGE_STYLE);
+            styles.set(1, BASIC_LABEL_STYLE);
+            break;
+        default:
+            styles.add(BASIC_EDGE_STYLE);
+            styles.add(BASIC_LABEL_STYLE);
         }
 
         if (isGrayedOut) {
@@ -1344,21 +1331,6 @@ public final class GraphToTikz {
     public static String endTikzFig() {
         return END_TIKZ_FIG + "\n";
     }
-
-    // Labels
-    private static final String ABS_COL = "abs:";
-    private static final String DEL_COL = "del:";
-    private static final String DEL = "del";
-    private static final String EXISTS = "exists";
-    private static final String FORALL = "forall:";
-    private static final String FORALLX = "forallx:";
-    private static final String NEW_COL = "new:";
-    private static final String NEW = "new";
-    private static final String NOT_COL = "not:";
-    private static final String NOT = "not";
-    private static final String SUB = "sub:";
-    private static final String REM_COL = "rem:";
-    private static final String REM = "rem";
 
     // Tikz output
     private static final String CRLF = "\\\\";

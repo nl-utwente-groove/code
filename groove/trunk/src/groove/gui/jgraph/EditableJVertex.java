@@ -70,11 +70,6 @@ public class EditableJVertex extends JVertex implements EditableJCell {
         return result;
     }
 
-    /** This implementation just returns the user object. */
-    public Collection<String> getPlainLabels() {
-        return getUserObject();
-    }
-
     /**
      * If the value is a collection or a string, loads the user object from it.
      */

@@ -475,7 +475,7 @@ public class JVertexView extends VertexView {
 
     /** Constant indicating a rectangular vertex. */
     static public final int RECTANGLE_SHAPE = 0;
-    /** Constant indicating an ellise-shaped vertex. */
+    /** Constant indicating an ellipse-shaped vertex. */
     static public final int ELLIPSE_SHAPE = 1;
     /** Constant indicating a diamond-shaped vertex. */
     static public final int DIAMOND_SHAPE = 2;
@@ -492,6 +492,9 @@ public class JVertexView extends VertexView {
             size = -1;
         } else {
             face = font.getFamily();
+            // actually a slightly smaller font is more in line with
+            // the edge font size, but then the forall symbol is not
+            // available
             size = font.getSize() - 2;
         }
         String argument =

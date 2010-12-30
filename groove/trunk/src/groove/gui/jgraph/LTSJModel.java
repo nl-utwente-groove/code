@@ -37,7 +37,6 @@ import groove.lts.LTSListener;
 import groove.util.Converter;
 import groove.util.Groove;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -464,29 +463,6 @@ public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
             // if( this.getNode().getLocation() != null ) {
             // result.append("ctrl: " + this.getNode().getLocation());
             // }
-            return result;
-        }
-
-        /**
-         * This implementation adds a label to the set if the j-vertex is the
-         * start state, an open state or a final state.
-         * @see LTS#START_LABEL_TEXT
-         * @see LTS#OPEN_LABEL_TEXT
-         * @see LTS#FINAL_LABEL_TEXT
-         */
-        @Override
-        public Collection<String> getPlainLabels() {
-            Set<String> result = new HashSet<String>();
-            if (isStart()) {
-                result.add(LTS.START_LABEL_TEXT);
-            }
-            if (!isClosed()) {
-                result.add(LTS.OPEN_LABEL_TEXT);
-            }
-            if (isFinal()) {
-                result.add(LTS.FINAL_LABEL_TEXT);
-            }
-            result.addAll(super.getPlainLabels());
             return result;
         }
 

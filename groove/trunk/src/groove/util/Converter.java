@@ -331,9 +331,9 @@ public class Converter {
         return bold + italic;
     }
 
-    /** HTML greater than symbol. */
     // The readable codes do not work on the Mac in some situations. Replaced
     // them with the numeric codes - this fixes it. -- Maarten
+    /** HTML greater than symbol. */
     static public final String HTML_GT = "&#62;"; // &gt;
     /** HTML forall symbol. */
     static public final String HTML_FORALL = "&#8704;"; // &forall;

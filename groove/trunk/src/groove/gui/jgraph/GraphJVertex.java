@@ -64,9 +64,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     }
 
     /**
-     * Convenience method to retrieve this model node's user object as a Node.
-     * @return this model node's user object as a Node
-     * @ensure if getUserObject() instanceof Node then result == getUserObject()
+     * Returns the graph node wrapped by this {@link JVertex}.
      */
     public N getNode() {
         return this.node;
@@ -87,7 +85,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
         while (!result && jEdgeIter.hasNext()) {
             GraphJEdge<?,?> jEdge = (GraphJEdge<?,?>) jEdgeIter.next();
             result =
-                !jEdge.isFiltered()
+                !jEdge.getLines().isEmpty()
                     && (jEdge.getSource() == this || !jEdge.isSourceLabel());
         }
         return result;
@@ -95,7 +93,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
 
     /**
      * Indicates if all list labels on this node are filtered (and therefore
-     * invisible).
+     * invisible), or at least one node type is filtered.
      */
     private boolean isFiltered() {
         boolean result = true;
@@ -116,24 +114,22 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     public List<StringBuilder> getLines() {
         List<StringBuilder> result = new LinkedList<StringBuilder>();
         // show the node identity if required
-        if (this.jModel.isShowNodeIdentities()) { // IOVKA showing node
-            // identity
+        if (this.jModel.isShowNodeIdentities()) {
             String id = getNodeIdentity();
             if (id != null) {
                 result.add(ITALIC_TAG.on(new StringBuilder(id)));
             }
         }
-        // add the multiplicity information if appropriate
-        // EDUARDO : HACK HACK HACK 
-        /*if (this.jModel instanceof ShapeJModel) {
-            Shape shape = (Shape) this.jModel.getGraph();
-            String mult = shape.getNodeMult((ShapeNode) this.node).toString();
-            result.add(Converter.createSpanTag("color: rgb(50,50,255)").on(
-                ITALIC_TAG.on(new StringBuilder(mult))));
-        }*/
-        // add signature label for typed variable nodes
         for (E edge : getSelfEdges()) {
-            if (!this.jModel.isFiltering(getLabel(edge))) {
+            // only add edges that have an unfiltered label
+            boolean visible = false;
+            for (Label label : getListLabels(edge)) {
+                if (!this.jModel.isFiltering(label)) {
+                    visible = true;
+                    break;
+                }
+            }
+            if (visible) {
                 result.add(getLine(edge));
             }
         }
@@ -175,18 +171,6 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     /** This implementation delegates to {@link Edge#label()}. */
     public Set<? extends Label> getListLabels(E edge) {
         return Collections.singleton(edge.label());
-    }
-
-    /**
-     * This implementation collects the strings on the self-edges.
-     * @see #getSelfEdges()
-     */
-    public Collection<String> getPlainLabels() {
-        Collection<String> result = new ArrayList<String>();
-        for (E edge : getSelfEdges()) {
-            result.add(edge.label().toString());
-        }
-        return result;
     }
 
     /**
@@ -284,15 +268,6 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
             result.append(ITALIC_TAG.on(id));
         }
         return result;
-    }
-
-    /**
-     * Removes an edge from the underlying edge set.
-     * @param edge the edge to be removed
-     * @ensure ! edges().contains(edge)
-     */
-    public void removeSelfEdge(Edge<?> edge) {
-        getUserObject().remove(edge);
     }
 
     /** Returns the underlying GraphJModel. */
