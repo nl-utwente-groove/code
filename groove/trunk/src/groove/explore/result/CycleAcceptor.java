@@ -18,9 +18,8 @@
 package groove.explore.result;
 
 import groove.explore.strategy.ModelCheckingStrategy;
+import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.LTS;
-import groove.lts.ProductGTS;
 import groove.lts.ProductTransition;
 import groove.verify.BuchiGraphState;
 import groove.verify.ModelChecking;
@@ -49,11 +48,10 @@ public class CycleAcceptor extends Acceptor {
     }
 
     @Override
-    public void closeUpdate(LTS gts, GraphState state) {
+    public void closeUpdate(GTS gts, GraphState state) {
         if (state instanceof BuchiGraphState) {
             if (((BuchiGraphState) state).getBuchiLocation().isAccepting()) {
-                assert (gts instanceof ProductGTS) : "Expected a GTS instead of an LTS.";
-                int event = redDFS((ProductGTS) gts, (BuchiGraphState) state);
+                int event = redDFS((BuchiGraphState) state);
                 if (event != ModelChecking.OK) {
                     // put the counter-example in the result
                     for (BuchiGraphState stackState : this.strategy.searchStack()) {
@@ -66,8 +64,8 @@ public class CycleAcceptor extends Acceptor {
         }
     }
 
-    private int redDFS(ProductGTS gts, BuchiGraphState state) {
-        for (ProductTransition nextTransition : (gts).outEdgeSet(state)) {
+    private int redDFS(BuchiGraphState state) {
+        for (ProductTransition nextTransition : state.outTransitions()) {
             // although the outgoing transition in the gts might cross the
             // boundary
             // we do not have to check for this since the target states
@@ -84,7 +82,7 @@ public class CycleAcceptor extends Acceptor {
                 return ModelChecking.COUNTER_EXAMPLE;
             } else if (target.colour() == ModelChecking.blue()) {
                 target.setColour(ModelChecking.red());
-                int event = redDFS(gts, target);
+                int event = redDFS(target);
                 if (event != ModelChecking.OK) {
                     return event;
                 }

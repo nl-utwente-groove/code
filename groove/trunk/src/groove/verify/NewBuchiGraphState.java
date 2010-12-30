@@ -17,21 +17,12 @@
 package groove.verify;
 
 import groove.control.CtrlState;
-import groove.lts.AbstractGraphState;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
-import groove.lts.GraphTransitionStub;
 import groove.lts.ProductGTS;
 import groove.lts.ProductTransition;
-import groove.lts.StateReference;
 import groove.trans.HostGraph;
-import groove.trans.RuleEvent;
-import groove.util.TransformIterator;
-import groove.util.TransformSet;
+import groove.util.Pair;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -40,11 +31,7 @@ import java.util.Set;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class BuchiGraphState extends AbstractGraphState {
-    /** the graph-state that is wrapped */
-    private final GraphState state;
-    /** the buchi location for this buchi graph state */
-    private BuchiLocation buchiLocation;
+public class NewBuchiGraphState extends Pair<GraphState,BuchiLocation> {
     /** the colour of this graph state (used in the nested DFS algorithm) */
     private int colour;
     /**
@@ -70,11 +57,9 @@ public class BuchiGraphState extends AbstractGraphState {
      * @param buchiLocation the Buchi-location component
      * @param parent the parent state
      */
-    public BuchiGraphState(ProductGTS gts, GraphState state,
-            BuchiLocation buchiLocation, BuchiGraphState parent) {
-        super(StateReference.newInstance(gts.getRecord()), gts.nodeCount());
-        this.state = state;
-        this.buchiLocation = buchiLocation;
+    public NewBuchiGraphState(ProductGTS gts, GraphState state,
+            BuchiLocation buchiLocation, NewBuchiGraphState parent) {
+        super(state, buchiLocation);
         this.colour = ModelChecking.NO_COLOUR;
         // this.iteration = ModelChecking.CURRENT_ITERATION;
         // this.parent = parent;
@@ -85,24 +70,22 @@ public class BuchiGraphState extends AbstractGraphState {
      * @return the graph-state component of the Buchi graph-state
      */
     public GraphState getGraphState() {
-        return this.state;
+        return one();
     }
 
-    @Override
     public HostGraph getGraph() {
-        return this.state.getGraph();
+        return one().getGraph();
     }
 
-    @Override
     public CtrlState getCtrlState() {
-        return this.state.getCtrlState();
+        return one().getCtrlState();
     }
 
     /**
-     * @return the <tt>buchiLocation</tt> of this {@link BuchiGraphState}
+     * @return the <tt>buchiLocation</tt> of this {@link NewBuchiGraphState}
      */
     public BuchiLocation getBuchiLocation() {
-        return this.buchiLocation;
+        return two();
     }
 
     /**
@@ -110,7 +93,7 @@ public class BuchiGraphState extends AbstractGraphState {
      * @param location the new location
      */
     public void setBuchiLocation(BuchiLocation location) {
-        this.buchiLocation = location;
+        setTwo(location);
     }
 
     /**
@@ -119,7 +102,7 @@ public class BuchiGraphState extends AbstractGraphState {
      *         otherwise
      */
     public boolean isAccepting() {
-        return this.buchiLocation.isAccepting();
+        return two().isAccepting();
     }
 
     /**
@@ -171,95 +154,10 @@ public class BuchiGraphState extends AbstractGraphState {
         this.iteration = value;
     }
 
-    /**
-     * Add an outgoing {@link ProductTransition} to this Buchi graph-state.
-     * @param transition the outgoing transition to be added
-     */
-    public boolean addTransition(ProductTransition transition) {
-        if (this.outTransitions == null) {
-            initOutTransitions();
-        }
-        return this.outTransitions.add(transition);
-    }
-
-    /**
-     * Returns the set of outgoing transitions.
-     * @return the set of outgoing transitions
-     */
-    public Set<ProductTransition> outTransitions() {
-        if (this.outTransitions == null) {
-            initOutTransitions();
-        }
-        return this.outTransitions;
-    }
-
-    private void initOutTransitions() {
-        this.outTransitions = new HashSet<ProductTransition>();
-    }
-
-    @Override
-    public GraphTransitionStub getOutStub(RuleEvent prime) {
-        return this.state.getOutStub(prime);
-    }
-
-    @Override
-    public Iterator<GraphTransition> getTransitionIter() {
-        return this.state.getTransitionIter();
-    }
-
-    @Override
-    public Set<GraphTransition> getTransitionSet() {
-        return this.state.getTransitionSet();
-    }
-
-    @Override
-    public Collection<? extends GraphState> getNextStateSet() {
-        return new TransformSet<ProductTransition,BuchiGraphState>(
-            outTransitions()) {
-            @Override
-            public BuchiGraphState toOuter(ProductTransition trans) {
-                return trans.target();
-            }
-        };
-    }
-
-    @Override
-    public Iterator<? extends GraphState> getNextStateIter() {
-        return new TransformIterator<ProductTransition,BuchiGraphState>(
-            outTransitions().iterator()) {
-            @Override
-            public BuchiGraphState toOuter(ProductTransition trans) {
-                return trans.target();
-            }
-        };
-    }
-
-    /**
-     * Returns an iterator over the outgoing transitions.
-     * @return an iterator over the outgoing transitions.
-     */
-    public Iterator<ProductTransition> outTransitionIter() {
-        return outTransitions().iterator();
-    }
-
-    @Override
-    public boolean addTransition(GraphTransition transition) {
-        throw new UnsupportedOperationException(
-            "Buchi graph-states can only have outgoing Buchi-transitions and no "
-                + transition.getClass());
-    }
-
-    @Override
-    public boolean containsTransition(GraphTransition transition) {
-        return this.state.containsTransition(transition);
-    }
-
-    @Override
     public boolean isClosed() {
         return this.closed;
     }
 
-    @Override
     protected void updateClosed() {
         this.closed = true;
     }
@@ -281,8 +179,8 @@ public class BuchiGraphState extends AbstractGraphState {
 
     @Override
     public String toString() {
-        if (this.state != null && this.buchiLocation != null) {
-            return this.state.toString() + "-" + this.buchiLocation.toString();
+        if (one() != null && two() != null) {
+            return one().toString() + "-" + two().toString();
         } else {
             return "??";
         }

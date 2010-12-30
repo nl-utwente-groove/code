@@ -19,7 +19,6 @@ package groove.verify;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.LTS;
 import groove.trans.Condition;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
@@ -100,9 +99,9 @@ public class CTLModelChecker extends CommandLineTool {
     }
 
     /** Constructs a model checker for a given LTS and property. */
-    public CTLModelChecker(LTS lts, TemporalFormula property) {
+    public CTLModelChecker(GTS gts, TemporalFormula property) {
         super(Collections.<String>emptyList());
-        this.gts = (GTS) lts;
+        this.gts = gts;
         this.property = property;
         this.marker = new CTLTransitionMarker();
     }

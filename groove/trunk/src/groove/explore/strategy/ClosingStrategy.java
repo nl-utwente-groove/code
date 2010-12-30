@@ -18,8 +18,7 @@ package groove.explore.strategy;
 
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.LTS;
-import groove.lts.LTSAdapter;
+import groove.lts.GTSAdapter;
 
 /**
  * Strategy that closes every state it explores, and adds the newly generated
@@ -61,9 +60,9 @@ abstract public class ClosingStrategy extends AbstractStrategy {
     private final ExploreListener exploreListener = new ExploreListener();
 
     /** A queue with states to be explored, used as a FIFO. */
-    private class ExploreListener extends LTSAdapter {
+    private class ExploreListener extends GTSAdapter {
         @Override
-        public void addUpdate(LTS lts, GraphState state) {
+        public void addUpdate(GTS gts, GraphState state) {
             putInPool(state);
         }
     }

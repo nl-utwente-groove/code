@@ -25,8 +25,7 @@ import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.LTS;
-import groove.lts.LTSAdapter;
+import groove.lts.GTSAdapter;
 import groove.trans.DefaultApplication;
 import groove.trans.HostFactory;
 import groove.trans.SPOEvent;
@@ -388,20 +387,20 @@ public class ExplorationStatistics {
     // ------------------------------------------------------------------------
 
     /** Listener to an LTS that counts the nodes and edges of the states. */
-    private static class StatisticsListener extends LTSAdapter {
+    private static class StatisticsListener extends GTSAdapter {
         /** Empty constructor with the correct visibility. */
         StatisticsListener() {
             // Empty.
         }
 
         @Override
-        public void addUpdate(LTS lts, GraphState state) {
+        public void addUpdate(GTS gts, GraphState state) {
             this.nodeCount += state.getGraph().nodeCount();
             this.edgeCount += state.getGraph().edgeCount();
         }
 
         @Override
-        public void addUpdate(LTS lts, GraphTransition transition) {
+        public void addUpdate(GTS gts, GraphTransition transition) {
             // Does nothing by design.
         }
 

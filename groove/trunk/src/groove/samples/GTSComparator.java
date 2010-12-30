@@ -23,8 +23,7 @@ import groove.explore.strategy.DFSStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.LTS;
-import groove.lts.LTSAdapter;
+import groove.lts.GTSAdapter;
 import groove.trans.GraphGrammar;
 import groove.util.GenerateProgressMonitor;
 import groove.util.Groove;
@@ -79,9 +78,9 @@ public class GTSComparator {
             new HashMap<GraphState,GraphState>();
         GTS result = new GTS(grammar);
         result.addLTSListener(new GenerateProgressMonitor());
-        result.addLTSListener(new LTSAdapter() {
+        result.addLTSListener(new GTSAdapter() {
             @Override
-            public void closeUpdate(LTS lts, GraphState explored) {
+            public void closeUpdate(GTS lts, GraphState explored) {
                 GraphState otherState = result1.addState(explored);
                 if (otherState.getTransitionSet().size() != (explored).getTransitionSet().size()) {
                     throw new IllegalStateException();
@@ -89,7 +88,7 @@ public class GTSComparator {
             }
 
             @Override
-            public void addUpdate(LTS lts, GraphState state) {
+            public void addUpdate(GTS gts, GraphState state) {
                 if (!result1.containsNode(state)) {
                     throw new IllegalStateException();
                 } else {
@@ -98,7 +97,7 @@ public class GTSComparator {
             }
 
             @Override
-            public void addUpdate(LTS lts, GraphTransition transition) {
+            public void addUpdate(GTS gts, GraphTransition transition) {
                 if (!result1.containsEdge(transition)) {
                     throw new IllegalStateException();
                 }

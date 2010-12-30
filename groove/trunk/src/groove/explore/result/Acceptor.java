@@ -16,12 +16,12 @@
  */
 package groove.explore.result;
 
-import groove.lts.LTSAdapter;
+import groove.lts.GTSAdapter;
 
 /**
  * Listens to a GTS and adds accepted elements to a result.
  */
-public class Acceptor extends LTSAdapter {
+public class Acceptor extends GTSAdapter {
     /** Creates an instance with a default {@link Result}. */
     public Acceptor() {
         this(new Result());

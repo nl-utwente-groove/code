@@ -20,8 +20,7 @@ import groove.explore.util.MatchSetCollector;
 import groove.lts.DefaultGraphNextState;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.LTS;
-import groove.lts.LTSAdapter;
+import groove.lts.GTSAdapter;
 import groove.lts.MatchResult;
 import groove.match.SearchEngineFactory;
 import groove.match.SearchEngineFactory.EngineType;
@@ -169,7 +168,7 @@ public class ReteLinearStrategy extends AbstractStrategy {
      * Registers the first new state added to the GTS it listens to. Such an
      * object should be added as listener only to a single GTS.
      */
-    static private class NewStateCollector extends LTSAdapter {
+    static private class NewStateCollector extends GTSAdapter {
         NewStateCollector() {
             reset();
         }
@@ -190,7 +189,7 @@ public class ReteLinearStrategy extends AbstractStrategy {
         }
 
         @Override
-        public void addUpdate(LTS shape, GraphState state) {
+        public void addUpdate(GTS shape, GraphState state) {
             if (this.newState == null) {
                 this.newState = state;
             }

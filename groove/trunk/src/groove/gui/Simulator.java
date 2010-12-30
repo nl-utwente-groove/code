@@ -94,9 +94,8 @@ import groove.io.Xml;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.LTS;
-import groove.lts.LTSAdapter;
-import groove.lts.LTSListener;
+import groove.lts.GTSAdapter;
+import groove.lts.GTSListener;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
@@ -4127,16 +4126,16 @@ public class Simulator {
          * Creates a graph listener that displays the progress of the generate
          * thread on the cancel dialog.
          */
-        private LTSListener createProgressListener() {
-            return new LTSAdapter() {
+        private GTSListener createProgressListener() {
+            return new GTSAdapter() {
                 @Override
-                public void addUpdate(LTS lts, GraphState state) {
-                    displayProgress(lts);
+                public void addUpdate(GTS gts, GraphState state) {
+                    displayProgress(gts);
                 }
 
                 @Override
-                public void addUpdate(LTS lts, GraphTransition transition) {
-                    displayProgress(lts);
+                public void addUpdate(GTS gts, GraphTransition transition) {
+                    displayProgress(gts);
                 }
             };
         }
@@ -4169,9 +4168,9 @@ public class Simulator {
          * Displays the number of lts states and transitions in the message
          * dialog.
          */
-        void displayProgress(LTS lts) {
-            getStateCountLabel().setText("States: " + lts.nodeCount());
-            getTransitionCountLabel().setText("Transitions: " + lts.edgeCount());
+        void displayProgress(GTS gts) {
+            getStateCountLabel().setText("States: " + gts.nodeCount());
+            getTransitionCountLabel().setText("Transitions: " + gts.edgeCount());
         }
 
         /** LTS generation strategy of this thread. (old version) */
@@ -4179,7 +4178,7 @@ public class Simulator {
         /** LTS generation strategy of this thread. (new version) */
         private final Exploration exploration;
         /** Progress listener for the generate thread. */
-        private final LTSListener progressListener;
+        private final GTSListener progressListener;
         /** Label displaying the number of states generated so far. */
         private JLabel transitionCountLabel;
         /** Label displaying the number of transitions generated so far. */

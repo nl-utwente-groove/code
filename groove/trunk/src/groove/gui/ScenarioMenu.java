@@ -20,8 +20,7 @@ import groove.explore.Scenario;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.LTS;
-import groove.lts.LTSAdapter;
+import groove.lts.GTSAdapter;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.view.StoredGrammarView;
@@ -267,7 +266,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
     private final GTSListener gtsListener = new GTSListener();
 
     /** Listener that can be refreshed with the current GTS. */
-    private class GTSListener extends LTSAdapter {
+    private class GTSListener extends GTSAdapter {
         /** Empty constructor with the correct visibility. */
         GTSListener() {
             // empty
@@ -287,7 +286,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         }
 
         @Override
-        public void closeUpdate(LTS lts, GraphState explored) {
+        public void closeUpdate(GTS lts, GraphState explored) {
             assert lts == this.gts;
             this.openStateCount--;
             assert this.openStateCount == this.gts.openStateCount();
@@ -298,7 +297,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
 
         /** If the added element is a state, increases the open state count. */
         @Override
-        public void addUpdate(LTS lts, GraphState state) {
+        public void addUpdate(GTS gts, GraphState state) {
             this.openStateCount++;
         }
 

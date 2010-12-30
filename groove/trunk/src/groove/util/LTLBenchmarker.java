@@ -33,9 +33,8 @@ import groove.io.ExtensionFilter;
 import groove.io.SystemStore;
 import groove.io.SystemStoreFactory;
 import groove.lts.GTS;
+import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
-import groove.lts.LTS;
-import groove.lts.LTSAdapter;
 import groove.lts.ProductGTS;
 import groove.trans.DefaultApplication;
 import groove.trans.GraphGrammar;
@@ -1048,7 +1047,7 @@ public class LTLBenchmarker extends CommandLineTool {
             getGTS().addLTSListener(new GenerateProgressMonitor());
         }
         if (getVerbosity() == HIGH_VERBOSITY) {
-            getProductGTS().addLTSListener(getStatisticsListener());
+            getProductGTS().addListener(getStatisticsListener());
         }
         this.startTime = System.currentTimeMillis();
         result = getScenario().play().getValue();
@@ -1312,33 +1311,12 @@ public class LTLBenchmarker extends CommandLineTool {
         int transitionCount =
             getScenario().getStrategy().getProductGTS().edgeCount();
         int transitionCountSystem = getGTS().edgeCount();
-        // int pocketStates =
-        // getStrategy().getProductGTS().getPocketStates().size();
-        // int pocketStates2 = BuchiGraphState.pocketStates;
-        // System.out.println(pocketStates + " (" + pocketStates2 + ")");
-        // long total = (endTime - startTime);
         long matching = SPORule.getMatchingTime();
-        // long modelCheckingNext =
-        // ModelChecking.reporter.getTotalTime(ModelChecking.NEXT);
-        // long modelCheckingUpdate =
-        // ModelChecking.reporter.getTotalTime(ModelChecking.UPDATE);
-        // long modelCheckingBacktrack =
-        // ModelChecking.reporter.getTotalTime(ModelChecking.BACKTRACK);
-        // System.out.println("Model checking statistics:");
-        // System.out.println("next: " + modelCheckingNext);
-        // System.out.println("updateNext: " + modelCheckingUpdate);
-        // System.out.println("backtrack: " + modelCheckingBacktrack);
         String results =
             stateCount + " (" + stateCountSystem + ") " + transitionCount
                 + " (" + transitionCountSystem + ") " + total + " "
                 + (percentage(matching / (double) total));
         System.err.println(results);
-        // System.out.println(results);
-
-        // if (ModelChecking.MARK_POCKET_STATES)
-        // results += " " + BuchiGraphState.pocketStates;
-
-        // writer.write("\n" + experiment + "\n");
         writer.write(results);
         writer.close();
     }
@@ -1480,14 +1458,14 @@ public class LTLBenchmarker extends CommandLineTool {
         "Serialized graph files", GRAPH_FILE_EXTENSION);
 
     /** Listener to an LTS that counts the nodes and edges of the states. */
-    private static class StatisticsListener extends LTSAdapter {
+    private static class StatisticsListener extends GTSAdapter {
         /** Empty constructor with the correct visibility. */
         StatisticsListener() {
             // Auto-generated constructor stub
         }
 
         @Override
-        public void addUpdate(LTS lts, GraphState state) {
+        public void addUpdate(GTS gts, GraphState state) {
             this.nodeCount += state.getGraph().nodeCount();
             this.edgeCount += state.getGraph().edgeCount();
         }

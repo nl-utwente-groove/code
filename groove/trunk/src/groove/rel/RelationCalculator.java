@@ -20,9 +20,9 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.lts.GTS;
 import groove.lts.GraphTransition;
-import groove.lts.LTS;
-import groove.lts.LTSAdapter;
+import groove.lts.GTSAdapter;
 import groove.rel.RegExpr.Sharp;
 
 import java.util.HashMap;
@@ -37,7 +37,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class RelationCalculator extends LTSAdapter implements
+public class RelationCalculator extends GTSAdapter implements
         RegExprCalculator<NodeRelation> {
     /**
      * Creates a relation calculator based on a given graph. The relation
@@ -172,7 +172,7 @@ public class RelationCalculator extends LTSAdapter implements
     }
 
     @Override
-    public void addUpdate(LTS lts, GraphTransition transition) {
+    public void addUpdate(GTS gts, GraphTransition transition) {
         if (this.labelEdgeMap != null) {
             addToLabelEdgeMap(transition, this.labelEdgeMap);
         }
@@ -180,15 +180,15 @@ public class RelationCalculator extends LTSAdapter implements
 
     /** Start listening to the wrapped graph, if it supports listeners. */
     public void startListening() {
-        if (this.graph instanceof LTS) {
-            ((LTS) this.graph).addLTSListener(this);
+        if (this.graph instanceof GTS) {
+            ((GTS) this.graph).addLTSListener(this);
         }
     }
 
     /** Stop listening to the wrapped graph. */
     public void stopListening() {
-        if (this.graph instanceof LTS) {
-            ((LTS) this.graph).removeLTSListener(this);
+        if (this.graph instanceof GTS) {
+            ((GTS) this.graph).removeLTSListener(this);
         }
     }
 

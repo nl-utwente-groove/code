@@ -67,13 +67,9 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
                 "Model checking should start at initial state");
         }
         super.prepare(gts, state);
-        setProductGTS(new ProductGTS(gts));
-        setup();
-    }
-
-    private void setProductGTS(ProductGTS gts) {
-        this.productGTS = gts;
+        this.productGTS = new ProductGTS(gts);
         this.productGTS.addListener(this.collector);
+        setup();
     }
 
     public void setResult(Result result) {
@@ -304,7 +300,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
         // if the current source state is already closed
         // the product-gts contains all transitions and
         // we do not have to add new transitions.
-        if (getProductGTS().isOpen(getAtBuchiState())) {
+        if (!getAtBuchiState().isClosed()) {
             result = addTransition(getAtBuchiState(), transition, location);
         } else {
             for (ProductTransition nextTransition : getProductGTS().outEdgeSet(

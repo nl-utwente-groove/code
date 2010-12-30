@@ -22,16 +22,16 @@ package groove.lts;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class LTSAdapter implements LTSListener {
+public class GTSAdapter implements GTSListener {
     /** Provides an empty default implementation. */
     @Override
-    public void addUpdate(LTS lts, GraphState state) {
+    public void addUpdate(GTS gts, GraphState state) {
         // empty default implementation
     }
 
     /** Provides an empty default implementation. */
     @Override
-    public void addUpdate(LTS lts, GraphTransition transition) {
+    public void addUpdate(GTS gts, GraphTransition transition) {
         // empty default implementation
     }
 
@@ -39,7 +39,7 @@ public class LTSAdapter implements LTSListener {
      * Event that occurs when closing a state. This default implementation
      * has no behaviour.
      */
-    public void closeUpdate(LTS graph, GraphState explored) {
+    public void closeUpdate(GTS graph, GraphState explored) {
         // this implementation does nothing
     }
 }

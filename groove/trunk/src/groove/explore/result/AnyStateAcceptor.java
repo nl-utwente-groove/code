@@ -17,8 +17,8 @@
 
 package groove.explore.result;
 
+import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.LTS;
 
 /**
  * Acceptor that accepts any new state that is added to the LTS.
@@ -47,7 +47,7 @@ public class AnyStateAcceptor extends Acceptor {
     }
 
     @Override
-    public void addUpdate(LTS lts, GraphState state) {
+    public void addUpdate(GTS gts, GraphState state) {
         getResult().add(state);
     }
 }

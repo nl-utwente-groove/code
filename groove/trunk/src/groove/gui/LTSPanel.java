@@ -25,8 +25,7 @@ import groove.gui.jgraph.LTSJModel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.LTS;
-import groove.lts.LTSAdapter;
+import groove.lts.GTSAdapter;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.view.StoredGrammarView;
@@ -308,7 +307,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
      * Listener that makes sure the panel status gets updated when the LYS is
      * extended.
      */
-    private class MyLTSListener extends LTSAdapter {
+    private class MyLTSListener extends GTSAdapter {
         /** Empty constructor with the correct visibility. */
         MyLTSListener() {
             // empty
@@ -319,8 +318,8 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
          * the frame title by showing the number of nodes and edges.
          */
         @Override
-        public void addUpdate(LTS lts, GraphState state) {
-            assert lts == getGTS() : "I want to listen only to my lts";
+        public void addUpdate(GTS gts, GraphState state) {
+            assert gts == getGTS() : "I want to listen only to my lts";
             this.stateAdded = true;
             refreshStatus();
         }
@@ -330,8 +329,8 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
          * the frame title by showing the number of nodes and edges.
          */
         @Override
-        public void addUpdate(LTS lts, GraphTransition transition) {
-            assert lts == getGTS() : "I want to listen only to my lts";
+        public void addUpdate(GTS gts, GraphTransition transition) {
+            assert gts == getGTS() : "I want to listen only to my lts";
             refreshStatus();
         }
 
@@ -339,7 +338,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
          * If a state is closed, its background should be reset.
          */
         @Override
-        public void closeUpdate(LTS lts, GraphState closed) {
+        public void closeUpdate(GTS lts, GraphState closed) {
             JCell jCell = getJModel().getJCellForNode(closed);
             // during automatic generation, we do not always have vertices for
             // all states

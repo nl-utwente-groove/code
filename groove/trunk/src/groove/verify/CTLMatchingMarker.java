@@ -19,7 +19,6 @@ package groove.verify;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.LTS;
 import groove.trans.Condition;
 import groove.verify.CTLStarFormula.Next;
 import groove.verify.CTLStarFormula.Until;
@@ -453,13 +452,13 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
                 GraphState nextState = stateIter.next();
                 // we distinguish two types of special states:
                 // - open states (i.e. unexplored states)
-                if (name.substring(1).endsWith(LTS.OPEN_LABEL_TEXT)) {
+                if (name.substring(1).endsWith(GTS.OPEN_LABEL_TEXT)) {
                     if (!nextState.isClosed()) {
                         marking.set(nextState, property, true);
                     }
                 }
                 // - final states (i.e. states with no outgoing transitions)
-                else if (name.substring(1).endsWith(LTS.FINAL_LABEL_TEXT)) {
+                else if (name.substring(1).endsWith(GTS.FINAL_LABEL_TEXT)) {
                     if (!gts.isFinal(nextState)) {
                         marking.set(nextState, property, true);
                     }
