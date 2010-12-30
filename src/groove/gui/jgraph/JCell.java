@@ -58,12 +58,6 @@ public interface JCell extends GraphCell, Serializable {
     public abstract Collection<? extends Label> getListLabels();
 
     /**
-     * Returns the set of labels to be shown on this cell in a plain graph view.
-     * A plain graph view is the representation used in the editor.
-     */
-    public abstract Collection<String> getPlainLabels();
-
-    /**
      * Returns a {@link JCellContent}, which is a set of objects associated with
      * this cell.
      * @ensure <tt>result instanceof JUserObject</tt>

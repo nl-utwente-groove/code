@@ -155,7 +155,7 @@ public class EditorJModel extends JModel {
                 nodeMap.put(jVertex, node);
                 elementMap.put(node, jVertex);
                 layoutMap.putNode(node, jVertex.getAttributes());
-                for (String label : jVertex.getPlainLabels()) {
+                for (String label : jVertex.getUserObject()) {
                     result.addEdge(node, label, node);
                 }
             }
@@ -164,7 +164,7 @@ public class EditorJModel extends JModel {
         // Create Edges
         for (Object root : getRoots()) {
             if (root instanceof JEdge) {
-                JEdge jEdge = (JEdge) root;
+                EditableJEdge jEdge = (EditableJEdge) root;
                 DefaultNode source = nodeMap.get(jEdge.getSourceVertex());
                 DefaultNode target = nodeMap.get(jEdge.getTargetVertex());
                 assert target != null : "Edge with empty target: " + root;
@@ -174,7 +174,7 @@ public class EditorJModel extends JModel {
                 boolean attrIsDefault =
                     JEdgeLayout.newInstance(edgeAttr).isDefault();
                 // parse edge text into label set
-                for (String label : jEdge.getPlainLabels()) {
+                for (String label : jEdge.getUserObject()) {
                     DefaultEdge edge = result.addEdge(source, label, target);
                     // add layout information if there is anything to be noted
                     // about the edge

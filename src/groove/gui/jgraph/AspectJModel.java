@@ -37,7 +37,6 @@ import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
-import groove.view.aspect.AspectLabel;
 import groove.view.aspect.AspectNode;
 
 import java.awt.Font;
@@ -390,16 +389,7 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             if (getJModel().isShowAspects()) {
                 result.append(TypeLabel.toHtmlString(edge.label()));
             } else {
-                // use special node label prefixes to indicate edge role
-                Aspect edgeAspect = edge.getAspect();
-                Aspect sourceAspect = edge.source().getAspect();
-                Label edgeLabel = edge.getDisplayLabel();
-                if (!edgeAspect.equals(sourceAspect)) {
-                    result.append(TypeLabel.toHtmlString(edgeLabel,
-                        edgeAspect.getKind()));
-                } else {
-                    result.append(TypeLabel.toHtmlString(edgeLabel));
-                }
+                result.append(TypeLabel.toHtmlString(edge.getDisplayLabel()));
             }
             if (edge.getKind() == AspectKind.ABSTRACT) {
                 result = Converter.ITALIC_TAG.on(result);
@@ -416,20 +406,41 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                 }
                 result.append(Converter.toHtml(suffix));
             }
+            // use special node label prefixes to indicate edge role
+            Aspect edgeAspect = edge.getAspect();
+            if (!edgeAspect.equals(edge.source().getAspect())) {
+                setRole(result, edgeAspect.getKind());
+            }
             return result;
         }
 
         /**
-         * This implementation adds node and edge aspects.
+         * Adds a textual prefix and a HTML colour to a given node line,
+         * depending on an edge role.
          */
-        @Override
-        public Collection<String> getPlainLabels() {
-            Collection<String> result = new ArrayList<String>();
-            for (AspectLabel nodeLabel : getNode().getNodeLabels()) {
-                result.add(nodeLabel.text());
+        public void setRole(StringBuilder text, AspectKind edgeRole) {
+            switch (edgeRole) {
+            case ERASER:
+                text.insert(0, "- ");
+                Converter.blue.on(text);
+                break;
+            case ADDER:
+                text.insert(0, "+! ");
+                Converter.green.on(text);
+                break;
+            case CREATOR:
+                text.insert(0, "+ ");
+                Converter.green.on(text);
+                break;
+            case EMBARGO:
+                text.insert(0, "! ");
+                Converter.red.on(text);
+                break;
+            case REMARK:
+                text.insert(0, "// ");
+                Converter.remark.on(text);
+                break;
             }
-            result.addAll(super.getPlainLabels());
-            return result;
         }
 
         @Override
@@ -564,6 +575,18 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         @Override
         public Label getLabel(AspectEdge edge) {
             return edge.getDisplayLabel();
+        }
+
+        @Override
+        public Set<? extends Label> getListLabels(AspectEdge edge) {
+            Set<? extends Label> result;
+            Label label = edge.getRuleLabel();
+            if (label != null && ((RuleLabel) label).isMatchable()) {
+                result = ((RuleLabel) label).getMatchExpr().getTypeLabels();
+            } else {
+                result = Collections.singleton(edge.getDisplayLabel());
+            }
+            return result;
         }
 
         /**
