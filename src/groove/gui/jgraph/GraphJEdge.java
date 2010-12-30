@@ -19,8 +19,6 @@ package groove.gui.jgraph;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.algebra.ArgumentEdge;
-import groove.graph.algebra.OperatorEdge;
 import groove.trans.RuleLabel;
 import groove.util.Converter;
 
@@ -56,6 +54,11 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
         getUserObject().add(edge);
     }
 
+    /** Returns the {@link JModel} associated with this {@link JEdge}. */
+    protected GraphJModel<N,E> getJModel() {
+        return this.jModel;
+    }
+
     /**
      * Returns <code>true</code> if the super method does so, and the edge has
      * at least one non-filtered list label, and all end nodes are visible.
@@ -72,41 +75,13 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
     }
 
     /**
-     * Indicates if this edge is shown as a label on its source node, instead of
-     * an explicit edge. This implementation returns <code>true</code> if either
-     * {@link #isSelfEdgeSourceLabel()} or {@link #isDataEdgeSourceLabel()}
-     * return <code>true</code>.
+     * Indicates if this edge is a self-edge that can be shown as a label on its
+     * source vertex. This is the case if {@link GraphJModel#isShowVertexLabels()} and
+     * {@link GraphJModel#isPotentialUnaryEdge(Edge)} hold for this edge.
      */
     public boolean isSourceLabel() {
-        return isSelfEdgeSourceLabel() || isDataEdgeSourceLabel();
-    }
-
-    /**
-     * Indicates if this edge is a self-edge that can be shown as a label on its
-     * source vertex. This is the case if the source node contains this edge in
-     * its user object.
-     * Callback method from {@link #isSourceLabel()}.
-     */
-    boolean isSelfEdgeSourceLabel() {
         return this.jModel.isShowVertexLabels()
             && this.jModel.isPotentialUnaryEdge(getEdge());
-    }
-
-    /**
-     * Indicates if this edge has a value node target and can be used as a label
-     * on its source node. This is the case if
-     * {@link GraphJModel#isShowValueNodes()} holds, and
-     * {@link GraphJVertex#isValueNode()} holds for the target node. Callback
-     * method from {@link #isSourceLabel()}.
-     */
-    public boolean isDataEdgeSourceLabel() {
-        boolean result = !this.jModel.isShowValueNodes();
-        if (result) {
-            result =
-                getTargetVertex().isValueNode()
-                    || getTargetVertex().isDataTypeNode();
-        }
-        return result;
     }
 
     /** Indicates if this edge is filtered (and therefore invisible). */
@@ -171,15 +146,6 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
      */
     public E getEdge() {
         return getUserObject().iterator().next();
-    }
-
-    /**
-     * Returns the actual graph edge <i>modelled</i> by this j-edge. For this
-     * implementation this is the same as {@link #getEdge()}.
-     * @see #getEdge()
-     */
-    Edge<?> getActualEdge() {
-        return getEdge();
     }
 
     /** This implementation delegates to {@link Edge#label()}. */
@@ -315,13 +281,7 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
     /** This implementation recognises argument and operation edges. */
     @Override
     StringBuilder getEdgeKindDescription() {
-        if (getActualEdge() instanceof ArgumentEdge) {
-            return new StringBuilder("Argument edge");
-        } else if (getActualEdge() instanceof OperatorEdge) {
-            return new StringBuilder("Operation edge");
-        } else {
-            return new StringBuilder("Edge");
-        }
+        return new StringBuilder("Edge");
     }
 
     /**

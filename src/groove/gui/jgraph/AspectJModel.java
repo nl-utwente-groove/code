@@ -20,11 +20,14 @@ import static groove.gui.jgraph.JAttr.RULE_EDGE_ATTR;
 import static groove.gui.jgraph.JAttr.RULE_EDGE_EMPH_CHANGE;
 import static groove.gui.jgraph.JAttr.RULE_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.RULE_NODE_EMPH_CHANGE;
+import static groove.view.aspect.AspectKind.ARGUMENT;
 import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Label;
+import groove.graph.LabelKind;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
 import groove.gui.Options;
 import groove.trans.RuleLabel;
 import groove.util.Converter;
@@ -40,11 +43,13 @@ import groove.view.aspect.AspectNode;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
@@ -95,10 +100,10 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                         errorCell = getJCellForNode((AspectNode) errorObject);
                     } else if (errorObject instanceof AspectEdge) {
                         errorCell = getJCell(errorObject);
-                        if (errorCell instanceof GraphJEdge
-                            && ((GraphJEdge<?,?>) errorCell).isDataEdgeSourceLabel()) {
+                        if (errorCell instanceof AspectJEdge
+                            && ((AspectJEdge) errorCell).isDataEdgeSourceLabel()) {
                             errorCell =
-                                ((GraphJEdge<?,?>) errorCell).getSourceVertex();
+                                ((AspectJEdge) errorCell).getSourceVertex();
                         }
                     }
                     if (errorCell != null) {
@@ -114,6 +119,20 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      */
     public final boolean isShowRemarks() {
         return getOptionValue(Options.SHOW_REMARKS_OPTION);
+    }
+
+    /**
+     * Indicates whether aspect prefixes should be shown for nodes and edges.
+     */
+    final boolean isShowAspects() {
+        return getOptionValue(Options.SHOW_ASPECTS_OPTION);
+    }
+
+    /**
+     * Indicates whether data nodes should be shown in the rule and lts views.
+     */
+    boolean isShowValueNodes() {
+        return getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
     }
 
     @Override
@@ -172,7 +191,7 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      */
     @Override
     protected GraphJEdge<AspectNode,AspectEdge> createJEdge(AspectEdge edge) {
-        return new AspectJEdge(edge);
+        return new AspectJEdge(this, edge);
     }
 
     /** Retrieves a node's image according to the view. */
@@ -245,20 +264,26 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     /**
      * Specialized j-vertex for rule graphs, with its own tool tip text.
      */
-    private class AspectJVertex extends GraphJVertex<AspectNode,AspectEdge> {
+    static public class AspectJVertex extends
+            GraphJVertex<AspectNode,AspectEdge> {
         /** Creates a j-vertex on the basis of a given (aspectual) node. */
         public AspectJVertex(AspectJModel jModel, AspectNode node) {
             super(jModel, node);
             this.aspect = node.getKind();
         }
 
-        /**
-         * This implementation return's the model node of {@link #getNode()}.
-         * @see #getModelNode(AspectNode)
-         */
         @Override
-        public Node getActualNode() {
-            return getModelNode(getNode());
+        AspectJModel getJModel() {
+            return (AspectJModel) super.getJModel();
+        }
+
+        @Override
+        public String getNodeIdentity() {
+            if (this.aspect.isMeta()) {
+                return null;
+            } else {
+                return super.getNodeIdentity();
+            }
         }
 
         /**
@@ -267,30 +292,51 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
          */
         @Override
         StringBuilder getNodeDescription() {
-            StringBuilder res = super.getNodeDescription();
-            if (ROLE_NAMES.containsKey(this.aspect)) {
-                Converter.toUppercase(res, false);
-                res.insert(0, " ");
-                res.insert(0, ROLE_NAMES.get(this.aspect));
-                res.append("<br>" + ROLE_DESCRIPTIONS.get(this.aspect));
+            StringBuilder result = new StringBuilder();
+            if (getNode().getAttrKind().isData()) {
+                if (getNode().getAttrAspect().hasContent()) {
+                    result.append("Constant node");
+                } else {
+                    result.append("Variable node");
+                }
+            } else if (getNode().hasAttrAspect()) {
+                result.append("Product node");
+            } else {
+                result.append(super.getNodeDescription());
             }
-            return res;
-        }
-
-        /**
-         * Tests {@link #isAllowedNodeLabel(AspectEdge)} and calls the super
-         * method if the test is successful.
-         */
-        @Override
-        public boolean addSelfEdge(AspectEdge edge) {
-            return isAllowedNodeLabel(edge) && super.addSelfEdge(edge);
+            if (ROLE_NAMES.containsKey(this.aspect)) {
+                Converter.toUppercase(result, false);
+                result.insert(0, " ");
+                result.insert(0, ROLE_NAMES.get(this.aspect));
+                result.append("<br>" + ROLE_DESCRIPTIONS.get(this.aspect));
+            }
+            return result;
         }
 
         /** Adds a quantifier, if the nesting aspect justifies this. */
         @Override
         public List<StringBuilder> getLines() {
             List<StringBuilder> result = super.getLines();
-            if (isShowAspects()) {
+            Aspect attrAspect = getNode().getAttrAspect();
+            if (attrAspect.getKind().isTypedData()) {
+                String dataLine;
+                if (getJModel().isShowAspects()) {
+                    dataLine = attrAspect.toString();
+                } else if (attrAspect.hasContent()) {
+                    dataLine = attrAspect.getContentString();
+                } else {
+                    dataLine =
+                        TypeLabel.toHtmlString(TypeLabel.createLabel(
+                            LabelKind.NODE_TYPE, attrAspect.getKind().getName()));
+                }
+                result.add(0, new StringBuilder(dataLine));
+            }
+            for (AspectEdge edge : getDataEdges()) {
+                if (!getJModel().isFiltering(edge.getDisplayLabel())) {
+                    result.add(getLine(edge));
+                }
+            }
+            if (getJModel().isShowAspects()) {
                 result.add(0, getRoleLine());
             }
             // adds a quantor if the node is a nesting node
@@ -298,25 +344,9 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                 result.add(0, getQuantifierLine(getNode().getAspect()));
             }
             // adds a parameter string if the node is a rule parameter
-            if (getNode().hasParam() && getNode().getParam().hasContent()) {
-                Integer paramNr = (Integer) getNode().getParam().getContent();
-                result.add(new StringBuilder(""
-                    + AspectKind.ContentKind.PARAM_START_CHAR + paramNr));
-            }
-            return result;
-        }
-
-        /**
-         * Tests if a given edge can be used as node label. This is the case if
-         * rule role and nesting label of the edge coincide with those of the
-         * node.
-         */
-        boolean isAllowedNodeLabel(AspectEdge dataEdge) {
-            boolean result =
-                !dataEdge.isBinary() || dataEdge.getKind().isMeta();
-            if (!result) {
-                // test for equal rule roles
-                result = dataEdge.equalsAspects(getNode());
+            Aspect param = getNode().getParam();
+            if (param != null && param.hasContent()) {
+                result.add(new StringBuilder(param.getContentString()));
             }
             return result;
         }
@@ -357,17 +387,34 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         @Override
         public StringBuilder getLine(AspectEdge edge) {
             StringBuilder result = new StringBuilder();
-            if (isShowAspects()) {
-                for (Aspect aspect : edge.label().getAspects()) {
-                    result.append(aspect);
+            if (getJModel().isShowAspects()) {
+                result.append(TypeLabel.toHtmlString(edge.label()));
+            } else {
+                // use special node label prefixes to indicate edge role
+                Aspect edgeAspect = edge.getAspect();
+                Aspect sourceAspect = edge.source().getAspect();
+                Label edgeLabel = edge.getDisplayLabel();
+                if (!edgeAspect.equals(sourceAspect)) {
+                    result.append(TypeLabel.toHtmlString(edgeLabel,
+                        edgeAspect.getKind()));
+                } else {
+                    result.append(TypeLabel.toHtmlString(edgeLabel));
                 }
             }
-            result.append(super.getLine(edge));
-            // add nesting level, if any
-            String levelName = edge.getLevelName();
-            if (!isShowAspects() && levelName != null
-                && levelName.length() != 0) {
-                result.append(Converter.SUB_TAG.on(levelName));
+            if (edge.getKind() == AspectKind.ABSTRACT) {
+                result = Converter.ITALIC_TAG.on(result);
+            }
+            if (edge.target() != edge.source()) {
+                // this is an attribute edge displayed as a node label
+                String suffix;
+                AspectNode actualTarget = edge.target();
+                if (actualTarget.hasAttrAspect()) {
+                    suffix =
+                        ASSIGN_TEXT + actualTarget.getAttrAspect().getContent();
+                } else {
+                    suffix = TYPE_TEXT + actualTarget.getAttrKind().getName();
+                }
+                result.append(Converter.toHtml(suffix));
             }
             return result;
         }
@@ -381,12 +428,60 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             for (AspectLabel nodeLabel : getNode().getNodeLabels()) {
                 result.add(nodeLabel.text());
             }
-            // we do not do a super call, for that adds the value of the actual
-            // node which we have here anyway
-            for (AspectEdge edge : getSelfEdges()) {
-                result.add(edge.label().text());
+            result.addAll(super.getPlainLabels());
+            return result;
+        }
+
+        @Override
+        public Collection<? extends Label> getListLabels() {
+            Collection<Label> result = new ArrayList<Label>();
+            result.addAll(super.getListLabels());
+            Aspect attrAspect = getNode().getAttrAspect();
+            if (attrAspect.getKind().isTypedData()) {
+                if (attrAspect.hasContent()) {
+                    result.add(TypeLabel.createLabel(attrAspect.getContentString()));
+                } else {
+                    result.add(TypeLabel.createLabel(LabelKind.NODE_TYPE,
+                        attrAspect.getKind().getName()));
+                }
             }
-            // result.addAll(super.getPlainLabels());
+            for (AspectEdge edge : getDataEdges()) {
+                result.addAll(getListLabels(edge));
+            }
+            return result;
+        }
+
+        @Override
+        public Set<? extends Label> getListLabels(AspectEdge edge) {
+            Set<? extends Label> result;
+            Label label = edge.getDisplayLabel();
+            if (label instanceof RuleLabel && ((RuleLabel) label).isMatchable()) {
+                result = ((RuleLabel) label).getMatchExpr().getTypeLabels();
+                if (result.isEmpty()) {
+                    result = Collections.singleton(NO_LABEL);
+                }
+            } else {
+                result = Collections.singleton(label);
+            }
+            return result;
+        }
+
+        /**
+         * Returns an ordered set of outgoing edges going to constants.
+         */
+        Set<AspectEdge> getDataEdges() {
+            Set<AspectEdge> result = new TreeSet<AspectEdge>();
+            if (!getJModel().isShowValueNodes()) {
+                for (Object edgeObject : getPort().getEdges()) {
+                    AspectJEdge jEdge = (AspectJEdge) edgeObject;
+                    if (jEdge.getSourceVertex() == this
+                        && jEdge.isDataEdgeSourceLabel()) {
+                        for (AspectEdge edge : jEdge.getEdges()) {
+                            result.add(edge);
+                        }
+                    }
+                }
+            }
             return result;
         }
 
@@ -402,41 +497,52 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         @Override
         public boolean isVisible() {
             if (this.aspect == REMARK) {
-                return isShowRemarks();
+                return getJModel().isShowRemarks();
             } else if (getNode().hasParam()) {
                 return true;
             } else {
-                return super.isVisible();
+                boolean result = super.isVisible();
+                if (getNode().getAttrKind().isTypedData()
+                    && !getJModel().isShowValueNodes()) {
+                    result = hasVisibleIncidentEdge();
+                }
+                return result;
             }
-        }
-
-        /**
-         * This implementation returns <code>true</code> only if
-         * {@link AspectKind#isMeta()} holds for the underlying
-         * node.
-         */
-        @Override
-        public boolean isListable() {
-            return super.isListable() && !this.aspect.isMeta();
         }
 
         /** The role of the underlying rule node. */
         private final AspectKind aspect;
+
+        static private final String ASSIGN_TEXT = " = ";
+        static private final String TYPE_TEXT = ": ";
     }
 
     /**
      * Specialized j-edge for rule graphs, with its own tool tip text.
      */
-    private class AspectJEdge extends GraphJEdge<AspectNode,AspectEdge> {
+    static public class AspectJEdge extends GraphJEdge<AspectNode,AspectEdge> {
         /** Creates a j-edge on the basis of a given (aspectual) edge. */
-        public AspectJEdge(AspectEdge edge) {
-            super(AspectJModel.this, edge);
+        public AspectJEdge(AspectJModel jModel, AspectEdge edge) {
+            super(jModel, edge);
             this.aspect = edge.getKind();
         }
 
         @Override
+        protected AspectJModel getJModel() {
+            return (AspectJModel) super.getJModel();
+        }
+
+        @Override
         StringBuilder getEdgeDescription() {
-            StringBuilder result = super.getEdgeDescription();
+            StringBuilder result = new StringBuilder();
+            AspectKind attrKind = getEdge().getAttrKind();
+            if (attrKind == ARGUMENT) {
+                result.append(new StringBuilder("Argument edge"));
+            } else if (attrKind.isTypedData()) {
+                result.append(new StringBuilder("Operation edge"));
+            } else {
+                result.append(super.getEdgeDescription());
+            }
             if (ROLE_DESCRIPTIONS.containsKey(this.aspect)) {
                 result.append("<br>" + ROLE_DESCRIPTIONS.get(this.aspect));
             }
@@ -452,11 +558,6 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                 result.insert(0, ROLE_NAMES.get(this.aspect));
             }
             return result;
-        }
-
-        @Override
-        Edge<?> getActualEdge() {
-            return getModelEdge(getEdge());
         }
 
         /** This implementation returns the (unparsed) label of the model edge. */
@@ -484,7 +585,7 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         @Override
         public StringBuilder getLine(AspectEdge edge) {
             StringBuilder result = new StringBuilder();
-            if (isShowAspects()) {
+            if (getJModel().isShowAspects()) {
                 for (Aspect aspect : edge.label().getAspects()) {
                     result.append(aspect);
                 }
@@ -506,28 +607,37 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         @Override
         public boolean isVisible() {
             return super.isVisible()
-                && (isShowRemarks() || this.aspect != REMARK);
+                && (getJModel().isShowRemarks() || this.aspect != REMARK);
         }
 
-        /**
-         * This implementation returns <code>true</code> only if
-         * {@link AspectKind#isMeta()} holds for the underlying
-         * edge.
-         */
         @Override
-        public boolean isListable() {
-            return super.isListable() && !this.aspect.isMeta();
+        public boolean isSourceLabel() {
+            boolean result = super.isSourceLabel();
+            if (!result) {
+                result = isDataEdgeSourceLabel();
+            }
+            return result;
         }
 
         /**
          * Only returns <code>true</code> if this edge has the same aspect
          * values as the source node. This is to prevent ambiguities.
          */
-        @Override
         public boolean isDataEdgeSourceLabel() {
-            return super.isDataEdgeSourceLabel()
-                && getEdge().equalsAspects(getSourceNode())
-                && getSourceNode().getKind() != REMARK;
+            boolean result =
+                !getJModel().isShowValueNodes() && this.aspect != REMARK;
+            if (result) {
+                if (this.aspect.isRole()) {
+                    // we're in a rule graph; watch for parameters and variable nodes
+                    result =
+                        getTargetVertex().getNode().getAttrAspect().hasContent()
+                            && !getTargetVertex().getNode().hasParam();
+                } else {
+                    result =
+                        getTargetVertex().getNode().getAttrKind().isTypedData();
+                }
+            }
+            return result;
         }
 
         private final AspectKind aspect;

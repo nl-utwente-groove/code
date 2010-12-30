@@ -377,10 +377,10 @@ public class LabelTree extends JTree implements GraphModelListener,
     /**
      * Callback method to determine whether a given cell should be included in
      * the label list. This should only be the case if the cell is a
-     * {@link JCell} for which {@link JCell#isListable()} holds.
+     * {@link JCell}.
      */
     private boolean isListable(Object cell) {
-        return cell instanceof JCell && ((JCell) cell).isListable();
+        return cell instanceof JCell;
     }
 
     /**
@@ -1235,12 +1235,10 @@ public class LabelTree extends JTree implements GraphModelListener,
                         }
                     } else {
                         Label keyType =
-                            TypeLabel.createLabel(
-                                LabelKind.NODE_TYPE,
+                            TypeLabel.createLabel(LabelKind.NODE_TYPE,
                                 dataRow.substring(0, separatorIndex));
                         Label valueType =
-                            TypeLabel.createLabel(
-                                LabelKind.NODE_TYPE,
+                            TypeLabel.createLabel(LabelKind.NODE_TYPE,
                                 dataRow.substring(separatorIndex + 1));
                         Set<Label> values = draggedLabels.get(keyType);
                         if (values == null) {

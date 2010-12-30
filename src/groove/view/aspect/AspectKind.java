@@ -484,6 +484,22 @@ public enum AspectKind {
             return text;
         }
 
+        /** 
+         * Builds a string description of a given content object, in a form that
+         * can be parsed back to the content by {@link #parseContent(String)}. 
+         * @return a string description of a content object, or the empty
+         * string if the object is {@code null}
+         */
+        String toString(Object content) {
+            if (content == null) {
+                return "";
+            } else if (this == PARAM) {
+                return "" + PARAM_START_CHAR + content;
+            } else {
+                return "" + content;
+            }
+        }
+
         /**
          * Builds a string description of a given aspect kind and content
          * of this {@link ContentKind}.

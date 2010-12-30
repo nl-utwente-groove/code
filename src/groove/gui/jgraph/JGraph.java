@@ -47,7 +47,6 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -1372,66 +1371,10 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         }
     }
 
+    /** Own implementation of UI for performance reasons. */
     private static class MyGraphUI extends org.jgraph.plaf.basic.BasicGraphUI {
         MyGraphUI() {
             // empty
-        }
-
-        @Override
-        public Dimension2D getPreferredSize(org.jgraph.JGraph graph,
-                CellView view) {
-            Dimension2D result = null;
-            if (view instanceof JVertexView) {
-                JVertexView vertexView = (JVertexView) view;
-                String text = convertDigits(vertexView.getCell().getText());
-                result = this.sizeMap.get(text);
-                if (result == null) {
-                    if (text.length() == 0) {
-                        result = JAttr.DEFAULT_NODE_SIZE;
-                    } else {
-                        result = super.getPreferredSize(graph, vertexView);
-                        // normalise for view insets
-                        Insets i = vertexView.getInsets();
-                        result.setSize(result.getWidth() - i.left - i.right,
-                            result.getHeight() - i.top - i.bottom);
-                    }
-                    this.sizeMap.put(text, result);
-                }
-                // adjust for view insets
-                Insets i = vertexView.getInsets();
-                // try to avoid conversion back and forth to double
-                if (result instanceof Dimension) {
-                    Dimension r = (Dimension) result;
-                    result =
-                        new Dimension(r.width + i.left + i.right, r.height
-                            + i.top + i.bottom);
-                } else {
-                    result =
-                        new Dimension((int) result.getWidth() + i.left
-                            + i.right, (int) result.getHeight() + i.top
-                            + i.bottom);
-                }
-            } else {
-                result = super.getPreferredSize(graph, view);
-            }
-            assert result != null;
-            return result;
-        }
-
-        /**
-         * Converts all digits in a string in the range 2-9 to 0. The idea is
-         * that this will not affect the size of the string, but will unify many
-         * keys in the size map.
-         */
-        private String convertDigits(String original) {
-            char[] array = original.toCharArray();
-            for (int i = 0; i < array.length; i++) {
-                char c = array[i];
-                if ('2' <= c && c <= '9') {
-                    array[i] = '0';
-                }
-            }
-            return String.valueOf(array);
         }
 
         /**
@@ -1490,9 +1433,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         protected GraphModelListener createGraphModelListener() {
             return new MyGraphModelHandler();
         }
-
-        private final Map<String,Dimension2D> sizeMap =
-            new HashMap<String,Dimension2D>();
 
         private class MyGraphModelHandler extends GraphModelHandler {
             MyGraphModelHandler() {

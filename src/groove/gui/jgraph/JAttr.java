@@ -629,13 +629,6 @@ public class JAttr {
         /** Computes the emphasised node attributes. */
         AttributeMap getNodeEmphAttrs() {
             AttributeMap result = getNodeAttrs().clone();
-            float linewidth = GraphConstants.getLineWidth(result);
-            GraphConstants.setLineWidth(result, linewidth + EMPH_INCREMENT - 1);
-            Color borderColour = GraphConstants.getBorderColor(result);
-            Border border =
-                this.border == null ? createBorder(borderColour, linewidth,
-                    this.dash) : this.border;
-            GraphConstants.setBorder(result, createNodeBorder(border, true));
             return result;
         }
 

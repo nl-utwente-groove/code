@@ -19,14 +19,11 @@ package groove.gui.jgraph;
 import static groove.util.Converter.HTML_TAG;
 import static groove.util.Converter.createColorTag;
 import static groove.util.Converter.createSpanTag;
-import groove.graph.Node;
-import groove.graph.algebra.ProductNode;
-import groove.graph.algebra.ValueNode;
-import groove.graph.algebra.VariableNode;
+import static groove.view.aspect.AspectKind.PRODUCT;
 import groove.util.Converter.HTMLTag;
+import groove.view.aspect.AspectNode;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -39,6 +36,8 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -104,50 +103,6 @@ public class JVertexView extends VertexView {
         super.refresh(cache, mapper, createDependentViews);
         // modify the bounds to make room for the border
         this.text = computeText();
-        // jGraph.updateAutoSize(this);
-        this.insets = computeInsets(this.text.length() == 0);
-    }
-
-    /**
-     * Computes insets for this view, using the view border and taking into
-     * account the shape of the vertex.
-     */
-    private Insets computeInsets(boolean empty) {
-        // calculate the insets of the border
-        // Border b = GraphConstants.getBorder(getAllAttributes());
-        // if (b == null) {
-        // top = left = bottom = right = 0;
-        // } else {
-        Insets result;
-        if (empty) {
-            result = (Insets) EMPTY_INSETS.clone();
-        } else {
-            result = (Insets) DEFAULT_INSETS.clone();// b.getBorderInsets(getRenderer());
-        }
-        int line = (int) GraphConstants.getLineWidth(getAllAttributes());
-        result.top += line;
-        result.left += line;
-        result.bottom += line;
-        result.right += line;
-        // }
-        // add space needed for an oval border
-        switch (getVertexShape()) {
-        case ELLIPSE_SHAPE:
-            Rectangle2D bounds = getCachedBounds();
-            result.left += (int) bounds.getWidth() / 8;
-            result.right += (int) bounds.getWidth() / 8;
-            result.top += (int) bounds.getHeight() / 8;
-            result.bottom += (int) bounds.getHeight() / 8;
-            break;
-        case DIAMOND_SHAPE:
-            bounds = getCachedBounds();
-            result.left += (int) bounds.getWidth() / 8;
-            result.right += (int) bounds.getWidth() / 8;
-            result.top += (int) bounds.getHeight() / 8;
-            result.bottom += (int) bounds.getHeight() / 8;
-            break;
-        }
-        return result;
     }
 
     /**
@@ -173,16 +128,21 @@ public class JVertexView extends VertexView {
      * should be rendered differently).
      */
     private int getVertexShape() {
-        if (getCell() instanceof GraphJVertex) {
-            Node actualNode = ((GraphJVertex<?,?>) getCell()).getActualNode();
-            if (actualNode instanceof VariableNode
-                || actualNode instanceof ValueNode) {
+        if (getCell() instanceof AspectJModel.AspectJVertex) {
+            AspectNode node =
+                ((AspectJModel.AspectJVertex) getCell()).getNode();
+            if (node.getAttrKind().isData()) {
                 return ELLIPSE_SHAPE;
-            } else if (actualNode instanceof ProductNode) {
+            } else if (node.getAttrKind() == PRODUCT) {
                 return DIAMOND_SHAPE;
             }
         }
         return RECTANGLE_SHAPE;
+    }
+
+    /** Stores the insets value for this view. */
+    void setInsets(Insets insets) {
+        this.insets = insets;
     }
 
     /** Returns the insets computed for this vertex view. */
@@ -211,46 +171,6 @@ public class JVertexView extends VertexView {
         if (isEmphasized()) {
             result += JAttr.EMPH_INCREMENT;
         }
-        return result;
-    }
-
-    /** Returns the shape of the vertex view. */
-    public Shape getShape(Dimension size) {
-        float line = getLinewidth();
-        float x = line / 2;
-        float y = line / 2;
-        float width = size.width - line;
-        float height = size.height - line;
-        switch (getVertexShape()) {
-        case ELLIPSE_SHAPE:
-            return new Ellipse2D.Float(x, y, width, height);
-        case DIAMOND_SHAPE:
-            return createDiamondShape(x, y, width, height);
-        default:
-            return createRectangleShape(x, y, width, height);
-        }
-    }
-
-    /** Creates a shape tracing the bounds given in the parameters. */
-    private Shape createRectangleShape(float x, float y, float width,
-            float height) {
-        GeneralPath result = new GeneralPath(Path2D.WIND_NON_ZERO, 5);
-        result.moveTo(x, y);
-        result.lineTo(x + width, y);
-        result.lineTo(x + width, y + height);
-        result.lineTo(x, y + height);
-        result.closePath();
-        return result;
-    }
-
-    /** Creates a diamond shape inscribed in the bounds given in the parameters. */
-    private Shape createDiamondShape(float x, float y, float width, float height) {
-        GeneralPath result = new GeneralPath(Path2D.WIND_NON_ZERO, 5);
-        result.moveTo(x + width / 2, y);
-        result.lineTo(x + width, y + height / 2);
-        result.lineTo(x + width / 2, y + height);
-        result.lineTo(x, y + height / 2);
-        result.closePath();
         return result;
     }
 
@@ -544,7 +464,7 @@ public class JVertexView extends VertexView {
     /** Flag indicating that the vertex is empty, i.e., there is no text inside. */
     /** The text on this vertex. */
     private String text;
-    /** Additional space to add to view bounds to make . */
+    /** Additional space to add to view bounds to make room for special borders. */
     private Insets insets;
 
     // switch off port magic
@@ -610,7 +530,7 @@ public class JVertexView extends VertexView {
             setMinimumSize(JAttr.DEFAULT_NODE_SIZE);
         }
 
-        public Component getRendererComponent(org.jgraph.JGraph graph,
+        public MyRenderer getRendererComponent(org.jgraph.JGraph graph,
                 CellView view, boolean sel, boolean focus, boolean preview) {
             assert view instanceof JVertexView : String.format(
                 "This renderer is only meant for %s", JVertexView.class);
@@ -620,6 +540,7 @@ public class JVertexView extends VertexView {
             AttributeMap attributes = view.getAllAttributes();
             this.dash = GraphConstants.getDashPattern(attributes);
             this.lineColor = GraphConstants.getLineColor(attributes);
+            this.lineWidth = this.view.getLinewidth();
 
             AttributeMap secondMap = (AttributeMap) attributes.get("line2map");
             if (secondMap != null) {
@@ -647,22 +568,6 @@ public class JVertexView extends VertexView {
             return this;
         }
 
-        /** This method calculates the preferred size without the border. */
-        @Override
-        public synchronized Dimension getPreferredSize() {
-            // unset the border
-            // Border border = getBorder();
-            // setBorder(null);
-            Dimension dimension = super.getPreferredSize();
-            // the preferred size may be too high because line breaks are
-            // taken into account, so try again after the width has been set
-            setSize(dimension);
-            Dimension result = super.getPreferredSize();
-            // reset the border
-            // setBorder(border);
-            return result;
-        }
-
         /**
          * In addition to called <code>super.paint()</code>, also draws the
          * selection border, if the vertex is selected.
@@ -670,7 +575,7 @@ public class JVertexView extends VertexView {
         @Override
         public void paint(Graphics g) {
             Graphics2D g2 = (Graphics2D) g;
-            Shape shape = this.view.getShape(getSize());
+            Shape shape = getShape(getSize());
             if (isOpaque()) {
                 paintBackground(g2, shape);
             }
@@ -703,7 +608,7 @@ public class JVertexView extends VertexView {
          */
         private void paintForeground(Graphics2D g, Shape shape) {
             g.setColor(this.lineColor);
-            g.setStroke(JAttr.createStroke(this.view.getLinewidth(), this.dash));
+            g.setStroke(JAttr.createStroke(this.lineWidth, this.dash));
             g.draw(shape);
             if (this.twoLines) {
                 g.setColor(this.line2color);
@@ -726,8 +631,8 @@ public class JVertexView extends VertexView {
          */
         private Border createEmptyBorder() {
             Insets i = this.view.getInsets();
-            return BorderFactory.createEmptyBorder(i.top, i.left, i.bottom,
-                i.right);
+            return i == null ? null : BorderFactory.createEmptyBorder(i.top,
+                i.left, i.bottom, i.right);
         }
 
         /**
@@ -737,6 +642,146 @@ public class JVertexView extends VertexView {
             g.setStroke(GraphConstants.SELECTION_STROKE);
             g.setColor(this.selectionColor);
             g.draw(shape);
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            Dimension result = null;
+            String text = convertDigits(getText());
+            result = this.sizeMap.get(text);
+            if (result == null) {
+                if (text.length() == 0) {
+                    result = JAttr.DEFAULT_NODE_SIZE;
+                } else {
+                    Border border = getBorder();
+                    // reset the border to make sure only the text size gets 
+                    // measured
+                    setBorder(null);
+                    // set a large size to avoid spurious line breaks
+                    // which would mess up the size calculation
+                    setSize(1000, 1000);
+                    result = super.getPreferredSize();
+                    // reset the border
+                    setBorder(border);
+                }
+                this.sizeMap.put(text, result);
+            }
+            // adjust for view insets
+            Insets i = computeInsets(result.width, result.height);
+            // try to avoid conversion back and forth to double
+            result =
+                new Dimension(result.width + i.left + i.right, result.height
+                    + i.top + i.bottom);
+            // store the insets in the view, to be used
+            // when actually drawing the view
+            this.view.setInsets(i);
+            return result;
+        }
+
+        /**
+         * Converts all digits in a string in the range 2-9 to 0. The idea is
+         * that this will not affect the size of the string, but will unify many
+         * keys in the size map.
+         */
+        private String convertDigits(String original) {
+            char[] array = original.toCharArray();
+            // flag indicating that we're inside a HTML tag
+            boolean htmlTag = false;
+            // flag indicating that we're inside a special HTML character
+            boolean htmlChar = false;
+            for (int i = 0; i < array.length; i++) {
+                char c = array[i];
+                if (htmlChar) {
+                    htmlChar = c != ';';
+                } else if (c == '&') {
+                    htmlChar = true;
+                } else if (htmlTag) {
+                    htmlTag = c != '>';
+                } else if (c == '<') {
+                    htmlTag = true;
+                } else if ('2' <= c && c <= '9') {
+                    array[i] = '0';
+                }
+            }
+            return String.valueOf(array);
+        }
+
+        /**
+         * Computes insets for this view, using the view border and taking into
+         * account the precalculated text width and height.
+         */
+        private Insets computeInsets(int textWidth, int textHeight) {
+            Insets result;
+            if (getText().length() == 0) {
+                result = (Insets) EMPTY_INSETS.clone();
+            } else {
+                result = (Insets) DEFAULT_INSETS.clone();// b.getBorderInsets(getRenderer());
+            }
+            // correct for the line width
+            int line =
+                (int) GraphConstants.getLineWidth(this.view.getAllAttributes());
+            result.top += line;
+            result.left += line;
+            result.bottom += line;
+            result.right += line;
+
+            // add space needed for the border
+            switch (this.view.getVertexShape()) {
+            case ELLIPSE_SHAPE:
+                result.left += textWidth / 8;
+                result.right += textWidth / 8;
+                result.top += textHeight / 8;
+                result.bottom += textHeight / 8;
+                break;
+            case DIAMOND_SHAPE:
+                result.left += textWidth / 3;
+                result.right += textWidth / 3;
+                result.top += textHeight / 3;
+                result.bottom += textHeight / 3;
+                break;
+            }
+            return result;
+        }
+
+        /** Returns the shape of the vertex. */
+        private Shape getShape(Dimension size) {
+            float line = this.lineWidth;
+            float x = line / 2;
+            float y = line / 2;
+            float width = size.width - line;
+            float height = size.height - line;
+            switch (this.view.getVertexShape()) {
+            case ELLIPSE_SHAPE:
+                return new Ellipse2D.Float(x, y, width, height);
+            case DIAMOND_SHAPE:
+                return createDiamondShape(x, y, width, height);
+            default:
+                return createRectangleShape(x, y, width, height);
+            }
+        }
+
+        /** Creates a shape tracing the bounds given in the parameters. */
+        private Shape createRectangleShape(float x, float y, float width,
+                float height) {
+            GeneralPath result = new GeneralPath(Path2D.WIND_NON_ZERO, 5);
+            result.moveTo(x, y);
+            result.lineTo(x + width, y);
+            result.lineTo(x + width, y + height);
+            result.lineTo(x, y + height);
+            result.closePath();
+            return result;
+        }
+
+        /** Creates a diamond shape inscribed in the bounds given in the parameters. */
+        private Shape createDiamondShape(float x, float y, float width,
+                float height) {
+            GeneralPath result = new GeneralPath(Path2D.WIND_NON_ZERO, 5);
+            result.moveTo(x + width / 2, y);
+            result.lineTo(x + width, y + height / 2);
+            result.lineTo(x + width / 2, y + height);
+            result.lineTo(x, y + height / 2);
+            result.closePath();
+            return result;
         }
 
         /**
@@ -876,6 +921,8 @@ public class JVertexView extends VertexView {
         private boolean selected;
         /** Color of the border (which could be different from the text color). */
         private Color lineColor;
+        /** Line width for the renderer. */
+        private float lineWidth;
         /** Dash pattern for the border. */
         private float[] dash;
 
@@ -886,5 +933,8 @@ public class JVertexView extends VertexView {
         private float line2width;
         /** Flag indicating that the vertex has an error. */
         private boolean error;
+        /** Mapping from (HTML) text to the preferred size for that text. */
+        private final Map<String,Dimension> sizeMap =
+            new HashMap<String,Dimension>();
     }
 }

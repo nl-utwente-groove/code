@@ -18,8 +18,6 @@
 package groove.gui.jgraph;
 
 import static groove.view.aspect.AspectKind.REMARK;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -244,20 +242,6 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
     @Override
     public boolean hasError(JCell cell) {
         return false;
-    }
-
-    /** This method reuses the node identity of the JVertex. */
-    @Override
-    protected DefaultNode addFreshNode(DefaultGraph graph, JVertex root) {
-        @SuppressWarnings("unchecked")
-        Node modelNode = ((GraphJVertex<N,E>) root).getActualNode();
-        assert modelNode != null : String.format(
-            "JModel node '%s' does not have underlying graph node", root);
-        if (modelNode instanceof DefaultNode) {
-            return (DefaultNode) modelNode;
-        } else {
-            return graph.addNode();
-        }
     }
 
     /**
@@ -609,13 +593,6 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
     }
 
     /**
-     * Indicates whether aspect prefixes should be shown for nodes and edges.
-     */
-    final boolean isShowAspects() {
-        return getOptionValue(Options.SHOW_ASPECTS_OPTION);
-    }
-
-    /**
      * Indicates whether unfiltered edges to filtered nodes should remain
      * visible.
      */
@@ -646,13 +623,6 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
      */
     boolean isShowAnchors() {
         return getOptionValue(Options.SHOW_ANCHORS_OPTION);
-    }
-
-    /**
-     * Indicates whether data nodes should be shown in the rule and lts views.
-     */
-    boolean isShowValueNodes() {
-        return getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
     }
 
     /** Sets the {@link #forEditor} flag to {@code true}. */

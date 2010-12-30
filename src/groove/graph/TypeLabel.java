@@ -17,6 +17,7 @@
 package groove.graph;
 
 import groove.algebra.Algebras;
+import groove.trans.RuleLabel;
 import groove.util.Converter;
 import groove.util.ExprParser;
 import groove.view.FormatException;
@@ -156,6 +157,11 @@ public final class TypeLabel extends AbstractLabel {
             result = Converter.STRONG_TAG.on(result);
         } else if (label.isFlag()) {
             result = Converter.ITALIC_TAG.on(result);
+        } else if (label instanceof RuleLabel) {
+            RuleLabel ruleLabel = (RuleLabel) label;
+            if (!ruleLabel.isAtom() && !ruleLabel.isSharp()) {
+                result = Converter.ITALIC_TAG.on(result);
+            }
         }
         return result;
     }

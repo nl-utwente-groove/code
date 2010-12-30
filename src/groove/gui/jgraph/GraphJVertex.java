@@ -17,22 +17,10 @@
 package groove.gui.jgraph;
 
 import static groove.util.Converter.ITALIC_TAG;
-import groove.control.CtrlState;
 import groove.graph.Edge;
 import groove.graph.Label;
-import groove.graph.LabelKind;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
-import groove.graph.TypeNode;
-import groove.graph.algebra.ProductNode;
-import groove.graph.algebra.ValueNode;
-import groove.graph.algebra.VariableNode;
-import groove.lts.GraphState;
-import groove.trans.RuleLabel;
-import groove.util.Converter;
-import groove.view.aspect.Aspect;
-import groove.view.aspect.AspectEdge;
-import groove.view.aspect.AspectKind;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -84,28 +72,10 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
         return this.node;
     }
 
-    /**
-     * Returns the actual graph node <i>modelled</i> by the vertex' underlying
-     * node. For this implementation this is the same as {@link #getNode()}.
-     * @see #getNode()
-     */
-    public Node getActualNode() {
-        return getNode();
-    }
-
     @Override
     public boolean isVisible() {
-        boolean result;
-        if (isFiltered()) {
-            result =
-                this.jModel.isShowUnfilteredEdges() && hasVisibleIncidentEdge();
-        } else if (isValueNode() && !this.jModel.isShowValueNodes()
-            || isDataTypeNode()) {
-            result = hasVisibleIncidentEdge();
-        } else {
-            result = true;
-        }
-        return result;
+        return !isFiltered() || this.jModel.isShowUnfilteredEdges()
+            && hasVisibleIncidentEdge();
     }
 
     /**
@@ -124,41 +94,21 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     }
 
     /**
-     * Indicates if all self-edges on this node are filtered (and therefore
+     * Indicates if all list labels on this node are filtered (and therefore
      * invisible).
      */
     private boolean isFiltered() {
-        boolean result;
-        if (isValueNode()) {
-            result = this.jModel.isFiltering(getValueLabel());
-        } else if (getSelfEdges().isEmpty()) {
-            result = this.jModel.isFiltering(NO_LABEL);
-        } else {
-            result = true;
-            // filter if either there is a filtered node type,
-            // or all self-edges are filtered
-            for (E selfEdge : getSelfEdges()) {
-                for (Label label : getListLabels(selfEdge)) {
-                    if (this.jModel.isFiltering(label)) {
-                        if (label.isNodeType()) {
-                            result = true;
-                            break;
-                        }
-                    } else {
-                        result = false;
-                    }
+        boolean result = true;
+        for (Label label : getListLabels()) {
+            if (this.jModel.isFiltering(label)) {
+                if (label.isNodeType()) {
+                    result = true;
+                    break;
                 }
+            } else {
+                result = false;
             }
         }
-        return result;
-    }
-
-    /** Constant and type nodes are only listable when data nodes are shown. */
-    @Override
-    public boolean isListable() {
-        boolean result =
-            this.jModel.isShowValueNodes() || !isValueNode()
-                || !isDataTypeNode();
         return result;
     }
 
@@ -172,16 +122,6 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
             if (id != null) {
                 result.add(ITALIC_TAG.on(new StringBuilder(id)));
             }
-            // REMOVE: this is a temp edit until tooltips work
-            // to show control location in LTS states
-            if (getActualNode() instanceof GraphState) {
-                CtrlState ctrlState =
-                    ((GraphState) getActualNode()).getCtrlState();
-                if (ctrlState.getAut().getProgram() != null) {
-                    result.add(new StringBuilder("ctrl: "
-                        + Converter.toHtml(ctrlState.toString())));
-                }
-            }
         }
         // add the multiplicity information if appropriate
         // EDUARDO : HACK HACK HACK 
@@ -192,23 +132,10 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
                 ITALIC_TAG.on(new StringBuilder(mult))));
         }*/
         // add signature label for typed variable nodes
-        if (getSignature() != null) {
-            result.add(new StringBuilder(
-                TypeLabel.toHtmlString(TypeLabel.createLabel(
-                    LabelKind.NODE_TYPE, getSignature()))));
-        }
         for (E edge : getSelfEdges()) {
             if (!this.jModel.isFiltering(getLabel(edge))) {
                 result.add(getLine(edge));
             }
-        }
-        for (E edge : getDataEdges()) {
-            if (!this.jModel.isFiltering(getLabel(edge))) {
-                result.add(getLine(edge));
-            }
-        }
-        if (result.size() == 0 && isValueNode()) {
-            result.add(new StringBuilder(getValueLabel().text()));
         }
         return result;
     }
@@ -220,42 +147,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
      */
     public StringBuilder getLine(E edge) {
         StringBuilder result = new StringBuilder();
-        Label edgeLabel = getLabel(edge);
-        if (edge.target() == getNode()) {
-            // use special node label prefixes to indicate edge role
-            if (edge instanceof AspectEdge && !this.jModel.isShowAspects()) {
-                AspectEdge aspectEdge = (AspectEdge) edge;
-                Aspect edgeAspect = aspectEdge.getAspect();
-                Aspect sourceAspect = aspectEdge.source().getAspect();
-                if (edgeAspect != null && !edgeAspect.equals(sourceAspect)) {
-                    result.append(TypeLabel.toHtmlString(edgeLabel,
-                        edgeAspect.getKind()));
-                }
-            }
-            if (result.length() == 0) {
-                result.append(TypeLabel.toHtmlString(edgeLabel));
-            }
-            if (edgeLabel instanceof RuleLabel
-                && !(((RuleLabel) edgeLabel).isSharp() || ((RuleLabel) edgeLabel).isAtom())
-                || edge instanceof AspectEdge
-                && ((AspectEdge) edge).getKind() == AspectKind.ABSTRACT) {
-                result = Converter.ITALIC_TAG.on(result);
-            }
-        } else {
-            // this is a binary edge displayed as a node label
-            result.append(edgeLabel);
-            GraphJVertex<N,E> oppositeVertex =
-                this.jModel.getJCellForNode(edge.target());
-            Node actualTarget = oppositeVertex.getActualNode();
-            if (actualTarget instanceof ValueNode) {
-                result.append(ASSIGN_TEXT);
-                result.append(((ValueNode) actualTarget).getSymbol());
-            } else {
-                result.append(TYPE_TEXT);
-                result.append(((TypeNode) actualTarget).getType().text());
-            }
-            result = Converter.toHtml(result);
-        }
+        result.append(TypeLabel.toHtmlString(edge.label()));
         return result;
     }
 
@@ -271,72 +163,28 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
      */
     public Collection<? extends Label> getListLabels() {
         Collection<Label> result = new ArrayList<Label>();
-        if (isValueNode()) {
-            result.add(getValueLabel());
-        }
         for (E edge : getSelfEdges()) {
             result.addAll(getListLabels(edge));
         }
-        if (getSignature() != null) {
-            result.add(TypeLabel.createLabel(LabelKind.NODE_TYPE,
-                getSignature()));
-        } else if (getSelfEdges().isEmpty()) {
+        if (getSelfEdges().isEmpty()) {
             result.add(NO_LABEL);
-        }
-        for (E edge : getDataEdges()) {
-            result.addAll(getListLabels(edge));
         }
         return result;
     }
 
     /** This implementation delegates to {@link Edge#label()}. */
     public Set<? extends Label> getListLabels(E edge) {
-        Set<? extends Label> result;
-        Label label = getLabel(edge);
-        if (label instanceof RuleLabel) {
-            result = ((RuleLabel) label).getMatchExpr().getTypeLabels();
-            if (result.isEmpty()) {
-                result = Collections.singleton(NO_LABEL);
-            }
-        } else {
-            result = Collections.singleton(label);
-        }
-        return result;
+        return Collections.singleton(edge.label());
     }
 
     /**
-     * This implementation adds a constant identifier to the labels in case the
-     * node is a ValueNode.
+     * This implementation collects the strings on the self-edges.
+     * @see #getSelfEdges()
      */
     public Collection<String> getPlainLabels() {
         Collection<String> result = new ArrayList<String>();
-        if (isValueNode()) {
-            Label symbol = getValueLabel();
-            String prefix = Aspect.getAspect(getSignature()).toString();
-            result.add(prefix + symbol);
-        }
         for (E edge : getSelfEdges()) {
             result.add(edge.label().toString());
-        }
-        return result;
-    }
-
-    /**
-     * Returns an ordered set of outgoing edges going to constants.
-     */
-    Set<E> getDataEdges() {
-        Set<E> result = new TreeSet<E>();
-        if (!this.jModel.isShowValueNodes()) {
-            for (Object edgeObject : getPort().getEdges()) {
-                @SuppressWarnings("unchecked")
-                GraphJEdge<N,E> jEdge = (GraphJEdge<N,E>) edgeObject;
-                if (jEdge.getSourceVertex() == this
-                    && jEdge.isDataEdgeSourceLabel()) {
-                    for (E edge : jEdge.getEdges()) {
-                        result.add(edge);
-                    }
-                }
-            }
         }
         return result;
     }
@@ -418,114 +266,18 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     }
 
     /**
-     * Callback method to determine whether the underlying graph node is data
-     * attribute-related.
-     */
-    boolean isDataTypeNode() {
-        return getActualNode() instanceof TypeNode
-            && ((TypeNode) getActualNode()).getType().isDataType();
-    }
-
-    /**
-     * Callback method to determine whether the underlying graph node is data
-     * attribute-related.
-     */
-    public boolean isValueNode() {
-        return getActualNode() instanceof ValueNode;
-    }
-
-    /**
-     * @return true if this node is a (variable or constant) value node, false otherwise.
-     */
-    public boolean isVariableNode() {
-        return getActualNode() instanceof VariableNode;
-    }
-
-    /**
-     * @return true if this node is a product node, false otherwise.
-     */
-    public boolean isProductNode() {
-        return getActualNode() instanceof ProductNode;
-    }
-
-    /**
-     * Callback method to determine whether the underlying graph node stores a
-     * constant value.
-     * @return <code>true</code> if {@link #getActualNode()} is a
-     *         {@link ValueNode} storing a constant value.
-     * @see #getValueLabel()
-     */
-    boolean hasValue() {
-        return (getActualNode() instanceof ValueNode);
-    }
-
-    /**
-     * Callback method to return the symbolic representation of the value stored
-     * in the underlying graph node, in case the graph node is a value node.
-     * @see ValueNode#getSymbol()
-     */
-    TypeLabel getValueLabel() {
-        if (getActualNode() instanceof ValueNode) {
-            return TypeLabel.createBinaryLabel(((ValueNode) getActualNode()).getSymbol());
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Callback method to return the algebra to which the underlying value node
-     * belongs, or <code>null</code> if the underlying node is not a value node.
-     * This method returns <code>null</code> if and only if {@link #hasValue()}
-     * holds.
-     */
-    String getSignature() {
-        if (getActualNode() instanceof VariableNode) {
-            return ((VariableNode) getActualNode()).getSignature();
-        } else if (getActualNode() instanceof ValueNode) {
-            return ((ValueNode) getActualNode()).getSignature();
-        } else {
-            return null;
-        }
-    }
-
-    /**
      * Callback method yielding a string description of the underlying node,
-     * used for the node inscription in case node identities are to be shown. If
-     * the node is a constant (see {@link #hasValue()}) the constant value is
-     * returned; otherwise this implementation delegates to
-     * <code>getNode().toString()</code>. The result may be <code>null</code>,
-     * if the node has no proper identity.
-     * @return A node descriptor, or <code>null</code> if the node has no proper
-     *         identity
+     * used for the node inscription in case node identities are to be shown.
      */
     public String getNodeIdentity() {
-        // if (isConstant()) {
-        // return getConstant().toString();
-        // } else
-        if (getActualNode() == null) {
-            return null;
-        } else {
-            return getActualNode().toString();
-        }
+        return getNode().toString();
     }
 
     /** This implementation includes the node number of the underlying node. */
     @Override
     StringBuilder getNodeDescription() {
         StringBuilder result = new StringBuilder();
-        Node node = getActualNode();
-        if (node instanceof ValueNode) {
-            result.append("Constant");
-        } else if (node instanceof VariableNode) {
-            result.append("Variable");
-        } else if (node instanceof ProductNode) {
-            result.append("Product");
-        }
-        if (result.length() == 0) {
-            result.append("Node");
-        } else {
-            result.append(" node");
-        }
+        result.append("Node");
         String id = getNodeIdentity();
         if (id != null) {
             result.append(" ");
@@ -544,7 +296,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     }
 
     /** Returns the underlying GraphJModel. */
-    GraphJModel<N,E> getGraphJModel() {
+    GraphJModel<N,E> getJModel() {
         return this.jModel;
     }
 
@@ -557,7 +309,4 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     private final boolean vertexLabelled;
     /** The graph node modelled by this jgraph node. */
     private final N node;
-
-    static private final String ASSIGN_TEXT = " = ";
-    static private final String TYPE_TEXT = ": ";
 }

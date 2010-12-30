@@ -151,7 +151,7 @@ public class EditorJModel extends JModel {
         for (Object root : getRoots()) {
             if (root instanceof EditableJVertex) {
                 EditableJVertex jVertex = (EditableJVertex) root;
-                DefaultNode node = addFreshNode(result, jVertex);
+                DefaultNode node = result.addNode(jVertex.getNumber());
                 nodeMap.put(jVertex, node);
                 elementMap.put(node, jVertex);
                 layoutMap.putNode(node, jVertex.getAttributes());

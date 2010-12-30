@@ -69,13 +69,6 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
         return true;
     }
 
-    /**
-     * This implementation always returns <code>true</code>.
-     */
-    public boolean isListable() {
-        return true;
-    }
-
     @Override
     public String toString() {
         return String.format("JVertex %d with labels %s", getNumber(),

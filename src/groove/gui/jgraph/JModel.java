@@ -16,8 +16,6 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
 import groove.gui.Options;
@@ -192,14 +190,6 @@ abstract public class JModel extends DefaultGraphModel {
             }
         }
         return result;
-    }
-
-    /**
-     * Callback factory method to add a fresh node to a given graph, reflecting
-     * a JVertex. Subclasses may use this to determine the node number.
-     */
-    protected DefaultNode addFreshNode(DefaultGraph result, JVertex root) {
-        return result.addNode(root.getNumber());
     }
 
     /**
