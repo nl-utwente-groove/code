@@ -16,8 +16,8 @@
  */
 package groove.explore.result;
 
+import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.LTS;
 
 /**
  * Accepts final states.
@@ -36,7 +36,7 @@ public class FinalStateAcceptor extends Acceptor {
     }
 
     @Override
-    public void closeUpdate(LTS gts, GraphState state) {
+    public void closeUpdate(GTS gts, GraphState state) {
         if (gts.isFinal(state)) {
             getResult().add(state);
         }

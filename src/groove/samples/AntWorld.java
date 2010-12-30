@@ -25,9 +25,8 @@ import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.lts.GTS;
 import groove.lts.GraphTransition;
-import groove.lts.LTS;
-import groove.lts.LTSAdapter;
-import groove.lts.LTSListener;
+import groove.lts.GTSAdapter;
+import groove.lts.GTSListener;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
 import groove.util.Groove;
@@ -89,10 +88,10 @@ public class AntWorld {
         }
     }
 
-    static private LTSListener getStatisticsListener() {
-        return new LTSAdapter() {
+    static private GTSListener getStatisticsListener() {
+        return new GTSAdapter() {
             @Override
-            public void addUpdate(LTS lts, GraphTransition trans) {
+            public void addUpdate(GTS gts, GraphTransition trans) {
                 this.counter++;
                 if (trans.getEvent().getRule().getName().equals("end_turn")) {
                     System.out.print("\n" + trans.getEvent());

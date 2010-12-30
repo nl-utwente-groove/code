@@ -16,9 +16,9 @@
  */
 package groove.explore.result;
 
+import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.LTS;
 
 /**
  * A <code>PredicateAcceptor</code> is an acceptor that adds states to its
@@ -62,7 +62,7 @@ public class PredicateAcceptor extends Acceptor {
      * Evaluates the state predicate, and updates the result set if needed.
      */
     @Override
-    public void addUpdate(LTS lts, GraphState state) {
+    public void addUpdate(GTS gts, GraphState state) {
         if (!this.statePredicate) {
             return;
         }
@@ -77,7 +77,7 @@ public class PredicateAcceptor extends Acceptor {
      * needed.
      */
     @Override
-    public void addUpdate(LTS lts, GraphTransition transition) {
+    public void addUpdate(GTS gts, GraphTransition transition) {
         if (!this.transitionPredicate) {
             return;
         }

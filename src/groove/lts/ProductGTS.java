@@ -17,13 +17,8 @@
 package groove.lts;
 
 import groove.explore.result.Acceptor;
-import groove.graph.AbstractGraph;
-import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.GraphRole;
-import groove.graph.Node;
 import groove.graph.iso.IsoChecker;
-import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -45,33 +40,20 @@ import java.util.Set;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class ProductGTS extends AbstractGraph<GraphState,GraphTransition>
-        implements LTS {
-
+public class ProductGTS {
     /**
      * Constructs a GTS from a (fixed) graph grammar.
      */
     public ProductGTS(GTS gts) {
-        super(gts.getName());
         this.gts = gts;
-        this.graphGrammar = gts.getGrammar();
-    }
-
-    @Override
-    public void testFixed(boolean fixed) throws IllegalStateException {
-        if (isFixed() != fixed) {
-            throw new IllegalStateException(String.format(
-                "Expected LTS to be %s", fixed ? "fixed" : "unfixed"));
-        }
     }
 
     /**
-     * Sets the Buechi start-state of the gts.
-     * @param startState the Buechi start-state
+     * Sets the Buchi start-state of the gts.
+     * @param startState the Buchi start-state
      */
     public void setStartState(BuchiGraphState startState) {
         addState(startState);
-        this.startState = startState;
     }
 
     /**
@@ -155,18 +137,10 @@ public class ProductGTS extends AbstractGraph<GraphState,GraphTransition>
     }
 
     /**
-     * Returns the grammar of this gts.
-     * @return the grammar of this gts
-     */
-    public GraphGrammar getGrammar() {
-        return this.graphGrammar;
-    }
-
-    /**
      * Adds a listener to the ProductGTS.
      * @param listener the listener to be added.
      */
-    public void addListener(LTSListener listener) {
+    public void addListener(GTSListener listener) {
         this.listeners.add(listener);
     }
 
@@ -174,42 +148,31 @@ public class ProductGTS extends AbstractGraph<GraphState,GraphTransition>
      * Removes a listener from the ProductGTS
      * @param listener the listener to be removed.
      */
-    public void removeListener(LTSListener listener) {
+    public void removeListener(GTSListener listener) {
         assert (this.listeners.contains(listener)) : "Listener cannot be removed since it is not registered.";
         this.listeners.remove(listener);
-    }
-
-    /**
-     * Returns an iterator over the current listeners.
-     * @return an iterator over the current listeners.
-     */
-    public Iterator<LTSListener> getListeners() {
-        return this.listeners.iterator();
     }
 
     /**
      * Notifies the listeners of the event of closing a state.
      * @param state the state that has been closed.
      */
-    public void fireCloseState(BuchiGraphState state) {
-        for (LTSListener listener : this.listeners) {
+    private void fireCloseState(BuchiGraphState state) {
+        for (GTSListener listener : this.listeners) {
             if (listener instanceof Acceptor) {
-                ((Acceptor) listener).closeUpdate(this, state);
+                ((Acceptor) listener).closeUpdate(null, state);
             }
         }
     }
 
     /**
-     * Calls {@link LTSListener#addUpdate(LTS, GraphState)} on all
+     * Calls {@link GTSListener#addUpdate(GTS, GraphState)} on all
      * GraphListeners in listeners.
      * @param state the node being added
      */
-    @Override
-    protected void fireAddNode(GraphState state) {
-        super.fireAddNode(state);
-        Iterator<LTSListener> iter = getListeners();
-        while (iter.hasNext()) {
-            iter.next().addUpdate(this, state);
+    private void fireAddNode(GraphState state) {
+        for (GTSListener listener : this.listeners) {
+            listener.addUpdate(null, state);
         }
     }
 
@@ -283,24 +246,42 @@ public class ProductGTS extends AbstractGraph<GraphState,GraphTransition>
         return nodeCount() - this.closedCount;
     }
 
-    @Override
-    public GraphRole getRole() {
-        return GraphRole.LTS;
+    /** Returns the set of product states. */
+    public Set<? extends BuchiGraphState> nodeSet() {
+        return this.stateSet;
+    }
+
+    /**
+     * Checks whether a given state is contained in the current ProductGTS.
+     * @param state the state to check containment for
+     * @return <tt>true</tt> if the state is in the state-set, <tt>false</tt>
+     *         otherwise
+     * @see TreeHashSet#contains(Object)
+     */
+    public boolean containsState(BuchiGraphState state) {
+        return this.stateSet.contains(state);
+    }
+
+    /** Returns the number of product transitions. */
+    public int edgeCount() {
+        return this.transitionCount;
+    }
+
+    /** Returns the number of product states. */
+    public int nodeCount() {
+        return this.stateSet.size();
     }
 
     private final GTS gts;
-    private final GraphGrammar graphGrammar;
-    private BuchiGraphState startState;
     private final TreeHashSet<BuchiGraphState> stateSet =
         new TreeHashStateSet();
     private int stateCount = 0;
-    // private TreeHashSet<BuchiGraphState> openStates = new TreeHashStateSet();
     private int openStateCount = 0;
     private int closedCount = 0;
     private int transitionCount = 0;
     private SystemRecord record;
 
-    private final Set<LTSListener> listeners = new HashSet<LTSListener>();
+    private final Set<GTSListener> listeners = new HashSet<GTSListener>();
 
     /** Specialised set implementation for storing states. */
     private class TreeHashStateSet extends TreeHashSet<BuchiGraphState> {
@@ -357,118 +338,4 @@ public class ProductGTS extends AbstractGraph<GraphState,GraphTransition>
         private final IsoChecker<HostNode,HostEdge> checker =
             IsoChecker.getInstance(true);
     }
-
-    public Set<? extends GraphTransition> edgeSet() {
-        return null;
-    }
-
-    public Collection<? extends BuchiGraphState> getFinalStates() {
-        return null;
-    }
-
-    public boolean hasFinalStates() {
-        return false;
-    }
-
-    public boolean isFinal(GraphState state) {
-        return false;
-    }
-
-    public boolean isOpen(GraphState state) {
-        return !state.isClosed();
-    }
-
-    public Set<? extends BuchiGraphState> nodeSet() {
-        return this.stateSet;
-    }
-
-    public BuchiGraphState startState() {
-        return this.startState;
-    }
-
-    public void addLTSListener(LTSListener listener) {
-        // Empty.
-    }
-
-    @Override
-    public boolean containsNode(Node elem) {
-        assert elem instanceof BuchiGraphState;
-        return containsState((BuchiGraphState) elem);
-    }
-
-    @Override
-    public boolean containsEdge(Edge<?> elem) {
-        assert elem instanceof ProductTransition;
-        return containsTransition((ProductTransition) elem);
-    }
-
-    /**
-     * Checks whether a given state is contained in the current ProductGTS.
-     * @param state the state to check containment for
-     * @return <tt>true</tt> if the state is in the state-set, <tt>false</tt>
-     *         otherwise
-     * @see TreeHashSet#contains(Object)
-     */
-    public boolean containsState(BuchiGraphState state) {
-        return this.stateSet.contains(state);
-    }
-
-    /**
-     * Checks whether a given transition is in the set of outgoing transitions
-     * of the source state as contained in the current ProductGTS.
-     * @param transition the transition to check containment for
-     * @return <tt>true</tt> if the transition is in the set of outgoing
-     *         transitions of its source-state, <tt>false</tt> otherwise
-     */
-    public boolean containsTransition(ProductTransition transition) {
-        BuchiGraphState source = transition.source();
-        return containsState(source)
-            && source.outTransitions().contains(transition);
-    }
-
-    @Override
-    public int edgeCount() {
-        return this.transitionCount;
-    }
-
-    @Override
-    public int nodeCount() {
-        return this.stateSet.size();
-    }
-
-    public void removeLTSListener(LTSListener listener) {
-        // Empty.
-    }
-
-    @Override
-    public ProductGTS newGraph(String name) {
-        return new ProductGTS(this.gts);
-    }
-
-    @Override
-    public boolean addNode(GraphState node) {
-        return addState((BuchiGraphState) node) == null;
-    }
-
-    @Override
-    public boolean removeEdge(GraphTransition edge) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean addEdgeWithoutCheck(GraphTransition edge) {
-        assert edge instanceof ProductTransition;
-        return addTransition((ProductTransition) edge);
-    }
-
-    @Override
-    public boolean removeNodeWithoutCheck(GraphState node) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public ProductGTS clone() {
-        throw new UnsupportedOperationException();
-    }
-
 }

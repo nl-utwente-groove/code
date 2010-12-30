@@ -18,8 +18,7 @@ package groove.explore.strategy;
 
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.LTS;
-import groove.lts.LTSAdapter;
+import groove.lts.GTSAdapter;
 import groove.lts.MatchResult;
 
 /**
@@ -118,7 +117,7 @@ public class LinearStrategy extends AbstractStrategy {
      * Registers the first new state added to the GTS it listens to. Such an
      * object should be added as listener only to a single GTS.
      */
-    static private class NewStateCollector extends LTSAdapter {
+    static private class NewStateCollector extends GTSAdapter {
         NewStateCollector() {
             reset();
         }
@@ -139,7 +138,7 @@ public class LinearStrategy extends AbstractStrategy {
         }
 
         @Override
-        public void addUpdate(LTS shape, GraphState state) {
+        public void addUpdate(GTS shape, GraphState state) {
             if (this.newState == null) {
                 this.newState = state;
             }

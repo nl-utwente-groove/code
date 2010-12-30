@@ -19,18 +19,17 @@ package groove.util;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.LTS;
-import groove.lts.LTSAdapter;
-import groove.lts.LTSListener;
+import groove.lts.GTSAdapter;
+import groove.lts.GTSListener;
 
 /**
  * Class that implements a visualisation of the progress of a GTS generation
- * process. The monitor should be added as a {@link LTSListener}
+ * process. The monitor should be added as a {@link GTSListener}
  * to the GTS in question.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GenerateProgressMonitor extends LTSAdapter {
+public class GenerateProgressMonitor extends GTSAdapter {
     /**
      * Creates a monitor that reports on states and transitions generated.
      */
@@ -39,21 +38,21 @@ public class GenerateProgressMonitor extends LTSAdapter {
     }
 
     @Override
-    public void addUpdate(LTS lts, GraphState state) {
-        if (lts.nodeCount() % UNIT == 0) {
+    public void addUpdate(GTS gts, GraphState state) {
+        if (gts.nodeCount() % UNIT == 0) {
             System.out.print("s");
             this.printed++;
         }
-        endLine((GTS) lts);
+        endLine((GTS) gts);
     }
 
     @Override
-    public void addUpdate(LTS lts, GraphTransition transition) {
-        if (lts.edgeCount() % UNIT == 0) {
+    public void addUpdate(GTS gts, GraphTransition transition) {
+        if (gts.edgeCount() % UNIT == 0) {
             System.out.print("t");
             this.printed++;
         }
-        endLine((GTS) lts);
+        endLine((GTS) gts);
     }
 
     private void endLine(GTS gts) {

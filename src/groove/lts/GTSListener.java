@@ -22,27 +22,27 @@ package groove.lts;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface LTSListener {
+public interface GTSListener {
     /**
      * Signals that a node has been added to a given graph.
-     * @param lts the graph that has been updated
+     * @param gts the graph that has been updated
      * @param state the node that has been added
      * @require <tt>graph.containsElement(elem)</tt>
      */
-    void addUpdate(LTS lts, GraphState state);
+    void addUpdate(GTS gts, GraphState state);
 
     /**
      * Signals that an edge has been added to a given graph.
-     * @param lts the graph that has been updated
+     * @param gts the graph that has been updated
      * @param transition the edge that has been added
      * @require <tt>graph.containsElement(elem)</tt>
      */
-    void addUpdate(LTS lts, GraphTransition transition);
+    void addUpdate(GTS gts, GraphTransition transition);
 
     /**
      * Update method called when a state of the LTS is set to closed, in the
      * course of LTS exploration.
-     * @see LTS#isOpen(GraphState)
+     * @see GTS#isOpen(GraphState)
      */
-    public void closeUpdate(LTS graph, GraphState explored);
+    public void closeUpdate(GTS graph, GraphState explored);
 }

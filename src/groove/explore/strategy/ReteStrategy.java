@@ -20,8 +20,7 @@ import groove.lts.DefaultGraphNextState;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.LTS;
-import groove.lts.LTSAdapter;
+import groove.lts.GTSAdapter;
 import groove.lts.MatchResult;
 import groove.match.SearchEngineFactory;
 import groove.match.SearchEngineFactory.EngineType;
@@ -171,9 +170,9 @@ public class ReteStrategy extends AbstractStrategy {
     private final ExploreListener exploreListener = new ExploreListener();
 
     /** A queue with states to be explored, used as a FIFO. */
-    private class ExploreListener extends LTSAdapter {
+    private class ExploreListener extends GTSAdapter {
         @Override
-        public void addUpdate(LTS lts, GraphState state) {
+        public void addUpdate(GTS gts, GraphState state) {
             ReteStrategy.this.newStates.add(state);
         }
     }

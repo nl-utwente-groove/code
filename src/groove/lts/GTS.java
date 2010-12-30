@@ -58,8 +58,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
-        LTS {
+public class GTS extends AbstractGraph<GraphState,GraphTransition> {
     /**
      * The number of transitions generated but not added (due to overlapping
      * existing transitions)
@@ -129,6 +128,9 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         return new StartGraphState(this.record, startGraph);
     }
 
+    /**
+     * Returns the start state of this LTS.
+     */
     public GraphState startState() {
         if (this.startState == null) {
             initialise();
@@ -154,6 +156,9 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         return this.hostFactory;
     }
 
+    /**
+     * Returns the set of final states explored so far.
+     */
     public Collection<GraphState> getFinalStates() {
         return this.finalStates;
     }
@@ -165,10 +170,18 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         return this.resultStates;
     }
 
+    /**
+     * Indicates whether we have found a final state during exploration.
+     * Convenience method for <tt>! getFinalStates().isEmpty()</tt>.
+     */
     public boolean hasFinalStates() {
         return !getFinalStates().isEmpty();
     }
 
+    /**
+     * Indicates whether a given state is final. Equivalent to
+     * <tt>getFinalStates().contains(state)</tt>.
+     */
     public boolean isFinal(GraphState state) {
         return getFinalStates().contains(state);
     }
@@ -193,6 +206,10 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         this.resultStates.addAll(result.getValue());
     }
 
+    /**
+     * Indicates whether a given state is open, in the sense of not (completely)
+     * explored. Equivalent to <tt>!state.isClosed()</tt>.
+     */
     public boolean isOpen(GraphState state) {
         return !state.isClosed();
     }
@@ -390,9 +407,9 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      * @return an iterator over the graph listeners of this graph
      * @ensure result \subseteq GraphListener
      */
-    public Set<LTSListener> getGraphListeners() {
+    public Set<GTSListener> getGraphListeners() {
         if (isFixed()) {
-            return Collections.<LTSListener>emptySet();
+            return Collections.<GTSListener>emptySet();
         } else {
             return this.listeners;
         }
@@ -401,7 +418,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     /**
      * Adds a graph listener to this graph.
      */
-    public void addLTSListener(LTSListener listener) {
+    public void addLTSListener(GTSListener listener) {
         if (this.listeners != null) {
             this.listeners.add(listener);
         }
@@ -410,32 +427,32 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     /**
      * Removes a graph listener from this graph.
      */
-    public void removeLTSListener(LTSListener listener) {
+    public void removeLTSListener(GTSListener listener) {
         if (this.listeners != null) {
             this.listeners.remove(listener);
         }
     }
 
     /**
-     * Notifies the {@link LTSListener}s, in addition to
+     * Notifies the {@link GTSListener}s, in addition to
      * calling the super method.
      */
     @Override
     protected void fireAddNode(GraphState node) {
         super.fireAddNode(node);
-        for (LTSListener listener : getGraphListeners()) {
+        for (GTSListener listener : getGraphListeners()) {
             listener.addUpdate(this, node);
         }
     }
 
     /**
-     * Notifies the {@link LTSListener}s, in addition to
+     * Notifies the {@link GTSListener}s, in addition to
      * calling the super method.
      */
     @Override
     protected void fireAddEdge(GraphTransition edge) {
         super.fireAddEdge(edge);
-        for (LTSListener listener : getGraphListeners()) {
+        for (GTSListener listener : getGraphListeners()) {
             listener.addUpdate(this, edge);
         }
     }
@@ -445,7 +462,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      * listeners of the fact that a state has been closed.
      */
     protected void fireCloseState(GraphState closed) {
-        for (LTSListener listener : getGraphListeners()) {
+        for (GTSListener listener : getGraphListeners()) {
             listener.closeUpdate(this, closed);
         }
     }
@@ -479,13 +496,13 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
             DefaultNode image = result.addNode(state.getNumber());
             nodeMap.put(state, image);
             if (showFinal && isFinal(state)) {
-                result.addEdge(image, LTS.FINAL_LABEL_TEXT, image);
+                result.addEdge(image, GTS.FINAL_LABEL_TEXT, image);
             }
             if (showStart && startState().equals(state)) {
-                result.addEdge(image, LTS.START_LABEL_TEXT, image);
+                result.addEdge(image, GTS.START_LABEL_TEXT, image);
             }
             if (showOpen && !state.isClosed()) {
-                result.addEdge(image, LTS.OPEN_LABEL_TEXT, image);
+                result.addEdge(image, GTS.OPEN_LABEL_TEXT, image);
             }
             if (showNames) {
                 result.addEdge(image, state.toString(), image);
@@ -571,10 +588,37 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     private int transitionCount = 0;
 
     /**
-     * Set of {@link LTSListener} s to be identified of changes in this graph.
+     * Set of {@link GTSListener} s to be identified of changes in this graph.
      * Set to <tt>null</tt> when the graph is fixed.
      */
-    private Set<LTSListener> listeners = new HashSet<LTSListener>();
+    private Set<GTSListener> listeners = new HashSet<GTSListener>();
+
+    /**
+     * Tree resolution of the state set (which is a {@link TreeHashSet}). A
+     * smaller value means memory savings; a larger value means speedup.
+     */
+    protected final static int STATE_SET_RESOLUTION = 2;
+
+    /**
+     * Tree root resolution of the state set (which is a {@link TreeHashSet}).
+     * A larger number means speedup, but the memory initially reserved for the
+     * set grows exponentially with this number.
+     */
+    protected final static int STATE_SET_ROOT_RESOLUTION = 10;
+
+    /**
+     * Number of states for which the state set should have room initially.
+     */
+    protected final static int INITIAL_STATE_SET_SIZE = 10000;
+
+    /** The text of the self-edge label that indicates a start state. */
+    public static final String START_LABEL_TEXT = "start";
+
+    /** The text of the self-edge label that indicates an open state. */
+    public static final String OPEN_LABEL_TEXT = "open";
+
+    /** The text of the self-edge label that indicates a final state. */
+    public static final String FINAL_LABEL_TEXT = "final";
 
     // /** Flag to indicate whether transitions are to be stored in the GTS. */
     // private final boolean storeTransitions;
@@ -799,20 +843,4 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
             return nodeCount() - 1;
         }
     }
-
-    /**
-     * Tree resolution of the state set (which is a {@link TreeHashSet}). A
-     * smaller value means memory savings; a larger value means speedup.
-     */
-    protected final static int STATE_SET_RESOLUTION = 2;
-    /**
-     * Tree root resolution of the state set (which is a {@link TreeHashSet}).
-     * A larger number means speedup, but the memory initially reserved for the
-     * set grows exponentially with this number.
-     */
-    protected final static int STATE_SET_ROOT_RESOLUTION = 10;
-    /**
-     * Number of states for which the state set should have room initially.
-     */
-    protected final static int INITIAL_STATE_SET_SIZE = 10000;
 }

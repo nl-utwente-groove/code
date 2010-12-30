@@ -32,8 +32,7 @@ import groove.lts.DerivationLabel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.LTS;
-import groove.lts.LTSListener;
+import groove.lts.GTSListener;
 import groove.util.Converter;
 import groove.util.Groove;
 
@@ -50,7 +49,7 @@ import org.jgraph.graph.AttributeMap;
  * @version $Revision$
  */
 public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
-        implements LTSListener {
+        implements GTSListener {
     /** Creates a new model from a given LTS and set of display options. */
     LTSJModel(GTS lts, Options options) {
         super(lts, LTS_NODE_ATTR, LTS_EDGE_ATTR, options);
@@ -85,7 +84,7 @@ public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
      * the change in the GraphModel. Can alse deal with NodeSet and EdgeSet
      * additions.
      */
-    public synchronized void addUpdate(LTS lts, GraphState state) {
+    public synchronized void addUpdate(GTS gts, GraphState state) {
         initializeTransients();
         // add a corresponding GraphCell to the GraphModel
         addNode(state);
@@ -98,7 +97,7 @@ public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
      * the change in the GraphModel. Can alse deal with NodeSet and EdgeSet
      * additions.
      */
-    public synchronized void addUpdate(LTS lts, GraphTransition transition) {
+    public synchronized void addUpdate(GTS gts, GraphTransition transition) {
         initializeTransients();
         // note that (as per GraphListener contract)
         // source and target Nodes (if any) have already been added
@@ -110,7 +109,7 @@ public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
     }
 
     @Override
-    public void closeUpdate(LTS lts, GraphState explored) {
+    public void closeUpdate(GTS lts, GraphState explored) {
         // do nothing
     }
 
@@ -262,9 +261,7 @@ public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
     @Override
     protected AttributeMap getJVertexEmphAttr(JVertex jCell) {
         AttributeMap result;
-        @SuppressWarnings("unchecked")
-        GraphState state =
-            ((GraphJVertex<GraphState,GraphTransition>) jCell).getNode();
+        GraphState state = ((StateJVertex) jCell).getNode();
         if (state.equals(getActiveState())) {
             result = LTS_ACTIVE_EMPH_NODE_CHANGE;
         } else {
@@ -274,44 +271,17 @@ public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
     }
 
     /**
-     * This implementation checks if the edge to be added is a flag with special
-     * label according to {@link #isSpecialLabel(String)}; if so, the edge is
-     * not added to the jmodel and its source jcell is returned instead.
+     * This implementation checks if the edge is a transition of an 
+     * unmodifying rule.
      */
     @Override
     protected boolean isUnaryEdge(GraphTransition edge) {
-        return isSpecialEdge(edge) || isUnmodifyingRule(edge)
-            || super.isUnaryEdge(edge);
+        return isUnmodifyingRule(edge) || super.isUnaryEdge(edge);
     }
 
     /** Tests if the underlying rule of a graph transition edges is unmodifying. */
     protected boolean isUnmodifyingRule(GraphTransition edge) {
         return !edge.getEvent().getRule().isModifying();
-    }
-
-    /**
-     * Tests if the edge is special in the sense of being a <i>flag</i> (or for
-     * legacy reasons a self-edge) with a label that is special according to
-     * {@link #isSpecialLabel(String)}.
-     * @see #isSpecialLabel(String)
-     */
-    protected boolean isSpecialEdge(GraphTransition edge) {
-        if (edge.source().equals(edge.target())) {
-            return isSpecialLabel(edge.label().text());
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Indicates whether a label, when occurring on a self-edge in the LTS,
-     * indicates a special role of its source/target node rather than modelling
-     * a transition. In that case the edge will probably not be displayed
-     * explicitly but rather through special attributes of its source node.
-     * @see #addEdge(GraphTransition)
-     */
-    protected boolean isSpecialLabel(String label) {
-        return this.specialLabels != null && this.specialLabels.contains(label);
     }
 
     /** Sets the active state. */
@@ -332,18 +302,6 @@ public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
      *            ltsJModel.graph().contains(activeTransition)
      */
     private GraphTransition activeTransition;
-
-    /**
-     * Set of special edge labels that, when occurring on self-edges, should not
-     * be displayed as edges in the LTS but are instead mapped to the jvertex
-     * also representing the edge's end point.
-     */
-    private final Set<String> specialLabels = new HashSet<String>();
-    {
-        this.specialLabels.add(LTS.START_LABEL_TEXT);
-        this.specialLabels.add(LTS.OPEN_LABEL_TEXT);
-        this.specialLabels.add(LTS.FINAL_LABEL_TEXT);
-    }
 
     /**
      * Factory method for {@link LTSJModel}. Creates and returns a new model
@@ -449,7 +407,7 @@ public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
          * closed.
          */
         private boolean isSpecialNode() {
-            LTS lts = getGraph();
+            GTS lts = getGraph();
             GraphState state = getNode();
             return lts.startState().equals(state) // || !state.isClosed()
                 || lts.isFinal(state);
