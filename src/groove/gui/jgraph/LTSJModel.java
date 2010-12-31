@@ -16,31 +16,14 @@
  */
 package groove.gui.jgraph;
 
-import static groove.gui.jgraph.JAttr.LTS_ACTIVE_EMPH_NODE_CHANGE;
-import static groove.gui.jgraph.JAttr.LTS_EDGE_ACTIVE_CHANGE;
-import static groove.gui.jgraph.JAttr.LTS_EDGE_ATTR;
-import static groove.gui.jgraph.JAttr.LTS_FINAL_NODE_ATTR;
-import static groove.gui.jgraph.JAttr.LTS_NODE_ACTIVE_CHANGE;
-import static groove.gui.jgraph.JAttr.LTS_NODE_ATTR;
-import static groove.gui.jgraph.JAttr.LTS_OPEN_NODE_ATTR;
-import static groove.gui.jgraph.JAttr.LTS_RESULT_NODE_ATTR;
-import static groove.gui.jgraph.JAttr.LTS_START_NODE_ATTR;
-import groove.control.CtrlState;
-import groove.graph.Label;
 import groove.gui.Options;
-import groove.lts.DerivationLabel;
 import groove.lts.GTS;
+import groove.lts.GTSListener;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.GTSListener;
-import groove.util.Converter;
-import groove.util.Groove;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-
-import org.jgraph.graph.AttributeMap;
 
 /**
  * Graph model adding a concept of active state and transition, with special
@@ -52,7 +35,7 @@ public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
         implements GTSListener {
     /** Creates a new model from a given LTS and set of display options. */
     LTSJModel(GTS lts, Options options) {
-        super(lts, LTS_NODE_ATTR, LTS_EDGE_ATTR, options);
+        super(lts, options);
     }
 
     /** Constructs a dummy, empty model. */
@@ -152,29 +135,39 @@ public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
         GraphTransition previousTrans = this.activeTransition;
         if (previousTrans != trans) {
             this.activeTransition = trans;
-            if (trans != null) {
-                JCell jCell = getJCellForEdge(trans);
-                assert jCell != null : String.format(
-                    "No image for %s in jModel", trans);
-                changedCells.add(jCell);
-            }
             if (previousTrans != null) {
-                JCell jCell = getJCellForEdge(previousTrans);
+                LTSJEdge jCell = (LTSJEdge) getJCellForEdge(previousTrans);
                 assert jCell != null : String.format(
                     "No image for %s in jModel", previousTrans);
-                changedCells.add(jCell);
+                if (jCell.setActive(false)) {
+                    changedCells.add(jCell);
+                }
+            }
+            if (trans != null) {
+                LTSJEdge jCell = (LTSJEdge) getJCellForEdge(trans);
+                assert jCell != null : String.format(
+                    "No image for %s in jModel", trans);
+                if (jCell.setActive(true)) {
+                    changedCells.add(jCell);
+                }
             }
         }
         GraphState previousState = this.activeState;
-        // if (state != previousState) {
-        this.activeState = state;
-        if (state != null) {
-            changedCells.add(getJCellForNode(state));
+        if (state != previousState) {
+            this.activeState = state;
+            if (previousState != null) {
+                LTSJVertex jCell = (LTSJVertex) getJCellForNode(previousState);
+                if (jCell.setActive(false)) {
+                    changedCells.add(getJCellForNode(previousState));
+                }
+            }
+            if (state != null) {
+                LTSJVertex jCell = (LTSJVertex) getJCellForNode(state);
+                if (jCell.setActive(true)) {
+                    changedCells.add(getJCellForNode(state));
+                }
+            }
         }
-        if (previousState != null) {
-            changedCells.add(getJCellForNode(previousState));
-        }
-        // }
         if (!changedCells.isEmpty()) {
             refresh(changedCells);
         }
@@ -195,79 +188,19 @@ public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
     }
 
     /**
-     * This implementation returns a {@link LTSJModel.TransitionJEdge}.
+     * This implementation returns a {@link LTSJEdge}.
      */
     @Override
-    protected TransitionJEdge createJEdge(GraphTransition edge) {
-        return new TransitionJEdge(edge);
+    protected LTSJEdge createJEdge(GraphTransition edge) {
+        return new LTSJEdge(this, edge);
     }
 
     /**
-     * This implementation returns a {@link LTSJModel.StateJVertex}.
+     * This implementation returns a {@link LTSJVertex}.
      */
     @Override
-    protected StateJVertex createJVertex(GraphState node) {
-        return new StateJVertex(this, node);
-    }
-
-    /**
-     * This implementation adds special attributes for the start state, open
-     * states, final states, and the active state.
-     * @see JAttr#LTS_NODE_ATTR
-     * @see JAttr#LTS_START_NODE_ATTR
-     * @see JAttr#LTS_OPEN_NODE_ATTR
-     * @see JAttr#LTS_FINAL_NODE_ATTR
-     * @see JAttr#LTS_RESULT_NODE_ATTR
-     * @see JAttr#LTS_NODE_ACTIVE_CHANGE
-     */
-    @Override
-    protected AttributeMap createJVertexAttr(GraphState state) {
-        AttributeMap result;
-
-        if (getGraph().isResult(state)) {
-            result = LTS_RESULT_NODE_ATTR.clone();
-        } else if (state.equals(getGraph().startState())) {
-            result = LTS_START_NODE_ATTR.clone();
-        } else if (!state.isClosed()) {
-            result = LTS_OPEN_NODE_ATTR.clone();
-        } else if (getGraph().isFinal(state)) {
-            result = LTS_FINAL_NODE_ATTR.clone();
-        } else {
-            result = LTS_NODE_ATTR.clone();
-        }
-        if (state.equals(this.activeState)) {
-            result.applyMap(LTS_NODE_ACTIVE_CHANGE);
-        }
-        return result;
-    }
-
-    /**
-     * This implementation adds special attributes for the active transition.
-     * @see JAttr#LTS_EDGE_ATTR
-     * @see JAttr#LTS_EDGE_ACTIVE_CHANGE
-     */
-    @Override
-    protected void modifyJEdgeAttr(AttributeMap result,
-            Set<GraphTransition> edgeSet) {
-        super.modifyJEdgeAttr(result, edgeSet);
-        result.applyMap(LTS_EDGE_ATTR.clone());
-        if (this.activeTransition != null
-            && edgeSet.contains(this.activeTransition)) {
-            result.applyMap(LTS_EDGE_ACTIVE_CHANGE);
-        }
-    }
-
-    /** Adds the correct border emphasis. */
-    @Override
-    protected AttributeMap getJVertexEmphAttr(JVertex jCell) {
-        AttributeMap result;
-        GraphState state = ((StateJVertex) jCell).getNode();
-        if (state.equals(getActiveState())) {
-            result = LTS_ACTIVE_EMPH_NODE_CHANGE;
-        } else {
-            result = super.getJVertexEmphAttr(jCell);
-        }
-        return result;
+    protected LTSJVertex createJVertex(GraphState node) {
+        return new LTSJVertex(this, node);
     }
 
     /**
@@ -323,159 +256,4 @@ public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
 
     /** Default name of an LTS model. */
     static public final String DEFAULT_LTS_NAME = "lts";
-
-    /**
-     * JEdge class that describes the underlying edge as a graph transition.
-     * @author Arend Rensink
-     * @version $Revision $
-     */
-    private class TransitionJEdge extends
-            GraphJEdge<GraphState,GraphTransition> {
-        /**
-         * Creates a new instance from a given edge (required to be a
-         * {@link GraphTransition}).
-         */
-        TransitionJEdge(GraphTransition edge) {
-            super(LTSJModel.this, edge);
-        }
-
-        @Override
-        StringBuilder getEdgeKindDescription() {
-            return new StringBuilder("transition");
-        }
-
-        @Override
-        String getLabelDescription() {
-            StringBuffer result = new StringBuffer(", generated by ");
-            String[] displayedLabels = new String[getUserObject().size()];
-            int labelIndex = 0;
-            for (Object part : getUserObject()) {
-                GraphTransition trans = (GraphTransition) part;
-                String description;
-                if (isShowAnchors()) {
-                    description = trans.getEvent().toString();
-                } else {
-                    description =
-                        trans.getEvent().getRule().getName().toString();
-                }
-                displayedLabels[labelIndex] =
-                    Converter.STRONG_TAG.on(description, true);
-                labelIndex++;
-            }
-            if (displayedLabels.length == 1) {
-                result.append(displayedLabels[0]);
-            } else {
-                result.append(Groove.toString(displayedLabels, "<br>- ", "",
-                    "<br>- "));
-            }
-            return result.toString();
-        }
-
-        /**
-         * This implementation returns either the transition label, or the event
-         * label, depending on #isShowAnchors().
-         */
-        @Override
-        public Label getLabel(GraphTransition edge) {
-            return isShowAnchors() ? new DerivationLabel(edge.getEvent())
-                    : super.getLabel(edge);
-        }
-    }
-
-    /**
-     * JVertex class that describes the underlying node as a graph state.
-     * @author Arend Rensink
-     * @version $Revision $
-     */
-    public class StateJVertex extends GraphJVertex<GraphState,GraphTransition> {
-        /**
-         * Creates a new instance for a given node (required to be a
-         * {@link GraphState}) in an LTS model.
-         */
-        StateJVertex(LTSJModel jModel, GraphState node) {
-            super(jModel, node, true);
-        }
-
-        /** A state is also visible if it is open, final, or the start state. */
-        @Override
-        public boolean isVisible() {
-            return isSpecialNode() || hasVisibleIncidentEdge();
-        }
-
-        /**
-         * Tests if the state is the start state, a final state, or not yet
-         * closed.
-         */
-        private boolean isSpecialNode() {
-            GTS lts = getGraph();
-            GraphState state = getNode();
-            return lts.startState().equals(state) // || !state.isClosed()
-                || lts.isFinal(state);
-        }
-
-        @Override
-        StringBuilder getNodeDescription() {
-            StringBuilder result = new StringBuilder("State ");
-            result.append(Converter.UNDERLINE_TAG.on(getNode()));
-            // if a control location is available, add this to the tooltip
-            // if( this.getNode().getLocation() != null ) {
-            // result.append("ctrl: " + this.getNode().getLocation());
-            // }
-            return result;
-        }
-
-        /**
-         * @return true if the state is a result state.
-         */
-        public boolean isResult() {
-            return getGraph().isResult(getNode());
-        }
-
-        /**
-         * @return true if the state is a start state.
-         */
-        public boolean isStart() {
-            return getGraph().startState().equals(getNode());
-        }
-
-        /**
-         * @return true if the state is closed.
-         */
-        public boolean isClosed() {
-            return getNode().isClosed();
-        }
-
-        /**
-         * @return true if the state is final.
-         */
-        public boolean isFinal() {
-            return getGraph().isFinal(getNode());
-        }
-
-        @Override
-        public List<StringBuilder> getLines() {
-            List<StringBuilder> result = super.getLines();
-            CtrlState ctrlState = getNode().getCtrlState();
-            if (ctrlState.getAut().getProgram() != null) {
-                result.add(new StringBuilder("ctrl: "
-                    + Converter.toHtml(ctrlState.toString())));
-            }
-            return result;
-        }
-
-        /**
-         * This implementation returns either the transition label, or the event
-         * label, depending on #isShowAnchors().
-         */
-        @Override
-        public Label getLabel(GraphTransition edge) {
-            return isShowAnchors() ? new DerivationLabel(edge.getEvent())
-                    : super.getLabel(edge);
-        }
-
-        @Override
-        public StringBuilder getLine(GraphTransition edge) {
-            return Converter.toHtml(new StringBuilder(edge.label().text()));
-        }
-    }
 }

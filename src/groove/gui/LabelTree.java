@@ -400,7 +400,7 @@ public class LabelTree extends JTree implements GraphModelListener,
                 }
             }
         }
-        this.jmodel.setEmphasized(emphSet);
+        this.jmodel.setEmphasised(emphSet);
     }
 
     /**

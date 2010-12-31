@@ -224,7 +224,7 @@ abstract public class AbstractLayouter implements Layouter {
         CellView[] cellViews = this.jgraph.getGraphLayoutCache().getRoots();
         for (CellView cellView : cellViews) {
             if (cellView.getCell() instanceof JCell
-                && !this.jmodel.isGrayedOut((JCell) cellView.getCell())) {
+                && !((JCell) cellView.getCell()).isGrayedOut()) {
                 JCell jCell = (JCell) cellView.getCell();
                 boolean immovable =
                     !GraphConstants.isMoveable(jCell.getAttributes());

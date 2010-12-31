@@ -46,6 +46,11 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         this.graphRole = graphRole;
     }
 
+    /** Returns the graph role set for this aspect node. */
+    public GraphRole getGraphRole() {
+        return this.graphRole;
+    }
+
     /**
      * This class does not guarantee unique representatives for the same number,
      * so we need to override {@link #hashCode()} and {@link #equals(Object)}.

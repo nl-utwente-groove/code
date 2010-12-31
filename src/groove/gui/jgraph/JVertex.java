@@ -18,8 +18,12 @@ package groove.gui.jgraph;
 
 import groove.util.Converter;
 
+import java.awt.Color;
+
+import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.DefaultPort;
+import org.jgraph.graph.GraphConstants;
 
 /**
  * JGraph vertex with a single port, and a fixed set of labels as a user object
@@ -29,11 +33,17 @@ import org.jgraph.graph.DefaultPort;
  */
 abstract public class JVertex extends DefaultGraphCell implements JCell {
     /**
-     * Creates a vertex with a {@link JCellContent}as its user object.
+     * Creates a vertex for a given {@link JModel},
+     * with a {@link JCellContent}as its user object.
      */
-    JVertex() {
-        // empty constructor
+    JVertex(JModel jModel) {
+        this.jModel = jModel;
         add(new DefaultPort());
+    }
+
+    @Override
+    public JModel getJModel() {
+        return this.jModel;
     }
 
     /**
@@ -130,7 +140,65 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
         return result;
     }
 
+    /** Returns the attributes to be used in displaying this vertex. */
+    final public AttributeMap createAttributes(JModel jModel) {
+        AttributeMap result = createAttributes();
+        if (!jModel.isShowBackground()) {
+            GraphConstants.setBackground(result, Color.WHITE);
+        }
+        if (isGrayedOut()) {
+            result.applyMap(JAttr.GRAYED_OUT_ATTR);
+        }
+        if (getAttributes() != null) {
+            getAttributes().applyMap(result);
+        }
+        return result;
+    }
+
+    /**
+     * Callback method for creating the core attributes.
+     * These might be modified by other parameters; don't call this
+     * method directly.
+     */
+    protected AttributeMap createAttributes() {
+        return JAttr.DEFAULT_NODE_ATTR.clone();
+    }
+
+    @Override
+    final public boolean isGrayedOut() {
+        return this.grayedOut;
+    }
+
+    @Override
+    final public boolean setGrayedOut(boolean grayedOut) {
+        boolean result = grayedOut != this.grayedOut;
+        if (result) {
+            this.grayedOut = grayedOut;
+            createAttributes(getJModel());
+        }
+        return result;
+    }
+
+    @Override
+    public final boolean isEmphasised() {
+        return this.emphasised;
+    }
+
+    @Override
+    public final boolean setEmphasised(boolean emphasised) {
+        boolean oldEmphasised = this.emphasised;
+        this.emphasised = emphasised;
+        return oldEmphasised != emphasised;
+    }
+
+    public boolean hasError() {
+        return false;
+    }
+
+    private final JModel jModel;
+    private boolean grayedOut;
+    private boolean emphasised;
+
     /** Flag indicating that the user object has been initialised. */
     private boolean userObjectSet;
-
 }

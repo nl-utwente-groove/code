@@ -193,6 +193,12 @@ public class JAttr {
         new LineBorder(DEFAULT_CELL_COLOR, DEFAULT_LINE_WIDTH), false);
 
     /**
+     * The border used for nodes.
+     */
+    public static final Border EMPH_BORDER = JAttr.createNodeBorder(
+        new LineBorder(DEFAULT_CELL_COLOR, EMPH_WIDTH), false);
+
+    /**
      * The standard bounds used for nodes.
      */
     public static final Rectangle DEFAULT_NODE_BOUNDS = new Rectangle(10, 10,
@@ -223,12 +229,6 @@ public class JAttr {
      */
     public static final AttributeMap DEFAULT_EDGE_ATTR;
 
-    /** The emphasis attribute changes for graph edges. */
-    public static final AttributeMap EMPH_EDGE_CHANGE;
-
-    /** The emphasis attribute changes for graph nodes. */
-    public static final AttributeMap EMPH_NODE_CHANGE;
-
     static {
         // graying out
         GRAYED_OUT_ATTR = new Values() {
@@ -241,8 +241,6 @@ public class JAttr {
         Values defaultValues = new Values();
         DEFAULT_EDGE_ATTR = defaultValues.getEdgeAttrs();
         DEFAULT_NODE_ATTR = defaultValues.getNodeAttrs();
-        EMPH_EDGE_CHANGE = defaultValues.getEdgeEmphAttrs();
-        EMPH_NODE_CHANGE = defaultValues.getNodeEmphAttrs();
     }
 
     /**
@@ -269,8 +267,6 @@ public class JAttr {
     static public final AttributeMap LTS_NODE_ACTIVE_CHANGE;
     /** Active edge attributes of the LTS */
     static public final AttributeMap LTS_EDGE_ACTIVE_CHANGE;
-    /** Emphasised active node attributes of the LTS */
-    static public final AttributeMap LTS_ACTIVE_EMPH_NODE_CHANGE;
 
     // set the emphasis attributes
     static {
@@ -315,7 +311,6 @@ public class JAttr {
         };
         LTS_NODE_ACTIVE_CHANGE = ltsActive.getNodeAttrs();
         LTS_EDGE_ACTIVE_CHANGE = ltsActive.getEdgeAttrs();
-        LTS_ACTIVE_EMPH_NODE_CHANGE = ltsActive.getNodeEmphAttrs();
     }
 
     /** The default node attributes of the control automaton */
@@ -463,16 +458,10 @@ public class JAttr {
 
             RULE_NODE_ATTR.put(aspect, v.getNodeAttrs());
             RULE_EDGE_ATTR.put(aspect, v.getEdgeAttrs());
-            RULE_EDGE_EMPH_CHANGE.put(aspect, v.getEdgeEmphAttrs());
-            RULE_NODE_EMPH_CHANGE.put(aspect, v.getNodeEmphAttrs());
         }
         // special formatting for ADDER
         RULE_NODE_ATTR.get(ADDER).put("line2map", RULE_NODE_ATTR.get(CREATOR));
         RULE_EDGE_ATTR.get(ADDER).put("line2map", RULE_EDGE_ATTR.get(CREATOR));
-        RULE_EDGE_EMPH_CHANGE.get(ADDER).put("line2map",
-            RULE_EDGE_EMPH_CHANGE.get(CREATOR));
-        RULE_NODE_EMPH_CHANGE.get(ADDER).put("line2map",
-            RULE_NODE_EMPH_CHANGE.get(CREATOR));
     }
 
     /** Specialised class to avoid casting for {@link #clone()}. */
@@ -617,20 +606,6 @@ public class JAttr {
         AttributeMap getEdgeAttrs() {
             AttributeMap result = getAttrs().clone();
             GraphConstants.setBackground(result, Color.white);
-            return result;
-        }
-
-        /** Computes the emphasised node attributes. */
-        AttributeMap getNodeEmphAttrs() {
-            AttributeMap result = getNodeAttrs().clone();
-            return result;
-        }
-
-        /** Computes the emphasised edge attributes. */
-        AttributeMap getEdgeEmphAttrs() {
-            AttributeMap result = getEdgeAttrs().clone();
-            float linewidth = GraphConstants.getLineWidth(result);
-            GraphConstants.setLineWidth(result, linewidth + EMPH_INCREMENT);
             return result;
         }
 

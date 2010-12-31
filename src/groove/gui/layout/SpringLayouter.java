@@ -198,7 +198,7 @@ public class SpringLayouter extends AbstractLayouter {
         for (int i = 0; i < this.jmodel.getRootCount(); i++) {
             JCell jCell = (JCell) this.jmodel.getRootAt(i);
             if (jCell instanceof JEdge && jCell.isVisible()
-                && !this.jmodel.isGrayedOut(jCell)) {
+                && !jCell.isGrayedOut()) {
                 EdgeView edgeView =
                     (EdgeView) layoutCache.getMapping(jCell, false);
                 List<?> edgePoints = edgeView.getPoints();

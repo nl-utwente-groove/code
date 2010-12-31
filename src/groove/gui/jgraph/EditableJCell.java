@@ -24,4 +24,7 @@ package groove.gui.jgraph;
 public interface EditableJCell extends JCell {
     // does not add any functionality.
     EditableContent getUserObject();
+
+    /** Sets the error flag of this vertex. */
+    void setError(boolean error);
 }

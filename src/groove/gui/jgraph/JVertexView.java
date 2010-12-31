@@ -101,7 +101,6 @@ public class JVertexView extends VertexView {
     public void refresh(GraphLayoutCache cache, CellMapper mapper,
             boolean createDependentViews) {
         super.refresh(cache, mapper, createDependentViews);
-        // modify the bounds to make room for the border
         this.text = computeText();
     }
 
@@ -128,9 +127,8 @@ public class JVertexView extends VertexView {
      * should be rendered differently).
      */
     private int getVertexShape() {
-        if (getCell() instanceof AspectJModel.AspectJVertex) {
-            AspectNode node =
-                ((AspectJModel.AspectJVertex) getCell()).getNode();
+        if (getCell() instanceof AspectJVertex) {
+            AspectNode node = ((AspectJVertex) getCell()).getNode();
             if (node.getAttrKind().isData()) {
                 return ELLIPSE_SHAPE;
             } else if (node.getAttrKind() == PRODUCT) {
@@ -157,7 +155,7 @@ public class JVertexView extends VertexView {
 
     /** Indicates if the underlying cell is currently emphasized in the model. */
     boolean isEmphasized() {
-        return this.jGraph.getModel().isEmphasized(getCell());
+        return getCell().isEmphasised();
     }
 
     /**
@@ -451,11 +449,8 @@ public class JVertexView extends VertexView {
         int height = (int) bounds.getHeight();
         g.setColor(GraphConstants.getLineColor(getAttributes()));
         // repaint the standard border to erase it
-        Border defaultBorder =
-            GraphConstants.getBorder(JAttr.DEFAULT_NODE_ATTR);
-        defaultBorder.paintBorder(this.jGraph, g, x, y, width, height);
-        Border emphBorder = GraphConstants.getBorder(JAttr.EMPH_NODE_CHANGE);
-        emphBorder.paintBorder(this.jGraph, g, x, y, width, height);
+        JAttr.DEFAULT_BORDER.paintBorder(this.jGraph, g, x, y, width, height);
+        JAttr.EMPH_BORDER.paintBorder(this.jGraph, g, x, y, width, height);
         g.setColor(previousColor);
     }
 
@@ -566,8 +561,7 @@ public class JVertexView extends VertexView {
             setFont((font != null) ? font : graph.getFont());
             setBorder(createEmptyBorder());
             setText(this.view.getText());
-            this.error =
-                ((JGraph) graph).getModel().hasError((JCell) view.getCell());
+            this.error = this.view.getCell().hasError();
             return this;
         }
 

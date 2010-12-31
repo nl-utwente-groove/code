@@ -140,7 +140,7 @@ public class ForestLayouter extends AbstractLayouter {
                         (EdgeView) this.jgraph.getGraphLayoutCache().getMapping(
                             edge, false);
                     if (edgeView != null && edge.isVisible()
-                        && !this.jmodel.isGrayedOut(edge)) {
+                        && !edge.isGrayedOut()) {
                         // the edge source is a node for sure
                         JVertex sourceVertex = edge.getSourceVertex();
                         // the edge target may be a point only
@@ -207,7 +207,7 @@ public class ForestLayouter extends AbstractLayouter {
                 Iterator<?> edgeIter = ((JVertex) key).getPort().edges();
                 while (edgeIter.hasNext()) {
                     JEdge edge = (JEdge) edgeIter.next();
-                    if (edge.isVisible() && !this.jmodel.isGrayedOut(edge)) {
+                    if (edge.isVisible() && !edge.isGrayedOut()) {
                         // the edge source is a node for sure
                         JVertex sourceVertex = edge.getSourceVertex();
                         // the edge target may be a point only

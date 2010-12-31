@@ -97,7 +97,7 @@ public class AspectParser {
             result.addAspect(value);
         }
         if (value == null || value.getKind().isLast() || text.length() == 0) {
-            result.setInnerText(text);
+            setInnerText(text, result);
         } else {
             // recursively call the method with the remainder of the text
             parse(text, result);
@@ -148,6 +148,22 @@ public class AspectParser {
             value = value.newInstance(contentText);
         }
         return value;
+    }
+
+    /** Do some final parsing and set the inner text. */
+    private void setInnerText(String text, AspectLabel result) {
+        // special case: we will treat labels of the form type:prim 
+        // (with prim a primitive type) as prim:
+        String typePrefix = LabelKind.NODE_TYPE.getPrefix();
+        if (text.startsWith(typePrefix)) {
+            Aspect primType =
+                Aspect.getAspect(text.substring(typePrefix.length()));
+            if (primType != null && primType.getKind().isData()) {
+                result.addAspect(primType);
+                text = "";
+            }
+        }
+        result.setInnerText(text);
     }
 
     /** The graph role of this aspect parser. */

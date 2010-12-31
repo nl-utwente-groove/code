@@ -21,6 +21,7 @@ import static groove.util.Converter.STRONG_TAG;
 import groove.util.Converter;
 import groove.util.Groove;
 
+import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultPort;
 
@@ -33,6 +34,15 @@ import org.jgraph.graph.DefaultPort;
  * @version $Revision$
  */
 abstract public class JEdge extends DefaultEdge implements JCell {
+    /** Constructs an edge for a given JModel. */
+    JEdge(JModel jModel) {
+        this.jModel = jModel;
+    }
+
+    public JModel getJModel() {
+        return this.jModel;
+    }
+
     /**
      * This implementation delegates the method to the user object.
      */
@@ -175,6 +185,61 @@ abstract public class JEdge extends DefaultEdge implements JCell {
         result.userObject = getUserObject().clone();
         return result;
     }
+
+    final public AttributeMap createAttributes(JModel jModel) {
+        AttributeMap result = createAttributes();
+        if (isGrayedOut()) {
+            result.applyMap(JAttr.GRAYED_OUT_ATTR);
+        }
+        if (getAttributes() != null) {
+            getAttributes().applyMap(result);
+        }
+        return result;
+    }
+
+    /**
+     * Callback method for creating the core attributes.
+     * These might be modified by other parameters; don't call this
+     * method directly.
+     */
+    protected AttributeMap createAttributes() {
+        return JAttr.DEFAULT_EDGE_ATTR.clone();
+    }
+
+    @Override
+    final public boolean isGrayedOut() {
+        return this.grayedOut;
+    }
+
+    @Override
+    final public boolean setGrayedOut(boolean grayedOut) {
+        boolean result = grayedOut != this.grayedOut;
+        if (result) {
+            this.grayedOut = grayedOut;
+            createAttributes(getJModel());
+        }
+        return result;
+    }
+
+    @Override
+    public final boolean isEmphasised() {
+        return this.emphasised;
+    }
+
+    @Override
+    public final boolean setEmphasised(boolean emphasised) {
+        boolean oldEmphasised = this.emphasised;
+        this.emphasised = emphasised;
+        return oldEmphasised != emphasised;
+    }
+
+    public boolean hasError() {
+        return false;
+    }
+
+    private final JModel jModel;
+    private boolean grayedOut;
+    private boolean emphasised;
 
     /** Flag indicating that the user object has been initialised. */
     private boolean userObjectSet;

@@ -31,6 +31,7 @@ import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.PropertiesDialog;
 import groove.gui.dialog.SingleListDialog;
 import groove.gui.jgraph.AspectJModel;
+import groove.gui.jgraph.EditableJCell;
 import groove.gui.jgraph.EditorJGraph;
 import groove.gui.jgraph.EditorJModel;
 import groove.gui.jgraph.GraphJModel;
@@ -74,13 +75,11 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -224,13 +223,14 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * from the editor contents.
      */
     private void setAspectGraph() {
-        Map<Element,JCell> plainToModelMap = new HashMap<Element,JCell>();
+        Map<Element,EditableJCell> plainToModelMap =
+            new HashMap<Element,EditableJCell>();
         DefaultGraph result = getModel().toPlainGraph(plainToModelMap);
         GraphInfo.setVersion(result, Version.GXL_VERSION);
         PlainToAspectMap plainToAspectMap = new PlainToAspectMap(getRole());
         this.graph = AspectGraph.newInstance(result, plainToAspectMap);
-        this.graphToModelMap = new HashMap<AspectElement,JCell>();
-        for (Map.Entry<Element,JCell> plainToModelEntry : plainToModelMap.entrySet()) {
+        this.graphToModelMap = new HashMap<AspectElement,EditableJCell>();
+        for (Map.Entry<Element,EditableJCell> plainToModelEntry : plainToModelMap.entrySet()) {
             Element plainKey = plainToModelEntry.getKey();
             AspectElement aspectKey =
                 plainKey instanceof Node
@@ -330,11 +330,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         updateTitle();
     }
 
-    /** Tests if a given cell occurs in the set of erroneous cells. */
-    public boolean hasError(JCell cell) {
-        return this.errorCells.contains(cell);
-    }
-
     /**
      * Handler method to execute a {@link Editor.OpenGraphAction}. Invokes a
      * file chooser dialog, and calls {@link #doOpenGraph(File)} if a file is
@@ -418,9 +413,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             setErrors(GraphInfo.getErrors(plainGraph));
             getModel().replace(
                 GraphJModel.newInstance(plainGraph, getOptions(), true));
-            // copy the edited properties into the model
-            getModel().setProperties(previewedModel.getProperties());
-            // setSelectInsertedCells(true);
             return true;
         } else {
             return false;
@@ -1107,25 +1099,26 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      */
     protected void updateStatus() {
         setAspectGraph();
-        int elementCount =
-            getModel().getRootCount() - getModel().getGrayedOut().size();
+        int elementCount = getModel().getRootCount();
         getStatusBar().setText("" + elementCount + " visible elements");
         List<FormatError> errors = new ArrayList<FormatError>();
         if (hasErrors()) {
             errors.addAll(getErrors());
         }
         errors.addAll(toView().getErrors());
-        this.errorCells.clear();
+        for (EditableJCell root : this.errorCellMap.values()) {
+            root.setError(false);
+        }
         this.errorCellMap.clear();
         for (FormatError error : errors) {
             for (Element errorObject : error.getElements()) {
-                JCell errorCell = this.graphToModelMap.get(errorObject);
+                EditableJCell errorCell = this.graphToModelMap.get(errorObject);
                 if (errorCell == null && errorObject instanceof Edge) {
                     errorCell =
                         this.graphToModelMap.get(((Edge<?>) errorObject).source());
                 }
                 if (errorCell != null) {
-                    this.errorCells.add(errorCell);
+                    errorCell.setError(true);
                     this.errorCellMap.put(error, errorCell);
                     break;
                 }
@@ -1280,8 +1273,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         dialog.setResizable(true);
         dialog.setVisible(true);
         // put the edited properties into the model
-        previewModel.setProperties(new GraphProperties(
-            propertiesDialog.getEditedProperties()));
+        GraphInfo.setProperties(graph,
+            new GraphProperties(propertiesDialog.getEditedProperties()));
         Object response = previewPane.getValue();
         this.previewSize = dialog.getSize();
         if (response instanceof JButton
@@ -1422,12 +1415,10 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** The graph generated from the current editor content. */
     private AspectGraph graph;
     /** Mapping from elements in {@link #getAspectGraph()} to elements in {@link #getModel()}. */
-    private Map<AspectElement,JCell> graphToModelMap;
-    /** Set of erroneous cells in the current editor model. */
-    private Set<JCell> errorCells = new HashSet<JCell>();
+    private Map<AspectElement,EditableJCell> graphToModelMap;
     /** Mapping from error messages to the corresponding cells. */
-    private Map<FormatError,JCell> errorCellMap =
-        new HashMap<FormatError,JCell>();
+    private Map<FormatError,EditableJCell> errorCellMap =
+        new HashMap<FormatError,EditableJCell>();
     /** Index of the currently set editor role */
     private GraphRole graphRole;
     /** Type view against which the edited graph is checked. */
