@@ -25,6 +25,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.GraphConstants;
+
 /**
  * J-Graph vertex for the editor. This has a {@link EditableContent} as user
  * object, which can be loaded from a string or set of strings.
@@ -36,12 +39,14 @@ public class EditableJVertex extends JVertex implements EditableJCell {
      * Constructs a new, empty empty j-vertex with a given number.
      * @param nr the number of the new vertex
      */
-    public EditableJVertex(int nr) {
+    public EditableJVertex(EditorJModel jModel, int nr) {
+        super(jModel);
         getUserObject().setNumber(nr);
     }
 
     /** Constructs a jvertex by cloning another one. */
-    public EditableJVertex(JVertex other) {
+    public EditableJVertex(EditorJModel jModel, JVertex other) {
+        super(jModel);
         getAttributes().applyMap(other.getAttributes());
         setUserObject(other.getUserObject());
     }
@@ -100,4 +105,24 @@ public class EditableJVertex extends JVertex implements EditableJCell {
     protected EditableContent createUserObject() {
         return new EditableContent(true);
     }
+
+    @Override
+    protected AttributeMap createAttributes() {
+        AttributeMap result = super.createAttributes();
+        GraphConstants.setEditable(result, true);
+        GraphConstants.setMoveable(result, true);
+        return result;
+    }
+
+    @Override
+    public final boolean hasError() {
+        return this.error;
+    }
+
+    /** Sets the error flag of this vertex. */
+    final public void setError(boolean error) {
+        this.error = error;
+    }
+
+    private boolean error;
 }

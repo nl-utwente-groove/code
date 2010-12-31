@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
+import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphCell;
 
 /**
@@ -34,6 +35,9 @@ import org.jgraph.graph.GraphCell;
  * @version $Revision$
  */
 public interface JCell extends GraphCell, Serializable {
+    /** Returns the model with which this cell is associated. */
+    public JModel getJModel();
+
     /**
      * Returns the complete text that should be displayed upon the cell. This is
      * obtained from {@link #getLines()} by inserting appropriate line
@@ -57,6 +61,30 @@ public interface JCell extends GraphCell, Serializable {
      */
     public abstract Collection<? extends Label> getListLabels();
 
+    /** Indicates if this cell is currently emphasised. */
+    boolean isEmphasised();
+
+    /**  
+     * Sets this cell to emphasised.
+     * @return {@code true} if the emphasised status changed as a result of this call
+     */
+    boolean setEmphasised(boolean emph);
+
+    /** Indicates if this cell is currently grayed-out. */
+    boolean isGrayedOut();
+
+    /** 
+     * Sets this cell to grayed-out. 
+     * @return {@code true} if the grayed-out status changed as a result of this call
+     */
+    boolean setGrayedOut(boolean gray);
+
+    /** 
+     * Indicates if this cell contains an error.
+     * This affects the rendering.
+     */
+    public boolean hasError();
+
     /**
      * Returns a {@link JCellContent}, which is a set of objects associated with
      * this cell.
@@ -68,6 +96,12 @@ public interface JCell extends GraphCell, Serializable {
      * Returns tool tip text for this j-cell.
      */
     public abstract String getToolTipText();
+
+    /** 
+     * Creates a fresh attribute map for this cell, with respect to a given model.
+     * Also stores the attribute map in the cell.
+     */
+    public AttributeMap createAttributes(JModel jModel);
 
     /** Pseudo-label for cells with an empty list label set. */
     static public final TypeLabel NO_LABEL = TypeLabel.createLabel(

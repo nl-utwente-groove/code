@@ -22,19 +22,14 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.GraphProperties;
 import groove.graph.Node;
-import groove.graph.algebra.ValueNode;
-import groove.graph.algebra.VariableNode;
 import groove.gui.Options;
 import groove.gui.layout.JCellLayout;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
-import groove.trans.RuleLabel;
 import groove.view.aspect.AspectEdge;
 
-import java.awt.Font;
 import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.HashMap;
@@ -45,7 +40,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.GraphConstants;
 
@@ -61,16 +55,12 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
      * node and edge attributes, and an indication whether self-edges should be
      * displayed as node labels. The node and edge attribute maps are cloned.
      * @param graph the underlying Graph
-     * @param defaultNodeAttr the attributes for displaying nodes
-     * @param defaultEdgeAttr the attributes for displaying edges
      * @param options specifies options for the visual display If false, node
      *        labels are used to display self edges.
      * @require graph != null, nodeAttr != null, edgeAttr != null;
      */
-    protected GraphJModel(Graph<N,E> graph, AttributeMap defaultNodeAttr,
-            AttributeMap defaultEdgeAttr, Options options) {
-        // the model is to store attributes
-        super(defaultNodeAttr, defaultEdgeAttr, options);
+    protected GraphJModel(Graph<N,E> graph, Options options) {
+        super(options);
         // set the transient variables (cells, attributes and connections)
         // add nodes from Graph to GraphModel
         this.graph = graph;
@@ -79,21 +69,10 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
     }
 
     /**
-     * Creates a new GraphJModel instance on top of a given Graph. Node
-     * attributes are given by NODE_ATTR and edge attributes by EDGE_ATTR.
-     * Self-edges will be displayed as node labels.
-     * @param graph the underlying Graph
-     * @require graph != null;
-     */
-    GraphJModel(Graph<N,E> graph, Options options) {
-        this(graph, JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, options);
-    }
-
-    /**
      * Constructor for a dummy (empty) model.
      */
     GraphJModel() {
-        super(JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, null);
+        super(null);
         this.graph = null;
         this.layoutMap = null;
     }
@@ -135,11 +114,6 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
         addedEdgeSet.removeAll(this.edgeJCellMap.keySet());
         addEdgeSet(addedEdgeSet);
         doInsert();
-        GraphProperties graphProperties =
-            GraphInfo.getProperties(this.graph, false);
-        if (graphProperties != null) {
-            setProperties(graphProperties);
-        }
         setName(this.graph.getName());
     }
 
@@ -237,11 +211,6 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
             currentLayout.putNode(((GraphJVertex<N,E>) jCell).getNode(),
                 jCell.getAttributes());
         }
-    }
-
-    @Override
-    public boolean hasError(JCell cell) {
-        return false;
     }
 
     /**
@@ -400,13 +369,13 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
 
     /**
      * Creates a new j-edge using {@link #createJEdge(Edge)}, and sets the
-     * attributes using {@link #createJEdgeAttr(JEdge)} and adds available
+     * attributes using {@link JEdge#createAttributes()} and adds available
      * layout information from the layout map stored in this model.
      * @param edge graph edge for which a corresponding j-edge is to be created
      */
     protected GraphJEdge<N,E> computeJEdge(E edge) {
         GraphJEdge<N,E> result = createJEdge(edge);
-        result.getAttributes().applyMap(createJEdgeAttr(result));
+        result.getAttributes().applyMap(result.createAttributes(this));
         JEdgeLayout layout = this.layoutMap.getLayout(edge);
         if (layout != null) {
             result.getAttributes().applyMap(layout.toJAttr());
@@ -416,7 +385,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
 
     /**
      * Creates a new j-vertex using {@link #createJVertex(Node)}, and sets the
-     * attributes using {@link #createJVertexAttr(JVertex)} and adds available
+     * attributes using {@link JVertex#createAttributes()} and adds available
      * layout information from the layout map stored in this model; or adds a
      * random position otherwise.
      * @param node graph node for which a corresponding j-vertex is to be
@@ -424,7 +393,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
      */
     protected GraphJVertex<N,E> computeJVertex(N node) {
         GraphJVertex<N,E> result = createJVertex(node);
-        result.getAttributes().applyMap(createJVertexAttr(result));
+        result.getAttributes().applyMap(result.createAttributes(this));
         if (GraphConstants.isMoveable(result.getAttributes())) {
             JVertexLayout layout = this.layoutMap.getLayout(node);
             if (layout != null) {
@@ -462,94 +431,6 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
      */
     protected GraphJVertex<N,E> createJVertex(N node) {
         return new GraphJVertex<N,E>(this, node, true);
-    }
-
-    /**
-     * Returns the attribute change required to mark a vertex as a value (i.e.,
-     * attribute-related) vertex.
-     */
-    protected AttributeMap getJVertexDataAttr() {
-        return DATA_NODE_ATTR;
-    }
-
-    /**
-     * If the edge is visible, tries to create the attributes based on the set
-     * of edges contained in the j-edge. Calls the super method only if this
-     * fails, i.e., if #createJEdge.
-     * @see GraphJVertex#isVisible()
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    final protected AttributeMap createJEdgeAttr(JEdge jEdge) {
-        AttributeMap result = super.createJEdgeAttr(jEdge);
-        modifyJEdgeAttr(result, ((GraphJEdge<N,E>) jEdge).getEdges());
-        return result;
-    }
-
-    /**
-     * Modifies the edge attributes based on the set of edges contained in a
-     * j-edge. Callback method from {@link #createJEdgeAttr(JEdge)}
-     * @param result the map to be modified
-     */
-    protected void modifyJEdgeAttr(AttributeMap result, Set<E> edgeSet) {
-        if (!edgeSet.isEmpty()) {
-            modifyJEdgeAttr(result, edgeSet.iterator().next());
-        }
-    }
-
-    /**
-     * Modifies the edge attributes based on the set of edges contained in a
-     * j-edge. Callback method from {@link #createJEdgeAttr(JEdge)}
-     * @param result the map to be modified
-     */
-    protected void modifyJEdgeAttr(AttributeMap result, E edge) {
-        // change the font to bold if the edges contain a node type
-        if (edge.label().isNodeType()) {
-            setFontAttr(result, Font.BOLD);
-        } else if (edge.label() instanceof RuleLabel) {
-            setFontAttr(result, Font.ITALIC);
-        }
-    }
-
-    /** Modifies the font attribute in the given attribute map. */
-    protected void setFontAttr(AttributeMap result, int fontAttr) {
-        Font currentFont = GraphConstants.getFont(result);
-        GraphConstants.setFont(result, currentFont.deriveFont(fontAttr));
-    }
-
-    /**
-     * If the vertex is visible, tries to create the attributes based on the
-     * node contained in the j-vertex. Calls the super method only if this
-     * fails.
-     * @see #createJVertexAttr(JVertex)
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    final protected AttributeMap createJVertexAttr(JVertex jVertex) {
-        AttributeMap result;
-        // if (jVertex.isVisible()) {
-        result = createJVertexAttr(((GraphJVertex<N,E>) jVertex).getNode());
-        if (result == null) {
-            result = super.createJVertexAttr(jVertex);
-        } else {
-            maybeResetBackground(result);
-        }
-        // } else {
-        // result = JAttr.INVISIBLE_ATTR;
-        // }
-        return result;
-    }
-
-    /**
-     * Creates the attributes based on the node contained in a j-vertex.
-     * Callback method from {@link #createJVertexAttr(JVertex)}.
-     */
-    protected AttributeMap createJVertexAttr(N node) {
-        AttributeMap result = (AttributeMap) this.defaultNodeAttr.clone();
-        if (node instanceof VariableNode || node instanceof ValueNode) {
-            result.applyMap(getJVertexDataAttr());
-        }
-        return result;
     }
 
     /**
@@ -697,9 +578,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
      */
     static public <N extends Node,E extends Edge<N>> GraphJModel<N,E> newInstance(
             Graph<N,E> graph, Options options, boolean forEditor) {
-        GraphJModel<N,E> result =
-            new GraphJModel<N,E>(graph, JAttr.DEFAULT_NODE_ATTR,
-                JAttr.DEFAULT_EDGE_ATTR, options);
+        GraphJModel<N,E> result = new GraphJModel<N,E>(graph, options);
         if (forEditor) {
             result.setForEditor();
         }
@@ -719,24 +598,6 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
     static public <N extends Node,E extends Edge<N>> GraphJModel<N,E> newInstance(
             Graph<N,E> graph, Options options) {
         return newInstance(graph, options, false);
-    }
-
-    /** Constant map containing the special data vertex attributes. */
-    static private final AttributeMap DATA_NODE_ATTR;
-
-    /** Constant map containing the special data edge attributes. */
-    static private final AttributeMap DATA_EDGE_ATTR;
-
-    static {
-        DATA_NODE_ATTR = new AttributeMap();
-        if (JAttr.DATA_FONT != null) {
-            GraphConstants.setFont(DATA_NODE_ATTR, JAttr.DATA_FONT);
-        }
-        // the data edge attributes
-        DATA_EDGE_ATTR = new AttributeMap();
-        if (JAttr.DATA_FONT != null) {
-            GraphConstants.setFont(DATA_EDGE_ATTR, JAttr.DATA_FONT);
-        }
     }
 
     /** Random generator for coordinates of new nodes. */

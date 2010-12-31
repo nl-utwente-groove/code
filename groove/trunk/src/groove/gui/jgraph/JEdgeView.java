@@ -426,6 +426,25 @@ public class JEdgeView extends EdgeView {
         }
     }
 
+    /** Indicates if the underlying cell is currently emphasised in the model. */
+    boolean isEmphasized() {
+        return getCell().isEmphasised();
+    }
+
+    /**
+     * Returns the line width of the vertex view. This is the line width stored
+     * in the attributes, augmented by {@link JAttr#EMPH_INCREMENT} if the view
+     * is emphasised.
+     * @see #isEmphasized()
+     */
+    public float getLinewidth() {
+        float result = GraphConstants.getLineWidth(getAllAttributes());
+        if (isEmphasized()) {
+            result += JAttr.EMPH_INCREMENT;
+        }
+        return result;
+    }
+
     /** The j-model underlying this edge view. */
     private final JModel jModel;
     //
@@ -525,13 +544,13 @@ public class JEdgeView extends EdgeView {
             } else {
                 this.twoLines = false;
             }
-            this.error =
-                ((JGraph) jGraph).getModel().hasError((JCell) view.getCell());
+            this.error = theView.getCell().hasError();
             if (this.error) {
-                this.errorBounds =
-                    getLabelBounds(jGraph, (EdgeView) view).getBounds();
+                this.errorBounds = getLabelBounds(jGraph, theView).getBounds();
             }
-            return super.getRendererComponent(jGraph, view, sel, focus, preview);
+            super.getRendererComponent(jGraph, view, sel, focus, preview);
+            this.lineWidth = theView.getLinewidth();
+            return this;
         }
 
         @Override

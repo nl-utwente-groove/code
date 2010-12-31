@@ -396,16 +396,6 @@ public class ShowHideMenu extends JMenu {
         }
 
         /**
-         * Convenience method to indicate if a jcell is set to hidden in the
-         * underlying jgraph.
-         * @param jCell the jcell to be tested
-         * @return <tt>true</tt> if jcell is hidden in the underlying jgraph
-         */
-        protected final boolean isHidden(JCell jCell) {
-            return this.jgraph.getModel().isGrayedOut(jCell);
-        }
-
-        /**
          * Indicates whether a given jgraph cell is involved in this show/hide
          * action.
          * @param jCell the jgraph cell for which the involvement is to be
@@ -472,7 +462,7 @@ public class ShowHideMenu extends JMenu {
          */
         @Override
         protected boolean isInvolved(JCell cell) {
-            return !isHidden(cell);
+            return !cell.isGrayedOut();
         }
     }
 
@@ -535,7 +525,8 @@ public class ShowHideMenu extends JMenu {
                     (JCell) ((DefaultPort) edge.getTarget()).getParent();
                 Object[] selectedCellArray = this.jgraph.getSelectionCells();
                 if (selectedCellArray.length == 0) {
-                    result = !isHidden(sourcePort) || !isHidden(targetPort);
+                    result =
+                        !sourcePort.isGrayedOut() || !targetPort.isGrayedOut();
                 } else {
                     Set<Object> selectedCells =
                         new HashSet<Object>(Arrays.asList(selectedCellArray));
@@ -693,7 +684,7 @@ public class ShowHideMenu extends JMenu {
          */
         @Override
         protected boolean isInvolved(JCell jCell) {
-            return this.jgraph.getModel().isEmphasized(jCell);
+            return jCell.isEmphasised();
         }
     }
 

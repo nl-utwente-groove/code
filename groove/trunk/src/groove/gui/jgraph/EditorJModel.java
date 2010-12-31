@@ -21,6 +21,7 @@ import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Element;
 import groove.graph.GraphInfo;
+import groove.graph.GraphProperties;
 import groove.gui.Editor;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
@@ -57,6 +58,12 @@ public class EditorJModel extends JModel {
         if (jModel != null) {
             replace(jModel);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<EditableJCell> getRoots() {
+        return (List<EditableJCell>) super.getRoots();
     }
 
     /**
@@ -120,7 +127,10 @@ public class EditorJModel extends JModel {
                 this.layoutableJCells.add(toResultCellMap.get(cell));
             }
         }
-        setProperties(jModel.getProperties());
+        if (jModel instanceof GraphJModel) {
+            setProperties(GraphInfo.getProperties(
+                ((GraphJModel<?,?>) jModel).getGraph(), false));
+        }
         setName(jModel.getName());
     }
 
@@ -129,7 +139,8 @@ public class EditorJModel extends JModel {
      * @see #toPlainGraph(Map)
      */
     public DefaultGraph toPlainGraph() {
-        Map<Element,JCell> dummyMap = new HashMap<Element,JCell>();
+        Map<Element,EditableJCell> dummyMap =
+            new HashMap<Element,EditableJCell>();
         return toPlainGraph(dummyMap);
     }
 
@@ -141,7 +152,7 @@ public class EditorJModel extends JModel {
      * @param elementMap receives the mapping from elements of the new graph
      * to root cells of this model
      */
-    public DefaultGraph toPlainGraph(Map<Element,JCell> elementMap) {
+    public DefaultGraph toPlainGraph(Map<Element,EditableJCell> elementMap) {
         DefaultGraph result = new DefaultGraph(getName());
         LayoutMap<DefaultNode,DefaultEdge> layoutMap =
             new LayoutMap<DefaultNode,DefaultEdge>();
@@ -190,6 +201,26 @@ public class EditorJModel extends JModel {
         result.setRole(this.editor.getRole());
         return result;
     }
+
+    /**
+     * Returns the properties associated with this j-model.
+     */
+    public final GraphProperties getProperties() {
+        if (this.properties == null) {
+            this.properties = new GraphProperties();
+        }
+        return this.properties;
+    }
+
+    /**
+     * Sets the properties of this j-model to a given properties map.
+     */
+    public final void setProperties(GraphProperties properties) {
+        this.properties = properties;
+    }
+
+    /** Properties map of the graph being displayed or edited. */
+    private GraphProperties properties;
 
     /**
      * New source is only acceptable if not <tt>null</tt>.
@@ -256,18 +287,13 @@ public class EditorJModel extends JModel {
         return result;
     }
 
-    @Override
-    public boolean hasError(JCell cell) {
-        return this.editor.hasError(cell);
-    }
-
     /**
      * Callback factory method for a j-vertex instance for this j-model that is
      * a copy of an existing j-vertex.
      */
     private EditableJVertex copyJVertex(JVertex original) {
-        EditableJVertex result = new EditableJVertex(original);
-        result.getAttributes().applyMap(createJVertexAttr(result));
+        EditableJVertex result = new EditableJVertex(this, original);
+        result.getAttributes().applyMap(result.createAttributes(this));
         return result;
     }
 
@@ -276,54 +302,29 @@ public class EditorJModel extends JModel {
      * copy of an existing j-edge.
      */
     private EditableJEdge copyJEdge(JEdge original) {
-        EditableJEdge result = new EditableJEdge(original);
-        result.getAttributes().applyMap(createJEdgeAttr(result));
+        EditableJEdge result = new EditableJEdge(this, original);
+        result.getAttributes().applyMap(result.createAttributes());
         return result;
     }
 
     /**
      * Callback factory method to create an editable j-vertex. The return value
      * has attributes initialised through
-     * {@link JModel#createJVertexAttr(JVertex)}.
+     * {@link JVertex#createAttributes(JModel)}.
      */
     EditableJVertex computeJVertex() {
-        EditableJVertex result = new EditableJVertex(createNewNodeNr());
-        result.getAttributes().applyMap(createJVertexAttr(result));
+        EditableJVertex result = new EditableJVertex(this, createNewNodeNr());
+        result.getAttributes().applyMap(result.createAttributes(this));
         return result;
     }
 
     /**
      * Callback factory method to create an editable j-edge. The return value
-     * has attributes initialised through {@link JModel#createJEdgeAttr(JEdge)}.
+     * has attributes initialised through {@link JEdge#createAttributes()}.
      */
     EditableJEdge computeJEdge() {
-        EditableJEdge result = new EditableJEdge();
-        result.getAttributes().applyMap(createJEdgeAttr(result));
-        return result;
-    }
-
-    /**
-     * Overwrites the method to set the editable and moveable attributes to
-     * <tt>true</tt>.
-     */
-    @Override
-    protected AttributeMap createJVertexAttr(JVertex cell) {
-        AttributeMap result = super.createJVertexAttr(cell);
-        GraphConstants.setEditable(result, true);
-        GraphConstants.setMoveable(result, true);
-        return result;
-    }
-
-    /**
-     * Overwrites the method to set the editable (dis)connectable attributes to
-     * <tt>true</tt>.
-     */
-    @Override
-    protected AttributeMap createJEdgeAttr(JEdge edge) {
-        AttributeMap result = super.createJEdgeAttr(edge);
-        GraphConstants.setEditable(result, true);
-        GraphConstants.setConnectable(result, true);
-        GraphConstants.setDisconnectable(result, true);
+        EditableJEdge result = new EditableJEdge(this);
+        result.getAttributes().applyMap(result.createAttributes());
         return result;
     }
 

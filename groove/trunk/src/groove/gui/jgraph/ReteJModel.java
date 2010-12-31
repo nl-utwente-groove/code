@@ -32,9 +32,4 @@ public class ReteJModel extends GraphJModel<DefaultNode,DefaultEdge> {
     public ReteJModel(ReteNetwork network) {
         super(network.toPlainGraph(), null);
     }
-
-    @Override
-    public boolean hasError(JCell cell) {
-        return false;
-    }
 }

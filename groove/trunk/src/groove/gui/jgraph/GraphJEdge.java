@@ -46,15 +46,17 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
      * @throws IllegalArgumentException if <code>edge.endCount() < 2</code>
      */
     GraphJEdge(GraphJModel<N,E> jModel, E edge) {
-        this.jModel = jModel;
+        super(jModel);
         this.source = edge.source();
         this.target = edge.target();
         getUserObject().add(edge);
     }
 
     /** Returns the {@link JModel} associated with this {@link JEdge}. */
-    protected GraphJModel<N,E> getJModel() {
-        return this.jModel;
+    @SuppressWarnings("unchecked")
+    @Override
+    public GraphJModel<N,E> getJModel() {
+        return (GraphJModel<N,E>) super.getJModel();
     }
 
     /**
@@ -65,7 +67,7 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
     public boolean isVisible() {
         boolean result =
             super.isVisible() && !isSourceLabel() && !getLines().isEmpty();
-        if (result && !this.jModel.isShowUnfilteredEdges()) {
+        if (result && !getJModel().isShowUnfilteredEdges()) {
             result =
                 getSourceVertex().isVisible()
                     && (isSourceLabel() || getTargetVertex().isVisible());
@@ -79,8 +81,8 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
      * {@link GraphJModel#isPotentialUnaryEdge(Edge)} hold for this edge.
      */
     public boolean isSourceLabel() {
-        return this.jModel.isShowVertexLabels()
-            && this.jModel.isPotentialUnaryEdge(getEdge());
+        return getJModel().isShowVertexLabels()
+            && getJModel().isPotentialUnaryEdge(getEdge());
     }
 
     /**
@@ -140,7 +142,7 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
             // only add edges that have an unfiltered label
             boolean visible = false;
             for (Label label : getListLabels(edge)) {
-                if (!this.jModel.isFiltering(label)) {
+                if (!getJModel().isFiltering(label)) {
                     visible = true;
                     break;
                 }
@@ -234,8 +236,6 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
         return result;
     }
 
-    /** Underlying {@link JModel} of this edge. */
-    private final GraphJModel<N,E> jModel;
     /** Source node of the underlying graph edges. */
     private final N source;
     /** Target node of the underlying graph edges. */

@@ -18,6 +18,7 @@ package groove.gui;
 
 import static groove.graph.GraphRole.TYPE;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
+import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.LabelStore;
 import groove.gui.JTypeNameList.CheckBoxListModel;
 import groove.gui.jgraph.AspectJModel;
@@ -69,6 +70,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         simulator.addSimulationListener(this);
         setEnabled(false);
         addRefreshListener(SHOW_NODE_IDS_OPTION);
+        addRefreshListener(SHOW_VALUE_NODES_OPTION);
     }
 
     private JToolBar createToolbar() {

@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.GraphConstants;
+
 /**
  * J-Graph edge for the editor. This has a {@link EditableContent} as user
  * object, which can be loaded from a string or set of strings.
@@ -31,12 +34,13 @@ import java.util.List;
  */
 public class EditableJEdge extends JEdge implements EditableJCell {
     /** Constructs a new, empty empty j-edge. */
-    public EditableJEdge() {
-        // empty constructor.
+    public EditableJEdge(EditorJModel jModel) {
+        super(jModel);
     }
 
     /** Constructs a j-edge by cloning another one. */
-    public EditableJEdge(JEdge other) {
+    public EditableJEdge(EditorJModel jModel, JEdge other) {
+        super(jModel);
         getAttributes().applyMap(other.getAttributes());
         setUserObject(other.getUserObject().getLabelSet());
     }
@@ -88,4 +92,24 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     protected EditableContent createUserObject() {
         return new EditableContent(false);
     }
+
+    @Override
+    protected AttributeMap createAttributes() {
+        AttributeMap result = super.createAttributes();
+        GraphConstants.setEditable(result, true);
+        GraphConstants.setConnectable(result, true);
+        GraphConstants.setDisconnectable(result, true);
+        return result;
+    }
+
+    @Override
+    public final boolean hasError() {
+        return this.error;
+    }
+
+    final public void setError(boolean error) {
+        this.error = error;
+    }
+
+    private boolean error;
 }

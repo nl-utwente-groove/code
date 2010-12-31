@@ -191,7 +191,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     @Override
     public String getToolTipText(MouseEvent evt) {
         JCell jCell = (JCell) getFirstCellForLocation(evt.getX(), evt.getY());
-        return getModel().getToolTipText(jCell);
+        if (jCell != null && jCell.isVisible()) {
+            return jCell.getToolTipText();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -238,11 +242,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * Overrides the super method to make sure hidden cells ae never editable.
      * If the specified cell is hidden (according to the underlying model),
      * returns false; otherwise, passes on the query to super.
-     * @see JModel#isGrayedOut(JCell)
+     * @see JCell#isGrayedOut()
      */
     @Override
     public boolean isCellEditable(Object cell) {
-        return !(cell instanceof JCell && getModel().isGrayedOut((JCell) cell))
+        return !(cell instanceof JCell && ((JCell) cell).isGrayedOut())
             && super.isCellEditable(cell);
     }
 
@@ -272,21 +276,19 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * Propagates some types of changes from model to view. Reacts in particular
      * to {@link JModel.RefreshEdit}-events: every refreshed cell with an empty
      * attribute set gets its view attributes refreshed by a call to
-     * {@link JModel#createTransientJAttr(JCell)}; moreover, hidden cells are
+     * {@link JCell#createAttributes(JModel)}; moreover, hidden cells are
      * unselected.
      * @see JModel.RefreshEdit#getRefreshedJCells()
      */
     public void graphChanged(GraphModelEvent evt) {
         if (evt.getSource() == getModel()
             && evt.getChange() instanceof JModel.RefreshEdit) {
-            Collection<JCell> refreshedJCells =
+            Collection<? extends JCell> refreshedJCells =
                 ((JModel.RefreshEdit) evt.getChange()).getRefreshedJCells();
             Collection<JCell> visibleCells = new ArrayList<JCell>();
             Collection<JCell> invisibleCells = new ArrayList<JCell>();
-            Set<JCell> emphElems = new HashSet<JCell>();
+            List<JCell> emphElems = new ArrayList<JCell>();
             for (JCell jCell : refreshedJCells) {
-                AttributeMap transientAttributes =
-                    getModel().createTransientJAttr(jCell);
                 CellView jView = getGraphLayoutCache().getMapping(jCell, false);
                 if (jView != null) {
                     if (!jCell.isVisible()) {
@@ -304,8 +306,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                         // as for data edges; hence reaffirm the visibility
                         visibleCells.add(jCell);
                     }
-                    jView.changeAttributes(getGraphLayoutCache(),
-                        transientAttributes);
                 } else {
                     if (jCell.isVisible()) {
                         visibleCells.add(jCell);
@@ -318,10 +318,10 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                         }
                     }
                 }
-                if (getModel().isGrayedOut(jCell)) {
+                if (jCell.isGrayedOut()) {
                     getSelectionModel().removeSelectionCell(jCell);
                 }
-                if (getModel().isEmphasized(jCell)) {
+                if (jCell.isEmphasised()) {
                     emphElems.add(jCell);
                 }
             }
@@ -365,7 +365,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         x /= this.scale;
         y /= this.scale;
         Object result = null;
-        JModel jModel = getModel();
         Rectangle xyArea = new Rectangle((int) (x - .5), (int) (y - .5), 1, 1);
         // iterate over the roots and query the visible ones
         CellView[] viewRoots = this.graphLayoutCache.getRoots();
@@ -374,7 +373,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             Object jCell = jCellView.getCell();
             boolean typeCorrect =
                 vertex ? jCell instanceof JVertex : jCell instanceof JCell;
-            if (typeCorrect && !jModel.isGrayedOut((JCell) jCell)) {
+            if (typeCorrect && !((JCell) jCell).isGrayedOut()) {
                 // now see if this jCell is sufficiently close to the point
                 if (jCellView.intersects(this, xyArea)) {
                     result = jCell;
@@ -1524,7 +1523,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         public void addSelectionCells(Object[] cells) {
             List<Object> visibleCells = new LinkedList<Object>();
             for (int i = 0; i < cells.length; i++) {
-                if (!getModel().isGrayedOut((JCell) cells[i])) {
+                if (!((JCell) cells[i]).isGrayedOut()) {
                     visibleCells.add(cells[i]);
                 }
             }
@@ -1535,7 +1534,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         public void setSelectionCells(Object[] cells) {
             List<Object> visibleCells = new LinkedList<Object>();
             for (Object cell : cells) {
-                if (!getModel().isGrayedOut((JCell) cell)) {
+                if (!((JCell) cell).isGrayedOut()) {
                     visibleCells.add(cell);
                 }
             }

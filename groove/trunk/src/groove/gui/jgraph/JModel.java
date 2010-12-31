@@ -16,13 +16,12 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.GraphProperties;
 import groove.graph.Label;
 import groove.gui.Options;
 import groove.util.ObservableSet;
 
-import java.awt.Color;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -31,7 +30,6 @@ import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
-import org.jgraph.event.GraphModelEvent;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.DefaultGraphModel;
@@ -54,28 +52,11 @@ import org.jgraph.graph.GraphConstants;
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
-     * Constructs a new JModel with given default node and edge attributes,
-     * possibly showing node identities.
-     * @param defaultNodeAttr the default node attributes for this model
-     * @param defaultEdgeAttr the default node attributes for this model
-     * @param options the (possibly {@code null}) options object
-     */
-    public JModel(AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr,
-            Options options) {
-        this.defaultNodeAttr = defaultNodeAttr;
-        this.defaultEdgeAttr = defaultEdgeAttr;
-        this.options = options == null ? new Options() : options;
-    }
-
-    /**
-     * Constructs a new JModel, displaying self-edges through JNode labels. The
-     * default node and edge identities are set through
-     * {@link JAttr#DEFAULT_NODE_ATTR} and {@link JAttr#DEFAULT_EDGE_ATTR}.
-     * @ensure !isLayedOut(), !isShowNodeIdentities()
+     * Constructs a new JModel, displaying self-edges through JNode labels.
      * @param options the options for the new model
      */
     public JModel(Options options) {
-        this(JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, options);
+        this.options = options == null ? new Options() : options;
     }
 
     /** Returns a (possibly <code>null</code>) name of this model. */
@@ -91,44 +72,27 @@ abstract public class JModel extends DefaultGraphModel {
     }
 
     /**
+     * Retrieves the value for a given option from the options object, or
+     * <code>null</code> if the options are not set (i.e., <code>null</code>).
+     * @param option the name of the option
+     */
+    public boolean getOptionValue(String option) {
+        return getOptions().getItem(option).isEnabled()
+            && getOptions().isSelected(option);
+    }
+
+    /** Indicates if nodes should determine their own background colour. */
+    public boolean isShowBackground() {
+        return getOptionValue(Options.SHOW_BACKGROUND_OPTION);
+    }
+
+    /**
      * Sets the name of this j-model to a given name. The name may be
      * <tt>null</tt> if the model is anonymous.
      * @see #getName()
      */
     public final void setName(String name) {
         this.name = name;
-    }
-
-    /**
-     * Returns the properties associated with this j-model.
-     */
-    public final GraphProperties getProperties() {
-        if (this.properties == null) {
-            this.properties = new GraphProperties();
-        }
-        return this.properties;
-    }
-
-    /**
-     * Sets the properties of this j-model to a given properties map.
-     */
-    public final void setProperties(GraphProperties properties) {
-        this.properties = properties;
-    }
-
-    /**
-     * Returns a tool tip text for a given graph cell. Does not test if the cell
-     * is hidden.
-     * @param jCell the graph cell (of this graph model) for which a tool tip is
-     *        to be returned
-     * @require cell != null
-     */
-    public String getToolTipText(JCell jCell) {
-        if (jCell != null && jCell.isVisible()) {
-            return jCell.getToolTipText();
-        } else {
-            return null;
-        }
     }
 
     /**
@@ -170,6 +134,13 @@ abstract public class JModel extends DefaultGraphModel {
     public void removeLayoutable(JCell jCell) {
         assert contains(jCell) : "Cell " + jCell + " is not in model";
         this.layoutableJCells.remove(jCell);
+    }
+
+    /** Specialises the type to a list of {@link JCell}s. */
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<? extends JCell> getRoots() {
+        return super.getRoots();
     }
 
     /**
@@ -221,7 +192,7 @@ abstract public class JModel extends DefaultGraphModel {
      * @see org.jgraph.graph.DefaultGraphModel#fireGraphChanged(Object,
      *      org.jgraph.event.GraphModelEvent.GraphModelChange)
      */
-    public void refresh(final Collection<JCell> jCellSet) {
+    public void refresh(final Collection<? extends JCell> jCellSet) {
         if (!jCellSet.isEmpty()) {
             // do it now if we are on the event dispatch thread
             if (SwingUtilities.isEventDispatchThread()) {
@@ -230,7 +201,7 @@ abstract public class JModel extends DefaultGraphModel {
                 // otherwise, defer to avoid concurrency problems
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        fireGraphChanged(new RefreshEdit(jCellSet));
+                        fireGraphChanged(this, new RefreshEdit(jCellSet));
                     }
                 });
             }
@@ -241,7 +212,6 @@ abstract public class JModel extends DefaultGraphModel {
      * Notifies the listeners that something has changed in the model (or in the
      * view of the model).
      */
-    @SuppressWarnings("unchecked")
     public void refresh() {
         refresh(getRoots());
     }
@@ -272,50 +242,37 @@ abstract public class JModel extends DefaultGraphModel {
     }
 
     /**
-     * Tests the grayed-out status of a given jgraph cell.
-     * @param cell the cell that is to be tested
-     * @return <tt>true</tt> if the cell is currently grayed-out
-     * @see #changeGrayedOut(Set,boolean)
-     */
-    public boolean isGrayedOut(JCell cell) {
-        return this.grayedOutJCells.contains(cell);
-    }
-
-    /**
      * Changes the grayed-out status of a given set of jgraph cells.
      * @param jCells the cells whose hiding status is to be changed
      * @param grayedOut the new grayed-out status of the cell
-     * @see #isGrayedOut(JCell)
+     * @see JCell#isGrayedOut()
      */
     public void changeGrayedOut(Set<JCell> jCells, boolean grayedOut) {
         Set<JCell> changedJCells = new HashSet<JCell>();
         for (JCell jCell : jCells) {
-            if (grayedOut != isGrayedOut(jCell)) {
+            if (jCell.setGrayedOut(grayedOut)) {
+                changedJCells.add(jCell);
                 if (grayedOut) {
-                    this.grayedOutJCells.add(jCell);
-                    changedJCells.add(jCell);
                     // also gray out incident edges
                     if (!isEdge(jCell)) {
                         Iterator<?> jEdgeIter =
                             ((JVertex) jCell).getPort().edges();
                         while (jEdgeIter.hasNext()) {
                             JEdge jEdge = (JEdge) jEdgeIter.next();
-                            if (this.grayedOutJCells.add(jEdge)) {
+                            if (jEdge.setGrayedOut(true)) {
                                 changedJCells.add(jEdge);
                             }
                         }
                     }
                 } else {
-                    this.grayedOutJCells.remove(jCell);
-                    changedJCells.add(jCell);
                     // also revive end nodes
                     if (isEdge(jCell)) {
                         JCell sourceJVertex = ((JEdge) jCell).getSourceVertex();
-                        if (this.grayedOutJCells.remove(sourceJVertex)) {
+                        if (sourceJVertex.setGrayedOut(false)) {
                             changedJCells.add(sourceJVertex);
                         }
                         JCell targetJVertex = ((JEdge) jCell).getTargetVertex();
-                        if (this.grayedOutJCells.remove(targetJVertex)) {
+                        if (targetJVertex.setGrayedOut(false)) {
                             changedJCells.add(targetJVertex);
                         }
                     }
@@ -323,21 +280,24 @@ abstract public class JModel extends DefaultGraphModel {
             }
         }
         refresh(changedJCells);
-        createLayerEdit(this.grayedOutJCells.toArray(),
-            GraphModelLayerEdit.BACK).execute();
+        createLayerEdit(changedJCells.toArray(), GraphModelLayerEdit.BACK).execute();
     }
 
     /**
      * Sets the grayed-out cells to a given set.
      * @param jCells the cells to be grayed out
-     * @see #isGrayedOut(JCell)
+     * @see JCell#isGrayedOut()
      */
     public void setGrayedOut(Set<JCell> jCells) {
+        Set<JCell> changedJCells = new HashSet<JCell>();
         // copy the old set of grayed-out cells
-        Set<JCell> changedJCells = new HashSet<JCell>(this.grayedOutJCells);
-        this.grayedOutJCells.clear();
+        for (JCell root : getRoots()) {
+            if (root.setGrayedOut(false)) {
+                changedJCells.add(root);
+            }
+        }
         for (JCell jCell : jCells) {
-            if (this.grayedOutJCells.add(jCell)) {
+            if (jCell.setGrayedOut(true)) {
                 // the cell should be either added or removed from the changed
                 // cells
                 if (!changedJCells.add(jCell)) {
@@ -348,7 +308,7 @@ abstract public class JModel extends DefaultGraphModel {
                     Iterator<?> jEdgeIter = ((JVertex) jCell).getPort().edges();
                     while (jEdgeIter.hasNext()) {
                         JEdge jEdge = (JEdge) jEdgeIter.next();
-                        if (this.grayedOutJCells.add(jEdge)) {
+                        if (jEdge.setGrayedOut(true)) {
                             // the cell should be either added or removed from
                             // the changed cells
                             if (!changedJCells.add(jEdge)) {
@@ -360,26 +320,7 @@ abstract public class JModel extends DefaultGraphModel {
             }
         }
         refresh(changedJCells);
-        createLayerEdit(this.grayedOutJCells.toArray(),
-            GraphModelLayerEdit.BACK).execute();
-    }
-
-    /**
-     * Returns the number of grayed-out cells.
-     */
-    public Set<JCell> getGrayedOut() {
-        return this.grayedOutJCells;
-    }
-
-    /**
-     * Tests if a given jcell is currently emphasized. Note that emphasis may
-     * also exist for hidden cells, even if this is not visible.
-     * 
-     * @param jCell the jcell that is tested for emphasis
-     * @return <tt>true</tt> if <tt>jcell</tt> is currently emphasized
-     */
-    public boolean isEmphasized(JCell jCell) {
-        return this.emphJCells.contains(jCell);
+        createLayerEdit(changedJCells.toArray(), GraphModelLayerEdit.BACK).execute();
     }
 
     /**
@@ -387,28 +328,22 @@ abstract public class JModel extends DefaultGraphModel {
      * @param jCellSet the set of jcells to be emphasised. Should not be
      *        <tt>null</tt>.
      */
-    public void setEmphasized(Set<JCell> jCellSet) {
-        Set<JCell> changedEmphJCells = new HashSet<JCell>(this.emphJCells);
-        changedEmphJCells.addAll(jCellSet);
-        this.emphJCells.clear();
-        this.emphJCells.addAll(jCellSet);
-        refresh(changedEmphJCells);
+    public void setEmphasised(Set<JCell> jCellSet) {
+        Set<JCell> changedJCells = new HashSet<JCell>();
+        for (JCell root : getRoots()) {
+            if (root.setEmphasised(jCellSet.contains(root))) {
+                changedJCells.add(root);
+            }
+        }
+        refresh(changedJCells);
     }
 
     /**
      * Clears the currently emphasised nodes.
      */
-    public void clearEmphasized() {
-        Set<JCell> oldEmphSet = new HashSet<JCell>(this.emphJCells);
-        this.emphJCells.clear();
-        refresh(oldEmphSet);
+    public void clearEmphasised() {
+        setEmphasised(Collections.<JCell>emptySet());
     }
-
-    /**
-     * Indicates if the given element has an error,
-     * in which case it needs to be displayed in a special way.
-     */
-    abstract public boolean hasError(JCell cell);
 
     /**
      * Invokes {@link JCellContent#clone()} to do the job.
@@ -420,33 +355,6 @@ abstract public class JModel extends DefaultGraphModel {
         } else {
             return ((JCellContent<?>) userObject).clone();
         }
-    }
-
-    /**
-     * Retrieves the value for a given option from the options object, or
-     * <code>null</code> if the options are not set (i.e., <code>null</code>).
-     * @param option the name of the option
-     */
-    public boolean getOptionValue(String option) {
-        return getOptions().getItem(option).isEnabled()
-            && getOptions().isSelected(option);
-    }
-
-    /**
-     * Returns the map of attribute changes needed to emphasize a jvertex. This
-     * implementation returns {@link JAttr#EMPH_NODE_CHANGE}.
-     * @param cell the vertex to be emphasized
-     */
-    protected AttributeMap getJVertexEmphAttr(JVertex cell) {
-        return JAttr.EMPH_NODE_CHANGE;
-    }
-
-    /**
-     * Returns the map of attribute changes needed to emphasize a jedge. This
-     * implementation returns {@link JAttr#EMPH_EDGE_CHANGE}.
-     */
-    protected AttributeMap getJEdgeEmphAttr(JEdge jEdge) {
-        return JAttr.EMPH_EDGE_CHANGE;
     }
 
     /**
@@ -464,9 +372,9 @@ abstract public class JModel extends DefaultGraphModel {
             result = ((JCell) node).getAttributes();
             if (result == null) {
                 if (node instanceof JVertex) {
-                    result = createJVertexAttr((JVertex) node);
+                    result = ((JVertex) node).createAttributes(this);
                 } else {
-                    result = createJEdgeAttr((JEdge) node);
+                    result = ((JEdge) node).createAttributes(this);
                 }
             }
         } else {
@@ -477,89 +385,6 @@ abstract public class JModel extends DefaultGraphModel {
     }
 
     /**
-     * Returns a freshly cloned attribute map for a given vertex. This
-     * implementation returns the default attributes, set at construction time.
-     * 
-     * @param jVertex the j-vertex for which the attributes are to be created
-     */
-    protected AttributeMap createJVertexAttr(JVertex jVertex) {
-        AttributeMap result = (AttributeMap) this.defaultNodeAttr.clone();
-        maybeResetBackground(result);
-        return result;
-    }
-
-    /**
-     * Resets the background colour in a certain attribute to
-     * {@link Color#WHITE} if the options demand this.
-     */
-    protected void maybeResetBackground(AttributeMap attributes) {
-        if (!getOptionValue(Options.SHOW_BACKGROUND_OPTION)) {
-            GraphConstants.setBackground(attributes, Color.WHITE);
-        }
-    }
-
-    /**
-     * Returns a freshly cloned attribute map for a given jgraph edge. This
-     * implementation returns the default attributes set at construction time.
-     * @param jEdge the jedge for which the attributes are to be created
-     */
-    protected AttributeMap createJEdgeAttr(JEdge jEdge) {
-        AttributeMap result = (AttributeMap) this.defaultEdgeAttr.clone();
-        return result;
-    }
-
-    /**
-     * Returns a fresh copy of the attribute map for a given jgraph cell, and
-     * adds the hidden and emphasised attributes to it.
-     */
-    protected AttributeMap createTransientJAttr(JCell jCell) {
-        AttributeMap result = new AttributeMap();
-        if (jCell instanceof JEdge) {
-            result = createJEdgeAttr((JEdge) jCell);
-            if (isEmphasized(jCell)) {
-                result.applyMap(getJEdgeEmphAttr((JEdge) jCell));
-            }
-        } else {
-            result = createJVertexAttr((JVertex) jCell);
-            if (isEmphasized(jCell)) {
-                result.applyMap(getJVertexEmphAttr((JVertex) jCell));
-            }
-        }
-        if (isGrayedOut(jCell)) {
-            result.applyMap(getGrayedOutAttr());
-        }
-        return result;
-    }
-
-    /**
-     * Calls {@link DefaultGraphModel}
-     * {@link #fireGraphChanged(Object, org.jgraph.event.GraphModelEvent.GraphModelChange)}
-     * with <code>this</code> as first parameter.
-     */
-    void fireGraphChanged(GraphModelEvent.GraphModelChange edit) {
-        super.fireGraphChanged(this, edit);
-    }
-
-    /**
-     * Standard node attributes used in this graph model. Set in the
-     * constructor.
-     */
-    protected final AttributeMap defaultNodeAttr;
-    /**
-     * Standard edge attributes used in this graph model. Set in the
-     * constructor.
-     */
-    protected final AttributeMap defaultEdgeAttr;
-
-    /**
-     * The set of currently hidden jcells.
-     */
-    protected final Set<JCell> grayedOutJCells = new HashSet<JCell>();
-
-    /** The set of currently emphasized j-cells. */
-    protected final Set<JCell> emphJCells = new HashSet<JCell>();
-
-    /**
      * Set of j-cells that were inserted in the model since the last time
      * <tt>{@link #setLayedOut(boolean)}</tt> was called.
      */
@@ -568,8 +393,6 @@ abstract public class JModel extends DefaultGraphModel {
     private final Options options;
     /** Set of labels that is currently filtered from view. */
     private ObservableSet<Label> filteredLabels;
-    /** Properties map of the graph being displayed or edited. */
-    private GraphProperties properties;
     /**
      * The name of this model.
      */
@@ -587,7 +410,7 @@ abstract public class JModel extends DefaultGraphModel {
          * Constructs a new edit based on a given set of jcells.
          * @param refreshedJCells the set of jcells to be refreshed
          */
-        public RefreshEdit(Collection<JCell> refreshedJCells) {
+        public RefreshEdit(Collection<? extends JCell> refreshedJCells) {
             super(null, null, null, null, null);
             this.refreshedJCells = refreshedJCells;
         }
@@ -595,7 +418,7 @@ abstract public class JModel extends DefaultGraphModel {
         /**
          * Returns the set of jcells to be refreshed.
          */
-        public Collection<JCell> getRefreshedJCells() {
+        public Collection<? extends JCell> getRefreshedJCells() {
             return this.refreshedJCells;
         }
 
@@ -608,6 +431,6 @@ abstract public class JModel extends DefaultGraphModel {
         }
 
         /** The set of cells that this event reports on refreshing. */
-        private final Collection<JCell> refreshedJCells;
+        private final Collection<? extends JCell> refreshedJCells;
     }
 }

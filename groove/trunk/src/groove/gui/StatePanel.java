@@ -22,7 +22,6 @@ import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
@@ -242,7 +241,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
             emphElems.add(aspectMap.getEdge(matchedEdge));
         }
         GraphJModel<?,?> currentModel = getJModel();
-        currentModel.setEmphasized(currentModel.getJCellSet(emphElems));
+        currentModel.setEmphasised(currentModel.getJCellSet(emphElems));
         this.selectedMatch = match;
         refreshStatus();
     }
@@ -257,7 +256,6 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         AspectJModel newModel = getAspectJModel(newState);
         GraphState oldState = transition.source();
         HostGraphMorphism morphism = transition.getMorphism();
-        getAspectJModel(oldState);
         copyLayout(this.stateToAspectMap.get(oldState),
             this.stateToAspectMap.get(newState), morphism);
         // set the graph model to the new state
@@ -313,7 +311,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         boolean result = this.selectedMatch != null;
         if (result) {
             this.selectedMatch = null;
-            getJModel().clearEmphasized();
+            getJModel().clearEmphasised();
         }
         return result;
     }
@@ -361,35 +359,27 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         AspectGraph aspectGraph = aspectMap.getAspectGraph();
         AspectJModel result = this.graphToJModel.get(aspectGraph);
         if (result == null) {
-            result = computeStateJModel(state, aspectMap);
+            result = createAspectJModel(aspectGraph);
+            result.setName(state.toString());
             assert result != null;
             this.graphToJModel.put(aspectGraph, result);
-        }
-        return result;
-    }
-
-    /**
-     * Computes a fresh GraphJModel for a given graph state.
-     */
-    private AspectJModel computeStateJModel(GraphState state,
-            HostToAspectMap stateMap) {
-        // create a fresh model
-        AspectJModel result = createAspectJModel(stateMap.getAspectGraph());
-        result.setName(state.toString());
-        // try to find layout information for the model
-        if (state instanceof GraphNextState) {
-            GraphState oldState = ((GraphNextState) state).source();
-            HostGraphMorphism morphism = ((GraphNextState) state).getMorphism();
-            // walk back along the derivation chain to find one for
-            // which we have a state model (and hence layout information)
-            while (!this.stateToAspectMap.containsKey(oldState)
-                && oldState instanceof GraphNextState) {
-                morphism =
-                    ((GraphNextState) oldState).getMorphism().then(morphism);
-                oldState = ((GraphNextState) oldState).source();
+            // try to find layout information for the model
+            if (state instanceof GraphNextState) {
+                GraphState oldState = ((GraphNextState) state).source();
+                HostGraphMorphism morphism =
+                    ((GraphNextState) state).getMorphism();
+                // walk back along the derivation chain to find one for
+                // which we have a state model (and hence layout information)
+                while (!this.stateToAspectMap.containsKey(oldState)
+                    && oldState instanceof GraphNextState) {
+                    morphism =
+                        ((GraphNextState) oldState).getMorphism().then(morphism);
+                    oldState = ((GraphNextState) oldState).source();
+                }
+                HostToAspectMap oldStateMap =
+                    this.stateToAspectMap.get(oldState);
+                copyLayout(oldStateMap, aspectMap, morphism);
             }
-            HostToAspectMap oldStateMap = this.stateToAspectMap.get(oldState);
-            copyLayout(oldStateMap, stateMap, morphism);
         }
         return result;
     }
@@ -442,12 +432,12 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
                 GraphConstants.getBounds(sourceCell.getAttributes());
             GraphConstants.setBounds(targetCell.getAttributes(), sourceBounds);
             newStateJModel.removeLayoutable(targetCell);
-            if (oldStateJModel.isGrayedOut(sourceCell)) {
+            if (sourceCell.isGrayedOut()) {
                 newGrayedOut.add(targetCell);
             }
         }
-        Set<Edge<?>> newEdges =
-            new HashSet<Edge<?>>(newStateJModel.getGraph().edgeSet());
+        Set<AspectEdge> newEdges =
+            new HashSet<AspectEdge>(newStateJModel.getGraph().edgeSet());
         for (Map.Entry<HostEdge,HostEdge> entry : morphism.edgeMap().entrySet()) {
             AspectEdge oldStateEdge = oldState.getEdge(entry.getKey());
             AspectEdge newStateEdge = newState.getEdge(entry.getValue());
@@ -470,20 +460,19 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
             GraphConstants.setLineStyle(targetAttributes,
                 GraphConstants.getLineStyle(sourceAttributes));
             newStateJModel.removeLayoutable(targetCell);
-            if (oldStateJModel.isGrayedOut(sourceCell)) {
+            if (sourceCell.isGrayedOut()) {
                 newGrayedOut.add(targetCell);
             }
-            newEdges.remove(entry.getValue());
+            newEdges.remove(newStateEdge);
         }
         // new edges should be shown, including their source and target vertex
-        for (Edge<?> newEdge : newEdges) {
+        for (AspectEdge newEdge : newEdges) {
             JCell targetCell = newStateJModel.getJCell(newEdge);
             if (targetCell instanceof JEdge) {
                 newGrayedOut.remove(((JEdge) targetCell).getSourceVertex());
                 newGrayedOut.remove(((JEdge) targetCell).getTargetVertex());
             }
         }
-        // remove for now; it's doing more harm than good
         newStateJModel.setGrayedOut(newGrayedOut);
     }
 

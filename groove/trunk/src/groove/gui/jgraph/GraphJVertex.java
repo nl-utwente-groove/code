@@ -47,9 +47,16 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
      * @ensure getUserObject() == node, labels().isEmpty()
      */
     GraphJVertex(GraphJModel<N,E> jModel, N node, boolean vertexLabelled) {
-        this.jModel = jModel;
+        super(jModel);
         this.node = node;
         this.vertexLabelled = vertexLabelled;
+    }
+
+    /** Returns the {@link JModel} associated with this vertex. */
+    @SuppressWarnings("unchecked")
+    @Override
+    public GraphJModel<N,E> getJModel() {
+        return (GraphJModel<N,E>) super.getJModel();
     }
 
     /**
@@ -72,7 +79,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
 
     @Override
     public boolean isVisible() {
-        return !isFiltered() || this.jModel.isShowUnfilteredEdges()
+        return !isFiltered() || getJModel().isShowUnfilteredEdges()
             && hasVisibleIncidentEdge();
     }
 
@@ -98,7 +105,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     private boolean isFiltered() {
         boolean result = true;
         for (Label label : getListLabels()) {
-            if (this.jModel.isFiltering(label)) {
+            if (getJModel().isFiltering(label)) {
                 if (label.isNodeType()) {
                     result = true;
                     break;
@@ -114,7 +121,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     public List<StringBuilder> getLines() {
         List<StringBuilder> result = new LinkedList<StringBuilder>();
         // show the node identity if required
-        if (this.jModel.isShowNodeIdentities()) {
+        if (getJModel().isShowNodeIdentities()) {
             String id = getNodeIdentity();
             if (id != null) {
                 result.add(ITALIC_TAG.on(new StringBuilder(id)));
@@ -124,7 +131,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
             // only add edges that have an unfiltered label
             boolean visible = false;
             for (Label label : getListLabels(edge)) {
-                if (!this.jModel.isFiltering(label)) {
+                if (!getJModel().isFiltering(label)) {
                     visible = true;
                     break;
                 }
@@ -214,13 +221,13 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
      * layout information are regarded as self edges.
      */
     public Set<E> getSelfEdges() {
-        if (this.jModel.isShowVertexLabels()) {
+        if (getJModel().isShowVertexLabels()) {
             // add self-edges without layout info
             Set<E> result = new TreeSet<E>(getUserObject());
             for (Object edgeObject : getPort().getEdges()) {
                 @SuppressWarnings("unchecked")
                 GraphJEdge<N,E> jEdge = (GraphJEdge<N,E>) edgeObject;
-                if (this.jModel.isPotentialUnaryEdge(jEdge.getEdge())) {
+                if (getJModel().isPotentialUnaryEdge(jEdge.getEdge())) {
                     result.addAll(jEdge.getEdges());
                 }
             }
@@ -270,13 +277,6 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
         return result;
     }
 
-    /** Returns the underlying GraphJModel. */
-    GraphJModel<N,E> getJModel() {
-        return this.jModel;
-    }
-
-    /** The model in which this vertex exists. */
-    private final GraphJModel<N,E> jModel;
     /**
      * An indicator whether the vertex can be labelled (otherwise labels are
      * self-edges).
