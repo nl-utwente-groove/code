@@ -17,9 +17,9 @@
 package groove.explore.strategy;
 
 import groove.explore.result.Result;
-import groove.lts.ProductGTS;
-import groove.verify.BuchiGraphState;
+import groove.verify.ProductState;
 import groove.verify.BuchiLocation;
+import groove.verify.ProductStateSet;
 
 import java.util.List;
 
@@ -48,7 +48,7 @@ public interface ModelCheckingStrategy extends Strategy {
     /**
      * Returns the product gts.
      */
-    public ProductGTS getProductGTS();
+    public ProductStateSet getProductGTS();
 
     /**
      * Sets the result container for the strategy
@@ -65,7 +65,7 @@ public interface ModelCheckingStrategy extends Strategy {
     /**
      * Returns the Büchi graph-state the strategy is currently at.
      */
-    public BuchiGraphState getAtBuchiState();
+    public ProductState getAtBuchiState();
 
     /**
      * Returns the current Büchi location.
@@ -82,5 +82,5 @@ public interface ModelCheckingStrategy extends Strategy {
     /**
      * Returns the current search-stack.
      */
-    public List<BuchiGraphState> searchStack();
+    public List<ProductState> searchStack();
 }

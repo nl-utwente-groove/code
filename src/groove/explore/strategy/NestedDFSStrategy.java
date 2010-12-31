@@ -16,12 +16,11 @@
  */
 package groove.explore.strategy;
 
-import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.ProductTransition;
-import groove.verify.BuchiGraphState;
+import groove.verify.ProductState;
 import groove.verify.BuchiTransition;
 import groove.verify.ModelChecking;
+import groove.verify.ProductTransition;
 
 import java.util.Set;
 
@@ -75,7 +74,7 @@ public class NestedDFSStrategy extends AbstractModelCheckingStrategy {
                         if (counterExample(getAtBuchiState(),
                             productTransition.target())) {
                             // notify counter-example
-                            for (BuchiGraphState state : searchStack()) {
+                            for (ProductState state : searchStack()) {
                                 getResult().add(state.getGraphState());
                             }
                             return true;
@@ -99,17 +98,15 @@ public class NestedDFSStrategy extends AbstractModelCheckingStrategy {
     protected boolean updateAtState() {
         boolean result;
         if (this.collector.pickRandomNewState() != null) {
-            GraphState newState = this.collector.pickRandomNewState();
-            assert (newState instanceof BuchiGraphState) : "Expected a Buchi graph-state instead of a "
-                + newState.getClass();
-            this.atBuchiState = (BuchiGraphState) newState;
+            ProductState newState = this.collector.pickRandomNewState();
+            this.atBuchiState = newState;
             result = (this.atBuchiState != null);
         } else {
-            BuchiGraphState s = null;
+            ProductState s = null;
 
             // backtracking
 
-            BuchiGraphState parent = null;
+            ProductState parent = null;
 
             do {
                 // pop the current state from the search-stack
@@ -121,7 +118,7 @@ public class NestedDFSStrategy extends AbstractModelCheckingStrategy {
                 parent = peekSearchStack();
                 if (parent != null) {
                     this.atBuchiState = parent;
-                    s = (BuchiGraphState) getRandomOpenBuchiSuccessor(parent);
+                    s = getRandomOpenBuchiSuccessor(parent);
                 }
             } while (parent != null && s == null); // ) &&
             // !getProductGTS().isOpen(getAtBuchiState()));

@@ -17,8 +17,7 @@
  */
 package groove.explore.strategy;
 
-import groove.lts.GraphTransition;
-import groove.verify.BuchiGraphState;
+import groove.verify.ProductState;
 import groove.verify.ModelChecking;
 
 import java.util.Iterator;
@@ -45,21 +44,18 @@ public class OptimizedBoundedNestedDFSPocketStrategy extends
             // iterating over the open states than to start
             // at the beginning every time one has been
             // processed
-            Iterator<BuchiGraphState> openStateIter =
+            Iterator<ProductState> openStateIter =
                 getProductGTS().getOpenStateIter();
             while (openStateIter.hasNext() && getAtBuchiState() == null) {
-                BuchiGraphState nextOpenState = openStateIter.next();
+                ProductState nextOpenState = openStateIter.next();
                 // states that are part of later iterations
                 // are not considered here
                 if (nextOpenState.iteration() <= ModelChecking.CURRENT_ITERATION) {
                     // furthermore, the transition by which the next open
                     // state is reached should also not cross the current
                     // boundary
-                    assert (nextOpenState.getGraphState() instanceof GraphTransition) : "Was expecting a graph-transition instead of a "
-                        + nextOpenState.getGraphState().getClass();
-
                     if (getBoundary() instanceof GraphNodeSizeBoundary
-                        && ((GraphNodeSizeBoundary) getBoundary()).crossingBoundary(nextOpenState.getGraph())) {
+                        && ((GraphNodeSizeBoundary) getBoundary()).crossingBoundary(nextOpenState.getGraphState().getGraph())) {
                         continue;
                     } else {
                         setAtBuchiState(nextOpenState);

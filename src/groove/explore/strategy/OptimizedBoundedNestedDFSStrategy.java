@@ -18,10 +18,9 @@
 package groove.explore.strategy;
 
 import groove.explore.result.CycleAcceptor;
-import groove.lts.GraphTransition;
-import groove.lts.ProductTransition;
-import groove.verify.BuchiGraphState;
+import groove.verify.ProductState;
 import groove.verify.ModelChecking;
+import groove.verify.ProductTransition;
 
 import java.util.Iterator;
 
@@ -42,29 +41,22 @@ import java.util.Iterator;
 public class OptimizedBoundedNestedDFSStrategy extends BoundedNestedDFSStrategy {
     @Override
     protected void setNextStartState() {
-        // while (getProductGTS().hasOpenStates() && getAtBuchiState() == null
-        // && ModelChecking.CURRENT_ITERATION < ModelChecking.MAX_ITERATIONS>) {
-        // increase the boundary
-        // getBoundary().increase();
-        // ModelChecking.nextIteration();
         // iterator over the open states
         // TODO: maybe there is a more efficient way of
         // iterating over the open states than to start
         // at the beginning every time one has been
         // processed
-        Iterator<BuchiGraphState> openStateIter =
+        Iterator<ProductState> openStateIter =
             getProductGTS().getOpenStateIter();
         while (openStateIter.hasNext() && getAtBuchiState() == null) {
-            BuchiGraphState nextOpenState = openStateIter.next();
+            ProductState nextOpenState = openStateIter.next();
             // states that are part of later iterations
             // are not considered here
             if (nextOpenState.iteration() <= ModelChecking.CURRENT_ITERATION) {
                 // furthermore, the transition by which the next open
                 // state is reached should also not cross the current boundary
-                assert (nextOpenState.getGraphState() instanceof GraphTransition) : "Was expecting a graph-transition instead of a "
-                    + nextOpenState.getGraphState().getClass();
                 if (getBoundary() instanceof GraphNodeSizeBoundary
-                    && ((GraphNodeSizeBoundary) getBoundary()).crossingBoundary(nextOpenState.getGraph())) {
+                    && ((GraphNodeSizeBoundary) getBoundary()).crossingBoundary(nextOpenState.getGraphState().getGraph())) {
                     continue;
                 } else {
                     setAtBuchiState(nextOpenState);
@@ -89,7 +81,7 @@ public class OptimizedBoundedNestedDFSStrategy extends BoundedNestedDFSStrategy 
      * @param transition the boundary-crossing transition
      */
     @Override
-    public BuchiGraphState processBoundaryCrossingTransition(
+    public ProductState processBoundaryCrossingTransition(
             ProductTransition transition) {
         // if the number of boundary-crossing transition on the current path
         // if (getBoundary().currentDepth() < ModelChecking.CURRENT_ITERATION -

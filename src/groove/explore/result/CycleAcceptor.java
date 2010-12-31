@@ -20,13 +20,15 @@ package groove.explore.result;
 import groove.explore.strategy.ModelCheckingStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.ProductTransition;
-import groove.verify.BuchiGraphState;
+import groove.verify.ProductListener;
+import groove.verify.ProductState;
 import groove.verify.ModelChecking;
+import groove.verify.ProductStateSet;
+import groove.verify.ProductTransition;
 
 /**
  * Acceptor that is notified on closing a Büchi graph-state in a
- * {@link groove.lts.ProductGTS}. If the Büchi graph-state is accepting, a a
+ * {@link groove.verify.ProductStateSet}. If the Büchi graph-state is accepting, a a
  * cycle detection depth-first search is started. If a counter-example is found,
  * the graph-states currently on the search-stack constitute the path
  * representing the counter-example.
@@ -34,7 +36,7 @@ import groove.verify.ModelChecking;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class CycleAcceptor extends Acceptor {
+public class CycleAcceptor extends Acceptor implements ProductListener {
     /** Creates a new acceptor with a 1-bounded {@link Result}. */
     public CycleAcceptor(ModelCheckingStrategy strategy) {
         this(new Result(1), strategy);
@@ -49,22 +51,29 @@ public class CycleAcceptor extends Acceptor {
 
     @Override
     public void closeUpdate(GTS gts, GraphState state) {
-        if (state instanceof BuchiGraphState) {
-            if (((BuchiGraphState) state).getBuchiLocation().isAccepting()) {
-                int event = redDFS((BuchiGraphState) state);
-                if (event != ModelChecking.OK) {
-                    // put the counter-example in the result
-                    for (BuchiGraphState stackState : this.strategy.searchStack()) {
-                        getResult().add(stackState.getGraphState());
-                    }
-                    getResult().add(((BuchiGraphState) state).getGraphState());
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void addUpdate(ProductStateSet gts, ProductState state) {
+        // does nothing
+    }
+
+    @Override
+    public void closeUpdate(ProductStateSet gts, ProductState state) {
+        if (state.getBuchiLocation().isAccepting()) {
+            int event = redDFS(state);
+            if (event != ModelChecking.OK) {
+                // put the counter-example in the result
+                for (ProductState stackState : this.strategy.searchStack()) {
+                    getResult().add(stackState.getGraphState());
                 }
-                // else leave result empty and continue
+                getResult().add(state.getGraphState());
             }
         }
     }
 
-    private int redDFS(BuchiGraphState state) {
+    private int redDFS(ProductState state) {
         for (ProductTransition nextTransition : state.outTransitions()) {
             // although the outgoing transition in the gts might cross the
             // boundary
@@ -77,7 +86,7 @@ public class CycleAcceptor extends Acceptor {
             // yet be coloured. The below code will thus not yield any
             // interesting
             // results for such states
-            BuchiGraphState target = nextTransition.target();
+            ProductState target = nextTransition.target();
             if (target.colour() == ModelChecking.cyan()) {
                 return ModelChecking.COUNTER_EXAMPLE;
             } else if (target.colour() == ModelChecking.blue()) {

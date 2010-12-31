@@ -16,8 +16,8 @@
  */
 package groove.explore.strategy;
 
-import groove.lts.ProductTransition;
 import groove.trans.Rule;
+import groove.verify.ProductTransition;
 
 import java.util.HashSet;
 import java.util.Set;

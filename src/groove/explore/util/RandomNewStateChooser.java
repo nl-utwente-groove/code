@@ -1,14 +1,14 @@
 package groove.explore.util;
 
-import groove.lts.GTS;
-import groove.lts.GraphState;
-import groove.lts.GTSAdapter;
+import groove.verify.ProductListener;
+import groove.verify.ProductState;
+import groove.verify.ProductStateSet;
 
 /**
  * Listens to a GTS and allows to pick a random state among those newly added to
  * the GTS. Should listen to a single GTS.
  */
-public class RandomNewStateChooser extends GTSAdapter {
+public class RandomNewStateChooser implements ProductListener {
 
     /**
      * Returns a randomly chosen state among those newly added to the GTS it
@@ -18,7 +18,7 @@ public class RandomNewStateChooser extends GTSAdapter {
      *         listens to since last {@link #reset()}, or <code>null</code>
      *         if no new state was added.
      */
-    public GraphState pickRandomNewState() {
+    public ProductState pickRandomNewState() {
         return this.rc.pickRandom();
     }
 
@@ -35,10 +35,15 @@ public class RandomNewStateChooser extends GTSAdapter {
     }
 
     @Override
-    public void addUpdate(GTS shape, GraphState state) {
+    public void addUpdate(ProductStateSet shape, ProductState state) {
         this.rc.show(state);
     }
 
-    private final RandomChooserInSequence<GraphState> rc =
-        new RandomChooserInSequence<GraphState>();
+    @Override
+    public void closeUpdate(ProductStateSet gts, ProductState state) {
+        // does nothing
+    }
+
+    private final RandomChooserInSequence<ProductState> rc =
+        new RandomChooserInSequence<ProductState>();
 }

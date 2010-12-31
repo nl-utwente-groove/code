@@ -30,13 +30,6 @@ import groove.lts.GraphState;
  */
 public class ModelCheckingScenario extends DefaultScenario {
     /**
-     * Creates a new instance from a given strategy and acceptor.
-     */
-    public ModelCheckingScenario(ModelCheckingStrategy strategy) {
-        this(strategy, null, null);
-    }
-
-    /**
      * Creates a new named instance from a given strategy and acceptor.
      */
     public ModelCheckingScenario(ModelCheckingStrategy strategy, String name,
