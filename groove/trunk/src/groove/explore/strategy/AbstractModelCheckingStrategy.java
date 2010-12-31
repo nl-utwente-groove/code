@@ -18,19 +18,20 @@
 package groove.explore.strategy;
 
 import groove.explore.result.Acceptor;
+import groove.explore.result.CycleAcceptor;
 import groove.explore.result.Result;
 import groove.explore.util.RandomChooserInSequence;
 import groove.explore.util.RandomNewStateChooser;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.ProductGTS;
-import groove.lts.ProductTransition;
-import groove.verify.BuchiGraphState;
 import groove.verify.BuchiLocation;
 import groove.verify.DefaultBuchiLocation;
 import groove.verify.DefaultBuchiTransition;
 import groove.verify.ModelChecking;
+import groove.verify.ProductState;
+import groove.verify.ProductStateSet;
+import groove.verify.ProductTransition;
 import groove.verify.ltl2ba.BuchiGraph;
 import groove.verify.ltl2ba.BuchiGraphFactory;
 import groove.verify.ltl2ba.LTL2BuchiGraph;
@@ -42,7 +43,6 @@ import groove.view.FormatException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -67,7 +67,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
                 "Model checking should start at initial state");
         }
         super.prepare(gts, state);
-        this.productGTS = new ProductGTS(gts);
+        this.productGTS = new ProductStateSet();
         this.productGTS.addListener(this.collector);
         setup();
     }
@@ -84,7 +84,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
      * Set the start Buchi graph-state.
      * @param startState the start Buchi graph-state
      */
-    public void setStartBuchiState(BuchiGraphState startState) {
+    public void setStartBuchiState(ProductState startState) {
         this.startBuchiState = startState;
         this.atBuchiState = startState;
     }
@@ -92,7 +92,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
     /**
      * Returns the start Büchi graph-state
      */
-    public final BuchiGraphState startBuchiState() {
+    public final ProductState startBuchiState() {
         return this.startBuchiState;
     }
 
@@ -100,7 +100,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
      * Closes Büchi graph-states.
      * @param state the Büchi graph-state to close
      */
-    public void setClosed(BuchiGraphState state) {
+    public void setClosed(ProductState state) {
         getProductGTS().setClosed(state);
     }
 
@@ -113,15 +113,10 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
      *         <tt>source</tt> or <tt>target</tt> is accepting, <tt>false</tt>
      *         otherwise.
      */
-    public boolean counterExample(BuchiGraphState source, BuchiGraphState target) {
+    public boolean counterExample(ProductState source, ProductState target) {
         boolean result =
             (target.colour() == ModelChecking.cyan())
                 && (source.getBuchiLocation().isAccepting() || target.getBuchiLocation().isAccepting());
-
-        // if (result) {
-        // System.out.println("Counter-example found");
-        // }
-
         return result;
     }
 
@@ -129,7 +124,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
      * Pops the top element from the search-stack
      * @return the top element from the search-stack
      */
-    protected BuchiGraphState popSearchStack() {
+    protected ProductState popSearchStack() {
         if (searchStack().isEmpty()) {
             return null;
         } else {
@@ -141,7 +136,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
      * Returns the top element from the search-stack.
      * @return the top element from the search-stack
      */
-    protected BuchiGraphState peekSearchStack() {
+    protected ProductState peekSearchStack() {
         if (searchStack().isEmpty()) {
             return null;
         } else {
@@ -151,27 +146,26 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
 
     @Override
     public void addGTSListener(Acceptor listener) {
-        this.productGTS.addListener(listener);
+        assert listener instanceof CycleAcceptor;
+        this.productGTS.addListener((CycleAcceptor) listener);
     }
 
     @Override
     public void removeGTSListener(Acceptor listener) {
-        this.productGTS.removeListener(listener);
+        assert listener instanceof CycleAcceptor;
+        this.productGTS.removeListener((CycleAcceptor) listener);
     }
 
     /**
      * Returns a random open successor of a state, if any. Returns null
      * otherwise.
      */
-    protected GraphState getRandomOpenBuchiSuccessor(BuchiGraphState state) {
-        Iterator<? extends GraphState> sucIter = state.getNextStateIter();
-        RandomChooserInSequence<GraphState> chooser =
-            new RandomChooserInSequence<GraphState>();
-        while (sucIter.hasNext()) {
-            GraphState s = sucIter.next();
-            assert (s instanceof BuchiGraphState) : "Expected a Buchi graph-state instead of a "
-                + s.getClass();
-            if (getProductGTS().getOpenStates().contains(s)) {
+    protected ProductState getRandomOpenBuchiSuccessor(ProductState state) {
+        RandomChooserInSequence<ProductState> chooser =
+            new RandomChooserInSequence<ProductState>();
+        for (ProductTransition trans : state.outTransitions()) {
+            ProductState s = trans.target();
+            if (!s.isClosed()) {
                 chooser.show(s);
             }
         }
@@ -179,35 +173,17 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
     }
 
     /**
-     * Returns the first open successor of a state, if any. Returns null
-     * otherwise.
-     */
-    protected final GraphState getFirstOpenBuchiSuccessor(BuchiGraphState state) {
-        Iterator<? extends GraphState> sucIter = state.getNextStateIter();
-        while (sucIter.hasNext()) {
-            GraphState s = sucIter.next();
-            assert (s instanceof BuchiGraphState) : "Expected a Buchi graph-state instead of a "
-                + s.getClass();
-            if (getProductGTS().getOpenStates().contains(s)) {
-                return s;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Initialise the data structures used during exploration.
      */
     public void setup() {
         // currentPath = new Stack<GraphTransition>();
-        this.searchStack = new Stack<BuchiGraphState>();
+        this.searchStack = new Stack<ProductState>();
         this.transitionStack = new Stack<ProductTransition>();
         assert (this.initialLocation != null) : "The property automaton should have an initial state";
-        BuchiGraphState startState =
-            new BuchiGraphState(this.productGTS, getGTS().startState(),
-                this.initialLocation, null);
+        ProductState startState =
+            new ProductState(getGTS().startState(), this.initialLocation);
         setStartBuchiState(startState);
-        this.productGTS.setStartState(startState);
+        this.productGTS.addState(startState);
     }
 
     /**
@@ -291,7 +267,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
      * @param transition the graph-transition component for the
      *        product-transition
      * @param location the location of the target Buechi graph-state
-     * @see ProductGTS#addTransition(ProductTransition)
+     * @see ProductState#addTransition(ProductTransition)
      */
     public ProductTransition addProductTransition(GraphTransition transition,
             BuchiLocation location) {
@@ -303,8 +279,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
         if (!getAtBuchiState().isClosed()) {
             result = addTransition(getAtBuchiState(), transition, location);
         } else {
-            for (ProductTransition nextTransition : getProductGTS().outEdgeSet(
-                getAtBuchiState())) {
+            for (ProductTransition nextTransition : getAtBuchiState().outTransitions()) {
                 if (nextTransition.graphTransition().equals(transition)
                     && nextTransition.target().getBuchiLocation().equals(
                         location)) {
@@ -324,13 +299,13 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
      * @param targetLocation the target Buechi location
      * @return the added product transition
      */
-    public ProductTransition addTransition(BuchiGraphState source,
+    public ProductTransition addTransition(ProductState source,
             GraphTransition transition, BuchiLocation targetLocation) {
         // we assume that we only add transitions for modifying graph
         // transitions
-        BuchiGraphState target =
+        ProductState target =
             createBuchiGraphState(source, transition, targetLocation);
-        BuchiGraphState isoTarget = getProductGTS().addState(target);
+        ProductState isoTarget = getProductGTS().addState(target);
         ProductTransition result = null;
 
         if (isoTarget == null) {
@@ -344,26 +319,24 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
         return result;
     }
 
-    private BuchiGraphState createBuchiGraphState(BuchiGraphState source,
+    private ProductState createBuchiGraphState(ProductState source,
             GraphTransition transition, BuchiLocation targetLocation) {
         if (transition == null) {
             // the system-state is a final one for which we assume an artificial
             // self-loop
-            // the resulting Buchi graph-state is nevertheless the product of
+            // the resulting Büchi graph-state is nevertheless the product of
             // the
-            // graph-state component of the source Buchi graph-state and the
+            // graph-state component of the source Büchi graph-state and the
             // target
-            // Buchi-location
-            return new BuchiGraphState(getProductGTS(), source.getGraphState(),
-                targetLocation, source);
+            // Büchi-location
+            return new ProductState(source.getGraphState(), targetLocation);
         } else {
-            return new BuchiGraphState(getProductGTS(), transition.target(),
-                targetLocation, source);
+            return new ProductState(transition.target(), targetLocation);
         }
     }
 
-    private ProductTransition createProductTransition(BuchiGraphState source,
-            GraphTransition transition, BuchiGraphState target) {
+    private ProductTransition createProductTransition(ProductState source,
+            GraphTransition transition, ProductState target) {
         return new ProductTransition(source, transition, target);
     }
 
@@ -371,7 +344,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
      * Returns the product GTS.
      * @return the product GTS
      */
-    public ProductGTS getProductGTS() {
+    public ProductStateSet getProductGTS() {
         return this.productGTS;
     }
 
@@ -380,7 +353,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
      * 
      * @see groove.explore.strategy.ModelCheckingStrategy#getAtBuchiState()
      */
-    public BuchiGraphState getAtBuchiState() {
+    public ProductState getAtBuchiState() {
         return this.atBuchiState;
     }
 
@@ -404,7 +377,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
      * Set the current buchi state
      * @param atState the state to set
      */
-    public void setAtBuchiState(BuchiGraphState atState) {
+    public void setAtBuchiState(ProductState atState) {
         this.atBuchiState = atState;
     }
 
@@ -412,7 +385,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
         return getAtBuchiState().getBuchiLocation();
     }
 
-    public Stack<BuchiGraphState> searchStack() {
+    public Stack<ProductState> searchStack() {
         return this.searchStack;
     }
 
@@ -420,7 +393,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
      * Pushes the given state on the search stack.
      * @param state the state to push
      */
-    public void pushState(BuchiGraphState state) {
+    public void pushState(ProductState state) {
         searchStack().push(state);
     }
 
@@ -475,11 +448,11 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
     }
 
     /** The Buchi start graph-state of the system. */
-    private BuchiGraphState startBuchiState;
+    private ProductState startBuchiState;
     /** The synchronised product of the system and the property. */
-    protected ProductGTS productGTS;
+    protected ProductStateSet productGTS;
     /** The current Buchi graph-state the system is at. */
-    protected BuchiGraphState atBuchiState;
+    protected ProductState atBuchiState;
     /** The transition by which the current Buchi graph-state is reached. */
     protected ProductTransition lastTransition;
     /** State collector which randomly provides unexplored states. */
@@ -487,7 +460,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
 
     private String property;
     private BuchiLocation initialLocation;
-    private Stack<BuchiGraphState> searchStack;
+    private Stack<ProductState> searchStack;
     private Stack<ProductTransition> transitionStack;
     private Result result;
 }

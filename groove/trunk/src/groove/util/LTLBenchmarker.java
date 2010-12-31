@@ -33,9 +33,6 @@ import groove.io.ExtensionFilter;
 import groove.io.SystemStore;
 import groove.io.SystemStoreFactory;
 import groove.lts.GTS;
-import groove.lts.GTSAdapter;
-import groove.lts.GraphState;
-import groove.lts.ProductGTS;
 import groove.trans.DefaultApplication;
 import groove.trans.GraphGrammar;
 import groove.trans.HostFactory;
@@ -44,6 +41,8 @@ import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemRecord;
 import groove.verify.ModelChecking;
+import groove.verify.ProductStateSet;
+import groove.verify.ProductTransition;
 import groove.view.FormatException;
 import groove.view.GrammarView;
 
@@ -520,7 +519,7 @@ public class LTLBenchmarker extends CommandLineTool {
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
             // be removed
             e.printStackTrace();
-            System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
+            System.out.println("\n\tStates:\t" + getProductGTS().stateCount());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -562,7 +561,7 @@ public class LTLBenchmarker extends CommandLineTool {
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
             // be removed
             e.printStackTrace();
-            System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
+            System.out.println("\n\tStates:\t" + getProductGTS().stateCount());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -606,7 +605,7 @@ public class LTLBenchmarker extends CommandLineTool {
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
             // be removed
             e.printStackTrace();
-            System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
+            System.out.println("\n\tStates:\t" + getProductGTS().stateCount());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -640,7 +639,7 @@ public class LTLBenchmarker extends CommandLineTool {
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
             // be removed
             e.printStackTrace();
-            System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
+            System.out.println("\n\tStates:\t" + getProductGTS().stateCount());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -671,7 +670,7 @@ public class LTLBenchmarker extends CommandLineTool {
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
             // be removed
             e.printStackTrace();
-            System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
+            System.out.println("\n\tStates:\t" + getProductGTS().stateCount());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -701,7 +700,7 @@ public class LTLBenchmarker extends CommandLineTool {
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
             // be removed
             e.printStackTrace();
-            System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
+            System.out.println("\n\tStates:\t" + getProductGTS().stateCount());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -740,7 +739,7 @@ public class LTLBenchmarker extends CommandLineTool {
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
             // be removed
             e.printStackTrace();
-            System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
+            System.out.println("\n\tStates:\t" + getProductGTS().stateCount());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -766,7 +765,7 @@ public class LTLBenchmarker extends CommandLineTool {
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
             // be removed
             e.printStackTrace();
-            System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
+            System.out.println("\n\tStates:\t" + getProductGTS().stateCount());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -795,7 +794,7 @@ public class LTLBenchmarker extends CommandLineTool {
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to
             // be removed
             e.printStackTrace();
-            System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
+            System.out.println("\n\tStates:\t" + getProductGTS().stateCount());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -895,9 +894,9 @@ public class LTLBenchmarker extends CommandLineTool {
      * the grammar if it had not yet been initialised.
      * @see #getGrammar()
      */
-    public ProductGTS getProductGTS() {
+    public ProductStateSet getProductGTS() {
         if (productGTS == null) {
-            productGTS = new ProductGTS(getGTS());
+            productGTS = new ProductStateSet();
         }
         return productGTS;
     }
@@ -1046,9 +1045,6 @@ public class LTLBenchmarker extends CommandLineTool {
             System.out.println("Exploration: " + getScenario());
             getGTS().addLTSListener(new GenerateProgressMonitor());
         }
-        if (getVerbosity() == HIGH_VERBOSITY) {
-            getProductGTS().addListener(getStatisticsListener());
-        }
         this.startTime = System.currentTimeMillis();
         result = getScenario().play().getValue();
         this.endTime = System.currentTimeMillis();
@@ -1131,9 +1127,8 @@ public class LTLBenchmarker extends CommandLineTool {
      */
     private void reportLTS() {
         println("\tStates:\t"
-            + getScenario().getStrategy().getProductGTS().nodeCount());
-        println("\tTransitions:\t"
-            + getScenario().getStrategy().getProductGTS().edgeCount());
+            + getScenario().getStrategy().getProductGTS().stateCount());
+        println("\tTransitions:\t" + ProductTransition.getTransitionCount());
     }
 
     /**
@@ -1169,18 +1164,6 @@ public class LTLBenchmarker extends CommandLineTool {
         printf("\tDefault labels:\t%d%n", factory.getLabelCount());
         printf("\tFresh nodes:\t%d%n", DefaultApplication.getFreshNodeCount());
         printf("\tFresh edges:\t%d%n", factory.getEdgeCount());
-        double nodeAvg =
-            (double) getStatisticsListener().getNodeCount()
-                / getProductGTS().nodeCount();
-        printf("\tAverage:\tNodes:\t%3.1f%n", nodeAvg);
-        double edgeAvg =
-            (double) getStatisticsListener().getEdgeCount()
-                / getProductGTS().nodeCount();
-        printf("\t\tEdges:\t%3.1f%n", edgeAvg);
-        // println("\t\tDelta:\t" +
-        // groove.graph.DeltaGraph.getDeltaElementAvg());
-        // println("\tAnchor images:\t" +
-        // DefaultGraphTransition.getAnchorImageCount());
     }
 
     /**
@@ -1306,10 +1289,9 @@ public class LTLBenchmarker extends CommandLineTool {
 
         writer.newLine();
         int stateCount =
-            getScenario().getStrategy().getProductGTS().nodeCount();
+            getScenario().getStrategy().getProductGTS().stateCount();
         int stateCountSystem = getGTS().nodeCount();
-        int transitionCount =
-            getScenario().getStrategy().getProductGTS().edgeCount();
+        int transitionCount = ProductTransition.getTransitionCount();
         int transitionCountSystem = getGTS().edgeCount();
         long matching = SPORule.getMatchingTime();
         String results =
@@ -1379,13 +1361,6 @@ public class LTLBenchmarker extends CommandLineTool {
         return USAGE_MESSAGE;
     }
 
-    private StatisticsListener getStatisticsListener() {
-        if (this.statisticsListener == null) {
-            this.statisticsListener = new StatisticsListener();
-        }
-        return this.statisticsListener;
-    }
-
     /**
      * Returns a string representation of a double as a percentage.
      */
@@ -1424,7 +1399,7 @@ public class LTLBenchmarker extends CommandLineTool {
      * The GTS that is being constructed. We make it static to enable memory
      * profiling.
      */
-    private static ProductGTS productGTS;
+    private static ProductStateSet productGTS;
 
     /**
      * The GTS that is being constructed. We make it static to enable memory
@@ -1442,8 +1417,6 @@ public class LTLBenchmarker extends CommandLineTool {
     private static String startStateName;
     /** The graph grammar used for the generation. */
     private GraphGrammar grammar;
-    /** Statistics listener to the GTS. */
-    private StatisticsListener statisticsListener;
 
     /** File filter for rule systems. */
     protected static final ExtensionFilter ruleSystemFilter =
@@ -1456,33 +1429,6 @@ public class LTLBenchmarker extends CommandLineTool {
     /** File filter for graph files (GXL or GST). */
     protected static final ExtensionFilter graphFilter = new ExtensionFilter(
         "Serialized graph files", GRAPH_FILE_EXTENSION);
-
-    /** Listener to an LTS that counts the nodes and edges of the states. */
-    private static class StatisticsListener extends GTSAdapter {
-        /** Empty constructor with the correct visibility. */
-        StatisticsListener() {
-            // Auto-generated constructor stub
-        }
-
-        @Override
-        public void addUpdate(GTS gts, GraphState state) {
-            this.nodeCount += state.getGraph().nodeCount();
-            this.edgeCount += state.getGraph().edgeCount();
-        }
-
-        /** Returns the number of nodes in the added states. */
-        public int getNodeCount() {
-            return this.nodeCount;
-        }
-
-        /** Returns the number of edges in the added states. */
-        public int getEdgeCount() {
-            return this.edgeCount;
-        }
-
-        private int nodeCount;
-        private int edgeCount;
-    }
 
     /** Prints the usage message */
     public static void printUsageMessage() {

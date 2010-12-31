@@ -16,10 +16,10 @@
  */
 package groove.explore.strategy;
 
-import groove.lts.ProductTransition;
-import groove.verify.BuchiGraphState;
+import groove.verify.ProductState;
 import groove.verify.BuchiTransition;
 import groove.verify.ModelChecking;
+import groove.verify.ProductTransition;
 
 /**
  * This bounded version deviates from the default nested DFS in the way it deals
@@ -45,7 +45,7 @@ public class BoundedNestedDFSPocketStrategy extends BoundedNestedDFSStrategy {
         // nevertheless, for correctness reasons we still do it
         // (in case the pocket detection is faulty, the colouring
         // is at least correct)
-        if (getAtBuchiState().isAccepting()) {
+        if (getAtBuchiState().getBuchiLocation().isAccepting()) {
             getAtBuchiState().setColour(ModelChecking.red());
         } else {
             getAtBuchiState().setColour(ModelChecking.blue());
@@ -60,7 +60,7 @@ public class BoundedNestedDFSPocketStrategy extends BoundedNestedDFSStrategy {
      *         neither cyan, blue, nor red, <tt>false</tt> otherwise
      */
     @Override
-    public boolean unexplored(BuchiGraphState newState) {
+    public boolean unexplored(ProductState newState) {
         boolean result =
             (!newState.isPocket() || newState.colour() == ModelChecking.NO_COLOUR)
                 && newState.colour() != ModelChecking.cyan()
@@ -75,7 +75,7 @@ public class BoundedNestedDFSPocketStrategy extends BoundedNestedDFSStrategy {
      * successor-states are marked black.
      * @param state the state to be marked black potentially
      */
-    protected void checkPocket(BuchiGraphState state) {
+    protected void checkPocket(ProductState state) {
         for (ProductTransition transition : state.outTransitions()) {
             if (transition.graphTransition() != null
                 && !transition.target().isPocket()) {

@@ -16,8 +16,8 @@
  */
 package groove.explore.strategy;
 
-import groove.lts.ProductTransition;
 import groove.verify.ModelChecking;
+import groove.verify.ProductTransition;
 
 /**
  * Abstract implementation for boundaries.

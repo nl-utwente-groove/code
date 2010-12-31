@@ -16,7 +16,7 @@
  */
 package groove.explore.strategy;
 
-import groove.lts.ProductTransition;
+import groove.verify.ProductTransition;
 
 /**
  * This interface facilitates a model checking strategy of using a boundary such

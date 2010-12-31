@@ -16,9 +16,9 @@
  */
 package groove.explore.strategy;
 
-import groove.lts.ProductTransition;
 import groove.trans.Rule;
 import groove.verify.ModelChecking;
+import groove.verify.ProductTransition;
 
 import java.util.Set;
 

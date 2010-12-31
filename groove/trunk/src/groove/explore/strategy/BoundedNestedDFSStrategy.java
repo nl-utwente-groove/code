@@ -20,11 +20,11 @@ import groove.explore.result.CycleAcceptor;
 import groove.explore.util.RandomChooserInSequence;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.ProductTransition;
 import groove.util.LTLBenchmarker;
-import groove.verify.BuchiGraphState;
+import groove.verify.ProductState;
 import groove.verify.BuchiTransition;
 import groove.verify.ModelChecking;
+import groove.verify.ProductTransition;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -178,10 +178,10 @@ public class BoundedNestedDFSStrategy extends
     @Override
     protected boolean updateAtState() {
         Iterator<ProductTransition> outTransitionIter =
-            getAtBuchiState().outTransitionIter();
+            getAtBuchiState().outTransitions().iterator();
         if (outTransitionIter.hasNext()) {
             // select the first new state that does not cross the boundary
-            BuchiGraphState newState = null;
+            ProductState newState = null;
             while (outTransitionIter.hasNext()) {
                 ProductTransition outTransition = outTransitionIter.next();
                 newState = outTransition.target();
@@ -230,8 +230,8 @@ public class BoundedNestedDFSStrategy extends
      * Backtrack to the next state to be explored.
      */
     protected void backtrack() {
-        BuchiGraphState parent = null;
-        BuchiGraphState s = null;
+        ProductState parent = null;
+        ProductState s = null;
         do {
             // pop the current state from the search-stack
             searchStack().pop();
@@ -291,7 +291,7 @@ public class BoundedNestedDFSStrategy extends
      * Process boundary-crossing transitions properly.
      * @param transition the boundary-crossing transition
      */
-    public BuchiGraphState processBoundaryCrossingTransition(
+    public ProductState processBoundaryCrossingTransition(
             ProductTransition transition) {
         // if the number of boundary-crossing transition on the current path
         if (getBoundary().currentDepth() < ModelChecking.CURRENT_ITERATION - 1) {
@@ -324,7 +324,7 @@ public class BoundedNestedDFSStrategy extends
      * @return <tt>true</tt> if the state-colour is neither of black, cyan,
      *         blue, or red, <tt>false</tt> otherwise
      */
-    public boolean unexplored(BuchiGraphState newState) {
+    public boolean unexplored(ProductState newState) {
         boolean result =
             newState.colour() != ModelChecking.cyan()
                 && newState.colour() != ModelChecking.blue()
@@ -336,7 +336,7 @@ public class BoundedNestedDFSStrategy extends
      * Construct the counter-example as currently on the search-stack.
      */
     public void constructCounterExample() {
-        for (BuchiGraphState state : searchStack()) {
+        for (ProductState state : searchStack()) {
             getResult().add(state.getGraphState());
         }
     }
@@ -362,14 +362,11 @@ public class BoundedNestedDFSStrategy extends
      * Returns a random buchi transition from a given state.
      */
     protected ProductTransition getRandomOpenBuchiTransition(
-            BuchiGraphState state) {
-        Iterator<ProductTransition> outTransitionIter =
-            state.outTransitionIter();
+            ProductState state) {
         RandomChooserInSequence<ProductTransition> chooser =
             new RandomChooserInSequence<ProductTransition>();
-        while (outTransitionIter.hasNext()) {
-            ProductTransition p = outTransitionIter.next();
-            BuchiGraphState buchiState = p.target();
+        for (ProductTransition p : state.outTransitions()) {
+            ProductState buchiState = p.target();
             if (unexplored(buchiState)) {
                 if (!getBoundary().crossingBoundary(p, false)
                     || buchiState.isExplored()) {
