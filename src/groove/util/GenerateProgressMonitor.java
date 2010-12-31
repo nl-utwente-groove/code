@@ -17,10 +17,10 @@
 package groove.util;
 
 import groove.lts.GTS;
-import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.lts.GTSAdapter;
 import groove.lts.GTSListener;
+import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 
 /**
  * Class that implements a visualisation of the progress of a GTS generation
@@ -43,7 +43,7 @@ public class GenerateProgressMonitor extends GTSAdapter {
             System.out.print("s");
             this.printed++;
         }
-        endLine((GTS) gts);
+        endLine(gts);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class GenerateProgressMonitor extends GTSAdapter {
             System.out.print("t");
             this.printed++;
         }
-        endLine((GTS) gts);
+        endLine(gts);
     }
 
     private void endLine(GTS gts) {

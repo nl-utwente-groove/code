@@ -19,7 +19,6 @@ package groove.gui.jgraph;
 import static groove.view.aspect.AspectKind.ADDER;
 import static groove.view.aspect.AspectKind.CREATOR;
 import groove.util.Colors;
-import groove.util.Groove;
 import groove.view.aspect.AspectKind;
 
 import java.awt.BasicStroke;
@@ -196,18 +195,13 @@ public class JAttr {
     /**
      * The standard bounds used for nodes.
      */
-    public static final Rectangle DEFAULT_NODE_BOUNDS;
+    public static final Rectangle DEFAULT_NODE_BOUNDS = new Rectangle(10, 10,
+        15, 15);
     /**
      * The standard size used for nodes.
      */
-    public static final Dimension DEFAULT_NODE_SIZE;
-    static {
-        int[] ba =
-            Groove.toIntArray(Groove.getGUIProperty("default.nodebounds"));
-        assert ba != null && ba.length == 4 : "Format error in default node bounds property";
-        DEFAULT_NODE_BOUNDS = new Rectangle(ba[0], ba[1], ba[2], ba[3]);
-        DEFAULT_NODE_SIZE = new Dimension(ba[2], ba[3]);
-    }
+    public static final Dimension DEFAULT_NODE_SIZE = new Dimension(
+        DEFAULT_NODE_BOUNDS.width, DEFAULT_NODE_BOUNDS.height);
 
     /**
      * Dash pattern specifying "no dash"
