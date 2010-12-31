@@ -454,15 +454,6 @@ public class Groove {
     }
 
     /**
-     * Retrieves a property from the gui properties file
-     * @param key the property description
-     * @return the value associated with <tt>key</tt> in the gui properties file
-     */
-    static public String getGUIProperty(String key) {
-        return guiProperties.getProperty(key);
-    }
-
-    /**
      * Retrieves a property from the xml properties file
      * @param key the property description
      * @return the value associated with <tt>key</tt> in the xml properties file
@@ -1038,8 +1029,6 @@ public class Groove {
         }
     }
 
-    /** Properties object for the GUI properties. */
-    static public final Properties guiProperties = new Properties();
     /** Properties object for the XML properties. */
     static public final Properties xmlProperties = new Properties();
 
@@ -1058,7 +1047,6 @@ public class Groove {
     }
 
     static {
-        loadProperties(guiProperties, GUI_PROPERTIES_FILE);
         loadProperties(xmlProperties, XML_PROPERTIES_FILE);
     }
 
