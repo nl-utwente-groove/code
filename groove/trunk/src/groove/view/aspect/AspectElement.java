@@ -18,6 +18,9 @@ package groove.view.aspect;
 
 import groove.graph.Element;
 import groove.util.Fixable;
+import groove.view.FormatError;
+
+import java.util.List;
 
 /**
  * Extension of the {@link Element} interface with support for {@link Aspect}s.
@@ -59,4 +62,17 @@ public interface AspectElement extends Element, Fixable {
      * @see #getAttrAspect()
      */
     AspectKind getAttrKind();
+
+    /** 
+     * Indicates if this element has format errors.
+     * Convenience methods for {@code !getErrors().isEmpty()}
+     * Should only be called after the element has been fixed.
+     * @see #getErrors()
+     */
+    boolean hasErrors();
+
+    /** 
+     * Returns the (non-{@code null}) list of format errors in this element. 
+     */
+    List<FormatError> getErrors();
 }

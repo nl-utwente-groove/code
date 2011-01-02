@@ -92,13 +92,21 @@ public class DefaultTypeView implements TypeView {
                 : this.model.getLabelStore().getLabels();
     }
 
-    /** Constructs the model and associated data structures from the view. */
+    /** Constructs the model and associated data structures from the view,
+     * if this has not already been done and the view itself does not contain
+     * errors. */
     private void initialise() {
         // first test if there is something to be done
-        if (this.errors != null) {
-            return;
+        if (this.errors == null) {
+            this.errors = new ArrayList<FormatError>(this.view.getErrors());
+            if (this.errors.isEmpty()) {
+                initialiseModel();
+            }
         }
-        this.errors = new ArrayList<FormatError>(this.view.getErrors());
+    }
+
+    /** Constructs the model and associated data structures from the view. */
+    private void initialiseModel() {
         this.model = new TypeGraph(getName());
         this.elementMap = new ViewToTypeMap();
         // collect primitive type nodes
@@ -162,13 +170,7 @@ public class DefaultTypeView implements TypeView {
         }
         // transfer graph info such as layout from view to model
         GraphInfo.transfer(this.view, this.model, this.elementMap);
-        if (this.errors.isEmpty()) {
-            this.model.setFixed();
-        } else {
-            // set the model to null to signify there were errors
-            this.elementMap.clear();
-            this.model = null;
-        }
+
     }
 
     /**

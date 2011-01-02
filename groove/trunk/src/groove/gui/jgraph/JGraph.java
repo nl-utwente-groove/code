@@ -71,7 +71,6 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.ToolTipManager;
 
@@ -512,15 +511,18 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 
         if (bounds != null) {
             toScreen(bounds);
-
+            // insert some extra space at the borders
+            int extraSpace = 5;
             // Create a Buffered Image
             BufferedImage img =
-                new BufferedImage((int) bounds.getWidth() + 10,
-                    (int) bounds.getHeight() + 10, BufferedImage.TYPE_INT_RGB);
+                new BufferedImage((int) bounds.getWidth() + 2 * extraSpace,
+                    (int) bounds.getHeight() + 2 * extraSpace,
+                    BufferedImage.TYPE_INT_RGB);
             Graphics2D graphics = img.createGraphics();
             graphics.setColor(getBackground());
             graphics.fillRect(0, 0, img.getWidth(), img.getHeight());
-            graphics.translate(-bounds.getX() + 5, -bounds.getY() + 5);
+            graphics.translate(-bounds.getX() + extraSpace, -bounds.getY()
+                + extraSpace);
 
             Object[] selection = getSelectionCells();
             boolean gridVisible = isGridVisible();
@@ -596,79 +598,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             ToolTipManager.sharedInstance().unregisterComponent(this);
         }
         this.toolTipEnabled = enabled;
-    }
-
-    /**
-     * Adds all known j-edge editing actions to a given popup menu.
-     * @param menu the menu to which to add some actions
-     * @param always flag to indicate if disabled actions should be added
-     */
-    public void fillOutEditMenu(JPopupMenu menu, boolean always) {
-        List<JMenuItem> items = new ArrayList<JMenuItem>();
-        items.add(new JMenuItem(getAddPointAction()));
-        items.add(new JMenuItem(getRemovePointAction()));
-        items.add(new JMenuItem(getResetLabelPositionAction()));
-        items.add(createLineStyleMenu());
-        boolean add = always;
-        if (!add) {
-            for (JMenuItem item : items) {
-                add |= item.isEnabled();
-            }
-        }
-        if (add) {
-            addSeparatorUnlessFirst(menu);
-            for (JMenuItem item : items) {
-                menu.add(item);
-            }
-        }
-    }
-
-    /**
-     * Adds all the display menu items of this jgraph to a given popup menu.
-     * 
-     * @param menu the popup menu to receive the items
-     */
-    public void fillOutDisplayMenu(JPopupMenu menu) {
-        addSeparatorUnlessFirst(menu);
-        Object[] cells = getSelectionCells();
-        boolean itemAdded = false;
-        if (cells != null && cells.length > 0 && getSimulator() != null) {
-            menu.add(getSimulator().getRelabelAction());
-            itemAdded = true;
-        }
-        if (this.filteredLabels != null && cells != null && cells.length > 0) {
-            menu.add(new FilterAction(cells));
-            itemAdded = true;
-        }
-        if (itemAdded) {
-            menu.addSeparator();
-        }
-        menu.add(createShowHideMenu());
-        menu.add(createZoomMenu());
-    }
-
-    /**
-     * Adds all the menu items from the layouter setting menu of this jgraph to
-     * a given popup menu.
-     * @param menu the popup menu to receive the items
-     */
-    public void fillOutSetLayoutMenu(JPopupMenu menu) {
-        addSeparatorUnlessFirst(menu);
-        for (int i = 0; i < this.setLayoutMenu.getComponentCount(); i++) {
-            menu.add(this.setLayoutMenu.getComponent(i));
-        }
-    }
-
-    /**
-     * Adds the items of a layout menu for this jgraph to a given popup menu.
-     * The items added are the current layout action and a layouter setting
-     * sub-menu.
-     * @param menu the popup menu to receive the items
-     */
-    public void fillOutLayoutMenu(JPopupMenu menu) {
-        addSeparatorUnlessFirst(menu);
-        menu.add(this.setLayoutMenu.getCurrentLayoutItem());
-        menu.add(this.setLayoutMenu);
     }
 
     /**
@@ -757,24 +686,26 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
-     * @return an action to add a point to the currently selected j-edge.
+     * Initialises and returns an action to add a point to the currently selected j-edge.
      */
-    public JCellEditAction getAddPointAction() {
+    public JCellEditAction getAddPointAction(Point atPoint) {
         if (this.addPointAction == null) {
             this.addPointAction = new AddPointAction();
             addAccelerator(this.addPointAction);
         }
+        this.addPointAction.setLocation(atPoint);
         return this.addPointAction;
     }
 
     /**
-     * @return an action to remove a point from the currently selected j-edge.
+     * Initialises and returns an action to remove a point from the currently selected j-edge.
      */
-    public JCellEditAction getRemovePointAction() {
+    public JCellEditAction getRemovePointAction(Point atPoint) {
         if (this.removePointAction == null) {
             this.removePointAction = new RemovePointAction();
             addAccelerator(this.removePointAction);
         }
+        this.removePointAction.setLocation(atPoint);
         return this.removePointAction;
     }
 
@@ -892,7 +823,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     protected void maybeShowPopup(MouseEvent evt) {
         if (isPopupMenuEvent(evt)) {
             Point atPoint = evt.getPoint();
-            getPopupMenu(atPoint).show(this, atPoint.x, atPoint.y);
+            createPopupMenu(atPoint).getPopupMenu().show(this, atPoint.x,
+                atPoint.y);
         }
     }
 
@@ -951,47 +883,115 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * a given point of the j-graph.
      * @param atPoint the point at which the menu is to be activated
      */
-    protected final JPopupMenu getPopupMenu(Point atPoint) {
-        JPopupMenu popupMenu = new JPopupMenu();
-        fillPopupMenu(popupMenu);
-        activatePopupMenu(atPoint);
-        return popupMenu;
+    public JMenu createPopupMenu(Point atPoint) {
+        JMenu result = new JMenu("Popup");
+        addSubmenu(result, createEditMenu(atPoint, false));
+        addSubmenu(result, createExportMenu());
+        addSubmenu(result, createDisplayMenu());
+        addSubmenu(result, getLayoutMenu());
+        return result;
     }
 
-    /**
-     * Fills out the popup menu for this jgraph. Does not clear the menu first.
-     * This method is invoked at least once whenever a new jmodel is set. This
-     * implementation successively invokes
-     * {@link #fillOutLayoutMenu(JPopupMenu)}and
-     * {@link #fillOutDisplayMenu(JPopupMenu)}.
-     * @param result the menu to be initialised
-     * @see #activatePopupMenu(Point)
+    /** 
+     * Adds to a given menu all the items of another menu.
+     * The submenu may be {@code null}, in which case nothing is added 
+     * @param menu the menu to be extended
+     * @param submenu the menu to be added to the popup menu
      */
-    protected void fillPopupMenu(JPopupMenu result) {
-        fillOutEditMenu(result, false);
-        addSeparatorUnlessFirst(result);
-        result.add(new JMenuItem(getExportAction()));
-        fillOutDisplayMenu(result);
-        fillOutLayoutMenu(result);
-    }
-
-    /**
-     * Adds a separator to a menu, unless the menu is empty.
-     */
-    protected void addSeparatorUnlessFirst(JPopupMenu menu) {
-        if (menu.getComponentCount() > 0) {
-            menu.addSeparator();
+    final public void addSubmenu(JMenu menu, JMenu submenu) {
+        if (submenu != null) {
+            // add a separator if this is not the first submenu
+            if (menu.getItemCount() > 0) {
+                menu.addSeparator();
+            }
+            // as we move items from the submenu to the main menu
+            // the submenu gets modified
+            while (submenu.getItemCount() > 0) {
+                JMenuItem item = submenu.getItem(0);
+                if (item == null) {
+                    submenu.remove(0);
+                    menu.addSeparator();
+                } else {
+                    menu.add(item);
+                }
+            }
         }
     }
 
     /**
-     * Activates and returns a popup menu, given a certain point at which it is
-     * to appear. The menu may be freshly created, but will typically be fixed.
-     * @param point the selected point at the moment of menu popup
+     * Returns a menu containing all known editing actions.
+     * @param atPoint point at which the popup menu will appear
+     * @param always flag to indicate if disabled actions should be added
      */
-    protected void activatePopupMenu(Point point) {
-        getAddPointAction().setLocation(point);
-        getRemovePointAction().setLocation(point);
+    public JMenu createEditMenu(Point atPoint, boolean always) {
+        JMenu result = new JMenu("Edit");
+        List<JMenuItem> items = new ArrayList<JMenuItem>();
+        items.add(new JMenuItem(getAddPointAction(atPoint)));
+        items.add(new JMenuItem(getRemovePointAction(atPoint)));
+        items.add(new JMenuItem(getResetLabelPositionAction()));
+        items.add(createLineStyleMenu());
+        boolean add = always;
+        if (!add) {
+            for (JMenuItem item : items) {
+                add |= item.isEnabled();
+            }
+        }
+        if (add) {
+            for (JMenuItem item : items) {
+                result.add(item);
+            }
+        }
+        return result;
+    }
+
+    /** Returns a menu consisting of the export action of this JGraph. */
+    public JMenu createExportMenu() {
+        JMenu result = new JMenu("Export");
+        result.add(getExportAction());
+        return result;
+    }
+
+    /**
+     * Returns a menu consisting of all the display menu items of this jgraph.
+     */
+    public JMenu createDisplayMenu() {
+        JMenu result = new JMenu("Display");
+        Object[] cells = getSelectionCells();
+        boolean itemAdded = false;
+        if (cells != null && cells.length > 0 && getSimulator() != null) {
+            result.add(getSimulator().getRelabelAction());
+            itemAdded = true;
+        }
+        if (this.filteredLabels != null && cells != null && cells.length > 0) {
+            result.add(new FilterAction(cells));
+            itemAdded = true;
+        }
+        if (itemAdded) {
+            result.addSeparator();
+        }
+        result.add(createShowHideMenu());
+        result.add(createZoomMenu());
+        return result;
+    }
+
+    /**
+     * Returns a menu consisting of the menu items from the layouter 
+     * setting menu of this jgraph.
+     */
+    public SetLayoutMenu getSetLayoutMenu() {
+        return this.setLayoutMenu;
+    }
+
+    /**
+     * Returns a layout menu for this jgraph.
+     * The items added are the current layout action and a layouter setting
+     * sub-menu.
+     */
+    public JMenu getLayoutMenu() {
+        JMenu result = new JMenu("Layout");
+        result.add(getSetLayoutMenu().getCurrentLayoutItem());
+        result.add(getSetLayoutMenu());
+        return result;
     }
 
     /**
@@ -1018,11 +1018,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     protected JMenu createLineStyleMenu() {
         JMenu result = new SetLineStyleMenu();
-        // initialize the line style menu
-        result.add(getSetLineStyleAction(GraphConstants.STYLE_ORTHOGONAL));
-        result.add(getSetLineStyleAction(GraphConstants.STYLE_SPLINE));
-        result.add(getSetLineStyleAction(GraphConstants.STYLE_BEZIER));
-        result.add(getSetLineStyleAction(JAttr.STYLE_MANHATTAN));
         return result;
     }
 
@@ -1348,6 +1343,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             super(Options.SET_LINE_STYLE_MENU);
             valueChanged(null);
             addGraphSelectionListener(this);
+            // initialize the line style menu
+            add(getSetLineStyleAction(GraphConstants.STYLE_ORTHOGONAL));
+            add(getSetLineStyleAction(GraphConstants.STYLE_SPLINE));
+            add(getSetLineStyleAction(GraphConstants.STYLE_BEZIER));
+            add(getSetLineStyleAction(JAttr.STYLE_MANHATTAN));
         }
 
         public void valueChanged(GraphSelectionEvent e) {

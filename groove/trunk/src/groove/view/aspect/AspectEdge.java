@@ -40,7 +40,11 @@ import groove.rel.RegExpr;
 import groove.trans.RuleLabel;
 import groove.util.ExprParser;
 import groove.util.Fixable;
+import groove.view.FormatError;
 import groove.view.FormatException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Edge enriched with aspect data. Aspect edge labels are interpreted as
@@ -60,7 +64,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     AspectEdge(AspectNode source, AspectLabel label, AspectNode target,
             GraphRole graphRole) {
         super(source, label, target);
-        assert label.getInnerText() != null;
+        assert label.isFixed();
         assert graphRole.inGrammar();
         this.graphRole = graphRole;
     }
@@ -68,6 +72,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     @Override
     public void setFixed() throws FormatException {
         if (!isFixed()) {
+            this.errors = new ArrayList<FormatError>();
             try {
                 setAspects(label());
                 inferAspects();
@@ -84,11 +89,24 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
                 if (this.graphRole == RULE && !getKind().isMeta()) {
                     checkRegExprs();
                 }
-            } finally {
-                // whatever happened, this edge is now fixed
-                this.fixed = true;
+            } catch (FormatException exc) {
+                for (FormatError error : exc.getErrors()) {
+                    this.errors.add(error.extend(this));
+                }
+                throw exc;
             }
         }
+    }
+
+    @Override
+    public boolean hasErrors() {
+        return !getErrors().isEmpty();
+    }
+
+    @Override
+    public List<FormatError> getErrors() {
+        testFixed(true);
+        return this.errors;
     }
 
     /**
@@ -144,7 +162,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
 
     @Override
     public boolean isFixed() {
-        return this.fixed;
+        return this.errors != null;
     }
 
     @Override
@@ -160,6 +178,9 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
      * @throws FormatException if the aspects are inconsistent
      */
     private void setAspects(AspectLabel label) throws FormatException {
+        if (label().hasErrors()) {
+            throw new FormatException(label().getErrors());
+        }
         assert !label.isNodeOnly();
         for (Aspect aspect : label.getAspects()) {
             declareAspect(aspect);
@@ -536,8 +557,6 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
 
     /** The graph role for this element. */
     private final GraphRole graphRole;
-    /** Flag indicating if this edge has been fully computed. */
-    private boolean fixed;
     /** The (possibly {@code null}) type label modelled by this edge. */
     private TypeLabel typeLabel;
     /** The (possibly {@code null}) rule label modelled by this edge. */
@@ -554,4 +573,6 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     private int argumentNr = -1;
     /** Algebraic operator, if this is an operator edge. */
     private Operator operator = null;
+    /** List of syntax errors in this edge. */
+    private List<FormatError> errors;
 }

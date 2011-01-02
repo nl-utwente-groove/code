@@ -92,10 +92,10 @@ import groove.io.SystemStore;
 import groove.io.SystemStoreFactory;
 import groove.io.Xml;
 import groove.lts.GTS;
-import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.lts.GTSAdapter;
 import groove.lts.GTSListener;
+import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
@@ -160,7 +160,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -2063,18 +2062,18 @@ public class Simulator {
      * jgraph
      */
     private JMenu createDisplayMenu() {
+        // fills the menu depending on the currently displayed graph panel
         JMenu result = new JMenu(Options.DISPLAY_MENU_NAME) {
             @Override
             public void menuSelectionChanged(boolean selected) {
                 removeAll();
-                JPopupMenu popupMenu = getPopupMenu();
                 if (getGraphPanel() != null) {
-                    JGraph jgraph = getGraphPanel().getJGraph();
-                    jgraph.fillOutEditMenu(popupMenu, true);
-                    jgraph.fillOutDisplayMenu(popupMenu);
-                    popupMenu.addSeparator();
+                    JGraph jGraph = getGraphPanel().getJGraph();
+                    jGraph.addSubmenu(this, jGraph.createEditMenu(null, true));
+                    jGraph.addSubmenu(this, jGraph.createDisplayMenu());
+                    this.addSeparator();
                 }
-                popupMenu.add(createOptionsMenu());
+                this.add(createOptionsMenu());
                 super.menuSelectionChanged(selected);
             }
         };
@@ -2146,7 +2145,7 @@ public class Simulator {
     private JMenu createVerifyMenu() {
         JMenu result = new VerifyMenu(this);
         result.addSeparator();
-        JMenu mcScenarioMenu = new MCScenarioMenu(this, false);
+        JMenu mcScenarioMenu = new ModelCheckingMenu(this, false);
         for (Component menuComponent : mcScenarioMenu.getMenuComponents()) {
             result.add(menuComponent);
         }

@@ -22,7 +22,7 @@ package groove.gui.jgraph;
  * @version $Revision $
  */
 public interface EditableJCell extends JCell {
-    // does not add any functionality.
+    /** Returns the user object of this cell, with the given type. */
     EditableContent getUserObject();
 
     /** Sets the error flag of this vertex. */

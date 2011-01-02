@@ -656,7 +656,7 @@ public class JVertexView extends VertexView {
                     setBorder(null);
                     // set a large size to avoid spurious line breaks
                     // which would mess up the size calculation
-                    setSize(1000, 1000);
+                    // setSize(1000, 1000);
                     result = super.getPreferredSize();
                     // reset the border
                     setBorder(border);

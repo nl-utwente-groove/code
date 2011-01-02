@@ -47,7 +47,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
      * @ensure getUserObject() == node, labels().isEmpty()
      */
     GraphJVertex(GraphJModel<N,E> jModel, N node, boolean vertexLabelled) {
-        super(jModel);
+        super(jModel, node.getNumber());
         this.node = node;
         this.vertexLabelled = vertexLabelled;
     }
@@ -190,31 +190,6 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     }
 
     /**
-     * This implementation does nothing: setting the user object directly is not
-     * the right way to go about it.
-     */
-    @Override
-    public void setUserObject(Object value) {
-        // does nothing
-    }
-
-    /**
-     * Specialises the return type of the super method.
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    public EdgeContent<E> getUserObject() {
-        return (EdgeContent<E>) super.getUserObject();
-    }
-
-    @Override
-    EdgeContent<E> createUserObject() {
-        EdgeContent<E> result = new EdgeContent<E>();
-        result.setNumber(getNode().getNumber());
-        return result;
-    }
-
-    /**
      * Returns an unmodifiable view on the self edges.
      * If {@link GraphJModel#isShowVertexLabels()} is set,
      * all edges with equal source and target and without explicit
@@ -223,7 +198,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     public Set<E> getSelfEdges() {
         if (getJModel().isShowVertexLabels()) {
             // add self-edges without layout info
-            Set<E> result = new TreeSet<E>(getUserObject());
+            Set<E> result = new TreeSet<E>(this.edges);
             for (Object edgeObject : getPort().getEdges()) {
                 @SuppressWarnings("unchecked")
                 GraphJEdge<N,E> jEdge = (GraphJEdge<N,E>) edgeObject;
@@ -233,7 +208,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
             }
             return result;
         } else {
-            return Collections.unmodifiableSet(getUserObject());
+            return Collections.unmodifiableSet(this.edges);
         }
     }
 
@@ -249,7 +224,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
      */
     public boolean addSelfEdge(E edge) {
         if (this.vertexLabelled && edge.source() == edge.target()) {
-            getUserObject().add(edge);
+            this.edges.add(edge);
             return true;
         } else {
             return false;
@@ -284,4 +259,6 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     private final boolean vertexLabelled;
     /** The graph node modelled by this jgraph node. */
     private final N node;
+    /** Set of graph edges mapped to this JEdge. */
+    private final Set<E> edges = new TreeSet<E>();
 }

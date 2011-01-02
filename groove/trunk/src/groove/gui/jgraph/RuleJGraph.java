@@ -19,15 +19,14 @@ package groove.gui.jgraph;
 import groove.gui.Exporter;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.gui.layout.SpringLayouter;
 import groove.trans.RuleName;
 
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
-import javax.swing.JPopupMenu;
 
 /**
  * Extension of {@link JGraph} that provides the proper popup menu.
@@ -39,8 +38,6 @@ public class RuleJGraph extends JGraph {
     public RuleJGraph(Simulator simulator) {
         super(AspectJModel.EMPTY_ASPECT_JMODEL, false);
         this.simulator = simulator;
-        setLayouter(new SpringLayouter());
-        doGraphLayout();
     }
 
     /** Specialises the return type to a {@link AspectJModel}. */
@@ -50,12 +47,13 @@ public class RuleJGraph extends JGraph {
     }
 
     @Override
-    protected void fillPopupMenu(JPopupMenu result) {
-        addSeparatorUnlessFirst(result);
+    public JMenu createPopupMenu(Point atPoint) {
+        JMenu result = new JMenu("Popup");
         result.add(computeSetMenu());
         result.addSeparator();
         result.add(this.simulator.getEditRuleAction());
-        super.fillPopupMenu(result);
+        addSubmenu(result, super.createPopupMenu(atPoint));
+        return result;
     }
 
     @Override

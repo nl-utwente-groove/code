@@ -484,8 +484,8 @@ public class LabelTree extends JTree implements GraphModelListener,
         }
         // add the show/hide menu
         JPopupMenu restMenu = new ShowHideMenu(this.jgraph).getPopupMenu();
-        for (int i = 0; i < restMenu.getComponentCount();) {
-            result.add(restMenu.getComponent(i));
+        while (restMenu.getComponentCount() > 0) {
+            result.add(restMenu.getComponent(0));
         }
         return result;
     }

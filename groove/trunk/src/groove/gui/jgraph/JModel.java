@@ -346,18 +346,6 @@ abstract public class JModel extends DefaultGraphModel {
     }
 
     /**
-     * Invokes {@link JCellContent#clone()} to do the job.
-     */
-    @Override
-    protected Object cloneUserObject(Object userObject) {
-        if (userObject == null) {
-            return null;
-        } else {
-            return ((JCellContent<?>) userObject).clone();
-        }
-    }
-
-    /**
      * Returns the map of attribute changes needed to gray-out a jcell. This
      * implementation returns {@link JAttr#GRAYED_OUT_ATTR}.
      */

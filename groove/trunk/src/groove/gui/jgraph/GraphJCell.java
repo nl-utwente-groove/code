@@ -25,8 +25,5 @@ import groove.graph.Node;
  * @version $Revision$
  */
 interface GraphJCell<N extends Node,E extends Edge<N>> extends JCell {
-    /**
-     * Specialises the return type.
-     */
-    public EdgeContent<E> getUserObject();
+    // no added functionality
 }
