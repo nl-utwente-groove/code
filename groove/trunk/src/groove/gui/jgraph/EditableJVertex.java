@@ -42,6 +42,7 @@ public class EditableJVertex extends JVertex implements EditableJCell {
      */
     public EditableJVertex(EditorJModel jModel, int nr) {
         super(jModel, nr);
+        super.setUserObject(new EditableContent(true));
         setNumber(nr);
     }
 
@@ -49,6 +50,7 @@ public class EditableJVertex extends JVertex implements EditableJCell {
     public <N extends Node,E extends Edge<N>> EditableJVertex(
             EditorJModel jModel, GraphJVertex<N,E> other) {
         super(jModel, other.getNumber());
+        super.setUserObject(new EditableContent(true));
         getAttributes().applyMap(other.getAttributes());
         setNumber(other.getNumber());
         List<Label> labelList = new ArrayList<Label>();
@@ -72,10 +74,7 @@ public class EditableJVertex extends JVertex implements EditableJCell {
      * containing {@link JVertex#NO_LABEL} if the user object is empty.
      */
     public Collection<? extends Label> getListLabels() {
-        Collection<Label> result = new ArrayList<Label>();
-        for (Label label : getUserObject()) {
-            result.add(label);
-        }
+        Collection<Label> result = getUserObject();
         if (result.isEmpty()) {
             result = Collections.singleton((Label) NO_LABEL);
         }
@@ -97,19 +96,7 @@ public class EditableJVertex extends JVertex implements EditableJCell {
 
     @Override
     public EditableContent getUserObject() {
-        if (!this.userObjectSet) {
-            this.userObjectSet = true;
-            super.setUserObject(createUserObject());
-        }
         return (EditableContent) super.getUserObject();
-    }
-
-    /**
-     * Callback factory method to create a user object. Called lazily in
-     * {@link #getUserObject()}.
-     */
-    protected EditableContent createUserObject() {
-        return new EditableContent(true);
     }
 
     @Override
@@ -131,7 +118,4 @@ public class EditableJVertex extends JVertex implements EditableJCell {
     }
 
     private boolean error;
-
-    /** Flag indicating that the user object has been initialised. */
-    private boolean userObjectSet;
 }

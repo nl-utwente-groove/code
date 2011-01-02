@@ -337,13 +337,9 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
      */
     private VertexView vertexAt(Point2D p) {
         JCell jCell =
-            (JCell) getJGraph().getFirstCellForLocation(p.getX(), p.getY());
-        if (jCell instanceof JVertex) {
-            return (VertexView) getJGraph().getGraphLayoutCache().getMapping(
-                jCell, false);
-        } else {
-            return null;
-        }
+            getJGraph().getFirstCellForLocation(p.getX(), p.getY(), true);
+        return (VertexView) getJGraph().getGraphLayoutCache().getMapping(jCell,
+            false);
     }
 
     /**
