@@ -546,7 +546,8 @@ public class JEdgeView extends EdgeView {
             }
             this.error = theView.getCell().hasError();
             if (this.error) {
-                this.errorBounds = getLabelBounds(jGraph, theView).getBounds();
+                Rectangle2D labelBounds = getLabelBounds(jGraph, theView);
+                this.errorBounds = labelBounds.getBounds();
             }
             super.getRendererComponent(jGraph, view, sel, focus, preview);
             this.lineWidth = theView.getLinewidth();

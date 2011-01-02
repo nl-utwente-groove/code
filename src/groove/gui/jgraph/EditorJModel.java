@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jgraph.event.GraphModelEvent;
+import org.jgraph.event.GraphModelListener;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultPort;
@@ -46,7 +48,7 @@ import org.jgraph.graph.GraphConstants;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class EditorJModel extends JModel {
+public class EditorJModel extends JModel implements GraphModelListener {
     /**
      * Creates a new editor JModel for a given graph
      * @param editor the associated editor
@@ -55,7 +57,13 @@ public class EditorJModel extends JModel {
     public EditorJModel(Editor editor, DefaultGraph graph) {
         super(editor.getOptions());
         this.editor = editor;
+        //        addGraphModelListener(this);
         load(graph);
+    }
+
+    @Override
+    public void graphChanged(GraphModelEvent e) {
+        System.out.println(e.getChange());
     }
 
     @SuppressWarnings("unchecked")

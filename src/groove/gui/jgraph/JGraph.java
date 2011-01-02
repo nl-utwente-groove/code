@@ -189,7 +189,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     @Override
     public String getToolTipText(MouseEvent evt) {
-        JCell jCell = (JCell) getFirstCellForLocation(evt.getX(), evt.getY());
+        JCell jCell = getFirstCellForLocation(evt.getX(), evt.getY());
         if (jCell != null && jCell.isVisible()) {
             return jCell.getToolTipText();
         } else {
@@ -360,10 +360,10 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * @param vertex <tt>true</tt> if we are not interested in edges
      * @return the topmost visible cell at a given point
      */
-    protected Object getFirstCellForLocation(double x, double y, boolean vertex) {
+    protected JCell getFirstCellForLocation(double x, double y, boolean vertex) {
         x /= this.scale;
         y /= this.scale;
-        Object result = null;
+        JCell result = null;
         Rectangle xyArea = new Rectangle((int) (x - .5), (int) (y - .5), 1, 1);
         // iterate over the roots and query the visible ones
         CellView[] viewRoots = this.graphLayoutCache.getRoots();
@@ -375,7 +375,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             if (typeCorrect && !((JCell) jCell).isGrayedOut()) {
                 // now see if this jCell is sufficiently close to the point
                 if (jCellView.intersects(this, xyArea)) {
-                    result = jCell;
+                    result = (JCell) jCell;
                 }
             }
         }
@@ -387,7 +387,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * cells.
      */
     @Override
-    public Object getFirstCellForLocation(double x, double y) {
+    public JCell getFirstCellForLocation(double x, double y) {
         return getFirstCellForLocation(x, y, false);
     }
 

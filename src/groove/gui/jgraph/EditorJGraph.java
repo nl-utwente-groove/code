@@ -35,7 +35,6 @@ import javax.swing.JMenu;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.AttributeMap.SerializableRectangle2D;
 import org.jgraph.graph.ConnectionSet;
-import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
@@ -149,7 +148,7 @@ public class EditorJGraph extends JGraph {
         DefaultPort toPort =
             toPortView == null ? fromPort : (DefaultPort) toPortView.getCell();
         // define the edge to be inserted
-        DefaultEdge newEdge = getModel().computeJEdge();
+        EditableJEdge newEdge = getModel().computeJEdge();
         Object[] insert = new Object[] {newEdge};
         // define connections between edge and nodes, if any
         ConnectionSet cs = new ConnectionSet();

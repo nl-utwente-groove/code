@@ -56,6 +56,12 @@ abstract public class JEdge extends DefaultEdge implements JCell {
         return result.toString();
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s with labels %s", getClass().getName(),
+            getListLabels());
+    }
+
     /**
      * Returns the j-vertex that is the parent of the source port of this
      * j-edge.

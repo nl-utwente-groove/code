@@ -46,42 +46,29 @@ public class EditableContent extends TreeSet<Label> {
     }
 
     /**
-     * Returns the edit separator of this user object. The edit separator is
-     * used to recognize individual labels in the string description of the
-     * entire user object, when editing the object or reloading a new collection
-     * from a string in {@link #load(String)}. It is set at construction time.
-     * @see #load(String)
-     */
-    public String getEditSeparator() {
-        return editSeparator;
-    }
-
-    /**
      * Converts the user object to an editable string, in which the individual
-     * labels are separated by the edit separator.
-     * @see #getEditSeparator()
+     * labels are separated by newlines
      */
     public String toEditString() {
-        return Groove.toString(toArray(), "", "", getEditSeparator());
+        return Groove.toString(toArray(), "", "", NEWLINE);
     }
 
     /**
      * Loads the user object collection from a given string value. This
-     * implementation splits the value using {@link String#split(String)} with
-     * as the split expression
-     * <tt>WHITESPACE+trim(getEditSeparator())+WHITESPACE</tt>. This means that
+     * implementation splits the value using newlines, and trims the
+     * individual labels. This means that
      * edit separators behave as the lowest-priority operators, lower even than
      * bracketing or quoting. If {@link #isAllowEmptyLabelSet()} is
      * <tt>false</tt>, then an empty <tt>value</tt> will result in the empty
      * string.
      * @param value the value from which to load the user object; may not be
      *        <tt>null</tt>
-     * @see #getEditSeparator()
      * @see #isAllowEmptyLabelSet()
      */
     public void load(String value) {
         List<Label> labelList = new ArrayList<Label>();
-        for (String text : value.split(loadSeparator, 0)) {
+        for (String text : value.split(NEWLINE)) {
+            text = text.trim();
             if (text.length() > 0) {
                 labelList.add(DefaultLabel.createLabel(text));
             }
@@ -119,18 +106,4 @@ public class EditableContent extends TreeSet<Label> {
     private boolean allowEmptyLabelSet = true;
     /** The default label separator. */
     public static final String NEWLINE = "\n";
-    /**
-     * The separator used between the labels when turning this user object into
-     * an editable string.
-     */
-    private static final String editSeparator = NEWLINE;
-    /** Whitespace recognizer in a regular expression. */
-    public static final String WHITESPACE = "\\s*";
-    /**
-     * The separator used in loading the string description of the entire user
-     * object, between the descriptions of the individual objects in the
-     * collection.
-     */
-    private static final String loadSeparator = WHITESPACE + editSeparator
-        + WHITESPACE;
 }

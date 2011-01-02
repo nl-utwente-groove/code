@@ -37,6 +37,7 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     /** Constructs a new, empty empty j-edge. */
     public EditableJEdge(EditorJModel jModel) {
         super(jModel);
+        super.setUserObject(new EditableContent(false));
     }
 
     /** Constructs a j-edge by cloning another one. */
@@ -81,19 +82,7 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     /** Specialises the return type. */
     @Override
     public EditableContent getUserObject() {
-        if (!this.userObjectSet) {
-            this.userObjectSet = true;
-            super.setUserObject(createUserObject());
-        }
         return (EditableContent) super.getUserObject();
-    }
-
-    /**
-     * Callback factory method to create a user object. Called lazily in
-     * {@link #getUserObject()}.
-     */
-    protected EditableContent createUserObject() {
-        return new EditableContent(false);
     }
 
     @Override
@@ -115,8 +104,4 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     }
 
     private boolean error;
-
-    /** Flag indicating that the user object has been initialised. */
-    private boolean userObjectSet;
-
 }
