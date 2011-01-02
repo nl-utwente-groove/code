@@ -16,8 +16,9 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.DefaultLabel;
+import groove.graph.Edge;
 import groove.graph.Label;
+import groove.graph.Node;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,48 +40,51 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     }
 
     /** Constructs a j-edge by cloning another one. */
-    public EditableJEdge(EditorJModel jModel, JEdge other) {
+    public <N extends Node,E extends Edge<N>> EditableJEdge(
+            EditorJModel jModel, GraphJEdge<N,E> other) {
         super(jModel);
         getAttributes().applyMap(other.getAttributes());
-        setUserObject(other.getUserObject().getLabelSet());
+        List<Label> labelList = new ArrayList<Label>();
+        for (E edge : other.getEdges()) {
+            labelList.add(edge.label());
+        }
+        getUserObject().load(labelList);
     }
 
     /** This implementation just returns the user object. */
     public List<StringBuilder> getLines() {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
-        for (String label : getUserObject()) {
-            result.add(new StringBuilder(label));
+        for (Label label : getUserObject()) {
+            result.add(new StringBuilder(label.toString()));
         }
         return result;
     }
 
     /** This implementation just returns the user object. */
     public Collection<? extends Label> getListLabels() {
-        Collection<DefaultLabel> result = new ArrayList<DefaultLabel>();
-        for (String labelString : getUserObject()) {
-            result.add(DefaultLabel.createLabel(labelString));
-        }
-        return result;
+        return getUserObject();
     }
 
     /**
      * If the value is a collection or a string, loads the user object from it.
      */
     @Override
-    @SuppressWarnings("unchecked")
     public void setUserObject(Object value) {
-        EditableContent newObject = createUserObject();
-        super.setUserObject(newObject);
-        if (value instanceof Collection) {
-            newObject.load((Collection<String>) value);
-        } else if (value != null) {
-            newObject.load(value.toString());
+        EditableContent myObject = getUserObject();
+        if (value instanceof EditableContent) {
+            myObject.load((EditableContent) value);
+        } else {
+            myObject.load(value.toString());
         }
     }
 
     /** Specialises the return type. */
     @Override
     public EditableContent getUserObject() {
+        if (!this.userObjectSet) {
+            this.userObjectSet = true;
+            super.setUserObject(createUserObject());
+        }
         return (EditableContent) super.getUserObject();
     }
 
@@ -88,7 +92,6 @@ public class EditableJEdge extends JEdge implements EditableJCell {
      * Callback factory method to create a user object. Called lazily in
      * {@link #getUserObject()}.
      */
-    @Override
     protected EditableContent createUserObject() {
         return new EditableContent(false);
     }
@@ -112,4 +115,8 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     }
 
     private boolean error;
+
+    /** Flag indicating that the user object has been initialised. */
+    private boolean userObjectSet;
+
 }

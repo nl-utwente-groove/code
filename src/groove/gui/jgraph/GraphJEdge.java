@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Extends DefaultEdge to store a collection of graph Edges. The graph edges are
@@ -49,7 +50,7 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
         super(jModel);
         this.source = edge.source();
         this.target = edge.target();
-        getUserObject().add(edge);
+        this.edges.add(edge);
     }
 
     /** Returns the {@link JModel} associated with this {@link JEdge}. */
@@ -121,14 +122,14 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
      * Returns an unmodifiable view upon the set of underlying graph edges.
      */
     public Set<E> getEdges() {
-        return Collections.unmodifiableSet(getUserObject());
+        return Collections.unmodifiableSet(this.edges);
     }
 
     /**
      * Returns an arbitrary edge from the set of underlying edges.
      */
     public E getEdge() {
-        return getUserObject().iterator().next();
+        return this.edges.iterator().next();
     }
 
     /**
@@ -184,27 +185,6 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
         return edge.label();
     }
 
-    /** Specialises the return type of the method. */
-    @SuppressWarnings("unchecked")
-    @Override
-    public EdgeContent<E> getUserObject() {
-        return (EdgeContent<E>) super.getUserObject();
-    }
-
-    @Override
-    EdgeContent<E> createUserObject() {
-        return new EdgeContent<E>();
-    }
-
-    /**
-     * This implementation does nothing: setting the user object directly is not
-     * the right way to go about it. Instead use <code>{@link #addEdge}.
-     */
-    @Override
-    public void setUserObject(Object value) {
-        // does nothing
-    }
-
     /**
      * Adds an edge to the underlying set of edges, if the edge is appropriate.
      * Indicates in its return value if the edge has indeed been added.
@@ -217,7 +197,7 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
      * @ensure if <tt>result</tt> then <tt>getEdgeSet().contains(edge)</tt>
      */
     public boolean addEdge(E edge) {
-        return getUserObject().add(edge);
+        return this.edges.add(edge);
     }
 
     @Override
@@ -240,4 +220,6 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
     private final N source;
     /** Target node of the underlying graph edges. */
     private final N target;
+    /** Set of graph edges mapped to this JEdge. */
+    private final Set<E> edges = new TreeSet<E>();
 }

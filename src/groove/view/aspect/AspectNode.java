@@ -26,9 +26,11 @@ import groove.graph.AbstractNode;
 import groove.graph.DefaultLabel;
 import groove.graph.GraphRole;
 import groove.util.Fixable;
+import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -87,6 +89,9 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
                 if (getAttrKind() == PRODUCT) {
                     testSignature();
                 }
+            } catch (FormatException exc) {
+                addErrors(exc.getErrors());
+                throw exc;
             } finally {
                 this.allFixed = true;
             }
@@ -144,14 +149,34 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         }
     }
 
+    @Override
+    public boolean hasErrors() {
+        return !this.errors.isEmpty();
+    }
+
+    @Override
+    public List<FormatError> getErrors() {
+        return this.errors;
+    }
+
+    private void addErrors(Collection<FormatError> errors) {
+        for (FormatError error : errors) {
+            errors.add(error.extend(this));
+        }
+    }
+
     /**
      * Adds a node label to this node, and processes the resulting aspects.
      * @throws FormatException if the aspects are inconsistent
      */
     public void setAspects(AspectLabel label) throws FormatException {
+        assert label.isFixed();
         assert !label.isEdgeOnly();
         testFixed(false);
         this.nodeLabels.add(label);
+        if (label.hasErrors()) {
+            addErrors(label.getErrors());
+        }
         for (Aspect aspect : label.getAspects()) {
             addAspect(aspect);
         }
@@ -485,4 +510,6 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     private List<AspectNode> argNodes;
     /** The operator of an outgoing operator edge. */
     private AspectEdge operatorEdge;
+    /** List of syntax errors in this node. */
+    private final List<FormatError> errors = new ArrayList<FormatError>();
 }

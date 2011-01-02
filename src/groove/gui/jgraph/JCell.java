@@ -86,13 +86,6 @@ public interface JCell extends GraphCell, Serializable {
     public boolean hasError();
 
     /**
-     * Returns a {@link JCellContent}, which is a set of objects associated with
-     * this cell.
-     * @ensure <tt>result instanceof JUserObject</tt>
-     */
-    public abstract JCellContent<?> getUserObject();
-
-    /**
      * Returns tool tip text for this j-cell.
      */
     public abstract String getToolTipText();

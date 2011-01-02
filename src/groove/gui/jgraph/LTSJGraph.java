@@ -18,9 +18,8 @@ package groove.gui.jgraph;
 
 import groove.graph.Element;
 import groove.gui.Exporter;
-import groove.gui.MCScenarioMenu;
+import groove.gui.ModelCheckingMenu;
 import groove.gui.Options;
-import groove.gui.ScenarioMenu;
 import groove.gui.SetLayoutMenu;
 import groove.gui.Simulator;
 import groove.gui.layout.Layouter;
@@ -40,7 +39,6 @@ import java.util.Collections;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
-import javax.swing.JPopupMenu;
 
 import org.jgraph.graph.DefaultGraphCell;
 
@@ -60,19 +58,9 @@ public class LTSJGraph extends JGraph {
     protected LTSJGraph(Simulator simulator, LTSJModel ltsModel) {
         super(ltsModel, true);
         this.simulator = simulator;
-        getExploreMenu();
-        getMCMenu();
         addMouseListener(new MyMouseListener());
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
-        this.setLayoutMenu.selectLayoutAction(createInitialLayouter());
         setEnabled(false);
-    }
-
-    /**
-     * Creates the layouter to be used at construction time.
-     */
-    protected Layouter createInitialLayouter() {
-        return new MyForestLayouter();
     }
 
     /** Specialises the return type to a {@link JModel}. */
@@ -82,34 +70,53 @@ public class LTSJGraph extends JGraph {
     }
 
     /**
+     * Scrolls the view to a given node or edge of the underlying graph model.
+     */
+    public void scrollTo(Element nodeOrEdge) {
+        JCell cell = getModel().getJCell(nodeOrEdge);
+        assert cell != null;
+        Rectangle2D bounds = getCellBounds(cell);
+        if (bounds != null) {
+            int extraSpace = 100;
+            Rectangle scrollRect =
+                new Rectangle((int) bounds.getX() - extraSpace,
+                    (int) bounds.getY() - extraSpace, (int) bounds.getWidth()
+                        + 2 * extraSpace, (int) bounds.getHeight() + 2
+                        * extraSpace);
+            scrollRectToVisible(scrollRect);
+        }
+    }
+
+    /**
      * This implementation adds actions to move to different states within the
      * LTS, to apply the current transition and to explore the LTS, and
      * subsequently invokes the super implementation.
      */
     @Override
-    protected void fillPopupMenu(JPopupMenu result) {
-        addSeparatorUnlessFirst(result);
-        // State exploration sub-menu
+    public JMenu createPopupMenu(Point atPoint) {
+        JMenu result = new JMenu("Popup");
+        addSubmenu(result, createExploreMenu());
+        addSubmenu(result, createGotoMenu());
+        addSubmenu(result, super.createPopupMenu(atPoint));
+        return result;
+    }
+
+    /** Creates a state exploration sub-menu. */
+    public JMenu createExploreMenu() {
+        JMenu result = new JMenu("Explore");
         result.add(this.simulator.getApplyTransitionAction());
         result.add(this.simulator.getDefaultExplorationAction());
         result.add(this.simulator.getExplorationDialogAction());
-        // result.add(getExploreMenu());
-        result.add(getMCMenu());
-        // Goto sub-menu
-        result.addSeparator();
-        result.add(this.simulator.getGotoStartStateAction());
-        result.add(this.scrollToCurrentAction);
-        super.fillPopupMenu(result);
+        result.add(createCheckerMenu());
+        return result;
     }
 
-    @Override
-    protected void activatePopupMenu(Point atPoint) {
-        super.activatePopupMenu(atPoint);
-        if (getModel().getActiveTransition() == null) {
-            this.scrollToCurrentAction.setState(this.simulator.getCurrentState());
-        } else {
-            this.scrollToCurrentAction.setTransition(this.simulator.getCurrentTransition());
-        }
+    /** Creates a traversal sub-menu. */
+    public JMenu createGotoMenu() {
+        JMenu result = new JMenu("Go To");
+        result.add(this.simulator.getGotoStartStateAction());
+        result.add(getScrollToCurrentAction());
+        return result;
     }
 
     /**
@@ -118,47 +125,16 @@ public class LTSJGraph extends JGraph {
      */
     @Override
     protected SetLayoutMenu createSetLayoutMenu() {
-        SetLayoutMenu result = new SetLayoutMenu(this, new SpringLayouter());
-        result.addLayoutItem(createInitialLayouter());
+        SetLayoutMenu result = new SetLayoutMenu(this, new MyForestLayouter());
+        result.addLayoutItem(new SpringLayouter());
         return result;
-    }
-
-    /**
-     * Scrolls the view to a given node or edge of the underlying graph model.
-     * 
-     * @require nodeOrEdge instanceof State || nodeOrEdge instanceof Transition
-     */
-    public void scrollTo(Element nodeOrEdge) {
-        JCell cell = getModel().getJCell(nodeOrEdge);
-        assert cell != null;
-        Rectangle2D bounds = getCellBounds(cell);
-        if (bounds != null) {
-            Rectangle scrollRect =
-                new Rectangle((int) bounds.getX() - 100,
-                    (int) bounds.getY() - 100, (int) bounds.getWidth() + 200,
-                    (int) bounds.getHeight() + 200);
-            scrollRectToVisible(scrollRect);
-        }
-    }
-
-    /**
-     * Lazily creates and returns the exploration menu.
-     */
-    protected final JMenu getExploreMenu() {
-        if (this.exploreMenu == null) {
-            this.exploreMenu = new ScenarioMenu(this.simulator);
-        }
-        return this.exploreMenu;
     }
 
     /**
      * Lazily creates and returns the model-checking menu.
      */
-    protected final JMenu getMCMenu() {
-        if (this.mcMenu == null) {
-            this.mcMenu = new MCScenarioMenu(this.simulator);
-        }
-        return this.mcMenu;
+    protected final JMenu createCheckerMenu() {
+        return new ModelCheckingMenu(this.simulator);
     }
 
     @Override
@@ -180,14 +156,17 @@ public class LTSJGraph extends JGraph {
      * The simulator to which this j-graph is associated.
      */
     private final Simulator simulator;
-    /**
-     * The exploration menu for this jgraph.
-     */
-    private JMenu exploreMenu;
-    /**
-     * The model-checking menu for this jgraph.
-     */
-    private JMenu mcMenu;
+
+    /** Initialises and returns the action to scroll to the active state or transition. */
+    private Action getScrollToCurrentAction() {
+        if (getModel().getActiveTransition() == null) {
+            this.scrollToCurrentAction.setState(this.simulator.getCurrentState());
+        } else {
+            this.scrollToCurrentAction.setTransition(this.simulator.getCurrentTransition());
+        }
+        return this.scrollToCurrentAction;
+    }
+
     /**
      * Action to scroll the JGraph to the current state or derivation.
      */

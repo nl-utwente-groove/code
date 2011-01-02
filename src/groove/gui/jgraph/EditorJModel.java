@@ -22,6 +22,7 @@ import groove.graph.DefaultNode;
 import groove.graph.Element;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
+import groove.graph.Label;
 import groove.gui.Editor;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
@@ -47,17 +48,14 @@ import org.jgraph.graph.GraphConstants;
  */
 public class EditorJModel extends JModel {
     /**
-     * Creates a new, anonymous editor as a copy of a given j-model.
+     * Creates a new editor JModel for a given graph
      * @param editor the associated editor
+     * @param graph the graph to be displayed; non-{@code null}
      */
-    public EditorJModel(Editor editor) {
+    public EditorJModel(Editor editor, DefaultGraph graph) {
         super(editor.getOptions());
         this.editor = editor;
-        setName("");
-        JModel jModel = editor.getModel();
-        if (jModel != null) {
-            replace(jModel);
-        }
+        load(graph);
     }
 
     @SuppressWarnings("unchecked")
@@ -71,8 +69,10 @@ public class EditorJModel extends JModel {
      * other model are copied, not aliased. Uses a single edit event to announce
      * the change to the listeners.
      */
-    public void replace(JModel jModel) {
-        Object[] oldRoots = getRoots(this);
+    public void load(DefaultGraph graph) {
+        Object[] oldRoots = getRoots().toArray();
+        GraphJModel<?,?> jModel =
+            GraphJModel.newInstance(graph, getOptions(), true);
         // map from the cells of jModel to their copies created for this model
         Map<JCell,JCell> toResultCellMap = new HashMap<JCell,JCell>();
         // the same for the ports
@@ -81,12 +81,9 @@ public class EditorJModel extends JModel {
         // list of new jcells kept to make sure nodes go in front
         List<Object> newRoots = new ArrayList<Object>();
         ConnectionSet connections = new ConnectionSet();
-        // new connections
-        List<?> rootCells = jModel.getRoots();
         // first do the nodes
-        for (Object jCell : rootCells) {
-            if (!(jCell instanceof org.jgraph.graph.DefaultEdge)) {
-                assert jCell instanceof GraphJVertex;
+        for (GraphJCell<?,?> jCell : jModel.getRoots()) {
+            if (jCell instanceof GraphJVertex) {
                 GraphJVertex<?,?> jVertex = (GraphJVertex<?,?>) jCell;
                 // create node image and attributes
                 JVertex nodeImage = copyJVertex(jVertex);
@@ -97,9 +94,8 @@ public class EditorJModel extends JModel {
             }
         }
         // now do the edges
-        for (Object jCell : rootCells) {
-            if (jCell instanceof org.jgraph.graph.DefaultEdge) {
-                assert jCell instanceof GraphJEdge;
+        for (GraphJCell<?,?> jCell : jModel.getRoots()) {
+            if (jCell instanceof GraphJEdge) {
                 GraphJEdge<?,?> jEdge = (GraphJEdge<?,?>) jCell;
                 // create edge image and attributes
                 JEdge edgeImage = copyJEdge(jEdge);
@@ -120,17 +116,15 @@ public class EditorJModel extends JModel {
         edit(newRoots.toArray(), oldRoots, null, connections, null, null);
         // copy the layoutables
         this.layoutableJCells.clear();
-        for (JCell cell : this.layoutableJCells) {
+        for (JCell cell : jModel.layoutableJCells) {
             // edges without extra points are not layoutable
             if (!(cell instanceof JEdge)
                 || GraphConstants.getPoints(((JEdge) cell).getAttributes()).size() > 2) {
                 this.layoutableJCells.add(toResultCellMap.get(cell));
             }
         }
-        if (jModel instanceof GraphJModel) {
-            setProperties(GraphInfo.getProperties(
-                ((GraphJModel<?,?>) jModel).getGraph(), false));
-        }
+        setProperties(GraphInfo.getProperties(
+            ((GraphJModel<?,?>) jModel).getGraph(), false));
         setName(jModel.getName());
     }
 
@@ -166,7 +160,7 @@ public class EditorJModel extends JModel {
                 nodeMap.put(jVertex, node);
                 elementMap.put(node, jVertex);
                 layoutMap.putNode(node, jVertex.getAttributes());
-                for (String label : jVertex.getUserObject()) {
+                for (Label label : jVertex.getUserObject()) {
                     result.addEdge(node, label, node);
                 }
             }
@@ -185,7 +179,7 @@ public class EditorJModel extends JModel {
                 boolean attrIsDefault =
                     JEdgeLayout.newInstance(edgeAttr).isDefault();
                 // parse edge text into label set
-                for (String label : jEdge.getUserObject()) {
+                for (Label label : jEdge.getUserObject()) {
                     DefaultEdge edge = result.addEdge(source, label, target);
                     // add layout information if there is anything to be noted
                     // about the edge
@@ -243,8 +237,7 @@ public class EditorJModel extends JModel {
     protected Object cloneCell(Object cell) {
         Object result = super.cloneCell(cell);
         if (cell instanceof EditableJVertex) {
-            ((EditableJVertex) result).getUserObject().setNumber(
-                createNewNodeNr());
+            ((EditableJVertex) result).setNumber(createNewNodeNr());
         }
         return result;
     }
@@ -291,7 +284,7 @@ public class EditorJModel extends JModel {
      * Callback factory method for a j-vertex instance for this j-model that is
      * a copy of an existing j-vertex.
      */
-    private EditableJVertex copyJVertex(JVertex original) {
+    private EditableJVertex copyJVertex(GraphJVertex<?,?> original) {
         EditableJVertex result = new EditableJVertex(this, original);
         result.getAttributes().applyMap(result.createAttributes(this));
         return result;
@@ -301,7 +294,7 @@ public class EditorJModel extends JModel {
      * Callback factory method for a j-edge instance for this j-model that is a
      * copy of an existing j-edge.
      */
-    private EditableJEdge copyJEdge(JEdge original) {
+    private EditableJEdge copyJEdge(GraphJEdge<?,?> original) {
         EditableJEdge result = new EditableJEdge(this, original);
         result.getAttributes().applyMap(result.createAttributes());
         return result;

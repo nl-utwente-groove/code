@@ -26,18 +26,18 @@ import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
 
 /**
- * JGraph vertex with a single port, and a fixed set of labels as a user object
- * (through {@link groove.gui.jgraph.JCellContent}).
+ * JGraph vertex with a single port and added functionality for display.
  * @author Arend Rensink
  * @version $Revision$
  */
 abstract public class JVertex extends DefaultGraphCell implements JCell {
     /**
-     * Creates a vertex for a given {@link JModel},
-     * with a {@link JCellContent}as its user object.
+     * Creates a vertex for a given {@link JModel}.
+     * @param nr the number of this vertex
      */
-    JVertex(JModel jModel) {
+    JVertex(JModel jModel, int nr) {
         this.jModel = jModel;
+        this.nr = nr;
         add(new DefaultPort());
     }
 
@@ -53,9 +53,14 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
         return (DefaultPort) getFirstChild();
     }
 
+    /** Sets the number of this vertex. */
+    public void setNumber(int nr) {
+        this.nr = nr;
+    }
+
     /** Returns the number with which this vertex was initialised. */
     public int getNumber() {
-        return getUserObject().getNumber();
+        return this.nr;
     }
 
     /**
@@ -85,36 +90,6 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
             getListLabels());
     }
 
-    @Override
-    public JCellContent<?> getUserObject() {
-        if (!this.userObjectSet) {
-            this.userObjectSet = true;
-            super.setUserObject(createUserObject());
-        }
-        return (JCellContent<?>) super.getUserObject();
-    }
-
-    /**
-     * Overrides the super method to test for the type of the parameter (which
-     * should be {@link JCellContent}) and records that the object has been set.
-     */
-    @Override
-    public void setUserObject(Object userObject) {
-        if (!(userObject instanceof JCellContent<?>)) {
-            throw new IllegalArgumentException(String.format(
-                "Cannot set user object %s: incorrect type %s", userObject,
-                userObject.getClass()));
-        }
-        super.setUserObject(userObject);
-        this.userObjectSet = true;
-    }
-
-    /**
-     * Callback factory method to create a user object. Called lazily in
-     * {@link #getUserObject()}.
-     */
-    abstract JCellContent<?> createUserObject();
-
     /**
      * Returns the tool tip text for this vertex.
      */
@@ -127,17 +102,6 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
      */
     StringBuilder getNodeDescription() {
         return new StringBuilder("Graph node");
-    }
-
-    /**
-     * Constructs a new jvertex, with cloned attributes and user object.
-     */
-    @Override
-    public JVertex clone() {
-        JVertex result = (JVertex) super.clone();
-        result.getAttributes().applyMap(getAttributes());
-        result.userObject = getUserObject().clone();
-        return result;
     }
 
     /** Returns the attributes to be used in displaying this vertex. */
@@ -196,9 +160,7 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
     }
 
     private final JModel jModel;
+    private int nr;
     private boolean grayedOut;
     private boolean emphasised;
-
-    /** Flag indicating that the user object has been initialised. */
-    private boolean userObjectSet;
 }

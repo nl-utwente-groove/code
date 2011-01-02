@@ -117,6 +117,13 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
         setName(this.graph.getName());
     }
 
+    /** Specialises the type to a list of {@link JCell}s. */
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<? extends GraphJCell<N,E>> getRoots() {
+        return (List<? extends GraphJCell<N,E>>) super.getRoots();
+    }
+
     /**
      * Returns the set of graph edges between two given graph nodes.
      */
@@ -587,9 +594,8 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
     }
 
     /**
-     * Creates a new GraphJModel instance on top of a given Graph. Node
-     * attributes are given by {@link JAttr#DEFAULT_NODE_ATTR} and edge
-     * attributes by {@link JAttr#DEFAULT_EDGE_ATTR}. Self-edges will be
+     * Creates a new GraphJModel instance on top of a given Graph.
+     * Self-edges will be
      * displayed as node labels.
      * 
      * @param graph the underlying Graph

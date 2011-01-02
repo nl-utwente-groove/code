@@ -16,8 +16,9 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.DefaultLabel;
+import groove.graph.Edge;
 import groove.graph.Label;
+import groove.graph.Node;
 import groove.util.Converter;
 
 import java.util.ArrayList;
@@ -40,22 +41,28 @@ public class EditableJVertex extends JVertex implements EditableJCell {
      * @param nr the number of the new vertex
      */
     public EditableJVertex(EditorJModel jModel, int nr) {
-        super(jModel);
-        getUserObject().setNumber(nr);
+        super(jModel, nr);
+        setNumber(nr);
     }
 
     /** Constructs a jvertex by cloning another one. */
-    public EditableJVertex(EditorJModel jModel, JVertex other) {
-        super(jModel);
+    public <N extends Node,E extends Edge<N>> EditableJVertex(
+            EditorJModel jModel, GraphJVertex<N,E> other) {
+        super(jModel, other.getNumber());
         getAttributes().applyMap(other.getAttributes());
-        setUserObject(other.getUserObject());
+        setNumber(other.getNumber());
+        List<Label> labelList = new ArrayList<Label>();
+        for (E edge : other.getSelfEdges()) {
+            labelList.add(edge.label());
+        }
+        getUserObject().load(labelList);
     }
 
     /** This implementation just returns the user object. */
     public List<StringBuilder> getLines() {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
-        for (String label : getUserObject()) {
-            result.add(Converter.toHtml(new StringBuilder(label)));
+        for (Label label : getUserObject()) {
+            result.add(Converter.toHtml(new StringBuilder(label.toString())));
         }
         return result;
     }
@@ -66,8 +73,8 @@ public class EditableJVertex extends JVertex implements EditableJCell {
      */
     public Collection<? extends Label> getListLabels() {
         Collection<Label> result = new ArrayList<Label>();
-        for (String labelString : getUserObject()) {
-            result.add(DefaultLabel.createLabel(labelString));
+        for (Label label : getUserObject()) {
+            result.add(label);
         }
         if (result.isEmpty()) {
             result = Collections.singleton((Label) NO_LABEL);
@@ -80,20 +87,20 @@ public class EditableJVertex extends JVertex implements EditableJCell {
      */
     @Override
     public void setUserObject(Object value) {
-        EditableContent newObject = createUserObject();
-        newObject.setNumber(getNumber());
-        super.setUserObject(newObject);
-        if (value instanceof JCellContent) {
-            newObject.load(((JCellContent<?>) value).getLabelSet());
-            newObject.setNumber(((JCellContent<?>) value).getNumber());
-        } else if (value != null) {
-            newObject.load(value.toString());
+        EditableContent myObject = getUserObject();
+        if (value instanceof EditableContent) {
+            myObject.load((EditableContent) value);
+        } else {
+            myObject.load(value.toString());
         }
     }
 
-    /** Specialises the return type. */
     @Override
     public EditableContent getUserObject() {
+        if (!this.userObjectSet) {
+            this.userObjectSet = true;
+            super.setUserObject(createUserObject());
+        }
         return (EditableContent) super.getUserObject();
     }
 
@@ -101,7 +108,6 @@ public class EditableJVertex extends JVertex implements EditableJCell {
      * Callback factory method to create a user object. Called lazily in
      * {@link #getUserObject()}.
      */
-    @Override
     protected EditableContent createUserObject() {
         return new EditableContent(true);
     }
@@ -125,4 +131,7 @@ public class EditableJVertex extends JVertex implements EditableJCell {
     }
 
     private boolean error;
+
+    /** Flag indicating that the user object has been initialised. */
+    private boolean userObjectSet;
 }

@@ -16,19 +16,21 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.DefaultGraph;
 import groove.gui.Editor;
 import groove.gui.SetLayoutMenu;
 import groove.gui.layout.ForestLayouter;
 import groove.gui.layout.SpringLayouter;
 
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
 
 import javax.swing.Action;
-import javax.swing.JPopupMenu;
+import javax.swing.JMenu;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.AttributeMap.SerializableRectangle2D;
@@ -53,7 +55,7 @@ public class EditorJGraph extends JGraph {
      * @since june2005
      */
     public EditorJGraph(Editor editor) {
-        super(new EditorJModel(editor), false);
+        super(new EditorJModel(editor, new DefaultGraph("")), false);
         this.editor = editor;
         setMarqueeHandler(createMarqueeHandler());
         getGraphLayoutCache().setSelectsLocalInsertedCells(true);
@@ -69,21 +71,16 @@ public class EditorJGraph extends JGraph {
     }
 
     /**
-     * Adds all known general j-cell editing actions to a given popup menu.
-     * (non-Javadoc)
-     * @param menu the menu to which actions should be added
-     * @param always if <code>false</code>, only enabled actions should be added
-     * @see groove.gui.jgraph.JGraph#fillOutEditMenu(javax.swing.JPopupMenu,
-     *      boolean)
+     * Adds the label editing action to the super menu.
      */
     @Override
-    public void fillOutEditMenu(JPopupMenu menu, boolean always) {
-        super.fillOutEditMenu(menu, always);
+    public JMenu createEditMenu(Point atPoint, boolean always) {
+        JMenu result = super.createEditMenu(atPoint, always);
         Action editAction = getEditLabelAction();
         if (always || editAction.isEnabled()) {
-            addSeparatorUnlessFirst(menu);
-            menu.add(editAction);
+            result.add(editAction);
         }
+        return result;
     }
 
     /** Specialises the return type to {@link EditorJModel}. */

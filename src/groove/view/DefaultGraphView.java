@@ -135,12 +135,16 @@ public class DefaultGraphView implements GraphView {
     private void initialise() {
         // first test if there is something to be done
         if (this.errors == null) {
-            this.labelSet = new HashSet<TypeLabel>();
-            Pair<DefaultHostGraph,ViewToHostMap> modelPlusMap =
-                computeModel(this.view);
-            this.model = modelPlusMap.one();
-            this.viewToModelMap = modelPlusMap.two();
-            this.errors = GraphInfo.getErrors(this.model);
+            if (getView().hasErrors()) {
+                this.errors = getView().getErrors();
+            } else {
+                this.labelSet = new HashSet<TypeLabel>();
+                Pair<DefaultHostGraph,ViewToHostMap> modelPlusMap =
+                    computeModel(this.view);
+                this.model = modelPlusMap.one();
+                this.viewToModelMap = modelPlusMap.two();
+                this.errors = GraphInfo.getErrors(this.model);
+            }
         }
     }
 

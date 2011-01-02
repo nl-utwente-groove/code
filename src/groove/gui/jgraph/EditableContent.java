@@ -16,11 +16,14 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.DefaultLabel;
+import groove.graph.Label;
 import groove.util.Groove;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
+import java.util.TreeSet;
 
 /**
  * Content object that is a collection of strings, and can be reloaded from an
@@ -28,7 +31,7 @@ import java.util.Collections;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class EditableContent extends JCellContent<String> {
+public class EditableContent extends TreeSet<Label> {
     /**
      * Constructs an object whose string description uses a given string as a
      * separator between labels (in {@link #toString()}, and which uses another
@@ -40,25 +43,6 @@ public class EditableContent extends JCellContent<String> {
      */
     public EditableContent(boolean allowEmptyLabelSet) {
         this.allowEmptyLabelSet = allowEmptyLabelSet;
-    }
-
-    @Override
-    public Collection<String> getLabelSet() {
-        return Collections.unmodifiableCollection(this);
-    }
-
-    /**
-     * Returns the stored number.
-     * @see #setNumber(int)
-     */
-    @Override
-    public int getNumber() {
-        return this.nr;
-    }
-
-    /** Sets the number of this user object. */
-    public void setNumber(int nr) {
-        this.nr = nr;
     }
 
     /**
@@ -96,7 +80,13 @@ public class EditableContent extends JCellContent<String> {
      * @see #isAllowEmptyLabelSet()
      */
     public void load(String value) {
-        load(Arrays.asList(value.split(loadSeparator, 0)));
+        List<Label> labelList = new ArrayList<Label>();
+        for (String text : value.split(loadSeparator, 0)) {
+            if (text.length() > 0) {
+                labelList.add(DefaultLabel.createLabel(text));
+            }
+        }
+        load(labelList);
     }
 
     /**
@@ -104,17 +94,9 @@ public class EditableContent extends JCellContent<String> {
      * 
      * @param labelSet the label set from which to load the user object
      */
-    public void load(Collection<String> labelSet) {
+    public void load(Collection<Label> labelSet) {
         clear();
-        boolean load = !isAllowEmptyLabelSet();
-        if (!load) {
-            load = labelSet.size() != 1;
-        }
-        if (!load) {
-            // only one label; load it if it is not empty
-            load = labelSet.iterator().next().length() > 0;
-        }
-        if (load) {
+        if (isAllowEmptyLabelSet() || !labelSet.isEmpty()) {
             addAll(labelSet);
         }
     }
@@ -130,20 +112,6 @@ public class EditableContent extends JCellContent<String> {
         return this.allowEmptyLabelSet;
     }
 
-    /**
-     * Sets the <tt>allowEmptyLabelSet</tt> property to a given value. This does
-     * not affect the current set, even if the new value is <tt>false</tt> and
-     * the label set is currently empty; only the loading behaviour (see (@link
-     * #load(String)}) is affected.
-     * @param allowEmptyLabelSet the value for {@link #allowEmptyLabelSet}
-     * @see #isAllowEmptyLabelSet()
-     */
-    public void setAllowEmptyLabelSet(boolean allowEmptyLabelSet) {
-        this.allowEmptyLabelSet = allowEmptyLabelSet;
-    }
-
-    /** The number stored in this user object. */
-    private int nr;
     /**
      * Indicates if an empty label set is allows. If so, the empty string will
      * be interpreted as an empty set.

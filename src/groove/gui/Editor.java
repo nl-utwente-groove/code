@@ -34,7 +34,6 @@ import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.EditableJCell;
 import groove.gui.jgraph.EditorJGraph;
 import groove.gui.jgraph.EditorJModel;
-import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
@@ -188,19 +187,23 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * Sets the graph to be edited
      * @param graph the graph to be edited; if <code>null</code>, an empty model
      *        is started.
+     * @param refreshModel TODO
      */
-    public void setPlainGraph(DefaultGraph graph) {
+    public void setPlainGraph(DefaultGraph graph, boolean refreshModel) {
         setErrors(null);
         if (graph == null) {
-            setModel(new EditorJModel(this));
+            graph = new DefaultGraph("");
+            graph.setRole(getRole());
         } else {
             // set the model afresh to make sure everything gets updated properly
             setRole(graph.getRole());
-            // don't set the errors, now as they will be computed again anyway
-            // setErrors(GraphInfo.getErrors(graph));
-            getModel().replace(
-                GraphJModel.newInstance(graph, getOptions(), true));
-            setModel(getModel());
+        }
+        if (refreshModel) {
+            setModel(new EditorJModel(this, graph));
+        } else {
+            getModel().load(graph);
+            updateStatus();
+            updateTitle();
         }
     }
 
@@ -253,7 +256,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * the model is <tt>null</tt>, a fresh {@link EditorJModel}is created;
      * otherwise, the given j-model is copied into a new {@link EditorJModel}.
      * @param model the j-model to be set
-     * @see EditorJModel#EditorJModel(Editor)
+     * @see EditorJModel#EditorJModel(Editor, DefaultGraph)
      */
     private void setModel(EditorJModel model) {
         // unregister listeners with the model
@@ -408,11 +411,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     protected boolean handlePreview(String okOption) {
         AspectJModel previewedModel = showPreviewDialog(toView(), okOption);
         if (previewedModel != null) {
-            // setSelectInsertedCells(false);
-            DefaultGraph plainGraph = previewedModel.getGraph().toPlainGraph();
-            setErrors(GraphInfo.getErrors(plainGraph));
-            getModel().replace(
-                GraphJModel.newInstance(plainGraph, getOptions(), true));
+            setPlainGraph(previewedModel.getGraph().toPlainGraph(), false);
             return true;
         } else {
             return false;
@@ -458,7 +457,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         // issues
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                setPlainGraph(graph.toPlainGraph());
+                setPlainGraph(graph.toPlainGraph(), true);
+                setModel(getModel());
             }
         });
     }
@@ -563,7 +563,10 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                                     ((ExtensionFilter) filter).addExtension(name)));
                             }
                             // change the role of the currently edited graph
-                            setRole(result.getFilterRole(filter));
+                            GraphRole newRole = result.getFilterRole(filter);
+                            if (newRole != null) {
+                                setRole(newRole);
+                            }
                         }
                     }
                 });
@@ -797,7 +800,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         result.add(getSelectModeAction());
         result.add(getNodeModeAction());
         result.add(getEdgeModeAction());
-        this.jgraph.fillOutEditMenu(result.getPopupMenu(), true);
+        this.jgraph.addSubmenu(result, this.jgraph.createPopupMenu(null));
         return result;
     }
 
@@ -831,7 +834,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         JMenu result = new JMenu(Options.DISPLAY_MENU_NAME);
         result.setMnemonic(Options.DISPLAY_MENU_MNEMONIC);
         result.add(getSnapToGridAction());
-        this.jgraph.fillOutDisplayMenu(result.getPopupMenu());
+        this.jgraph.addSubmenu(result, this.jgraph.createDisplayMenu());
         result.addSeparator();
         result.add(getGraphPanel().getViewLabelListItem());
         return result;
@@ -1104,8 +1107,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         List<FormatError> errors = new ArrayList<FormatError>();
         if (hasErrors()) {
             errors.addAll(getErrors());
+        } else {
+            errors.addAll(toView().getErrors());
         }
-        errors.addAll(toView().getErrors());
         for (EditableJCell root : this.errorCellMap.values()) {
             root.setError(false);
         }
@@ -1797,7 +1801,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             super.actionPerformed(evt);
             if (confirmAbandon()) {
                 setCurrentFile(null);
-                setPlainGraph(null);
+                setPlainGraph(null, true);
             }
         }
     }
@@ -2405,14 +2409,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         /**
          * Returns the role for which a given extension filter acts.
          * @param filter the filter for which the role should be returned
-         * @return the role for {@code filter}; {@link #HOST} if {@code
-         *         filter} is {@code null}
+         * @return the role for {@code filter}, or {@code null} if 
+         * {@code filter} has no associated filter.
          */
         private GraphRole getFilterRole(FileFilter filter) {
             GraphRole result = this.filterRoleMap.get(filter);
-            if (result == null) {
-                result = HOST;
-            }
             return result;
         }
 
@@ -2439,7 +2440,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             // Add an Editor Panel
             final Editor editor = new Editor();
             if (args.length == 0) {
-                editor.setPlainGraph(null);
+                editor.setPlainGraph(null, true);
             } else {
                 editor.doOpenGraph(new File(args[0]));
             }

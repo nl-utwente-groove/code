@@ -26,8 +26,7 @@ import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultPort;
 
 /**
- * JGraph edge with a set of string labels as its user object, in the form of a
- * fixed {@link groove.gui.jgraph.JCellContent}. The labels are edited as
+ * JGraph edge with added functionality for display. The labels are edited as
  * multiline text but printed as a comma-separated list, since the edge view
  * cannot handle multiline labels.
  * @author Arend Rensink
@@ -91,37 +90,6 @@ abstract public class JEdge extends DefaultEdge implements JCell {
         return sourceVertex.isVisible() && targetVertex.isVisible();
     }
 
-    @Override
-    public JCellContent<?> getUserObject() {
-        if (!this.userObjectSet) {
-            this.userObjectSet = true;
-            super.setUserObject(createUserObject());
-        }
-        return (JCellContent<?>) super.getUserObject();
-    }
-
-    /**
-     * Overrides the super method to test for the type of the parameter (which
-     * should be {@link JCellContent}) and records that the object has been
-     * set.
-     */
-    @Override
-    public void setUserObject(Object userObject) {
-        if (!(userObject instanceof JCellContent<?>)) {
-            throw new IllegalArgumentException(String.format(
-                "Cannot set user object %s: incorrect type %s", userObject,
-                userObject.getClass()));
-        }
-        super.setUserObject(userObject);
-        this.userObjectSet = true;
-    }
-
-    /**
-     * Callback factory method to create a user object. Called lazily in
-     * {@link #getUserObject()}.
-     */
-    abstract JCellContent<?> createUserObject();
-
     /**
      * Returns the tool tip text for this edge.
      */
@@ -182,7 +150,7 @@ abstract public class JEdge extends DefaultEdge implements JCell {
     public JEdge clone() {
         JEdge result = (JEdge) super.clone();
         result.getAttributes().applyMap(getAttributes());
-        result.userObject = getUserObject().clone();
+        result.setUserObject(getUserObject());
         return result;
     }
 
@@ -240,9 +208,6 @@ abstract public class JEdge extends DefaultEdge implements JCell {
     private final JModel jModel;
     private boolean grayedOut;
     private boolean emphasised;
-
-    /** Flag indicating that the user object has been initialised. */
-    private boolean userObjectSet;
 
     /**
      * The string used to separate arguments when preparing for editing.

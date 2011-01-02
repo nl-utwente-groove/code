@@ -20,11 +20,13 @@ import groove.gui.Exporter;
 import groove.gui.Options;
 import groove.gui.Simulator;
 
-import javax.swing.JPopupMenu;
+import java.awt.Point;
+
+import javax.swing.JMenu;
 
 /**
  * Implementation of {@link JGraph} that provides the proper popup menu. To
- * construct an instance, {@link #fillPopupMenu(JPopupMenu)} should be called
+ * construct an instance, {@link #createPopupMenu(Point)} should be called
  * after all global final variables have been set.
  */
 public class TypeJGraph extends JGraph {
@@ -41,10 +43,11 @@ public class TypeJGraph extends JGraph {
     }
 
     @Override
-    protected void fillPopupMenu(JPopupMenu result) {
-        addSeparatorUnlessFirst(result);
+    public JMenu createPopupMenu(Point atPoint) {
+        JMenu result = new JMenu();
         result.add(this.simulator.getEditTypeAction());
-        super.fillPopupMenu(result);
+        addSubmenu(result, super.createPopupMenu(atPoint));
+        return result;
     }
 
     @Override

@@ -20,11 +20,13 @@ import groove.gui.Exporter;
 import groove.gui.Options;
 import groove.gui.Simulator;
 
-import javax.swing.JPopupMenu;
+import java.awt.Point;
+
+import javax.swing.JMenu;
 
 /**
  * Implementation of {@link JGraph} that provides the proper popup menu. To
- * construct an instance, {@link #fillPopupMenu(JPopupMenu)} should be called
+ * construct an instance, {@link #createPopupMenu(Point)} should be called
  * after all global final variables have been set.
  */
 public class StateJGraph extends JGraph {
@@ -33,19 +35,11 @@ public class StateJGraph extends JGraph {
      * @param simulator the simulator to which this j-graph is associated
      */
     public StateJGraph(Simulator simulator) {
-        this(simulator, AspectJModel.newInstance(null, simulator.getOptions()));
-    }
-
-    /**
-     * Constructs a state graph associated with a given simulator, and with
-     * pre-defined underlying model.
-     */
-    protected StateJGraph(Simulator simulator, AspectJModel graphModel) {
-        super(graphModel, true);
-        setConnectable(false);
-        setDisconnectable(false);
-        setEnabled(false);
+        super(AspectJModel.newInstance(null, simulator.getOptions()), true);
         this.simulator = simulator;
+        //        setConnectable(false);
+        //        setDisconnectable(false);
+        //        setEnabled(false);
     }
 
     /** Specialises the return type to a {@link JModel}. */
@@ -55,12 +49,13 @@ public class StateJGraph extends JGraph {
     }
 
     @Override
-    protected void fillPopupMenu(JPopupMenu result) {
-        addSeparatorUnlessFirst(result);
+    public JMenu createPopupMenu(Point atPoint) {
+        JMenu result = new JMenu("Popup");
         result.add(this.simulator.getApplyTransitionAction());
         result.addSeparator();
         result.add(this.simulator.getEditGraphAction());
-        super.fillPopupMenu(result);
+        addSubmenu(result, super.createPopupMenu(atPoint));
+        return result;
     }
 
     @Override
