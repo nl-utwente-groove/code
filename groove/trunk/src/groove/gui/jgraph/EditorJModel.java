@@ -255,18 +255,18 @@ public class EditorJModel extends JModel implements GraphModelListener {
         AspectGraph graph = toAspectGraph(elementMap);
         AspectJModel jModel = createJModel(graph);
         for (Map.Entry<AspectElement,EditableJCell> entry : elementMap.entrySet()) {
-            AspectElement plainElement = entry.getKey();
+            AspectElement element = entry.getKey();
             EditableJCell editableJCell = entry.getValue();
             // errors accumulate in the editable cell
-            if (plainElement.hasErrors()) {
+            if (element.hasErrors()) {
                 editableJCell.setError(true);
             }
-            if (plainElement instanceof Node) {
+            if (element instanceof Node) {
                 AspectJVertex jCell =
-                    (AspectJVertex) jModel.getJCellForNode((Node) plainElement);
+                    (AspectJVertex) jModel.getJCellForNode((Node) element);
                 ((EditableJVertex) entry.getValue()).setProxy(jCell);
             } else {
-                JCell jCell = jModel.getJCellForEdge((Edge<?>) plainElement);
+                JCell jCell = jModel.getJCellForEdge((Edge<?>) element);
                 if (jCell instanceof AspectJEdge) {
                     ((EditableJEdge) entry.getValue()).setProxy((AspectJEdge) jCell);
                 }
