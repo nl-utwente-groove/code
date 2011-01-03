@@ -104,6 +104,11 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
         return new StringBuilder("Graph node");
     }
 
+    @Override
+    public void refreshAttributes() {
+        createAttributes(getJModel());
+    }
+
     /** Returns the attributes to be used in displaying this vertex. */
     final public AttributeMap createAttributes(JModel jModel) {
         AttributeMap result = createAttributes();
@@ -138,7 +143,7 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
         boolean result = grayedOut != this.grayedOut;
         if (result) {
             this.grayedOut = grayedOut;
-            createAttributes(getJModel());
+            refreshAttributes();
         }
         return result;
     }

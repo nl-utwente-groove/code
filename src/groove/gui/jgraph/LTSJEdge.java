@@ -3,13 +3,12 @@ package groove.gui.jgraph;
 import static groove.gui.jgraph.JAttr.LTS_EDGE_ACTIVE_CHANGE;
 import static groove.gui.jgraph.JAttr.LTS_EDGE_ATTR;
 import groove.graph.Label;
+import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.lts.DerivationLabel;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.util.Converter;
 import groove.util.Groove;
-
-import org.jgraph.graph.AttributeMap;
 
 /**
  * JEdge class that describes the underlying edge as a graph transition.

@@ -91,6 +91,13 @@ public interface JCell extends GraphCell, Serializable {
     public abstract String getToolTipText();
 
     /** 
+     * Refreshes the attributes by calling {@link #createAttributes(JModel)}. 
+     * Should be called whenever a change in the model has occurred that may
+     * influence the rendering.
+     */
+    public void refreshAttributes();
+
+    /** 
      * Creates a fresh attribute map for this cell, with respect to a given model.
      * Also stores the attribute map in the cell.
      */

@@ -123,6 +123,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         // Turn off double buffering for speed
         setDoubleBuffered(false);
         addMouseListener(new MyMouseListener());
+        setConnectable(false);
+        setDisconnectable(false);
     }
 
     /**
@@ -173,15 +175,21 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     @Override
     public String convertValueToString(Object value) {
+        String result;
         if (value instanceof JVertexView) {
-            return ((JVertexView) value).getCell().getText();
+            result = ((JVertexView) value).getCell().getText();
         } else if (value instanceof JEdgeView) {
-            return ((JEdgeView) value).getCell().getText();
+            result = ((JEdgeView) value).getCell().getText();
         } else if (value instanceof JCell) {
-            return ((JCell) value).getText();
+            result = ((JCell) value).getText();
         } else {
-            return value.toString();
+            result = value.toString();
         }
+        if (result != null && result.length() == 0) {
+            // set to a non-empty string to ensure proper size computation
+            result = " ";
+        }
+        return result;
     }
 
     /**

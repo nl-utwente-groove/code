@@ -19,13 +19,23 @@ package groove.gui.jgraph;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
+import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
+import groove.graph.GraphRole;
 import groove.graph.Label;
+import groove.graph.Node;
 import groove.gui.Editor;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
+import groove.view.FormatException;
+import groove.view.aspect.AspectEdge;
+import groove.view.aspect.AspectElement;
+import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectLabel;
+import groove.view.aspect.AspectNode;
+import groove.view.aspect.AspectParser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,16 +64,19 @@ public class EditorJModel extends JModel implements GraphModelListener {
      * @param editor the associated editor
      * @param graph the graph to be displayed; non-{@code null}
      */
-    public EditorJModel(Editor editor, DefaultGraph graph) {
+    public EditorJModel(Editor editor, AspectGraph graph) {
         super(editor.getOptions());
+        setName(graph.getName());
         this.editor = editor;
-        //        addGraphModelListener(this);
-        load(graph);
+        addGraphModelListener(this);
+        loadGraph(graph);
     }
 
     @Override
     public void graphChanged(GraphModelEvent e) {
-        System.out.println(e.getChange());
+        if (!this.loading && !(e.getChange() instanceof JModel.RefreshEdit)) {
+            //            parseGraph();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -73,16 +86,21 @@ public class EditorJModel extends JModel implements GraphModelListener {
     }
 
     /**
-     * Replaces the content of this model by that of another. The cells of the
-     * other model are copied, not aliased. Uses a single edit event to announce
-     * the change to the listeners.
+     * Replaces the content of this model by a given aspect graph.
+     * The graph as well as the map from graph elements to model JCells
+     * can be retrieved afterwards by {@link #getGraph()} and
+     * {@link #getElementMap()}.
      */
-    public void load(DefaultGraph graph) {
+    public void loadGraph(AspectGraph graph) {
+        this.loading = true;
         Object[] oldRoots = getRoots().toArray();
-        GraphJModel<?,?> jModel =
-            GraphJModel.newInstance(graph, getOptions(), true);
+        AspectJModel jModel = createJModel(graph);
+        Map<AspectElement,EditableJCell> elementMap =
+            new HashMap<AspectElement,EditableJCell>();
+        jModel.setForEditor();
         // map from the cells of jModel to their copies created for this model
-        Map<JCell,JCell> toResultCellMap = new HashMap<JCell,JCell>();
+        Map<JCell,EditableJCell> toResultCellMap =
+            new HashMap<JCell,EditableJCell>();
         // the same for the ports
         Map<DefaultPort,DefaultPort> portMap =
             new HashMap<DefaultPort,DefaultPort>();
@@ -90,23 +108,26 @@ public class EditorJModel extends JModel implements GraphModelListener {
         List<Object> newRoots = new ArrayList<Object>();
         ConnectionSet connections = new ConnectionSet();
         // first do the nodes
-        for (GraphJCell<?,?> jCell : jModel.getRoots()) {
-            if (jCell instanceof GraphJVertex) {
-                GraphJVertex<?,?> jVertex = (GraphJVertex<?,?>) jCell;
-                // create node image and attributes
-                JVertex nodeImage = copyJVertex(jVertex);
-                // add new port to port map (for correct edge cloning)
-                portMap.put(jVertex.getPort(), nodeImage.getPort());
-                toResultCellMap.put(jVertex, nodeImage);
-                newRoots.add(nodeImage);
-            }
+        for (AspectNode node : graph.nodeSet()) {
+            AspectJVertex jVertex =
+                (AspectJVertex) jModel.getJCellForNode(node);
+            // create node image and attributes
+            EditableJVertex nodeImage = copyJVertex(jVertex);
+            // add new port to port map (for correct edge cloning)
+            portMap.put(jVertex.getPort(), nodeImage.getPort());
+            toResultCellMap.put(jVertex, nodeImage);
+            elementMap.put(node, nodeImage);
+            newRoots.add(nodeImage);
         }
         // now do the edges
-        for (GraphJCell<?,?> jCell : jModel.getRoots()) {
-            if (jCell instanceof GraphJEdge) {
-                GraphJEdge<?,?> jEdge = (GraphJEdge<?,?>) jCell;
+        for (AspectEdge edge : graph.edgeSet()) {
+            JCell jCell = jModel.getJCellForEdge(edge);
+            if (jCell instanceof AspectJVertex) {
+                elementMap.put(edge, toResultCellMap.get(jCell));
+            } else if (jCell.isVisible() && jCell instanceof AspectJEdge) {
+                AspectJEdge jEdge = (AspectJEdge) jCell;
                 // create edge image and attributes
-                JEdge edgeImage = copyJEdge(jEdge);
+                EditableJEdge edgeImage = copyJEdge(jEdge);
                 // connect up edge image
                 assert jEdge.getSource() != null : "Edge " + jEdge
                     + " has no source";
@@ -117,6 +138,7 @@ public class EditorJModel extends JModel implements GraphModelListener {
                         portMap.get(jEdge.getTarget()), false);
                 }
                 toResultCellMap.put(jEdge, edgeImage);
+                elementMap.put(edge, edgeImage);
                 newRoots.add(0, edgeImage);
             }
         }
@@ -134,6 +156,18 @@ public class EditorJModel extends JModel implements GraphModelListener {
         setProperties(GraphInfo.getProperties(
             ((GraphJModel<?,?>) jModel).getGraph(), false));
         setName(jModel.getName());
+        this.graph = graph;
+        this.elementMap = elementMap;
+        this.loading = false;
+    }
+
+    /**
+     * Creates an appropriate JModel for a given aspect graph.
+     */
+    private AspectJModel createJModel(AspectGraph graph) {
+        AspectJModel jModel = AspectJModel.newInstance(graph, getOptions());
+        jModel.setForEditor();
+        return jModel;
     }
 
     /** 
@@ -169,7 +203,7 @@ public class EditorJModel extends JModel implements GraphModelListener {
                 elementMap.put(node, jVertex);
                 layoutMap.putNode(node, jVertex.getAttributes());
                 for (Label label : jVertex.getUserObject()) {
-                    result.addEdge(node, label, node);
+                    result.addEdge(node, label.toString(), node);
                 }
             }
         }
@@ -188,7 +222,8 @@ public class EditorJModel extends JModel implements GraphModelListener {
                     JEdgeLayout.newInstance(edgeAttr).isDefault();
                 // parse edge text into label set
                 for (Label label : jEdge.getUserObject()) {
-                    DefaultEdge edge = result.addEdge(source, label, target);
+                    DefaultEdge edge =
+                        result.addEdge(source, label.toString(), target);
                     // add layout information if there is anything to be noted
                     // about the edge
                     if (!attrIsDefault) {
@@ -202,6 +237,131 @@ public class EditorJModel extends JModel implements GraphModelListener {
         GraphInfo.setProperties(result, getProperties());
         result.setRole(this.editor.getRole());
         return result;
+    }
+
+    /** 
+     * Parses the current content of the model into an aspect graph.
+     * Sets the attributes of the model accordingly.
+     * The parse result can be retrieved using {@link #getGraph()} 
+     * and {@link #getElementMap()}.
+     */
+    public void parseGraph() {
+        // reset the errors
+        for (EditableJCell jCell : getRoots()) {
+            jCell.setError(false);
+        }
+        Map<AspectElement,EditableJCell> elementMap =
+            new HashMap<AspectElement,EditableJCell>();
+        AspectGraph graph = toAspectGraph(elementMap);
+        AspectJModel jModel = createJModel(graph);
+        for (Map.Entry<AspectElement,EditableJCell> entry : elementMap.entrySet()) {
+            AspectElement plainElement = entry.getKey();
+            EditableJCell editableJCell = entry.getValue();
+            // errors accumulate in the editable cell
+            if (plainElement.hasErrors()) {
+                editableJCell.setError(true);
+            }
+            if (plainElement instanceof Node) {
+                AspectJVertex jCell =
+                    (AspectJVertex) jModel.getJCellForNode((Node) plainElement);
+                ((EditableJVertex) entry.getValue()).setProxy(jCell);
+            } else {
+                JCell jCell = jModel.getJCellForEdge((Edge<?>) plainElement);
+                if (jCell instanceof AspectJEdge) {
+                    ((EditableJEdge) entry.getValue()).setProxy((AspectJEdge) jCell);
+                }
+            }
+        }
+        this.graph = graph;
+        this.elementMap = elementMap;
+    }
+
+    /**
+     * Converts this j-model to an aspect graph. Layout information is also
+     * transferred.
+     * @param elementMap receives the mapping from elements of the new graph
+     * to root cells of this model
+     */
+    private AspectGraph toAspectGraph(
+            Map<AspectElement,EditableJCell> elementMap) {
+        GraphRole graphRole = this.editor.getRole();
+        AspectParser labelParser = AspectParser.getInstance(graphRole);
+        AspectGraph result = new AspectGraph(getName(), graphRole);
+        LayoutMap<AspectNode,AspectEdge> layoutMap =
+            new LayoutMap<AspectNode,AspectEdge>();
+        Map<JVertex,AspectNode> nodeMap = new HashMap<JVertex,AspectNode>();
+
+        // Create nodes
+        for (Object root : getRoots()) {
+            if (root instanceof EditableJVertex) {
+                EditableJVertex jVertex = (EditableJVertex) root;
+                AspectNode node = result.addNode(jVertex.getNumber());
+                nodeMap.put(jVertex, node);
+                elementMap.put(node, jVertex);
+                layoutMap.putNode(node, jVertex.getAttributes());
+                for (Label label : jVertex.getUserObject()) {
+                    AspectLabel newLabel = labelParser.parse(label.toString());
+                    if (newLabel.isNodeOnly()) {
+                        try {
+                            node.setAspects(newLabel);
+                        } catch (FormatException e) {
+                            // do nothing
+                            // (the error is recorded in the node itself)
+                        }
+                    } else {
+                        result.addEdge(node, newLabel, node);
+                    }
+                }
+            }
+        }
+
+        // Create Edges
+        for (Object root : getRoots()) {
+            if (root instanceof JEdge) {
+                EditableJEdge jEdge = (EditableJEdge) root;
+                AspectNode source = nodeMap.get(jEdge.getSourceVertex());
+                AspectNode target = nodeMap.get(jEdge.getTargetVertex());
+                assert target != null : "Edge with empty target: " + root;
+                assert source != null : "Edge with empty source: " + root;
+                AttributeMap edgeAttr = jEdge.getAttributes();
+                // test if the edge attributes are default
+                boolean attrIsDefault =
+                    JEdgeLayout.newInstance(edgeAttr).isDefault();
+                // parse edge text into label set
+                for (Label label : jEdge.getUserObject()) {
+                    AspectLabel newLabel = labelParser.parse(label.toString());
+                    AspectEdge edge = result.addEdge(source, newLabel, target);
+                    // add layout information if there is anything to be noted
+                    // about the edge
+                    if (!attrIsDefault) {
+                        layoutMap.putEdge(edge, edgeAttr);
+                    }
+                    elementMap.put(edge, jEdge);
+                }
+            }
+        }
+        result.setFixed();
+        GraphInfo.setLayoutMap(result, layoutMap);
+        GraphInfo.setProperties(result, getProperties());
+        return result;
+    }
+
+    /** 
+     * Returns the aspect graph set using {@link #loadGraph(AspectGraph)}
+     * or resulting from or to {@link #parseGraph()}, whichever came
+     * last.
+     */
+    public AspectGraph getGraph() {
+        return this.graph;
+    }
+
+    /** 
+     * Returns the element map set using {@link #loadGraph(AspectGraph)}
+     * or resulting from or to {@link #parseGraph()}, whichever came
+     * last.
+     */
+    public Map<AspectElement,EditableJCell> getElementMap() {
+        return this.elementMap;
     }
 
     /**
@@ -250,6 +410,15 @@ public class EditorJModel extends JModel implements GraphModelListener {
         return result;
     }
 
+    @Override
+    protected Object cloneUserObject(Object userObject) {
+        if (userObject == null) {
+            return null;
+        } else {
+            return ((EditableContent) userObject).clone();
+        }
+    }
+
     /** Initialises the set {@link #usedNrs} with the currently used node numbers. */
     private boolean collectNodeNrs() {
         boolean result = this.usedNrs == null;
@@ -292,18 +461,17 @@ public class EditorJModel extends JModel implements GraphModelListener {
      * Callback factory method for a j-vertex instance for this j-model that is
      * a copy of an existing j-vertex.
      */
-    private EditableJVertex copyJVertex(GraphJVertex<?,?> original) {
-        EditableJVertex result = new EditableJVertex(this, original);
-        result.getAttributes().applyMap(result.createAttributes(this));
-        return result;
+    private EditableJVertex copyJVertex(AspectJVertex original) {
+        return new EditableJVertex(this, original);
     }
 
     /**
      * Callback factory method for a j-edge instance for this j-model that is a
      * copy of an existing j-edge.
      */
-    private EditableJEdge copyJEdge(GraphJEdge<?,?> original) {
+    private EditableJEdge copyJEdge(AspectJEdge original) {
         EditableJEdge result = new EditableJEdge(this, original);
+        //        result.setProxy(original);
         result.getAttributes().applyMap(result.createAttributes());
         return result;
     }
@@ -333,4 +501,10 @@ public class EditorJModel extends JModel implements GraphModelListener {
     private final Editor editor;
     /** The set of used node numbers. */
     private Set<Integer> usedNrs;
+    /** Flag indicating that we are loading a new aspect graph,
+     * so we don't have to parse it.
+     */
+    private boolean loading;
+    private AspectGraph graph;
+    private Map<AspectElement,EditableJCell> elementMap;
 }

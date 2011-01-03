@@ -5,6 +5,7 @@ import static groove.view.aspect.AspectKind.ARGUMENT;
 import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Label;
 import groove.gui.Options;
+import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.trans.RuleLabel;
 import groove.util.Converter;
 import groove.view.aspect.Aspect;
@@ -16,7 +17,6 @@ import java.awt.Font;
 import java.util.Collections;
 import java.util.Set;
 
-import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
 
 /**

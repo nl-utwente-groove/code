@@ -172,7 +172,7 @@ public class Exporter {
             if (jGraph.getModel() instanceof GraphJModel) {
                 graph = ((GraphJModel<?,?>) jGraph.getModel()).getGraph();
             } else {
-                graph = ((EditorJModel) jGraph.getModel()).toPlainGraph();
+                graph = ((EditorJModel) jGraph.getModel()).getGraph();
             }
             export(graph, file);
         }
@@ -330,7 +330,7 @@ public class Exporter {
             if (jGraph.getModel() instanceof GraphJModel) {
                 graph = ((GraphJModel<?,?>) jGraph.getModel()).getGraph();
             } else {
-                graph = ((EditorJModel) jGraph.getModel()).toPlainGraph();
+                graph = ((EditorJModel) jGraph.getModel()).getGraph();
             }
             export(graph, file);
         }

@@ -22,8 +22,10 @@ import groove.graph.LabelKind;
 import groove.view.FormatError;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -97,7 +99,8 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
         boolean notForEdge = !value.getKind().isForEdge(this.role);
         if (notForNode) {
             if (notForEdge) {
-                addError("Aspect %s not allowed", value, this.role);
+                addError("Aspect %s not allowed in %s", value,
+                    roleDescription.get(this.role), this.role);
             } else {
                 this.edgeOnly = value;
             }
@@ -177,6 +180,20 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
             && this.innerText != null && this.innerText.length() == 0;
     }
 
+    /** Returns an aspect of this label that makes it suitable for edges only.
+     * Returns {@code null} if there is no such aspect.
+     */
+    public Aspect getEdgeOnlyAspect() {
+        return this.edgeOnly;
+    }
+
+    /** Returns an aspect of this label that makes it suitable for edges only.
+     * Returns {@code null} if there is no such aspect.
+     */
+    public Aspect getNodeOnlyAspect() {
+        return this.nodeOnly;
+    }
+
     /** Edge-only aspect value in this label, if any. */
     private Aspect edgeOnly;
     /** Node-only aspect value in this label, if any. */
@@ -239,10 +256,17 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
     /** Label used for level edges (from rule nodes to quantifier nodes). */
     public static final String AT_LABEL = "at";
     /** The set of all allowed nesting labels. */
-    static final Set<String> ALLOWED_LABELS = new HashSet<String>();
+    static final Set<String> NESTED_LABELS = new HashSet<String>();
 
     static {
-        ALLOWED_LABELS.add(IN_LABEL);
-        ALLOWED_LABELS.add(AT_LABEL);
+        NESTED_LABELS.add(IN_LABEL);
+        NESTED_LABELS.add(AT_LABEL);
+    }
+    private static final Map<GraphRole,String> roleDescription =
+        new EnumMap<GraphRole,String>(GraphRole.class);
+    static {
+        roleDescription.put(GraphRole.HOST, "host graph");
+        roleDescription.put(GraphRole.TYPE, "type graph");
+        roleDescription.put(GraphRole.RULE, "rule graph");
     }
 }

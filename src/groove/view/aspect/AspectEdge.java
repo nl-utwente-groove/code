@@ -64,6 +64,20 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     AspectEdge(AspectNode source, AspectLabel label, AspectNode target,
             GraphRole graphRole) {
         super(source, label, target);
+        if (label.isNodeOnly()) {
+            if (label.getInnerText().length() == 0) {
+                this.errors.add(new FormatError(
+                    "Empty edge label not allowed in %s; prefix with ':' if desired",
+                    this));
+            } else {
+                this.errors.add(new FormatError(
+                    "Node aspect %s not allowed in %s",
+                    label.getNodeOnlyAspect(), this));
+            }
+        }
+        for (FormatError error : label().getErrors()) {
+            this.errors.add(error.extend(this));
+        }
         assert label.isFixed();
         assert graphRole.inGrammar();
         this.graphRole = graphRole;
@@ -72,28 +86,41 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     @Override
     public void setFixed() throws FormatException {
         if (!isFixed()) {
-            this.errors = new ArrayList<FormatError>();
-            try {
-                setAspects(label());
-                inferAspects();
-                checkAspects();
-                if (this.graphRole == RULE) {
-                    this.ruleLabel = createRuleLabel();
-                    this.typeLabel = null;
-                } else {
-                    this.ruleLabel = null;
-                    this.typeLabel = createTypeLabel();
-                }
-                target().inferInAspect(this);
-                source().inferOutAspect(this);
-                if (this.graphRole == RULE && !getKind().isMeta()) {
-                    checkRegExprs();
-                }
-            } catch (FormatException exc) {
-                for (FormatError error : exc.getErrors()) {
-                    this.errors.add(error.extend(this));
-                }
-                throw exc;
+            this.fixed = true;
+            if (!hasErrors()) {
+                setAspectsFixed();
+            }
+            if (hasErrors()) {
+                throw new FormatException(getErrors());
+            }
+        }
+    }
+
+    /**
+     * Fixes the aspects, by first setting the declared label aspects,
+     * then inferring aspects from the end nodes.
+     * Should only be called if the edge has no errors otherwise.
+     */
+    private void setAspectsFixed() {
+        try {
+            setAspects(label());
+            inferAspects();
+            checkAspects();
+            if (this.graphRole == RULE) {
+                this.ruleLabel = createRuleLabel();
+                this.typeLabel = null;
+            } else {
+                this.ruleLabel = null;
+                this.typeLabel = createTypeLabel();
+            }
+            target().inferInAspect(this);
+            source().inferOutAspect(this);
+            if (this.graphRole == RULE && !getKind().isMeta()) {
+                checkRegExprs();
+            }
+        } catch (FormatException exc) {
+            for (FormatError error : exc.getErrors()) {
+                this.errors.add(error.extend(this));
             }
         }
     }
@@ -162,7 +189,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
 
     @Override
     public boolean isFixed() {
-        return this.errors != null;
+        return this.fixed;
     }
 
     @Override
@@ -178,9 +205,6 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
      * @throws FormatException if the aspects are inconsistent
      */
     private void setAspects(AspectLabel label) throws FormatException {
-        if (label().hasErrors()) {
-            throw new FormatException(label().getErrors());
-        }
         assert !label.isNodeOnly();
         for (Aspect aspect : label.getAspects()) {
             declareAspect(aspect);
@@ -377,7 +401,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             && kind != AspectKind.LITERAL;
         // process the content, if any
         if (kind == NESTED
-            && !AspectLabel.ALLOWED_LABELS.contains(getInnerText())) {
+            && !AspectLabel.NESTED_LABELS.contains(getInnerText())) {
             throw new FormatException("Unknown label '%s' on nesting edge",
                 getInnerText(), this);
         } else if (kind.isQuantifier()) {
@@ -573,6 +597,8 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     private int argumentNr = -1;
     /** Algebraic operator, if this is an operator edge. */
     private Operator operator = null;
+    /** Flag indicating if the edge is fixed. */
+    private boolean fixed;
     /** List of syntax errors in this edge. */
-    private List<FormatError> errors;
+    private final List<FormatError> errors = new ArrayList<FormatError>();
 }

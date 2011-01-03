@@ -68,7 +68,7 @@ public class Operator {
      * Returns the parameter type names of this operator.
      * The type names are actually the names of the defining signatures. 
      */
-    public List<String> getParameterTypes() {
+    public List<String> getParamTypes() {
         return this.parameterTypes;
     }
 

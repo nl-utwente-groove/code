@@ -37,9 +37,7 @@ public class StateJGraph extends JGraph {
     public StateJGraph(Simulator simulator) {
         super(AspectJModel.newInstance(null, simulator.getOptions()), true);
         this.simulator = simulator;
-        //        setConnectable(false);
-        //        setDisconnectable(false);
-        //        setEnabled(false);
+        setEnabled(false);
     }
 
     /** Specialises the return type to a {@link JModel}. */
