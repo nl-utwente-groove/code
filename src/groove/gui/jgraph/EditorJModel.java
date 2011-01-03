@@ -16,15 +16,10 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
 import groove.graph.Edge;
-import groove.graph.Element;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.gui.Editor;
 import groove.gui.layout.JEdgeLayout;
@@ -171,75 +166,6 @@ public class EditorJModel extends JModel implements GraphModelListener {
     }
 
     /** 
-     * Converts this model to a plain Groove graph.
-     * @see #toPlainGraph(Map)
-     */
-    public DefaultGraph toPlainGraph() {
-        Map<Element,EditableJCell> dummyMap =
-            new HashMap<Element,EditableJCell>();
-        return toPlainGraph(dummyMap);
-    }
-
-    /**
-     * Converts this j-model to a plain groove graph. Layout information is also
-     * transferred. A plain graph is one in which the nodes and edges are
-     * {@link DefaultNode}s and {@link DefaultEdge}s, and all further
-     * information is in the labels.
-     * @param elementMap receives the mapping from elements of the new graph
-     * to root cells of this model
-     */
-    public DefaultGraph toPlainGraph(Map<Element,EditableJCell> elementMap) {
-        DefaultGraph result = new DefaultGraph(getName());
-        LayoutMap<DefaultNode,DefaultEdge> layoutMap =
-            new LayoutMap<DefaultNode,DefaultEdge>();
-        Map<JVertex,DefaultNode> nodeMap = new HashMap<JVertex,DefaultNode>();
-
-        // Create nodes
-        for (Object root : getRoots()) {
-            if (root instanceof EditableJVertex) {
-                EditableJVertex jVertex = (EditableJVertex) root;
-                DefaultNode node = result.addNode(jVertex.getNumber());
-                nodeMap.put(jVertex, node);
-                elementMap.put(node, jVertex);
-                layoutMap.putNode(node, jVertex.getAttributes());
-                for (Label label : jVertex.getUserObject()) {
-                    result.addEdge(node, label.toString(), node);
-                }
-            }
-        }
-
-        // Create Edges
-        for (Object root : getRoots()) {
-            if (root instanceof JEdge) {
-                EditableJEdge jEdge = (EditableJEdge) root;
-                DefaultNode source = nodeMap.get(jEdge.getSourceVertex());
-                DefaultNode target = nodeMap.get(jEdge.getTargetVertex());
-                assert target != null : "Edge with empty target: " + root;
-                assert source != null : "Edge with empty source: " + root;
-                AttributeMap edgeAttr = jEdge.getAttributes();
-                // test if the edge attributes are default
-                boolean attrIsDefault =
-                    JEdgeLayout.newInstance(edgeAttr).isDefault();
-                // parse edge text into label set
-                for (Label label : jEdge.getUserObject()) {
-                    DefaultEdge edge =
-                        result.addEdge(source, label.toString(), target);
-                    // add layout information if there is anything to be noted
-                    // about the edge
-                    if (!attrIsDefault) {
-                        layoutMap.putEdge(edge, edgeAttr);
-                    }
-                    elementMap.put(edge, jEdge);
-                }
-            }
-        }
-        GraphInfo.setLayoutMap(result, layoutMap);
-        GraphInfo.setProperties(result, getProperties());
-        result.setRole(this.editor.getRole());
-        return result;
-    }
-
-    /** 
      * Parses the current content of the model into an aspect graph.
      * Sets the attributes of the model accordingly.
      * The parse result can be retrieved using {@link #getGraph()} 
@@ -299,8 +225,8 @@ public class EditorJModel extends JModel implements GraphModelListener {
                 nodeMap.put(jVertex, node);
                 elementMap.put(node, jVertex);
                 layoutMap.putNode(node, jVertex.getAttributes());
-                for (Label label : jVertex.getUserObject()) {
-                    AspectLabel newLabel = labelParser.parse(label.toString());
+                for (String label : jVertex.getUserObject()) {
+                    AspectLabel newLabel = labelParser.parse(label);
                     if (newLabel.isNodeOnly()) {
                         try {
                             node.setAspects(newLabel);
@@ -328,8 +254,8 @@ public class EditorJModel extends JModel implements GraphModelListener {
                 boolean attrIsDefault =
                     JEdgeLayout.newInstance(edgeAttr).isDefault();
                 // parse edge text into label set
-                for (Label label : jEdge.getUserObject()) {
-                    AspectLabel newLabel = labelParser.parse(label.toString());
+                for (String label : jEdge.getUserObject()) {
+                    AspectLabel newLabel = labelParser.parse(label);
                     AspectEdge edge = result.addEdge(source, newLabel, target);
                     // add layout information if there is anything to be noted
                     // about the edge
@@ -415,7 +341,7 @@ public class EditorJModel extends JModel implements GraphModelListener {
         if (userObject == null) {
             return null;
         } else {
-            return ((EditableContent) userObject).clone();
+            return ((StringObject) userObject).clone();
         }
     }
 
@@ -470,10 +396,7 @@ public class EditorJModel extends JModel implements GraphModelListener {
      * copy of an existing j-edge.
      */
     private EditableJEdge copyJEdge(AspectJEdge original) {
-        EditableJEdge result = new EditableJEdge(this, original);
-        //        result.setProxy(original);
-        result.getAttributes().applyMap(result.createAttributes());
-        return result;
+        return new EditableJEdge(this, original);
     }
 
     /**

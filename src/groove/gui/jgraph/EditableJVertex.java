@@ -16,10 +16,12 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.util.Converter;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
+import groove.view.aspect.AspectLabel;
 import groove.view.aspect.AspectNode;
 
 import java.util.ArrayList;
@@ -31,7 +33,7 @@ import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
 
 /**
- * J-Graph vertex for the editor. This has a {@link EditableContent} as user
+ * J-Graph vertex for the editor. This has a {@link StringObject} as user
  * object, which can be loaded from a string or set of strings.
  * @author Arend Rensink
  * @version $Revision $
@@ -51,10 +53,12 @@ public class EditableJVertex extends JVertex implements EditableJCell {
     public EditableJVertex(EditorJModel jModel, AspectJVertex other) {
         this(jModel, other.getNumber());
         this.proxy = other;
-        List<Label> labelList = new ArrayList<Label>();
-        labelList.addAll(this.proxy.getNode().getNodeLabels());
+        List<String> labelList = new ArrayList<String>();
+        for (AspectLabel label : this.proxy.getNode().getNodeLabels()) {
+            labelList.add(label.toString());
+        }
         for (AspectEdge edge : this.proxy.getSelfEdges()) {
-            labelList.add(edge.label());
+            labelList.add(edge.label().toString());
         }
         getUserObject().load(labelList);
         refreshAttributes();
@@ -65,8 +69,8 @@ public class EditableJVertex extends JVertex implements EditableJCell {
         List<StringBuilder> result;
         if (hasError() || this.proxy == null) {
             result = new ArrayList<StringBuilder>();
-            for (Label label : getUserObject()) {
-                result.add(Converter.toHtml(new StringBuilder(label.toString())));
+            for (String label : getUserObject()) {
+                result.add(Converter.toHtml(new StringBuilder(label)));
             }
         } else {
             result = this.proxy.getLines();
@@ -79,16 +83,18 @@ public class EditableJVertex extends JVertex implements EditableJCell {
      * containing {@link JVertex#NO_LABEL} if the user object is empty.
      */
     public Collection<? extends Label> getListLabels() {
-        Collection<? extends Label> result;
         if (hasError() || this.proxy == null) {
-            result = getUserObject();
+            Collection<Label> result = new ArrayList<Label>();
+            for (String text : getUserObject()) {
+                result.add(DefaultLabel.createLabel(text));
+            }
             if (result.isEmpty()) {
                 result = Collections.singleton((Label) NO_LABEL);
             }
+            return result;
         } else {
-            result = this.proxy.getListLabels();
+            return this.proxy.getListLabels();
         }
-        return result;
     }
 
     /**
@@ -98,9 +104,9 @@ public class EditableJVertex extends JVertex implements EditableJCell {
     @Override
     public void setUserObject(Object value) {
         // we do need to create a new object, otherwise undos do not work
-        EditableContent myObject = new EditableContent(false);
-        if (value instanceof EditableContent) {
-            myObject.load((EditableContent) value);
+        StringObject myObject = new StringObject(false);
+        if (value instanceof StringObject) {
+            myObject.load((StringObject) value);
         } else if (value != null) {
             myObject.load(value.toString());
         }
@@ -108,8 +114,8 @@ public class EditableJVertex extends JVertex implements EditableJCell {
     }
 
     @Override
-    public EditableContent getUserObject() {
-        return (EditableContent) super.getUserObject();
+    public StringObject getUserObject() {
+        return (StringObject) super.getUserObject();
     }
 
     @Override
