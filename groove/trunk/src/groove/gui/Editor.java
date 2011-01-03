@@ -16,15 +16,11 @@ import static groove.graph.GraphRole.HOST;
 import static groove.graph.GraphRole.RULE;
 import static groove.graph.GraphRole.TYPE;
 import static groove.gui.Options.HELP_MENU_NAME;
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
-import groove.graph.Node;
 import groove.graph.TypeGraph;
 import groove.gui.dialog.AboutBox;
 import groove.gui.dialog.ErrorDialog;
@@ -44,7 +40,6 @@ import groove.io.LayedOutXml;
 import groove.io.PriorityFileName;
 import groove.util.Groove;
 import groove.util.Property;
-import groove.util.Version;
 import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.GraphView;
@@ -53,7 +48,6 @@ import groove.view.StoredGrammarView.TypeViewList;
 import groove.view.View;
 import groove.view.aspect.AspectElement;
 import groove.view.aspect.AspectGraph;
-import groove.view.aspect.PlainToAspectMap;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -187,13 +181,13 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * Sets the graph to be edited
      * @param graph the graph to be edited; if <code>null</code>, an empty model
      *        is started.
-     * @param refreshModel TODO
+     * @param refreshModel if {@code true}, the model is refreshed
+     * (which causes the edit history to be reset, etc.)
      */
-    public void setPlainGraph(DefaultGraph graph, boolean refreshModel) {
+    public void setAspectGraph(AspectGraph graph, boolean refreshModel) {
         setErrors(null);
         if (graph == null) {
-            graph = new DefaultGraph("");
-            graph.setRole(getRole());
+            graph = AspectGraph.newInstance(getRole());
         } else {
             // set the model afresh to make sure everything gets updated properly
             setRole(graph.getRole());
@@ -201,7 +195,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         if (refreshModel) {
             setModel(new EditorJModel(this, graph));
         } else {
-            getModel().load(graph);
+            getModel().loadGraph(graph);
             updateStatus();
             updateTitle();
         }
@@ -221,34 +215,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         }
     }
 
-    /**
-     * Generates the aspect graph stored in this editor
-     * from the editor contents.
-     */
-    private void setAspectGraph() {
-        Map<Element,EditableJCell> plainToModelMap =
-            new HashMap<Element,EditableJCell>();
-        DefaultGraph result = getModel().toPlainGraph(plainToModelMap);
-        GraphInfo.setVersion(result, Version.GXL_VERSION);
-        PlainToAspectMap plainToAspectMap = new PlainToAspectMap(getRole());
-        this.graph = AspectGraph.newInstance(result, plainToAspectMap);
-        this.graphToModelMap = new HashMap<AspectElement,EditableJCell>();
-        for (Map.Entry<Element,EditableJCell> plainToModelEntry : plainToModelMap.entrySet()) {
-            Element plainKey = plainToModelEntry.getKey();
-            AspectElement aspectKey =
-                plainKey instanceof Node
-                        ? plainToAspectMap.getNode((DefaultNode) plainKey)
-                        : plainToAspectMap.getEdge((DefaultEdge) plainKey);
-            this.graphToModelMap.put(aspectKey, plainToModelEntry.getValue());
-        }
-    }
-
     /** Returns the aspect graph generated from the current editor contents. */
     public AspectGraph getAspectGraph() {
-        if (this.graph == null) {
-            setAspectGraph();
-        }
-        return this.graph;
+        return getModel().getGraph();
     }
 
     /**
@@ -256,7 +225,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * the model is <tt>null</tt>, a fresh {@link EditorJModel}is created;
      * otherwise, the given j-model is copied into a new {@link EditorJModel}.
      * @param model the j-model to be set
-     * @see EditorJModel#EditorJModel(Editor, DefaultGraph)
+     * @see EditorJModel#EditorJModel(Editor, AspectGraph)
      */
     private void setModel(EditorJModel model) {
         // unregister listeners with the model
@@ -411,7 +380,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     protected boolean handlePreview(String okOption) {
         AspectJModel previewedModel = showPreviewDialog(toView(), okOption);
         if (previewedModel != null) {
-            setPlainGraph(previewedModel.getGraph().toPlainGraph(), false);
+            setAspectGraph(previewedModel.getGraph(), false);
             return true;
         } else {
             return false;
@@ -457,7 +426,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         // issues
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                setPlainGraph(graph.toPlainGraph(), true);
+                setAspectGraph(graph, true);
                 setModel(getModel());
             }
         });
@@ -501,8 +470,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             this.undoManager = new GraphUndoManager() {
                 @Override
                 public void undoableEditHappened(UndoableEditEvent e) {
-                    super.undoableEditHappened(e);
-                    updateHistoryButtons();
+                    if (!(e.getEdit() instanceof JModel.RefreshEdit)) {
+                        super.undoableEditHappened(e);
+                        updateHistoryButtons();
+                    } else {
+                        System.out.println("Refresh not added to undo history");
+                    }
                 }
             };
         }
@@ -1101,35 +1074,43 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * with information about the currently edited graph.
      */
     protected void updateStatus() {
-        setAspectGraph();
-        int elementCount = getModel().getRootCount();
-        getStatusBar().setText("" + elementCount + " visible elements");
-        List<FormatError> errors = new ArrayList<FormatError>();
-        if (hasErrors()) {
-            errors.addAll(getErrors());
-        } else {
-            errors.addAll(toView().getErrors());
-        }
-        for (EditableJCell root : this.errorCellMap.values()) {
-            root.setError(false);
-        }
-        this.errorCellMap.clear();
-        for (FormatError error : errors) {
-            for (Element errorObject : error.getElements()) {
-                EditableJCell errorCell = this.graphToModelMap.get(errorObject);
-                if (errorCell == null && errorObject instanceof Edge) {
-                    errorCell =
-                        this.graphToModelMap.get(((Edge<?>) errorObject).source());
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                getModel().parseGraph();
+                getGraphPanel().refresh();
+                Map<AspectElement,EditableJCell> graphToModelMap =
+                    getModel().getElementMap();
+                int elementCount = getModel().getRootCount();
+                getStatusBar().setText("" + elementCount + " visible elements");
+                List<FormatError> errors = new ArrayList<FormatError>();
+                if (hasErrors()) {
+                    errors.addAll(getErrors());
+                } else {
+                    errors.addAll(toView().getErrors());
                 }
-                if (errorCell != null) {
-                    errorCell.setError(true);
-                    this.errorCellMap.put(error, errorCell);
-                    break;
+                for (EditableJCell root : Editor.this.errorCellMap.values()) {
+                    root.setError(false);
                 }
+                Editor.this.errorCellMap.clear();
+                for (FormatError error : errors) {
+                    for (Element errorObject : error.getElements()) {
+                        EditableJCell errorCell =
+                            graphToModelMap.get(errorObject);
+                        if (errorCell == null && errorObject instanceof Edge) {
+                            errorCell =
+                                graphToModelMap.get(((Edge<?>) errorObject).source());
+                        }
+                        if (errorCell != null) {
+                            errorCell.setError(true);
+                            Editor.this.errorCellMap.put(error, errorCell);
+                            break;
+                        }
+                    }
+                }
+                getErrorPanel().setErrors(errors);
             }
-        }
-        getErrorPanel().setErrors(errors);
-        this.jgraph.refresh();
+        });
     }
 
     /** Sets the property whether all inserted cells are automatically selected. */
@@ -1241,7 +1222,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
         // Snap to grid.
         JToggleButton button = getSnapToGridButton(jGraph);
-        boolean selected = this.snapToGridButton.isSelected();
+        boolean selected = getSnapToGridButton().isSelected();
         button.setSelected(selected);
         jGraph.setGridEnabled(selected);
         jGraph.setGridVisible(selected);
@@ -1358,7 +1339,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /** Returns the jgraph component of this editor. */
-    EditorJGraph getJGraph() {
+    public EditorJGraph getJGraph() {
         return this.jgraph;
     }
 
@@ -1416,15 +1397,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** Indicates whether jgraph has been modified since the last save. */
     private boolean anyGraphSaved;
 
-    /** The graph generated from the current editor content. */
-    private AspectGraph graph;
-    /** Mapping from elements in {@link #getAspectGraph()} to elements in {@link #getModel()}. */
-    private Map<AspectElement,EditableJCell> graphToModelMap;
     /** Mapping from error messages to the corresponding cells. */
     private Map<FormatError,EditableJCell> errorCellMap =
         new HashMap<FormatError,EditableJCell>();
     /** Index of the currently set editor role */
-    private GraphRole graphRole;
+    private GraphRole graphRole = HOST;
     /** Type view against which the edited graph is checked. */
     private TypeViewList typeViewList;
     /** Type against which the edited graph is checked. */
@@ -1478,7 +1455,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                             : Options.SET_GRAPH_ROLE_ACTION_NAME);
                 }
             });
-            result.doClick();
+            result.setSelected(true);
+            //            result.doClick();
         }
         return this.graphRoleButton;
     }
@@ -1801,7 +1779,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             super.actionPerformed(evt);
             if (confirmAbandon()) {
                 setCurrentFile(null);
-                setPlainGraph(null, true);
+                setAspectGraph(null, true);
             }
         }
     }
@@ -2440,7 +2418,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             // Add an Editor Panel
             final Editor editor = new Editor();
             if (args.length == 0) {
-                editor.setPlainGraph(null, true);
+                editor.setAspectGraph(null, true);
             } else {
                 editor.doOpenGraph(new File(args[0]));
             }

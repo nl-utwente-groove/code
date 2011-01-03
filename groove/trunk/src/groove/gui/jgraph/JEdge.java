@@ -18,10 +18,10 @@ package groove.gui.jgraph;
 
 import static groove.util.Converter.HTML_TAG;
 import static groove.util.Converter.STRONG_TAG;
+import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.util.Converter;
 import groove.util.Groove;
 
-import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultPort;
 
@@ -160,6 +160,11 @@ abstract public class JEdge extends DefaultEdge implements JCell {
         return result;
     }
 
+    @Override
+    public void refreshAttributes() {
+        createAttributes(getJModel());
+    }
+
     final public AttributeMap createAttributes(JModel jModel) {
         AttributeMap result = createAttributes();
         if (isGrayedOut()) {
@@ -190,7 +195,7 @@ abstract public class JEdge extends DefaultEdge implements JCell {
         boolean result = grayedOut != this.grayedOut;
         if (result) {
             this.grayedOut = grayedOut;
-            createAttributes(getJModel());
+            refreshAttributes();
         }
         return result;
     }

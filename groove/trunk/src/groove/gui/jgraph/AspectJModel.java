@@ -104,7 +104,7 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      * Indicates whether data nodes should be shown in the rule and lts views.
      */
     boolean isShowValueNodes() {
-        return getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
+        return isForEditor() || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
     }
 
     /**

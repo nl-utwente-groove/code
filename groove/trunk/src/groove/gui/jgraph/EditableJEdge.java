@@ -16,15 +16,15 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.Edge;
 import groove.graph.Label;
-import groove.graph.Node;
+import groove.gui.jgraph.JAttr.AttributeMap;
+import groove.util.Converter;
+import groove.view.aspect.AspectEdge;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
 
 /**
@@ -37,46 +37,64 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     /** Constructs a new, empty empty j-edge. */
     public EditableJEdge(EditorJModel jModel) {
         super(jModel);
-        super.setUserObject(new EditableContent(false));
+        setUserObject(null);
     }
 
     /** Constructs a j-edge by cloning another one. */
-    public <N extends Node,E extends Edge<N>> EditableJEdge(
-            EditorJModel jModel, GraphJEdge<N,E> other) {
-        super(jModel);
-        getAttributes().applyMap(other.getAttributes());
+    public EditableJEdge(EditorJModel jModel, AspectJEdge other) {
+        this(jModel);
+        this.proxy = other;
         List<Label> labelList = new ArrayList<Label>();
-        for (E edge : other.getEdges()) {
+        for (AspectEdge edge : this.proxy.getEdges()) {
             labelList.add(edge.label());
         }
         getUserObject().load(labelList);
+        refreshAttributes();
+    }
+
+    /**
+     * Sets the proxy edge, from which this one borrows its attributes.
+     */
+    public void setProxy(AspectJEdge proxy) {
+        this.proxy = proxy;
+        refreshAttributes();
+        // note that we do not change the user object.
     }
 
     /** This implementation just returns the user object. */
     public List<StringBuilder> getLines() {
-        List<StringBuilder> result = new ArrayList<StringBuilder>();
-        for (Label label : getUserObject()) {
-            result.add(new StringBuilder(label.toString()));
+        List<StringBuilder> result;
+        if (hasError() || this.proxy == null) {
+            result = new ArrayList<StringBuilder>();
+            for (Label label : getUserObject()) {
+                result.add(Converter.toHtml(new StringBuilder(label.toString())));
+            }
+        } else {
+            result = this.proxy.getLines();
         }
         return result;
     }
 
     /** This implementation just returns the user object. */
     public Collection<? extends Label> getListLabels() {
-        return getUserObject();
+        return hasError() || this.proxy == null ? getUserObject()
+                : this.proxy.getListLabels();
     }
 
     /**
+     * Creates a new used object, and initialises it from a given value.
      * If the value is a collection or a string, loads the user object from it.
      */
     @Override
     public void setUserObject(Object value) {
-        EditableContent myObject = getUserObject();
+        // we do need to create a new object, otherwise undos do not work
+        EditableContent myObject = new EditableContent(false);
         if (value instanceof EditableContent) {
             myObject.load((EditableContent) value);
-        } else {
+        } else if (value != null) {
             myObject.load(value.toString());
         }
+        super.setUserObject(myObject);
     }
 
     /** Specialises the return type. */
@@ -87,7 +105,12 @@ public class EditableJEdge extends JEdge implements EditableJCell {
 
     @Override
     protected AttributeMap createAttributes() {
-        AttributeMap result = super.createAttributes();
+        AttributeMap result;
+        if (hasError() || this.proxy == null) {
+            result = super.createAttributes();
+        } else {
+            result = new AttributeMap(this.proxy.getAttributes());
+        }
         GraphConstants.setEditable(result, true);
         GraphConstants.setConnectable(result, true);
         GraphConstants.setDisconnectable(result, true);
@@ -104,4 +127,5 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     }
 
     private boolean error;
+    private AspectJEdge proxy;
 }

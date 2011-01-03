@@ -106,8 +106,6 @@ public class DefaultRuleView implements RuleView {
         this.name = new RuleName(graph.getName());
         this.systemProperties = properties;
         this.graph = graph;
-        this.viewErrors =
-            graph.getErrors().isEmpty() ? null : graph.getErrors();
     }
 
     /**
@@ -276,9 +274,7 @@ public class DefaultRuleView implements RuleView {
         // only do something if there is something to be done
         if (this.ruleErrors == null) {
             this.ruleErrors = new ArrayList<FormatError>();
-            if (this.viewErrors != null) {
-                this.ruleErrors.addAll(this.viewErrors);
-            }
+            this.ruleErrors.addAll(getView().getErrors());
             // trying to initialise with view errors, e.g. an
             // at-edge from a forall:-node, may throw exceptions
             if (this.ruleErrors.isEmpty()) {
@@ -431,11 +427,6 @@ public class DefaultRuleView implements RuleView {
 
     /** The view graph representation of the rule. */
     private final AspectGraph graph;
-    /**
-     * The list of errors in the view graph; if <code>null</code>, there are no
-     * view errors.
-     */
-    private final List<FormatError> viewErrors;
     /** The graph for this view, if any. */
     private TypeGraph type;
     /** The level tree for this rule view. */
@@ -1483,8 +1474,10 @@ public class DefaultRuleView implements RuleView {
                 new HashMap<RuleNode,Set<TypeLabel>>(this.parentTypeMap);
             for (Map.Entry<AspectEdge,RuleEdge> lhsEdgeEntry : this.lhsMap.edgeMap().entrySet()) {
                 RuleEdge typeEdge = lhsEdgeEntry.getValue();
+                RuleLabel label = typeEdge.label();
                 if (lhsEdgeEntry.getKey().getKind().inLHS()
-                    && typeEdge.label().isNodeType()) {
+                    && label.isNodeType()
+                    && (label.isAtom() || label.isSharp())) {
                     // add the type to the parent types
                     Set<TypeLabel> parentTypes =
                         parentTypeMap.get(typeEdge.source());

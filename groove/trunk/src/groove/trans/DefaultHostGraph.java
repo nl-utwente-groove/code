@@ -146,7 +146,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
     }
 
     public HostToAspectMap toAspectMap() {
-        AspectGraph targetGraph = AspectGraph.newInstance(getName(), HOST);
+        AspectGraph targetGraph = new AspectGraph(getName(), HOST);
         HostToAspectMap result = new HostToAspectMap(targetGraph);
         for (HostNode node : nodeSet()) {
             AspectNode nodeImage = targetGraph.addNode(node.getNumber());

@@ -6,6 +6,7 @@ import groove.graph.Label;
 import groove.graph.LabelKind;
 import groove.graph.TypeLabel;
 import groove.gui.Options;
+import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.trans.RuleLabel;
 import groove.util.Converter;
 import groove.view.aspect.Aspect;
@@ -19,8 +20,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.jgraph.graph.AttributeMap;
 
 /**
  * Specialized j-vertex for rule graphs, with its own tool tip text.

@@ -21,6 +21,7 @@ import static groove.util.Converter.createColorTag;
 import static groove.util.Converter.createSpanTag;
 import static groove.view.aspect.AspectKind.PRODUCT;
 import groove.util.Converter.HTMLTag;
+import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
 
 import java.awt.Color;
@@ -127,13 +128,18 @@ public class JVertexView extends VertexView {
      * should be rendered differently).
      */
     private int getVertexShape() {
+        AspectNode node = null;
         if (getCell() instanceof AspectJVertex) {
-            AspectNode node = ((AspectJVertex) getCell()).getNode();
-            if (node.getAttrKind().isData()) {
-                return ELLIPSE_SHAPE;
-            } else if (node.getAttrKind() == PRODUCT) {
-                return DIAMOND_SHAPE;
-            }
+            node = ((AspectJVertex) getCell()).getNode();
+        } else if (getCell() instanceof EditableJVertex) {
+            node = ((EditableJVertex) getCell()).getNode();
+        }
+        AspectKind attrKind =
+            node == null ? AspectKind.NONE : node.getAttrKind();
+        if (attrKind.isData()) {
+            return ELLIPSE_SHAPE;
+        } else if (attrKind == PRODUCT) {
+            return DIAMOND_SHAPE;
         }
         return RECTANGLE_SHAPE;
     }

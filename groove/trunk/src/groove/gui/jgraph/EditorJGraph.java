@@ -16,11 +16,11 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.DefaultGraph;
 import groove.gui.Editor;
 import groove.gui.SetLayoutMenu;
 import groove.gui.layout.ForestLayouter;
 import groove.gui.layout.SpringLayouter;
+import groove.view.aspect.AspectGraph;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -54,12 +54,15 @@ public class EditorJGraph extends JGraph {
      * @since june2005
      */
     public EditorJGraph(Editor editor) {
-        super(new EditorJModel(editor, new DefaultGraph("")), false);
+        super(new EditorJModel(editor,
+            AspectGraph.newInstance(editor.getRole())), false);
         this.editor = editor;
         setMarqueeHandler(createMarqueeHandler());
+        setExporter(editor.getExporter());
         getGraphLayoutCache().setSelectsLocalInsertedCells(true);
         setCloneable(true);
-        setExporter(editor.getExporter());
+        setConnectable(true);
+        setDisconnectable(true);
     }
 
     @Override

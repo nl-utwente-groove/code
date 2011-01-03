@@ -99,6 +99,11 @@ public class EditableContent extends TreeSet<Label> {
         return this.allowEmptyLabelSet;
     }
 
+    @Override
+    public EditableContent clone() {
+        return (EditableContent) super.clone();
+    }
+
     /**
      * Indicates if an empty label set is allows. If so, the empty string will
      * be interpreted as an empty set.

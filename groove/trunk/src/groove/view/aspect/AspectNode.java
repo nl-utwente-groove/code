@@ -84,6 +84,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     @Override
     public void setFixed() throws FormatException {
         if (!isFixed()) {
+            this.allFixed = true;
             try {
                 checkAspects();
                 if (getAttrKind() == PRODUCT) {
@@ -91,9 +92,9 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
                 }
             } catch (FormatException exc) {
                 addErrors(exc.getErrors());
-                throw exc;
-            } finally {
-                this.allFixed = true;
+            }
+            if (hasErrors()) {
+                throw new FormatException(getErrors());
             }
         }
     }
@@ -105,36 +106,25 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         if (this.argNodes == null) {
             throw new FormatException("Product node has no arguments", this);
         }
+        if (this.operatorEdge == null) {
+            throw new FormatException("Product node has no operations", this);
+        }
         int arity = this.argNodes.size();
-        boolean argsOk = true;
-        List<String> argTypes = new ArrayList<String>();
+        Operator operator = this.operatorEdge.getOperator();
+        if (arity != operator.getArity()) {
+            throw new FormatException(
+                "Product node arity %d is incorrect for operator %s", arity,
+                operator, this);
+        }
         for (int i = 0; i < arity; i++) {
             AspectNode argNode = this.argNodes.get(i);
             if (argNode == null) {
                 throw new FormatException("Missing product argument %d", i,
                     this);
             }
-            Aspect argNodeType = argNode.getAspect();
-            if (argNodeType == null) {
-                argsOk = false;
-            } else {
-                argTypes.add(argNodeType.getKind().getName());
-            }
         }
-        if (this.operatorEdge != null && argsOk) {
-            Operator operator = this.operatorEdge.getOperator();
-            this.operatorEdge.target().setDataType(operator.getResultType());
-            List<String> opTypes = operator.getParameterTypes();
-            if (opTypes.size() != arity) {
-                throw new FormatException(
-                    "Product node arity %d conflicts with operator %s", arity,
-                    operator, this);
-            } else {
-                for (int i = 0; i < arity; i++) {
-                    this.argNodes.get(i).setDataType(opTypes.get(i));
-                }
-            }
-        }
+        // type correctness of the parameters and result has already been tested for
+        // as part of inferInAspect and inferOutAspect
     }
 
     @Override
@@ -161,7 +151,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
 
     private void addErrors(Collection<FormatError> errors) {
         for (FormatError error : errors) {
-            errors.add(error.extend(this));
+            this.errors.add(error.extend(this));
         }
     }
 
@@ -176,9 +166,15 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         this.nodeLabels.add(label);
         if (label.hasErrors()) {
             addErrors(label.getErrors());
-        }
-        for (Aspect aspect : label.getAspects()) {
-            addAspect(aspect);
+        } else {
+            try {
+                for (Aspect aspect : label.getAspects()) {
+                    addAspect(aspect);
+                }
+            } catch (FormatException exc) {
+                this.errors.addAll(exc.getErrors());
+                throw exc;
+            }
         }
     }
 
@@ -252,11 +248,15 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
             throw new FormatException(
                 "Target node of %s-edge should be quantifier", edge.label(),
                 this);
+        } else if (edge.isOperator()) {
+            Operator operator = edge.getOperator();
+            setDataType(operator.getResultType());
         }
     }
 
     /** Attempts to set the aspect type of this node to a given data type. */
     private void setDataType(String typeName) throws FormatException {
+        assert !isFixed();
         Aspect newType = Aspect.getAspect(typeName);
         assert newType.getKind().isTypedData();
         setAttrAspect(newType);
@@ -308,15 +308,22 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
             if (this.argNodes == null) {
                 this.argNodes = new ArrayList<AspectNode>();
             }
+            int index = edge.getArgument();
             // extend the list if necessary
-            while (this.argNodes.size() <= edge.getArgument()) {
+            while (this.argNodes.size() <= index) {
                 this.argNodes.add(null);
             }
-            if (this.argNodes.get(edge.getArgument()) != null) {
+            if (this.argNodes.get(index) != null) {
                 throw new FormatException("Duplicate %s-edge", edge.label(),
                     this);
             }
-            this.argNodes.set(edge.getArgument(), edge.target());
+            this.argNodes.set(index, edge.target());
+            // infer target type if an operator edge is already present
+            if (this.operatorEdge != null) {
+                String paramType =
+                    this.operatorEdge.getOperator().getParamTypes().get(index);
+                edge.target().setDataType(paramType);
+            }
         } else if (edge.isOperator()) {
             if (!hasAttrAspect()) {
                 setAttrAspect(PRODUCT.getAspect());
@@ -326,11 +333,22 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
                     this);
             } else if (this.operatorEdge == null) {
                 this.operatorEdge = edge;
-            } else if (!this.operatorEdge.getOperator().getParameterTypes().equals(
-                edge.getOperator().getParameterTypes())) {
+            } else if (!this.operatorEdge.getOperator().getParamTypes().equals(
+                edge.getOperator().getParamTypes())) {
                 throw new FormatException(
                     "Conflicting operator signatures for %s and %s",
                     this.operatorEdge.label(), edgeLabel, this);
+            } else {
+                // infer operand types of present argument edges
+                for (int i = 0; i < this.argNodes.size(); i++) {
+                    AspectNode argNode = this.argNodes.get(i);
+                    if (argNode != null) {
+                        String paramType =
+                            this.operatorEdge.getOperator().getParamTypes().get(
+                                i);
+                        argNode.setDataType(paramType);
+                    }
+                }
             }
         } else if (edge.getKind() == ABSTRACT
             && edge.getTypeLabel().isNodeType()) {
@@ -435,10 +453,15 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     }
 
     /** Changes the (aspect) type of this node. */
-    private void setAspect(Aspect type) {
+    private void setAspect(Aspect type) throws FormatException {
         assert !type.getKind().isAttrKind() && !type.getKind().isParam() : String.format(
             "Aspect %s is not a valid node type", type);
-        this.aspect = type;
+        if (this.aspect == null) {
+            this.aspect = type;
+        } else if (!this.aspect.equals(type)) {
+            throw new FormatException("Conflicting aspects %s and %s",
+                this.aspect, type, this);
+        }
     }
 
     /** 

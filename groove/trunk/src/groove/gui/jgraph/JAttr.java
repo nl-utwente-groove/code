@@ -134,31 +134,13 @@ public class JAttr {
     public static final int DEFAULT_LINE_STYLE =
         GraphConstants.STYLE_ORTHOGONAL;
 
-    /** The default font used in the j-graphs. */
-    static public final Font DEFAULT_FONT = GraphConstants.DEFAULTFONT;
-    /** Constant defining an italic font, for displaying state identities. */
-    static public final Font ITALIC_FONT = DEFAULT_FONT.deriveFont(Font.ITALIC);
-    /** Percentage of white in the background colour. */
-    static private final int BACKGROUND_WHITEWASH = 90;
-    /** Maximum value of the colour dimensions. */
-    static private final int MAX_VALUE = 255;
-    /** Colour used for indicating errors in the graph. */
-    static public final Color ERROR_COLOR = new Color(MAX_VALUE, 50, 0, 40);
-
     /**
      * The line width used for edges and node borders.
      */
     public static final int DEFAULT_LINE_WIDTH = 1;
-    /** Line width used for emphasised cells. */
-    public static final int EMPH_WIDTH = 3;
-    /** Difference in line width between emphasised and non-emphasised. */
-    public static final int EMPH_INCREMENT = EMPH_WIDTH - DEFAULT_LINE_WIDTH;
 
-    /**
-     * Border insets for emphasised nodes.
-     */
-    private static final Insets EMPH_INSETS = new Insets(-2, 1, -2, 1);
-
+    /** The default font used in the j-graphs. */
+    static public final Font DEFAULT_FONT = GraphConstants.DEFAULTFONT;
     /**
      * The colour used for edges and node.
      */
@@ -171,21 +153,17 @@ public class JAttr {
         Colors.findColor("245 245 245");
 
     /**
-     * Font for data nodes and edges; is <code>null</code> if no special font is
-     * set.
+     * The standard bounds used for nodes.
      */
-    public static final Font DATA_FONT = DEFAULT_FONT;
+    public static final Rectangle DEFAULT_NODE_BOUNDS = new Rectangle(10, 10,
+        19, 19);
 
     /**
-     * Border insets for default nodes.
+     * The standard size used for nodes.
      */
-    public static final Insets DEFAULT_INSETS = new Insets(0, 3, 0, 3);
-    /**
-     * An empty border, to be used as the inner border of a compound border,
-     * which inserts some space to the left and right of the label text.
-     */
-    public static final Border EMPTY_INSET_BORDER = new EmptyBorder(
-        DEFAULT_INSETS);
+    public static final Dimension DEFAULT_NODE_SIZE = new Dimension(
+        DEFAULT_NODE_BOUNDS.width, DEFAULT_NODE_BOUNDS.height);
+
     /**
      * The border used for nodes.
      */
@@ -193,21 +171,41 @@ public class JAttr {
         new LineBorder(DEFAULT_CELL_COLOR, DEFAULT_LINE_WIDTH), false);
 
     /**
+     * Border insets for default nodes.
+     */
+    public static final Insets DEFAULT_INSETS = new Insets(0, 3, 0, 3);
+
+    /**
+     * An empty border, to be used as the inner border of a compound border,
+     * which inserts some space to the left and right of the label text.
+     */
+    public static final Border EMPTY_INSET_BORDER = new EmptyBorder(
+        DEFAULT_INSETS);
+
+    /** Constant defining an italic font, for displaying state identities. */
+    static public final Font ITALIC_FONT = DEFAULT_FONT.deriveFont(Font.ITALIC);
+    /** Percentage of white in the background colour. */
+    static private final int BACKGROUND_WHITEWASH = 90;
+    /** Maximum value of the colour dimensions. */
+    static private final int MAX_VALUE = 255;
+    /** Colour used for indicating errors in the graph. */
+    static public final Color ERROR_COLOR = new Color(MAX_VALUE, 50, 0, 40);
+
+    /** Line width used for emphasised cells. */
+    public static final int EMPH_WIDTH = 3;
+    /** Difference in line width between emphasised and non-emphasised. */
+    public static final int EMPH_INCREMENT = EMPH_WIDTH - DEFAULT_LINE_WIDTH;
+
+    /**
+     * Border insets for emphasised nodes.
+     */
+    private static final Insets EMPH_INSETS = new Insets(-2, 1, -2, 1);
+
+    /**
      * The border used for nodes.
      */
     public static final Border EMPH_BORDER = JAttr.createNodeBorder(
         new LineBorder(DEFAULT_CELL_COLOR, EMPH_WIDTH), false);
-
-    /**
-     * The standard bounds used for nodes.
-     */
-    public static final Rectangle DEFAULT_NODE_BOUNDS = new Rectangle(10, 10,
-        15, 15);
-    /**
-     * The standard size used for nodes.
-     */
-    public static final Dimension DEFAULT_NODE_SIZE = new Dimension(
-        DEFAULT_NODE_BOUNDS.width, DEFAULT_NODE_BOUNDS.height);
 
     /**
      * Dash pattern specifying "no dash"
@@ -403,10 +401,6 @@ public class JAttr {
             case REMARK:
                 v.foreColour = Colors.findColor("255 140 0");
                 v.backColour = Colors.findColor("255 255 180");
-                v.connectable = false;
-                break;
-            case READER:
-                v.connectable = false;
                 break;
             case EMBARGO:
                 v.foreColour = Color.red;
@@ -414,19 +408,16 @@ public class JAttr {
                 v.linewidth = 5;
                 v.dash = new float[] {2, 2};
                 v.endFill = false;
-                v.connectable = false;
                 break;
             case ERASER:
                 v.foreColour = Color.blue;
                 v.backColour = Colors.findColor("200 240 255");
                 v.dash = new float[] {4, 4};
-                v.connectable = false;
                 break;
             case CREATOR:
                 v.foreColour = Color.green.darker();
                 v.backColour = null;
                 v.linewidth = 3;
-                v.connectable = false;
                 break;
             case ADDER:
                 v.foreColour = Color.green.darker();
@@ -434,7 +425,6 @@ public class JAttr {
                 v.linewidth = 6;
                 v.dash = new float[] {2, 2};
                 v.endFill = false;
-                v.connectable = false;
                 break;
             case FORALL:
             case FORALL_POS:
@@ -466,6 +456,16 @@ public class JAttr {
 
     /** Specialised class to avoid casting for {@link #clone()}. */
     static public class AttributeMap extends org.jgraph.graph.AttributeMap {
+        /** Constructor for an empty map. */
+        public AttributeMap() {
+            // empty constructor
+        }
+
+        /** Constructor for a copy of an existing map. */
+        public AttributeMap(org.jgraph.graph.AttributeMap map) {
+            super(map);
+        }
+
         @Override
         public AttributeMap clone() {
             return (AttributeMap) super.clone();

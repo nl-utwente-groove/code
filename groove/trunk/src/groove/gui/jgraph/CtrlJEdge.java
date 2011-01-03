@@ -2,11 +2,10 @@ package groove.gui.jgraph;
 
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
+import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.lts.GraphTransition;
 import groove.util.Converter;
 import groove.util.Groove;
-
-import org.jgraph.graph.AttributeMap;
 
 /**
  * JEdge class that describes the underlying edge as a graph transition.

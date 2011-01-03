@@ -514,12 +514,12 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
     }
 
     /** Sets the {@link #forEditor} flag to {@code true}. */
-    private final void setForEditor() {
+    final void setForEditor() {
         this.forEditor = true;
     }
 
     /** Returns the value of the {@link #forEditor} flag. */
-    private final boolean isForEditor() {
+    final boolean isForEditor() {
         return this.forEditor;
     }
 
