@@ -16,6 +16,7 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.Graph;
 import groove.gui.Options;
 import groove.lts.GTS;
 import groove.lts.GTSListener;
@@ -97,10 +98,12 @@ public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
     }
 
     @Override
-    public void reload() {
+    public void loadGraph(Graph<GraphState,GraphTransition> gts) {
         // temporarily remove the model as a graph listener
-        getGraph().removeLTSListener(this);
-        super.reload();
+        if (getGraph() != null) {
+            getGraph().removeLTSListener(this);
+        }
+        super.loadGraph(gts);
         // add the model as a graph listener
         getGraph().addLTSListener(this);
     }
@@ -246,7 +249,6 @@ public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
             return EMPTY_LTS_JMODEL;
         } else {
             LTSJModel result = new LTSJModel(lts, options);
-            result.reload();
             return result;
         }
     }

@@ -63,9 +63,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
         super(options);
         // set the transient variables (cells, attributes and connections)
         // add nodes from Graph to GraphModel
-        this.graph = graph;
-        LayoutMap<N,E> layoutMap = GraphInfo.getLayoutMap(graph);
-        this.layoutMap = layoutMap == null ? new LayoutMap<N,E>() : layoutMap;
+        loadGraph(graph);
     }
 
     /**
@@ -104,7 +102,10 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
      * necessary if the model was removed as a graph listener, for instance for
      * the sake of efficiency.
      */
-    public void reload() {
+    public void loadGraph(Graph<N,E> graph) {
+        this.graph = graph;
+        LayoutMap<N,E> layoutMap = GraphInfo.getLayoutMap(graph);
+        this.layoutMap = layoutMap == null ? new LayoutMap<N,E>() : layoutMap;
         // add nodes from Graph to GraphModel
         initializeTransients();
         Set<N> addedNodeSet = new HashSet<N>(this.graph.nodeSet());
@@ -533,13 +534,13 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
      * The underlying Graph of this GraphModel.
      * @invariant graph != null
      */
-    private final Graph<N,E> graph;
+    private Graph<N,E> graph;
     /**
      * The layout map for the underlying graph. It maps {@link Element}s to
      * {@link JCellLayout}s. This is set to an empty map if the graph is not a
      * layed out graph.
      */
-    private final LayoutMap<N,E> layoutMap;
+    private LayoutMap<N,E> layoutMap;
     /**
      * Map from graph nodes to JGraph cells.
      */
@@ -572,28 +573,6 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
     private transient int nodeY;
 
     /**
-     * Creates a new GraphJModel instance on top of a given Graph. Node
-     * attributes are given by {@link JAttr#DEFAULT_NODE_ATTR} and edge
-     * attributes by {@link JAttr#DEFAULT_EDGE_ATTR}.
-     * 
-     * @param graph the underlying Graph
-     * @param options display options
-     * @param forEditor flag indicating that the graph model is only used
-     * as an intermediate step to reload an {@link EditorJModel}. If {@code true},
-     * all self-edges without explicit layout information will be treated as node
-     * labels.
-     */
-    static public <N extends Node,E extends Edge<N>> GraphJModel<N,E> newInstance(
-            Graph<N,E> graph, Options options, boolean forEditor) {
-        GraphJModel<N,E> result = new GraphJModel<N,E>(graph, options);
-        if (forEditor) {
-            result.setForEditor();
-        }
-        result.reload();
-        return result;
-    }
-
-    /**
      * Creates a new GraphJModel instance on top of a given Graph.
      * Self-edges will be
      * displayed as node labels.
@@ -603,7 +582,8 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
      */
     static public <N extends Node,E extends Edge<N>> GraphJModel<N,E> newInstance(
             Graph<N,E> graph, Options options) {
-        return newInstance(graph, options, false);
+        GraphJModel<N,E> result = new GraphJModel<N,E>(graph, options);
+        return result;
     }
 
     /** Random generator for coordinates of new nodes. */

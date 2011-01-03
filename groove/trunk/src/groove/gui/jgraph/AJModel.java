@@ -34,22 +34,23 @@ import java.util.Map;
  * Implements jgraph's GraphModel interface on top of a {@link View}. This is
  * used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 2982 $
  */
-public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
+public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     // --------------------- INSTANCE DEFINITIONS ------------------------
 
     /**
      * Creates a new aspect model instance on top of a given aspectual view.
      */
-    AspectJModel(AspectGraph graph, Options options) {
+    AJModel(AspectGraph graph, Options options) {
         super(graph, options);
+        this.view = graph.toView();
     }
 
     /** Constructor for a dummy model. */
-    private AspectJModel() {
-        // empty
+    private AJModel() {
+        this.view = null;
     }
 
     /** Specialises the return type. */
@@ -61,8 +62,7 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     @Override
     public void loadGraph(Graph<AspectNode,AspectEdge> graph) {
         super.loadGraph(graph);
-        AspectGraph aspectGraph = (AspectGraph) graph;
-        List<FormatError> graphErrors = aspectGraph.toView().getErrors();
+        List<FormatError> graphErrors = this.view.getErrors();
         if (graphErrors != null) {
             for (FormatError error : graphErrors) {
                 for (Element errorObject : error.getElements()) {
@@ -114,7 +114,7 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      */
     @Override
     protected GraphJVertex<AspectNode,AspectEdge> createJVertex(AspectNode node) {
-        return new AspectJVertex(this, node);
+        return new AJVertex(this, node);
     }
 
     /**
@@ -123,24 +123,29 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      */
     @Override
     protected GraphJEdge<AspectNode,AspectEdge> createJEdge(AspectEdge edge) {
-        return new AspectJEdge(this, edge);
+        return new AJEdge(this, edge);
     }
+
+    /**
+     * The underlying view of this graph model.
+     */
+    private final View<?> view;
 
     /**
      * Creates a new aspect model instance on top of a given aspectual view.
      * Returns {@link #EMPTY_ASPECT_JMODEL} if the view is <code>null</code>.
      */
-    static public AspectJModel newInstance(AspectGraph graph, Options options) {
+    static public AJModel newInstance(AspectGraph graph, Options options) {
         if (graph == null) {
             return EMPTY_ASPECT_JMODEL;
         } else {
-            AspectJModel result = new AspectJModel(graph, options);
+            AJModel result = new AJModel(graph, options);
             return result;
         }
     }
 
-    /** Empty instance of the {@link AspectJModel}. */
-    static public final AspectJModel EMPTY_ASPECT_JMODEL = new AspectJModel();
+    /** Empty instance of the {@link AJModel}. */
+    static public final AJModel EMPTY_ASPECT_JMODEL = new AJModel();
 
     /** Role names (for the tool tips). */
     static final Map<AspectKind,String> ROLE_NAMES =
