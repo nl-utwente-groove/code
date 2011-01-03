@@ -20,6 +20,7 @@ import groove.graph.DefaultNode;
 import groove.graph.Node;
 import groove.trans.HostNode;
 import groove.trans.RuleElement;
+import groove.trans.RuleFactory;
 import groove.util.Reporter;
 import groove.util.TreeHashSet;
 
@@ -51,7 +52,9 @@ public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber 
      */
     public NodeCheckerNode(ReteNetwork network) {
         super(network);
-        this.pattern[0] = DefaultNode.createNode();
+        this.pattern[0] =
+            RuleFactory.instance().createNode(
+                RuleFactory.instance().getMaxNodeNr() + 1);
         this.getOwner().getState().subscribe(this);
     }
 
@@ -111,6 +114,7 @@ public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber 
             this.ondemandBuffer.remove(node);
         } else {
             this.ondemandBuffer.add(node);
+            this.invalidate();
         }
     }
 
@@ -138,11 +142,14 @@ public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber 
     @Override
     public boolean demandUpdate() {
         boolean result = this.ondemandBuffer.size() > 0;
-        if (this.getOwner().isInOnDemandMode()) {
-            for (HostNode n : this.ondemandBuffer) {
-                sendDownReceivedNode(n, Action.ADD);
+        if (!this.isUpToDate()) {
+            if (this.getOwner().isInOnDemandMode()) {
+                for (HostNode n : this.ondemandBuffer) {
+                    sendDownReceivedNode(n, Action.ADD);
+                }
+                this.ondemandBuffer.clear();
             }
-            this.ondemandBuffer.clear();
+            setUpToDate(true);
         }
         return result;
     }
@@ -156,5 +163,20 @@ public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber 
     public List<? extends Object> initialize() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public int demandOneMatch() {
+        int result = this.ondemandBuffer.size();
+        if (this.getOwner().isInOnDemandMode()) {
+            if (!this.isUpToDate() && (result > 0)) {
+                HostNode n = this.ondemandBuffer.iterator().next();
+                this.ondemandBuffer.remove(n);
+                sendDownReceivedNode(n, Action.ADD);
+                setUpToDate(this.ondemandBuffer.size() == 0);
+                result = 1;
+            }
+        }
+        return result;
     }
 }

@@ -227,6 +227,7 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
         }
         c.add(subgraph);
         subgraph.addContainerCollection(c);
+        this.invalidate();
     }
 
     /**
@@ -267,11 +268,12 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
      *        could be any value from 0 to k-1, which k is the number of 
      *        times <code>source</code> occurs in the list of antecedents. 
      *         
-     * @param subgraph The subgraph match found by <code>source</code>.     
+     * @param subgraph The subgraph match found by <code>source</code>.
+     * @return The number of new combined matches generated     
      */
-    protected void receiveAndProcess(ReteNetworkNode source, int repeatIndex,
+    protected int receiveAndProcess(ReteNetworkNode source, int repeatIndex,
             ReteMatch subgraph) {
-
+        int result = 0;
         TreeHashSet<ReteMatch> memory;
         TreeHashSet<ReteMatch> otherMemory;
 
@@ -293,6 +295,7 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
             ReteMatch right = (left == subgraph) ? gOther : subgraph;
 
             if (this.test(left, right)) {
+                result++;
                 ReteMatch combined = this.construct(left, right);
                 ReteNetworkNode previous = null;
                 int repeatedSuccessorIndex = 0;
@@ -312,6 +315,7 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
                 }
             }
         }
+        return result;
     }
 
     private ReteMatch construct(ReteMatch subgraph, ReteMatch other) {
@@ -568,29 +572,80 @@ public class SubgraphCheckerNode extends ReteNetworkNode implements
     @Override
     public boolean demandUpdate() {
         boolean result = false;
-        if (this.getOwner().isInOnDemandMode()) {
-            for (ReteNetworkNode nnode : this.getAntecedents()) {
-                nnode.demandUpdate();
-            }
-            result =
-                (this.leftOnDemandBuffer.size() + this.rightOnDemandBuffer.size()) > 0;
+        if (!this.isUpToDate()) {
+            if (this.getOwner().isInOnDemandMode()) {
 
-            if (result) {
-                for (ReteMatch m : this.leftOnDemandBuffer) {
-                    assert !m.isDeleted();
-                    m.removeContainerCollection(this.leftOnDemandBuffer);
-                    this.receiveAndProcess(m.getOrigin(), 0, m);
+                for (ReteNetworkNode nnode : this.getAntecedents()) {
+                    nnode.demandUpdate();
                 }
-                this.leftOnDemandBuffer.clear();
+                result =
+                    (this.leftOnDemandBuffer.size() + this.rightOnDemandBuffer.size()) > 0;
+
+                if (result) {
+                    int newMatchCounter = 0;
+                    result = false;
+                    for (ReteMatch m : this.leftOnDemandBuffer) {
+                        assert !m.isDeleted();
+                        m.removeContainerCollection(this.leftOnDemandBuffer);
+                        newMatchCounter +=
+                            this.receiveAndProcess(m.getOrigin(), 0, m);
+                    }
+                    this.leftOnDemandBuffer.clear();
+                    int repeatIndex =
+                        (this.getAntecedents().get(0) != this.getAntecedents().get(
+                            1)) ? 0 : 1;
+                    for (ReteMatch m : this.rightOnDemandBuffer) {
+                        assert !m.isDeleted();
+                        m.removeContainerCollection(this.rightOnDemandBuffer);
+                        newMatchCounter +=
+                            this.receiveAndProcess(m.getOrigin(), repeatIndex,
+                                m);
+                    }
+                    this.rightOnDemandBuffer.clear();
+                    result = newMatchCounter > 0;
+                }
+            }
+            setUpToDate(true);
+        }
+        return result;
+    }
+
+    @Override
+    public int demandOneMatch() {
+        int result = 0;
+        if (!this.isUpToDate()) {
+            if (this.getOwner().isInOnDemandMode()) {
+                TreeHashSet<ReteMatch> theBuffer;
+                ReteNetworkNode theAntecedent;
+                theBuffer = this.rightOnDemandBuffer;
+                theAntecedent = this.getAntecedents().get(1);
                 int repeatIndex =
                     (this.getAntecedents().get(0) != this.getAntecedents().get(
                         1)) ? 0 : 1;
-                for (ReteMatch m : this.rightOnDemandBuffer) {
-                    assert !m.isDeleted();
-                    m.removeContainerCollection(this.rightOnDemandBuffer);
-                    this.receiveAndProcess(m.getOrigin(), repeatIndex, m);
-                }
-                this.rightOnDemandBuffer.clear();
+                do {
+                    do {
+                        if (theBuffer.size() == 0) {
+                            if (theAntecedent.demandOneMatch() == 0) {
+                                break;
+                            }
+                        }
+                        ReteMatch m = theBuffer.iterator().next();
+                        theBuffer.remove(m);
+                        m.removeContainerCollection(theBuffer);
+                        result +=
+                            this.receiveAndProcess(m.getOrigin(), repeatIndex,
+                                m);
+                    } while (result == 0);
+
+                    if ((result == 0)
+                        && (theBuffer == this.rightOnDemandBuffer)) {
+                        theBuffer = this.leftOnDemandBuffer;
+                        theAntecedent = this.getAntecedents().get(0);
+                        repeatIndex = 0;
+                    } else {
+                        break;
+                    }
+                } while (result == 0);
             }
         }
         return result;

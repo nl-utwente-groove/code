@@ -170,6 +170,7 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
             this.makeWholeMatchesIfPossible(antecedent, repeatIndex, m);
 
         if (completeMatches != null) {
+            this.matchesProduced += completeMatches.size();
             for (ReteMatch completeMatch : completeMatches) {
                 ReteNetworkNode previous = null;
                 int repeatedSuccessorIndex = 0;
@@ -322,10 +323,27 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
     @Override
     public boolean demandUpdate() {
         boolean result = false;
-        for (ReteNetworkNode nnode : this.getAntecedents()) {
-            result = result || nnode.demandUpdate();
+        if (!this.isUpToDate()) {
+            for (ReteNetworkNode nnode : this.getAntecedents()) {
+                result = result || nnode.demandUpdate();
+            }
+            setUpToDate(true);
         }
         return result;
+    }
+
+    /**
+     * This internal counter will be incremented by the number
+     * of matches produced upon calling the method 
+     * {@link #produceAndSendDownNewMatches(ReteNetworkNode, int, ReteMatch)}.
+     */
+    private int matchesProduced = 0;
+
+    @Override
+    public int demandOneMatch() {
+        this.matchesProduced = 0;
+        demandUpdate();
+        return this.matchesProduced;
     }
 
 }

@@ -64,6 +64,17 @@ public abstract class ReteNetworkNode {
     protected LookupTable patternLookupTable;
 
     /**
+     * Flag indicating if this n-node's run-time state
+     * is up to date or has been invalidated due to a
+     * lazily deferred update at some higher level in the RETE
+     * network in the on-demand mode.
+     * 
+     * The value of this field is only meaningful if 
+     * {@link ReteNetwork#isInOnDemandMode()} returns <code>true</code>.
+     */
+    protected boolean isUpToDate = true;
+
+    /**
      * @return The pattern of elements this n-node finds matches for.
      */
     public abstract RuleElement[] getPattern();
@@ -139,6 +150,18 @@ public abstract class ReteNetworkNode {
     public abstract boolean demandUpdate();
 
     /**
+     * When called, this method will try to send down one match
+     * to its successors. There is however no guarantee that the
+     * actual number of matches sent down is equal to one. 
+     * 
+     * @return The actual number of matches found and sent down. If the
+     * n-node cannot tell exactly how many match have actually been produced 
+     * (probably because it does not buffer anything itself) the return value 
+     * should be 1 if it has produced any matches and 0 otherwise.
+     */
+    public abstract int demandOneMatch();
+
+    /**
      * This method is called by an n-node's antecedent telling it
      * to send down all its lazily kept matches to its successor and 
      * force them to propagate their updates as well. 
@@ -189,5 +212,48 @@ public abstract class ReteNetworkNode {
      */
     public void addAntecedent(ReteNetworkNode nnode) {
         this.antecedents.add(nnode);
+    }
+
+    /**
+     * Determines if this n-node's run-time state
+     * is up to date or has been invalidated due to a
+     * lazily deferred update at some higher level in the RETE
+     * network in the on-demand mode.
+     * 
+     * The return value is meaningful only if the owner RETE
+     * network is in on-demand mode. See {@link ReteNetwork#isInOnDemandMode()}.
+     */
+    public boolean isUpToDate() {
+        return this.isUpToDate;
+    }
+
+    /**
+     * Instructs this n-node that it should consider its run-time state
+     * out of date.
+     *
+     * @return The old value of it's up-to-date flag prior to the call to this
+     * method.
+     */
+    public boolean invalidate() {
+        boolean result = this.isUpToDate;
+        this.isUpToDate = false;
+        if (result) {
+            for (ReteNetworkNode suc : this.getSuccessors()) {
+                suc.invalidate();
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Sets the new value of the up-to-date flag.
+     *  
+     * @param newValue The new value for the flag.
+     * @return The old value of the up-to-date flag.
+     */
+    protected boolean setUpToDate(boolean newValue) {
+        boolean result = this.isUpToDate;
+        this.isUpToDate = newValue;
+        return result;
     }
 }

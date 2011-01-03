@@ -470,7 +470,10 @@ public class ReteNetwork {
     private RuleGraphMorphism createRuleMorphismForCloning(RuleGraph source) {
         RuleGraphMorphism result = new RuleGraphMorphism();
         for (RuleNode n : source.nodeSet()) {
-            result.nodeMap().put(n, DefaultNode.createNode());
+            result.nodeMap().put(
+                n,
+                source.getFactory().createNode(
+                    source.getFactory().getMaxNodeNr() + 1));
         }
         return result;
     }
@@ -1152,7 +1155,7 @@ public class ReteNetwork {
         private HostGraph hostGraph;
         private Set<StateSubscriber> subscribers =
             new HashSet<StateSubscriber>();
-        private ReteUpdateMode updateMode = ReteUpdateMode.NORMAL;
+        private ReteUpdateMode updateMode = ReteUpdateMode.ONDEMAND;
 
         protected ReteState(ReteNetwork owner) {
             this.owner = owner;

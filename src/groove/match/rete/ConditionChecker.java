@@ -610,22 +610,39 @@ public class ConditionChecker extends ReteNetworkNode implements
     @Override
     public boolean demandUpdate() {
         boolean result = false;
-        if (this.getOwner().isInOnDemandMode()) {
-            if (!this.isEmpty()) {
-                for (ReteNetworkNode nnode : this.getAntecedents()) {
-                    result = result || nnode.demandUpdate();
+        if (!this.isUpToDate()) {
+            if (this.getOwner().isInOnDemandMode()) {
+                if (!this.isEmpty()) {
+                    for (ReteNetworkNode nnode : this.getAntecedents()) {
+                        result = result || nnode.demandUpdate();
+                    }
                 }
-            }
 
-            if (this.hasNacs()) {
-                for (ConditionChecker cc : this.getSubConditionCheckers()) {
-                    if (cc instanceof CompositeConditionChecker) {
-                        cc.demandUpdate();
+                if (this.hasNacs()) {
+                    for (ConditionChecker cc : this.getSubConditionCheckers()) {
+                        if (cc instanceof CompositeConditionChecker) {
+                            cc.demandUpdate();
+                        }
                     }
                 }
             }
+            setUpToDate(true);
         }
         return result;
+    }
+
+    @Override
+    public int demandOneMatch() {
+        int result = 0;
+        if (this.getOwner().isInOnDemandMode()) {
+            result = this.getAntecedents().get(0).demandOneMatch();
+            while ((result > 0)
+                && (this.conflictSet.size() == this.inhibitionMap.elementSet().size())) {
+                result = this.getAntecedents().get(0).demandOneMatch();
+            }
+        }
+        return result;
+
     }
 
 }

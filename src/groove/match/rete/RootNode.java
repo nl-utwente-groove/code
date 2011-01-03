@@ -117,4 +117,16 @@ public class RootNode extends ReteNetworkNode {
     public boolean demandUpdate() {
         return true;
     }
+
+    @Override
+    public boolean isUpToDate() {
+        // this method is not supposed to be called
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int demandOneMatch() {
+        // this method is not supposed to be called
+        throw new UnsupportedOperationException();
+    }
 }

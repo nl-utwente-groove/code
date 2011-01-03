@@ -149,6 +149,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
             this.ondemandBuffer.remove(edge);
         } else {
             this.ondemandBuffer.add(edge);
+            this.invalidate();
         }
     }
 
@@ -208,11 +209,14 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
     @Override
     public boolean demandUpdate() {
         boolean result = this.ondemandBuffer.size() > 0;
-        if (this.getOwner().isInOnDemandMode()) {
-            for (HostEdge e : this.ondemandBuffer) {
-                sendDownReceivedEdge(e, Action.ADD);
+        if (!this.isUpToDate()) {
+            if (this.getOwner().isInOnDemandMode()) {
+                for (HostEdge e : this.ondemandBuffer) {
+                    sendDownReceivedEdge(e, Action.ADD);
+                }
+                this.ondemandBuffer.clear();
             }
-            this.ondemandBuffer.clear();
+            setUpToDate(true);
         }
         return result;
     }
@@ -227,5 +231,20 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
     public List<? extends Object> initialize() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public int demandOneMatch() {
+        int result = this.ondemandBuffer.size();
+        if (this.getOwner().isInOnDemandMode()) {
+            if (!this.isUpToDate() && (result > 0)) {
+                HostEdge e = this.ondemandBuffer.iterator().next();
+                this.ondemandBuffer.remove(e);
+                sendDownReceivedEdge(e, Action.ADD);
+                setUpToDate(this.ondemandBuffer.size() == 0);
+                result = 1;
+            }
+        }
+        return result;
     }
 }
