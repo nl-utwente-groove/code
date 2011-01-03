@@ -16,8 +16,6 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.DefaultLabel;
-import groove.graph.Label;
 import groove.util.Groove;
 
 import java.util.ArrayList;
@@ -31,7 +29,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class EditableContent extends TreeSet<Label> {
+public class StringObject extends TreeSet<String> {
     /**
      * Constructs an object whose string description uses a given string as a
      * separator between labels (in {@link #toString()}, and which uses another
@@ -41,7 +39,7 @@ public class EditableContent extends TreeSet<Label> {
      * @param allowEmptyLabelSet set to <code>true</code> if the label set
      *        should not be empty.
      */
-    public EditableContent(boolean allowEmptyLabelSet) {
+    public StringObject(boolean allowEmptyLabelSet) {
         this.allowEmptyLabelSet = allowEmptyLabelSet;
     }
 
@@ -66,11 +64,11 @@ public class EditableContent extends TreeSet<Label> {
      * @see #isAllowEmptyLabelSet()
      */
     public void load(String value) {
-        List<Label> labelList = new ArrayList<Label>();
+        List<String> labelList = new ArrayList<String>();
         for (String text : value.split(NEWLINE)) {
             text = text.trim();
             if (text.length() > 0) {
-                labelList.add(DefaultLabel.createLabel(text));
+                labelList.add(text);
             }
         }
         load(labelList);
@@ -81,7 +79,7 @@ public class EditableContent extends TreeSet<Label> {
      * 
      * @param labelSet the label set from which to load the user object
      */
-    public void load(Collection<Label> labelSet) {
+    public void load(Collection<String> labelSet) {
         clear();
         if (isAllowEmptyLabelSet() || !labelSet.isEmpty()) {
             addAll(labelSet);
@@ -100,8 +98,8 @@ public class EditableContent extends TreeSet<Label> {
     }
 
     @Override
-    public EditableContent clone() {
-        return (EditableContent) super.clone();
+    public StringObject clone() {
+        return (StringObject) super.clone();
     }
 
     /**

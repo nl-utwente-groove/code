@@ -16,6 +16,7 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.util.Converter;
@@ -28,7 +29,7 @@ import java.util.List;
 import org.jgraph.graph.GraphConstants;
 
 /**
- * J-Graph edge for the editor. This has a {@link EditableContent} as user
+ * J-Graph edge for the editor. This has a {@link StringObject} as user
  * object, which can be loaded from a string or set of strings.
  * @author Arend Rensink
  * @version $Revision $
@@ -44,9 +45,9 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     public EditableJEdge(EditorJModel jModel, AspectJEdge other) {
         this(jModel);
         this.proxy = other;
-        List<Label> labelList = new ArrayList<Label>();
+        List<String> labelList = new ArrayList<String>();
         for (AspectEdge edge : this.proxy.getEdges()) {
-            labelList.add(edge.label());
+            labelList.add(edge.label().toString());
         }
         getUserObject().load(labelList);
         refreshAttributes();
@@ -66,8 +67,8 @@ public class EditableJEdge extends JEdge implements EditableJCell {
         List<StringBuilder> result;
         if (hasError() || this.proxy == null) {
             result = new ArrayList<StringBuilder>();
-            for (Label label : getUserObject()) {
-                result.add(Converter.toHtml(new StringBuilder(label.toString())));
+            for (String label : getUserObject()) {
+                result.add(Converter.toHtml(new StringBuilder(label)));
             }
         } else {
             result = this.proxy.getLines();
@@ -77,8 +78,15 @@ public class EditableJEdge extends JEdge implements EditableJCell {
 
     /** This implementation just returns the user object. */
     public Collection<? extends Label> getListLabels() {
-        return hasError() || this.proxy == null ? getUserObject()
-                : this.proxy.getListLabels();
+        if (hasError() || this.proxy == null) {
+            List<Label> result = new ArrayList<Label>();
+            for (String text : getUserObject()) {
+                result.add(DefaultLabel.createLabel(text));
+            }
+            return result;
+        } else {
+            return this.proxy.getListLabels();
+        }
     }
 
     /**
@@ -88,9 +96,9 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     @Override
     public void setUserObject(Object value) {
         // we do need to create a new object, otherwise undos do not work
-        EditableContent myObject = new EditableContent(false);
-        if (value instanceof EditableContent) {
-            myObject.load((EditableContent) value);
+        StringObject myObject = new StringObject(false);
+        if (value instanceof StringObject) {
+            myObject.load((StringObject) value);
         } else if (value != null) {
             myObject.load(value.toString());
         }
@@ -99,8 +107,8 @@ public class EditableJEdge extends JEdge implements EditableJCell {
 
     /** Specialises the return type. */
     @Override
-    public EditableContent getUserObject() {
-        return (EditableContent) super.getUserObject();
+    public StringObject getUserObject() {
+        return (StringObject) super.getUserObject();
     }
 
     @Override

@@ -17,13 +17,13 @@
 package groove.gui.jgraph;
 
 /**
- * Instantiation of a {@link JCell} with an {@link EditableContent}.
+ * Instantiation of a {@link JCell} with an {@link StringObject}.
  * @author Arend Rensink
  * @version $Revision $
  */
 public interface EditableJCell extends JCell {
     /** Returns the user object of this cell, with the given type. */
-    EditableContent getUserObject();
+    StringObject getUserObject();
 
     /** Sets the error flag of this vertex. */
     void setError(boolean error);
