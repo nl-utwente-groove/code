@@ -108,7 +108,7 @@ public class AspectJEdge extends GraphJEdge<AspectNode,AspectEdge> {
             // add nesting level, if any
             String levelName = edge.getLevelName();
             if (levelName != null && levelName.length() != 0) {
-                result.append(levelName + LEVEL_NAME_SEPARATOR);
+                result.append(LEVEL_NAME_SEPARATOR + levelName);
             }
         }
         result.append(super.getLine(edge));
@@ -192,5 +192,5 @@ public class AspectJEdge extends GraphJEdge<AspectNode,AspectEdge> {
     private boolean error;
 
     /** Separator between level name and edge label. */
-    private static final char LEVEL_NAME_SEPARATOR = ':';
+    private static final char LEVEL_NAME_SEPARATOR = '@';
 }
