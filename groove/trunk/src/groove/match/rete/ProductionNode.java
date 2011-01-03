@@ -18,6 +18,7 @@ package groove.match.rete;
 
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
 import groove.trans.Rule;
+import groove.util.Reporter;
 import groove.util.TreeHashSet;
 
 import java.util.Iterator;
@@ -28,6 +29,19 @@ import java.util.Set;
  * @version $Revision $
  */
 public class ProductionNode extends ConditionChecker {
+
+    /**
+     * Report collector for production nodes
+     */
+    protected static final Reporter reporter =
+        Reporter.register(ProductionNode.class);
+
+    /**
+     * For collecting reports on the number of time the 
+     * {@link #demandOneMatch()} method is called for production nodes only.
+     */
+    protected static final Reporter demandOneMatchReporter =
+        reporter.register("demandOneMatch");
 
     /**
      * @param network The RETE network to which this node belongs
@@ -72,7 +86,7 @@ public class ProductionNode extends ConditionChecker {
             result = new TreeHashSet<ReteMatch>();
             Set<ReteMatch> cs = this.conflictSet;
             if (this.hasNacs()) {
-                this.demandUpdate();
+                this.demandUpdateOnlyIfNecessary();
             }
             if (!this.inhibitionMap.isEmpty() && (cs.size() > 0)) {
                 for (ReteMatch m : cs) {
@@ -84,9 +98,37 @@ public class ProductionNode extends ConditionChecker {
             } else if (cs.size() > 0) {
                 result.add(cs.iterator().next());
             } else {
-                this.demandUpdate();
-                if (cs.size() > 0) {
+                demandOneMatchReporter.start();
+                if (this.demandOneMatch() > 0) {
                     result.add(cs.iterator().next());
+                }
+                demandOneMatchReporter.stop();
+            }
+        }
+        return result;
+    }
+
+    private void demandUpdateOnlyIfNecessary() {
+        if (this.conflictSet.size() == this.inhibitionMap.elementSet().size()) {
+            demandUpdate();
+        } else if (!allNacsUpToDate()) {
+            demandUpdate();
+        }
+    }
+
+    /**
+     * Determines if all the NACs are up to date w.r.t. 
+     * the matches currently present in the conflict set. That is,
+     * no match in the conflict set is wrongfully considered uninhibitted.
+     */
+    protected boolean allNacsUpToDate() {
+        boolean result = this.hasNacs();
+        if (result) {
+            for (ConditionChecker cc : this.getSubConditionCheckers()) {
+                if (cc instanceof CompositeConditionChecker) {
+                    result =
+                        result
+                            && ((CompositeConditionChecker) cc).isNegativePartUpToDate();
                 }
             }
         }

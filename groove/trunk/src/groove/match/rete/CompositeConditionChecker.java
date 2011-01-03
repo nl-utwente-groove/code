@@ -17,9 +17,9 @@
 package groove.match.rete;
 
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
-import groove.trans.NotCondition;
 import groove.trans.HostEdge;
 import groove.trans.HostNode;
+import groove.trans.NotCondition;
 
 /**
  * A checker node which is the result of superimposing the
@@ -88,4 +88,25 @@ public class CompositeConditionChecker extends ConditionChecker {
         this.getParent().receiveInhibitorMatch(
             actualPrefixMatchWithCorrectOwner, Action.REMOVE);
     }
+
+    /**
+     * Determines if the negative parts of this composite condition
+     * are up to date.
+     */
+    public boolean isNegativePartUpToDate() {
+        //If the positive component 
+        //(which is the parent) is
+        //up to date then this whole composite condition is up to date too. 
+        return this.isUpToDate() || !this.parent.isUpToDate();
+    }
+
+    @Override
+    public boolean invalidate() {
+        boolean result = super.invalidate();
+        if (!this.isNegativePartUpToDate()) {
+            this.getParent().invalidate();
+        }
+        return result;
+    }
+
 }
