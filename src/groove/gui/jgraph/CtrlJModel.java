@@ -24,7 +24,6 @@ import groove.gui.Options;
 import java.util.HashSet;
 import java.util.Set;
 
-
 /**
  * JModel for a ControlAutomaton
  * @author Tom Staijen
@@ -53,7 +52,6 @@ public class CtrlJModel extends GraphJModel<CtrlState,CtrlTransition> {
      */
     public CtrlJModel(CtrlAut shape, Options options) {
         super(shape, options);
-        this.reload();
     }
 
     @Override

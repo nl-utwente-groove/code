@@ -755,7 +755,7 @@ public class Simulator {
             // go!
             generateThread.start();
             // get the lts' jmodel back on line and re-synchronize its state
-            ltsJModel.reload();
+            ltsJModel.loadGraph(ltsJModel.getGraph());
             // re-enable rule application
             getApplyTransitionAction().setEnabled(applyEnabled);
             // reset lts display visibility
@@ -1091,7 +1091,7 @@ public class Simulator {
             // collect the result states
             getGTS().setResult(exploration.getLastResult());
             // get the lts' jmodel back on line and re-synchronize its state
-            ltsJModel.reload();
+            ltsJModel.loadGraph(ltsJModel.getGraph());
             // re-enable rule application
             getApplyTransitionAction().setEnabled(applyEnabled);
             // reset lts display visibility
