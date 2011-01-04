@@ -36,14 +36,14 @@ public class RuleJGraph extends JGraph {
      * Creates a j-graph for a given simulator, with an initially empty j-model.
      */
     public RuleJGraph(Simulator simulator) {
-        super(AspectJModel.EMPTY_ASPECT_JMODEL, false);
+        super(AJModel.EMPTY_JMODEL, false);
         this.simulator = simulator;
     }
 
     /** Specialises the return type to a {@link AspectJModel}. */
     @Override
-    public AspectJModel getModel() {
-        return (AspectJModel) super.getModel();
+    public AJModel getModel() {
+        return (AJModel) super.getModel();
     }
 
     @Override

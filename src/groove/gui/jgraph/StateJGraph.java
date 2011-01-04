@@ -35,15 +35,15 @@ public class StateJGraph extends JGraph {
      * @param simulator the simulator to which this j-graph is associated
      */
     public StateJGraph(Simulator simulator) {
-        super(AspectJModel.newInstance(null, simulator.getOptions()), true);
+        super(AJModel.EMPTY_JMODEL, true);
         this.simulator = simulator;
         setEnabled(false);
     }
 
     /** Specialises the return type to a {@link JModel}. */
     @Override
-    public AspectJModel getModel() {
-        return (AspectJModel) super.getModel();
+    public AJModel getModel() {
+        return (AJModel) super.getModel();
     }
 
     @Override

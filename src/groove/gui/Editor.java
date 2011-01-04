@@ -26,7 +26,7 @@ import groove.gui.dialog.AboutBox;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.PropertiesDialog;
 import groove.gui.dialog.SingleListDialog;
-import groove.gui.jgraph.AspectJModel;
+import groove.gui.jgraph.AJModel;
 import groove.gui.jgraph.EditableJCell;
 import groove.gui.jgraph.EditorJGraph;
 import groove.gui.jgraph.EditorJModel;
@@ -378,7 +378,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      *         aspect correct (and so can be saved).
      */
     protected boolean handlePreview(String okOption) {
-        AspectJModel previewedModel = showPreviewDialog(toView(), okOption);
+        AJModel previewedModel = showPreviewDialog(toView(), okOption);
         if (previewedModel != null) {
             setAspectGraph(previewedModel.getGraph(), false);
             return true;
@@ -1201,14 +1201,13 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * Creates a preview of an aspect model, with properties. Returns a j-model
      * if the edited model should be replaced, <code>null</code> otherwise.
      */
-    private AspectJModel showPreviewDialog(View<?> view, String okOption) {
+    private AJModel showPreviewDialog(View<?> view, String okOption) {
         if (this.previewSize == null) {
             this.previewSize = DEFAULT_PREVIEW_SIZE;
         }
         AspectGraph graph = view.getView();
         boolean partial = graph.hasErrors();
-        AspectJModel previewModel =
-            AspectJModel.newInstance(graph, getOptions());
+        AJModel previewModel = AJModel.newInstance(graph, getOptions());
         JGraph jGraph = createJGraph(previewModel);
         jGraph.setToolTipEnabled(true);
         JScrollPane jGraphPane = new JScrollPane(jGraph);
@@ -1347,7 +1346,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * Factory method to create a {@link JGraph} displaying a given
      * {@link JModel}.
      */
-    private JGraph createJGraph(AspectJModel jmodel) {
+    private JGraph createJGraph(AJModel jmodel) {
         JGraph result = new JGraph(jmodel, false);
         result.setExporter(getExporter());
         return result;

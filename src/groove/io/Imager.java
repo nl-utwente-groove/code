@@ -20,7 +20,7 @@ import groove.graph.DefaultGraph;
 import groove.graph.GraphRole;
 import groove.gui.Exporter;
 import groove.gui.Options;
-import groove.gui.jgraph.AspectJModel;
+import groove.gui.jgraph.AJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
@@ -195,7 +195,7 @@ public class Imager extends CommandLineTool {
                         Options options = new Options();
                         options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(
                             false);
-                        model = AspectJModel.newInstance(aspectGraph, options);
+                        model = AJModel.newInstance(aspectGraph, options);
                     }
 
                     JGraph jGraph = new JGraph(model, false);

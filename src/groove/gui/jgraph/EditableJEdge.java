@@ -41,7 +41,7 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     }
 
     /** Constructs a j-edge by cloning another one. */
-    public EditableJEdge(EditorJModel jModel, AspectJEdge other) {
+    public EditableJEdge(EditorJModel jModel, AJEdge other) {
         this(jModel);
         this.proxy = other;
         getUserObject().addEdges(this.proxy.getEdges());
@@ -51,7 +51,7 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     /**
      * Sets the proxy edge, from which this one borrows its attributes.
      */
-    public void setProxy(AspectJEdge proxy) {
+    public void setProxy(AJEdge proxy) {
         this.proxy = proxy;
         refreshAttributes();
         // note that we do not change the user object.
@@ -130,5 +130,5 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     }
 
     private boolean error;
-    private AspectJEdge proxy;
+    private AJEdge proxy;
 }

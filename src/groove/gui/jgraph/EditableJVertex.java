@@ -48,7 +48,7 @@ public class EditableJVertex extends JVertex implements EditableJCell {
     }
 
     /** Constructs a jvertex by cloning another one. */
-    public EditableJVertex(EditorJModel jModel, AspectJVertex other) {
+    public EditableJVertex(EditorJModel jModel, AJVertex other) {
         this(jModel, other.getNumber());
         this.proxy = other;
         getUserObject().addLabels(this.proxy.getNode().getNodeLabels());
@@ -124,7 +124,7 @@ public class EditableJVertex extends JVertex implements EditableJCell {
     }
 
     /** Sets the proxy vertex, from which this one borrows its attributes. */
-    public void setProxy(AspectJVertex proxy) {
+    public void setProxy(AJVertex proxy) {
         this.proxy = proxy;
         refreshAttributes();
         // note that we do not change the user object.
@@ -154,5 +154,5 @@ public class EditableJVertex extends JVertex implements EditableJCell {
     private boolean error;
 
     /** The aspect vertex from which we get our data. */
-    private AspectJVertex proxy;
+    private AJVertex proxy;
 }

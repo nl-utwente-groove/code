@@ -24,8 +24,8 @@ import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.Node;
 import groove.gui.Options;
-import groove.gui.jgraph.AspectJEdge;
-import groove.gui.jgraph.AspectJVertex;
+import groove.gui.jgraph.AJEdge;
+import groove.gui.jgraph.AJVertex;
 import groove.gui.jgraph.CtrlJEdge;
 import groove.gui.jgraph.CtrlJVertex;
 import groove.gui.jgraph.GraphJEdge;
@@ -1048,8 +1048,8 @@ public final class GraphToTikz {
         ArrayList<String> styles = new ArrayList<String>();
 
         AspectKind nodeKind =
-            node instanceof AspectJVertex
-                    ? ((AspectJVertex) node).getNode().getKind() : NONE;
+            node instanceof AJVertex ? ((AJVertex) node).getNode().getKind()
+                    : NONE;
         switch (nodeKind) {
         case ERASER:
             // Eraser node
@@ -1085,8 +1085,8 @@ public final class GraphToTikz {
         }
 
         AspectKind attrKind =
-            node instanceof AspectJVertex
-                    ? ((AspectJVertex) node).getNode().getAttrKind() : NONE;
+            node instanceof AJVertex
+                    ? ((AJVertex) node).getNode().getAttrKind() : NONE;
         if (attrKind.isData()) {
             styles.add(ATTRIBUTE_NODE_STYLE);
         } else if (attrKind == PRODUCT) {
@@ -1191,8 +1191,7 @@ public final class GraphToTikz {
         ArrayList<String> styles = new ArrayList<String>();
 
         AspectKind edgeKind =
-            edge instanceof AspectJEdge
-                    ? ((AspectJEdge) edge).getEdge().getKind() : NONE;
+            edge instanceof AJEdge ? ((AJEdge) edge).getEdge().getKind() : NONE;
         switch (edgeKind) {
         case ERASER:
             styles.add(ERASER_EDGE_STYLE);

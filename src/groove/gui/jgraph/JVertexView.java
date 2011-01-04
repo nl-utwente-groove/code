@@ -129,8 +129,8 @@ public class JVertexView extends VertexView {
      */
     private int getVertexShape() {
         AspectNode node = null;
-        if (getCell() instanceof AspectJVertex) {
-            node = ((AspectJVertex) getCell()).getNode();
+        if (getCell() instanceof AJVertex) {
+            node = ((AJVertex) getCell()).getNode();
         } else if (getCell() instanceof EditableJVertex) {
             node = ((EditableJVertex) getCell()).getNode();
         }

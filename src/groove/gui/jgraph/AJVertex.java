@@ -93,12 +93,11 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
         } else {
             result.append(super.getNodeDescription());
         }
-        if (AspectJModel.ROLE_NAMES.containsKey(this.aspect)) {
+        if (AJModel.ROLE_NAMES.containsKey(this.aspect)) {
             Converter.toUppercase(result, false);
             result.insert(0, " ");
-            result.insert(0, AspectJModel.ROLE_NAMES.get(this.aspect));
-            result.append("<br>"
-                + AspectJModel.ROLE_DESCRIPTIONS.get(this.aspect));
+            result.insert(0, AJModel.ROLE_NAMES.get(this.aspect));
+            result.append("<br>" + AJModel.ROLE_DESCRIPTIONS.get(this.aspect));
         }
         return result;
     }
@@ -275,7 +274,7 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
         Set<AspectEdge> result = new TreeSet<AspectEdge>();
         if (!getJModel().isShowValueNodes()) {
             for (Object edgeObject : getPort().getEdges()) {
-                AspectJEdge jEdge = (AspectJEdge) edgeObject;
+                AJEdge jEdge = (AJEdge) edgeObject;
                 if (jEdge.getSourceVertex() == this
                     && jEdge.isDataEdgeSourceLabel()) {
                     for (AspectEdge edge : jEdge.getEdges()) {

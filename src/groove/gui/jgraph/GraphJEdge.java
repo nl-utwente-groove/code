@@ -36,15 +36,15 @@ import java.util.TreeSet;
 public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
         implements GraphJCell<N,E> {
     /**
-     * Constructs a model edge based on a graph edge. The graph edge is required
-     * to have at least arity two; yet we cannot rely on it being a binary
-     * edge, it might be regular with some pseudo-ends or it might be a
-     * {@link groove.view.aspect.AspectEdge}.
+     * Constructs an uninitialised model edge.
+     */
+    GraphJEdge(GraphJModel<N,E> jModel) {
+        super(jModel);
+    }
+
+    /**
+     * Constructs a model edge based on a graph edge.
      * @param edge the underlying graph edge of this model edge.
-     * @require <tt>edge != null && edge.endCount() >= 0</tt>
-     * @ensure labels().size()==1, labels().contains(edge.label) source() ==
-     *         edge.source(), target() == edge.target()
-     * @throws IllegalArgumentException if <code>edge.endCount() < 2</code>
      */
     GraphJEdge(GraphJModel<N,E> jModel, E edge) {
         super(jModel);
@@ -90,6 +90,9 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
      * Returns the common source of the underlying graph edges.
      */
     public N getSourceNode() {
+        if (this.source == null) {
+            this.source = getSourceVertex().getNode();
+        }
         return this.source;
     }
 
@@ -97,6 +100,9 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
      * Returns the common target of the underlying graph edges.
      */
     public N getTargetNode() {
+        if (this.target == null) {
+            this.target = getTargetVertex().getNode();
+        }
         return this.target;
     }
 
@@ -124,8 +130,8 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
      */
     void reset() {
         this.edges.clear();
-        this.source = getSourceVertex().getNode();
-        this.target = getTargetVertex().getNode();
+        this.source = null;
+        this.target = null;
     }
 
     /**
