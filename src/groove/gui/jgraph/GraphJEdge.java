@@ -118,6 +118,16 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
         return (GraphJVertex<N,E>) super.getTargetVertex();
     }
 
+    /** 
+     * Clears the set of graph edges wrapped in this JEdge,
+     * and sets the source and target node from the source and target JVertex. 
+     */
+    void reset() {
+        this.edges.clear();
+        this.source = getSourceVertex().getNode();
+        this.target = getTargetVertex().getNode();
+    }
+
     /**
      * Returns an unmodifiable view upon the set of underlying graph edges.
      */
@@ -126,7 +136,7 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
     }
 
     /**
-     * Returns an arbitrary edge from the set of underlying edges.
+     * Returns the first edge from the set of underlying edges.
      */
     public E getEdge() {
         return this.edges.iterator().next();
@@ -197,6 +207,8 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
      * @ensure if <tt>result</tt> then <tt>getEdgeSet().contains(edge)</tt>
      */
     public boolean addEdge(E edge) {
+        assert edge.source().equals(getSourceNode());
+        assert edge.target().equals(getTargetNode());
         return this.edges.add(edge);
     }
 
@@ -217,9 +229,9 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
     }
 
     /** Source node of the underlying graph edges. */
-    private final N source;
+    private N source;
     /** Target node of the underlying graph edges. */
-    private final N target;
+    private N target;
     /** Set of graph edges mapped to this JEdge. */
     private final Set<E> edges = new TreeSet<E>();
 }

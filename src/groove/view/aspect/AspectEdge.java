@@ -61,7 +61,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
      * @param target the target node for this edge
      * @param graphRole the role of the graph in which this edge occurs
      */
-    AspectEdge(AspectNode source, AspectLabel label, AspectNode target,
+    public AspectEdge(AspectNode source, AspectLabel label, AspectNode target,
             GraphRole graphRole) {
         super(source, label, target);
         if (label.isNodeOnly()) {

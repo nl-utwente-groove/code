@@ -3,18 +3,26 @@ package groove.gui.jgraph;
 import static groove.gui.jgraph.JAttr.RULE_EDGE_ATTR;
 import static groove.view.aspect.AspectKind.ARGUMENT;
 import static groove.view.aspect.AspectKind.REMARK;
+import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.gui.Options;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.trans.RuleLabel;
 import groove.util.Converter;
+import groove.view.FormatError;
+import groove.view.FormatException;
 import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
+import groove.view.aspect.AspectLabel;
 import groove.view.aspect.AspectNode;
+import groove.view.aspect.AspectParser;
 
 import java.awt.Font;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.jgraph.graph.GraphConstants;
@@ -22,16 +30,44 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Specialized j-edge for rule graphs, with its own tool tip text.
  */
-public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> {
+public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell {
     /** Creates a j-edge on the basis of a given (aspectual) edge. */
     public AJEdge(AJModel jModel, AspectEdge edge) {
         super(jModel, edge);
+        setUserObject(null);
         this.aspect = edge.getKind();
     }
 
     @Override
     public AJModel getJModel() {
         return (AJModel) super.getJModel();
+    }
+
+    /** Clears the errors and the aspect, in addition to calling the super method. */
+    @Override
+    void reset() {
+        super.reset();
+        this.errors.clear();
+        this.aspect = null;
+    }
+
+    /**
+     * Returns <tt>true</tt> only if the aspect values of the edge to be
+     * added equal those of this j-edge, and the superclass is also willing.
+     */
+    @Override
+    public boolean addEdge(AspectEdge edge) {
+        boolean first = getEdges().isEmpty();
+        super.addEdge(edge);
+        this.errors.addAll(edge.getErrors());
+        if (first) {
+            this.aspect = edge.getKind();
+        } else if (!edge.equalsAspects(getEdge())) {
+            this.errors.add(new FormatError(
+                "Conflicting aspects in edge labels %s and %s",
+                getEdge().label(), edge.label(), this));
+        }
+        return true;
     }
 
     @Override
@@ -79,19 +115,6 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> {
             result = Collections.singleton(edge.getDisplayLabel());
         }
         return result;
-    }
-
-    /**
-     * Returns <tt>true</tt> only if the aspect values of the edge to be
-     * added equal those of this j-edge, and the superclass is also willing.
-     */
-    @Override
-    public boolean addEdge(AspectEdge edge) {
-        if (edge.equalsAspects(getEdge())) {
-            return super.addEdge(edge);
-        } else {
-            return false;
-        }
     }
 
     /**
@@ -157,12 +180,12 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> {
 
     @Override
     public final boolean hasError() {
-        return this.error;
+        return !this.errors.isEmpty();
     }
 
-    /** Sets the error flag of this edge. */
-    final void setError(boolean error) {
-        this.error = error;
+    /** Returns the (possibly empty) set of errors in this JEdge. */
+    public Collection<FormatError> getErrors() {
+        return this.errors;
     }
 
     @Override
@@ -188,8 +211,55 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> {
         GraphConstants.setFont(result, currentFont.deriveFont(fontAttr));
     }
 
-    private final AspectKind aspect;
-    private boolean error;
+    public void saveToUserObject() {
+        // collect the edge information
+        AJObject userObject = getUserObject();
+        userObject.clear();
+        userObject.addEdges(getEdges());
+    }
+
+    @Override
+    public void loadFromUserObject(GraphRole role) {
+        reset();
+        AspectParser parser = AspectParser.getInstance(role);
+        for (String text : getUserObject()) {
+            AspectLabel label = parser.parse(text);
+            AspectEdge edge =
+                new AspectEdge(getSourceNode(), label, getTargetNode(), role);
+            try {
+                edge.setFixed();
+            } catch (FormatException e) {
+                // do nothing; the errors in the edge will be processed later
+            }
+            addEdge(edge);
+        }
+    }
+
+    /**
+     * Creates a new used object, and initialises it from a given value.
+     * If the value is a collection or a string, loads the user object from it.
+     */
+    @Override
+    public void setUserObject(Object value) {
+        // we do need to create a new object, otherwise undos do not work
+        AJObject myObject = new AJObject(false);
+        if (value instanceof AJObject) {
+            myObject.addAll((AJObject) value);
+        } else if (value != null) {
+            myObject.load(value.toString());
+        }
+        super.setUserObject(myObject);
+    }
+
+    /** Specialises the return type. */
+    @Override
+    public AJObject getUserObject() {
+        return (AJObject) super.getUserObject();
+    }
+
+    private AspectKind aspect;
+
+    private List<FormatError> errors = new ArrayList<FormatError>();
 
     /** Separator between level name and edge label. */
     private static final char LEVEL_NAME_SEPARATOR = ':';

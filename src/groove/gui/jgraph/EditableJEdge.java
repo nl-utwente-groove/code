@@ -20,7 +20,6 @@ import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.util.Converter;
-import groove.view.aspect.AspectEdge;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,11 +44,7 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     public EditableJEdge(EditorJModel jModel, AspectJEdge other) {
         this(jModel);
         this.proxy = other;
-        List<String> labelList = new ArrayList<String>();
-        for (AspectEdge edge : this.proxy.getEdges()) {
-            labelList.add(edge.label().toString());
-        }
-        getUserObject().load(labelList);
+        getUserObject().addEdges(this.proxy.getEdges());
         refreshAttributes();
     }
 
@@ -98,7 +93,7 @@ public class EditableJEdge extends JEdge implements EditableJCell {
         // we do need to create a new object, otherwise undos do not work
         StringObject myObject = new StringObject(false);
         if (value instanceof StringObject) {
-            myObject.load((StringObject) value);
+            myObject.addAll((StringObject) value);
         } else if (value != null) {
             myObject.load(value.toString());
         }

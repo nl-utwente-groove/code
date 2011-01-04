@@ -42,7 +42,7 @@ import java.util.Set;
  */
 public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     /** Constructs an aspect node with a given number. */
-    AspectNode(int nr, GraphRole graphRole) {
+    public AspectNode(int nr, GraphRole graphRole) {
         super(nr);
         assert graphRole.inGrammar();
         this.graphRole = graphRole;

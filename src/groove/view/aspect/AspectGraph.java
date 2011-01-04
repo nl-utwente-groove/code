@@ -355,23 +355,28 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
 
     @Override
     public void setFixed() {
-        List<FormatError> errors = new ArrayList<FormatError>();
-        for (AspectEdge edge : edgeSet()) {
-            try {
-                edge.setFixed();
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
+        if (!isFixed()) {
+            // first fix the edges, then the nodes
+            List<FormatError> errors = new ArrayList<FormatError>();
+            for (AspectEdge edge : edgeSet()) {
+                try {
+                    edge.setFixed();
+                } catch (FormatException exc) {
+                    // collect error information in any case
+                }
+                errors.addAll(edge.getErrors());
             }
-        }
-        for (AspectNode node : nodeSet()) {
-            try {
-                node.setFixed();
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
+            for (AspectNode node : nodeSet()) {
+                try {
+                    node.setFixed();
+                } catch (FormatException exc) {
+                    // collect error information in any case
+                }
+                errors.addAll(node.getErrors());
             }
+            addErrors(errors);
+            super.setFixed();
         }
-        addErrors(errors);
-        super.setFixed();
     }
 
     @Override

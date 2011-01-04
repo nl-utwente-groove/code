@@ -9,10 +9,14 @@ import groove.gui.Options;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.trans.RuleLabel;
 import groove.util.Converter;
+import groove.view.FormatError;
+import groove.view.FormatException;
 import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
+import groove.view.aspect.AspectLabel;
 import groove.view.aspect.AspectNode;
+import groove.view.aspect.AspectParser;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,16 +28,42 @@ import java.util.TreeSet;
 /**
  * Specialized j-vertex for rule graphs, with its own tool tip text.
  */
-public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> {
+public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
+        AJCell {
     /** Creates a j-vertex on the basis of a given (aspectual) node. */
     public AJVertex(AJModel jModel, AspectNode node) {
         super(jModel, node);
+        setUserObject(null);
         this.aspect = node.getKind();
     }
 
     @Override
     public AJModel getJModel() {
         return (AJModel) super.getJModel();
+    }
+
+    /** Clears the errors and the aspect, in addition to calling the super method. */
+    @Override
+    void reset(AspectNode node) {
+        super.reset(node);
+        this.errors.clear();
+        this.aspect = node.getKind();
+    }
+
+    @Override
+    public boolean addSelfEdge(AspectEdge edge) {
+        assert edge.source() == getNode();
+        assert edge.target() == getNode();
+        this.errors.addAll(edge.getErrors());
+        return super.addSelfEdge(edge);
+    }
+
+    void setNodeFixed() {
+        try {
+            getNode().setFixed();
+        } catch (FormatException e) {
+            this.errors.addAll(e.getErrors());
+        }
     }
 
     @Override
@@ -284,12 +314,12 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> {
 
     @Override
     public final boolean hasError() {
-        return this.error;
+        return !this.errors.isEmpty();
     }
 
-    /** Sets the error flag of this vertex. */
-    final void setError(boolean error) {
-        this.error = error;
+    /** Returns the (possibly empty) set of errors in this JVertex. */
+    public Collection<FormatError> getErrors() {
+        return this.errors;
     }
 
     @Override
@@ -297,9 +327,64 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> {
         return JAttr.RULE_NODE_ATTR.get(this.aspect).clone();
     }
 
+    public void saveToUserObject() {
+        // collect the node and edge information
+        AJObject userObject = getUserObject();
+        userObject.clear();
+        userObject.addLabels(getNode().getNodeLabels());
+        userObject.addEdges(getSelfEdges());
+    }
+
+    @Override
+    public void loadFromUserObject(GraphRole role) {
+        AspectNode node = new AspectNode(getNode().getNumber(), role);
+        reset(node);
+        AspectParser parser = AspectParser.getInstance(role);
+        for (String text : getUserObject()) {
+            AspectLabel label = parser.parse(text);
+            if (label.isNodeOnly()) {
+                try {
+                    node.setAspects(label);
+                } catch (FormatException e) {
+                    // do nothing; the errors in the node will be processed later
+                }
+            } else {
+                AspectEdge edge = new AspectEdge(node, label, node, role);
+                try {
+                    edge.setFixed();
+                } catch (FormatException e) {
+                    // do nothing; the errors in the edge will be processed later
+                }
+                addSelfEdge(edge);
+            }
+        }
+    }
+
+    /**
+     * Creates a new used object, and initialises it from a given value.
+     * If the value is a collection or a string, loads the user object from it.
+     */
+    @Override
+    public void setUserObject(Object value) {
+        // we do need to create a new object, otherwise undos do not work
+        AJObject myObject = new AJObject(false);
+        if (value instanceof AJObject) {
+            myObject.addAll((AJObject) value);
+        } else if (value != null) {
+            myObject.load(value.toString());
+        }
+        super.setUserObject(myObject);
+    }
+
+    /** Specialises the return type. */
+    @Override
+    public AJObject getUserObject() {
+        return (AJObject) super.getUserObject();
+    }
+
     /** The role of the underlying rule node. */
-    private final AspectKind aspect;
-    private boolean error;
+    private AspectKind aspect;
+    private List<FormatError> errors = new ArrayList<FormatError>();
     static private final String ASSIGN_TEXT = " = ";
     static private final String TYPE_TEXT = ": ";
 }

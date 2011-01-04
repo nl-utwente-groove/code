@@ -52,13 +52,6 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
         this.vertexLabelled = vertexLabelled;
     }
 
-    /** Returns the {@link JModel} associated with this vertex. */
-    @SuppressWarnings("unchecked")
-    @Override
-    public GraphJModel<N,E> getJModel() {
-        return (GraphJModel<N,E>) super.getJModel();
-    }
-
     /**
      * Constructs a model node on top of a graph node.
      * @param jModel the model in which this vertex exists
@@ -68,6 +61,22 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
      */
     GraphJVertex(GraphJModel<N,E> jModel, N node) {
         this(jModel, node, true);
+    }
+
+    /** Returns the {@link JModel} associated with this vertex. */
+    @SuppressWarnings("unchecked")
+    @Override
+    public GraphJModel<N,E> getJModel() {
+        return (GraphJModel<N,E>) super.getJModel();
+    }
+
+    /**
+     * Sets the node wrapped in this JVertex to a new one,
+     * and clears the set of self-edges. 
+     */
+    void reset(N node) {
+        this.node = node;
+        this.edges.clear();
     }
 
     /**
@@ -258,7 +267,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
      */
     private final boolean vertexLabelled;
     /** The graph node modelled by this jgraph node. */
-    private final N node;
+    private N node;
     /** Set of graph edges mapped to this JEdge. */
     private final Set<E> edges = new TreeSet<E>();
 }
