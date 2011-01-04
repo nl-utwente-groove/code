@@ -7,7 +7,6 @@ import static groove.gui.jgraph.JAttr.LTS_OPEN_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.LTS_RESULT_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.LTS_START_NODE_ATTR;
 import groove.control.CtrlState;
-import groove.graph.Label;
 import groove.lts.DerivationLabel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -117,9 +116,9 @@ public class LTSJVertex extends GraphJVertex<GraphState,GraphTransition> {
      * label, depending on #isShowAnchors().
      */
     @Override
-    public Label getLabel(GraphTransition edge) {
+    public String getLabelText(GraphTransition edge) {
         return getJModel().isShowAnchors() ? new DerivationLabel(
-            edge.getEvent()) : super.getLabel(edge);
+            edge.getEvent()).text() : super.getLabelText(edge);
     }
 
     @Override

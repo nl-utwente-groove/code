@@ -16,6 +16,8 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.DefaultLabel;
+import groove.graph.Label;
 import groove.util.Groove;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectLabel;
@@ -50,6 +52,29 @@ public class AJObject extends ArrayList<String> {
      */
     public String toEditString() {
         return Groove.toString(toArray(), "", "", NEWLINE);
+    }
+
+    /** 
+     * Returns a list of lines constituting the node or edge label
+     * in case this object is displayed directly.
+     */
+    public List<StringBuilder> toLines() {
+        List<StringBuilder> result = new ArrayList<StringBuilder>();
+        for (String text : this) {
+            result.add(new StringBuilder(text));
+        }
+        return result;
+    }
+
+    /** 
+     * Returns the content of this object as a list of labels.
+     */
+    public List<Label> toLabels() {
+        List<Label> result = new ArrayList<Label>();
+        for (String text : this) {
+            result.add(DefaultLabel.createLabel(text));
+        }
+        return result;
     }
 
     /**

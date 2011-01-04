@@ -131,8 +131,6 @@ public class JVertexView extends VertexView {
         AspectNode node = null;
         if (getCell() instanceof AJVertex) {
             node = ((AJVertex) getCell()).getNode();
-        } else if (getCell() instanceof EditableJVertex) {
-            node = ((EditableJVertex) getCell()).getNode();
         }
         AspectKind attrKind =
             node == null ? AspectKind.NONE : node.getAttrKind();

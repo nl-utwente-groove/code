@@ -248,16 +248,6 @@ public enum AspectKind {
         return attributers.contains(this);
     }
 
-    /** Indicates that this aspect kind is allowed to appear on edges of a particular graph kind. */
-    public boolean isForEdge(GraphRole role) {
-        return allowedEdgeKinds.get(role).contains(this);
-    }
-
-    /** Indicates that this aspect kind is allowed to appear on nodes of a particular graph kind. */
-    public boolean isForNode(GraphRole role) {
-        return allowedNodeKinds.get(role).contains(this);
-    }
-
     /** Indicates that this aspect kind is always the last on a label. */
     public boolean isLast() {
         return this.contentKind != ContentKind.LEVEL;

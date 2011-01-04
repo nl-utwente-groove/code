@@ -125,8 +125,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             }
             this.labels.addAll(this.prefixes);
             JTextArea result = getEditorComponent();
-            String editString =
-                ((EditableJCell) value).getUserObject().toEditString();
+            String editString = ((AJCell) value).getUserObject().toEditString();
             result.setText(editString);
             result.selectAll();
             return result;

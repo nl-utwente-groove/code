@@ -64,22 +64,16 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     public AspectEdge(AspectNode source, AspectLabel label, AspectNode target,
             GraphRole graphRole) {
         super(source, label, target);
+        assert label.isFixed();
+        assert graphRole.inGrammar();
         if (label.isNodeOnly()) {
-            if (label.getInnerText().length() == 0) {
-                this.errors.add(new FormatError(
-                    "Empty edge label not allowed in %s; prefix with ':' if desired",
-                    this));
-            } else {
-                this.errors.add(new FormatError(
-                    "Node aspect %s not allowed in %s",
-                    label.getNodeOnlyAspect(), this));
-            }
+            this.errors.add(new FormatError(
+                "Aspect %s not allowed in edge label",
+                label.getNodeOnlyAspect(), this));
         }
         for (FormatError error : label().getErrors()) {
             this.errors.add(error.extend(this));
         }
-        assert label.isFixed();
-        assert graphRole.inGrammar();
         this.graphRole = graphRole;
     }
 
@@ -261,8 +255,8 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
      * declared or inferred one
      */
     private void declareAspect(Aspect value) throws FormatException {
+        assert value.isForEdge(this.graphRole);
         AspectKind kind = value.getKind();
-        assert kind.isForEdge(this.graphRole);
         if (kind == PATH || kind == LITERAL) {
             setLabelMode(value);
         } else if (kind.isAttrKind()) {
@@ -510,12 +504,12 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
 
     @Override
     public boolean hasAttrAspect() {
-        return this.attr != null;
+        return this.attr != null && this.attr.getKind() != NONE;
     }
 
     @Override
     public AspectKind getAttrKind() {
-        return hasAttrAspect() ? getAttrAspect().getKind() : null;
+        return hasAttrAspect() ? getAttrAspect().getKind() : NONE;
     }
 
     /** Indicates if this is an argument edge. */

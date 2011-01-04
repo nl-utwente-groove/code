@@ -20,7 +20,6 @@ import groove.gui.Editor;
 import groove.gui.SetLayoutMenu;
 import groove.gui.layout.ForestLayouter;
 import groove.gui.layout.SpringLayouter;
-import groove.view.aspect.AspectGraph;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -35,7 +34,6 @@ import javax.swing.JMenu;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.AttributeMap.SerializableRectangle2D;
 import org.jgraph.graph.ConnectionSet;
-import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.PortView;
@@ -54,8 +52,7 @@ public class EditorJGraph extends JGraph {
      * @since june2005
      */
     public EditorJGraph(Editor editor) {
-        super(new EditorJModel(editor,
-            AspectGraph.newInstance(editor.getRole())), false);
+        super(new AJModel(editor), false);
         this.editor = editor;
         setMarqueeHandler(createMarqueeHandler());
         setExporter(editor.getExporter());
@@ -87,8 +84,8 @@ public class EditorJGraph extends JGraph {
 
     /** Specialises the return type to {@link EditorJModel}. */
     @Override
-    public EditorJModel getModel() {
-        return (EditorJModel) this.graphModel;
+    public AJModel getModel() {
+        return (AJModel) this.graphModel;
     }
 
     /**
@@ -109,7 +106,8 @@ public class EditorJGraph extends JGraph {
         stopEditing();
         Point2D atPoint = fromScreen(snap(screenPoint));
         // define the j-cell to be inserted
-        DefaultGraphCell jVertex = getModel().computeJVertex();
+        AJVertex jVertex = getModel().computeJVertex();
+        jVertex.setNodeFixed();
         // set the bounds and store them in the cell
         Dimension size = JAttr.DEFAULT_NODE_SIZE;
         Point2D corner =
@@ -151,7 +149,9 @@ public class EditorJGraph extends JGraph {
         DefaultPort toPort =
             toPortView == null ? fromPort : (DefaultPort) toPortView.getCell();
         // define the edge to be inserted
-        EditableJEdge newEdge = getModel().computeJEdge();
+        AJEdge newEdge = getModel().computeJEdge();
+        // to make sure there is at least one graph edge wrapped by this JEdge,
+        // we add a dummy edge label to the JEdge's user object
         Object[] insert = new Object[] {newEdge};
         // define connections between edge and nodes, if any
         ConnectionSet cs = new ConnectionSet();

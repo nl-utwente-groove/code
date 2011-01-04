@@ -30,9 +30,11 @@ import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
 
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,6 +62,7 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     /** Constructor for an editable model. */
     AJModel(Editor editor) {
+        super(editor.getOptions());
         this.editor = editor;
     }
 
@@ -80,6 +83,9 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
     public void loadGraph(Graph<AspectNode,AspectEdge> graph) {
         this.loading = true;
         super.loadGraph(graph);
+        for (AJCell root : getRoots()) {
+            root.saveToUserObject();
+        }
         this.loading = false;
     }
 
@@ -100,9 +106,11 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
             if (jCell instanceof AJVertex) {
                 AJVertex jVertex = (AJVertex) jCell;
                 jVertex.loadFromUserObject(role);
+                graph.addNode(jVertex.getNode());
                 nodeJVertexMap.put(jVertex.getNode(), jVertex);
                 for (AspectEdge edge : jVertex.getSelfEdges()) {
                     edgeJCellMap.put(edge, jVertex);
+                    graph.addEdge(edge);
                 }
                 layoutMap.putNode(jVertex.getNode(), jVertex.getAttributes());
             }
@@ -116,12 +124,13 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
                     JEdgeLayout.newInstance(edgeAttr).isDefault();
                 for (AspectEdge edge : jEdge.getEdges()) {
                     edgeJCellMap.put(edge, jEdge);
+                    graph.addEdge(edge);
+                    // add layout information if there is anything to be noted
+                    // about the edge
                     if (!attrIsDefault) {
                         layoutMap.putEdge(edge, edgeAttr);
                     }
                 }
-                // add layout information if there is anything to be noted
-                // about the edge
             }
         }
         for (AJVertex jVertex : nodeJVertexMap.values()) {
@@ -161,24 +170,6 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
     }
 
     /**
-     * Overwrites the method so as to return a rule vertex.
-     * @require <tt>edge instanceof RuleGraph.RuleNode</tt>
-     */
-    @Override
-    protected GraphJVertex<AspectNode,AspectEdge> createJVertex(AspectNode node) {
-        return new AJVertex(this, node);
-    }
-
-    /**
-     * Overwrites the method so as to return a rule edge.
-     * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
-     */
-    @Override
-    protected GraphJEdge<AspectNode,AspectEdge> createJEdge(AspectEdge edge) {
-        return new AJEdge(this, edge);
-    }
-
-    /**
      * Returns the properties associated with this j-model.
      */
     public final GraphProperties getProperties() {
@@ -206,6 +197,22 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
         return port != null;// && port != ((JEdge) edge).getTarget();
     }
 
+    /**
+     * Overrides the method so also incident edges of removed nodes are removed.
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public void remove(Object[] roots) {
+        List<Object> removables = new LinkedList<Object>(Arrays.asList(roots));
+        for (Object element : roots) {
+            if (element instanceof AJVertex) {
+                AJVertex cell = (AJVertex) element;
+                removables.addAll(cell.getPort().getEdges());
+            }
+        }
+        super.remove(removables.toArray());
+    }
+
     @Override
     public Map<?,?> cloneCells(Object[] cells) {
         Map<?,?> result;
@@ -213,6 +220,12 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
         // the following will call cloneCell(Object) for each individual cell
         result = super.cloneCells(cells);
         resetNodeNrs();
+        // load the cloned cells from their user objects
+        for (Object cell : result.values()) {
+            if (cell instanceof AJCell) {
+                ((AJCell) cell).loadFromUserObject(this.editor.getRole());
+            }
+        }
         // now finish the cloning by fixing the cloned JVertices
         for (Object cell : result.values()) {
             if (cell instanceof AJVertex) {
@@ -224,25 +237,55 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     @Override
     protected Object cloneCell(Object cell) {
-        Object result;
-        AJCell clone = null;
+        Object result = cell;
         if (cell instanceof AJVertex) {
             // clone the vertex, making certain of a new node number
-            AspectNode newNode =
-                new AspectNode(createNewNodeNr(), this.editor.getRole());
-            clone = new AJVertex(this, newNode);
-        } else if (cell instanceof AJEdge) {
-            clone = new AJEdge(this);
-        }
-        // initialise the cloned object
-        if (clone != null) {
-            clone.setUserObject(((AJCell) cell).getUserObject());
-            clone.loadFromUserObject(this.editor.getRole());
+            AJVertex clone = computeJVertex();
+            clone.setUserObject(((AJVertex) cell).getUserObject());
             result = clone;
-        } else {
-            result = cell;
+        } else if (cell instanceof AJEdge) {
+            AJEdge clone = computeJEdge();
+            clone.setUserObject(((AJEdge) cell).getUserObject());
+            result = clone;
         }
         return result;
+    }
+
+    /**
+     * Callback factory method to create an editable JVertex.
+     * The vertex is initialised with a new node whose number is 
+     * obtained through {@link #createNewNodeNr()}.
+     */
+    AJVertex computeJVertex() {
+        AspectNode newNode =
+            new AspectNode(createNewNodeNr(), this.editor.getRole());
+        return createJVertex(newNode);
+    }
+
+    /**
+     * Callback factory method to create an editable j-edge. The return value
+     * has attributes initialised through {@link JEdge#createAttributes()}.
+     */
+    AJEdge computeJEdge() {
+        return new AJEdge(this);
+    }
+
+    /**
+     * Overwrites the method so as to return a rule vertex.
+     * @require <tt>edge instanceof RuleGraph.RuleNode</tt>
+     */
+    @Override
+    protected AJVertex createJVertex(AspectNode node) {
+        return new AJVertex(this, node);
+    }
+
+    /**
+     * Overwrites the method so as to return a rule edge.
+     * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
+     */
+    @Override
+    protected AJEdge createJEdge(AspectEdge edge) {
+        return new AJEdge(this, edge);
     }
 
     /** Initialises the set {@link #usedNrs} with the currently used node numbers. */
@@ -298,6 +341,17 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
     static public AJModel newInstance(AspectGraph graph, Options options) {
         assert graph != null;
         AJModel result = new AJModel(options);
+        result.loadGraph(graph);
+        return result;
+    }
+
+    /**
+     * Creates a new model instance for a given editor, and initialises it
+     * to a given graph.
+     */
+    static public AJModel newInstance(Editor editor, AspectGraph graph) {
+        assert graph != null;
+        AJModel result = new AJModel(editor);
         result.loadGraph(graph);
         return result;
     }

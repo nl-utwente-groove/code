@@ -308,7 +308,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
      * node label.
      */
     protected boolean isPotentialUnaryEdge(E edge) {
-        return edge.source() == edge.target()
+        return edge != null && edge.source() == edge.target()
             && this.layoutMap.getLayout(edge) == null;
     }
 

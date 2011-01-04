@@ -107,7 +107,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
             throw new FormatException("Product node has no arguments", this);
         }
         if (this.operatorEdge == null) {
-            throw new FormatException("Product node has no operations", this);
+            throw new FormatException("Product node has no operators", this);
         }
         int arity = this.argNodes.size();
         Operator operator = this.operatorEdge.getOperator();
@@ -135,7 +135,9 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     @Override
     public void testFixed(boolean fixed) {
         if (this.allFixed != fixed) {
-            throw new IllegalStateException("Node fixation is not as expected");
+            throw new IllegalStateException(String.format(
+                "Aspect node %d should%s be fixed", getNumber(), fixed ? ""
+                        : " not"));
         }
     }
 
@@ -161,7 +163,6 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
      */
     public void setAspects(AspectLabel label) throws FormatException {
         assert label.isFixed();
-        assert !label.isEdgeOnly();
         testFixed(false);
         this.nodeLabels.add(label);
         if (label.hasErrors()) {
@@ -206,9 +207,13 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
      * declared one
      */
     private void addAspect(Aspect value) throws FormatException {
-        AspectKind kind = value.getKind();
-        assert kind.isForNode(this.graphRole) : String.format(
+        assert value.isForNode(getGraphRole()) : String.format(
             "Inappropriate node aspect %s", value, this);
+        AspectKind kind = value.getKind();
+        //        if (!kind.isForNode(getGraphRole())) {
+        //            throw new FormatException("Aspect %s is not allowed on nodes",
+        //                value, this);
+        //        } else 
         if (kind.isAttrKind()) {
             if (hasAttrAspect()) {
                 throw new FormatException("Conflicting node aspects %s and %s",

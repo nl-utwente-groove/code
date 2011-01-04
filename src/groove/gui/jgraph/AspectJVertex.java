@@ -258,8 +258,8 @@ public class AspectJVertex extends GraphJVertex<AspectNode,AspectEdge> {
     }
 
     @Override
-    public Label getLabel(AspectEdge edge) {
-        return edge.getDisplayLabel();
+    public String getLabelText(AspectEdge edge) {
+        return edge.getDisplayLabel().text();
     }
 
     /**
