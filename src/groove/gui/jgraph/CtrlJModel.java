@@ -29,7 +29,7 @@ import java.util.Set;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class CtrlJModel extends GraphJModel<CtrlState,CtrlTransition> {
+final public class CtrlJModel extends GraphJModel<CtrlState,CtrlTransition> {
 
     /**
      * The active state of the LTS. Is null if there is no active state.
@@ -50,8 +50,9 @@ public class CtrlJModel extends GraphJModel<CtrlState,CtrlTransition> {
     /**
      * Creates a controlJmodel given a control automaton
      */
-    public CtrlJModel(CtrlAut shape, Options options) {
-        super(shape, options);
+    public CtrlJModel(CtrlAut ctrlAut, Options options) {
+        super(options);
+        loadGraph(ctrlAut);
     }
 
     @Override

@@ -104,14 +104,15 @@ public class AspectJEdge extends GraphJEdge<AspectNode,AspectEdge> {
             for (Aspect aspect : edge.label().getAspects()) {
                 result.append(aspect);
             }
-        } else if (this.aspect.isRole()) {
-            // add nesting level, if any
+        }
+        result.append(super.getLine(edge));
+        // add the level name, if not already shown as an aspect
+        if (!getJModel().isShowAspects() && this.aspect.isRole()) {
             String levelName = edge.getLevelName();
             if (levelName != null && levelName.length() != 0) {
                 result.append(LEVEL_NAME_SEPARATOR + levelName);
             }
         }
-        result.append(super.getLine(edge));
         return result;
     }
 

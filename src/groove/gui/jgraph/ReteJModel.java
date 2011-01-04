@@ -23,13 +23,16 @@ import groove.match.rete.ReteNetwork;
 /**
  * @author Arash Jalali
  * @version $Revision $
+ * @deprecated no subclass is needed; just reuse {@link GraphJModel}
  */
+@Deprecated
 public class ReteJModel extends GraphJModel<DefaultNode,DefaultEdge> {
     /**
      * Constructs a graph model for the static structure of a given RETE network. 
      * @param network The RETE network.
      */
     public ReteJModel(ReteNetwork network) {
-        super(network.toPlainGraph(), null);
+        super(null);
+        loadGraph(network.toPlainGraph());
     }
 }

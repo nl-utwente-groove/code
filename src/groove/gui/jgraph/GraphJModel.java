@@ -53,16 +53,12 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
      * Creates a new GraphJModel instance on top of a given Graph, with given
      * node and edge attributes, and an indication whether self-edges should be
      * displayed as node labels. The node and edge attribute maps are cloned.
-     * @param graph the underlying Graph
      * @param options specifies options for the visual display If false, node
      *        labels are used to display self edges.
      * @require graph != null, nodeAttr != null, edgeAttr != null;
      */
-    protected GraphJModel(Graph<N,E> graph, Options options) {
+    protected GraphJModel(Options options) {
         super(options);
-        // set the transient variables (cells, attributes and connections)
-        // add nodes from Graph to GraphModel
-        loadGraph(graph);
     }
 
     /**
@@ -70,8 +66,6 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
      */
     GraphJModel() {
         super(null);
-        this.graph = null;
-        this.layoutMap = null;
     }
 
     /**
@@ -549,7 +543,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
      */
     static public <N extends Node,E extends Edge<N>> GraphJModel<N,E> newInstance(
             Graph<N,E> graph, Options options) {
-        GraphJModel<N,E> result = new GraphJModel<N,E>(graph, options);
+        GraphJModel<N,E> result = new GraphJModel<N,E>(options);
         return result;
     }
 

@@ -47,19 +47,20 @@ import org.jgraph.graph.AttributeMap;
  * @author Arend Rensink
  * @version $Revision: 2982 $
  */
-public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
+final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     // --------------------- INSTANCE DEFINITIONS ------------------------
 
     /**
-     * Creates a new aspect model instance on top of a given aspectual view.
+     * Creates an empty instance.
+     * Initialise with {@link #loadGraph(Graph)} before using.
      */
-    AJModel(AspectGraph graph, Options options) {
-        super(graph, options);
+    AJModel(Options options) {
+        super(options);
         this.editor = null;
     }
 
-    /** Constructor for a dummy model. */
+    /** Constructor for an editable model. */
     AJModel(Editor editor) {
         this.editor = editor;
     }
@@ -106,50 +107,6 @@ public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
             }
         }
         this.loading = false;
-    }
-
-    @Override
-    boolean isForEditor() {
-        return this.editor != null;
-    }
-
-    /**
-     * Indicates whether aspect prefixes should be shown for nodes and edges.
-     */
-    public final boolean isShowRemarks() {
-        return getOptionValue(Options.SHOW_REMARKS_OPTION);
-    }
-
-    /**
-     * Indicates whether aspect prefixes should be shown for nodes and edges.
-     */
-    final boolean isShowAspects() {
-        return getOptionValue(Options.SHOW_ASPECTS_OPTION);
-    }
-
-    /**
-     * Indicates whether data nodes should be shown in the rule and lts views.
-     */
-    boolean isShowValueNodes() {
-        return isForEditor() || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
-    }
-
-    /**
-     * Overwrites the method so as to return a rule vertex.
-     * @require <tt>edge instanceof RuleGraph.RuleNode</tt>
-     */
-    @Override
-    protected GraphJVertex<AspectNode,AspectEdge> createJVertex(AspectNode node) {
-        return new AJVertex(this, node);
-    }
-
-    /**
-     * Overwrites the method so as to return a rule edge.
-     * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
-     */
-    @Override
-    protected GraphJEdge<AspectNode,AspectEdge> createJEdge(AspectEdge edge) {
-        return new AJEdge(this, edge);
     }
 
     /** 
@@ -200,6 +157,51 @@ public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
         GraphInfo.setLayoutMap(graph, layoutMap);
         GraphInfo.setProperties(graph, getProperties());
         setGraph(graph, nodeJVertexMap, edgeJCellMap);
+    }
+
+    @Override
+    boolean isForEditor() {
+        return this.editor != null;
+    }
+
+    /**
+     * Indicates whether aspect prefixes should be shown for nodes and edges.
+     */
+    public final boolean isShowRemarks() {
+        return getOptionValue(Options.SHOW_REMARKS_OPTION);
+    }
+
+    /**
+     * Indicates whether aspect prefixes should be shown for nodes and edges.
+     */
+    public final boolean isShowAspects() {
+        return getOptionValue(Options.SHOW_ASPECTS_OPTION);
+    }
+
+    /**
+     * Indicates whether data nodes should be shown in the JGraph.
+     * This is certainly the case if this model is editable.
+     */
+    public final boolean isShowValueNodes() {
+        return isForEditor() || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
+    }
+
+    /**
+     * Overwrites the method so as to return a rule vertex.
+     * @require <tt>edge instanceof RuleGraph.RuleNode</tt>
+     */
+    @Override
+    protected GraphJVertex<AspectNode,AspectEdge> createJVertex(AspectNode node) {
+        return new AJVertex(this, node);
+    }
+
+    /**
+     * Overwrites the method so as to return a rule edge.
+     * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
+     */
+    @Override
+    protected GraphJEdge<AspectNode,AspectEdge> createJEdge(AspectEdge edge) {
+        return new AJEdge(this, edge);
     }
 
     /**
@@ -303,6 +305,16 @@ public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
      * so we don't have to parse it.
      */
     private boolean loading;
+
+    /**
+     * Creates a new model instance for a given aspect graph.
+     */
+    static public AJModel newInstance(AspectGraph graph, Options options) {
+        assert graph != null;
+        AJModel result = new AJModel(options);
+        result.loadGraph(graph);
+        return result;
+    }
 
     /** Role names (for the tool tips). */
     static final Map<AspectKind,String> ROLE_NAMES =
