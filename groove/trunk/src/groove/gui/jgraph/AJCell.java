@@ -25,7 +25,7 @@ import groove.view.aspect.AspectNode;
  * @author Arend Rensink
  * @version $Revision $
  */
-interface AJCell extends GraphJCell<AspectNode,AspectEdge> {
+public interface AJCell extends GraphJCell<AspectNode,AspectEdge> {
     /** Returns the user object of this cell, with the given type. */
     AJObject getUserObject();
 

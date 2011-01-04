@@ -2,7 +2,6 @@ package groove.gui.jgraph;
 
 import static groove.gui.jgraph.JAttr.LTS_EDGE_ACTIVE_CHANGE;
 import static groove.gui.jgraph.JAttr.LTS_EDGE_ATTR;
-import groove.graph.Label;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.lts.DerivationLabel;
 import groove.lts.GraphState;
@@ -65,9 +64,9 @@ public class LTSJEdge extends GraphJEdge<GraphState,GraphTransition> {
      * label, depending on #isShowAnchors().
      */
     @Override
-    public Label getLabel(GraphTransition edge) {
+    public String getLabelText(GraphTransition edge) {
         return getJModel().isShowAnchors() ? new DerivationLabel(
-            edge.getEvent()) : super.getLabel(edge);
+            edge.getEvent()).text() : super.getLabelText(edge);
     }
 
     /** Indicates that this edge is active. */

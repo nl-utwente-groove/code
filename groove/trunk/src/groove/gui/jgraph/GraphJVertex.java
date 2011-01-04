@@ -164,8 +164,8 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     }
 
     /** This implementation delegates to {@link Edge#label()}. */
-    public Label getLabel(E edge) {
-        return edge.label();
+    public String getLabelText(E edge) {
+        return edge.label().text();
     }
 
     /**

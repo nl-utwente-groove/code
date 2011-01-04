@@ -2,6 +2,7 @@ package groove.gui.jgraph;
 
 import static groove.gui.jgraph.JAttr.RULE_EDGE_ATTR;
 import static groove.view.aspect.AspectKind.ARGUMENT;
+import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.GraphRole;
 import groove.graph.Label;
@@ -35,6 +36,8 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
     public AJEdge(AJModel jModel) {
         super(jModel);
         setUserObject(null);
+        this.aspect = NONE;
+        refreshAttributes();
     }
 
     /** Creates a j-edge on the basis of a given (aspectual) edge. */
@@ -42,6 +45,7 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
         super(jModel, edge);
         setUserObject(null);
         this.aspect = edge.getKind();
+        refreshAttributes();
     }
 
     @Override
@@ -54,7 +58,7 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
     void reset() {
         super.reset();
         this.errors.clear();
-        this.aspect = null;
+        this.aspect = NONE;
     }
 
     /**
@@ -78,6 +82,7 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
 
     @Override
     StringBuilder getEdgeDescription() {
+        getEdge().testFixed(true);
         StringBuilder result = new StringBuilder();
         AspectKind attrKind = getEdge().getAttrKind();
         if (attrKind == ARGUMENT) {
@@ -104,10 +109,50 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
         return result;
     }
 
+    @Override
+    public List<StringBuilder> getLines() {
+        if (hasError()) {
+            return getUserObject().toLines();
+        } else {
+            return super.getLines();
+        }
+    }
+
+    /**
+     * On demand prefixes the label with the edge's aspect values.
+     */
+    @Override
+    public StringBuilder getLine(AspectEdge edge) {
+        StringBuilder result = new StringBuilder();
+        if (getJModel().isShowAspects()) {
+            for (Aspect aspect : edge.label().getAspects()) {
+                result.append(aspect);
+            }
+        }
+        result.append(edge.getDisplayLabel().text());
+        // add the level name, if not already shown as an aspect
+        if (!getJModel().isShowAspects() && this.aspect.isRole()) {
+            String levelName = edge.getLevelName();
+            if (levelName != null && levelName.length() != 0) {
+                result.append(LEVEL_NAME_SEPARATOR + levelName);
+            }
+        }
+        return result;
+    }
+
     /** This implementation returns the (unparsed) label of the model edge. */
     @Override
-    public Label getLabel(AspectEdge edge) {
-        return edge.getDisplayLabel();
+    public String getLabelText(AspectEdge edge) {
+        return edge.getDisplayLabel().text();
+    }
+
+    @Override
+    public Collection<? extends Label> getListLabels() {
+        if (hasError()) {
+            return getUserObject().toLabels();
+        } else {
+            return super.getListLabels();
+        }
     }
 
     @Override
@@ -123,34 +168,12 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
     }
 
     /**
-     * On demand prefixes the label with the edge's aspect values.
-     */
-    @Override
-    public StringBuilder getLine(AspectEdge edge) {
-        StringBuilder result = new StringBuilder();
-        if (getJModel().isShowAspects()) {
-            for (Aspect aspect : edge.label().getAspects()) {
-                result.append(aspect);
-            }
-        }
-        result.append(super.getLine(edge));
-        // add the level name, if not already shown as an aspect
-        if (!getJModel().isShowAspects() && this.aspect.isRole()) {
-            String levelName = edge.getLevelName();
-            if (levelName != null && levelName.length() != 0) {
-                result.append(LEVEL_NAME_SEPARATOR + levelName);
-            }
-        }
-        return result;
-    }
-
-    /**
      * This implementation makes remark edges invisible as demanded by the
      * {@link Options#SHOW_REMARKS_OPTION}.
      */
     @Override
     public boolean isVisible() {
-        return super.isVisible()
+        return getJModel().isForEditor() || super.isVisible()
             && (getJModel().isShowRemarks() || this.aspect != REMARK);
     }
 
@@ -196,9 +219,9 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
 
     @Override
     protected AttributeMap createAttributes() {
+        AttributeMap result = RULE_EDGE_ATTR.get(this.aspect).clone();
         AspectEdge edge = getEdge();
-        AttributeMap result = RULE_EDGE_ATTR.get(edge.getKind()).clone();
-        RuleLabel ruleModelLabel = edge.getRuleLabel();
+        RuleLabel ruleModelLabel = edge == null ? null : edge.getRuleLabel();
         if (ruleModelLabel != null) {
             if (ruleModelLabel.isEmpty() || ruleModelLabel.isNeg()
                 && ruleModelLabel.getNegOperand().isEmpty()) {
@@ -207,6 +230,11 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
             } else if (!ruleModelLabel.isAtom()) {
                 setFontAttr(result, Font.ITALIC);
             }
+        }
+        if (getJModel().isForEditor()) {
+            GraphConstants.setEditable(result, true);
+            GraphConstants.setConnectable(result, true);
+            GraphConstants.setDisconnectable(result, true);
         }
         return result;
     }
@@ -239,6 +267,7 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
             }
             addEdge(edge);
         }
+        refreshAttributes();
     }
 
     /**

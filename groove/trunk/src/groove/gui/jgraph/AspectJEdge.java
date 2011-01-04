@@ -65,8 +65,8 @@ public class AspectJEdge extends GraphJEdge<AspectNode,AspectEdge> {
 
     /** This implementation returns the (unparsed) label of the model edge. */
     @Override
-    public Label getLabel(AspectEdge edge) {
-        return edge.getDisplayLabel();
+    public String getLabelText(AspectEdge edge) {
+        return edge.getDisplayLabel().text();
     }
 
     @Override

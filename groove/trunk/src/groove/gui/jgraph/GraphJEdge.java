@@ -145,7 +145,7 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
      * Returns the first edge from the set of underlying edges.
      */
     public E getEdge() {
-        return this.edges.iterator().next();
+        return this.edges.isEmpty() ? null : this.edges.iterator().next();
     }
 
     /**
@@ -165,18 +165,18 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
                 }
             }
             if (visible) {
-                result.add(getLine(edge));
+                result.add(new StringBuilder(getLine(edge)));
             }
         }
         return result;
     }
 
     /**
-     * This implementation returns the text from {@link #getLabel(Edge)} wrapped
+     * This implementation returns the text from {@link #getLabelText(Edge)} wrapped
      * in a StringBuilder.
      */
     public StringBuilder getLine(E edge) {
-        return new StringBuilder(getLabel(edge).text());
+        return new StringBuilder(getLabelText(edge));
     }
 
     /**
@@ -193,12 +193,12 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
 
     /** Returns the listable labels on a given edge. */
     public Set<? extends Label> getListLabels(E edge) {
-        return Collections.singleton(getLabel(edge));
+        return Collections.singleton(edge.label());
     }
 
     /** This implementation delegates to {@link Edge#label()}. */
-    public Label getLabel(E edge) {
-        return edge.label();
+    public String getLabelText(E edge) {
+        return edge.label().text();
     }
 
     /**

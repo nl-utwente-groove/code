@@ -16,6 +16,7 @@
  */
 package groove.view.aspect;
 
+import groove.graph.GraphRole;
 import groove.view.FormatException;
 import groove.view.aspect.AspectKind.ContentKind;
 
@@ -133,6 +134,32 @@ public class Aspect {
      */
     public String getContentString() {
         return this.contentKind.toString(getContent());
+    }
+
+    /** Indicates that this aspect kind is allowed to appear on edges of a particular graph kind. */
+    public boolean isForEdge(GraphRole role) {
+        boolean result =
+            AspectKind.allowedEdgeKinds.get(role).contains(getKind());
+        if (result && getKind().isTypedData()) {
+            result = !hasContent();
+        }
+        return result;
+    }
+
+    /** Indicates that this aspect kind is allowed to appear on nodes of a particular graph kind. */
+    public boolean isForNode(GraphRole role) {
+        boolean result =
+            AspectKind.allowedNodeKinds.get(role).contains(getKind());
+        if (result && getKind().isTypedData()) {
+            if (hasContent()) {
+                // data aspects with content not allowed in type graphs
+                result = role != GraphRole.TYPE;
+            } else {
+                // data aspects without content not allowed in host graphs
+                result = role != GraphRole.HOST;
+            }
+        }
+        return result;
     }
 
     /** Flag indicating that this aspect is a prototype. */

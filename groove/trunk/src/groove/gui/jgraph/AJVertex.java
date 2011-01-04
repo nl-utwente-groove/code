@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.jgraph.graph.GraphConstants;
+
 /**
  * Specialized j-vertex for rule graphs, with its own tool tip text.
  */
@@ -47,7 +49,7 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
     void reset(AspectNode node) {
         super.reset(node);
         this.errors.clear();
-        this.aspect = node.getKind();
+        this.aspect = AspectKind.NONE;
     }
 
     @Override
@@ -64,6 +66,7 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
         } catch (FormatException e) {
             this.errors.addAll(e.getErrors());
         }
+        refreshAttributes();
     }
 
     @Override
@@ -105,37 +108,43 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
     /** Adds a quantifier, if the nesting aspect justifies this. */
     @Override
     public List<StringBuilder> getLines() {
-        List<StringBuilder> result = super.getLines();
-        Aspect attrAspect = getNode().getAttrAspect();
-        if (attrAspect.getKind().isTypedData()) {
-            String dataLine;
+        getNode().testFixed(true);
+        List<StringBuilder> result;
+        if (hasError()) {
+            result = getUserObject().toLines();
+        } else {
+            result = super.getLines();
+            Aspect attrAspect = getNode().getAttrAspect();
+            if (attrAspect.getKind().isTypedData()) {
+                String dataLine;
+                if (getJModel().isShowAspects()) {
+                    dataLine = attrAspect.toString();
+                } else if (attrAspect.hasContent()) {
+                    dataLine = attrAspect.getContentString();
+                } else {
+                    dataLine =
+                        TypeLabel.toHtmlString(TypeLabel.createLabel(
+                            LabelKind.NODE_TYPE, attrAspect.getKind().getName()));
+                }
+                result.add(0, new StringBuilder(dataLine));
+            }
+            for (AspectEdge edge : getDataEdges()) {
+                if (!getJModel().isFiltering(edge.getDisplayLabel())) {
+                    result.add(getLine(edge));
+                }
+            }
             if (getJModel().isShowAspects()) {
-                dataLine = attrAspect.toString();
-            } else if (attrAspect.hasContent()) {
-                dataLine = attrAspect.getContentString();
-            } else {
-                dataLine =
-                    TypeLabel.toHtmlString(TypeLabel.createLabel(
-                        LabelKind.NODE_TYPE, attrAspect.getKind().getName()));
+                result.add(0, getRoleLine());
             }
-            result.add(0, new StringBuilder(dataLine));
-        }
-        for (AspectEdge edge : getDataEdges()) {
-            if (!getJModel().isFiltering(edge.getDisplayLabel())) {
-                result.add(getLine(edge));
+            // adds a quantor if the node is a nesting node
+            if (this.aspect.isQuantifier()) {
+                result.add(0, getQuantifierLine(getNode().getAspect()));
             }
-        }
-        if (getJModel().isShowAspects()) {
-            result.add(0, getRoleLine());
-        }
-        // adds a quantor if the node is a nesting node
-        if (this.aspect.isQuantifier()) {
-            result.add(0, getQuantifierLine(getNode().getAspect()));
-        }
-        // adds a parameter string if the node is a rule parameter
-        Aspect param = getNode().getParam();
-        if (param != null && param.hasContent()) {
-            result.add(new StringBuilder(param.getContentString()));
+            // adds a parameter string if the node is a rule parameter
+            Aspect param = getNode().getParam();
+            if (param != null && param.hasContent()) {
+                result.add(new StringBuilder(param.getContentString()));
+            }
         }
         return result;
     }
@@ -175,6 +184,7 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
      */
     @Override
     public StringBuilder getLine(AspectEdge edge) {
+        edge.testFixed(true);
         StringBuilder result = new StringBuilder();
         if (getJModel().isShowAspects()) {
             result.append(TypeLabel.toHtmlString(edge.label()));
@@ -199,7 +209,7 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
         // use special node label prefixes to indicate edge role
         Aspect edgeAspect = edge.getAspect();
         if (!edgeAspect.equals(edge.source().getAspect())) {
-            setRole(result, edgeAspect.getKind());
+            addRoleIndicator(result, edgeAspect.getKind());
         }
         return result;
     }
@@ -208,7 +218,7 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
      * Adds a textual prefix and a HTML colour to a given node line,
      * depending on an edge role.
      */
-    public void setRole(StringBuilder text, AspectKind edgeRole) {
+    private void addRoleIndicator(StringBuilder text, AspectKind edgeRole) {
         switch (edgeRole) {
         case ERASER:
             text.insert(0, "- ");
@@ -235,19 +245,25 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
 
     @Override
     public Collection<? extends Label> getListLabels() {
-        Collection<Label> result = new ArrayList<Label>();
-        result.addAll(super.getListLabels());
-        Aspect attrAspect = getNode().getAttrAspect();
-        if (attrAspect.getKind().isTypedData()) {
-            if (attrAspect.hasContent()) {
-                result.add(TypeLabel.createLabel(attrAspect.getContentString()));
-            } else {
-                result.add(TypeLabel.createLabel(LabelKind.NODE_TYPE,
-                    attrAspect.getKind().getName()));
+        getNode().testFixed(true);
+        Collection<Label> result;
+        if (hasError()) {
+            result = getUserObject().toLabels();
+        } else {
+            result = new ArrayList<Label>();
+            result.addAll(super.getListLabels());
+            Aspect attrAspect = getNode().getAttrAspect();
+            if (attrAspect.getKind().isTypedData()) {
+                if (attrAspect.hasContent()) {
+                    result.add(TypeLabel.createLabel(attrAspect.getContentString()));
+                } else {
+                    result.add(TypeLabel.createLabel(LabelKind.NODE_TYPE,
+                        attrAspect.getKind().getName()));
+                }
             }
-        }
-        for (AspectEdge edge : getDataEdges()) {
-            result.addAll(getListLabels(edge));
+            for (AspectEdge edge : getDataEdges()) {
+                result.addAll(getListLabels(edge));
+            }
         }
         return result;
     }
@@ -287,8 +303,8 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
     }
 
     @Override
-    public Label getLabel(AspectEdge edge) {
-        return edge.getDisplayLabel();
+    public String getLabelText(AspectEdge edge) {
+        return edge.getDisplayLabel().text();
     }
 
     /**
@@ -323,7 +339,11 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
 
     @Override
     protected AttributeMap createAttributes() {
-        return JAttr.RULE_NODE_ATTR.get(this.aspect).clone();
+        AttributeMap result = JAttr.RULE_NODE_ATTR.get(this.aspect).clone();
+        if (getJModel().isForEditor()) {
+            GraphConstants.setEditable(result, true);
+        }
+        return result;
     }
 
     public void saveToUserObject() {
@@ -357,6 +377,7 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
                 addSelfEdge(edge);
             }
         }
+        this.aspect = node.getKind();
     }
 
     /**

@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -33,7 +32,6 @@ import javax.swing.SwingUtilities;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.DefaultGraphModel;
-import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
 
 /**
@@ -161,28 +159,6 @@ abstract public class JModel extends DefaultGraphModel {
             }
         }
         return result;
-    }
-
-    /**
-     * Overrides the method so also incident edges of removed nodes are removed.
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public void remove(Object[] roots) {
-        List<Object> removables = new LinkedList<Object>();
-        for (Object element : roots) {
-            DefaultGraphCell cell = (DefaultGraphCell) element;
-            if (cell.getChildCount() > 0) {
-                DefaultPort port = (DefaultPort) cell.getChildAt(0);
-                removables.addAll(port.getEdges());
-            }
-        }
-        // add the roots to the incident edge list, so the remove is done in one
-        // go
-        for (Object element : roots) {
-            removables.add(element);
-        }
-        super.remove(removables.toArray());
     }
 
     /**

@@ -95,8 +95,8 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
     public void addAspect(Aspect value) {
         testFixed(false);
         this.aspects.add(value);
-        boolean notForNode = !value.getKind().isForNode(this.role);
-        boolean notForEdge = !value.getKind().isForEdge(this.role);
+        boolean notForNode = !value.isForNode(this.role);
+        boolean notForEdge = !value.isForEdge(this.role);
         if (notForNode) {
             if (notForEdge) {
                 addError("Aspect %s not allowed in %s", value,
