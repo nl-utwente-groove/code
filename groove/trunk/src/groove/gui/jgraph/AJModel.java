@@ -18,7 +18,13 @@ package groove.gui.jgraph;
 
 import groove.graph.Element;
 import groove.graph.Graph;
+import groove.graph.GraphInfo;
+import groove.graph.GraphProperties;
+import groove.graph.GraphRole;
+import groove.gui.Editor;
 import groove.gui.Options;
+import groove.gui.layout.JEdgeLayout;
+import groove.gui.layout.LayoutMap;
 import groove.view.FormatError;
 import groove.view.View;
 import groove.view.aspect.AspectEdge;
@@ -27,8 +33,13 @@ import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
 
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import org.jgraph.graph.AttributeMap;
 
 /**
  * Implements jgraph's GraphModel interface on top of a {@link View}. This is
@@ -45,12 +56,19 @@ public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
      */
     AJModel(AspectGraph graph, Options options) {
         super(graph, options);
-        this.view = graph.toView();
+        this.editor = null;
     }
 
     /** Constructor for a dummy model. */
-    private AJModel() {
-        this.view = null;
+    AJModel(Editor editor) {
+        this.editor = editor;
+    }
+
+    /** Specialises the type to a list of {@link GraphJCell}s. */
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<? extends AJCell> getRoots() {
+        return (List<? extends AJCell>) super.getRoots();
     }
 
     /** Specialises the return type. */
@@ -61,8 +79,10 @@ public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     @Override
     public void loadGraph(Graph<AspectNode,AspectEdge> graph) {
+        this.loading = true;
         super.loadGraph(graph);
-        List<FormatError> graphErrors = this.view.getErrors();
+        AspectGraph aspectGraph = (AspectGraph) graph;
+        List<FormatError> graphErrors = aspectGraph.toView().getErrors();
         if (graphErrors != null) {
             for (FormatError error : graphErrors) {
                 for (Element errorObject : error.getElements()) {
@@ -85,6 +105,12 @@ public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
                 }
             }
         }
+        this.loading = false;
+    }
+
+    @Override
+    boolean isForEditor() {
+        return this.editor != null;
     }
 
     /**
@@ -126,26 +152,157 @@ public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
         return new AJEdge(this, edge);
     }
 
-    /**
-     * The underlying view of this graph model.
+    /** 
+     * Parses the current content of the model into an aspect graph.
      */
-    private final View<?> view;
+    public void loadFromModel(GraphRole role) {
+        if (this.loading) {
+            return;
+        }
+        Map<AspectNode,AJVertex> nodeJVertexMap =
+            new HashMap<AspectNode,AJVertex>();
+        Map<AspectEdge,AJCell> edgeJCellMap = new HashMap<AspectEdge,AJCell>();
+        AspectGraph graph = new AspectGraph(getName(), role);
+        LayoutMap<AspectNode,AspectEdge> layoutMap =
+            new LayoutMap<AspectNode,AspectEdge>();
+        for (AJCell jCell : getRoots()) {
+            if (jCell instanceof AJVertex) {
+                AJVertex jVertex = (AJVertex) jCell;
+                jVertex.loadFromUserObject(role);
+                nodeJVertexMap.put(jVertex.getNode(), jVertex);
+                for (AspectEdge edge : jVertex.getSelfEdges()) {
+                    edgeJCellMap.put(edge, jVertex);
+                }
+                layoutMap.putNode(jVertex.getNode(), jVertex.getAttributes());
+            }
+        }
+        for (AJCell jCell : getRoots()) {
+            if (jCell instanceof AJEdge) {
+                AJEdge jEdge = (AJEdge) jCell;
+                jEdge.loadFromUserObject(role);
+                AttributeMap edgeAttr = jEdge.getAttributes();
+                boolean attrIsDefault =
+                    JEdgeLayout.newInstance(edgeAttr).isDefault();
+                for (AspectEdge edge : jEdge.getEdges()) {
+                    edgeJCellMap.put(edge, jEdge);
+                    if (!attrIsDefault) {
+                        layoutMap.putEdge(edge, edgeAttr);
+                    }
+                }
+                // add layout information if there is anything to be noted
+                // about the edge
+            }
+        }
+        for (AJVertex jVertex : nodeJVertexMap.values()) {
+            jVertex.setNodeFixed();
+        }
+        graph.setFixed();
+        GraphInfo.setLayoutMap(graph, layoutMap);
+        GraphInfo.setProperties(graph, getProperties());
+        setGraph(graph, nodeJVertexMap, edgeJCellMap);
+    }
 
     /**
-     * Creates a new aspect model instance on top of a given aspectual view.
-     * Returns {@link #EMPTY_ASPECT_JMODEL} if the view is <code>null</code>.
+     * Returns the properties associated with this j-model.
      */
-    static public AJModel newInstance(AspectGraph graph, Options options) {
-        if (graph == null) {
-            return EMPTY_ASPECT_JMODEL;
+    public final GraphProperties getProperties() {
+        if (this.properties == null) {
+            this.properties = new GraphProperties();
+        }
+        return this.properties;
+    }
+
+    /**
+     * Sets the properties of this j-model to a given properties map.
+     */
+    public final void setProperties(GraphProperties properties) {
+        this.properties = properties;
+    }
+
+    /** Properties map of the graph being displayed or edited. */
+    private GraphProperties properties;
+
+    /**
+     * New source is only acceptable if not <tt>null</tt>.
+     */
+    @Override
+    public boolean acceptsSource(Object edge, Object port) {
+        return port != null;// && port != ((JEdge) edge).getTarget();
+    }
+
+    @Override
+    public Map<?,?> cloneCells(Object[] cells) {
+        Map<?,?> result;
+        collectNodeNrs();
+        result = super.cloneCells(cells);
+        resetNodeNrs();
+        return result;
+    }
+
+    @Override
+    protected Object cloneCell(Object cell) {
+        Object result = super.cloneCell(cell);
+        if (cell instanceof EditableJVertex) {
+            ((EditableJVertex) result).setNumber(createNewNodeNr());
+        }
+        return result;
+    }
+
+    @Override
+    protected Object cloneUserObject(Object userObject) {
+        if (userObject == null) {
+            return null;
         } else {
-            AJModel result = new AJModel(graph, options);
-            return result;
+            return ((StringObject) userObject).clone();
         }
     }
 
-    /** Empty instance of the {@link AJModel}. */
-    static public final AJModel EMPTY_ASPECT_JMODEL = new AJModel();
+    /** Initialises the set {@link #usedNrs} with the currently used node numbers. */
+    private boolean collectNodeNrs() {
+        boolean result = this.usedNrs == null;
+        if (result) {
+            this.usedNrs = new HashSet<Integer>();
+            for (Object root : getRoots()) {
+                if (root instanceof JVertex) {
+                    this.usedNrs.add(((JVertex) root).getNumber());
+                }
+            }
+        }
+        return result;
+    }
+
+    /** Resets the set of used node numbers to {@code null}. */
+    private void resetNodeNrs() {
+        this.usedNrs = null;
+    }
+
+    /**
+     * Returns the first non-negative number that is not used as a node number
+     * in this model.
+     */
+    private int createNewNodeNr() {
+        int result = 0;
+        boolean collect = collectNodeNrs();
+        // search for an unused node number
+        while (this.usedNrs.contains(result)) {
+            result++;
+        }
+        if (collect) {
+            resetNodeNrs();
+        } else {
+            this.usedNrs.add(result);
+        }
+        return result;
+    }
+
+    /** The associated editor. */
+    private final Editor editor;
+    /** The set of used node numbers. */
+    private Set<Integer> usedNrs;
+    /** Flag indicating that we are loading a new aspect graph,
+     * so we don't have to parse it.
+     */
+    private boolean loading;
 
     /** Role names (for the tool tips). */
     static final Map<AspectKind,String> ROLE_NAMES =

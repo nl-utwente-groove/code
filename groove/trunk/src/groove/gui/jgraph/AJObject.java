@@ -23,7 +23,6 @@ import groove.view.aspect.AspectLabel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.TreeSet;
 
 /**
  * Content object that is a collection of strings, and can be reloaded from an
@@ -31,7 +30,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class StringObject extends TreeSet<String> {
+public class AJObject extends ArrayList<String> {
     /**
      * Constructs an object whose string description uses a given string as a
      * separator between labels (in {@link #toString()}, and which uses another
@@ -41,7 +40,7 @@ public class StringObject extends TreeSet<String> {
      * @param allowEmptyLabelSet set to <code>true</code> if the label set
      *        should not be empty.
      */
-    public StringObject(boolean allowEmptyLabelSet) {
+    public AJObject(boolean allowEmptyLabelSet) {
         this.allowEmptyLabelSet = allowEmptyLabelSet;
     }
 
@@ -110,8 +109,8 @@ public class StringObject extends TreeSet<String> {
     }
 
     @Override
-    public StringObject clone() {
-        return (StringObject) super.clone();
+    public AJObject clone() {
+        return (AJObject) super.clone();
     }
 
     /**

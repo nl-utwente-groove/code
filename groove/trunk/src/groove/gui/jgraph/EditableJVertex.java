@@ -19,9 +19,7 @@ package groove.gui.jgraph;
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.util.Converter;
-import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
-import groove.view.aspect.AspectLabel;
 import groove.view.aspect.AspectNode;
 
 import java.util.ArrayList;
@@ -53,14 +51,8 @@ public class EditableJVertex extends JVertex implements EditableJCell {
     public EditableJVertex(EditorJModel jModel, AspectJVertex other) {
         this(jModel, other.getNumber());
         this.proxy = other;
-        List<String> labelList = new ArrayList<String>();
-        for (AspectLabel label : this.proxy.getNode().getNodeLabels()) {
-            labelList.add(label.toString());
-        }
-        for (AspectEdge edge : this.proxy.getSelfEdges()) {
-            labelList.add(edge.label().toString());
-        }
-        getUserObject().load(labelList);
+        getUserObject().addLabels(this.proxy.getNode().getNodeLabels());
+        getUserObject().addEdges(this.proxy.getSelfEdges());
         refreshAttributes();
     }
 
@@ -106,7 +98,7 @@ public class EditableJVertex extends JVertex implements EditableJCell {
         // we do need to create a new object, otherwise undos do not work
         StringObject myObject = new StringObject(false);
         if (value instanceof StringObject) {
-            myObject.load((StringObject) value);
+            myObject.addAll((StringObject) value);
         } else if (value != null) {
             myObject.load(value.toString());
         }
