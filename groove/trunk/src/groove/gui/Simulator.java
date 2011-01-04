@@ -73,7 +73,7 @@ import groove.gui.dialog.PropertiesDialog;
 import groove.gui.dialog.RelabelDialog;
 import groove.gui.dialog.StringDialog;
 import groove.gui.dialog.VersionErrorDialog;
-import groove.gui.jgraph.AspectJModel;
+import groove.gui.jgraph.AJModel;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
@@ -3414,7 +3414,7 @@ public class Simulator {
          * panel.
          */
         public void actionPerformed(ActionEvent e) {
-            AspectJModel stateModel = getStatePanel().getJModel();
+            AJModel stateModel = getStatePanel().getJModel();
             handleEditGraph(stateModel.getGraph(), false);
         }
     }
@@ -4903,7 +4903,7 @@ public class Simulator {
                 actionForLTS(((LTSJModel) jModel).getGraph());
             } else {
                 assert getGraphPanel() == getStatePanel();
-                actionForState(((AspectJModel) jModel).getGraph());
+                actionForState(((AJModel) jModel).getGraph());
             }
         }
 

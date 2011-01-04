@@ -16,7 +16,6 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
@@ -25,7 +24,6 @@ import groove.gui.Editor;
 import groove.gui.Options;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
-import groove.view.FormatError;
 import groove.view.View;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
@@ -82,30 +80,6 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
     public void loadGraph(Graph<AspectNode,AspectEdge> graph) {
         this.loading = true;
         super.loadGraph(graph);
-        AspectGraph aspectGraph = (AspectGraph) graph;
-        List<FormatError> graphErrors = aspectGraph.toView().getErrors();
-        if (graphErrors != null) {
-            for (FormatError error : graphErrors) {
-                for (Element errorObject : error.getElements()) {
-                    JCell errorCell = null;
-                    if (errorObject instanceof AspectNode) {
-                        errorCell = getJCellForNode((AspectNode) errorObject);
-                    } else if (errorObject instanceof AspectEdge) {
-                        errorCell = getJCell(errorObject);
-                        if (errorCell instanceof AspectJEdge
-                            && ((AspectJEdge) errorCell).isDataEdgeSourceLabel()) {
-                            errorCell =
-                                ((AspectJEdge) errorCell).getSourceVertex();
-                        }
-                    }
-                    if (errorCell instanceof AspectJEdge) {
-                        ((AspectJEdge) errorCell).setError(true);
-                    } else if (errorCell instanceof AspectJVertex) {
-                        ((AspectJVertex) errorCell).setError(true);
-                    }
-                }
-            }
-        }
         this.loading = false;
     }
 
@@ -236,27 +210,39 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
     public Map<?,?> cloneCells(Object[] cells) {
         Map<?,?> result;
         collectNodeNrs();
+        // the following will call cloneCell(Object) for each individual cell
         result = super.cloneCells(cells);
         resetNodeNrs();
+        // now finish the cloning by fixing the cloned JVertices
+        for (Object cell : result.values()) {
+            if (cell instanceof AJVertex) {
+                ((AJVertex) cell).setNodeFixed();
+            }
+        }
         return result;
     }
 
     @Override
     protected Object cloneCell(Object cell) {
-        Object result = super.cloneCell(cell);
-        if (cell instanceof EditableJVertex) {
-            ((EditableJVertex) result).setNumber(createNewNodeNr());
+        Object result;
+        AJCell clone = null;
+        if (cell instanceof AJVertex) {
+            // clone the vertex, making certain of a new node number
+            AspectNode newNode =
+                new AspectNode(createNewNodeNr(), this.editor.getRole());
+            clone = new AJVertex(this, newNode);
+        } else if (cell instanceof AJEdge) {
+            clone = new AJEdge(this);
+        }
+        // initialise the cloned object
+        if (clone != null) {
+            clone.setUserObject(((AJCell) cell).getUserObject());
+            clone.loadFromUserObject(this.editor.getRole());
+            result = clone;
+        } else {
+            result = cell;
         }
         return result;
-    }
-
-    @Override
-    protected Object cloneUserObject(Object userObject) {
-        if (userObject == null) {
-            return null;
-        } else {
-            return ((StringObject) userObject).clone();
-        }
     }
 
     /** Initialises the set {@link #usedNrs} with the currently used node numbers. */
@@ -315,6 +301,10 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
         result.loadGraph(graph);
         return result;
     }
+
+    /** A fixed, empty model. */
+    public static final AJModel EMPTY_JMODEL = newInstance(
+        AspectGraph.newInstance("", GraphRole.HOST), null);
 
     /** Role names (for the tool tips). */
     static final Map<AspectKind,String> ROLE_NAMES =

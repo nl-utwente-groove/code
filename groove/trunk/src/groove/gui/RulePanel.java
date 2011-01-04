@@ -24,7 +24,7 @@ import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.Options.SHOW_VERTEX_LABELS_OPTION;
 import groove.graph.GraphProperties;
 import groove.graph.LabelStore;
-import groove.gui.jgraph.AspectJModel;
+import groove.gui.jgraph.AJModel;
 import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.RuleJGraph;
 import groove.lts.GTS;
@@ -96,8 +96,8 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements
         this.ruleJModelMap.clear();
         if (grammar != null) {
             for (RuleName ruleName : grammar.getRuleNames()) {
-                AspectJModel jModel =
-                    AspectJModel.newInstance(
+                AJModel jModel =
+                    AJModel.newInstance(
                         grammar.getRuleView(ruleName).getView(), getOptions());
                 this.ruleJModelMap.put(ruleName, jModel);
             }
@@ -172,12 +172,12 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements
         if (reload || ruleName == null && this.displayedRule != null
             || !ruleName.equals(this.displayedRule)) {
             JModel ruleJModel =
-                ruleName == null ? AspectJModel.EMPTY_ASPECT_JMODEL
+                ruleName == null ? AJModel.EMPTY_JMODEL
                         : this.ruleJModelMap.get(ruleName);
             if (ruleJModel == null) {
                 // apparently the rule name is unknown
                 ruleName = null;
-                ruleJModel = AspectJModel.EMPTY_ASPECT_JMODEL;
+                ruleJModel = AJModel.EMPTY_JMODEL;
             }
             // display new rule
             this.displayedRule = ruleName;
@@ -240,8 +240,8 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements
      * Contains graph models for the production system's rules.
      * @invariant ruleJModels: RuleName --> RuleJModel
      */
-    private final Map<RuleName,AspectJModel> ruleJModelMap =
-        new TreeMap<RuleName,AspectJModel>();
+    private final Map<RuleName,AJModel> ruleJModelMap =
+        new TreeMap<RuleName,AJModel>();
     // /** The currently displayed grammar, if any. */
     // private GrammarView displayedGrammar;
     /** The name of the currently displayed rule, if any. */

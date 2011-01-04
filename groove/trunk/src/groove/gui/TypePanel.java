@@ -21,7 +21,7 @@ import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.LabelStore;
 import groove.gui.JTypeNameList.CheckBoxListModel;
-import groove.gui.jgraph.AspectJModel;
+import groove.gui.jgraph.AJModel;
 import groove.gui.jgraph.TypeJGraph;
 import groove.io.SystemStore;
 import groove.lts.GTS;
@@ -227,10 +227,10 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
      * from {@link #typeJModelMap}; if there is no image for the requested state
      * then one is created.
      */
-    private AspectJModel getTypeJModel(TypeView graph) {
-        AspectJModel result = this.typeJModelMap.get(graph);
+    private AJModel getTypeJModel(TypeView graph) {
+        AJModel result = this.typeJModelMap.get(graph);
         if (result == null) {
-            result = AspectJModel.newInstance(graph.getView(), getOptions());
+            result = AJModel.newInstance(graph.getView(), getOptions());
             this.typeJModelMap.put(graph, result);
         }
         return result;
@@ -240,8 +240,8 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
      * Contains graph models for the production system's rules.
      * @invariant ruleJModels: RuleName --> RuleJModel
      */
-    private final Map<TypeView,AspectJModel> typeJModelMap =
-        new HashMap<TypeView,AspectJModel>();
+    private final Map<TypeView,AJModel> typeJModelMap =
+        new HashMap<TypeView,AJModel>();
 
     /**
      * Registers a refreshable.
@@ -260,13 +260,13 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
 
     /** Sets the model according to the currently selected type. */
     public void displayType() {
-        AspectJModel newModel =
+        AJModel newModel =
             isTypeSelected() ? getTypeJModel(getGrammarView().getTypeView(
-                getSelectedType())) : AspectJModel.EMPTY_ASPECT_JMODEL;
+                getSelectedType())) : AJModel.EMPTY_JMODEL;
         if (newModel != getJModel()) {
             this.jGraph.setModel(newModel);
         }
-        if (newModel == AspectJModel.EMPTY_ASPECT_JMODEL) {
+        if (newModel == AJModel.EMPTY_JMODEL) {
             setEnabled(false);
         } else {
             setEnabled(getNameListModel().isSelectedChecked());

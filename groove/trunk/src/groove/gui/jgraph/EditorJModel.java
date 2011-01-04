@@ -89,7 +89,7 @@ public class EditorJModel extends JModel implements GraphModelListener {
     public void loadGraph(AspectGraph graph) {
         this.loading = true;
         Object[] oldRoots = getRoots().toArray();
-        AspectJModel jModel = createJModel(graph);
+        AJModel jModel = createJModel(graph);
         Map<AspectElement,EditableJCell> elementMap =
             new HashMap<AspectElement,EditableJCell>();
         jModel.setForEditor();
@@ -104,8 +104,7 @@ public class EditorJModel extends JModel implements GraphModelListener {
         ConnectionSet connections = new ConnectionSet();
         // first do the nodes
         for (AspectNode node : graph.nodeSet()) {
-            AspectJVertex jVertex =
-                (AspectJVertex) jModel.getJCellForNode(node);
+            AJVertex jVertex = (AJVertex) jModel.getJCellForNode(node);
             // create node image and attributes
             EditableJVertex nodeImage = copyJVertex(jVertex);
             // add new port to port map (for correct edge cloning)
@@ -117,10 +116,10 @@ public class EditorJModel extends JModel implements GraphModelListener {
         // now do the edges
         for (AspectEdge edge : graph.edgeSet()) {
             JCell jCell = jModel.getJCellForEdge(edge);
-            if (jCell instanceof AspectJVertex) {
+            if (jCell instanceof AJVertex) {
                 elementMap.put(edge, toResultCellMap.get(jCell));
-            } else if (jCell.isVisible() && jCell instanceof AspectJEdge) {
-                AspectJEdge jEdge = (AspectJEdge) jCell;
+            } else if (jCell.isVisible() && jCell instanceof AJEdge) {
+                AJEdge jEdge = (AJEdge) jCell;
                 // create edge image and attributes
                 EditableJEdge edgeImage = copyJEdge(jEdge);
                 // connect up edge image
@@ -159,9 +158,9 @@ public class EditorJModel extends JModel implements GraphModelListener {
     /**
      * Creates an appropriate JModel for a given aspect graph.
      */
-    private AspectJModel createJModel(AspectGraph graph) {
-        AspectJModel jModel = AspectJModel.newInstance(graph, getOptions());
-        jModel.setForEditor();
+    private AJModel createJModel(AspectGraph graph) {
+        AJModel jModel = new AJModel(this.editor);
+        jModel.loadGraph(graph);
         return jModel;
     }
 
@@ -179,7 +178,7 @@ public class EditorJModel extends JModel implements GraphModelListener {
         Map<AspectElement,EditableJCell> elementMap =
             new HashMap<AspectElement,EditableJCell>();
         AspectGraph graph = toAspectGraph(elementMap);
-        AspectJModel jModel = createJModel(graph);
+        AJModel jModel = createJModel(graph);
         for (Map.Entry<AspectElement,EditableJCell> entry : elementMap.entrySet()) {
             AspectElement element = entry.getKey();
             EditableJCell editableJCell = entry.getValue();
@@ -188,13 +187,13 @@ public class EditorJModel extends JModel implements GraphModelListener {
                 editableJCell.setError(true);
             }
             if (element instanceof Node) {
-                AspectJVertex jCell =
-                    (AspectJVertex) jModel.getJCellForNode((Node) element);
+                AJVertex jCell =
+                    (AJVertex) jModel.getJCellForNode((Node) element);
                 ((EditableJVertex) entry.getValue()).setProxy(jCell);
             } else {
                 JCell jCell = jModel.getJCellForEdge((Edge<?>) element);
-                if (jCell instanceof AspectJEdge) {
-                    ((EditableJEdge) entry.getValue()).setProxy((AspectJEdge) jCell);
+                if (jCell instanceof AJEdge) {
+                    ((EditableJEdge) entry.getValue()).setProxy((AJEdge) jCell);
                 }
             }
         }
@@ -387,7 +386,7 @@ public class EditorJModel extends JModel implements GraphModelListener {
      * Callback factory method for a j-vertex instance for this j-model that is
      * a copy of an existing j-vertex.
      */
-    private EditableJVertex copyJVertex(AspectJVertex original) {
+    private EditableJVertex copyJVertex(AJVertex original) {
         return new EditableJVertex(this, original);
     }
 
@@ -395,7 +394,7 @@ public class EditorJModel extends JModel implements GraphModelListener {
      * Callback factory method for a j-edge instance for this j-model that is a
      * copy of an existing j-edge.
      */
-    private EditableJEdge copyJEdge(AspectJEdge original) {
+    private EditableJEdge copyJEdge(AJEdge original) {
         return new EditableJEdge(this, original);
     }
 

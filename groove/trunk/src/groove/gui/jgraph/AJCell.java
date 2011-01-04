@@ -29,6 +29,9 @@ interface AJCell extends GraphJCell<AspectNode,AspectEdge> {
     /** Returns the user object of this cell, with the given type. */
     AJObject getUserObject();
 
+    /** Sets the user object to a given value. */
+    void setUserObject(Object value);
+
     /** 
      * Sets the user object with information from the cell's wrapped 
      * nodes and edges.

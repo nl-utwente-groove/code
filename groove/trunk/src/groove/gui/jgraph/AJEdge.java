@@ -31,6 +31,12 @@ import org.jgraph.graph.GraphConstants;
  * Specialized j-edge for rule graphs, with its own tool tip text.
  */
 public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell {
+    /** Creates an uninitialised instance. */
+    public AJEdge(AJModel jModel) {
+        super(jModel);
+        setUserObject(null);
+    }
+
     /** Creates a j-edge on the basis of a given (aspectual) edge. */
     public AJEdge(AJModel jModel, AspectEdge edge) {
         super(jModel, edge);
@@ -81,9 +87,8 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
         } else {
             result.append(super.getEdgeDescription());
         }
-        if (AspectJModel.ROLE_DESCRIPTIONS.containsKey(this.aspect)) {
-            result.append("<br>"
-                + AspectJModel.ROLE_DESCRIPTIONS.get(this.aspect));
+        if (AJModel.ROLE_DESCRIPTIONS.containsKey(this.aspect)) {
+            result.append("<br>" + AJModel.ROLE_DESCRIPTIONS.get(this.aspect));
         }
         return result;
     }
@@ -91,10 +96,10 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
     @Override
     StringBuilder getEdgeKindDescription() {
         StringBuilder result = super.getEdgeKindDescription();
-        if (AspectJModel.ROLE_NAMES.containsKey(this.aspect)) {
+        if (AJModel.ROLE_NAMES.containsKey(this.aspect)) {
             Converter.toUppercase(result, false);
             result.insert(0, " ");
-            result.insert(0, AspectJModel.ROLE_NAMES.get(this.aspect));
+            result.insert(0, AJModel.ROLE_NAMES.get(this.aspect));
         }
         return result;
     }
