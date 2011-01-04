@@ -36,15 +36,16 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
+final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     // --------------------- INSTANCE DEFINITIONS ------------------------
 
     /**
-     * Creates a new aspect model instance on top of a given aspectual view.
+     * Creates an initially empty instance.
+     * Initialise with {@link #loadGraph(Graph)} before using.
      */
-    AspectJModel(AspectGraph graph, Options options) {
-        super(graph, options);
+    AspectJModel(Options options) {
+        super(options);
     }
 
     /** Constructor for a dummy model. */
@@ -134,7 +135,8 @@ public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         if (graph == null) {
             return EMPTY_ASPECT_JMODEL;
         } else {
-            AspectJModel result = new AspectJModel(graph, options);
+            AspectJModel result = new AspectJModel(options);
+            result.loadGraph(graph);
             return result;
         }
     }

@@ -32,11 +32,12 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
+final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
         implements GTSListener {
     /** Creates a new model from a given LTS and set of display options. */
     LTSJModel(GTS lts, Options options) {
-        super(lts, options);
+        super(options);
+        loadGraph(lts);
     }
 
     /** Constructs a dummy, empty model. */

@@ -19,7 +19,9 @@ package groove.gui.jgraph;
 /**
  * @author Arash Jalali
  * @version $Revision $
+ * @deprecated no subclass is needed; just reuse {@link JGraph}
  */
+@Deprecated
 public class ReteJGraph extends JGraph {
 
     /**

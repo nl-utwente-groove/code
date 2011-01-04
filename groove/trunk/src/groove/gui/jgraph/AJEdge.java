@@ -127,14 +127,15 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
             for (Aspect aspect : edge.label().getAspects()) {
                 result.append(aspect);
             }
-        } else if (this.aspect.isRole()) {
-            // add nesting level, if any
-            String levelName = edge.getLevelName();
-            if (levelName != null && levelName.length() != 0) {
-                result.append(levelName + LEVEL_NAME_SEPARATOR);
-            }
         }
         result.append(super.getLine(edge));
+        // add the level name, if not already shown as an aspect
+        if (!getJModel().isShowAspects() && this.aspect.isRole()) {
+            String levelName = edge.getLevelName();
+            if (levelName != null && levelName.length() != 0) {
+                result.append(LEVEL_NAME_SEPARATOR + levelName);
+            }
+        }
         return result;
     }
 
