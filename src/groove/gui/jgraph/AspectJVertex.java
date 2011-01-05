@@ -30,18 +30,18 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Specialized j-vertex for rule graphs, with its own tool tip text.
  */
-public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
-        AJCell {
+public class AspectJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
+        AspectJCell {
     /** Creates a j-vertex on the basis of a given (aspectual) node. */
-    public AJVertex(AJModel jModel, AspectNode node) {
+    public AspectJVertex(AspectJModel jModel, AspectNode node) {
         super(jModel, node);
         setUserObject(null);
         this.aspect = node.getKind();
     }
 
     @Override
-    public AJModel getJModel() {
-        return (AJModel) super.getJModel();
+    public AspectJModel getJModel() {
+        return (AspectJModel) super.getJModel();
     }
 
     /** Clears the errors and the aspect, in addition to calling the super method. */
@@ -53,8 +53,8 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
     }
 
     @Override
-    public AJVertex clone() {
-        AJVertex result = (AJVertex) super.clone();
+    public AspectJVertex clone() {
+        AspectJVertex result = (AspectJVertex) super.clone();
         result.errors = new ArrayList<FormatError>();
         return result;
     }
@@ -72,13 +72,13 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
      * display settings are also to be shown on this label.
      * These are obtained from the outgoing JEdges that
      * have this JVertex as their source label and for which
-     * {@link AJEdge#isSourceLabel()} holds.
+     * {@link AspectJEdge#isSourceLabel()} holds.
      */
     private Set<AspectEdge> getExtraSelfEdges() {
         Set<AspectEdge> result = new TreeSet<AspectEdge>();
         // add all outgoing JEdges that are source labels
         for (Object edgeObject : getPort().getEdges()) {
-            AJEdge jEdge = (AJEdge) edgeObject;
+            AspectJEdge jEdge = (AspectJEdge) edgeObject;
             if (jEdge.getSourceVertex() == this && jEdge.isSourceLabel()) {
                 result.addAll(jEdge.getEdges());
             }
@@ -122,11 +122,11 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
         } else {
             result.append(super.getNodeDescription());
         }
-        if (AJModel.ROLE_NAMES.containsKey(this.aspect)) {
+        if (AspectJModel.ROLE_NAMES.containsKey(this.aspect)) {
             Converter.toUppercase(result, false);
             result.insert(0, " ");
-            result.insert(0, AJModel.ROLE_NAMES.get(this.aspect));
-            result.append("<br>" + AJModel.ROLE_DESCRIPTIONS.get(this.aspect));
+            result.insert(0, AspectJModel.ROLE_NAMES.get(this.aspect));
+            result.append("<br>" + AspectJModel.ROLE_DESCRIPTIONS.get(this.aspect));
         }
         return result;
     }
@@ -355,7 +355,7 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
 
     public void saveToUserObject() {
         // collect the node and edge information
-        AJObject userObject = getUserObject();
+        AspectJObject userObject = getUserObject();
         userObject.clear();
         userObject.addLabels(getNode().getNodeLabels());
         userObject.addEdges(getSelfEdges());
@@ -394,9 +394,9 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
     @Override
     public void setUserObject(Object value) {
         // we do need to create a new object, otherwise undos do not work
-        AJObject myObject = new AJObject(false);
-        if (value instanceof AJObject) {
-            myObject.addAll((AJObject) value);
+        AspectJObject myObject = new AspectJObject();
+        if (value instanceof AspectJObject) {
+            myObject.addAll((AspectJObject) value);
         } else if (value != null) {
             myObject.load(value.toString());
         }
@@ -405,8 +405,8 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
 
     /** Specialises the return type. */
     @Override
-    public AJObject getUserObject() {
-        return (AJObject) super.getUserObject();
+    public AspectJObject getUserObject() {
+        return (AspectJObject) super.getUserObject();
     }
 
     /** The role of the underlying rule node. */

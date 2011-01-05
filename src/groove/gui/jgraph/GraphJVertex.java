@@ -22,6 +22,7 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.util.Converter;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,14 +31,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.DefaultGraphCell;
+import org.jgraph.graph.DefaultPort;
+import org.jgraph.graph.GraphConstants;
+
 /**
  * Extends DefaultGraphCell to use a Node as user object but send the toString
  * method to a set of self-edge labels. Provides a convenience method to
  * retrieve the user object as a Node. Also provides a single default port for
  * the graph cell, and a convenience method to retrieve it.
  */
-public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
-        implements GraphJCell<N,E> {
+public class GraphJVertex<N extends Node,E extends Edge<N>> extends
+        DefaultGraphCell implements GraphJCell {
     /**
      * Constructs a jnode on top of a graph node.
      * @param jModel the model in which this vertex exists
@@ -46,7 +52,9 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
      * @ensure getUserObject() == node, labels().isEmpty()
      */
     GraphJVertex(GraphJModel<N,E> jModel, N node, boolean vertexLabelled) {
-        super(jModel, node.getNumber());
+        this.jModel = jModel;
+        this.nr = node.getNumber();
+        add(new DefaultPort());
         this.node = node;
         this.vertexLabelled = vertexLabelled;
     }
@@ -62,15 +70,13 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
         this(jModel, node, true);
     }
 
-    /** Returns the {@link JModel} associated with this vertex. */
-    @SuppressWarnings("unchecked")
-    @Override
+    /** Returns the {@link GraphJModel} associated with this vertex. */
     public GraphJModel<N,E> getJModel() {
-        return (GraphJModel<N,E>) super.getJModel();
+        return this.jModel;
     }
 
     /**
-     * Sets the node wrapped in this JVertex to a new one,
+     * Sets the node wrapped in this GraphJVertex<?,?> to a new one,
      * and clears the set of self-edges. 
      */
     void reset(N node) {
@@ -90,7 +96,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     }
 
     /**
-     * Returns the graph node wrapped by this {@link JVertex}.
+     * Returns the graph node wrapped by this {@link GraphJVertex}.
      */
     public N getNode() {
         return this.node;
@@ -226,7 +232,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     /**
      * This implementation returns a special constant label in case the node is
      * a constant, followed by the self-edge labels and data-edge labels; or
-     * {@link JCell#NO_LABEL} if the result would otherwise be empty.
+     * {@link GraphJCell#NO_LABEL} if the result would otherwise be empty.
      */
     public Collection<? extends Label> getListLabels() {
         Collection<Label> result = new ArrayList<Label>();
@@ -245,15 +251,6 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     }
 
     /**
-     * This implementation forwards the query to the underlying graph node.
-     * @see #getNode()
-     */
-    @Override
-    public String toString() {
-        return "JVertex for " + getNode();
-    }
-
-    /**
      * Callback method yielding a string description of the underlying node,
      * used for the node inscription in case node identities are to be shown.
      * Subclasses may return {@code null} if there is no useful node identity.
@@ -263,7 +260,6 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     }
 
     /** This implementation includes the node number of the underlying node. */
-    @Override
     StringBuilder getNodeDescription() {
         StringBuilder result = new StringBuilder();
         result.append("Node");
@@ -276,6 +272,114 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     }
 
     /**
+     * Returns this graph node's one and only port.
+     */
+    public DefaultPort getPort() {
+        return (DefaultPort) getFirstChild();
+    }
+
+    /** Sets the number of this vertex. */
+    public void setNumber(int nr) {
+        this.nr = nr;
+    }
+
+    /** Returns the number with which this vertex was initialised. */
+    public int getNumber() {
+        return this.nr;
+    }
+
+    /**
+     * Returns HTML-formatted text, without a surrounding HTML tag.
+     */
+    public String getText() {
+        StringBuilder result = new StringBuilder();
+        for (StringBuilder line : getLines()) {
+            if (result.length() > 0) {
+                result.append(Converter.HTML_LINEBREAK);
+            }
+            result.append(line);
+        }
+        return result.toString();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("JVertex %d with labels %s", getNumber(),
+            getListLabels());
+    }
+
+    /**
+     * Returns the tool tip text for this vertex.
+     */
+    public String getToolTipText() {
+        return Converter.HTML_TAG.on(getNodeDescription()).toString();
+    }
+
+    @Override
+    public void refreshAttributes() {
+        createAttributes(getJModel());
+    }
+
+    /** Returns the attributes to be used in displaying this vertex. */
+    final public AttributeMap createAttributes(GraphJModel<?,?> jModel) {
+        AttributeMap result = createAttributes();
+        if (!jModel.isShowBackground()) {
+            GraphConstants.setBackground(result, Color.WHITE);
+        }
+        if (isGrayedOut()) {
+            result.applyMap(JAttr.GRAYED_OUT_ATTR);
+        }
+        if (getAttributes() != null) {
+            getAttributes().applyMap(result);
+        }
+        return result;
+    }
+
+    /**
+     * Callback method for creating the core attributes.
+     * These might be modified by other parameters; don't call this
+     * method directly.
+     */
+    protected AttributeMap createAttributes() {
+        return JAttr.DEFAULT_NODE_ATTR.clone();
+    }
+
+    @Override
+    final public boolean isGrayedOut() {
+        return this.grayedOut;
+    }
+
+    @Override
+    final public boolean setGrayedOut(boolean grayedOut) {
+        boolean result = grayedOut != this.grayedOut;
+        if (result) {
+            this.grayedOut = grayedOut;
+            refreshAttributes();
+        }
+        return result;
+    }
+
+    @Override
+    public final boolean isEmphasised() {
+        return this.emphasised;
+    }
+
+    @Override
+    public final boolean setEmphasised(boolean emphasised) {
+        boolean oldEmphasised = this.emphasised;
+        this.emphasised = emphasised;
+        return oldEmphasised != emphasised;
+    }
+
+    public boolean hasError() {
+        return false;
+    }
+
+    private final GraphJModel<N,E> jModel;
+    private int nr;
+    private boolean grayedOut;
+    private boolean emphasised;
+    /**
      * An indicator whether the vertex can be labelled (otherwise labels are
      * self-edges).
      */
@@ -284,4 +388,5 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     private N node;
     /** Set of graph edges mapped to this JEdge. */
     private Set<E> edges = new TreeSet<E>();
+
 }

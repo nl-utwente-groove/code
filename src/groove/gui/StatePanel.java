@@ -25,10 +25,10 @@ import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.Element;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
-import groove.gui.jgraph.AJModel;
+import groove.gui.jgraph.AspectJCell;
+import groove.gui.jgraph.AspectJEdge;
+import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.JCell;
-import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.StateJGraph;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
@@ -133,15 +133,15 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * Specialises the return type to {@link GraphJModel}.
      */
     @Override
-    public AJModel getJModel() {
-        return (AJModel) super.getJModel();
+    public AspectJModel getJModel() {
+        return (AspectJModel) super.getJModel();
     }
 
     /**
      * Sets the graph model in the jgraph. Convenience method for
      * <code>this.jGraph.setModel(newModel)</code>.
      */
-    private void setJModel(AJModel newModel) {
+    private void setJModel(AspectJModel newModel) {
         clearSelectedMatch();
         this.jGraph.setModel(newModel);
     }
@@ -155,7 +155,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         this.graphToJModel.clear();
         this.jGraph.getFilteredLabels().clear();
         if (grammar == null || grammar.getStartGraphView() == null) {
-            setJModel(AJModel.EMPTY_JMODEL);
+            setJModel(AspectJModel.EMPTY_JMODEL);
             setEnabled(false);
         } else {
             GraphView startGraphView = grammar.getStartGraphView();
@@ -240,7 +240,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         for (HostEdge matchedEdge : match.getEdgeValues()) {
             emphElems.add(aspectMap.getEdge(matchedEdge));
         }
-        GraphJModel<?,?> currentModel = getJModel();
+        AspectJModel currentModel = getJModel();
         currentModel.setEmphasised(currentModel.getJCellSet(emphElems));
         this.selectedMatch = match;
         refreshStatus();
@@ -253,7 +253,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      */
     public synchronized void applyTransitionUpdate(GraphTransition transition) {
         GraphState newState = transition.target();
-        AJModel newModel = getAspectJModel(newState);
+        AspectJModel newModel = getAspectJModel(newState);
         GraphState oldState = transition.source();
         HostGraphMorphism morphism = transition.getMorphism();
         copyLayout(this.stateToAspectMap.get(oldState),
@@ -350,17 +350,16 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * retrieved from stateJModelMap; if there is no image for the requested
      * state then one is created.
      */
-    private AJModel getAspectJModel(GraphState state) {
+    private AspectJModel getAspectJModel(GraphState state) {
         HostToAspectMap aspectMap = this.stateToAspectMap.get(state);
         if (aspectMap == null) {
             this.stateToAspectMap.put(state, aspectMap =
                 state.getGraph().toAspectMap());
         }
         AspectGraph aspectGraph = aspectMap.getAspectGraph();
-        AJModel result = this.graphToJModel.get(aspectGraph);
+        AspectJModel result = this.graphToJModel.get(aspectGraph);
         if (result == null) {
             result = createAspectJModel(aspectGraph);
-            result.setName(state.toString());
             assert result != null;
             this.graphToJModel.put(aspectGraph, result);
             // try to find layout information for the model
@@ -390,8 +389,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * requested state then one is created using
      * {@link #createAspectJModel(AspectGraph)}.
      */
-    private AJModel getAspectJModel(AspectGraph graph) {
-        AJModel result = this.graphToJModel.get(graph);
+    private AspectJModel getAspectJModel(AspectGraph graph) {
+        AspectJModel result = this.graphToJModel.get(graph);
         if (result == null) {
             result = createAspectJModel(graph);
             this.graphToJModel.put(graph, result);
@@ -400,8 +399,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     }
 
     /** Creates a j-model for a given aspect graph. */
-    private AJModel createAspectJModel(AspectGraph graph) {
-        return AJModel.newInstance(graph, getOptions());
+    private AspectJModel createAspectJModel(AspectGraph graph) {
+        return AspectJModel.newInstance(graph, getOptions());
     }
 
     /**
@@ -414,16 +413,16 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      */
     private void copyLayout(HostToAspectMap oldState, HostToAspectMap newState,
             HostGraphMorphism morphism) {
-        AJModel oldStateJModel = getAspectJModel(oldState.getAspectGraph());
-        AJModel newStateJModel = getAspectJModel(newState.getAspectGraph());
-        Set<JCell> newGrayedOut = new HashSet<JCell>();
+        AspectJModel oldStateJModel = getAspectJModel(oldState.getAspectGraph());
+        AspectJModel newStateJModel = getAspectJModel(newState.getAspectGraph());
+        Set<AspectJCell> newGrayedOut = new HashSet<AspectJCell>();
         for (Map.Entry<HostNode,HostNode> entry : morphism.nodeMap().entrySet()) {
             AspectNode oldStateNode = oldState.getNode(entry.getKey());
             AspectNode newStateNode = newState.getNode(entry.getValue());
-            JCell sourceCell = oldStateJModel.getJCell(oldStateNode);
+            AspectJCell sourceCell = oldStateJModel.getJCellForNode(oldStateNode);
             assert sourceCell != null : "Source element " + oldStateNode
                 + " unknown";
-            JCell targetCell = newStateJModel.getJCell(newStateNode);
+            AspectJCell targetCell = newStateJModel.getJCellForNode(newStateNode);
             assert targetCell != null : "Target element " + newStateNode
                 + " unknown";
             Rectangle2D sourceBounds =
@@ -439,9 +438,9 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         for (Map.Entry<HostEdge,HostEdge> entry : morphism.edgeMap().entrySet()) {
             AspectEdge oldStateEdge = oldState.getEdge(entry.getKey());
             AspectEdge newStateEdge = newState.getEdge(entry.getValue());
-            JCell sourceCell = oldStateJModel.getJCell(oldStateEdge);
+            AspectJCell sourceCell = oldStateJModel.getJCellForEdge(oldStateEdge);
             AttributeMap sourceAttributes = sourceCell.getAttributes();
-            JCell targetCell = newStateJModel.getJCell(newStateEdge);
+            AspectJCell targetCell = newStateJModel.getJCellForEdge(newStateEdge);
             assert targetCell != null : "Target element " + newStateEdge
                 + " unknown";
             AttributeMap targetAttributes = targetCell.getAttributes();
@@ -465,10 +464,10 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         }
         // new edges should be shown, including their source and target vertex
         for (AspectEdge newEdge : newEdges) {
-            JCell targetCell = newStateJModel.getJCell(newEdge);
-            if (targetCell instanceof JEdge) {
-                newGrayedOut.remove(((JEdge) targetCell).getSourceVertex());
-                newGrayedOut.remove(((JEdge) targetCell).getTargetVertex());
+            AspectJCell targetCell = newStateJModel.getJCellForEdge(newEdge);
+            if (targetCell instanceof AspectJEdge) {
+                newGrayedOut.remove(((AspectJEdge) targetCell).getSourceVertex());
+                newGrayedOut.remove(((AspectJEdge) targetCell).getTargetVertex());
             }
         }
         newStateJModel.setGrayedOut(newGrayedOut);
@@ -485,8 +484,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     /**
      * Mapping from graphs to the corresponding graph models.
      */
-    private final Map<AspectGraph,AJModel> graphToJModel =
-        new HashMap<AspectGraph,AJModel>();
+    private final Map<AspectGraph,AspectJModel> graphToJModel =
+        new HashMap<AspectGraph,AspectJModel>();
     /**
      * Mapping from graphs to the corresponding graph models.
      */

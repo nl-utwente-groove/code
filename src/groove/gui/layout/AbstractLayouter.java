@@ -16,10 +16,10 @@
  */
 package groove.gui.layout;
 
-import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JEdgeView;
 import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.JModel;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -223,9 +223,9 @@ abstract public class AbstractLayouter implements Layouter {
         // iterate over the cell views
         CellView[] cellViews = this.jgraph.getGraphLayoutCache().getRoots();
         for (CellView cellView : cellViews) {
-            if (cellView.getCell() instanceof JCell
-                && !((JCell) cellView.getCell()).isGrayedOut()) {
-                JCell jCell = (JCell) cellView.getCell();
+            if (cellView.getCell() instanceof GraphJCell
+                && !((GraphJCell) cellView.getCell()).isGrayedOut()) {
+                GraphJCell jCell = (GraphJCell) cellView.getCell();
                 boolean immovable =
                     !GraphConstants.isMoveable(jCell.getAttributes());
                 if (cellView instanceof JEdgeView) {
@@ -272,12 +272,12 @@ abstract public class AbstractLayouter implements Layouter {
      * the node bounds and edge points.
      */
     protected void finish() {
-        final Map<JCell,AttributeMap> change =
-            new HashMap<JCell,AttributeMap>();
+        final Map<GraphJCell,AttributeMap> change =
+            new HashMap<GraphJCell,AttributeMap>();
         CellView[] cellViews = this.jgraph.getGraphLayoutCache().getRoots();
         for (CellView view : cellViews) {
             if (view instanceof VertexView || view instanceof EdgeView) {
-                JCell cell = (JCell) view.getCell();
+                GraphJCell cell = (GraphJCell) view.getCell();
                 GraphConstants.setMoveable(cell.getAttributes(), true);
                 AttributeMap modelAttr = new AttributeMap();
                 if (view instanceof VertexView) {
@@ -325,7 +325,7 @@ abstract public class AbstractLayouter implements Layouter {
     /**
      * The model that has last been layed out.
      */
-    protected JModel jmodel;
+    protected GraphJModel<?,?> jmodel;
 
     /**
      * A map from the cells and edge points to layoutables. This is a transient

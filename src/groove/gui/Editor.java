@@ -26,12 +26,11 @@ import groove.gui.dialog.AboutBox;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.PropertiesDialog;
 import groove.gui.dialog.SingleListDialog;
-import groove.gui.jgraph.AJCell;
-import groove.gui.jgraph.AJModel;
+import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.EditorJGraph;
-import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.JModel;
 import groove.io.AspectGxl;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
@@ -190,7 +189,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             setRole(graph.getRole());
         }
         if (refreshModel) {
-            setModel(AJModel.newInstance(this, graph));
+            setModel(AspectJModel.newInstance(this, graph));
         } else {
             getModel().loadGraph(graph);
             updateStatus();
@@ -219,11 +218,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     /**
      * Changes the graph being edited to a given j-model, with a given name. If
-     * the model is <tt>null</tt>, a fresh {@link AJModel}is created;
-     * otherwise, the given j-model is copied into a new {@link AJModel}.
+     * the model is <tt>null</tt>, a fresh {@link AspectJModel}is created;
+     * otherwise, the given j-model is copied into a new {@link AspectJModel}.
      * @param model the j-model to be set
      */
-    private void setModel(AJModel model) {
+    private void setModel(AspectJModel model) {
         // unregister listeners with the model
         getModel().removeUndoableEditListener(getUndoManager());
         getModel().removeGraphModelListener(this);
@@ -241,7 +240,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * @return the j-model currently being edited, or <tt>null</tt> if no editor
      *         model is set.
      */
-    public AJModel getModel() {
+    public AspectJModel getModel() {
         return this.jgraph == null ? null : this.jgraph.getModel();
     }
 
@@ -344,19 +343,15 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             }
             if (toFile != null) {
                 try {
-                    doSaveGraph(toFile);
                     // parse the file name to extract any priority info
                     PriorityFileName priorityName =
                         new PriorityFileName(toFile);
                     String actualName = priorityName.getActualName();
                     setModelName(actualName);
-                    if (priorityName.hasPriority()) {
-                        getModel().getProperties().setPriority(
-                            priorityName.getPriority());
-                    }
                     toFile =
                         new File(toFile.getParentFile(), actualName
                             + ExtensionFilter.getExtension(toFile));
+                    doSaveGraph(toFile);
                     setCurrentFile(toFile);
                 } catch (Exception exc) {
                     showErrorDialog(
@@ -375,7 +370,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      *         aspect correct (and so can be saved).
      */
     protected boolean handlePreview(String okOption) {
-        AJModel previewedModel = showPreviewDialog(toView(), okOption);
+        AspectJModel previewedModel = showPreviewDialog(toView(), okOption);
         if (previewedModel != null) {
             setAspectGraph(previewedModel.getGraph(), false);
             return true;
@@ -635,7 +630,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * Sets the name of the editor model. The name may be <tt>null</tt> if the
      * model is to be anonymous.
      * @param name new name for the editor model
-     * @see AJModel#setName(String)
+     * @see AspectJModel#setName(String)
      */
     protected void setModelName(String name) {
         if (getModel() != null) {
@@ -646,7 +641,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     /**
      * Returns the current name of the editor model.
-     * @see AJModel#getName()
+     * @see AspectJModel#getName()
      */
     protected String getModelName() {
         if (getModel() != null) {
@@ -980,7 +975,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                 @Override
                 public void update(Observable o, Object arg) {
                     if (arg != null) {
-                        JCell errorCell = Editor.this.errorCellMap.get(arg);
+                        GraphJCell errorCell =
+                            Editor.this.errorCellMap.get(arg);
                         if (errorCell != null) {
                             getJGraph().setSelectionCell(errorCell);
                         }
@@ -1074,11 +1070,10 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                 Editor.this.errorCellMap.clear();
                 for (FormatError error : errors) {
                     for (Element errorObject : error.getElements()) {
-                        AJCell errorCell =
-                            (AJCell) getModel().getJCell(errorObject);
+                        GraphJCell errorCell = getModel().getJCell(errorObject);
                         if (errorCell == null && errorObject instanceof Edge) {
                             errorCell =
-                                (AJCell) getModel().getJCell(
+                                getModel().getJCell(
                                     ((Edge<?>) errorObject).source());
                         }
                         if (errorCell != null) {
@@ -1170,13 +1165,13 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * Creates a preview of an aspect model, with properties. Returns a j-model
      * if the edited model should be replaced, <code>null</code> otherwise.
      */
-    private AJModel showPreviewDialog(View<?> view, String okOption) {
+    private AspectJModel showPreviewDialog(View<?> view, String okOption) {
         if (this.previewSize == null) {
             this.previewSize = DEFAULT_PREVIEW_SIZE;
         }
         AspectGraph graph = view.getView();
         boolean partial = graph.hasErrors();
-        AJModel previewModel = AJModel.newInstance(graph, getOptions());
+        AspectJModel previewModel = AspectJModel.newInstance(graph, getOptions());
         JGraph jGraph = createJGraph(previewModel);
         jGraph.setToolTipEnabled(true);
         JScrollPane jGraphPane = new JScrollPane(jGraph);
@@ -1313,9 +1308,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     /**
      * Factory method to create a {@link JGraph} displaying a given
-     * {@link JModel}.
+     * {@link GraphJModel}.
      */
-    private JGraph createJGraph(AJModel jmodel) {
+    private JGraph createJGraph(AspectJModel jmodel) {
         JGraph result = new JGraph(jmodel, false);
         result.setExporter(getExporter());
         return result;
@@ -1366,8 +1361,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     private boolean anyGraphSaved;
 
     /** Mapping from error messages to the corresponding cells. */
-    private Map<FormatError,AJCell> errorCellMap =
-        new HashMap<FormatError,AJCell>();
+    private Map<FormatError,GraphJCell> errorCellMap =
+        new HashMap<FormatError,GraphJCell>();
     /** Index of the currently set editor role */
     private GraphRole graphRole = HOST;
     /** Type view against which the edited graph is checked. */

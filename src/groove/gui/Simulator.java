@@ -73,10 +73,10 @@ import groove.gui.dialog.PropertiesDialog;
 import groove.gui.dialog.RelabelDialog;
 import groove.gui.dialog.StringDialog;
 import groove.gui.dialog.VersionErrorDialog;
-import groove.gui.jgraph.AJModel;
-import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.AspectJModel;
+import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.io.AspectGxl;
@@ -3414,7 +3414,7 @@ public class Simulator {
          * panel.
          */
         public void actionPerformed(ActionEvent e) {
-            AJModel stateModel = getStatePanel().getJModel();
+            AspectJModel stateModel = getStatePanel().getJModel();
             handleEditGraph(stateModel.getGraph(), false);
         }
     }
@@ -4661,7 +4661,7 @@ public class Simulator {
             Object[] selection = ((JGraph) e.getSource()).getSelectionCells();
             if (selection != null && selection.length > 0) {
                 Collection<? extends Label> selectedLabels =
-                    ((JCell) selection[0]).getListLabels();
+                    ((GraphJCell) selection[0]).getListLabels();
                 if (selectedLabels.size() > 0) {
                     Label selectedLabel = selectedLabels.iterator().next();
                     if (selectedLabel instanceof TypeLabel) {
@@ -4898,12 +4898,12 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            JModel jModel = getGraphPanel().getJModel();
+            GraphJModel<?,?> jModel = getGraphPanel().getJModel();
             if (getGraphPanel() == getLtsPanel()) {
                 actionForLTS(((LTSJModel) jModel).getGraph());
             } else {
                 assert getGraphPanel() == getStatePanel();
-                actionForState(((AJModel) jModel).getGraph());
+                actionForState(((AspectJModel) jModel).getGraph());
             }
         }
 

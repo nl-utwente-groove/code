@@ -20,9 +20,9 @@ import groove.graph.Label;
 import groove.graph.LabelKind;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
-import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.JModel;
 import groove.util.Converter;
 import groove.util.Groove;
 import groove.util.ObservableSet;
@@ -260,7 +260,7 @@ public class LabelTree extends JTree implements GraphModelListener,
         this.labelCellMap.clear();
         this.jmodel.addGraphModelListener(this);
         for (int i = 0; i < this.jmodel.getRootCount(); i++) {
-            JCell cell = (JCell) this.jmodel.getRootAt(i);
+            GraphJCell cell = (GraphJCell) this.jmodel.getRootAt(i);
             if (isListable(cell)) {
                 addToLabels(cell);
             }
@@ -273,10 +273,10 @@ public class LabelTree extends JTree implements GraphModelListener,
     /**
      * Returns the set of jcells whose label sets contain a given label.
      * @param label the label looked for
-     * @return the set of {@link JCell}s for which {@link JCell#getListLabels()}
+     * @return the set of {@link GraphJCell}s for which {@link GraphJCell#getListLabels()}
      *         contains <tt>label</tt>
      */
-    public Set<JCell> getJCells(Object label) {
+    public Set<GraphJCell> getJCells(Object label) {
         return this.labelCellMap.get(label);
     }
 
@@ -308,8 +308,9 @@ public class LabelTree extends JTree implements GraphModelListener,
     public void graphChanged(GraphModelEvent e) {
         boolean changed = false;
         GraphModelEvent.GraphModelChange change = e.getChange();
-        if (change instanceof JModel.RefreshEdit) {
-            changed = processRefresh((JModel.RefreshEdit) change, changed);
+        if (change instanceof GraphJModel<?,?>.RefreshEdit) {
+            changed =
+                processRefresh((GraphJModel<?,?>.RefreshEdit) change, changed);
         } else {
             changed = processRegularEdit(change, changed);
         }
@@ -320,7 +321,7 @@ public class LabelTree extends JTree implements GraphModelListener,
 
     /**
      * Records the changes imposed by a graph change that is not a
-     * {@link JModel.RefreshEdit}.
+     * {@link GraphJModel.RefreshEdit}.
      */
     private boolean processRegularEdit(GraphModelEvent.GraphModelChange change,
             boolean changed) {
@@ -328,10 +329,8 @@ public class LabelTree extends JTree implements GraphModelListener,
         if (changeMap != null) {
             for (Object changeEntry : changeMap.entrySet()) {
                 Object obj = ((Map.Entry<?,?>) changeEntry).getKey();
-                if (isListable(obj)) { // &&
-                    // attributes.containsKey(GraphConstants.VALUE))
-                    // {
-                    changed |= modifyLabels((JCell) obj);
+                if (isListable(obj)) {
+                    changed |= modifyLabels((GraphJCell) obj);
                 }
             }
         }
@@ -342,8 +341,7 @@ public class LabelTree extends JTree implements GraphModelListener,
                 // the cell may be a port, so we have to check for
                 // JCell-hood
                 if (isListable(element)) {
-                    JCell cell = (JCell) element;
-                    changed |= addToLabels(cell);
+                    changed |= addToLabels((GraphJCell) element);
                 }
             }
         }
@@ -354,8 +352,7 @@ public class LabelTree extends JTree implements GraphModelListener,
                 // the cell may be a port, so we have to check for
                 // JCell-hood
                 if (isListable(element)) {
-                    JCell cell = (JCell) element;
-                    changed |= removeFromLabels(cell);
+                    changed |= removeFromLabels((GraphJCell) element);
                 }
             }
         }
@@ -363,10 +360,11 @@ public class LabelTree extends JTree implements GraphModelListener,
     }
 
     /**
-     * Processes the changes of a {@link JModel.RefreshEdit}.
+     * Processes the changes of a {@link GraphJModel}.
      */
-    private boolean processRefresh(JModel.RefreshEdit change, boolean changed) {
-        for (JCell cell : change.getRefreshedJCells()) {
+    private boolean processRefresh(GraphJModel<?,?>.RefreshEdit change,
+            boolean changed) {
+        for (GraphJCell cell : change.getRefreshedJCells()) {
             if (isListable(cell)) {
                 changed |= modifyLabels(cell);
             }
@@ -377,10 +375,10 @@ public class LabelTree extends JTree implements GraphModelListener,
     /**
      * Callback method to determine whether a given cell should be included in
      * the label list. This should only be the case if the cell is a
-     * {@link JCell}.
+     * {@link GraphJCell}.
      */
     private boolean isListable(Object cell) {
-        return cell instanceof JCell;
+        return cell instanceof GraphJCell;
     }
 
     /**
@@ -388,13 +386,13 @@ public class LabelTree extends JTree implements GraphModelListener,
      * selection.
      */
     public void valueChanged(TreeSelectionEvent e) {
-        Set<JCell> emphSet = new HashSet<JCell>();
+        Set<GraphJCell> emphSet = new HashSet<GraphJCell>();
         TreePath[] selectionPaths = getSelectionPaths();
         if (selectionPaths != null) {
             for (TreePath selectedPath : selectionPaths) {
                 Label label =
                     ((LabelTreeNode) selectedPath.getLastPathComponent()).getLabel();
-                Set<JCell> occurrences = this.labelCellMap.get(label);
+                Set<GraphJCell> occurrences = this.labelCellMap.get(label);
                 if (occurrences != null) {
                     emphSet.addAll(occurrences);
                 }
@@ -495,7 +493,7 @@ public class LabelTree extends JTree implements GraphModelListener,
      * the cell is inserted in that label's image. The return value indicates if
      * any labels were added
      */
-    private boolean addToLabels(JCell cell) {
+    private boolean addToLabels(GraphJCell cell) {
         boolean result = false;
         for (Label label : cell.getListLabels()) {
             result |= addToLabels(cell, label);
@@ -508,11 +506,11 @@ public class LabelTree extends JTree implements GraphModelListener,
      * in the map, insetrs it. The return value indicates if the label had to be
      * created.
      */
-    private boolean addToLabels(JCell cell, Label label) {
+    private boolean addToLabels(GraphJCell cell, Label label) {
         boolean result = false;
-        Set<JCell> currentCells = this.labelCellMap.get(label);
+        Set<GraphJCell> currentCells = this.labelCellMap.get(label);
         if (currentCells == null) {
-            currentCells = new HashSet<JCell>();
+            currentCells = new HashSet<GraphJCell>();
             this.labelCellMap.put(label, currentCells);
             result = true;
         }
@@ -525,13 +523,13 @@ public class LabelTree extends JTree implements GraphModelListener,
      * there are no cells left for it. The return value indicates if there were
      * any labels removed.
      */
-    private boolean removeFromLabels(JCell cell) {
+    private boolean removeFromLabels(GraphJCell cell) {
         boolean result = false;
-        Iterator<Map.Entry<Label,Set<JCell>>> labelIter =
+        Iterator<Map.Entry<Label,Set<GraphJCell>>> labelIter =
             this.labelCellMap.entrySet().iterator();
         while (labelIter.hasNext()) {
-            Map.Entry<Label,Set<JCell>> labelEntry = labelIter.next();
-            Set<JCell> cellSet = labelEntry.getValue();
+            Map.Entry<Label,Set<GraphJCell>> labelEntry = labelIter.next();
+            Set<GraphJCell> cellSet = labelEntry.getValue();
             if (cellSet.remove(cell) && cellSet.isEmpty()) {
                 labelIter.remove();
                 result = true;
@@ -544,16 +542,16 @@ public class LabelTree extends JTree implements GraphModelListener,
      * Modifies the presence of the cell in the label map. The return value
      * indicates if there were any labels added or removed.
      */
-    private boolean modifyLabels(JCell cell) {
+    private boolean modifyLabels(GraphJCell cell) {
         boolean result = false;
         Set<Label> newLabelSet = new HashSet<Label>(cell.getListLabels());
         // go over the existing label map
-        Iterator<Map.Entry<Label,Set<JCell>>> labelIter =
+        Iterator<Map.Entry<Label,Set<GraphJCell>>> labelIter =
             this.labelCellMap.entrySet().iterator();
         while (labelIter.hasNext()) {
-            Map.Entry<Label,Set<JCell>> labelEntry = labelIter.next();
+            Map.Entry<Label,Set<GraphJCell>> labelEntry = labelIter.next();
             Label label = labelEntry.getKey();
-            Set<JCell> cellSet = labelEntry.getValue();
+            Set<GraphJCell> cellSet = labelEntry.getValue();
             if (newLabelSet.remove(label)) {
                 // the cell should be in the set
                 cellSet.add(cell);
@@ -566,7 +564,7 @@ public class LabelTree extends JTree implements GraphModelListener,
         }
         // any new labels left over were not in the label map; add them
         for (Label label : newLabelSet) {
-            Set<JCell> newCells = new HashSet<JCell>();
+            Set<GraphJCell> newCells = new HashSet<GraphJCell>();
             newCells.add(cell);
             this.labelCellMap.put(label, newCells);
             result = true;
@@ -596,10 +594,10 @@ public class LabelTree extends JTree implements GraphModelListener,
     private String getText(Label label) {
         StringBuilder text = new StringBuilder();
         boolean specialLabelColour = false;
-        if (label.equals(JCell.NO_LABEL)) {
+        if (label.equals(GraphJCell.NO_LABEL)) {
             text.append(Options.NO_LABEL_TEXT);
             specialLabelColour = true;
-        } else if (label.equals(JCell.SUBTYPE_LABEL)) {
+        } else if (label.equals(GraphJCell.SUBTYPE_LABEL)) {
             text.append(Options.SUBTYPE_LABEL_TEXT);
             specialLabelColour = true;
         } else if (label.text().length() == 0) {
@@ -704,15 +702,15 @@ public class LabelTree extends JTree implements GraphModelListener,
     private final JGraph jgraph;
 
     /**
-     * The {@link JModel}currently being viewed by this label list.
+     * The {@link GraphJModel}currently being viewed by this label list.
      */
-    private JModel jmodel;
+    private GraphJModel<?,?> jmodel;
 
     /**
      * The bag of labels in this jmodel.
      */
-    private final Map<Label,Set<JCell>> labelCellMap =
-        new TreeMap<Label,Set<JCell>>();
+    private final Map<Label,Set<GraphJCell>> labelCellMap =
+        new TreeMap<Label,Set<GraphJCell>>();
     /** Flag indicating if label filtering should be used. */
     private final boolean filtering;
     /** Set of filtered labels. */
@@ -987,7 +985,8 @@ public class LabelTree extends JTree implements GraphModelListener,
             if (this.labelNode != null) {
                 Label label = ((LabelTreeNode) value).getLabel();
                 StringBuilder toolTipText = new StringBuilder();
-                Set<JCell> occurrences = LabelTree.this.labelCellMap.get(label);
+                Set<GraphJCell> occurrences =
+                    LabelTree.this.labelCellMap.get(label);
                 int count = occurrences == null ? 0 : occurrences.size();
                 toolTipText.append(count);
                 toolTipText.append(" occurrence");

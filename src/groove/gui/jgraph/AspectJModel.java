@@ -17,10 +17,13 @@
 package groove.gui.jgraph;
 
 import static groove.view.aspect.AspectKind.REMARK;
+import groove.graph.Edge;
+import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
+import groove.graph.Node;
 import groove.gui.Editor;
 import groove.gui.Options;
 import groove.gui.layout.JEdgeLayout;
@@ -50,7 +53,7 @@ import org.jgraph.graph.GraphConstants;
  * @author Arend Rensink
  * @version $Revision: 2982 $
  */
-final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
+final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     // --------------------- INSTANCE DEFINITIONS ------------------------
 
@@ -58,13 +61,13 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
      * Creates an empty instance.
      * Initialise with {@link #loadGraph(Graph)} before using.
      */
-    AJModel(Options options) {
+    AspectJModel(Options options) {
         super(options);
         this.editor = null;
     }
 
     /** Constructor for an editable model. */
-    AJModel(Editor editor) {
+    AspectJModel(Editor editor) {
         super(editor.getOptions());
         this.editor = editor;
     }
@@ -72,8 +75,8 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
     /** Specialises the type to a list of {@link GraphJCell}s. */
     @Override
     @SuppressWarnings("unchecked")
-    public List<? extends AJCell> getRoots() {
-        return (List<? extends AJCell>) super.getRoots();
+    public List<? extends AspectJCell> getRoots() {
+        return (List<? extends AspectJCell>) super.getRoots();
     }
 
     /** Specialises the return type. */
@@ -82,11 +85,30 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
         return (AspectGraph) super.getGraph();
     }
 
+    /** Specialises the return type. */
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<AspectJCell> getJCellSet(Set<Element> elemSet) {
+        return (Set<AspectJCell>) super.getJCellSet(elemSet);
+    }
+
+    /** Specialises the return type. */
+    @Override
+    public AspectJCell getJCellForEdge(Edge<?> edge) {
+        return (AspectJCell) super.getJCellForEdge(edge);
+    }
+
+    /** Specialises the return type. */
+    @Override
+    public AspectJVertex getJCellForNode(Node node) {
+        return (AspectJVertex) super.getJCellForNode(node);
+    }
+
     @Override
     public void loadGraph(Graph<AspectNode,AspectEdge> graph) {
         this.loading = true;
         super.loadGraph(graph);
-        for (AJCell root : getRoots()) {
+        for (AspectJCell root : getRoots()) {
             root.saveToUserObject();
         }
         this.loading = false;
@@ -104,15 +126,16 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
             return;
         }
         GraphRole role = this.editor.getRole();
-        Map<AspectNode,AJVertex> nodeJVertexMap =
-            new HashMap<AspectNode,AJVertex>();
-        Map<AspectEdge,AJCell> edgeJCellMap = new HashMap<AspectEdge,AJCell>();
+        Map<AspectNode,AspectJVertex> nodeJVertexMap =
+            new HashMap<AspectNode,AspectJVertex>();
+        Map<AspectEdge,GraphJCell> edgeJCellMap =
+            new HashMap<AspectEdge,GraphJCell>();
         AspectGraph graph = new AspectGraph(getName(), role);
         LayoutMap<AspectNode,AspectEdge> layoutMap =
             new LayoutMap<AspectNode,AspectEdge>();
-        for (AJCell jCell : getRoots()) {
-            if (jCell instanceof AJVertex) {
-                AJVertex jVertex = (AJVertex) jCell;
+        for (GraphJCell jCell : getRoots()) {
+            if (jCell instanceof AspectJVertex) {
+                AspectJVertex jVertex = (AspectJVertex) jCell;
                 jVertex.loadFromUserObject(role);
                 graph.addNode(jVertex.getNode());
                 nodeJVertexMap.put(jVertex.getNode(), jVertex);
@@ -123,9 +146,9 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
                 layoutMap.putNode(jVertex.getNode(), jVertex.getAttributes());
             }
         }
-        for (AJCell jCell : getRoots()) {
-            if (jCell instanceof AJEdge) {
-                AJEdge jEdge = (AJEdge) jCell;
+        for (GraphJCell jCell : getRoots()) {
+            if (jCell instanceof AspectJEdge) {
+                AspectJEdge jEdge = (AspectJEdge) jCell;
                 jEdge.loadFromUserObject(role);
                 AttributeMap edgeAttr = jEdge.getAttributes();
                 boolean attrIsDefault =
@@ -141,13 +164,18 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
                 }
             }
         }
-        for (AJVertex jVertex : nodeJVertexMap.values()) {
+        for (AspectJVertex jVertex : nodeJVertexMap.values()) {
             jVertex.setNodeFixed();
         }
         graph.setFixed();
         GraphInfo.setLayoutMap(graph, layoutMap);
         GraphInfo.setProperties(graph, getProperties());
         setGraph(graph, nodeJVertexMap, edgeJCellMap);
+    }
+
+    /** Changes the name of the model (and the underlying graph). */
+    public void setName(String name) {
+        setGraph(getGraph().rename(name));
     }
 
     /** Indicates that the JModel is editable. */
@@ -213,8 +241,8 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
     public void remove(Object[] roots) {
         List<Object> removables = new LinkedList<Object>(Arrays.asList(roots));
         for (Object element : roots) {
-            if (element instanceof AJVertex) {
-                AJVertex cell = (AJVertex) element;
+            if (element instanceof AspectJVertex) {
+                AspectJVertex cell = (AspectJVertex) element;
                 removables.addAll(cell.getPort().getEdges());
             }
         }
@@ -227,8 +255,8 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
         // assign new node numbers to the JVertices
         collectNodeNrs();
         for (Object cell : result.values()) {
-            if (cell instanceof AJVertex) {
-                ((AJVertex) cell).reset(createAspectNode());
+            if (cell instanceof AspectJVertex) {
+                ((AspectJVertex) cell).reset(createAspectNode());
             }
         }
         resetNodeNrs();
@@ -272,8 +300,8 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
     /**
      * Callback factory method to create an empty, editable j-edge.
      */
-    AJEdge computeJEdge() {
-        AJEdge result = new AJEdge(this);
+    AspectJEdge computeJEdge() {
+        AspectJEdge result = new AspectJEdge(this);
         // add a single, empty label so the edge will be displayed
         result.getUserObject().add("");
         return result;
@@ -299,11 +327,11 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
     }
 
     /**
-     * Callback factory method to create an editable JVertex.
+     * Callback factory method to create an editable GraphJVertex<?,?>.
      * The vertex is initialised with a new node 
      * obtained through {@link #createAspectNode()}.
      */
-    AJVertex computeJVertex() {
+    AspectJVertex computeJVertex() {
         return createJVertex(createAspectNode());
     }
 
@@ -312,8 +340,8 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
      * @require <tt>edge instanceof RuleGraph.RuleNode</tt>
      */
     @Override
-    protected AJVertex createJVertex(AspectNode node) {
-        return new AJVertex(this, node);
+    protected AspectJVertex createJVertex(AspectNode node) {
+        return new AspectJVertex(this, node);
     }
 
     /**
@@ -321,8 +349,8 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
      * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
      */
     @Override
-    protected AJEdge createJEdge(AspectEdge edge) {
-        return new AJEdge(this, edge);
+    protected AspectJEdge createJEdge(AspectEdge edge) {
+        return new AspectJEdge(this, edge);
     }
 
     /** 
@@ -340,8 +368,8 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
         if (result) {
             this.usedNrs = new HashSet<Integer>();
             for (Object root : getRoots()) {
-                if (root instanceof JVertex) {
-                    this.usedNrs.add(((JVertex) root).getNumber());
+                if (root instanceof GraphJVertex<?,?>) {
+                    this.usedNrs.add(((GraphJVertex<?,?>) root).getNumber());
                 }
             }
         }
@@ -384,9 +412,9 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
     /**
      * Creates a new model instance for a given aspect graph.
      */
-    static public AJModel newInstance(AspectGraph graph, Options options) {
+    static public AspectJModel newInstance(AspectGraph graph, Options options) {
         assert graph != null;
-        AJModel result = new AJModel(options);
+        AspectJModel result = new AspectJModel(options);
         result.loadGraph(graph);
         return result;
     }
@@ -395,15 +423,15 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
      * Creates a new model instance for a given editor, and initialises it
      * to a given graph.
      */
-    static public AJModel newInstance(Editor editor, AspectGraph graph) {
+    static public AspectJModel newInstance(Editor editor, AspectGraph graph) {
         assert graph != null;
-        AJModel result = new AJModel(editor);
+        AspectJModel result = new AspectJModel(editor);
         result.loadGraph(graph);
         return result;
     }
 
     /** A fixed, empty model. */
-    public static final AJModel EMPTY_JMODEL = newInstance(
+    public static final AspectJModel EMPTY_JMODEL = newInstance(
         AspectGraph.emptyGraph("", GraphRole.HOST), null);
 
     /** Role names (for the tool tips). */

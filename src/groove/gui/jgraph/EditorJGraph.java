@@ -47,13 +47,13 @@ import org.jgraph.graph.PortView;
  */
 public class EditorJGraph extends JGraph {
     /**
-     * Constructs an editor j-graph with an initially empty {@link AJModel}.
+     * Constructs an editor j-graph with an initially empty {@link AspectJModel}.
      * @param editor the editor to which this j-graph is
      *        associated
      * @since june2005
      */
     public EditorJGraph(Editor editor) {
-        super(AJModel.newInstance(editor,
+        super(AspectJModel.newInstance(editor,
             AspectGraph.emptyGraph(editor.getRole())), false);
         this.editor = editor;
         setMarqueeHandler(createMarqueeHandler());
@@ -84,10 +84,10 @@ public class EditorJGraph extends JGraph {
         return result;
     }
 
-    /** Specialises the return type to {@link AJModel}. */
+    /** Specialises the return type to {@link AspectJModel}. */
     @Override
-    public AJModel getModel() {
-        return (AJModel) this.graphModel;
+    public AspectJModel getModel() {
+        return (AspectJModel) this.graphModel;
     }
 
     /**
@@ -108,7 +108,7 @@ public class EditorJGraph extends JGraph {
         stopEditing();
         Point2D atPoint = fromScreen(snap(screenPoint));
         // define the j-cell to be inserted
-        AJVertex jVertex = getModel().computeJVertex();
+        AspectJVertex jVertex = getModel().computeJVertex();
         jVertex.setNodeFixed();
         // set the bounds and store them in the cell
         Dimension size = JAttr.DEFAULT_NODE_SIZE;
@@ -151,7 +151,7 @@ public class EditorJGraph extends JGraph {
         DefaultPort toPort =
             toPortView == null ? fromPort : (DefaultPort) toPortView.getCell();
         // define the edge to be inserted
-        AJEdge newEdge = getModel().computeJEdge();
+        AspectJEdge newEdge = getModel().computeJEdge();
         // to make sure there is at least one graph edge wrapped by this JEdge,
         // we add a dummy edge label to the JEdge's user object
         Object[] insert = new Object[] {newEdge};

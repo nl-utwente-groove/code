@@ -88,15 +88,15 @@ final public class CtrlJModel extends GraphJModel<CtrlState,CtrlTransition> {
     public CtrlTransition setActiveTransition(CtrlTransition trans) {
         CtrlTransition result = this.activeTransition;
         this.activeTransition = trans;
-        Set<JCell> changedCells = new HashSet<JCell>();
+        Set<GraphJCell> changedCells = new HashSet<GraphJCell>();
         if (trans != null) {
-            JCell jCell = getJCellForEdge(trans);
+            GraphJCell jCell = getJCellForEdge(trans);
             assert jCell != null : String.format("No image for %s in jModel",
                 trans);
             changedCells.add(jCell);
         }
         if (result != null) {
-            JCell jCell = getJCellForEdge(result);
+            GraphJCell jCell = getJCellForEdge(result);
             assert jCell != null : String.format("No image for %s in jModel",
                 result);
             changedCells.add(jCell);
@@ -114,7 +114,13 @@ final public class CtrlJModel extends GraphJModel<CtrlState,CtrlTransition> {
     public CtrlState setActiveLocation(CtrlState location) {
         CtrlState result = this.activeLocation;
         this.activeLocation = location;
-        Set<JCell> changedCells = new HashSet<JCell>();
+        Set<GraphJCell> changedCells = new HashSet<GraphJCell>();
+        if (result != null) {
+            GraphJCell jCell = getJCellForNode(result);
+            assert jCell != null : String.format("No image for %s in jModel",
+                result);
+            changedCells.add(jCell);
+        }
         refresh(changedCells);
         return result;
     }

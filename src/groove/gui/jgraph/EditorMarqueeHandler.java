@@ -336,7 +336,7 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
      * <tt>null</tt> if there is no vertex there.
      */
     private VertexView vertexAt(Point2D p) {
-        JCell jCell =
+        GraphJCell jCell =
             getJGraph().getFirstCellForLocation(p.getX(), p.getY(), true);
         return (VertexView) getJGraph().getGraphLayoutCache().getMapping(jCell,
             false);

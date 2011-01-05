@@ -16,8 +16,8 @@
  */
 package groove.gui.layout;
 
-import groove.gui.jgraph.JCell;
-import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.JGraph;
 
 import java.awt.geom.Point2D;
@@ -196,8 +196,8 @@ public class SpringLayouter extends AbstractLayouter {
         List<Layoutable> edgeFragmentSourceList = new LinkedList<Layoutable>();
         List<Layoutable> edgeFragmentTargetList = new LinkedList<Layoutable>();
         for (int i = 0; i < this.jmodel.getRootCount(); i++) {
-            JCell jCell = (JCell) this.jmodel.getRootAt(i);
-            if (jCell instanceof JEdge && jCell.isVisible()
+            GraphJCell jCell = (GraphJCell) this.jmodel.getRootAt(i);
+            if (jCell instanceof GraphJEdge && jCell.isVisible()
                 && !jCell.isGrayedOut()) {
                 EdgeView edgeView =
                     (EdgeView) layoutCache.getMapping(jCell, false);

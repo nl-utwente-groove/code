@@ -24,15 +24,15 @@ import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.Node;
 import groove.gui.Options;
-import groove.gui.jgraph.AJEdge;
-import groove.gui.jgraph.AJVertex;
+import groove.gui.jgraph.AspectJEdge;
+import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.CtrlJEdge;
 import groove.gui.jgraph.CtrlJVertex;
+import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JAttr;
-import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.LTSJVertex;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
@@ -88,7 +88,7 @@ public final class GraphToTikz {
             if (layoutMap != null) {
                 layout = layoutMap.getLayout(edge);
             }
-            JCell jCell = model.getJCellForEdge(edge);
+            GraphJCell jCell = model.getJCellForEdge(edge);
             result.append(convertEdgeToTikzStr(jCell, layout, layoutMap));
         }
 
@@ -157,7 +157,7 @@ public final class GraphToTikz {
      *         cast into a valid sub-type or an empty StringBuilder otherwise.
      */
     private static <N extends Node,E extends Edge<N>> StringBuilder convertEdgeToTikzStr(
-            JCell cell, JEdgeLayout layout, LayoutMap<N,E> layoutMap) {
+            GraphJCell cell, JEdgeLayout layout, LayoutMap<N,E> layoutMap) {
 
         if (cell instanceof GraphJEdge) {
             @SuppressWarnings("unchecked")
@@ -1048,7 +1048,7 @@ public final class GraphToTikz {
         ArrayList<String> styles = new ArrayList<String>();
 
         AspectKind nodeKind =
-            node instanceof AJVertex ? ((AJVertex) node).getNode().getKind()
+            node instanceof AspectJVertex ? ((AspectJVertex) node).getNode().getKind()
                     : NONE;
         switch (nodeKind) {
         case ERASER:
@@ -1085,8 +1085,8 @@ public final class GraphToTikz {
         }
 
         AspectKind attrKind =
-            node instanceof AJVertex
-                    ? ((AJVertex) node).getNode().getAttrKind() : NONE;
+            node instanceof AspectJVertex
+                    ? ((AspectJVertex) node).getNode().getAttrKind() : NONE;
         if (attrKind.isData()) {
             styles.add(ATTRIBUTE_NODE_STYLE);
         } else if (attrKind == PRODUCT) {
@@ -1191,7 +1191,7 @@ public final class GraphToTikz {
         ArrayList<String> styles = new ArrayList<String>();
 
         AspectKind edgeKind =
-            edge instanceof AJEdge ? ((AJEdge) edge).getEdge().getKind() : NONE;
+            edge instanceof AspectJEdge ? ((AspectJEdge) edge).getEdge().getKind() : NONE;
         switch (edgeKind) {
         case ERASER:
             styles.add(ERASER_EDGE_STYLE);
