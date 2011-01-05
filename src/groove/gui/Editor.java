@@ -29,7 +29,6 @@ import groove.gui.dialog.SingleListDialog;
 import groove.gui.jgraph.AJCell;
 import groove.gui.jgraph.AJModel;
 import groove.gui.jgraph.EditorJGraph;
-import groove.gui.jgraph.EditorJModel;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
@@ -184,7 +183,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      */
     public void setAspectGraph(AspectGraph graph, boolean refreshModel) {
         if (graph == null) {
-            graph = AspectGraph.newInstance(getRole());
+            graph = AspectGraph.emptyGraph(getRole());
         } else {
             // set the model afresh to make sure everything gets updated properly
             setRole(graph.getRole());
@@ -219,10 +218,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     /**
      * Changes the graph being edited to a given j-model, with a given name. If
-     * the model is <tt>null</tt>, a fresh {@link EditorJModel}is created;
-     * otherwise, the given j-model is copied into a new {@link EditorJModel}.
+     * the model is <tt>null</tt>, a fresh {@link AJModel}is created;
+     * otherwise, the given j-model is copied into a new {@link AJModel}.
      * @param model the j-model to be set
-     * @see EditorJModel#EditorJModel(Editor, AspectGraph)
      */
     private void setModel(AJModel model) {
         // unregister listeners with the model
@@ -290,10 +288,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * We listen to the {@link #ROLE_PROPERTY}.
      */
     public void propertyChange(PropertyChangeEvent evt) {
+        assert evt.getPropertyName().equals(ROLE_PROPERTY);
         getGraphRoleButton().setSelected(getRole() == HOST);
         getRuleRoleButton().setSelected(getRole() == RULE);
         getTypeRoleButton().setSelected(getRole() == TYPE);
         // we need to refresh because the errors may have changed
+        getModel().syncGraph();
         updateStatus();
         updateTitle();
     }
@@ -423,7 +423,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 setAspectGraph(graph, true);
-                setModel(getModel());
             }
         });
     }
@@ -627,7 +626,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * Sets the name of the editor model. The name may be <tt>null</tt> if the
      * model is to be anonymous.
      * @param name new name for the editor model
-     * @see EditorJModel#setName(String)
+     * @see AJModel#setName(String)
      */
     protected void setModelName(String name) {
         if (getModel() != null) {
@@ -638,7 +637,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     /**
      * Returns the current name of the editor model.
-     * @see EditorJModel#getName()
+     * @see AJModel#getName()
      */
     protected String getModelName() {
         if (getModel() != null) {
@@ -1058,7 +1057,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                getModel().loadFromModel(getRole());
                 getGraphPanel().refresh();
                 int elementCount = getModel().getRootCount();
                 getStatusBar().setText("" + elementCount + " visible elements");

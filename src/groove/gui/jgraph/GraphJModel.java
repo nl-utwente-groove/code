@@ -17,7 +17,6 @@
 
 package groove.gui.jgraph;
 
-import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -28,7 +27,6 @@ import groove.gui.layout.JCellLayout;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
-import groove.view.aspect.AspectEdge;
 
 import java.awt.Rectangle;
 import java.util.HashMap;
@@ -86,6 +84,14 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
     }
 
     /** 
+     * Returns the (non-{@code null}) layout map of the graph.
+     * This is retrieved from {@link GraphInfo#getLayoutMap(Graph)}. 
+     */
+    public LayoutMap<N,E> getLayoutMap() {
+        return this.layoutMap;
+    }
+
+    /** 
      * Changes the underlying graph to the one passed in as a parameter.
      * Note that this should only be done as part of an action that also
      * changes the {@link JCell}s of the {@link JModel}, as well as the
@@ -114,7 +120,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
         this.nodeJCellMap.clear();
         this.edgeJCellMap.clear();
         // add nodes from Graph to GraphModel
-        initializeTransients();
+        prepareInsert();
         for (N node : graph.nodeSet()) {
             addNode(node);
         }
@@ -289,27 +295,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
      * Tests if a given edge may be added to its source vertex.
      */
     protected boolean isUnaryEdge(E edge) {
-        boolean result;
-        if (isForEditor()) {
-            result = isPotentialUnaryEdge(edge);
-        } else if (edge instanceof AspectEdge) {
-            result =
-                !edge.isBinary() || isPotentialUnaryEdge(edge)
-                    && ((AspectEdge) edge).getKind() == REMARK;
-        } else {
-            result = !edge.label().isBinary();
-        }
-        return result;
-    }
-
-    /** 
-     * Indicates if, as far as equality of source and target and (the absence 
-     * of) explicit layouting is concerned, a given edge could be displayed as 
-     * node label.
-     */
-    protected boolean isPotentialUnaryEdge(E edge) {
-        return edge != null && edge.source() == edge.target()
-            && this.layoutMap.getLayout(edge) == null;
+        return !edge.label().isBinary();
     }
 
     /**
@@ -400,7 +386,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
      * Sets the transient variables (cells, attributes and connections) to fresh
      * (empty) initial values.
      */
-    protected void initializeTransients() {
+    protected void prepareInsert() {
         this.addedJCells.clear();
         this.addedOutJEdges.clear();
         this.connections = new ConnectionSet();
@@ -468,22 +454,6 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends JModel {
         return getOptionValue(Options.SHOW_ANCHORS_OPTION);
     }
 
-    /** Sets the {@link #forEditor} flag to {@code true}. */
-    final void setForEditor() {
-        this.forEditor = true;
-    }
-
-    /** Returns the value of the {@link #forEditor} flag. */
-    boolean isForEditor() {
-        return this.forEditor;
-    }
-
-    /**
-     * Flag indicating that this JModel is only created in an intermediate
-     * step to make an EditorJModel.
-     * This affects the way self-edges are handled.
-     */
-    private boolean forEditor;
     /**
      * The underlying Graph of this GraphModel.
      * @invariant graph != null

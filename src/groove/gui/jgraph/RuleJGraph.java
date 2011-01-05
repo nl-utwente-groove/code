@@ -40,7 +40,7 @@ public class RuleJGraph extends JGraph {
         this.simulator = simulator;
     }
 
-    /** Specialises the return type to a {@link AspectJModel}. */
+    /** Specialises the return type to a {@link AJModel}. */
     @Override
     public AJModel getModel() {
         return (AJModel) super.getModel();

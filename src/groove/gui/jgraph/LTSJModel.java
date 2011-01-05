@@ -70,7 +70,7 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
      * additions.
      */
     public synchronized void addUpdate(GTS gts, GraphState state) {
-        initializeTransients();
+        prepareInsert();
         // add a corresponding GraphCell to the GraphModel
         addNode(state);
         // insert(cells.toArray(), connections, null, attributes);
@@ -83,7 +83,7 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
      * additions.
      */
     public synchronized void addUpdate(GTS gts, GraphTransition transition) {
-        initializeTransients();
+        prepareInsert();
         // note that (as per GraphListener contract)
         // source and target Nodes (if any) have already been added
         addEdge(transition);

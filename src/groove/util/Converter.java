@@ -20,7 +20,6 @@ import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.gui.jgraph.EditorJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraph;
@@ -161,18 +160,7 @@ public class Converter {
     static public <N extends Node,E extends Edge<N>> void graphToTikz(
             JGraph graph, PrintWriter writer) {
         JModel model = graph.getModel();
-        GraphJModel<?,?> graphModel;
-        // if the model is an editor model, self-edges should be displayed as
-        // node labels
-        if (model instanceof EditorJModel) {
-            graphModel =
-                GraphJModel.newInstance(
-                    ((EditorJModel) model).getGraph().toPlainGraph(),
-                    model.getOptions());
-            graphModel.setShowVertexLabels();
-        } else {
-            graphModel = (GraphJModel<?,?>) model;
-        }
+        GraphJModel<?,?> graphModel = (GraphJModel<?,?>) model;
         writer.print(GraphToTikz.convertGraphToTikzStr(graphModel));
     }
 

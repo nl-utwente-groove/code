@@ -116,14 +116,15 @@ public class LTSJVertex extends GraphJVertex<GraphState,GraphTransition> {
      * label, depending on #isShowAnchors().
      */
     @Override
-    public String getLabelText(GraphTransition edge) {
-        return getJModel().isShowAnchors() ? new DerivationLabel(
-            edge.getEvent()).text() : super.getLabelText(edge);
-    }
-
-    @Override
     public StringBuilder getLine(GraphTransition edge) {
-        return Converter.toHtml(new StringBuilder(edge.label().text()));
+        String text =
+            getJModel().isShowAnchors()
+                    ? new DerivationLabel(edge.getEvent()).text()
+                    : edge.label().text();
+        StringBuilder result = new StringBuilder(text);
+        Converter.toHtml(result);
+        return result;
+
     }
 
     /** Indicates that this edge is active. */

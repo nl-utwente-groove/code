@@ -12,7 +12,6 @@ import groove.trans.RuleLabel;
 import groove.util.Converter;
 import groove.view.FormatError;
 import groove.view.FormatException;
-import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectLabel;
@@ -59,6 +58,13 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
         super.reset();
         this.errors.clear();
         this.aspect = NONE;
+    }
+
+    @Override
+    public AJEdge clone() {
+        AJEdge result = (AJEdge) super.clone();
+        result.errors = new ArrayList<FormatError>();
+        return result;
     }
 
     /**
@@ -111,7 +117,10 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
 
     @Override
     public List<StringBuilder> getLines() {
-        if (hasError()) {
+        if (isSourceLabel() || this.aspect == REMARK
+            && !getJModel().isShowRemarks()) {
+            return Collections.emptyList();
+        } else if (hasError() || getJModel().isShowAspects()) {
             return getUserObject().toLines();
         } else {
             return super.getLines();
@@ -124,26 +133,15 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
     @Override
     public StringBuilder getLine(AspectEdge edge) {
         StringBuilder result = new StringBuilder();
-        if (getJModel().isShowAspects()) {
-            for (Aspect aspect : edge.label().getAspects()) {
-                result.append(aspect);
-            }
-        }
         result.append(edge.getDisplayLabel().text());
         // add the level name, if not already shown as an aspect
-        if (!getJModel().isShowAspects() && this.aspect.isRole()) {
+        if (this.aspect.isRole()) {
             String levelName = edge.getLevelName();
             if (levelName != null && levelName.length() != 0) {
                 result.append(LEVEL_NAME_SEPARATOR + levelName);
             }
         }
         return result;
-    }
-
-    /** This implementation returns the (unparsed) label of the model edge. */
-    @Override
-    public String getLabelText(AspectEdge edge) {
-        return edge.getDisplayLabel().text();
     }
 
     @Override
@@ -167,44 +165,34 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
         return result;
     }
 
-    /**
-     * This implementation makes remark edges invisible as demanded by the
-     * {@link Options#SHOW_REMARKS_OPTION}.
+    /** 
+     * Indicates if this JEdge should be shown
+     * instead as part of the source node label.
+     * This is true if {@link AJModel#isShowVertexLabels()} is {@code true}
+     * and this is a self-edge, or if {@link Options#SHOW_VALUE_NODES_OPTION}
+     * is unset and the target of this edge is a pure data constant. 
      */
-    @Override
-    public boolean isVisible() {
-        return getJModel().isForEditor() || super.isVisible()
-            && (getJModel().isShowRemarks() || this.aspect != REMARK);
-    }
-
-    @Override
     public boolean isSourceLabel() {
-        boolean result = super.isSourceLabel();
-        if (!result) {
-            result = isDataEdgeSourceLabel();
+        if (getJModel().isEditing() || hasError()) {
+            return false;
         }
-        return result;
-    }
-
-    /**
-     * Only returns <code>true</code> if this edge has the same aspect
-     * values as the source node. This is to prevent ambiguities.
-     */
-    public boolean isDataEdgeSourceLabel() {
-        boolean result =
-            !getJModel().isShowValueNodes() && this.aspect != REMARK;
-        if (result) {
-            if (this.aspect.isRole()) {
-                // we're in a rule graph; watch for parameters and variable nodes
-                result =
-                    getTargetVertex().getNode().getAttrAspect().hasContent()
-                        && !getTargetVertex().getNode().hasParam();
-            } else {
-                result =
-                    getTargetVertex().getNode().getAttrKind().isTypedData();
-            }
+        if (getJModel().isShowVertexLabels()
+            && getSourceNode() == getTargetNode()) {
+            return true;
         }
-        return result;
+        if (this.aspect == REMARK) {
+            return false;
+        }
+        if (getJModel().isShowValueNodes()) {
+            return false;
+        }
+        if (this.aspect.isRole()) {
+            // we're in a rule graph; watch for parameters and variable nodes
+            return getTargetVertex().getNode().getAttrAspect().hasContent()
+                && !getTargetVertex().getNode().hasParam();
+        } else {
+            return getTargetVertex().getNode().getAttrKind().isTypedData();
+        }
     }
 
     @Override
@@ -231,7 +219,7 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
                 setFontAttr(result, Font.ITALIC);
             }
         }
-        if (getJModel().isForEditor()) {
+        if (getJModel().isEditing()) {
             GraphConstants.setEditable(result, true);
             GraphConstants.setConnectable(result, true);
             GraphConstants.setDisconnectable(result, true);

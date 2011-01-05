@@ -325,9 +325,11 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
             this.argNodes.set(index, edge.target());
             // infer target type if an operator edge is already present
             if (this.operatorEdge != null) {
-                String paramType =
-                    this.operatorEdge.getOperator().getParamTypes().get(index);
-                edge.target().setDataType(paramType);
+                List<String> paramTypes =
+                    this.operatorEdge.getOperator().getParamTypes();
+                if (index < paramTypes.size()) {
+                    edge.target().setDataType(paramTypes.get(index));
+                }
             }
         } else if (edge.isOperator()) {
             if (!hasAttrAspect()) {

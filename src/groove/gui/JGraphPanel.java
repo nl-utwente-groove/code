@@ -19,7 +19,7 @@ package groove.gui;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
-import groove.gui.jgraph.GraphJEdge;
+import groove.gui.jgraph.AJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
@@ -148,9 +148,8 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
                 cell = graphJModel.getJCellForEdge((Edge<?>) elem);
             }
             if (cell != null) {
-                if (cell instanceof GraphJEdge
-                    && ((GraphJEdge<?,?>) cell).isSourceLabel()) {
-                    cell = ((GraphJEdge<?,?>) cell).getSourceVertex();
+                if (cell instanceof AJEdge && ((AJEdge) cell).isSourceLabel()) {
+                    cell = ((AJEdge) cell).getSourceVertex();
                 }
                 getJGraph().setSelectionCell(cell);
             }
@@ -304,7 +303,9 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      */
     protected void refresh() {
         JModel jModel = getJModel();
-        getJGraph().getGraphLayoutCache().reload();
+        if (jModel != null) {
+            jModel.refresh();
+        }
         getJGraph().setEnabled(jModel != null);
         getJGraph().clearSelection();
         getLabelTree().updateModel();

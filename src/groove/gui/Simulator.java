@@ -4384,7 +4384,7 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            AspectGraph newGraph = AspectGraph.newInstance(HOST);
+            AspectGraph newGraph = AspectGraph.emptyGraph(HOST);
             handleEditGraph(newGraph, true);
         }
 
@@ -4419,7 +4419,7 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(false)) {
-                AspectGraph newRule = AspectGraph.newInstance(RULE);
+                AspectGraph newRule = AspectGraph.emptyGraph(RULE);
                 EditorDialog dialog =
                     new EditorDialog(getFrame(), getOptions(), newRule,
                         getTypeView()) {

@@ -60,30 +60,52 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
         return (GraphJModel<N,E>) super.getJModel();
     }
 
+    /** 
+     * Clears the set of graph edges wrapped in this JEdge,
+     * and sets the source and target node from the source and target JVertex. 
+     */
+    void reset() {
+        this.edges.clear();
+        this.source = null;
+        this.target = null;
+    }
+
+    /**
+     * Adds an edge to the underlying set of edges, if the edge is appropriate.
+     * Indicates in its return value if the edge has indeed been added.
+     * @param edge the edge to be added
+     * @return <tt>true</tt> if the edge has been added; <tt>false</tt> if
+     *         <tt>edge</tt> is not compatible with this j-edge and cannot be
+     *         added. This implementation returns <tt>true</tt> always.
+     * @require <tt>edge.source() == getSourceNode</tt> and
+     *          <tt>edge.target() == getTargetNode()</tt>
+     * @ensure if <tt>result</tt> then <tt>getEdgeSet().contains(edge)</tt>
+     */
+    public boolean addEdge(E edge) {
+        assert edge.source().equals(getSourceNode());
+        assert edge.target().equals(getTargetNode());
+        return this.edges.add(edge);
+    }
+
+    /** 
+     * The cloned object is equal to this one after a reset. 
+     */
+    @Override
+    public GraphJEdge<N,E> clone() {
+        @SuppressWarnings("unchecked")
+        GraphJEdge<N,E> clone = (GraphJEdge<N,E>) super.clone();
+        clone.edges = new TreeSet<E>();
+        return clone;
+    }
+
     /**
      * Returns <code>true</code> if the super method does so, and the edge has
      * at least one non-filtered list label, and all end nodes are visible.
      */
     @Override
-    public boolean isVisible() {
-        boolean result =
-            super.isVisible() && !isSourceLabel() && !getLines().isEmpty();
-        if (result && !getJModel().isShowUnfilteredEdges()) {
-            result =
-                getSourceVertex().isVisible()
-                    && (isSourceLabel() || getTargetVertex().isVisible());
-        }
-        return result;
-    }
-
-    /**
-     * Indicates if this edge is a self-edge that can be shown as a label on its
-     * source vertex. This is the case if {@link GraphJModel#isShowVertexLabels()} and
-     * {@link GraphJModel#isPotentialUnaryEdge(Edge)} hold for this edge.
-     */
-    public boolean isSourceLabel() {
-        return getJModel().isShowVertexLabels()
-            && getJModel().isPotentialUnaryEdge(getEdge());
+    final public boolean isVisible() {
+        return getSourceVertex().isVisible() && getTargetVertex().isVisible()
+            && !getLines().isEmpty();
     }
 
     /**
@@ -124,16 +146,6 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
         return (GraphJVertex<N,E>) super.getTargetVertex();
     }
 
-    /** 
-     * Clears the set of graph edges wrapped in this JEdge,
-     * and sets the source and target node from the source and target JVertex. 
-     */
-    void reset() {
-        this.edges.clear();
-        this.source = null;
-        this.target = null;
-    }
-
     /**
      * Returns an unmodifiable view upon the set of underlying graph edges.
      */
@@ -157,26 +169,37 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
         List<StringBuilder> result = new ArrayList<StringBuilder>();
         for (E edge : getEdges()) {
             // only add edges that have an unfiltered label
-            boolean visible = false;
-            for (Label label : getListLabels(edge)) {
-                if (!getJModel().isFiltering(label)) {
-                    visible = true;
-                    break;
-                }
+            if (!isFiltered(edge)) {
+                result.add(getLine(edge));
             }
-            if (visible) {
-                result.add(new StringBuilder(getLine(edge)));
+        }
+        return result;
+    }
+
+    /** 
+     * Tests if a given edge is currently being filtered.
+     * This is the case if at least one of the list labels on it
+     * (as returned by {@link #getListLabels()})
+     * is being filtered.
+     */
+    final protected boolean isFiltered(E edge) {
+        boolean result = false;
+        for (Label label : getListLabels(edge)) {
+            if (getJModel().isFiltering(label)) {
+                result = true;
+                break;
             }
         }
         return result;
     }
 
     /**
-     * This implementation returns the text from {@link #getLabelText(Edge)} wrapped
-     * in a StringBuilder.
+     * Callback method to retrieve the line (as it should appear in an 
+     * edge label) from a given edge.
+     * @see #getLines()
      */
-    public StringBuilder getLine(E edge) {
-        return new StringBuilder(getLabelText(edge));
+    protected StringBuilder getLine(E edge) {
+        return new StringBuilder(edge.label().text());
     }
 
     /**
@@ -194,28 +217,6 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
     /** Returns the listable labels on a given edge. */
     public Set<? extends Label> getListLabels(E edge) {
         return Collections.singleton(edge.label());
-    }
-
-    /** This implementation delegates to {@link Edge#label()}. */
-    public String getLabelText(E edge) {
-        return edge.label().text();
-    }
-
-    /**
-     * Adds an edge to the underlying set of edges, if the edge is appropriate.
-     * Indicates in its return value if the edge has indeed been added.
-     * @param edge the edge to be added
-     * @return <tt>true</tt> if the edge has been added; <tt>false</tt> if
-     *         <tt>edge</tt> is not compatible with this j-edge and cannot be
-     *         added. This implementation returns <tt>true</tt> always.
-     * @require <tt>edge.source() == getSourceNode</tt> and
-     *          <tt>edge.target() == getTargetNode()</tt>
-     * @ensure if <tt>result</tt> then <tt>getEdgeSet().contains(edge)</tt>
-     */
-    public boolean addEdge(E edge) {
-        assert edge.source().equals(getSourceNode());
-        assert edge.target().equals(getTargetNode());
-        return this.edges.add(edge);
     }
 
     @Override
@@ -239,5 +240,5 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
     /** Target node of the underlying graph edges. */
     private N target;
     /** Set of graph edges mapped to this JEdge. */
-    private final Set<E> edges = new TreeSet<E>();
+    private Set<E> edges = new TreeSet<E>();
 }

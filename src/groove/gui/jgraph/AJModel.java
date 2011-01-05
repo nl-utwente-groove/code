@@ -16,6 +16,7 @@
  */
 package groove.gui.jgraph;
 
+import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
@@ -39,7 +40,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.GraphConstants;
 
 /**
  * Implements jgraph's GraphModel interface on top of a {@link View}. This is
@@ -90,12 +93,17 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
     }
 
     /** 
-     * Parses the current content of the model into an aspect graph.
+     * Reconstructs the aspect graph on the basis of the current
+     * content of the JModel.
+     * This method should be called immediately after the changes to
+     * the JModel have been made, but before any graph listeners are 
+     * notified.
      */
-    public void loadFromModel(GraphRole role) {
+    public void syncGraph() {
         if (this.loading) {
             return;
         }
+        GraphRole role = this.editor.getRole();
         Map<AspectNode,AJVertex> nodeJVertexMap =
             new HashMap<AspectNode,AJVertex>();
         Map<AspectEdge,AJCell> edgeJCellMap = new HashMap<AspectEdge,AJCell>();
@@ -142,8 +150,8 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
         setGraph(graph, nodeJVertexMap, edgeJCellMap);
     }
 
-    @Override
-    boolean isForEditor() {
+    /** Indicates that the JModel is editable. */
+    boolean isEditing() {
         return this.editor != null;
     }
 
@@ -166,7 +174,7 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
      * This is certainly the case if this model is editable.
      */
     public final boolean isShowValueNodes() {
-        return isForEditor() || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
+        return isEditing() || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
     }
 
     /**
@@ -215,59 +223,88 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     @Override
     public Map<?,?> cloneCells(Object[] cells) {
-        Map<?,?> result;
+        Map<?,?> result = super.cloneCells(cells);
+        // assign new node numbers to the JVertices
         collectNodeNrs();
-        // the following will call cloneCell(Object) for each individual cell
-        result = super.cloneCells(cells);
-        resetNodeNrs();
-        // load the cloned cells from their user objects
-        for (Object cell : result.values()) {
-            if (cell instanceof AJCell) {
-                ((AJCell) cell).loadFromUserObject(this.editor.getRole());
-            }
-        }
-        // now finish the cloning by fixing the cloned JVertices
         for (Object cell : result.values()) {
             if (cell instanceof AJVertex) {
-                ((AJVertex) cell).setNodeFixed();
+                ((AJVertex) cell).reset(createAspectNode());
             }
         }
+        resetNodeNrs();
         return result;
     }
 
+    /** 
+     * We override this method to ensure that the aspect graph
+     * remains in sync with any changes made to the JModel, <i>before</i>
+     * the listeners are notified of the changes.
+     * If a relevant change was made, {@link #syncGraph()}
+     * is invoked.
+     */
     @Override
-    protected Object cloneCell(Object cell) {
-        Object result = cell;
-        if (cell instanceof AJVertex) {
-            // clone the vertex, making certain of a new node number
-            AJVertex clone = computeJVertex();
-            clone.setUserObject(((AJVertex) cell).getUserObject());
-            result = clone;
-        } else if (cell instanceof AJEdge) {
-            AJEdge clone = computeJEdge();
-            clone.setUserObject(((AJEdge) cell).getUserObject());
-            result = clone;
+    protected void fireGraphChanged(Object source, GraphModelChange edit) {
+        if (!this.loading) {
+            // only reload if the edit changed the graph structure
+            // (and not just the layout)
+            boolean changed =
+                edit.getInserted() != null || edit.getRemoved() != null
+                    || edit.getConnectionSet() != null;
+            // only user object changes in the attribute should trigger a reload
+            if (!changed && edit.getAttributes() != null) {
+                for (Object attrValue : ((Map<?,?>) edit.getAttributes()).values()) {
+                    // the user object changed if the attribute map contains an
+                    // entry for the VALUE key
+                    AttributeMap attrMap = (AttributeMap) attrValue;
+                    if (attrMap.containsKey(GraphConstants.VALUE)) {
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+            if (changed) {
+                syncGraph();
+            }
+        }
+        super.fireGraphChanged(source, edit);
+    }
+
+    /**
+     * Callback factory method to create an empty, editable j-edge.
+     */
+    AJEdge computeJEdge() {
+        AJEdge result = new AJEdge(this);
+        // add a single, empty label so the edge will be displayed
+        result.getUserObject().add("");
+        return result;
+    }
+
+    /**
+     * Tests if a given edge may be added to its source vertex.
+     */
+    @Override
+    protected boolean isUnaryEdge(AspectEdge edge) {
+        boolean result;
+        boolean unLayedoutSelfEdge =
+            edge != null && edge.source() == edge.target()
+                && getLayoutMap().getLayout(edge) == null;
+        if (isEditing()) {
+            result = unLayedoutSelfEdge;
+        } else {
+            result =
+                !edge.isBinary() || unLayedoutSelfEdge
+                    && edge.getKind() == REMARK;
         }
         return result;
     }
 
     /**
      * Callback factory method to create an editable JVertex.
-     * The vertex is initialised with a new node whose number is 
-     * obtained through {@link #createNewNodeNr()}.
+     * The vertex is initialised with a new node 
+     * obtained through {@link #createAspectNode()}.
      */
     AJVertex computeJVertex() {
-        AspectNode newNode =
-            new AspectNode(createNewNodeNr(), this.editor.getRole());
-        return createJVertex(newNode);
-    }
-
-    /**
-     * Callback factory method to create an editable j-edge. The return value
-     * has attributes initialised through {@link JEdge#createAttributes()}.
-     */
-    AJEdge computeJEdge() {
-        return new AJEdge(this);
+        return createJVertex(createAspectNode());
     }
 
     /**
@@ -286,6 +323,15 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
     @Override
     protected AJEdge createJEdge(AspectEdge edge) {
         return new AJEdge(this, edge);
+    }
+
+    /** 
+     * Creates a new aspect node, with a fresh node number and
+     * the graph role taken from the editor.
+     */
+    private AspectNode createAspectNode() {
+        assert isEditing();
+        return new AspectNode(createNewNodeNr(), this.editor.getRole());
     }
 
     /** Initialises the set {@link #usedNrs} with the currently used node numbers. */
@@ -358,7 +404,7 @@ final public class AJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     /** A fixed, empty model. */
     public static final AJModel EMPTY_JMODEL = newInstance(
-        AspectGraph.newInstance("", GraphRole.HOST), null);
+        AspectGraph.emptyGraph("", GraphRole.HOST), null);
 
     /** Role names (for the tool tips). */
     static final Map<AspectKind,String> ROLE_NAMES =

@@ -59,14 +59,13 @@ public class LTSJEdge extends GraphJEdge<GraphState,GraphTransition> {
         return result.toString();
     }
 
-    /**
-     * This implementation returns either the transition label, or the event
-     * label, depending on #isShowAnchors().
-     */
     @Override
-    public String getLabelText(GraphTransition edge) {
-        return getJModel().isShowAnchors() ? new DerivationLabel(
-            edge.getEvent()).text() : super.getLabelText(edge);
+    protected StringBuilder getLine(GraphTransition edge) {
+        String text =
+            getJModel().isShowAnchors()
+                    ? new DerivationLabel(edge.getEvent()).text()
+                    : edge.label().text();
+        return new StringBuilder(text);
     }
 
     /** Indicates that this edge is active. */
