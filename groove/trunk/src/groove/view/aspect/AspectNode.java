@@ -17,6 +17,7 @@
 package groove.view.aspect;
 
 import static groove.view.aspect.AspectKind.ABSTRACT;
+import static groove.view.aspect.AspectKind.EMBARGO;
 import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.PRODUCT;
 import static groove.view.aspect.AspectKind.READER;
@@ -82,7 +83,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     }
 
     @Override
-    public void setFixed() throws FormatException {
+    public void setFixed() {
         if (!isFixed()) {
             this.allFixed = true;
             try {
@@ -92,9 +93,6 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
                 }
             } catch (FormatException exc) {
                 addErrors(exc.getErrors());
-            }
-            if (hasErrors()) {
-                throw new FormatException(getErrors());
             }
         }
     }
@@ -159,9 +157,8 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
 
     /**
      * Adds a node label to this node, and processes the resulting aspects.
-     * @throws FormatException if the aspects are inconsistent
      */
-    public void setAspects(AspectLabel label) throws FormatException {
+    public void setAspects(AspectLabel label) {
         assert label.isFixed();
         testFixed(false);
         this.nodeLabels.add(label);
@@ -174,7 +171,6 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
                 }
             } catch (FormatException exc) {
                 this.errors.addAll(exc.getErrors());
-                throw exc;
             }
         }
     }
@@ -189,6 +185,10 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
             // rule nodes that are not explicitly typed must be readers
             if (!hasAspect()) {
                 setAspect(READER.getAspect());
+            }
+            if (hasAttrAspect() && getKind() != READER && getKind() != EMBARGO) {
+                throw new FormatException("Conflicting aspects %s and %s",
+                    getAttrAspect(), getAspect());
             }
         } else if (getKind().isRole()) {
             throw new FormatException("Node aspect %s only allowed in rules",

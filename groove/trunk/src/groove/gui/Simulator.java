@@ -21,7 +21,6 @@ import static groove.graph.GraphRole.RULE;
 import static groove.gui.Options.DELETE_RULE_OPTION;
 import static groove.gui.Options.HELP_MENU_NAME;
 import static groove.gui.Options.OPTIONS_MENU_NAME;
-import static groove.gui.Options.PREVIEW_ON_CLOSE_OPTION;
 import static groove.gui.Options.REPLACE_RULE_OPTION;
 import static groove.gui.Options.REPLACE_START_GRAPH_OPTION;
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
@@ -2684,7 +2683,6 @@ public class Simulator {
             this.options.getItem(SHOW_REMARKS_OPTION).setSelected(true);
             this.options.getItem(SHOW_STATE_IDS_OPTION).setSelected(true);
             this.options.getItem(SHOW_BACKGROUND_OPTION).setSelected(true);
-            this.options.getItem(PREVIEW_ON_CLOSE_OPTION).setSelected(true);
         }
         return this.options;
     }
@@ -4570,6 +4568,7 @@ public class Simulator {
                 LabelStore labelStore = getGrammarView().getLabelStore();
                 if (labelStore.hasFlags()) {
                     item.setEnabled(false);
+                    item.setSelected(false);
                 } else {
                     item.setEnabled(true);
                 }

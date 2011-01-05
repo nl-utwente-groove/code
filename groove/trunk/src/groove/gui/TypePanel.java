@@ -52,6 +52,7 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 
 /**
  * @author Frank van Es
@@ -67,13 +68,13 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
     public TypePanel(final Simulator simulator) {
         super(new AspectJGraph(simulator, GraphRole.TYPE), true, true,
             simulator.getOptions());
+        initialise();
         this.simulator = simulator;
         add(createToolbar(), BorderLayout.NORTH);
         simulator.addSimulationListener(this);
         setEnabled(false);
         addRefreshListener(SHOW_NODE_IDS_OPTION);
         addRefreshListener(SHOW_VALUE_NODES_OPTION);
-        initialise();
     }
 
     private JToolBar createToolbar() {
@@ -149,7 +150,12 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
             this.getNameList().refresh();
         }
         this.jGraph.setLabelStore(labelStore, null);
-        displayType();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                displayType();
+            }
+        });
     }
 
     /**

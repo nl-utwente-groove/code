@@ -22,6 +22,7 @@ import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
+import static groove.gui.Options.SHOW_VERTEX_LABELS_OPTION;
 import groove.graph.GraphRole;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
@@ -99,6 +100,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         addRefreshListener(SHOW_REMARKS_OPTION);
         addRefreshListener(SHOW_VALUE_NODES_OPTION);
         addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
+        addRefreshListener(SHOW_VERTEX_LABELS_OPTION);
         getJGraph().setToolTipEnabled(true);
         // make sure that emphasis due to selections in the label tree
         // cause any selected transition to be deselected first

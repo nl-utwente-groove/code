@@ -277,8 +277,6 @@ public class Options implements Cloneable {
     public static final String OPEN_ACTION_NAME = "Open ...";
     /** Paste action name */
     public static final String PASTE_ACTION_NAME = "Paste";
-    /** Preview action name */
-    public static final String PREVIEW_ACTION_NAME = "Preview ...";
     /** Preview control action name */
     public static final String PREVIEW_CONTROL_ACTION_NAME =
         "Preview Control ...";
@@ -410,6 +408,8 @@ public class Options implements Cloneable {
         "Reset type graph filter";
     /** Select mode action name */
     public static final String SELECT_MODE_NAME = "Selection mode";
+    /** Preview mode action name */
+    public static final String PREVIEW_MODE_NAME = "Preview mode";
 
     /** Add point keystroke. */
     public static final KeyStroke ADD_POINT_KEY = KeyStroke.getKeyStroke(
@@ -493,6 +493,11 @@ public class Options implements Cloneable {
      */
     public static final KeyStroke PASTE_KEY =
         KeyStroke.getKeyStroke("control V");
+    /**
+     * Preview keystroke
+     */
+    public static final KeyStroke PREVIEW_MODE_KEY =
+        KeyStroke.getKeyStroke("control P");
     /** Quit keystroke */
     public static final KeyStroke QUIT_KEY =
         KeyStroke.getKeyStroke("control Q");
@@ -606,11 +611,6 @@ public class Options implements Cloneable {
     static public final String DELETE_GRAPH_OPTION = "Delete graph?";
     /** Option to delete type graphs. */
     static public final String DELETE_TYPE_OPTION = "Delete type graph?";
-    /** Show preview before close. */
-    static public final String PREVIEW_ON_CLOSE_OPTION = "Show preview on OK";
-    /** Show preview before save. */
-    static public final String PREVIEW_ON_SAVE_OPTION =
-        "Show preview when saving";
     /** Always replace edited rules. */
     static public final String REPLACE_RULE_OPTION = "Replace edited rule?";
     /** Always replace edited rules. */
@@ -642,8 +642,6 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_BACKGROUND_OPTION, true);
         boolOptionDefaults.put(SHOW_VALUE_NODES_OPTION, false);
         boolOptionDefaults.put(SHOW_UNFILTERED_EDGES_OPTION, false);
-        boolOptionDefaults.put(PREVIEW_ON_CLOSE_OPTION, true);
-        boolOptionDefaults.put(PREVIEW_ON_SAVE_OPTION, true);
         intOptionDefaults.put(CANCEL_CONTROL_EDIT_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(DELETE_CONTROL_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(DELETE_GRAPH_OPTION, BehaviourOption.ASK);
@@ -807,9 +805,6 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_VERTEX_LABELS_OPTION);
         addCheckbox(SHOW_STATE_IDS_OPTION);
         addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
-        // addCheckbox(IS_ATTRIBUTED_OPTION);
-        addCheckbox(PREVIEW_ON_CLOSE_OPTION);
-        addCheckbox(PREVIEW_ON_SAVE_OPTION);
         addBehaviour(CANCEL_CONTROL_EDIT_OPTION, 2);
         addBehaviour(DELETE_CONTROL_OPTION, 2);
         addBehaviour(DELETE_GRAPH_OPTION, 2);

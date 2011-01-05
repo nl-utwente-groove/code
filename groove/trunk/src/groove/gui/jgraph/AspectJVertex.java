@@ -14,7 +14,6 @@ import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.trans.RuleLabel;
 import groove.util.Converter;
 import groove.view.FormatError;
-import groove.view.FormatException;
 import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
@@ -40,6 +39,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         super(jModel, node);
         setUserObject(null);
         this.aspect = node.getKind();
+        this.errors.addAll(node.getErrors());
     }
 
     @Override
@@ -101,11 +101,8 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     void setNodeFixed() {
-        try {
-            getNode().setFixed();
-        } catch (FormatException e) {
-            this.errors.addAll(e.getErrors());
-        }
+        getNode().setFixed();
+        this.errors.addAll(getNode().getErrors());
         refreshAttributes();
     }
 
@@ -194,8 +191,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     private List<StringBuilder> getDataLines() {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
         Aspect attrAspect = getNode().getAttrAspect();
-        if (attrAspect.getKind().isTypedData()
-            && !getJModel().isShowNodeIdentities()) {
+        if (attrAspect.getKind().isTypedData()) {
             String dataLine = null;
             if (!attrAspect.hasContent()) {
                 dataLine =
@@ -317,7 +313,9 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             return Collections.emptySet();
         } else {
             result = new ArrayList<Label>();
-            result.addAll(super.getListLabels());
+            for (Edge<?> edge : getSelfEdges()) {
+                result.addAll(getListLabels(edge));
+            }
             Aspect attrAspect = getNode().getAttrAspect();
             if (attrAspect.getKind().isTypedData()) {
                 if (attrAspect.hasContent()) {
@@ -329,6 +327,9 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             }
             for (AspectEdge edge : getExtraSelfEdges()) {
                 result.addAll(getListLabels(edge));
+            }
+            if (result.isEmpty()) {
+                result.add(NO_LABEL);
             }
         }
         return result;
@@ -359,18 +360,21 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         if (this.aspect == REMARK) {
             return !getJModel().isShowRemarks();
         }
-        if (getNode().hasParam()) {
+        if (getNode().hasParam() || hasError()) {
             return false;
         }
         if (super.isFiltered()) {
             return true;
         }
-        // in addition, value nodes may be filtered
+        // in addition, value nodes or data type nodes may be filtered
         if (getJModel().isShowValueNodes()) {
             return false;
         }
         Aspect attr = getNode().getAttrAspect();
-        return attr.getKind().isTypedData() && attr.hasContent();
+        if (!attr.getKind().isTypedData()) {
+            return false;
+        }
+        return getNode().getGraphRole() == GraphRole.TYPE || attr.hasContent();
     }
 
     @Override
@@ -408,18 +412,10 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         for (String text : getUserObject()) {
             AspectLabel label = parser.parse(text);
             if (label.isNodeOnly()) {
-                try {
-                    node.setAspects(label);
-                } catch (FormatException e) {
-                    // do nothing; the errors in the node will be processed later
-                }
+                node.setAspects(label);
             } else {
                 AspectEdge edge = new AspectEdge(node, label, node, role);
-                try {
-                    edge.setFixed();
-                } catch (FormatException e) {
-                    // do nothing; the errors in the edge will be processed later
-                }
+                edge.setFixed();
                 addSelfEdge(edge);
             }
         }

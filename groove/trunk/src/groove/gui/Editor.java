@@ -53,6 +53,8 @@ import java.awt.Dimension;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
@@ -90,6 +92,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -97,8 +100,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.TableCellEditor;
@@ -174,6 +175,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         return getEdgeModeButton().isSelected();
     }
 
+    /** Indicates that the editor is in previewing mode. */
+    public boolean isPreviewMode() {
+        return getPreviewModeButton().isSelected();
+    }
+
     /**
      * Sets the graph to be edited
      * @param graph the graph to be edited; if <code>null</code>, an empty model
@@ -181,13 +187,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * @param refreshModel if {@code true}, the model is refreshed
      * (which causes the edit history to be reset, etc.)
      */
-    public void setAspectGraph(AspectGraph graph, boolean refreshModel) {
-        if (graph == null) {
-            graph = AspectGraph.emptyGraph(getRole());
-        } else {
-            // set the model afresh to make sure everything gets updated properly
-            setRole(graph.getRole());
-        }
+    public void setGraph(AspectGraph graph, boolean refreshModel) {
+        // set the model afresh to make sure everything gets updated properly
+        setRole(graph.getRole());
         if (refreshModel) {
             setModel(AspectJModel.newInstance(this, graph));
         } else {
@@ -197,22 +199,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         }
     }
 
-    /** Sets the type graph for this editor. */
-    public void setTypeView(TypeViewList typeView) {
-        this.type = null;
-        this.typeViewList = null;
-        if (typeView != null) {
-            try {
-                this.type = typeView.toModel();
-                this.typeViewList = typeView;
-            } catch (FormatException e) {
-                // do nothing
-            }
-        }
-    }
-
     /** Returns the aspect graph generated from the current editor contents. */
-    public AspectGraph getAspectGraph() {
+    public AspectGraph getGraph() {
         return getModel().getGraph();
     }
 
@@ -244,6 +232,20 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         return this.jgraph == null ? null : this.jgraph.getModel();
     }
 
+    /** Sets the type graph for this editor. */
+    public void setTypeView(TypeViewList typeView) {
+        this.type = null;
+        this.typeViewList = null;
+        if (typeView != null) {
+            try {
+                this.type = typeView.toModel();
+                this.typeViewList = typeView;
+            } catch (FormatException e) {
+                // do nothing
+            }
+        }
+    }
+
     /** Returns the type graph set in this editor, if any. */
     public TypeViewList getTypeViewList() {
         return this.typeViewList;
@@ -258,7 +260,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * Creates and returns a view, based on the current aspect graph.
      */
     private View<?> toView() {
-        View<?> result = getAspectGraph().toView();
+        View<?> result = getGraph().toView();
         if (getType() != null) {
             if (result instanceof GraphView) {
                 ((GraphView) result).setType(getType());
@@ -326,57 +328,30 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      *        should always be shown
      */
     protected File handleSaveGraph(boolean as) {
-        if (getOptions().isSelected(Options.PREVIEW_ON_SAVE_OPTION)
-            && !handlePreview(null)) {
-            return null;
-        } else if (getAspectGraph().hasErrors()) {
-            JOptionPane.showMessageDialog(getFrame(),
-                "Cannot save graph with syntax errors", null,
-                JOptionPane.WARNING_MESSAGE);
-            return null;
-        } else {
-            File toFile = getCurrentFile();
-            if (as || toFile == null) {
+        File toFile = getCurrentFile();
+        if (as || toFile == null) {
+            toFile =
+                ExtensionFilter.showSaveDialog(getGraphChooser(),
+                    getGraphPanel(), toFile);
+        }
+        if (toFile != null) {
+            try {
+                // parse the file name to extract any priority info
+                PriorityFileName priorityName = new PriorityFileName(toFile);
+                String actualName = priorityName.getActualName();
+                setModelName(actualName);
                 toFile =
-                    ExtensionFilter.showSaveDialog(getGraphChooser(),
-                        getGraphPanel(), toFile);
+                    new File(toFile.getParentFile(), actualName
+                        + ExtensionFilter.getExtension(toFile));
+                doSaveGraph(toFile);
+                setCurrentFile(toFile);
+            } catch (Exception exc) {
+                showErrorDialog(
+                    String.format("Error while saving to %s", toFile), exc);
+                toFile = null;
             }
-            if (toFile != null) {
-                try {
-                    // parse the file name to extract any priority info
-                    PriorityFileName priorityName =
-                        new PriorityFileName(toFile);
-                    String actualName = priorityName.getActualName();
-                    setModelName(actualName);
-                    toFile =
-                        new File(toFile.getParentFile(), actualName
-                            + ExtensionFilter.getExtension(toFile));
-                    doSaveGraph(toFile);
-                    setCurrentFile(toFile);
-                } catch (Exception exc) {
-                    showErrorDialog(
-                        String.format("Error while saving to %s", toFile), exc);
-                    toFile = null;
-                }
-            }
-            return toFile;
         }
-    }
-
-    /**
-     * Shows a preview dialog, and possibly replaces the edited graph by the
-     * previewed model.
-     * @return <tt>true</tt> if the dialog was confirmed; if so, the jModel is
-     *         aspect correct (and so can be saved).
-     */
-    protected boolean handlePreview(String okOption) {
-        AspectJModel previewedModel = showPreviewDialog(toView(), okOption);
-        if (previewedModel != null) {
-            setAspectGraph(previewedModel.getGraph(), false);
-            return true;
-        } else {
-            return false;
-        }
+        return toFile;
     }
 
     /**
@@ -418,7 +393,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         // issues
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                setAspectGraph(graph, true);
+                setGraph(graph, true);
             }
         });
     }
@@ -430,7 +405,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      *         formatted graph
      */
     private void doSaveGraph(File toFile) throws IOException {
-        AspectGraph saveGraph = getAspectGraph();
+        AspectGraph saveGraph = getGraph();
         this.layoutGxl.marshalGraph(saveGraph, toFile);
         setGraphSaved();
     }
@@ -505,8 +480,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         // initialize the main editor panel
         // Add a ToolBar
         result.add(toolBar, BorderLayout.NORTH);
-        result.add(getGraphPanel(), BorderLayout.CENTER);
-        result.add(getStatusPanel(), BorderLayout.SOUTH);
+        result.add(getMainPanel());
         return result;
     }
 
@@ -702,6 +676,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                     getOptions());
             this.jGraphPanel.initialise();
             this.jGraphPanel.addRefreshListener(Options.SHOW_NODE_IDS_OPTION);
+            this.jGraphPanel.addRefreshListener(Options.SHOW_VALUE_NODES_OPTION);
         }
         return this.jGraphPanel;
     }
@@ -769,7 +744,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     JMenu createOptionsMenu() {
         JMenu result = new JMenu(Options.OPTIONS_MENU_NAME);
         result.setMnemonic(Options.OPTIONS_MENU_MNEMONIC);
-        result.add(getOptions().getItem(Options.PREVIEW_ON_SAVE_OPTION));
         result.add(getOptions().getItem(Options.SHOW_VALUE_NODES_OPTION));
         result.add(getOptions().getItem(Options.SHOW_NODE_IDS_OPTION));
         return result;
@@ -857,6 +831,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         toolbar.add(getSelectModeButton());
         toolbar.add(getNodeModeButton());
         toolbar.add(getEdgeModeButton());
+        toolbar.add(getPreviewModeButton());
     }
 
     /**
@@ -902,6 +877,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             this.modeButtonGroup.add(getSelectModeButton());
             this.modeButtonGroup.add(getNodeModeButton());
             this.modeButtonGroup.add(getEdgeModeButton());
+            this.modeButtonGroup.add(getPreviewModeButton());
         }
         return this.modeButtonGroup;
     }
@@ -956,6 +932,40 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             this.selectModeButton.doClick();
         }
         return this.selectModeButton;
+    }
+
+    /**
+     * Returns the button for setting selection mode, lazily creating it first.
+     */
+    private JToggleButton getPreviewModeButton() {
+        if (this.previewButton == null) {
+            final JToggleButton result =
+                this.previewButton = new JToggleButton(getPreviewModeAction());
+            result.setText(null);
+            result.setToolTipText(Options.PREVIEW_MODE_NAME);
+            result.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    getGraphPanel().refresh();
+                    //                    getModel().syncGraph();
+                    //                    setGraph(getGraph(), false);
+                }
+            });
+        }
+        return this.previewButton;
+    }
+
+    /** Creates a panel consisting of the error panel and the status bar. */
+    JSplitPane getMainPanel() {
+        if (this.mainPanel == null) {
+            this.mainPanel =
+                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphPanel(),
+                    getStatusPanel());
+            this.mainPanel.setDividerSize(1);
+            this.mainPanel.setContinuousLayout(true);
+            this.mainPanel.setResizeWeight(0.9);
+        }
+        return this.mainPanel;
     }
 
     /** Creates a panel consisting of the error panel and the status bar. */
@@ -1064,12 +1074,10 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                //                getGraphPanel().refresh();
                 int elementCount = getModel().getRootCount();
                 getStatusBar().setText("" + elementCount + " visible elements");
-                List<FormatError> errors =
-                    new ArrayList<FormatError>(toView().getErrors());
                 Editor.this.errorCellMap.clear();
+                List<FormatError> errors = toView().getErrors();
                 for (FormatError error : errors) {
                     for (Element errorObject : error.getElements()) {
                         GraphJCell errorCell = getModel().getJCell(errorObject);
@@ -1085,6 +1093,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                     }
                 }
                 getErrorPanel().setErrors(errors);
+                getMainPanel().resetToPreferredSizes();
             }
         });
     }
@@ -1350,6 +1359,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** Status bar of the editor. */
     private final JLabel statusBar = new JLabel();
 
+    /** Panel containing the graph panel and status panel. */
+    private JSplitPane mainPanel;
     /** Panel containing the error panel and status par. */
     private JPanel statusPanel;
     /** Panel displaying format error messages. */
@@ -1398,6 +1409,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     private transient JToggleButton nodeModeButton;
     /** Button for setting selection mode. */
     private transient JToggleButton selectModeButton;
+    /** Button for setting previewing mode. */
+    private transient JToggleButton previewButton;
 
     /**
      * Returns the button for setting node editing mode, lazily creating it
@@ -1409,15 +1422,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                 this.graphRoleButton =
                     new JToggleButton(getSetGraphRoleAction());
             result.setText(null);
-            result.addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    result.setToolTipText(result.isSelected()
-                            ? Options.PREVIEW_GRAPH_ACTION_NAME
-                            : Options.SET_GRAPH_ROLE_ACTION_NAME);
-                }
-            });
             result.setSelected(true);
-            //            result.doClick();
         }
         return this.graphRoleButton;
     }
@@ -1433,13 +1438,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             final JToggleButton result =
                 this.ruleRoleButton = new JToggleButton(getSetRuleRoleAction());
             result.setText(null);
-            result.addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    result.setToolTipText(result.isSelected()
-                            ? Options.PREVIEW_RULE_ACTION_NAME
-                            : Options.SET_RULE_ROLE_ACTION_NAME);
-                }
-            });
         }
         return this.ruleRoleButton;
     }
@@ -1455,13 +1453,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             final JToggleButton result =
                 this.typeRoleButton = new JToggleButton(getSetTypeRoleAction());
             result.setText(null);
-            result.addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    result.setToolTipText(result.isSelected()
-                            ? Options.PREVIEW_TYPE_ACTION_NAME
-                            : Options.SET_TYPE_ROLE_ACTION_NAME);
-                }
-            });
         }
         return this.typeRoleButton;
     }
@@ -1740,7 +1731,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             super.actionPerformed(evt);
             if (confirmAbandon()) {
                 setCurrentFile(null);
-                setAspectGraph(null, true);
+                setGraph(AspectGraph.emptyGraph(getRole()), true);
             }
         }
     }
@@ -1925,6 +1916,24 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     private Action selectModeAction;
 
     /**
+     * Lazily creates and returns the action to set the editor to selection
+     * mode.
+     */
+    private Action getPreviewModeAction() {
+        if (this.previewAction == null) {
+            ImageIcon previewIcon =
+                new ImageIcon(Groove.getResource("preview.gif"));
+            this.previewAction =
+                new SetEditingModeAction(Options.PREVIEW_MODE_NAME,
+                    Options.PREVIEW_MODE_KEY, previewIcon);
+        }
+        return this.previewAction;
+    }
+
+    /** Action to set the editor to selection mode. */
+    private Action previewAction;
+
+    /**
      * Action to set the editing mode (selection, node or edge).
      */
     private class SetEditingModeAction extends ToolbarAction {
@@ -1974,11 +1983,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
-            if (!setRole(HOST)) {
-                // only do a preview if the type was not changed (on the second
-                // click)
-                handlePreview(null);
-            }
+            setRole(HOST);
         }
     }
 
@@ -2010,11 +2015,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
-            if (!setRole(RULE)) {
-                // only do a preview if the type was not changed (on the second
-                // click)
-                handlePreview(null);
-            }
+            setRole(RULE);
         }
     }
 
@@ -2048,11 +2049,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                     Options.OK_BUTTON);
             } else {
                 super.actionPerformed(evt);
-                if (!setRole(TYPE)) {
-                    // only do a preview if the type was not changed (on the
-                    // second click)
-                    handlePreview(null);
-                }
+                setRole(TYPE);
             }
         }
     }
@@ -2379,7 +2376,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             // Add an Editor Panel
             final Editor editor = new Editor();
             if (args.length == 0) {
-                editor.setAspectGraph(null, true);
+                editor.setGraph(AspectGraph.emptyGraph(editor.getRole()), true);
             } else {
                 editor.doOpenGraph(new File(args[0]));
             }
