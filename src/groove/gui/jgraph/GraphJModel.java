@@ -490,24 +490,6 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
     }
 
     /**
-     * Returns the set of {@link GraphJCell}s associated with a given set of graph
-     * elements.
-     * @param elemSet the set of elements for which the jcells are requested
-     * @return the jcells associated with <tt>elemSet</tt>
-     * @see #getJCell(Element)
-     */
-    public Set<? extends GraphJCell> getJCellSet(Set<Element> elemSet) {
-        Set<GraphJCell> result = new HashSet<GraphJCell>();
-        for (Element elem : elemSet) {
-            GraphJCell image = getJCell(elem);
-            if (image != null) {
-                result.add(getJCell(elem));
-            }
-        }
-        return result;
-    }
-
-    /**
      * Returns the {@link GraphJCell}associated with a given graph element. The
      * result is a {@link GraphJVertex}for which the graph element is the
      * underlying node or self-edge, or a {@link GraphJEdge}for which the graph

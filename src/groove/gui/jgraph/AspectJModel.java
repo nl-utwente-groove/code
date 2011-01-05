@@ -18,7 +18,6 @@ package groove.gui.jgraph;
 
 import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
-import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
@@ -83,13 +82,6 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     @Override
     public AspectGraph getGraph() {
         return (AspectGraph) super.getGraph();
-    }
-
-    /** Specialises the return type. */
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<AspectJCell> getJCellSet(Set<Element> elemSet) {
-        return (Set<AspectJCell>) super.getJCellSet(elemSet);
     }
 
     /** Specialises the return type. */
@@ -171,6 +163,10 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         GraphInfo.setLayoutMap(graph, layoutMap);
         GraphInfo.setProperties(graph, getProperties());
         setGraph(graph, nodeJVertexMap, edgeJCellMap);
+        if (GUI_DEBUG) {
+            System.out.printf("Graph resynchronised with model %s%n", getName());
+        }
+        cellsChanged(getRoots().toArray());
     }
 
     /** Changes the name of the model (and the underlying graph). */
@@ -178,7 +174,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         setGraph(getGraph().rename(name));
     }
 
-    /** Indicates that the JModel is editable. */
+    /** Indicates that the JModel is being edited. */
     boolean isEditing() {
         return this.editor != null;
     }
@@ -221,9 +217,6 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     public final void setProperties(GraphProperties properties) {
         this.properties = properties;
     }
-
-    /** Properties map of the graph being displayed or edited. */
-    private GraphProperties properties;
 
     /**
      * New source is only acceptable if not <tt>null</tt>.
@@ -276,8 +269,11 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             // only reload if the edit changed the graph structure
             // (and not just the layout)
             boolean changed =
-                edit.getInserted() != null || edit.getRemoved() != null
-                    || edit.getConnectionSet() != null;
+                edit.getInserted() != null && edit.getInserted().length > 0
+                    || edit.getRemoved() != null
+                    && edit.getRemoved().length > 0
+                    || edit.getConnectionSet() != null
+                    && !edit.getConnectionSet().isEmpty();
             // only user object changes in the attribute should trigger a reload
             if (!changed && edit.getAttributes() != null) {
                 for (Object attrValue : ((Map<?,?>) edit.getAttributes()).values()) {
@@ -294,17 +290,10 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                 syncGraph();
             }
         }
+        if (GUI_DEBUG) {
+            System.out.printf("Firing graph change in %s%n", getName());
+        }
         super.fireGraphChanged(source, edit);
-    }
-
-    /**
-     * Callback factory method to create an empty, editable j-edge.
-     */
-    AspectJEdge computeJEdge() {
-        AspectJEdge result = new AspectJEdge(this);
-        // add a single, empty label so the edge will be displayed
-        result.getUserObject().add("");
-        return result;
     }
 
     /**
@@ -323,6 +312,16 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                 !edge.isBinary() || unLayedoutSelfEdge
                     && edge.getKind() == REMARK;
         }
+        return result;
+    }
+
+    /**
+     * Callback factory method to create an empty, editable j-edge.
+     */
+    AspectJEdge computeJEdge() {
+        AspectJEdge result = new AspectJEdge(this);
+        // add a single, empty label so the edge will be displayed
+        result.getUserObject().add("");
         return result;
     }
 
@@ -402,6 +401,8 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     /** The associated editor. */
     private final Editor editor;
+    /** Properties map of the graph being displayed or edited. */
+    private GraphProperties properties;
     /** The set of used node numbers. */
     private Set<Integer> usedNrs;
     /** Flag indicating that we are loading a new aspect graph,
@@ -440,6 +441,8 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     /** Role descriptions (for the tool tips). */
     static final Map<AspectKind,String> ROLE_DESCRIPTIONS =
         new EnumMap<AspectKind,String>(AspectKind.class);
+
+    static private final boolean GUI_DEBUG = true;
 
     static {
         ROLE_NAMES.put(AspectKind.EMBARGO, "Embargo");

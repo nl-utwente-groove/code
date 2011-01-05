@@ -194,7 +194,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends
     final protected List<StringBuilder> getNodeIdLines() {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
         if (getJModel().isShowNodeIdentities()) {
-            String id = getNodeIdentity();
+            String id = getNodeIdString();
             if (id != null) {
                 result.add(ITALIC_TAG.on(new StringBuilder(id)));
             }
@@ -255,7 +255,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends
      * used for the node inscription in case node identities are to be shown.
      * Subclasses may return {@code null} if there is no useful node identity.
      */
-    protected String getNodeIdentity() {
+    protected String getNodeIdString() {
         return getNode().toString();
     }
 
@@ -263,7 +263,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends
     StringBuilder getNodeDescription() {
         StringBuilder result = new StringBuilder();
         result.append("Node");
-        String id = getNodeIdentity();
+        String id = getNodeIdString();
         if (id != null) {
             result.append(" ");
             result.append(ITALIC_TAG.on(id));

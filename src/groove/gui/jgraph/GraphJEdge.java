@@ -321,12 +321,12 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends DefaultEdge
             result.insert(0, "Multiple ");
             result.append("s");
         }
-        String sourceIdentity = getSourceVertex().getNodeIdentity();
+        String sourceIdentity = getSourceVertex().getNodeIdString();
         if (sourceIdentity != null) {
             result.append(" from ");
             result.append(Converter.ITALIC_TAG.on(sourceIdentity));
         }
-        String targetIdentity = getTargetVertex().getNodeIdentity();
+        String targetIdentity = getTargetVertex().getNodeIdString();
         if (targetIdentity != null) {
             result.append(" to ");
             result.append(Converter.ITALIC_TAG.on(targetIdentity));

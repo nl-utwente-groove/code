@@ -23,9 +23,10 @@ import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.Options.SHOW_VERTEX_LABELS_OPTION;
 import groove.graph.GraphProperties;
+import groove.graph.GraphRole;
 import groove.graph.LabelStore;
+import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
-import groove.gui.jgraph.RuleJGraph;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -53,7 +54,7 @@ import java.util.TreeMap;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class RulePanel extends JGraphPanel<RuleJGraph> implements
+public class RulePanel extends JGraphPanel<AspectJGraph> implements
         SimulationListener {
     /** Frame name when no rule is selected. */
     protected static final String INITIAL_FRAME_NAME = "No rule selected";
@@ -62,7 +63,8 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements
      * Constructs a new rule frame on the basis of a given graph.
      */
     public RulePanel(final Simulator simulator) {
-        super(new RuleJGraph(simulator), true, true, simulator.getOptions());
+        super(new AspectJGraph(simulator, GraphRole.RULE), true, true,
+            simulator.getOptions());
         this.simulator = simulator;
         setEnabled(false);
         addRefreshListener(SHOW_ANCHORS_OPTION);
@@ -83,6 +85,7 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements
                 simulator.doSaveProperties(newProperties);
             }
         });
+        initialise();
     }
 
     /**

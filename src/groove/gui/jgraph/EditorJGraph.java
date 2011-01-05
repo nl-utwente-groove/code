@@ -45,7 +45,7 @@ import org.jgraph.graph.PortView;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class EditorJGraph extends JGraph {
+final public class EditorJGraph extends JGraph {
     /**
      * Constructs an editor j-graph with an initially empty {@link AspectJModel}.
      * @param editor the editor to which this j-graph is
@@ -53,8 +53,7 @@ public class EditorJGraph extends JGraph {
      * @since june2005
      */
     public EditorJGraph(Editor editor) {
-        super(AspectJModel.newInstance(editor,
-            AspectGraph.emptyGraph(editor.getRole())), false);
+        super(null, false);
         this.editor = editor;
         setMarqueeHandler(createMarqueeHandler());
         setExporter(editor.getExporter());
@@ -62,6 +61,8 @@ public class EditorJGraph extends JGraph {
         setCloneable(true);
         setConnectable(true);
         setDisconnectable(true);
+        setModel(AspectJModel.newInstance(editor,
+            AspectGraph.emptyGraph(editor.getRole())));
     }
 
     @Override

@@ -700,6 +700,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             this.jGraphPanel =
                 new JGraphPanel<EditorJGraph>(this.jgraph, false, false,
                     getOptions());
+            this.jGraphPanel.initialise();
+            this.jGraphPanel.addRefreshListener(Options.SHOW_NODE_IDS_OPTION);
         }
         return this.jGraphPanel;
     }
@@ -1171,7 +1173,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         }
         AspectGraph graph = view.getView();
         boolean partial = graph.hasErrors();
-        AspectJModel previewModel = AspectJModel.newInstance(graph, getOptions());
+        AspectJModel previewModel =
+            AspectJModel.newInstance(graph, getOptions());
         JGraph jGraph = createJGraph(previewModel);
         jGraph.setToolTipEnabled(true);
         JScrollPane jGraphPane = new JScrollPane(jGraph);

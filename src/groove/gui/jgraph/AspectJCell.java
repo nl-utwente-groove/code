@@ -19,7 +19,8 @@ package groove.gui.jgraph;
 import groove.graph.GraphRole;
 
 /**
- * Instantiation of a {@link GraphJCell} with an {@link StringObject}.
+ * Instantiation of a {@link GraphJCell} with an {@link AspectJObject}
+ * that stores the (editable) string representation of the node/edge label.
  * @author Arend Rensink
  * @version $Revision $
  */

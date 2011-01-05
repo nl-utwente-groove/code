@@ -16,6 +16,7 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.GraphRole;
 import groove.gui.Exporter;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -31,42 +32,16 @@ import javax.swing.JMenu;
 /**
  * Extension of {@link JGraph} that provides the proper popup menu.
  */
-public class RuleJGraph extends JGraph {
+final public class AspectJGraph extends JGraph {
     /**
      * Creates a j-graph for a given simulator, with an initially empty j-model.
      */
-    public RuleJGraph(Simulator simulator) {
-        super(AspectJModel.EMPTY_JMODEL, false);
+    public AspectJGraph(Simulator simulator, GraphRole role) {
+        super(null, role != GraphRole.RULE);
         this.simulator = simulator;
-    }
-
-    /** Specialises the return type to a {@link AspectJModel}. */
-    @Override
-    public AspectJModel getModel() {
-        return (AspectJModel) super.getModel();
-    }
-
-    @Override
-    public JMenu createPopupMenu(Point atPoint) {
-        JMenu result = new JMenu("Popup");
-        result.add(computeSetMenu());
-        result.addSeparator();
-        result.add(this.simulator.getEditRuleAction());
-        addSubmenu(result, super.createPopupMenu(atPoint));
-        return result;
-    }
-
-    @Override
-    protected Exporter getExporter() {
-        return getSimulator().getExporter();
-    }
-
-    @Override
-    protected String getExportActionName() {
-        // return GraphInfo.hasGraphRole(getModel().getGraph())
-        // ? Options.EXPORT_STATE_ACTION_NAME
-        // : Options.EXPORT_RULE_ACTION_NAME;
-        return Options.EXPORT_RULE_ACTION_NAME;
+        assert role.inGrammar();
+        this.graphRole = role;
+        setModel(AspectJModel.EMPTY_JMODEL);
     }
 
     @Override
@@ -74,10 +49,46 @@ public class RuleJGraph extends JGraph {
         return this.simulator;
     }
 
-    /**
-     * The simulator with which this j-graph is associated.
-     */
-    private final Simulator simulator;
+    @Override
+    public JMenu createPopupMenu(Point atPoint) {
+        JMenu result = new JMenu("Popup");
+        switch (this.graphRole) {
+        case HOST:
+            result.add(this.simulator.getApplyTransitionAction());
+            result.addSeparator();
+            result.add(this.simulator.getEditGraphAction());
+            addSubmenu(result, super.createPopupMenu(atPoint));
+            break;
+        case RULE:
+            result.add(computeSetMenu());
+            result.addSeparator();
+            result.add(this.simulator.getEditRuleAction());
+            addSubmenu(result, super.createPopupMenu(atPoint));
+            break;
+        case TYPE:
+            result.add(this.simulator.getEditTypeAction());
+            addSubmenu(result, super.createPopupMenu(atPoint));
+        }
+        return result;
+    }
+
+    @Override
+    protected Exporter getExporter() {
+        return this.simulator.getExporter();
+    }
+
+    @Override
+    protected String getExportActionName() {
+        switch (this.graphRole) {
+        case HOST:
+            return Options.EXPORT_STATE_ACTION_NAME;
+        case RULE:
+            return Options.EXPORT_RULE_ACTION_NAME;
+        case TYPE:
+            return Options.EXPORT_TYPE_ACTION_NAME;
+        }
+        throw new IllegalStateException();
+    }
 
     /**
      * Computes and returns a menu that allows setting the display to another
@@ -108,4 +119,12 @@ public class RuleJGraph extends JGraph {
             }
         };
     }
+
+    /**
+     * The simulator with which this j-graph is associated.
+     */
+    private final Simulator simulator;
+
+    /** The role for which this {@link JGraph} will display graphs. */
+    private final GraphRole graphRole;
 }

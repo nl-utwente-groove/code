@@ -22,14 +22,14 @@ import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import groove.graph.Element;
+import groove.graph.GraphRole;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.gui.jgraph.AspectJCell;
 import groove.gui.jgraph.AspectJEdge;
+import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.StateJGraph;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
@@ -76,7 +76,7 @@ import org.jgraph.graph.GraphConstants;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class StatePanel extends JGraphPanel<StateJGraph> implements
+public class StatePanel extends JGraphPanel<AspectJGraph> implements
         SimulationListener, ListSelectionListener {
     /** Display name of this panel. */
     public static final String FRAME_NAME = "Current state";
@@ -87,8 +87,10 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      * Constructs a new state panel.
      */
     public StatePanel(final Simulator simulator) {
-        super(new StateJGraph(simulator), true, true, simulator.getOptions());
+        super(new AspectJGraph(simulator, GraphRole.HOST), true, true,
+            simulator.getOptions());
         this.simulator = simulator;
+        initialise();
         simulator.addSimulationListener(this);
         simulator.getStateList().addListSelectionListener(this);
         addRefreshListener(SHOW_NODE_IDS_OPTION);
@@ -231,17 +233,17 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
     public void setMatchUpdate(RuleMatch match) {
         assert match != null : "Match update should not be called with empty match";
         setStateModel(this.simulator.getCurrentState());
+        AspectJModel jModel = getJModel();
         HostToAspectMap aspectMap =
             this.stateToAspectMap.get(this.selectedState);
-        Set<Element> emphElems = new HashSet<Element>();
+        Set<AspectJCell> emphElems = new HashSet<AspectJCell>();
         for (HostNode matchedNode : match.getNodeValues()) {
-            emphElems.add(aspectMap.getNode(matchedNode));
+            emphElems.add(jModel.getJCellForNode(aspectMap.getNode(matchedNode)));
         }
         for (HostEdge matchedEdge : match.getEdgeValues()) {
-            emphElems.add(aspectMap.getEdge(matchedEdge));
+            emphElems.add(jModel.getJCellForEdge(aspectMap.getEdge(matchedEdge)));
         }
-        AspectJModel currentModel = getJModel();
-        currentModel.setEmphasised(currentModel.getJCellSet(emphElems));
+        jModel.setEmphasised(emphElems);
         this.selectedMatch = match;
         refreshStatus();
     }
@@ -413,16 +415,20 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
      */
     private void copyLayout(HostToAspectMap oldState, HostToAspectMap newState,
             HostGraphMorphism morphism) {
-        AspectJModel oldStateJModel = getAspectJModel(oldState.getAspectGraph());
-        AspectJModel newStateJModel = getAspectJModel(newState.getAspectGraph());
+        AspectJModel oldStateJModel =
+            getAspectJModel(oldState.getAspectGraph());
+        AspectJModel newStateJModel =
+            getAspectJModel(newState.getAspectGraph());
         Set<AspectJCell> newGrayedOut = new HashSet<AspectJCell>();
         for (Map.Entry<HostNode,HostNode> entry : morphism.nodeMap().entrySet()) {
             AspectNode oldStateNode = oldState.getNode(entry.getKey());
             AspectNode newStateNode = newState.getNode(entry.getValue());
-            AspectJCell sourceCell = oldStateJModel.getJCellForNode(oldStateNode);
+            AspectJCell sourceCell =
+                oldStateJModel.getJCellForNode(oldStateNode);
             assert sourceCell != null : "Source element " + oldStateNode
                 + " unknown";
-            AspectJCell targetCell = newStateJModel.getJCellForNode(newStateNode);
+            AspectJCell targetCell =
+                newStateJModel.getJCellForNode(newStateNode);
             assert targetCell != null : "Target element " + newStateNode
                 + " unknown";
             Rectangle2D sourceBounds =
@@ -438,9 +444,11 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements
         for (Map.Entry<HostEdge,HostEdge> entry : morphism.edgeMap().entrySet()) {
             AspectEdge oldStateEdge = oldState.getEdge(entry.getKey());
             AspectEdge newStateEdge = newState.getEdge(entry.getValue());
-            AspectJCell sourceCell = oldStateJModel.getJCellForEdge(oldStateEdge);
+            AspectJCell sourceCell =
+                oldStateJModel.getJCellForEdge(oldStateEdge);
             AttributeMap sourceAttributes = sourceCell.getAttributes();
-            AspectJCell targetCell = newStateJModel.getJCellForEdge(newStateEdge);
+            AspectJCell targetCell =
+                newStateJModel.getJCellForEdge(newStateEdge);
             assert targetCell != null : "Target element " + newStateEdge
                 + " unknown";
             AttributeMap targetAttributes = targetCell.getAttributes();

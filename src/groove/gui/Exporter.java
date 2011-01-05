@@ -17,9 +17,9 @@
 package groove.gui;
 
 import groove.graph.Graph;
+import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.StateJGraph;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.util.Converter;
@@ -404,8 +404,9 @@ public class Exporter {
          * the graph contained therein.
          */
         public void export(JGraph jGraph, File file) throws IOException {
-            if (jGraph instanceof StateJGraph) {
-                Graph<?,?> graph = ((StateJGraph) jGraph).getModel().getGraph();
+            if (jGraph instanceof AspectJGraph) {
+                Graph<?,?> graph =
+                    ((AspectJGraph) jGraph).getModel().getGraph();
                 export(graph, file);
             } else {
                 throw new IOException(

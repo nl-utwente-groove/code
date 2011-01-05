@@ -19,10 +19,11 @@ package groove.gui;
 import static groove.graph.GraphRole.TYPE;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
+import groove.graph.GraphRole;
 import groove.graph.LabelStore;
 import groove.gui.JTypeNameList.CheckBoxListModel;
+import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
-import groove.gui.jgraph.TypeJGraph;
 import groove.io.SystemStore;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -56,7 +57,7 @@ import javax.swing.ScrollPaneConstants;
  * @author Frank van Es
  * @version $Revision $
  */
-public class TypePanel extends JGraphPanel<TypeJGraph> implements
+public class TypePanel extends JGraphPanel<AspectJGraph> implements
         SimulationListener {
     /**
      * Constructor for this TypePanel Creates a new TypePanel instance and
@@ -64,13 +65,15 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
      * @param simulator The simulator this type panel belongs to.
      */
     public TypePanel(final Simulator simulator) {
-        super(new TypeJGraph(simulator), true, true, simulator.getOptions());
+        super(new AspectJGraph(simulator, GraphRole.TYPE), true, true,
+            simulator.getOptions());
         this.simulator = simulator;
         add(createToolbar(), BorderLayout.NORTH);
         simulator.addSimulationListener(this);
         setEnabled(false);
         addRefreshListener(SHOW_NODE_IDS_OPTION);
         addRefreshListener(SHOW_VALUE_NODES_OPTION);
+        initialise();
     }
 
     private JToolBar createToolbar() {
