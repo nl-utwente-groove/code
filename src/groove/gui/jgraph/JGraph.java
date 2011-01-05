@@ -310,8 +310,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                         }
                     } else {
                         // the display modus might have changed,
-                        // as for data edges; hence reaffirm the visibility
-                        visibleCells.add(jCell);
+                        // like for data edges; hence reaffirm the visibility
+                        // visibleCells.add(jCell);
                     }
                 } else {
                     if (jCell.isVisible()) {

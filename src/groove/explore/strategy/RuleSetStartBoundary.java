@@ -61,7 +61,7 @@ public class RuleSetStartBoundary extends RuleSetBoundary {
     @Override
     public void backtrackTransition(ProductTransition transition) {
         if (transition.rule() == null) {
-            System.out.println("backtracking final transition");
+            // System.out.println("backtracking final transition");
         } else if (containsRule(transition.rule())) {
             decreaseDepth();
         }

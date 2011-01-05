@@ -104,8 +104,13 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
      */
     @Override
     final public boolean isVisible() {
-        return getSourceVertex().isVisible() && getTargetVertex().isVisible()
-            && !getLines().isEmpty();
+        if (getSourceVertex() == null || !getSourceVertex().isVisible()) {
+            return false;
+        }
+        if (getTargetVertex() == null || !getTargetVertex().isVisible()) {
+            return false;
+        }
+        return !getLines().isEmpty();
     }
 
     /**

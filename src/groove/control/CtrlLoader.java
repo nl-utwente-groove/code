@@ -78,9 +78,6 @@ public class CtrlLoader {
             MyTree tree = this.parser.run(inputStream, namespace, family);
             if (DEBUG) {
                 System.out.printf("Parse tree: %s%n", tree.toStringTree());
-                //                ASTFrame frame = new ASTFrame("checker result", tree);
-                //                frame.setSize(500, 1000);
-                //                frame.setVisible(true);
             }
             List<String> errors = this.parser.getErrors();
             if (!errors.isEmpty()) {
