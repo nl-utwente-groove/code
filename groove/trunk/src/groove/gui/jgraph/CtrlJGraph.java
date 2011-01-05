@@ -40,7 +40,7 @@ public class CtrlJGraph extends JGraph {
      *        <code>null</code>.
      */
     public CtrlJGraph(CtrlAut aut, Simulator simulator) {
-        super(new CtrlJModel(aut, simulator.getOptions()), true);
+        super(null, true);
         this.simulator = simulator;
         this.exporter = simulator.getExporter();
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
@@ -50,6 +50,7 @@ public class CtrlJGraph extends JGraph {
         setDisconnectable(false);
         setEnabled(true);
         setToolTipEnabled(true);
+        setModel(new CtrlJModel(aut, simulator.getOptions()));
     }
 
     @Override

@@ -5,6 +5,8 @@ import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.LabelKind;
 import groove.graph.TypeLabel;
+import groove.graph.algebra.ProductNode;
+import groove.graph.algebra.VariableNode;
 import groove.gui.Options;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.trans.RuleLabel;
@@ -30,8 +32,8 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Specialized j-vertex for rule graphs, with its own tool tip text.
  */
-public class AspectJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
-        AspectJCell {
+public class AspectJVertex extends GraphJVertex<AspectNode,AspectEdge>
+        implements AspectJCell {
     /** Creates a j-vertex on the basis of a given (aspectual) node. */
     public AspectJVertex(AspectJModel jModel, AspectNode node) {
         super(jModel, node);
@@ -96,11 +98,20 @@ public class AspectJVertex extends GraphJVertex<AspectNode,AspectEdge> implement
     }
 
     @Override
-    protected String getNodeIdentity() {
+    protected String getNodeIdString() {
         if (this.aspect.isMeta()) {
             return null;
+        } else if (getNode().getAttrKind().isData()) {
+            // delegate the identity string to a corresponding variable node
+            return new VariableNode(getNode().getNumber(),
+                getNode().getAttrKind().getName(),
+                getNode().getAttrAspect().getContentString()).toString();
+        } else if (getNode().getAttrKind() == AspectKind.PRODUCT) {
+            // delegate the identity string to a corresponding product node
+            return new ProductNode(getNode().getNumber(),
+                getNode().getArgNodes().size()).toString();
         } else {
-            return super.getNodeIdentity();
+            return super.getNodeIdString();
         }
     }
 
@@ -126,7 +137,8 @@ public class AspectJVertex extends GraphJVertex<AspectNode,AspectEdge> implement
             Converter.toUppercase(result, false);
             result.insert(0, " ");
             result.insert(0, AspectJModel.ROLE_NAMES.get(this.aspect));
-            result.append("<br>" + AspectJModel.ROLE_DESCRIPTIONS.get(this.aspect));
+            result.append("<br>"
+                + AspectJModel.ROLE_DESCRIPTIONS.get(this.aspect));
         }
         return result;
     }
@@ -145,18 +157,7 @@ public class AspectJVertex extends GraphJVertex<AspectNode,AspectEdge> implement
             // show the main aspect correctly
             result.addAll(getAspectLines());
             // show data constants and variables correctly
-            Aspect attrAspect = getNode().getAttrAspect();
-            if (attrAspect.getKind().isTypedData()) {
-                String dataLine;
-                if (attrAspect.hasContent()) {
-                    dataLine = attrAspect.getContentString();
-                } else {
-                    dataLine =
-                        TypeLabel.toHtmlString(TypeLabel.createLabel(
-                            LabelKind.NODE_TYPE, attrAspect.getKind().getName()));
-                }
-                result.add(new StringBuilder(dataLine));
-            }
+            result.addAll(getDataLines());
             // show the visible self-edges
             for (AspectEdge edge : getSelfEdges()) {
                 if (!isFiltered(edge)) {
@@ -172,6 +173,28 @@ public class AspectJVertex extends GraphJVertex<AspectNode,AspectEdge> implement
             Aspect param = getNode().getParam();
             if (param != null && param.hasContent()) {
                 result.add(new StringBuilder(param.getContentString()));
+            }
+        }
+        return result;
+    }
+
+    /** Returns lines describing any data content of the JVertex. */
+    private List<StringBuilder> getDataLines() {
+        List<StringBuilder> result = new ArrayList<StringBuilder>();
+        Aspect attrAspect = getNode().getAttrAspect();
+        if (attrAspect.getKind().isTypedData()
+            && !getJModel().isShowNodeIdentities()) {
+            String dataLine = null;
+            if (!attrAspect.hasContent()) {
+                dataLine =
+                    TypeLabel.toHtmlString(TypeLabel.createLabel(
+                        LabelKind.NODE_TYPE, attrAspect.getKind().getName()));
+            } else if (!getJModel().isShowNodeIdentities()) {
+                // show constants only if they are not already shown as node identities
+                dataLine = attrAspect.getContentString();
+            }
+            if (dataLine != null) {
+                result.add(new StringBuilder(dataLine));
             }
         }
         return result;
@@ -277,6 +300,8 @@ public class AspectJVertex extends GraphJVertex<AspectNode,AspectEdge> implement
         Collection<Label> result;
         if (hasError()) {
             result = getUserObject().toLabels();
+        } else if (this.aspect.isMeta()) {
+            return Collections.emptySet();
         } else {
             result = new ArrayList<Label>();
             result.addAll(super.getListLabels());

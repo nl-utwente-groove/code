@@ -31,6 +31,7 @@ public class ReteJGraph extends JGraph {
      */
     public ReteJGraph(ReteJModel model, boolean hasFilters) {
         super(model, hasFilters);
+        setModel(model);
     }
 
     //TODO ARASH: we can add a new tab to the groove GUI to display the constructed RETE 

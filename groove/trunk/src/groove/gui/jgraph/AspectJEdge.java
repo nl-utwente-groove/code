@@ -30,7 +30,8 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Specialized j-edge for rule graphs, with its own tool tip text.
  */
-public class AspectJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AspectJCell {
+public class AspectJEdge extends GraphJEdge<AspectNode,AspectEdge> implements
+        AspectJCell {
     /** Creates an uninitialised instance. */
     public AspectJEdge(AspectJModel jModel) {
         super(jModel);
@@ -99,7 +100,8 @@ public class AspectJEdge extends GraphJEdge<AspectNode,AspectEdge> implements As
             result.append(super.getEdgeDescription());
         }
         if (AspectJModel.ROLE_DESCRIPTIONS.containsKey(this.aspect)) {
-            result.append("<br>" + AspectJModel.ROLE_DESCRIPTIONS.get(this.aspect));
+            result.append("<br>"
+                + AspectJModel.ROLE_DESCRIPTIONS.get(this.aspect));
         }
         return result;
     }
@@ -148,6 +150,8 @@ public class AspectJEdge extends GraphJEdge<AspectNode,AspectEdge> implements As
     public Collection<? extends Label> getListLabels() {
         if (hasError()) {
             return getUserObject().toLabels();
+        } else if (this.aspect.isMeta()) {
+            return Collections.emptySet();
         } else {
             return super.getListLabels();
         }

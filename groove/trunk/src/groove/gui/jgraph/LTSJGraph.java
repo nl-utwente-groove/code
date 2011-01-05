@@ -51,15 +51,11 @@ public class LTSJGraph extends JGraph {
 
     /** Constructs an instance of the j-graph for a given simulator. */
     public LTSJGraph(Simulator simulator) {
-        this(simulator, LTSJModel.EMPTY_LTS_JMODEL);
-    }
-
-    /** Constructs an instance for a given simulator, with pre-defined model. */
-    protected LTSJGraph(Simulator simulator, LTSJModel ltsModel) {
-        super(ltsModel, true);
+        super(null, true);
         this.simulator = simulator;
         addMouseListener(new MyMouseListener());
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
+        setModel(LTSJModel.EMPTY_LTS_JMODEL);
         setEnabled(false);
     }
 

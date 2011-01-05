@@ -41,7 +41,7 @@ public class VariableNode extends AbstractNode implements RuleNode {
      */
     @Override
     public String toString() {
-        if (getConstant() == null) {
+        if (getConstant() == null || getConstant().length() == 0) {
             return "x" + getNumber();
         } else {
             return getSignature() + '/' + getConstant();

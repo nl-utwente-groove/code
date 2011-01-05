@@ -55,6 +55,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         addRefreshListener(SHOW_STATE_IDS_OPTION);
         simulator.addSimulationListener(this);
         getJGraph().setToolTipEnabled(true);
+        initialise();
     }
 
     /**

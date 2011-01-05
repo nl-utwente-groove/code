@@ -69,13 +69,18 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
             boolean supportsSubtypes, Options options) {
         super(false);
         // right now we always want label panels; keep this option
-        boolean withLabelPanel = true;
         this.jGraph = jGraph;
-        this.labelTree = jGraph.initLabelTree(supportsSubtypes);
         this.options = options;
+        this.supportsSubtypes = supportsSubtypes;
         this.statusBar = withStatusBar ? new JLabel(" ") : null;
-        this.viewLabelListItem =
-            withLabelPanel ? this.createViewLabelListItem() : null;
+    }
+
+    /** 
+     * Initialises the GUI.
+     * Should be called immediately after the constructor.
+     */
+    public void initialise() {
+        boolean withLabelPanel = true;
         setLayout(new BorderLayout());
         this.setPane(withLabelPanel ? createSplitPane() : this.createSoloPane());
         if (this.statusBar != null) {
@@ -88,6 +93,21 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * Returns a menu item that allows to switch the label list view on and off.
      */
     public JMenuItem getViewLabelListItem() {
+        if (this.viewLabelListItem == null) {
+            this.viewLabelListItem = new JCheckBoxMenuItem("Label list", true);
+            this.viewLabelListItem.addItemListener(new ItemListener() {
+                public void itemStateChanged(ItemEvent evt) {
+                    if (evt.getStateChange() == ItemEvent.SELECTED) {
+                        setPane(createSplitPane());
+                        // splitEditorPane.revalidate();
+                    } else {
+                        setPane(createSoloPane());
+                        // realEditorPane.revalidate();
+                    }
+                    revalidate();
+                }
+            });
+        }
         return this.viewLabelListItem;
     }
 
@@ -100,6 +120,9 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
 
     /** Returns the label tree displayed on this panel. */
     public LabelTree getLabelTree() {
+        if (this.labelTree == null) {
+            this.labelTree = this.jGraph.initLabelTree(this.supportsSubtypes);
+        }
         return this.labelTree;
     }
 
@@ -145,7 +168,8 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
             cell = getJModel().getJCellForEdge((Edge<?>) elem);
         }
         if (cell != null) {
-            if (cell instanceof AspectJEdge && ((AspectJEdge) cell).isSourceLabel()) {
+            if (cell instanceof AspectJEdge
+                && ((AspectJEdge) cell).isSourceLabel()) {
                 cell = ((AspectJEdge) cell).getSourceVertex();
             }
             getJGraph().setSelectionCell(cell);
@@ -183,12 +207,12 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
             new JLabel(" " + Options.LABEL_PANE_TITLE + " ");
         labelPaneTitle.setAlignmentX(LEFT_ALIGNMENT);
         labelPaneTop.add(labelPaneTitle);
-        JToolBar labelTreeToolbar = this.labelTree.createToolBar();
+        JToolBar labelTreeToolbar = getLabelTree().createToolBar();
         if (labelTreeToolbar != null) {
             labelTreeToolbar.setAlignmentX(LEFT_ALIGNMENT);
             labelPaneTop.add(labelTreeToolbar);
         }
-        JScrollPane scrollPane = new JScrollPane(this.labelTree) {
+        JScrollPane scrollPane = new JScrollPane(getLabelTree()) {
             @Override
             public Dimension getMinimumSize() {
                 return new Dimension(MINIMUM_LABEL_PANE_WIDTH, 0);
@@ -207,26 +231,6 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     }
 
     /**
-     * Creates a menu item that allows to add the label list to the panel.
-     */
-    protected JMenuItem createViewLabelListItem() {
-        JCheckBoxMenuItem result = new JCheckBoxMenuItem("Label list", true);
-        result.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent evt) {
-                if (evt.getStateChange() == ItemEvent.SELECTED) {
-                    setPane(createSplitPane());
-                    // splitEditorPane.revalidate();
-                } else {
-                    setPane(createSoloPane());
-                    // realEditorPane.revalidate();
-                }
-                revalidate();
-            }
-        });
-        return result;
-    }
-
-    /**
      * Adds a given component as center component to the panel. Removes the
      * previous pane, if any, and revalidates the panel. The current pane is
      * stored in {@link #currentPane}.
@@ -238,11 +242,6 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
         add(editorPane, BorderLayout.CENTER);
         this.currentPane = editorPane;
         revalidate();
-    }
-
-    /** Returns the component inside the panel. */
-    protected JComponent getPane() {
-        return this.currentPane;
     }
 
     /**
@@ -348,8 +347,10 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * The {@link JGraph}on which this panel provides a view.
      */
     protected final JG jGraph;
+    /** Flag indicating that the label tree is to support subtypes. */
+    private final boolean supportsSubtypes;
     /** The label tree associated with this label pane. */
-    private final LabelTree labelTree;
+    private LabelTree labelTree;
     /** Options for this panel. */
     private final Options options;
     /** Change listener that calls {@link #refresh()} when activated. */
@@ -360,7 +361,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     private final JLabel statusBar;
 
     /** The menu item to switch the label list on and off. */
-    private final JMenuItem viewLabelListItem;
+    private JMenuItem viewLabelListItem;
 
     private final List<Pair<JMenuItem,ItemListener>> listeners =
         new LinkedList<Pair<JMenuItem,ItemListener>>();
