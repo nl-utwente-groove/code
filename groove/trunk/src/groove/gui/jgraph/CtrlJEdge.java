@@ -1,6 +1,5 @@
 package groove.gui.jgraph;
 
-import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.lts.GraphTransition;
@@ -12,13 +11,18 @@ import groove.util.Groove;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class CtrlJEdge extends GraphJEdge<CtrlState,CtrlTransition> {
+public class CtrlJEdge extends GraphJEdge {
     /**
      * Creates a new instance from a given edge (required to be a
      * {@link GraphTransition}).
      */
     CtrlJEdge(CtrlJModel jModel, CtrlTransition edge) {
         super(jModel, edge);
+    }
+
+    @Override
+    public CtrlTransition getEdge() {
+        return (CtrlTransition) super.getEdge();
     }
 
     @Override
@@ -51,7 +55,7 @@ public class CtrlJEdge extends GraphJEdge<CtrlState,CtrlTransition> {
     @Override
     protected AttributeMap createAttributes() {
         AttributeMap result;
-        if (!getEdge().label().getGuard().isEmpty()) {
+        if (!(getEdge()).label().getGuard().isEmpty()) {
             result = JAttr.CONTROL_FAILURE_EDGE_ATTR.clone();
         } else {
             result = JAttr.CONTROL_EDGE_ATTR.clone();

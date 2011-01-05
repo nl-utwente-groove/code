@@ -4,6 +4,7 @@ import static groove.gui.jgraph.JAttr.RULE_EDGE_ATTR;
 import static groove.view.aspect.AspectKind.ARGUMENT;
 import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.REMARK;
+import groove.graph.Edge;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.gui.Options;
@@ -30,8 +31,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Specialized j-edge for rule graphs, with its own tool tip text.
  */
-public class AspectJEdge extends GraphJEdge<AspectNode,AspectEdge> implements
-        AspectJCell {
+public class AspectJEdge extends GraphJEdge implements AspectJCell {
     /** Creates an uninitialised instance. */
     public AspectJEdge(AspectJModel jModel) {
         super(jModel);
@@ -51,6 +51,27 @@ public class AspectJEdge extends GraphJEdge<AspectNode,AspectEdge> implements
     @Override
     public AspectJModel getJModel() {
         return (AspectJModel) super.getJModel();
+    }
+
+    @Override
+    public AspectNode getSourceNode() {
+        return (AspectNode) super.getSourceNode();
+    }
+
+    @Override
+    public AspectNode getTargetNode() {
+        return (AspectNode) super.getTargetNode();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<AspectEdge> getEdges() {
+        return (Set<AspectEdge>) super.getEdges();
+    }
+
+    @Override
+    public AspectEdge getEdge() {
+        return (AspectEdge) super.getEdge();
     }
 
     /** Clears the errors and the aspect, in addition to calling the super method. */
@@ -73,13 +94,14 @@ public class AspectJEdge extends GraphJEdge<AspectNode,AspectEdge> implements
      * added equal those of this j-edge, and the superclass is also willing.
      */
     @Override
-    public boolean addEdge(AspectEdge edge) {
+    public boolean addEdge(Edge<?> edge) {
+        AspectEdge aspectEdge = (AspectEdge) edge;
         boolean first = getEdges().isEmpty();
         super.addEdge(edge);
-        this.errors.addAll(edge.getErrors());
+        this.errors.addAll(aspectEdge.getErrors());
         if (first) {
-            this.aspect = edge.getKind();
-        } else if (!edge.equalsAspects(getEdge())) {
+            this.aspect = aspectEdge.getKind();
+        } else if (!aspectEdge.equalsAspects(getEdge())) {
             this.errors.add(new FormatError(
                 "Conflicting aspects in edge labels %s and %s",
                 getEdge().label(), edge.label(), this));
@@ -133,12 +155,13 @@ public class AspectJEdge extends GraphJEdge<AspectNode,AspectEdge> implements
      * On demand prefixes the label with the edge's aspect values.
      */
     @Override
-    public StringBuilder getLine(AspectEdge edge) {
+    public StringBuilder getLine(Edge<?> edge) {
+        AspectEdge aspectEdge = (AspectEdge) edge;
         StringBuilder result = new StringBuilder();
-        result.append(edge.getDisplayLabel().text());
+        result.append(aspectEdge.getDisplayLabel().text());
         // add the level name, if not already shown as an aspect
         if (this.aspect.isRole()) {
-            String levelName = edge.getLevelName();
+            String levelName = aspectEdge.getLevelName();
             if (levelName != null && levelName.length() != 0) {
                 result.append(LEVEL_NAME_SEPARATOR + levelName);
             }
@@ -158,13 +181,14 @@ public class AspectJEdge extends GraphJEdge<AspectNode,AspectEdge> implements
     }
 
     @Override
-    public Set<? extends Label> getListLabels(AspectEdge edge) {
+    public Set<? extends Label> getListLabels(Edge<?> edge) {
+        AspectEdge aspectEdge = (AspectEdge) edge;
         Set<? extends Label> result;
-        Label label = edge.getRuleLabel();
+        Label label = aspectEdge.getRuleLabel();
         if (label != null && ((RuleLabel) label).isMatchable()) {
             result = ((RuleLabel) label).getMatchExpr().getTypeLabels();
         } else {
-            result = Collections.singleton(edge.getDisplayLabel());
+            result = Collections.singleton(aspectEdge.getDisplayLabel());
         }
         return result;
     }
@@ -192,10 +216,10 @@ public class AspectJEdge extends GraphJEdge<AspectNode,AspectEdge> implements
         }
         if (this.aspect.isRole()) {
             // we're in a rule graph; watch for parameters and variable nodes
-            return getTargetVertex().getNode().getAttrAspect().hasContent()
-                && !getTargetVertex().getNode().hasParam();
+            return getTargetNode().getAttrAspect().hasContent()
+                && !getTargetNode().hasParam();
         } else {
-            return getTargetVertex().getNode().getAttrKind().isTypedData();
+            return getTargetNode().getAttrKind().isTypedData();
         }
     }
 

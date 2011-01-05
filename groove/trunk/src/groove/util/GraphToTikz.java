@@ -74,7 +74,7 @@ public final class GraphToTikz {
         result.append(beginTikzFig());
 
         for (N node : graph.nodeSet()) {
-            GraphJVertex<N,E> vertex = model.getJCellForNode(node);
+            GraphJVertex vertex = model.getJCellForNode(node);
             model.synchroniseLayout(vertex);
             JVertexLayout layout = null;
             if (layoutMap != null) {
@@ -105,7 +105,7 @@ public final class GraphToTikz {
      * @return a StringBuilder filled with the Tikz string.
      */
     private static <N extends Node,E extends Edge<N>> StringBuilder convertNodeToTikzStr(
-            GraphJVertex<N,E> node, JVertexLayout layout, boolean showBackground) {
+            GraphJVertex node, JVertexLayout layout, boolean showBackground) {
 
         StringBuilder result = new StringBuilder();
 
@@ -160,8 +160,7 @@ public final class GraphToTikz {
             GraphJCell cell, JEdgeLayout layout, LayoutMap<N,E> layoutMap) {
 
         if (cell instanceof GraphJEdge) {
-            @SuppressWarnings("unchecked")
-            GraphJEdge<N,E> graphCell = (GraphJEdge<N,E>) cell;
+            GraphJEdge graphCell = (GraphJEdge) cell;
             return convertEdgeToTikzStr(graphCell, layout, layoutMap);
         } else {
             return new StringBuilder();
@@ -176,7 +175,7 @@ public final class GraphToTikz {
      * @return a StringBuilder filled with the Tikz string.
      */
     private static <N extends Node,E extends Edge<N>> StringBuilder convertEdgeToTikzStr(
-            GraphJEdge<N,E> edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap) {
+            GraphJEdge edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap) {
 
         StringBuilder result = new StringBuilder();
 
@@ -226,11 +225,11 @@ public final class GraphToTikz {
      * @param s a StringBuilder where the Tikz string will be appended.
      */
     private static <N extends Node,E extends Edge<N>> void appendDefaultLayout(
-            GraphJEdge<N,E> edge, LayoutMap<N,E> layoutMap, String labStyle,
+            GraphJEdge edge, LayoutMap<N,E> layoutMap, String labStyle,
             StringBuilder s) {
 
-        GraphJVertex<N,E> srcVertex = edge.getSourceVertex();
-        GraphJVertex<N,E> tgtVertex = edge.getTargetVertex();
+        GraphJVertex srcVertex = edge.getSourceVertex();
+        GraphJVertex tgtVertex = edge.getTargetVertex();
 
         appendSourceNode(srcVertex, tgtVertex, layoutMap, s);
         s.append(encloseSpace(DOUBLE_DASH));
@@ -251,11 +250,11 @@ public final class GraphToTikz {
      * @param s a StringBuilder where the Tikz string will be appended.
      */
     private static <N extends Node,E extends Edge<N>> void appendOrthogonalLayout(
-            GraphJEdge<N,E> edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
+            GraphJEdge edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
             String labStyle, String connection, StringBuilder s) {
 
-        GraphJVertex<N,E> srcVertex = edge.getSourceVertex();
-        GraphJVertex<N,E> tgtVertex = edge.getTargetVertex();
+        GraphJVertex srcVertex = edge.getSourceVertex();
+        GraphJVertex tgtVertex = edge.getTargetVertex();
         List<Point2D> points = layout.getPoints();
 
         if (points.size() == 2) {
@@ -306,7 +305,7 @@ public final class GraphToTikz {
      * @param s a StringBuilder where the Tikz string will be appended.
      */
     private static <N extends Node,E extends Edge<N>> void appendOrthogonalLayout(
-            GraphJEdge<N,E> edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
+            GraphJEdge edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
             String labStyle, StringBuilder s) {
         appendOrthogonalLayout(edge, layout, layoutMap, labStyle, DOUBLE_DASH,
             s);
@@ -325,11 +324,11 @@ public final class GraphToTikz {
      * @param s a StringBuilder where the Tikz string will be appended.
      */
     private static <N extends Node,E extends Edge<N>> void appendBezierLayout(
-            GraphJEdge<N,E> edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
+            GraphJEdge edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
             String labStyle, StringBuilder s) {
 
-        GraphJVertex<N,E> srcVertex = edge.getSourceVertex();
-        GraphJVertex<N,E> tgtVertex = edge.getTargetVertex();
+        GraphJVertex srcVertex = edge.getSourceVertex();
+        GraphJVertex tgtVertex = edge.getTargetVertex();
         List<Point2D> points = layout.getPoints();
         boolean isLoop = srcVertex.getNode().equals(tgtVertex.getNode());
 
@@ -391,7 +390,7 @@ public final class GraphToTikz {
      * @param s a StringBuilder where the Tikz string will be appended.
      */
     private static <N extends Node,E extends Edge<N>> void appendSplineLayout(
-            GraphJEdge<N,E> edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
+            GraphJEdge edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
             String labStyle, StringBuilder s) {
 
         System.err.println("Sorry, the SPLINE line style is not yet "
@@ -410,7 +409,7 @@ public final class GraphToTikz {
      * @param s a StringBuilder where the Tikz string will be appended.
      */
     private static <N extends Node,E extends Edge<N>> void appendManhattanLayout(
-            GraphJEdge<N,E> edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
+            GraphJEdge edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
             String labStyle, StringBuilder s) {
         appendOrthogonalLayout(edge, layout, layoutMap, labStyle, ANGLE, s);
     }
@@ -421,7 +420,7 @@ public final class GraphToTikz {
      * Appends the node name to the given string builder.
      */
     private static <N extends Node,E extends Edge<N>> void appendNode(
-            GraphJVertex<N,E> node, StringBuilder s) {
+            GraphJVertex node, StringBuilder s) {
         s.append(encloseSpace(enclosePar(node.getNode().toString())));
     }
 
@@ -431,7 +430,7 @@ public final class GraphToTikz {
      * with a node anchor that keeps the edge horizontal or vertical.
      */
     private static <N extends Node,E extends Edge<N>> void appendNode(
-            GraphJVertex<N,E> node, Point2D point, LayoutMap<N,E> layoutMap,
+            GraphJVertex node, Point2D point, LayoutMap<N,E> layoutMap,
             StringBuilder s) {
 
         int side = getSide(node, point, layoutMap);
@@ -452,11 +451,13 @@ public final class GraphToTikz {
      * horizontal or vertical.
      */
     private static <N extends Node,E extends Edge<N>> void appendSourceNode(
-            GraphJVertex<N,E> srcNode, GraphJVertex<N,E> tgtNode,
+            GraphJVertex srcNode, GraphJVertex tgtNode,
             LayoutMap<N,E> layoutMap, StringBuilder s) {
 
         if (layoutMap != null) {
-            JVertexLayout tgtLayout = layoutMap.getLayout(tgtNode.getNode());
+            @SuppressWarnings("unchecked")
+            JVertexLayout tgtLayout =
+                layoutMap.getLayout((N) tgtNode.getNode());
             if (tgtLayout != null) {
                 Rectangle2D tgtBounds = tgtLayout.getBounds();
                 Point2D tgtCenter =
@@ -476,12 +477,16 @@ public final class GraphToTikz {
      * horizontal or vertical.
      */
     private static <N extends Node,E extends Edge<N>> void appendTargetNode(
-            GraphJVertex<N,E> srcNode, GraphJVertex<N,E> tgtNode,
+            GraphJVertex srcNode, GraphJVertex tgtNode,
             LayoutMap<N,E> layoutMap, StringBuilder s) {
 
         if (layoutMap != null) {
-            JVertexLayout srcLayout = layoutMap.getLayout(srcNode.getNode());
-            JVertexLayout tgtLayout = layoutMap.getLayout(tgtNode.getNode());
+            @SuppressWarnings("unchecked")
+            JVertexLayout srcLayout =
+                layoutMap.getLayout((N) srcNode.getNode());
+            @SuppressWarnings("unchecked")
+            JVertexLayout tgtLayout =
+                layoutMap.getLayout((N) tgtNode.getNode());
             if (srcLayout != null && tgtLayout != null) {
                 Rectangle2D tgtBounds = tgtLayout.getBounds();
                 Point2D tgtCenter =
@@ -503,9 +508,8 @@ public final class GraphToTikz {
         }
     }
 
-    private static <N extends Node,E extends Edge<N>> void appendEdgeLabel(
-            GraphJEdge<N,E> edge, StringBuilder s) {
-        E e = edge.getEdge();
+    private static void appendEdgeLabel(GraphJEdge edge, StringBuilder s) {
+        Edge<?> e = edge.getEdge();
         if (e instanceof AspectEdge) {
             RuleLabel ruleLabel = ((AspectEdge) e).getRuleLabel();
             if (ruleLabel != null && ruleLabel.isMatchable()
@@ -525,7 +529,7 @@ public final class GraphToTikz {
      * Appends the edge label along the path that is being drawn.
      */
     private static <N extends Node,E extends Edge<N>> void appendEdgeLabelInPath(
-            GraphJEdge<N,E> edge, String labStyle, StringBuilder s) {
+            GraphJEdge edge, String labStyle, StringBuilder s) {
 
         if (!labStyle.equals(INHERITANCE_LABEL_STYLE)) {
             s.append(NODE);
@@ -539,7 +543,7 @@ public final class GraphToTikz {
      * placement requirements.
      */
     private static <N extends Node,E extends Edge<N>> void appendEdgeLabel(
-            GraphJEdge<N,E> edge, JEdgeLayout layout, String labStyle,
+            GraphJEdge edge, JEdgeLayout layout, String labStyle,
             List<Point2D> points, StringBuilder s) {
 
         if (!labStyle.equals(INHERITANCE_LABEL_STYLE)) {
@@ -709,13 +713,14 @@ public final class GraphToTikz {
      * @return true if the edge is horizontal or vertical and false otherwise.
      */
     private static <N extends Node,E extends Edge<N>> boolean isHorizontalOrVertical(
-            List<Point2D> points, int index, GraphJVertex<N,E> tgtVertex,
+            List<Point2D> points, int index, GraphJVertex tgtVertex,
             LayoutMap<N,E> layoutMap) {
 
         boolean result = false;
 
         if (layoutMap != null) {
-            JVertexLayout layout = layoutMap.getLayout(tgtVertex.getNode());
+            @SuppressWarnings("unchecked")
+            JVertexLayout layout = layoutMap.getLayout((N) tgtVertex.getNode());
             if (layout != null) {
                 Rectangle2D tgtBounds = layout.getBounds();
                 if (points.get(index).getY() == points.get(index + 1).getY()
@@ -737,11 +742,12 @@ public final class GraphToTikz {
      *         4 if it lies south, and 0 if its outside a proper position.
      */
     private static <N extends Node,E extends Edge<N>> int getSide(
-            GraphJVertex<N,E> vertex, Point2D point, LayoutMap<N,E> layoutMap) {
+            GraphJVertex vertex, Point2D point, LayoutMap<N,E> layoutMap) {
 
         int side = 0;
         if (layoutMap != null) {
-            JVertexLayout layout = layoutMap.getLayout(vertex.getNode());
+            @SuppressWarnings("unchecked")
+            JVertexLayout layout = layoutMap.getLayout((N) vertex.getNode());
             if (layout != null) {
                 Rectangle2D bounds = layout.getBounds();
                 side = getSide(bounds, point);
@@ -1031,7 +1037,7 @@ public final class GraphToTikz {
      * @return a string with all the Tikz styles to be used.
      */
     private static <N extends Node,E extends Edge<N>> String convertStyles(
-            GraphJVertex<N,E> node, boolean showBackground) {
+            GraphJVertex node, boolean showBackground) {
 
         if (node instanceof CtrlJVertex) {
             // Node from control automaton.
@@ -1048,8 +1054,8 @@ public final class GraphToTikz {
         ArrayList<String> styles = new ArrayList<String>();
 
         AspectKind nodeKind =
-            node instanceof AspectJVertex ? ((AspectJVertex) node).getNode().getKind()
-                    : NONE;
+            node instanceof AspectJVertex
+                    ? ((AspectJVertex) node).getNode().getKind() : NONE;
         switch (nodeKind) {
         case ERASER:
             // Eraser node
@@ -1183,7 +1189,7 @@ public final class GraphToTikz {
      *         second one is the label style.
      */
     private static <N extends Node,E extends Edge<N>> ArrayList<String> convertStyles(
-            GraphJEdge<N,E> edge) {
+            GraphJEdge edge) {
 
         if (edge instanceof CtrlJEdge) {
             return convertStyles((CtrlJEdge) edge);
@@ -1191,7 +1197,8 @@ public final class GraphToTikz {
         ArrayList<String> styles = new ArrayList<String>();
 
         AspectKind edgeKind =
-            edge instanceof AspectJEdge ? ((AspectJEdge) edge).getEdge().getKind() : NONE;
+            edge instanceof AspectJEdge
+                    ? ((AspectJEdge) edge).getEdge().getKind() : NONE;
         switch (edgeKind) {
         case ERASER:
             styles.add(ERASER_EDGE_STYLE);

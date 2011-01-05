@@ -69,7 +69,7 @@ public class JVertexView extends VertexView {
      * @param jNode the node underlying the view
      * @param jGraph the graph on which the node is to be displayed
      */
-    public JVertexView(GraphJVertex<?,?> jNode, JGraph jGraph) {
+    public JVertexView(GraphJVertex jNode, JGraph jGraph) {
         super(jNode);
         this.jGraph = jGraph;
     }
@@ -78,8 +78,8 @@ public class JVertexView extends VertexView {
      * Specialises the return type.
      */
     @Override
-    public GraphJVertex<?,?> getCell() {
-        return (GraphJVertex<?,?>) super.getCell();
+    public GraphJVertex getCell() {
+        return (GraphJVertex) super.getCell();
     }
 
     /**

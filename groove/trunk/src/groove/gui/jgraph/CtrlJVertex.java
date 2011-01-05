@@ -1,7 +1,6 @@
 package groove.gui.jgraph;
 
 import groove.control.CtrlState;
-import groove.control.CtrlTransition;
 import groove.control.CtrlVar;
 
 import java.util.List;
@@ -13,7 +12,7 @@ import org.jgraph.graph.AttributeMap;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class CtrlJVertex extends GraphJVertex<CtrlState,CtrlTransition> {
+public class CtrlJVertex extends GraphJVertex {
     /**
      * Creates a new instance for a given node (required to be a
      * {@link CtrlState}) in an LTS model.
@@ -33,7 +32,7 @@ public class CtrlJVertex extends GraphJVertex<CtrlState,CtrlTransition> {
     @Override
     public java.util.List<StringBuilder> getLines() {
         List<StringBuilder> result = super.getLines();
-        List<CtrlVar> boundVars = getNode().getBoundVars();
+        List<CtrlVar> boundVars = ((CtrlState) getNode()).getBoundVars();
         if (boundVars.size() > 0) {
             StringBuilder sb = new StringBuilder();
             sb.append(boundVars.toString());
