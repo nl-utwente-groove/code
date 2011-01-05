@@ -16,9 +16,9 @@
  */
 package groove.gui.layout;
 
-import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.GraphJEdge;
+import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.JVertex;
 import groove.util.CollectionOfCollections;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
@@ -126,14 +126,16 @@ public class ForestLayouter extends AbstractLayouter {
             // add the layoutable to the leaves and the branch map
             Set<Layoutable> branchSet = new LinkedHashSet<Layoutable>();
             this.branchMap.put(cellLayoutable, branchSet);
-            if (key instanceof JVertex && ((JVertex) key).isVisible()) {
+            if (key instanceof GraphJVertex<?,?>
+                && ((GraphJVertex<?,?>) key).isVisible()) {
                 // Initialise the incoming edge count
                 int inEdgeCount = 0;
                 // calculate the incoming edge count and outgoing edge map
                 // iterate over the incident edges
-                Iterator<?> edgeIter = ((JVertex) key).getPort().edges();
+                Iterator<?> edgeIter =
+                    ((GraphJVertex<?,?>) key).getPort().edges();
                 while (edgeIter.hasNext()) {
-                    JEdge edge = (JEdge) edgeIter.next();
+                    GraphJEdge<?,?> edge = (GraphJEdge<?,?>) edgeIter.next();
                     // it's possible that the edge is displayed as node label
                     // even though it has an explicit layout
                     EdgeView edgeView =
@@ -142,7 +144,7 @@ public class ForestLayouter extends AbstractLayouter {
                     if (edgeView != null && edge.isVisible()
                         && !edge.isGrayedOut()) {
                         // the edge source is a node for sure
-                        JVertex sourceVertex = edge.getSourceVertex();
+                        GraphJVertex<?,?> sourceVertex = edge.getSourceVertex();
                         // the edge target may be a point only
                         if (sourceVertex.equals(key)) {
                             // add all the points on the edge to the branches of
@@ -150,7 +152,8 @@ public class ForestLayouter extends AbstractLayouter {
                             // source node
                             // as well as its end node (if any)
                             List<?> points = edgeView.getPoints();
-                            JVertex targetVertex = edge.getTargetVertex();
+                            GraphJVertex<?,?> targetVertex =
+                                edge.getTargetVertex();
                             Iterator<?> pointsIter = points.iterator();
                             // the first point is the (port of the) source node
                             // itself; skip it
@@ -199,17 +202,19 @@ public class ForestLayouter extends AbstractLayouter {
             Layoutable cellLayoutable = cellLayoutableEntry.getValue();
             // add the layoutable to the leaves and the branch map
             Set<Layoutable> branchSet = new LinkedHashSet<Layoutable>();
-            if (key instanceof JVertex && ((JVertex) key).isVisible()) {
+            if (key instanceof GraphJVertex<?,?>
+                && ((GraphJVertex<?,?>) key).isVisible()) {
                 // Initialise the incoming edge count
                 int inEdgeCount = 0;
                 // calculate the incoming edge count and outgoing edge map
                 // iterate over the incident edges
-                Iterator<?> edgeIter = ((JVertex) key).getPort().edges();
+                Iterator<?> edgeIter =
+                    ((GraphJVertex<?,?>) key).getPort().edges();
                 while (edgeIter.hasNext()) {
-                    JEdge edge = (JEdge) edgeIter.next();
+                    GraphJEdge<?,?> edge = (GraphJEdge<?,?>) edgeIter.next();
                     if (edge.isVisible() && !edge.isGrayedOut()) {
                         // the edge source is a node for sure
-                        JVertex sourceVertex = edge.getSourceVertex();
+                        GraphJVertex<?,?> sourceVertex = edge.getSourceVertex();
                         // the edge target may be a point only
                         if (sourceVertex.equals(key)) {
                             // add all the points on the edge to the branches of
@@ -219,7 +224,8 @@ public class ForestLayouter extends AbstractLayouter {
                             List<?> points =
                                 ((EdgeView) this.jgraph.getGraphLayoutCache().getMapping(
                                     edge, false)).getPoints();
-                            JVertex targetVertex = edge.getTargetVertex();
+                            GraphJVertex<?,?> targetVertex =
+                                edge.getTargetVertex();
                             Iterator<?> pointsIter = points.iterator();
                             // the first point is the (port of the) source node
                             // itself; skip it

@@ -19,13 +19,13 @@ package groove.gui;
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import groove.graph.Element;
-import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.lts.GTS;
+import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.GTSAdapter;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.view.StoredGrammarView;
@@ -268,7 +268,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         if (this.isVisible) {
             getSimulator().setGraphPanel(this);
         }
-        Set<JCell> jCells = new HashSet<JCell>();
+        Set<GraphJCell> jCells = new HashSet<GraphJCell>();
         for (GraphState counterExample : counterExamples) {
             jCells.add(getJModel().getJCellForNode(counterExample));
         }
@@ -339,7 +339,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
          */
         @Override
         public void closeUpdate(GTS lts, GraphState closed) {
-            JCell jCell = getJModel().getJCellForNode(closed);
+            GraphJCell jCell = getJModel().getJCellForNode(closed);
             // during automatic generation, we do not always have vertices for
             // all states
             if (jCell != null) {

@@ -63,7 +63,7 @@ public class LTSJGraph extends JGraph {
         setEnabled(false);
     }
 
-    /** Specialises the return type to a {@link JModel}. */
+    /** Specialises the return type to a {@link LTSJModel}. */
     @Override
     public LTSJModel getModel() {
         return (LTSJModel) this.graphModel;
@@ -73,7 +73,7 @@ public class LTSJGraph extends JGraph {
      * Scrolls the view to a given node or edge of the underlying graph model.
      */
     public void scrollTo(Element nodeOrEdge) {
-        JCell cell = getModel().getJCell(nodeOrEdge);
+        GraphJCell cell = getModel().getJCell(nodeOrEdge);
         assert cell != null;
         Rectangle2D bounds = getCellBounds(cell);
         if (bounds != null) {

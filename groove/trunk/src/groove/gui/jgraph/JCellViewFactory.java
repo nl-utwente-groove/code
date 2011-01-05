@@ -16,8 +16,10 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.Edge;
+import groove.graph.Node;
+
 import org.jgraph.graph.DefaultCellViewFactory;
-import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.VertexView;
 
 /**
@@ -27,7 +29,8 @@ import org.jgraph.graph.VertexView;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class JCellViewFactory extends DefaultCellViewFactory {
+public class JCellViewFactory<N extends Node,E extends Edge<N>> extends
+        DefaultCellViewFactory {
     /**
      * Constructs a factory for creating views upon a particular {@link JGraph}.
      * @param jGraph the graph on which the views are to be displayed.
@@ -38,13 +41,14 @@ public class JCellViewFactory extends DefaultCellViewFactory {
 
     /**
      * This implementation creates {@link JVertexView} if the cell to be viewed
-     * is a {@link JVertex}. Otherwise, the method delegates to the super
+     * is a {@link GraphJVertex}. Otherwise, the method delegates to the super
      * class.
      */
     @Override
     protected VertexView createVertexView(Object cell) {
-        if (cell instanceof JVertex) {
-            JVertexView result = new JVertexView((JVertex) cell, this.jGraph);
+        if (cell instanceof GraphJVertex) {
+            JVertexView result =
+                new JVertexView((GraphJVertex<?,?>) cell, this.jGraph);
             // the following is apparently necessary
             // to initialise the autosize correctly
             result.refresh(this.jGraph.getGraphLayoutCache(),
@@ -58,15 +62,12 @@ public class JCellViewFactory extends DefaultCellViewFactory {
 
     /**
      * This implementation creates {@link JEdgeView} if the cell to be viewed is
-     * a {@link JEdge}. Otherwise, the method delegates to the super class.
+     * a {@link GraphJEdge}. Otherwise, the method delegates to the super class.
      */
     @Override
-    protected EdgeView createEdgeView(Object edge) {
-        if (edge instanceof JEdge) {
-            return new JEdgeView((JEdge) edge, this.jGraph);
-        } else {
-            return super.createEdgeView(edge);
-        }
+    protected JEdgeView createEdgeView(Object edge) {
+        assert edge instanceof GraphJEdge;
+        return new JEdgeView((GraphJEdge<?,?>) edge, this.jGraph);
     }
 
     /**

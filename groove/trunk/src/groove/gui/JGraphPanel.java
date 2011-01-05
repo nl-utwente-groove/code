@@ -19,11 +19,10 @@ package groove.gui;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
-import groove.gui.jgraph.AJEdge;
+import groove.gui.jgraph.AspectJEdge;
+import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.JModel;
 import groove.util.Pair;
 
 import java.awt.BorderLayout;
@@ -105,10 +104,10 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     }
 
     /**
-     * Returns the underlying {@link JModel}, or <code>null</code> if the jgraph
+     * Returns the underlying {@link GraphJModel}, or <code>null</code> if the jgraph
      * is currently disabled.
      */
-    public JModel getJModel() {
+    public GraphJModel<?,?> getJModel() {
         if (isEnabled()) {
             return this.jGraph.getModel();
         } else {
@@ -139,20 +138,17 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * @return {@code true} if {@code elem} occurs in the {@link GraphJModel}.
      */
     public boolean selectJCell(Element elem) {
-        JCell cell = null;
-        if (getJModel() instanceof GraphJModel) {
-            GraphJModel<?,?> graphJModel = (GraphJModel<?,?>) getJModel();
-            if (elem instanceof Node) {
-                cell = graphJModel.getJCellForNode((Node) elem);
-            } else if (elem instanceof Edge) {
-                cell = graphJModel.getJCellForEdge((Edge<?>) elem);
+        GraphJCell cell = null;
+        if (elem instanceof Node) {
+            cell = getJModel().getJCellForNode((Node) elem);
+        } else if (elem instanceof Edge) {
+            cell = getJModel().getJCellForEdge((Edge<?>) elem);
+        }
+        if (cell != null) {
+            if (cell instanceof AspectJEdge && ((AspectJEdge) cell).isSourceLabel()) {
+                cell = ((AspectJEdge) cell).getSourceVertex();
             }
-            if (cell != null) {
-                if (cell instanceof AJEdge && ((AJEdge) cell).isSourceLabel()) {
-                    cell = ((AJEdge) cell).getSourceVertex();
-                }
-                getJGraph().setSelectionCell(cell);
-            }
+            getJGraph().setSelectionCell(cell);
         }
         return cell != null;
     }
@@ -299,10 +295,10 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**
      * Refreshes everything on the panel, for instance in reaction to a change
      * in one of the visualisation options. This implementation calls
-     * {@link JModel#refresh()} and {@link #refreshStatus()}.
+     * {@link GraphJModel#refresh()} and {@link #refreshStatus()}.
      */
     protected void refresh() {
-        JModel jModel = getJModel();
+        GraphJModel<?,?> jModel = getJModel();
         getJGraph().getGraphLayoutCache().setModel(jModel);
         //        if (jModel != null) {
         //            jModel.refresh();

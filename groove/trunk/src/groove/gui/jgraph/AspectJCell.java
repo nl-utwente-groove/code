@@ -17,17 +17,15 @@
 package groove.gui.jgraph;
 
 import groove.graph.GraphRole;
-import groove.view.aspect.AspectEdge;
-import groove.view.aspect.AspectNode;
 
 /**
- * Instantiation of a {@link JCell} with an {@link StringObject}.
+ * Instantiation of a {@link GraphJCell} with an {@link StringObject}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface AJCell extends GraphJCell<AspectNode,AspectEdge> {
+public interface AspectJCell extends GraphJCell {
     /** Returns the user object of this cell, with the given type. */
-    AJObject getUserObject();
+    AspectJObject getUserObject();
 
     /** Sets the user object to a given value. */
     void setUserObject(Object value);

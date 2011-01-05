@@ -69,7 +69,7 @@ public class JVertexView extends VertexView {
      * @param jNode the node underlying the view
      * @param jGraph the graph on which the node is to be displayed
      */
-    public JVertexView(JVertex jNode, JGraph jGraph) {
+    public JVertexView(GraphJVertex<?,?> jNode, JGraph jGraph) {
         super(jNode);
         this.jGraph = jGraph;
     }
@@ -78,8 +78,8 @@ public class JVertexView extends VertexView {
      * Specialises the return type.
      */
     @Override
-    public JVertex getCell() {
-        return (JVertex) super.getCell();
+    public GraphJVertex<?,?> getCell() {
+        return (GraphJVertex<?,?>) super.getCell();
     }
 
     /**
@@ -108,7 +108,7 @@ public class JVertexView extends VertexView {
     /**
      * Retrieves the HTML text for the vertex, and adapts the text colour to the
      * line colour if the line colour is not black.
-     * @see JVertex#getText()
+     * @see GraphJVertex#getText()
      */
     private String computeText() {
         StringBuilder result = new StringBuilder(getCell().getText());
@@ -129,8 +129,8 @@ public class JVertexView extends VertexView {
      */
     private int getVertexShape() {
         AspectNode node = null;
-        if (getCell() instanceof AJVertex) {
-            node = ((AJVertex) getCell()).getNode();
+        if (getCell() instanceof AspectJVertex) {
+            node = ((AspectJVertex) getCell()).getNode();
         }
         AspectKind attrKind =
             node == null ? AspectKind.NONE : node.getAttrKind();

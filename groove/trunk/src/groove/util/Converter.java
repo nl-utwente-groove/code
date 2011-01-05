@@ -23,7 +23,6 @@ import groove.graph.Node;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.JModel;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Color;
@@ -159,8 +158,7 @@ public class Converter {
     /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
     static public <N extends Node,E extends Edge<N>> void graphToTikz(
             JGraph graph, PrintWriter writer) {
-        JModel model = graph.getModel();
-        GraphJModel<?,?> graphModel = (GraphJModel<?,?>) model;
+        GraphJModel<?,?> graphModel = graph.getModel();
         writer.print(GraphToTikz.convertGraphToTikzStr(graphModel));
     }
 

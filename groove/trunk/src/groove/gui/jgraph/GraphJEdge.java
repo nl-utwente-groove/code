@@ -16,10 +16,14 @@
  */
 package groove.gui.jgraph;
 
+import static groove.util.Converter.HTML_TAG;
+import static groove.util.Converter.STRONG_TAG;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.util.Converter;
+import groove.util.Groove;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,18 +32,21 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.jgraph.graph.DefaultEdge;
+import org.jgraph.graph.DefaultPort;
+
 /**
  * Extends DefaultEdge to store a collection of graph Edges. The graph edges are
  * stored as a Set in the user object. In the latter case, toString() the user
  * object is the empty string.
  */
-public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
-        implements GraphJCell<N,E> {
+public class GraphJEdge<N extends Node,E extends Edge<N>> extends DefaultEdge
+        implements GraphJCell {
     /**
      * Constructs an uninitialised model edge.
      */
     GraphJEdge(GraphJModel<N,E> jModel) {
-        super(jModel);
+        this.jModel = jModel;
     }
 
     /**
@@ -47,17 +54,34 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
      * @param edge the underlying graph edge of this model edge.
      */
     GraphJEdge(GraphJModel<N,E> jModel, E edge) {
-        super(jModel);
+        this(jModel);
         this.source = edge.source();
         this.target = edge.target();
         this.edges.add(edge);
     }
 
-    /** Returns the {@link JModel} associated with this {@link JEdge}. */
-    @SuppressWarnings("unchecked")
+    public GraphJModel<?,?> getJModel() {
+        return this.jModel;
+    }
+
+    /**
+     * This implementation delegates the method to the user object.
+     */
+    public String getText() {
+        StringBuilder result = new StringBuilder();
+        for (StringBuilder line : getLines()) {
+            if (result.length() > 0) {
+                result.append(PRINT_SEPARATOR);
+            }
+            result.append(line);
+        }
+        return result.toString();
+    }
+
     @Override
-    public GraphJModel<N,E> getJModel() {
-        return (GraphJModel<N,E>) super.getJModel();
+    public String toString() {
+        return String.format("%s with labels %s", getClass().getName(),
+            getListLabels());
     }
 
     /** 
@@ -99,6 +123,70 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
     }
 
     /**
+     * Returns the tool tip text for this edge.
+     */
+    public String getToolTipText() {
+        return HTML_TAG.on(getEdgeDescription()).toString(); // +
+        // getLabelDescription());
+    }
+
+    @Override
+    public void refreshAttributes() {
+        createAttributes(getJModel());
+    }
+
+    final public AttributeMap createAttributes(GraphJModel<?,?> jModel) {
+        AttributeMap result = createAttributes();
+        if (isGrayedOut()) {
+            result.applyMap(JAttr.GRAYED_OUT_ATTR);
+        }
+        if (getAttributes() != null) {
+            getAttributes().applyMap(result);
+        }
+        return result;
+    }
+
+    /**
+     * Callback method for creating the core attributes.
+     * These might be modified by other parameters; don't call this
+     * method directly.
+     */
+    protected AttributeMap createAttributes() {
+        return JAttr.DEFAULT_EDGE_ATTR.clone();
+    }
+
+    @Override
+    final public boolean isGrayedOut() {
+        return this.grayedOut;
+    }
+
+    @Override
+    final public boolean setGrayedOut(boolean grayedOut) {
+        boolean result = grayedOut != this.grayedOut;
+        if (result) {
+            this.grayedOut = grayedOut;
+            refreshAttributes();
+        }
+        return result;
+    }
+
+    @Override
+    public final boolean isEmphasised() {
+        return this.emphasised;
+    }
+
+    @Override
+    public final boolean setEmphasised(boolean emphasised) {
+        boolean oldEmphasised = this.emphasised;
+        this.emphasised = emphasised;
+        return oldEmphasised != emphasised;
+    }
+
+    public boolean hasError() {
+        return false;
+    }
+
+    /**
      * Returns <code>true</code> if the super method does so, and the edge has
      * at least one non-filtered list label, and all end nodes are visible.
      */
@@ -134,21 +222,23 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
     }
 
     /**
-     * Specialises the return type.
+     * Returns the j-vertex that is the parent of the source port of this
+     * j-edge.
      */
     @SuppressWarnings("unchecked")
-    @Override
     public GraphJVertex<N,E> getSourceVertex() {
-        return (GraphJVertex<N,E>) super.getSourceVertex();
+        DefaultPort source = (DefaultPort) getSource();
+        return source == null ? null : (GraphJVertex<N,E>) source.getParent();
     }
 
     /**
-     * Specialises the return type.
+     * Returns the j-vertex that is the parent of the target port of this
+     * j-edge.
      */
     @SuppressWarnings("unchecked")
-    @Override
     public GraphJVertex<N,E> getTargetVertex() {
-        return (GraphJVertex<N,E>) super.getTargetVertex();
+        DefaultPort target = (DefaultPort) getTarget();
+        return target == null ? null : (GraphJVertex<N,E>) target.getParent();
     }
 
     /**
@@ -168,7 +258,7 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
     /**
      * This implementation calls {@link #getLine(Edge)} on all edges in
      * {@link #getEdges()} that are not being filtered by the model
-     * according to {@link JModel#isFiltering(Label)}.
+     * according to {@link GraphJModel#isFiltering(Label)}.
      */
     public List<StringBuilder> getLines() {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
@@ -224,9 +314,13 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
         return Collections.singleton(edge.label());
     }
 
-    @Override
     StringBuilder getEdgeDescription() {
-        StringBuilder result = super.getEdgeDescription();
+        StringBuilder result = getEdgeKindDescription();
+        if (getListLabels().size() > 1) {
+            Converter.toUppercase(result, false);
+            result.insert(0, "Multiple ");
+            result.append("s");
+        }
         String sourceIdentity = getSourceVertex().getNodeIdentity();
         if (sourceIdentity != null) {
             result.append(" from ");
@@ -240,10 +334,49 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends JEdge
         return result;
     }
 
+    /**
+     * Callback method from {@link #getEdgeDescription()} to describe the kind
+     * of edge.
+     */
+    StringBuilder getEdgeKindDescription() {
+        return new StringBuilder("Graph edge");
+    }
+
+    /**
+     * Callback method from {@link #getToolTipText()} to describe the labels on
+     * this edge.
+     */
+    String getLabelDescription() {
+        StringBuffer result = new StringBuffer();
+        String[] displayedLabels = new String[getListLabels().size()];
+        int labelIndex = 0;
+        for (Object label : getListLabels()) {
+            displayedLabels[labelIndex] = STRONG_TAG.on(label.toString(), true);
+            labelIndex++;
+        }
+        if (displayedLabels.length == 0) {
+            result.append(" (unlabelled)");
+        } else {
+            result.append(", labelled ");
+            result.append(Groove.toString(displayedLabels, "", "", ", ",
+                " and "));
+        }
+        return result.toString();
+    }
+
     /** Source node of the underlying graph edges. */
     private N source;
     /** Target node of the underlying graph edges. */
     private N target;
     /** Set of graph edges mapped to this JEdge. */
     private Set<E> edges = new TreeSet<E>();
+
+    private final GraphJModel<?,?> jModel;
+    private boolean grayedOut;
+    private boolean emphasised;
+
+    /**
+     * The string used to separate arguments when preparing for editing.
+     */
+    static public final String PRINT_SEPARATOR = ", ";
 }

@@ -132,7 +132,7 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
      * @param trans the new active transition
      */
     public void setActive(GraphState state, GraphTransition trans) {
-        Set<JCell> changedCells = new HashSet<JCell>();
+        Set<GraphJCell> changedCells = new HashSet<GraphJCell>();
         GraphTransition previousTrans = this.activeTransition;
         if (previousTrans != trans) {
             this.activeTransition = trans;
@@ -159,13 +159,13 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
             if (previousState != null) {
                 LTSJVertex jCell = (LTSJVertex) getJCellForNode(previousState);
                 if (jCell.setActive(false)) {
-                    changedCells.add(getJCellForNode(previousState));
+                    changedCells.add(jCell);
                 }
             }
             if (state != null) {
                 LTSJVertex jCell = (LTSJVertex) getJCellForNode(state);
                 if (jCell.setActive(true)) {
-                    changedCells.add(getJCellForNode(state));
+                    changedCells.add(jCell);
                 }
             }
         }

@@ -30,9 +30,9 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Specialized j-edge for rule graphs, with its own tool tip text.
  */
-public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell {
+public class AspectJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AspectJCell {
     /** Creates an uninitialised instance. */
-    public AJEdge(AJModel jModel) {
+    public AspectJEdge(AspectJModel jModel) {
         super(jModel);
         setUserObject(null);
         this.aspect = NONE;
@@ -40,7 +40,7 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
     }
 
     /** Creates a j-edge on the basis of a given (aspectual) edge. */
-    public AJEdge(AJModel jModel, AspectEdge edge) {
+    public AspectJEdge(AspectJModel jModel, AspectEdge edge) {
         super(jModel, edge);
         setUserObject(null);
         this.aspect = edge.getKind();
@@ -48,8 +48,8 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
     }
 
     @Override
-    public AJModel getJModel() {
-        return (AJModel) super.getJModel();
+    public AspectJModel getJModel() {
+        return (AspectJModel) super.getJModel();
     }
 
     /** Clears the errors and the aspect, in addition to calling the super method. */
@@ -61,8 +61,8 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
     }
 
     @Override
-    public AJEdge clone() {
-        AJEdge result = (AJEdge) super.clone();
+    public AspectJEdge clone() {
+        AspectJEdge result = (AspectJEdge) super.clone();
         result.errors = new ArrayList<FormatError>();
         return result;
     }
@@ -98,8 +98,8 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
         } else {
             result.append(super.getEdgeDescription());
         }
-        if (AJModel.ROLE_DESCRIPTIONS.containsKey(this.aspect)) {
-            result.append("<br>" + AJModel.ROLE_DESCRIPTIONS.get(this.aspect));
+        if (AspectJModel.ROLE_DESCRIPTIONS.containsKey(this.aspect)) {
+            result.append("<br>" + AspectJModel.ROLE_DESCRIPTIONS.get(this.aspect));
         }
         return result;
     }
@@ -107,10 +107,10 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
     @Override
     StringBuilder getEdgeKindDescription() {
         StringBuilder result = super.getEdgeKindDescription();
-        if (AJModel.ROLE_NAMES.containsKey(this.aspect)) {
+        if (AspectJModel.ROLE_NAMES.containsKey(this.aspect)) {
             Converter.toUppercase(result, false);
             result.insert(0, " ");
-            result.insert(0, AJModel.ROLE_NAMES.get(this.aspect));
+            result.insert(0, AspectJModel.ROLE_NAMES.get(this.aspect));
         }
         return result;
     }
@@ -168,7 +168,7 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
     /** 
      * Indicates if this JEdge should be shown
      * instead as part of the source node label.
-     * This is true if {@link AJModel#isShowVertexLabels()} is {@code true}
+     * This is true if {@link AspectJModel#isShowVertexLabels()} is {@code true}
      * and this is a self-edge, or if {@link Options#SHOW_VALUE_NODES_OPTION}
      * is unset and the target of this edge is a pure data constant. 
      */
@@ -235,7 +235,7 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
 
     public void saveToUserObject() {
         // collect the edge information
-        AJObject userObject = getUserObject();
+        AspectJObject userObject = getUserObject();
         userObject.clear();
         userObject.addEdges(getEdges());
     }
@@ -265,9 +265,9 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
     @Override
     public void setUserObject(Object value) {
         // we do need to create a new object, otherwise undos do not work
-        AJObject myObject = new AJObject(false);
-        if (value instanceof AJObject) {
-            myObject.addAll((AJObject) value);
+        AspectJObject myObject = new AspectJObject();
+        if (value instanceof AspectJObject) {
+            myObject.addAll((AspectJObject) value);
         } else if (value != null) {
             myObject.load(value.toString());
         }
@@ -276,8 +276,8 @@ public class AJEdge extends GraphJEdge<AspectNode,AspectEdge> implements AJCell 
 
     /** Specialises the return type. */
     @Override
-    public AJObject getUserObject() {
-        return (AJObject) super.getUserObject();
+    public AspectJObject getUserObject() {
+        return (AspectJObject) super.getUserObject();
     }
 
     private AspectKind aspect;

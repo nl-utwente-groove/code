@@ -32,20 +32,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AJObject extends ArrayList<String> {
-    /**
-     * Constructs an object whose string description uses a given string as a
-     * separator between labels (in {@link #toString()}, and which uses another
-     * separator when editing the object and loading the object from a string
-     * (in {@link #load(String)}. The behaviour on loading from an empty set or
-     * string can also be set.
-     * @param allowEmptyLabelSet set to <code>true</code> if the label set
-     *        should not be empty.
-     */
-    public AJObject(boolean allowEmptyLabelSet) {
-        this.allowEmptyLabelSet = allowEmptyLabelSet;
-    }
-
+public class AspectJObject extends ArrayList<String> {
     /**
      * Converts the user object to an editable string, in which the individual
      * labels are separated by newlines
@@ -82,12 +69,9 @@ public class AJObject extends ArrayList<String> {
      * implementation splits the value using newlines, and trims the
      * individual labels. This means that
      * edit separators behave as the lowest-priority operators, lower even than
-     * bracketing or quoting. If {@link #isAllowEmptyLabelSet()} is
-     * <tt>false</tt>, then an empty <tt>value</tt> will result in the empty
-     * string.
+     * bracketing or quoting. 
      * @param value the value from which to load the user object; may not be
      *        <tt>null</tt>
-     * @see #isAllowEmptyLabelSet()
      */
     public void load(String value) {
         List<String> labelList = new ArrayList<String>();
@@ -122,27 +106,11 @@ public class AJObject extends ArrayList<String> {
         }
     }
 
-    /**
-     * Indicates if this user object may have an empty label set. If so, then
-     * loading it with an empty string results in the empty label set; if not,
-     * then the initial value is set to the empty string. The property is set to
-     * <tt>true</tt> by default.
-     * @return <tt>true</tt> if the user object may have an empty label set
-     */
-    public boolean isAllowEmptyLabelSet() {
-        return this.allowEmptyLabelSet;
-    }
-
     @Override
-    public AJObject clone() {
-        return (AJObject) super.clone();
+    public AspectJObject clone() {
+        return (AspectJObject) super.clone();
     }
 
-    /**
-     * Indicates if an empty label set is allows. If so, the empty string will
-     * be interpreted as an empty set.
-     */
-    private boolean allowEmptyLabelSet = true;
     /** The default label separator. */
     public static final String NEWLINE = "\n";
 }

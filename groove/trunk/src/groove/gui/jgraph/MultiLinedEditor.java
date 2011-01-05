@@ -111,21 +111,21 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             GraphCellEditor, DocumentListener {
         /**
          * Initialises the editor component with the edit string of the user
-         * object of <tt>value</tt> (which is required to be a {@link JCell}).
+         * object of <tt>value</tt> (which is required to be a {@link GraphJCell}).
          */
         public Component getGraphCellEditorComponent(JGraph graph,
                 Object value, boolean isSelected) {
             this.labels.clear();
-            JModel jmodel = (JModel) graph.getModel();
+            GraphJModel<?,?> jmodel = (GraphJModel<?,?>) graph.getModel();
             for (int i = 0; i < jmodel.getRootCount(); i++) {
-                JCell cell = (JCell) jmodel.getRootAt(i);
+                GraphJCell cell = (GraphJCell) jmodel.getRootAt(i);
                 for (Label listLabel : cell.getListLabels()) {
                     this.labels.add(stripPrefixes(listLabel.text()));
                 }
             }
             this.labels.addAll(this.prefixes);
             JTextArea result = getEditorComponent();
-            String editString = ((AJCell) value).getUserObject().toEditString();
+            String editString = ((AspectJCell) value).getUserObject().toEditString();
             result.setText(editString);
             result.selectAll();
             return result;
