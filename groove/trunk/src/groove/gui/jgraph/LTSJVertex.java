@@ -139,7 +139,7 @@ public class LTSJVertex extends GraphJVertex<GraphState,GraphTransition> {
         boolean result = active != this.active;
         if (result) {
             this.active = active;
-            createAttributes(getJModel());
+            refreshAttributes();
         }
         return result;
     }

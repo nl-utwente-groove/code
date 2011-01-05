@@ -328,7 +328,7 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
         }
         // in addition, value nodes may be filtered
         if (getJModel().isShowValueNodes()) {
-            return true;
+            return false;
         }
         Aspect attr = getNode().getAttrAspect();
         return attr.getKind().isTypedData() && attr.hasContent();

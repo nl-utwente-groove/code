@@ -108,6 +108,7 @@ import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
+import org.jgraph.graph.GraphLayoutCache.GraphLayoutCacheEdit;
 import org.jgraph.graph.GraphUndoManager;
 
 /**
@@ -465,11 +466,19 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             this.undoManager = new GraphUndoManager() {
                 @Override
                 public void undoableEditHappened(UndoableEditEvent e) {
-                    if (!(e.getEdit() instanceof JModel.RefreshEdit)) {
+                    boolean relevant = true;
+                    // only process edits that really changed anything
+                    if (e.getEdit() instanceof GraphLayoutCacheEdit) {
+                        GraphLayoutCacheEdit edit =
+                            (GraphLayoutCacheEdit) e.getEdit();
+                        relevant =
+                            edit.getInserted().length > 0
+                                || edit.getRemoved().length > 0
+                                || edit.getChanged().length > 0;
+                    }
+                    if (relevant) {
                         super.undoableEditHappened(e);
                         updateHistoryButtons();
-                    } else {
-                        System.out.println("Refresh not added to undo history");
                     }
                 }
             };
@@ -1057,7 +1066,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                getGraphPanel().refresh();
+                //                getGraphPanel().refresh();
                 int elementCount = getModel().getRootCount();
                 getStatusBar().setText("" + elementCount + " visible elements");
                 List<FormatError> errors =
@@ -1098,28 +1107,18 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     /** Undoes the last registered change to the Model or the View. */
     protected void undoLastEdit() {
-        try {
-            setSelectInsertedCells(false);
-            getUndoManager().undo(this.jgraph.getGraphLayoutCache());
-            setSelectInsertedCells(true);
-        } catch (Exception ex) {
-            System.err.println(ex);
-        } finally {
-            updateHistoryButtons();
-        }
+        setSelectInsertedCells(false);
+        getUndoManager().undo(this.jgraph.getGraphLayoutCache());
+        setSelectInsertedCells(true);
+        updateHistoryButtons();
     }
 
     /** Redoes the latest undone change to the Model or the View. */
     protected void redoLastEdit() {
-        try {
-            setSelectInsertedCells(false);
-            getUndoManager().redo(this.jgraph.getGraphLayoutCache());
-            setSelectInsertedCells(true);
-        } catch (Exception ex) {
-            System.err.println(ex);
-        } finally {
-            updateHistoryButtons();
-        }
+        setSelectInsertedCells(false);
+        getUndoManager().redo(this.jgraph.getGraphLayoutCache());
+        setSelectInsertedCells(true);
+        updateHistoryButtons();
     }
 
     /**

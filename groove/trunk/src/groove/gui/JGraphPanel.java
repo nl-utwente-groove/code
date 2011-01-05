@@ -303,9 +303,10 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      */
     protected void refresh() {
         JModel jModel = getJModel();
-        if (jModel != null) {
-            jModel.refresh();
-        }
+        getJGraph().getGraphLayoutCache().setModel(jModel);
+        //        if (jModel != null) {
+        //            jModel.refresh();
+        //        }
         getJGraph().setEnabled(jModel != null);
         getJGraph().clearSelection();
         getLabelTree().updateModel();
