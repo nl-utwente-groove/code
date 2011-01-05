@@ -571,7 +571,7 @@ public class TypePanel extends JGraphPanel<TypeJGraph> implements
         @Override
         public void actionPerformed(ActionEvent e) {
             final AspectGraph initType =
-                AspectGraph.newInstance(Groove.DEFAULT_TYPE_NAME, TYPE);
+                AspectGraph.emptyGraph(Groove.DEFAULT_TYPE_NAME, TYPE);
             handleEditType(initType, true);
         }
 

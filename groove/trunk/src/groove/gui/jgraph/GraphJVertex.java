@@ -20,12 +20,11 @@ import static groove.util.Converter.ITALIC_TAG;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.TypeLabel;
+import groove.util.Converter;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -79,146 +78,22 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
         this.edges.clear();
     }
 
+    /** 
+     * The cloned object is equal to this one after a reset. 
+     */
+    @Override
+    public GraphJVertex<N,E> clone() {
+        @SuppressWarnings("unchecked")
+        GraphJVertex<N,E> clone = (GraphJVertex<N,E>) super.clone();
+        clone.edges = new TreeSet<E>();
+        return clone;
+    }
+
     /**
      * Returns the graph node wrapped by this {@link JVertex}.
      */
     public N getNode() {
         return this.node;
-    }
-
-    @Override
-    public boolean isVisible() {
-        return !isFiltered() || getJModel().isShowUnfilteredEdges()
-            && hasVisibleIncidentEdge();
-    }
-
-    /**
-     * Tests if this node has a visible incident edge.
-     */
-    boolean hasVisibleIncidentEdge() {
-        boolean result = false;
-        Iterator<?> jEdgeIter = getPort().edges();
-        while (!result && jEdgeIter.hasNext()) {
-            GraphJEdge<?,?> jEdge = (GraphJEdge<?,?>) jEdgeIter.next();
-            result =
-                !jEdge.getLines().isEmpty()
-                    && (jEdge.getSource() == this || !jEdge.isSourceLabel());
-        }
-        return result;
-    }
-
-    /**
-     * Indicates if all list labels on this node are filtered (and therefore
-     * invisible), or at least one node type is filtered.
-     */
-    private boolean isFiltered() {
-        boolean result = true;
-        for (Label label : getListLabels()) {
-            if (getJModel().isFiltering(label)) {
-                if (label.isNodeType()) {
-                    result = true;
-                    break;
-                }
-            } else {
-                result = false;
-            }
-        }
-        return result;
-    }
-
-    /** This implementation adds the data edges to the super result. */
-    public List<StringBuilder> getLines() {
-        List<StringBuilder> result = new LinkedList<StringBuilder>();
-        // show the node identity if required
-        if (getJModel().isShowNodeIdentities()) {
-            String id = getNodeIdentity();
-            if (id != null) {
-                result.add(ITALIC_TAG.on(new StringBuilder(id)));
-            }
-        }
-        for (E edge : getSelfEdges()) {
-            // only add edges that have an unfiltered label
-            boolean visible = false;
-            for (Label label : getListLabels(edge)) {
-                if (!getJModel().isFiltering(label)) {
-                    visible = true;
-                    break;
-                }
-            }
-            if (visible) {
-                result.add(getLine(edge));
-            }
-        }
-        return result;
-    }
-
-    /**
-     * This implementation returns the label text of the edge; moreover, if the
-     * opposite end is not also this vertex, the line is turned into an
-     * attribute-style assignment.
-     */
-    public StringBuilder getLine(E edge) {
-        StringBuilder result = new StringBuilder();
-        result.append(TypeLabel.toHtmlString(edge.label()));
-        return result;
-    }
-
-    /** This implementation delegates to {@link Edge#label()}. */
-    public String getLabelText(E edge) {
-        return edge.label().text();
-    }
-
-    /**
-     * This implementation returns a special constant label in case the node is
-     * a constant, followed by the self-edge labels and data-edge labels; or
-     * {@link JCell#NO_LABEL} if the result would otherwise be empty.
-     */
-    public Collection<? extends Label> getListLabels() {
-        Collection<Label> result = new ArrayList<Label>();
-        for (E edge : getSelfEdges()) {
-            result.addAll(getListLabels(edge));
-        }
-        if (getSelfEdges().isEmpty()) {
-            result.add(NO_LABEL);
-        }
-        return result;
-    }
-
-    /** This implementation delegates to {@link Edge#label()}. */
-    public Set<? extends Label> getListLabels(E edge) {
-        return Collections.singleton(edge.label());
-    }
-
-    /**
-     * This implementation forwards the query to the underlying graph node.
-     * @see #getNode()
-     */
-    @Override
-    public String toString() {
-        return "JVertex for " + getNode();
-    }
-
-    /**
-     * Returns an unmodifiable view on the self edges.
-     * If {@link GraphJModel#isShowVertexLabels()} is set,
-     * all edges with equal source and target and without explicit
-     * layout information are regarded as self edges.
-     */
-    public Set<E> getSelfEdges() {
-        if (getJModel().isShowVertexLabels()) {
-            // add self-edges without layout info
-            Set<E> result = new TreeSet<E>(this.edges);
-            for (Object edgeObject : getPort().getEdges()) {
-                @SuppressWarnings("unchecked")
-                GraphJEdge<N,E> jEdge = (GraphJEdge<N,E>) edgeObject;
-                if (getJModel().isPotentialUnaryEdge(jEdge.getEdge())) {
-                    result.addAll(jEdge.getEdges());
-                }
-            }
-            return result;
-        } else {
-            return Collections.unmodifiableSet(this.edges);
-        }
     }
 
     /**
@@ -241,10 +116,149 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     }
 
     /**
+     * Returns an unmodifiable view on the self edges.
+     * These are the edges added using {@link #addSelfEdge(Edge)}.
+     */
+    public Set<E> getSelfEdges() {
+        return Collections.unmodifiableSet(this.edges);
+    }
+
+    @Override
+    public boolean isVisible() {
+        return !isFiltered() || getJModel().isShowUnfilteredEdges()
+            && hasVisibleIncidentEdge();
+    }
+
+    /**
+     * Callback method to test if this node has an incident edge
+     * with nonempty (unfiltered) label text, as determined
+     * by {@link GraphJEdge#getLines()}.
+     * This is to determine the visibility of the node.
+     */
+    protected boolean hasVisibleIncidentEdge() {
+        boolean result = false;
+        for (Object jEdge : getPort().getEdges()) {
+            if (!((GraphJEdge<?,?>) jEdge).getLines().isEmpty()) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Indicates if all list labels on this node are filtered (and therefore
+     * invisible), or at least one node type is filtered.
+     */
+    protected boolean isFiltered() {
+        boolean result = true;
+        for (Label label : getListLabels()) {
+            if (getJModel().isFiltering(label)) {
+                if (label.isNodeType()) {
+                    result = true;
+                    break;
+                }
+            } else {
+                result = false;
+            }
+        }
+        return result;
+    }
+
+    /** This implementation adds the data edges to the super result. */
+    public List<StringBuilder> getLines() {
+        List<StringBuilder> result = new LinkedList<StringBuilder>();
+        // show the node identity if required
+        result.addAll(getNodeIdLines());
+        // only add edges that have an unfiltered label
+        for (E edge : getSelfEdges()) {
+            if (!isFiltered(edge)) {
+                result.add(new StringBuilder(getLine(edge)));
+            }
+        }
+        return result;
+    }
+
+    /** 
+     * Returns the (possibly empty) list of lines 
+     * describing the node identity, if this is to be shown
+     * according to the current setting.
+     * @see GraphJModel#isShowNodeIdentities()
+     */
+    final protected List<StringBuilder> getNodeIdLines() {
+        List<StringBuilder> result = new ArrayList<StringBuilder>();
+        if (getJModel().isShowNodeIdentities()) {
+            String id = getNodeIdentity();
+            if (id != null) {
+                result.add(ITALIC_TAG.on(new StringBuilder(id)));
+            }
+        }
+        return result;
+    }
+
+    /** 
+     * Tests if a given edge is currently being filtered.
+     * This is the case if at least one of the list labels on it
+     * (as returned by {@link #getListLabels()})
+     * is being filtered.
+     */
+    final protected boolean isFiltered(E edge) {
+        boolean result = false;
+        for (Label label : getListLabels(edge)) {
+            if (getJModel().isFiltering(label)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /** 
+     * Returns the text to be shown for the node label of a given edge.
+     * This implementation delegates to {@link Edge#label()}. 
+     */
+    protected StringBuilder getLine(E edge) {
+        StringBuilder result = new StringBuilder(edge.label().text());
+        Converter.toHtml(result);
+        return result;
+    }
+
+    /**
+     * This implementation returns a special constant label in case the node is
+     * a constant, followed by the self-edge labels and data-edge labels; or
+     * {@link JCell#NO_LABEL} if the result would otherwise be empty.
+     */
+    public Collection<? extends Label> getListLabels() {
+        Collection<Label> result = new ArrayList<Label>();
+        for (E edge : getSelfEdges()) {
+            result.addAll(getListLabels(edge));
+        }
+        if (getSelfEdges().isEmpty()) {
+            result.add(NO_LABEL);
+        }
+        return result;
+    }
+
+    /** This implementation delegates to {@link Edge#label()}. */
+    protected Set<? extends Label> getListLabels(E edge) {
+        return Collections.singleton(edge.label());
+    }
+
+    /**
+     * This implementation forwards the query to the underlying graph node.
+     * @see #getNode()
+     */
+    @Override
+    public String toString() {
+        return "JVertex for " + getNode();
+    }
+
+    /**
      * Callback method yielding a string description of the underlying node,
      * used for the node inscription in case node identities are to be shown.
+     * Subclasses may return {@code null} if there is no useful node identity.
      */
-    public String getNodeIdentity() {
+    protected String getNodeIdentity() {
         return getNode().toString();
     }
 
@@ -269,5 +283,5 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends JVertex
     /** The graph node modelled by this jgraph node. */
     private N node;
     /** Set of graph edges mapped to this JEdge. */
-    private final Set<E> edges = new TreeSet<E>();
+    private Set<E> edges = new TreeSet<E>();
 }

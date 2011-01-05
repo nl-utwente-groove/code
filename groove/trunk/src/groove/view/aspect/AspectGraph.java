@@ -568,21 +568,21 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
     }
 
     /** Creates an empty, fixed, named aspect graph, with a given graph role. */
-    public static AspectGraph newInstance(String name, GraphRole role) {
+    public static AspectGraph emptyGraph(String name, GraphRole role) {
         AspectGraph result = new AspectGraph(name, role);
         result.setFixed();
         return result;
     }
 
     /** Creates an empty, fixed aspect graph, with a given graph role. */
-    public static AspectGraph newInstance(GraphRole role) {
-        return newInstance("", role);
+    public static AspectGraph emptyGraph(GraphRole role) {
+        return emptyGraph("", role);
     }
 
     /**
      * The static instance serving as a factory.
      */
-    private static final AspectGraph factory = newInstance(HOST);
+    private static final AspectGraph factory = emptyGraph(HOST);
 
     /** Factory for AspectGraph elements. */
     public static class AspectFactory implements

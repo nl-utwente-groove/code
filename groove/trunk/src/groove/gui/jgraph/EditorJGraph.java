@@ -20,6 +20,7 @@ import groove.gui.Editor;
 import groove.gui.SetLayoutMenu;
 import groove.gui.layout.ForestLayouter;
 import groove.gui.layout.SpringLayouter;
+import groove.view.aspect.AspectGraph;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -46,13 +47,14 @@ import org.jgraph.graph.PortView;
  */
 public class EditorJGraph extends JGraph {
     /**
-     * Constructs an editor j-graph with an initially empty {@link EditorJModel}.
+     * Constructs an editor j-graph with an initially empty {@link AJModel}.
      * @param editor the editor to which this j-graph is
      *        associated
      * @since june2005
      */
     public EditorJGraph(Editor editor) {
-        super(new AJModel(editor), false);
+        super(AJModel.newInstance(editor,
+            AspectGraph.emptyGraph(editor.getRole())), false);
         this.editor = editor;
         setMarqueeHandler(createMarqueeHandler());
         setExporter(editor.getExporter());
@@ -82,7 +84,7 @@ public class EditorJGraph extends JGraph {
         return result;
     }
 
-    /** Specialises the return type to {@link EditorJModel}. */
+    /** Specialises the return type to {@link AJModel}. */
     @Override
     public AJModel getModel() {
         return (AJModel) this.graphModel;

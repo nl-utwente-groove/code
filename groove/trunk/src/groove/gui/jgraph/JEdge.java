@@ -85,15 +85,7 @@ abstract public class JEdge extends DefaultEdge implements JCell {
      * target nodes are visible.
      */
     public boolean isVisible() {
-        JVertex sourceVertex = getSourceVertex();
-        if (sourceVertex == null) {
-            return false;
-        }
-        JVertex targetVertex = getTargetVertex();
-        if (targetVertex == null) {
-            return false;
-        }
-        return sourceVertex.isVisible() && targetVertex.isVisible();
+        return getSourceVertex().isVisible() && getTargetVertex().isVisible();
     }
 
     /**
@@ -147,17 +139,6 @@ abstract public class JEdge extends DefaultEdge implements JCell {
                 " and "));
         }
         return result.toString();
-    }
-
-    /**
-     * Constructs a new edge, with cloned attributes and user object.
-     */
-    @Override
-    public JEdge clone() {
-        JEdge result = (JEdge) super.clone();
-        result.getAttributes().applyMap(getAttributes());
-        result.setUserObject(getUserObject());
-        return result;
     }
 
     @Override

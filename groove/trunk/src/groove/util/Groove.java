@@ -44,6 +44,7 @@ import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -1026,6 +1027,17 @@ public class Groove {
             }
         } else {
             return null;
+        }
+    }
+
+    /** Prints the own-code part of the stack trace to the given output. */
+    static public void printStackTrace(PrintStream out) {
+        StackTraceElement[] stackTrace = new Exception().getStackTrace();
+        String method = stackTrace[1].getMethodName();
+        out.printf("%s called from: %n", method);
+        for (int myCode = 2; myCode < stackTrace.length
+            && stackTrace[myCode].getLineNumber() >= 0; myCode++) {
+            out.printf("  %s%n", stackTrace[myCode]);
         }
     }
 

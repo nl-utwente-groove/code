@@ -53,11 +53,37 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
     }
 
     @Override
+    public AJVertex clone() {
+        AJVertex result = (AJVertex) super.clone();
+        result.errors = new ArrayList<FormatError>();
+        return result;
+    }
+
+    @Override
     public boolean addSelfEdge(AspectEdge edge) {
         assert edge.source() == getNode();
         assert edge.target() == getNode();
         this.errors.addAll(edge.getErrors());
         return super.addSelfEdge(edge);
+    }
+
+    /** 
+     * Collects a set of edges that under the current
+     * display settings are also to be shown on this label.
+     * These are obtained from the outgoing JEdges that
+     * have this JVertex as their source label and for which
+     * {@link AJEdge#isSourceLabel()} holds.
+     */
+    private Set<AspectEdge> getExtraSelfEdges() {
+        Set<AspectEdge> result = new TreeSet<AspectEdge>();
+        // add all outgoing JEdges that are source labels
+        for (Object edgeObject : getPort().getEdges()) {
+            AJEdge jEdge = (AJEdge) edgeObject;
+            if (jEdge.getSourceVertex() == this && jEdge.isSourceLabel()) {
+                result.addAll(jEdge.getEdges());
+            }
+        }
+        return result;
     }
 
     void setNodeFixed() {
@@ -70,7 +96,7 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
     }
 
     @Override
-    public String getNodeIdentity() {
+    protected String getNodeIdentity() {
         if (this.aspect.isMeta()) {
             return null;
         } else {
@@ -110,35 +136,37 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
     public List<StringBuilder> getLines() {
         getNode().testFixed(true);
         List<StringBuilder> result;
-        if (hasError()) {
+        if (hasError() || getJModel().isShowAspects()) {
             result = getUserObject().toLines();
         } else {
-            result = super.getLines();
+            result = new ArrayList<StringBuilder>();
+            // show the node identity
+            result.addAll(getNodeIdLines());
+            // show the main aspect correctly
+            result.addAll(getAspectLines());
+            // show data constants and variables correctly
             Aspect attrAspect = getNode().getAttrAspect();
             if (attrAspect.getKind().isTypedData()) {
                 String dataLine;
-                if (getJModel().isShowAspects()) {
-                    dataLine = attrAspect.toString();
-                } else if (attrAspect.hasContent()) {
+                if (attrAspect.hasContent()) {
                     dataLine = attrAspect.getContentString();
                 } else {
                     dataLine =
                         TypeLabel.toHtmlString(TypeLabel.createLabel(
                             LabelKind.NODE_TYPE, attrAspect.getKind().getName()));
                 }
-                result.add(0, new StringBuilder(dataLine));
+                result.add(new StringBuilder(dataLine));
             }
-            for (AspectEdge edge : getDataEdges()) {
-                if (!getJModel().isFiltering(edge.getDisplayLabel())) {
+            // show the visible self-edges
+            for (AspectEdge edge : getSelfEdges()) {
+                if (!isFiltered(edge)) {
                     result.add(getLine(edge));
                 }
             }
-            if (getJModel().isShowAspects()) {
-                result.add(0, getRoleLine());
-            }
-            // adds a quantor if the node is a nesting node
-            if (this.aspect.isQuantifier()) {
-                result.add(0, getQuantifierLine(getNode().getAspect()));
+            for (AspectEdge edge : getExtraSelfEdges()) {
+                if (!isFiltered(edge)) {
+                    result.add(getLine(edge));
+                }
             }
             // adds a parameter string if the node is a rule parameter
             Aspect param = getNode().getParam();
@@ -150,31 +178,31 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
     }
 
     /**
-     * Returns a string with the aspect prefix for this node's role, of the
-     * empty string if the node has no special role.
+     * Returns the lines describing this node's main aspect.
+     * Currently this just concerns a possible quantifier.
      */
-    private StringBuilder getRoleLine() {
-        boolean hasRoleValue =
-            this.aspect.isRole() && this.aspect != AspectKind.READER;
-        return new StringBuilder(hasRoleValue
-                ? getNode().getAspect().toString() : "");
-    }
-
-    /** Returns an HTML-formatted line describing a given quantifier value. */
-    private StringBuilder getQuantifierLine(Aspect nesting) {
-        StringBuilder result = new StringBuilder();
-        AspectKind kind = nesting.getKind();
-        if (kind == AspectKind.FORALL) {
-            result.append(Converter.HTML_FORALL);
-        } else if (kind == AspectKind.FORALL_POS) {
-            result.append(Converter.HTML_FORALL);
-            result.append(Converter.SUPER_TAG.on(Converter.HTML_GT + "0"));
-        } else if (kind == AspectKind.EXISTS) {
-            result.append(Converter.HTML_EXISTS);
-        }
-        String level = (String) nesting.getContent();
-        if (level != null && level.length() != 0) {
-            result.append(Converter.SUB_TAG.on(level));
+    private List<StringBuilder> getAspectLines() {
+        List<StringBuilder> result = new ArrayList<StringBuilder>();
+        if (this.aspect.isQuantifier()) {
+            StringBuilder line = new StringBuilder();
+            switch (this.aspect) {
+            case FORALL:
+                line.append(Converter.HTML_FORALL);
+                break;
+            case FORALL_POS:
+                line.append(Converter.HTML_FORALL);
+                line.append(Converter.SUPER_TAG.on(Converter.HTML_GT + "0"));
+                break;
+            case EXISTS:
+                line.append(Converter.HTML_EXISTS);
+            }
+            String level = (String) getNode().getAspect().getContent();
+            if (level != null && level.length() != 0) {
+                line.append(Converter.SUB_TAG.on(level));
+            }
+            if (line.length() > 0) {
+                result.add(line);
+            }
         }
         return result;
     }
@@ -183,7 +211,7 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
      * On demand prefixes the label with the edge's aspect values.
      */
     @Override
-    public StringBuilder getLine(AspectEdge edge) {
+    protected StringBuilder getLine(AspectEdge edge) {
         edge.testFixed(true);
         StringBuilder result = new StringBuilder();
         if (getJModel().isShowAspects()) {
@@ -261,7 +289,7 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
                         attrAspect.getKind().getName()));
                 }
             }
-            for (AspectEdge edge : getDataEdges()) {
+            for (AspectEdge edge : getExtraSelfEdges()) {
                 result.addAll(getListLabels(edge));
             }
         }
@@ -269,7 +297,7 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
     }
 
     @Override
-    public Set<? extends Label> getListLabels(AspectEdge edge) {
+    protected Set<? extends Label> getListLabels(AspectEdge edge) {
         Set<? extends Label> result;
         Label label = edge.getDisplayLabel();
         if (label instanceof RuleLabel && ((RuleLabel) label).isMatchable()) {
@@ -284,47 +312,26 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
     }
 
     /**
-     * Returns an ordered set of outgoing edges going to constants.
-     */
-    Set<AspectEdge> getDataEdges() {
-        Set<AspectEdge> result = new TreeSet<AspectEdge>();
-        if (!getJModel().isShowValueNodes()) {
-            for (Object edgeObject : getPort().getEdges()) {
-                AJEdge jEdge = (AJEdge) edgeObject;
-                if (jEdge.getSourceVertex() == this
-                    && jEdge.isDataEdgeSourceLabel()) {
-                    for (AspectEdge edge : jEdge.getEdges()) {
-                        result.add(edge);
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    @Override
-    public String getLabelText(AspectEdge edge) {
-        return edge.getDisplayLabel().text();
-    }
-
-    /**
      * This implementation makes remark edges invisible as demanded by the
      * {@link Options#SHOW_REMARKS_OPTION}.
      */
     @Override
-    public boolean isVisible() {
+    public boolean isFiltered() {
         if (this.aspect == REMARK) {
-            return getJModel().isShowRemarks();
-        } else if (getNode().hasParam()) {
-            return true;
-        } else {
-            boolean result = super.isVisible();
-            if (getNode().getAttrKind().isTypedData()
-                && !getJModel().isShowValueNodes()) {
-                result = hasVisibleIncidentEdge();
-            }
-            return result;
+            return !getJModel().isShowRemarks();
         }
+        if (getNode().hasParam()) {
+            return false;
+        }
+        if (super.isFiltered()) {
+            return true;
+        }
+        // in addition, value nodes may be filtered
+        if (getJModel().isShowValueNodes()) {
+            return true;
+        }
+        Aspect attr = getNode().getAttrAspect();
+        return attr.getKind().isTypedData() && attr.hasContent();
     }
 
     @Override
@@ -340,7 +347,7 @@ public class AJVertex extends GraphJVertex<AspectNode,AspectEdge> implements
     @Override
     protected AttributeMap createAttributes() {
         AttributeMap result = JAttr.RULE_NODE_ATTR.get(this.aspect).clone();
-        if (getJModel().isForEditor()) {
+        if (getJModel().isEditing()) {
             GraphConstants.setEditable(result, true);
         }
         return result;

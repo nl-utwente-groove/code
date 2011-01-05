@@ -67,9 +67,14 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         assert label.isFixed();
         assert graphRole.inGrammar();
         if (label.isNodeOnly()) {
-            this.errors.add(new FormatError(
-                "Aspect %s not allowed in edge label",
-                label.getNodeOnlyAspect(), this));
+            if (label.getNodeOnlyAspect() == null) {
+                this.errors.add(new FormatError("Empy edge label not allowed",
+                    this));
+            } else {
+                this.errors.add(new FormatError(
+                    "Aspect %s not allowed in edge label",
+                    label.getNodeOnlyAspect(), this));
+            }
         }
         for (FormatError error : label().getErrors()) {
             this.errors.add(error.extend(this));
