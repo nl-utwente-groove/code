@@ -182,8 +182,10 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         } else {
             result = value.toString();
         }
-        if (result != null && result.length() == 0) {
-            // set to a non-empty string to ensure proper size computation
+        // set text to nonempty in case we have a node,
+        // so the size gets set properly
+        if (result == null || result.length() == 0
+            && !(value instanceof JEdgeView)) {
             result = " ";
         }
         return result;

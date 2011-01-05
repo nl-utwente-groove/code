@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.SwingUtilities;
+
 import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
@@ -166,7 +168,12 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         if (GUI_DEBUG) {
             System.out.printf("Graph resynchronised with model %s%n", getName());
         }
-        cellsChanged(getRoots().toArray());
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                cellsChanged(getRoots().toArray());
+            }
+        });
     }
 
     /** Changes the name of the model (and the underlying graph). */
@@ -176,7 +183,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     /** Indicates that the JModel is being edited. */
     boolean isEditing() {
-        return this.editor != null;
+        return this.editor != null && !this.editor.isPreviewMode();
     }
 
     /**
@@ -442,7 +449,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     static final Map<AspectKind,String> ROLE_DESCRIPTIONS =
         new EnumMap<AspectKind,String>(AspectKind.class);
 
-    static private final boolean GUI_DEBUG = true;
+    static private final boolean GUI_DEBUG = false;
 
     static {
         ROLE_NAMES.put(AspectKind.EMBARGO, "Embargo");

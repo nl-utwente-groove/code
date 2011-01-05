@@ -709,7 +709,8 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
      */
     protected void doInsert(boolean toBack) {
         Object[] addedCells = this.addedJCells.toArray();
-        createEdit(addedCells, null, null, this.connections, null, null).execute();
+        createEdit(addedCells, getRoots().toArray(), null, this.connections,
+            null, null).execute();
         if (toBack) {
             // new edges should be behind the nodes
             toBack(addedCells);
@@ -744,19 +745,8 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
      * Indicates whether self-edges should be shown as node labels.
      */
     boolean isShowVertexLabels() {
-        return this.showVertexLabels
-            || getOptionValue(Options.SHOW_VERTEX_LABELS_OPTION);
+        return getOptionValue(Options.SHOW_VERTEX_LABELS_OPTION);
     }
-
-    /** Option to make sure vertex labels are shown, 
-     * irregardless of the option value.
-     */
-    public void setShowVertexLabels() {
-        this.showVertexLabels = true;
-    }
-
-    /** Private flag to show vertex labels irregardless of the menu option. */
-    private boolean showVertexLabels;
 
     /**
      * Indicates whether anchors should be shown in the rule and lts views.

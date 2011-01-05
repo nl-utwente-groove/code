@@ -63,7 +63,7 @@ abstract public class EditorDialog {
             }
         };
         this.editor.setTypeView(typeView);
-        this.editor.setAspectGraph(graph, true);
+        this.editor.setGraph(graph, true);
         this.newContentPane =
             this.editor.createContentPanel(createToolBar(graph.getRole()));
     }
@@ -82,7 +82,7 @@ abstract public class EditorDialog {
 
     /** Returns the resulting aspect graph of the editor. */
     public AspectGraph getAspectGraph() {
-        return this.editor.getAspectGraph();
+        return this.editor.getGraph();
     }
 
     /**
@@ -102,6 +102,7 @@ abstract public class EditorDialog {
         result.add(this.editor.createEditMenu());
         result.add(this.editor.createPropertiesMenu());
         result.add(this.editor.createDisplayMenu());
+        result.add(this.editor.createOptionsMenu());
         result.add(createOptionsMenu());
         result.add(this.editor.createHelpMenu());
         return result;
@@ -113,8 +114,8 @@ abstract public class EditorDialog {
     private JMenu createOptionsMenu() {
         JMenu result = new JMenu(Options.OPTIONS_MENU_NAME);
         result.setMnemonic(Options.OPTIONS_MENU_MNEMONIC);
-        result.add(this.options.getItem(Options.PREVIEW_ON_CLOSE_OPTION));
         result.add(this.options.getItem(Options.SHOW_VALUE_NODES_OPTION));
+        result.add(this.options.getItem(Options.SHOW_NODE_IDS_OPTION));
         return result;
     }
 
@@ -177,16 +178,8 @@ abstract public class EditorDialog {
      * <code>true</code> and disposes the dialog.
      */
     void handleOk() {
-        if (this.options.isSelected(Options.PREVIEW_ON_CLOSE_OPTION)
-            && !this.editor.handlePreview(null)) {
-            return;
-            //        } else if (hasErrors()) {
-            //            JOptionPane.showMessageDialog(this.parent, String.format(
-            //                "Cannot use %s with syntax errors", this.editor.getRole(false)));
-        } else {
-            this.ok = true;
-            dispose();
-        }
+        this.ok = true;
+        dispose();
     }
 
     /**

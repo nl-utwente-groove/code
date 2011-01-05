@@ -12,7 +12,6 @@ import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.trans.RuleLabel;
 import groove.util.Converter;
 import groove.view.FormatError;
-import groove.view.FormatException;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectLabel;
@@ -45,6 +44,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         super(jModel, edge);
         setUserObject(null);
         this.aspect = edge.getKind();
+        this.errors.addAll(edge.getErrors());
         refreshAttributes();
     }
 
@@ -205,7 +205,8 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
             return false;
         }
         if (getJModel().isShowVertexLabels()
-            && getSourceNode() == getTargetNode()) {
+            && getSourceNode() == getTargetNode()
+            && !getAttributes().containsKey(GraphConstants.POINTS)) {
             return true;
         }
         if (this.aspect == REMARK) {
@@ -276,11 +277,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
             AspectLabel label = parser.parse(text);
             AspectEdge edge =
                 new AspectEdge(getSourceNode(), label, getTargetNode(), role);
-            try {
-                edge.setFixed();
-            } catch (FormatException e) {
-                // do nothing; the errors in the edge will be processed later
-            }
+            edge.setFixed();
             addEdge(edge);
         }
         refreshAttributes();

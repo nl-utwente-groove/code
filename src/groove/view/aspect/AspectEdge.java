@@ -83,14 +83,11 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     }
 
     @Override
-    public void setFixed() throws FormatException {
+    public void setFixed() {
         if (!isFixed()) {
             this.fixed = true;
             if (!hasErrors()) {
                 setAspectsFixed();
-            }
-            if (hasErrors()) {
-                throw new FormatException(getErrors());
             }
         }
     }
@@ -146,6 +143,10 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
                     "Edge aspect %s not allowed in rules", getAspect(), this);
             } else if (!hasAspect()) {
                 setAspect(AspectKind.READER.getAspect());
+            }
+            if (hasAttrAspect() && getKind() != READER && getKind() != EMBARGO) {
+                throw new FormatException("Conflicting aspects %s and %s",
+                    getAttrAspect(), getAspect());
             }
         } else if (getKind().isRole()) {
             throw new FormatException("Edge aspect %s only allowed in rules",

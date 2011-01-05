@@ -170,23 +170,8 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
         // add edge images
         for (HostEdge edge : edgeSet()) {
             AspectEdge edgeImage = result.mapEdge(edge);
-            try {
-                edgeImage.setFixed();
-            } catch (FormatException e) {
-                // this is sure not to raise an exception
-                assert false;
-            }
+            edgeImage.setFixed();
             targetGraph.addEdge(edgeImage);
-        }
-        // now fix the nodes, insofar this was not achieved
-        // by fixing the edges
-        for (AspectNode node : result.nodeMap().values()) {
-            try {
-                node.setFixed();
-            } catch (FormatException e) {
-                // this is sure not to raise an exception
-                assert false;
-            }
         }
         GraphInfo.transfer(this, targetGraph, result);
         targetGraph.setFixed();
