@@ -367,8 +367,8 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         if (result) {
             this.usedNrs = new HashSet<Integer>();
             for (Object root : getRoots()) {
-                if (root instanceof GraphJVertex<?,?>) {
-                    this.usedNrs.add(((GraphJVertex<?,?>) root).getNumber());
+                if (root instanceof GraphJVertex) {
+                    this.usedNrs.add(((GraphJVertex) root).getNumber());
                 }
             }
         }

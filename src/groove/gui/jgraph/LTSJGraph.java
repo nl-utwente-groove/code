@@ -217,15 +217,11 @@ public class LTSJGraph extends JGraph {
                 // find cell in model coordinates
                 DefaultGraphCell cell =
                     (DefaultGraphCell) getFirstCellForLocation(loc.x, loc.y);
-                if (cell instanceof GraphJEdge) {
-                    @SuppressWarnings("unchecked")
-                    GraphTransition edge =
-                        ((GraphJEdge<GraphState,GraphTransition>) cell).getEdge();
+                if (cell instanceof LTSJEdge) {
+                    GraphTransition edge = ((LTSJEdge) cell).getEdge();
                     getSimulator().setTransition(edge);
-                } else if (cell instanceof GraphJVertex) {
-                    @SuppressWarnings("unchecked")
-                    GraphState node =
-                        ((GraphJVertex<GraphState,GraphTransition>) cell).getNode();
+                } else if (cell instanceof LTSJVertex) {
+                    GraphState node = ((LTSJVertex) cell).getNode();
                     if (!getSimulator().getCurrentState().equals(node)) {
                         getSimulator().setState(node);
                     }

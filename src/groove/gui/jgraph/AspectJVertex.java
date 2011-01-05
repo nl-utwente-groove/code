@@ -1,9 +1,11 @@
 package groove.gui.jgraph;
 
 import static groove.view.aspect.AspectKind.REMARK;
+import groove.graph.Edge;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.LabelKind;
+import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.VariableNode;
@@ -32,8 +34,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Specialized j-vertex for rule graphs, with its own tool tip text.
  */
-public class AspectJVertex extends GraphJVertex<AspectNode,AspectEdge>
-        implements AspectJCell {
+public class AspectJVertex extends GraphJVertex implements AspectJCell {
     /** Creates a j-vertex on the basis of a given (aspectual) node. */
     public AspectJVertex(AspectJModel jModel, AspectNode node) {
         super(jModel, node);
@@ -46,9 +47,20 @@ public class AspectJVertex extends GraphJVertex<AspectNode,AspectEdge>
         return (AspectJModel) super.getJModel();
     }
 
+    @Override
+    public AspectNode getNode() {
+        return (AspectNode) super.getNode();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<AspectEdge> getSelfEdges() {
+        return (Set<AspectEdge>) super.getSelfEdges();
+    }
+
     /** Clears the errors and the aspect, in addition to calling the super method. */
     @Override
-    void reset(AspectNode node) {
+    void reset(Node node) {
         super.reset(node);
         this.errors.clear();
         this.aspect = AspectKind.NONE;
@@ -62,10 +74,10 @@ public class AspectJVertex extends GraphJVertex<AspectNode,AspectEdge>
     }
 
     @Override
-    public boolean addSelfEdge(AspectEdge edge) {
+    public boolean addSelfEdge(Edge<?> edge) {
         assert edge.source() == getNode();
         assert edge.target() == getNode();
-        this.errors.addAll(edge.getErrors());
+        this.errors.addAll(((AspectEdge) edge).getErrors());
         return super.addSelfEdge(edge);
     }
 
@@ -234,21 +246,22 @@ public class AspectJVertex extends GraphJVertex<AspectNode,AspectEdge>
      * On demand prefixes the label with the edge's aspect values.
      */
     @Override
-    protected StringBuilder getLine(AspectEdge edge) {
-        edge.testFixed(true);
+    protected StringBuilder getLine(Edge<?> edge) {
+        AspectEdge aspectEdge = (AspectEdge) edge;
+        aspectEdge.testFixed(true);
         StringBuilder result = new StringBuilder();
         if (getJModel().isShowAspects()) {
-            result.append(TypeLabel.toHtmlString(edge.label()));
+            result.append(TypeLabel.toHtmlString(aspectEdge.label()));
         } else {
-            result.append(TypeLabel.toHtmlString(edge.getDisplayLabel()));
+            result.append(TypeLabel.toHtmlString(aspectEdge.getDisplayLabel()));
         }
-        if (edge.getKind() == AspectKind.ABSTRACT) {
+        if (aspectEdge.getKind() == AspectKind.ABSTRACT) {
             result = Converter.ITALIC_TAG.on(result);
         }
         if (edge.target() != edge.source()) {
             // this is an attribute edge displayed as a node label
             String suffix;
-            AspectNode actualTarget = edge.target();
+            AspectNode actualTarget = aspectEdge.target();
             if (getNode().getGraphRole() == GraphRole.TYPE) {
                 suffix = TYPE_TEXT + actualTarget.getAttrKind().getName();
             } else {
@@ -258,8 +271,8 @@ public class AspectJVertex extends GraphJVertex<AspectNode,AspectEdge>
             result.append(Converter.toHtml(suffix));
         }
         // use special node label prefixes to indicate edge role
-        Aspect edgeAspect = edge.getAspect();
-        if (!edgeAspect.equals(edge.source().getAspect())) {
+        Aspect edgeAspect = aspectEdge.getAspect();
+        if (!edgeAspect.equals(aspectEdge.source().getAspect())) {
             addRoleIndicator(result, edgeAspect.getKind());
         }
         return result;
@@ -322,9 +335,10 @@ public class AspectJVertex extends GraphJVertex<AspectNode,AspectEdge>
     }
 
     @Override
-    protected Set<? extends Label> getListLabels(AspectEdge edge) {
+    protected Set<? extends Label> getListLabels(Edge<?> edge) {
+        AspectEdge aspectEdge = (AspectEdge) edge;
         Set<? extends Label> result;
-        Label label = edge.getDisplayLabel();
+        Label label = aspectEdge.getDisplayLabel();
         if (label instanceof RuleLabel && ((RuleLabel) label).isMatchable()) {
             result = ((RuleLabel) label).getMatchExpr().getTypeLabels();
             if (result.isEmpty()) {

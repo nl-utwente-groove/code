@@ -7,6 +7,7 @@ import static groove.gui.jgraph.JAttr.LTS_OPEN_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.LTS_RESULT_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.LTS_START_NODE_ATTR;
 import groove.control.CtrlState;
+import groove.graph.Edge;
 import groove.lts.DerivationLabel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -22,7 +23,7 @@ import org.jgraph.graph.AttributeMap;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LTSJVertex extends GraphJVertex<GraphState,GraphTransition> {
+public class LTSJVertex extends GraphJVertex {
     /**
      * Creates a new instance for a given node (required to be a
      * {@link GraphState}) in an LTS model.
@@ -42,6 +43,11 @@ public class LTSJVertex extends GraphJVertex<GraphState,GraphTransition> {
      */
     GTS getGraph() {
         return getJModel().getGraph();
+    }
+
+    @Override
+    public GraphState getNode() {
+        return (GraphState) super.getNode();
     }
 
     /** A state is also visible if it is open, final, or the start state. */
@@ -116,10 +122,10 @@ public class LTSJVertex extends GraphJVertex<GraphState,GraphTransition> {
      * label, depending on #isShowAnchors().
      */
     @Override
-    public StringBuilder getLine(GraphTransition edge) {
+    public StringBuilder getLine(Edge<?> edge) {
         String text =
-            getJModel().isShowAnchors()
-                    ? new DerivationLabel(edge.getEvent()).text()
+            getJModel().isShowAnchors() ? new DerivationLabel(
+                ((GraphTransition) edge).getEvent()).text()
                     : edge.label().text();
         StringBuilder result = new StringBuilder(text);
         Converter.toHtml(result);

@@ -68,7 +68,7 @@ public class JEdgeView extends EdgeView {
      * underlying model for edge attributes. (using
      * <tt>@link JModel#createEdgeAttributes</tt>).
      */
-    public JEdgeView(GraphJEdge<?,?> jEdge, JGraph jGraph) {
+    public JEdgeView(GraphJEdge jEdge, JGraph jGraph) {
         super(jEdge);
         this.jModel = jGraph.getModel();
         // first we add points and change the linestyle of the edge
@@ -99,8 +99,8 @@ public class JEdgeView extends EdgeView {
      * Specialises the return type.
      */
     @Override
-    public GraphJEdge<?,?> getCell() {
-        return (GraphJEdge<?,?>) super.getCell();
+    public GraphJEdge getCell() {
+        return (GraphJEdge) super.getCell();
     }
 
     /**

@@ -16,10 +16,8 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.LabelStore;
-import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.gui.Exporter;
 import groove.gui.LabelTree;
@@ -209,10 +207,10 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * this j-graph. This implementation tests whether the object is an instance
      * of {@link GraphJVertex}.
      * @param jCell the object to be tested
-     * @return true if <tt>cell instanceof GraphJVertex<?,?></tt>
+     * @return true if <tt>cell instanceof GraphJVertex</tt>
      */
     public boolean isVertex(Object jCell) {
-        return jCell instanceof GraphJVertex<?,?>;
+        return jCell instanceof GraphJVertex;
     }
 
     /**
@@ -231,17 +229,16 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * @param jEdge the JEdge for which to retrieve the JEdgeView
      * @return the JEdgeView corresponding to <code>jEdge</code>
      */
-    public final <N extends Node,E extends Edge<N>> JEdgeView getJEdgeView(
-            GraphJEdge<N,E> jEdge) {
+    public final JEdgeView getJEdgeView(GraphJEdge jEdge) {
         return (JEdgeView) getGraphLayoutCache().getMapping(jEdge, false);
     }
 
     /**
      * Convenience method to retrieve a j-node view as a {@link JVertexView}.
-     * @param jNode the GraphJVertex<?,?> for which to retrieve the JVertexView
+     * @param jNode the GraphJVertex for which to retrieve the JVertexView
      * @return the JVertexView corresponding to <code>jNode</code>
      */
-    public final JVertexView getJNodeView(GraphJVertex<?,?> jNode) {
+    public final JVertexView getJNodeView(GraphJVertex jNode) {
         return (JVertexView) getGraphLayoutCache().getMapping(jNode, false);
     }
 
@@ -266,7 +263,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         for (Object element : cells) {
             res.add(element);
             if (isVertex(element)) {
-                res.add(((GraphJVertex<?,?>) element).getChildAt(0));
+                res.add(((GraphJVertex) element).getChildAt(0));
             }
         }
         return res.toArray();
@@ -302,9 +299,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                         invisibleCells.add(jCell);
                         getSelectionModel().removeSelectionCell(jCell);
                         if (jCell instanceof GraphJVertex) {
-                            for (Object edge : ((GraphJVertex<?,?>) jCell).getPort().getEdges()) {
-                                if (!((GraphJEdge<?,?>) edge).isVisible()) {
-                                    invisibleCells.add((GraphJEdge<?,?>) edge);
+                            for (Object edge : ((GraphJVertex) jCell).getPort().getEdges()) {
+                                if (!((GraphJEdge) edge).isVisible()) {
+                                    invisibleCells.add((GraphJEdge) edge);
                                 }
                             }
                         }
@@ -317,9 +314,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                     if (jCell.isVisible()) {
                         visibleCells.add(jCell);
                         if (jCell instanceof GraphJVertex) {
-                            for (Object edge : ((GraphJVertex<?,?>) jCell).getPort().getEdges()) {
-                                if (((GraphJEdge<?,?>) edge).isVisible()) {
-                                    visibleCells.add((GraphJEdge<?,?>) edge);
+                            for (Object edge : ((GraphJVertex) jCell).getPort().getEdges()) {
+                                if (((GraphJEdge) edge).isVisible()) {
+                                    visibleCells.add((GraphJEdge) edge);
                                 }
                             }
                         }
@@ -374,7 +371,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             CellView jCellView = viewRoots[i];
             Object jCell = jCellView.getCell();
             boolean typeCorrect =
-                vertex ? jCell instanceof GraphJVertex<?,?>
+                vertex ? jCell instanceof GraphJVertex
                         : jCell instanceof GraphJCell;
             if (typeCorrect && !((GraphJCell) jCell).isGrayedOut()) {
                 // now see if this jCell is sufficiently close to the point
@@ -400,8 +397,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     @Override
     public PortView getPortViewAt(double x, double y) {
-        GraphJVertex<?,?> vertex =
-            (GraphJVertex<?,?>) getFirstCellForLocation(x, y, true);
+        GraphJVertex vertex =
+            (GraphJVertex) getFirstCellForLocation(x, y, true);
         if (vertex != null) {
             return (PortView) getGraphLayoutCache().getMapping(
                 vertex.getPort(), false);
@@ -636,7 +633,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * @param jEdge the j-edge to be modified
      * @param location the point to be added
      */
-    public void addPoint(GraphJEdge<?,?> jEdge, Point2D location) {
+    public void addPoint(GraphJEdge jEdge, Point2D location) {
         JEdgeView jEdgeView = getJEdgeView(jEdge);
         AttributeMap jEdgeAttr = new AttributeMap();
         List<?> points = jEdgeView.addPointAt(location);
@@ -654,7 +651,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * @param jEdge the j-edge to be modified
      * @param location the point to be removed
      */
-    public void removePoint(GraphJEdge<?,?> jEdge, Point2D location) {
+    public void removePoint(GraphJEdge jEdge, Point2D location) {
         JEdgeView jEdgeView = getJEdgeView(jEdge);
         AttributeMap jEdgeAttr = new AttributeMap();
         List<?> points = jEdgeView.removePointAt(location);
@@ -670,7 +667,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * position.
      * @param jEdge the j-edge to be modified
      */
-    public void resetLabelPosition(GraphJEdge<?,?> jEdge) {
+    public void resetLabelPosition(GraphJEdge jEdge) {
         AttributeMap newAttr = new AttributeMap();
         GraphConstants.setLabelPosition(newAttr,
             JCellLayout.defaultLabelPosition);
@@ -685,7 +682,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * @param jEdge the j-edge to be modified
      * @param lineStyle the new line style for <tt>jEdge</tt>
      */
-    public void setLineStyle(GraphJEdge<?,?> jEdge, int lineStyle) {
+    public void setLineStyle(GraphJEdge jEdge, int lineStyle) {
         AttributeMap newAttr = new AttributeMap();
         GraphConstants.setLineStyle(newAttr, lineStyle);
         Map<GraphJCell,AttributeMap> change =
@@ -875,8 +872,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                     new Rectangle(evt.getX() - this.tolerance, evt.getY()
                         - this.tolerance, 2 * this.tolerance,
                         2 * this.tolerance);
-                List<?> points =
-                    getJEdgeView((GraphJEdge<?,?>) jCell).getPoints();
+                List<?> points = getJEdgeView((GraphJEdge) jCell).getPoints();
                 for (int i = 1; i < points.size() - 1; i++) {
                     Point2D point = (Point2D) points.get(i);
                     if (r.intersects(point.getX(), point.getY(), 1, 1)) {
@@ -1209,7 +1205,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         }
 
         public void actionPerformed(ActionEvent evt) {
-            addPoint((GraphJEdge<?,?>) this.jCell, this.location);
+            addPoint((GraphJEdge) this.jCell, this.location);
         }
     }
 
@@ -1296,7 +1292,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         }
 
         public void actionPerformed(ActionEvent evt) {
-            removePoint((GraphJEdge<?,?>) this.jCell, this.location);
+            removePoint((GraphJEdge) this.jCell, this.location);
         }
     }
 
@@ -1312,7 +1308,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 
         public void actionPerformed(ActionEvent evt) {
             for (GraphJCell jCell : this.jCells) {
-                resetLabelPosition((GraphJEdge<?,?>) jCell);
+                resetLabelPosition((GraphJEdge) jCell);
             }
         }
     }
@@ -1330,7 +1326,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 
         public void actionPerformed(ActionEvent evt) {
             for (GraphJCell jCell : this.jCells) {
-                GraphJEdge<?,?> jEdge = (GraphJEdge<?,?>) jCell;
+                GraphJEdge jEdge = (GraphJEdge) jCell;
                 setLineStyle(jEdge, this.lineStyle);
                 List<?> points =
                     GraphConstants.getPoints(jCell.getAttributes());
@@ -1452,8 +1448,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     private class MyGraphLayoutCache extends GraphLayoutCache {
         /** Constructs an instance of the cache. */
         MyGraphLayoutCache() {
-            super(null, new JCellViewFactory<Node,Edge<Node>>(JGraph.this),
-                true);
+            super(null, new JCellViewFactory(JGraph.this), true);
             setSelectsLocalInsertedCells(false);
             setShowsExistingConnections(false);
             setShowsChangedConnections(false);
@@ -1569,11 +1564,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             Object jCell = getSelectionCell();
             if (isAddPointEvent(evt)) {
                 if (jCell instanceof GraphJEdge) {
-                    addPoint((GraphJEdge<?,?>) jCell, evt.getPoint());
+                    addPoint((GraphJEdge) jCell, evt.getPoint());
                 }
             } else if (isRemovePointEvent(evt)) {
                 if (jCell instanceof GraphJEdge) {
-                    removePoint((GraphJEdge<?,?>) jCell, evt.getPoint());
+                    removePoint((GraphJEdge) jCell, evt.getPoint());
                 }
             }
             maybeShowPopup(evt);
@@ -1613,8 +1608,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                     for (GraphJCell cell : labelledCells) {
                         changedCellSet.add(cell);
                         if (cell instanceof GraphJEdge) {
-                            changedCellSet.add(((GraphJEdge<?,?>) cell).getSourceVertex());
-                            changedCellSet.add(((GraphJEdge<?,?>) cell).getTargetVertex());
+                            changedCellSet.add(((GraphJEdge) cell).getSourceVertex());
+                            changedCellSet.add(((GraphJEdge) cell).getTargetVertex());
                         }
                     }
                 }

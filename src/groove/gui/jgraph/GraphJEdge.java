@@ -40,12 +40,11 @@ import org.jgraph.graph.DefaultPort;
  * stored as a Set in the user object. In the latter case, toString() the user
  * object is the empty string.
  */
-public class GraphJEdge<N extends Node,E extends Edge<N>> extends DefaultEdge
-        implements GraphJCell {
+public class GraphJEdge extends DefaultEdge implements GraphJCell {
     /**
      * Constructs an uninitialised model edge.
      */
-    GraphJEdge(GraphJModel<N,E> jModel) {
+    GraphJEdge(GraphJModel<?,?> jModel) {
         this.jModel = jModel;
     }
 
@@ -53,7 +52,7 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends DefaultEdge
      * Constructs a model edge based on a graph edge.
      * @param edge the underlying graph edge of this model edge.
      */
-    GraphJEdge(GraphJModel<N,E> jModel, E edge) {
+    GraphJEdge(GraphJModel<?,?> jModel, Edge<?> edge) {
         this(jModel);
         this.source = edge.source();
         this.target = edge.target();
@@ -105,7 +104,7 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends DefaultEdge
      *          <tt>edge.target() == getTargetNode()</tt>
      * @ensure if <tt>result</tt> then <tt>getEdgeSet().contains(edge)</tt>
      */
-    public boolean addEdge(E edge) {
+    public boolean addEdge(Edge<?> edge) {
         assert edge.source().equals(getSourceNode());
         assert edge.target().equals(getTargetNode());
         return this.edges.add(edge);
@@ -115,10 +114,9 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends DefaultEdge
      * The cloned object is equal to this one after a reset. 
      */
     @Override
-    public GraphJEdge<N,E> clone() {
-        @SuppressWarnings("unchecked")
-        GraphJEdge<N,E> clone = (GraphJEdge<N,E>) super.clone();
-        clone.edges = new TreeSet<E>();
+    public GraphJEdge clone() {
+        GraphJEdge clone = (GraphJEdge) super.clone();
+        clone.edges = new TreeSet<Edge<?>>();
         return clone;
     }
 
@@ -204,7 +202,7 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends DefaultEdge
     /**
      * Returns the common source of the underlying graph edges.
      */
-    public N getSourceNode() {
+    public Node getSourceNode() {
         if (this.source == null) {
             this.source = getSourceVertex().getNode();
         }
@@ -214,7 +212,7 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends DefaultEdge
     /**
      * Returns the common target of the underlying graph edges.
      */
-    public N getTargetNode() {
+    public Node getTargetNode() {
         if (this.target == null) {
             this.target = getTargetVertex().getNode();
         }
@@ -225,33 +223,31 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends DefaultEdge
      * Returns the j-vertex that is the parent of the source port of this
      * j-edge.
      */
-    @SuppressWarnings("unchecked")
-    public GraphJVertex<N,E> getSourceVertex() {
+    public GraphJVertex getSourceVertex() {
         DefaultPort source = (DefaultPort) getSource();
-        return source == null ? null : (GraphJVertex<N,E>) source.getParent();
+        return source == null ? null : (GraphJVertex) source.getParent();
     }
 
     /**
      * Returns the j-vertex that is the parent of the target port of this
      * j-edge.
      */
-    @SuppressWarnings("unchecked")
-    public GraphJVertex<N,E> getTargetVertex() {
+    public GraphJVertex getTargetVertex() {
         DefaultPort target = (DefaultPort) getTarget();
-        return target == null ? null : (GraphJVertex<N,E>) target.getParent();
+        return target == null ? null : (GraphJVertex) target.getParent();
     }
 
     /**
      * Returns an unmodifiable view upon the set of underlying graph edges.
      */
-    public Set<E> getEdges() {
+    public Set<? extends Edge<?>> getEdges() {
         return Collections.unmodifiableSet(this.edges);
     }
 
     /**
      * Returns the first edge from the set of underlying edges.
      */
-    public E getEdge() {
+    public Edge<?> getEdge() {
         return this.edges.isEmpty() ? null : this.edges.iterator().next();
     }
 
@@ -262,7 +258,7 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends DefaultEdge
      */
     public List<StringBuilder> getLines() {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
-        for (E edge : getEdges()) {
+        for (Edge<?> edge : getEdges()) {
             // only add edges that have an unfiltered label
             if (!isFiltered(edge)) {
                 result.add(getLine(edge));
@@ -277,7 +273,7 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends DefaultEdge
      * (as returned by {@link #getListLabels()})
      * is being filtered.
      */
-    final protected boolean isFiltered(E edge) {
+    final protected boolean isFiltered(Edge<?> edge) {
         boolean result = false;
         for (Label label : getListLabels(edge)) {
             if (getJModel().isFiltering(label)) {
@@ -293,7 +289,7 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends DefaultEdge
      * edge label) from a given edge.
      * @see #getLines()
      */
-    protected StringBuilder getLine(E edge) {
+    protected StringBuilder getLine(Edge<?> edge) {
         return new StringBuilder(edge.label().text());
     }
 
@@ -303,14 +299,14 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends DefaultEdge
      */
     public Collection<? extends Label> getListLabels() {
         List<Label> result = new ArrayList<Label>();
-        for (E edge : getEdges()) {
+        for (Edge<?> edge : getEdges()) {
             result.addAll(getListLabels(edge));
         }
         return result;
     }
 
     /** Returns the listable labels on a given edge. */
-    public Set<? extends Label> getListLabels(E edge) {
+    public Set<? extends Label> getListLabels(Edge<?> edge) {
         return Collections.singleton(edge.label());
     }
 
@@ -365,11 +361,11 @@ public class GraphJEdge<N extends Node,E extends Edge<N>> extends DefaultEdge
     }
 
     /** Source node of the underlying graph edges. */
-    private N source;
+    private Node source;
     /** Target node of the underlying graph edges. */
-    private N target;
+    private Node target;
     /** Set of graph edges mapped to this JEdge. */
-    private Set<E> edges = new TreeSet<E>();
+    private Set<Edge<?>> edges = new TreeSet<Edge<?>>();
 
     private final GraphJModel<?,?> jModel;
     private boolean grayedOut;

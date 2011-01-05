@@ -2,9 +2,9 @@ package groove.gui.jgraph;
 
 import static groove.gui.jgraph.JAttr.LTS_EDGE_ACTIVE_CHANGE;
 import static groove.gui.jgraph.JAttr.LTS_EDGE_ATTR;
+import groove.graph.Edge;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.lts.DerivationLabel;
-import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.util.Converter;
 import groove.util.Groove;
@@ -14,7 +14,7 @@ import groove.util.Groove;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LTSJEdge extends GraphJEdge<GraphState,GraphTransition> {
+public class LTSJEdge extends GraphJEdge {
     /**
      * Creates a new instance from a given edge (required to be a
      * {@link GraphTransition}).
@@ -26,6 +26,11 @@ public class LTSJEdge extends GraphJEdge<GraphState,GraphTransition> {
     @Override
     public LTSJModel getJModel() {
         return (LTSJModel) super.getJModel();
+    }
+
+    @Override
+    public GraphTransition getEdge() {
+        return (GraphTransition) super.getEdge();
     }
 
     @Override
@@ -60,10 +65,10 @@ public class LTSJEdge extends GraphJEdge<GraphState,GraphTransition> {
     }
 
     @Override
-    protected StringBuilder getLine(GraphTransition edge) {
+    protected StringBuilder getLine(Edge<?> edge) {
         String text =
-            getJModel().isShowAnchors()
-                    ? new DerivationLabel(edge.getEvent()).text()
+            getJModel().isShowAnchors() ? new DerivationLabel(
+                ((GraphTransition) edge).getEvent()).text()
                     : edge.label().text();
         return new StringBuilder(text);
     }

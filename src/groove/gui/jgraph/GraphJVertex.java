@@ -42,8 +42,7 @@ import org.jgraph.graph.GraphConstants;
  * retrieve the user object as a Node. Also provides a single default port for
  * the graph cell, and a convenience method to retrieve it.
  */
-public class GraphJVertex<N extends Node,E extends Edge<N>> extends
-        DefaultGraphCell implements GraphJCell {
+public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     /**
      * Constructs a jnode on top of a graph node.
      * @param jModel the model in which this vertex exists
@@ -51,7 +50,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends
      * @param vertexLabelled flag to indicate if the vertex should be labelled.
      * @ensure getUserObject() == node, labels().isEmpty()
      */
-    GraphJVertex(GraphJModel<N,E> jModel, N node, boolean vertexLabelled) {
+    GraphJVertex(GraphJModel<?,?> jModel, Node node, boolean vertexLabelled) {
         this.jModel = jModel;
         this.nr = node.getNumber();
         add(new DefaultPort());
@@ -66,12 +65,12 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends
      *        may be null.
      * @ensure getUserObject() == node, labels().isEmpty()
      */
-    GraphJVertex(GraphJModel<N,E> jModel, N node) {
+    GraphJVertex(GraphJModel<?,?> jModel, Node node) {
         this(jModel, node, true);
     }
 
     /** Returns the {@link GraphJModel} associated with this vertex. */
-    public GraphJModel<N,E> getJModel() {
+    public GraphJModel<?,?> getJModel() {
         return this.jModel;
     }
 
@@ -79,7 +78,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends
      * Sets the node wrapped in this GraphJVertex<?,?> to a new one,
      * and clears the set of self-edges. 
      */
-    void reset(N node) {
+    void reset(Node node) {
         this.node = node;
         this.edges.clear();
     }
@@ -88,17 +87,16 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends
      * The cloned object is equal to this one after a reset. 
      */
     @Override
-    public GraphJVertex<N,E> clone() {
-        @SuppressWarnings("unchecked")
-        GraphJVertex<N,E> clone = (GraphJVertex<N,E>) super.clone();
-        clone.edges = new TreeSet<E>();
+    public GraphJVertex clone() {
+        GraphJVertex clone = (GraphJVertex) super.clone();
+        clone.edges = new TreeSet<Edge<?>>();
         return clone;
     }
 
     /**
      * Returns the graph node wrapped by this {@link GraphJVertex}.
      */
-    public N getNode() {
+    public Node getNode() {
         return this.node;
     }
 
@@ -112,7 +110,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends
      * @require <tt>edge.source() == edge.target() == getNode()</tt>
      * @ensure if <tt>result</tt> then <tt>edges().contains(edge)</tt>
      */
-    public boolean addSelfEdge(E edge) {
+    public boolean addSelfEdge(Edge<?> edge) {
         if (this.vertexLabelled && edge.source() == edge.target()) {
             this.edges.add(edge);
             return true;
@@ -125,7 +123,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends
      * Returns an unmodifiable view on the self edges.
      * These are the edges added using {@link #addSelfEdge(Edge)}.
      */
-    public Set<E> getSelfEdges() {
+    public Set<? extends Edge<?>> getSelfEdges() {
         return Collections.unmodifiableSet(this.edges);
     }
 
@@ -144,7 +142,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends
     protected boolean hasVisibleIncidentEdge() {
         boolean result = false;
         for (Object jEdge : getPort().getEdges()) {
-            if (!((GraphJEdge<?,?>) jEdge).getLines().isEmpty()) {
+            if (!((GraphJEdge) jEdge).getLines().isEmpty()) {
                 result = true;
                 break;
             }
@@ -177,7 +175,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends
         // show the node identity if required
         result.addAll(getNodeIdLines());
         // only add edges that have an unfiltered label
-        for (E edge : getSelfEdges()) {
+        for (Edge<?> edge : getSelfEdges()) {
             if (!isFiltered(edge)) {
                 result.add(new StringBuilder(getLine(edge)));
             }
@@ -208,7 +206,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends
      * (as returned by {@link #getListLabels()})
      * is being filtered.
      */
-    final protected boolean isFiltered(E edge) {
+    final protected boolean isFiltered(Edge<?> edge) {
         boolean result = false;
         for (Label label : getListLabels(edge)) {
             if (getJModel().isFiltering(label)) {
@@ -223,7 +221,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends
      * Returns the text to be shown for the node label of a given edge.
      * This implementation delegates to {@link Edge#label()}. 
      */
-    protected StringBuilder getLine(E edge) {
+    protected StringBuilder getLine(Edge<?> edge) {
         StringBuilder result = new StringBuilder(edge.label().text());
         Converter.toHtml(result);
         return result;
@@ -236,7 +234,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends
      */
     public Collection<? extends Label> getListLabels() {
         Collection<Label> result = new ArrayList<Label>();
-        for (E edge : getSelfEdges()) {
+        for (Edge<?> edge : getSelfEdges()) {
             result.addAll(getListLabels(edge));
         }
         if (getSelfEdges().isEmpty()) {
@@ -246,7 +244,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends
     }
 
     /** This implementation delegates to {@link Edge#label()}. */
-    protected Set<? extends Label> getListLabels(E edge) {
+    protected Set<? extends Label> getListLabels(Edge<?> edge) {
         return Collections.singleton(edge.label());
     }
 
@@ -375,7 +373,7 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends
         return false;
     }
 
-    private final GraphJModel<N,E> jModel;
+    private final GraphJModel<?,?> jModel;
     private int nr;
     private boolean grayedOut;
     private boolean emphasised;
@@ -385,8 +383,8 @@ public class GraphJVertex<N extends Node,E extends Edge<N>> extends
      */
     private final boolean vertexLabelled;
     /** The graph node modelled by this jgraph node. */
-    private N node;
+    private Node node;
     /** Set of graph edges mapped to this JEdge. */
-    private Set<E> edges = new TreeSet<E>();
+    private Set<Edge<?>> edges = new TreeSet<Edge<?>>();
 
 }

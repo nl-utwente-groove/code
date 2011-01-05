@@ -16,9 +16,6 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.Edge;
-import groove.graph.Node;
-
 import org.jgraph.graph.DefaultCellViewFactory;
 import org.jgraph.graph.VertexView;
 
@@ -29,8 +26,7 @@ import org.jgraph.graph.VertexView;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class JCellViewFactory<N extends Node,E extends Edge<N>> extends
-        DefaultCellViewFactory {
+public class JCellViewFactory extends DefaultCellViewFactory {
     /**
      * Constructs a factory for creating views upon a particular {@link JGraph}.
      * @param jGraph the graph on which the views are to be displayed.
@@ -48,7 +44,7 @@ public class JCellViewFactory<N extends Node,E extends Edge<N>> extends
     protected VertexView createVertexView(Object cell) {
         if (cell instanceof GraphJVertex) {
             JVertexView result =
-                new JVertexView((GraphJVertex<?,?>) cell, this.jGraph);
+                new JVertexView((GraphJVertex) cell, this.jGraph);
             // the following is apparently necessary
             // to initialise the autosize correctly
             result.refresh(this.jGraph.getGraphLayoutCache(),
@@ -67,7 +63,7 @@ public class JCellViewFactory<N extends Node,E extends Edge<N>> extends
     @Override
     protected JEdgeView createEdgeView(Object edge) {
         assert edge instanceof GraphJEdge;
-        return new JEdgeView((GraphJEdge<?,?>) edge, this.jGraph);
+        return new JEdgeView((GraphJEdge) edge, this.jGraph);
     }
 
     /**
