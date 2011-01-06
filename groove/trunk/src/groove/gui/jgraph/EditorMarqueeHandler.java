@@ -179,14 +179,14 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
      * @see #drawEmphVertex(Graphics)
      * @see #drawAddingEdge(Graphics)
      */
-    public void overlay(Graphics g) {
-        super.overlay(getJGraph(), g, false);
+    public void overlay(Graphics g, boolean clear) {
+        super.overlay(getJGraph(), g, clear);
         drawEmphVertex(g);
         drawAddingEdge(g);
     }
 
     /**
-     * Calls {@link #overlay(Graphics)} twice, with the color of the graphics
+     * Calls {@link #overlay(Graphics,boolean)} twice, with the color of the graphics
      * set to the j-graph foreground and the XOR value to the background. In
      * between the method {@link #changeOverlayState()} is called to install the
      * values for the new overlay; at the end the {@link #overlayDone()} is
@@ -196,9 +196,9 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
         Graphics g = getJGraph().getGraphics();
         g.setColor(getJGraph().getForeground());
         g.setXORMode(getJGraph().getBackground());
-        overlay(g);
+        overlay(g, true);
         changeOverlayState();
-        overlay(g);
+        overlay(g, false);
         overlayDone();
     }
 
@@ -206,8 +206,8 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
      * Callback method to change the drawable state of the overlay to some
      * (previously determined) new state. Callback method invoked in
      * {@link #redrawOverlay()} aver undrawing (first call of
-     * {@link #overlay(Graphics)} but before (re)drawing (second call of
-     * {@link #overlay(Graphics)}.
+     * {@link #overlay(Graphics,boolean)} but before (re)drawing (second call of
+     * {@link #overlay(Graphics,boolean)}.
      */
     protected void changeOverlayState() {
         this.emphVertex = this.newEmphVertex;

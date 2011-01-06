@@ -546,8 +546,9 @@ public class JEdgeView extends EdgeView {
             }
             this.error = theView.getCell().hasError();
             if (this.error) {
-                Rectangle2D labelBounds = getLabelBounds(jGraph, theView);
-                this.errorBounds = labelBounds.getBounds();
+                Rectangle b = getLabelBounds(jGraph, theView).getBounds();
+                b.setRect(b.x - 1, b.y - 1, b.width, b.height + 1);
+                this.errorBounds = b;
             }
             super.getRendererComponent(jGraph, view, sel, focus, preview);
             this.lineWidth = theView.getLinewidth();
@@ -558,9 +559,9 @@ public class JEdgeView extends EdgeView {
         public void paint(Graphics g) {
             super.paint(g);
 
+            Graphics2D g2 = (Graphics2D) g;
             if (this.twoLines) {
                 // draw the second line
-                Graphics2D g2 = (Graphics2D) g;
                 g2.setColor(this.line2color);
                 g2.setStroke(JAttr.createStroke(this.line2width, this.line2dash));
                 g2.draw(this.view.lineShape);
@@ -571,20 +572,19 @@ public class JEdgeView extends EdgeView {
 
                 g2.setStroke(new BasicStroke(1));
                 g.setFont(GraphConstants.getFont(this.line2map));
-
-                JGraph graph = (JGraph) this.graph.get();
-                if (graph.getEditingCell() != this.view.getCell()) {
-                    Object label = graph.convertValueToString(this.view);
-                    if (label != null) {
-                        paintLabel(g, label.toString(),
-                            getLabelPosition(this.view), true);
-                    }
-                }
+                paintLabels(g);
             }
             if (this.error) {
+                // overlay with error colour
+                int s = JAttr.EXTRA_BORDER_SPACE;
                 g.setColor(JAttr.ERROR_COLOR);
-                g.fillRect(this.errorBounds.x, this.errorBounds.y,
-                    this.errorBounds.width, this.errorBounds.height);
+                g2.setStroke(JAttr.createStroke(this.lineWidth + s, null));
+                g2.draw(this.view.lineShape);
+                g2.fill(this.view.endShape);
+                g2.draw(this.view.endShape);
+                paintLabels(g);
+                g.setColor(JAttr.ERROR_COLOR);
+                g2.fill(this.errorBounds);
             }
         }
 
@@ -696,6 +696,6 @@ public class JEdgeView extends EdgeView {
         private AttributeMap line2map;
         /** Flag indicating that the underlying edge has an error. */
         private boolean error;
-        private Rectangle errorBounds;
+        private Rectangle2D errorBounds;
     }
 }
