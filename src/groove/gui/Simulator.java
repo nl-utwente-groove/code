@@ -458,58 +458,31 @@ public class Simulator {
         return this.undoHistory;
     }
 
-    /**
-     * Calls the editor for a certain graph, and stores the graph into the
-     * grammar afterwards, under a user-determined name.
-     * @param graph the graph to be edited.
-     * @param fresh flag indicating if the name for the graph should be fresh
+    /** 
+     * Adds an editor panel for the given graph, or selects the 
+     * one that already exists.
      */
-    void handleEditGraph(final AspectGraph graph, final boolean fresh) {
-        EditorDialog dialog =
-            new EditorDialog(getFrame(), getOptions(), graph, getTypeView()) {
-                @Override
-                public void finish() {
-                    String oldGraphName = graph.getName();
-                    String newGraphName =
-                        askNewGraphName("Select graph name",
-                            oldGraphName == null ? NEW_GRAPH_NAME
-                                    : oldGraphName, fresh);
-                    if (newGraphName != null) {
-                        AspectGraph newGraph =
-                            getAspectGraph().rename(newGraphName);
-                        if (doAddGraph(newGraph)
-                            && confirmLoadStartState(newGraphName)) {
-                            doLoadStartGraph(newGraphName);
-                        }
-                    }
-                }
-            };
-        dialog.start();
+    void handleEditGraph(final AspectGraph graph) {
+        EditorPanel result = null;
+        // look if an editor already exists for the graph
+        JTabbedPane viewsPane = getGraphViewsPanel();
+        for (int i = 0; i < viewsPane.getTabCount(); i++) {
+            Component view = viewsPane.getComponentAt(i);
+            if (view instanceof EditorPanel
+                && ((EditorPanel) view).getGraph() == graph) {
+                result = (EditorPanel) view;
+                break;
+            }
+        }
+        if (result == null) {
+            result = addEditorPanel(graph);
+        }
+        getGraphViewsPanel().setSelectedComponent(result);
     }
 
-    void newHandleEditGraph(final AspectGraph graph, final boolean fresh) {
-        final JPanel editorPanel = new JPanel();
-        EditorDialog dialog =
-            new EditorDialog(editorPanel, getOptions(), graph, getTypeView()) {
-                @Override
-                public void finish() {
-                    String oldGraphName = graph.getName();
-                    String newGraphName =
-                        askNewGraphName("Select graph name",
-                            oldGraphName == null ? NEW_GRAPH_NAME
-                                    : oldGraphName, fresh);
-                    if (newGraphName != null) {
-                        AspectGraph newGraph =
-                            getAspectGraph().rename(newGraphName);
-                        if (doAddGraph(newGraph)
-                            && confirmLoadStartState(newGraphName)) {
-                            doLoadStartGraph(newGraphName);
-                        }
-                    }
-                    getGraphViewsPanel().remove(editorPanel);
-                }
-            };
-        dialog.start();
+    /** Creates and adds an editor panel for the given graph. */
+    private EditorPanel addEditorPanel(AspectGraph graph) {
+        final EditorPanel result = new EditorPanel(this, graph);
         Icon icon = null;
         switch (graph.getRole()) {
         case HOST:
@@ -521,8 +494,13 @@ public class Simulator {
         case TYPE:
             icon = Groove.TYPE_MODE_ICON;
         }
-        getGraphViewsPanel().addTab(graph.getName(), icon, editorPanel);
-        getGraphViewsPanel().setSelectedComponent(editorPanel);
+        getGraphViewsPanel().addTab("", result);
+        int index = getGraphViewsPanel().indexOfComponent(result);
+        Component tabComponent =
+            new ButtonTabComponent(result, icon, graph.getName());
+        getGraphViewsPanel().setTabComponentAt(index, tabComponent);
+        result.start();
+        return result;
     }
 
     /** Tests if a given file refers to a graph within the current system store. */
@@ -580,17 +558,12 @@ public class Simulator {
     boolean doAddGraph(AspectGraph graph) {
         boolean result = false;
         try {
-            if (graph.hasErrors()) {
-                showErrorDialog("Errors in graph",
-                    new FormatException(graph.getErrors()));
+            getGrammarStore().putGraph(graph);
+            result = true;
+            if (graph.getName().equals(getGrammarView().getStartGraphName())) {
+                updateGrammar();
             } else {
-                getGrammarStore().putGraph(graph);
-                result = true;
-                if (graph.getName().equals(getGrammarView().getStartGraphName())) {
-                    updateGrammar();
-                } else {
-                    refresh();
-                }
+                refresh();
             }
             result = true;
         } catch (IOException exc) {
@@ -633,20 +606,15 @@ public class Simulator {
     boolean doAddType(AspectGraph typeGraph) {
         boolean result = false;
         try {
-            if (typeGraph.hasErrors()) {
-                showErrorDialog("Errors in type graph", new FormatException(
-                    typeGraph.getErrors()));
+            getGrammarStore().putType(typeGraph);
+            if (getGrammarView().getActiveTypeNames().contains(
+                typeGraph.getName())) {
+                updateGrammar();
             } else {
-                getGrammarStore().putType(typeGraph);
-                if (getGrammarView().getActiveTypeNames().contains(
-                    typeGraph.getName())) {
-                    updateGrammar();
-                } else {
-                    // otherwise, we only need to update the type panel
-                    getTypePanel().displayType();
-                }
-                result = true;
+                // otherwise, we only need to update the type panel
+                getTypePanel().displayType();
             }
+            result = true;
         } catch (IOException exc) {
             showErrorDialog(
                 String.format("Error while saving type graph '%s'",
@@ -983,18 +951,36 @@ public class Simulator {
      * itself is successful. 
      */
     public boolean doQuit() {
-        groove.gui.UserSettings.synchSettings(this.frame);
-        // Saves the current user settings.
-        if (confirmAbandon(false)) {
-            getFrame().dispose();
-            // try to persist the user preferences
-            try {
-                Preferences.userRoot().flush();
-            } catch (BackingStoreException e) {
-                // do nothing if the backing store is inaccessible
+        // collect the (possibly dirty) editors
+        JTabbedPane viewsPane = getGraphViewsPanel();
+        List<EditorPanel> editorList = new ArrayList<EditorPanel>();
+        for (int i = 0; i < viewsPane.getTabCount(); i++) {
+            if (viewsPane.getComponentAt(i) instanceof EditorPanel) {
+                editorList.add((EditorPanel) viewsPane.getComponentAt(i));
             }
         }
-        return true;
+        // try to close the editors
+        boolean allClosed = true;
+        for (EditorPanel editor : editorList) {
+            if (!editor.handleCancel()) {
+                allClosed = false;
+                break;
+            }
+        }
+        if (allClosed) {
+            groove.gui.UserSettings.synchSettings(this.frame);
+            // Saves the current user settings.
+            if (confirmAbandon(false)) {
+                getFrame().dispose();
+                // try to persist the user preferences
+                try {
+                    Preferences.userRoot().flush();
+                } catch (BackingStoreException e) {
+                    // do nothing if the backing store is inaccessible
+                }
+            }
+        }
+        return allClosed;
     }
 
     /**
@@ -1476,7 +1462,13 @@ public class Simulator {
      */
     JTabbedPane getGraphViewsPanel() {
         if (this.graphViewsPanel == null) {
-            this.graphViewsPanel = new JTabbedPane();
+            this.graphViewsPanel = new JTabbedPane() {
+                @Override
+                public void setSelectedIndex(int index) {
+                    super.setSelectedIndex(index);
+                    getSelectedComponent().requestFocusInWindow();
+                }
+            };
             this.graphViewsPanel.addTab(null, Groove.GRAPH_FRAME_ICON,
                 getStatePanel(), "Current graph state");
             this.graphViewsPanel.addTab(null, Groove.RULE_FRAME_ICON,
@@ -2100,13 +2092,13 @@ public class Simulator {
             @Override
             public void menuSelectionChanged(boolean selected) {
                 removeAll();
+                JGraph jGraph = getGraphPanel().getJGraph();
                 if (getGraphPanel() != null) {
-                    JGraph jGraph = getGraphPanel().getJGraph();
                     jGraph.addSubmenu(this, jGraph.createEditMenu(null, true));
                     jGraph.addSubmenu(this, jGraph.createDisplayMenu());
                     this.addSeparator();
                 }
-                this.add(createOptionsMenu());
+                jGraph.addSubmenu(this, createOptionsMenu());
                 super.menuSelectionChanged(selected);
             }
         };
@@ -3447,7 +3439,7 @@ public class Simulator {
          */
         public void actionPerformed(ActionEvent e) {
             AspectJModel stateModel = getStatePanel().getJModel();
-            newHandleEditGraph(stateModel.getGraph(), false);
+            handleEditGraph(stateModel.getGraph());
         }
     }
 
@@ -3622,26 +3614,7 @@ public class Simulator {
          * @require <tt>getCurrentRule != null</tt>.
          */
         public void actionPerformed(ActionEvent e) {
-            final String ruleName = getCurrentRule().getName();
-            EditorDialog dialog =
-                new EditorDialog(getFrame(), getOptions(),
-                    getCurrentRule().getView(), getTypeView()) {
-                    @Override
-                    public void finish() {
-                        if (confirmAbandon(false)) {
-                            RuleName newRuleName =
-                                askNewRuleName("Name for edited rule",
-                                    ruleName, false);
-                            if (newRuleName != null) {
-                                AspectGraph ruleAsAspectGraph =
-                                    getAspectGraph().rename(
-                                        newRuleName.toString());
-                                doAddRule(ruleAsAspectGraph);
-                            }
-                        }
-                    }
-                };
-            dialog.start();
+            handleEditGraph(getCurrentRule().getView());
         }
     }
 
@@ -4416,8 +4389,13 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            AspectGraph newGraph = AspectGraph.emptyGraph(HOST);
-            newHandleEditGraph(newGraph, true);
+            String newGraphName =
+                askNewGraphName("Select graph name", NEW_GRAPH_NAME, true);
+            if (newGraphName != null) {
+                AspectGraph newGraph =
+                    AspectGraph.emptyGraph(newGraphName, HOST);
+                handleEditGraph(newGraph);
+            }
         }
 
         /** Enabled if there is a grammar loaded. */
@@ -4451,24 +4429,13 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(false)) {
-                AspectGraph newRule = AspectGraph.emptyGraph(RULE);
-                EditorDialog dialog =
-                    new EditorDialog(getFrame(), getOptions(), newRule,
-                        getTypeView()) {
-                        @Override
-                        public void finish() {
-                            final RuleName ruleName =
-                                askNewRuleName(null, NEW_RULE_NAME, true);
-                            if (ruleName != null) {
-                                AspectGraph newRule =
-                                    getAspectGraph().rename(ruleName.toString());
-                                if (doAddRule(newRule)) {
-                                    setRule(ruleName);
-                                }
-                            }
-                        }
-                    };
-                dialog.start();
+                final RuleName ruleName =
+                    askNewRuleName(null, NEW_RULE_NAME, true);
+                if (ruleName != null) {
+                    AspectGraph newRule =
+                        AspectGraph.emptyGraph(ruleName.toString(), RULE);
+                    handleEditGraph(newRule);
+                }
             }
         }
 

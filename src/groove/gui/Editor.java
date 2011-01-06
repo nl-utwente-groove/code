@@ -24,12 +24,10 @@ import groove.graph.TypeGraph;
 import groove.gui.dialog.AboutBox;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.PropertiesDialog;
-import groove.gui.dialog.SingleListDialog;
 import groove.gui.jgraph.AspectJCell;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
 import groove.io.AspectGxl;
 import groove.io.ExtensionFilter;
@@ -48,7 +46,6 @@ import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
@@ -60,7 +57,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -88,7 +84,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
@@ -96,7 +91,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.WindowConstants;
-import javax.swing.border.BevelBorder;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.filechooser.FileFilter;
 
@@ -211,7 +205,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         getModel().removeUndoableEditListener(getUndoManager());
         getModel().removeGraphModelListener(this);
         this.jgraph.setModel(model);
-        setCurrentGraphModified(false);
+        setDirty(false);
         getUndoManager().discardAllEdits();
         getModel().addUndoableEditListener(getUndoManager());
         getModel().addGraphModelListener(this);
@@ -523,20 +517,20 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /**
      * Sets the modified status of the currently edited graph. Also updates the
      * frame title to reflect the new modified status.
-     * @param modified the new modified status
-     * @see #isCurrentGraphModified()
+     * @param dirty the new modified status
+     * @see #isDirty()
      */
-    protected void setCurrentGraphModified(boolean modified) {
-        this.currentGraphModified = modified;
+    protected void setDirty(boolean dirty) {
+        this.dirty = dirty;
         updateTitle();
     }
 
     /**
      * Returns the current modified status of the underlying jgraph.
-     * @see #setCurrentGraphModified(boolean)
+     * @see #setDirty(boolean)
      */
-    protected boolean isCurrentGraphModified() {
-        return this.currentGraphModified;
+    protected boolean isDirty() {
+        return this.dirty;
     }
 
     /**
@@ -545,7 +539,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      */
     protected void setGraphSaved() {
         this.anyGraphSaved = true;
-        setCurrentGraphModified(false);
+        setDirty(false);
     }
 
     /**
@@ -632,26 +626,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             this.propertyChangeSupport = new PropertyChangeSupport(this);
         }
         return this.propertyChangeSupport;
-    }
-
-    /**
-     * Sets the name of the graph in the title bar. If the indicated name is
-     * <tt>null</tt>, the appropriate element of {@link #TITLE} is used.
-     */
-    protected void updateTitle() {
-        String modelName = getModelName();
-        if (modelName == null || modelName.length() == 0) {
-            modelName = TITLE.get(getRole());
-        }
-        String title =
-            (this.currentGraphModified ? MODIFIED_INDICATOR : "") + modelName
-                + " - " + EDITOR_NAME;
-        Component window = getRootComponent();
-        if (window instanceof JFrame) {
-            ((JFrame) window).setTitle(title);
-        } else if (window instanceof JDialog) {
-            ((JDialog) window).setTitle(title);
-        }
     }
 
     /**
@@ -944,12 +918,13 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             result.addItemListener(new ItemListener() {
                 @Override
                 public void itemStateChanged(ItemEvent e) {
+                    getJGraph().setEditable(
+                        e.getStateChange() == ItemEvent.DESELECTED);
                     getModel().syncGraph();
                     updateStatus();
                     Editor.this.previewSwitching = true;
                     getGraphPanel().refresh();
                     Editor.this.previewSwitching = false;
-                    //                    setGraph(getGraph(), false);
                 }
             });
         }
@@ -1025,13 +1000,13 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     /**
      * Updates the Undo/Redo Button State based on Undo Manager. Also sets
-     * {@link #isCurrentGraphModified()} if no more undos are available.
+     * {@link #isDirty()} if no more undos are available.
      */
     protected void updateHistoryButtons() {
         // The View Argument Defines the Context
         getUndoAction().setEnabled(getUndoManager().canUndo());
         getRedoAction().setEnabled(getUndoManager().canRedo());
-        setCurrentGraphModified(getUndoManager().canUndo());
+        setDirty(getUndoManager().canUndo());
     }
 
     /**
@@ -1052,16 +1027,16 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /**
-     * Activates the appropriate mode button (select, node or edge), based on a
-     * given (mode) action.
+     * Activates the appropriate role button (host, rule or type), based on a
+     * given (type) action.
      * @param forAction the mode action for which the corresponding button is to
      *        be activated
      */
     protected void updateTypeButtons(Action forAction) {
-        Enumeration<AbstractButton> modeButtonEnum =
+        Enumeration<AbstractButton> typeButtonEnum =
             getTypeButtonGroup().getElements();
-        while (modeButtonEnum.hasMoreElements()) {
-            JToggleButton button = (JToggleButton) modeButtonEnum.nextElement();
+        while (typeButtonEnum.hasMoreElements()) {
+            JToggleButton button = (JToggleButton) typeButtonEnum.nextElement();
             if (button.getAction() == forAction) {
                 button.setSelected(true);
             }
@@ -1069,10 +1044,41 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /**
+     * Sets the name of the graph in the title bar. If the indicated name is
+     * <tt>null</tt>, the appropriate element of {@link #TITLE} is used.
+     */
+    protected void updateTitle() {
+        String modelName = getModelName();
+        if (modelName == null || modelName.length() == 0) {
+            modelName = TITLE.get(getRole());
+        }
+        String title =
+            (this.dirty ? MODIFIED_INDICATOR : "") + modelName + " - "
+                + EDITOR_NAME;
+        Component window = getRootComponent();
+        if (window instanceof JFrame) {
+            ((JFrame) window).setTitle(title);
+        } else if (window instanceof JDialog) {
+            ((JDialog) window).setTitle(title);
+        }
+    }
+
+    /** Sets the enabling of the transfer buttons. */
+    protected void updateCopyPasteButtons() {
+        boolean previewing = getPreviewModeButton().isSelected();
+        boolean hasSelection = !getJGraph().isSelectionEmpty();
+        getCopyAction().setEnabled(!previewing && hasSelection);
+        getCutAction().setEnabled(!previewing && hasSelection);
+        getDeleteAction().setEnabled(!previewing && hasSelection);
+        getPasteAction().setEnabled(!previewing && clipboardFilled);
+    }
+
+    /**
      * Updates the status bar and the error panel 
      * with information about the currently edited graph.
      */
     protected void updateStatus() {
+        updateCopyPasteButtons();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -1120,7 +1126,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** Undoes the last registered change to the Model or the View. */
     protected void undoLastEdit() {
         setSelectInsertedCells(false);
-        getUndoManager().undo(this.jgraph.getGraphLayoutCache());
+        getUndoManager().undo();
         setSelectInsertedCells(true);
         updateHistoryButtons();
     }
@@ -1128,7 +1134,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** Redoes the latest undone change to the Model or the View. */
     protected void redoLastEdit() {
         setSelectInsertedCells(false);
-        getUndoManager().redo(this.jgraph.getGraphLayoutCache());
+        getUndoManager().redo();
         setSelectInsertedCells(true);
         updateHistoryButtons();
     }
@@ -1146,7 +1152,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * edited graph.
      */
     boolean confirmAbandon() {
-        if (isCurrentGraphModified()) {
+        if (isDirty()) {
             int res =
                 JOptionPane.showConfirmDialog(getGraphPanel(),
                     "Save changes in current graph?", null,
@@ -1164,59 +1170,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         }
     }
 
-    private String showTypeGraphSelectionDialog() {
-        List<String> typeNames =
-            new ArrayList<String>(
-                this.getTypeViewList().getTypeViewMap().keySet());
-        if (typeNames.size() == 1) {
-            return typeNames.iterator().next();
-        } else {
-            SingleListDialog dialog =
-                new SingleListDialog(this.getFrame(), "Type graph selection",
-                    "Select the type graph to display:", typeNames, false);
-            return dialog.getSelectedItem();
-        }
-    }
-
-    /**
-     * Creates a preview of an aspect model, with properties. Returns a j-model
-     * if the edited model should be replaced, <code>null</code> otherwise.
-     */
-    private void showPreviewDialog(View<?> view) {
-        if (this.previewSize == null) {
-            this.previewSize = DEFAULT_PREVIEW_SIZE;
-        }
-        AspectGraph graph = view.getView();
-        AspectJModel previewModel =
-            AspectJModel.newInstance(graph, getOptions());
-        JGraph jGraph = createJGraph(previewModel);
-        jGraph.setToolTipEnabled(true);
-        JScrollPane jGraphPane = new JScrollPane(jGraph);
-        jGraphPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
-        JComponent previewContent = new JPanel(false);
-        previewContent.setLayout(new BorderLayout());
-        previewContent.add(jGraphPane);
-        // Snap to grid.
-        JToggleButton button = getSnapToGridButton(jGraph);
-        boolean selected = getSnapToGridButton().isSelected();
-        button.setSelected(selected);
-        jGraph.setGridEnabled(selected);
-        jGraph.setGridVisible(selected);
-        JPanel snapPane = new JPanel();
-        snapPane.add(button);
-        snapPane.add(new JLabel("Snap to grid"));
-        previewContent.add(snapPane, BorderLayout.SOUTH);
-        JOptionPane previewPane =
-            new JOptionPane(previewContent, JOptionPane.PLAIN_MESSAGE,
-                JOptionPane.DEFAULT_OPTION);
-        JDialog dialog = previewPane.createDialog(getFrame(), "Type graph");
-        dialog.setSize(this.previewSize);
-        dialog.setResizable(true);
-        dialog.setModalityType(null);
-        dialog.setVisible(true);
-        this.previewSize = dialog.getSize();
-    }
-
     /**
      * Returns the options object associated with the simulator.
      */
@@ -1231,17 +1184,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** Returns the jgraph component of this editor. */
     public AspectJGraph getJGraph() {
         return this.jgraph;
-    }
-
-    /**
-     * Factory method to create a {@link JGraph} displaying a given
-     * {@link GraphJModel}.
-     */
-    private JGraph createJGraph(AspectJModel jmodel) {
-        JGraph result = new JGraph(null, false);
-        result.setModel(jmodel);
-        result.setExporter(getExporter());
-        return result;
     }
 
     /**
@@ -1281,11 +1223,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     private JPanel statusPanel;
     /** Panel displaying format error messages. */
     private ErrorListPanel errorPanel;
-    /** The size of the (previous) preview dialog. */
-    private Dimension previewSize;
 
     /** Indicates whether jgraph has been modified since the last save. */
-    private boolean currentGraphModified;
+    private boolean dirty;
 
     /** Indicates whether jgraph has been modified since the last save. */
     private boolean anyGraphSaved;
@@ -1617,7 +1557,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             if (dialog.showDialog(getFrame())) {
                 getModel().setProperties(
                     new GraphProperties(dialog.getEditedProperties()));
-                setCurrentGraphModified(true);
+                setDirty(true);
                 updateTitle();
             }
         }
@@ -1967,33 +1907,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         }
     }
 
-    /** Returns the type preview action, lazily creating it first. */
-    Action getPreviewTypeAction() {
-        if (this.setPreviewTypeAction == null) {
-            this.setPreviewTypeAction = new PreviewTypeAction();
-        }
-        return this.setPreviewTypeAction;
-    }
-
-    /** Action to create a type preview dialog. */
-    private Action setPreviewTypeAction;
-
-    /**
-     * Action to preview the current type graph.
-     */
-    private class PreviewTypeAction extends ToolbarAction {
-        /** Constructs an instance of the action. */
-        protected PreviewTypeAction() {
-            super(Options.PREVIEW_TYPE_ACTION_NAME, null, Groove.TYPE_MODE_ICON);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            String typeName = showTypeGraphSelectionDialog();
-            showPreviewDialog(getTypeViewList().getTypeViewMap().get(typeName));
-        }
-    }
-
     /** This will change the source of the action event to graph. */
     private class TransferAction extends ToolbarAction {
         /**
@@ -2017,6 +1930,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                     evt.getActionCommand(), evt.getModifiers());
             this.action.actionPerformed(evt);
             if (this == getCutAction() || this == getCopyAction()) {
+                clipboardFilled = true;
                 getPasteAction().setEnabled(true);
             }
         }
@@ -2313,10 +2227,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** The indication displayed in the frame title for a modified graph. */
     public static final String MODIFIED_INDICATOR = "> ";
 
-    /** Size of the preview dialog window. */
-    private static final Dimension DEFAULT_PREVIEW_SIZE = new Dimension(500,
-        500);
-
+    /**
+     * Flag shared between all Editor instances indicating that
+     * the clipboard was filled by a cut or copy action.
+     */
+    private static boolean clipboardFilled;
     /**
      * Property name of the edit type of the editor. The edit type is the kind
      * of object being edited. Values are of type {@link GraphRole}.

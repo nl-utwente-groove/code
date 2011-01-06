@@ -23,7 +23,7 @@ import org.jgraph.graph.AttributeMap;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LTSJVertex extends GraphJVertex {
+public class LTSJVertex extends GraphJVertex implements LTSJCell {
     /**
      * Creates a new instance for a given node (required to be a
      * {@link GraphState}) in an LTS model.
@@ -141,7 +141,7 @@ public class LTSJVertex extends GraphJVertex {
     /** Changes the active status of this edge.
      * @return {@code true} if the active status changed as a result of this call.
      */
-    final boolean setActive(boolean active) {
+    public final boolean setActive(boolean active) {
         boolean result = active != this.active;
         if (result) {
             this.active = active;

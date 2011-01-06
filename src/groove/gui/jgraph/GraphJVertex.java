@@ -52,7 +52,6 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      */
     GraphJVertex(GraphJModel<?,?> jModel, Node node, boolean vertexLabelled) {
         this.jModel = jModel;
-        this.nr = node.getNumber();
         add(new DefaultPort());
         this.node = node;
         this.vertexLabelled = vertexLabelled;
@@ -276,14 +275,9 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
         return (DefaultPort) getFirstChild();
     }
 
-    /** Sets the number of this vertex. */
-    public void setNumber(int nr) {
-        this.nr = nr;
-    }
-
     /** Returns the number with which this vertex was initialised. */
     public int getNumber() {
-        return this.nr;
+        return getNode().getNumber();
     }
 
     /**
@@ -374,7 +368,6 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     }
 
     private final GraphJModel<?,?> jModel;
-    private int nr;
     private boolean grayedOut;
     private boolean emphasised;
     /**

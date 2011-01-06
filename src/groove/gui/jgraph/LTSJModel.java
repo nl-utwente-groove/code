@@ -137,7 +137,7 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
         if (previousTrans != trans) {
             this.activeTransition = trans;
             if (previousTrans != null) {
-                LTSJEdge jCell = (LTSJEdge) getJCellForEdge(previousTrans);
+                LTSJCell jCell = (LTSJCell) getJCellForEdge(previousTrans);
                 assert jCell != null : String.format(
                     "No image for %s in jModel", previousTrans);
                 if (jCell.setActive(false)) {
@@ -145,7 +145,7 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
                 }
             }
             if (trans != null) {
-                LTSJEdge jCell = (LTSJEdge) getJCellForEdge(trans);
+                LTSJCell jCell = (LTSJCell) getJCellForEdge(trans);
                 assert jCell != null : String.format(
                     "No image for %s in jModel", trans);
                 if (jCell.setActive(true)) {
