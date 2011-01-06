@@ -18,6 +18,7 @@ package groove.gui.jgraph;
 
 import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
+import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
@@ -84,6 +85,11 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     @Override
     public AspectGraph getGraph() {
         return (AspectGraph) super.getGraph();
+    }
+
+    @Override
+    public AspectJCell getJCell(Element elem) {
+        return (AspectJCell) super.getJCell(elem);
     }
 
     /** Specialises the return type. */

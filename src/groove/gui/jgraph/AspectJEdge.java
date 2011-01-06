@@ -22,6 +22,7 @@ import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -229,6 +230,10 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         return !this.errors.isEmpty();
     }
 
+    public void addError(FormatError error) {
+        this.errors.add(error.extend(this));
+    }
+
     /** Returns the (possibly empty) set of errors in this JEdge. */
     public Collection<FormatError> getErrors() {
         return this.errors;
@@ -307,7 +312,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     private AspectKind aspect;
 
-    private List<FormatError> errors = new ArrayList<FormatError>();
+    private Collection<FormatError> errors = new LinkedHashSet<FormatError>();
 
     /** Separator between level name and edge label. */
     private static final char LEVEL_NAME_SEPARATOR = ':';

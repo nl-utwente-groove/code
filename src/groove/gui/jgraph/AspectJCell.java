@@ -17,6 +17,7 @@
 package groove.gui.jgraph;
 
 import groove.graph.GraphRole;
+import groove.view.FormatError;
 
 /**
  * Instantiation of a {@link GraphJCell} with an {@link AspectJObject}
@@ -39,7 +40,9 @@ public interface AspectJCell extends GraphJCell {
 
     /**
      * Resets the cell's nodes and edges from the user object.
-     * @param role TODO
      */
     void loadFromUserObject(GraphRole role);
+
+    /** Adds an error to this cell. */
+    void addError(FormatError error);
 }

@@ -1017,7 +1017,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /** Creates and returns a fresh layout setting menu upon this j-graph. */
-    protected SetLayoutMenu createSetLayoutMenu() {
+    public SetLayoutMenu createSetLayoutMenu() {
         return new SetLayoutMenu(this);
     }
 

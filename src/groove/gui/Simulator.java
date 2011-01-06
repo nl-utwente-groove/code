@@ -487,6 +487,44 @@ public class Simulator {
         dialog.start();
     }
 
+    void newHandleEditGraph(final AspectGraph graph, final boolean fresh) {
+        final JPanel editorPanel = new JPanel();
+        EditorDialog dialog =
+            new EditorDialog(editorPanel, getOptions(), graph, getTypeView()) {
+                @Override
+                public void finish() {
+                    String oldGraphName = graph.getName();
+                    String newGraphName =
+                        askNewGraphName("Select graph name",
+                            oldGraphName == null ? NEW_GRAPH_NAME
+                                    : oldGraphName, fresh);
+                    if (newGraphName != null) {
+                        AspectGraph newGraph =
+                            getAspectGraph().rename(newGraphName);
+                        if (doAddGraph(newGraph)
+                            && confirmLoadStartState(newGraphName)) {
+                            doLoadStartGraph(newGraphName);
+                        }
+                    }
+                    getGraphViewsPanel().remove(editorPanel);
+                }
+            };
+        dialog.start();
+        Icon icon = null;
+        switch (graph.getRole()) {
+        case HOST:
+            icon = Groove.GRAPH_MODE_ICON;
+            break;
+        case RULE:
+            icon = Groove.RULE_MODE_ICON;
+            break;
+        case TYPE:
+            icon = Groove.TYPE_MODE_ICON;
+        }
+        getGraphViewsPanel().addTab(graph.getName(), icon, editorPanel);
+        getGraphViewsPanel().setSelectedComponent(editorPanel);
+    }
+
     /** Tests if a given file refers to a graph within the current system store. */
     private boolean isFileInStore(File file, SystemStore store) {
         boolean result = false;
@@ -1447,10 +1485,8 @@ public class Simulator {
                 getConditionalLTSPanel(), "Labelled transition system");
             this.graphViewsPanel.addTab(null, Groove.CONTROL_FRAME_ICON,
                 getControlPanel(), "Control specification");
-            if (USE_TYPES) {
-                this.graphViewsPanel.addTab(null, Groove.TYPE_FRAME_ICON,
-                    getTypePanel(), "Type graph");
-            }
+            this.graphViewsPanel.addTab(null, Groove.TYPE_FRAME_ICON,
+                getTypePanel(), "Type graph");
             // add this simulator as a listener so that the actions are updated
             // regularly
             this.graphViewsPanel.addChangeListener(new ChangeListener() {
@@ -1958,9 +1994,7 @@ public class Simulator {
 
         result.add(getNewGraphAction());
         result.add(getNewRuleAction());
-        if (USE_TYPES) {
-            result.add(getNewTypeAction());
-        }
+        result.add(getNewTypeAction());
 
         result.addSeparator();
 
@@ -3413,7 +3447,7 @@ public class Simulator {
          */
         public void actionPerformed(ActionEvent e) {
             AspectJModel stateModel = getStatePanel().getJModel();
-            handleEditGraph(stateModel.getGraph(), false);
+            newHandleEditGraph(stateModel.getGraph(), false);
         }
     }
 
@@ -4383,7 +4417,7 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             AspectGraph newGraph = AspectGraph.emptyGraph(HOST);
-            handleEditGraph(newGraph, true);
+            newHandleEditGraph(newGraph, true);
         }
 
         /** Enabled if there is a grammar loaded. */
@@ -5488,9 +5522,6 @@ public class Simulator {
      */
     static private final Dimension GRAPH_VIEW_PREFERRED_SIZE = new Dimension(
         GRAPH_VIEW_PREFERRED_WIDTH, GRAPH_VIEW_PREFERRED_HEIGHT);
-
-    /** Flag controlling if types should be used. */
-    private static final boolean USE_TYPES = true;
 
     /** Detect if we are on MacOS (used for hooking doQuit() properly.  */
     private static boolean MAC_OS_X =
