@@ -21,6 +21,7 @@ import static groove.util.Converter.HTML_TAG;
 import static groove.util.Converter.createColorTag;
 import static groove.util.Converter.createSpanTag;
 import static groove.view.aspect.AspectKind.PRODUCT;
+import groove.graph.GraphRole;
 import groove.util.Converter.HTMLTag;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
@@ -38,6 +39,7 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -133,14 +135,19 @@ public class JVertexView extends VertexView {
         if (getCell() instanceof AspectJVertex) {
             node = ((AspectJVertex) getCell()).getNode();
         }
+        GraphRole graphRole =
+            node == null ? GraphRole.NONE : node.getGraphRole();
         AspectKind attrKind =
             node == null ? AspectKind.NONE : node.getAttrKind();
-        if (attrKind.isData()) {
+        if (graphRole == GraphRole.TYPE) {
+            return RECTANGLE_SHAPE;
+        } else if (attrKind.isData()) {
             return ELLIPSE_SHAPE;
         } else if (attrKind == PRODUCT) {
             return DIAMOND_SHAPE;
+        } else {
+            return ROUNDED_RECTANGLE_SHAPE;
         }
-        return RECTANGLE_SHAPE;
     }
 
     /** Stores the insets value for this view. */
@@ -183,6 +190,8 @@ public class JVertexView extends VertexView {
     @Override
     public Point2D getPerimeterPoint(EdgeView edge, Point2D source, Point2D p) {
         Rectangle2D bounds = getBounds().getBounds2D();
+        // revert to the actual borders by subtracting the
+        // extra border space
         bounds.setRect(bounds.getX() + EXTRA_BORDER_SPACE, bounds.getY()
             + EXTRA_BORDER_SPACE, bounds.getWidth() - 2 * EXTRA_BORDER_SPACE,
             bounds.getHeight() - 2 * EXTRA_BORDER_SPACE);
@@ -204,6 +213,7 @@ public class JVertexView extends VertexView {
                 case DIAMOND_SHAPE:
                     return getDiamondPerimeterPoint(bounds, x, y, p);
                 case RECTANGLE_SHAPE:
+                case ROUNDED_RECTANGLE_SHAPE:
                     return getRectanglePerimeterPoint(bounds, x, y, p);
                 }
             }
@@ -448,18 +458,15 @@ public class JVertexView extends VertexView {
      * {@link EditorMarqueeHandler} and from {@link JEdgeView.MyEdgeHandle}.
      */
     void paintArmed(Graphics g) {
-        Color previousColor = g.getColor();
-        Rectangle2D bounds =
-            this.jGraph.toScreen((Rectangle2D) getBounds().clone());
-        int x = (int) bounds.getX();
-        int y = (int) bounds.getY();
-        int width = (int) bounds.getWidth();
-        int height = (int) bounds.getHeight();
-        g.setColor(GraphConstants.getLineColor(getAttributes()));
-        // repaint the standard border to erase it
-        JAttr.DEFAULT_BORDER.paintBorder(this.jGraph, g, x, y, width, height);
-        JAttr.EMPH_BORDER.paintBorder(this.jGraph, g, x, y, width, height);
-        g.setColor(previousColor);
+        Graphics2D newG = (Graphics2D) g.create();
+        double scale = this.jGraph.getScale();
+        newG.scale(scale, scale);
+        // paint the border to erase it (we're in XOR mode)
+        this.jGraph.getUI().paintCell(newG, this, getBounds(), true);
+        boolean previousEmph = getCell().isEmphasised();
+        getCell().setEmphasised(true);
+        this.jGraph.getUI().paintCell(newG, this, getBounds(), true);
+        getCell().setEmphasised(previousEmph);
     }
 
     /** Underlying graph model, used to construct the autosize. */
@@ -476,12 +483,14 @@ public class JVertexView extends VertexView {
         PortView.allowPortMagic = false;
     }
 
-    /** Constant indicating a rectangular vertex. */
-    static public final int RECTANGLE_SHAPE = 0;
+    /** Constant indicating a rounded rectangular vertex. */
+    static public final int ROUNDED_RECTANGLE_SHAPE = 0;
     /** Constant indicating an ellipse-shaped vertex. */
     static public final int ELLIPSE_SHAPE = 1;
     /** Constant indicating a diamond-shaped vertex. */
     static public final int DIAMOND_SHAPE = 2;
+    /** Constant indicating a rectangular vertex. */
+    static public final int RECTANGLE_SHAPE = 3;
 
     /** HTML tag for the text display font. */
     private static final HTMLTag fontTag;
@@ -580,7 +589,9 @@ public class JVertexView extends VertexView {
         @Override
         public void paint(Graphics g) {
             Graphics2D g2 = (Graphics2D) g;
-            Shape shape = getShape(getSize(), 0);
+            double width = getSize().getWidth();
+            double height = getSize().getHeight();
+            Shape shape = getShape(width, height, this.lineWidth, 0);
             if (isOpaque()) {
                 paintBackground(g2, shape);
             }
@@ -590,7 +601,7 @@ public class JVertexView extends VertexView {
                 paintSelectionBorder(g2, shape);
             }
             if (this.error) {
-                shape = getShape(getSize(), JAttr.EXTRA_BORDER_SPACE);
+                shape = getShape(width, height, 0, EXTRA_BORDER_SPACE);
                 g.setColor(JAttr.ERROR_COLOR);
                 g2.fill(shape);
             }
@@ -638,9 +649,8 @@ public class JVertexView extends VertexView {
         private Border createEmptyBorder() {
             Insets i = this.view.getInsets();
             return i == null ? null : BorderFactory.createEmptyBorder(i.top
-                + JAttr.EXTRA_BORDER_SPACE, i.left + JAttr.EXTRA_BORDER_SPACE,
-                i.bottom + JAttr.EXTRA_BORDER_SPACE, i.right
-                    + JAttr.EXTRA_BORDER_SPACE);
+                + EXTRA_BORDER_SPACE, i.left + EXTRA_BORDER_SPACE, i.bottom
+                + EXTRA_BORDER_SPACE, i.right + EXTRA_BORDER_SPACE);
         }
 
         /**
@@ -679,8 +689,8 @@ public class JVertexView extends VertexView {
             // try to avoid conversion back and forth to double
             result =
                 new Dimension(result.width + i.left + i.right + 2
-                    * JAttr.EXTRA_BORDER_SPACE, result.height + i.top
-                    + i.bottom + 2 * JAttr.EXTRA_BORDER_SPACE);
+                    * EXTRA_BORDER_SPACE, result.height + i.top + i.bottom + 2
+                    * EXTRA_BORDER_SPACE);
             // store the insets in the view, to be used
             // when actually drawing the view
             this.view.setInsets(i);
@@ -759,38 +769,30 @@ public class JVertexView extends VertexView {
          * A second parameter controls how much the shape
          * should extend at each side beyond the size. 
          */
-        private Shape getShape(Dimension size, int extension) {
-            int extra = JAttr.EXTRA_BORDER_SPACE - extension;
-            float line = this.lineWidth;
-            float x = line / 2 + extra;
-            float y = line / 2 + extra;
-            float width = size.width - line - 2 * extra;
-            float height = size.height - line - 2 * extra;
+        private Shape getShape(double width, double height, double lineWidth,
+                int extension) {
+            // subtract the extra border space
+            double extra = EXTRA_BORDER_SPACE - extension;
+            double x = lineWidth / 2 + extra;
+            double y = lineWidth / 2 + extra;
+            width = width - lineWidth - 2 * extra;
+            height = height - lineWidth - 2 * extra;
             switch (this.view.getVertexShape()) {
             case ELLIPSE_SHAPE:
-                return new Ellipse2D.Float(x, y, width, height);
+                return new Ellipse2D.Double(x, y, width, height);
             case DIAMOND_SHAPE:
                 return createDiamondShape(x, y, width, height);
+            case RECTANGLE_SHAPE:
+                return new Rectangle2D.Double(x, y, width, height);
             default:
-                return createRectangleShape(x, y, width, height);
+                return new RoundRectangle2D.Double(x, y, width, height,
+                    ARC_SIZE, ARC_SIZE);
             }
         }
 
-        /** Creates a shape tracing the bounds given in the parameters. */
-        private Shape createRectangleShape(float x, float y, float width,
-                float height) {
-            GeneralPath result = new GeneralPath(Path2D.WIND_NON_ZERO, 5);
-            result.moveTo(x, y);
-            result.lineTo(x + width, y);
-            result.lineTo(x + width, y + height);
-            result.lineTo(x, y + height);
-            result.closePath();
-            return result;
-        }
-
         /** Creates a diamond shape inscribed in the bounds given in the parameters. */
-        private Shape createDiamondShape(float x, float y, float width,
-                float height) {
+        private Shape createDiamondShape(double x, double y, double width,
+                double height) {
             GeneralPath result = new GeneralPath(Path2D.WIND_NON_ZERO, 5);
             result.moveTo(x + width / 2, y);
             result.lineTo(x + width, y + height / 2);
@@ -954,4 +956,7 @@ public class JVertexView extends VertexView {
             new HashMap<String,Dimension>();
 
     }
+
+    /** The size of the rounded corners for rounded-rectangle vertices. */
+    public static final int ARC_SIZE = 5;
 }

@@ -964,6 +964,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             this.mainPanel.setDividerSize(1);
             this.mainPanel.setContinuousLayout(true);
             this.mainPanel.setResizeWeight(0.9);
+            this.mainPanel.resetToPreferredSizes();
         }
         return this.mainPanel;
     }
@@ -1074,8 +1075,10 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                int elementCount = getModel().getRootCount();
-                getStatusBar().setText("" + elementCount + " visible elements");
+                int nodeCount = getGraph().nodeCount();
+                int edgeCount = getGraph().edgeCount();
+                getStatusBar().setText(
+                    String.format("%s nodes, %s edges", nodeCount, edgeCount));
                 Editor.this.errorCellMap.clear();
                 List<FormatError> errors = toView().getErrors();
                 for (FormatError error : errors) {
