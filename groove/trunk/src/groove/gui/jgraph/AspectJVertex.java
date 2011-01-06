@@ -117,8 +117,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 getNode().getAttrAspect().getContentString()).toString();
         } else if (getNode().getAttrKind() == AspectKind.PRODUCT) {
             // delegate the identity string to a corresponding product node
-            return new ProductNode(getNode().getNumber(),
-                getNode().getArgNodes().size()).toString();
+            return new ProductNode(getNode().getNumber(), 0).toString();
         } else {
             return super.getNodeIdString();
         }

@@ -114,8 +114,9 @@ final public class EditorJGraph extends JGraph {
         // set the bounds and store them in the cell
         Dimension size = JAttr.DEFAULT_NODE_SIZE;
         Point2D corner =
-            new Double(atPoint.getX() - (double) size.width / 2, atPoint.getY()
-                - (double) size.height / 2);
+            new Double(atPoint.getX() - (double) size.width / 2
+                - JAttr.EXTRA_BORDER_SPACE, atPoint.getY()
+                - (double) size.height / 2 - JAttr.EXTRA_BORDER_SPACE);
         GraphConstants.setBounds(
             jVertex.getAttributes(),
             new SerializableRectangle2D(corner.getX(), corner.getY(),
