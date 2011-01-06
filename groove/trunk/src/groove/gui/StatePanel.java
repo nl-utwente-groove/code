@@ -30,6 +30,7 @@ import groove.gui.jgraph.AspectJCell;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
+import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.GraphJModel;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
@@ -382,6 +383,26 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                 HostToAspectMap oldStateMap =
                     this.stateToAspectMap.get(oldState);
                 copyLayout(oldStateMap, aspectMap, morphism);
+            } else {
+                // this is the start state
+                AspectGraph startGraph =
+                    this.simulator.getGrammarView().getStartGraphView().getView();
+                AspectJModel startModel = getAspectJModel(startGraph);
+                for (AspectNode node : startGraph.nodeSet()) {
+                    AspectJVertex graphVertex =
+                        startModel.getJCellForNode(node);
+                    AspectJVertex stateVertex = result.getJCellForNode(node);
+                    stateVertex.getAttributes().applyMap(
+                        graphVertex.getAttributes());
+                    stateVertex.setGrayedOut(graphVertex.isGrayedOut());
+                }
+                for (AspectEdge edge : startGraph.edgeSet()) {
+                    AspectJCell graphVertex = startModel.getJCellForEdge(edge);
+                    AspectJCell stateVertex = result.getJCellForEdge(edge);
+                    stateVertex.getAttributes().applyMap(
+                        graphVertex.getAttributes());
+                    stateVertex.setGrayedOut(graphVertex.isGrayedOut());
+                }
             }
         }
         return result;

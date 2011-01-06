@@ -239,7 +239,7 @@ public class StateJList extends JList implements SimulationListener {
         }
         refreshCurrentState(false);
         restoreListeners();
-        if (keepSelection) {
+        if (keepSelection && currentSelection.length > 0) {
             int[] selectedIndices = new int[currentSelection.length];
             for (int i = 0; i < currentSelection.length; i++) {
                 selectedIndices[i] =
