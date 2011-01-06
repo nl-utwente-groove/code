@@ -16,6 +16,7 @@
  */
 package groove.gui.jgraph;
 
+import static groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
 import static groove.util.Converter.HTML_TAG;
 import static groove.util.Converter.createColorTag;
 import static groove.util.Converter.createSpanTag;
@@ -181,10 +182,13 @@ public class JVertexView extends VertexView {
      */
     @Override
     public Point2D getPerimeterPoint(EdgeView edge, Point2D source, Point2D p) {
+        Rectangle2D bounds = getBounds().getBounds2D();
+        bounds.setRect(bounds.getX() + EXTRA_BORDER_SPACE, bounds.getY()
+            + EXTRA_BORDER_SPACE, bounds.getWidth() - 2 * EXTRA_BORDER_SPACE,
+            bounds.getHeight() - 2 * EXTRA_BORDER_SPACE);
         if (source == null) {
             // be smart about positioning the perimeter point if p is within
             // the limits of the vertex itself, in either x or y coordinate
-            Rectangle2D bounds = getBounds();
             double xDrop = bounds.getWidth() / DROP_FRACTION;
             double yDrop = bounds.getHeight() / DROP_FRACTION;
             double minX = bounds.getMinX() + xDrop;
@@ -206,15 +210,15 @@ public class JVertexView extends VertexView {
         }
         switch (getVertexShape()) {
         case ELLIPSE_SHAPE:
-            return getEllipsePerimeterPoint(this.bounds, p);
+            return getEllipsePerimeterPoint(bounds, p);
         case DIAMOND_SHAPE:
-            return getDiamondPerimeterPoint(this.bounds, p);
+            return getDiamondPerimeterPoint(bounds, p);
         default:
             if (JAttr.isManhattanStyle(edge.getAllAttributes())) {
-                return getRectanglePerimeterPoint(this.bounds, p,
+                return getRectanglePerimeterPoint(bounds, p,
                     this == edge.getSource().getParentView());
             } else {
-                return getRectanglePerimeterPoint(this.bounds, p);
+                return getRectanglePerimeterPoint(bounds, p);
             }
         }
     }
@@ -576,7 +580,7 @@ public class JVertexView extends VertexView {
         @Override
         public void paint(Graphics g) {
             Graphics2D g2 = (Graphics2D) g;
-            Shape shape = getShape(getSize());
+            Shape shape = getShape(getSize(), 0);
             if (isOpaque()) {
                 paintBackground(g2, shape);
             }
@@ -586,6 +590,7 @@ public class JVertexView extends VertexView {
                 paintSelectionBorder(g2, shape);
             }
             if (this.error) {
+                shape = getShape(getSize(), JAttr.EXTRA_BORDER_SPACE);
                 g.setColor(JAttr.ERROR_COLOR);
                 g2.fill(shape);
             }
@@ -632,8 +637,10 @@ public class JVertexView extends VertexView {
          */
         private Border createEmptyBorder() {
             Insets i = this.view.getInsets();
-            return i == null ? null : BorderFactory.createEmptyBorder(i.top,
-                i.left, i.bottom, i.right);
+            return i == null ? null : BorderFactory.createEmptyBorder(i.top
+                + JAttr.EXTRA_BORDER_SPACE, i.left + JAttr.EXTRA_BORDER_SPACE,
+                i.bottom + JAttr.EXTRA_BORDER_SPACE, i.right
+                    + JAttr.EXTRA_BORDER_SPACE);
         }
 
         /**
@@ -671,8 +678,9 @@ public class JVertexView extends VertexView {
             Insets i = computeInsets(result.width, result.height);
             // try to avoid conversion back and forth to double
             result =
-                new Dimension(result.width + i.left + i.right, result.height
-                    + i.top + i.bottom);
+                new Dimension(result.width + i.left + i.right + 2
+                    * JAttr.EXTRA_BORDER_SPACE, result.height + i.top
+                    + i.bottom + 2 * JAttr.EXTRA_BORDER_SPACE);
             // store the insets in the view, to be used
             // when actually drawing the view
             this.view.setInsets(i);
@@ -744,13 +752,20 @@ public class JVertexView extends VertexView {
             return result;
         }
 
-        /** Returns the shape of the vertex. */
-        private Shape getShape(Dimension size) {
+        /** 
+         * Returns the shape of the vertex.
+         * The vertex is to be painted at the origin (x=0, y=0)
+         * and to take a given size.
+         * A second parameter controls how much the shape
+         * should extend at each side beyond the size. 
+         */
+        private Shape getShape(Dimension size, int extension) {
+            int extra = JAttr.EXTRA_BORDER_SPACE - extension;
             float line = this.lineWidth;
-            float x = line / 2;
-            float y = line / 2;
-            float width = size.width - line;
-            float height = size.height - line;
+            float x = line / 2 + extra;
+            float y = line / 2 + extra;
+            float width = size.width - line - 2 * extra;
+            float height = size.height - line - 2 * extra;
             switch (this.view.getVertexShape()) {
             case ELLIPSE_SHAPE:
                 return new Ellipse2D.Float(x, y, width, height);
@@ -937,5 +952,6 @@ public class JVertexView extends VertexView {
         /** Mapping from (HTML) text to the preferred size for that text. */
         private final Map<String,Dimension> sizeMap =
             new HashMap<String,Dimension>();
+
     }
 }

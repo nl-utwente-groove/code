@@ -75,8 +75,10 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         // set the size of an editor to that of a view
         CellView view = graph.getGraphLayoutCache().getMapping(cell, false);
         Rectangle2D tmp = view.getBounds();
-        this.editingComponent.setBounds((int) tmp.getX(), (int) tmp.getY(),
-            (int) tmp.getWidth(), (int) tmp.getHeight());
+        this.editingComponent.setBounds((int) tmp.getX()
+            + JAttr.EXTRA_BORDER_SPACE, (int) tmp.getY()
+            + JAttr.EXTRA_BORDER_SPACE, (int) tmp.getWidth(),
+            (int) tmp.getHeight());
 
         // I have to set a font here instead of in the
         // RealCellEditor.getGraphCellEditorComponent() because
@@ -125,7 +127,8 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             }
             this.labels.addAll(this.prefixes);
             JTextArea result = getEditorComponent();
-            String editString = ((AspectJCell) value).getUserObject().toEditString();
+            String editString =
+                ((AspectJCell) value).getUserObject().toEditString();
             result.setText(editString);
             result.selectAll();
             return result;

@@ -182,6 +182,13 @@ public class JAttr {
     public static final Border EMPTY_INSET_BORDER = new EmptyBorder(
         DEFAULT_INSETS);
 
+    /** Space left outside the borders of nodes to enable larger
+     * error or emphasis overlays to be painted correctly.
+     * This also influences the initial positioning of the nodes
+     * (at creation time).
+     */
+    public static final int EXTRA_BORDER_SPACE = 5;
+
     /** Constant defining an italic font, for displaying state identities. */
     static public final Font ITALIC_FONT = DEFAULT_FONT.deriveFont(Font.ITALIC);
     /** Percentage of white in the background colour. */
