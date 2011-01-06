@@ -24,6 +24,7 @@ import groove.view.aspect.AspectParser;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -359,7 +360,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         if (this.aspect == REMARK) {
             return !getJModel().isShowRemarks();
         }
-        if (getNode().hasParam() || hasError()) {
+        if (getNode().hasParam() || this.aspect.isQuantifier() || hasError()) {
             return false;
         }
         if (super.isFiltered()) {
@@ -379,6 +380,10 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     @Override
     public final boolean hasError() {
         return !this.errors.isEmpty();
+    }
+
+    public void addError(FormatError error) {
+        this.errors.add(error.extend(this));
     }
 
     /** Returns the (possibly empty) set of errors in this JVertex. */
@@ -445,7 +450,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     /** The role of the underlying rule node. */
     private AspectKind aspect;
-    private List<FormatError> errors = new ArrayList<FormatError>();
+    private Collection<FormatError> errors = new LinkedHashSet<FormatError>();
     static private final String ASSIGN_TEXT = " = ";
     static private final String TYPE_TEXT = ": ";
 }

@@ -18,7 +18,6 @@ import static groove.graph.GraphRole.TYPE;
 import static groove.gui.Options.HELP_MENU_NAME;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.TypeGraph;
@@ -26,8 +25,9 @@ import groove.gui.dialog.AboutBox;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.PropertiesDialog;
 import groove.gui.dialog.SingleListDialog;
+import groove.gui.jgraph.AspectJCell;
+import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
-import groove.gui.jgraph.EditorJGraph;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
@@ -47,12 +47,10 @@ import groove.view.View;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
@@ -80,7 +78,6 @@ import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -102,7 +99,6 @@ import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.table.TableCellEditor;
 
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
@@ -134,7 +130,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             this.frame = frame;
             this.frame.setTitle(EDITOR_NAME);
         }
-        this.jgraph = new EditorJGraph(this);
+        this.jgraph = new AspectJGraph(this);
         this.jgraph.setExporter(getExporter());
         initListeners();
         initGUI();
@@ -437,8 +433,10 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                 @Override
                 public void undoableEditHappened(UndoableEditEvent e) {
                     boolean relevant = true;
-                    // only process edits that really changed anything
-                    if (e.getEdit() instanceof GraphLayoutCacheEdit) {
+                    if (Editor.this.previewSwitching) {
+                        relevant = false;
+                    } else if (e.getEdit() instanceof GraphLayoutCacheEdit) {
+                        // only process edits that really changed anything
                         GraphLayoutCacheEdit edit =
                             (GraphLayoutCacheEdit) e.getEdit();
                         relevant =
@@ -672,7 +670,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     JGraphPanel<?> getGraphPanel() {
         if (this.jGraphPanel == null) {
             this.jGraphPanel =
-                new JGraphPanel<EditorJGraph>(this.jgraph, false, false,
+                new JGraphPanel<AspectJGraph>(this.jgraph, false, false,
                     getOptions());
             this.jGraphPanel.initialise();
             this.jGraphPanel.addRefreshListener(Options.SHOW_NODE_IDS_OPTION);
@@ -946,8 +944,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             result.addItemListener(new ItemListener() {
                 @Override
                 public void itemStateChanged(ItemEvent e) {
+                    getModel().syncGraph();
+                    updateStatus();
+                    Editor.this.previewSwitching = true;
                     getGraphPanel().refresh();
-                    //                    getModel().syncGraph();
+                    Editor.this.previewSwitching = false;
                     //                    setGraph(getGraph(), false);
                 }
             });
@@ -1083,7 +1084,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                 List<FormatError> errors = toView().getErrors();
                 for (FormatError error : errors) {
                     for (Element errorObject : error.getElements()) {
-                        GraphJCell errorCell = getModel().getJCell(errorObject);
+                        AspectJCell errorCell =
+                            getModel().getJCell(errorObject);
                         if (errorCell == null && errorObject instanceof Edge) {
                             errorCell =
                                 getModel().getJCell(
@@ -1091,6 +1093,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                         }
                         if (errorCell != null) {
                             Editor.this.errorCellMap.put(error, errorCell);
+                            errorCell.addError(error);
                             break;
                         }
                     }
@@ -1179,12 +1182,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * Creates a preview of an aspect model, with properties. Returns a j-model
      * if the edited model should be replaced, <code>null</code> otherwise.
      */
-    private AspectJModel showPreviewDialog(View<?> view, String okOption) {
+    private void showPreviewDialog(View<?> view) {
         if (this.previewSize == null) {
             this.previewSize = DEFAULT_PREVIEW_SIZE;
         }
         AspectGraph graph = view.getView();
-        boolean partial = graph.hasErrors();
         AspectJModel previewModel =
             AspectJModel.newInstance(graph, getOptions());
         JGraph jGraph = createJGraph(previewModel);
@@ -1194,10 +1196,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         JComponent previewContent = new JPanel(false);
         previewContent.setLayout(new BorderLayout());
         previewContent.add(jGraphPane);
-        PropertiesDialog propertiesDialog = createPropertiesDialog(true);
-        previewContent.add(propertiesDialog.createTablePane(),
-            BorderLayout.NORTH);
-
         // Snap to grid.
         JToggleButton button = getSnapToGridButton(jGraph);
         boolean selected = getSnapToGridButton().isSelected();
@@ -1208,98 +1206,15 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         snapPane.add(button);
         snapPane.add(new JLabel("Snap to grid"));
         previewContent.add(snapPane, BorderLayout.SOUTH);
-
-        if (partial) {
-            JLabel errorLabel =
-                new JLabel(String.format(
-                    "Incomplete preview due to syntax errors in edited %s",
-                    getRoleName(false)));
-            errorLabel.setForeground(Color.RED);
-            previewContent.add(errorLabel, BorderLayout.SOUTH);
-            if (okOption == null) {
-                okOption = Options.USE_BUTTON;
-            }
-        } else if (okOption == null) {
-            okOption = Options.OK_BUTTON;
-        }
         JOptionPane previewPane =
-            new JOptionPane(previewContent, JOptionPane.PLAIN_MESSAGE);
-        previewPane.setOptions(new Object[] {
-            createOkButtonOnPreviewDialog(okOption, previewPane,
-                propertiesDialog),
-            createCancelButtonOnPreviewDialog(Options.CANCEL_BUTTON,
-                previewPane, propertiesDialog)});
-        JDialog dialog =
-            previewPane.createDialog(getFrame(),
-                String.format("%s preview", getRoleName(true)));
+            new JOptionPane(previewContent, JOptionPane.PLAIN_MESSAGE,
+                JOptionPane.DEFAULT_OPTION);
+        JDialog dialog = previewPane.createDialog(getFrame(), "Type graph");
         dialog.setSize(this.previewSize);
         dialog.setResizable(true);
+        dialog.setModalityType(null);
         dialog.setVisible(true);
-        // put the edited properties into the model
-        GraphInfo.setProperties(graph,
-            new GraphProperties(propertiesDialog.getEditedProperties()));
-        Object response = previewPane.getValue();
         this.previewSize = dialog.getSize();
-        if (response instanceof JButton
-            && okOption.equals(((JButton) response).getText())) {
-            return previewModel;
-        } else {
-            return null;
-        }
-    }
-
-    /*
-     * Specialized listeners for the buttons on the showPreviewDialog. Same
-     * functionality as in PropertiesDialog.
-     */
-    private class CloseListener implements ActionListener {
-        JOptionPane previewPane;
-        PropertiesDialog propertiesDialog;
-
-        public CloseListener(JOptionPane previewPane,
-                PropertiesDialog propertiesDialog) {
-            this.previewPane = previewPane;
-            this.propertiesDialog = propertiesDialog;
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            this.previewPane.setValue(e.getSource());
-            this.previewPane.setVisible(false);
-        }
-    }
-
-    /**
-     * Specialised OK button for the showPreviewDialog. Same functionality as in
-     * PropertiesDialog. Signals the editors to stop editing, which ensures that
-     * partially edited results are not lost.
-     */
-    private JButton createOkButtonOnPreviewDialog(String message,
-            JOptionPane previewPane, PropertiesDialog propertiesDialog) {
-        JButton theButton = new JButton(message);
-        theButton.addActionListener(new CloseListener(previewPane,
-            propertiesDialog) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                TableCellEditor editor =
-                    this.propertiesDialog.getInnerTable().getCellEditor();
-                if (editor == null || editor.stopCellEditing()) {
-                    super.actionPerformed(e);
-                }
-            }
-        });
-        return theButton;
-    }
-
-    /*
-     * Specialized cancel button for the showPreviewDialog. Same functionality
-     * as in PropertiesDialog.
-     */
-    private JButton createCancelButtonOnPreviewDialog(String message,
-            JOptionPane previewPane, PropertiesDialog propertiesDialog) {
-        JButton theButton = new JButton(message);
-        theButton.addActionListener(new CloseListener(previewPane,
-            propertiesDialog));
-        return theButton;
     }
 
     /**
@@ -1309,15 +1224,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         // lazily creates the options
         if (this.options == null) {
             this.options = new Options();
-            // options.getItem(Options.SHOW_BACKGROUND_OPTION).setSelected(true);
-            // options.getItem(Options.SHOW_REMARKS_OPTION).setSelected(true);
-            // options.getItem(Options.PREVIEW_ON_SAVE_OPTION).setSelected(true);
         }
         return this.options;
     }
 
     /** Returns the jgraph component of this editor. */
-    public EditorJGraph getJGraph() {
+    public AspectJGraph getJGraph() {
         return this.jgraph;
     }
 
@@ -1326,7 +1238,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * {@link GraphJModel}.
      */
     private JGraph createJGraph(AspectJModel jmodel) {
-        JGraph result = new JGraph(jmodel, false);
+        JGraph result = new JGraph(null, false);
+        result.setModel(jmodel);
         result.setExporter(getExporter());
         return result;
     }
@@ -1354,10 +1267,10 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     private final JFrame frame;
 
     /** The jgraph instance used in this editor. */
-    private final EditorJGraph jgraph;
+    private final AspectJGraph jgraph;
 
     /** The jgraph panel used in this editor. */
-    private JGraphPanel<EditorJGraph> jGraphPanel;
+    private JGraphPanel<AspectJGraph> jGraphPanel;
 
     /** Status bar of the editor. */
     private final JLabel statusBar = new JLabel();
@@ -1390,6 +1303,10 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** The undo manager of the editor. */
     private transient GraphUndoManager undoManager;
 
+    /** Flag that is set to true while the action of the {@link #getPreviewModeButton()}
+     * is being executed.
+     */
+    private transient boolean previewSwitching;
     /** Object providing the core functionality for property changes. */
     private PropertyChangeSupport propertyChangeSupport;
 
@@ -2045,15 +1962,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            if (getType() != null) {
-                String typeName = showTypeGraphSelectionDialog();
-                showPreviewDialog(
-                    getTypeViewList().getTypeViewMap().get(typeName),
-                    Options.OK_BUTTON);
-            } else {
-                super.actionPerformed(evt);
-                setRole(TYPE);
-            }
+            super.actionPerformed(evt);
+            setRole(TYPE);
         }
     }
 
@@ -2080,8 +1990,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         @Override
         public void actionPerformed(ActionEvent evt) {
             String typeName = showTypeGraphSelectionDialog();
-            showPreviewDialog(getTypeViewList().getTypeViewMap().get(typeName),
-                Options.OK_BUTTON);
+            showPreviewDialog(getTypeViewList().getTypeViewMap().get(typeName));
         }
     }
 

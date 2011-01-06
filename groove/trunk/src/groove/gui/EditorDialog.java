@@ -20,6 +20,8 @@ import groove.graph.GraphRole;
 import groove.view.StoredGrammarView.TypeViewList;
 import groove.view.aspect.AspectGraph;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
@@ -31,6 +33,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
 /**
@@ -47,6 +50,35 @@ abstract public class EditorDialog {
      *        checked
      * @throws HeadlessException -
      */
+    public EditorDialog(JPanel owner, Options options, AspectGraph graph,
+            TypeViewList typeView) throws HeadlessException {
+        this.parent = null;
+        this.oldJMenuBar = null;
+        this.oldContentPane = null;
+        this.oldTitle = null;
+        this.oldWindowListeners = null;
+        this.options = options;
+        this.panel = owner;
+        this.editor = new Editor(this.parent, options) {
+            @Override
+            protected void doQuit() {
+                handleCancel();
+            }
+        };
+        this.editor.setTypeView(typeView);
+        this.editor.setGraph(graph, true);
+        this.newContentPane =
+            this.editor.createContentPanel(createToolBar(graph.getRole()));
+    }
+
+    /**
+     * Constructs an instance of the dialog, for a given graph or rule.
+     * @param owner the parent frame for the dialog
+     * @param graph the input graph for the editor
+     * @param typeView type graph against which the edited object should be
+     *        checked
+     * @throws HeadlessException -
+     */
     public EditorDialog(JFrame owner, Options options, AspectGraph graph,
             TypeViewList typeView) throws HeadlessException {
         this.parent = owner;
@@ -54,7 +86,7 @@ abstract public class EditorDialog {
         this.oldContentPane = this.parent.getContentPane();
         this.oldTitle = this.parent.getTitle();
         this.oldWindowListeners = this.parent.getWindowListeners();
-        // this.oldDefaultCloseOperation = parent.getDefaultCloseOperation();
+        this.panel = null;
         this.options = options;
         this.editor = new Editor(this.parent, options) {
             @Override
@@ -70,14 +102,19 @@ abstract public class EditorDialog {
 
     /** Starts the dialog. */
     public void start() {
-        this.parent.setJMenuBar(createMenuBar());
-        this.parent.setContentPane(this.newContentPane);
-        // set the title from the editor frame
-        this.parent.setTitle(this.editor.getFrame().getTitle());
-        for (WindowListener listener : this.oldWindowListeners) {
-            this.parent.removeWindowListener(listener);
+        if (this.panel == null) {
+            this.parent.setJMenuBar(createMenuBar());
+            this.parent.setContentPane(this.newContentPane);
+            // set the title from the editor frame
+            this.parent.setTitle(this.editor.getFrame().getTitle());
+            for (WindowListener listener : this.oldWindowListeners) {
+                this.parent.removeWindowListener(listener);
+            }
+            this.parent.validate();
+        } else {
+            this.panel.setLayout(new BorderLayout());
+            this.panel.add(this.newContentPane);
         }
-        this.parent.validate();
     }
 
     /** Returns the resulting aspect graph of the editor. */
@@ -102,7 +139,6 @@ abstract public class EditorDialog {
         result.add(this.editor.createEditMenu());
         result.add(this.editor.createPropertiesMenu());
         result.add(this.editor.createDisplayMenu());
-        result.add(this.editor.createOptionsMenu());
         result.add(createOptionsMenu());
         result.add(this.editor.createHelpMenu());
         return result;
@@ -188,11 +224,12 @@ abstract public class EditorDialog {
      * disposes the dialog.
      */
     void handleCancel() {
+        Component parent = this.panel == null ? this.parent : this.panel;
         this.ok = false;
         if (!hasErrors() && isModified()) {
             int confirm =
                 JOptionPane.showConfirmDialog(
-                    this.parent,
+                    parent,
                     String.format("Use edited %s?",
                         this.editor.getRoleName(false)), null,
                     JOptionPane.YES_NO_CANCEL_OPTION);
@@ -222,19 +259,21 @@ abstract public class EditorDialog {
 
     /** Besides calling the super method, also disposes the editor frame. */
     private void dispose() {
-        this.parent.setContentPane(this.oldContentPane);
-        // parent.setDefaultCloseOperation(oldDefaultCloseOperation);
-        for (WindowListener listener : this.parent.getWindowListeners()) {
-            this.parent.removeWindowListener(listener);
+        if (this.panel == null) {
+            this.parent.setContentPane(this.oldContentPane);
+            // parent.setDefaultCloseOperation(oldDefaultCloseOperation);
+            for (WindowListener listener : this.parent.getWindowListeners()) {
+                this.parent.removeWindowListener(listener);
+            }
+            this.parent.setTitle(this.oldTitle);
+            this.parent.setJMenuBar(this.oldJMenuBar);
+            for (WindowListener listener : this.oldWindowListeners) {
+                this.parent.addWindowListener(listener);
+            }
+            this.parent.invalidate();
+            this.parent.validate();
+            // parent.pack();
         }
-        this.parent.setTitle(this.oldTitle);
-        this.parent.setJMenuBar(this.oldJMenuBar);
-        for (WindowListener listener : this.oldWindowListeners) {
-            this.parent.addWindowListener(listener);
-        }
-        this.parent.invalidate();
-        this.parent.validate();
-        // parent.pack();
         if (isOK()) {
             finish();
         }
@@ -249,6 +288,7 @@ abstract public class EditorDialog {
     private final Options options;
     /** The dialog wrapped in the editor. */
     private final Editor editor;
+    private final JPanel panel;
     private final JFrame parent;
     private final Container oldContentPane;
     // private final int oldDefaultCloseOperation;

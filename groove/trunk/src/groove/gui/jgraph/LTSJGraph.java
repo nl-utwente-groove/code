@@ -120,7 +120,7 @@ public class LTSJGraph extends JGraph {
      * its root.
      */
     @Override
-    protected SetLayoutMenu createSetLayoutMenu() {
+    public SetLayoutMenu createSetLayoutMenu() {
         SetLayoutMenu result = new SetLayoutMenu(this, new MyForestLayouter());
         result.addLayoutItem(new SpringLayouter());
         return result;

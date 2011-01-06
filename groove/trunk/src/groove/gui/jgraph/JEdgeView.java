@@ -515,7 +515,7 @@ public class JEdgeView extends EdgeView {
         @Override
         protected void paintPort(Graphics g, CellView p) {
             if (p.getParentView() instanceof JVertexView
-                && this.graph instanceof EditorJGraph) {
+                && this.graph instanceof AspectJGraph) {
                 ((JVertexView) p.getParentView()).paintArmed(g);
             } else {
                 super.paintPort(g, p);

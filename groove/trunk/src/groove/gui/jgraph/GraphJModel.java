@@ -491,7 +491,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
      * @param elem the graph element for which the jcell is requested
      * @return the jcell associated with <tt>elem</tt>
      */
-    public final GraphJCell getJCell(Element elem) {
+    public GraphJCell getJCell(Element elem) {
         if (elem instanceof Node) {
             return getJCellForNode((Node) elem);
         } else {

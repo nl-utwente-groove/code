@@ -77,7 +77,7 @@ public class CtrlJGraph extends JGraph {
      * as its root.
      */
     @Override
-    protected SetLayoutMenu createSetLayoutMenu() {
+    public SetLayoutMenu createSetLayoutMenu() {
         SetLayoutMenu result = new SetLayoutMenu(this, new SpringLayouter());
         result.addLayoutItem(createInitialLayouter());
         return result;

@@ -46,7 +46,7 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
     /**
      * Creates a marquee handler for a given <tt>JGraph</tt>.
      */
-    public EditorMarqueeHandler(EditorJGraph jGraph) {
+    public EditorMarqueeHandler(AspectJGraph jGraph) {
         this.jGraph = jGraph;
     }
 
@@ -345,12 +345,12 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
     /**
      * Returns the j-graph upon which this marquee handler works.
      */
-    final EditorJGraph getJGraph() {
+    final AspectJGraph getJGraph() {
         return this.jGraph;
     }
 
     /** The j-graph upon which this marquee handler works. */
-    private final EditorJGraph jGraph;
+    private final AspectJGraph jGraph;
     /**
      * While adding an edge, the vertex at which edge drawing started. A value
      * of <tt>null</tt> indicates no edge is being added.
