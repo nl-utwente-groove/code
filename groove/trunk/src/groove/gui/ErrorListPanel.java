@@ -108,6 +108,15 @@ public class ErrorListPanel extends JPanel {
         return (FormatError) getErrorArea().getSelectedValue();
     }
 
+    @Override
+    public Dimension getPreferredSize() {
+        if (getErrorArea().getComponentCount() == 0) {
+            return new Dimension();
+        } else {
+            return super.getPreferredSize();
+        }
+    }
+
     /** Lazily creates and returns the error panel. */
     private JList getErrorArea() {
         if (this.errorArea == null) {

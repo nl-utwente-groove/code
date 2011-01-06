@@ -14,7 +14,7 @@ import groove.util.Groove;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LTSJEdge extends GraphJEdge {
+public class LTSJEdge extends GraphJEdge implements LTSJCell {
     /**
      * Creates a new instance from a given edge (required to be a
      * {@link GraphTransition}).
@@ -81,7 +81,7 @@ public class LTSJEdge extends GraphJEdge {
     /** Changes the active status of this edge.
      * @return {@code true} if the active status changed as a result of this call.
      */
-    final boolean setActive(boolean active) {
+    public final boolean setActive(boolean active) {
         boolean result = active != this.active;
         if (result) {
             this.active = active;

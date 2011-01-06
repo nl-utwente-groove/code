@@ -159,36 +159,6 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
     }
 
     /**
-     * Invokes the editor and saves the resulting type.
-     * @param type the graph to be edited
-     * @param fresh if <code>true</code>, the name for the edited type should be
-     *        fresh
-     */
-    private void handleEditType(final AspectGraph type, final boolean fresh) {
-        final String oldSelectedType = getSelectedType();
-        EditorDialog dialog =
-            new EditorDialog(getSimulator().getFrame(), getOptions(), type,
-                null) {
-                @Override
-                public void finish() {
-                    String typeName =
-                        getSimulator().askNewTypeName("Select type graph name",
-                            type.getName(), fresh);
-                    if (typeName != null) {
-                        AspectGraph newType = getAspectGraph().rename(typeName);
-                        getSimulator().doAddType(newType);
-                        if (oldSelectedType != null
-                            & !typeName.equals(oldSelectedType)) {
-                            getNameListModel().addType(typeName, false, false);
-                            getNameListModel().selectMostAppropriateType();
-                        }
-                    }
-                }
-            };
-        dialog.start();
-    }
-
-    /**
      * Saves the current checked type graphs as a list in the system properties.
      */
     public void doSaveProperties() {
@@ -545,7 +515,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         public void actionPerformed(ActionEvent e) {
             final AspectGraph initType =
                 getGrammarView().getTypeView(getSelectedType()).getView();
-            handleEditType(initType, false);
+            TypePanel.this.simulator.handleEditGraph(initType);
         }
 
         @Override
@@ -579,9 +549,13 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            final AspectGraph initType =
-                AspectGraph.emptyGraph(Groove.DEFAULT_TYPE_NAME, TYPE);
-            handleEditType(initType, true);
+            String typeName =
+                getSimulator().askNewTypeName("Select type graph name",
+                    Groove.DEFAULT_TYPE_NAME, true);
+            if (typeName != null) {
+                AspectGraph initType = AspectGraph.emptyGraph(typeName, TYPE);
+                TypePanel.this.simulator.handleEditGraph(initType);
+            }
         }
 
         @Override

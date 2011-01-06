@@ -213,6 +213,14 @@ final public class AspectJGraph extends JGraph {
         throw new IllegalStateException();
     }
 
+    @Override
+    public void setEditable(boolean editable) {
+        setCloneable(editable);
+        setConnectable(editable);
+        setDisconnectable(editable);
+        super.setEditable(editable);
+    }
+
     /**
      * This implementation returns a {@link EditorMarqueeHandler}.
      * @see groove.gui.jgraph.JGraph#createMarqueeHandler()
