@@ -28,6 +28,7 @@ import groove.gui.Editor;
 import groove.gui.Options;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
+import groove.view.FormatError;
 import groove.view.View;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
@@ -35,6 +36,7 @@ import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -167,9 +169,9 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         for (AspectJVertex jVertex : nodeJVertexMap.values()) {
             jVertex.setNodeFixed();
         }
-        graph.setFixed();
         GraphInfo.setLayoutMap(graph, layoutMap);
         GraphInfo.setProperties(graph, getProperties());
+        graph.setFixed();
         setGraph(graph, nodeJVertexMap, edgeJCellMap);
         if (GUI_DEBUG) {
             System.out.printf("Graph resynchronised with model %s%n", getName());
@@ -180,6 +182,34 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                 cellsChanged(getRoots().toArray());
             }
         });
+    }
+
+    /** 
+     * Sets the extra-error flags of all the cells, based
+     * on a list of errors.
+     * @return a mapping from the errors to cells involved in them
+     */
+    public Map<FormatError,AspectJCell> setExtraErrors(
+            Collection<FormatError> errors) {
+        for (AspectJCell jCell : getRoots()) {
+            jCell.setExtraError(false);
+        }
+        Map<FormatError,AspectJCell> result =
+            new HashMap<FormatError,AspectJCell>();
+        for (FormatError error : errors) {
+            for (Element errorObject : error.getElements()) {
+                AspectJCell errorCell = getJCell(errorObject);
+                if (errorCell == null && errorObject instanceof Edge) {
+                    errorCell = getJCell(((Edge<?>) errorObject).source());
+                }
+                if (errorCell != null) {
+                    result.put(error, errorCell);
+                    errorCell.setExtraError(true);
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     /** Changes the name of the model (and the underlying graph). */

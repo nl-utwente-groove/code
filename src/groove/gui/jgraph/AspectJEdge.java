@@ -80,6 +80,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     void reset() {
         super.reset();
         this.errors.clear();
+        this.extraError = false;
         this.aspect = NONE;
     }
 
@@ -227,11 +228,12 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     @Override
     public final boolean hasError() {
-        return !this.errors.isEmpty();
+        return this.extraError || !this.errors.isEmpty();
     }
 
-    public void addError(FormatError error) {
-        this.errors.add(error.extend(this));
+    @Override
+    public void setExtraError(boolean error) {
+        this.extraError = error;
     }
 
     /** Returns the (possibly empty) set of errors in this JEdge. */
@@ -313,6 +315,8 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     private AspectKind aspect;
 
     private Collection<FormatError> errors = new LinkedHashSet<FormatError>();
+
+    private boolean extraError;
 
     /** Separator between level name and edge label. */
     private static final char LEVEL_NAME_SEPARATOR = ':';

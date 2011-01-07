@@ -233,6 +233,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
             Graph<N,E> graph, boolean create) {
         GraphInfo<N,E> result = graph.getInfo();
         if (result == null && create) {
+            assert !graph.isFixed();
             result = graph.setInfo(new GraphInfo<N,E>());
         }
         return result;
@@ -278,6 +279,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
     public static <N extends Node,E extends Edge<N>> void setErrors(
             Graph<N,E> graph, Collection<FormatError> errors) {
         if (errors != null) {
+            assert !graph.isFixed();
             getInfo(graph, true).setErrors(errors);
         }
     }
@@ -297,6 +299,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
     public static <N extends Node,E extends Edge<N>> void setFile(
             Graph<N,E> graph, String file) {
         if (file != null) {
+            assert !graph.isFixed();
             getInfo(graph, true).setFile(file);
         }
     }
@@ -358,6 +361,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
     public static <N extends Node,E extends Edge<N>> void setProperties(
             Graph<N,E> graph, GraphProperties properties) {
         if (properties != null) {
+            assert !graph.isFixed();
             getInfo(graph, true).setProperties(properties);
         }
     }
@@ -370,6 +374,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
         GraphProperties properties =
             getProperties(graph, version.length() != 0);
         if (properties != null) {
+            assert !graph.isFixed();
             properties.setVersion(version);
         }
     }
@@ -423,6 +428,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
             GraphProperties properties = sourceInfo.getProperties(false);
 
             if (properties != null) {
+                assert !target.isFixed();
                 target.getInfo().newProperties(properties);
             }
         }

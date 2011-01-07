@@ -85,7 +85,7 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
         boolean result = active != this.active;
         if (result) {
             this.active = active;
-            createAttributes(getJModel());
+            refreshAttributes();
         }
         return result;
     }

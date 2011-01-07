@@ -17,7 +17,6 @@
 package groove.gui.jgraph;
 
 import groove.graph.GraphRole;
-import groove.view.FormatError;
 
 /**
  * Instantiation of a {@link GraphJCell} with an {@link AspectJObject}
@@ -43,6 +42,10 @@ public interface AspectJCell extends GraphJCell {
      */
     void loadFromUserObject(GraphRole role);
 
-    /** Adds an error to this cell. */
-    void addError(FormatError error);
+    /** 
+     * Sets the extra-error flag of this cell.
+     * This indicates that there are errors besides the ones
+     * explicitly stored in the cell. 
+     */
+    void setExtraError(boolean error);
 }

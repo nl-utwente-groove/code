@@ -2,7 +2,6 @@
 package groove.lts;
 
 import groove.control.CtrlAut;
-import groove.graph.GraphInfo;
 import groove.trans.DeltaHostGraph;
 import groove.trans.HostGraph;
 import groove.trans.SystemRecord;
@@ -23,7 +22,6 @@ public class StartGraphState extends AbstractGraphState {
         if (ctrlAut != null) {
             setCtrlState(ctrlAut.getStart());
         }
-        GraphInfo.transfer(graph, this.graph, null);
     }
 
     @Override

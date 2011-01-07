@@ -238,7 +238,6 @@ public class StateJList extends JList implements SimulationListener {
             this.listModel.addElement(name);
         }
         refreshCurrentState(false);
-        restoreListeners();
         if (keepSelection && currentSelection.length > 0) {
             int[] selectedIndices = new int[currentSelection.length];
             for (int i = 0; i < currentSelection.length; i++) {
@@ -249,6 +248,7 @@ public class StateJList extends JList implements SimulationListener {
         } else if (getStartGraphName() != null) {
             setSelectedValue(getStartGraphName(), true);
         }
+        restoreListeners();
     }
 
     /**

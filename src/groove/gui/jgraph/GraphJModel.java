@@ -462,7 +462,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
         for (E edge : graph.edgeSet()) {
             addEdge(edge);
         }
-        doInsert(false);
+        doInsert(true, false);
     }
 
     /**
@@ -706,11 +706,12 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
     /**
      * Executes the insertion prepared by node and edge additions.
      * Optionally sends the new elements to the back
+     * @param replace if {@code true}, the old roots should be deleted
      */
-    protected void doInsert(boolean toBack) {
+    protected void doInsert(boolean replace, boolean toBack) {
         Object[] addedCells = this.addedJCells.toArray();
-        createEdit(addedCells, getRoots().toArray(), null, this.connections,
-            null, null).execute();
+        Object[] removedCells = replace ? getRoots().toArray() : null;
+        createEdit(addedCells, removedCells, null, this.connections, null, null).execute();
         if (toBack) {
             // new edges should be behind the nodes
             toBack(addedCells);
