@@ -35,6 +35,8 @@ public final class JGraphXStyles {
     public static final String ERASER_NODE_STYLE = "eraserNode";
     public static final String ERASER_EDGE_STYLE = "eraserEdge";
 
+    public static final String ERASER_NODE_FILL = "#3388ff";
+
     public static final mxStylesheet ruleStylesheet;
 
     static {
@@ -62,7 +64,7 @@ public final class JGraphXStyles {
             (Map<String,Object>) skelNodeStyle.clone();
         eraserNodeStyle.put(mxConstants.STYLE_FONTCOLOR, "blue");
         eraserNodeStyle.put(mxConstants.STYLE_STROKECOLOR, "blue");
-        eraserNodeStyle.put(mxConstants.STYLE_FILLCOLOR, "blue");
+        eraserNodeStyle.put(mxConstants.STYLE_FILLCOLOR, ERASER_NODE_FILL);
         ruleStylesheet.putCellStyle(ERASER_NODE_STYLE, eraserNodeStyle);
 
         HashMap<String,Object> skelEdgeStyle = new HashMap<String,Object>();
@@ -80,14 +82,14 @@ public final class JGraphXStyles {
 
         Map<String,Object> creatorEdgeStyle =
             (Map<String,Object>) skelEdgeStyle.clone();
-        readerEdgeStyle.put(mxConstants.STYLE_STROKECOLOR, "green");
-        readerEdgeStyle.put(mxConstants.STYLE_FONTCOLOR, "green");
+        creatorEdgeStyle.put(mxConstants.STYLE_STROKECOLOR, "green");
+        creatorEdgeStyle.put(mxConstants.STYLE_FONTCOLOR, "green");
         ruleStylesheet.putCellStyle(CREATOR_EDGE_STYLE, creatorEdgeStyle);
 
         Map<String,Object> eraserEdgeStyle =
             (Map<String,Object>) skelEdgeStyle.clone();
-        readerEdgeStyle.put(mxConstants.STYLE_STROKECOLOR, "blue");
-        readerEdgeStyle.put(mxConstants.STYLE_FONTCOLOR, "blue");
+        eraserEdgeStyle.put(mxConstants.STYLE_STROKECOLOR, "blue");
+        eraserEdgeStyle.put(mxConstants.STYLE_FONTCOLOR, "blue");
         ruleStylesheet.putCellStyle(ERASER_EDGE_STYLE, eraserEdgeStyle);
     }
 
