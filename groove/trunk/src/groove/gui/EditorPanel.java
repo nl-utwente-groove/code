@@ -21,7 +21,6 @@ import groove.util.Groove;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
-import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -39,11 +38,12 @@ import javax.swing.JToolBar;
 public class EditorPanel extends JPanel {
     /**
      * Constructs an instance of the dialog, for a given graph or rule.
+     * @param simulator the simulator on which this panel is placed
      * @param graph the input graph for the editor
-     * @throws HeadlessException -
+     * @param fresh if {@code true}, the graph is fresh (and therefore the
+     * editor is immediately dirty)
      */
-    public EditorPanel(Simulator simulator, AspectGraph graph)
-        throws HeadlessException {
+    public EditorPanel(Simulator simulator, AspectGraph graph, boolean fresh) {
         this.simulator = simulator;
         this.options = simulator.getOptions();
         this.editor = new Editor(null, this.options) {
@@ -61,12 +61,14 @@ public class EditorPanel extends JPanel {
             }
         };
         this.graph = graph;
+        this.fresh = fresh;
     }
 
     /** Starts the editor with the graph passed in at construction time. */
     public void start() {
         this.editor.setTypeView(this.simulator.getTypeView());
         this.editor.setGraph(this.graph, true);
+        this.editor.setDirty(this.fresh);
         setLayout(new BorderLayout());
         add(this.editor.createContentPanel(createToolBar(this.graph.getRole())));
     }
@@ -74,6 +76,13 @@ public class EditorPanel extends JPanel {
     /** Returns the resulting aspect graph of the editor. */
     public AspectGraph getGraph() {
         return this.editor.getGraph();
+    }
+
+    /** Changes the type graph in the editor,
+     * according to the current type view in the simulator. 
+     */
+    public void setType() {
+        this.editor.setTypeView(this.simulator.getTypeView());
     }
 
     /** Returns the tabbed view pane of the simulator (on which this panel is displayed). */
@@ -136,16 +145,20 @@ public class EditorPanel extends JPanel {
      */
     void handleOk() {
         if (this.editor.isDirty()) {
+            boolean success = false;
             switch (this.editor.getRole()) {
             case HOST:
-                this.simulator.doAddGraph(this.editor.getGraph());
+                success = this.simulator.doAddGraph(this.editor.getGraph());
                 break;
             case RULE:
-                this.simulator.doAddRule(this.editor.getGraph());
+                success = this.simulator.doAddRule(this.editor.getGraph());
                 break;
             case TYPE:
-                this.simulator.doAddType(this.editor.getGraph());
+                success = this.simulator.doAddType(this.editor.getGraph());
                 break;
+            }
+            if (success) {
+                this.editor.setDirty(false);
             }
         }
     }
@@ -160,7 +173,7 @@ public class EditorPanel extends JPanel {
         if (this.editor.isDirty()) {
             int confirm =
                 JOptionPane.showConfirmDialog(this, String.format(
-                    "%s %s has been modified. Save changes?",
+                    "%s '%s' has been modified. Save changes?",
                     this.editor.getRoleName(true), getGraph().getName()), null,
                     JOptionPane.YES_NO_CANCEL_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
@@ -183,6 +196,8 @@ public class EditorPanel extends JPanel {
     private JButton cancelButton;
     /** The graph with which the editor has been initially set. */
     private final AspectGraph graph;
+    /** Flag indicating that this is a fresh graph, not already in the simulator. */
+    private final boolean fresh;
     /** Options of this dialog. */
     private final Options options;
     /** The simulator to which the panel reports. */

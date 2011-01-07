@@ -64,6 +64,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     void reset(Node node) {
         super.reset(node);
         this.errors.clear();
+        this.extraError = false;
         this.aspect = AspectKind.NONE;
     }
 
@@ -379,11 +380,12 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     @Override
     public final boolean hasError() {
-        return !this.errors.isEmpty();
+        return this.extraError || !this.errors.isEmpty();
     }
 
-    public void addError(FormatError error) {
-        this.errors.add(error.extend(this));
+    @Override
+    public void setExtraError(boolean error) {
+        this.extraError = error;
     }
 
     /** Returns the (possibly empty) set of errors in this JVertex. */
@@ -451,6 +453,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     /** The role of the underlying rule node. */
     private AspectKind aspect;
     private Collection<FormatError> errors = new LinkedHashSet<FormatError>();
+    private boolean extraError;
     static private final String ASSIGN_TEXT = " = ";
     static private final String TYPE_TEXT = ": ";
 }

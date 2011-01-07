@@ -16,8 +16,6 @@ import static groove.graph.GraphRole.HOST;
 import static groove.graph.GraphRole.RULE;
 import static groove.graph.GraphRole.TYPE;
 import static groove.gui.Options.HELP_MENU_NAME;
-import groove.graph.Edge;
-import groove.graph.Element;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.TypeGraph;
@@ -224,21 +222,18 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     /** Sets the type graph for this editor. */
     public void setTypeView(TypeViewList typeView) {
+        TypeGraph oldType = this.type;
         this.type = null;
-        this.typeViewList = null;
         if (typeView != null) {
             try {
                 this.type = typeView.toModel();
-                this.typeViewList = typeView;
             } catch (FormatException e) {
                 // do nothing
             }
         }
-    }
-
-    /** Returns the type graph set in this editor, if any. */
-    public TypeViewList getTypeViewList() {
-        return this.typeViewList;
+        if (this.type != oldType) {
+            updateStatus();
+        }
     }
 
     /** Returns the type graph set in this editor, if any. */
@@ -251,13 +246,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      */
     private View<?> toView() {
         View<?> result = getGraph().toView();
-        if (getType() != null) {
-            if (result instanceof GraphView) {
-                ((GraphView) result).setType(getType());
-            }
-            if (result instanceof RuleView) {
-                ((RuleView) result).setType(getType());
-            }
+        if (result instanceof GraphView) {
+            ((GraphView) result).setType(getType());
+        }
+        if (result instanceof RuleView) {
+            ((RuleView) result).setType(getType());
         }
         return result;
     }
@@ -1088,22 +1081,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                     String.format("%s nodes, %s edges", nodeCount, edgeCount));
                 Editor.this.errorCellMap.clear();
                 List<FormatError> errors = toView().getErrors();
-                for (FormatError error : errors) {
-                    for (Element errorObject : error.getElements()) {
-                        AspectJCell errorCell =
-                            getModel().getJCell(errorObject);
-                        if (errorCell == null && errorObject instanceof Edge) {
-                            errorCell =
-                                getModel().getJCell(
-                                    ((Edge<?>) errorObject).source());
-                        }
-                        if (errorCell != null) {
-                            Editor.this.errorCellMap.put(error, errorCell);
-                            errorCell.addError(error);
-                            break;
-                        }
-                    }
-                }
+                Editor.this.errorCellMap = getModel().setExtraErrors(errors);
                 getErrorPanel().setErrors(errors);
                 getMainPanel().resetToPreferredSizes();
             }
@@ -1231,12 +1209,10 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     private boolean anyGraphSaved;
 
     /** Mapping from error messages to the corresponding cells. */
-    private Map<FormatError,GraphJCell> errorCellMap =
-        new HashMap<FormatError,GraphJCell>();
+    private Map<FormatError,AspectJCell> errorCellMap =
+        new HashMap<FormatError,AspectJCell>();
     /** Index of the currently set editor role */
     private GraphRole graphRole = HOST;
-    /** Type view against which the edited graph is checked. */
-    private TypeViewList typeViewList;
     /** Type against which the edited graph is checked. */
     private TypeGraph type;
 

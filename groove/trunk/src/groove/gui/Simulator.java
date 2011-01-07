@@ -461,28 +461,32 @@ public class Simulator {
     /** 
      * Adds an editor panel for the given graph, or selects the 
      * one that already exists.
+     * @param fresh if {@code true}, this is a new graph (not already in the grammar)
      */
-    void handleEditGraph(final AspectGraph graph) {
+    void handleEditGraph(final AspectGraph graph, boolean fresh) {
         EditorPanel result = null;
         // look if an editor already exists for the graph
         JTabbedPane viewsPane = getGraphViewsPanel();
         for (int i = 0; i < viewsPane.getTabCount(); i++) {
             Component view = viewsPane.getComponentAt(i);
-            if (view instanceof EditorPanel
-                && ((EditorPanel) view).getGraph() == graph) {
-                result = (EditorPanel) view;
-                break;
+            if (view instanceof EditorPanel) {
+                AspectGraph editedGraph = ((EditorPanel) view).getGraph();
+                if (editedGraph.getName().equals(graph.getName())
+                    && editedGraph.getRole() == graph.getRole()) {
+                    result = (EditorPanel) view;
+                    break;
+                }
             }
         }
         if (result == null) {
-            result = addEditorPanel(graph);
+            result = addEditorPanel(graph, fresh);
         }
         getGraphViewsPanel().setSelectedComponent(result);
     }
 
     /** Creates and adds an editor panel for the given graph. */
-    private EditorPanel addEditorPanel(AspectGraph graph) {
-        final EditorPanel result = new EditorPanel(this, graph);
+    private EditorPanel addEditorPanel(AspectGraph graph, boolean fresh) {
+        final EditorPanel result = new EditorPanel(this, graph, fresh);
         Icon icon = null;
         switch (graph.getRole()) {
         case HOST:
@@ -500,6 +504,40 @@ public class Simulator {
             new ButtonTabComponent(result, icon, graph.getName());
         getGraphViewsPanel().setTabComponentAt(index, tabComponent);
         result.start();
+        return result;
+    }
+
+    /** Changes the type graph in the open editor panels. */
+    void changeEditorTypes() {
+        JTabbedPane viewsPane = getGraphViewsPanel();
+        for (int i = 0; i < viewsPane.getTabCount(); i++) {
+            Component view = viewsPane.getComponentAt(i);
+            if (view instanceof EditorPanel) {
+                ((EditorPanel) view).setType();
+            }
+        }
+    }
+
+    /** 
+     * Attempts to close the dirty editors, asking the user what should happen.
+     * @return {@code true} if all the direty editors were closed
+     */
+    boolean abandonEditors() {
+        boolean result = true;
+        // collect the (possibly dirty) editors
+        JTabbedPane viewsPane = getGraphViewsPanel();
+        List<EditorPanel> editorList = new ArrayList<EditorPanel>();
+        for (int i = 0; i < viewsPane.getTabCount(); i++) {
+            if (viewsPane.getComponentAt(i) instanceof EditorPanel) {
+                editorList.add((EditorPanel) viewsPane.getComponentAt(i));
+            }
+        }
+        for (EditorPanel editor : editorList) {
+            if (!editor.handleCancel()) {
+                result = false;
+                break;
+            }
+        }
         return result;
     }
 
@@ -837,6 +875,9 @@ public class Simulator {
      * Loads in a given system store.
      */
     void doLoadGrammar(final SystemStore store, final String startGraphName) {
+        if (!abandonEditors()) {
+            return;
+        }
         final ProgressBarDialog dialog =
             new ProgressBarDialog(getFrame(), "Load Progress");
         final Observer loadListener = new Observer() {
@@ -928,15 +969,17 @@ public class Simulator {
      */
     void doNewGrammar(File grammarFile) {
         try {
-            StoredGrammarView grammar =
-                StoredGrammarView.newInstance(grammarFile, true);
-            // now we know loading succeeded, we can set the current names &
-            // files
-            getStateFileChooser().setCurrentDirectory(grammarFile);
-            getStateFileChooser().setSelectedFile(new File(""));
-            getGrammarFileChooser().setSelectedFile(grammarFile);
-            setGrammarView(grammar);
-            updateGrammar();
+            if (abandonEditors()) {
+                StoredGrammarView grammar =
+                    StoredGrammarView.newInstance(grammarFile, true);
+                // now we know loading succeeded, we can set the current names &
+                // files
+                getStateFileChooser().setCurrentDirectory(grammarFile);
+                getStateFileChooser().setSelectedFile(new File(""));
+                getGrammarFileChooser().setSelectedFile(grammarFile);
+                setGrammarView(grammar);
+                updateGrammar();
+            }
         } catch (IllegalArgumentException exc) {
             showErrorDialog(
                 String.format("Can't create grammar at '%s'", grammarFile), exc);
@@ -951,23 +994,8 @@ public class Simulator {
      * itself is successful. 
      */
     public boolean doQuit() {
-        // collect the (possibly dirty) editors
-        JTabbedPane viewsPane = getGraphViewsPanel();
-        List<EditorPanel> editorList = new ArrayList<EditorPanel>();
-        for (int i = 0; i < viewsPane.getTabCount(); i++) {
-            if (viewsPane.getComponentAt(i) instanceof EditorPanel) {
-                editorList.add((EditorPanel) viewsPane.getComponentAt(i));
-            }
-        }
-        // try to close the editors
-        boolean allClosed = true;
-        for (EditorPanel editor : editorList) {
-            if (!editor.handleCancel()) {
-                allClosed = false;
-                break;
-            }
-        }
-        if (allClosed) {
+        boolean result = abandonEditors();
+        if (result) {
             groove.gui.UserSettings.synchSettings(this.frame);
             // Saves the current user settings.
             if (confirmAbandon(false)) {
@@ -980,7 +1008,7 @@ public class Simulator {
                 }
             }
         }
-        return allClosed;
+        return result;
     }
 
     /**
@@ -1152,19 +1180,21 @@ public class Simulator {
      */
     void doSaveGrammar(File grammarFile) {
         try {
-            SystemStore newStore = getGrammarStore().save(grammarFile);
-            StoredGrammarView newView = newStore.toGrammarView();
-            String startGraphName = getGrammarView().getStartGraphName();
-            GraphView startGraphView = getGrammarView().getStartGraphView();
-            if (startGraphName != null) {
-                newView.setStartGraph(startGraphName);
-            } else if (startGraphView != null) {
-                newView.setStartGraph(startGraphView.getView());
+            if (abandonEditors()) {
+                SystemStore newStore = getGrammarStore().save(grammarFile);
+                StoredGrammarView newView = newStore.toGrammarView();
+                String startGraphName = getGrammarView().getStartGraphName();
+                GraphView startGraphView = getGrammarView().getStartGraphView();
+                if (startGraphName != null) {
+                    newView.setStartGraph(startGraphName);
+                } else if (startGraphView != null) {
+                    newView.setStartGraph(startGraphView.getView());
+                }
+                setGrammarView(newView);
+                setTitle();
+                getGrammarFileChooser().setSelectedFile(grammarFile);
+                updateGrammar();
             }
-            setGrammarView(newView);
-            setTitle();
-            getGrammarFileChooser().setSelectedFile(grammarFile);
-            updateGrammar();
         } catch (IOException exc) {
             showErrorDialog("Error while saving grammar to " + grammarFile, exc);
         }
@@ -1241,6 +1271,7 @@ public class Simulator {
     public synchronized void updateGrammar() {
         setGTS(null);
         fireSetGrammar(getGrammarView());
+        changeEditorTypes();
         refresh();
         List<FormatError> grammarErrors = getGrammarView().getErrors();
         boolean grammarCorrect = grammarErrors.isEmpty();
@@ -3439,7 +3470,7 @@ public class Simulator {
          */
         public void actionPerformed(ActionEvent e) {
             AspectJModel stateModel = getStatePanel().getJModel();
-            handleEditGraph(stateModel.getGraph());
+            handleEditGraph(stateModel.getGraph(), false);
         }
     }
 
@@ -3489,7 +3520,7 @@ public class Simulator {
             for (int i = 0; i < ruleViews.length; i++) {
                 ruleGraphs[i] = ruleViews[i].getView();
                 ruleProperties[i] =
-                    GraphInfo.getProperties(ruleGraphs[i], true);
+                    GraphInfo.getProperties(ruleGraphs[i], true).clone();
             }
 
             // Use the first properties of the first rule as the starting point. 
@@ -3543,15 +3574,16 @@ public class Simulator {
                 for (int i = 0; i < ruleViews.length; i++) {
                     // Avoiding call to doDeleteRule() and doAddRule() because
                     // of grammar updates.
-                    RuleName ruleName = ruleViews[i].getRuleName();
-                    getGrammarStore().deleteRule(ruleName);
-                    ruleGraphs[i].setName(ruleName.toString());
                     try {
-                        getGrammarStore().putRule(ruleGraphs[i]);
+                        AspectGraph newGraph = ruleGraphs[i].clone();
+                        GraphInfo.setProperties(newGraph, ruleProperties[i]);
+                        newGraph.setFixed();
+                        getGrammarStore().putRule(newGraph);
                         ruleGraphs[i].invalidateView();
                     } catch (IOException exc) {
                         showErrorDialog(String.format(
-                            "Error while saving rule '%s'", ruleName), exc);
+                            "Error while storing rule '%s'",
+                            ruleGraphs[i].getName()), exc);
                     } catch (UnsupportedOperationException u) {
                         showErrorDialog("Current grammar is read-only", u);
                     }
@@ -3614,7 +3646,7 @@ public class Simulator {
          * @require <tt>getCurrentRule != null</tt>.
          */
         public void actionPerformed(ActionEvent e) {
-            handleEditGraph(getCurrentRule().getView());
+            handleEditGraph(getCurrentRule().getView(), false);
         }
     }
 
@@ -4394,7 +4426,7 @@ public class Simulator {
             if (newGraphName != null) {
                 AspectGraph newGraph =
                     AspectGraph.emptyGraph(newGraphName, HOST);
-                handleEditGraph(newGraph);
+                handleEditGraph(newGraph, true);
             }
         }
 
@@ -4434,7 +4466,7 @@ public class Simulator {
                 if (ruleName != null) {
                     AspectGraph newRule =
                         AspectGraph.emptyGraph(ruleName.toString(), RULE);
-                    handleEditGraph(newRule);
+                    handleEditGraph(newRule, true);
                 }
             }
         }

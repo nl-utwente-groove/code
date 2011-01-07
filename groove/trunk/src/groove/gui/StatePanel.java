@@ -36,6 +36,7 @@ import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.StartGraphState;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph.HostToAspectMap;
 import groove.trans.HostGraphMorphism;
@@ -380,28 +381,43 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                         ((GraphNextState) oldState).getMorphism().then(morphism);
                     oldState = ((GraphNextState) oldState).source();
                 }
+                // the following call will make sure the start state
+                // is actually loaded
+                getAspectJModel(oldState);
                 HostToAspectMap oldStateMap =
                     this.stateToAspectMap.get(oldState);
                 copyLayout(oldStateMap, aspectMap, morphism);
             } else {
+                assert state instanceof StartGraphState;
                 // this is the start state
                 AspectGraph startGraph =
                     this.simulator.getGrammarView().getStartGraphView().getView();
                 AspectJModel startModel = getAspectJModel(startGraph);
                 for (AspectNode node : startGraph.nodeSet()) {
+                    AspectJVertex stateVertex = result.getJCellForNode(node);
+                    // meta nodes are not in the state;
+                    // data nodes may have been merged
+                    if (stateVertex == null) {
+                        continue;
+                    }
                     AspectJVertex graphVertex =
                         startModel.getJCellForNode(node);
-                    AspectJVertex stateVertex = result.getJCellForNode(node);
+                    stateVertex.refreshAttributes();
                     stateVertex.getAttributes().applyMap(
                         graphVertex.getAttributes());
                     stateVertex.setGrayedOut(graphVertex.isGrayedOut());
                 }
                 for (AspectEdge edge : startGraph.edgeSet()) {
-                    AspectJCell graphVertex = startModel.getJCellForEdge(edge);
-                    AspectJCell stateVertex = result.getJCellForEdge(edge);
-                    stateVertex.getAttributes().applyMap(
-                        graphVertex.getAttributes());
-                    stateVertex.setGrayedOut(graphVertex.isGrayedOut());
+                    AspectJCell stateEdge = result.getJCellForEdge(edge);
+                    // meta edges and merged data edges are not in the state
+                    if (stateEdge == null) {
+                        continue;
+                    }
+                    AspectJCell graphEdge = startModel.getJCellForEdge(edge);
+                    stateEdge.refreshAttributes();
+                    stateEdge.getAttributes().applyMap(
+                        graphEdge.getAttributes());
+                    stateEdge.setGrayedOut(graphEdge.isGrayedOut());
                 }
             }
         }

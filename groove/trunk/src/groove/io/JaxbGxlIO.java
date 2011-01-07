@@ -80,7 +80,6 @@ public class JaxbGxlIO implements GxlIO {
      */
     public void saveGraph(Graph<?,?> graph, OutputStream out)
         throws IOException {
-        GraphInfo.setVersion(graph, Version.GXL_VERSION);
         GraphType gxlGraph = graphToGxl(graph);
         // now marshal the attribute graph
         try {
@@ -283,6 +282,11 @@ public class JaxbGxlIO implements GxlIO {
                     attr.setString((String) entry.getValue());
                     graphAttrs.add(attr);
                 }
+                // Add version info
+                AttrType attr = this.factory.createAttrType();
+                attr.setName(GraphProperties.VERSION_KEY);
+                attr.setString(Version.GXL_VERSION);
+                graphAttrs.add(attr);
             }
         }
         return gxlGraph;

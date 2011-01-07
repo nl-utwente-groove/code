@@ -515,7 +515,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         public void actionPerformed(ActionEvent e) {
             final AspectGraph initType =
                 getGrammarView().getTypeView(getSelectedType()).getView();
-            TypePanel.this.simulator.handleEditGraph(initType);
+            TypePanel.this.simulator.handleEditGraph(initType, false);
         }
 
         @Override
@@ -554,7 +554,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
                     Groove.DEFAULT_TYPE_NAME, true);
             if (typeName != null) {
                 AspectGraph initType = AspectGraph.emptyGraph(typeName, TYPE);
-                TypePanel.this.simulator.handleEditGraph(initType);
+                TypePanel.this.simulator.handleEditGraph(initType, true);
             }
         }
 
