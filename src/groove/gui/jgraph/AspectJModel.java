@@ -344,16 +344,13 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      */
     @Override
     protected boolean isUnaryEdge(AspectEdge edge) {
-        boolean result;
-        boolean unLayedoutSelfEdge =
-            edge != null && edge.source() == edge.target()
-                && getLayoutMap().getLayout(edge) == null;
-        if (isEditing()) {
-            result = unLayedoutSelfEdge;
-        } else {
+        boolean result = super.isUnaryEdge(edge);
+        if (!result) {
+            boolean unLayedoutSelfEdge =
+                edge.source() == edge.target()
+                    && getLayoutMap().getLayout(edge) == null;
             result =
-                !edge.isBinary() || unLayedoutSelfEdge
-                    && edge.getKind() == REMARK;
+                unLayedoutSelfEdge && (isEditing() || edge.getKind() == REMARK);
         }
         return result;
     }

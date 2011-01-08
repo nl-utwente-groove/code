@@ -61,15 +61,6 @@ public interface GraphJCell extends GraphCell, Serializable {
      */
     public abstract Collection<? extends Label> getListLabels();
 
-    /** Indicates if this cell is currently emphasised. */
-    boolean isEmphasised();
-
-    /**  
-     * Sets this cell to emphasised.
-     * @return {@code true} if the emphasised status changed as a result of this call
-     */
-    boolean setEmphasised(boolean emph);
-
     /** Indicates if this cell is currently grayed-out. */
     boolean isGrayedOut();
 

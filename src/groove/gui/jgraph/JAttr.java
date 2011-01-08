@@ -26,10 +26,14 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
+import java.awt.MultipleGradientPaint.CycleMethod;
+import java.awt.Paint;
+import java.awt.RadialGradientPaint;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -73,6 +77,50 @@ public class JAttr {
         }
         return result;
     }
+
+    /**
+     * Creates paint for a vertex with given bounds and (inner) colour.
+     */
+    static public Paint createPaint(Rectangle b, Color c) {
+        // only bother with special paint if the vertex is not too small to notice
+        if (b.width < 10 && b.height < 10) {
+            return c;
+        } else {
+            int cx = b.x + b.width / 2;
+            int cy = b.y + b.height / 2;
+            int fx = b.x + b.width / 3;
+            int fy = b.y + 2 * b.height / 3;
+            int rx = b.width - fx;
+            int ry = b.height - fy;
+            float r = (float) Math.sqrt(rx * rx + ry * ry);
+            Paint newPaint =
+                new RadialGradientPaint(cx, cy, r, fx, fy,
+                    new float[] {0f, 1f}, getGradient(c), CycleMethod.NO_CYCLE);
+            return newPaint;
+        }
+    }
+
+    /** Lazily creates and returns the colour gradient derived from a given colour. */
+    static private Color[] getGradient(Color c) {
+        Color[] result = gradientMap.get(c);
+        if (result == null) {
+            float factor = .9f;
+            Color inC =
+                new Color((int) Math.min(c.getRed() / factor, 255),
+                    (int) Math.min(c.getGreen() / factor, 255), (int) Math.min(
+                        c.getBlue() / factor, 255), c.getAlpha());
+            Color outC =
+                new Color((int) (c.getRed() * factor),
+                    (int) (c.getGreen() * factor),
+                    (int) (c.getBlue() * factor), c.getAlpha());
+            gradientMap.put(c, result = new Color[] {inC, outC});
+        }
+        return result;
+    }
+
+    /** Mapping from colours to colour gradients for {@link #createPaint(Rectangle, Color)}. */
+    static private Map<Color,Color[]> gradientMap =
+        new HashMap<Color,Color[]>();
 
     /** Tests if a given code is a recognised line style. */
     public static boolean isLineStyle(int style) {
@@ -139,10 +187,13 @@ public class JAttr {
      */
     public static final int DEFAULT_LINE_WIDTH = 1;
 
+    /** The size of the rounded corners for rounded-rectangle vertices. */
+    public static final int ARC_SIZE = 5;
+
     /** The default font used in the j-graphs. */
     static public final Font DEFAULT_FONT = GraphConstants.DEFAULTFONT;
     /**
-     * The colour used for edges and node.
+     * The default foreground colour used for edges and nodes.
      */
     public static final Color DEFAULT_CELL_COLOR = Color.black;
 
@@ -150,7 +201,7 @@ public class JAttr {
      * The default background colour used for nodes.
      */
     public static final Color DEFAULT_BACKGROUND =
-        Colors.findColor("245 245 245");
+        Colors.findColor("250 250 250");
 
     /**
      * The standard bounds used for nodes.

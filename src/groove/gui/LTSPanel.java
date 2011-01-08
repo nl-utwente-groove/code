@@ -273,7 +273,8 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         for (GraphState counterExample : counterExamples) {
             jCells.add(getJModel().getJCellForNode(counterExample));
         }
-        getJModel().setEmphasised(jCells);
+        getJGraph().setSelectionCells(jCells.toArray());
+        //        getJModel().setEmphasised(jCells);
         return message;
     }
 

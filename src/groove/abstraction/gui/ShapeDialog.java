@@ -43,7 +43,7 @@ public class ShapeDialog {
     private static Options options = new Options();
     static {
         options.setValue(Options.SHOW_NODE_IDS_OPTION, 0);
-        options.setValue(Options.SHOW_VERTEX_LABELS_OPTION, 0);
+        options.setValue(Options.SHOW_LOOPS_AS_NODE_LABELS_OPTION, 0);
     }
 
     private final ShapeJModel jModel;

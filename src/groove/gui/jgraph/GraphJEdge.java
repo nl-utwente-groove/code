@@ -168,18 +168,6 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
         return result;
     }
 
-    @Override
-    public final boolean isEmphasised() {
-        return this.emphasised;
-    }
-
-    @Override
-    public final boolean setEmphasised(boolean emphasised) {
-        boolean oldEmphasised = this.emphasised;
-        this.emphasised = emphasised;
-        return oldEmphasised != emphasised;
-    }
-
     public boolean hasError() {
         return false;
     }
@@ -369,7 +357,6 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
 
     private final GraphJModel<?,?> jModel;
     private boolean grayedOut;
-    private boolean emphasised;
 
     /**
      * The string used to separate arguments when preparing for editing.

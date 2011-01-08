@@ -20,7 +20,6 @@ import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraph;
 import groove.view.aspect.AspectGraph;
@@ -158,8 +157,7 @@ public class Converter {
     /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
     static public <N extends Node,E extends Edge<N>> void graphToTikz(
             JGraph graph, PrintWriter writer) {
-        GraphJModel<?,?> graphModel = graph.getModel();
-        writer.print(GraphToTikz.convertGraphToTikzStr(graphModel));
+        writer.print(GraphToTikz.convertGraphToTikzStr(graph));
     }
 
     /** Writes a graph in a simple .kth format to a print writer. */

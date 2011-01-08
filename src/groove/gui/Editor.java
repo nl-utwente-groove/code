@@ -1707,7 +1707,13 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             ImageIcon edgeIcon = new ImageIcon(Groove.getResource("edge.gif"));
             this.edgeModeAction =
                 new SetEditingModeAction(Options.EDGE_MODE_NAME,
-                    Options.EDGE_MODE_KEY, edgeIcon);
+                    Options.EDGE_MODE_KEY, edgeIcon) {
+                    @Override
+                    public void actionPerformed(ActionEvent evt) {
+                        super.actionPerformed(evt);
+                        getJGraph().clearSelection();
+                    }
+                };
         }
         return this.edgeModeAction;
     }

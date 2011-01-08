@@ -351,25 +351,12 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
         return result;
     }
 
-    @Override
-    public final boolean isEmphasised() {
-        return this.emphasised;
-    }
-
-    @Override
-    public final boolean setEmphasised(boolean emphasised) {
-        boolean oldEmphasised = this.emphasised;
-        this.emphasised = emphasised;
-        return oldEmphasised != emphasised;
-    }
-
     public boolean hasError() {
         return false;
     }
 
     private final GraphJModel<?,?> jModel;
     private boolean grayedOut;
-    private boolean emphasised;
     /**
      * An indicator whether the vertex can be labelled (otherwise labels are
      * self-edges).

@@ -18,11 +18,11 @@ package groove.gui;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
+import static groove.gui.Options.SHOW_LOOPS_AS_NODE_LABELS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import static groove.gui.Options.SHOW_VERTEX_LABELS_OPTION;
 import groove.graph.GraphRole;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
@@ -102,7 +102,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         addRefreshListener(SHOW_REMARKS_OPTION);
         addRefreshListener(SHOW_VALUE_NODES_OPTION);
         addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
-        addRefreshListener(SHOW_VERTEX_LABELS_OPTION);
+        addRefreshListener(SHOW_LOOPS_AS_NODE_LABELS_OPTION);
         getJGraph().setToolTipEnabled(true);
         // make sure that emphasis due to selections in the label tree
         // cause any selected transition to be deselected first
@@ -242,12 +242,21 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
             this.stateToAspectMap.get(this.selectedState);
         Set<AspectJCell> emphElems = new HashSet<AspectJCell>();
         for (HostNode matchedNode : match.getNodeValues()) {
-            emphElems.add(jModel.getJCellForNode(aspectMap.getNode(matchedNode)));
+            AspectJCell jCell =
+                jModel.getJCellForNode(aspectMap.getNode(matchedNode));
+            if (jCell != null) {
+                emphElems.add(jCell);
+            }
         }
         for (HostEdge matchedEdge : match.getEdgeValues()) {
-            emphElems.add(jModel.getJCellForEdge(aspectMap.getEdge(matchedEdge)));
+            AspectJCell jCell =
+                jModel.getJCellForEdge(aspectMap.getEdge(matchedEdge));
+            if (jCell != null) {
+                emphElems.add(jCell);
+            }
         }
-        jModel.setEmphasised(emphElems);
+        this.jGraph.setSelectionCells(emphElems.toArray());
+        //        jModel.setEmphasised(emphElems);
         this.selectedMatch = match;
         refreshStatus();
     }
@@ -317,7 +326,8 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         boolean result = this.selectedMatch != null;
         if (result) {
             this.selectedMatch = null;
-            getJModel().clearEmphasised();
+            getJGraph().clearSelection();
+            //            getJModel().clearEmphasised();
         }
         return result;
     }
@@ -406,6 +416,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                     stateVertex.getAttributes().applyMap(
                         graphVertex.getAttributes());
                     stateVertex.setGrayedOut(graphVertex.isGrayedOut());
+                    result.removeLayoutable(stateVertex);
                 }
                 for (AspectEdge edge : startGraph.edgeSet()) {
                     AspectJCell stateEdge = result.getJCellForEdge(edge);
@@ -418,6 +429,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                     stateEdge.getAttributes().applyMap(
                         graphEdge.getAttributes());
                     stateEdge.setGrayedOut(graphEdge.isGrayedOut());
+                    result.removeLayoutable(stateEdge);
                 }
             }
         }

@@ -21,7 +21,7 @@ import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import static groove.gui.Options.SHOW_VERTEX_LABELS_OPTION;
+import static groove.gui.Options.SHOW_LOOPS_AS_NODE_LABELS_OPTION;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.LabelStore;
@@ -72,7 +72,7 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
         addRefreshListener(SHOW_NODE_IDS_OPTION);
         addRefreshListener(SHOW_REMARKS_OPTION);
         addRefreshListener(SHOW_VALUE_NODES_OPTION);
-        addRefreshListener(SHOW_VERTEX_LABELS_OPTION);
+        addRefreshListener(SHOW_LOOPS_AS_NODE_LABELS_OPTION);
         simulator.addSimulationListener(this);
         this.jGraph.setToolTipEnabled(true);
         getJGraph().getLabelTree().addLabelStoreObserver(new Observer() {

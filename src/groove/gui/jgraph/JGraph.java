@@ -16,6 +16,7 @@
  */
 package groove.gui.jgraph;
 
+import static groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
@@ -43,6 +44,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -293,7 +295,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                 ((GraphJModel<?,?>.RefreshEdit) evt.getChange()).getRefreshedJCells();
             Collection<GraphJCell> visibleCells = new ArrayList<GraphJCell>();
             Collection<GraphJCell> invisibleCells = new ArrayList<GraphJCell>();
-            List<GraphJCell> emphElems = new ArrayList<GraphJCell>();
             for (GraphJCell jCell : refreshedJCells) {
                 CellView jView = getGraphLayoutCache().getMapping(jCell, false);
                 if (jView != null) {
@@ -327,15 +328,12 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                 if (jCell.isGrayedOut()) {
                     getSelectionModel().removeSelectionCell(jCell);
                 }
-                if (jCell.isEmphasised()) {
-                    emphElems.add(jCell);
-                }
             }
             getGraphLayoutCache().setVisible(visibleCells.toArray(),
                 invisibleCells.toArray());
-            if (!emphElems.isEmpty()) {
+            if (getSelectionCount() > 0) {
                 Rectangle scope =
-                    Groove.toRectangle(getCellBounds(emphElems.toArray()));
+                    Groove.toRectangle(getCellBounds(getSelectionCells()));
                 if (scope != null) {
                     scrollRectToVisible(scope);
                 }
@@ -1417,6 +1415,16 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                     + in.top + in.bottom);
             }
             this.validCachedPreferredSize = true;
+        }
+
+        @Override
+        protected Point2D getEditorLocation(Object cell,
+                Dimension2D editorSize, Point2D pt) {
+            double scale = this.graph.getScale();
+            // shift the location by the extra border space
+            return super.getEditorLocation(cell, editorSize,
+                new Point2D.Double(pt.getX() + scale * (EXTRA_BORDER_SPACE + 4)
+                    - 4, pt.getY() + scale * (EXTRA_BORDER_SPACE + 3) - 3));
         }
 
         /**

@@ -33,6 +33,7 @@ import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JAttr;
+import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.LTSJVertex;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
@@ -60,11 +61,13 @@ public final class GraphToTikz {
 
     /**
      * Converts a graph to a Tikz representation.
-     * @param model the graph to be converted.
+     * @param jGraph the graph to be converted.
      * @return a string with the Tikz encoding of the graph.
      */
     public static <N extends Node,E extends Edge<N>> String convertGraphToTikzStr(
-            GraphJModel<N,E> model) {
+            JGraph jGraph) {
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        GraphJModel<N,E> model = (GraphJModel) jGraph.getModel();
         Graph<N,E> graph = model.getGraph();
         LayoutMap<N,E> layoutMap = GraphInfo.getLayoutMap(graph);
         boolean showBackground =
@@ -80,7 +83,8 @@ public final class GraphToTikz {
             if (layoutMap != null) {
                 layout = layoutMap.getLayout(node);
             }
-            result.append(convertNodeToTikzStr(vertex, layout, showBackground));
+            result.append(convertNodeToTikzStr(vertex, layout, showBackground,
+                jGraph.getSelectionModel().isCellSelected(vertex)));
         }
 
         for (E edge : graph.edgeSet()) {
@@ -89,7 +93,8 @@ public final class GraphToTikz {
                 layout = layoutMap.getLayout(edge);
             }
             GraphJCell jCell = model.getJCellForEdge(edge);
-            result.append(convertEdgeToTikzStr(jCell, layout, layoutMap));
+            result.append(convertEdgeToTikzStr(jCell, layout, layoutMap,
+                jGraph.getSelectionModel().isCellSelected(jCell)));
         }
 
         result.append(endTikzFig());
@@ -102,10 +107,12 @@ public final class GraphToTikz {
      * @param node the node to be converted.
      * @param layout information regarding layout of the node. 
      * @param showBackground flag to indicate if the node should be filled.
+     * @param selected flag to indicate that the node should be drawn as selected
      * @return a StringBuilder filled with the Tikz string.
      */
     private static <N extends Node,E extends Edge<N>> StringBuilder convertNodeToTikzStr(
-            GraphJVertex node, JVertexLayout layout, boolean showBackground) {
+            GraphJVertex node, JVertexLayout layout, boolean showBackground,
+            boolean selected) {
 
         StringBuilder result = new StringBuilder();
 
@@ -113,7 +120,7 @@ public final class GraphToTikz {
             result.append(BEGIN_NODE);
 
             // Styles.
-            result.append(convertStyles(node, showBackground));
+            result.append(convertStyles(node, selected, showBackground));
 
             // Node ID.
             appendNode(node, result);
@@ -153,15 +160,17 @@ public final class GraphToTikz {
      * @param cell the edge to be converted.
      * @param layout information regarding layout of the node.
      * @param layoutMap the layout information associated with the graph.
+     * @param selected flag to indicate that the edge should be drawn as selected
      * @return a StringBuilder filled with the Tikz string if the JCell could
      *         cast into a valid sub-type or an empty StringBuilder otherwise.
      */
     private static <N extends Node,E extends Edge<N>> StringBuilder convertEdgeToTikzStr(
-            GraphJCell cell, JEdgeLayout layout, LayoutMap<N,E> layoutMap) {
+            GraphJCell cell, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
+            boolean selected) {
 
         if (cell instanceof GraphJEdge) {
             GraphJEdge graphCell = (GraphJEdge) cell;
-            return convertEdgeToTikzStr(graphCell, layout, layoutMap);
+            return convertEdgeToTikzStr(graphCell, layout, layoutMap, selected);
         } else {
             return new StringBuilder();
         }
@@ -172,15 +181,17 @@ public final class GraphToTikz {
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
      * @param layoutMap the layout information associated with the graph.
+     * @param selected flag to indicate that the edge should be drawn as selected
      * @return a StringBuilder filled with the Tikz string.
      */
     private static <N extends Node,E extends Edge<N>> StringBuilder convertEdgeToTikzStr(
-            GraphJEdge edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap) {
+            GraphJEdge edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
+            boolean selected) {
 
         StringBuilder result = new StringBuilder();
 
         if (edge.isVisible()) {
-            ArrayList<String> styles = convertStyles(edge);
+            ArrayList<String> styles = convertStyles(edge, selected);
             String edgeStyle = styles.get(0);
             String labStyle = styles.get(1);
 
@@ -1033,20 +1044,23 @@ public final class GraphToTikz {
     /**
      * Produces a string with the proper Tikz styles of a given node.
      * @param node the node to be converted.
+     * @param selected flag to indicate that the node should be drawn as selected
      * @param showBackground flag to indicate if the node should be filled.
      * @return a string with all the Tikz styles to be used.
      */
     private static <N extends Node,E extends Edge<N>> String convertStyles(
-            GraphJVertex node, boolean showBackground) {
+            GraphJVertex node, boolean selected, boolean showBackground) {
 
         if (node instanceof CtrlJVertex) {
             // Node from control automaton.
-            return convertControlNodeStyles((CtrlJVertex) node, showBackground);
+            return convertControlNodeStyles((CtrlJVertex) node, selected,
+                showBackground);
         }
 
         if (node instanceof LTSJVertex) {
             // Node from LTS.
-            return convertLTSNodeStyles((LTSJVertex) node, showBackground);
+            return convertLTSNodeStyles((LTSJVertex) node, selected,
+                showBackground);
         }
 
         // If we got to this point we have either a node from a rule,
@@ -1099,7 +1113,7 @@ public final class GraphToTikz {
             styles.add(PRODUCT_NODE_STYLE);
         }
 
-        if (node.isEmphasised()) {
+        if (selected) {
             styles.add(BOLD_LINE);
         }
 
@@ -1113,11 +1127,12 @@ public final class GraphToTikz {
     /**
      * Produces a string with the proper Tikz styles of a given control node.
      * @param node the control node to be converted.
+     * @param selected flag to indicate that the node should be drawn as selected
      * @param showBackground flag to indicate if the node should be filled.
      * @return a string with all the Tikz styles to be used.
      */
     private static String convertControlNodeStyles(CtrlJVertex node,
-            boolean showBackground) {
+            boolean selected, boolean showBackground) {
 
         ArrayList<String> styles = new ArrayList<String>();
 
@@ -1129,7 +1144,7 @@ public final class GraphToTikz {
             styles.add(CONTROL_NODE_STYLE);
         }
 
-        if (node.isEmphasised()) {
+        if (selected) {
             styles.add(BOLD_LINE);
         }
 
@@ -1147,11 +1162,12 @@ public final class GraphToTikz {
     /**
      * Produces a string with the proper Tikz styles of a given LTS node.
      * @param node the LTS node to be converted.
+     * @param selected flag to indicate that the node should be drawn as selected
      * @param showBackground flag to indicate if the node should be filled.
      * @return a string with all the Tikz styles to be used.
      */
     private static String convertLTSNodeStyles(LTSJVertex node,
-            boolean showBackground) {
+            boolean selected, boolean showBackground) {
 
         ArrayList<String> styles = new ArrayList<String>();
 
@@ -1171,7 +1187,7 @@ public final class GraphToTikz {
             styles.add(OPEN_NODE_STYLE);
         }
 
-        if (node.isEmphasised()) {
+        if (selected) {
             styles.add(BOLD_LINE);
         }
 
@@ -1185,14 +1201,15 @@ public final class GraphToTikz {
     /**
      * Find the proper Tikz styles for a given edge.
      * @param edge the edge to be analysed.
+     * @param selected flag to indicate that the edge should be drawn as selected
      * @return an array of size two. The first string is the edge style and the
      *         second one is the label style.
      */
     private static <N extends Node,E extends Edge<N>> ArrayList<String> convertStyles(
-            GraphJEdge edge) {
+            GraphJEdge edge, boolean selected) {
 
         if (edge instanceof CtrlJEdge) {
-            return convertStyles((CtrlJEdge) edge);
+            return convertStyles((CtrlJEdge) edge, selected);
         }
         ArrayList<String> styles = new ArrayList<String>();
 
@@ -1238,7 +1255,7 @@ public final class GraphToTikz {
             styles.set(1, THIN_LABEL_STYLE);
         }
 
-        if (edge.isEmphasised()) {
+        if (selected) {
             styles.set(0, styles.get(0) + ", " + BOLD_LINE);
         }
 
@@ -1254,10 +1271,12 @@ public final class GraphToTikz {
     /**
      * Find the proper Tikz styles for a given control edge.
      * @param edge the control edge to be analysed.
+     * @param selected flag to indicate that the edge should be drawn as selected
      * @return an array of size two. The first string is the edge style and the
      *         second one is the label style.
      */
-    private static ArrayList<String> convertStyles(CtrlJEdge edge) {
+    private static ArrayList<String> convertStyles(CtrlJEdge edge,
+            boolean selected) {
 
         ArrayList<String> styles = new ArrayList<String>();
 
@@ -1274,7 +1293,7 @@ public final class GraphToTikz {
             styles.set(1, THIN_LABEL_STYLE);
         }
 
-        if (edge.isEmphasised()) {
+        if (selected) {
             styles.set(0, styles.get(0) + ", " + BOLD_LINE);
         }
 

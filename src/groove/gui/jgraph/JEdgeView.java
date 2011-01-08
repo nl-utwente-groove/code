@@ -426,25 +426,6 @@ public class JEdgeView extends EdgeView {
         }
     }
 
-    /** Indicates if the underlying cell is currently emphasised in the model. */
-    boolean isEmphasized() {
-        return getCell().isEmphasised();
-    }
-
-    /**
-     * Returns the line width of the vertex view. This is the line width stored
-     * in the attributes, augmented by {@link JAttr#EMPH_INCREMENT} if the view
-     * is emphasised.
-     * @see #isEmphasized()
-     */
-    public float getLinewidth() {
-        float result = GraphConstants.getLineWidth(getAllAttributes());
-        if (isEmphasized()) {
-            result += JAttr.EMPH_INCREMENT;
-        }
-        return result;
-    }
-
     /** The j-model underlying this edge view. */
     private final GraphJModel<?,?> jModel;
     //
@@ -550,8 +531,15 @@ public class JEdgeView extends EdgeView {
                 b.setRect(b.x - 1, b.y - 1, b.width, b.height + 1);
                 this.errorBounds = b;
             }
+            // pretend to the superclass that this cell is not selected
             super.getRendererComponent(jGraph, view, sel, focus, preview);
-            this.lineWidth = theView.getLinewidth();
+            // treat selection as emphasis
+            float lineWidth =
+                GraphConstants.getLineWidth(theView.getAllAttributes());
+            if (sel) {
+                lineWidth += JAttr.EMPH_INCREMENT;
+            }
+            this.lineWidth = lineWidth;
             return this;
         }
 
@@ -585,6 +573,16 @@ public class JEdgeView extends EdgeView {
                 paintLabels(g);
                 g.setColor(JAttr.ERROR_COLOR);
                 g2.fill(this.errorBounds);
+            }
+        }
+
+        @Override
+        protected void paintSelection(Graphics g) {
+            if (this.selected) {
+                float oldLineWidth = this.lineWidth;
+                this.lineWidth = 1;
+                super.paintSelection(g);
+                this.lineWidth = oldLineWidth;
             }
         }
 

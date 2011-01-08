@@ -254,6 +254,7 @@ final public class AspectJGraph extends JGraph {
         // add the cell to the jGraph
         Object[] insert = new Object[] {jVertex};
         getModel().insert(insert, null, null, null, null);
+        setSelectionCell(jVertex);
         // immediately add a label, if so indicated by startEditingNewNode
         if (this.startEditingNewNode) {
             startEditingAtCell(jVertex);
@@ -304,6 +305,7 @@ final public class AspectJGraph extends JGraph {
         }
         // add the cell to the jGraph
         getModel().insert(insert, null, cs, null, null);
+        setSelectionCell(newEdge);
         // immediately add a label
         if (this.startEditingNewEdge) {
             startEditingAtCell(newEdge);
@@ -332,7 +334,8 @@ final public class AspectJGraph extends JGraph {
      */
     boolean isNodeMode(MouseEvent evt) {
         boolean result = false;
-        if (this.editor != null && this.editor.isNodeMode()) {
+        if (evt.getButton() == MouseEvent.BUTTON1 && this.editor != null
+            && this.editor.isNodeMode()) {
             result = getFirstCellForLocation(evt.getX(), evt.getY()) == null;
         }
         return result;
@@ -342,7 +345,7 @@ final public class AspectJGraph extends JGraph {
      * Flag to indicate creating a node will immediately start editing the node
      * label
      */
-    private final boolean startEditingNewNode = false;
+    private final boolean startEditingNewNode = true;
     /**
      * Flag to indicate creating an edge will immediately start editing the edge
      * label

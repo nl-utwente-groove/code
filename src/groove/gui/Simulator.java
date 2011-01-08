@@ -31,7 +31,7 @@ import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import static groove.gui.Options.SHOW_VERTEX_LABELS_OPTION;
+import static groove.gui.Options.SHOW_LOOPS_AS_NODE_LABELS_OPTION;
 import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
@@ -2151,7 +2151,7 @@ public class Simulator {
         result.add(getOptions().getItem(SHOW_VALUE_NODES_OPTION));
         result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
         result.add(getOptions().getItem(SHOW_UNFILTERED_EDGES_OPTION));
-        result.add(getOptions().getItem(SHOW_VERTEX_LABELS_OPTION));
+        result.add(getOptions().getItem(SHOW_LOOPS_AS_NODE_LABELS_OPTION));
         result.addSeparator();
         result.add(getOptions().getItem(Options.CANCEL_CONTROL_EDIT_OPTION));
         result.add(getOptions().getItem(Options.DELETE_CONTROL_OPTION));
@@ -4597,7 +4597,7 @@ public class Simulator {
         public void refresh() {
             if (getGrammarView() != null) {
                 JMenuItem item =
-                    getOptions().getItem(SHOW_VERTEX_LABELS_OPTION);
+                    getOptions().getItem(SHOW_LOOPS_AS_NODE_LABELS_OPTION);
                 LabelStore labelStore = getGrammarView().getLabelStore();
                 if (labelStore.hasFlags()) {
                     item.setEnabled(false);

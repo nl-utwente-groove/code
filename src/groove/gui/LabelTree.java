@@ -148,18 +148,6 @@ public class LabelTree extends JTree implements GraphModelListener,
         // make sure tool tips get displayed
         ToolTipManager.sharedInstance().registerComponent(this);
         addMouseListener(new MyMouseListener());
-        // add a mouse listener to the jgraph to clear the selection of this
-        // tree
-        // as soon as the mouse is pressed in the jgraph
-        jgraph.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent evt) {
-                if (evt.getButton() == MouseEvent.BUTTON1
-                    && !isSelectionEmpty()) {
-                    clearSelection();
-                }
-            }
-        });
         setEnabled(false);
     }
 
@@ -398,7 +386,7 @@ public class LabelTree extends JTree implements GraphModelListener,
                 }
             }
         }
-        this.jmodel.setEmphasised(emphSet);
+        this.jgraph.setSelectionCells(emphSet.toArray());//jmodel.setEmphasised(emphSet);
     }
 
     /**
