@@ -32,7 +32,6 @@ import groove.util.ObservableSet;
 
 import java.awt.Rectangle;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -306,28 +305,6 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
         }
         refresh(changedJCells);
         createLayerEdit(changedJCells.toArray(), GraphModelLayerEdit.BACK).execute();
-    }
-
-    /**
-     * Sets the set of emphasised jcells.
-     * @param jCellSet the set of jcells to be emphasised. Should not be
-     *        <tt>null</tt>.
-     */
-    public void setEmphasised(Set<? extends GraphJCell> jCellSet) {
-        Set<GraphJCell> changedJCells = new HashSet<GraphJCell>();
-        for (GraphJCell root : getRoots()) {
-            if (root.setEmphasised(jCellSet.contains(root))) {
-                changedJCells.add(root);
-            }
-        }
-        refresh(changedJCells);
-    }
-
-    /**
-     * Clears the currently emphasised nodes.
-     */
-    public void clearEmphasised() {
-        setEmphasised(Collections.<GraphJCell>emptySet());
     }
 
     /**
@@ -745,8 +722,8 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
     /**
      * Indicates whether self-edges should be shown as node labels.
      */
-    boolean isShowVertexLabels() {
-        return getOptionValue(Options.SHOW_VERTEX_LABELS_OPTION);
+    boolean isShowLoopsAsNodeLabels() {
+        return getOptionValue(Options.SHOW_LOOPS_AS_NODE_LABELS_OPTION);
     }
 
     /**

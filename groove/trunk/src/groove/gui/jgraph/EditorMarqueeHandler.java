@@ -21,6 +21,8 @@
  */
 package groove.gui.jgraph;
 
+import groove.gui.Options;
+
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
@@ -29,7 +31,6 @@ import java.awt.geom.Point2D;
 
 import org.jgraph.graph.AbstractCellView;
 import org.jgraph.graph.BasicMarqueeHandler;
-import org.jgraph.graph.VertexView;
 
 /**
  * Abstract MarqueeHandler that can insert cells and edges. The class can be
@@ -141,7 +142,9 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
             redrawOverlay();
             evt.consume();
         }
-        super.mouseReleased(evt);
+        if (!Options.isPointEditEvent(evt)) {
+            super.mouseReleased(evt);
+        }
     }
 
     /**
@@ -240,7 +243,7 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
      * @param startPort the new start port for the edge being added; if
      *        <tt>null</tt>, nu edge will be drawn
      */
-    protected void setAddingEdge(VertexView startPort) {
+    protected void setAddingEdge(JVertexView startPort) {
         this.startVertex = startPort;
         if (startPort == null) {
             setAddingEdgeStartPoint(null);
@@ -300,7 +303,7 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
      * <tt>null</tt>, no vertex is emphasised. The change will be realized on
      * the next invocation of {@link #redrawOverlay()}.
      */
-    private void setEmphVertex(VertexView newEmphVertex) {
+    private void setEmphVertex(JVertexView newEmphVertex) {
         this.emphVertexChanged = (newEmphVertex != this.emphVertex);
         this.newEmphVertex = newEmphVertex;
     }
@@ -322,12 +325,12 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
     }
 
     /**
-     * Draws an emphasized vertex, if it is set
-     * @see #setEmphVertex(VertexView)
+     * Draws an emphasised vertex, if it is set
+     * @see #setEmphVertex(JVertexView)
      */
     private void drawEmphVertex(Graphics g) {
-        if (this.emphVertexChanged && this.emphVertex instanceof JVertexView) {
-            ((JVertexView) this.emphVertex).paintArmed(g);
+        if (this.emphVertexChanged && this.emphVertex != null) {
+            this.emphVertex.paintArmed(g);
         }
     }
 
@@ -335,11 +338,11 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
      * Returns the current vertex view at a given x- and y-coordinate, or
      * <tt>null</tt> if there is no vertex there.
      */
-    private VertexView vertexAt(Point2D p) {
+    private JVertexView vertexAt(Point2D p) {
         GraphJCell jCell =
             getJGraph().getFirstCellForLocation(p.getX(), p.getY(), true);
-        return (VertexView) getJGraph().getGraphLayoutCache().getMapping(jCell,
-            false);
+        return (JVertexView) getJGraph().getGraphLayoutCache().getMapping(
+            jCell, false);
     }
 
     /**
@@ -355,10 +358,10 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
      * While adding an edge, the vertex at which edge drawing started. A value
      * of <tt>null</tt> indicates no edge is being added.
      */
-    private VertexView startVertex;
+    private JVertexView startVertex;
 
     /** The vertex at <tt>currentPoint</tt> */
-    private VertexView currentVertex;
+    private JVertexView currentVertex;
     /**
      * Flag indicating that some aspect of the <i>adding edge</i> component on
      * the overlay has changed, so it should be redrawn.
@@ -397,10 +400,10 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
      * The current emphasized vertex. Used in repainting the overlay.
      * @see #drawEmphVertex(Graphics)
      */
-    private VertexView emphVertex;
+    private JVertexView emphVertex;
     /**
      * The new emphasized vertex. Used in repainting the overlay.
      * @see #drawEmphVertex(Graphics)
      */
-    private VertexView newEmphVertex;
+    private JVertexView newEmphVertex;
 }

@@ -32,6 +32,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
@@ -163,25 +164,6 @@ public class JVertexView extends VertexView {
     /** Returns the (html formatted) text to be displayed in this vertex view. */
     final String getText() {
         return this.text;
-    }
-
-    /** Indicates if the underlying cell is currently emphasized in the model. */
-    boolean isEmphasized() {
-        return getCell().isEmphasised();
-    }
-
-    /**
-     * Returns the line width of the vertex view. This is the line width stored
-     * in the attributes, augmented by {@link JAttr#EMPH_INCREMENT} if the view
-     * is emphasized.
-     * @see #isEmphasized()
-     */
-    public float getLinewidth() {
-        float result = GraphConstants.getLineWidth(getAllAttributes());
-        if (isEmphasized()) {
-            result += JAttr.EMPH_INCREMENT;
-        }
-        return result;
     }
 
     /**
@@ -463,10 +445,10 @@ public class JVertexView extends VertexView {
         newG.scale(scale, scale);
         // paint the border to erase it (we're in XOR mode)
         this.jGraph.getUI().paintCell(newG, this, getBounds(), true);
-        boolean previousEmph = getCell().isEmphasised();
-        getCell().setEmphasised(true);
+        this.armed = true;
         this.jGraph.getUI().paintCell(newG, this, getBounds(), true);
-        getCell().setEmphasised(previousEmph);
+        this.armed = false;
+        newG.dispose();
     }
 
     /** Underlying graph model, used to construct the autosize. */
@@ -476,6 +458,11 @@ public class JVertexView extends VertexView {
     private String text;
     /** Additional space to add to view bounds to make room for special borders. */
     private Insets insets;
+    /** 
+     * Temporary flag set to indicate that this cell should be painted 
+     * as selected.
+     */
+    private boolean armed;
 
     // switch off port magic
 
@@ -550,12 +537,17 @@ public class JVertexView extends VertexView {
             assert view instanceof JVertexView : String.format(
                 "This renderer is only meant for %s", JVertexView.class);
             this.view = (JVertexView) view;
-            this.selected = sel;
             this.selectionColor = graph.getHighlightColor();
             AttributeMap attributes = view.getAllAttributes();
             this.dash = GraphConstants.getDashPattern(attributes);
             this.lineColor = GraphConstants.getLineColor(attributes);
-            this.lineWidth = this.view.getLinewidth();
+            this.selected = sel;
+            boolean emph = this.view.armed || sel;
+            float lineWidth = GraphConstants.getLineWidth(attributes);
+            if (emph) {
+                lineWidth += JAttr.EMPH_INCREMENT;
+            }
+            this.lineWidth = lineWidth;
 
             AttributeMap secondMap = (AttributeMap) attributes.get("line2map");
             if (secondMap != null) {
@@ -572,8 +564,15 @@ public class JVertexView extends VertexView {
             setForeground((foreground != null) ? foreground
                     : graph.getForeground());
             Color background = GraphConstants.getBackground(attributes);
-            setBackground((background != null) ? background
-                    : graph.getBackground());
+            background =
+                (background != null) ? background : graph.getBackground();
+            if (emph) {
+                background =
+                    new Color(Math.max(background.getRed() - 30, 0), Math.max(
+                        background.getGreen() - 30, 0), Math.max(
+                        background.getBlue() - 30, 0), background.getAlpha());
+            }
+            setBackground(background);
             Font font = GraphConstants.getFont(attributes);
             setFont((font != null) ? font : graph.getFont());
             setBorder(createEmptyBorder());
@@ -596,13 +595,13 @@ public class JVertexView extends VertexView {
                 paintBackground(g2, shape);
             }
             paintText(g2);
-            paintForeground(g2, shape);
-            if (this.selected) {
-                paintSelectionBorder(g2, shape);
-            }
+            paintBorder(g2, shape);
             if (this.error) {
                 shape = getShape(width, height, 0, EXTRA_BORDER_SPACE);
-                g.setColor(JAttr.ERROR_COLOR);
+                g2.setColor(JAttr.ERROR_COLOR);
+                //               
+                //                g2.setPaint(JAttr.createPaint(shape.getBounds(),
+                //                    JAttr.ERROR_COLOR));
                 g2.fill(shape);
             }
         }
@@ -614,7 +613,7 @@ public class JVertexView extends VertexView {
                 setOpaque(false);
                 this.selected = false;
                 g.setColor(getForeground());
-                super.paint(g);
+                super.paintComponent(g);
             } finally {
                 this.selected = tmp;
             }
@@ -623,7 +622,7 @@ public class JVertexView extends VertexView {
         /**
          * Paints the border, with a given shape.
          */
-        private void paintForeground(Graphics2D g, Shape shape) {
+        private void paintBorder(Graphics2D g, Shape shape) {
             g.setColor(this.lineColor);
             g.setStroke(JAttr.createStroke(this.lineWidth, this.dash));
             g.draw(shape);
@@ -632,14 +631,21 @@ public class JVertexView extends VertexView {
                 g.setStroke(JAttr.createStroke(this.line2width, this.line2dash));
                 g.draw(shape);
             }
+            if (this.selected) {
+                paintSelectionBorder(g, shape);
+            }
         }
 
         /**
          * Paints the background, with a given shape.
          */
         private void paintBackground(Graphics2D g, Shape shape) {
-            g.setColor(getBackground());
+            Paint oldPaint = g.getPaint();
+            Paint newPaint =
+                JAttr.createPaint(shape.getBounds(), getBackground());
+            g.setPaint(newPaint);
             g.fill(shape);
+            g.setPaint(oldPaint);
         }
 
         /**
@@ -786,7 +792,7 @@ public class JVertexView extends VertexView {
                 return new Rectangle2D.Double(x, y, width, height);
             default:
                 return new RoundRectangle2D.Double(x, y, width, height,
-                    ARC_SIZE, ARC_SIZE);
+                    JAttr.ARC_SIZE, JAttr.ARC_SIZE);
             }
         }
 
@@ -956,7 +962,4 @@ public class JVertexView extends VertexView {
             new HashMap<String,Dimension>();
 
     }
-
-    /** The size of the rounded corners for rounded-rectangle vertices. */
-    public static final int ARC_SIZE = 5;
 }

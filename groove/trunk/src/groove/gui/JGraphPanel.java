@@ -172,6 +172,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
                 && ((AspectJEdge) cell).isSourceLabel()) {
                 cell = ((AspectJEdge) cell).getSourceVertex();
             }
+            //            getJModel().setEmphasised(Collections.singleton(cell));
             getJGraph().setSelectionCell(cell);
         }
         return cell != null;

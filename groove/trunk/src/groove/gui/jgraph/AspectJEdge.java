@@ -198,7 +198,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     /** 
      * Indicates if this JEdge should be shown
      * instead as part of the source node label.
-     * This is true if {@link AspectJModel#isShowVertexLabels()} is {@code true}
+     * This is true if {@link AspectJModel#isShowLoopsAsNodeLabels()} is {@code true}
      * and this is a self-edge, or if {@link Options#SHOW_VALUE_NODES_OPTION}
      * is unset and the target of this edge is a pure data constant. 
      */
@@ -206,7 +206,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         if (getJModel().isEditing() || hasError()) {
             return false;
         }
-        if (getJModel().isShowVertexLabels()
+        if (getJModel().isShowLoopsAsNodeLabels()
             && getSourceNode() == getTargetNode()
             && !getAttributes().containsKey(GraphConstants.POINTS)) {
             return true;

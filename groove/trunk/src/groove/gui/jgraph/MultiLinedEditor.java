@@ -27,7 +27,6 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.awt.geom.Rectangle2D;
 import java.util.EnumSet;
 import java.util.EventObject;
 import java.util.LinkedList;
@@ -49,7 +48,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import org.jgraph.JGraph;
-import org.jgraph.graph.CellView;
 import org.jgraph.graph.DefaultGraphCellEditor;
 import org.jgraph.graph.GraphCellEditor;
 import org.jgraph.graph.GraphConstants;
@@ -73,19 +71,19 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             super.getGraphCellEditorComponent(graph, cell, isSelected);
 
         // set the size of an editor to that of a view
-        CellView view = graph.getGraphLayoutCache().getMapping(cell, false);
-        Rectangle2D tmp = view.getBounds();
-        this.editingComponent.setBounds((int) tmp.getX()
-            + JAttr.EXTRA_BORDER_SPACE, (int) tmp.getY()
-            + JAttr.EXTRA_BORDER_SPACE, (int) tmp.getWidth(),
-            (int) tmp.getHeight());
+        //        CellView view = graph.getGraphLayoutCache().getMapping(cell, false);
+        //        Rectangle2D tmp = view.getBounds();
+        //        this.editingComponent.setBounds((int) tmp.getX()
+        //            + JAttr.EXTRA_BORDER_SPACE, (int) tmp.getY()
+        //            + JAttr.EXTRA_BORDER_SPACE, (int) tmp.getWidth(),
+        //            (int) tmp.getHeight());
 
         // I have to set a font here instead of in the
         // RealCellEditor.getGraphCellEditorComponent() because
         // I don't know what cell is being edited when in the
         // RealCellEditor.getGraphCellEditorComponent().
-        Font font = GraphConstants.getFont(view.getAllAttributes());
-        this.editingComponent.setFont((font != null) ? font : graph.getFont());
+        //        Font font = GraphConstants.getFont(view.getAllAttributes());
+        //        this.editingComponent.setFont((font != null) ? font : graph.getFont());
         return component;
     }
 
@@ -117,6 +115,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
          */
         public Component getGraphCellEditorComponent(JGraph graph,
                 Object value, boolean isSelected) {
+            AspectJCell jCell = (AspectJCell) value;
             this.labels.clear();
             GraphJModel<?,?> jmodel = (GraphJModel<?,?>) graph.getModel();
             for (int i = 0; i < jmodel.getRootCount(); i++) {
@@ -127,6 +126,18 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             }
             this.labels.addAll(this.prefixes);
             JTextArea result = getEditorComponent();
+            // scale with the jGraph
+            Font font = GraphConstants.getFont(jCell.getAttributes());
+            font = (font != null) ? font : graph.getFont();
+            if (graph.getScale() != 1) {
+                double scale = graph.getScale();
+                Dimension size = result.getSize();
+                size.height *= scale;
+                size.width *= scale;
+                result.setSize(size);
+                font = font.deriveFont((float) (font.getSize() * scale));
+            }
+            result.setFont(font);
             String editString =
                 ((AspectJCell) value).getUserObject().toEditString();
             result.setText(editString);

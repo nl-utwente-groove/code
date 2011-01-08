@@ -98,7 +98,10 @@ public class ErrorListPanel extends JPanel {
 
             @Override
             public void focusGained(FocusEvent e) {
-                listener.update(null, getErrorArea().getSelectedValue());
+                if (!e.isTemporary()) {
+                    listener.update(null, getErrorArea().getSelectedValue());
+                }
+
             }
         });
     }

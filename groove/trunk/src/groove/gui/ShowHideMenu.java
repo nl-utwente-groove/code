@@ -678,7 +678,7 @@ public class ShowHideMenu extends JMenu {
          */
         @Override
         protected boolean isInvolved(GraphJCell jCell) {
-            return jCell.isEmphasised();
+            return this.jgraph.getSelectionModel().isCellSelected(jCell);
         }
     }
 
