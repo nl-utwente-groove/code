@@ -16,6 +16,8 @@
  */
 package groove.gui;
 
+import groove.gui.jgraph.JAttr;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
@@ -83,9 +85,12 @@ public class ButtonTabComponent extends JPanel {
         //add more space to the top of the component
         setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
         setOpaque(false);
-        this.titleLabel = new JLabel(title, icon, JLabel.TRAILING);
+        this.iconLabel = new JLabel(icon);
+        this.iconLabel.setBackground(JAttr.ERROR_COLOR);
+        add(this.iconLabel);
+        this.titleLabel = new JLabel(title);
         //add more space between the label and the button
-        this.titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+        this.titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 5));
         add(this.titleLabel);
         //tab button
         JButton button = new TabButton();
@@ -97,8 +102,15 @@ public class ButtonTabComponent extends JPanel {
         ButtonTabComponent.this.titleLabel.setText(title);
     }
 
+    /** Visually displays the error property. */
+    public void setError(boolean error) {
+        this.iconLabel.setOpaque(error);
+    }
+
     /** The editor panel in this tab. */
     private final EditorPanel editorPanel;
+    /** The label that the icon is displayed on. */
+    private final JLabel iconLabel;
     /** The label that the title is displayed on. */
     private final JLabel titleLabel;
 

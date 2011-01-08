@@ -59,6 +59,14 @@ public class EditorPanel extends JPanel {
                     getTabIndex())).setTitle(title);
                 getOkButton().setEnabled(isDirty());
             }
+
+            @Override
+            protected void updateStatus() {
+                super.updateStatus();
+                ((ButtonTabComponent) getTabbedPane().getTabComponentAt(
+                    getTabIndex())).setError(!toView().getErrors().isEmpty());
+            }
+
         };
         this.graph = graph;
         this.fresh = fresh;
