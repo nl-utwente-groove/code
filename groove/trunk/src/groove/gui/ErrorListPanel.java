@@ -110,10 +110,19 @@ public class ErrorListPanel extends JPanel {
 
     @Override
     public Dimension getPreferredSize() {
-        if (getErrorArea().getComponentCount() == 0) {
+        if (getErrorArea().getModel().getSize() == 0) {
             return new Dimension();
         } else {
             return super.getPreferredSize();
+        }
+    }
+
+    @Override
+    public Dimension getMaximumSize() {
+        if (getErrorArea().getModel().getSize() == 0) {
+            return new Dimension();
+        } else {
+            return super.getMaximumSize();
         }
     }
 

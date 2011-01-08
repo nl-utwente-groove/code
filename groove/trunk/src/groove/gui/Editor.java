@@ -244,7 +244,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /**
      * Creates and returns a view, based on the current aspect graph.
      */
-    private View<?> toView() {
+    public View<?> toView() {
         View<?> result = getGraph().toView();
         if (result instanceof GraphView) {
             ((GraphView) result).setType(getType());
