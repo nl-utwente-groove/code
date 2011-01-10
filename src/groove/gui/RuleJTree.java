@@ -118,13 +118,7 @@ public class RuleJTree extends JTree implements SimulationListener {
             @Override
             public void focusGained(FocusEvent e) {
                 RuleJTree.this.repaint();
-                TreePath[] paths = getSelectionPaths();
-                if (paths != null && paths.length == 1) {
-                    Object selectedNode = paths[0].getLastPathComponent();
-                    if (selectedNode instanceof RuleTreeNode) {
-                        switchSimulatorToRulePanel();
-                    }
-                }
+                triggerSelectionUpdate();
             }
         });
     }
@@ -599,6 +593,56 @@ public class RuleJTree extends JTree implements SimulationListener {
     }
 
     /**
+     * Triggers a rule or match selection update by the simulator
+     * based on the current selection in the tree.
+     */
+    void triggerSelectionUpdate() {
+        TreePath[] paths = getSelectionPaths();
+        for (int i = 0; paths != null && i < paths.length; i++) {
+            Object selectedNode = paths[i].getLastPathComponent();
+            if (selectedNode instanceof RuleTreeNode) {
+                // selected tree node is a production rule (level 1
+                // node)
+                if (paths.length == 1) {
+                    getSimulator().setRule(
+                        ((RuleTreeNode) selectedNode).getRule().getRuleName());
+                    switchSimulatorToRulePanel();
+                }
+            } else if (selectedNode instanceof MatchTreeNode) {
+                // selected tree node is a match (level 2 node)
+                RuleEvent event = ((MatchTreeNode) selectedNode).event();
+                GraphTransition trans =
+                    RuleJTree.this.matchTransitionMap.get(event);
+                if (trans == null) {
+                    // possibly there is a transition associated with
+                    // this event that has not yet made it to the
+                    // matchTransitionMap because the refresh is only
+                    // occurring after setting the event; so look it
+                    // up among the outgoing transitions
+                    Iterator<GraphTransition> outTransitions =
+                        getCurrentState().getTransitionIter();
+                    while (outTransitions.hasNext()) {
+                        GraphTransition outTrans = outTransitions.next();
+                        if (outTrans.getEvent().equals(event)) {
+                            RuleJTree.this.matchTransitionMap.put(event, trans =
+                                outTrans);
+                            break;
+                        }
+                    }
+                }
+                if (trans != null) {
+                    getSimulator().setTransition(trans);
+                } else {
+                    getSimulator().setEvent(event);
+                }
+                if (getSimulator().getGraphPanel() == getSimulator().getRulePanel()) {
+                    getSimulator().setGraphPanel(getSimulator().getStatePanel());
+                }
+            }
+        }
+    }
+
+    /**
      * The simulator to which this directory belongs.
      * @invariant simulator != null
      */
@@ -676,52 +720,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         public void valueChanged(TreeSelectionEvent evt) {
             // only do something if a path was added to the selection
             if (isListenToSelectionChanges() && evt.isAddedPath()) {
-                TreePath[] paths = getSelectionPaths();
-                for (int i = 0; i < paths.length; i++) {
-                    Object selectedNode = paths[i].getLastPathComponent();
-                    if (selectedNode instanceof RuleTreeNode) {
-                        // selected tree node is a production rule (level 1
-                        // node)
-                        if (paths.length == 1) {
-                            getSimulator().setRule(
-                                ((RuleTreeNode) selectedNode).getRule().getRuleName());
-                            switchSimulatorToRulePanel();
-                        }
-                    } else if (selectedNode instanceof MatchTreeNode) {
-                        // selected tree node is a match (level 2 node)
-                        RuleEvent event =
-                            ((MatchTreeNode) selectedNode).event();
-                        GraphTransition trans =
-                            RuleJTree.this.matchTransitionMap.get(event);
-                        if (trans == null) {
-                            // possibly there is a transition associated with
-                            // this event that has not yet made it to the
-                            // matchTransitionMap because the refresh is only
-                            // occurring after setting the event; so look it
-                            // up among the outgoing transitions
-                            Iterator<GraphTransition> outTransitions =
-                                getCurrentState().getTransitionIter();
-                            while (outTransitions.hasNext()) {
-                                GraphTransition outTrans =
-                                    outTransitions.next();
-                                if (outTrans.getEvent().equals(event)) {
-                                    RuleJTree.this.matchTransitionMap.put(
-                                        event, trans = outTrans);
-                                    break;
-                                }
-                            }
-                        }
-                        if (trans != null) {
-                            getSimulator().setTransition(trans);
-                        } else {
-                            getSimulator().setEvent(event);
-                        }
-                        if (getSimulator().getGraphPanel() == getSimulator().getRulePanel()) {
-                            getSimulator().setGraphPanel(
-                                getSimulator().getStatePanel());
-                        }
-                    }
-                }
+                triggerSelectionUpdate();
             }
         }
     }

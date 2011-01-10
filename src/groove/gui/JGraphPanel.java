@@ -71,6 +71,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     public JGraphPanel(JG jGraph, boolean withStatusBar,
             boolean supportsSubtypes, Options options) {
         super(false);
+        setFocusable(false);
         // right now we always want label panels; keep this option
         this.jGraph = jGraph;
         this.options = options;
