@@ -1493,31 +1493,32 @@ public class Simulator {
      */
     JTabbedPane getGraphViewsPanel() {
         if (this.graphViewsPanel == null) {
-            this.graphViewsPanel = new JTabbedPane() {
+            JTabbedPane result = new JTabbedPane() {
                 @Override
                 public void setSelectedIndex(int index) {
                     super.setSelectedIndex(index);
                     getSelectedComponent().requestFocusInWindow();
                 }
             };
-            this.graphViewsPanel.addTab(null, Groove.GRAPH_FRAME_ICON,
-                getStatePanel(), "Current graph state");
-            this.graphViewsPanel.addTab(null, Groove.RULE_FRAME_ICON,
-                getRulePanel(), "Selected rule");
-            this.graphViewsPanel.addTab(null, Groove.LTS_FRAME_ICON,
+            result.addTab(null, Groove.GRAPH_FRAME_ICON, getStatePanel(),
+                "Current graph state");
+            result.addTab(null, Groove.RULE_FRAME_ICON, getRulePanel(),
+                "Selected rule");
+            result.addTab(null, Groove.LTS_FRAME_ICON,
                 getConditionalLTSPanel(), "Labelled transition system");
-            this.graphViewsPanel.addTab(null, Groove.CONTROL_FRAME_ICON,
-                getControlPanel(), "Control specification");
-            this.graphViewsPanel.addTab(null, Groove.TYPE_FRAME_ICON,
-                getTypePanel(), "Type graph");
+            result.addTab(null, Groove.CONTROL_FRAME_ICON, getControlPanel(),
+                "Control specification");
+            result.addTab(null, Groove.TYPE_FRAME_ICON, getTypePanel(),
+                "Type graph");
             // add this simulator as a listener so that the actions are updated
             // regularly
-            this.graphViewsPanel.addChangeListener(new ChangeListener() {
+            result.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent evt) {
                     refreshActions();
                 }
             });
-            this.graphViewsPanel.setVisible(true);
+            result.setVisible(true);
+            this.graphViewsPanel = result;
         }
         return this.graphViewsPanel;
     }

@@ -81,6 +81,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         this.simulator = simulator;
         // create the layout for this JPanel
         this.setLayout(new BorderLayout());
+        this.setFocusable(false);
         // fill in the GUI
         RTextScrollPane scroller =
             new RTextScrollPane(500, 400, getControlTextArea(), true);

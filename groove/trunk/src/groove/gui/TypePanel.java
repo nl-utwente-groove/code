@@ -68,6 +68,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
     public TypePanel(final Simulator simulator) {
         super(new AspectJGraph(simulator, GraphRole.TYPE), true, true,
             simulator.getOptions());
+        setFocusable(false);
         initialise();
         this.simulator = simulator;
         add(createToolbar(), BorderLayout.NORTH);
