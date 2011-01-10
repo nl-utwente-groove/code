@@ -118,13 +118,13 @@ final public class AspectJGraph extends JGraph {
                 result.add(this.simulator.getApplyTransitionAction());
                 result.addSeparator();
                 result.add(this.simulator.getEditGraphAction());
-                addSubmenu(result, super.createPopupMenu(atPoint));
                 break;
             case RULE:
-                result.add(createSetRuleMenu());
+                JMenu setRuleMenu = createSetRuleMenu();
+                setRuleMenu.setEnabled(getSimulator().getGrammarView() != null);
+                result.add(setRuleMenu);
                 result.addSeparator();
                 result.add(this.simulator.getEditRuleAction());
-                addSubmenu(result, super.createPopupMenu(atPoint));
                 break;
             case TYPE:
                 result.add(this.simulator.getEditTypeAction());

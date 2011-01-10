@@ -45,6 +45,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 
+import org.jgraph.event.GraphSelectionEvent;
+import org.jgraph.event.GraphSelectionListener;
+
 /**
  * A panel that combines a {@link groove.gui.jgraph.JGraph}and (optionally) a
  * {@link groove.gui.LabelTree}.
@@ -73,6 +76,12 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
         this.options = options;
         this.supportsSubtypes = supportsSubtypes;
         this.statusBar = withStatusBar ? new JLabel(" ") : null;
+        this.jGraph.addGraphSelectionListener(new GraphSelectionListener() {
+            @Override
+            public void valueChanged(GraphSelectionEvent e) {
+                getLabelTree().clearSelection();
+            }
+        });
     }
 
     /** 

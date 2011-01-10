@@ -179,7 +179,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                cellsChanged(getRoots().toArray());
+                refresh();
             }
         });
     }
