@@ -67,9 +67,9 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 
+import org.jgraph.event.GraphSelectionEvent;
+import org.jgraph.event.GraphSelectionListener;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
 
@@ -104,19 +104,25 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
         addRefreshListener(SHOW_LOOPS_AS_NODE_LABELS_OPTION);
         getJGraph().setToolTipEnabled(true);
-        // make sure that emphasis due to selections in the label tree
-        // cause any selected transition to be deselected first
-        getJGraph().getLabelTree().addTreeSelectionListener(
-            new TreeSelectionListener() {
-                public void valueChanged(TreeSelectionEvent e) {
-                    RuleMatch match = StatePanel.this.selectedMatch;
-                    if (match != null) {
-                        simulator.setRule(match.getRule().getName());
+        // make sure that removals from the selection model
+        // also deselect the match
+        getJGraph().addGraphSelectionListener(new GraphSelectionListener() {
+            @Override
+            public void valueChanged(GraphSelectionEvent e) {
+                if (!StatePanel.this.changing
+                    && StatePanel.this.selectedMatch != null) {
+                    // change only if cells were removed
+                    boolean removed = false;
+                    Object[] cells = e.getCells();
+                    for (int i = 0; !removed && i < cells.length; i++) {
+                        removed = !e.isAddedCell(i);
+                    }
+                    if (removed) {
+                        clearSelectedMatch(false);
                     }
                 }
-            });
-        // ensure that changes in the inheritance strocture of the label tree
-        // get stored in the properties
+            }
+        });
         getJGraph().getLabelTree().addLabelStoreObserver(new Observer() {
             @Override
             public void update(Observable o, Object arg) {
@@ -148,7 +154,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
      * <code>this.jGraph.setModel(newModel)</code>.
      */
     private void setJModel(AspectJModel newModel) {
-        clearSelectedMatch();
+        clearSelectedMatch(true);
         this.jGraph.setModel(newModel);
     }
 
@@ -211,7 +217,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
      * Resets the emphasis in the state model and the current derivation.
      */
     public synchronized void setRuleUpdate(RuleName rule) {
-        if (clearSelectedMatch()) {
+        if (clearSelectedMatch(true)) {
             refreshStatus();
         }
     }
@@ -255,8 +261,10 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                 emphElems.add(jCell);
             }
         }
+        assert !this.changing;
+        this.changing = true;
         this.jGraph.setSelectionCells(emphElems.toArray());
-        //        jModel.setEmphasised(emphElems);
+        this.changing = false;
         this.selectedMatch = match;
         refreshStatus();
     }
@@ -309,25 +317,36 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
 
     /** Changes the display to a given state. */
     private void setStateModel(GraphState state) {
-        this.selectedGraph = null;
-        this.selectedState = state;
-        if (state != null) {
-            setJModel(getAspectJModel(state));
-            setEnabled(true);
+        boolean change = this.selectedState != state;
+        if (change) {
+            this.selectedGraph = null;
+            this.selectedState = state;
+            if (state != null) {
+                setJModel(getAspectJModel(state));
+                setEnabled(true);
+            }
+            refreshStatus();
         }
-        refreshStatus();
     }
 
-    /**
+    /** 
      * Clears the emphasis due to the currently selected match, if any.
-     * @return <code>true</code> if there was a match to be cleared.
+     * Also changes the match selection in the rule tree to the corresponding
+     * rule.
+     * @param clear if {@code true}, the current selection should be cleared;
+     *  otherwise it should be preserved
      */
-    private boolean clearSelectedMatch() {
-        boolean result = this.selectedMatch != null;
+    private boolean clearSelectedMatch(boolean clear) {
+        boolean result = !this.changing && this.selectedMatch != null;
         if (result) {
+            this.changing = true;
+            RuleName selectedRule = this.selectedMatch.getRule().getName();
             this.selectedMatch = null;
-            getJGraph().clearSelection();
-            //            getJModel().clearEmphasised();
+            this.simulator.setRule(selectedRule);
+            if (clear) {
+                getJGraph().clearSelection();
+            }
+            this.changing = false;
         }
         return result;
     }
@@ -560,4 +579,9 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     private String selectedGraph;
     /** Either {@code null} or the state currently showing in the panel. */
     private GraphState selectedState;
+    /** 
+     * Flag indicating that a status change in the simulator is initiated
+     * from this object (so we shouldn't react to it)
+     */
+    private boolean changing;
 }

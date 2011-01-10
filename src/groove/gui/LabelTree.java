@@ -258,6 +258,26 @@ public class LabelTree extends JTree implements GraphModelListener,
         setEnabled(true);
     }
 
+    @Override
+    protected void fireValueChanged(TreeSelectionEvent e) {
+        // only inform the listeners if the change is not triggered
+        // from this object
+        if (!this.changing) {
+            this.changing = true;
+            super.fireValueChanged(e);
+            this.changing = false;
+        }
+    }
+
+    @Override
+    public void clearSelection() {
+        if (!this.changing) {
+            this.changing = true;
+            super.clearSelection();
+            this.changing = false;
+        }
+    }
+
     /**
      * Returns the set of jcells whose label sets contain a given label.
      * @param label the label looked for
@@ -386,7 +406,7 @@ public class LabelTree extends JTree implements GraphModelListener,
                 }
             }
         }
-        this.jgraph.setSelectionCells(emphSet.toArray());//jmodel.setEmphasised(emphSet);
+        this.jgraph.setSelectionCells(emphSet.toArray());
     }
 
     /**
@@ -717,6 +737,11 @@ public class LabelTree extends JTree implements GraphModelListener,
 
     /** Flag indicating if this instance of the label tree supports subtypes. */
     private final boolean supportsSubtypes;
+    /** 
+     * Flag indicating that the selection model is changing.
+     * This means the listener should not be active.
+     */
+    private transient boolean changing;
     /** Mode of the label tree: showing subtypes or supertypes. */
     private boolean showsSubtypes = true;
     /** Mode of the label tree: showing all labels or just those in the graph. */

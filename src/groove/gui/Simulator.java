@@ -26,12 +26,12 @@ import static groove.gui.Options.REPLACE_START_GRAPH_OPTION;
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_BACKGROUND_OPTION;
+import static groove.gui.Options.SHOW_LOOPS_AS_NODE_LABELS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import static groove.gui.Options.SHOW_LOOPS_AS_NODE_LABELS_OPTION;
 import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
@@ -2127,7 +2127,6 @@ public class Simulator {
                 if (getGraphPanel() != null) {
                     jGraph.addSubmenu(this, jGraph.createEditMenu(null, true));
                     jGraph.addSubmenu(this, jGraph.createDisplayMenu());
-                    this.addSeparator();
                 }
                 jGraph.addSubmenu(this, createOptionsMenu());
                 super.menuSelectionChanged(selected);
