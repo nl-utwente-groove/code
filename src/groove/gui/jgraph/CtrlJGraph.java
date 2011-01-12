@@ -17,6 +17,8 @@
 package groove.gui.jgraph;
 
 import groove.control.CtrlAut;
+import groove.control.CtrlState;
+import groove.control.CtrlTransition;
 import groove.gui.Exporter;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
@@ -26,6 +28,8 @@ import groove.gui.layout.SpringLayouter;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This is the JGraph representation of a ControlAutomaton.
@@ -33,15 +37,13 @@ import java.util.Collections;
  * @version $Revision $
  */
 public class CtrlJGraph extends JGraph {
-
     /**
      * Creates a ControlJGraph given a ControlJModel
      * @param simulator the simulator that is the context of this jgraph; may be
      *        <code>null</code>.
      */
-    public CtrlJGraph(CtrlAut aut, Simulator simulator) {
-        super(null, true);
-        this.simulator = simulator;
+    public CtrlJGraph(Simulator simulator) {
+        super(simulator == null ? null : simulator.getOptions(), true);
         this.exporter = simulator.getExporter();
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         this.setLayoutMenu.selectLayoutAction(createInitialLayouter().newInstance(
@@ -50,19 +52,91 @@ public class CtrlJGraph extends JGraph {
         setDisconnectable(false);
         setEnabled(true);
         setToolTipEnabled(true);
-        setModel(new CtrlJModel(aut, simulator.getOptions()));
-    }
-
-    @Override
-    public CtrlJModel getModel() {
-        return (CtrlJModel) super.getModel();
     }
 
     /** Creates a new model based on a given control automaton. */
     public void setModel(CtrlAut aut) {
-        if (getModel().getGraph() != aut) {
-            setModel(new CtrlJModel(aut, this.simulator.getOptions()));
+        if (getModel() == null || getModel().getGraph() != aut) {
+            GraphJModel<CtrlState,CtrlTransition> newModel = newModel();
+            newModel.loadGraph(aut);
+            setModel(newModel);
         }
+    }
+
+    @Override
+    public GraphJModel<CtrlState,CtrlTransition> newModel() {
+        return new GraphJModel<CtrlState,CtrlTransition>(
+            CtrlJVertex.getPrototype(this), CtrlJEdge.getPrototype(this));
+    }
+
+    @Override
+    public boolean isShowNodeIdentities() {
+        return true;
+    }
+
+    /**
+     * Returns the active transition of the LTS, if any. The active transition
+     * is the one currently selected in the simulator. Returns <tt>null</tt> if
+     * no transition is selected.
+     */
+    public CtrlTransition getActiveTransition() {
+        return this.activeTransition;
+    }
+
+    /**
+     * Returns the active state of the LTS, if any. The active transition is the
+     * one currently displayed in the state frame. Returns <tt>null</tt> if no
+     * state is active (which should occur only if no grammar is loaded and
+     * hence the LTS is empty).
+     */
+    public CtrlState getActiveLocation() {
+        return this.activeLocation;
+    }
+
+    /**
+     * Sets the active transition to a new value, and returns the previous
+     * value. Both old and new transitions may be <tt>null</tt>.
+     * @param trans the new active transition
+     * @return the old active transition
+     */
+    public CtrlTransition setActiveTransition(CtrlTransition trans) {
+        CtrlTransition result = this.activeTransition;
+        this.activeTransition = trans;
+        Set<GraphJCell> changedCells = new HashSet<GraphJCell>();
+        if (trans != null) {
+            GraphJCell jCell = getModel().getJCellForEdge(trans);
+            assert jCell != null : String.format("No image for %s in jModel",
+                trans);
+            changedCells.add(jCell);
+        }
+        if (result != null) {
+            GraphJCell jCell = getModel().getJCellForEdge(result);
+            assert jCell != null : String.format("No image for %s in jModel",
+                result);
+            changedCells.add(jCell);
+        }
+        getModel().refresh(changedCells);
+        return result;
+    }
+
+    /**
+     * Sets the active location to a new value, and returns the previous value.
+     * Both old and new locations may be <tt>null</tt>.
+     * @param location the new active location
+     * @return the old active location
+     */
+    public CtrlState setActiveLocation(CtrlState location) {
+        CtrlState result = this.activeLocation;
+        this.activeLocation = location;
+        Set<GraphJCell> changedCells = new HashSet<GraphJCell>();
+        if (result != null) {
+            GraphJCell jCell = getModel().getJCellForNode(result);
+            assert jCell != null : String.format("No image for %s in jModel",
+                result);
+            changedCells.add(jCell);
+        }
+        getModel().refresh(changedCells);
+        return result;
     }
 
     /**
@@ -95,8 +169,16 @@ public class CtrlJGraph extends JGraph {
 
     /** The context of this jgraph; possibly <code>null</code>. */
     private final Exporter exporter;
-    /** The underlying simulator. */
-    private final Simulator simulator;
+
+    /**
+     * The active state of the control automaton. Is null if there is no active state.
+     */
+    private CtrlState activeLocation;
+
+    /**
+     * The currently active transition of the control automaton.
+     */
+    private CtrlTransition activeTransition;
 
     private class MyForestLayouter extends groove.gui.layout.ForestLayouter {
         /**
@@ -119,8 +201,8 @@ public class CtrlJGraph extends JGraph {
          */
         @Override
         protected Collection<?> getSuggestedRoots() {
-            return Collections.singleton(getModel().getJCellForNode(
-                getModel().getGraph().getStart()));
+            CtrlState start = ((CtrlAut) getModel().getGraph()).getStart();
+            return Collections.singleton(getModel().getJCellForNode(start));
         }
 
         /**

@@ -17,12 +17,10 @@
 package groove.io;
 
 import groove.graph.DefaultGraph;
-import groove.graph.GraphRole;
 import groove.gui.Exporter;
 import groove.gui.Options;
+import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
-import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.JGraph;
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
 import groove.util.Groove;
@@ -88,7 +86,6 @@ public class Imager extends CommandLineTool {
         } else {
             this.imagerFrame = null;
             addOption(getFormatOption());
-            addOption(getEditorViewOption());
         }
     }
 
@@ -183,21 +180,15 @@ public class Imager extends CommandLineTool {
                         return;
                     }
 
-                    GraphJModel<?,?> model;
-                    if (isEditorView()) {
-                        plainGraph.setRole(GraphRole.NONE);
-                        model =
-                            GraphJModel.newInstance(plainGraph, new Options());
-                    } else {
-                        AspectGraph aspectGraph =
-                            AspectGraph.newInstance(plainGraph);
-                        Options options = new Options();
-                        options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(
-                            false);
-                        model = AspectJModel.newInstance(aspectGraph, options);
-                    }
-
-                    JGraph jGraph = new JGraph(null, false);
+                    AspectGraph aspectGraph =
+                        AspectGraph.newInstance(plainGraph);
+                    Options options = new Options();
+                    options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(
+                        false);
+                    AspectJGraph jGraph =
+                        new AspectJGraph(null, aspectGraph.getRole());
+                    AspectJModel model = jGraph.newModel();
+                    model.loadGraph(aspectGraph);
                     jGraph.setModel(model);
                     // Ugly hack to prevent clipping of the image. We set the
                     // jGraph size
@@ -373,22 +364,6 @@ public class Imager extends CommandLineTool {
     private String imageFormat;
 
     /**
-     * Indicates if the exported image should be in editor view.
-     */
-    private boolean isEditorView() {
-        return this.editorView;
-    }
-
-    /**
-     * Changes the export to editor or display view.
-     */
-    private void setEditorView(boolean editorView) {
-        this.editorView = editorView;
-    }
-
-    /** Indicates if the exported image should be in editor view. */
-    private boolean editorView;
-    /**
      * The imager frame if the invocation is gui-based; <tt>null</tt> if it is
      * command-line based.
      */
@@ -397,20 +372,6 @@ public class Imager extends CommandLineTool {
     private File inFile;
     /** The intended location of the image file(s). */
     private File outFile;
-
-    /** Lazily creates and returns the editor view option associated with this Imager. */
-    private EditorViewOption getEditorViewOption() {
-        if (this.editorViewOption == null) {
-            this.editorViewOption = new EditorViewOption();
-        }
-        return this.editorViewOption;
-    }
-
-    /** 
-     * The editor view option associated with this Imager.
-     * Lazily created by {@link #getEditorViewOption()}.
-     */
-    private EditorViewOption editorViewOption;
 
     /** Lazily creates and returns the format option associated with this Imager. */
     private FormatOption getFormatOption() {
@@ -425,21 +386,6 @@ public class Imager extends CommandLineTool {
      * Lazily created by {@link #getFormatOption()}.
      */
     private FormatOption formatOption;
-
-    //
-    //    /** Lazily creates and returns the editor needed to export images in edit view. */
-    //    private Editor getEditor() {
-    //        if (this.editor == null) {
-    //            this.editor = new Editor();
-    //        }
-    //        return this.editor;
-    //
-    //    }
-    //
-    //    /** The editor (needed to get edit view export).
-    //     * Lazily created by {@link #getEditor()}.
-    //     */
-    //    private Editor editor;
 
     /** Starts the imager with a list of options and file names. */
     public static void main(String[] args) {
@@ -491,38 +437,6 @@ public class Imager extends CommandLineTool {
     /** An array of all filters identifying files that can be imaged. */
     static final ExtensionFilter[] acceptFilters = new ExtensionFilter[] {
         gpsFilter, ruleFilter, typeFilter, stateFilter, gxlFilter};
-
-    private class EditorViewOption implements CommandLineOption {
-        @Override
-        public String[] getDescription() {
-            return new String[] {DESCRIPTION};
-        }
-
-        @Override
-        public String getName() {
-            return NAME;
-        }
-
-        @Override
-        public String getParameterName() {
-            return null;
-        }
-
-        @Override
-        public boolean hasParameter() {
-            return false;
-        }
-
-        @Override
-        public void parse(String parameter) throws IllegalArgumentException {
-            setEditorView(true);
-        }
-
-        /** Abbreviation of the editor view option. */
-        static public final String NAME = "e";
-        /** Short description of the editor view option. */
-        static public final String DESCRIPTION = "Enforces editor view export";
-    }
 
     /**
      * Option to set the output format for the imager.

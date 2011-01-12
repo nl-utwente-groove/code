@@ -37,6 +37,9 @@ import java.util.Set;
  * @version $Revision$ $Date: 2008-02-22 13:02:44 $
  */
 public interface GraphState extends Node {
+    /** Returns the Graph Transition System of which this is a state. */
+    public GTS getGTS();
+
     /** Returns the graph contained in this state. */
     public HostGraph getGraph();
 

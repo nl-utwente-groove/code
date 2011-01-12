@@ -25,7 +25,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
-import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphCell;
 
 /**
@@ -36,7 +35,7 @@ import org.jgraph.graph.GraphCell;
 public interface GraphJCell extends GraphCell, Serializable {
 
     /** Returns the model with which this cell is associated. */
-    public GraphJModel<?,?> getJModel();
+    public JGraph getJGraph();
 
     /**
      * Returns the complete text that should be displayed upon the cell. This is
@@ -82,17 +81,11 @@ public interface GraphJCell extends GraphCell, Serializable {
     public abstract String getToolTipText();
 
     /** 
-     * Refreshes the attributes by calling {@link #createAttributes(GraphJModel)}. 
+     * Refreshes the attributes of this {@link GraphJCell}. 
      * Should be called whenever a change in the model has occurred that may
      * influence the rendering.
      */
     public void refreshAttributes();
-
-    /** 
-     * Creates a fresh attribute map for this cell, with respect to a given model.
-     * Also stores the attribute map in the cell.
-     */
-    public AttributeMap createAttributes(GraphJModel<?,?> jModel);
 
     /** Pseudo-label for cells with an empty list label set. */
     static public final TypeLabel NO_LABEL = TypeLabel.createLabel(

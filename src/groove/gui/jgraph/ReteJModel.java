@@ -18,7 +18,7 @@ package groove.gui.jgraph;
 
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultNode;
-import groove.match.rete.ReteNetwork;
+import groove.gui.Options;
 
 /**
  * @author Arash Jalali
@@ -29,10 +29,8 @@ import groove.match.rete.ReteNetwork;
 public class ReteJModel extends GraphJModel<DefaultNode,DefaultEdge> {
     /**
      * Constructs a graph model for the static structure of a given RETE network. 
-     * @param network The RETE network.
      */
-    public ReteJModel(ReteNetwork network) {
-        super(null);
-        loadGraph(network.toPlainGraph());
+    public ReteJModel(Options options) {
+        super(new GraphJVertex(null, null), new GraphJEdge(null));
     }
 }

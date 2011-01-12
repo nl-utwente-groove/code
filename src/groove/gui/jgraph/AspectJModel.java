@@ -25,7 +25,6 @@ import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.gui.Editor;
-import groove.gui.Options;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
 import groove.view.FormatError;
@@ -56,21 +55,12 @@ import org.jgraph.graph.GraphConstants;
  * @version $Revision: 2982 $
  */
 final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
-
-    // --------------------- INSTANCE DEFINITIONS ------------------------
-
-    /**
-     * Creates an empty instance.
-     * Initialise with {@link #loadGraph(Graph)} before using.
+    /** 
+     * Creates an new model, initially without a graph loaded.
+     * @param editor if non-{@code null}, the model is editable
      */
-    AspectJModel(Options options) {
-        super(options);
-        this.editor = null;
-    }
-
-    /** Constructor for an editable model. */
-    AspectJModel(Editor editor) {
-        super(editor.getOptions());
+    AspectJModel(AspectJVertex jVertexProt, AspectJEdge jEdgeProt, Editor editor) {
+        super(jVertexProt, jEdgeProt);
         this.editor = editor;
     }
 
@@ -111,6 +101,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         for (AspectJCell root : getRoots()) {
             root.saveToUserObject();
         }
+        setExtraErrors(((AspectGraph) graph).toView().getErrors());
         this.loading = false;
     }
 
@@ -174,12 +165,6 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         if (GUI_DEBUG) {
             System.out.printf("Graph resynchronised with model %s%n", getName());
         }
-        //        SwingUtilities.invokeLater(new Runnable() {
-        //            @Override
-        //            public void run() {
-        //                cellsChanged(getRoots().toArray());
-        //            }
-        //        });
     }
 
     /** 
@@ -218,28 +203,6 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     /** Indicates that the JModel is being edited. */
     boolean isEditing() {
         return this.editor != null && !this.editor.isPreviewMode();
-    }
-
-    /**
-     * Indicates whether aspect prefixes should be shown for nodes and edges.
-     */
-    public final boolean isShowRemarks() {
-        return getOptionValue(Options.SHOW_REMARKS_OPTION);
-    }
-
-    /**
-     * Indicates whether aspect prefixes should be shown for nodes and edges.
-     */
-    public final boolean isShowAspects() {
-        return getOptionValue(Options.SHOW_ASPECTS_OPTION);
-    }
-
-    /**
-     * Indicates whether data nodes should be shown in the JGraph.
-     * This is certainly the case if this model is editable.
-     */
-    public final boolean isShowValueNodes() {
-        return isEditing() || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
     }
 
     /**
@@ -360,7 +323,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      * Callback factory method to create an empty, editable j-edge.
      */
     AspectJEdge computeJEdge() {
-        AspectJEdge result = new AspectJEdge(this);
+        AspectJEdge result = (AspectJEdge) createJEdge(null);
         // add a single, empty label so the edge will be displayed
         result.getUserObject().add("");
         return result;
@@ -372,25 +335,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      * obtained through {@link #createAspectNode()}.
      */
     AspectJVertex computeJVertex() {
-        return createJVertex(createAspectNode());
-    }
-
-    /**
-     * Overwrites the method so as to return a rule vertex.
-     * @require <tt>edge instanceof RuleGraph.RuleNode</tt>
-     */
-    @Override
-    protected AspectJVertex createJVertex(AspectNode node) {
-        return new AspectJVertex(this, node);
-    }
-
-    /**
-     * Overwrites the method so as to return a rule edge.
-     * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
-     */
-    @Override
-    protected AspectJEdge createJEdge(AspectEdge edge) {
-        return new AspectJEdge(this, edge);
+        return (AspectJVertex) createJVertex(createAspectNode());
     }
 
     /** 
@@ -450,31 +395,6 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      * so we don't have to parse it.
      */
     private boolean loading;
-
-    /**
-     * Creates a new model instance for a given aspect graph.
-     */
-    static public AspectJModel newInstance(AspectGraph graph, Options options) {
-        assert graph != null;
-        AspectJModel result = new AspectJModel(options);
-        result.loadGraph(graph);
-        return result;
-    }
-
-    /**
-     * Creates a new model instance for a given editor, and initialises it
-     * to a given graph.
-     */
-    static public AspectJModel newInstance(Editor editor, AspectGraph graph) {
-        assert graph != null;
-        AspectJModel result = new AspectJModel(editor);
-        result.loadGraph(graph);
-        return result;
-    }
-
-    /** A fixed, empty model. */
-    public static final AspectJModel EMPTY_JMODEL = newInstance(
-        AspectGraph.emptyGraph("", GraphRole.HOST), null);
 
     /** Role names (for the tool tips). */
     static final Map<AspectKind,String> ROLE_NAMES =

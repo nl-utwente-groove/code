@@ -18,10 +18,10 @@ package groove.gui;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
+import static groove.gui.Options.SHOW_LOOPS_AS_NODE_LABELS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import static groove.gui.Options.SHOW_LOOPS_AS_NODE_LABELS_OPTION;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.LabelStore;
@@ -98,9 +98,10 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
         this.ruleJModelMap.clear();
         if (grammar != null) {
             for (RuleName ruleName : grammar.getRuleNames()) {
-                AspectJModel jModel =
-                    AspectJModel.newInstance(
-                        grammar.getRuleView(ruleName).getView(), getOptions());
+                RuleView ruleView = grammar.getRuleView(ruleName);
+                AspectJModel jModel = getJGraph().newModel();
+                jModel.loadGraph(ruleView.getView());
+                jModel.setExtraErrors(ruleView.getErrors());
                 this.ruleJModelMap.put(ruleName, jModel);
             }
             newLabelStore = grammar.getLabelStore();
@@ -174,17 +175,16 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
         if (reload || ruleName == null && this.displayedRule != null
             || !ruleName.equals(this.displayedRule)) {
             AspectJModel ruleJModel =
-                ruleName == null ? AspectJModel.EMPTY_JMODEL
-                        : this.ruleJModelMap.get(ruleName);
-            if (ruleJModel == null) {
-                // apparently the rule name is unknown
-                ruleName = null;
-                ruleJModel = AspectJModel.EMPTY_JMODEL;
-            }
+                ruleName == null ? null : this.ruleJModelMap.get(ruleName);
+            //            if (ruleJModel == null) {
+            //                // apparently the rule name is unknown
+            //                ruleName = null;
+            //                ruleJModel = getJGraph().newModel();
+            //            }
             // display new rule
             this.displayedRule = ruleName;
             this.jGraph.setModel(ruleJModel);
-            setEnabled(ruleName != null);
+            setEnabled(ruleJModel != null);
             refreshStatus();
         }
     }

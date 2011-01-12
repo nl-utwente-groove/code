@@ -25,7 +25,6 @@ import groove.gui.Simulator;
 import groove.gui.layout.ForestLayouter;
 import groove.gui.layout.SpringLayouter;
 import groove.trans.RuleName;
-import groove.view.aspect.AspectGraph;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -54,19 +53,19 @@ final public class AspectJGraph extends JGraph {
      * Creates a j-graph for a given simulator, with an initially empty j-model.
      */
     public AspectJGraph(Simulator simulator, GraphRole role) {
-        super(null, role != GraphRole.RULE);
+        super(simulator == null ? null : simulator.getOptions(),
+            role != GraphRole.RULE);
         this.simulator = simulator;
         this.editor = null;
         assert role.inGrammar();
         this.graphRole = role;
-        setModel(AspectJModel.EMPTY_JMODEL);
     }
 
     /**
      * Creates a j-graph for a given simulator, with an initially empty j-model.
      */
     public AspectJGraph(Editor editor) {
-        super(null, false);
+        super(editor.getOptions(), false);
         this.simulator = null;
         this.editor = editor;
         this.graphRole = null;
@@ -75,13 +74,44 @@ final public class AspectJGraph extends JGraph {
         setCloneable(true);
         setConnectable(true);
         setDisconnectable(true);
-        setModel(AspectJModel.newInstance(editor,
-            AspectGraph.emptyGraph(editor.getRole())));
     }
 
     @Override
     public AspectJModel getModel() {
         return (AspectJModel) super.getModel();
+    }
+
+    @Override
+    public AspectJModel newModel() {
+        return new AspectJModel(AspectJVertex.getPrototype(this),
+            AspectJEdge.getPrototype(this), this.editor);
+    }
+
+    /**
+     * Indicates whether aspect prefixes should be shown for nodes and edges.
+     */
+    public final boolean isShowRemarks() {
+        return getOptionValue(Options.SHOW_REMARKS_OPTION);
+    }
+
+    /**
+     * Indicates whether aspect prefixes should be shown for nodes and edges.
+     */
+    public final boolean isShowAspects() {
+        return getOptionValue(Options.SHOW_ASPECTS_OPTION);
+    }
+
+    /**
+     * Indicates whether data nodes should be shown in the JGraph.
+     * This is certainly the case if this model is editable.
+     */
+    public final boolean isShowValueNodes() {
+        return hasEditor() || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
+    }
+
+    /** Indicates that the JModel has an editor enabled. */
+    public boolean hasEditor() {
+        return this.editor != null && !this.editor.isPreviewMode();
     }
 
     @Override

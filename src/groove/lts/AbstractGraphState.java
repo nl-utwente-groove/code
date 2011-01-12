@@ -56,6 +56,11 @@ abstract public class AbstractGraphState extends
         stateCount++;
     }
 
+    @Override
+    public GTS getGTS() {
+        return getRecord().getGTS();
+    }
+
     /*
      * (non-Javadoc)
      * @see groove.lts.GraphState#getOutTransitionIter()

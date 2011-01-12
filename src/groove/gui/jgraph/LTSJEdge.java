@@ -16,21 +16,33 @@ import groove.util.Groove;
  */
 public class LTSJEdge extends GraphJEdge implements LTSJCell {
     /**
+     * Constructor for a prototype object of this class.
+     */
+    LTSJEdge(LTSJGraph jGraph) {
+        super(jGraph);
+    }
+
+    /**
      * Creates a new instance from a given edge (required to be a
      * {@link GraphTransition}).
      */
-    LTSJEdge(LTSJModel jModel, GraphTransition edge) {
-        super(jModel, edge);
+    LTSJEdge(LTSJGraph jGraph, GraphTransition edge) {
+        super(jGraph, edge);
     }
 
     @Override
-    public LTSJModel getJModel() {
-        return (LTSJModel) super.getJModel();
+    public LTSJGraph getJGraph() {
+        return (LTSJGraph) super.getJGraph();
     }
 
     @Override
     public GraphTransition getEdge() {
         return (GraphTransition) super.getEdge();
+    }
+
+    @Override
+    public GraphJEdge newJEdge(Edge<?> edge) {
+        return new LTSJEdge(getJGraph(), (GraphTransition) edge);
     }
 
     @Override
@@ -46,7 +58,7 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
         for (Object part : getEdges()) {
             GraphTransition trans = (GraphTransition) part;
             String description;
-            if (getJModel().isShowAnchors()) {
+            if (getJGraph().isShowAnchors()) {
                 description = trans.getEvent().toString();
             } else {
                 description = trans.getEvent().getRule().getName().toString();
@@ -67,7 +79,7 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
     @Override
     protected StringBuilder getLine(Edge<?> edge) {
         String text =
-            getJModel().isShowAnchors() ? new DerivationLabel(
+            getJGraph().isShowAnchors() ? new DerivationLabel(
                 ((GraphTransition) edge).getEvent()).text()
                     : edge.label().text();
         return new StringBuilder(text);
@@ -100,4 +112,9 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
     }
 
     private boolean active;
+
+    /** Returns a prototype {@link CtrlJEdge} for a given {@link CtrlJGraph}. */
+    public static LTSJEdge getPrototype(LTSJGraph jGraph) {
+        return new LTSJEdge(jGraph);
+    }
 }

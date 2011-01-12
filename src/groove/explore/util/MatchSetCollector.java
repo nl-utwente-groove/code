@@ -178,7 +178,8 @@ public class MatchSetCollector {
         }
         // there may be new matches only if the rule was untried in
         // the parent state
-        return !state.source().getSchedule().getTriedRules().contains(call);
+        Set<Rule> triedRules = state.source().getSchedule().getTriedRules();
+        return triedRules == null || !triedRules.contains(call);
     }
 
     private boolean checkDiamonds() {

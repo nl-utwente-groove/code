@@ -71,7 +71,7 @@ public final class GraphToTikz {
         Graph<N,E> graph = model.getGraph();
         LayoutMap<N,E> layoutMap = GraphInfo.getLayoutMap(graph);
         boolean showBackground =
-            model.getOptionValue(Options.SHOW_BACKGROUND_OPTION);
+            jGraph.getOptionValue(Options.SHOW_BACKGROUND_OPTION);
         StringBuilder result = new StringBuilder();
 
         result.append(beginTikzFig());
