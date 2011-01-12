@@ -45,13 +45,14 @@ import org.jgraph.graph.GraphConstants;
 public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     /**
      * Constructs a jnode on top of a graph node.
-     * @param jModel the model in which this vertex exists
+     * @param jGraph the {@link JGraph} in which this vertex exists; if {@code null}, the
+     * JVertex can only be used as a prototype
      * @param node the underlying graph node for this model node
      * @param vertexLabelled flag to indicate if the vertex should be labelled.
      * @ensure getUserObject() == node, labels().isEmpty()
      */
-    GraphJVertex(GraphJModel<?,?> jModel, Node node, boolean vertexLabelled) {
-        this.jModel = jModel;
+    GraphJVertex(JGraph jGraph, Node node, boolean vertexLabelled) {
+        this.jGraph = jGraph;
         add(new DefaultPort());
         this.node = node;
         this.vertexLabelled = vertexLabelled;
@@ -59,18 +60,18 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
 
     /**
      * Constructs a model node on top of a graph node.
-     * @param jModel the model in which this vertex exists
+     * @param jGraph the {@link JGraph} in which this vertex exists
      * @param node the underlying graph node for this model node. Note that this
      *        may be null.
      * @ensure getUserObject() == node, labels().isEmpty()
      */
-    GraphJVertex(GraphJModel<?,?> jModel, Node node) {
-        this(jModel, node, true);
+    GraphJVertex(JGraph jGraph, Node node) {
+        this(jGraph, node, true);
     }
 
-    /** Returns the {@link GraphJModel} associated with this vertex. */
-    public GraphJModel<?,?> getJModel() {
-        return this.jModel;
+    /** Returns the {@link JGraph} associated with this vertex. */
+    public JGraph getJGraph() {
+        return this.jGraph;
     }
 
     /**
@@ -90,6 +91,14 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
         GraphJVertex clone = (GraphJVertex) super.clone();
         clone.edges = new TreeSet<Edge<?>>();
         return clone;
+    }
+
+    /** 
+     * Factory method, in case this object is used as a prototype.
+     * Returns a fresh {@link GraphJEdge} of the same type as this one. 
+     */
+    public GraphJVertex newJVertex(Node node) {
+        return new GraphJVertex(getJGraph(), node, this.vertexLabelled);
     }
 
     /**
@@ -128,7 +137,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
 
     @Override
     public boolean isVisible() {
-        return !isFiltered() || getJModel().isShowUnfilteredEdges()
+        return !isFiltered() || getJGraph().isShowUnfilteredEdges()
             && hasVisibleIncidentEdge();
     }
 
@@ -156,7 +165,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     protected boolean isFiltered() {
         boolean result = true;
         for (Label label : getListLabels()) {
-            if (getJModel().isFiltering(label)) {
+            if (getJGraph().isFiltering(label)) {
                 if (label.isNodeType()) {
                     result = true;
                     break;
@@ -186,11 +195,11 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      * Returns the (possibly empty) list of lines 
      * describing the node identity, if this is to be shown
      * according to the current setting.
-     * @see GraphJModel#isShowNodeIdentities()
+     * @see JGraph#isShowNodeIdentities()
      */
     final protected List<StringBuilder> getNodeIdLines() {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
-        if (getJModel().isShowNodeIdentities()) {
+        if (getJGraph().isShowNodeIdentities()) {
             String id = getNodeIdString();
             if (id != null) {
                 result.add(ITALIC_TAG.on(new StringBuilder(id)));
@@ -208,7 +217,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     final protected boolean isFiltered(Edge<?> edge) {
         boolean result = false;
         for (Label label : getListLabels(edge)) {
-            if (getJModel().isFiltering(label)) {
+            if (getJGraph().isFiltering(label)) {
                 result = true;
                 break;
             }
@@ -309,13 +318,8 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
 
     @Override
     public void refreshAttributes() {
-        createAttributes(getJModel());
-    }
-
-    /** Returns the attributes to be used in displaying this vertex. */
-    final public AttributeMap createAttributes(GraphJModel<?,?> jModel) {
         AttributeMap result = createAttributes();
-        if (!jModel.isShowBackground()) {
+        if (!getJGraph().isShowBackground()) {
             GraphConstants.setBackground(result, Color.WHITE);
         }
         if (isGrayedOut()) {
@@ -323,8 +327,9 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
         }
         if (getAttributes() != null) {
             getAttributes().applyMap(result);
+        } else {
+            setAttributes(result);
         }
-        return result;
     }
 
     /**
@@ -355,7 +360,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
         return false;
     }
 
-    private final GraphJModel<?,?> jModel;
+    private final JGraph jGraph;
     private boolean grayedOut;
     /**
      * An indicator whether the vertex can be labelled (otherwise labels are
@@ -367,4 +372,8 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     /** Set of graph edges mapped to this JEdge. */
     private Set<Edge<?>> edges = new TreeSet<Edge<?>>();
 
+    /** Returns a prototype {@link GraphJVertex} for a given {@link JGraph}. */
+    public static GraphJVertex getPrototype(JGraph jGraph) {
+        return new GraphJVertex(jGraph, null);
+    }
 }

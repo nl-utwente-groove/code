@@ -17,7 +17,6 @@
 package groove.gui.jgraph;
 
 import groove.graph.Graph;
-import groove.gui.Options;
 import groove.lts.GTS;
 import groove.lts.GTSListener;
 import groove.lts.GraphState;
@@ -35,14 +34,8 @@ import java.util.Set;
 final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
         implements GTSListener {
     /** Creates a new model from a given LTS and set of display options. */
-    LTSJModel(GTS lts, Options options) {
-        super(options);
-        loadGraph(lts);
-    }
-
-    /** Constructs a dummy, empty model. */
-    private LTSJModel() {
-        // empty
+    LTSJModel(LTSJVertex jVertexProt, LTSJEdge jEdgeProt) {
+        super(jVertexProt, jEdgeProt);
     }
 
     /** Specialises the return type. */
@@ -174,36 +167,6 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
         }
     }
 
-    @Override
-    public boolean isShowNodeIdentities() {
-        return getOptionValue(Options.SHOW_STATE_IDS_OPTION);
-    }
-
-    /**
-     * Node hiding doesn't mean much in the LTS, so always show the edges unless
-     * explicitly filtered.
-     */
-    @Override
-    boolean isShowUnfilteredEdges() {
-        return true;
-    }
-
-    /**
-     * This implementation returns a {@link LTSJEdge}.
-     */
-    @Override
-    protected LTSJEdge createJEdge(GraphTransition edge) {
-        return new LTSJEdge(this, edge);
-    }
-
-    /**
-     * This implementation returns a {@link LTSJVertex}.
-     */
-    @Override
-    protected LTSJVertex createJVertex(GraphState node) {
-        return new LTSJVertex(this, node);
-    }
-
     /**
      * This implementation checks if the edge is a transition of an 
      * unmodifying rule.
@@ -236,23 +199,6 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
      *            ltsJModel.graph().contains(activeTransition)
      */
     private GraphTransition activeTransition;
-
-    /**
-     * Factory method for {@link LTSJModel}. Creates and returns a new model
-     * from a given LTS and set of display options. Returns
-     * {@link #EMPTY_LTS_JMODEL} if the LTS is <code>null</code>.
-     */
-    static public LTSJModel newInstance(GTS lts, Options options) {
-        if (lts == null) {
-            return EMPTY_LTS_JMODEL;
-        } else {
-            LTSJModel result = new LTSJModel(lts, options);
-            return result;
-        }
-    }
-
-    /** Dummy LTS model. */
-    static public final LTSJModel EMPTY_LTS_JMODEL = new LTSJModel();
 
     /** Default name of an LTS model. */
     static public final String DEFAULT_LTS_NAME = "lts";

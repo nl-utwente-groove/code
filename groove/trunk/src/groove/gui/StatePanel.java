@@ -167,7 +167,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         this.graphToJModel.clear();
         this.jGraph.getFilteredLabels().clear();
         if (grammar == null || grammar.getStartGraphView() == null) {
-            setJModel(AspectJModel.EMPTY_JMODEL);
+            setJModel(getJGraph().newModel());
             setEnabled(false);
         } else {
             GraphView startGraphView = grammar.getStartGraphView();
@@ -472,7 +472,9 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
 
     /** Creates a j-model for a given aspect graph. */
     private AspectJModel createAspectJModel(AspectGraph graph) {
-        return AspectJModel.newInstance(graph, getOptions());
+        AspectJModel result = getJGraph().newModel();
+        result.loadGraph(graph);
+        return result;
     }
 
     /**

@@ -36,16 +36,18 @@ import org.jgraph.graph.GraphConstants;
  */
 public class AspectJVertex extends GraphJVertex implements AspectJCell {
     /** Creates a j-vertex on the basis of a given (aspectual) node. */
-    public AspectJVertex(AspectJModel jModel, AspectNode node) {
-        super(jModel, node);
+    public AspectJVertex(AspectJGraph jGraph, AspectNode node) {
+        super(jGraph, node);
         setUserObject(null);
-        this.aspect = node.getKind();
-        this.errors.addAll(node.getErrors());
+        if (node != null) {
+            this.aspect = node.getKind();
+            this.errors.addAll(node.getErrors());
+        }
     }
 
     @Override
-    public AspectJModel getJModel() {
-        return (AspectJModel) super.getJModel();
+    public AspectJGraph getJGraph() {
+        return (AspectJGraph) super.getJGraph();
     }
 
     @Override
@@ -73,6 +75,11 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         AspectJVertex result = (AspectJVertex) super.clone();
         result.errors = new ArrayList<FormatError>();
         return result;
+    }
+
+    @Override
+    public AspectJVertex newJVertex(Node node) {
+        return new AspectJVertex(getJGraph(), (AspectNode) node);
     }
 
     @Override
@@ -158,7 +165,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     public List<StringBuilder> getLines() {
         getNode().testFixed(true);
         List<StringBuilder> result;
-        if (hasError() || getJModel().isShowAspects()) {
+        if (hasError() || getJGraph().isShowAspects()) {
             result = getUserObject().toLines();
         } else {
             result = new ArrayList<StringBuilder>();
@@ -198,7 +205,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 dataLine =
                     TypeLabel.toHtmlString(TypeLabel.createLabel(
                         LabelKind.NODE_TYPE, attrAspect.getKind().getName()));
-            } else if (!getJModel().isShowNodeIdentities()) {
+            } else if (!getJGraph().isShowNodeIdentities()) {
                 // show constants only if they are not already shown as node identities
                 dataLine = attrAspect.getContentString();
             }
@@ -247,7 +254,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         AspectEdge aspectEdge = (AspectEdge) edge;
         aspectEdge.testFixed(true);
         StringBuilder result = new StringBuilder();
-        if (getJModel().isShowAspects()) {
+        if (getJGraph().isShowAspects()) {
             result.append(TypeLabel.toHtmlString(aspectEdge.label()));
         } else {
             result.append(TypeLabel.toHtmlString(aspectEdge.getDisplayLabel()));
@@ -359,7 +366,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     @Override
     public boolean isFiltered() {
         if (this.aspect == REMARK) {
-            return !getJModel().isShowRemarks();
+            return !getJGraph().isShowRemarks();
         }
         if (getNode().hasParam() || this.aspect.isQuantifier() || hasError()) {
             return false;
@@ -368,7 +375,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             return true;
         }
         // in addition, value nodes or data type nodes may be filtered
-        if (getJModel().isShowValueNodes()) {
+        if (getJGraph().isShowValueNodes()) {
             return false;
         }
         Aspect attr = getNode().getAttrAspect();
@@ -396,7 +403,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     @Override
     protected AttributeMap createAttributes() {
         AttributeMap result = JAttr.RULE_NODE_ATTR.get(this.aspect).clone();
-        if (getJModel().isEditing()) {
+        if (getJGraph().hasEditor()) {
             GraphConstants.setEditable(result, true);
         }
         return result;
@@ -426,6 +433,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             }
         }
         this.aspect = node.getKind();
+        // attributes will be refreshed upon the call to setNodeFixed()
     }
 
     /**
@@ -454,6 +462,12 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     private AspectKind aspect;
     private Collection<FormatError> errors = new LinkedHashSet<FormatError>();
     private boolean extraError;
+
+    /** Returns a prototype {@link AspectJVertex} for a given {@link AspectJGraph}. */
+    public static AspectJVertex getPrototype(AspectJGraph jGraph) {
+        return new AspectJVertex(jGraph, null);
+    }
+
     static private final String ASSIGN_TEXT = " = ";
     static private final String TYPE_TEXT = ": ";
 }

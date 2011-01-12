@@ -48,21 +48,38 @@ import org.jgraph.graph.DefaultGraphCell;
  * variables have been set.
  */
 public class LTSJGraph extends JGraph {
-
     /** Constructs an instance of the j-graph for a given simulator. */
     public LTSJGraph(Simulator simulator) {
-        super(null, true);
+        super(simulator.getOptions(), true);
         this.simulator = simulator;
         addMouseListener(new MyMouseListener());
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
-        setModel(LTSJModel.EMPTY_LTS_JMODEL);
-        setEnabled(false);
     }
 
     /** Specialises the return type to a {@link LTSJModel}. */
     @Override
     public LTSJModel getModel() {
         return (LTSJModel) this.graphModel;
+    }
+
+    @Override
+    public LTSJModel newModel() {
+        return new LTSJModel(LTSJVertex.getPrototype(this),
+            LTSJEdge.getPrototype(this));
+    }
+
+    @Override
+    public boolean isShowNodeIdentities() {
+        return getOptionValue(Options.SHOW_STATE_IDS_OPTION);
+    }
+
+    /**
+     * Node hiding doesn't mean much in the LTS, so always show the edges unless
+     * explicitly filtered.
+     */
+    @Override
+    boolean isShowUnfilteredEdges() {
+        return true;
     }
 
     /**

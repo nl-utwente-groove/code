@@ -96,14 +96,16 @@ import org.jgraph.plaf.basic.BasicGraphUI;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-05 13:27:59 $
  */
-public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
+abstract public class JGraph extends org.jgraph.JGraph implements
+        GraphModelListener {
     /**
-     * Constructs a JGraph on the basis of a given j-model.
-     * @param model the JModel for which to create a JGraph
+     * Constructs a JGraph.
+     * @param options display options object to be used
      * @param hasFilters indicates if this JGraph is to use label filtering.
      */
-    public JGraph(GraphJModel<?,?> model, boolean hasFilters) {
+    public JGraph(Options options, boolean hasFilters) {
         super((GraphJModel<?,?>) null);
+        this.options = options == null ? new Options() : options;
         if (hasFilters) {
             this.filteredLabels = new ObservableSet<Label>();
             this.filteredLabels.addObserver(this.refreshListener);
@@ -114,7 +116,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         getGraphLayoutCache();
         setMarqueeHandler(createMarqueeHandler());
         setSelectionModel(createSelectionModel());
-        setModel(model);
         // Make Ports invisible by Default
         setPortsVisible(false);
         // Save edits to a cell whenever something else happens
@@ -127,11 +128,20 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
-     * Returns the (possibly <code>null</code>) set of filtered labels of this
-     * {@link JGraph}.
+     * Returns the set of labels that is currently filtered from view. If
+     * <code>null</code>, no filtering is going on.
      */
     public final ObservableSet<Label> getFilteredLabels() {
         return this.filteredLabels;
+    }
+
+    /**
+     * Indicates if a given label is currently being filtered from view. This is
+     * the case if it is in the set of filtered labels.
+     */
+    public boolean isFiltering(Label label) {
+        return this.filteredLabels != null
+            && this.filteredLabels.contains(label);
     }
 
     /**
@@ -160,6 +170,55 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     public final Map<String,Set<TypeLabel>> getLabelsMap() {
         return this.labelsMap;
+    }
+
+    /** Returns the object holding the display options for this {@link JGraph}. */
+    public final Options getOptions() {
+        return this.options;
+    }
+
+    /**
+     * Retrieves the value for a given option from the options object, or
+     * <code>null</code> if the options are not set (i.e., <code>null</code>).
+     * @param option the name of the option
+     */
+    public boolean getOptionValue(String option) {
+        return getOptions().getItem(option).isEnabled()
+            && getOptions().isSelected(option);
+    }
+
+    /** Indicates if nodes should determine their own background colour. */
+    public boolean isShowBackground() {
+        return getOptionValue(Options.SHOW_BACKGROUND_OPTION);
+    }
+
+    /**
+     * Indicates whether aspect prefixes should be shown for nodes and edges.
+     */
+    boolean isShowNodeIdentities() {
+        return getOptionValue(Options.SHOW_NODE_IDS_OPTION);
+    }
+
+    /**
+     * Indicates whether unfiltered edges to filtered nodes should remain
+     * visible.
+     */
+    boolean isShowUnfilteredEdges() {
+        return getOptionValue(Options.SHOW_UNFILTERED_EDGES_OPTION);
+    }
+
+    /**
+     * Indicates whether self-edges should be shown as node labels.
+     */
+    boolean isShowLoopsAsNodeLabels() {
+        return getOptionValue(Options.SHOW_LOOPS_AS_NODE_LABELS_OPTION);
+    }
+
+    /**
+     * Indicates whether anchors should be shown in the rule and lts views.
+     */
+    boolean isShowAnchors() {
+        return getOptionValue(Options.SHOW_ANCHORS_OPTION);
     }
 
     /** Returns the simulator associated with this {@link JGraph}, if any. */
@@ -284,7 +343,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * Propagates some types of changes from model to view. Reacts in particular
      * to {@link GraphJModel.RefreshEdit}-events: every refreshed cell with an empty
      * attribute set gets its view attributes refreshed by a call to
-     * {@link GraphJCell#createAttributes(GraphJModel)}; moreover, hidden cells are
+     * {@link GraphJCell#refreshAttributes()}; moreover, hidden cells are
      * unselected.
      * @see GraphJModel.RefreshEdit#getRefreshedJCells()
      */
@@ -427,7 +486,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                 }
                 getModel().removeGraphModelListener(this);
             }
-            jModel.setFilteredLabels(getFilteredLabels());
             super.setModel(jModel);
             getLabelTree().updateModel();
             jModel.addGraphModelListener(this);
@@ -463,6 +521,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     public GraphJModel<?,?> getModel() {
         return (GraphJModel<?,?>) this.graphModel;
     }
+
+    /** Callback factory method to create an appropriate JModel
+     * instance for this JGraph.
+     */
+    public abstract GraphJModel<?,?> newModel();
 
     /**
      * In addition to delegating the method to the label list and to
@@ -609,7 +672,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     public LabelTree initLabelTree(boolean supportsSubtypes) {
         this.labelTree = new LabelTree(this, supportsSubtypes);
-        this.labelTree.updateModel();
         this.labelTree.setEnabled(isEnabled());
         return this.labelTree;
     }
@@ -1042,6 +1104,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             action.getValue(Action.NAME));
     }
 
+    /** The options object with which this {@link JGraph} was constructed. */
+    private final Options options;
     /** The set of labels currently filtered from view. */
     private final ObservableSet<Label> filteredLabels;
     /** Set of all labels and subtypes in the graph. */

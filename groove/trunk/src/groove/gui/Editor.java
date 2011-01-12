@@ -123,6 +123,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             this.frame.setTitle(EDITOR_NAME);
         }
         this.jgraph = new AspectJGraph(this);
+        AspectJModel newModel = this.jgraph.newModel();
+        newModel.loadGraph(AspectGraph.emptyGraph(HOST));
+        this.jgraph.setModel(newModel);
         this.jgraph.setExporter(getExporter());
         initListeners();
         initGUI();
@@ -179,7 +182,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         // set the model afresh to make sure everything gets updated properly
         setRole(graph.getRole());
         if (refreshModel) {
-            setModel(AspectJModel.newInstance(this, graph));
+            AspectJModel newModel = getJGraph().newModel();
+            newModel.loadGraph(graph);
+            setModel(newModel);
         } else {
             getModel().loadGraph(graph);
             updateStatus();

@@ -21,14 +21,11 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.Label;
 import groove.graph.Node;
-import groove.gui.Options;
 import groove.gui.layout.JCellLayout;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
-import groove.util.ObservableSet;
 
 import java.awt.Rectangle;
 import java.util.Collection;
@@ -61,41 +58,13 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
      * Creates a new GraphJModel instance on top of a given Graph, with given
      * node and edge attributes, and an indication whether self-edges should be
      * displayed as node labels. The node and edge attribute maps are cloned.
-     * @param options specifies options for the visual display If false, node
-     *        labels are used to display self edges.
+     * @param jVertexProt prototype object for JVertices of this model
+     * @param jEdgeProt prototype object for JEdges of this model
      * @require graph != null, nodeAttr != null, edgeAttr != null;
      */
-    protected GraphJModel(Options options) {
-        this.options = options == null ? new Options() : options;
-    }
-
-    /**
-     * Constructor for a dummy (empty) model.
-     */
-    GraphJModel() {
-        this.options = null;
-    }
-
-    /**
-     * Returns the options associated with this object.
-     */
-    public final Options getOptions() {
-        return this.options;
-    }
-
-    /**
-     * Retrieves the value for a given option from the options object, or
-     * <code>null</code> if the options are not set (i.e., <code>null</code>).
-     * @param option the name of the option
-     */
-    public boolean getOptionValue(String option) {
-        return getOptions().getItem(option).isEnabled()
-            && getOptions().isSelected(option);
-    }
-
-    /** Indicates if nodes should determine their own background colour. */
-    public boolean isShowBackground() {
-        return getOptionValue(Options.SHOW_BACKGROUND_OPTION);
+    protected GraphJModel(GraphJVertex jVertexProt, GraphJEdge jEdgeProt) {
+        this.jVertexProt = jVertexProt;
+        this.jEdgeProt = jEdgeProt;
     }
 
     /**
@@ -198,31 +167,6 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
     }
 
     /**
-     * Returns the set of labels that is currently filtered from view. If
-     * <code>null</code>, no filtering is going on.
-     */
-    public final ObservableSet<Label> getFilteredLabels() {
-        return this.filteredLabels;
-    }
-
-    /**
-     * Sets filtering on a given set of labels. Filtered labels will be set to
-     * invisible in the {@link JGraph}.
-     */
-    public final void setFilteredLabels(ObservableSet<Label> filteredLabels) {
-        this.filteredLabels = filteredLabels;
-    }
-
-    /**
-     * Indicates if a given label is currently being filtered from view. This is
-     * the case if it is in the set of filtered labels.
-     */
-    public boolean isFiltering(Label label) {
-        return this.filteredLabels != null
-            && this.filteredLabels.contains(label);
-    }
-
-    /**
      * Changes the grayed-out status of a given set of jgraph cells.
      * @param jCells the cells whose hiding status is to be changed
      * @param grayedOut the new grayed-out status of the cell
@@ -319,14 +263,8 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
     public AttributeMap getAttributes(Object node) {
         AttributeMap result;
         if (node instanceof GraphJCell) {
+            ((GraphJCell) node).refreshAttributes();
             result = ((GraphJCell) node).getAttributes();
-            if (result == null) {
-                if (node instanceof GraphJVertex) {
-                    result = ((GraphJVertex) node).createAttributes(this);
-                } else {
-                    result = ((GraphJEdge) node).createAttributes(this);
-                }
-            }
         } else {
             result = super.getAttributes(node);
         }
@@ -612,7 +550,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
      */
     protected GraphJEdge computeJEdge(E edge) {
         GraphJEdge result = createJEdge(edge);
-        result.getAttributes().applyMap(result.createAttributes(this));
+        result.refreshAttributes();
         JEdgeLayout layout = this.layoutMap.getLayout(edge);
         if (layout != null) {
             result.getAttributes().applyMap(layout.toJAttr());
@@ -630,7 +568,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
      */
     protected GraphJVertex computeJVertex(N node) {
         GraphJVertex result = createJVertex(node);
-        result.getAttributes().applyMap(result.createAttributes(this));
+        result.refreshAttributes();
         if (GraphConstants.isMoveable(result.getAttributes())) {
             JVertexLayout layout = this.layoutMap.getLayout(node);
             if (layout != null) {
@@ -657,7 +595,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
      * @ensure <tt>result.getEdgeSet().contains(edge)</tt>
      */
     protected GraphJEdge createJEdge(E edge) {
-        return new GraphJEdge(this, edge);
+        return this.jEdgeProt.newJEdge(edge);
     }
 
     /**
@@ -667,7 +605,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
      * @ensure <tt>result.getNode().equals(node)</tt>
      */
     protected GraphJVertex createJVertex(N node) {
-        return new GraphJVertex(this, node, true);
+        return this.jVertexProt.newJVertex(node);
     }
 
     /**
@@ -705,44 +643,15 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
     }
 
     /**
-     * Indicates whether aspect prefixes should be shown for nodes and edges.
-     */
-    boolean isShowNodeIdentities() {
-        return getOptionValue(Options.SHOW_NODE_IDS_OPTION);
-    }
-
-    /**
-     * Indicates whether unfiltered edges to filtered nodes should remain
-     * visible.
-     */
-    boolean isShowUnfilteredEdges() {
-        return getOptionValue(Options.SHOW_UNFILTERED_EDGES_OPTION);
-    }
-
-    /**
-     * Indicates whether self-edges should be shown as node labels.
-     */
-    boolean isShowLoopsAsNodeLabels() {
-        return getOptionValue(Options.SHOW_LOOPS_AS_NODE_LABELS_OPTION);
-    }
-
-    /**
-     * Indicates whether anchors should be shown in the rule and lts views.
-     */
-    boolean isShowAnchors() {
-        return getOptionValue(Options.SHOW_ANCHORS_OPTION);
-    }
-
-    /**
      * Set of j-cells that were inserted in the model since the last time
      * <tt>{@link #setLayedOut(boolean)}</tt> was called.
      */
     protected final Set<GraphJCell> layoutableJCells =
         new HashSet<GraphJCell>();
-    /** Set of options values to control the display. May be <code>null</code>. */
-    private final Options options;
-    /** Set of labels that is currently filtered from view. */
-    private ObservableSet<Label> filteredLabels;
+    /** Prototype object for {@link GraphJEdge}s. */
+    private final GraphJEdge jEdgeProt;
+    /** Prototype object for {@link GraphJVertex}s. */
+    private final GraphJVertex jVertexProt;
     /**
      * The underlying Graph of this GraphModel.
      * @invariant graph != null
@@ -789,20 +698,6 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
      * Counter to provide the y-coordinate of fresh nodes with fresh values
      */
     private transient int nodeY;
-
-    /**
-     * Creates a new GraphJModel instance on top of a given Graph.
-     * Self-edges will be
-     * displayed as node labels.
-     * 
-     * @param graph the underlying Graph
-     * @param options display options
-     */
-    static public <N extends Node,E extends Edge<N>> GraphJModel<N,E> newInstance(
-            Graph<N,E> graph, Options options) {
-        GraphJModel<N,E> result = new GraphJModel<N,E>(options);
-        return result;
-    }
 
     /** Random generator for coordinates of new nodes. */
     private static final Random randomGenerator = new Random();

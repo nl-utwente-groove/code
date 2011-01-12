@@ -32,17 +32,20 @@ import org.jgraph.graph.GraphConstants;
  * Specialized j-edge for rule graphs, with its own tool tip text.
  */
 public class AspectJEdge extends GraphJEdge implements AspectJCell {
-    /** Creates an uninitialised instance. */
-    public AspectJEdge(AspectJModel jModel) {
-        super(jModel);
+    /** 
+     * Creates an uninitialised instance.
+     * @param jGraph the {@link JGraph} in which this JEdge will be used.
+     */
+    public AspectJEdge(AspectJGraph jGraph) {
+        super(jGraph);
         setUserObject(null);
         this.aspect = NONE;
         refreshAttributes();
     }
 
     /** Creates a j-edge on the basis of a given (aspectual) edge. */
-    public AspectJEdge(AspectJModel jModel, AspectEdge edge) {
-        super(jModel, edge);
+    public AspectJEdge(AspectJGraph jGraph, AspectEdge edge) {
+        super(jGraph, edge);
         setUserObject(null);
         this.aspect = edge.getKind();
         this.errors.addAll(edge.getErrors());
@@ -50,8 +53,8 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     }
 
     @Override
-    public AspectJModel getJModel() {
-        return (AspectJModel) super.getJModel();
+    public AspectJGraph getJGraph() {
+        return (AspectJGraph) super.getJGraph();
     }
 
     @Override
@@ -89,6 +92,11 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         AspectJEdge result = (AspectJEdge) super.clone();
         result.errors = new ArrayList<FormatError>();
         return result;
+    }
+
+    @Override
+    public AspectJEdge newJEdge(Edge<?> edge) {
+        return new AspectJEdge(getJGraph(), (AspectEdge) edge);
     }
 
     /**
@@ -144,9 +152,9 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     @Override
     public List<StringBuilder> getLines() {
         if (isSourceLabel() || this.aspect == REMARK
-            && !getJModel().isShowRemarks()) {
+            && !getJGraph().isShowRemarks()) {
             return Collections.emptyList();
-        } else if (hasError() || getJModel().isShowAspects()) {
+        } else if (hasError() || getJGraph().isShowAspects()) {
             return getUserObject().toLines();
         } else {
             return super.getLines();
@@ -198,15 +206,15 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     /** 
      * Indicates if this JEdge should be shown
      * instead as part of the source node label.
-     * This is true if {@link AspectJModel#isShowLoopsAsNodeLabels()} is {@code true}
+     * This is true if {@link JGraph#isShowLoopsAsNodeLabels()} is {@code true}
      * and this is a self-edge, or if {@link Options#SHOW_VALUE_NODES_OPTION}
      * is unset and the target of this edge is a pure data constant. 
      */
     public boolean isSourceLabel() {
-        if (getJModel().isEditing() || hasError()) {
+        if (getJGraph().hasEditor() || hasError()) {
             return false;
         }
-        if (getJModel().isShowLoopsAsNodeLabels()
+        if (getJGraph().isShowLoopsAsNodeLabels()
             && getSourceNode() == getTargetNode()
             && !getAttributes().containsKey(GraphConstants.POINTS)) {
             return true;
@@ -214,7 +222,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         if (this.aspect == REMARK) {
             return false;
         }
-        if (getJModel().isShowValueNodes()) {
+        if (getJGraph().isShowValueNodes()) {
             return false;
         }
         if (this.aspect.isRole()) {
@@ -255,7 +263,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
                 setFontAttr(result, Font.ITALIC);
             }
         }
-        if (getJModel().isEditing()) {
+        if (getJGraph().hasEditor()) {
             GraphConstants.setEditable(result, true);
             GraphConstants.setConnectable(result, true);
             GraphConstants.setDisconnectable(result, true);
@@ -317,6 +325,11 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     private Collection<FormatError> errors = new LinkedHashSet<FormatError>();
 
     private boolean extraError;
+
+    /** Returns a prototype {@link AspectJEdge} for a given {@link AspectJGraph}. */
+    public static AspectJEdge getPrototype(AspectJGraph jGraph) {
+        return new AspectJEdge(jGraph);
+    }
 
     /** Separator between level name and edge label. */
     private static final char LEVEL_NAME_SEPARATOR = ':';

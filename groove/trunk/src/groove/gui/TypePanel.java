@@ -210,7 +210,8 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
     private AspectJModel getTypeJModel(TypeView graph) {
         AspectJModel result = this.typeJModelMap.get(graph);
         if (result == null) {
-            result = AspectJModel.newInstance(graph.getView(), getOptions());
+            result = getJGraph().newModel();
+            result.loadGraph(graph.getView());
             this.typeJModelMap.put(graph, result);
         }
         return result;
@@ -242,11 +243,11 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
     public void displayType() {
         AspectJModel newModel =
             isTypeSelected() ? getTypeJModel(getGrammarView().getTypeView(
-                getSelectedType())) : AspectJModel.EMPTY_JMODEL;
+                getSelectedType())) : getJGraph().newModel();
         if (newModel != getJModel()) {
             this.jGraph.setModel(newModel);
         }
-        if (newModel == AspectJModel.EMPTY_JMODEL) {
+        if (newModel.getGraph() == null) {
             setEnabled(false);
         } else {
             setEnabled(getNameListModel().isSelectedChecked());

@@ -2,6 +2,7 @@ package groove.gui.jgraph;
 
 import groove.control.CtrlState;
 import groove.control.CtrlVar;
+import groove.graph.Node;
 
 import java.util.List;
 
@@ -17,13 +18,23 @@ public class CtrlJVertex extends GraphJVertex {
      * Creates a new instance for a given node (required to be a
      * {@link CtrlState}) in an LTS model.
      */
-    CtrlJVertex(CtrlJModel jModel, CtrlState node) {
-        super(jModel, node, false);
+    CtrlJVertex(CtrlJGraph jGraph, CtrlState node) {
+        super(jGraph, node, false);
     }
 
     @Override
-    public CtrlJModel getJModel() {
-        return (CtrlJModel) super.getJModel();
+    public CtrlJGraph getJGraph() {
+        return (CtrlJGraph) super.getJGraph();
+    }
+
+    @Override
+    public GraphJVertex newJVertex(Node node) {
+        return new CtrlJVertex(getJGraph(), (CtrlState) node);
+    }
+
+    @Override
+    public CtrlState getNode() {
+        return (CtrlState) super.getNode();
     }
 
     /**
@@ -32,7 +43,7 @@ public class CtrlJVertex extends GraphJVertex {
     @Override
     public java.util.List<StringBuilder> getLines() {
         List<StringBuilder> result = super.getLines();
-        List<CtrlVar> boundVars = ((CtrlState) getNode()).getBoundVars();
+        List<CtrlVar> boundVars = getNode().getBoundVars();
         if (boundVars.size() > 0) {
             StringBuilder sb = new StringBuilder();
             sb.append(boundVars.toString());
@@ -43,12 +54,12 @@ public class CtrlJVertex extends GraphJVertex {
 
     /** Indicates if this jVertex represents the start state of the control automaton. */
     public boolean isStart() {
-        return getJModel().getGraph().getStart().equals(getNode());
+        return getNode().getAut().getStart().equals(getNode());
     }
 
     /** Indicates if this jVertex represents the start state of the control automaton. */
     public boolean isFinal() {
-        return getJModel().getGraph().getFinal().equals(getNode());
+        return getNode().getAut().getFinal().equals(getNode());
     }
 
     /**
@@ -72,5 +83,10 @@ public class CtrlJVertex extends GraphJVertex {
         }
 
         return result;
+    }
+
+    /** Returns a prototype {@link CtrlJVertex} for a given {@link CtrlJGraph}. */
+    public static CtrlJVertex getPrototype(CtrlJGraph jGraph) {
+        return new CtrlJVertex(jGraph, null);
     }
 }

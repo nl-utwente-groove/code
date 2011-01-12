@@ -30,8 +30,13 @@ public class ReteJGraph extends JGraph {
      * @param hasFilters indicates if this JGraph is to use label filtering.
      */
     public ReteJGraph(ReteJModel model, boolean hasFilters) {
-        super(model, hasFilters);
+        super(null, hasFilters);
         setModel(model);
+    }
+
+    @Override
+    public ReteJModel newModel() {
+        return new ReteJModel(getOptions());
     }
 
     //TODO ARASH: we can add a new tab to the groove GUI to display the constructed RETE 

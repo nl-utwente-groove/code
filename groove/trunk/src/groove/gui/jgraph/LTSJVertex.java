@@ -8,6 +8,7 @@ import static groove.gui.jgraph.JAttr.LTS_RESULT_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.LTS_START_NODE_ATTR;
 import groove.control.CtrlState;
 import groove.graph.Edge;
+import groove.graph.Node;
 import groove.lts.DerivationLabel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -28,21 +29,18 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
      * Creates a new instance for a given node (required to be a
      * {@link GraphState}) in an LTS model.
      */
-    LTSJVertex(LTSJModel jModel, GraphState node) {
-        super(jModel, node, true);
+    LTSJVertex(LTSJGraph jGraph, GraphState node) {
+        super(jGraph, node, true);
     }
 
     @Override
-    public LTSJModel getJModel() {
-        return (LTSJModel) super.getJModel();
+    public LTSJGraph getJGraph() {
+        return (LTSJGraph) super.getJGraph();
     }
 
-    /** 
-     * Returns the GTS wrapped in the model.
-     * Convenience method for {@code getJModel().getGraph()}. 
-     */
-    GTS getGraph() {
-        return getJModel().getGraph();
+    @Override
+    public LTSJVertex newJVertex(Node node) {
+        return new LTSJVertex(getJGraph(), (GraphState) node);
     }
 
     @Override
@@ -61,8 +59,8 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
      * closed.
      */
     private boolean isSpecialNode() {
-        GTS lts = getGraph();
         GraphState state = getNode();
+        GTS lts = getNode().getGTS();
         return lts.startState().equals(state) // || !state.isClosed()
             || lts.isFinal(state);
     }
@@ -82,14 +80,15 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
      * @return true if the state is a result state.
      */
     public boolean isResult() {
-        return getGraph().isResult(getNode());
+        return getNode().getGTS().isResult(getNode());
     }
 
     /**
      * @return true if the state is a start state.
      */
     public boolean isStart() {
-        return getGraph().startState().equals(getNode());
+        GTS gts = getNode().getGTS();
+        return gts.startState().equals(getNode());
     }
 
     /**
@@ -103,7 +102,8 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
      * @return true if the state is final.
      */
     public boolean isFinal() {
-        return getGraph().isFinal(getNode());
+        GTS gts = getNode().getGTS();
+        return gts.isFinal(getNode());
     }
 
     @Override
@@ -124,7 +124,7 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     @Override
     public StringBuilder getLine(Edge<?> edge) {
         String text =
-            getJModel().isShowAnchors() ? new DerivationLabel(
+            getJGraph().isShowAnchors() ? new DerivationLabel(
                 ((GraphTransition) edge).getEvent()).text()
                     : edge.label().text();
         StringBuilder result = new StringBuilder(text);
@@ -181,4 +181,9 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     }
 
     private boolean active;
+
+    /** Returns a prototype {@link LTSJVertex} for a given {@link LTSJGraph}. */
+    public static LTSJVertex getPrototype(LTSJGraph jGraph) {
+        return new LTSJVertex(jGraph, null);
+    }
 }

@@ -44,23 +44,23 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     /**
      * Constructs an uninitialised model edge.
      */
-    GraphJEdge(GraphJModel<?,?> jModel) {
-        this.jModel = jModel;
+    GraphJEdge(JGraph jGraph) {
+        this.jGraph = jGraph;
     }
 
     /**
      * Constructs a model edge based on a graph edge.
      * @param edge the underlying graph edge of this model edge.
      */
-    GraphJEdge(GraphJModel<?,?> jModel, Edge<?> edge) {
-        this(jModel);
+    GraphJEdge(JGraph jGraph, Edge<?> edge) {
+        this(jGraph);
         this.source = edge.source();
         this.target = edge.target();
         this.edges.add(edge);
     }
 
-    public GraphJModel<?,?> getJModel() {
-        return this.jModel;
+    public JGraph getJGraph() {
+        return this.jGraph;
     }
 
     /**
@@ -120,6 +120,14 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
         return clone;
     }
 
+    /** 
+     * Factory method, in case this object is used as a prototype.
+     * Returns a fresh {@link GraphJEdge} of the same type as this one. 
+     */
+    public GraphJEdge newJEdge(Edge<?> edge) {
+        return new GraphJEdge(getJGraph(), edge);
+    }
+
     /**
      * Returns the tool tip text for this edge.
      */
@@ -130,18 +138,15 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
 
     @Override
     public void refreshAttributes() {
-        createAttributes(getJModel());
-    }
-
-    final public AttributeMap createAttributes(GraphJModel<?,?> jModel) {
         AttributeMap result = createAttributes();
         if (isGrayedOut()) {
             result.applyMap(JAttr.GRAYED_OUT_ATTR);
         }
         if (getAttributes() != null) {
             getAttributes().applyMap(result);
+        } else {
+            setAttributes(result);
         }
-        return result;
     }
 
     /**
@@ -242,7 +247,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     /**
      * This implementation calls {@link #getLine(Edge)} on all edges in
      * {@link #getEdges()} that are not being filtered by the model
-     * according to {@link GraphJModel#isFiltering(Label)}.
+     * according to {@link JGraph#isFiltering(Label)}.
      */
     public List<StringBuilder> getLines() {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
@@ -264,7 +269,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     final protected boolean isFiltered(Edge<?> edge) {
         boolean result = false;
         for (Label label : getListLabels(edge)) {
-            if (getJModel().isFiltering(label)) {
+            if (getJGraph().isFiltering(label)) {
                 result = true;
                 break;
             }
@@ -355,8 +360,13 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     /** Set of graph edges mapped to this JEdge. */
     private Set<Edge<?>> edges = new TreeSet<Edge<?>>();
 
-    private final GraphJModel<?,?> jModel;
+    private final JGraph jGraph;
     private boolean grayedOut;
+
+    /** Returns a prototype {@link GraphJEdge} for a given {@link JGraph}. */
+    public static GraphJEdge getPrototype(JGraph jGraph) {
+        return new GraphJEdge(jGraph);
+    }
 
     /**
      * The string used to separate arguments when preparing for editing.

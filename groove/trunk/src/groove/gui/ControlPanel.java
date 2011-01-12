@@ -858,7 +858,8 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
         private CtrlJGraph getJGraph() throws FormatException {
             if (this.jGraph == null) {
-                this.jGraph = new CtrlJGraph(getCtrlAut(), getSimulator());
+                this.jGraph = new CtrlJGraph(getSimulator());
+                this.jGraph.setModel(getCtrlAut());
                 this.jGraph.getLayouter().start(true);
             }
             return this.jGraph;

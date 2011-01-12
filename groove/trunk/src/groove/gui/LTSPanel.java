@@ -50,6 +50,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     public LTSPanel(Simulator simulator) {
         super(new LTSJGraph(simulator), true, false, simulator.getOptions());
         this.simulator = simulator;
+        getJGraph().setEnabled(false);
         getJGraph().addMouseListener(new MyMouseListener());
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_STATE_IDS_OPTION);
@@ -77,7 +78,8 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
      */
     public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
         setGTS(null);
-        getJGraph().setModel(LTSJModel.EMPTY_LTS_JMODEL);
+        LTSJModel newModel = getJGraph().newModel();
+        getJGraph().setModel(newModel);
         getJGraph().getFilteredLabels().clear();
         setEnabled(false);
         refreshStatus();
@@ -85,7 +87,9 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
 
     public synchronized void startSimulationUpdate(GTS gts) {
         setGTS(gts);
-        getJGraph().setModel(LTSJModel.newInstance(gts, getOptions()));
+        LTSJModel newModel = getJGraph().newModel();
+        newModel.loadGraph(gts);
+        getJGraph().setModel(newModel);
         setStateUpdate(gts.startState());
         setEnabled(true);
         refreshStatus();
