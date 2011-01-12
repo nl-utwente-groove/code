@@ -45,8 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.SwingUtilities;
-
 import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
@@ -176,12 +174,12 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         if (GUI_DEBUG) {
             System.out.printf("Graph resynchronised with model %s%n", getName());
         }
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                refresh();
-            }
-        });
+        //        SwingUtilities.invokeLater(new Runnable() {
+        //            @Override
+        //            public void run() {
+        //                cellsChanged(getRoots().toArray());
+        //            }
+        //        });
     }
 
     /** 
@@ -344,13 +342,16 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      */
     @Override
     protected boolean isUnaryEdge(AspectEdge edge) {
-        boolean result = super.isUnaryEdge(edge);
-        if (!result) {
-            boolean unLayedoutSelfEdge =
-                edge.source() == edge.target()
-                    && getLayoutMap().getLayout(edge) == null;
+        boolean result;
+        boolean unLayedoutSelfEdge =
+            edge != null && edge.source() == edge.target()
+                && getLayoutMap().getLayout(edge) == null;
+        if (isEditing()) {
+            result = unLayedoutSelfEdge;
+        } else {
             result =
-                unLayedoutSelfEdge && (isEditing() || edge.getKind() == REMARK);
+                !edge.isBinary() || unLayedoutSelfEdge
+                    && edge.getKind() == REMARK;
         }
         return result;
     }

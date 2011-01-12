@@ -129,7 +129,7 @@ stat
 
 rule
 @after{ helper.checkCall($tree); }
-  : ^(CALL ID (^(ARGS arg*))?)
+  : ^(CALL id=ID (^(ARGS arg*))?)
   ;
 
 var_decl

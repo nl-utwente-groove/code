@@ -310,8 +310,7 @@ public class StoredGrammarView implements GrammarView, Observer {
             this.grammar = computeGrammar();
             this.errors = Collections.emptyList();
         } catch (FormatException exc) {
-            this.errors = new ArrayList<FormatError>(exc.getErrors());
-            Collections.sort(this.errors);
+            this.errors = exc.getErrors();
         }
     }
 

@@ -108,7 +108,14 @@ public class CtrlHelper {
             builder.append(((CommonToken) token).getText());
         }
         result = builder.toString();
-        return new MyTree(new CommonToken(CtrlParser.ID, result));
+        CommonToken token = new CommonToken(CtrlParser.ID, result);
+        // set the line/column info to get useful error output
+        if (!children.isEmpty()) {
+            CommonToken child = (CommonToken) children.get(0);
+            token.setLine(child.getLine());
+            token.setTokenIndex(child.getTokenIndex());
+        }
+        return new MyTree(token);
     }
 
     /** 
