@@ -1493,32 +1493,31 @@ public class Simulator {
      */
     JTabbedPane getGraphViewsPanel() {
         if (this.graphViewsPanel == null) {
-            JTabbedPane result = new JTabbedPane() {
+            this.graphViewsPanel = new JTabbedPane() {
                 @Override
                 public void setSelectedIndex(int index) {
                     super.setSelectedIndex(index);
                     getSelectedComponent().requestFocusInWindow();
                 }
             };
-            result.addTab(null, Groove.GRAPH_FRAME_ICON, getStatePanel(),
-                "Current graph state");
-            result.addTab(null, Groove.RULE_FRAME_ICON, getRulePanel(),
-                "Selected rule");
-            result.addTab(null, Groove.LTS_FRAME_ICON,
+            this.graphViewsPanel.addTab(null, Groove.GRAPH_FRAME_ICON,
+                getStatePanel(), "Current graph state");
+            this.graphViewsPanel.addTab(null, Groove.RULE_FRAME_ICON,
+                getRulePanel(), "Selected rule");
+            this.graphViewsPanel.addTab(null, Groove.LTS_FRAME_ICON,
                 getConditionalLTSPanel(), "Labelled transition system");
-            result.addTab(null, Groove.CONTROL_FRAME_ICON, getControlPanel(),
-                "Control specification");
-            result.addTab(null, Groove.TYPE_FRAME_ICON, getTypePanel(),
-                "Type graph");
+            this.graphViewsPanel.addTab(null, Groove.CONTROL_FRAME_ICON,
+                getControlPanel(), "Control specification");
+            this.graphViewsPanel.addTab(null, Groove.TYPE_FRAME_ICON,
+                getTypePanel(), "Type graph");
             // add this simulator as a listener so that the actions are updated
             // regularly
-            result.addChangeListener(new ChangeListener() {
+            this.graphViewsPanel.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent evt) {
                     refreshActions();
                 }
             });
-            result.setVisible(true);
-            this.graphViewsPanel = result;
+            this.graphViewsPanel.setVisible(true);
         }
         return this.graphViewsPanel;
     }
@@ -2124,12 +2123,12 @@ public class Simulator {
             @Override
             public void menuSelectionChanged(boolean selected) {
                 removeAll();
-                JGraph jGraph = getGraphPanel().getJGraph();
                 if (getGraphPanel() != null) {
+                    JGraph jGraph = getGraphPanel().getJGraph();
                     jGraph.addSubmenu(this, jGraph.createEditMenu(null, true));
                     jGraph.addSubmenu(this, jGraph.createDisplayMenu());
+                    jGraph.addSubmenu(this, createOptionsMenu());
                 }
-                jGraph.addSubmenu(this, createOptionsMenu());
                 super.menuSelectionChanged(selected);
             }
         };

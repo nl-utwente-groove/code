@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 CtrlChecker.g 2010-12-28 09:29:27
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 CtrlChecker.g 2011-01-12 17:03:05
 
 package groove.control.parse;
 
@@ -1216,7 +1216,7 @@ public class CtrlChecker extends TreeParser {
     };
 
     // $ANTLR start "rule"
-    // CtrlChecker.g:130:1: rule : ^( CALL ID ( ^( ARGS ( arg )* ) )? ) ;
+    // CtrlChecker.g:130:1: rule : ^( CALL id= ID ( ^( ARGS ( arg )* ) )? ) ;
     public final CtrlChecker.rule_return rule() throws RecognitionException {
         CtrlChecker.rule_return retval = new CtrlChecker.rule_return();
         retval.start = this.input.LT(1);
@@ -1226,18 +1226,18 @@ public class CtrlChecker extends TreeParser {
         MyTree _first_0 = null;
         MyTree _last = null;
 
+        MyTree id = null;
         MyTree CALL37 = null;
-        MyTree ID38 = null;
-        MyTree ARGS39 = null;
-        CtrlChecker.arg_return arg40 = null;
+        MyTree ARGS38 = null;
+        CtrlChecker.arg_return arg39 = null;
 
+        MyTree id_tree = null;
         MyTree CALL37_tree = null;
-        MyTree ID38_tree = null;
-        MyTree ARGS39_tree = null;
+        MyTree ARGS38_tree = null;
 
         try {
-            // CtrlChecker.g:132:3: ( ^( CALL ID ( ^( ARGS ( arg )* ) )? ) )
-            // CtrlChecker.g:132:5: ^( CALL ID ( ^( ARGS ( arg )* ) )? )
+            // CtrlChecker.g:132:3: ( ^( CALL id= ID ( ^( ARGS ( arg )* ) )? ) )
+            // CtrlChecker.g:132:5: ^( CALL id= ID ( ^( ARGS ( arg )* ) )? )
             {
                 _last = (MyTree) this.input.LT(1);
                 {
@@ -1252,12 +1252,12 @@ public class CtrlChecker extends TreeParser {
                     }
                     match(this.input, Token.DOWN, null);
                     _last = (MyTree) this.input.LT(1);
-                    ID38 = (MyTree) match(this.input, ID, FOLLOW_ID_in_rule662);
+                    id = (MyTree) match(this.input, ID, FOLLOW_ID_in_rule664);
 
                     if (_first_1 == null) {
-                        _first_1 = ID38;
+                        _first_1 = id;
                     }
-                    // CtrlChecker.g:132:15: ( ^( ARGS ( arg )* ) )?
+                    // CtrlChecker.g:132:18: ( ^( ARGS ( arg )* ) )?
                     int alt8 = 2;
                     int LA8_0 = this.input.LA(1);
 
@@ -1266,23 +1266,23 @@ public class CtrlChecker extends TreeParser {
                     }
                     switch (alt8) {
                     case 1:
-                        // CtrlChecker.g:132:16: ^( ARGS ( arg )* )
+                        // CtrlChecker.g:132:19: ^( ARGS ( arg )* )
                     {
                         _last = (MyTree) this.input.LT(1);
                         {
                             MyTree _save_last_2 = _last;
                             MyTree _first_2 = null;
                             _last = (MyTree) this.input.LT(1);
-                            ARGS39 =
+                            ARGS38 =
                                 (MyTree) match(this.input, ARGS,
-                                    FOLLOW_ARGS_in_rule666);
+                                    FOLLOW_ARGS_in_rule668);
 
                             if (_first_1 == null) {
-                                _first_1 = ARGS39;
+                                _first_1 = ARGS38;
                             }
                             if (this.input.LA(1) == Token.DOWN) {
                                 match(this.input, Token.DOWN, null);
-                                // CtrlChecker.g:132:23: ( arg )*
+                                // CtrlChecker.g:132:26: ( arg )*
                                 loop7: do {
                                     int alt7 = 2;
                                     int LA7_0 = this.input.LA(1);
@@ -1293,16 +1293,16 @@ public class CtrlChecker extends TreeParser {
 
                                     switch (alt7) {
                                     case 1:
-                                        // CtrlChecker.g:132:23: arg
+                                        // CtrlChecker.g:132:26: arg
                                     {
                                         _last = (MyTree) this.input.LT(1);
-                                        pushFollow(FOLLOW_arg_in_rule668);
-                                        arg40 = arg();
+                                        pushFollow(FOLLOW_arg_in_rule670);
+                                        arg39 = arg();
 
                                         this.state._fsp--;
 
                                         if (_first_2 == null) {
-                                            _first_2 = arg40.tree;
+                                            _first_2 = arg39.tree;
                                         }
 
                                         retval.tree = (MyTree) _first_0;
@@ -1377,12 +1377,12 @@ public class CtrlChecker extends TreeParser {
         MyTree _first_0 = null;
         MyTree _last = null;
 
-        MyTree VAR41 = null;
-        MyTree ID43 = null;
-        CtrlChecker.type_return type42 = null;
+        MyTree VAR40 = null;
+        MyTree ID42 = null;
+        CtrlChecker.type_return type41 = null;
 
-        MyTree VAR41_tree = null;
-        MyTree ID43_tree = null;
+        MyTree VAR40_tree = null;
+        MyTree ID42_tree = null;
 
         try {
             // CtrlChecker.g:136:2: ( ^( VAR type ( ID )+ ) )
@@ -1393,22 +1393,22 @@ public class CtrlChecker extends TreeParser {
                     MyTree _save_last_1 = _last;
                     MyTree _first_1 = null;
                     _last = (MyTree) this.input.LT(1);
-                    VAR41 =
+                    VAR40 =
                         (MyTree) match(this.input, VAR,
-                            FOLLOW_VAR_in_var_decl687);
+                            FOLLOW_VAR_in_var_decl689);
 
                     if (_first_0 == null) {
-                        _first_0 = VAR41;
+                        _first_0 = VAR40;
                     }
                     match(this.input, Token.DOWN, null);
                     _last = (MyTree) this.input.LT(1);
-                    pushFollow(FOLLOW_type_in_var_decl689);
-                    type42 = type();
+                    pushFollow(FOLLOW_type_in_var_decl691);
+                    type41 = type();
 
                     this.state._fsp--;
 
                     if (_first_1 == null) {
-                        _first_1 = type42.tree;
+                        _first_1 = type41.tree;
                     }
                     // CtrlChecker.g:138:7: ( ID )+
                     int cnt9 = 0;
@@ -1425,15 +1425,15 @@ public class CtrlChecker extends TreeParser {
                             // CtrlChecker.g:138:9: ID
                         {
                             _last = (MyTree) this.input.LT(1);
-                            ID43 =
+                            ID42 =
                                 (MyTree) match(this.input, ID,
-                                    FOLLOW_ID_in_var_decl706);
+                                    FOLLOW_ID_in_var_decl708);
 
                             if (_first_1 == null) {
-                                _first_1 = ID43;
+                                _first_1 = ID42;
                             }
-                            this.helper.declareVar(ID43, (type42 != null
-                                    ? ((MyTree) type42.tree) : null));
+                            this.helper.declareVar(ID42, (type41 != null
+                                    ? ((MyTree) type41.tree) : null));
 
                             retval.tree = (MyTree) _first_0;
                             if (this.adaptor.getParent(retval.tree) != null
@@ -1495,17 +1495,17 @@ public class CtrlChecker extends TreeParser {
         MyTree _first_0 = null;
         MyTree _last = null;
 
-        MyTree NODE44 = null;
-        MyTree BOOL45 = null;
-        MyTree STRING46 = null;
-        MyTree INT47 = null;
-        MyTree REAL48 = null;
+        MyTree NODE43 = null;
+        MyTree BOOL44 = null;
+        MyTree STRING45 = null;
+        MyTree INT46 = null;
+        MyTree REAL47 = null;
 
-        MyTree NODE44_tree = null;
-        MyTree BOOL45_tree = null;
-        MyTree STRING46_tree = null;
-        MyTree INT47_tree = null;
-        MyTree REAL48_tree = null;
+        MyTree NODE43_tree = null;
+        MyTree BOOL44_tree = null;
+        MyTree STRING45_tree = null;
+        MyTree INT46_tree = null;
+        MyTree REAL47_tree = null;
 
         try {
             // CtrlChecker.g:145:3: ( NODE | BOOL | STRING | INT | REAL )
@@ -1543,13 +1543,13 @@ public class CtrlChecker extends TreeParser {
                 // CtrlChecker.g:145:5: NODE
             {
                 _last = (MyTree) this.input.LT(1);
-                NODE44 =
-                    (MyTree) match(this.input, NODE, FOLLOW_NODE_in_type745);
+                NODE43 =
+                    (MyTree) match(this.input, NODE, FOLLOW_NODE_in_type747);
 
                 if (_first_0 == null) {
-                    _first_0 = NODE44;
+                    _first_0 = NODE43;
                 }
-                this.helper.checkType(NODE44);
+                this.helper.checkType(NODE43);
 
                 retval.tree = (MyTree) _first_0;
                 if (this.adaptor.getParent(retval.tree) != null
@@ -1562,13 +1562,13 @@ public class CtrlChecker extends TreeParser {
                 // CtrlChecker.g:146:5: BOOL
             {
                 _last = (MyTree) this.input.LT(1);
-                BOOL45 =
-                    (MyTree) match(this.input, BOOL, FOLLOW_BOOL_in_type755);
+                BOOL44 =
+                    (MyTree) match(this.input, BOOL, FOLLOW_BOOL_in_type757);
 
                 if (_first_0 == null) {
-                    _first_0 = BOOL45;
+                    _first_0 = BOOL44;
                 }
-                this.helper.checkType(BOOL45);
+                this.helper.checkType(BOOL44);
 
                 retval.tree = (MyTree) _first_0;
                 if (this.adaptor.getParent(retval.tree) != null
@@ -1581,13 +1581,13 @@ public class CtrlChecker extends TreeParser {
                 // CtrlChecker.g:147:5: STRING
             {
                 _last = (MyTree) this.input.LT(1);
-                STRING46 =
-                    (MyTree) match(this.input, STRING, FOLLOW_STRING_in_type765);
+                STRING45 =
+                    (MyTree) match(this.input, STRING, FOLLOW_STRING_in_type767);
 
                 if (_first_0 == null) {
-                    _first_0 = STRING46;
+                    _first_0 = STRING45;
                 }
-                this.helper.checkType(STRING46);
+                this.helper.checkType(STRING45);
 
                 retval.tree = (MyTree) _first_0;
                 if (this.adaptor.getParent(retval.tree) != null
@@ -1600,12 +1600,12 @@ public class CtrlChecker extends TreeParser {
                 // CtrlChecker.g:148:5: INT
             {
                 _last = (MyTree) this.input.LT(1);
-                INT47 = (MyTree) match(this.input, INT, FOLLOW_INT_in_type773);
+                INT46 = (MyTree) match(this.input, INT, FOLLOW_INT_in_type775);
 
                 if (_first_0 == null) {
-                    _first_0 = INT47;
+                    _first_0 = INT46;
                 }
-                this.helper.checkType(INT47);
+                this.helper.checkType(INT46);
 
                 retval.tree = (MyTree) _first_0;
                 if (this.adaptor.getParent(retval.tree) != null
@@ -1618,13 +1618,13 @@ public class CtrlChecker extends TreeParser {
                 // CtrlChecker.g:149:5: REAL
             {
                 _last = (MyTree) this.input.LT(1);
-                REAL48 =
-                    (MyTree) match(this.input, REAL, FOLLOW_REAL_in_type784);
+                REAL47 =
+                    (MyTree) match(this.input, REAL, FOLLOW_REAL_in_type786);
 
                 if (_first_0 == null) {
-                    _first_0 = REAL48;
+                    _first_0 = REAL47;
                 }
-                this.helper.checkType(REAL48);
+                this.helper.checkType(REAL47);
 
                 retval.tree = (MyTree) _first_0;
                 if (this.adaptor.getParent(retval.tree) != null
@@ -1664,16 +1664,16 @@ public class CtrlChecker extends TreeParser {
         MyTree _first_0 = null;
         MyTree _last = null;
 
-        MyTree ARG49 = null;
-        MyTree OUT50 = null;
-        MyTree ID51 = null;
-        MyTree DONT_CARE52 = null;
-        CtrlChecker.literal_return literal53 = null;
+        MyTree ARG48 = null;
+        MyTree OUT49 = null;
+        MyTree ID50 = null;
+        MyTree DONT_CARE51 = null;
+        CtrlChecker.literal_return literal52 = null;
 
-        MyTree ARG49_tree = null;
-        MyTree OUT50_tree = null;
-        MyTree ID51_tree = null;
-        MyTree DONT_CARE52_tree = null;
+        MyTree ARG48_tree = null;
+        MyTree OUT49_tree = null;
+        MyTree ID50_tree = null;
+        MyTree DONT_CARE51_tree = null;
 
         try {
             // CtrlChecker.g:153:2: ( ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) ) )
@@ -1684,11 +1684,11 @@ public class CtrlChecker extends TreeParser {
                     MyTree _save_last_1 = _last;
                     MyTree _first_1 = null;
                     _last = (MyTree) this.input.LT(1);
-                    ARG49 =
-                        (MyTree) match(this.input, ARG, FOLLOW_ARG_in_arg804);
+                    ARG48 =
+                        (MyTree) match(this.input, ARG, FOLLOW_ARG_in_arg806);
 
                     if (_first_0 == null) {
-                        _first_0 = ARG49;
+                        _first_0 = ARG48;
                     }
                     match(this.input, Token.DOWN, null);
                     // CtrlChecker.g:154:7: ( ( OUT )? ID | DONT_CARE | literal )
@@ -1734,12 +1734,12 @@ public class CtrlChecker extends TreeParser {
                             // CtrlChecker.g:154:9: OUT
                         {
                             _last = (MyTree) this.input.LT(1);
-                            OUT50 =
+                            OUT49 =
                                 (MyTree) match(this.input, OUT,
-                                    FOLLOW_OUT_in_arg815);
+                                    FOLLOW_OUT_in_arg817);
 
                             if (_first_1 == null) {
-                                _first_1 = OUT50;
+                                _first_1 = OUT49;
                             }
 
                             retval.tree = (MyTree) _first_0;
@@ -1754,13 +1754,13 @@ public class CtrlChecker extends TreeParser {
                         }
 
                         _last = (MyTree) this.input.LT(1);
-                        ID51 =
-                            (MyTree) match(this.input, ID, FOLLOW_ID_in_arg818);
+                        ID50 =
+                            (MyTree) match(this.input, ID, FOLLOW_ID_in_arg820);
 
                         if (_first_1 == null) {
-                            _first_1 = ID51;
+                            _first_1 = ID50;
                         }
-                        this.helper.checkVarArg(ARG49);
+                        this.helper.checkVarArg(ARG48);
 
                         retval.tree = (MyTree) _first_0;
                         if (this.adaptor.getParent(retval.tree) != null
@@ -1774,14 +1774,14 @@ public class CtrlChecker extends TreeParser {
                         // CtrlChecker.g:155:9: DONT_CARE
                     {
                         _last = (MyTree) this.input.LT(1);
-                        DONT_CARE52 =
+                        DONT_CARE51 =
                             (MyTree) match(this.input, DONT_CARE,
-                                FOLLOW_DONT_CARE_in_arg830);
+                                FOLLOW_DONT_CARE_in_arg832);
 
                         if (_first_1 == null) {
-                            _first_1 = DONT_CARE52;
+                            _first_1 = DONT_CARE51;
                         }
-                        this.helper.checkDontCareArg(ARG49);
+                        this.helper.checkDontCareArg(ARG48);
 
                         retval.tree = (MyTree) _first_0;
                         if (this.adaptor.getParent(retval.tree) != null
@@ -1795,15 +1795,15 @@ public class CtrlChecker extends TreeParser {
                         // CtrlChecker.g:156:9: literal
                     {
                         _last = (MyTree) this.input.LT(1);
-                        pushFollow(FOLLOW_literal_in_arg842);
-                        literal53 = literal();
+                        pushFollow(FOLLOW_literal_in_arg844);
+                        literal52 = literal();
 
                         this.state._fsp--;
 
                         if (_first_1 == null) {
-                            _first_1 = literal53.tree;
+                            _first_1 = literal52.tree;
                         }
-                        this.helper.checkConstArg(ARG49);
+                        this.helper.checkConstArg(ARG48);
 
                         retval.tree = (MyTree) _first_0;
                         if (this.adaptor.getParent(retval.tree) != null
@@ -1857,16 +1857,16 @@ public class CtrlChecker extends TreeParser {
         MyTree _first_0 = null;
         MyTree _last = null;
 
-        MyTree set54 = null;
+        MyTree set53 = null;
 
-        MyTree set54_tree = null;
+        MyTree set53_tree = null;
 
         try {
             // CtrlChecker.g:162:3: ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT )
             // CtrlChecker.g:
             {
                 _last = (MyTree) this.input.LT(1);
-                set54 = (MyTree) this.input.LT(1);
+                set53 = (MyTree) this.input.LT(1);
                 if (this.input.LA(1) == TRUE
                     || (this.input.LA(1) >= FALSE && this.input.LA(1) <= REAL_LIT)) {
                     this.input.consume();
@@ -1972,37 +1972,37 @@ public class CtrlChecker extends TreeParser {
         new long[] {0x0000000000000002L});
     public static final BitSet FOLLOW_CALL_in_rule660 = new BitSet(
         new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_ID_in_rule662 = new BitSet(
+    public static final BitSet FOLLOW_ID_in_rule664 = new BitSet(
         new long[] {0x0000000000000028L});
-    public static final BitSet FOLLOW_ARGS_in_rule666 = new BitSet(
+    public static final BitSet FOLLOW_ARGS_in_rule668 = new BitSet(
         new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_arg_in_rule668 = new BitSet(
+    public static final BitSet FOLLOW_arg_in_rule670 = new BitSet(
         new long[] {0x0000000000000018L});
-    public static final BitSet FOLLOW_VAR_in_var_decl687 = new BitSet(
+    public static final BitSet FOLLOW_VAR_in_var_decl689 = new BitSet(
         new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_type_in_var_decl689 = new BitSet(
+    public static final BitSet FOLLOW_type_in_var_decl691 = new BitSet(
         new long[] {0x0000000000010000L});
-    public static final BitSet FOLLOW_ID_in_var_decl706 = new BitSet(
+    public static final BitSet FOLLOW_ID_in_var_decl708 = new BitSet(
         new long[] {0x0000000000010008L});
-    public static final BitSet FOLLOW_NODE_in_type745 = new BitSet(
+    public static final BitSet FOLLOW_NODE_in_type747 = new BitSet(
         new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_BOOL_in_type755 = new BitSet(
+    public static final BitSet FOLLOW_BOOL_in_type757 = new BitSet(
         new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_STRING_in_type765 = new BitSet(
+    public static final BitSet FOLLOW_STRING_in_type767 = new BitSet(
         new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_INT_in_type773 = new BitSet(
+    public static final BitSet FOLLOW_INT_in_type775 = new BitSet(
         new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_REAL_in_type784 = new BitSet(
+    public static final BitSet FOLLOW_REAL_in_type786 = new BitSet(
         new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_ARG_in_arg804 = new BitSet(
+    public static final BitSet FOLLOW_ARG_in_arg806 = new BitSet(
         new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_OUT_in_arg815 = new BitSet(
+    public static final BitSet FOLLOW_OUT_in_arg817 = new BitSet(
         new long[] {0x0000000000010000L});
-    public static final BitSet FOLLOW_ID_in_arg818 = new BitSet(
+    public static final BitSet FOLLOW_ID_in_arg820 = new BitSet(
         new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_DONT_CARE_in_arg830 = new BitSet(
+    public static final BitSet FOLLOW_DONT_CARE_in_arg832 = new BitSet(
         new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_literal_in_arg842 = new BitSet(
+    public static final BitSet FOLLOW_literal_in_arg844 = new BitSet(
         new long[] {0x0000000000000008L});
     public static final BitSet FOLLOW_set_in_literal0 = new BitSet(
         new long[] {0x0000000000000002L});

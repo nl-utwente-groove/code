@@ -129,7 +129,7 @@ expr_atom
 
 call
 	: rule_name arg_list?
-	  -> ^(CALL rule_name arg_list?)
+	  -> ^(CALL[$rule_name] rule_name arg_list?)
 	;
 
 /** Returns a flattened rule name. */
