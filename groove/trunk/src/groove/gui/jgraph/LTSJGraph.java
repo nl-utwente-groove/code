@@ -78,7 +78,7 @@ public class LTSJGraph extends JGraph {
      * explicitly filtered.
      */
     @Override
-    boolean isShowUnfilteredEdges() {
+    public boolean isShowUnfilteredEdges() {
         return true;
     }
 

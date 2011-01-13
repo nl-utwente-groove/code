@@ -18,7 +18,6 @@ package groove.gui;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
-import static groove.gui.Options.SHOW_LOOPS_AS_NODE_LABELS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
@@ -102,7 +101,6 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         addRefreshListener(SHOW_REMARKS_OPTION);
         addRefreshListener(SHOW_VALUE_NODES_OPTION);
         addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
-        addRefreshListener(SHOW_LOOPS_AS_NODE_LABELS_OPTION);
         getJGraph().setToolTipEnabled(true);
         // make sure that removals from the selection model
         // also deselect the match

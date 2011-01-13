@@ -16,7 +16,6 @@
  */
 package groove.gui.jgraph;
 
-import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -130,7 +129,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                 jVertex.loadFromUserObject(role);
                 graph.addNode(jVertex.getNode());
                 nodeJVertexMap.put(jVertex.getNode(), jVertex);
-                for (AspectEdge edge : jVertex.getSelfEdges()) {
+                for (AspectEdge edge : jVertex.getJVertexLabels()) {
                     edgeJCellMap.put(edge, jVertex);
                     graph.addEdge(edge);
                 }
@@ -298,25 +297,6 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             System.out.printf("Firing graph change in %s%n", getName());
         }
         super.fireGraphChanged(source, edit);
-    }
-
-    /**
-     * Tests if a given edge may be added to its source vertex.
-     */
-    @Override
-    protected boolean isUnaryEdge(AspectEdge edge) {
-        boolean result;
-        boolean unLayedoutSelfEdge =
-            edge != null && edge.source() == edge.target()
-                && getLayoutMap().getLayout(edge) == null;
-        if (isEditing()) {
-            result = unLayedoutSelfEdge;
-        } else {
-            result =
-                !edge.isBinary() || unLayedoutSelfEdge
-                    && edge.getKind() == REMARK;
-        }
-        return result;
     }
 
     /**

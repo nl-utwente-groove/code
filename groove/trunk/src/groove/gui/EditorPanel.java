@@ -46,28 +46,31 @@ public class EditorPanel extends JPanel {
     public EditorPanel(Simulator simulator, AspectGraph graph, boolean fresh) {
         this.simulator = simulator;
         this.options = simulator.getOptions();
-        this.editor = new Editor(null, this.options) {
-            @Override
-            protected void doQuit() {
-                handleCancel();
-            }
+        this.editor =
+            new Editor(null, this.options,
+                simulator.getGrammarView().getProperties()) {
+                @Override
+                protected void doQuit() {
+                    handleCancel();
+                }
 
-            @Override
-            protected void updateTitle() {
-                String title = (isDirty() ? "*" : "") + getGraph().getName();
-                ((ButtonTabComponent) getTabbedPane().getTabComponentAt(
-                    getTabIndex())).setTitle(title);
-                getOkButton().setEnabled(isDirty());
-            }
+                @Override
+                protected void updateTitle() {
+                    String title =
+                        (isDirty() ? "*" : "") + getGraph().getName();
+                    ((ButtonTabComponent) getTabbedPane().getTabComponentAt(
+                        getTabIndex())).setTitle(title);
+                    getOkButton().setEnabled(isDirty());
+                }
 
-            @Override
-            protected void updateStatus() {
-                super.updateStatus();
-                ((ButtonTabComponent) getTabbedPane().getTabComponentAt(
-                    getTabIndex())).setError(!toView().getErrors().isEmpty());
-            }
+                @Override
+                protected void updateStatus() {
+                    super.updateStatus();
+                    ((ButtonTabComponent) getTabbedPane().getTabComponentAt(
+                        getTabIndex())).setError(!toView().getErrors().isEmpty());
+                }
 
-        };
+            };
         this.graph = graph;
         this.fresh = fresh;
     }
@@ -91,6 +94,11 @@ public class EditorPanel extends JPanel {
      */
     public void setType() {
         this.editor.setTypeView(this.simulator.getTypeView());
+    }
+
+    /** Returns the editor instance of this panel. */
+    public Editor getEditor() {
+        return this.editor;
     }
 
     /** Returns the tabbed view pane of the simulator (on which this panel is displayed). */

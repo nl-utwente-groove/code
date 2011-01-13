@@ -32,6 +32,7 @@ import groove.gui.layout.JCellLayout;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 import groove.io.ExtensionFilter;
+import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.util.ObservableSet;
 
@@ -195,7 +196,7 @@ abstract public class JGraph extends org.jgraph.JGraph implements
     /**
      * Indicates whether aspect prefixes should be shown for nodes and edges.
      */
-    boolean isShowNodeIdentities() {
+    public boolean isShowNodeIdentities() {
         return getOptionValue(Options.SHOW_NODE_IDS_OPTION);
     }
 
@@ -203,22 +204,31 @@ abstract public class JGraph extends org.jgraph.JGraph implements
      * Indicates whether unfiltered edges to filtered nodes should remain
      * visible.
      */
-    boolean isShowUnfilteredEdges() {
+    public boolean isShowUnfilteredEdges() {
         return getOptionValue(Options.SHOW_UNFILTERED_EDGES_OPTION);
+    }
+
+    /**
+     * Indicates whether anchors should be shown in the rule and lts views.
+     */
+    public boolean isShowAnchors() {
+        return getOptionValue(Options.SHOW_ANCHORS_OPTION);
     }
 
     /**
      * Indicates whether self-edges should be shown as node labels.
      */
     boolean isShowLoopsAsNodeLabels() {
-        return getOptionValue(Options.SHOW_LOOPS_AS_NODE_LABELS_OPTION);
+        return getProperties() == null || getProperties().isShowLoopsAsLabels();
     }
 
-    /**
-     * Indicates whether anchors should be shown in the rule and lts views.
+    /** 
+     * The properties of the grammar to which the displayed graph belongs.
+     * May return {@code null} if the simulator is not set.
      */
-    boolean isShowAnchors() {
-        return getOptionValue(Options.SHOW_ANCHORS_OPTION);
+    SystemProperties getProperties() {
+        return getSimulator() == null ? null
+                : getSimulator().getGrammarView().getProperties();
     }
 
     /** Returns the simulator associated with this {@link JGraph}, if any. */
@@ -350,6 +360,7 @@ abstract public class JGraph extends org.jgraph.JGraph implements
     public void graphChanged(GraphModelEvent evt) {
         if (evt.getSource() == getModel()
             && evt.getChange() instanceof GraphJModel<?,?>.RefreshEdit) {
+            this.modelRefreshing = true;
             Collection<? extends GraphJCell> refreshedJCells =
                 ((GraphJModel<?,?>.RefreshEdit) evt.getChange()).getRefreshedJCells();
             Collection<GraphJCell> visibleCells = new ArrayList<GraphJCell>();
@@ -397,6 +408,7 @@ abstract public class JGraph extends org.jgraph.JGraph implements
                     scrollRectToVisible(scope);
                 }
             }
+            this.modelRefreshing = false;
         }
         // if the backing JModel has an underlying Groove graph, then
         // store the changed layout information in that Groove graph
@@ -407,6 +419,15 @@ abstract public class JGraph extends org.jgraph.JGraph implements
                 graphJModel.synchroniseLayout(graphJCell);
             }
         }
+    }
+
+    /** 
+     * Indicates if this {@link JGraph} is in the course of processing
+     * a {@link GraphJModel#refresh()}. This allows listeners to ignore the
+     * resulting graph view update, if they wish.
+     */
+    public boolean isModelRefreshing() {
+        return this.modelRefreshing;
     }
 
     /**
@@ -491,28 +512,26 @@ abstract public class JGraph extends org.jgraph.JGraph implements
             jModel.addGraphModelListener(this);
             //            jModel.refresh();
             getSelectionModel().clearSelection();
-            if (this.initialized) {
-                if (this.layouter != null && !jModel.isLayedOut()) {
-                    int layoutCount = jModel.freeze();
-                    if (layoutCount > 0) {
-                        Layouter layouter =
-                            layoutCount == jModel.getRootCount()
-                                    ? this.layouter : this.incrementalLayouter;
-                        layouter.start(false);
-                        final Timer timer = new Timer();
-                        timer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                JGraph.this.layouter.stop();
-                                // cancel the timer, because it may otherwise
-                                // keep the entire program from terminating
-                                timer.cancel();
-                            }
-                        }, MAX_LAYOUT_DURATION);
-                    }
+            if (this.layouter != null && !jModel.isLayedOut()) {
+                int layoutCount = jModel.freeze();
+                if (layoutCount > 0) {
+                    Layouter layouter =
+                        layoutCount == jModel.getRootCount() ? this.layouter
+                                : this.incrementalLayouter;
+                    layouter.start(false);
+                    final Timer timer = new Timer();
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            JGraph.this.layouter.stop();
+                            // cancel the timer, because it may otherwise
+                            // keep the entire program from terminating
+                            timer.cancel();
+                        }
+                    }, MAX_LAYOUT_DURATION);
                 }
-                setEnabled(true);
             }
+            setEnabled(true);
         }
     }
 
@@ -1114,6 +1133,8 @@ abstract public class JGraph extends org.jgraph.JGraph implements
     private Map<String,Set<TypeLabel>> labelsMap;
     /** The fixed refresh listener of this {@link GraphJModel}. */
     private final RefreshListener refreshListener = new RefreshListener();
+    /** Flag indicating that a model refresh is being executed. */
+    private boolean modelRefreshing;
     /**
      * A standard layouter setting menu over this jgraph.
      */
@@ -1167,12 +1188,6 @@ abstract public class JGraph extends org.jgraph.JGraph implements
      */
     private boolean toolTipEnabled;
 
-    /**
-     * A variable to determined whether this MyJGraph instance has been
-     * initialized. It is important that this is the last (non-static) variable
-     * declared in the class.
-     */
-    private final boolean initialized = true;
     /** Layouter used if only part of the model should be layed out. */
     private final Layouter incrementalLayouter =
         new SpringLayouter().newInstance(this);
