@@ -580,9 +580,6 @@ public class Options implements Cloneable {
     static public final String SHOW_NODE_IDS_OPTION = "Show node identities";
     /** Show state ids option */
     static public final String SHOW_STATE_IDS_OPTION = "Show state identities";
-    /** Vertices are labels options */
-    static public final String SHOW_LOOPS_AS_NODE_LABELS_OPTION =
-        "Show self edges as node labels";
     /** Show unfiltered edges to filtered nodes. */
     static public final String SHOW_UNFILTERED_EDGES_OPTION =
         "Show all unfiltered edges";
@@ -636,7 +633,6 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_ANCHORS_OPTION, false);
         boolOptionDefaults.put(SHOW_NODE_IDS_OPTION, false);
         boolOptionDefaults.put(SHOW_STATE_IDS_OPTION, true);
-        boolOptionDefaults.put(SHOW_LOOPS_AS_NODE_LABELS_OPTION, true);
         boolOptionDefaults.put(SHOW_ASPECTS_OPTION, false);
         boolOptionDefaults.put(SHOW_REMARKS_OPTION, true);
         boolOptionDefaults.put(SHOW_BACKGROUND_OPTION, true);
@@ -802,7 +798,6 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_REMARKS_OPTION);
         addCheckbox(SHOW_BACKGROUND_OPTION);
         addCheckbox(SHOW_VALUE_NODES_OPTION);
-        addCheckbox(SHOW_LOOPS_AS_NODE_LABELS_OPTION);
         addCheckbox(SHOW_STATE_IDS_OPTION);
         addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
         addBehaviour(CANCEL_CONTROL_EDIT_OPTION, 2);

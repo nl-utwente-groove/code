@@ -214,11 +214,6 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         if (getJGraph().hasEditor() || hasError()) {
             return false;
         }
-        if (getJGraph().isShowLoopsAsNodeLabels()
-            && getSourceNode() == getTargetNode()
-            && !getAttributes().containsKey(GraphConstants.POINTS)) {
-            return true;
-        }
         if (this.aspect == REMARK) {
             return false;
         }

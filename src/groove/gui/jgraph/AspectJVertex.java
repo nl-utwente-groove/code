@@ -57,8 +57,8 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Set<AspectEdge> getSelfEdges() {
-        return (Set<AspectEdge>) super.getSelfEdges();
+    public Set<AspectEdge> getJVertexLabels() {
+        return (Set<AspectEdge>) super.getJVertexLabels();
     }
 
     /** Clears the errors and the aspect, in addition to calling the super method. */
@@ -83,11 +83,18 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     @Override
-    public boolean addSelfEdge(Edge<?> edge) {
-        assert edge.source() == getNode();
-        assert edge.target() == getNode();
-        this.errors.addAll(((AspectEdge) edge).getErrors());
-        return super.addSelfEdge(edge);
+    public boolean addJVertexLabel(Edge<?> edge) {
+        boolean result = super.addJVertexLabel(edge);
+        if (result) {
+            this.errors.addAll(((AspectEdge) edge).getErrors());
+        }
+        return result;
+    }
+
+    @Override
+    protected boolean isJVertexLabel(Edge<?> edge) {
+        return super.isJVertexLabel(edge)
+            || ((AspectEdge) edge).getKind() == REMARK;
     }
 
     /** 
@@ -167,6 +174,11 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         List<StringBuilder> result;
         if (hasError() || getJGraph().isShowAspects()) {
             result = getUserObject().toLines();
+            for (AspectEdge edge : getExtraSelfEdges()) {
+                if (!isFiltered(edge)) {
+                    result.add(getLine(edge));
+                }
+            }
         } else {
             result = new ArrayList<StringBuilder>();
             // show the node identity
@@ -176,7 +188,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             // show data constants and variables correctly
             result.addAll(getDataLines());
             // show the visible self-edges
-            for (AspectEdge edge : getSelfEdges()) {
+            for (AspectEdge edge : getJVertexLabels()) {
                 if (!isFiltered(edge)) {
                     result.add(getLine(edge));
                 }
@@ -321,7 +333,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             return Collections.emptySet();
         } else {
             result = new ArrayList<Label>();
-            for (Edge<?> edge : getSelfEdges()) {
+            for (Edge<?> edge : getJVertexLabels()) {
                 result.addAll(getListLabels(edge));
             }
             Aspect attrAspect = getNode().getAttrAspect();
@@ -414,7 +426,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         AspectJObject userObject = getUserObject();
         userObject.clear();
         userObject.addLabels(getNode().getNodeLabels());
-        userObject.addEdges(getSelfEdges());
+        userObject.addEdges(getJVertexLabels());
     }
 
     @Override
@@ -429,7 +441,8 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             } else {
                 AspectEdge edge = new AspectEdge(node, label, node, role);
                 edge.setFixed();
-                addSelfEdge(edge);
+                boolean added = addJVertexLabel(edge);
+                assert added;
             }
         }
         this.aspect = node.getKind();

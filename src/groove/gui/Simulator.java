@@ -26,7 +26,6 @@ import static groove.gui.Options.REPLACE_START_GRAPH_OPTION;
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_BACKGROUND_OPTION;
-import static groove.gui.Options.SHOW_LOOPS_AS_NODE_LABELS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
@@ -58,7 +57,6 @@ import groove.graph.Element;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
-import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.gui.dialog.AboutBox;
 import groove.gui.dialog.BoundedModelCheckingDialog;
@@ -1828,6 +1826,9 @@ public class Simulator {
             return getLtsPanel();
         }
 
+        if (selectedComponent instanceof EditorPanel) {
+            return ((EditorPanel) selectedComponent).getEditor().getGraphPanel();
+        }
         if (!(selectedComponent instanceof JGraphPanel<?>)) {
             return null;
         } else {
@@ -2150,7 +2151,6 @@ public class Simulator {
         result.add(getOptions().getItem(SHOW_VALUE_NODES_OPTION));
         result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
         result.add(getOptions().getItem(SHOW_UNFILTERED_EDGES_OPTION));
-        result.add(getOptions().getItem(SHOW_LOOPS_AS_NODE_LABELS_OPTION));
         result.addSeparator();
         result.add(getOptions().getItem(Options.CANCEL_CONTROL_EDIT_OPTION));
         result.add(getOptions().getItem(Options.DELETE_CONTROL_OPTION));
@@ -4594,20 +4594,7 @@ public class Simulator {
         }
 
         public void refresh() {
-            if (getGrammarView() != null) {
-                JMenuItem item =
-                    getOptions().getItem(SHOW_LOOPS_AS_NODE_LABELS_OPTION);
-                LabelStore labelStore = getGrammarView().getLabelStore();
-                if (labelStore.hasFlags()) {
-                    item.setEnabled(false);
-                    item.setSelected(false);
-                } else {
-                    item.setEnabled(true);
-                }
-                setEnabled(true);
-            } else {
-                setEnabled(false);
-            }
+            setEnabled(getGrammarView() != null);
         }
     }
 

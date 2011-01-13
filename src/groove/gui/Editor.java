@@ -32,6 +32,7 @@ import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.io.LayedOutXml;
 import groove.io.PriorityFileName;
+import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.util.Property;
 import groove.view.FormatError;
@@ -110,11 +111,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * display options setting.
      * @param options the display options object; may be <code>null</code>
      */
-    Editor(JFrame frame, Options options) {
+    Editor(JFrame frame, Options options, SystemProperties properties) {
         // force the LAF to be set
         groove.gui.Options.initLookAndFeel();
         // Construct the main components
         this.options = options;
+        this.properties = properties;
         if (frame == null) {
             this.frame = new JFrame(EDITOR_NAME);
             // this.frame.getRootPane().setDoubleBuffered(false);
@@ -136,7 +138,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * configured as an auxiliary component.
      */
     public Editor() {
-        this(null, null);
+        this(null, null, null);
     }
 
     /** Creates the frame and makes it visible. */
@@ -425,7 +427,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                 @Override
                 public void undoableEditHappened(UndoableEditEvent e) {
                     boolean relevant = true;
-                    if (Editor.this.previewSwitching) {
+                    if (Editor.this.previewSwitching
+                        || getJGraph().isModelRefreshing()) {
                         relevant = false;
                     } else if (e.getEdit() instanceof GraphLayoutCacheEdit) {
                         // only process edits that really changed anything
@@ -1164,6 +1167,14 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         return this.options;
     }
 
+    /** 
+     * The grammar properties of the grammar to which the edited
+     * graph belongs. May be {@code null} in case no grammar is set.
+     */
+    public final SystemProperties getProperties() {
+        return this.properties;
+    }
+
     /** Returns the jgraph component of this editor. */
     public AspectJGraph getJGraph() {
         return this.jgraph;
@@ -1184,7 +1195,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /**
-     * The options object of this simulator.
+     * The properties of the grammar being edited.
+     */
+    private final SystemProperties properties;
+    /**
+     * The options object of this editor.
      */
     private Options options;
 

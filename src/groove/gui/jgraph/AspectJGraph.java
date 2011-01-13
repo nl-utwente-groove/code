@@ -25,6 +25,7 @@ import groove.gui.Simulator;
 import groove.gui.layout.ForestLayouter;
 import groove.gui.layout.SpringLayouter;
 import groove.trans.RuleName;
+import groove.trans.SystemProperties;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -125,6 +126,15 @@ final public class AspectJGraph extends JGraph {
      */
     public Editor getEditor() {
         return this.editor;
+    }
+
+    @Override
+    SystemProperties getProperties() {
+        SystemProperties result = super.getProperties();
+        if (result == null) {
+            result = getEditor().getProperties();
+        }
+        return result;
     }
 
     /** 

@@ -151,12 +151,12 @@ public class DefaultGraphNextState extends AbstractGraphState implements
 
     @Override
     public boolean isFlag() {
-        return false;
+        return !getEvent().getRule().isModifying();
     }
 
     @Override
     public boolean isBinary() {
-        return true;
+        return !isFlag();
     }
 
     /**

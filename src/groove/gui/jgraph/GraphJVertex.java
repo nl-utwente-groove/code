@@ -80,7 +80,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      */
     void reset(Node node) {
         this.node = node;
-        this.edges.clear();
+        this.jVertexLabels.clear();
     }
 
     /** 
@@ -89,7 +89,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     @Override
     public GraphJVertex clone() {
         GraphJVertex clone = (GraphJVertex) super.clone();
-        clone.edges = new TreeSet<Edge<?>>();
+        clone.jVertexLabels = new TreeSet<Edge<?>>();
         return clone;
     }
 
@@ -118,21 +118,33 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      * @require <tt>edge.source() == edge.target() == getNode()</tt>
      * @ensure if <tt>result</tt> then <tt>edges().contains(edge)</tt>
      */
-    public boolean addSelfEdge(Edge<?> edge) {
-        if (this.vertexLabelled && edge.source() == edge.target()) {
-            this.edges.add(edge);
+    public boolean addJVertexLabel(Edge<?> edge) {
+        if (isJVertexLabel(edge)) {
+            this.jVertexLabels.add(edge);
             return true;
         } else {
             return false;
         }
     }
 
+    /** Tests if a given edge can be added as label to this {@link GraphJVertex}. */
+    protected boolean isJVertexLabel(Edge<?> edge) {
+        return !edge.isBinary() || this.vertexLabelled
+            && edge.source() == edge.target()
+            && getJGraph().isShowLoopsAsNodeLabels();
+    }
+
+    /** Tests if a given edge's layout attributes
+    protected boolean hasLayout(Edge<?> edge) {
+        
+    }
+    
     /**
      * Returns an unmodifiable view on the self edges.
-     * These are the edges added using {@link #addSelfEdge(Edge)}.
+     * These are the edges added using {@link #addJVertexLabel(Edge)}.
      */
-    public Set<? extends Edge<?>> getSelfEdges() {
-        return Collections.unmodifiableSet(this.edges);
+    public Set<? extends Edge<?>> getJVertexLabels() {
+        return Collections.unmodifiableSet(this.jVertexLabels);
     }
 
     @Override
@@ -183,7 +195,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
         // show the node identity if required
         result.addAll(getNodeIdLines());
         // only add edges that have an unfiltered label
-        for (Edge<?> edge : getSelfEdges()) {
+        for (Edge<?> edge : getJVertexLabels()) {
             if (!isFiltered(edge)) {
                 result.add(new StringBuilder(getLine(edge)));
             }
@@ -242,10 +254,10 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      */
     public Collection<? extends Label> getListLabels() {
         Collection<Label> result = new ArrayList<Label>();
-        for (Edge<?> edge : getSelfEdges()) {
+        for (Edge<?> edge : getJVertexLabels()) {
             result.addAll(getListLabels(edge));
         }
-        if (getSelfEdges().isEmpty()) {
+        if (getJVertexLabels().isEmpty()) {
             result.add(NO_LABEL);
         }
         return result;
@@ -370,7 +382,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     /** The graph node modelled by this jgraph node. */
     private Node node;
     /** Set of graph edges mapped to this JEdge. */
-    private Set<Edge<?>> edges = new TreeSet<Edge<?>>();
+    private Set<Edge<?>> jVertexLabels = new TreeSet<Edge<?>>();
 
     /** Returns a prototype {@link GraphJVertex} for a given {@link JGraph}. */
     public static GraphJVertex getPrototype(JGraph jGraph) {

@@ -476,9 +476,10 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
      * be a new j-edge.
      */
     protected GraphJCell addEdge(E edge) {
-        if (isUnaryEdge(edge)) {
+        // first try to add the edge as vertex label to its source vertex
+        if (!edge.label().isBinary() || getLayoutMap().getLayout(edge) == null) {
             GraphJVertex jVertex = getJCellForNode(edge.source());
-            if (jVertex.addSelfEdge(edge)) {
+            if (jVertex.addJVertexLabel(edge)) {
                 // yes, the edge could be added here; we're done
                 this.edgeJCellMap.put(edge, jVertex);
                 return jVertex;
@@ -514,13 +515,6 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
         this.connections.connect(jEdge, sourceNode.getPort(),
             targetPort.getPort());
         return jEdge;
-    }
-
-    /**
-     * Tests if a given edge may be added to its source vertex.
-     */
-    protected boolean isUnaryEdge(E edge) {
-        return !edge.label().isBinary();
     }
 
     /**

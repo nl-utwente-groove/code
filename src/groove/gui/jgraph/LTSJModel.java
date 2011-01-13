@@ -168,25 +168,6 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
     }
 
     /**
-     * This implementation checks if the edge is a transition of an 
-     * unmodifying rule.
-     */
-    @Override
-    protected boolean isUnaryEdge(GraphTransition edge) {
-        return isUnmodifyingRule(edge) || super.isUnaryEdge(edge);
-    }
-
-    /** Tests if the underlying rule of a graph transition edges is unmodifying. */
-    protected boolean isUnmodifyingRule(GraphTransition edge) {
-        return !edge.getEvent().getRule().isModifying();
-    }
-
-    /** Sets the active state. */
-    protected void setterActiveState(GraphState s) {
-        this.activeState = s;
-    }
-
-    /**
      * The active state of the LTS. Is null if there is no active state.
      * @invariant activeState == null || ltsJModel.graph().contains(activeState)
      */

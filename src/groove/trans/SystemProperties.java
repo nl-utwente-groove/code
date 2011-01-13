@@ -54,6 +54,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     public void setCurrentVersionProperties() {
         this.setGrooveVersion(Version.getCurrentGrooveVersion());
         this.setGrammarVersion(Version.getCurrentGrammarVersion());
+        setShowLoopsAsLabels(false);
     }
 
     /**
@@ -72,13 +73,29 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      */
     public boolean isUseControl() {
         String control = getProperty(SystemProperties.CONTROL_KEY);
-        return control == null || Boolean.valueOf(control)
-            || control.equals(SystemProperties.CONTROL_YES);
+        return control == null || Boolean.valueOf(control);
     }
 
     /** Sets the {@link #CONTROL_KEY} property to the given value * */
     public void setUseControl(boolean useControl) {
         setProperty(CONTROL_KEY, "" + useControl);
+    }
+
+    /**
+     * Indicates if the LTS labels should be surrounded by angular brackets.
+     * Default value: <code>true</code>.
+     */
+    public boolean isShowLoopsAsLabels() {
+        String property = getProperty(SystemProperties.LOOPS_AS_LABELS_KEY);
+        return property == null || Boolean.valueOf(property);
+    }
+
+    /**
+     * Indicates if the LTS labels should be surrounded by angular brackets.
+     * Default value: <code>true</code>.
+     */
+    public void setShowLoopsAsLabels(boolean show) {
+        setProperty(LOOPS_AS_LABELS_KEY, "" + show);
     }
 
     /**
@@ -368,6 +385,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     @Override
     public synchronized void load(InputStream inStream) throws IOException {
         testFixed(false);
+        clear();
         super.load(inStream);
     }
 
@@ -381,6 +399,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     public synchronized void loadFromXML(InputStream in) throws IOException,
         InvalidPropertiesFormatException {
         testFixed(false);
+        clear();
         super.loadFromXML(in);
     }
 
@@ -543,6 +562,10 @@ public class SystemProperties extends java.util.Properties implements Fixable {
         return input == null || input.length() == 0 ? null : input;
     }
 
+    /** Default "yes" value for binary properties. */
+    static public final String YES = "true";
+    /** Default "no" value for binary properties. */
+    static public final String NO = "true";
     /**
      * Name of the file containing the used type graph.
      */
@@ -598,11 +621,10 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      */
     static public final String CONTROL_KEY = "enableControl";
 
-    /** Value of {@link #CONTROL_KEY} that means control is used */
-    static public final String CONTROL_YES = "true";
-
-    /** Value of {@link #CONTROL_KEY} that means control is not used */
-    static public final String CONTROL_NO = "false";
+    /**
+     * Property that determines if (binary) loops can be shown as vertex labels.
+     */
+    static public final String LOOPS_AS_LABELS_KEY = "loopsAsLabels";
 
     /**
      * Property that determines if transition parameters are included in the LTS
@@ -689,8 +711,8 @@ public class SystemProperties extends java.util.Properties implements Fixable {
             ALGEBRA_KEY,
             new Property.Choice<String>(
                 "Algebra family that should be used in simulation (empty for default)",
-                AlgebraFamily.DEFAULT_ALGEBRAS,
-                AlgebraFamily.POINT_ALGEBRAS, AlgebraFamily.BIG_ALGEBRAS));
+                AlgebraFamily.DEFAULT_ALGEBRAS, AlgebraFamily.POINT_ALGEBRAS,
+                AlgebraFamily.BIG_ALGEBRAS));
         defaultKeys.put(INJECTIVE_KEY, new Property.IsBoolean(
             "Flag controlling if matches should be injective", true));
         defaultKeys.put(
@@ -723,16 +745,21 @@ public class SystemProperties extends java.util.Properties implements Fixable {
             new Property.True<String>(String.format(
                 "Name of the type graph (default: '%s')",
                 Groove.DEFAULT_TYPE_NAME)));
+        defaultKeys.put(CONTROL_LABELS_KEY, new Property.True<String>(
+            "A list of rare labels, used to optimise rule matching"));
+        defaultKeys.put(COMMON_LABELS_KEY, new Property.True<String>(
+            "A list of frequent labels, used to optimise rule matching"));
         defaultKeys.put(TRANSITION_BRACKETS_KEY, new IsExtendedBoolean(
             "Flag controlling if transition labels should be bracketed"));
         defaultKeys.put(
             PARAMETERS_KEY,
             new IsExtendedBoolean(
                 "Flag controlling if transition labels should include rule parameters"));
-        defaultKeys.put(CONTROL_LABELS_KEY, new Property.True<String>(
-            "A list of rare labels, used to optimise rule matching"));
-        defaultKeys.put(COMMON_LABELS_KEY, new Property.True<String>(
-            "A list of frequent labels, used to optimise rule matching"));
+        defaultKeys.put(
+            LOOPS_AS_LABELS_KEY,
+            new Property.IsBoolean(
+                "Flag controlling if binary self-edges may be shown as vertex labels",
+                true));
         DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);
     }
 
