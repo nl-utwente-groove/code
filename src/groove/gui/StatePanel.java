@@ -163,6 +163,8 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
         this.stateToAspectMap.clear();
         this.graphToJModel.clear();
+        this.selectedState = null;
+        this.selectedGraph = null;
         this.jGraph.getFilteredLabels().clear();
         if (grammar == null || grammar.getStartGraphView() == null) {
             setJModel(getJGraph().newModel());

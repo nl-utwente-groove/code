@@ -1208,11 +1208,6 @@ public class Simulator {
         }
     }
 
-    /** Renames all instances of a given label by another. */
-    void doRenameLabel(String original, String replacement) {
-        // does nothing for now
-    }
-
     /**
      * Directs the actual verification process.
      * @param property the property to be checked
