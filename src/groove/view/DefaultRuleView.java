@@ -17,6 +17,7 @@
 
 package groove.view;
 
+import static groove.graph.EdgeRole.NODE_TYPE;
 import static groove.view.aspect.AspectKind.EXISTS;
 import static groove.view.aspect.AspectKind.FORALL;
 import static groove.view.aspect.AspectKind.FORALL_POS;
@@ -1054,7 +1055,8 @@ public class DefaultRuleView implements RuleView {
                 for (Level sublevel : this.children) {
                     sublevel.addEdge(viewEdge, ruleEdge);
                 }
-            } else if (!viewEdge.getKind().inNAC() && ruleEdge.isNodeType()) {
+            } else if (!viewEdge.getKind().inNAC()
+                && ruleEdge.getRole() == NODE_TYPE) {
                 // add type edges to all sublevels
                 for (Level sublevel : this.children) {
                     sublevel.addParentType(ruleEdge);
@@ -1476,7 +1478,7 @@ public class DefaultRuleView implements RuleView {
                 RuleEdge typeEdge = lhsEdgeEntry.getValue();
                 RuleLabel label = typeEdge.label();
                 if (lhsEdgeEntry.getKey().getKind().inLHS()
-                    && label.isNodeType()
+                    && typeEdge.getRole() == NODE_TYPE
                     && (label.isAtom() || label.isSharp())) {
                     // add the type to the parent types
                     Set<TypeLabel> parentTypes =

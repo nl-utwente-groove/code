@@ -17,6 +17,7 @@
 
 package groove.gui.jgraph;
 
+import static groove.graph.EdgeRole.BINARY;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -253,7 +254,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
     protected GraphJCell addEdge(E edge) {
         // first try to add the edge as vertex label to its source vertex
         if (edge.source() == edge.target()
-            && (!edge.label().isBinary() || getLayoutMap().getLayout(edge) == null)) {
+            && (edge.getRole() != BINARY || getLayoutMap().getLayout(edge) == null)) {
             GraphJVertex jVertex = getJCellForNode(edge.source());
             if (jVertex.addJVertexLabel(edge)) {
                 // yes, the edge could be added here; we're done

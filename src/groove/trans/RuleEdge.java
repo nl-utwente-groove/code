@@ -37,6 +37,6 @@ public class RuleEdge extends AbstractEdge<RuleNode,RuleLabel> implements
         super(source, label, target);
         assert source.equals(target) || label.isBinary() : String.format(
             "Can't create %s label %s between distinct nodes %s and %s",
-            label.getKind().getName(false), label, source, target);
+            label.getRole().getName(false), label, source, target);
     }
 }

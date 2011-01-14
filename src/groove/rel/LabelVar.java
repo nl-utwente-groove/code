@@ -16,7 +16,7 @@
  */
 package groove.rel;
 
-import groove.graph.LabelKind;
+import groove.graph.EdgeRole;
 
 /**
  * Encodes a label variable (which may occur in a wildcard expression).
@@ -31,7 +31,7 @@ public class LabelVar {
      * @param name name of the label variable; non-{@code null}
      * @param kind kind of the label variable.
      */
-    public LabelVar(String name, LabelKind kind) {
+    public LabelVar(String name, EdgeRole kind) {
         super();
         this.name = name;
         this.kind = kind;
@@ -45,7 +45,7 @@ public class LabelVar {
     /** 
      * Returns the kind of this label variable.
      */
-    public final LabelKind getKind() {
+    public final EdgeRole getKind() {
         return this.kind;
     }
 
@@ -92,5 +92,5 @@ public class LabelVar {
     /** The name of the label variable. */
     private final String name;
     /** The kind of the label variable. */
-    private final LabelKind kind;
+    private final EdgeRole kind;
 }

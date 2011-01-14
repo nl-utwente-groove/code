@@ -39,25 +39,9 @@ public interface Edge<N extends Node> extends Element {
      */
     public Label label();
 
-    /**
-     * Indicates if the edge label stands for a node type. Convenience
-     * method for {@code label().isNodeType()}.
-     * @see Label#isNodeType()
+    /** 
+     * Returns the edge role of a given edge.
+     * For most edge types, this is determined by (the edge role of) the label.
      */
-    boolean isNodeType();
-
-    /**
-     * Indicates if the edge label stands for a flag. Convenience method for
-     * {@code label().isNodeType()}.
-     * @see Label#isFlag()
-     */
-    boolean isFlag();
-
-    /**
-     * Indicates if this is a (normal) binary edge. Convenience method for {@code
-     * label().isNodeType()}.
-     * @see Label#isBinary()
-     */
-    boolean isBinary();
-
+    public EdgeRole getRole();
 }

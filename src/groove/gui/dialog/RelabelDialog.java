@@ -16,7 +16,7 @@
  */
 package groove.gui.dialog;
 
-import groove.graph.LabelKind;
+import groove.graph.EdgeRole;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.util.Converter;
@@ -91,10 +91,10 @@ public class RelabelDialog {
      */
     private void propagateSelection() {
         TypeLabel selection = (TypeLabel) getOldField().getSelectedItem();
-        getOldTypeLabel().setText(selection.getKind().getName(true));
+        getOldTypeLabel().setText(selection.getRole().getName(true));
         //        getOldTypeCombobox().setSelectedIndex(selection.getType());
         getNewTypeCombobox().setSelectedIndex(
-            LabelKind.getIndex(selection.getKind()));
+            EdgeRole.getIndex(selection.getRole()));
         //        getNewTypeCheckbox().setSelected(selection.isNodeType());
         getNewField().setText(selection.text());
         getNewField().setSelectionStart(0);
@@ -127,7 +127,7 @@ public class RelabelDialog {
         String text = getNewField().getText();
         if (text.length() > 0) {
             int labelType = getNewTypeCombobox().getSelectedIndex();
-            result = TypeLabel.createLabel(LabelKind.getKind(labelType), text);
+            result = TypeLabel.createLabel(EdgeRole.getKind(labelType), text);
             TypeLabel oldLabel = getOldLabel();
             if (this.existingLabels.getLabels().contains(result)) {
                 if (result.equals(oldLabel)) {
@@ -292,7 +292,7 @@ public class RelabelDialog {
     private JLabel getOldTypeLabel() {
         if (this.oldTypeLabel == null) {
             final JLabel result = this.oldTypeLabel = new JLabel();
-            result.setText(getOldLabel().getKind().getName(true));
+            result.setText(getOldLabel().getRole().getName(true));
             result.setPreferredSize(getNewTypeCombobox().getPreferredSize());
             result.setBorder(new EtchedBorder());
             result.setEnabled(true);
@@ -308,10 +308,10 @@ public class RelabelDialog {
     private JComboBox getNewTypeCombobox() {
         if (this.newTypeChoice == null) {
             final JComboBox result = this.newTypeChoice = new JComboBox();
-            for (LabelKind kind : EnumSet.allOf(LabelKind.class)) {
+            for (EdgeRole kind : EnumSet.allOf(EdgeRole.class)) {
                 result.addItem(kind.getName(true));
             }
-            result.setSelectedIndex(LabelKind.getIndex(getOldLabel().getKind()));
+            result.setSelectedIndex(EdgeRole.getIndex(getOldLabel().getRole()));
             result.setEnabled(true);
             result.setFocusable(false);
             result.addActionListener(new ActionListener() {
@@ -319,7 +319,7 @@ public class RelabelDialog {
                 public void actionPerformed(ActionEvent e) {
                     Font font = getNewField().getFont();
                     int fontProperty;
-                    switch (LabelKind.getKind(result.getSelectedIndex())) {
+                    switch (EdgeRole.getKind(result.getSelectedIndex())) {
                     case NODE_TYPE:
                         fontProperty = Font.BOLD;
                         break;

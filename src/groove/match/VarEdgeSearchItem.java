@@ -82,7 +82,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
     }
 
     boolean isLabelConstraintSatisfied(TypeLabel label) {
-        return label.getKind() == this.var.getKind()
+        return label.getRole() == this.var.getKind()
             && this.labelConstraint == null
             || this.labelConstraint.isSatisfied(label);
     }

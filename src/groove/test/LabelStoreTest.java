@@ -22,7 +22,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.graph.Label;
-import groove.graph.LabelKind;
+import groove.graph.EdgeRole;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.view.FormatException;
@@ -301,10 +301,10 @@ public class LabelStoreTest {
 
     private LabelStore store1;
     private LabelStore store2;
-    private final TypeLabel typeA = TypeLabel.createLabel(LabelKind.NODE_TYPE, "A");
-    private final TypeLabel typeB = TypeLabel.createLabel(LabelKind.NODE_TYPE, "B");
-    private final TypeLabel typeC = TypeLabel.createLabel(LabelKind.NODE_TYPE, "C");
-    private final TypeLabel typeD = TypeLabel.createLabel(LabelKind.NODE_TYPE, "D");
+    private final TypeLabel typeA = TypeLabel.createLabel(EdgeRole.NODE_TYPE, "A");
+    private final TypeLabel typeB = TypeLabel.createLabel(EdgeRole.NODE_TYPE, "B");
+    private final TypeLabel typeC = TypeLabel.createLabel(EdgeRole.NODE_TYPE, "C");
+    private final TypeLabel typeD = TypeLabel.createLabel(EdgeRole.NODE_TYPE, "D");
     private final TypeLabel a = TypeLabel.createBinaryLabel("a");
     private final TypeLabel b = TypeLabel.createBinaryLabel("b");
     private final TypeLabel c = TypeLabel.createBinaryLabel("c");

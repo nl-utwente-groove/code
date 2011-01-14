@@ -16,6 +16,7 @@
  */
 package groove.abstraction;
 
+import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
 import groove.trans.DefaultApplication;
 import groove.trans.HostEdge;
@@ -403,7 +404,8 @@ public final class Materialisation implements Cloneable {
         for (Entry<RuleEdge,ShapeEdge> edgeEntry : this.originalMatch.edgeMap().entrySet()) {
             RuleEdge edgeR = edgeEntry.getKey();
             ShapeEdge edgeS = edgeEntry.getValue();
-            if (edgeR.isBinary() && !processedEdges.contains(edgeS)) {
+            if (edgeR.getRole() == EdgeRole.BINARY
+                && !processedEdges.contains(edgeS)) {
                 // Check if the image edge in the shape has abstract
                 // multiplicities.
                 EdgeSignature outEs = this.shape.getEdgeOutSignature(edgeS);
@@ -501,7 +503,7 @@ public final class Materialisation implements Cloneable {
                     Set<RuleEdge> edgesR = new HashSet<RuleEdge>();
                     edgesR.add(edgeR);
                     this.tasks.add(new MaterialiseEdge(this, newEdgeS, edgesR));
-                } else if (newEdgeS.isBinary()) {
+                } else if (newEdgeS.getRole() == EdgeRole.BINARY) {
                     edgesToFreeze.add(newEdgeS);
                 }
             }

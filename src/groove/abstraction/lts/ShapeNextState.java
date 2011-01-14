@@ -18,6 +18,7 @@ package groove.abstraction.lts;
 
 import groove.abstraction.Shape;
 import groove.control.CtrlTransition;
+import groove.graph.EdgeRole;
 import groove.lts.DerivationLabel;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
@@ -110,18 +111,13 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
-    public boolean isNodeType() {
-        return false;
-    }
-
-    @Override
-    public boolean isFlag() {
-        return !getEvent().getRule().isModifying();
-    }
-
-    @Override
-    public boolean isBinary() {
-        return !isFlag();
+    public EdgeRole getRole() {
+        if (getEvent().getRule().isModifying()
+            || getCtrlTransition().isModifying()) {
+            return EdgeRole.BINARY;
+        } else {
+            return EdgeRole.FLAG;
+        }
     }
 
     @Override

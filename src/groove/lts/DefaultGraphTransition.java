@@ -20,6 +20,7 @@ import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.graph.AbstractEdge;
 import groove.graph.AbstractGraph;
+import groove.graph.EdgeRole;
 import groove.graph.Element;
 import groove.graph.Morphism;
 import groove.graph.iso.IsoChecker;
@@ -72,6 +73,16 @@ public class DefaultGraphTransition extends
 
     public boolean isSymmetry() {
         return this.symmetry;
+    }
+
+    @Override
+    public EdgeRole getRole() {
+        if (getEvent().getRule().isModifying()
+            || getCtrlTransition().isModifying()) {
+            return EdgeRole.BINARY;
+        } else {
+            return EdgeRole.FLAG;
+        }
     }
 
     public HostNode[] getAddedNodes() {

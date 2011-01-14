@@ -16,6 +16,7 @@
  */
 package groove.gui.jgraph;
 
+import static groove.graph.EdgeRole.BINARY;
 import static groove.util.Converter.ITALIC_TAG;
 import groove.graph.Edge;
 import groove.graph.Label;
@@ -116,7 +117,8 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
 
     /** Tests if a given edge can be added as label to this {@link GraphJVertex}. */
     protected boolean isJVertexLabel(Edge<?> edge) {
-        return !edge.isBinary() || getJGraph().isShowLoopsAsNodeLabels();
+        return edge.getRole() != BINARY
+            || getJGraph().isShowLoopsAsNodeLabels();
     }
 
     /** Tests if a given edge's layout attributes

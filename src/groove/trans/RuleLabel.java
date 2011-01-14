@@ -18,7 +18,7 @@ package groove.trans;
 
 import groove.algebra.Operator;
 import groove.graph.AbstractLabel;
-import groove.graph.LabelKind;
+import groove.graph.EdgeRole;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.rel.LabelVar;
@@ -86,12 +86,12 @@ public class RuleLabel extends AbstractLabel {
     }
 
     @Override
-    public LabelKind getKind() {
-        LabelKind result = super.getKind();
+    public EdgeRole getRole() {
+        EdgeRole result = super.getRole();
         if (isWildcard()) {
             result = ((RegExpr.Wildcard) getMatchExpr()).getKind();
         } else if (isSharp() || isAtom()) {
-            result = getTypeLabel().getKind();
+            result = getTypeLabel().getRole();
         }
         return result;
     }
@@ -107,7 +107,7 @@ public class RuleLabel extends AbstractLabel {
             result = "" + Groove.LC_PI + getArgument();
         } else {
             result = getMatchExpr().toString();
-            result = LabelKind.parse(result).two();
+            result = EdgeRole.parseLabel(result).two();
         }
         return result;
     }
@@ -254,7 +254,7 @@ public class RuleLabel extends AbstractLabel {
      * matches against.
      * Returns {@code -1} otherwise.
      */
-    public LabelKind getWildcardKind() {
+    public EdgeRole getWildcardKind() {
         RegExpr regExpr = getMatchExpr();
         return regExpr == null ? null : regExpr.getWildcardKind();
     }

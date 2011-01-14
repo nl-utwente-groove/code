@@ -16,7 +16,7 @@
  */
 package groove.view;
 
-import static groove.graph.LabelKind.NODE_TYPE;
+import static groove.graph.EdgeRole.NODE_TYPE;
 import static groove.view.aspect.AspectKind.ABSTRACT;
 import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.SUBTYPE;

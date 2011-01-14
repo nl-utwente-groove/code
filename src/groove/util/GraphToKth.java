@@ -17,6 +17,7 @@
 package groove.util;
 
 import groove.algebra.StringAlgebra;
+import groove.graph.EdgeRole;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 import groove.trans.HostEdge;
@@ -220,7 +221,7 @@ public final class GraphToKth {
         assert isFlowNode(node) : "Node " + node + " has an illegal type.";
         ArrayList<String> flags = new ArrayList<String>();
         for (AspectEdge edge : graph.outEdgeSet(node)) {
-            if (edge.isFlag()) {
+            if (edge.getRole() == EdgeRole.FLAG) {
                 flags.add(edge.label().text());
             }
         }

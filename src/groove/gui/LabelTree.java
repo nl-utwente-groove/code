@@ -17,7 +17,7 @@
 package groove.gui;
 
 import groove.graph.Label;
-import groove.graph.LabelKind;
+import groove.graph.EdgeRole;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.gui.jgraph.GraphJCell;
@@ -1222,16 +1222,16 @@ public class LabelTree extends JTree implements GraphModelListener,
                     int separatorIndex = dataRow.indexOf(' ');
                     if (separatorIndex < 0) {
                         Label keyType =
-                            TypeLabel.createLabel(LabelKind.NODE_TYPE, dataRow);
+                            TypeLabel.createLabel(EdgeRole.NODE_TYPE, dataRow);
                         if (!draggedLabels.containsKey(keyType)) {
                             draggedLabels.put(keyType, new HashSet<Label>());
                         }
                     } else {
                         Label keyType =
-                            TypeLabel.createLabel(LabelKind.NODE_TYPE,
+                            TypeLabel.createLabel(EdgeRole.NODE_TYPE,
                                 dataRow.substring(0, separatorIndex));
                         Label valueType =
-                            TypeLabel.createLabel(LabelKind.NODE_TYPE,
+                            TypeLabel.createLabel(EdgeRole.NODE_TYPE,
                                 dataRow.substring(separatorIndex + 1));
                         Set<Label> values = draggedLabels.get(keyType);
                         if (values == null) {

@@ -20,7 +20,7 @@ import static groove.graph.GraphRole.HOST;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
-import groove.graph.LabelKind;
+import groove.graph.EdgeRole;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -279,7 +279,7 @@ public class InstanceGraphRep {
             // added as well
             if (attributeType.eClass().getName().equals("EEnum")) {
                 String flagLabel =
-                    LabelKind.FLAG.getPrefix() + target.toString();
+                    EdgeRole.FLAG.getPrefix() + target.toString();
                 this.ig.addEdge(datatypeNode, flagLabel, datatypeNode);
             }
         }
