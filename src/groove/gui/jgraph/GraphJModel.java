@@ -358,7 +358,8 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
     /**
      * Factory method for jgraph edges.
      * 
-     * @param edge graph edge for which a corresponding j-edge is to be created
+     * @param edge graph edge for which a corresponding JEdge is to be created;
+     * may be {@code null} if there is initially no edge
      * @return j-edge corresponding to <tt>edge</tt>
      * @ensure <tt>result.getEdgeSet().contains(edge)</tt>
      */

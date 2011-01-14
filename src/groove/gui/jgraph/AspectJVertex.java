@@ -171,18 +171,17 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     @Override
     public List<StringBuilder> getLines() {
         getNode().testFixed(true);
-        List<StringBuilder> result;
+        List<StringBuilder> result = new ArrayList<StringBuilder>();
+        // show the node identity
+        result.addAll(getNodeIdLines());
         if (hasError() || getJGraph().isShowAspects()) {
-            result = getUserObject().toLines();
+            result.addAll(getUserObject().toLines());
             for (AspectEdge edge : getExtraSelfEdges()) {
                 if (!isFiltered(edge)) {
                     result.add(getLine(edge));
                 }
             }
         } else {
-            result = new ArrayList<StringBuilder>();
-            // show the node identity
-            result.addAll(getNodeIdLines());
             // show the main aspect correctly
             result.addAll(getAspectLines());
             // show data constants and variables correctly
@@ -415,7 +414,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     @Override
     protected AttributeMap createAttributes() {
         AttributeMap result = JAttr.RULE_NODE_ATTR.get(this.aspect).clone();
-        if (getJGraph().hasEditor()) {
+        if (getJGraph().hasActiveEditor()) {
             GraphConstants.setEditable(result, true);
         }
         return result;

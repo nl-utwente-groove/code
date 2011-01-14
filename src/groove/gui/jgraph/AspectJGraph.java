@@ -113,11 +113,11 @@ final public class AspectJGraph extends JGraph {
      * This is certainly the case if this model is editable.
      */
     public final boolean isShowValueNodes() {
-        return hasEditor() || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
+        return hasActiveEditor() || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
     }
 
     /** Indicates that the JModel has an editor enabled. */
-    public boolean hasEditor() {
+    public boolean hasActiveEditor() {
         return this.editor != null && !this.editor.isPreviewMode();
     }
 
@@ -199,7 +199,7 @@ final public class AspectJGraph extends JGraph {
      */
     public JMenu createEditMenu(Point atPoint) {
         JMenu result = new JMenu("Edit");
-        if (hasEditor()) {
+        if (hasActiveEditor()) {
             result.add(getEditLabelAction());
             result.add(getAddPointAction(atPoint));
             result.add(getRemovePointAction(atPoint));

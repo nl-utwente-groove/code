@@ -290,6 +290,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         // we need to refresh because the errors may have changed
         getModel().syncGraph();
         updateStatus();
+        Editor.this.refreshing = true;
+        getGraphPanel().refresh();
+        Editor.this.refreshing = false;
         updateTitle();
     }
 
@@ -430,7 +433,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                 @Override
                 public void undoableEditHappened(UndoableEditEvent e) {
                     boolean relevant = true;
-                    if (Editor.this.previewSwitching
+                    if (Editor.this.refreshing
                         || getJGraph().isModelRefreshing()) {
                         relevant = false;
                     } else if (e.getEdit() instanceof GraphLayoutCacheEdit) {
@@ -722,8 +725,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     JMenu createOptionsMenu() {
         JMenu result = new JMenu(Options.OPTIONS_MENU_NAME);
         result.setMnemonic(Options.OPTIONS_MENU_MNEMONIC);
-        result.add(getOptions().getItem(Options.SHOW_VALUE_NODES_OPTION));
         result.add(getOptions().getItem(Options.SHOW_NODE_IDS_OPTION));
+        result.add(getOptions().getItem(Options.SHOW_ASPECTS_OPTION));
+        result.add(getOptions().getItem(Options.SHOW_VALUE_NODES_OPTION));
         return result;
     }
 
@@ -928,9 +932,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                         e.getStateChange() == ItemEvent.DESELECTED);
                     getModel().syncGraph();
                     updateStatus();
-                    Editor.this.previewSwitching = true;
+                    Editor.this.refreshing = true;
                     getGraphPanel().refresh();
-                    Editor.this.previewSwitching = false;
+                    Editor.this.refreshing = false;
                 }
             });
         }
@@ -1247,7 +1251,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** Flag that is set to true while the action of the {@link #getPreviewModeButton()}
      * is being executed.
      */
-    private transient boolean previewSwitching;
+    private transient boolean refreshing;
     /** Object providing the core functionality for property changes. */
     private PropertyChangeSupport propertyChangeSupport;
 
