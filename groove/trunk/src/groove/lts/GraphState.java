@@ -43,7 +43,7 @@ public interface GraphState extends Node {
     /** Returns the graph contained in this state. */
     public HostGraph getGraph();
 
-    /** Returns the (possibly {@code null}) control state associated with this state. */
+    /** Returns the (non-{@code null}) control state associated with this state. */
     public CtrlState getCtrlState();
 
     /** Returns the (possibly {@code null}) control schedule associated with this state. */

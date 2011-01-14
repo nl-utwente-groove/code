@@ -257,7 +257,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 }
                 if (signature != null) {
                     nodeTypeMap.put(node,
-                        TypeLabel.createLabel(LabelKind.NODE_TYPE, signature));
+                        TypeLabel.createLabel(EdgeRole.NODE_TYPE, signature));
                     untypedNodes.remove(node);
                 }
             }
@@ -614,13 +614,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 HostNode source = typeNodeMap.get(connectEntry.getKey());
                 HostNode target = typeNodeMap.get(targetType);
                 result.addEdge(source,
-                    MatrixAutomaton.getDummyLabel(LabelKind.BINARY), target);
+                    MatrixAutomaton.getDummyLabel(EdgeRole.BINARY), target);
             }
         }
         for (Label flaggedType : flaggedNodes) {
             HostNode source = typeNodeMap.get(flaggedType);
             result.addEdge(source,
-                MatrixAutomaton.getDummyLabel(LabelKind.FLAG), source);
+                MatrixAutomaton.getDummyLabel(EdgeRole.FLAG), source);
         }
         this.saturationNodeMap = typeNodeMap;
         this.saturation = result;

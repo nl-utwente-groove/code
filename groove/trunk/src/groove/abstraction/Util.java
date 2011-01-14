@@ -16,6 +16,7 @@
  */
 package groove.abstraction;
 
+import static groove.graph.EdgeRole.BINARY;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
@@ -54,7 +55,7 @@ public final class Util {
     public static Set<TypeLabel> getNodeLabels(HostGraph graph, HostNode node) {
         HashSet<TypeLabel> nodeLabels = new HashSet<TypeLabel>();
         for (HostEdge edge : graph.outEdgeSet(node)) {
-            if (!edge.isBinary()) {
+            if (edge.getRole() != BINARY) {
                 nodeLabels.add(edge.label());
             }
         }
@@ -65,7 +66,7 @@ public final class Util {
     public static Set<TypeLabel> getBinaryLabels(HostGraph graph) {
         Set<TypeLabel> result = new HashSet<TypeLabel>();
         for (HostEdge edge : graph.edgeSet()) {
-            if (edge.isBinary()) {
+            if (edge.getRole() == BINARY) {
                 result.add(edge.label());
             }
         }

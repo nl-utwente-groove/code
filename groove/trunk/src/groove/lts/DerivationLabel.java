@@ -17,14 +17,13 @@
 package groove.lts;
 
 import groove.graph.AbstractLabel;
-import groove.graph.Label;
 import groove.trans.AbstractEvent;
 import groove.trans.HostNode;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 
 /** Class of labels that can appear on graph transitions. */
-public class DerivationLabel extends AbstractLabel implements Label {
+public class DerivationLabel extends AbstractLabel {
     /** 
      * Constructs a new label on the basis of a given rule event and list
      * of created nodes.

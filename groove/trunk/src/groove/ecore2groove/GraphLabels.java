@@ -16,7 +16,7 @@
  */
 package groove.ecore2groove;
 
-import groove.graph.LabelKind;
+import groove.graph.EdgeRole;
 import groove.view.aspect.AspectKind;
 
 import java.util.HashSet;
@@ -42,8 +42,8 @@ public class GraphLabels {
     private static final String INT_PREFIX = AspectKind.INT.getPrefix();
     private static final String REAL_PREFIX = AspectKind.REAL.getPrefix();
     private static final String STRING_PREFIX = AspectKind.STRING.getPrefix();
-    private static final String FLAG_PREFIX = LabelKind.FLAG.getPrefix();
-    private static final String TYPE_PREFIX = LabelKind.NODE_TYPE.getPrefix();
+    private static final String FLAG_PREFIX = EdgeRole.FLAG.getPrefix();
+    private static final String TYPE_PREFIX = EdgeRole.NODE_TYPE.getPrefix();
 
     private static final Set<String> boolTypes = new HashSet<String>();
     private static final Set<String> intTypes = new HashSet<String>();

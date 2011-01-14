@@ -42,7 +42,7 @@ public class TypeNode implements Node {
      * @param nr the number of the new node
      */
     public TypeNode(int nr) {
-        this(nr, TypeLabel.createLabel(LabelKind.NODE_TYPE, "t0:" + nr));
+        this(nr, TypeLabel.createLabel(EdgeRole.NODE_TYPE, "t0:" + nr));
     }
 
     /** 

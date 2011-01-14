@@ -245,7 +245,7 @@ abstract public class AbstractGraphState extends
             updateClosed();
             // reset the schedule to the beginning if the state was not 
             // completely explored
-            if (!complete && getCtrlState() != null) {
+            if (!complete) {
                 setSchedule(getCtrlState().getSchedule());
             }
             return true;
@@ -366,13 +366,11 @@ abstract public class AbstractGraphState extends
      * This should occur at initialisation.
      */
     protected final void setCtrlState(CtrlState ctrlState) {
-        if (ctrlState != null) {
-            this.schedule = ctrlState.getSchedule();
-        }
+        this.schedule = ctrlState.getSchedule();
     }
 
     public CtrlState getCtrlState() {
-        return this.schedule == null ? null : this.schedule.getState();
+        return this.schedule.getState();
     }
 
     @Override

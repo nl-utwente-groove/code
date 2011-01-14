@@ -320,10 +320,10 @@ public class LabelStore extends DefaultFixable implements Cloneable {
     /** 
      * Returns the set of labels of a given kind.
      */
-    public Set<TypeLabel> getLabels(LabelKind kind) {
+    public Set<TypeLabel> getLabels(EdgeRole kind) {
         Set<TypeLabel> result = new HashSet<TypeLabel>();
         for (TypeLabel label : getLabels()) {
-            if (label.getKind() == kind) {
+            if (label.getRole() == kind) {
                 result.add(label);
             }
         }
@@ -578,7 +578,7 @@ public class LabelStore extends DefaultFixable implements Cloneable {
                         "Invalid node type identifier '%s'", splitDecl[0]);
                 }
                 TypeLabel supertype =
-                    TypeLabel.createLabel(LabelKind.NODE_TYPE, splitDecl[0]);
+                    TypeLabel.createLabel(EdgeRole.NODE_TYPE, splitDecl[0]);
                 Set<TypeLabel> subtypes = result.get(supertype);
                 if (subtypes == null) {
                     result.put(supertype, subtypes = new TreeSet<TypeLabel>());
@@ -591,7 +591,7 @@ public class LabelStore extends DefaultFixable implements Cloneable {
                         throw new FormatException(
                             "Invalid node type identifier '%s'", subtype);
                     }
-                    subtypes.add(TypeLabel.createLabel(LabelKind.NODE_TYPE, subtype));
+                    subtypes.add(TypeLabel.createLabel(EdgeRole.NODE_TYPE, subtype));
                 }
             }
         }

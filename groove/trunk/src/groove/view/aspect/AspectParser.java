@@ -18,7 +18,7 @@ package groove.view.aspect;
 
 import groove.algebra.Algebras;
 import groove.graph.GraphRole;
-import groove.graph.LabelKind;
+import groove.graph.EdgeRole;
 import groove.util.ExprParser;
 import groove.view.FormatException;
 
@@ -113,7 +113,7 @@ public class AspectParser {
         int result = text.indexOf(SEPARATOR);
         if (result > 0) {
             if (!Character.isLetter(text.charAt(0))
-                || !LabelKind.parse(text).two().equals(text)) {
+                || !EdgeRole.parseLabel(text).two().equals(text)) {
                 result = -1;
             }
         }
@@ -154,7 +154,7 @@ public class AspectParser {
     private void setInnerText(String text, AspectLabel result) {
         // special case: we will treat labels of the form type:prim 
         // (with prim a primitive type) as prim:
-        String typePrefix = LabelKind.NODE_TYPE.getPrefix();
+        String typePrefix = EdgeRole.NODE_TYPE.getPrefix();
         if (text.startsWith(typePrefix)) {
             Aspect primType =
                 Aspect.getAspect(text.substring(typePrefix.length()));

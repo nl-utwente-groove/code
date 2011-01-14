@@ -4,7 +4,7 @@ import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.GraphRole;
 import groove.graph.Label;
-import groove.graph.LabelKind;
+import groove.graph.EdgeRole;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ProductNode;
@@ -215,7 +215,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             if (!attrAspect.hasContent()) {
                 dataLine =
                     TypeLabel.toHtmlString(TypeLabel.createLabel(
-                        LabelKind.NODE_TYPE, attrAspect.getKind().getName()));
+                        EdgeRole.NODE_TYPE, attrAspect.getKind().getName()));
             } else if (!getJGraph().isShowNodeIdentities()) {
                 // show constants only if they are not already shown as node identities
                 dataLine = attrAspect.getContentString();
@@ -340,7 +340,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 if (attrAspect.hasContent()) {
                     result.add(TypeLabel.createLabel(attrAspect.getContentString()));
                 } else {
-                    result.add(TypeLabel.createLabel(LabelKind.NODE_TYPE,
+                    result.add(TypeLabel.createLabel(EdgeRole.NODE_TYPE,
                         attrAspect.getKind().getName()));
                 }
             }

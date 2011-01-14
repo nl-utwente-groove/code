@@ -20,12 +20,12 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
 
     /** Creates a label with the given kind-prefixed text. */
     public TypeLabel createLabel(String text) {
-        Pair<LabelKind,String> parsedLabel = LabelKind.parse(text);
+        Pair<EdgeRole,String> parsedLabel = EdgeRole.parseLabel(text);
         return createLabel(parsedLabel.one(), parsedLabel.two());
     }
 
     /** Returns a label with the given text and label kind. */
-    public TypeLabel createLabel(LabelKind kind, String text) {
+    public TypeLabel createLabel(EdgeRole kind, String text) {
         assert text != null : "Label text of type label should not be null";
         return newLabel(text, kind);
     }
@@ -69,7 +69,7 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
      * @param text the label text being looked up
      * @return the (reused or new) label object.
      */
-    private TypeLabel newLabel(String text, LabelKind kind) {
+    private TypeLabel newLabel(String text, EdgeRole kind) {
         Map<String,TypeLabel> labelMap = this.labelMaps.get(kind);
         TypeLabel result = labelMap.get(text);
         if (result == null) {
@@ -86,10 +86,10 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
      * The internal translation table from strings to standard (non-node type)
      * label indices.
      */
-    private final Map<LabelKind,Map<String,TypeLabel>> labelMaps =
-        new EnumMap<LabelKind,Map<String,TypeLabel>>(LabelKind.class);
+    private final Map<EdgeRole,Map<String,TypeLabel>> labelMaps =
+        new EnumMap<EdgeRole,Map<String,TypeLabel>>(EdgeRole.class);
     {
-        for (LabelKind kind : EnumSet.allOf(LabelKind.class)) {
+        for (EdgeRole kind : EnumSet.allOf(EdgeRole.class)) {
             this.labelMaps.put(kind, new HashMap<String,TypeLabel>());
         }
     }

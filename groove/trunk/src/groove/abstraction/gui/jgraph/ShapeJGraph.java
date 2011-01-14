@@ -16,6 +16,7 @@
  */
 package groove.abstraction.gui.jgraph;
 
+import static groove.graph.EdgeRole.BINARY;
 import groove.abstraction.EdgeSignature;
 import groove.abstraction.EquivClass;
 import groove.abstraction.EquivRelation;
@@ -153,7 +154,7 @@ public class ShapeJGraph extends JGraph {
     private void createEdges() {
         ArrayList<ShapeJEdge> edges = new ArrayList<ShapeJEdge>();
         for (ShapeEdge edgeS : this.shape.edgeSet()) {
-            if (!edgeS.isBinary()) {
+            if (edgeS.getRole() != BINARY) {
                 continue;
             }
             EdgeSignature outEs = this.shape.getEdgeOutSignature(edgeS);
@@ -186,7 +187,7 @@ public class ShapeJGraph extends JGraph {
         this.getEdgeToMultMaps(edge2OutMult, edge2InMult);
 
         for (ShapeEdge edgeS : this.shape.edgeSet()) {
-            if (!edgeS.isBinary()) {
+            if (edgeS.getRole() != BINARY) {
                 continue;
             }
             ShapeJEdge jEdge = this.edgeMap.get(edgeS);
@@ -265,7 +266,7 @@ public class ShapeJGraph extends JGraph {
         }
 
         for (ShapeEdge edge : this.shape.edgeSet()) {
-            if (edge.isBinary()) {
+            if (edge.getRole() == BINARY) {
                 edge2OutMult.put(edge, null);
                 edge2InMult.put(edge, null);
             }

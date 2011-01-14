@@ -26,29 +26,31 @@ import groove.util.Fixable;
  */
 public abstract class AbstractLabel implements Cloneable, Label, Fixable {
     @Override
-    public boolean isNodeType() {
-        return getKind() == LabelKind.NODE_TYPE;
+    final public boolean isNodeType() {
+        return getRole() == EdgeRole.NODE_TYPE;
     }
 
     @Override
-    public boolean isFlag() {
-        return getKind() == LabelKind.FLAG;
+    final public boolean isFlag() {
+        return getRole() == EdgeRole.FLAG;
     }
 
     @Override
-    public boolean isBinary() {
-        return getKind() == LabelKind.BINARY;
+    final public boolean isBinary() {
+        return getRole() == EdgeRole.BINARY;
     }
 
     /** Labels are binary by default. */
-    public LabelKind getKind() {
-        return LabelKind.BINARY;
+    @Override
+    public EdgeRole getRole() {
+        return EdgeRole.BINARY;
     }
 
     /**
      * This implementation compares this label's class, and then its
      * {@link #text()} with that of <code>obj</code>.
      */
+    @Override
     public int compareTo(Label obj) {
         /* All node type labels are smaller than all others. */
         int result = boolToInt(obj.isNodeType()) - boolToInt(isNodeType());
@@ -100,7 +102,7 @@ public abstract class AbstractLabel implements Cloneable, Label, Fixable {
         if (!(obj instanceof Label)) {
             return false;
         }
-        if (getKind() != ((Label) obj).getKind()) {
+        if (getRole() != ((Label) obj).getRole()) {
             return false;
         }
         return text().equals(((Label) obj).text());
@@ -137,7 +139,7 @@ public abstract class AbstractLabel implements Cloneable, Label, Fixable {
      */
     final protected int getKindMask() {
         int mask;
-        switch (getKind()) {
+        switch (getRole()) {
         case NODE_TYPE:
             mask = NODE_TYPE_MASK;
             break;

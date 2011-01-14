@@ -23,6 +23,7 @@ import groove.abstraction.Multiplicity;
 import groove.abstraction.PreMatch;
 import groove.abstraction.Shape;
 import groove.abstraction.ShapeEdge;
+import groove.graph.EdgeRole;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
 import groove.trans.Rule;
@@ -177,7 +178,7 @@ public class TestMaterialisation {
     private Set<ShapeEdge> getBinaryEdges(Shape shape) {
         Set<ShapeEdge> result = new HashSet<ShapeEdge>();
         for (ShapeEdge edge : shape.edgeSet()) {
-            if (edge.isBinary()) {
+            if (edge.getRole() == EdgeRole.BINARY) {
                 result.add(edge);
             }
         }

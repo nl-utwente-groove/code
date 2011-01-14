@@ -16,6 +16,7 @@
  */
 package groove.abstraction;
 
+import static groove.graph.EdgeRole.BINARY;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Label;
@@ -245,7 +246,7 @@ public final class Shape extends DefaultHostGraph {
         }
         sb.append("Edges:\n");
         for (ShapeEdge e : edgeSet()) {
-            if (!e.isBinary()) {
+            if (e.getRole() != BINARY) {
                 continue;
             }
             String frozen = "";
@@ -295,7 +296,7 @@ public final class Shape extends DefaultHostGraph {
     public boolean addEdgeWithoutCheck(HostEdge edge) {
         assert !this.isFrozen();
         boolean added = super.addEdgeWithoutCheck(edge);
-        if (added && edge.isBinary()) {
+        if (added && edge.getRole() == BINARY) {
             ShapeEdge edgeS = (ShapeEdge) edge;
             Multiplicity zero = Multiplicity.getMultOf(0);
             Multiplicity one = Multiplicity.getMultOf(1);
@@ -939,7 +940,7 @@ public final class Shape extends DefaultHostGraph {
     private void copyUnaryEdges(ShapeNode from, ShapeNode to) {
         assert !this.isFrozen();
         for (HostEdge edge : this.outEdgeSet(from)) {
-            if (!edge.isBinary()) {
+            if (edge.getRole() != BINARY) {
                 TypeLabel label = edge.label();
                 this.addEdge(to, label, to);
             }
@@ -950,7 +951,7 @@ public final class Shape extends DefaultHostGraph {
     public Set<ShapeEdge> outBinaryEdgeSet(ShapeNode source) {
         Set<ShapeEdge> result = new HashSet<ShapeEdge>();
         for (ShapeEdge edge : this.outEdgeSet(source)) {
-            if (edge.isBinary()) {
+            if (edge.getRole() == BINARY) {
                 result.add(edge);
             }
         }
@@ -961,7 +962,7 @@ public final class Shape extends DefaultHostGraph {
     public Set<ShapeEdge> inBinaryEdgeSet(ShapeNode target) {
         Set<ShapeEdge> result = new HashSet<ShapeEdge>();
         for (ShapeEdge edge : this.edgeSet(target)) {
-            if (edge.isBinary() && edge.target().equals(target)) {
+            if (edge.getRole() == BINARY && edge.target().equals(target)) {
                 result.add(edge);
             }
         }

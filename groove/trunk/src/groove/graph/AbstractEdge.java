@@ -188,18 +188,8 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
     }
 
     @Override
-    public boolean isNodeType() {
-        return label().isNodeType();
-    }
-
-    @Override
-    public boolean isFlag() {
-        return label().isFlag();
-    }
-
-    @Override
-    public boolean isBinary() {
-        return label().isBinary();
+    public EdgeRole getRole() {
+        return label().getRole();
     }
 
     /**

@@ -32,35 +32,28 @@ public interface Label extends Comparable<Label>, java.io.Serializable {
     String text();
 
     /**
-     * Returns the label kind of this label.
+     * Returns the edge role of this label.
      */
-    LabelKind getKind();
+    EdgeRole getRole();
 
     /**
-     * Indicates if this label stands for a node type. Equivalent to {@code
-     * getType() == LabelKind.TYPE}.
-     * @see LabelKind#NODE_TYPE
+     * Indicates if this label stands for a node type. Convenience method for
+     * {@code getRole() == EdgeRole.NODE_TYPE}.
+     * @see EdgeRole#NODE_TYPE
      */
     boolean isNodeType();
 
     /**
-     * Indicates if this label stands for a flag. Equivalent to {@code getType()
-     * == LabelKind.FLAG}.
-     * @see LabelKind#FLAG
+     * Indicates if this label stands for a flag. Convenience method for
+     * {@code getRole() == EdgeRole.FLAG}.
+     * @see EdgeRole#FLAG
      */
     boolean isFlag();
 
     /**
-     * Indicates if this is a (normal) binary edge label. Equivalent to {@code
-     * getType() == BINARY}.
-     * @see LabelKind#BINARY
+     * Indicates if this is a (normal) binary edge label. Convenience method for
+     * {@code getRole() == EdgeRole.BINARY}.
+     * @see EdgeRole#BINARY
      */
     boolean isBinary();
-    //
-    //    /** Type indicator of a label for a (normal) binary edge. @see #getType() */
-    //    int BINARY = 2;
-    //    /** Type indicator of a node type label. @see #getType() */
-    //    int NODE_TYPE = 0;
-    //    /** Type indicator of a flag label. @see #getType() */
-    //    int FLAG = 1;
 }

@@ -16,6 +16,7 @@
  */
 package groove.abstraction;
 
+import static groove.graph.EdgeRole.BINARY;
 import groove.abstraction.gui.ShapeDialog;
 import groove.graph.TypeLabel;
 import groove.util.Duo;
@@ -473,7 +474,7 @@ public final class NodeSingEqSystem extends EquationSystem {
 
     private void buildEdgeToVarsMap(Map<ShapeEdge,Pair<MultVar,MultVar>> edgeMap) {
         for (ShapeEdge edge : this.shape.edgeSet()) {
-            if (edge.isBinary()) {
+            if (edge.getRole() == BINARY) {
                 edgeMap.put(edge, new Pair<MultVar,MultVar>(null, null));
             }
         }

@@ -23,7 +23,7 @@ import static groove.util.ExprParser.PLACEHOLDER;
 import static groove.util.ExprParser.RPAR_CHAR;
 import static groove.util.ExprParser.SINGLE_QUOTE_CHAR;
 import groove.graph.Label;
-import groove.graph.LabelKind;
+import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
 import groove.trans.RuleLabel;
 import groove.util.ExprParser;
@@ -125,7 +125,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * If this is a {@link RegExpr.Wildcard}, returns the kind of label
      * the wildcard matches against; otherwise returns {@code -1}.
      */
-    public LabelKind getWildcardKind() {
+    public EdgeRole getWildcardKind() {
         if (this instanceof Wildcard) {
             return ((Wildcard) this).getKind();
         } else {
@@ -1429,7 +1429,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         /** Returns the kind of labels accepted by this wildcard. */
-        public LabelKind getKind() {
+        public EdgeRole getKind() {
             return getGuard().getKind();
         }
 
@@ -1473,11 +1473,11 @@ abstract public class RegExpr { // implements VarSetSupport {
             }
             String prefix = expr.substring(0, index);
             // derive the type of labels the wildcard should match
-            Pair<LabelKind,String> parsedPrefix = LabelKind.parse(prefix);
+            Pair<EdgeRole,String> parsedPrefix = EdgeRole.parseLabel(prefix);
             if (parsedPrefix.two().length() > 0) {
                 throw error;
             }
-            LabelKind kind = parsedPrefix.one();
+            EdgeRole kind = parsedPrefix.one();
             // parse the identifier and constraint expression
             String identifier = null;
             LabelConstraint constraint = new LabelConstraint(kind);
@@ -1602,7 +1602,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             /** Constructs a new constraint.
              * @param kind The kind of labels tested for; only labels of this type can ever satisfy the constraint
              */
-            LabelConstraint(LabelKind kind) {
+            LabelConstraint(EdgeRole kind) {
                 this.kind = kind;
             }
 
@@ -1636,7 +1636,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                     int index = this.textList.indexOf(oldLabel.text());
                     List<String> newTextList =
                         new ArrayList<String>(this.textList);
-                    if (newLabel.getKind() == this.kind) {
+                    if (newLabel.getRole() == this.kind) {
                         newTextList.set(index, newLabel.text());
                     } else {
                         newTextList.remove(index);
@@ -1656,7 +1656,7 @@ abstract public class RegExpr { // implements VarSetSupport {
 
             @Override
             public boolean isSatisfied(TypeLabel value) {
-                return this.kind == value.getKind()
+                return this.kind == value.getRole()
                     && (this.labelSet == null || this.negated != this.labelSet.contains(value));
             }
 
@@ -1676,7 +1676,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             }
 
             /** Returns the kind of labels accepted by this constraint. */
-            public LabelKind getKind() {
+            public EdgeRole getKind() {
                 return this.kind;
             }
 
@@ -1686,8 +1686,8 @@ abstract public class RegExpr { // implements VarSetSupport {
             private Set<TypeLabel> labelSet;
             /** Flag indicating if we are testing for absence or presence. */
             private boolean negated;
-            /** The type of label we are testing for. See {@link Label#getKind()} */
-            private final LabelKind kind;
+            /** The type of label we are testing for. See {@link Label#getRole()} */
+            private final EdgeRole kind;
         }
     }
 
@@ -1748,7 +1748,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          */
         @Override
         public String toString() {
-            return LabelKind.NODE_TYPE.getPrefix() + super.toString()
+            return EdgeRole.NODE_TYPE.getPrefix() + super.toString()
                 + getTypeLabel();
         }
 
@@ -1765,16 +1765,16 @@ abstract public class RegExpr { // implements VarSetSupport {
                 return null;
             }
             // separate the expression into operator and text
-            Pair<LabelKind,String> parsedExpr =
-                LabelKind.parse(expr.substring(0, index));
+            Pair<EdgeRole,String> parsedExpr =
+                EdgeRole.parseLabel(expr.substring(0, index));
             String text = expr.substring(index + 1);
-            if (parsedExpr.one() != LabelKind.NODE_TYPE
+            if (parsedExpr.one() != EdgeRole.NODE_TYPE
                 || parsedExpr.two().length() != 0) {
                 throw new FormatException(
                     "Sharp operator '%s' must be preceded by '%s'",
-                    getOperator(), LabelKind.NODE_TYPE.getPrefix());
+                    getOperator(), EdgeRole.NODE_TYPE.getPrefix());
             }
-            return newInstance(TypeLabel.createLabel(LabelKind.NODE_TYPE, text, true));
+            return newInstance(TypeLabel.createLabel(EdgeRole.NODE_TYPE, text, true));
         }
 
         /** Returns a {@link Wildcard} with a given identifier. */

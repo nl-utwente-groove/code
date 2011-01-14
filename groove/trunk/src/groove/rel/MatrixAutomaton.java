@@ -19,7 +19,7 @@ package groove.rel;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.ElementFactory;
-import groove.graph.LabelKind;
+import groove.graph.EdgeRole;
 import groove.graph.LabelStore;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.TypeLabel;
@@ -806,7 +806,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
     /** Returns the dummy label for a given label kind.
      *  The dummy labels can be used to match wildcards in case there is no proper match for them. 
      */
-    static public TypeLabel getDummyLabel(LabelKind kind) {
+    static public TypeLabel getDummyLabel(EdgeRole kind) {
         return DUMMY_LABELS.get(kind);
     }
 
@@ -814,10 +814,10 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
      * Array of dummy labels for each label kind.
      * Can be used to match wildcards in case there is no proper match for them. 
      */
-    private static final Map<LabelKind,TypeLabel> DUMMY_LABELS =
-        new EnumMap<LabelKind,TypeLabel>(LabelKind.class);
+    private static final Map<EdgeRole,TypeLabel> DUMMY_LABELS =
+        new EnumMap<EdgeRole,TypeLabel>(EdgeRole.class);
     static {
-        for (LabelKind kind : EnumSet.allOf(LabelKind.class)) {
+        for (EdgeRole kind : EnumSet.allOf(EdgeRole.class)) {
             DUMMY_LABELS.put(kind,
                 TypeLabel.createLabel(kind, DUMMY_LABEL_TEXT));
         }

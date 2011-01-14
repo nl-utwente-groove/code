@@ -16,6 +16,7 @@ package groove.lts;
 
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
+import groove.graph.EdgeRole;
 import groove.trans.DefaultApplication;
 import groove.trans.DeltaApplier;
 import groove.trans.DeltaHostGraph;
@@ -46,14 +47,10 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         this.event = event;
         this.addedNodes = addedNodes;
         CtrlState sourceCtrlState = source.getCtrlState();
-        if (sourceCtrlState == null) {
-            this.boundNodes = null;
-        } else {
-            CtrlTransition ctrlTrans =
-                sourceCtrlState.getTransition(event.getRule());
-            setCtrlState(ctrlTrans.target());
-            this.boundNodes = computeBoundNodes(ctrlTrans);
-        }
+        CtrlTransition ctrlTrans =
+            sourceCtrlState.getTransition(event.getRule());
+        setCtrlState(ctrlTrans.target());
+        this.boundNodes = computeBoundNodes(ctrlTrans);
     }
 
     public RuleEvent getEvent() {
@@ -145,18 +142,13 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     }
 
     @Override
-    public boolean isNodeType() {
-        return false;
-    }
-
-    @Override
-    public boolean isFlag() {
-        return !getEvent().getRule().isModifying();
-    }
-
-    @Override
-    public boolean isBinary() {
-        return !isFlag();
+    public EdgeRole getRole() {
+        if (getEvent().getRule().isModifying()
+            || getCtrlTransition().isModifying()) {
+            return EdgeRole.BINARY;
+        } else {
+            return EdgeRole.FLAG;
+        }
     }
 
     /**

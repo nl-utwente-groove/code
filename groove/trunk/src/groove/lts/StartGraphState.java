@@ -19,9 +19,7 @@ public class StartGraphState extends AbstractGraphState {
         setFrozenGraph(getCache().computeFrozenGraph(graph));
         this.graph = getCache().getGraph();
         CtrlAut ctrlAut = record.getGrammar().getCtrlAut();
-        if (ctrlAut != null) {
-            setCtrlState(ctrlAut.getStart());
-        }
+        setCtrlState(ctrlAut.getStart());
     }
 
     @Override
