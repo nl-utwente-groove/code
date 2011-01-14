@@ -129,7 +129,7 @@ public class GraphGrammar extends RuleSystem {
     public void setFixed() throws FormatException {
         getStartGraph().setFixed();
         super.setFixed();
-        assert this.ctrlAut == null : "Grammar must have control";
+        assert this.ctrlAut != null : "Grammar must have control";
     }
 
     /** Combines the consistency errors in the rules and start graph. */
