@@ -252,7 +252,8 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
      */
     protected GraphJCell addEdge(E edge) {
         // first try to add the edge as vertex label to its source vertex
-        if (!edge.label().isBinary() || getLayoutMap().getLayout(edge) == null) {
+        if (edge.source() == edge.target()
+            && (!edge.label().isBinary() || getLayoutMap().getLayout(edge) == null)) {
             GraphJVertex jVertex = getJCellForNode(edge.source());
             if (jVertex.addJVertexLabel(edge)) {
                 // yes, the edge could be added here; we're done

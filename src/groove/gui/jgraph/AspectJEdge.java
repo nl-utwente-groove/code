@@ -1,6 +1,5 @@
 package groove.gui.jgraph;
 
-import static groove.gui.jgraph.JAttr.RULE_EDGE_ATTR;
 import static groove.view.aspect.AspectKind.ARGUMENT;
 import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.REMARK;
@@ -245,7 +244,8 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     @Override
     protected AttributeMap createAttributes() {
-        AttributeMap result = RULE_EDGE_ATTR.get(this.aspect).clone();
+        AttributeMap result =
+            AspectJGraph.ASPECT_EDGE_ATTR.get(this.aspect).clone();
         AspectEdge edge = getEdge();
         RuleLabel ruleModelLabel = edge == null ? null : edge.getRuleLabel();
         if (ruleModelLabel != null) {

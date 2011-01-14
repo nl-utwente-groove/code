@@ -72,9 +72,9 @@ public class CtrlJEdge extends GraphJEdge {
     protected AttributeMap createAttributes() {
         AttributeMap result;
         if (!(getEdge()).label().getGuard().isEmpty()) {
-            result = JAttr.CONTROL_FAILURE_EDGE_ATTR.clone();
+            result = CtrlJGraph.CONTROL_FAILURE_EDGE_ATTR.clone();
         } else {
-            result = JAttr.CONTROL_EDGE_ATTR.clone();
+            result = CtrlJGraph.CONTROL_EDGE_ATTR.clone();
         }
         return result;
     }

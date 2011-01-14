@@ -140,7 +140,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     public void refreshAttributes() {
         AttributeMap result = createAttributes();
         if (isGrayedOut()) {
-            result.applyMap(JAttr.GRAYED_OUT_ATTR);
+            result.applyMap(JGraph.GRAYED_OUT_ATTR);
         }
         if (getAttributes() != null) {
             getAttributes().applyMap(result);
@@ -155,7 +155,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
      * method directly.
      */
     protected AttributeMap createAttributes() {
-        return JAttr.DEFAULT_EDGE_ATTR.clone();
+        return JGraph.DEFAULT_EDGE_ATTR.clone();
     }
 
     @Override

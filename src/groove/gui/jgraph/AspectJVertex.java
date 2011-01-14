@@ -413,7 +413,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     @Override
     protected AttributeMap createAttributes() {
-        AttributeMap result = JAttr.RULE_NODE_ATTR.get(this.aspect).clone();
+        AttributeMap result = AspectJGraph.ASPECT_NODE_ATTR.get(this.aspect).clone();
         if (getJGraph().hasActiveEditor()) {
             GraphConstants.setEditable(result, true);
         }

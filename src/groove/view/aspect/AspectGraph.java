@@ -315,8 +315,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
         if (!graphChanged) {
             return this;
         } else {
-            result.setFixed();
             GraphInfo.transfer(this, result, elementMap);
+            GraphInfo.setErrors(result, Collections.<FormatError>emptyList());
+            result.setFixed();
             return fromPlainGraph(result);
         }
     }

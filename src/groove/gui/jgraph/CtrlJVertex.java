@@ -19,7 +19,7 @@ public class CtrlJVertex extends GraphJVertex {
      * {@link CtrlState}) in an LTS model.
      */
     CtrlJVertex(CtrlJGraph jGraph, CtrlState node) {
-        super(jGraph, node, false);
+        super(jGraph, node);
     }
 
     @Override
@@ -65,21 +65,21 @@ public class CtrlJVertex extends GraphJVertex {
     /**
      * This implementation adds special attributes for the start state, open
      * states, final states, and the active state.
-     * @see JAttr#LTS_NODE_ATTR
-     * @see JAttr#LTS_START_NODE_ATTR
-     * @see JAttr#LTS_OPEN_NODE_ATTR
-     * @see JAttr#LTS_FINAL_NODE_ATTR
-     * @see JAttr#LTS_NODE_ACTIVE_CHANGE
+     * @see LTSJGraph#LTS_NODE_ATTR
+     * @see LTSJGraph#LTS_START_NODE_ATTR
+     * @see LTSJGraph#LTS_OPEN_NODE_ATTR
+     * @see LTSJGraph#LTS_FINAL_NODE_ATTR
+     * @see LTSJGraph#LTS_NODE_ACTIVE_CHANGE
      */
     @Override
     protected AttributeMap createAttributes() {
         AttributeMap result;
         if (isStart()) {
-            result = JAttr.CONTROL_START_NODE_ATTR.clone();
+            result = CtrlJGraph.CONTROL_START_NODE_ATTR.clone();
         } else if (isFinal()) {
-            result = JAttr.CONTROL_SUCCESS_NODE_ATTR.clone();
+            result = CtrlJGraph.CONTROL_SUCCESS_NODE_ATTR.clone();
         } else {
-            result = JAttr.CONTROL_NODE_ATTR.clone();
+            result = CtrlJGraph.CONTROL_NODE_ATTR.clone();
         }
 
         return result;
