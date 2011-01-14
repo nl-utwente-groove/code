@@ -17,7 +17,6 @@
 package groove.gui.jgraph;
 
 import groove.graph.Element;
-import groove.gui.Exporter;
 import groove.gui.ModelCheckingMenu;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
@@ -30,17 +29,15 @@ import groove.lts.GraphTransition;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
-
-import org.jgraph.graph.DefaultGraphCell;
 
 /**
  * Implementation of MyJGraph that provides the proper popup menu. To construct
@@ -52,8 +49,7 @@ public class LTSJGraph extends JGraph {
     public LTSJGraph(Simulator simulator) {
         super(simulator.getOptions(), true);
         this.simulator = simulator;
-        addMouseListener(new MyMouseListener());
-        getGraphLayoutCache().setSelectsAllInsertedCells(false);
+        setExporter(simulator.getExporter());
     }
 
     /** Specialises the return type to a {@link LTSJModel}. */
@@ -156,14 +152,94 @@ public class LTSJGraph extends JGraph {
     }
 
     @Override
-    protected Exporter getExporter() {
-        return getSimulator().getExporter();
-    }
-
-    @Override
     protected String getExportActionName() {
         return Options.EXPORT_LTS_ACTION_NAME;
     }
+
+    /**
+     * Returns the active transition of the LTS, if any. The active transition
+     * is the one currently selected in the simulator. Returns <tt>null</tt> if
+     * no transition is selected.
+     */
+    public GraphTransition getActiveTransition() {
+        return this.activeTransition;
+    }
+
+    /**
+     * Returns the active state of the LTS, if any. The active transition is the
+     * one currently displayed in the state frame. Returns <tt>null</tt> if no
+     * state is active (which should occur only if no grammar is loaded and
+     * hence the LTS is empty).
+     */
+    public GraphState getActiveState() {
+        return this.activeState;
+    }
+
+    /**
+     * Sets the active state and transition to a new value. Both old and new
+     * values may be <tt>null</tt>.
+     * @param state the new active state
+     * @param trans the new active transition
+     */
+    public void setActive(GraphState state, GraphTransition trans) {
+        Set<GraphJCell> changedCells = new HashSet<GraphJCell>();
+        GraphTransition previousTrans = this.activeTransition;
+        if (previousTrans != trans) {
+            this.activeTransition = trans;
+            if (previousTrans != null) {
+                LTSJCell jCell =
+                    (LTSJCell) getModel().getJCellForEdge(previousTrans);
+                assert jCell != null : String.format(
+                    "No image for %s in jModel", previousTrans);
+                if (jCell.setActive(false)) {
+                    changedCells.add(jCell);
+                }
+            }
+            if (trans != null) {
+                LTSJCell jCell = (LTSJCell) getModel().getJCellForEdge(trans);
+                assert jCell != null : String.format(
+                    "No image for %s in jModel", trans);
+                if (jCell.setActive(true)) {
+                    changedCells.add(jCell);
+                }
+            }
+        }
+        GraphState previousState = this.activeState;
+        if (state != previousState) {
+            this.activeState = state;
+            if (previousState != null) {
+                LTSJVertex jCell =
+                    (LTSJVertex) getModel().getJCellForNode(previousState);
+                if (jCell.setActive(false)) {
+                    changedCells.add(jCell);
+                }
+            }
+            if (state != null) {
+                LTSJVertex jCell =
+                    (LTSJVertex) getModel().getJCellForNode(state);
+                if (jCell.setActive(true)) {
+                    changedCells.add(jCell);
+                }
+            }
+        }
+        if (!changedCells.isEmpty()) {
+            refreshCells(changedCells);
+        }
+    }
+
+    /**
+     * The active state of the LTS. Is null if there is no active state.
+     * @invariant activeState == null || ltsJModel.graph().contains(activeState)
+     */
+    private GraphState activeState;
+    /**
+     * The currently active transition of the LTS. The source node of
+     * emphasizedEdge (if non-null) is also emphasized. Is null if there is no
+     * currently emphasized edge.
+     * @invariant activeTransition == null ||
+     *            ltsJModel.graph().contains(activeTransition)
+     */
+    private GraphTransition activeTransition;
 
     /**
      * The simulator to which this j-graph is associated.
@@ -172,7 +248,7 @@ public class LTSJGraph extends JGraph {
 
     /** Initialises and returns the action to scroll to the active state or transition. */
     private Action getScrollToCurrentAction() {
-        if (getModel().getActiveTransition() == null) {
+        if (getActiveTransition() == null) {
             this.scrollToCurrentAction.setState(this.simulator.getCurrentState());
         } else {
             this.scrollToCurrentAction.setTransition(this.simulator.getCurrentTransition());
@@ -213,40 +289,6 @@ public class LTSJGraph extends JGraph {
          */
         public void setState(GraphState node) {
             putValue(Action.NAME, Options.SCROLL_TO_ACTION_NAME + " state");
-        }
-    }
-
-    /**
-     * Mouse listener that activates a state or transition on a single click,
-     * and switches to the state panel on a double click.
-     */
-    private class MyMouseListener extends MouseAdapter {
-        /** Empty constructor with correct visibility. */
-        MyMouseListener() {
-            // empty
-        }
-
-        @Override
-        public void mouseClicked(MouseEvent evt) {
-            if (evt.getButton() == MouseEvent.BUTTON1) {
-                // scale from screen to model
-                java.awt.Point loc = evt.getPoint();
-                // find cell in model coordinates
-                DefaultGraphCell cell =
-                    (DefaultGraphCell) getFirstCellForLocation(loc.x, loc.y);
-                if (cell instanceof LTSJEdge) {
-                    GraphTransition edge = ((LTSJEdge) cell).getEdge();
-                    getSimulator().setTransition(edge);
-                } else if (cell instanceof LTSJVertex) {
-                    GraphState node = ((LTSJVertex) cell).getNode();
-                    if (!getSimulator().getCurrentState().equals(node)) {
-                        getSimulator().setState(node);
-                    }
-                    if (evt.getClickCount() == 2) {
-                        getSimulator().exploreState(node);
-                    }
-                }
-            }
         }
     }
 

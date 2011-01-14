@@ -386,7 +386,7 @@ public class ShowHideMenu extends JMenu {
          * @param hidden <tt>true</tt> if the cells are to be changed to hidden
          */
         protected final void setHidden(Set<GraphJCell> cells, boolean hidden) {
-            this.jgraph.getModel().changeGrayedOut(cells, hidden);
+            this.jgraph.changeGrayedOut(cells, hidden);
         }
 
         /**
@@ -764,7 +764,7 @@ public class ShowHideMenu extends JMenu {
         @Override
         public void actionPerformed(ActionEvent evt) {
             LTSJGraph jGraph = (LTSJGraph) this.jgraph;
-            GraphState state = jGraph.getModel().getActiveState();
+            GraphState state = jGraph.getActiveState();
             this.trace = new ArrayList<GraphJCell>();
             while (state instanceof GraphNextState) {
                 this.trace.add(jGraph.getModel().getJCellForNode(state));

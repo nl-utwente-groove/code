@@ -20,8 +20,10 @@ import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import groove.graph.Element;
 import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.LTSJEdge;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
+import groove.gui.jgraph.LTSJVertex;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
@@ -101,11 +103,11 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
      * and edge, if any. Scrolls the view to the newly emphasised node.
      */
     public synchronized void setStateUpdate(GraphState state) {
-        getJModel().setActive(state, null);
+        getJGraph().setActive(state, null);
         // we do layouting here because it's too expensive to do it
         // every time a new state is added
         if (this.ltsListener.stateAdded && getJGraph().getLayouter() != null) {
-            getJModel().freeze();
+            getJGraph().freeze();
             getJGraph().getLayouter().start(false);
             this.ltsListener.stateAdded = false;
         }
@@ -119,8 +121,8 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
      * if any. Scrolls the view to the newly emphasised edge.
      */
     public synchronized void setTransitionUpdate(GraphTransition transition) {
-        getJModel().setActive(transition.source(), transition);
-        conditionalScrollTo(getJModel().getActiveTransition());
+        getJGraph().setActive(transition.source(), transition);
+        conditionalScrollTo(getJGraph().getActiveTransition());
     }
 
     /**
@@ -128,7 +130,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
      */
     public void setMatchUpdate(RuleMatch match) {
         if (isGTSactivated()) {
-            getJModel().setActive(getJModel().getActiveState(), null);
+            getJGraph().setActive(getSimulator().getCurrentState(), null);
         }
     }
 
@@ -137,7 +139,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
      */
     public synchronized void setRuleUpdate(RuleName name) {
         if (isGTSactivated()) {
-            getJModel().setActive(getJModel().getActiveState(), null);
+            getJGraph().setActive(getSimulator().getCurrentState(), null);
         }
     }
 
@@ -349,7 +351,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
             // during automatic generation, we do not always have vertices for
             // all states
             if (jCell != null) {
-                getJModel().refresh(Collections.singleton(jCell));
+                getJGraph().refreshCells(Collections.singleton(jCell));
             }
             refreshStatus();
         }
@@ -375,6 +377,24 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
                     getSimulator().startSimulation();
                 } else if (evt.isControlDown()) {
                     getSimulator().setGraphPanel(getSimulator().getStatePanel());
+                } else {
+                    // scale from screen to model
+                    java.awt.Point loc = evt.getPoint();
+                    // find cell in model coordinates
+                    GraphJCell cell =
+                        getJGraph().getFirstCellForLocation(loc.x, loc.y);
+                    if (cell instanceof LTSJEdge) {
+                        GraphTransition edge = ((LTSJEdge) cell).getEdge();
+                        getSimulator().setTransition(edge);
+                    } else if (cell instanceof LTSJVertex) {
+                        GraphState node = ((LTSJVertex) cell).getNode();
+                        if (!getSimulator().getCurrentState().equals(node)) {
+                            getSimulator().setState(node);
+                        }
+                        if (evt.getClickCount() == 2) {
+                            getSimulator().exploreState(node);
+                        }
+                    }
                 }
             }
         }

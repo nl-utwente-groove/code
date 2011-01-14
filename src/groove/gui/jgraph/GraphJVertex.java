@@ -354,6 +354,20 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     }
 
     @Override
+    final public boolean isLayoutable() {
+        return this.layoutable;
+    }
+
+    @Override
+    final public boolean setLayoutable(boolean layedOut) {
+        boolean result = layedOut != this.layoutable;
+        if (result) {
+            this.layoutable = layedOut;
+        }
+        return result;
+    }
+
+    @Override
     final public boolean isGrayedOut() {
         return this.grayedOut;
     }
@@ -373,6 +387,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     }
 
     private final JGraph jGraph;
+    private boolean layoutable;
     private boolean grayedOut;
     /**
      * An indicator whether the vertex can be labelled (otherwise labels are

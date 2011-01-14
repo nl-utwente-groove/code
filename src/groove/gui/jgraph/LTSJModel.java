@@ -22,9 +22,6 @@ import groove.lts.GTSListener;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * Graph model adding a concept of active state and transition, with special
  * visual characteristics.
@@ -98,88 +95,6 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
         // add the model as a graph listener
         getGraph().addLTSListener(this);
     }
-
-    /**
-     * Returns the active transition of the LTS, if any. The active transition
-     * is the one currently selected in the simulator. Returns <tt>null</tt> if
-     * no transition is selected.
-     */
-    public GraphTransition getActiveTransition() {
-        return this.activeTransition;
-    }
-
-    /**
-     * Returns the active state of the LTS, if any. The active transition is the
-     * one currently displayed in the state frame. Returns <tt>null</tt> if no
-     * state is active (which should occur only if no grammar is loaded and
-     * hence the LTS is empty).
-     */
-    public GraphState getActiveState() {
-        return this.activeState;
-    }
-
-    /**
-     * Sets the active state and transition to a new value. Both old and new
-     * values may be <tt>null</tt>.
-     * @param state the new active state
-     * @param trans the new active transition
-     */
-    public void setActive(GraphState state, GraphTransition trans) {
-        Set<GraphJCell> changedCells = new HashSet<GraphJCell>();
-        GraphTransition previousTrans = this.activeTransition;
-        if (previousTrans != trans) {
-            this.activeTransition = trans;
-            if (previousTrans != null) {
-                LTSJCell jCell = (LTSJCell) getJCellForEdge(previousTrans);
-                assert jCell != null : String.format(
-                    "No image for %s in jModel", previousTrans);
-                if (jCell.setActive(false)) {
-                    changedCells.add(jCell);
-                }
-            }
-            if (trans != null) {
-                LTSJCell jCell = (LTSJCell) getJCellForEdge(trans);
-                assert jCell != null : String.format(
-                    "No image for %s in jModel", trans);
-                if (jCell.setActive(true)) {
-                    changedCells.add(jCell);
-                }
-            }
-        }
-        GraphState previousState = this.activeState;
-        if (state != previousState) {
-            this.activeState = state;
-            if (previousState != null) {
-                LTSJVertex jCell = (LTSJVertex) getJCellForNode(previousState);
-                if (jCell.setActive(false)) {
-                    changedCells.add(jCell);
-                }
-            }
-            if (state != null) {
-                LTSJVertex jCell = (LTSJVertex) getJCellForNode(state);
-                if (jCell.setActive(true)) {
-                    changedCells.add(jCell);
-                }
-            }
-        }
-        if (!changedCells.isEmpty()) {
-            cellsChanged(changedCells.toArray());
-        }
-    }
-
-    /**
-     * The active state of the LTS. Is null if there is no active state.
-     * @invariant activeState == null || ltsJModel.graph().contains(activeState)
-     */
-    private GraphState activeState;
-    /**
-     * The currently active transition of the LTS. The source node of
-     * emphasizedEdge (if non-null) is also emphasized. Is null if there is no
-     * currently emphasized edge.
-     * @invariant activeTransition == null ||
-     *            ltsJModel.graph().contains(activeTransition)
-     */
-    private GraphTransition activeTransition;
 
     /** Default name of an LTS model. */
     static public final String DEFAULT_LTS_NAME = "lts";

@@ -70,7 +70,6 @@ public class JEdgeView extends EdgeView {
      */
     public JEdgeView(GraphJEdge jEdge, JGraph jGraph) {
         super(jEdge);
-        this.jModel = jGraph.getModel();
         // first we add points and change the linestyle of the edge
         // in the model attributes, if the new edge demands it
         // AttributeMap jEdgeAttr = jEdge.getAttributes();
@@ -129,7 +128,7 @@ public class JEdgeView extends EdgeView {
      * @return a copy of the points of the underlying j-edge with a point added
      */
     public List<Object> addPointBetween() {
-        this.jModel.addLayoutable(getCell());
+        getCell().setLayoutable(true);
         List<Object> points = new LinkedList<Object>(getViewPoints());
         points.add(1,
             createPointBetween(toPoint(points.get(0)), toPoint(points.get(1))));
@@ -426,12 +425,6 @@ public class JEdgeView extends EdgeView {
         }
     }
 
-    /** The j-model underlying this edge view. */
-    private final GraphJModel<?,?> jModel;
-    //
-    // /** Internally stored bounds. */
-    //    
-    // private Rectangle2D bounds;
     static {
         renderer = new MyEdgeRenderer();
     }

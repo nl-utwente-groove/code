@@ -228,7 +228,7 @@ public class Options implements Cloneable {
     /** Export lts action name */
     public static final String EXPORT_LTS_ACTION_NAME = "Export LTS ...";
     /** Export state action name */
-    public static final String EXPORT_STATE_ACTION_NAME = "Export State ...";
+    public static final String EXPORT_GRAPH_ACTION_NAME = "Export Graph ...";
     /** Export type action name */
     public static final String EXPORT_TYPE_ACTION_NAME = "Export Type ...";
     /** Export label filter action name */

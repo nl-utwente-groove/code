@@ -70,6 +70,7 @@ import groove.gui.dialog.PropertiesDialog;
 import groove.gui.dialog.RelabelDialog;
 import groove.gui.dialog.StringDialog;
 import groove.gui.dialog.VersionErrorDialog;
+import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJModel;
@@ -2121,7 +2122,10 @@ public class Simulator {
                 removeAll();
                 if (getGraphPanel() != null) {
                     JGraph jGraph = getGraphPanel().getJGraph();
-                    jGraph.addSubmenu(this, jGraph.createEditMenu(null, true));
+                    if (jGraph instanceof AspectJGraph) {
+                        jGraph.addSubmenu(this,
+                            ((AspectJGraph) jGraph).createEditMenu(null));
+                    }
                     jGraph.addSubmenu(this, jGraph.createDisplayMenu());
                     jGraph.addSubmenu(this, createOptionsMenu());
                 }
