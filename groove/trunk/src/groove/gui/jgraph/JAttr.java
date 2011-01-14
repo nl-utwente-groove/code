@@ -31,6 +31,7 @@ import java.awt.Paint;
 import java.awt.RadialGradientPaint;
 import java.awt.Rectangle;
 import java.awt.Stroke;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -68,14 +69,15 @@ public class JAttr {
     }
 
     /** Creates a rule border with given colour, dash pattern, and width. */
-    public static Border createRuleBorder(Color color, float width, float[] dash) {
+    public static Border createRuleBorder(Color color, float width,
+            float[] dash, boolean emph) {
         Border result;
         if (dash == NO_DASH) {
             result = new LineBorder(color, (int) width);
         } else {
             result = new StrokedLineBorder(color, createStroke(width, dash));
         }
-        return result;
+        return createNodeBorder(result, emph);
     }
 
     /**
@@ -183,6 +185,30 @@ public class JAttr {
         GraphConstants.STYLE_ORTHOGONAL;
 
     /**
+     * Border insets for default nodes.
+     */
+    private static final Insets DEFAULT_INSETS = new Insets(0, 3, 0, 3);
+
+    /**
+     * An empty border, to be used as the inner border of a compound border,
+     * which inserts some space to the left and right of the label text.
+     */
+    private static final Border EMPTY_INSET_BORDER = new EmptyBorder(
+        DEFAULT_INSETS);
+
+    /**
+     * Border insets for emphasised nodes.
+     */
+    private static final Insets EMPH_INSETS = new Insets(-2, 1, -2, 1);
+
+    /**
+     * An empty border, to be used as the inner border of a compound border,
+     * which inserts some space to the left and right of the label text.
+     */
+    private static final Border EMPH_INSET_BORDER =
+        new EmptyBorder(EMPH_INSETS);
+
+    /**
      * The line width used for edges and node borders.
      */
     public static final int DEFAULT_LINE_WIDTH = 1;
@@ -221,18 +247,6 @@ public class JAttr {
     public static final Border DEFAULT_BORDER = JAttr.createNodeBorder(
         new LineBorder(DEFAULT_CELL_COLOR, DEFAULT_LINE_WIDTH), false);
 
-    /**
-     * Border insets for default nodes.
-     */
-    public static final Insets DEFAULT_INSETS = new Insets(0, 3, 0, 3);
-
-    /**
-     * An empty border, to be used as the inner border of a compound border,
-     * which inserts some space to the left and right of the label text.
-     */
-    public static final Border EMPTY_INSET_BORDER = new EmptyBorder(
-        DEFAULT_INSETS);
-
     /** Space left outside the borders of nodes to enable larger
      * error or emphasis overlays to be painted correctly.
      * This also influences the initial positioning of the nodes
@@ -253,17 +267,6 @@ public class JAttr {
     public static final int EMPH_WIDTH = 3;
     /** Difference in line width between emphasised and non-emphasised. */
     public static final int EMPH_INCREMENT = EMPH_WIDTH - DEFAULT_LINE_WIDTH;
-
-    /**
-     * Border insets for emphasised nodes.
-     */
-    private static final Insets EMPH_INSETS = new Insets(-2, 1, -2, 1);
-
-    /**
-     * The border used for nodes.
-     */
-    public static final Border EMPH_BORDER = JAttr.createNodeBorder(
-        new LineBorder(DEFAULT_CELL_COLOR, EMPH_WIDTH), false);
 
     /**
      * Dash pattern specifying "no dash"
@@ -287,24 +290,17 @@ public class JAttr {
 
     static {
         // graying out
-        GRAYED_OUT_ATTR = new Values() {
+        GRAYED_OUT_ATTR = new JAttr() {
             {
                 this.foreColour = Colors.findColor("200 200 200 100");
                 this.opaque = false;
             }
         }.getEdgeAttrs();
         // set default node and edge attributes
-        Values defaultValues = new Values();
+        JAttr defaultValues = new JAttr();
         DEFAULT_EDGE_ATTR = defaultValues.getEdgeAttrs();
         DEFAULT_NODE_ATTR = defaultValues.getNodeAttrs();
     }
-
-    /**
-     * An empty border, to be used as the inner border of a compound border,
-     * which inserts some space to the left and right of the label text.
-     */
-    private static final Border EMPH_INSET_BORDER =
-        new EmptyBorder(EMPH_INSETS);
 
     /** The default node attributes of the LTS */
     static public final AttributeMap LTS_NODE_ATTR;
@@ -327,7 +323,7 @@ public class JAttr {
     // set the emphasis attributes
     static {
         // Ordinary LTS nodes and edges
-        Values ltsValues = new Values() {
+        JAttr ltsValues = new JAttr() {
             {
                 this.connectable = false;
                 this.lineEnd = GraphConstants.ARROW_SIMPLE;
@@ -335,38 +331,39 @@ public class JAttr {
         };
         LTS_NODE_ATTR = ltsValues.getNodeAttrs();
         LTS_EDGE_ATTR = ltsValues.getEdgeAttrs();
-        LTS_START_NODE_ATTR = new Values() {
+        LTS_START_NODE_ATTR = new JAttr() {
             {
                 this.backColour = Color.green;
             }
         }.getNodeAttrs();
 
         // Special LTS  nodes
-        LTS_OPEN_NODE_ATTR = new Values() {
+        LTS_OPEN_NODE_ATTR = new JAttr() {
             {
                 this.backColour = Color.gray.brighter();
             }
         }.getNodeAttrs();
-        LTS_FINAL_NODE_ATTR = new Values() {
+        LTS_FINAL_NODE_ATTR = new JAttr() {
             {
                 this.backColour = Color.red;
             }
         }.getNodeAttrs();
-        LTS_RESULT_NODE_ATTR = new Values() {
+        LTS_RESULT_NODE_ATTR = new JAttr() {
             {
                 this.backColour = Colors.findColor("255 165 0");
             }
         }.getNodeAttrs();
 
         // active LTS nodes and edges
-        Values ltsActive = new Values() {
+        JAttr ltsActive = new JAttr() {
             {
                 this.lineColour = Color.blue;
                 this.linewidth = 3;
+                this.lineEnd = GraphConstants.ARROW_SIMPLE;
             }
         };
-        LTS_NODE_ACTIVE_CHANGE = ltsActive.getNodeAttrs();
-        LTS_EDGE_ACTIVE_CHANGE = ltsActive.getEdgeAttrs();
+        LTS_NODE_ACTIVE_CHANGE = ltsActive.getNodeAttrs().diff(LTS_NODE_ATTR);
+        LTS_EDGE_ACTIVE_CHANGE = ltsActive.getEdgeAttrs().diff(LTS_EDGE_ATTR);
     }
 
     /** The default node attributes of the control automaton */
@@ -385,7 +382,7 @@ public class JAttr {
     static public final AttributeMap CONTROL_SHAPE_EDGE_ATTR;
 
     static {
-        Values ctrlValues = new Values() {
+        JAttr ctrlValues = new JAttr() {
             {
                 this.connectable = false;
                 this.lineEnd = GraphConstants.ARROW_CLASSIC;
@@ -395,12 +392,12 @@ public class JAttr {
         CONTROL_EDGE_ATTR = ctrlValues.getEdgeAttrs();
 
         // special nodes
-        CONTROL_START_NODE_ATTR = new Values() {
+        CONTROL_START_NODE_ATTR = new JAttr() {
             {
                 this.backColour = Color.green;
             }
         }.getNodeAttrs();
-        CONTROL_SUCCESS_NODE_ATTR = new Values() {
+        CONTROL_SUCCESS_NODE_ATTR = new JAttr() {
             {
                 this.borderColour = Color.RED;
                 this.backColour = Color.RED;
@@ -410,17 +407,17 @@ public class JAttr {
         }.getNodeAttrs();
 
         // special edges
-        CONTROL_LAMBDA_EDGE_ATTR = new Values() {
+        CONTROL_LAMBDA_EDGE_ATTR = new JAttr() {
             {
                 this.lineColour = Color.GREEN;
             }
         }.getEdgeAttrs();
-        CONTROL_FAILURE_EDGE_ATTR = new Values() {
+        CONTROL_FAILURE_EDGE_ATTR = new JAttr() {
             {
                 this.lineColour = Color.RED;
             }
         }.getEdgeAttrs();
-        CONTROL_SHAPE_EDGE_ATTR = new Values() {
+        CONTROL_SHAPE_EDGE_ATTR = new JAttr() {
             {
                 this.font = ITALIC_FONT;
                 this.lineColour = Color.GRAY;
@@ -442,19 +439,13 @@ public class JAttr {
     /** Collection of attributes for rule nodes. */
     static public final Map<AspectKind,AttributeMap> RULE_NODE_ATTR =
         new EnumMap<AspectKind,AttributeMap>(AspectKind.class);
-    /** Collection of attribute changes for emphasised rule nodes. */
-    static public final Map<AspectKind,AttributeMap> RULE_NODE_EMPH_CHANGE =
-        new EnumMap<AspectKind,AttributeMap>(AspectKind.class);
     /** Collection of attributes for rule edges. */
     static public final Map<AspectKind,AttributeMap> RULE_EDGE_ATTR =
-        new EnumMap<AspectKind,AttributeMap>(AspectKind.class);
-    /** Collection of attribute changes for emphasised rule edges. */
-    static public final Map<AspectKind,AttributeMap> RULE_EDGE_EMPH_CHANGE =
         new EnumMap<AspectKind,AttributeMap>(AspectKind.class);
     static {
         for (AspectKind aspect : EnumSet.allOf(AspectKind.class)) {
             /** Object to collect the attributes. */
-            Values v = new Values(aspect.isRole());
+            JAttr v = new JAttr();
             switch (aspect) {
             case REMARK:
                 v.foreColour = Colors.findColor("255 140 0");
@@ -534,147 +525,145 @@ public class JAttr {
         public Object put(Object key, Object value) {
             return super.put(key, value);
         }
+
+        /** 
+         * Retains only the values of this attribute map that
+         * differ from a given map.
+         */
+        public AttributeMap diff(AttributeMap other) {
+            List<Object> removedKeys = new ArrayList<Object>();
+            for (Map.Entry<?,?> entry : ((Map<?,?>) this).entrySet()) {
+                if (entry.getValue().equals(other.get(entry.getKey()))) {
+                    removedKeys.add(entry.getKey());
+                }
+            }
+            for (Object key : removedKeys) {
+                remove(key);
+            }
+            return this;
+        }
     }
 
-    static class Values {
-        /** Foreground colour; defaults to #DEFAULT_CELL_COLOR. */
-        Color foreColour = DEFAULT_CELL_COLOR;
-        /** Background colour for nodes; defaults to #DEFAULT_BACKGROUND. 
-         * A {@code null} value means a whitewashed version of the foreground is used. 
-         */
-        Color backColour = DEFAULT_BACKGROUND;
-        /** Edge line colour; defaults to {@code null}. 
-         * If {@code null}, the foreground colour is used (see @link #foreColour}. */
-        Color lineColour = null;
-        /** Border colour; defaults to {@code null}.
-         * If {@code null}, the line colour is used (see {@link #lineColour}). */
-        Color borderColour = null;
-        /** Font to be used; defaults to the standard UI font. */
-        Font font = null;
-        /** Line width; defaults to 1. */
-        int linewidth = 1;
-        /** Dash pattern; defaults to no dash. */
-        float[] dash = NO_DASH;
-        /** Line begin; defaults to {@link GraphConstants#ARROW_NONE}. */
-        int lineBegin = GraphConstants.ARROW_NONE;
-        /** Line end; defaults to {@link GraphConstants#ARROW_CLASSIC}. */
-        int lineEnd = GraphConstants.ARROW_CLASSIC;
-        /** Line end size; defaults to {@link GraphConstants#DEFAULTDECORATIONSIZE}. */
-        int endSize = GraphConstants.DEFAULTDECORATIONSIZE;
-        /** Node border; defaults to a line border of the given colour and width. */
-        Border border = null;
-        /** Line begin fill; defaults to {@code true} */
-        boolean beginFill = true;
-        /** Line end fill; defaults to {@code true} */
-        boolean endFill = true;
-        /** Editable flag; defaults to {@code false} */
-        boolean editable = false;
-        /** Node moveability; defaults to {@code true} */
-        boolean moveable = true;
-        /** Node autosizing; defaults to {@code true} */
-        boolean autosize = true;
-        /** Node resizeability; defaults to {@code true} */
-        boolean resizeable = true;
-        /** Selectable flag; defaults to {@code true} */
-        boolean selectable = true;
-        /** Bendable flag; defaults to {@code true} */
-        boolean bendable = true;
-        /** Node opacity flag; defaults to {@code true} */
-        boolean opaque = true;
-        /** Edge (dis)connectability; defaults to {@code true} */
-        boolean connectable = true;
+    /** Foreground colour; defaults to #DEFAULT_CELL_COLOR. */
+    Color foreColour = DEFAULT_CELL_COLOR;
+    /** Background colour for nodes; defaults to #DEFAULT_BACKGROUND. 
+     * A {@code null} value means a whitewashed version of the foreground is used. 
+     */
+    Color backColour = DEFAULT_BACKGROUND;
+    /** Edge line colour; defaults to {@code null}. 
+     * If {@code null}, the foreground colour is used (see @link #foreColour}. */
+    Color lineColour = null;
+    /** Border colour; defaults to {@code null}.
+     * If {@code null}, the line colour is used (see {@link #lineColour}). */
+    Color borderColour = null;
+    /** Font to be used; defaults to the standard UI font. */
+    Font font = null;
+    /** Line width; defaults to 1. */
+    int linewidth = 1;
+    /** Extra space between text and border (needed if the node can have
+     * a thicker border). Defaults to 0. 
+     */
+    int inset = 0;
+    /** Dash pattern; defaults to no dash. */
+    float[] dash = NO_DASH;
+    /** Line begin; defaults to {@link GraphConstants#ARROW_NONE}. */
+    int lineBegin = GraphConstants.ARROW_NONE;
+    /** Line end; defaults to {@link GraphConstants#ARROW_CLASSIC}. */
+    int lineEnd = GraphConstants.ARROW_CLASSIC;
+    /** Line end size; defaults to {@link GraphConstants#DEFAULTDECORATIONSIZE}. */
+    int endSize = GraphConstants.DEFAULTDECORATIONSIZE;
+    /** Node border; defaults to a line border of the given colour and width. */
+    Border border = null;
+    /** Line begin fill; defaults to {@code true} */
+    boolean beginFill = true;
+    /** Line end fill; defaults to {@code true} */
+    boolean endFill = true;
+    /** Editable flag; defaults to {@code false} */
+    boolean editable = false;
+    /** Node moveability; defaults to {@code true} */
+    boolean moveable = true;
+    /** Node autosizing; defaults to {@code true} */
+    boolean autosize = true;
+    /** Node resizeability; defaults to {@code true} */
+    boolean resizeable = true;
+    /** Selectable flag; defaults to {@code true} */
+    boolean selectable = true;
+    /** Bendable flag; defaults to {@code true} */
+    boolean bendable = true;
+    /** Node opacity flag; defaults to {@code true} */
+    boolean opaque = true;
+    /** Edge (dis)connectability; defaults to {@code true} */
+    boolean connectable = true;
 
-        Values() {
-            this(false);
+    /** Creates the attributes common to nodes and edges. */
+    private AttributeMap getAttrs() {
+        AttributeMap result = new AttributeMap();
+        Color foreground = this.foreColour;
+        if (foreground != null) {
+            GraphConstants.setForeground(result, foreground);
         }
-
-        Values(boolean isRole) {
-            this.isRole = isRole;
+        Color background =
+            this.backColour == null ? whitewash(foreground) : this.backColour;
+        if (background != null) {
+            GraphConstants.setBackground(result, background);
         }
-
-        /** Creates the attributes common to nodes and edges. */
-        private AttributeMap getAttrs() {
-            AttributeMap result = new AttributeMap();
-            Color foreground = this.foreColour;
-            if (foreground != null) {
-                GraphConstants.setForeground(result, foreground);
-            }
-            Color background =
-                this.backColour == null ? whitewash(foreground)
-                        : this.backColour;
-            if (background != null) {
-                GraphConstants.setBackground(result, background);
-            }
-            Color lineColour =
-                this.lineColour == null ? foreground : this.lineColour;
-            if (lineColour != null) {
-                GraphConstants.setLineColor(result, lineColour);
-            }
-            if (this.font != null) {
-                GraphConstants.setFont(result, this.font);
-            }
-            GraphConstants.setLineWidth(result, this.linewidth);
-            GraphConstants.setDashPattern(result, this.dash);
-            GraphConstants.setLineBegin(result, this.lineBegin);
-            GraphConstants.setLineEnd(result, this.lineEnd);
-            GraphConstants.setEndSize(result, this.endSize);
-            GraphConstants.setBeginFill(result, this.beginFill);
-            GraphConstants.setEndFill(result, this.endFill);
-            GraphConstants.setEditable(result, this.editable);
-            GraphConstants.setSelectable(result, this.selectable);
-            GraphConstants.setMoveable(result, this.moveable);
-            GraphConstants.setBendable(result, this.bendable);
-            GraphConstants.setOpaque(result, this.opaque);
-            GraphConstants.setSizeable(result, this.resizeable);
-            GraphConstants.setAutoSize(result, this.autosize);
-            GraphConstants.setConnectable(result, this.connectable);
-            GraphConstants.setDisconnectable(result, this.connectable);
-            GraphConstants.setRouting(result,
-                new org.jgraph.graph.Edge.Routing() {
-                    /**
-                     * Returns {@link #NO_PREFERENCE}.
-                     */
-                    public int getPreferredLineStyle(EdgeView edge) {
-                        return NO_PREFERENCE;
-                    }
-
-                    public List<?> route(GraphLayoutCache cache, EdgeView edge) {
-                        return null;
-                    }
-                });
-
-            return result;
+        Color lineColour =
+            this.lineColour == null ? foreground : this.lineColour;
+        if (lineColour != null) {
+            GraphConstants.setLineColor(result, lineColour);
         }
-
-        AttributeMap getNodeAttrs() {
-            AttributeMap result = getAttrs().clone();
-            Color borderColour =
-                this.borderColour == null ? GraphConstants.getLineColor(result)
-                        : this.borderColour;
-            if (borderColour != null) {
-                GraphConstants.setBorderColor(result, borderColour);
+        if (this.font != null) {
+            GraphConstants.setFont(result, this.font);
+        }
+        GraphConstants.setLineWidth(result, this.linewidth);
+        if (this.inset != 0) {
+            GraphConstants.setInset(result, this.inset);
+        }
+        GraphConstants.setDashPattern(result, this.dash);
+        GraphConstants.setLineBegin(result, this.lineBegin);
+        GraphConstants.setLineEnd(result, this.lineEnd);
+        GraphConstants.setEndSize(result, this.endSize);
+        GraphConstants.setBeginFill(result, this.beginFill);
+        GraphConstants.setEndFill(result, this.endFill);
+        GraphConstants.setEditable(result, this.editable);
+        GraphConstants.setSelectable(result, this.selectable);
+        GraphConstants.setMoveable(result, this.moveable);
+        GraphConstants.setBendable(result, this.bendable);
+        GraphConstants.setOpaque(result, this.opaque);
+        GraphConstants.setSizeable(result, this.resizeable);
+        GraphConstants.setAutoSize(result, this.autosize);
+        GraphConstants.setConnectable(result, this.connectable);
+        GraphConstants.setDisconnectable(result, this.connectable);
+        GraphConstants.setRouting(result, new org.jgraph.graph.Edge.Routing() {
+            /**
+             * Returns {@link #NO_PREFERENCE}.
+             */
+            public int getPreferredLineStyle(EdgeView edge) {
+                return NO_PREFERENCE;
             }
-            Border border =
-                this.border == null ? createBorder(borderColour,
-                    this.linewidth, this.dash) : this.border;
-            GraphConstants.setBorder(result, createNodeBorder(border, false));
-            return result;
-        }
 
-        AttributeMap getEdgeAttrs() {
-            AttributeMap result = getAttrs().clone();
-            GraphConstants.setBackground(result, Color.white);
-            return result;
-        }
-
-        private Border createBorder(Color colour, float width, float[] dash) {
-            if (this.isRole) {
-                return createRuleBorder(colour, width, dash);
-            } else {
-                return new LineBorder(colour, (int) width);
+            public List<?> route(GraphLayoutCache cache, EdgeView edge) {
+                return null;
             }
-        }
+        });
 
-        private final boolean isRole;
+        return result;
+    }
+
+    AttributeMap getNodeAttrs() {
+        AttributeMap result = getAttrs().clone();
+        Color borderColour =
+            this.borderColour == null ? GraphConstants.getLineColor(result)
+                    : this.borderColour;
+        if (borderColour != null) {
+            GraphConstants.setBorderColor(result, borderColour);
+        }
+        return result;
+    }
+
+    AttributeMap getEdgeAttrs() {
+        AttributeMap result = getAttrs().clone();
+        GraphConstants.setBackground(result, Color.white);
+        return result;
     }
 }

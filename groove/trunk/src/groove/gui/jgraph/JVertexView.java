@@ -174,9 +174,11 @@ public class JVertexView extends VertexView {
         Rectangle2D bounds = getBounds().getBounds2D();
         // revert to the actual borders by subtracting the
         // extra border space
-        bounds.setRect(bounds.getX() + EXTRA_BORDER_SPACE, bounds.getY()
-            + EXTRA_BORDER_SPACE, bounds.getWidth() - 2 * EXTRA_BORDER_SPACE,
-            bounds.getHeight() - 2 * EXTRA_BORDER_SPACE);
+        float extra =
+            EXTRA_BORDER_SPACE
+                - GraphConstants.getLineWidth(getAllAttributes());
+        bounds.setRect(bounds.getX() + extra, bounds.getY() + extra,
+            bounds.getWidth() - 2 * extra, bounds.getHeight() - 2 * extra);
         if (source == null) {
             // be smart about positioning the perimeter point if p is within
             // the limits of the vertex itself, in either x or y coordinate
@@ -590,18 +592,15 @@ public class JVertexView extends VertexView {
             Graphics2D g2 = (Graphics2D) g;
             double width = getSize().getWidth();
             double height = getSize().getHeight();
-            Shape shape = getShape(width, height, this.lineWidth, 0);
+            Shape shape = getShape(width, height, this.lineWidth / 2);
             if (isOpaque()) {
                 paintBackground(g2, shape);
             }
             paintText(g2);
             paintBorder(g2, shape);
             if (this.error) {
-                shape = getShape(width, height, 0, EXTRA_BORDER_SPACE);
+                shape = getShape(width, height, EXTRA_BORDER_SPACE);
                 g2.setColor(JAttr.ERROR_COLOR);
-                //               
-                //                g2.setPaint(JAttr.createPaint(shape.getBounds(),
-                //                    JAttr.ERROR_COLOR));
                 g2.fill(shape);
             }
         }
@@ -692,7 +691,6 @@ public class JVertexView extends VertexView {
             }
             // adjust for view insets
             Insets i = computeInsets(result.width, result.height);
-            // try to avoid conversion back and forth to double
             result =
                 new Dimension(result.width + i.left + i.right + 2
                     * EXTRA_BORDER_SPACE, result.height + i.top + i.bottom + 2
@@ -740,17 +738,15 @@ public class JVertexView extends VertexView {
             if (getText().length() == 0) {
                 result = (Insets) EMPTY_INSETS.clone();
             } else {
-                result = (Insets) DEFAULT_INSETS.clone();// b.getBorderInsets(getRenderer());
+                result = (Insets) DEFAULT_INSETS.clone();
             }
-            // correct for the line width
-            int line =
-                (int) GraphConstants.getLineWidth(this.view.getAllAttributes());
-            result.top += line;
-            result.left += line;
-            result.bottom += line;
-            result.right += line;
-
-            // add space needed for the border
+            // correct for the predefined inset
+            int inset = GraphConstants.getInset(this.view.getAllAttributes());
+            result.left += inset;
+            result.right += inset;
+            result.top += inset;
+            result.bottom += inset;
+            // add space needed for non-rectangular shapes
             switch (this.view.getVertexShape()) {
             case ELLIPSE_SHAPE:
                 result.left += textWidth / 8;
@@ -775,14 +771,13 @@ public class JVertexView extends VertexView {
          * A second parameter controls how much the shape
          * should extend at each side beyond the size. 
          */
-        private Shape getShape(double width, double height, double lineWidth,
-                int extension) {
+        private Shape getShape(double width, double height, double extension) {
             // subtract the extra border space
             double extra = EXTRA_BORDER_SPACE - extension;
-            double x = lineWidth / 2 + extra;
-            double y = lineWidth / 2 + extra;
-            width = width - lineWidth - 2 * extra;
-            height = height - lineWidth - 2 * extra;
+            double x = extra;
+            double y = extra;
+            width -= 2 * extra;
+            height -= 2 * extra;
             switch (this.view.getVertexShape()) {
             case ELLIPSE_SHAPE:
                 return new Ellipse2D.Double(x, y, width, height);

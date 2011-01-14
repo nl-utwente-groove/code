@@ -7,7 +7,6 @@ import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.GraphRole;
 import groove.graph.Label;
-import groove.gui.Options;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.trans.RuleLabel;
 import groove.util.Converter;
@@ -96,7 +95,11 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     @Override
     public AspectJEdge newJEdge(Edge<?> edge) {
-        return new AspectJEdge(getJGraph(), (AspectEdge) edge);
+        if (edge == null) {
+            return new AspectJEdge(getJGraph());
+        } else {
+            return new AspectJEdge(getJGraph(), (AspectEdge) edge);
+        }
     }
 
     /**
@@ -206,15 +209,11 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     /** 
      * Indicates if this JEdge should be shown
      * instead as part of the source node label.
-     * This is true if {@link JGraph#isShowLoopsAsNodeLabels()} is {@code true}
-     * and this is a self-edge, or if {@link Options#SHOW_VALUE_NODES_OPTION}
-     * is unset and the target of this edge is a pure data constant. 
+     * This is true if this is an attribute edge to a "pure" value node, 
+     * and value nodes are not shown.
      */
     public boolean isSourceLabel() {
-        if (getJGraph().hasEditor() || hasError()) {
-            return false;
-        }
-        if (this.aspect == REMARK) {
+        if (hasError()) {
             return false;
         }
         if (getJGraph().isShowValueNodes()) {
@@ -258,7 +257,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
                 setFontAttr(result, Font.ITALIC);
             }
         }
-        if (getJGraph().hasEditor()) {
+        if (getJGraph().hasActiveEditor()) {
             GraphConstants.setEditable(result, true);
             GraphConstants.setConnectable(result, true);
             GraphConstants.setDisconnectable(result, true);
