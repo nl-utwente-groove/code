@@ -25,7 +25,9 @@ import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.util.Colors;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -39,6 +41,9 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 
+import org.jgraph.graph.GraphConstants;
+import org.jgraph.graph.GraphModel;
+
 /**
  * Implementation of MyJGraph that provides the proper popup menu. To construct
  * an instance, setupPopupMenu() should be called after all global final
@@ -50,6 +55,14 @@ public class LTSJGraph extends JGraph {
         super(simulator.getOptions(), true);
         this.simulator = simulator;
         setExporter(simulator.getExporter());
+    }
+
+    @Override
+    public void setModel(GraphModel model) {
+        // reset the active state and transition
+        this.activeState = null;
+        this.activeTransition = null;
+        super.setModel(model);
     }
 
     /** Specialises the return type to a {@link LTSJModel}. */
@@ -261,6 +274,68 @@ public class LTSJGraph extends JGraph {
      */
     private final ScrollToCurrentAction scrollToCurrentAction =
         new ScrollToCurrentAction();
+    /** The default node attributes of the LTS */
+    static public final JAttr.AttributeMap LTS_NODE_ATTR;
+    /** The start node attributes of the LTS */
+    static public final JAttr.AttributeMap LTS_START_NODE_ATTR;
+    /** Unexplored node attributes */
+    static public final JAttr.AttributeMap LTS_OPEN_NODE_ATTR;
+    /** Final node attributes */
+    static public final JAttr.AttributeMap LTS_FINAL_NODE_ATTR;
+    /** Result node attributes */
+    static public final JAttr.AttributeMap LTS_RESULT_NODE_ATTR;
+    /** The default edge attributes of the LTS */
+    static public final JAttr.AttributeMap LTS_EDGE_ATTR;
+    /** Active node attributes of the LTS */
+    static public final JAttr.AttributeMap LTS_NODE_ACTIVE_CHANGE;
+    /** Active edge attributes of the LTS */
+    static public final JAttr.AttributeMap LTS_EDGE_ACTIVE_CHANGE;
+
+    // set the emphasis attributes
+    static {
+        // Ordinary LTS nodes and edges
+        JAttr ltsValues = new JAttr() {
+            {
+                this.connectable = false;
+                this.lineEnd = GraphConstants.ARROW_SIMPLE;
+            }
+        };
+        LTS_NODE_ATTR = ltsValues.getNodeAttrs();
+        LTS_EDGE_ATTR = ltsValues.getEdgeAttrs();
+        LTS_START_NODE_ATTR = new JAttr() {
+            {
+                this.backColour = Color.green;
+            }
+        }.getNodeAttrs();
+
+        // Special LTS  nodes
+        LTS_OPEN_NODE_ATTR = new JAttr() {
+            {
+                this.backColour = Color.gray.brighter();
+            }
+        }.getNodeAttrs();
+        LTS_FINAL_NODE_ATTR = new JAttr() {
+            {
+                this.backColour = Color.red;
+            }
+        }.getNodeAttrs();
+        LTS_RESULT_NODE_ATTR = new JAttr() {
+            {
+                this.backColour = Colors.findColor("255 165 0");
+            }
+        }.getNodeAttrs();
+
+        // active LTS nodes and edges
+        JAttr ltsActive = new JAttr() {
+            {
+                this.lineColour = Color.blue;
+                this.linewidth = 3;
+                this.lineEnd = GraphConstants.ARROW_SIMPLE;
+            }
+        };
+        LTS_NODE_ACTIVE_CHANGE = ltsActive.getNodeAttrs().diff(LTS_NODE_ATTR);
+        LTS_EDGE_ACTIVE_CHANGE = ltsActive.getEdgeAttrs().diff(LTS_EDGE_ATTR);
+    }
 
     /**
      * Action to scroll the LTS display to a (previously set) node or edge.

@@ -1,11 +1,5 @@
 package groove.gui.jgraph;
 
-import static groove.gui.jgraph.JAttr.LTS_FINAL_NODE_ATTR;
-import static groove.gui.jgraph.JAttr.LTS_NODE_ACTIVE_CHANGE;
-import static groove.gui.jgraph.JAttr.LTS_NODE_ATTR;
-import static groove.gui.jgraph.JAttr.LTS_OPEN_NODE_ATTR;
-import static groove.gui.jgraph.JAttr.LTS_RESULT_NODE_ATTR;
-import static groove.gui.jgraph.JAttr.LTS_START_NODE_ATTR;
 import groove.control.CtrlState;
 import groove.graph.Edge;
 import groove.graph.Node;
@@ -30,7 +24,7 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
      * {@link GraphState}) in an LTS model.
      */
     LTSJVertex(LTSJGraph jGraph, GraphState node) {
-        super(jGraph, node, true);
+        super(jGraph, node);
     }
 
     @Override
@@ -153,29 +147,29 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     /**
      * This implementation adds special attributes for the start state, open
      * states, final states, and the active state.
-     * @see JAttr#LTS_NODE_ATTR
-     * @see JAttr#LTS_START_NODE_ATTR
-     * @see JAttr#LTS_OPEN_NODE_ATTR
-     * @see JAttr#LTS_FINAL_NODE_ATTR
-     * @see JAttr#LTS_RESULT_NODE_ATTR
-     * @see JAttr#LTS_NODE_ACTIVE_CHANGE
+     * @see LTSJGraph#LTS_NODE_ATTR
+     * @see LTSJGraph#LTS_START_NODE_ATTR
+     * @see LTSJGraph#LTS_OPEN_NODE_ATTR
+     * @see LTSJGraph#LTS_FINAL_NODE_ATTR
+     * @see LTSJGraph#LTS_RESULT_NODE_ATTR
+     * @see LTSJGraph#LTS_NODE_ACTIVE_CHANGE
      */
     @Override
     protected AttributeMap createAttributes() {
         AttributeMap result;
         if (isResult()) {
-            result = LTS_RESULT_NODE_ATTR.clone();
+            result = LTSJGraph.LTS_RESULT_NODE_ATTR.clone();
         } else if (isStart()) {
-            result = LTS_START_NODE_ATTR.clone();
+            result = LTSJGraph.LTS_START_NODE_ATTR.clone();
         } else if (!isClosed()) {
-            result = LTS_OPEN_NODE_ATTR.clone();
+            result = LTSJGraph.LTS_OPEN_NODE_ATTR.clone();
         } else if (isFinal()) {
-            result = LTS_FINAL_NODE_ATTR.clone();
+            result = LTSJGraph.LTS_FINAL_NODE_ATTR.clone();
         } else {
-            result = LTS_NODE_ATTR.clone();
+            result = LTSJGraph.LTS_NODE_ATTR.clone();
         }
         if (isActive()) {
-            result.applyMap(LTS_NODE_ACTIVE_CHANGE);
+            result.applyMap(LTSJGraph.LTS_NODE_ACTIVE_CHANGE);
         }
         return result;
     }

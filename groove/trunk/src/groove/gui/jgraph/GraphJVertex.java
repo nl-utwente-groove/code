@@ -44,21 +44,6 @@ import org.jgraph.graph.GraphConstants;
  */
 public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     /**
-     * Constructs a jnode on top of a graph node.
-     * @param jGraph the {@link JGraph} in which this vertex exists; if {@code null}, the
-     * JVertex can only be used as a prototype
-     * @param node the underlying graph node for this model node
-     * @param vertexLabelled flag to indicate if the vertex should be labelled.
-     * @ensure getUserObject() == node, labels().isEmpty()
-     */
-    GraphJVertex(JGraph jGraph, Node node, boolean vertexLabelled) {
-        this.jGraph = jGraph;
-        add(new DefaultPort());
-        this.node = node;
-        this.vertexLabelled = vertexLabelled;
-    }
-
-    /**
      * Constructs a model node on top of a graph node.
      * @param jGraph the {@link JGraph} in which this vertex exists
      * @param node the underlying graph node for this model node. Note that this
@@ -66,7 +51,9 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      * @ensure getUserObject() == node, labels().isEmpty()
      */
     GraphJVertex(JGraph jGraph, Node node) {
-        this(jGraph, node, true);
+        this.jGraph = jGraph;
+        add(new DefaultPort());
+        this.node = node;
     }
 
     /** Returns the {@link JGraph} associated with this vertex. */
@@ -98,7 +85,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      * Returns a fresh {@link GraphJEdge} of the same type as this one. 
      */
     public GraphJVertex newJVertex(Node node) {
-        return new GraphJVertex(getJGraph(), node, this.vertexLabelled);
+        return new GraphJVertex(getJGraph(), node);
     }
 
     /**
@@ -111,14 +98,14 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     /**
      * Adds an edge to the underlying self-edge set, if the edge is appropriate.
      * Indicates in its return value if the edge has indeed been added.
-     * @param edge the edge to be added
+     * @param edge the edge to be added; it is assumed that this is a loop 
+     * on the node of this JVertex
      * @return <tt>true</tt> if the edge has been added; <tt>false</tt> if
      *         <tt>edge</tt> is not compatible with this j-vertex and cannot be
      *         added.
-     * @require <tt>edge.source() == edge.target() == getNode()</tt>
-     * @ensure if <tt>result</tt> then <tt>edges().contains(edge)</tt>
      */
     public boolean addJVertexLabel(Edge<?> edge) {
+        assert edge.source() == edge.target() && edge.source() == getNode();
         if (isJVertexLabel(edge)) {
             this.jVertexLabels.add(edge);
             return true;
@@ -129,9 +116,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
 
     /** Tests if a given edge can be added as label to this {@link GraphJVertex}. */
     protected boolean isJVertexLabel(Edge<?> edge) {
-        return !edge.isBinary() || this.vertexLabelled
-            && edge.source() == edge.target()
-            && getJGraph().isShowLoopsAsNodeLabels();
+        return !edge.isBinary() || getJGraph().isShowLoopsAsNodeLabels();
     }
 
     /** Tests if a given edge's layout attributes
@@ -335,7 +320,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
             GraphConstants.setBackground(result, Color.WHITE);
         }
         if (isGrayedOut()) {
-            result.applyMap(JAttr.GRAYED_OUT_ATTR);
+            result.applyMap(JGraph.GRAYED_OUT_ATTR);
         }
         if (getAttributes() != null) {
             getAttributes().applyMap(result);
@@ -350,7 +335,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      * method directly.
      */
     protected AttributeMap createAttributes() {
-        return JAttr.DEFAULT_NODE_ATTR.clone();
+        return JGraph.DEFAULT_NODE_ATTR.clone();
     }
 
     @Override
@@ -389,11 +374,6 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     private final JGraph jGraph;
     private boolean layoutable;
     private boolean grayedOut;
-    /**
-     * An indicator whether the vertex can be labelled (otherwise labels are
-     * self-edges).
-     */
-    private final boolean vertexLabelled;
     /** The graph node modelled by this jgraph node. */
     private Node node;
     /** Set of graph edges mapped to this JEdge. */

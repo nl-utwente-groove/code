@@ -16,6 +16,8 @@
  */
 package groove.gui.jgraph;
 
+import static groove.view.aspect.AspectKind.ADDER;
+import static groove.view.aspect.AspectKind.CREATOR;
 import groove.graph.GraphRole;
 import groove.gui.Editor;
 import groove.gui.Options;
@@ -25,7 +27,10 @@ import groove.gui.layout.ForestLayouter;
 import groove.gui.layout.SpringLayouter;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
+import groove.util.Colors;
+import groove.view.aspect.AspectKind;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -33,6 +38,8 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,7 +120,8 @@ final public class AspectJGraph extends JGraph {
      * This is certainly the case if this model is editable.
      */
     public final boolean isShowValueNodes() {
-        return hasActiveEditor() || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
+        return hasActiveEditor()
+            || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
     }
 
     /** Indicates that the JModel has an editor enabled. */
@@ -404,6 +412,78 @@ final public class AspectJGraph extends JGraph {
     /** The role for which this {@link JGraph} will display graphs. */
     private final GraphRole graphRole;
 
+    /** Map from line style names to corresponding actions. */
+    private final Map<String,JCellEditAction> setLineStyleActionMap =
+        new HashMap<String,JCellEditAction>();
+    /** Collection of attributes for rule nodes. */
+    static public final Map<AspectKind,JAttr.AttributeMap> ASPECT_NODE_ATTR =
+        new EnumMap<AspectKind,JAttr.AttributeMap>(AspectKind.class);
+    /** Collection of attributes for rule edges. */
+    static public final Map<AspectKind,JAttr.AttributeMap> ASPECT_EDGE_ATTR =
+        new EnumMap<AspectKind,JAttr.AttributeMap>(AspectKind.class);
+
+    static {
+        for (AspectKind aspect : EnumSet.allOf(AspectKind.class)) {
+            /** Object to collect the attributes. */
+            JAttr v = new JAttr();
+            switch (aspect) {
+            case REMARK:
+                v.foreColour = Colors.findColor("255 140 0");
+                v.backColour = Colors.findColor("255 255 180");
+                break;
+            case EMBARGO:
+                v.foreColour = Color.red;
+                v.backColour = null;
+                v.linewidth = 5;
+                v.dash = new float[] {2, 2};
+                v.endFill = false;
+                break;
+            case ERASER:
+                v.foreColour = Color.blue;
+                v.backColour = Colors.findColor("200 240 255");
+                v.dash = new float[] {4, 4};
+                break;
+            case CREATOR:
+                v.foreColour = Color.green.darker();
+                v.backColour = null;
+                v.linewidth = 3;
+                break;
+            case ADDER:
+                v.foreColour = Color.green.darker();
+                v.backColour = null;
+                v.linewidth = 6;
+                v.dash = new float[] {2, 2};
+                v.endFill = false;
+                break;
+            case FORALL:
+            case FORALL_POS:
+            case EXISTS:
+            case NESTED:
+                v.dash = JAttr.NESTED_DASH;
+                v.lineEnd = GraphConstants.ARROW_SIMPLE;
+                v.endSize = GraphConstants.DEFAULTDECORATIONSIZE - 2;
+                break;
+            case SUBTYPE:
+                v.lineEnd = GraphConstants.ARROW_TECHNICAL;
+                v.endFill = false;
+                v.endSize = GraphConstants.DEFAULTDECORATIONSIZE + 5;
+                break;
+            case ABSTRACT:
+                v.dash = new float[] {6.0f, 2.0f};
+                v.font = JAttr.ITALIC_FONT;
+                break;
+            }
+
+            AspectJGraph.ASPECT_NODE_ATTR.put(aspect, v.getNodeAttrs());
+            AspectJGraph.ASPECT_EDGE_ATTR.put(aspect, v.getEdgeAttrs());
+        }
+        // special formatting for ADDER
+        AspectJGraph.ASPECT_NODE_ATTR.get(ADDER).put("line2map",
+            AspectJGraph.ASPECT_NODE_ATTR.get(CREATOR));
+        AspectJGraph.ASPECT_EDGE_ATTR.get(ADDER).put("line2map",
+            AspectJGraph.ASPECT_EDGE_ATTR.get(CREATOR));
+    }
+
     /**
      * Abstract class for j-cell edit actions.
      */
@@ -627,10 +707,6 @@ final public class AspectJGraph extends JGraph {
         }
         return result;
     }
-
-    /** Map from line style names to corresponding actions. */
-    private final Map<String,JCellEditAction> setLineStyleActionMap =
-        new HashMap<String,JCellEditAction>();
 
     /**
      * Action to set the line style of the currently selected j-edge.

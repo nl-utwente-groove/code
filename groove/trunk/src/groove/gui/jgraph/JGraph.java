@@ -33,6 +33,7 @@ import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 import groove.io.ExtensionFilter;
 import groove.trans.SystemProperties;
+import groove.util.Colors;
 import groove.util.Groove;
 import groove.util.ObservableSet;
 
@@ -213,7 +214,7 @@ abstract public class JGraph extends org.jgraph.JGraph {
     /**
      * Indicates whether self-edges should be shown as node labels.
      */
-    boolean isShowLoopsAsNodeLabels() {
+    public boolean isShowLoopsAsNodeLabels() {
         return getProperties() == null || getProperties().isShowLoopsAsLabels();
     }
 
@@ -540,6 +541,9 @@ abstract public class JGraph extends org.jgraph.JGraph {
                 if (this.layouter != null) {
                     this.layouter.stop();
                 }
+                // if we don't clear the selection, the old selection
+                // gives trouble when setting the model
+                clearSelection();
             }
             super.setModel(jModel);
             getLabelTree().updateModel();
@@ -1079,18 +1083,22 @@ abstract public class JGraph extends org.jgraph.JGraph {
     /**
      * A standard layouter setting menu over this jgraph.
      */
-    protected final SetLayoutMenu setLayoutMenu = createSetLayoutMenu();
+    private final SetLayoutMenu setLayoutMenu = createSetLayoutMenu();
 
     /**
      * The label list associated with this jgraph.
      */
-    protected LabelTree labelTree;
+    private LabelTree labelTree;
 
     /**
      * The currently selected prototype layouter.
      */
-    protected Layouter layouter;
+    private Layouter layouter;
 
+    /**
+     * The permanent ExportAction associated with this j-graph.
+     */
+    private ExportAction exportAction;
     /**
      * The background color of this component when it is enabled.
      */
@@ -1110,9 +1118,31 @@ abstract public class JGraph extends org.jgraph.JGraph {
     static private final long MAX_LAYOUT_DURATION = 1000;
 
     /**
-     * The permanent ExportAction associated with this j-graph.
+     * The standard jgraph attributes used for graying out nodes and edges.
      */
-    protected ExportAction exportAction;
+    static public final JAttr.AttributeMap GRAYED_OUT_ATTR;
+    /**
+     * The standard jgraph attributes used for representing nodes.
+     */
+    public static final JAttr.AttributeMap DEFAULT_NODE_ATTR;
+    /**
+     * The standard jgraph attributes used for representing edges.
+     */
+    public static final JAttr.AttributeMap DEFAULT_EDGE_ATTR;
+
+    static {
+        // graying out
+        GRAYED_OUT_ATTR = new JAttr() {
+            {
+                this.foreColour = Colors.findColor("200 200 200 100");
+                this.opaque = false;
+            }
+        }.getEdgeAttrs();
+        // set default node and edge attributes
+        JAttr defaultValues = new JAttr();
+        DEFAULT_EDGE_ATTR = defaultValues.getEdgeAttrs();
+        DEFAULT_NODE_ATTR = defaultValues.getNodeAttrs();
+    }
 
     /**
      * Action to save the state, as a graph or in some export format.
@@ -1258,18 +1288,13 @@ abstract public class JGraph extends org.jgraph.JGraph {
         }
 
         /**
-         * After calling the super method, sets all roots to visible. This is
-         * necessary because the cache is partial.
+         * Make sure all views are correctly inserted
          */
         @Override
         public void setModel(GraphModel model) {
+            this.partial = false;
             super.setModel(model);
-            Object[] cells = DefaultGraphModel.getRoots(this.getModel());
-            CellView[] cellViews = getMapping(cells, true);
-            insertViews(cellViews);
-            // Update PortView Cache and Notify Observers
-            updatePorts();
-            cellViewsChanged(getRoots());
+            this.partial = true;
         }
 
         @Override

@@ -20,7 +20,7 @@ import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.gui.jgraph.JAttr;
+import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.JGraph;
 import groove.view.aspect.AspectGraph;
 
@@ -399,7 +399,7 @@ public class Converter {
     public static final HTMLTag red = createColorTag(Colors.findColor("red"));
     /** Remark color tag. */
     public static final HTMLTag remark =
-        createColorTag(GraphConstants.getForeground(JAttr.RULE_NODE_ATTR.get(REMARK)));
+        createColorTag(GraphConstants.getForeground(AspectJGraph.ASPECT_NODE_ATTR.get(REMARK)));
 
     /**
      * Class that allows some handling of HTML text.

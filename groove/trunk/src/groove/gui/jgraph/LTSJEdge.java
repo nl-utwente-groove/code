@@ -1,7 +1,5 @@
 package groove.gui.jgraph;
 
-import static groove.gui.jgraph.JAttr.LTS_EDGE_ACTIVE_CHANGE;
-import static groove.gui.jgraph.JAttr.LTS_EDGE_ATTR;
 import groove.graph.Edge;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.lts.DerivationLabel;
@@ -104,9 +102,9 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
 
     @Override
     protected AttributeMap createAttributes() {
-        AttributeMap result = LTS_EDGE_ATTR.clone();
+        AttributeMap result = LTSJGraph.LTS_EDGE_ATTR.clone();
         if (isActive()) {
-            result.applyMap(LTS_EDGE_ACTIVE_CHANGE);
+            result.applyMap(LTSJGraph.LTS_EDGE_ACTIVE_CHANGE);
         }
         return result;
     }

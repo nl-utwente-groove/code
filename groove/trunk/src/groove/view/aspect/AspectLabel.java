@@ -205,8 +205,6 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
      */
     public void setInnerText(String text) {
         testFixed(false);
-        assert this.innerText == null : String.format(
-            "Inner text already set to '%s'", this.innerText);
         this.innerText = text;
         if (text.length() > 0 && this.nodeOnly != null) {
             addError("Aspect %s cannot have label text %s", this.nodeOnly, text);
