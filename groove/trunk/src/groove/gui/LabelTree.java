@@ -316,20 +316,14 @@ public class LabelTree extends JTree implements GraphModelListener,
     public void graphChanged(GraphModelEvent e) {
         boolean changed = false;
         GraphModelEvent.GraphModelChange change = e.getChange();
-        if (change instanceof GraphJModel<?,?>.RefreshEdit) {
-            changed =
-                processRefresh((GraphJModel<?,?>.RefreshEdit) change, changed);
-        } else {
-            changed = processRegularEdit(change, changed);
-        }
+        changed = processRegularEdit(change, changed);
         if (changed) {
             updateTree();
         }
     }
 
     /**
-     * Records the changes imposed by a graph change that is not a
-     * {@link GraphJModel.RefreshEdit}.
+     * Records the changes imposed by a graph change.
      */
     private boolean processRegularEdit(GraphModelEvent.GraphModelChange change,
             boolean changed) {
@@ -362,19 +356,6 @@ public class LabelTree extends JTree implements GraphModelListener,
                 if (isListable(element)) {
                     changed |= removeFromLabels((GraphJCell) element);
                 }
-            }
-        }
-        return changed;
-    }
-
-    /**
-     * Processes the changes of a {@link GraphJModel}.
-     */
-    private boolean processRefresh(GraphJModel<?,?>.RefreshEdit change,
-            boolean changed) {
-        for (GraphJCell cell : change.getRefreshedJCells()) {
-            if (isListable(cell)) {
-                changed |= modifyLabels(cell);
             }
         }
         return changed;

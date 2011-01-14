@@ -18,7 +18,6 @@ package groove.gui.jgraph;
 
 import groove.graph.GraphRole;
 import groove.gui.Editor;
-import groove.gui.Exporter;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
 import groove.gui.Simulator;
@@ -34,11 +33,16 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 
+import org.jgraph.event.GraphSelectionEvent;
+import org.jgraph.event.GraphSelectionListener;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.AttributeMap.SerializableRectangle2D;
 import org.jgraph.graph.ConnectionSet;
@@ -60,6 +64,7 @@ final public class AspectJGraph extends JGraph {
         this.editor = null;
         assert role.inGrammar();
         this.graphRole = role;
+        setExporter(simulator.getExporter());
     }
 
     /**
@@ -75,6 +80,7 @@ final public class AspectJGraph extends JGraph {
         setCloneable(true);
         setConnectable(true);
         setDisconnectable(true);
+        setExporter(editor.getExporter());
     }
 
     @Override
@@ -170,6 +176,7 @@ final public class AspectJGraph extends JGraph {
                 result.add(this.simulator.getEditTypeAction());
             }
         }
+        addSubmenu(result, createEditMenu(atPoint));
         addSubmenu(result, super.createPopupMenu(atPoint));
         return result;
     }
@@ -187,16 +194,17 @@ final public class AspectJGraph extends JGraph {
     }
 
     /**
-     * Adds the label editing action to the super menu.
+     * Returns a menu containing all known editing actions.
+     * @param atPoint point at which the popup menu will appear
      */
-    @Override
-    public JMenu createEditMenu(Point atPoint, boolean always) {
-        JMenu result = super.createEditMenu(atPoint, always);
-        if (this.editor != null) {
-            Action editAction = getEditLabelAction();
-            if (always || editAction.isEnabled()) {
-                result.add(editAction);
-            }
+    public JMenu createEditMenu(Point atPoint) {
+        JMenu result = new JMenu("Edit");
+        if (hasEditor()) {
+            result.add(getEditLabelAction());
+            result.add(getAddPointAction(atPoint));
+            result.add(getRemovePointAction(atPoint));
+            result.add(getResetLabelPositionAction());
+            result.add(createLineStyleMenu());
         }
         return result;
     }
@@ -232,19 +240,10 @@ final public class AspectJGraph extends JGraph {
     }
 
     @Override
-    protected Exporter getExporter() {
-        if (this.simulator == null) {
-            return this.editor.getExporter();
-        } else {
-            return this.simulator.getExporter();
-        }
-    }
-
-    @Override
     protected String getExportActionName() {
         switch (getGraphRole()) {
         case HOST:
-            return Options.EXPORT_STATE_ACTION_NAME;
+            return Options.EXPORT_GRAPH_ACTION_NAME;
         case RULE:
             return Options.EXPORT_RULE_ACTION_NAME;
         case TYPE:
@@ -404,4 +403,290 @@ final public class AspectJGraph extends JGraph {
 
     /** The role for which this {@link JGraph} will display graphs. */
     private final GraphRole graphRole;
+
+    /**
+     * Abstract class for j-cell edit actions.
+     */
+    private abstract class JCellEditAction extends AbstractAction implements
+            GraphSelectionListener {
+        /**
+         * Constructs an edit action that is enabled for all j-cells.
+         * @param name the name of the action
+         */
+        protected JCellEditAction(String name) {
+            super(name);
+            this.allCells = true;
+            this.vertexOnly = true;
+            this.jCells = new ArrayList<GraphJCell>();
+            this.setEnabled(false);
+            addGraphSelectionListener(this);
+        }
+
+        /**
+         * Constructs an edit action that is enabled for only j-vertices or
+         * j-edges.
+         * @param name the name of the action
+         * @param vertexOnly <tt>true</tt> if the action is for j-vertices only
+         */
+        protected JCellEditAction(String name, boolean vertexOnly) {
+            super(name);
+            this.allCells = false;
+            this.vertexOnly = vertexOnly;
+            this.jCells = new ArrayList<GraphJCell>();
+            this.setEnabled(false);
+            addGraphSelectionListener(this);
+        }
+
+        /**
+         * Sets the j-cell to the first selected cell. Disables the action if
+         * the type of the cell disagrees with the expected type.
+         */
+        public void valueChanged(GraphSelectionEvent e) {
+            this.jCell = null;
+            this.jCells.clear();
+            for (Object cell : AspectJGraph.this.getSelectionCells()) {
+                GraphJCell jCell = (GraphJCell) cell;
+                if (this.allCells
+                    || this.vertexOnly == (jCell instanceof GraphJVertex)) {
+                    this.jCell = jCell;
+                    this.jCells.add(jCell);
+                }
+            }
+            this.setEnabled(this.jCell != null);
+        }
+
+        /**
+         * Sets the location attribute of this action.
+         */
+        public void setLocation(Point2D location) {
+            this.location = location;
+        }
+
+        /**
+         * Switch indication that the action is enabled for all types of
+         * j-cells.
+         */
+        protected final boolean allCells;
+        /** Switch indication that the action is enabled for all j-vertices. */
+        protected final boolean vertexOnly;
+        /** The first currently selected j-cell of the right type. */
+        protected GraphJCell jCell;
+        /** List list of currently selected j-cells of the right type. */
+        protected final List<GraphJCell> jCells;
+        /** The currently set point location. */
+        protected Point2D location;
+    }
+
+    /**
+     * Initialises and returns an action to add a point to the currently selected j-edge.
+     */
+    public JCellEditAction getAddPointAction(Point atPoint) {
+        if (this.addPointAction == null) {
+            this.addPointAction = new AddPointAction();
+            addAccelerator(this.addPointAction);
+        }
+        this.addPointAction.setLocation(atPoint);
+        return this.addPointAction;
+    }
+
+    /** The permanent AddPointAction associated with this j-graph. */
+    private AddPointAction addPointAction;
+
+    /**
+     * Action to add a point to the currently selected j-edge.
+     */
+    private class AddPointAction extends JCellEditAction {
+        /** Constructs an instance of the action. */
+        AddPointAction() {
+            super(Options.ADD_POINT_ACTION, false);
+            putValue(ACCELERATOR_KEY, Options.ADD_POINT_KEY);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return this.jCells.size() == 1;
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            addPoint((GraphJEdge) this.jCell, this.location);
+        }
+    }
+
+    /**
+     * @return an action to edit the currently selected j-cell label.
+     */
+    public JCellEditAction getEditLabelAction() {
+        if (this.editLabelAction == null) {
+            this.editLabelAction = new EditLabelAction();
+            addAccelerator(this.editLabelAction);
+        }
+        return this.editLabelAction;
+    }
+
+    /**
+     * The permanent EditLabelAction associated with this j-graph.
+     */
+    private EditLabelAction editLabelAction;
+
+    /**
+     * Action to edit the label of the currently selected j-cell.
+     */
+    private class EditLabelAction extends JCellEditAction {
+        /** Constructs an instance of the action. */
+        EditLabelAction() {
+            super(Options.EDIT_LABEL_ACTION);
+            putValue(ACCELERATOR_KEY, Options.RENAME_KEY);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            startEditingAtCell(this.jCell);
+        }
+    }
+
+    /**
+     * Initialises and returns an action to remove a point from the currently selected j-edge.
+     */
+    public JCellEditAction getRemovePointAction(Point atPoint) {
+        if (this.removePointAction == null) {
+            this.removePointAction = new RemovePointAction();
+            addAccelerator(this.removePointAction);
+        }
+        this.removePointAction.setLocation(atPoint);
+        return this.removePointAction;
+    }
+
+    /**
+     * The permanent RemovePointAction associated with this j-graph.
+     */
+    private RemovePointAction removePointAction;
+
+    /**
+     * Action to remove a point from the currently selected j-edge.
+     */
+    private class RemovePointAction extends JCellEditAction {
+        /** Constructs an instance of the action. */
+        RemovePointAction() {
+            super(Options.REMOVE_POINT_ACTION, false);
+            putValue(ACCELERATOR_KEY, Options.REMOVE_POINT_KEY);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return this.jCells.size() == 1;
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            removePoint((GraphJEdge) this.jCell, this.location);
+        }
+    }
+
+    /**
+     * @return an action to reset the label position of the currently selected
+     *         j-edge.
+     */
+    public JCellEditAction getResetLabelPositionAction() {
+        if (this.resetLabelPositionAction == null) {
+            this.resetLabelPositionAction = new ResetLabelPositionAction();
+        }
+        return this.resetLabelPositionAction;
+    }
+
+    /**
+     * The permanent ResetLabelPositionAction associated with this j-graph.
+     */
+    private ResetLabelPositionAction resetLabelPositionAction;
+
+    /**
+     * Action set the label of the currently selected j-cell to its default
+     * position.
+     */
+    private class ResetLabelPositionAction extends JCellEditAction {
+        /** Constructs an instance of the action. */
+        ResetLabelPositionAction() {
+            super(Options.RESET_LABEL_POSITION_ACTION, false);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            for (GraphJCell jCell : this.jCells) {
+                resetLabelPosition((GraphJEdge) jCell);
+            }
+        }
+    }
+
+    /**
+     * @param lineStyle the lineStyle for which to get the set-action
+     * @return an action to set the line style of the currently selected j-edge.
+     */
+    public JCellEditAction getSetLineStyleAction(int lineStyle) {
+        JCellEditAction result =
+            this.setLineStyleActionMap.get(Options.getLineStyleName(lineStyle));
+        if (result == null) {
+            this.setLineStyleActionMap.put(Options.getLineStyleName(lineStyle),
+                result = new SetLineStyleAction(lineStyle));
+            addAccelerator(result);
+        }
+        return result;
+    }
+
+    /** Map from line style names to corresponding actions. */
+    private final Map<String,JCellEditAction> setLineStyleActionMap =
+        new HashMap<String,JCellEditAction>();
+
+    /**
+     * Action to set the line style of the currently selected j-edge.
+     */
+    private class SetLineStyleAction extends JCellEditAction {
+        /** Constructs an instance of the action, for a given line style. */
+        SetLineStyleAction(int lineStyle) {
+            super(Options.getLineStyleName(lineStyle), false);
+            putValue(ACCELERATOR_KEY, Options.getLineStyleKey(lineStyle));
+            this.lineStyle = lineStyle;
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            for (GraphJCell jCell : this.jCells) {
+                GraphJEdge jEdge = (GraphJEdge) jCell;
+                setLineStyle(jEdge, this.lineStyle);
+                List<?> points =
+                    GraphConstants.getPoints(jCell.getAttributes());
+                if (points == null || points.size() == 2) {
+                    addPoint(jEdge, this.location);
+                }
+            }
+        }
+
+        /** The line style set by this action instance. */
+        protected final int lineStyle;
+    }
+
+    /**
+     * Creates and returns a fresh line style menu for this j-graph.
+     */
+    public JMenu createLineStyleMenu() {
+        JMenu result = new SetLineStyleMenu();
+        return result;
+    }
+
+    /**
+     * Menu offering a choice of line style setting actions.
+     */
+    private class SetLineStyleMenu extends JMenu implements
+            GraphSelectionListener {
+        /** Constructs an instance of the action. */
+        SetLineStyleMenu() {
+            super(Options.SET_LINE_STYLE_MENU);
+            valueChanged(null);
+            addGraphSelectionListener(this);
+            // initialize the line style menu
+            add(getSetLineStyleAction(GraphConstants.STYLE_ORTHOGONAL));
+            add(getSetLineStyleAction(GraphConstants.STYLE_SPLINE));
+            add(getSetLineStyleAction(GraphConstants.STYLE_BEZIER));
+            add(getSetLineStyleAction(JAttr.STYLE_MANHATTAN));
+        }
+
+        public void valueChanged(GraphSelectionEvent e) {
+            this.setEnabled(getSelectionCell() instanceof GraphJEdge);
+        }
+    }
+
 }

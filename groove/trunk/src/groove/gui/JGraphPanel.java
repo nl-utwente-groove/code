@@ -305,16 +305,11 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**
      * Refreshes everything on the panel, for instance in reaction to a change
      * in one of the visualisation options. This implementation calls
-     * {@link GraphJModel#refresh()} and {@link #refreshStatus()}.
+     * {@link JGraph#refreshAllCells()} and {@link #refreshStatus()}.
      */
     protected void refresh() {
-        GraphJModel<?,?> jModel = getJModel();
-        //        getJGraph().getGraphLayoutCache().setModel(jModel);
-        if (jModel != null) {
-            jModel.refresh();
-        }
-        getJGraph().setEnabled(jModel != null);
-        getJGraph().clearSelection();
+        getJGraph().refreshAllCells();
+        getJGraph().setEnabled(getJModel() != null);
         getLabelTree().updateModel();
         refreshStatus();
     }

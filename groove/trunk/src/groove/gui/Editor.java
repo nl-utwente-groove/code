@@ -16,6 +16,9 @@ import static groove.graph.GraphRole.HOST;
 import static groove.graph.GraphRole.RULE;
 import static groove.graph.GraphRole.TYPE;
 import static groove.gui.Options.HELP_MENU_NAME;
+import static groove.gui.Options.SHOW_ASPECTS_OPTION;
+import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
+import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.TypeGraph;
@@ -644,12 +647,14 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     JGraphPanel<?> getGraphPanel() {
         if (this.jGraphPanel == null) {
-            this.jGraphPanel =
-                new JGraphPanel<AspectJGraph>(this.jgraph, false, false,
-                    getOptions());
-            this.jGraphPanel.initialise();
-            this.jGraphPanel.addRefreshListener(Options.SHOW_NODE_IDS_OPTION);
-            this.jGraphPanel.addRefreshListener(Options.SHOW_VALUE_NODES_OPTION);
+            JGraphPanel<?> result =
+                this.jGraphPanel =
+                    new JGraphPanel<AspectJGraph>(this.jgraph, false, false,
+                        getOptions());
+            result.initialise();
+            result.addRefreshListener(SHOW_NODE_IDS_OPTION);
+            result.addRefreshListener(SHOW_VALUE_NODES_OPTION);
+            result.addRefreshListener(SHOW_ASPECTS_OPTION);
         }
         return this.jGraphPanel;
     }

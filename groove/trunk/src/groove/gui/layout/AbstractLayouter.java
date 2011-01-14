@@ -300,9 +300,6 @@ abstract public class AbstractLayouter implements Layouter {
                 if (change.size() != 0) {
                     AbstractLayouter.this.jmodel.edit(change, null, null, null);
                 }
-                // jgraph.setToolTipEnabled(jgraphWasToolTipEnabled);
-                // jgraph.repaint();
-                AbstractLayouter.this.jmodel.setLayedOut(true);
             }
         });
     }

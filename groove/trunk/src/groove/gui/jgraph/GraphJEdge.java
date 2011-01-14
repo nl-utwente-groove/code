@@ -159,6 +159,20 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     }
 
     @Override
+    final public boolean isLayoutable() {
+        return this.layoutable;
+    }
+
+    @Override
+    final public boolean setLayoutable(boolean layedOut) {
+        boolean result = layedOut != this.layoutable;
+        if (result) {
+            this.layoutable = layedOut;
+        }
+        return result;
+    }
+
+    @Override
     final public boolean isGrayedOut() {
         return this.grayedOut;
     }
@@ -361,6 +375,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     private Set<Edge<?>> edges = new TreeSet<Edge<?>>();
 
     private final JGraph jGraph;
+    private boolean layoutable;
     private boolean grayedOut;
 
     /** Returns a prototype {@link GraphJEdge} for a given {@link JGraph}. */

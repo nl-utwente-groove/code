@@ -26,7 +26,6 @@ import groove.graph.GraphRole;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.gui.jgraph.AspectJCell;
-import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.AspectJVertex;
@@ -435,7 +434,8 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                     stateVertex.getAttributes().applyMap(
                         graphVertex.getAttributes());
                     stateVertex.setGrayedOut(graphVertex.isGrayedOut());
-                    result.removeLayoutable(stateVertex);
+                    result.synchroniseLayout(stateVertex);
+                    stateVertex.setLayoutable(false);
                 }
                 for (AspectEdge edge : startGraph.edgeSet()) {
                     AspectJCell stateEdge = result.getJCellForEdge(edge);
@@ -448,7 +448,8 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                     stateEdge.getAttributes().applyMap(
                         graphEdge.getAttributes());
                     stateEdge.setGrayedOut(graphEdge.isGrayedOut());
-                    result.removeLayoutable(stateEdge);
+                    result.synchroniseLayout(stateEdge);
+                    stateEdge.setLayoutable(false);
                 }
             }
         }
@@ -491,7 +492,10 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
             getAspectJModel(oldState.getAspectGraph());
         AspectJModel newStateJModel =
             getAspectJModel(newState.getAspectGraph());
-        Set<AspectJCell> newGrayedOut = new HashSet<AspectJCell>();
+        // initially set all cells of the new model to layoutable
+        for (AspectJCell jCell : newStateJModel.getRoots()) {
+            jCell.setLayoutable(true);
+        }
         for (Map.Entry<HostNode,HostNode> entry : morphism.nodeMap().entrySet()) {
             AspectNode oldStateNode = oldState.getNode(entry.getKey());
             AspectNode newStateNode = newState.getNode(entry.getValue());
@@ -506,10 +510,9 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
             Rectangle2D sourceBounds =
                 GraphConstants.getBounds(sourceCell.getAttributes());
             GraphConstants.setBounds(targetCell.getAttributes(), sourceBounds);
-            newStateJModel.removeLayoutable(targetCell);
-            if (sourceCell.isGrayedOut()) {
-                newGrayedOut.add(targetCell);
-            }
+            targetCell.setLayoutable(false);
+            targetCell.setGrayedOut(sourceCell.isGrayedOut());
+            newStateJModel.synchroniseLayout(targetCell);
         }
         Set<AspectEdge> newEdges =
             new HashSet<AspectEdge>(newStateJModel.getGraph().edgeSet());
@@ -536,21 +539,11 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
             }
             GraphConstants.setLineStyle(targetAttributes,
                 GraphConstants.getLineStyle(sourceAttributes));
-            newStateJModel.removeLayoutable(targetCell);
-            if (sourceCell.isGrayedOut()) {
-                newGrayedOut.add(targetCell);
-            }
+            targetCell.setLayoutable(false);
+            targetCell.setGrayedOut(sourceCell.isGrayedOut());
+            newStateJModel.synchroniseLayout(targetCell);
             newEdges.remove(newStateEdge);
         }
-        // new edges should be shown, including their source and target vertex
-        for (AspectEdge newEdge : newEdges) {
-            AspectJCell targetCell = newStateJModel.getJCellForEdge(newEdge);
-            if (targetCell instanceof AspectJEdge) {
-                newGrayedOut.remove(((AspectJEdge) targetCell).getSourceVertex());
-                newGrayedOut.remove(((AspectJEdge) targetCell).getTargetVertex());
-            }
-        }
-        newStateJModel.setGrayedOut(newGrayedOut);
     }
 
     /**
