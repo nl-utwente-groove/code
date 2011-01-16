@@ -659,9 +659,6 @@ public enum AspectKind {
 
         private final String signature;
 
-        static private final EnumSet<ContentKind> literals = EnumSet.of(
-            STRING_LITERAL, BOOL_LITERAL, INT_LITERAL, REAL_LITERAL);
-
         /** Start character of parameter strings. */
         static public final char PARAM_START_CHAR = '$';
     }

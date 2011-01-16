@@ -224,14 +224,6 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         return text.toString();
     }
 
-    @Override
-    public void setEnabled(boolean enabled) {
-        if (this.isVisible && enabled) {
-            super.setEnabled(enabled);
-            this.simulator.setGraphPanelEnabled(this, enabled);
-        }
-    }
-
     /***
      * Only scroll when the panel is visible.
      */

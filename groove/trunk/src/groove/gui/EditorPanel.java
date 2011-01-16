@@ -27,7 +27,6 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 
 /**
@@ -44,6 +43,7 @@ public class EditorPanel extends JPanel {
      * editor is immediately dirty)
      */
     public EditorPanel(Simulator simulator, AspectGraph graph, boolean fresh) {
+        setName(graph.getName());
         this.simulator = simulator;
         this.options = simulator.getOptions();
         this.editor =
@@ -58,16 +58,16 @@ public class EditorPanel extends JPanel {
                 protected void updateTitle() {
                     String title =
                         (isDirty() ? "*" : "") + getGraph().getName();
-                    ((ButtonTabComponent) getTabbedPane().getTabComponentAt(
-                        getTabIndex())).setTitle(title);
+                    getTabbedPane().getTabComponentOf(EditorPanel.this).setTitle(
+                        title);
                     getOkButton().setEnabled(isDirty());
                 }
 
                 @Override
                 protected void updateStatus() {
                     super.updateStatus();
-                    ((ButtonTabComponent) getTabbedPane().getTabComponentAt(
-                        getTabIndex())).setError(!toView().getErrors().isEmpty());
+                    getTabbedPane().getTabComponentOf(EditorPanel.this).setError(
+                        !toView().getErrors().isEmpty());
                 }
 
             };
@@ -102,13 +102,8 @@ public class EditorPanel extends JPanel {
     }
 
     /** Returns the tabbed view pane of the simulator (on which this panel is displayed). */
-    private JTabbedPane getTabbedPane() {
-        return this.simulator.getGraphViewsPanel();
-    }
-
-    /** Returns the tab index of this panel on the view panel of the simulator. */
-    private int getTabIndex() {
-        return getTabbedPane().indexOfComponent(this);
+    private SimulatorPanel getTabbedPane() {
+        return this.simulator.getSimulatorPanel();
     }
 
     /**
@@ -205,7 +200,7 @@ public class EditorPanel extends JPanel {
 
     /** Besides calling the super method, also disposes the editor frame. */
     private void dispose() {
-        getTabbedPane().remove(getTabIndex());
+        getTabbedPane().remove(this);
     }
 
     private JButton okButton;
