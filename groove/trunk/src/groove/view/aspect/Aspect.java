@@ -16,7 +16,11 @@
  */
 package groove.view.aspect;
 
+import static groove.view.aspect.AspectKind.UNTYPED;
+import groove.algebra.Constant;
+import groove.algebra.Operator;
 import groove.graph.GraphRole;
+import groove.graph.algebra.VariableNode;
 import groove.view.FormatException;
 import groove.view.aspect.AspectKind.ContentKind;
 
@@ -41,7 +45,7 @@ public class Aspect {
     }
 
     /** Creates a new aspect, wrapping either a number or a text. */
-    private Aspect(AspectKind kind, ContentKind contentKind, Object content) {
+    Aspect(AspectKind kind, ContentKind contentKind, Object content) {
         this.aspectKind = kind;
         this.contentKind = contentKind;
         this.content = content;
@@ -136,12 +140,33 @@ public class Aspect {
         return this.contentKind.toString(getContent());
     }
 
+    /** 
+     * Returns a variable node, with a given number,
+     * derived from the content of this aspect.
+     * Should only be called for node aspects of data kind.
+     * @param nr the number of the node to be constructed
+     * @return a variable node
+     */
+    public VariableNode getVariableNode(int nr) {
+        VariableNode result = null;
+        if (getKind() == UNTYPED) {
+            result = new VariableNode(nr);
+        } else if (getKind().isTypedData()) {
+            if (hasContent()) {
+                result = new VariableNode(nr, (Constant) getContent());
+            } else {
+                result = new VariableNode(nr, getKind().getName());
+            }
+        }
+        return result;
+    }
+
     /** Indicates that this aspect kind is allowed to appear on edges of a particular graph kind. */
     public boolean isForEdge(GraphRole role) {
         boolean result =
             AspectKind.allowedEdgeKinds.get(role).contains(getKind());
         if (result && getKind().isTypedData()) {
-            result = !hasContent();
+            result = getContent() instanceof Operator;
         }
         return result;
     }
@@ -153,7 +178,8 @@ public class Aspect {
         if (result && getKind().isTypedData()) {
             if (hasContent()) {
                 // data aspects with content not allowed in type graphs
-                result = role != GraphRole.TYPE;
+                result =
+                    getContent() instanceof Constant && role != GraphRole.TYPE;
             } else {
                 // data aspects without content not allowed in host graphs
                 result = role != GraphRole.HOST;

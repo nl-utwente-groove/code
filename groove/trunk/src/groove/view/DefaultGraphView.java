@@ -19,6 +19,7 @@ package groove.view;
 import static groove.view.aspect.AspectKind.UNTYPED;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
+import groove.algebra.Constant;
 import groove.graph.Element;
 import groove.graph.GraphInfo;
 import groove.graph.TypeGraph;
@@ -39,6 +40,7 @@ import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -114,7 +116,8 @@ public class DefaultGraphView implements GraphView {
     /** Returns the set of labels used in this graph. */
     public Set<TypeLabel> getLabels() {
         initialise();
-        return this.labelSet;
+        return this.labelSet == null ? Collections.<TypeLabel>emptySet()
+                : this.labelSet;
     }
 
     /** 
@@ -246,10 +249,10 @@ public class DefaultGraphView implements GraphView {
                 Algebra<?> nodeAlgebra =
                     this.algebraFamily.getAlgebra(attrType.getName());
                 Aspect dataType = viewNode.getAttrAspect();
+                String symbol = ((Constant) dataType.getContent()).getSymbol();
                 nodeImage =
                     model.getFactory().createNode(viewNode.getNumber(),
-                        nodeAlgebra,
-                        nodeAlgebra.getValue((String) dataType.getContent()));
+                        nodeAlgebra, nodeAlgebra.getValue(symbol));
                 model.addNode(nodeImage);
             } else {
                 nodeImage = model.addNode(viewNode.getNumber());

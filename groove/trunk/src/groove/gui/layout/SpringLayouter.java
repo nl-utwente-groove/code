@@ -18,7 +18,7 @@ package groove.gui.layout;
 
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJEdge;
-import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.GraphJGraph;
 
 import java.awt.geom.Point2D;
 import java.util.HashMap;
@@ -53,14 +53,14 @@ public class SpringLayouter extends AbstractLayouter {
      * @require name != null, jgraph != null, rigidity > 0 jgraph.getModel()
      *          instanceof jgraph.GraphJModel
      */
-    private SpringLayouter(String name, JGraph jgraph, float rigidity) {
+    private SpringLayouter(String name, GraphJGraph jgraph, float rigidity) {
         super(name, jgraph);
         // setEnabled(true);
         // setDuration(duration);
         setRigidity(rigidity);
     }
 
-    public Layouter newInstance(JGraph jgraph) {
+    public Layouter newInstance(GraphJGraph jgraph) {
         return new SpringLayouter(this.name, jgraph, this.rigidity);
     }
 

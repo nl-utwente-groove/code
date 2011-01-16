@@ -74,6 +74,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 
 import org.jgraph.graph.AttributeMap;
@@ -94,13 +95,13 @@ import org.jgraph.plaf.basic.BasicGraphUI;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-05 13:27:59 $
  */
-abstract public class JGraph extends org.jgraph.JGraph {
+abstract public class GraphJGraph extends org.jgraph.JGraph {
     /**
      * Constructs a JGraph.
      * @param options display options object to be used
      * @param hasFilters indicates if this JGraph is to use label filtering.
      */
-    public JGraph(Options options, boolean hasFilters) {
+    public GraphJGraph(Options options, boolean hasFilters) {
         super((GraphJModel<?,?>) null);
         this.options = options == null ? new Options() : options;
         if (hasFilters) {
@@ -142,7 +143,7 @@ abstract public class JGraph extends org.jgraph.JGraph {
     }
 
     /**
-     * Changes the label store of this {@link JGraph}.
+     * Changes the label store of this {@link GraphJGraph}.
      * @param store the global label stores
      * @param labelStoreMap map from names to subsets of labels; may be {@code null}
      */
@@ -169,7 +170,7 @@ abstract public class JGraph extends org.jgraph.JGraph {
         return this.labelsMap;
     }
 
-    /** Returns the object holding the display options for this {@link JGraph}. */
+    /** Returns the object holding the display options for this {@link GraphJGraph}. */
     public final Options getOptions() {
         return this.options;
     }
@@ -227,7 +228,7 @@ abstract public class JGraph extends org.jgraph.JGraph {
                 : getSimulator().getGrammarView().getProperties();
     }
 
-    /** Returns the simulator associated with this {@link JGraph}, if any. */
+    /** Returns the simulator associated with this {@link GraphJGraph}, if any. */
     public Simulator getSimulator() {
         return null;
     }
@@ -348,12 +349,11 @@ abstract public class JGraph extends org.jgraph.JGraph {
     /** Refreshes the visibility and view of a given set of JCells. */
     public void refreshCells(final Collection<? extends GraphJCell> jCellSet) {
         if (!jCellSet.isEmpty()) {
-            this.modelRefreshing = true;
-            Collection<GraphJCell> visibleCells =
+            final Collection<GraphJCell> visibleCells =
                 new ArrayList<GraphJCell>(jCellSet.size());
-            Collection<GraphJCell> invisibleCells =
+            final Collection<GraphJCell> invisibleCells =
                 new ArrayList<GraphJCell>(jCellSet.size());
-            Collection<GraphJCell> grayedOutCells =
+            final Collection<GraphJCell> grayedOutCells =
                 new ArrayList<GraphJCell>(jCellSet.size());
             for (GraphJCell jCell : jCellSet) {
                 CellView jView = getGraphLayoutCache().getMapping(jCell, false);
@@ -389,23 +389,30 @@ abstract public class JGraph extends org.jgraph.JGraph {
                     grayedOutCells.add(jCell);
                 }
             }
-            // make sure refreshed cells are not selected
-            boolean selectsInsertedCells =
-                getGraphLayoutCache().isSelectsLocalInsertedCells();
-            getGraphLayoutCache().setSelectsLocalInsertedCells(false);
-            getGraphLayoutCache().setVisible(visibleCells.toArray(),
-                invisibleCells.toArray());
-            getGraphLayoutCache().setSelectsLocalInsertedCells(
-                selectsInsertedCells);
-            getSelectionModel().removeSelectionCells(grayedOutCells.toArray());
-            if (getSelectionCount() > 0) {
-                Rectangle scope =
-                    Groove.toRectangle(getCellBounds(getSelectionCells()));
-                if (scope != null) {
-                    scrollRectToVisible(scope);
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    GraphJGraph.this.modelRefreshing = true;
+                    // make sure refreshed cells are not selected
+                    boolean selectsInsertedCells =
+                        getGraphLayoutCache().isSelectsLocalInsertedCells();
+                    getGraphLayoutCache().setSelectsLocalInsertedCells(false);
+                    getGraphLayoutCache().setVisible(visibleCells.toArray(),
+                        invisibleCells.toArray());
+                    getGraphLayoutCache().setSelectsLocalInsertedCells(
+                        selectsInsertedCells);
+                    getSelectionModel().removeSelectionCells(
+                        grayedOutCells.toArray());
+                    if (getSelectionCount() > 0) {
+                        Rectangle scope =
+                            Groove.toRectangle(getCellBounds(getSelectionCells()));
+                        if (scope != null) {
+                            scrollRectToVisible(scope);
+                        }
+                    }
+                    GraphJGraph.this.modelRefreshing = false;
                 }
-            }
-            this.modelRefreshing = false;
+            });
         }
     }
 
@@ -459,7 +466,7 @@ abstract public class JGraph extends org.jgraph.JGraph {
     }
 
     /** 
-     * Indicates if this {@link JGraph} is in the course of processing
+     * Indicates if this {@link GraphJGraph} is in the course of processing
      * a {@link #refreshCells(Collection)}. This allows listeners to ignore the
      * resulting graph view update, if they wish.
      */
@@ -558,7 +565,7 @@ abstract public class JGraph extends org.jgraph.JGraph {
                     timer.schedule(new TimerTask() {
                         @Override
                         public void run() {
-                            JGraph.this.layouter.stop();
+                            GraphJGraph.this.layouter.stop();
                             // cancel the timer, because it may otherwise
                             // keep the entire program from terminating
                             timer.cancel();
@@ -834,7 +841,7 @@ abstract public class JGraph extends org.jgraph.JGraph {
 
     /**
      * Factory method for the graph selection model. This implementation returns
-     * a {@link JGraph.MyGraphSelectionModel}.
+     * a {@link GraphJGraph.MyGraphSelectionModel}.
      * @return the new graph selection model
      */
     protected GraphSelectionModel createSelectionModel() {
@@ -854,7 +861,7 @@ abstract public class JGraph extends org.jgraph.JGraph {
 
     /**
      * Factory method for the graph layout cache. This implementation returns a
-     * {@link groove.gui.jgraph.JGraph.MyGraphLayoutCache}.
+     * {@link groove.gui.jgraph.GraphJGraph.MyGraphLayoutCache}.
      * @return the new graph layout cache
      */
     protected GraphLayoutCache createGraphLayoutCache() {
@@ -1068,7 +1075,7 @@ abstract public class JGraph extends org.jgraph.JGraph {
             action.getValue(Action.NAME));
     }
 
-    /** The options object with which this {@link JGraph} was constructed. */
+    /** The options object with which this {@link GraphJGraph} was constructed. */
     private final Options options;
     /** The set of labels currently filtered from view. */
     private final ObservableSet<Label> filteredLabels;
@@ -1146,7 +1153,7 @@ abstract public class JGraph extends org.jgraph.JGraph {
 
     /**
      * Action to save the state, as a graph or in some export format.
-     * @see Exporter#export(JGraph, File)
+     * @see Exporter#export(GraphJGraph, File)
      */
     private class ExportAction extends AbstractAction {
         /** Constructs an instance of the action. */
@@ -1163,14 +1170,14 @@ abstract public class JGraph extends org.jgraph.JGraph {
             }
             File selectedFile =
                 ExtensionFilter.showSaveDialog(this.exporter.getFileChooser(),
-                    JGraph.this, null);
+                    GraphJGraph.this, null);
             // now save, if so required
             if (selectedFile != null) {
                 try {
-                    this.exporter.export(JGraph.this, selectedFile);
+                    this.exporter.export(GraphJGraph.this, selectedFile);
                 } catch (IOException exc) {
-                    new ErrorDialog(JGraph.this, "Error while exporting to "
-                        + selectedFile, exc).setVisible(true);
+                    new ErrorDialog(GraphJGraph.this,
+                        "Error while exporting to " + selectedFile, exc).setVisible(true);
                 }
 
             }
@@ -1278,7 +1285,7 @@ abstract public class JGraph extends org.jgraph.JGraph {
     private class MyGraphLayoutCache extends GraphLayoutCache {
         /** Constructs an instance of the cache. */
         MyGraphLayoutCache() {
-            super(null, new JCellViewFactory(JGraph.this), true);
+            super(null, new JCellViewFactory(GraphJGraph.this), true);
             setSelectsLocalInsertedCells(false);
             setShowsExistingConnections(false);
             setShowsChangedConnections(false);
@@ -1337,7 +1344,7 @@ abstract public class JGraph extends org.jgraph.JGraph {
     private class MyGraphSelectionModel extends DefaultGraphSelectionModel {
         /** Constructs an instance of the selection model. */
         MyGraphSelectionModel() {
-            super(JGraph.this);
+            super(GraphJGraph.this);
         }
 
         @Override
@@ -1395,7 +1402,7 @@ abstract public class JGraph extends org.jgraph.JGraph {
     }
 
     /**
-     * Observer that calls {@link JGraph#refreshCells(Collection)} whenever it receives an
+     * Observer that calls {@link GraphJGraph#refreshCells(Collection)} whenever it receives an
      * update event.
      */
     private class RefreshListener implements Observer {

@@ -246,8 +246,12 @@ public class JAttr {
      * This also influences the initial positioning of the nodes
      * (at creation time).
      */
-    public static final int EXTRA_BORDER_SPACE = 5;
+    public static final int EXTRA_BORDER_SPACE = 6;
 
+    /** The height of the adornment text box. */
+    public static final int ADORNMENT_HEIGHT = 12;
+    /** The font used for adornment text. */
+    public static final Font ADORNMENT_FONT = DEFAULT_FONT;
     /** Constant defining an italic font, for displaying state identities. */
     static public final Font ITALIC_FONT = DEFAULT_FONT.deriveFont(Font.ITALIC);
     /** Percentage of white in the background colour. */

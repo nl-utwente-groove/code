@@ -32,6 +32,10 @@ import java.util.TreeMap;
  * @version $Revision $
  */
 public class Algebras {
+    /** Tests if a given string represents a known signature. */
+    static public boolean isSigName(String sigName) {
+        return signatureMap.containsKey(sigName);
+    }
 
     /** Returns the set of all known signature names. */
     static public Set<String> getSigNames() {
@@ -51,21 +55,13 @@ public class Algebras {
 
     /**
      * Returns the operator for a given signature name and operator name,
-     * or {@code null} if the operator does not exist.
-     * @throws UnknownSymbolException if the signature or operator does not
-     *         exist
+     * or {@code null} if the signature or operator does not exist.
      */
-    static public Operator getOperator(String signature, String operator)
-        throws UnknownSymbolException {
-        Map<String,Operator> operators = operatorsMap.get(signature);
-        if (operators == null) {
-            throw new UnknownSymbolException(String.format(
-                "No such signature '%s'", signature));
-        }
-        Operator result = operators.get(operator);
-        if (result == null) {
-            throw new UnknownSymbolException(String.format(
-                "No such operator '%s' in signature '%s'", operator, signature));
+    static public Operator getOperator(String sigName, String operName) {
+        Operator result = null;
+        Map<String,Operator> operators = operatorsMap.get(sigName);
+        if (operators != null) {
+            result = operators.get(operName);
         }
         return result;
     }
@@ -74,9 +70,9 @@ public class Algebras {
      * Returns the name of the signature defining a constant value with a given
      * string representation, if any.
      */
-    static public String getSigNameFor(String value) {
+    static public String getSigNameFor(String symbol) {
         for (Class<? extends Signature> signature : signatureMap.values()) {
-            if (isConstant(signature, value)) {
+            if (isConstant(signature, symbol)) {
                 return getSigName(signature);
             }
         }
@@ -85,16 +81,30 @@ public class Algebras {
 
     /**
      * Tests if a string represents a constant in a given (named) signature.
-     * @throws UnknownSymbolException if the signature does not exist
+     * @return {@code true} if the signature exists and the symbol represents
+     * a known value in that signature
      */
-    static public boolean isConstant(String sigName, String value)
-        throws UnknownSymbolException {
+    static public boolean isConstant(String sigName, String symbol) {
+        boolean result = false;
         Class<? extends Signature> signature = signatureMap.get(sigName);
-        if (signature == null) {
-            throw new UnknownSymbolException(String.format(
-                "No such signature '%s'", signature));
+        if (signature != null) {
+            result = isConstant(signature, symbol);
         }
-        return isConstant(signature, value);
+        return result;
+    }
+
+    /**
+     * Returns a constant object for a given signature and constant symbol.
+     * @return a constant object, or {@code null} if either the signature does
+     * not exist, or the constant symbol does not represent a value of this
+     * signature.
+     */
+    static public Constant getConstant(String sigName, String symbol) {
+        if (isConstant(sigName, symbol)) {
+            return new Constant(sigName, symbol);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -106,8 +116,7 @@ public class Algebras {
         String signatureName = getSigName(signature);
         try {
             return (Boolean) isValueMethod.invoke(
-                AlgebraFamily.getInstance().getAlgebra(signatureName),
-                value);
+                AlgebraFamily.getInstance().getAlgebra(signatureName), value);
         } catch (IllegalAccessException e) {
             throw new IllegalArgumentException();
         } catch (InvocationTargetException e) {
@@ -211,6 +220,10 @@ public class Algebras {
         return (Class<Signature>) signature;
     }
 
+    /** 
+     * Checks if all generic types used in the signature declaration
+     * are actually themselves signatures.
+     */
     static private void checkSignatureConsistency() {
         for (Class<? extends Signature> signature : signatureMap.values()) {
             for (TypeVariable<?> type : signature.getTypeParameters()) {
@@ -223,6 +236,7 @@ public class Algebras {
         }
     }
 
+    /** Creates content for {@link #operatorsMap}. */
     static private Map<String,Map<String,Operator>> createOperatorsMap() {
         Map<String,Map<String,Operator>> result =
             new HashMap<String,Map<String,Operator>>();

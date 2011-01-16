@@ -36,7 +36,7 @@ import org.jgraph.graph.GraphConstants;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class CtrlJGraph extends JGraph {
+public class CtrlJGraph extends GraphJGraph {
     /**
      * Creates a ControlJGraph given a ControlJModel
      * @param simulator the simulator that is the context of this jgraph; may be
@@ -170,7 +170,7 @@ public class CtrlJGraph extends JGraph {
         }
 
         /**
-         * Creates a new instance, for a given {@link JGraph}.
+         * Creates a new instance, for a given {@link GraphJGraph}.
          */
         public MyForestLayouter(String name, CtrlJGraph jgraph) {
             super(name, jgraph);
@@ -190,7 +190,7 @@ public class CtrlJGraph extends JGraph {
          * This implementation returns a {@link MyForestLayouter}.
          */
         @Override
-        public Layouter newInstance(JGraph jGraph) {
+        public Layouter newInstance(GraphJGraph jGraph) {
             return new MyForestLayouter(this.name, (CtrlJGraph) jGraph);
         }
     }

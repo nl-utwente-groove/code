@@ -26,7 +26,7 @@ import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
-import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.LTSJGraph;
 import groove.io.GrooveFileChooser;
 import groove.lts.GraphNextState;
@@ -142,7 +142,7 @@ public class ShowHideMenu extends JMenu {
      * @param jgraph the underlying jgraph of which the display should be
      *        controlled
      */
-    public ShowHideMenu(JGraph jgraph) {
+    public ShowHideMenu(GraphJGraph jgraph) {
         super(Options.SHOW_HIDE_MENU_NAME);
         setMnemonic(MENU_MNEMONIC);
         this.jgraph = jgraph;
@@ -259,12 +259,12 @@ public class ShowHideMenu extends JMenu {
     }
 
     /** Returns the jgraph for which this menu works. */
-    JGraph getJGraph() {
+    GraphJGraph getJGraph() {
         return this.jgraph;
     }
 
     /** The jgraph upon which this menu works. */
-    private final JGraph jgraph;
+    private final GraphJGraph jgraph;
 
     /** Mnemonic key for the {@link AllAction} */
     private static int ALL_MNEMONIC = KeyEvent.VK_A;
@@ -302,7 +302,7 @@ public class ShowHideMenu extends JMenu {
          * @param showMode the show mode: one of {@link #ADD_MODE},
          *        {@link #HIDE_MODE} or {@link #ONLY_MODE}
          */
-        protected ShowHideAction(JGraph jgraph, int showMode, String name) {
+        protected ShowHideAction(GraphJGraph jgraph, int showMode, String name) {
             super(getModeName(showMode) + " " + name);
             this.jgraph = jgraph;
             this.showMode = showMode;
@@ -400,7 +400,7 @@ public class ShowHideMenu extends JMenu {
         abstract protected boolean isInvolved(GraphJCell jCell);
 
         /** The jgraph upon which this menu works. */
-        protected final JGraph jgraph;
+        protected final GraphJGraph jgraph;
 
         /**
          * The show mode of this action.
@@ -420,7 +420,7 @@ public class ShowHideMenu extends JMenu {
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        protected AllAction(JGraph jgraph, int showMode) {
+        protected AllAction(GraphJGraph jgraph, int showMode) {
             super(jgraph, showMode, ALL_ACTION_NAME);
             putValue(MNEMONIC_KEY, ALL_MNEMONIC);
         }
@@ -446,7 +446,7 @@ public class ShowHideMenu extends JMenu {
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        protected InvertAction(JGraph jgraph, int showMode) {
+        protected InvertAction(GraphJGraph jgraph, int showMode) {
             super(jgraph, showMode, INVERT_ACTION_NAME);
         }
 
@@ -474,7 +474,7 @@ public class ShowHideMenu extends JMenu {
          * @param selected <code>true</code> if this action instance is for the
          *        selected elements.
          */
-        protected SelectedAction(JGraph jgraph, int showMode, boolean selected) {
+        protected SelectedAction(GraphJGraph jgraph, int showMode, boolean selected) {
             super(jgraph, showMode, selected ? SELECTED_ACTION_NAME
                     : UNSELECTED_ACTION_NAME);
             putValue(MNEMONIC_KEY, SELECTED_MNEMONIC);
@@ -502,7 +502,7 @@ public class ShowHideMenu extends JMenu {
          * @param showMode one of {@link #ADD_MODE} or
          *        {@link #ONLY_MODE}
          */
-        protected ContextAction(JGraph jgraph, int showMode) {
+        protected ContextAction(GraphJGraph jgraph, int showMode) {
             super(jgraph, showMode, CONTEXT_ACTION_NAME);
             assert showMode != HIDE_MODE : "Hiding not defined for context";
             putValue(MNEMONIC_KEY, CONTEXT_MNEMONIC);
@@ -547,7 +547,7 @@ public class ShowHideMenu extends JMenu {
          * @throws IllegalArgumentException if <tt>cell</tt> does not give rise
          *         to a valid label, i.e., <tt>getLabel(cell) == null</tt>
          */
-        protected LabelAction(JGraph jgraph, int showMode, Label label)
+        protected LabelAction(GraphJGraph jgraph, int showMode, Label label)
             throws IllegalArgumentException {
             super(jgraph, showMode, "");
             putValue(NAME,
@@ -585,7 +585,7 @@ public class ShowHideMenu extends JMenu {
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        protected RegExprAction(JGraph jgraph, int showMode) {
+        protected RegExprAction(GraphJGraph jgraph, int showMode) {
             super(jgraph, showMode, REGEXPR_ACTION_NAME);
             putValue(MNEMONIC_KEY, REG_EXPR_MNEMONIC);
         }
@@ -667,7 +667,7 @@ public class ShowHideMenu extends JMenu {
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        public EmphasizedAction(JGraph jgraph, int showMode) {
+        public EmphasizedAction(GraphJGraph jgraph, int showMode) {
             super(jgraph, showMode, EMPHASIZED_ACTION_NAME);
             putValue(MNEMONIC_KEY, EMPHASIZED_MNEMONIC);
         }
@@ -694,7 +694,7 @@ public class ShowHideMenu extends JMenu {
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        public FromFileAction(JGraph jgraph, int showMode) {
+        public FromFileAction(GraphJGraph jgraph, int showMode) {
             super(jgraph, showMode, FILE_ACTION_NAME);
             putValue(MNEMONIC_KEY, FILE_MNEMONIC);
         }
@@ -756,7 +756,7 @@ public class ShowHideMenu extends JMenu {
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        public TraceAction(JGraph jgraph, int showMode) {
+        public TraceAction(GraphJGraph jgraph, int showMode) {
             super(jgraph, showMode, TRACE_ACTION_NAME);
             putValue(MNEMONIC_KEY, TRACE_MNEMONIC);
         }

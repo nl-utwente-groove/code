@@ -28,9 +28,7 @@ import static groove.view.aspect.AspectKind.PATH;
 import static groove.view.aspect.AspectKind.READER;
 import static groove.view.aspect.AspectKind.REMARK;
 import static groove.view.aspect.AspectKind.SUBTYPE;
-import groove.algebra.Algebras;
 import groove.algebra.Operator;
-import groove.algebra.UnknownSymbolException;
 import groove.graph.AbstractEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.GraphRole;
@@ -42,6 +40,7 @@ import groove.util.ExprParser;
 import groove.util.Fixable;
 import groove.view.FormatError;
 import groove.view.FormatException;
+import groove.view.aspect.AspectKind.NestedValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,13 +58,10 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
      * @param source the source node for this edge
      * @param label the label for this edge
      * @param target the target node for this edge
-     * @param graphRole the role of the graph in which this edge occurs
      */
-    public AspectEdge(AspectNode source, AspectLabel label, AspectNode target,
-            GraphRole graphRole) {
+    public AspectEdge(AspectNode source, AspectLabel label, AspectNode target) {
         super(source, label, target);
         assert label.isFixed();
-        assert graphRole.inGrammar();
         if (label.isNodeOnly()) {
             if (label.getNodeOnlyAspect() == null) {
                 this.errors.add(new FormatError("Empy edge label not allowed",
@@ -79,7 +75,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         for (FormatError error : label().getErrors()) {
             this.errors.add(error.extend(this));
         }
-        this.graphRole = graphRole;
+        this.graphRole = label.getGraphRole();
     }
 
     @Override
@@ -221,7 +217,9 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         if (sourceKind == REMARK || targetKind == REMARK) {
             setAspect(REMARK.getAspect());
         } else if (sourceKind.isQuantifier() || targetKind.isQuantifier()) {
-            setAspect(NESTED.getAspect());
+            if (getKind() != NESTED) {
+                setAspect(NESTED.getAspect().newInstance(getInnerText()));
+            }
         } else {
             AspectKind sourceRole = null;
             AspectKind targetRole = null;
@@ -312,7 +310,10 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             result = getTypeLabel();
         }
         if (result == null) {
-            result = DefaultLabel.createLabel(getInnerText());
+            String text =
+                getKind() == NESTED ? getAspect().getContentString()
+                        : getInnerText();
+            result = DefaultLabel.createLabel(text);
         }
         return result;
     }
@@ -400,11 +401,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         assert !kind.isAttrKind() && kind != AspectKind.PATH
             && kind != AspectKind.LITERAL;
         // process the content, if any
-        if (kind == NESTED
-            && !AspectLabel.NESTED_LABELS.contains(getInnerText())) {
-            throw new FormatException("Unknown label '%s' on nesting edge",
-                getInnerText(), this);
-        } else if (kind.isQuantifier()) {
+        if (kind.isQuantifier()) {
             // backward compatibility to take care of edges such as
             // exists=q:del:a rather than del=q:a or 
             // exists=q:a rather than use=q:a
@@ -466,13 +463,13 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     /** Indicates if this edge is a "nested:at". */
     public boolean isNestedAt() {
         return hasAspect() && getKind() == NESTED
-            && AspectLabel.AT_LABEL.equals(getInnerText());
+            && getAspect().getContent() == NestedValue.AT;
     }
 
     /** Indicates if this edge is a "nested:in". */
     public boolean isNestedIn() {
         return hasAspect() && getKind() == NESTED
-            && AspectLabel.IN_LABEL.equals(getInnerText());
+            && getAspect().getContent() == NestedValue.IN;
     }
 
     /** Indicates that this is a creator element with a merge label ("="). */
@@ -483,23 +480,17 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     }
 
     /** Setter for the aspect type. */
-    private void setAttrAspect(Aspect type) throws FormatException {
+    private void setAttrAspect(Aspect type) {
         AspectKind kind = type.getKind();
         assert kind == AspectKind.NONE || kind.isAttrKind();
         assert this.attr == null;
         this.attr = type;
         if (type.getKind() == ARGUMENT) {
-            this.attr = type.newInstance(getInnerText());
+            this.attr = type;
             this.argumentNr = (Integer) this.attr.getContent();
         } else if (kind.isTypedData()) {
-            try {
-                this.operator =
-                    Algebras.getOperator(kind.getName(), getInnerText());
-            } catch (UnknownSymbolException e) {
-                throw new FormatException(
-                    "Label '%s' is not an operator of type %s", getInnerText(),
-                    kind, this);
-            }
+            this.attr = type;
+            this.operator = (Operator) type.getContent();
         }
     }
 

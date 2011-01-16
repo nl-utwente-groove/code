@@ -19,8 +19,10 @@ package groove.view.aspect;
 import static groove.view.aspect.AspectParser.ASSIGN;
 import static groove.view.aspect.AspectParser.SEPARATOR;
 import groove.algebra.Algebras;
-import groove.algebra.UnknownSymbolException;
+import groove.algebra.Constant;
+import groove.algebra.Operator;
 import groove.graph.GraphRole;
+import groove.util.Pair;
 import groove.view.FormatException;
 
 import java.util.EnumMap;
@@ -104,7 +106,7 @@ public enum AspectKind {
     /** Existential quantifier. */
     EXISTS("exists", ContentKind.LEVEL),
     /** Nesting edge. */
-    NESTED("nested");
+    NESTED("nested", ContentKind.NESTED);
 
     /** Creates a new aspect kind, without content. */
     private AspectKind(String name) {
@@ -150,6 +152,26 @@ public enum AspectKind {
             this.aspect = new Aspect(this, this.contentKind);
         }
         return this.aspect;
+    }
+
+    /** 
+     * Parses a given string into an aspect of this kind, and the remainder.
+     * The string is guaranteed to start with the name of this aspect, and
+     * to contain a separator.
+     * @param input the string to be parsed
+     * @return a pair consisting of the resulting aspect and the remainder of
+     * the input string, starting from the character after the first occurrence 
+     * of #SEPARATOR onwards.
+     * @throws FormatException if the string does not have content of the
+     * correct kind
+     */
+    public Pair<Aspect,String> parseAspect(String input) throws FormatException {
+        assert input.startsWith(getName()) && input.indexOf(SEPARATOR) >= 0;
+        // give the text to the content kind to parse
+        Pair<Object,String> result =
+            getContentKind().parse(input, getName().length());
+        return new Pair<Aspect,String>(new Aspect(this, getContentKind(),
+            result.one()), result.two());
     }
 
     /** 
@@ -261,19 +283,35 @@ public enum AspectKind {
      * Returns the aspect kind corresponding to a certain non-{@code null}
      * name, or {@code null} if there is no such aspect kind.
      */
-    public static AspectKind parse(String name) {
-        return aspectMap.get(name);
+    public static AspectKind getKind(String name) {
+        return kindMap.get(name);
+    }
+
+    /** 
+     * Returns the aspect kind corresponding to a certain non-{@code null}
+     * name, or {@code null} if there is no such aspect kind.
+     */
+    public static NestedValue getNestedValue(String name) {
+        return nestedValueMap.get(name);
     }
 
     /** Static mapping from all aspect names to aspects. */
-    private static final Map<String,AspectKind> aspectMap =
+    private static final Map<String,AspectKind> kindMap =
         new HashMap<String,AspectKind>();
+    /** Static mapping from nested value texts to values. */
+    private static final Map<String,NestedValue> nestedValueMap =
+        new HashMap<String,NestedValue>();
 
     static {
-        // initialise the aspect map
-        for (AspectKind aspect : EnumSet.allOf(AspectKind.class)) {
-            AspectKind oldAspect = aspectMap.put(aspect.toString(), aspect);
-            assert oldAspect == null;
+        // initialise the aspect kind map
+        for (AspectKind kind : EnumSet.allOf(AspectKind.class)) {
+            AspectKind oldKind = kindMap.put(kind.toString(), kind);
+            assert oldKind == null;
+        }
+        // initialise the nested value map
+        for (NestedValue value : EnumSet.allOf(NestedValue.class)) {
+            NestedValue oldValue = nestedValueMap.put(value.toString(), value);
+            assert oldValue == null;
         }
     }
 
@@ -342,23 +380,30 @@ public enum AspectKind {
     }
 
     /** Type of content that can be wrapped inside an aspect. */
-    public enum ContentKind {
+    static public enum ContentKind {
         /** No content. */
         NONE,
         /** Quantifier level name. */
         LEVEL {
             @Override
-            String parseContent(String text) throws FormatException {
-                if (!isValidFirstChar(text.charAt(0))) {
-                    throw new FormatException(
-                        "Invalid start character '%c' in name '%s'",
-                        text.charAt(0), text);
+            Pair<Object,String> parse(String text, int pos)
+                throws FormatException {
+                String content = null;
+                int end = text.indexOf(SEPARATOR);
+                assert end >= 0;
+                if (end > pos) {
+                    content = parseContent(text.substring(pos + 1, end));
                 }
-                for (int i = 1; i < text.length(); i++) {
+                return new Pair<Object,String>(content, text.substring(end + 1));
+            }
+
+            @Override
+            String parseContent(String text) throws FormatException {
+                for (int i = 0; i < text.length(); i++) {
                     char c = text.charAt(i);
-                    if (!isValidNextChar(c)) {
+                    if (i == 0 ? !isValidFirstChar(c) : !isValidNextChar(c)) {
                         throw new FormatException(
-                            "Invalid character '%c' in name '%s'", c, text);
+                            "Invalid quantification level");
                     }
                 }
                 return text;
@@ -404,20 +449,66 @@ public enum AspectKind {
          */
         PARAM {
             @Override
-            Integer parseContent(String text) throws FormatException {
-                int result;
-                if (text.length() == 0 || text.charAt(0) != PARAM_START_CHAR) {
-                    throw new FormatException(
-                        "Parameter number '%s' should start with '%c'", text,
-                        PARAM_START_CHAR);
+            Pair<Object,String> parse(String text, int pos)
+                throws FormatException {
+                assert text.indexOf(SEPARATOR) >= 0;
+                // either the prefix is of the form par=$N: or par:M
+                // in the first case, the parameter number is N-1
+                String nrText;
+                int subtract;
+                FormatException nrFormatExc =
+                    new FormatException("Invalid parameter number");
+                switch (text.charAt(pos)) {
+                case SEPARATOR:
+                    nrText = text.substring(pos + 1);
+                    subtract = 0;
+                    break;
+                case ASSIGN:
+                    if (text.charAt(pos + 1) != PARAM_START_CHAR) {
+                        throw new FormatException(
+                            "Parameter number should start with '%s'", ""
+                                + PARAM_START_CHAR);
+                    }
+                    if (text.charAt(text.length() - 1) != SEPARATOR) {
+                        throw new FormatException(
+                            "Parameter line should end with '%s'", ""
+                                + SEPARATOR);
+                    }
+                    nrText = text.substring(pos + 2, text.length() - 1);
+                    if (nrText.length() == 0) {
+                        throw nrFormatExc;
+                    }
+                    // the new numbering scheme starts with 0 rather than 1;
+                    // the old parameter syntax is normalised to this scheme.
+                    subtract = 1;
+                    break;
+                default:
+                    throw new FormatException("Can't parse parameter");
                 }
+                Integer content = null;
+                if (nrText.length() > 0) {
+                    content = parseContent(nrText) - subtract;
+                    if (content < 0) {
+                        if (content + subtract == 0) {
+                            // special case: par=$0: was an alternative to
+                            // par: to specify a hidden parameter
+                            content = null;
+                        } else {
+                            throw nrFormatExc;
+                        }
+                    }
+                }
+                return new Pair<Object,String>(content, "");
+            }
+
+            @Override
+            Integer parseContent(String text) throws FormatException {
                 try {
-                    result = Integer.parseInt(text.substring(1));
+                    return Integer.parseInt(text);
                 } catch (NumberFormatException exc) {
                     throw new FormatException("Invalid parameter number %s",
                         text);
                 }
-                return result;
             }
         },
         /** 
@@ -426,15 +517,51 @@ public enum AspectKind {
          */
         NUMBER {
             @Override
+            Pair<Object,String> parse(String text, int pos)
+                throws FormatException {
+                assert text.indexOf(SEPARATOR) >= 0;
+                if (text.charAt(pos) != SEPARATOR) {
+                    throw new FormatException("Can't parse argument");
+                }
+                String nrText = text.substring(pos + 1);
+                return new Pair<Object,String>(parseContent(nrText), "");
+            }
+
+            @Override
             Integer parseContent(String text) throws FormatException {
                 int result;
+                FormatException formatExc =
+                    new FormatException("Invalid argument number %s", text);
                 try {
                     result = Integer.parseInt(text);
                 } catch (NumberFormatException exc) {
-                    throw new FormatException("Invalid argument number %s",
-                        text);
+                    throw formatExc;
+                }
+                if (result < 0) {
+                    throw formatExc;
                 }
                 return result;
+            }
+        },
+        /** Content must be a {@link NestedValue}. */
+        NESTED {
+            @Override
+            Pair<Object,String> parse(String text, int pos)
+                throws FormatException {
+                if (text.charAt(pos) != SEPARATOR) {
+                    throw new FormatException("Can't parse quantifier nesting");
+                }
+                return new Pair<Object,String>(
+                    parseContent(text.substring(pos + 1)), "");
+            }
+
+            @Override
+            NestedValue parseContent(String text) throws FormatException {
+                NestedValue content = getNestedValue(text);
+                if (content == null) {
+                    throw new FormatException("Can't parse quantifier nesting");
+                }
+                return content;
             }
         };
 
@@ -449,29 +576,52 @@ public enum AspectKind {
         }
 
         /** 
-         * Tries to parse a given string can be parsed as content of the correct kind. 
-         * This implementation tries to parse the text as a constant of the 
-         * given signature.
+         * Tries to parse a given string, from a given position, as content 
+         * of this kind.
+         * @return a pair consisting of the resulting content value (which
+         * may be {@code null} if there is, correctly, no content) and
+         * the remainder of the input string
+         * @throws FormatException if the input string cannot be parsed 
+         */
+        Pair<Object,String> parse(String text, int pos) throws FormatException {
+            // this implementation tries to find a literal of the
+            // correct signature, or no content if the signature is not set
+            assert text.indexOf(SEPARATOR, pos) >= 0;
+            if (text.charAt(pos) != SEPARATOR) {
+                throw new FormatException(
+                    "Prefix %s should be followed by '%s' in %s",
+                    text.substring(0, pos), "" + SEPARATOR, text);
+            }
+            if (this.signature == null || pos == text.length() - 1) {
+                return new Pair<Object,String>(null, text.substring(pos + 1));
+            } else {
+                // the rest of the label should be a constant or operator
+                // of the signature
+                String value = text.substring(pos + 1);
+                return new Pair<Object,String>(parseContent(value), "");
+            }
+        }
+
+        /** 
+         * Tries to parse a given string as content of the correct kind. 
          * @return the resulting content value 
          */
         Object parseContent(String text) throws FormatException {
+            // This implementation tries to parse the text as a constant of the 
+            // given signature.
             if (this.signature == null) {
                 throw new UnsupportedOperationException("No content allowed");
-            } else {
-                try {
-                    if (!Algebras.isConstant(this.signature, text)) {
-                        throw new FormatException(
-                            "Signature '%s' has no constant %s",
-                            this.signature, text);
-                    }
-                } catch (UnknownSymbolException e) {
-                    assert false : String.format(
-                        "Method called for unknown signature '%s'",
-                        this.signature);
-                    return null;
-                }
             }
-            return text;
+            Object content = Algebras.getConstant(this.signature, text);
+            if (content == null) {
+                content = Algebras.getOperator(this.signature, text);
+            }
+            if (content == null) {
+                throw new FormatException(
+                    "Signature '%s' has no constant or operator %s",
+                    this.signature, text);
+            }
+            return content;
         }
 
         /** 
@@ -483,8 +633,10 @@ public enum AspectKind {
         String toString(Object content) {
             if (content == null) {
                 return "";
-            } else if (this == PARAM) {
-                return "" + PARAM_START_CHAR + content;
+            } else if (content instanceof Constant) {
+                return ((Constant) content).getSymbol();
+            } else if (content instanceof Operator) {
+                return ((Operator) content).getName();
             } else {
                 return "" + content;
             }
@@ -497,13 +649,11 @@ public enum AspectKind {
         String toString(AspectKind aspect, Object content) {
             if (content == null) {
                 return aspect.getPrefix();
-            } else if (literals.contains(this)) {
-                return aspect.getPrefix() + content;
-            } else if (this == PARAM) {
-                return aspect.getName() + ASSIGN + PARAM_START_CHAR + content
+            } else if (this == LEVEL) {
+                return aspect.getName() + ASSIGN + toString(content)
                     + SEPARATOR;
             } else {
-                return aspect.getName() + ASSIGN + content + SEPARATOR;
+                return aspect.getPrefix() + toString(content);
             }
         }
 
@@ -514,5 +664,24 @@ public enum AspectKind {
 
         /** Start character of parameter strings. */
         static public final char PARAM_START_CHAR = '$';
+    }
+
+    /** Correct values of the {@link #NESTED} aspect kind. */
+    public static enum NestedValue {
+        /** Embedding of one nesting level in another. */
+        IN("in"),
+        /** Assignment of a nesting level to a rule node. */
+        AT("at");
+
+        private NestedValue(String text) {
+            this.text = text;
+        }
+
+        @Override
+        public String toString() {
+            return this.text;
+        }
+
+        private final String text;
     }
 }

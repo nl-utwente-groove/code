@@ -146,7 +146,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
             PlainToAspectMap elementMap) {
         GraphRole role = graph.getRole();
         AspectGraph result = new AspectGraph(graph.getName(), role);
-        AspectParser labelParser = AspectParser.getInstance(role);
+        AspectParser labelParser = AspectParser.getInstance();
         List<FormatError> errors = new ArrayList<FormatError>();
         assert elementMap != null && elementMap.isEmpty();
         // first do the nodes;
@@ -160,7 +160,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
         Map<DefaultEdge,AspectLabel> edgeDataMap =
             new HashMap<DefaultEdge,AspectLabel>();
         for (DefaultEdge edge : graph.edgeSet()) {
-            AspectLabel label = labelParser.parse(edge.label().text());
+            AspectLabel label = labelParser.parse(edge.label().text(), role);
             if (label.isNodeOnly()) {
                 AspectNode sourceImage = elementMap.getNode(edge.source());
                 sourceImage.setAspects(label);
@@ -178,7 +178,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
             elementMap.putEdge(edge, edgeImage);
             if (!edge.source().equals(edge.target()) && !label.isBinary()) {
                 errors.add(new FormatError("%s %s must be a node label",
-                    label.getRole().getName(true), label, edgeImage));
+                    label.getRole().getDescription(true), label, edgeImage));
             }
         }
         GraphInfo.transfer(graph, result, elementMap);
@@ -582,8 +582,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
         @Override
         public AspectEdge createEdge(AspectNode source, Label label,
                 AspectNode target) {
-            return new AspectEdge(source, (AspectLabel) label, target,
-                this.graphRole);
+            return new AspectEdge(source, (AspectLabel) label, target);
         }
 
         @Override

@@ -40,7 +40,8 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         this.node = node;
         this.boundNodes = Collections.<RuleNode>singleton(node);
         this.algebra = family.getAlgebra(node.getSignature());
-        assert node.getConstant() != null;
+        this.symbol = node.getSymbol();
+        assert this.symbol != null;
     }
 
     public ValueNodeRecord getRecord(SearchPlanStrategy.Search matcher) {
@@ -87,6 +88,8 @@ class ValueNodeSearchItem extends AbstractSearchItem {
     final VariableNode node;
     /** The algebra family in which the value is to be created. */
     final Algebra<?> algebra;
+    /** The constant symbol. */
+    final String symbol;
     /** The index of the value node (in the result. */
     int nodeIx;
 
@@ -103,9 +106,8 @@ class ValueNodeSearchItem extends AbstractSearchItem {
             super(search);
             Algebra<?> algebra = ValueNodeSearchItem.this.algebra;
             this.image =
-                search.getHost().getFactory().createNode(
-                    algebra,
-                    algebra.getValue(ValueNodeSearchItem.this.node.getConstant()));
+                search.getHost().getFactory().createNode(algebra,
+                    algebra.getValue(ValueNodeSearchItem.this.symbol));
         }
 
         /**

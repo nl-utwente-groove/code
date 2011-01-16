@@ -33,7 +33,7 @@ import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JAttr;
-import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.LTSJVertex;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
@@ -65,7 +65,7 @@ public final class GraphToTikz {
      * @return a string with the Tikz encoding of the graph.
      */
     public static <N extends Node,E extends Edge<N>> String convertGraphToTikzStr(
-            JGraph jGraph) {
+            GraphJGraph jGraph) {
         @SuppressWarnings({"unchecked", "rawtypes"})
         GraphJModel<N,E> model = (GraphJModel) jGraph.getModel();
         Graph<N,E> graph = model.getGraph();

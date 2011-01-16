@@ -68,7 +68,7 @@ public class JEdgeView extends EdgeView {
      * underlying model for edge attributes. (using
      * <tt>@link JModel#createEdgeAttributes</tt>).
      */
-    public JEdgeView(GraphJEdge jEdge, JGraph jGraph) {
+    public JEdgeView(GraphJEdge jEdge, GraphJGraph jGraph) {
         super(jEdge);
         // first we add points and change the linestyle of the edge
         // in the model attributes, if the new edge demands it

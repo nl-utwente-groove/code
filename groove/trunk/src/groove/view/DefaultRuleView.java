@@ -36,7 +36,6 @@ import groove.graph.Label;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ProductNode;
-import groove.graph.algebra.VariableNode;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
 import groove.rel.VarSupport;
@@ -370,13 +369,7 @@ public class DefaultRuleView implements RuleView {
         if (nodeAttrKind == PRODUCT) {
             return new ProductNode(node.getNumber(), node.getArgNodes().size());
         } else if (nodeAttrKind.isData()) {
-            if (nodeAttrKind == UNTYPED) {
-                return new VariableNode(node.getNumber(), null, null);
-            } else {
-                return new VariableNode(node.getNumber(),
-                    nodeAttrKind.getName(),
-                    (String) node.getAttrAspect().getContent());
-            }
+            return node.getAttrAspect().getVariableNode(node.getNumber());
         } else {
             return ruleFactory.createNode(node.getNumber());
         }
@@ -1910,12 +1903,26 @@ public class DefaultRuleView implements RuleView {
                 if (node.hasParam()) {
                     Integer nr = (Integer) node.getParam().getContent();
                     if (nr != null) {
-                        parCount = Math.max(parCount, nr);
+                        parCount = Math.max(parCount, nr + 1);
                         try {
                             processNode(parMap, node, nr);
                         } catch (FormatException exc) {
                             errors.addAll(exc.getErrors());
                         }
+                    } else {
+                        // this is an unnumbered parameter,
+                        // which serves as an explicit anchor node
+                        if (node.getParamKind() != PARAM_BI) {
+                            throw new FormatException(
+                                "Anchor node cannot be input or output", node);
+                        }
+                        if (!node.getKind().inLHS()) {
+                            throw new FormatException(
+                                "Anchor node must be in LHS", node);
+                        }
+                        Level level = getLevelTree().getLevel(node);
+                        RuleNode nodeImage = level.getLhsMap().getNode(node);
+                        this.hiddenPars.add(nodeImage);
                     }
                 }
             }
@@ -1925,7 +1932,7 @@ public class DefaultRuleView implements RuleView {
             // construct the signature
             // test if parameters form a consecutive sequence
             Set<Integer> missingPars = new TreeSet<Integer>();
-            for (int i = 1; i <= parCount; i++) {
+            for (int i = 0; i < parCount; i++) {
                 missingPars.add(i);
             }
             missingPars.removeAll(parMap.keySet());
@@ -1934,7 +1941,7 @@ public class DefaultRuleView implements RuleView {
             }
             CtrlPar.Var[] sigArray = new CtrlPar.Var[parCount];
             for (Map.Entry<Integer,CtrlPar.Var> parEntry : parMap.entrySet()) {
-                sigArray[parEntry.getKey() - 1] = parEntry.getValue();
+                sigArray[parEntry.getKey()] = parEntry.getValue();
             }
             this.sig = Arrays.asList(sigArray);
         }
@@ -1949,66 +1956,52 @@ public class DefaultRuleView implements RuleView {
             }
             AspectKind nodeKind = node.getKind();
             AspectKind paramKind = node.getParamKind();
-            if (nr == 0) {
-                if (paramKind != PARAM_BI) {
-                    throw new FormatException(
-                        "Anchor node cannot be input or output", node);
-                }
-                if (!nodeKind.inLHS()) {
-                    throw new FormatException("Anchor node must be in LHS",
-                        node);
-                }
-                RuleNode nodeImage = level.getLhsMap().getNode(node);
-                this.hiddenPars.add(nodeImage);
+            boolean hasControl =
+                getSystemProperties() != null
+                    && getSystemProperties().isUseControl();
+            CtrlType varType;
+            AspectKind attrKind = node.getAttrKind();
+            if (!attrKind.isData()) {
+                varType = CtrlType.getNodeType();
+            } else if (attrKind == UNTYPED) {
+                varType = CtrlType.getAttrType();
             } else {
-                boolean hasControl =
-                    getSystemProperties() != null
-                        && getSystemProperties().isUseControl();
-                CtrlType varType;
-                AspectKind attrKind = node.getAttrKind();
-                if (!attrKind.isData()) {
-                    varType = CtrlType.getNodeType();
-                } else if (attrKind == UNTYPED) {
-                    varType = CtrlType.getAttrType();
-                } else {
-                    varType = CtrlType.getDataType(attrKind.getName());
-                }
-                CtrlVar var = new CtrlVar("arg" + nr, varType);
-                boolean inOnly = paramKind == PARAM_IN;
-                boolean outOnly = paramKind == PARAM_OUT;
-                if (inOnly && !hasControl) {
+                varType = CtrlType.getDataType(attrKind.getName());
+            }
+            CtrlVar var = new CtrlVar("arg" + nr, varType);
+            boolean inOnly = paramKind == PARAM_IN;
+            boolean outOnly = paramKind == PARAM_OUT;
+            if (inOnly && !hasControl) {
+                throw new FormatException(
+                    "Parameter '%d' is a required input, but no control is in use",
+                    nr, node);
+            }
+            RuleNode nodeImage;
+            boolean creator;
+            if (nodeKind.inLHS()) {
+                nodeImage = level.getLhsMap().getNode(node);
+                creator = false;
+            } else if (nodeKind.inRHS()) {
+                if (inOnly) {
                     throw new FormatException(
-                        "Parameter '%d' is a required input, but no control is in use",
-                        nr, node);
+                        "Creator node cannot be used as input parameter", node);
                 }
-                RuleNode nodeImage;
-                boolean creator;
-                if (nodeKind.inLHS()) {
-                    nodeImage = level.getLhsMap().getNode(node);
-                    creator = false;
-                } else if (nodeKind.inRHS()) {
-                    if (inOnly) {
-                        throw new FormatException(
-                            "Creator node cannot be used as input parameter",
-                            node);
-                    }
-                    outOnly = true;
-                    nodeImage = level.getRhsMap().getNode(node);
-                    creator = true;
-                } else {
-                    throw new FormatException(
-                        "Parameter '%d' may not occur in NAC", nr, node);
-                }
-                CtrlPar.Var par =
-                    inOnly || outOnly ? new CtrlPar.Var(var, inOnly)
-                            : new CtrlPar.Var(var);
-                par.setRuleNode(nodeImage, creator);
-                CtrlPar.Var oldPar = parMap.put(nr, par);
-                if (oldPar != null) {
-                    throw new FormatException(
-                        "Parameter '%d' defined more than once", nr, node,
-                        oldPar.getRuleNode());
-                }
+                outOnly = true;
+                nodeImage = level.getRhsMap().getNode(node);
+                creator = true;
+            } else {
+                throw new FormatException(
+                    "Parameter '%d' may not occur in NAC", nr, node);
+            }
+            CtrlPar.Var par =
+                inOnly || outOnly ? new CtrlPar.Var(var, inOnly)
+                        : new CtrlPar.Var(var);
+            par.setRuleNode(nodeImage, creator);
+            CtrlPar.Var oldPar = parMap.put(nr, par);
+            if (oldPar != null) {
+                throw new FormatException(
+                    "Parameter '%d' defined more than once", nr, node,
+                    oldPar.getRuleNode());
             }
         }
 

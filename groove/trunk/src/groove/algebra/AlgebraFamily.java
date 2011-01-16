@@ -100,6 +100,15 @@ public class AlgebraFamily {
         return getAlgebra(signature).getValue(constant);
     }
 
+    /** 
+     * Returns the value for a given constant.
+     * @return the value {@code constant} (in the appropriate algebra)
+     * @see #getAlgebraFor(String)
+     */
+    public Object getValue(Constant constant) {
+        return getValue(constant.getSignature(), constant.getSymbol());
+    }
+
     /**
      * Returns the operation associated with a certain signature name and operation
      * name.
@@ -174,15 +183,8 @@ public class AlgebraFamily {
         // now create an operation for all those declared methods
         Method[] methods = algebra.getClass().getDeclaredMethods();
         for (Method method : methods) {
-            try {
-                if (methodNames.contains(method.getName())) {
-                    result.put(method.getName(),
-                        createOperation(algebra, method));
-                }
-            } catch (UnknownSymbolException e) {
-                // this can never happen, as we are only using existing 
-                // signatures and methods
-                assert false;
+            if (methodNames.contains(method.getName())) {
+                result.put(method.getName(), createOperation(algebra, method));
             }
         }
         return result;
@@ -192,8 +194,7 @@ public class AlgebraFamily {
      * Returns a new algebra operation object for the given method (from a given
      * algebra).
      */
-    private Operation createOperation(Algebra<?> algebra, Method method)
-        throws UnknownSymbolException {
+    private Operation createOperation(Algebra<?> algebra, Method method) {
         return new Operation(this, algebra, method);
     }
 
@@ -282,8 +283,7 @@ public class AlgebraFamily {
 
     /** Implementation of an algebra operation. */
     private static class Operation implements groove.algebra.Operation {
-        Operation(AlgebraFamily register, Algebra<?> algebra, Method method)
-            throws UnknownSymbolException {
+        Operation(AlgebraFamily register, Algebra<?> algebra, Method method) {
             this.algebra = algebra;
             this.method = method;
             String returnTypeName =

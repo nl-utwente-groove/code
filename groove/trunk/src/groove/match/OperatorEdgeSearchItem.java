@@ -57,7 +57,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
             this.neededNodes.add(this.target);
             this.value =
                 family.getValue(edge.getOperator().getResultType(),
-                    this.target.getConstant());
+                    this.target.getSymbol());
         } else {
             this.boundNodes = Collections.<RuleNode>singleton(this.target);
             this.value = null;

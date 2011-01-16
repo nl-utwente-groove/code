@@ -22,7 +22,7 @@ import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.GraphJGraph;
 import groove.util.Converter;
 import groove.util.Groove;
 import groove.util.ObservableSet;
@@ -106,7 +106,7 @@ public class LabelTree extends JTree implements GraphModelListener,
      * @param supportsSubtypes if <code>true</code>, the tree should support
      *        subtype display and operations, by using the jgraph's label store.
      */
-    public LabelTree(JGraph jgraph, boolean supportsSubtypes) {
+    public LabelTree(GraphJGraph jgraph, boolean supportsSubtypes) {
         this.jgraph = jgraph;
         this.supportsSubtypes = supportsSubtypes;
         this.filteredLabels = jgraph.getFilteredLabels();
@@ -213,7 +213,7 @@ public class LabelTree extends JTree implements GraphModelListener,
     /**
      * Returns the jgraph with which this label list is associated.
      */
-    public JGraph getJGraph() {
+    public GraphJGraph getJGraph() {
         return this.jgraph;
     }
 
@@ -686,9 +686,9 @@ public class LabelTree extends JTree implements GraphModelListener,
     private final DefaultTreeModel treeModel;
 
     /**
-     * The {@link JGraph}associated to this label list.
+     * The {@link GraphJGraph}associated to this label list.
      */
-    private final JGraph jgraph;
+    private final GraphJGraph jgraph;
 
     /**
      * The {@link GraphJModel}currently being viewed by this label list.

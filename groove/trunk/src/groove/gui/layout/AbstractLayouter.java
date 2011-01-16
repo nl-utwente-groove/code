@@ -19,7 +19,7 @@ package groove.gui.layout;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JEdgeView;
-import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.GraphJGraph;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -149,7 +149,7 @@ abstract public class AbstractLayouter implements Layouter {
     /**
      * Constructor to create a dummy, prototype layout action. Proper layout
      * actions are created using <tt>newInstance(MyJGraph)</tt>
-     * @see #newInstance(JGraph)
+     * @see #newInstance(GraphJGraph)
      */
     protected AbstractLayouter(String name) {
         this(name, null);
@@ -158,9 +158,9 @@ abstract public class AbstractLayouter implements Layouter {
     /**
      * Constructor to create a dummy, prototype layout action. Proper layout
      * actions are created using <tt>newInstance(MyJGraph)</tt>
-     * @see #newInstance(JGraph)
+     * @see #newInstance(GraphJGraph)
      */
-    protected AbstractLayouter(String name, JGraph jgraph) {
+    protected AbstractLayouter(String name, GraphJGraph jgraph) {
         setName(name);
         this.jgraph = jgraph;
     }
@@ -317,7 +317,7 @@ abstract public class AbstractLayouter implements Layouter {
     /**
      * The underlying jgraph for this layout action.
      */
-    protected final JGraph jgraph;
+    protected final GraphJGraph jgraph;
 
     /**
      * The model that has last been layed out.

@@ -34,7 +34,6 @@ import groove.view.StoredGrammarView;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -351,7 +350,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
             // during automatic generation, we do not always have vertices for
             // all states
             if (jCell != null) {
-                getJGraph().refreshCells(Collections.singleton(jCell));
+                jCell.refreshAttributes();
             }
             refreshStatus();
         }
