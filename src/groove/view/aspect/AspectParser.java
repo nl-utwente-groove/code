@@ -16,15 +16,10 @@
  */
 package groove.view.aspect;
 
-import groove.algebra.Algebras;
-import groove.graph.GraphRole;
 import groove.graph.EdgeRole;
-import groove.util.ExprParser;
+import groove.graph.GraphRole;
+import groove.util.Pair;
 import groove.view.FormatException;
-
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.Map;
 
 /**
  * Class that is responsible for recognising aspects from edge labels.
@@ -33,19 +28,20 @@ import java.util.Map;
  */
 public class AspectParser {
     /** Creates an aspect parser for a particular graph role. */
-    private AspectParser(GraphRole role) {
-        assert role.inGrammar();
-        this.role = role;
+    private AspectParser() {
+        // empty
     }
 
     /**
      * Converts a plain label to an aspect label.
      * @param text the plain label text to start from
+     * @param role the graph role for which we are parsing
      * @return an aspect label, in which the aspect prefixes of {@code label}
      * have been parsed into aspect values.
      */
-    public AspectLabel parse(String text) {
-        AspectLabel result = new AspectLabel(this.role);
+    public AspectLabel parse(String text, GraphRole role) {
+        assert role.inGrammar();
+        AspectLabel result = new AspectLabel(role);
         try {
             parse(text, result);
         } catch (FormatException exc) {
@@ -62,96 +58,33 @@ public class AspectParser {
      * @throws FormatException if there were parse errors in {@code text}
      */
     private void parse(String text, AspectLabel result) throws FormatException {
-        Aspect value = null;
-        String valueText = nextValue(text);
-        if (valueText != null) {
-            text = text.substring(valueText.length() + 1);
-            // parse the value text into a value
-            String contentText;
-            int assignIndex = valueText.indexOf(ASSIGN);
-            if (assignIndex < 0) {
-                contentText = null;
-            } else {
-                contentText =
-                    valueText.substring(assignIndex + ASSIGN.length());
-                valueText = valueText.substring(0, assignIndex);
+        int nextSeparator;
+        boolean stopParsing = false;
+        while (!stopParsing && (nextSeparator = text.indexOf(SEPARATOR)) >= 0) {
+            // find the prefixing sequence of letters
+            StringBuilder prefixBuilder = new StringBuilder();
+            int pos;
+            char c;
+            for (pos = 0; Character.isLetter(c = text.charAt(pos)); pos++) {
+                prefixBuilder.append(c);
             }
-            value = parseValue(valueText, contentText);
-            // test if this should be a data constant
-            if (value.getKind().isTypedData() && text.length() > 0) {
-                String signature = value.getKind().getName();
-                String sigForConstant = Algebras.getSigNameFor(text);
-                if (signature.equals(sigForConstant)) {
-                    value = value.newInstance(text);
-                    text = "";
-                } else if (sigForConstant != null) {
-                    throw new FormatException("Value %s belongs to type %s",
-                        text, signature);
-                } else if (!ExprParser.isIdentifier(text)) {
+            String prefix = prefixBuilder.toString();
+            stopParsing =
+                EdgeRole.getRole(prefix) != null && pos == nextSeparator;
+            if (!stopParsing) {
+                AspectKind kind = AspectKind.getKind(prefix);
+                if (kind == null) {
                     throw new FormatException(
-                        "Type '%s' does not have value %s", signature, text);
+                        "Can't parse prefix '%s' (precede with ':' to use literal text)",
+                        text.substring(0, nextSeparator));
                 }
+                Pair<Aspect,String> parseResult = kind.parseAspect(text);
+                Aspect aspect = parseResult.one();
+                result.addAspect(aspect);
+                text = parseResult.two();
+                stopParsing = aspect.getKind().isLast();
             }
         }
-        if (value != null) {
-            result.addAspect(value);
-        }
-        if (value == null || value.getKind().isLast() || text.length() == 0) {
-            setInnerText(text, result);
-        } else {
-            // recursively call the method with the remainder of the text
-            parse(text, result);
-        }
-    }
-
-    /** 
-     * Determines the next aspect value.
-     * @return the next aspect value in {@code text},
-     * or {@code null} if there is no next aspect value 
-     */
-    private String nextValue(String text) {
-        int result = text.indexOf(SEPARATOR);
-        if (result > 0) {
-            if (!Character.isLetter(text.charAt(0))
-                || !EdgeRole.parseLabel(text).two().equals(text)) {
-                result = -1;
-            }
-        }
-        if (result < 0) {
-            return null;
-        } else {
-            return text.substring(0, result);
-        }
-    }
-
-    /**
-     * Returns the aspect value obtained by parsing a given value and content
-     * text.
-     * @param name string description of a new {@link Aspect}
-     * @param contentText string description for the new value's content;
-     * may be {@code null}
-     * @return the resulting aspect value
-     * @throws FormatException if <code>valueText</code> is not a valid
-     *         {@link Aspect}, or the presence of content is not as it
-     *         should be.
-     */
-    private Aspect parseValue(String name, String contentText)
-        throws FormatException {
-        Aspect value = Aspect.getAspect(name);
-        if (value == null) {
-            throw new FormatException(
-                String.format(
-                    "Unknown aspect value '%s' (precede label text with ':' to avoid aspect parsing)",
-                    name));
-        } else if (contentText != null) {
-            // use the value as a factory to get a correct instance
-            value = value.newInstance(contentText);
-        }
-        return value;
-    }
-
-    /** Do some final parsing and set the inner text. */
-    private void setInnerText(String text, AspectLabel result) {
         // special case: we will treat labels of the form type:prim 
         // (with prim a primitive type) as prim:
         String typePrefix = EdgeRole.NODE_TYPE.getPrefix();
@@ -166,28 +99,16 @@ public class AspectParser {
         result.setInnerText(text);
     }
 
-    /** The graph role of this aspect parser. */
-    private final GraphRole role;
-
     /** Separator between aspect name and associated content. */
-    static public final String ASSIGN = "=";
+    static public final char ASSIGN = '=';
 
     /** Separator between aspect prefix and main label text. */
-    static public final String SEPARATOR = ":";
+    static public final char SEPARATOR = ':';
 
-    /** Yields a predefined label parser for a given graph role. */
-    public static AspectParser getInstance(GraphRole role) {
-        return instances.get(role);
+    /** Returns the singleton instance of this class. */
+    public static AspectParser getInstance() {
+        return instance;
     }
 
-    static private final Map<GraphRole,AspectParser> instances =
-        new EnumMap<GraphRole,AspectParser>(GraphRole.class);
-
-    static {
-        for (GraphRole role : EnumSet.allOf(GraphRole.class)) {
-            if (role.inGrammar()) {
-                instances.put(role, new AspectParser(role));
-            }
-        }
-    }
+    static private final AspectParser instance = new AspectParser();
 }

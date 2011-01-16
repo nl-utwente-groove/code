@@ -16,6 +16,7 @@
  */
 package groove.graph.algebra;
 
+import groove.algebra.Constant;
 import groove.graph.AbstractNode;
 import groove.trans.RuleNode;
 
@@ -27,12 +28,29 @@ import groove.trans.RuleNode;
  */
 public class VariableNode extends AbstractNode implements RuleNode {
     /**
-     * Constructs a (numbered) variable node,
-     * with an optional signature and an optional constant symbol.
+     * Constructs a (numbered) untyped variable node.
      */
-    public VariableNode(int nr, String signature, String constant) {
+    public VariableNode(int nr) {
+        super(nr);
+        this.signature = null;
+        this.constant = null;
+    }
+
+    /**
+     * Constructs a (numbered) typed variable node.
+     */
+    public VariableNode(int nr, String signature) {
         super(nr);
         this.signature = signature;
+        this.constant = null;
+    }
+
+    /**
+     * Constructs a (numbered) constant variable node.
+     */
+    public VariableNode(int nr, Constant constant) {
+        super(nr);
+        this.signature = constant.getSignature();
         this.constant = constant;
     }
 
@@ -41,10 +59,10 @@ public class VariableNode extends AbstractNode implements RuleNode {
      */
     @Override
     public String toString() {
-        if (getConstant() == null || getConstant().length() == 0) {
+        if (getConstant() == null) {
             return "x" + getNumber();
         } else {
-            return getSignature() + '/' + getConstant();
+            return getConstant().toString();
         }
     }
 
@@ -78,12 +96,19 @@ public class VariableNode extends AbstractNode implements RuleNode {
     /**
      * Method returning the (possibly null) constant symbol of the variable node.
      */
-    public String getConstant() {
+    public String getSymbol() {
+        return this.constant == null ? null : this.constant.getSymbol();
+    }
+
+    /**
+     * Method returning the (possibly null) constant of the variable node.
+     */
+    public Constant getConstant() {
         return this.constant;
     }
 
     /** The signature name of this variable node, if any. */
     private final String signature;
     /** Optional constant symbol. */
-    private final String constant;
+    private final Constant constant;
 }

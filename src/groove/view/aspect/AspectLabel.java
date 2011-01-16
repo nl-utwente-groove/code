@@ -17,16 +17,14 @@
 package groove.view.aspect;
 
 import groove.graph.AbstractLabel;
-import groove.graph.GraphRole;
 import groove.graph.EdgeRole;
+import groove.graph.GraphRole;
 import groove.view.FormatError;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Label storing a set of aspect values and an inner text.
@@ -60,6 +58,11 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
     @Override
     public EdgeRole getRole() {
         return EdgeRole.parseLabel(getInnerText()).one();
+    }
+
+    /** Returns the graph role for which this label is intended. */
+    public GraphRole getGraphRole() {
+        return this.role;
     }
 
     @Override
@@ -248,18 +251,7 @@ public class AspectLabel extends AbstractLabel implements Cloneable {
 
     /** List of errors detected while building this label. */
     private final List<FormatError> errors = new ArrayList<FormatError>();
-
-    /** Label used for parent edges (between quantifier nodes). */
-    public static final String IN_LABEL = "in";
-    /** Label used for level edges (from rule nodes to quantifier nodes). */
-    public static final String AT_LABEL = "at";
     /** The set of all allowed nesting labels. */
-    static final Set<String> NESTED_LABELS = new HashSet<String>();
-
-    static {
-        NESTED_LABELS.add(IN_LABEL);
-        NESTED_LABELS.add(AT_LABEL);
-    }
     private static final Map<GraphRole,String> roleDescription =
         new EnumMap<GraphRole,String>(GraphRole.class);
     static {

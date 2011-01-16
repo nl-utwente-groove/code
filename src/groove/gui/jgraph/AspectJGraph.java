@@ -58,9 +58,9 @@ import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.PortView;
 
 /**
- * Extension of {@link JGraph} that provides the proper popup menu.
+ * Extension of {@link GraphJGraph} that provides the proper popup menu.
  */
-final public class AspectJGraph extends JGraph {
+final public class AspectJGraph extends GraphJGraph {
     /**
      * Creates a j-graph for a given simulator, with an initially empty j-model.
      */
@@ -270,7 +270,7 @@ final public class AspectJGraph extends JGraph {
 
     /**
      * This implementation returns a {@link EditorMarqueeHandler}.
-     * @see groove.gui.jgraph.JGraph#createMarqueeHandler()
+     * @see groove.gui.jgraph.GraphJGraph#createMarqueeHandler()
      */
     @Override
     protected EditorMarqueeHandler createMarqueeHandler() {
@@ -409,7 +409,7 @@ final public class AspectJGraph extends JGraph {
      */
     private final Editor editor;
 
-    /** The role for which this {@link JGraph} will display graphs. */
+    /** The role for which this {@link GraphJGraph} will display graphs. */
     private final GraphRole graphRole;
 
     /** Map from line style names to corresponding actions. */

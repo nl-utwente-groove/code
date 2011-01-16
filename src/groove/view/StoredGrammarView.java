@@ -436,6 +436,7 @@ public class StoredGrammarView implements GrammarView, Observer {
             errors.addAll(exc.getErrors());
         }
         if (errors.isEmpty()) {
+            assert result.getCtrlAut() != null : "Grammar must have control";
             return result;
         } else {
             throw new FormatException(errors);

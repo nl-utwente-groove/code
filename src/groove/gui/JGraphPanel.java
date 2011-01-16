@@ -22,7 +22,7 @@ import groove.graph.Node;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.GraphJGraph;
 import groove.util.Pair;
 
 import java.awt.BorderLayout;
@@ -49,13 +49,13 @@ import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
 
 /**
- * A panel that combines a {@link groove.gui.jgraph.JGraph}and (optionally) a
+ * A panel that combines a {@link groove.gui.jgraph.GraphJGraph}and (optionally) a
  * {@link groove.gui.LabelTree}.
  * 
  * @author Arend Rensink, updated by Carel van Leeuwen
  * @version $Revision$
  */
-public class JGraphPanel<JG extends JGraph> extends JPanel {
+public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     /**
      * Constructs a view upon a given jgraph, possibly with a status bar.
      * 
@@ -122,7 +122,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     }
 
     /**
-     * Returns the underlying {@link JGraph}.
+     * Returns the underlying {@link GraphJGraph}.
      */
     public JG getJGraph() {
         return this.jGraph;
@@ -305,7 +305,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**
      * Refreshes everything on the panel, for instance in reaction to a change
      * in one of the visualisation options. This implementation calls
-     * {@link JGraph#refreshAllCells()} and {@link #refreshStatus()}.
+     * {@link GraphJGraph#refreshAllCells()} and {@link #refreshStatus()}.
      */
     protected void refresh() {
         getJGraph().refreshAllCells();
@@ -350,7 +350,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     }
 
     /**
-     * The {@link JGraph}on which this panel provides a view.
+     * The {@link GraphJGraph}on which this panel provides a view.
      */
     protected final JG jGraph;
     /** Flag indicating that the label tree is to support subtypes. */

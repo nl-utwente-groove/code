@@ -49,7 +49,7 @@ import org.jgraph.graph.GraphModel;
  * an instance, setupPopupMenu() should be called after all global final
  * variables have been set.
  */
-public class LTSJGraph extends JGraph {
+public class LTSJGraph extends GraphJGraph {
     /** Constructs an instance of the j-graph for a given simulator. */
     public LTSJGraph(Simulator simulator) {
         super(simulator.getOptions(), true);
@@ -380,9 +380,9 @@ public class LTSJGraph extends JGraph {
         }
 
         /**
-         * Creates a new instance, for a given {@link JGraph}.
+         * Creates a new instance, for a given {@link GraphJGraph}.
          */
-        public MyForestLayouter(String name, JGraph jgraph) {
+        public MyForestLayouter(String name, GraphJGraph jgraph) {
             super(name, jgraph);
         }
 
@@ -400,7 +400,7 @@ public class LTSJGraph extends JGraph {
          * This implementation returns a {@link MyForestLayouter}.
          */
         @Override
-        public Layouter newInstance(JGraph jGraph) {
+        public Layouter newInstance(GraphJGraph jGraph) {
             return new MyForestLayouter(this.name, jGraph);
         }
     }

@@ -21,7 +21,7 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.gui.jgraph.AspectJGraph;
-import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.GraphJGraph;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Color;
@@ -156,7 +156,7 @@ public class Converter {
 
     /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
     static public <N extends Node,E extends Edge<N>> void graphToTikz(
-            JGraph graph, PrintWriter writer) {
+            GraphJGraph graph, PrintWriter writer) {
         writer.print(GraphToTikz.convertGraphToTikzStr(graph));
     }
 

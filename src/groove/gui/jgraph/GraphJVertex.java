@@ -46,19 +46,19 @@ import org.jgraph.graph.GraphConstants;
 public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     /**
      * Constructs a model node on top of a graph node.
-     * @param jGraph the {@link JGraph} in which this vertex exists
+     * @param jGraph the {@link GraphJGraph} in which this vertex exists
      * @param node the underlying graph node for this model node. Note that this
      *        may be null.
      * @ensure getUserObject() == node, labels().isEmpty()
      */
-    GraphJVertex(JGraph jGraph, Node node) {
+    GraphJVertex(GraphJGraph jGraph, Node node) {
         this.jGraph = jGraph;
         add(new DefaultPort());
         this.node = node;
     }
 
-    /** Returns the {@link JGraph} associated with this vertex. */
-    public JGraph getJGraph() {
+    /** Returns the {@link GraphJGraph} associated with this vertex. */
+    public GraphJGraph getJGraph() {
         return this.jGraph;
     }
 
@@ -194,7 +194,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      * Returns the (possibly empty) list of lines 
      * describing the node identity, if this is to be shown
      * according to the current setting.
-     * @see JGraph#isShowNodeIdentities()
+     * @see GraphJGraph#isShowNodeIdentities()
      */
     final protected List<StringBuilder> getNodeIdLines() {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
@@ -322,7 +322,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
             GraphConstants.setBackground(result, Color.WHITE);
         }
         if (isGrayedOut()) {
-            result.applyMap(JGraph.GRAYED_OUT_ATTR);
+            result.applyMap(GraphJGraph.GRAYED_OUT_ATTR);
         }
         if (getAttributes() != null) {
             getAttributes().applyMap(result);
@@ -337,7 +337,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      * method directly.
      */
     protected AttributeMap createAttributes() {
-        return JGraph.DEFAULT_NODE_ATTR.clone();
+        return GraphJGraph.DEFAULT_NODE_ATTR.clone();
     }
 
     @Override
@@ -373,7 +373,16 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
         return false;
     }
 
-    private final JGraph jGraph;
+    /** 
+     * Returns the adornment text, to be placed in the
+     * vertex' upper left hand corner.
+     * Is only taken into account when non-{@code null}.
+     */
+    public String getAdornment() {
+        return null;
+    }
+
+    private final GraphJGraph jGraph;
     private boolean layoutable;
     private boolean grayedOut;
     /** The graph node modelled by this jgraph node. */
@@ -381,8 +390,8 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     /** Set of graph edges mapped to this JEdge. */
     private Set<Edge<?>> jVertexLabels = new TreeSet<Edge<?>>();
 
-    /** Returns a prototype {@link GraphJVertex} for a given {@link JGraph}. */
-    public static GraphJVertex getPrototype(JGraph jGraph) {
+    /** Returns a prototype {@link GraphJVertex} for a given {@link GraphJGraph}. */
+    public static GraphJVertex getPrototype(GraphJGraph jGraph) {
         return new GraphJVertex(jGraph, null);
     }
 }

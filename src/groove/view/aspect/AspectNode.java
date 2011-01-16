@@ -160,6 +160,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
      */
     public void setAspects(AspectLabel label) {
         assert label.isFixed();
+        assert this.graphRole == label.getGraphRole();
         testFixed(false);
         this.nodeLabels.add(label);
         if (label.hasErrors()) {

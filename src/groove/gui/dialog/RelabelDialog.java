@@ -91,7 +91,7 @@ public class RelabelDialog {
      */
     private void propagateSelection() {
         TypeLabel selection = (TypeLabel) getOldField().getSelectedItem();
-        getOldTypeLabel().setText(selection.getRole().getName(true));
+        getOldTypeLabel().setText(selection.getRole().getDescription(true));
         //        getOldTypeCombobox().setSelectedIndex(selection.getType());
         getNewTypeCombobox().setSelectedIndex(
             EdgeRole.getIndex(selection.getRole()));
@@ -127,7 +127,7 @@ public class RelabelDialog {
         String text = getNewField().getText();
         if (text.length() > 0) {
             int labelType = getNewTypeCombobox().getSelectedIndex();
-            result = TypeLabel.createLabel(EdgeRole.getKind(labelType), text);
+            result = TypeLabel.createLabel(EdgeRole.getRole(labelType), text);
             TypeLabel oldLabel = getOldLabel();
             if (this.existingLabels.getLabels().contains(result)) {
                 if (result.equals(oldLabel)) {
@@ -292,7 +292,7 @@ public class RelabelDialog {
     private JLabel getOldTypeLabel() {
         if (this.oldTypeLabel == null) {
             final JLabel result = this.oldTypeLabel = new JLabel();
-            result.setText(getOldLabel().getRole().getName(true));
+            result.setText(getOldLabel().getRole().getDescription(true));
             result.setPreferredSize(getNewTypeCombobox().getPreferredSize());
             result.setBorder(new EtchedBorder());
             result.setEnabled(true);
@@ -309,7 +309,7 @@ public class RelabelDialog {
         if (this.newTypeChoice == null) {
             final JComboBox result = this.newTypeChoice = new JComboBox();
             for (EdgeRole kind : EnumSet.allOf(EdgeRole.class)) {
-                result.addItem(kind.getName(true));
+                result.addItem(kind.getDescription(true));
             }
             result.setSelectedIndex(EdgeRole.getIndex(getOldLabel().getRole()));
             result.setEnabled(true);
@@ -319,7 +319,7 @@ public class RelabelDialog {
                 public void actionPerformed(ActionEvent e) {
                     Font font = getNewField().getFont();
                     int fontProperty;
-                    switch (EdgeRole.getKind(result.getSelectedIndex())) {
+                    switch (EdgeRole.getRole(result.getSelectedIndex())) {
                     case NODE_TYPE:
                         fontProperty = Font.BOLD;
                         break;

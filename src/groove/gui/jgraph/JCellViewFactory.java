@@ -28,10 +28,10 @@ import org.jgraph.graph.VertexView;
  */
 public class JCellViewFactory extends DefaultCellViewFactory {
     /**
-     * Constructs a factory for creating views upon a particular {@link JGraph}.
+     * Constructs a factory for creating views upon a particular {@link GraphJGraph}.
      * @param jGraph the graph on which the views are to be displayed.
      */
-    public JCellViewFactory(JGraph jGraph) {
+    public JCellViewFactory(GraphJGraph jGraph) {
         this.jGraph = jGraph;
     }
 
@@ -69,5 +69,5 @@ public class JCellViewFactory extends DefaultCellViewFactory {
     /**
      * The underlying graph on which all views are to be displayed.
      */
-    private final JGraph jGraph;
+    private final GraphJGraph jGraph;
 }

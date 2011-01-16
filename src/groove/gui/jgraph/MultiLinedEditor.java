@@ -18,7 +18,6 @@ package groove.gui.jgraph;
 
 import groove.graph.Label;
 import groove.view.aspect.AspectKind;
-import groove.view.aspect.AspectLabel;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -305,9 +304,6 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
                     this.prefixes.add(prefix);
                 }
             }
-            // add the special edge labels
-            this.prefixes.add(AspectLabel.AT_LABEL);
-            this.prefixes.add(AspectLabel.IN_LABEL);
         }
 
         private class CompletionTask implements Runnable {

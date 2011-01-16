@@ -19,10 +19,10 @@ package groove.gui.jgraph;
 /**
  * @author Arash Jalali
  * @version $Revision $
- * @deprecated no subclass is needed; just reuse {@link JGraph}
+ * @deprecated no subclass is needed; just reuse {@link GraphJGraph}
  */
 @Deprecated
-public class ReteJGraph extends JGraph {
+public class ReteJGraph extends GraphJGraph {
 
     /**
      * A graph representing the looks of the static structure of a RETE network.

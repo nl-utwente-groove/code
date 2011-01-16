@@ -73,8 +73,8 @@ import groove.gui.dialog.VersionErrorDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.io.AspectGxl;
@@ -2121,7 +2121,7 @@ public class Simulator {
             public void menuSelectionChanged(boolean selected) {
                 removeAll();
                 if (getGraphPanel() != null) {
-                    JGraph jGraph = getGraphPanel().getJGraph();
+                    GraphJGraph jGraph = getGraphPanel().getJGraph();
                     if (jGraph instanceof AspectJGraph) {
                         jGraph.addSubmenu(this,
                             ((AspectJGraph) jGraph).createEditMenu(null));
@@ -4671,11 +4671,12 @@ public class Simulator {
             }
         }
 
-        /** Sets {@link #oldLabel} based on the {@link JGraph} selection. */
+        /** Sets {@link #oldLabel} based on the {@link GraphJGraph} selection. */
         @Override
         public void valueChanged(GraphSelectionEvent e) {
             this.oldLabel = null;
-            Object[] selection = ((JGraph) e.getSource()).getSelectionCells();
+            Object[] selection =
+                ((GraphJGraph) e.getSource()).getSelectionCells();
             if (selection != null && selection.length > 0) {
                 Collection<? extends Label> selectedLabels =
                     ((GraphJCell) selection[0]).getListLabels();

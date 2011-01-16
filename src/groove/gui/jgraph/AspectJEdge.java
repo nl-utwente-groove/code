@@ -32,7 +32,7 @@ import org.jgraph.graph.GraphConstants;
 public class AspectJEdge extends GraphJEdge implements AspectJCell {
     /** 
      * Creates an uninitialised instance.
-     * @param jGraph the {@link JGraph} in which this JEdge will be used.
+     * @param jGraph the {@link GraphJGraph} in which this JEdge will be used.
      */
     public AspectJEdge(AspectJGraph jGraph) {
         super(jGraph);
@@ -281,11 +281,11 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     @Override
     public void loadFromUserObject(GraphRole role) {
         reset();
-        AspectParser parser = AspectParser.getInstance(role);
+        AspectParser parser = AspectParser.getInstance();
         for (String text : getUserObject()) {
-            AspectLabel label = parser.parse(text);
+            AspectLabel label = parser.parse(text, role);
             AspectEdge edge =
-                new AspectEdge(getSourceNode(), label, getTargetNode(), role);
+                new AspectEdge(getSourceNode(), label, getTargetNode());
             edge.setFixed();
             addEdge(edge);
         }

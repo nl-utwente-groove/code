@@ -57,7 +57,7 @@ public interface HostGraph extends Graph<HostNode,HostEdge>, DeltaTarget {
             super(new AspectGraph.AspectFactory(HOST) {
                 @Override
                 public AspectLabel createLabel(String text) {
-                    return AspectParser.getInstance(HOST).parse(text);
+                    return AspectParser.getInstance().parse(text, HOST);
                 }
             });
             this.aspectGraph = aspectGraph;

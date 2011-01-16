@@ -106,7 +106,7 @@ public final class TypeLabel extends AbstractLabel {
         throws FormatException {
         if (test && kind != EdgeRole.BINARY && !ExprParser.isIdentifier(text)) {
             throw new FormatException(
-                "%s label '%s' is not a valid identifier", kind.getName(true),
+                "%s label '%s' is not a valid identifier", kind.getDescription(true),
                 text);
         }
         return createLabel(kind, text);

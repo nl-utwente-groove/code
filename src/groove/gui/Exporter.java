@@ -19,7 +19,7 @@ package groove.gui;
 import groove.graph.Graph;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.GraphJGraph;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.util.Converter;
@@ -45,7 +45,7 @@ import net.sf.epsgraphics.ColorMode;
 import net.sf.epsgraphics.EpsGraphics;
 
 /**
- * Class providing functionality to export a {@link JGraph} to a file in
+ * Class providing functionality to export a {@link GraphJGraph} to a file in
  * different formats.
  * @author Arend Rensink
  * @version $Revision$
@@ -70,7 +70,7 @@ public class Exporter {
      * Exports the current state to a given format. The format is deduced from
      * the file name, using known file filters.
      */
-    public void export(JGraph jGraph, File file) throws IOException {
+    public void export(GraphJGraph jGraph, File file) throws IOException {
         for (Format format : getFormatList()) {
             if (format.getFilter().accept(file)) {
                 format.export(jGraph, file);
@@ -166,7 +166,7 @@ public class Exporter {
             return this.fsmFilter;
         }
 
-        public void export(JGraph jGraph, File file) throws IOException {
+        public void export(GraphJGraph jGraph, File file) throws IOException {
             Graph<?,?> graph =
                 ((GraphJModel<?,?>) jGraph.getModel()).getGraph();
             export(graph, file);
@@ -203,7 +203,7 @@ public class Exporter {
             return this.jpgFilter;
         }
 
-        public void export(JGraph jGraph, File file) throws IOException {
+        public void export(GraphJGraph jGraph, File file) throws IOException {
             BufferedImage image = jGraph.toImage();
             if (image == null) {
                 throw new IOException("Cannot export blank image");
@@ -238,7 +238,7 @@ public class Exporter {
             return this.pngFilter;
         }
 
-        public void export(JGraph jGraph, File file) throws IOException {
+        public void export(GraphJGraph jGraph, File file) throws IOException {
             BufferedImage image = jGraph.toImage();
             String format = this.pngFilter.getExtension().substring(1);
             if (image == null) {
@@ -273,7 +273,7 @@ public class Exporter {
             return this.epsFilter;
         }
 
-        public void export(JGraph jGraph, File file) throws IOException {
+        public void export(GraphJGraph jGraph, File file) throws IOException {
             // Create a graphics contents on the buffered image
             BufferedImage image = jGraph.toImage();
             if (image == null) {
@@ -320,7 +320,7 @@ public class Exporter {
          * {@link Converter#graphToAut(Graph, PrintWriter)} on
          * the graph contained therein.
          */
-        public void export(JGraph jGraph, File file) throws IOException {
+        public void export(GraphJGraph jGraph, File file) throws IOException {
             Graph<?,?> graph =
                 ((GraphJModel<?,?>) jGraph.getModel()).getGraph();
             export(graph, file);
@@ -364,9 +364,9 @@ public class Exporter {
 
         /**
          * Exports the graph by calling
-         * {@link Converter#graphToTikz(JGraph, PrintWriter)}.
+         * {@link Converter#graphToTikz(GraphJGraph, PrintWriter)}.
          */
-        public void export(JGraph jGraph, File file) throws IOException {
+        public void export(GraphJGraph jGraph, File file) throws IOException {
             PrintWriter writer = new PrintWriter(new FileWriter(file));
             Converter.graphToTikz(jGraph, writer);
             writer.close();
@@ -403,7 +403,7 @@ public class Exporter {
          * {@link Converter#graphToKth(AspectGraph, PrintWriter)} on
          * the graph contained therein.
          */
-        public void export(JGraph jGraph, File file) throws IOException {
+        public void export(GraphJGraph jGraph, File file) throws IOException {
             if (jGraph instanceof AspectJGraph) {
                 Graph<?,?> graph =
                     ((AspectJGraph) jGraph).getModel().getGraph();
@@ -448,7 +448,7 @@ public class Exporter {
         ExtensionFilter getFilter();
 
         /** Exports a JGraph into this format. */
-        void export(JGraph jGraph, File file) throws IOException;
+        void export(GraphJGraph jGraph, File file) throws IOException;
     }
 
     /**

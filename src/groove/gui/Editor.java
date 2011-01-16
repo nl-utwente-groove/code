@@ -29,7 +29,7 @@ import groove.gui.jgraph.AspectJCell;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.GraphJGraph;
 import groove.io.AspectGxl;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
@@ -1340,7 +1340,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         return this.snapToGridButton;
     }
 
-    JToggleButton getSnapToGridButton(JGraph jgraph) {
+    JToggleButton getSnapToGridButton(GraphJGraph jgraph) {
         JToggleButton button = new JToggleButton(new SnapToGridAction(jgraph));
         button.setText(null);
         return button;
@@ -1354,7 +1354,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         return this.exporter;
     }
 
-    /** Exporter used for all {@link JGraph}s in the editor. */
+    /** Exporter used for all {@link GraphJGraph}s in the editor. */
     private final Exporter exporter = new Exporter();
 
     /**
@@ -1966,10 +1966,10 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      */
     private class SnapToGridAction extends ToolbarAction {
 
-        private JGraph jgraph;
+        private GraphJGraph jgraph;
 
         /** Constructs an instance of the action. */
-        protected SnapToGridAction(JGraph jgraph) {
+        protected SnapToGridAction(GraphJGraph jgraph) {
             super(Options.SNAP_TO_GRID_NAME, null, Groove.GRID_ICON);
             this.jgraph = jgraph;
         }

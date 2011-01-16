@@ -18,7 +18,7 @@ package groove.gui.layout;
 
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJVertex;
-import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.GraphJGraph;
 import groove.util.CollectionOfCollections;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
@@ -67,12 +67,12 @@ public class ForestLayouter extends AbstractLayouter {
     /**
      * Constructs a layouter for a given j-graph.
      */
-    protected ForestLayouter(String name, JGraph jgraph) {
+    protected ForestLayouter(String name, GraphJGraph jgraph) {
         super(name, jgraph);
         // setEnabled(true);
     }
 
-    public Layouter newInstance(JGraph jgraph) {
+    public Layouter newInstance(GraphJGraph jgraph) {
         return new ForestLayouter(this.name, jgraph);
     }
 
@@ -105,7 +105,7 @@ public class ForestLayouter extends AbstractLayouter {
      * Callback method to determine a set of j-cells that are to be used as
      * roots in the forest layout. A return value of <tt>null</tt> means no
      * suggestions. The current implementation returns the list of selected
-     * cells of the underlying {@link JGraph}.
+     * cells of the underlying {@link GraphJGraph}.
      */
     protected Collection<?> getSuggestedRoots() {
         return Arrays.asList(this.jgraph.getSelectionCells());

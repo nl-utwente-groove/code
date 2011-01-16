@@ -29,7 +29,7 @@ public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel> {
         super(source, label, target);
         assert source.equals(target) || label.isBinary() : String.format(
             "Can't create %s label %s between distinct nodes %s and %s",
-            label.getRole().getName(false), label, source, target);
+            label.getRole().getDescription(false), label, source, target);
     }
 
     /** Indicates if this edge type is abstract. */

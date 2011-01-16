@@ -16,7 +16,7 @@
  */
 package groove.gui.layout;
 
-import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.GraphJGraph;
 
 /**
  * Interface for classes that can layout a <tt>JGraph</tt> in some fashion.
@@ -29,7 +29,7 @@ public interface Layouter {
      * @param jgraph The underlying jgraph for the layouter
      * @return a new layouter
      */
-    public abstract Layouter newInstance(JGraph jgraph);
+    public abstract Layouter newInstance(GraphJGraph jgraph);
 
     /**
      * Returns the name of this layouter.

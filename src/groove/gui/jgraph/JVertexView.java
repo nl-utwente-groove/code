@@ -16,6 +16,7 @@
  */
 package groove.gui.jgraph;
 
+import static groove.gui.jgraph.JAttr.ADORNMENT_FONT;
 import static groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
 import static groove.util.Converter.HTML_TAG;
 import static groove.util.Converter.createColorTag;
@@ -46,6 +47,7 @@ import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
 import org.jgraph.graph.AttributeMap;
@@ -73,7 +75,7 @@ public class JVertexView extends VertexView {
      * @param jNode the node underlying the view
      * @param jGraph the graph on which the node is to be displayed
      */
-    public JVertexView(GraphJVertex jNode, JGraph jGraph) {
+    public JVertexView(GraphJVertex jNode, GraphJGraph jGraph) {
         super(jNode);
         this.jGraph = jGraph;
     }
@@ -166,19 +168,27 @@ public class JVertexView extends VertexView {
         return this.text;
     }
 
-    /**
+    /*
      * Overwrites the super method because we have a different renderer.
      */
     @Override
     public Point2D getPerimeterPoint(EdgeView edge, Point2D source, Point2D p) {
-        Rectangle2D bounds = getBounds().getBounds2D();
-        // revert to the actual borders by subtracting the
-        // extra border space
-        float extra =
-            EXTRA_BORDER_SPACE
-                - GraphConstants.getLineWidth(getAllAttributes());
-        bounds.setRect(bounds.getX() + extra, bounds.getY() + extra,
-            bounds.getWidth() - 2 * extra, bounds.getHeight() - 2 * extra);
+        Point2D result = null;
+        // use the adornment bounds if there is an adornment, and the
+        // source lies to the northwest of it
+        Rectangle2D bounds = null;
+        bounds = getAdornBounds();
+        if (bounds == null || bounds.getX() + bounds.getWidth() <= p.getX()
+            || bounds.getY() + bounds.getHeight() <= p.getY()) {
+            bounds = getBounds().getBounds2D();
+            // revert to the actual borders by subtracting the
+            // extra border space
+            float extra =
+                EXTRA_BORDER_SPACE
+                    - GraphConstants.getLineWidth(getAllAttributes());
+            bounds.setRect(bounds.getX() + extra, bounds.getY() + extra,
+                bounds.getWidth() - 2 * extra, bounds.getHeight() - 2 * extra);
+        }
         if (source == null) {
             // be smart about positioning the perimeter point if p is within
             // the limits of the vertex itself, in either x or y coordinate
@@ -195,26 +205,45 @@ public class JVertexView extends VertexView {
                 double y = yAdjust ? p.getY() : bounds.getCenterY();
                 switch (getVertexShape()) {
                 case DIAMOND_SHAPE:
-                    return getDiamondPerimeterPoint(bounds, x, y, p);
+                    result = getDiamondPerimeterPoint(bounds, x, y, p);
+                    break;
                 case RECTANGLE_SHAPE:
                 case ROUNDED_RECTANGLE_SHAPE:
-                    return getRectanglePerimeterPoint(bounds, x, y, p);
+                    result = getRectanglePerimeterPoint(bounds, x, y, p);
                 }
             }
         }
-        switch (getVertexShape()) {
-        case ELLIPSE_SHAPE:
-            return getEllipsePerimeterPoint(bounds, p);
-        case DIAMOND_SHAPE:
-            return getDiamondPerimeterPoint(bounds, p);
-        default:
-            if (JAttr.isManhattanStyle(edge.getAllAttributes())) {
-                return getRectanglePerimeterPoint(bounds, p,
-                    this == edge.getSource().getParentView());
-            } else {
-                return getRectanglePerimeterPoint(bounds, p);
+        if (result == null) {
+            switch (getVertexShape()) {
+            case ELLIPSE_SHAPE:
+                result = getEllipsePerimeterPoint(bounds, p);
+                break;
+            case DIAMOND_SHAPE:
+                result = getDiamondPerimeterPoint(bounds, p);
+                break;
+            default:
+                if (JAttr.isManhattanStyle(edge.getAllAttributes())) {
+                    result =
+                        getRectanglePerimeterPoint(bounds, p,
+                            this == edge.getSource().getParentView());
+                } else {
+                    result = getRectanglePerimeterPoint(bounds, p);
+                }
             }
         }
+        return result;
+    }
+
+    private Rectangle2D getAdornBounds() {
+        String adornment = getCell().getAdornment();
+        if (adornment == null) {
+            return null;
+        }
+        Rectangle2D b = getBounds();
+        MyRenderer renderer =
+            ((MyRenderer) getRendererComponent(this.jGraph, false, false, false));
+        return new Rectangle2D.Double(b.getX(), b.getY(), renderer.adornWidth,
+            renderer.adornHeight);
     }
 
     /**
@@ -454,7 +483,7 @@ public class JVertexView extends VertexView {
     }
 
     /** Underlying graph model, used to construct the autosize. */
-    private final JGraph jGraph;
+    private final GraphJGraph jGraph;
     /** Flag indicating that the vertex is empty, i.e., there is no text inside. */
     /** The text on this vertex. */
     private String text;
@@ -539,6 +568,14 @@ public class JVertexView extends VertexView {
             assert view instanceof JVertexView : String.format(
                 "This renderer is only meant for %s", JVertexView.class);
             this.view = (JVertexView) view;
+            this.adornment = this.view.getCell().getAdornment();
+            if (this.adornment == null) {
+                this.adornHeight = 0;
+                this.adornWidth = 0;
+            } else {
+                this.adornHeight = 12;
+                this.adornWidth = getAdornWidth(this.adornment);
+            }
             this.selectionColor = graph.getHighlightColor();
             AttributeMap attributes = view.getAllAttributes();
             this.dash = GraphConstants.getDashPattern(attributes);
@@ -590,18 +627,35 @@ public class JVertexView extends VertexView {
         @Override
         public void paint(Graphics g) {
             Graphics2D g2 = (Graphics2D) g;
-            double width = getSize().getWidth();
-            double height = getSize().getHeight();
-            Shape shape = getShape(width, height, this.lineWidth / 2);
+            Shape shape = getShape(this.lineWidth / 2);
             if (isOpaque()) {
                 paintBackground(g2, shape);
             }
             paintText(g2);
             paintBorder(g2, shape);
+            paintErrorOverlay(g2);
+            paintParameter(g2);
+        }
+
+        /**
+         * Paints a transparent overlay for an error node.
+         */
+        private void paintErrorOverlay(Graphics2D g2) {
             if (this.error) {
-                shape = getShape(width, height, EXTRA_BORDER_SPACE);
+                Shape shape = getShape(EXTRA_BORDER_SPACE);
                 g2.setColor(JAttr.ERROR_COLOR);
                 g2.fill(shape);
+            }
+        }
+
+        private void paintParameter(Graphics2D g2) {
+            if (this.adornment != null) {
+                g2.setColor(getForeground());
+                int offset = 2;
+                g2.fillRect(0, 0, this.adornWidth + offset, this.adornHeight);
+                g2.setFont(ADORNMENT_FONT);
+                g2.setColor(Color.white);
+                g2.drawString(this.adornment, 1, this.adornHeight - offset);
             }
         }
 
@@ -701,6 +755,17 @@ public class JVertexView extends VertexView {
             return result;
         }
 
+        private int getAdornWidth(String text) {
+            Integer result = this.adornWidthMap.get(text);
+            if (result == null) {
+                result =
+                    SwingUtilities.computeStringWidth(
+                        getFontMetrics(ADORNMENT_FONT), text);
+                this.adornWidthMap.put(text, result);
+            }
+            return result;
+        }
+
         /**
          * Converts all digits in a string in the range 2-9 to 0. The idea is
          * that this will not affect the size of the string, but will unify many
@@ -740,6 +805,8 @@ public class JVertexView extends VertexView {
             } else {
                 result = (Insets) DEFAULT_INSETS.clone();
             }
+            // correct for the adornment space
+            result.left += Math.max(0, this.adornWidth - 6);
             // correct for the predefined inset
             int inset = GraphConstants.getInset(this.view.getAllAttributes());
             result.left += inset;
@@ -771,13 +838,14 @@ public class JVertexView extends VertexView {
          * A second parameter controls how much the shape
          * should extend at each side beyond the size. 
          */
-        private Shape getShape(double width, double height, double extension) {
+        private Shape getShape(double extension) {
             // subtract the extra border space
             double extra = EXTRA_BORDER_SPACE - extension;
+            Dimension s = getSize();
             double x = extra;
             double y = extra;
-            width -= 2 * extra;
-            height -= 2 * extra;
+            double width = s.getWidth() - 2 * extra;
+            double height = s.getHeight() - 2 * extra;
             switch (this.view.getVertexShape()) {
             case ELLIPSE_SHAPE:
                 return new Ellipse2D.Double(x, y, width, height);
@@ -952,9 +1020,13 @@ public class JVertexView extends VertexView {
         private float line2width;
         /** Flag indicating that the vertex has an error. */
         private boolean error;
+        private String adornment;
+        private int adornHeight;
+        private int adornWidth;
         /** Mapping from (HTML) text to the preferred size for that text. */
         private final Map<String,Dimension> sizeMap =
             new HashMap<String,Dimension>();
-
+        private final Map<String,Integer> adornWidthMap =
+            new HashMap<String,Integer>();
     }
 }

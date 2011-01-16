@@ -35,7 +35,7 @@ import org.jgraph.graph.GraphCell;
 public interface GraphJCell extends GraphCell, Serializable {
 
     /** Returns the model with which this cell is associated. */
-    public JGraph getJGraph();
+    public GraphJGraph getJGraph();
 
     /**
      * Returns the complete text that should be displayed upon the cell. This is

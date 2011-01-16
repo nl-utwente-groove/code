@@ -242,7 +242,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         this.hiddenPars = hiddenPars;
         List<CtrlPar.Var> derivedSig = new ArrayList<CtrlPar.Var>();
         for (int i = 0; i < sig.size(); i++) {
-            String parName = "arg" + (i + 1);
+            String parName = "arg" + i;
             String parTypeName = sig.get(i).getType().toString();
             CtrlType parType = CtrlType.getType(parTypeName);
             CtrlVar var = new CtrlVar(parName, parType);

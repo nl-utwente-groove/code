@@ -2,13 +2,12 @@ package groove.gui.jgraph;
 
 import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
+import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.Label;
-import groove.graph.EdgeRole;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ProductNode;
-import groove.graph.algebra.VariableNode;
 import groove.gui.Options;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.trans.RuleLabel;
@@ -126,14 +125,16 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     protected String getNodeIdString() {
         if (this.aspect.isMeta()) {
             return null;
-        } else if (getNode().getAttrKind().isData()) {
-            // delegate the identity string to a corresponding variable node
-            return new VariableNode(getNode().getNumber(),
-                getNode().getAttrKind().getName(),
-                getNode().getAttrAspect().getContentString()).toString();
-        } else if (getNode().getAttrKind() == AspectKind.PRODUCT) {
-            // delegate the identity string to a corresponding product node
-            return new ProductNode(getNode().getNumber(), 0).toString();
+        } else if (getNode().hasAttrAspect()) {
+            Aspect attrAspect = getNode().getAttrAspect();
+            if (attrAspect.getKind().isData()) {
+                // delegate the identity string to a corresponding variable node
+                return attrAspect.getVariableNode(getNode().getNumber()).toString();
+            } else {
+                assert attrAspect.getKind() == AspectKind.PRODUCT;
+                // delegate the identity string to a corresponding product node
+                return new ProductNode(getNode().getNumber(), 0).toString();
+            }
         } else {
             return super.getNodeIdString();
         }
@@ -196,11 +197,6 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 if (!isFiltered(edge)) {
                     result.add(getLine(edge));
                 }
-            }
-            // adds a parameter string if the node is a rule parameter
-            Aspect param = getNode().getParam();
-            if (param != null && param.hasContent()) {
-                result.add(new StringBuilder(param.getContentString()));
             }
         }
         return result;
@@ -281,7 +277,8 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 suffix = TYPE_TEXT + actualTarget.getAttrKind().getName();
             } else {
                 suffix =
-                    ASSIGN_TEXT + actualTarget.getAttrAspect().getContent();
+                    ASSIGN_TEXT
+                        + actualTarget.getAttrAspect().getContentString();
             }
             result.append(Converter.toHtml(suffix));
         }
@@ -412,8 +409,28 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     @Override
+    public String getAdornment() {
+        if (getNode().hasParam()) {
+            Aspect param = getNode().getParam();
+            StringBuilder result = new StringBuilder(5);
+            switch (param.getKind()) {
+            case PARAM_IN:
+                result.append("?");
+                break;
+            case PARAM_OUT:
+                result.append("!");
+            }
+            result.append(param.getContentString());
+            return result.toString();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
     protected AttributeMap createAttributes() {
-        AttributeMap result = AspectJGraph.ASPECT_NODE_ATTR.get(this.aspect).clone();
+        AttributeMap result =
+            AspectJGraph.ASPECT_NODE_ATTR.get(this.aspect).clone();
         if (getJGraph().hasActiveEditor()) {
             GraphConstants.setEditable(result, true);
         }
@@ -432,13 +449,13 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     public void loadFromUserObject(GraphRole role) {
         AspectNode node = new AspectNode(getNode().getNumber(), role);
         reset(node);
-        AspectParser parser = AspectParser.getInstance(role);
+        AspectParser parser = AspectParser.getInstance();
         for (String text : getUserObject()) {
-            AspectLabel label = parser.parse(text);
+            AspectLabel label = parser.parse(text, role);
             if (label.isNodeOnly()) {
                 node.setAspects(label);
             } else {
-                AspectEdge edge = new AspectEdge(node, label, node, role);
+                AspectEdge edge = new AspectEdge(node, label, node);
                 edge.setFixed();
                 boolean added = addJVertexLabel(edge);
                 assert added;
