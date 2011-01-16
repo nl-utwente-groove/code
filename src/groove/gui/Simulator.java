@@ -118,7 +118,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -166,8 +165,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.WindowConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.UndoableEditEvent;
@@ -465,7 +462,7 @@ public class Simulator {
     void handleEditGraph(final AspectGraph graph, boolean fresh) {
         EditorPanel result = null;
         // look if an editor already exists for the graph
-        JTabbedPane viewsPane = getGraphViewsPanel();
+        JTabbedPane viewsPane = getSimulatorPanel();
         for (int i = 0; i < viewsPane.getTabCount(); i++) {
             Component view = viewsPane.getComponentAt(i);
             if (view instanceof EditorPanel) {
@@ -480,40 +477,21 @@ public class Simulator {
         if (result == null) {
             result = addEditorPanel(graph, fresh);
         }
-        getGraphViewsPanel().setSelectedComponent(result);
+        getSimulatorPanel().setSelectedComponent(result);
     }
 
     /** Creates and adds an editor panel for the given graph. */
     private EditorPanel addEditorPanel(AspectGraph graph, boolean fresh) {
         final EditorPanel result = new EditorPanel(this, graph, fresh);
-        Icon icon = null;
-        switch (graph.getRole()) {
-        case HOST:
-            icon = Groove.GRAPH_MODE_ICON;
-            break;
-        case RULE:
-            icon = Groove.RULE_MODE_ICON;
-            break;
-        case TYPE:
-            icon = Groove.TYPE_MODE_ICON;
-        }
-        getGraphViewsPanel().addTab("", result);
-        int index = getGraphViewsPanel().indexOfComponent(result);
-        Component tabComponent =
-            new ButtonTabComponent(result, icon, graph.getName());
-        getGraphViewsPanel().setTabComponentAt(index, tabComponent);
+        getSimulatorPanel().add(result);
         result.start();
         return result;
     }
 
     /** Changes the type graph in the open editor panels. */
     void changeEditorTypes() {
-        JTabbedPane viewsPane = getGraphViewsPanel();
-        for (int i = 0; i < viewsPane.getTabCount(); i++) {
-            Component view = viewsPane.getComponentAt(i);
-            if (view instanceof EditorPanel) {
-                ((EditorPanel) view).setType();
-            }
+        for (EditorPanel editor : getSimulatorPanel().getEditors()) {
+            editor.setType();
         }
     }
 
@@ -523,15 +501,7 @@ public class Simulator {
      */
     boolean abandonEditors() {
         boolean result = true;
-        // collect the (possibly dirty) editors
-        JTabbedPane viewsPane = getGraphViewsPanel();
-        List<EditorPanel> editorList = new ArrayList<EditorPanel>();
-        for (int i = 0; i < viewsPane.getTabCount(); i++) {
-            if (viewsPane.getComponentAt(i) instanceof EditorPanel) {
-                editorList.add((EditorPanel) viewsPane.getComponentAt(i));
-            }
-        }
-        for (EditorPanel editor : editorList) {
+        for (EditorPanel editor : getSimulatorPanel().getEditors()) {
             if (!editor.handleCancel()) {
                 result = false;
                 break;
@@ -1464,7 +1434,7 @@ public class Simulator {
             // make sure tool tips get displayed
             ToolTipManager.sharedInstance().registerComponent(leftPanel);
 
-            JComponent rightPanel = getGraphViewsPanel();
+            JComponent rightPanel = getSimulatorPanel();
 
             // Set up the content pane of the frame as a split pane,
             // with the rule directory to the left and a desktop pane to the
@@ -1485,35 +1455,11 @@ public class Simulator {
     /**
      * Lazily creates and returns the panel with the state, rule and LTS views.
      */
-    JTabbedPane getGraphViewsPanel() {
-        if (this.graphViewsPanel == null) {
-            this.graphViewsPanel = new JTabbedPane() {
-                @Override
-                public void setSelectedIndex(int index) {
-                    super.setSelectedIndex(index);
-                    getSelectedComponent().requestFocusInWindow();
-                }
-            };
-            this.graphViewsPanel.addTab(null, Groove.GRAPH_FRAME_ICON,
-                getStatePanel(), "Current graph state");
-            this.graphViewsPanel.addTab(null, Groove.RULE_FRAME_ICON,
-                getRulePanel(), "Selected rule");
-            this.graphViewsPanel.addTab(null, Groove.LTS_FRAME_ICON,
-                getConditionalLTSPanel(), "Labelled transition system");
-            this.graphViewsPanel.addTab(null, Groove.CONTROL_FRAME_ICON,
-                getControlPanel(), "Control specification");
-            this.graphViewsPanel.addTab(null, Groove.TYPE_FRAME_ICON,
-                getTypePanel(), "Type graph");
-            // add this simulator as a listener so that the actions are updated
-            // regularly
-            this.graphViewsPanel.addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent evt) {
-                    refreshActions();
-                }
-            });
-            this.graphViewsPanel.setVisible(true);
+    SimulatorPanel getSimulatorPanel() {
+        if (this.simulatorPanel == null) {
+            this.simulatorPanel = new SimulatorPanel(this);
         }
-        return this.graphViewsPanel;
+        return this.simulatorPanel;
     }
 
     /**
@@ -1675,7 +1621,7 @@ public class Simulator {
                                     // do nothing
                                 }
                             }
-                            getGraphViewsPanel().setSelectedComponent(
+                            getSimulatorPanel().setSelectedComponent(
                                 getControlPanel());
                         }
                     }
@@ -1740,18 +1686,6 @@ public class Simulator {
     }
 
     /**
-     * Returns the LTSOptions panel on the simulator. Note that this panel may
-     * currently not be visible.
-     */
-    ConditionalLTSPanel getConditionalLTSPanel() {
-        if (this.conditionalLTSPanel == null) {
-            this.conditionalLTSPanel =
-                new ConditionalLTSPanel(this.getLtsPanel());
-        }
-        return this.conditionalLTSPanel;
-    }
-
-    /**
      * Returns the exploration statistics object associated with the current
      * GTS.
      */
@@ -1801,7 +1735,7 @@ public class Simulator {
 
     /** Returns the currently selected simulator panel. */
     Component getPanel() {
-        return getGraphViewsPanel().getSelectedComponent();
+        return getSimulatorPanel().getSelectedComponent();
     }
 
     /**
@@ -1811,17 +1745,11 @@ public class Simulator {
      * @see #getStatePanel()
      * @see #getRulePanel()
      * @see #getLtsPanel()
-     * @see #getConditionalLTSPanel()
      * @see #setGraphPanel(JGraphPanel)
      */
     JGraphPanel<?> getGraphPanel() {
         Component selectedComponent =
-            getGraphViewsPanel().getSelectedComponent();
-
-        if (selectedComponent == getConditionalLTSPanel()) {
-            return getLtsPanel();
-        }
-
+            getSimulatorPanel().getSelectedComponent();
         if (selectedComponent instanceof EditorPanel) {
             return ((EditorPanel) selectedComponent).getEditor().getGraphPanel();
         }
@@ -1841,50 +1769,11 @@ public class Simulator {
      * @see #getStatePanel()
      * @see #getRulePanel()
      * @see #getLtsPanel()
-     * @see #getConditionalLTSPanel()
      * @see #getGraphPanel()
      */
     public void setGraphPanel(JGraphPanel<?> component) {
-        if (component == getLtsPanel()) {
-            getGraphViewsPanel().setSelectedComponent(getConditionalLTSPanel());
-        } else {
-            getGraphViewsPanel().setSelectedComponent(component);
-        }
-    }
-
-    /**
-     * Changes the enabledness of one of the graph panels
-     * @param component the panel to change (again, the inner LTSPanel is
-     *        expected instead of the outer ConditionalLTSPanel)
-     * @param enabled the new enabledness status
-     */
-    void setGraphPanelEnabled(JGraphPanel<?> component, boolean enabled) {
-        int index;
-
-        if (component == getLtsPanel()) {
-            index =
-                getGraphViewsPanel().indexOfComponent(getConditionalLTSPanel());
-        } else {
-            index = getGraphViewsPanel().indexOfComponent(component);
-        }
-
-        getGraphViewsPanel().setEnabledAt(index, enabled);
-        if (component == getLtsPanel()) {
-            String text;
-            if (enabled) {
-                text = "Labelled transition system";
-            } else if (getGrammarView() == null) {
-                text = "Currently disabled; load grammar";
-            } else if (getGrammarView().getErrors().isEmpty()) {
-                text =
-                    String.format(
-                        "Currently disabled; press %s to start simulation",
-                        KeyEvent.getKeyText(((KeyStroke) getStartSimulationAction().getValue(
-                            Action.ACCELERATOR_KEY)).getKeyCode()));
-            } else {
-                text = "Disabled due to grammar errors";
-            }
-            getGraphViewsPanel().setToolTipTextAt(index, text);
+        if (getSimulatorPanel().indexOfComponent(component) >= 0) {
+            getSimulatorPanel().setSelectedComponent(component);
         }
     }
 
@@ -2910,9 +2799,6 @@ public class Simulator {
     /** LTS display panel. (which is contained in the ConditionalLTSPanel) */
     private LTSPanel ltsPanel;
 
-    /** Conditional LTS display panel. */
-    private ConditionalLTSPanel conditionalLTSPanel;
-
     /** Type graph display panel. */
     private TypePanel typePanel;
 
@@ -2920,7 +2806,7 @@ public class Simulator {
     private UndoHistory undoHistory;
 
     /** background for displays. */
-    private JTabbedPane graphViewsPanel;
+    private SimulatorPanel simulatorPanel;
 
     /** History of recently opened grammars. */
     private History history;
@@ -5103,7 +4989,7 @@ public class Simulator {
                 simulator.ruleJTree = null;
                 simulator.ruleTreePanel.setViewportView(simulator.getRuleTree());
                 simulator.statePanel = null;
-                simulator.getGraphViewsPanel().setComponentAt(0,
+                simulator.getSimulatorPanel().setComponentAt(0,
                     simulator.getStatePanel());
                 simulator.startSimulation();
             }
