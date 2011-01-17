@@ -124,8 +124,14 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
 
     @Override
     public List<FormatError> getErrors() {
-        testFixed(true);
+        setFixed();
         return this.errors;
+    }
+
+    /** Adds a format error to the errors in this edge. */
+    public void addError(FormatError error) {
+        testFixed(false);
+        this.errors.add(error.extend(this));
     }
 
     /**
@@ -192,7 +198,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     public void testFixed(boolean fixed) {
         if (fixed != isFixed()) {
             throw new IllegalStateException(String.format(
-                "Incorrect fixation of %s", this));
+                "Aspect edge %s should %sbe fixed", this, fixed ? "" : "not "));
         }
     }
 

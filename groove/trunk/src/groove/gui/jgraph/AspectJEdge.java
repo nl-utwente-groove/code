@@ -102,23 +102,42 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     }
 
     /**
+     * Returns <tt>true</tt> only if {@code mustAdd} holds or if the aspect 
+     * values of the edge to be added equal those of this JEdge.
+     * @param mustAdd if {@code true}, the edge is added even if its
+     * aspects conflict with previously added edges (but an error is added
+     * to the edge).
+     */
+    private boolean addEdge(Edge<?> edge, boolean mustAdd) {
+        AspectEdge aspectEdge = (AspectEdge) edge;
+        boolean first = getEdges().isEmpty();
+        boolean compatible = first || aspectEdge.equalsAspects(getEdge());
+        boolean result = (compatible || mustAdd) && super.addEdge(edge);
+        if (result) {
+            if (first) {
+                this.aspect = aspectEdge.getKind();
+            }
+            if (!compatible) {
+                aspectEdge =
+                    new AspectEdge(aspectEdge.source(), aspectEdge.label(),
+                        aspectEdge.target());
+                aspectEdge.addError(new FormatError(
+                    "Conflicting aspects in edge labels %s and %s",
+                    getEdge().label(), edge.label(), this));
+                aspectEdge.setFixed();
+            }
+            this.errors.addAll(aspectEdge.getErrors());
+        }
+        return result;
+    }
+
+    /**
      * Returns <tt>true</tt> only if the aspect values of the edge to be
      * added equal those of this j-edge, and the superclass is also willing.
      */
     @Override
     public boolean addEdge(Edge<?> edge) {
-        AspectEdge aspectEdge = (AspectEdge) edge;
-        boolean first = getEdges().isEmpty();
-        super.addEdge(edge);
-        this.errors.addAll(aspectEdge.getErrors());
-        if (first) {
-            this.aspect = aspectEdge.getKind();
-        } else if (!aspectEdge.equalsAspects(getEdge())) {
-            this.errors.add(new FormatError(
-                "Conflicting aspects in edge labels %s and %s",
-                getEdge().label(), edge.label(), this));
-        }
-        return true;
+        return addEdge(edge, false);
     }
 
     @Override
@@ -287,7 +306,9 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
             AspectEdge edge =
                 new AspectEdge(getSourceNode(), label, getTargetNode());
             edge.setFixed();
-            addEdge(edge);
+            boolean added = addEdge(edge, true);
+            assert added : String.format("Could not add edge %s to jEdge %s",
+                edge, this);
         }
         refreshAttributes();
     }

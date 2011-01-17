@@ -34,6 +34,7 @@ import groove.util.Groove;
 import groove.view.StoredGrammarView;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Point;
@@ -540,6 +541,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         }
 
         public void actionPerformed(ActionEvent arg0) {
+            getJGraph().setCursor(Cursor.getDefaultCursor());
             getJGraph().setSelectMode();
             getScrollPane().setWheelScrollingEnabled(true);
         }
