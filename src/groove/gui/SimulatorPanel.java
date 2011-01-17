@@ -129,6 +129,7 @@ public class SimulatorPanel extends JTabbedPane {
         Component tabComponent =
             new ButtonTabComponent(panel, icon, panel.getName());
         setTabComponentAt(index, tabComponent);
+        setSelectedIndex(index);
     }
 
     /** Returns the tab component of a given editor panel. */
