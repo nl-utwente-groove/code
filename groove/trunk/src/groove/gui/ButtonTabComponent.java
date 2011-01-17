@@ -99,7 +99,7 @@ public class ButtonTabComponent extends JPanel {
 
     /** Changes the title of the tab. */
     public void setTitle(String title) {
-        ButtonTabComponent.this.titleLabel.setText(title);
+        this.titleLabel.setText(title);
     }
 
     /** Visually displays the error property. */
