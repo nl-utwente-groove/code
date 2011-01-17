@@ -31,6 +31,8 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.Collections;
@@ -41,8 +43,10 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 
+import org.jgraph.JGraph;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphModel;
+import org.jgraph.plaf.basic.BasicGraphUI;
 
 /**
  * Implementation of MyJGraph that provides the proper popup menu. To construct
@@ -54,7 +58,30 @@ public class LTSJGraph extends GraphJGraph {
     public LTSJGraph(Simulator simulator) {
         super(simulator.getOptions(), true);
         this.simulator = simulator;
+        // turn off double buffering to improve performance
+        setDoubleBuffered(false);
         setExporter(simulator.getExporter());
+    }
+
+    /**
+     * Sets the view mode to select.
+     * @see #isSelectMode() 
+     */
+    public void setSelectMode() {
+        this.selectMode = true;
+    }
+
+    /**
+     * Sets the view mode to pan-and-zoom.
+     * @see #isSelectMode() 
+     */
+    public void setPanMode() {
+        this.selectMode = false;
+    }
+
+    @Override
+    protected BasicGraphUI createGraphUI() {
+        return new LTSGraphUI();
     }
 
     @Override
@@ -117,9 +144,15 @@ public class LTSJGraph extends GraphJGraph {
     @Override
     public JMenu createPopupMenu(Point atPoint) {
         JMenu result = new JMenu("Popup");
-        addSubmenu(result, createExploreMenu());
-        addSubmenu(result, createGotoMenu());
-        addSubmenu(result, super.createPopupMenu(atPoint));
+        if (isSelectMode()) {
+            addSubmenu(result, createExploreMenu());
+            addSubmenu(result, createGotoMenu());
+            addSubmenu(result, super.createPopupMenu(atPoint));
+        } else {
+            addSubmenu(result, createGotoMenu());
+            addSubmenu(result, createShowHideMenu());
+            addSubmenu(result, createZoomMenu());
+        }
         return result;
     }
 
@@ -240,6 +273,15 @@ public class LTSJGraph extends GraphJGraph {
         }
     }
 
+    /** 
+     * Indicates if the {@link JGraph} is in selection mode.
+     * Otherwise, it is in pan-and-zoom mode.
+     */
+    public boolean isSelectMode() {
+        return this.selectMode;
+    }
+
+    private boolean selectMode;
     /**
      * The active state of the LTS. Is null if there is no active state.
      * @invariant activeState == null || ltsJModel.graph().contains(activeState)
@@ -402,6 +444,48 @@ public class LTSJGraph extends GraphJGraph {
         @Override
         public Layouter newInstance(GraphJGraph jGraph) {
             return new MyForestLayouter(this.name, jGraph);
+        }
+    }
+
+    /** Subclass that makes sure mouse events are only passed on
+     * when the graph is in selection mode.
+     * @author Arend Rensink
+     * @version $Revision $
+     */
+    private class LTSGraphUI extends MyGraphUI {
+        @Override
+        protected MouseListener createMouseListener() {
+            return new MouseHandler() {
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    if (isSelectMode() || e.getButton() == MouseEvent.BUTTON2) {
+                        super.mousePressed(e);
+                    }
+                }
+
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                    if (isSelectMode() || e.getButton() == MouseEvent.BUTTON2) {
+                        super.mouseDragged(e);
+                    }
+                }
+
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    if (isSelectMode()) {
+                        super.mouseMoved(e);
+                    }
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    if (isSelectMode() || e.getButton() == MouseEvent.BUTTON2) {
+                        super.mouseReleased(e);
+                    }
+                }
+
+            };
         }
     }
 }

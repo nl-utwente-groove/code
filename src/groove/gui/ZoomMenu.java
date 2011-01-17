@@ -110,9 +110,7 @@ public class ZoomMenu extends JMenu {
     /** Action for zooming in, i.e., enlarging the figure. */
     protected final Action zoomInAction = new AbstractAction("Zoom in") {
         public void actionPerformed(ActionEvent evt) {
-            double scale = ZoomMenu.this.jgraph.getScale() * 2;
-            // jgraph.setScale(Math.min(1, scale));
-            ZoomMenu.this.jgraph.setScale(scale);
+            ZoomMenu.this.jgraph.changeScale(1);
             setActionsEnabled();
         }
     };
@@ -120,7 +118,7 @@ public class ZoomMenu extends JMenu {
     /** Action for zooming out, i.e., making the figure smaller. */
     protected final Action zoomOutAction = new AbstractAction("Zoom out") {
         public void actionPerformed(ActionEvent evt) {
-            ZoomMenu.this.jgraph.setScale(ZoomMenu.this.jgraph.getScale() / 2);
+            ZoomMenu.this.jgraph.changeScale(-1);
             setActionsEnabled();
         }
     };
@@ -137,5 +135,5 @@ public class ZoomMenu extends JMenu {
     final GraphJGraph jgraph;
 
     /** Mnemonic key for the menu. */
-    private static int MENU_MNEMONIC = KeyEvent.VK_Z;
+    private static final int MENU_MNEMONIC = KeyEvent.VK_Z;
 }

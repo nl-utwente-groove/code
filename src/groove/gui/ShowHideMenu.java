@@ -24,9 +24,9 @@ import groove.graph.TypeLabel;
 import groove.gui.dialog.StringDialog;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJEdge;
+import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
-import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.LTSJGraph;
 import groove.io.GrooveFileChooser;
 import groove.lts.GraphNextState;
@@ -101,12 +101,8 @@ public class ShowHideMenu extends JMenu {
     static protected final String ONLY_MODE_NAME = "Show";
     /** Name of the action to process all elements. */
     static public final String ALL_ACTION_NAME = "All";
-    /** Name of the action to process the currently selected elements. */
+    /** Name of the action to process only the selected elements. */
     static public final String SELECTED_ACTION_NAME = "Selected";
-    /** Name of the action to process only the emphasised elements. */
-    static public final String EMPHASIZED_ACTION_NAME = "Emphasized";
-    /** Name of the action to process only the unselected elements. */
-    static public final String UNSELECTED_ACTION_NAME = "Deselected";
     /** Name of the action to invert the hidden elements. */
     static public final String INVERT_ACTION_NAME = "Inverse";
     /** Name of the action to process the context of a given element. */
@@ -153,24 +149,23 @@ public class ShowHideMenu extends JMenu {
     protected void fillOutMenu(JPopupMenu menu) {
         // show actions
         menu.add(createAllAction(ONLY_MODE));
-        menu.add(createEmphasizedAction(ONLY_MODE));
-        menu.add(createSelectedAction(ONLY_MODE, true));
+        menu.add(createSelectedAction(ONLY_MODE));
         menu.add(createShowRegExprAction(ONLY_MODE));
+        menu.add(createContextAction(ADD_MODE));
         if (this.jgraph instanceof LTSJGraph) {
             menu.add(createTraceAction(ONLY_MODE));
         }
         menu.add(createFromFileAction(ONLY_MODE));
         // add actions
         menu.addSeparator();
-        menu.add(createEmphasizedAction(ADD_MODE));
+        menu.add(createSelectedAction(ADD_MODE));
         menu.add(createAddRegExprAction(ADD_MODE));
         menu.add(createContextAction(ADD_MODE));
         menu.add(createLabelMenu(ADD_MODE));
         menu.addSeparator();
         // hide actions
         menu.add(createAllAction(HIDE_MODE));
-        menu.add(createEmphasizedAction(HIDE_MODE));
-        menu.add(createSelectedAction(HIDE_MODE, true));
+        menu.add(createSelectedAction(HIDE_MODE));
         menu.add(createAddRegExprAction(HIDE_MODE));
         menu.add(createLabelMenu(HIDE_MODE));
     }
@@ -180,13 +175,6 @@ public class ShowHideMenu extends JMenu {
      */
     protected ShowHideAction createAllAction(int showMode) {
         return new AllAction(this.jgraph, showMode);
-    }
-
-    /**
-     * Factory method for <tt>SelectedAction</tt>s.
-     */
-    protected ShowHideAction createSelectedAction(int showMode, boolean selected) {
-        return new SelectedAction(this.jgraph, showMode, selected);
     }
 
     /**
@@ -218,10 +206,10 @@ public class ShowHideMenu extends JMenu {
     }
 
     /**
-     * Factory method for {@link ShowHideMenu.EmphasizedAction}s.
+     * Factory method for {@link ShowHideMenu.SelectedAction}s.
      */
-    protected ShowHideAction createEmphasizedAction(int showMode) {
-        return new EmphasizedAction(this.jgraph, showMode);
+    protected ShowHideAction createSelectedAction(int showMode) {
+        return new SelectedAction(this.jgraph, showMode);
     }
 
     /**
@@ -268,8 +256,6 @@ public class ShowHideMenu extends JMenu {
 
     /** Mnemonic key for the {@link AllAction} */
     private static int ALL_MNEMONIC = KeyEvent.VK_A;
-    /** Mnemonic key for the {@link SelectedAction} */
-    private static int SELECTED_MNEMONIC = KeyEvent.VK_S;
     /** Mnemonic key for the {@link SelectedAction} */
     private static int EMPHASIZED_MNEMONIC = KeyEvent.VK_E;
     /** Mnemonic key for the {@link ContextAction} */
@@ -461,36 +447,6 @@ public class ShowHideMenu extends JMenu {
     }
 
     /**
-     * Action that shows/hides all selected nodes and edges in the graph.
-     */
-    static protected class SelectedAction extends ShowHideAction {
-        /**
-         * Constructs an instance of the action for a given j-graph, either for
-         * showing or for hiding and either for the selected or for the
-         * unselected elements.
-         * @param jgraph the underlying j-graph
-         * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
-         *        {@link #ONLY_MODE}
-         * @param selected <code>true</code> if this action instance is for the
-         *        selected elements.
-         */
-        protected SelectedAction(GraphJGraph jgraph, int showMode, boolean selected) {
-            super(jgraph, showMode, selected ? SELECTED_ACTION_NAME
-                    : UNSELECTED_ACTION_NAME);
-            putValue(MNEMONIC_KEY, SELECTED_MNEMONIC);
-            this.selected = selected;
-        }
-
-        @Override
-        protected boolean isInvolved(GraphJCell cell) {
-            return this.jgraph.isCellSelected(cell) == this.selected;
-        }
-
-        /** Flag indicating if this action is for the selected elements. */
-        private final boolean selected;
-    }
-
-    /**
      * Action that shows all incident edges of non-hidden nodes, or hides all
      * endpoints of hidden edges.
      */
@@ -654,12 +610,12 @@ public class ShowHideMenu extends JMenu {
     }
 
     /**
-     * Show/hide action based on the currently emphasized cells. The action adds
+     * Show/hide action based on the currently selected cells. The action adds
      * the selection to the shown or hidden cells
      * @author Arend Rensink
      * @version $Revision$
      */
-    static protected class EmphasizedAction extends ShowHideAction {
+    static protected class SelectedAction extends ShowHideAction {
         /**
          * Constructs an instance of the action for a given j-graph, either for
          * showing or for hiding.
@@ -667,8 +623,8 @@ public class ShowHideMenu extends JMenu {
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        public EmphasizedAction(GraphJGraph jgraph, int showMode) {
-            super(jgraph, showMode, EMPHASIZED_ACTION_NAME);
+        public SelectedAction(GraphJGraph jgraph, int showMode) {
+            super(jgraph, showMode, SELECTED_ACTION_NAME);
             putValue(MNEMONIC_KEY, EMPHASIZED_MNEMONIC);
         }
 

@@ -24,6 +24,7 @@ import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
 import groove.gui.Simulator;
 import groove.gui.layout.ForestLayouter;
+import groove.gui.layout.JCellLayout;
 import groove.gui.layout.SpringLayouter;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
@@ -33,7 +34,9 @@ import groove.view.aspect.AspectKind;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
@@ -82,7 +85,7 @@ final public class AspectJGraph extends GraphJGraph {
         this.simulator = null;
         this.editor = editor;
         this.graphRole = null;
-        setMarqueeHandler(createMarqueeHandler());
+        addMouseListener(new MyMouseListener());
         getGraphLayoutCache().setSelectsLocalInsertedCells(true);
         setCloneable(true);
         setConnectable(true);
@@ -275,6 +278,112 @@ final public class AspectJGraph extends GraphJGraph {
     @Override
     protected EditorMarqueeHandler createMarqueeHandler() {
         return new EditorMarqueeHandler(this);
+    }
+
+    /**
+     * Callback method to determine whether a given event is a menu popup event.
+     * This implementation checks for the right hand mouse button. To be
+     * overridden by subclasses.
+     * @param evt the event that could be a popup menu event
+     * @return <tt>true</tt> if <tt>e</tt> is a popup menu event
+     */
+    protected boolean isAddPointEvent(MouseEvent evt) {
+        return Options.isPointEditEvent(evt) && !isRemovePointEvent(evt);
+    }
+
+    /**
+     * Callback method to determine whether a given event is a menu popup event.
+     * This implementation checks for the right hand mouse button. To be
+     * overridden by subclasses.
+     * @param evt the event that could be a popup menu event
+     * @return <tt>true</tt> if <tt>e</tt> is a popup menu event
+     */
+    protected boolean isRemovePointEvent(MouseEvent evt) {
+        if (Options.isPointEditEvent(evt)) {
+            Object jCell = getSelectionCell();
+            if (jCell instanceof GraphJEdge) {
+                // check if an intermediate point is in the neighbourhood of evt
+                Rectangle r =
+                    new Rectangle(evt.getX() - this.tolerance, evt.getY()
+                        - this.tolerance, 2 * this.tolerance,
+                        2 * this.tolerance);
+                List<?> points = getJEdgeView((GraphJEdge) jCell).getPoints();
+                for (int i = 1; i < points.size() - 1; i++) {
+                    Point2D point = (Point2D) points.get(i);
+                    if (r.intersects(point.getX(), point.getY(), 1, 1)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Adds an intermediate point to a given j-edge, controlled by a given
+     * location. If the location if <tt>null</tt>, the point is added directly
+     * after the initial point of the edge, at a slightly randomized position.
+     * Otherwise, the point is added at the given location, between the
+     * (existing) points closest to the location.
+     * @param jEdge the j-edge to be modified
+     * @param location the point to be added
+     */
+    public void addPoint(GraphJEdge jEdge, Point2D location) {
+        JEdgeView jEdgeView = getJEdgeView(jEdge);
+        AttributeMap jEdgeAttr = new AttributeMap();
+        List<?> points = jEdgeView.addPointAt(location);
+        GraphConstants.setPoints(jEdgeAttr, points);
+        Map<GraphJCell,AttributeMap> change =
+            new HashMap<GraphJCell,AttributeMap>();
+        change.put(jEdge, jEdgeAttr);
+        getModel().edit(change, null, null, null);
+    }
+
+    /**
+     * Removes an intermediate point from a given j-edge, controlled by a given
+     * location. The point removed is either the second point (if the location
+     * is <tt>null</tt>) or the one closest to the location.
+     * @param jEdge the j-edge to be modified
+     * @param location the point to be removed
+     */
+    public void removePoint(GraphJEdge jEdge, Point2D location) {
+        JEdgeView jEdgeView = getJEdgeView(jEdge);
+        AttributeMap jEdgeAttr = new AttributeMap();
+        List<?> points = jEdgeView.removePointAt(location);
+        GraphConstants.setPoints(jEdgeAttr, points);
+        Map<GraphJCell,AttributeMap> change =
+            new HashMap<GraphJCell,AttributeMap>();
+        change.put(jEdge, jEdgeAttr);
+        getModel().edit(change, null, null, null);
+    }
+
+    /**
+     * Resets the label position of a given a given j-edge to the default
+     * position.
+     * @param jEdge the j-edge to be modified
+     */
+    public void resetLabelPosition(GraphJEdge jEdge) {
+        AttributeMap newAttr = new AttributeMap();
+        GraphConstants.setLabelPosition(newAttr,
+            JCellLayout.defaultLabelPosition);
+        Map<GraphJCell,AttributeMap> change =
+            new HashMap<GraphJCell,AttributeMap>();
+        change.put(jEdge, newAttr);
+        getModel().edit(change, null, null, null);
+    }
+
+    /**
+     * Sets the line style of a given a given j-edge to a given value.
+     * @param jEdge the j-edge to be modified
+     * @param lineStyle the new line style for <tt>jEdge</tt>
+     */
+    public void setLineStyle(GraphJEdge jEdge, int lineStyle) {
+        AttributeMap newAttr = new AttributeMap();
+        GraphConstants.setLineStyle(newAttr, lineStyle);
+        Map<GraphJCell,AttributeMap> change =
+            new HashMap<GraphJCell,AttributeMap>();
+        change.put(jEdge, newAttr);
+        getModel().edit(change, null, null, null);
     }
 
     /**
@@ -482,6 +591,31 @@ final public class AspectJGraph extends GraphJGraph {
             AspectJGraph.ASPECT_NODE_ATTR.get(CREATOR));
         AspectJGraph.ASPECT_EDGE_ATTR.get(ADDER).put("line2map",
             AspectJGraph.ASPECT_EDGE_ATTR.get(CREATOR));
+    }
+
+    /**
+     * Mouse listener that creates the popup menu and adds and deletes points on
+     * appropriate events.
+     */
+    private class MyMouseListener extends MouseAdapter {
+        /** Empty constructor wit the correct visibility. */
+        MyMouseListener() {
+            // empty
+        }
+
+        @Override
+        public void mousePressed(MouseEvent evt) {
+            Object jCell = getSelectionCell();
+            if (isAddPointEvent(evt)) {
+                if (jCell instanceof GraphJEdge) {
+                    addPoint((GraphJEdge) jCell, evt.getPoint());
+                }
+            } else if (isRemovePointEvent(evt)) {
+                if (jCell instanceof GraphJEdge) {
+                    removePoint((GraphJEdge) jCell, evt.getPoint());
+                }
+            }
+        }
     }
 
     /**
