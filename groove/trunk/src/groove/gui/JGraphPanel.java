@@ -21,8 +21,8 @@ import groove.graph.Element;
 import groove.graph.Node;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.GraphJModel;
 import groove.util.Pair;
 
 import java.awt.BorderLayout;
@@ -45,6 +45,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 
+import org.jgraph.JGraph;
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
 
@@ -202,7 +203,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      */
     protected JComponent createSoloPane() {
         // set up the real editor pane
-        JScrollPane result = new JScrollPane(this.jGraph);
+        JScrollPane result = getScrollPane();
         result.setDoubleBuffered(false);
         result.setPreferredSize(new Dimension(500, 400));
         return result;
@@ -223,7 +224,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
             labelTreeToolbar.setAlignmentX(LEFT_ALIGNMENT);
             labelPaneTop.add(labelTreeToolbar);
         }
-        JScrollPane scrollPane = new JScrollPane(getLabelTree()) {
+        JScrollPane labelScrollPane = new JScrollPane(getLabelTree()) {
             @Override
             public Dimension getMinimumSize() {
                 return new Dimension(MINIMUM_LABEL_PANE_WIDTH, 0);
@@ -231,7 +232,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         };
         JPanel labelPane = new JPanel(new BorderLayout(), false);
         labelPane.add(labelPaneTop, BorderLayout.NORTH);
-        labelPane.add(scrollPane, BorderLayout.CENTER);
+        labelPane.add(labelScrollPane, BorderLayout.CENTER);
         // set up the split editor pane
         JSplitPane result =
             new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, createSoloPane(),
@@ -239,6 +240,17 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         result.setOneTouchExpandable(true);
         result.setResizeWeight(1.0);
         return result;
+    }
+
+    /**
+     * Lazily creates and returns the scroll pane within which the {@link JGraph}
+     * is displayed.
+     */
+    protected JScrollPane getScrollPane() {
+        if (this.scrollPane == null) {
+            this.scrollPane = new JScrollPane(getJGraph());
+        }
+        return this.scrollPane;
     }
 
     /**
@@ -375,6 +387,10 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      * The editor pane most recently installed by {@link #setPane}.
      */
     private JComponent currentPane;
+    /**
+     * The editor pane most recently installed by {@link #setPane}.
+     */
+    private JScrollPane scrollPane;
 
     /**
      * The minimum width of the label pane. If the label list is empty, the

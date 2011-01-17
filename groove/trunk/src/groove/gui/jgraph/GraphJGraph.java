@@ -28,7 +28,6 @@ import groove.gui.ShowHideMenu;
 import groove.gui.Simulator;
 import groove.gui.ZoomMenu;
 import groove.gui.dialog.ErrorDialog;
-import groove.gui.layout.JCellLayout;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 import groove.io.ExtensionFilter;
@@ -54,7 +53,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -77,16 +75,14 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 
-import org.jgraph.graph.AttributeMap;
+import org.jgraph.JGraph;
 import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.CellView;
 import org.jgraph.graph.DefaultGraphModel;
-import org.jgraph.graph.DefaultGraphSelectionModel;
 import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphLayoutCache;
 import org.jgraph.graph.GraphModel;
-import org.jgraph.graph.GraphSelectionModel;
 import org.jgraph.graph.PortView;
 import org.jgraph.plaf.basic.BasicGraphUI;
 
@@ -113,13 +109,10 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
         // make sure the layout cache has been created
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         setMarqueeHandler(createMarqueeHandler());
-        setSelectionModel(createSelectionModel());
         // Make Ports invisible by Default
         setPortsVisible(false);
         // Save edits to a cell whenever something else happens
         setInvokesStopCellEditing(true);
-        // Turn off double buffering for speed
-        setDoubleBuffered(false);
         addMouseListener(new MyMouseListener());
         setConnectable(false);
         setDisconnectable(false);
@@ -401,8 +394,8 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
                         invisibleCells.toArray());
                     getGraphLayoutCache().setSelectsLocalInsertedCells(
                         selectsInsertedCells);
-                    getSelectionModel().removeSelectionCells(
-                        grayedOutCells.toArray());
+                    //                    getSelectionModel().removeSelectionCells(
+                    //                        grayedOutCells.toArray());
                     if (getSelectionCount() > 0) {
                         Rectangle scope =
                             Groove.toRectangle(getCellBounds(getSelectionCells()));
@@ -764,88 +757,12 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
         return this.labelTree;
     }
 
-    /**
-     * Adds an intermediate point to a given j-edge, controlled by a given
-     * location. If the location if <tt>null</tt>, the point is added directly
-     * after the initial point of the edge, at a slightly randomized position.
-     * Otherwise, the point is added at the given location, between the
-     * (existing) points closest to the location.
-     * @param jEdge the j-edge to be modified
-     * @param location the point to be added
-     */
-    public void addPoint(GraphJEdge jEdge, Point2D location) {
-        JEdgeView jEdgeView = getJEdgeView(jEdge);
-        AttributeMap jEdgeAttr = new AttributeMap();
-        List<?> points = jEdgeView.addPointAt(location);
-        GraphConstants.setPoints(jEdgeAttr, points);
-        Map<GraphJCell,AttributeMap> change =
-            new HashMap<GraphJCell,AttributeMap>();
-        change.put(jEdge, jEdgeAttr);
-        getModel().edit(change, null, null, null);
-    }
-
-    /**
-     * Removes an intermediate point from a given j-edge, controlled by a given
-     * location. The point removed is either the second point (if the location
-     * is <tt>null</tt>) or the one closest to the location.
-     * @param jEdge the j-edge to be modified
-     * @param location the point to be removed
-     */
-    public void removePoint(GraphJEdge jEdge, Point2D location) {
-        JEdgeView jEdgeView = getJEdgeView(jEdge);
-        AttributeMap jEdgeAttr = new AttributeMap();
-        List<?> points = jEdgeView.removePointAt(location);
-        GraphConstants.setPoints(jEdgeAttr, points);
-        Map<GraphJCell,AttributeMap> change =
-            new HashMap<GraphJCell,AttributeMap>();
-        change.put(jEdge, jEdgeAttr);
-        getModel().edit(change, null, null, null);
-    }
-
-    /**
-     * Resets the label position of a given a given j-edge to the default
-     * position.
-     * @param jEdge the j-edge to be modified
-     */
-    public void resetLabelPosition(GraphJEdge jEdge) {
-        AttributeMap newAttr = new AttributeMap();
-        GraphConstants.setLabelPosition(newAttr,
-            JCellLayout.defaultLabelPosition);
-        Map<GraphJCell,AttributeMap> change =
-            new HashMap<GraphJCell,AttributeMap>();
-        change.put(jEdge, newAttr);
-        getModel().edit(change, null, null, null);
-    }
-
-    /**
-     * Sets the line style of a given a given j-edge to a given value.
-     * @param jEdge the j-edge to be modified
-     * @param lineStyle the new line style for <tt>jEdge</tt>
-     */
-    public void setLineStyle(GraphJEdge jEdge, int lineStyle) {
-        AttributeMap newAttr = new AttributeMap();
-        GraphConstants.setLineStyle(newAttr, lineStyle);
-        Map<GraphJCell,AttributeMap> change =
-            new HashMap<GraphJCell,AttributeMap>();
-        change.put(jEdge, newAttr);
-        getModel().edit(change, null, null, null);
-    }
-
     /** Returns the action to export this JGraph in various formats. */
     public ExportAction getExportAction() {
         if (this.exportAction == null) {
             this.exportAction = new ExportAction();
         }
         return this.exportAction;
-    }
-
-    /**
-     * Factory method for the graph selection model. This implementation returns
-     * a {@link GraphJGraph.MyGraphSelectionModel}.
-     * @return the new graph selection model
-     */
-    protected GraphSelectionModel createSelectionModel() {
-        return new MyGraphSelectionModel();
     }
 
     @Override
@@ -870,7 +787,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
 
     /**
      * Factory method for the marquee handler. This marquee handler ensures that
-     * mouse right-clicks don't deselect unless they can select something else.
+     * mouse right-clicks don't deselect.
      */
     protected BasicMarqueeHandler createMarqueeHandler() {
         return new BasicMarqueeHandler() {
@@ -891,6 +808,15 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
     /** Callback method to return the export action name. */
     protected String getExportActionName() {
         return Options.EXPORT_ACTION_NAME;
+    }
+
+    /** Changes the scale of the {@link JGraph} by a given
+     * increment or decrement.
+     */
+    public void changeScale(int change) {
+        double scale = getScale();
+        scale *= Math.pow(ZOOM_FACTOR, change);
+        setScale(scale);
     }
 
     /** Shows a popup menu if the event is a popup trigger. */
@@ -914,45 +840,6 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
     }
 
     /**
-     * Callback method to determine whether a given event is a menu popup event.
-     * This implementation checks for the right hand mouse button. To be
-     * overridden by subclasses.
-     * @param evt the event that could be a popup menu event
-     * @return <tt>true</tt> if <tt>e</tt> is a popup menu event
-     */
-    protected boolean isAddPointEvent(MouseEvent evt) {
-        return Options.isPointEditEvent(evt) && !isRemovePointEvent(evt);
-    }
-
-    /**
-     * Callback method to determine whether a given event is a menu popup event.
-     * This implementation checks for the right hand mouse button. To be
-     * overridden by subclasses.
-     * @param evt the event that could be a popup menu event
-     * @return <tt>true</tt> if <tt>e</tt> is a popup menu event
-     */
-    protected boolean isRemovePointEvent(MouseEvent evt) {
-        if (Options.isPointEditEvent(evt)) {
-            Object jCell = getSelectionCell();
-            if (jCell instanceof GraphJEdge) {
-                // check if an intermediate point is in the neighbourhood of evt
-                Rectangle r =
-                    new Rectangle(evt.getX() - this.tolerance, evt.getY()
-                        - this.tolerance, 2 * this.tolerance,
-                        2 * this.tolerance);
-                List<?> points = getJEdgeView((GraphJEdge) jCell).getPoints();
-                for (int i = 1; i < points.size() - 1; i++) {
-                    Point2D point = (Point2D) points.get(i);
-                    if (r.intersects(point.getX(), point.getY(), 1, 1)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * Lazily creates and returns the popup menu for this j-graph, activated for
      * a given point of the j-graph.
      * @param atPoint the point at which the menu is to be activated
@@ -972,7 +859,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
      * @param submenu the menu to be added to the popup menu
      */
     final public void addSubmenu(JMenu menu, JMenu submenu) {
-        if (submenu != null) {
+        if (submenu != null && submenu.getItemCount() > 0) {
             // add a separator if this is not the first submenu
             if (menu.getItemCount() > 0) {
                 menu.addSeparator();
@@ -1137,6 +1024,9 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
      */
     public static final JAttr.AttributeMap DEFAULT_EDGE_ATTR;
 
+    /** The factor by which the zoom is adapted. */
+    public static final float ZOOM_FACTOR = 1.4f;
+
     static {
         // graying out
         GRAYED_OUT_ATTR = new JAttr() {
@@ -1211,7 +1101,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
     }
 
     /** Own implementation of UI for performance reasons. */
-    private static class MyGraphUI extends org.jgraph.plaf.basic.BasicGraphUI {
+    static class MyGraphUI extends org.jgraph.plaf.basic.BasicGraphUI {
         MyGraphUI() {
             // empty
         }
@@ -1339,38 +1229,6 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
     }
 
     /**
-     * Selection model that makes sure hidden cells cannot be selected.
-     */
-    private class MyGraphSelectionModel extends DefaultGraphSelectionModel {
-        /** Constructs an instance of the selection model. */
-        MyGraphSelectionModel() {
-            super(GraphJGraph.this);
-        }
-
-        @Override
-        public void addSelectionCells(Object[] cells) {
-            List<Object> visibleCells = new LinkedList<Object>();
-            for (int i = 0; i < cells.length; i++) {
-                if (!((GraphJCell) cells[i]).isGrayedOut()) {
-                    visibleCells.add(cells[i]);
-                }
-            }
-            super.addSelectionCells(visibleCells.toArray());
-        }
-
-        @Override
-        public void setSelectionCells(Object[] cells) {
-            List<Object> visibleCells = new LinkedList<Object>();
-            for (Object cell : cells) {
-                if (!((GraphJCell) cell).isGrayedOut()) {
-                    visibleCells.add(cell);
-                }
-            }
-            super.setSelectionCells(visibleCells.toArray());
-        }
-    }
-
-    /**
      * Mouse listener that creates the popup menu and adds and deletes points on
      * appropriate events.
      */
@@ -1382,16 +1240,6 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
 
         @Override
         public void mousePressed(MouseEvent evt) {
-            Object jCell = getSelectionCell();
-            if (isAddPointEvent(evt)) {
-                if (jCell instanceof GraphJEdge) {
-                    addPoint((GraphJEdge) jCell, evt.getPoint());
-                }
-            } else if (isRemovePointEvent(evt)) {
-                if (jCell instanceof GraphJEdge) {
-                    removePoint((GraphJEdge) jCell, evt.getPoint());
-                }
-            }
             maybeShowPopup(evt);
         }
 

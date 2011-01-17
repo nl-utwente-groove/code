@@ -39,7 +39,11 @@ import groove.trans.RuleToHostMap;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
+import java.awt.Cursor;
+import java.awt.Image;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
@@ -269,15 +273,56 @@ public class Groove {
     /** Save as action icon. */
     public static final ImageIcon SAVE_AS_ICON = new ImageIcon(
         Groove.getResource("saveas.gif"));
+    /** Selection (arrow) icon. */
+    public static final ImageIcon SELECT_ICON = new ImageIcon(
+        Groove.getResource("select.gif"));
     /** Start action icon. */
     public static final ImageIcon START_ICON = new ImageIcon(
         Groove.getResource("start.gif"));
+
+    /** Icon in the shape of an open hand. */
+    public static final ImageIcon OPEN_HAND_ICON = new ImageIcon(
+        Groove.getResource("openhand-small.gif"));
+    /** Icon in the shape of a closed hand. */
+    public static final ImageIcon CLOSED_HAND_ICON = new ImageIcon(
+        Groove.getResource("closedhand.gif"));
+    /** Icon in the shape of a + magnifying class. */
+    public static final ImageIcon ZOOM_IN_ICON = new ImageIcon(
+        Groove.getResource("zoomin.gif"));
+    /** Icon in the shape of a - magnifying class. */
+    public static final ImageIcon ZOOM_OUT_ICON = new ImageIcon(
+        Groove.getResource("zoomout.gif"));
+
+    /** Custom cursor in the shape of an open hand. */
+    public static final Cursor OPEN_HAND_CURSOR = createCursor("Open Hand",
+        createIcon("openhand.gif"));
+    /** Custom cursor in the shape of a closed hand. */
+    public static final Cursor CLOSED_HAND_CURSOR = createCursor("Closed Hand",
+        CLOSED_HAND_ICON);
+    /** Custom cursor in the shape of a + magnifying class. */
+    public static final Cursor ZOOM_IN_CURSOR = createCursor("Zoom In",
+        ZOOM_IN_ICON);
+    /** Custom cursor in the shape of a - magnifying class. */
+    public static final Cursor ZOOM_OUT_CURSOR = createCursor("Zoom Out",
+        ZOOM_OUT_ICON);
 
     /**
      * Flag to indicate if various types of statistics should be computed. This
      * flag is intended to be used globally.
      */
     static public final boolean GATHER_STATISTICS = true;
+
+    /** Creates a named cursor from a given file. */
+    static public ImageIcon createIcon(String filename) {
+        return new ImageIcon(getResource(filename));
+    }
+
+    /** Creates a named cursor from a given file. */
+    static public Cursor createCursor(String name, ImageIcon icon) {
+        Toolkit tk = Toolkit.getDefaultToolkit();
+        Image cursorImage = icon.getImage();
+        return tk.createCustomCursor(cursorImage, new Point(0, 0), name);
+    }
 
     /**
      * Returns a fresh extension filter for {@link #AUT_EXTENSION}.

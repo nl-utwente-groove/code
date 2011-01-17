@@ -1254,7 +1254,8 @@ public class Simulator {
         JSplitPane contentPane = (JSplitPane) this.frame.getContentPane();
         if (getErrorPanel().isVisible()) {
             contentPane.setBottomComponent(getErrorPanel());
-            contentPane.setDividerSize(5);
+            contentPane.setDividerSize(1);
+            contentPane.resetToPreferredSizes();
         } else {
             contentPane.remove(getErrorPanel());
             contentPane.setDividerSize(0);
@@ -1447,6 +1448,7 @@ public class Simulator {
             contentPane.setTopComponent(splitPane);
             contentPane.setResizeWeight(0.8);
             contentPane.setDividerSize(0);
+            contentPane.setContinuousLayout(true);
             this.frame.setContentPane(contentPane);
         }
         return this.frame;

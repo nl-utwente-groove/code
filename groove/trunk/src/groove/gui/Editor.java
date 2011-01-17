@@ -1096,13 +1096,25 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                 int edgeCount = getGraph().edgeCount();
                 getStatusBar().setText(
                     String.format("%s nodes, %s edges", nodeCount, edgeCount));
-                Editor.this.errorCellMap.clear();
-                List<FormatError> errors = toView().getErrors();
-                Editor.this.errorCellMap = getModel().setExtraErrors(errors);
-                getErrorPanel().setErrors(errors);
-                getMainPanel().resetToPreferredSizes();
+                setErrors(toView().getErrors());
             }
         });
+    }
+
+    /**
+     * Displays a list of errors, or hides the error panel if the list is empty.
+     */
+    private void setErrors(List<FormatError> errors) {
+        this.errorCellMap = getModel().setExtraErrors(errors);
+        getErrorPanel().setErrors(errors);
+        if (getErrorPanel().isVisible()) {
+            getMainPanel().setBottomComponent(getErrorPanel());
+            getMainPanel().setDividerSize(1);
+            getMainPanel().resetToPreferredSizes();
+        } else {
+            getMainPanel().remove(getErrorPanel());
+            getMainPanel().setDividerSize(0);
+        }
     }
 
     /** Sets the property whether all inserted cells are automatically selected. */

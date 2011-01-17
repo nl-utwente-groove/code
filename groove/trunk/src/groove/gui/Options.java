@@ -406,10 +406,12 @@ public class Options implements Cloneable {
     /** Unfilter type-based labels action name */
     public static final String UNFILTER_TYPE_ACTION_NAME =
         "Reset type graph filter";
-    /** Select mode action name */
-    public static final String SELECT_MODE_NAME = "Selection mode";
+    /** Pan mode action name */
+    public static final String PAN_MODE_NAME = "Pan and Zoom mode";
     /** Preview mode action name */
     public static final String PREVIEW_MODE_NAME = "Preview mode";
+    /** Select mode action name */
+    public static final String SELECT_MODE_NAME = "Selection mode";
 
     /** Add point keystroke. */
     public static final KeyStroke ADD_POINT_KEY = KeyStroke.getKeyStroke(
