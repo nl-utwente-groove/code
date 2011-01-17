@@ -70,7 +70,8 @@ public class AspectParser {
             }
             String prefix = prefixBuilder.toString();
             stopParsing =
-                EdgeRole.getRole(prefix) != null && pos == nextSeparator;
+                pos != 0 && EdgeRole.getRole(prefix) != null
+                    && pos == nextSeparator;
             if (!stopParsing) {
                 AspectKind kind = AspectKind.getKind(prefix);
                 if (kind == null) {

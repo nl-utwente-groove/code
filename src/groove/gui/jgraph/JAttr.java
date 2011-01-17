@@ -256,6 +256,12 @@ public class JAttr {
     static public final Font ITALIC_FONT = DEFAULT_FONT.deriveFont(Font.ITALIC);
     /** Percentage of white in the background colour. */
     static private final int BACKGROUND_WHITEWASH = 90;
+
+    /** Foreground (= border) colour of the rubber band selector. */
+    static public final Color RUBBER_FOREGROUND = new Color(150, 150, 150);
+    /** Foreground (= border) colour of the rubber band selector. */
+    static public final Color RUBBER_BACKGROUND = new Color(202, 212, 224, 40);
+
     /** Maximum value of the colour dimensions. */
     static private final int MAX_VALUE = 255;
     /** Colour used for indicating errors in the graph. */

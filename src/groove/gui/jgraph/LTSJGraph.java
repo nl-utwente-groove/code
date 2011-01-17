@@ -28,6 +28,7 @@ import groove.lts.GraphTransition;
 import groove.util.Colors;
 
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -41,7 +42,12 @@ import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.JMenu;
+
+import net.java.swingfx.rubberband.canvas.RubberBandCanvas;
+import net.java.swingfx.rubberband.rubberbands.RectangularRubberBand;
+import net.java.swingfx.rubberband.rubberbands.RubberBand;
 
 import org.jgraph.JGraph;
 import org.jgraph.graph.GraphConstants;
@@ -53,7 +59,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
  * an instance, setupPopupMenu() should be called after all global final
  * variables have been set.
  */
-public class LTSJGraph extends GraphJGraph {
+public class LTSJGraph extends GraphJGraph implements RubberBandCanvas {
     /** Constructs an instance of the j-graph for a given simulator. */
     public LTSJGraph(Simulator simulator) {
         super(simulator.getOptions(), true);
@@ -61,7 +67,41 @@ public class LTSJGraph extends GraphJGraph {
         // turn off double buffering to improve performance
         setDoubleBuffered(false);
         setExporter(simulator.getExporter());
+        setRubberBand(new RectangularRubberBand(this) {
+
+            @Override
+            public void draw(Graphics g) {
+                Color oldColor = g.getColor();
+                g.setColor(JAttr.RUBBER_FOREGROUND);
+                super.draw(g);
+                g.setColor(JAttr.RUBBER_BACKGROUND);
+                g.fillRect(this.rubberband.x, this.rubberband.y,
+                    this.rubberband.width, this.rubberband.height);
+                g.setColor(oldColor);
+            }
+
+        });
     }
+
+    @Override
+    public JComponent getCanvas() {
+        return this;
+    }
+
+    @Override
+    public void setRubberBand(RubberBand rubberband) {
+        this.rubberBand = rubberband;
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if (this.rubberBand != null) {
+            this.rubberBand.draw(g);
+        }
+    }
+
+    private RubberBand rubberBand;
 
     /**
      * Sets the view mode to select.

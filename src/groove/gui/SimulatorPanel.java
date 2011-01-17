@@ -46,7 +46,6 @@ import javax.swing.event.ChangeListener;
 public class SimulatorPanel extends JTabbedPane {
     /** Constructs a fresh instance, for a given simulator. */
     public SimulatorPanel(final Simulator simulator) {
-        setTabLayoutPolicy(SCROLL_TAB_LAYOUT);
         add(simulator.getStatePanel(), Groove.GRAPH_FRAME_ICON,
             Groove.GRAPH_FILE_ICON, "Current graph state");
         add(simulator.getRulePanel(), Groove.RULE_FRAME_ICON,

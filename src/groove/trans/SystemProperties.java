@@ -42,6 +42,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
         super();
         if (useCurrentGrooveVersion) {
             this.setCurrentVersionProperties();
+            setShowLoopsAsLabels(false);
         } else {
             this.setGrooveVersion(Version.getInitialGrooveVersion());
             this.setGrammarVersion(Version.getInitialGrammarVersion());
@@ -54,7 +55,6 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     public void setCurrentVersionProperties() {
         this.setGrooveVersion(Version.getCurrentGrooveVersion());
         this.setGrammarVersion(Version.getCurrentGrammarVersion());
-        setShowLoopsAsLabels(false);
     }
 
     /**
