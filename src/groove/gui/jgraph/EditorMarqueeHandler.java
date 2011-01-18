@@ -65,7 +65,6 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
      * <ul>
      * <li>A node creation event: create the node
      * <li>The start of a edge creation; store the starting point
-     * <li>A popup menu event; create the popup
      * </ul>
      * Pass on the event to <tt>super</tt> if it is not for us.
      * 
