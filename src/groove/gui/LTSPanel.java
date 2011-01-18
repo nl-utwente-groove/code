@@ -35,7 +35,6 @@ import groove.trans.RuleName;
 import groove.util.Groove;
 import groove.view.StoredGrammarView;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
@@ -45,8 +44,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.swing.JToolBar;
 
 /**
  * Window that displays and controls the current lts graph. Auxiliary class for
@@ -60,7 +57,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
 
     /** Creates a LTS panel for a given simulator. */
     public LTSPanel(Simulator simulator) {
-        super(new LTSJGraph(simulator), true, false, simulator.getOptions());
+        super(new LTSJGraph(simulator), true, simulator.getOptions());
         this.simulator = simulator;
         getJGraph().setEnabled(false);
         MyMouseListener mouseListener = new MyMouseListener();
@@ -79,14 +76,6 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         simulator.addSimulationListener(this);
         getJGraph().setToolTipEnabled(true);
         initialise();
-        this.add(createToolbar(), BorderLayout.NORTH);
-    }
-
-    private JToolBar createToolbar() {
-        JToolBar result = new JToolBar();
-        result.add(getJGraph().getModeButton(SELECT_MODE));
-        result.add(getJGraph().getModeButton(PAN_MODE));
-        return result;
     }
 
     @Override

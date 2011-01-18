@@ -19,6 +19,7 @@ package groove.gui.jgraph;
 import static groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
 import static groove.gui.jgraph.JGraphMode.EDGE_MODE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
+import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.LabelStore;
@@ -42,7 +43,6 @@ import groove.util.ObservableSet;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Point;
@@ -99,6 +99,7 @@ import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphLayoutCache;
 import org.jgraph.graph.GraphModel;
 import org.jgraph.graph.PortView;
+import org.jgraph.plaf.GraphUI;
 import org.jgraph.plaf.basic.BasicGraphUI;
 
 /**
@@ -590,7 +591,10 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
         }
         getLabelTree().setEnabled(enabled);
         getExportAction().setEnabled(enabled);
-        getRubberBand().setEnabled(enabled);
+        for (JToggleButton button : getModeButtonMap().values()) {
+            button.setEnabled(enabled);
+        }
+        getModeButton(SELECT_MODE).setSelected(true);
         super.setEnabled(enabled);
     }
 
@@ -600,7 +604,8 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
      */
     @Override
     public void updateUI() {
-        setUI(createGraphUI());
+        GraphUI ui = createGraphUI();
+        setUI(ui);
         invalidate();
     }
 
@@ -609,7 +614,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
      * previously computed values.
      */
     protected BasicGraphUI createGraphUI() {
-        return new MyGraphUI();
+        return new JGraphUI();
     }
 
     /** 
@@ -618,19 +623,13 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
      */
     protected JViewport getViewPort() {
         JViewport result = null;
-        for (JComponent parent = this; parent != null && result != null; parent =
+        for (JComponent parent = this; parent != null && result == null; parent =
             (JComponent) parent.getParent()) {
             if (parent instanceof JViewport) {
                 result = (JViewport) parent;
             }
         }
         return result;
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        this.rubberBand.draw(g);
     }
 
     /**
@@ -780,11 +779,9 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
 
     /**
      * Creates, sets and returns a new label tree instance for this jgraph.
-     * @param supportsSubtypes if <code>true</code>, the new label tree supports
-     *        subtypes
      */
-    public LabelTree initLabelTree(boolean supportsSubtypes) {
-        this.labelTree = new LabelTree(this, supportsSubtypes);
+    public LabelTree initLabelTree() {
+        this.labelTree = new LabelTree(this);
         this.labelTree.setEnabled(isEnabled());
         return this.labelTree;
     }
@@ -794,7 +791,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
      */
     public LabelTree getLabelTree() {
         if (this.labelTree == null) {
-            initLabelTree(false);
+            initLabelTree();
         }
         return this.labelTree;
     }
@@ -1104,6 +1101,10 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
      * {@link #getModeAction(JGraphMode)}.
      */
     public JToggleButton getModeButton(JGraphMode mode) {
+        return getModeButtonMap().get(mode);
+    }
+
+    private Map<JGraphMode,JToggleButton> getModeButtonMap() {
         if (this.modeButtonMap == null) {
             this.modeButtonMap =
                 new EnumMap<JGraphMode,JToggleButton>(JGraphMode.class);
@@ -1112,11 +1113,12 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
                 JToggleButton button = new JToggleButton(getModeAction(any));
                 button.setText(null);
                 button.setToolTipText(any.getName());
+                button.setEnabled(false);
                 this.modeButtonMap.put(any, button);
                 modeButtonGroup.add(button);
             }
         }
-        return this.modeButtonMap.get(mode);
+        return this.modeButtonMap;
     }
 
     private Map<JGraphMode,Action> modeActionMap;
@@ -1132,7 +1134,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
     /** Object providing the core functionality for property changes. */
     private PropertyChangeSupport propertyChangeSupport;
     /** Boolean indicating if the JGraph is in select mode or in pan+zoom mode. */
-    private JGraphMode mode;
+    private JGraphMode mode = SELECT_MODE;
     /** Set of all labels and subtypes in the graph. */
     private LabelStore labelStore;
     /** Mapping from names to sub-label stores. */
@@ -1365,8 +1367,6 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
         }
 
         private final class MyMouseHandler extends MouseHandler {
-            /** The JGraph's ancestor viewport, if any. */
-            private JViewport viewport = getJGraph().getViewPort();
             /** The coordinates of a point where panning started. */
             private int origX = -1, origY = -1;
 
@@ -1439,12 +1439,12 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
                 if (this.origX == -1) {
                     return; // never happens ??
                 }
-                Point p = this.viewport.getViewPosition();
+                Point p = getViewPort().getViewPosition();
                 p.x -= (e.getX() - this.origX);
                 p.y -= (e.getY() - this.origY);
 
                 Dimension size = getJGraph().getSize();
-                Dimension vsize = this.viewport.getExtentSize();
+                Dimension vsize = getViewPort().getExtentSize();
 
                 if (p.x + vsize.width > size.width) {
                     p.x = size.width - vsize.width;
@@ -1458,12 +1458,17 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
                 if (p.y < 0) {
                     p.y = 0;
                 }
-                this.viewport.setViewPosition(p);
+                getViewPort().setViewPosition(p);
             }
 
             private boolean isPanEnabled() {
                 return getJGraph().getMode() == PAN_MODE
-                    && this.viewport != null;
+                    && getViewPort() != null;
+            }
+
+            /** The JGraph's ancestor viewport, if any. */
+            private JViewport getViewPort() {
+                return getJGraph().getViewPort();
             }
         }
     }

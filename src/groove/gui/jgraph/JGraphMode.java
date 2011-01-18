@@ -15,7 +15,7 @@ public enum JGraphMode {
             Groove.createIcon("select.gif")),
     /** Panning and zooming. */
     PAN_MODE(Options.PAN_MODE_NAME, null, Groove.OPEN_HAND_ICON,
-            Groove.OPEN_HAND_CURSOR),
+            Groove.OPEN_HAND_CURSOR, Groove.CLOSED_HAND_CURSOR),
     /** Node edit mode. */
     NODE_MODE(Options.NODE_MODE_NAME, Options.NODE_MODE_KEY,
             Groove.createIcon("rectangle.gif")),
@@ -27,15 +27,17 @@ public enum JGraphMode {
             Groove.createIcon("preview.gif"));
 
     private JGraphMode(String text, KeyStroke acceleratorKey, ImageIcon icon,
-            Cursor cursor) {
+            Cursor moveCursor, Cursor dragCursor) {
         this.text = text;
         this.acceleratorKey = acceleratorKey;
         this.icon = icon;
-        this.cursor = cursor;
+        this.cursor = moveCursor;
+        this.dragCursor = dragCursor;
     }
 
     private JGraphMode(String text, KeyStroke acceleratorKey, ImageIcon icon) {
-        this(text, acceleratorKey, icon, Cursor.getDefaultCursor());
+        this(text, acceleratorKey, icon, Cursor.getDefaultCursor(),
+            Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
     }
 
     /** Returns a descriptive (tool tip) text for this mode. */
@@ -53,13 +55,19 @@ public enum JGraphMode {
         return this.icon;
     }
 
-    /** Returns the preferred cursor for this mode. */
+    /** Returns the preferred (normal) cursor for this mode. */
     public final Cursor getCursor() {
         return this.cursor;
+    }
+
+    /** Returns the preferred drag cursor for this mode. */
+    public final Cursor getDragCursor() {
+        return this.dragCursor;
     }
 
     private final String text;
     private final KeyStroke acceleratorKey;
     private final ImageIcon icon;
     private final Cursor cursor;
+    private final Cursor dragCursor;
 }
