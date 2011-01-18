@@ -17,12 +17,16 @@
 package groove.gui.jgraph;
 
 import static groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
+import static groove.gui.jgraph.JGraphMode.EDGE_MODE;
+import static groove.gui.jgraph.JGraphMode.PAN_MODE;
+import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.gui.Exporter;
 import groove.gui.LabelTree;
 import groove.gui.Options;
+import groove.gui.RubberBand;
 import groove.gui.SetLayoutMenu;
 import groove.gui.ShowHideMenu;
 import groove.gui.Simulator;
@@ -38,6 +42,7 @@ import groove.util.ObservableSet;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Point;
@@ -49,10 +54,14 @@ import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -67,10 +76,12 @@ import java.util.TimerTask;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.ButtonGroup;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
@@ -615,6 +626,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
         }
         getLabelTree().setEnabled(enabled);
         getExportAction().setEnabled(enabled);
+        getRubberBand().setEnabled(enabled);
         super.setEnabled(enabled);
     }
 
@@ -634,6 +646,12 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
      */
     protected BasicGraphUI createGraphUI() {
         return new MyGraphUI();
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        this.rubberBand.draw(g);
     }
 
     /**
@@ -707,6 +725,51 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
         }
     }
 
+    /** Adds a listener to {@link #setMode(JGraphMode)} calls. */
+    public void addJGraphModeListener(PropertyChangeListener listener) {
+        getChangeSupport().addPropertyChangeListener(JGRAPH_MODE_PROPERTY,
+            listener);
+    }
+
+    /** Removes a listener to {@link #setMode(JGraphMode)} calls. */
+    public void removeJGraphModeListener(PropertyChangeListener listener) {
+        getChangeSupport().removePropertyChangeListener(JGRAPH_MODE_PROPERTY,
+            listener);
+    }
+
+    /**
+     * Sets the JGraph mode to a new value.
+     * Fires a property change event for {@link #JGRAPH_MODE_PROPERTY} if the
+     * mode was changed.
+     * @return {@code true} if the JGraph mode was changed as a result
+     * of this call
+     */
+    public boolean setMode(JGraphMode mode) {
+        JGraphMode oldMode = this.mode;
+        boolean result = mode != oldMode;
+        // set the value if it has changed
+        if (result) {
+            this.mode = mode;
+            if (mode == EDGE_MODE) {
+                clearSelection();
+            }
+            stopEditing();
+            getModeButton(mode).setSelected(true);
+            setCursor(mode.getCursor());
+            // fire change only if there was a previous value
+            getChangeSupport().firePropertyChange(JGRAPH_MODE_PROPERTY,
+                oldMode, mode);
+        }
+        return result;
+    }
+
+    /** 
+     * Returns the current JGraph mode.
+     */
+    public JGraphMode getMode() {
+        return this.mode;
+    }
+
     /**
      * Indicates whether this jgraph is currently registered at the tool tip
      * manager.
@@ -755,6 +818,63 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
             initLabelTree(false);
         }
         return this.labelTree;
+    }
+
+    /** Lazily creates and returns the rubber band selector for this JGraph. */
+    public RubberBand getRubberBand() {
+        if (this.rubberBand == null) {
+            this.rubberBand = new RubberBand(this) {
+                @Override
+                protected boolean isAllowed(MouseEvent event) {
+                    return getMode() == PAN_MODE
+                        && event.getButton() == MouseEvent.BUTTON2;
+                }
+
+                @Override
+                protected void stopRubberBand(MouseEvent event) {
+                    if (getMode() == PAN_MODE) {
+                        zoomTo(getBounds());
+                    } else {
+                        CellView[] views =
+                            getGraphLayoutCache().getRoots(getBounds());
+                        ArrayList<Object> list = new ArrayList<Object>();
+                        for (int i = 0; i < views.length; i++) {
+                            // above returns intersection, we want containment
+                            if (getBounds().contains(views[i].getBounds())) {
+                                list.add(views[i].getCell());
+                            }
+                        }
+                        Object[] cells = list.toArray();
+                        setSelectionCells(cells);
+                    }
+                }
+            };
+        }
+        return this.rubberBand;
+    }
+
+    /** 
+     * Zooms and centres a given portion of the JGraph, as
+     * defined by a certain rectangle. 
+     */
+    private void zoomTo(Rectangle2D bounds) {
+        Rectangle2D viewBounds = getViewPortBounds();
+        double widthScale = viewBounds.getWidth() / bounds.getWidth();
+        double heightScale = viewBounds.getHeight() / bounds.getHeight();
+        double scale = Math.min(widthScale, heightScale);
+        double oldScale = getScale();
+        setScale(oldScale * scale);
+        double scaledHeight = scale * bounds.getHeight();
+        double scaledWidth = scale * bounds.getWidth();
+        // choose new origin so the selected bounds are centred
+        double newX =
+            bounds.getX() * scale - (viewBounds.getWidth() - scaledWidth) / 2;
+        double newY =
+            bounds.getY() * scale - (viewBounds.getHeight() - scaledHeight) / 2;
+        Rectangle newBounds =
+            new Rectangle((int) newX, (int) newY, (int) viewBounds.getWidth(),
+                (int) viewBounds.getHeight());
+        scrollRectToVisible(newBounds);
     }
 
     /** Returns the action to export this JGraph in various formats. */
@@ -949,9 +1069,8 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
 
     /**
      * Adds the accelerator key for a given action to the action and input maps
-     * of this j-frame.
+     * of this JGraph.
      * @param action the action to be added
-     * @require <tt>frame.getContentPane()</tt> should be initialized
      */
     protected void addAccelerator(Action action) {
         ActionMap am = getActionMap();
@@ -962,10 +1081,79 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
             action.getValue(Action.NAME));
     }
 
+    /**
+     * Lazily creates and returns the property change support object for this
+     * editor.
+     */
+    private PropertyChangeSupport getChangeSupport() {
+        if (this.propertyChangeSupport == null) {
+            this.propertyChangeSupport = new PropertyChangeSupport(this);
+        }
+        return this.propertyChangeSupport;
+    }
+
+    /** 
+     * Lazily creates and returns an action setting the mode of this 
+     * JGraph. The actual setting is done by a call to {@link #setMode(JGraphMode)}.
+     */
+    public Action getModeAction(JGraphMode mode) {
+        if (this.modeActionMap == null) {
+            this.modeActionMap =
+                new EnumMap<JGraphMode,Action>(JGraphMode.class);
+            for (final JGraphMode any : EnumSet.allOf(JGraphMode.class)) {
+                Action action =
+                    new AbstractAction(any.getName(), any.getIcon()) {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            setMode(any);
+                        }
+                    };
+
+                if (any.getAcceleratorKey() != null) {
+                    action.putValue(Action.ACCELERATOR_KEY,
+                        any.getAcceleratorKey());
+                    addAccelerator(action);
+                }
+                this.modeActionMap.put(any, action);
+            }
+        }
+        return this.modeActionMap.get(mode);
+    }
+
+    /** 
+     * Lazily creates and returns a button wrapping
+     * {@link #getModeAction(JGraphMode)}.
+     */
+    public JToggleButton getModeButton(JGraphMode mode) {
+        if (this.modeButtonMap == null) {
+            this.modeButtonMap =
+                new EnumMap<JGraphMode,JToggleButton>(JGraphMode.class);
+            ButtonGroup modeButtonGroup = new ButtonGroup();
+            for (JGraphMode any : EnumSet.allOf(JGraphMode.class)) {
+                JToggleButton button = new JToggleButton(getModeAction(any));
+                button.setText(null);
+                button.setToolTipText(any.getName());
+                this.modeButtonMap.put(any, button);
+                modeButtonGroup.add(button);
+            }
+        }
+        return this.modeButtonMap.get(mode);
+    }
+
+    private Map<JGraphMode,Action> modeActionMap;
+
+    private Map<JGraphMode,JToggleButton> modeButtonMap;
+
     /** The options object with which this {@link GraphJGraph} was constructed. */
     private final Options options;
     /** The set of labels currently filtered from view. */
     private final ObservableSet<Label> filteredLabels;
+    /** The selection rubber band for this JGraph. */
+    private RubberBand rubberBand;
+    /** Object providing the core functionality for property changes. */
+    private PropertyChangeSupport propertyChangeSupport;
+    /** Boolean indicating if the JGraph is in select mode or in pan+zoom mode. */
+    private JGraphMode mode;
     /** Set of all labels and subtypes in the graph. */
     private LabelStore labelStore;
     /** Mapping from names to sub-label stores. */
@@ -1026,6 +1214,12 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
 
     /** The factor by which the zoom is adapted. */
     public static final float ZOOM_FACTOR = 1.4f;
+
+    /**
+     * Property name of the JGraph mode. 
+     * Values are of type {@link GraphRole}.
+     */
+    static public final String JGRAPH_MODE_PROPERTY = "JGraphMode";
 
     static {
         // graying out

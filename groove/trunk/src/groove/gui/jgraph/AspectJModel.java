@@ -199,11 +199,6 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         setGraph(getGraph().rename(name));
     }
 
-    /** Indicates that the JModel is being edited. */
-    boolean isEditing() {
-        return this.editor != null && !this.editor.isPreviewMode();
-    }
-
     /**
      * Returns the properties associated with this j-model.
      */
@@ -323,7 +318,6 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      * the graph role taken from the editor.
      */
     private AspectNode createAspectNode() {
-        assert isEditing();
         return new AspectNode(createNewNodeNr(), this.editor.getRole());
     }
 

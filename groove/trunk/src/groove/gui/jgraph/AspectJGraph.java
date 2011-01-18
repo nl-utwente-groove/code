@@ -16,6 +16,9 @@
  */
 package groove.gui.jgraph;
 
+import static groove.gui.jgraph.JGraphMode.EDGE_MODE;
+import static groove.gui.jgraph.JGraphMode.NODE_MODE;
+import static groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
 import static groove.view.aspect.AspectKind.ADDER;
 import static groove.view.aspect.AspectKind.CREATOR;
 import groove.graph.GraphRole;
@@ -129,7 +132,7 @@ final public class AspectJGraph extends GraphJGraph {
 
     /** Indicates that the JModel has an editor enabled. */
     public boolean hasActiveEditor() {
-        return this.editor != null && !this.editor.isPreviewMode();
+        return this.editor != null && getMode() != PREVIEW_MODE;
     }
 
     @Override
@@ -476,7 +479,7 @@ final public class AspectJGraph extends GraphJGraph {
      */
     boolean isEdgeMode(MouseEvent evt) {
         boolean result = false;
-        if (this.editor != null && this.editor.isEdgeMode()) {
+        if (this.editor != null && getMode() == EDGE_MODE) {
             result = isVertex(getFirstCellForLocation(evt.getX(), evt.getY()));
         }
         return result;
@@ -491,7 +494,7 @@ final public class AspectJGraph extends GraphJGraph {
     boolean isNodeMode(MouseEvent evt) {
         boolean result = false;
         if (evt.getButton() == MouseEvent.BUTTON1 && this.editor != null
-            && this.editor.isNodeMode()) {
+            && getMode() == NODE_MODE) {
             result = getFirstCellForLocation(evt.getX(), evt.getY()) == null;
         }
         return result;

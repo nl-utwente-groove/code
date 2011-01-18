@@ -19,6 +19,10 @@ import static groove.gui.Options.HELP_MENU_NAME;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
+import static groove.gui.jgraph.JGraphMode.EDGE_MODE;
+import static groove.gui.jgraph.JGraphMode.NODE_MODE;
+import static groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
+import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.TypeGraph;
@@ -30,6 +34,7 @@ import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JGraphMode;
 import groove.io.AspectGxl;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
@@ -50,8 +55,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
@@ -153,27 +156,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** Returns the frame in which the editor is displayed. */
     public final JFrame getFrame() {
         return this.frame;
-    }
-
-    /**
-     * Indicates whether the editor is in node editing mode.
-     * @return <tt>true</tt> if the editor is in node editing mode.
-     */
-    public boolean isNodeMode() {
-        return getNodeModeButton().isSelected();
-    }
-
-    /**
-     * Indicates whether the editor is in edge editing mode.
-     * @return <tt>true</tt> if the editor is in edge editing mode.
-     */
-    public boolean isEdgeMode() {
-        return getEdgeModeButton().isSelected();
-    }
-
-    /** Indicates that the editor is in previewing mode. */
-    public boolean isPreviewMode() {
-        return getPreviewModeButton().isSelected();
     }
 
     /**
@@ -280,20 +262,34 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /**
-     * We listen to the {@link #ROLE_PROPERTY}.
+     * We listen to the {@link #ROLE_PROPERTY} and the 
+     * {@link GraphJGraph#JGRAPH_MODE_PROPERTY}.
      */
     public void propertyChange(PropertyChangeEvent evt) {
-        assert evt.getPropertyName().equals(ROLE_PROPERTY);
-        getGraphRoleButton().setSelected(getRole() == HOST);
-        getRuleRoleButton().setSelected(getRole() == RULE);
-        getTypeRoleButton().setSelected(getRole() == TYPE);
-        // we need to refresh because the errors may have changed
-        getModel().syncGraph();
-        updateStatus();
-        Editor.this.refreshing = true;
-        getGraphPanel().refresh();
-        Editor.this.refreshing = false;
-        updateTitle();
+        boolean refresh = false;
+        if (evt.getPropertyName().equals(ROLE_PROPERTY)) {
+            getGraphRoleButton().setSelected(getRole() == HOST);
+            getRuleRoleButton().setSelected(getRole() == RULE);
+            getTypeRoleButton().setSelected(getRole() == TYPE);
+            // we need to refresh because the errors may have changed
+            refresh = true;
+        } else {
+            assert evt.getPropertyName().equals(
+                GraphJGraph.JGRAPH_MODE_PROPERTY);
+            JGraphMode mode = getJGraph().getMode();
+            if (mode == PREVIEW_MODE || evt.getOldValue() == PREVIEW_MODE) {
+                getJGraph().setEditable(mode != PREVIEW_MODE);
+                refresh = true;
+            }
+        }
+        if (refresh) {
+            getModel().syncGraph();
+            updateStatus();
+            Editor.this.refreshing = true;
+            getGraphPanel().refresh();
+            Editor.this.refreshing = false;
+            updateTitle();
+        }
     }
 
     /**
@@ -420,6 +416,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                     getCutAction().setEnabled(selected);
                 }
             });
+        getJGraph().addJGraphModeListener(this);
         getChangeSupport().addPropertyChangeListener(ROLE_PROPERTY, this);
     }
 
@@ -565,22 +562,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /**
-     * Returns a textual representation of the graph role, with the first letter
-     * capitalised on demand.
-     * @param upper if <code>true</code>, the first letter is capitalised
-     */
-    String getRoleName(boolean upper) {
-        String roleName = getRole().toString();
-        if (upper) {
-            char[] result = roleName.toCharArray();
-            result[0] = Character.toUpperCase(result[0]);
-            return String.valueOf(result);
-        } else {
-            return roleName;
-        }
-    }
-
-    /**
      * Sets the edit role to a given graph role.
      * @param role the edit role to be set.
      * @return <code>true</code> if the edit type was actually changed;
@@ -712,10 +693,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         result.add(getPasteAction());
         result.add(getDeleteAction());
         result.addSeparator();
-        result.add(getSelectModeAction());
-        result.add(getNodeModeAction());
-        result.add(getEdgeModeAction());
-        this.jgraph.addSubmenu(result, this.jgraph.createPopupMenu(null));
+        result.add(getJGraph().getModeAction(SELECT_MODE));
+        result.add(getJGraph().getModeAction(NODE_MODE));
+        result.add(getJGraph().getModeAction(EDGE_MODE));
+        result.add(getJGraph().getModeAction(PREVIEW_MODE));
+        getJGraph().addSubmenu(result, getJGraph().createPopupMenu(null));
         return result;
     }
 
@@ -810,10 +792,10 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     void addModeButtons(JToolBar toolbar) {
         // Mode block
         toolbar.addSeparator();
-        toolbar.add(getSelectModeButton());
-        toolbar.add(getNodeModeButton());
-        toolbar.add(getEdgeModeButton());
-        toolbar.add(getPreviewModeButton());
+        toolbar.add(getJGraph().getModeButton(SELECT_MODE));
+        toolbar.add(getJGraph().getModeButton(NODE_MODE));
+        toolbar.add(getJGraph().getModeButton(EDGE_MODE));
+        toolbar.add(getJGraph().getModeButton(PREVIEW_MODE));
     }
 
     /**
@@ -853,20 +835,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /**
      * Returns the group of editing mode buttons, lazily creating it first.
      */
-    private ButtonGroup getModeButtonGroup() {
-        if (this.modeButtonGroup == null) {
-            this.modeButtonGroup = new ButtonGroup();
-            this.modeButtonGroup.add(getSelectModeButton());
-            this.modeButtonGroup.add(getNodeModeButton());
-            this.modeButtonGroup.add(getEdgeModeButton());
-            this.modeButtonGroup.add(getPreviewModeButton());
-        }
-        return this.modeButtonGroup;
-    }
-
-    /**
-     * Returns the group of editing mode buttons, lazily creating it first.
-     */
     private ButtonGroup getTypeButtonGroup() {
         if (this.typeButtonGroup == null) {
             this.typeButtonGroup = new ButtonGroup();
@@ -875,70 +843,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             this.typeButtonGroup.add(getTypeRoleButton());
         }
         return this.typeButtonGroup;
-    }
-
-    /**
-     * Returns the button for setting edge editing mode, lazily creating it
-     * first.
-     */
-    private JToggleButton getEdgeModeButton() {
-        if (this.edgeModeButton == null) {
-            this.edgeModeButton = new JToggleButton(getEdgeModeAction());
-            this.edgeModeButton.setText(null);
-            this.edgeModeButton.setToolTipText(Options.EDGE_MODE_NAME);
-        }
-        return this.edgeModeButton;
-    }
-
-    /**
-     * Returns the button for setting node editing mode, lazily creating it
-     * first.
-     */
-    private JToggleButton getNodeModeButton() {
-        if (this.nodeModeButton == null) {
-            this.nodeModeButton = new JToggleButton(getNodeModeAction());
-            this.nodeModeButton.setText(null);
-            this.nodeModeButton.setToolTipText(Options.NODE_MODE_NAME);
-        }
-        return this.nodeModeButton;
-    }
-
-    /**
-     * Returns the button for setting selection mode, lazily creating it first.
-     */
-    private JToggleButton getSelectModeButton() {
-        if (this.selectModeButton == null) {
-            this.selectModeButton = new JToggleButton(getSelectModeAction());
-            this.selectModeButton.setText(null);
-            this.selectModeButton.setToolTipText(Options.SELECT_MODE_NAME);
-            this.selectModeButton.doClick();
-        }
-        return this.selectModeButton;
-    }
-
-    /**
-     * Returns the button for setting selection mode, lazily creating it first.
-     */
-    private JToggleButton getPreviewModeButton() {
-        if (this.previewButton == null) {
-            final JToggleButton result =
-                this.previewButton = new JToggleButton(getPreviewModeAction());
-            result.setText(null);
-            result.setToolTipText(Options.PREVIEW_MODE_NAME);
-            result.addItemListener(new ItemListener() {
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                    getJGraph().setEditable(
-                        e.getStateChange() == ItemEvent.DESELECTED);
-                    getModel().syncGraph();
-                    updateStatus();
-                    Editor.this.refreshing = true;
-                    getGraphPanel().refresh();
-                    Editor.this.refreshing = false;
-                }
-            });
-        }
-        return this.previewButton;
     }
 
     /** Creates a panel consisting of the error panel and the status bar. */
@@ -1020,23 +924,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /**
-     * Activates the appropriate mode button (select, node or edge), based on a
-     * given (mode) action.
-     * @param forAction the mode action for which the corresponding button is to
-     *        be activated
-     */
-    protected void updateModeButtons(Action forAction) {
-        Enumeration<AbstractButton> modeButtonEnum =
-            getModeButtonGroup().getElements();
-        while (modeButtonEnum.hasMoreElements()) {
-            JToggleButton button = (JToggleButton) modeButtonEnum.nextElement();
-            if (button.getAction() == forAction) {
-                button.setSelected(true);
-            }
-        }
-    }
-
-    /**
      * Activates the appropriate role button (host, rule or type), based on a
      * given (type) action.
      * @param forAction the mode action for which the corresponding button is to
@@ -1075,7 +962,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     /** Sets the enabling of the transfer buttons. */
     protected void updateCopyPasteButtons() {
-        boolean previewing = getPreviewModeButton().isSelected();
+        boolean previewing = getJGraph().getMode() == PREVIEW_MODE;
         boolean hasSelection = !getJGraph().isSelectionEmpty();
         getCopyAction().setEnabled(!previewing && hasSelection);
         getCutAction().setEnabled(!previewing && hasSelection);
@@ -1260,7 +1147,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** The undo manager of the editor. */
     private transient GraphUndoManager undoManager;
 
-    /** Flag that is set to true while the action of the {@link #getPreviewModeButton()}
+    /** 
+     * Flag that is set to true while the preview mode switch
      * is being executed.
      */
     private transient boolean refreshing;
@@ -1279,15 +1167,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * File chooser for graph opening.
      */
     private MyFileChooser graphChooser;
-
-    /** Button for setting edge editing mode. */
-    private transient JToggleButton edgeModeButton;
-    /** Button for setting node editing mode. */
-    private transient JToggleButton nodeModeButton;
-    /** Button for setting selection mode. */
-    private transient JToggleButton selectModeButton;
-    /** Button for setting previewing mode. */
-    private transient JToggleButton previewButton;
 
     /**
      * Returns the button for setting node editing mode, lazily creating it
@@ -1336,8 +1215,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     /** Button for setting type editing mode. */
     private transient JToggleButton typeRoleButton;
-    /** Collection of editing mode buttons. */
-    private ButtonGroup modeButtonGroup;
     /** Collection of graph editing type buttons. */
     private ButtonGroup typeButtonGroup;
 
@@ -1736,105 +1613,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
         public void actionPerformed(ActionEvent evt) {
             handleSaveGraph(true);
-        }
-    }
-
-    /**
-     * Lazily creates and returns the action to set the editor to edge editing
-     * mode.
-     */
-    private Action getEdgeModeAction() {
-        if (this.edgeModeAction == null) {
-            ImageIcon edgeIcon = new ImageIcon(Groove.getResource("edge.gif"));
-            this.edgeModeAction =
-                new SetEditingModeAction(Options.EDGE_MODE_NAME,
-                    Options.EDGE_MODE_KEY, edgeIcon) {
-                    @Override
-                    public void actionPerformed(ActionEvent evt) {
-                        super.actionPerformed(evt);
-                        getJGraph().clearSelection();
-                    }
-                };
-        }
-        return this.edgeModeAction;
-    }
-
-    /** Action to set the editor to edge editing mode. */
-    private Action edgeModeAction;
-
-    /**
-     * Lazily creates and returns the action to set the editor to node editing
-     * mode.
-     */
-    private Action getNodeModeAction() {
-        if (this.nodeModeAction == null) {
-            ImageIcon nodeIcon =
-                new ImageIcon(Groove.getResource("rectangle.gif"));
-            this.nodeModeAction =
-                new SetEditingModeAction(Options.NODE_MODE_NAME,
-                    Options.NODE_MODE_KEY, nodeIcon);
-        }
-        return this.nodeModeAction;
-    }
-
-    /** Action to set the editor to node editing mode. */
-    private Action nodeModeAction;
-
-    /**
-     * Lazily creates and returns the action to set the editor to selection
-     * mode.
-     */
-    private Action getSelectModeAction() {
-        if (this.selectModeAction == null) {
-            ImageIcon selectIcon =
-                new ImageIcon(Groove.getResource("select.gif"));
-            this.selectModeAction =
-                new SetEditingModeAction(Options.SELECT_MODE_NAME,
-                    Options.SELECT_MODE_KEY, selectIcon);
-        }
-        return this.selectModeAction;
-    }
-
-    /** Action to set the editor to selection mode. */
-    private Action selectModeAction;
-
-    /**
-     * Lazily creates and returns the action to set the editor to selection
-     * mode.
-     */
-    private Action getPreviewModeAction() {
-        if (this.previewAction == null) {
-            ImageIcon previewIcon =
-                new ImageIcon(Groove.getResource("preview.gif"));
-            this.previewAction =
-                new SetEditingModeAction(Options.PREVIEW_MODE_NAME,
-                    Options.PREVIEW_MODE_KEY, previewIcon);
-        }
-        return this.previewAction;
-    }
-
-    /** Action to set the editor to selection mode. */
-    private Action previewAction;
-
-    /**
-     * Action to set the editing mode (selection, node or edge).
-     */
-    private class SetEditingModeAction extends ToolbarAction {
-        /** Constructs an action with a given name, key and icon. */
-        SetEditingModeAction(String text, KeyStroke acceleratorKey,
-                ImageIcon smallIcon) {
-            super(text, acceleratorKey, smallIcon);
-            putValue(SHORT_DESCRIPTION, null);
-        }
-
-        /**
-         * (non-Javadoc)
-         * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-         */
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            super.actionPerformed(evt);
-            updateModeButtons(this);
         }
     }
 
