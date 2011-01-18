@@ -36,7 +36,6 @@ import groove.view.StoredGrammarView;
 import groove.view.TypeView;
 import groove.view.aspect.AspectGraph;
 
-import java.awt.BorderLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -66,19 +65,18 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
      * @param simulator The simulator this type panel belongs to.
      */
     public TypePanel(final Simulator simulator) {
-        super(new AspectJGraph(simulator, GraphRole.TYPE), true, true,
-            simulator.getOptions());
+        super(new AspectJGraph(simulator, GraphRole.TYPE), true, simulator.getOptions());
         setFocusable(false);
         initialise();
         this.simulator = simulator;
-        add(createToolbar(), BorderLayout.NORTH);
         simulator.addSimulationListener(this);
         setEnabled(false);
         addRefreshListener(SHOW_NODE_IDS_OPTION);
         addRefreshListener(SHOW_VALUE_NODES_OPTION);
     }
 
-    private JToolBar createToolbar() {
+    @Override
+    protected JToolBar createToolBar() {
         JToolBar result = new JToolBar();
         result.setFloatable(false);
         result.add(createButton(getNewAction()));
@@ -373,7 +371,8 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
                     oldName, true);
             if (newName != null) {
                 TypeView oldTypeView = getGrammarView().getTypeView(oldName);
-                AspectGraph newType = oldTypeView.getAspectGraph().rename(newName);
+                AspectGraph newType =
+                    oldTypeView.getAspectGraph().rename(newName);
                 getSimulator().doAddType(newType);
                 getNameListModel().addType(newName, false, false);
                 getNameListModel().selectMostAppropriateType();

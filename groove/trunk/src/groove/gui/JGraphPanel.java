@@ -16,6 +16,8 @@
  */
 package groove.gui;
 
+import static groove.gui.jgraph.JGraphMode.PAN_MODE;
+import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
@@ -63,20 +65,16 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      * @param jGraph the jgraph on which this panel is a view
      * @param withStatusBar <tt>true</tt> if a status bar should be added to the
      *        panel
-     * @param supportsSubtypes if <code>true</code>, the label tree of this
-     *        panel will support subtypes
      * @param options Options object used to create menu item listeners. If
      *        <code>null</code>, no listeners are created.
      * @ensure <tt>getJGraph() == jGraph</tt>
      */
-    public JGraphPanel(JG jGraph, boolean withStatusBar,
-            boolean supportsSubtypes, Options options) {
+    public JGraphPanel(JG jGraph, boolean withStatusBar, Options options) {
         super(false);
         setFocusable(false);
         // right now we always want label panels; keep this option
         this.jGraph = jGraph;
         this.options = options;
-        this.supportsSubtypes = supportsSubtypes;
         this.statusBar = withStatusBar ? new JLabel(" ") : null;
         this.jGraph.addGraphSelectionListener(new GraphSelectionListener() {
             @Override
@@ -94,10 +92,24 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         boolean withLabelPanel = true;
         setLayout(new BorderLayout());
         this.setPane(withLabelPanel ? createSplitPane() : this.createSoloPane());
+        JToolBar toolBar = createToolBar();
+        if (toolBar != null) {
+            add(toolBar, BorderLayout.NORTH);
+        }
         if (this.statusBar != null) {
             add(this.statusBar, BorderLayout.SOUTH);
         }
         addRefreshListener(Options.SHOW_BACKGROUND_OPTION);
+    }
+
+    /** Creates a tool bar for this JGraphPanel.
+     * If the method returns {@code null}, no tool bar is used.
+     */
+    protected JToolBar createToolBar() {
+        JToolBar result = new JToolBar();
+        result.add(getJGraph().getModeButton(SELECT_MODE));
+        result.add(getJGraph().getModeButton(PAN_MODE));
+        return result;
     }
 
     /**
@@ -132,7 +144,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     /** Returns the label tree displayed on this panel. */
     public LabelTree getLabelTree() {
         if (this.labelTree == null) {
-            this.labelTree = this.jGraph.initLabelTree(this.supportsSubtypes);
+            this.labelTree = this.jGraph.initLabelTree();
         }
         return this.labelTree;
     }
@@ -365,8 +377,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      * The {@link GraphJGraph}on which this panel provides a view.
      */
     protected final JG jGraph;
-    /** Flag indicating that the label tree is to support subtypes. */
-    private final boolean supportsSubtypes;
     /** The label tree associated with this label pane. */
     private LabelTree labelTree;
     /** Options for this panel. */

@@ -88,8 +88,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
      * Constructs a new state panel.
      */
     public StatePanel(final Simulator simulator) {
-        super(new AspectJGraph(simulator, GraphRole.HOST), true, true,
-            simulator.getOptions());
+        super(new AspectJGraph(simulator, GraphRole.HOST), true, simulator.getOptions());
         this.simulator = simulator;
         initialise();
         simulator.addSimulationListener(this);

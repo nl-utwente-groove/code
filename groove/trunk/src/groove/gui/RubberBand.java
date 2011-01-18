@@ -40,7 +40,7 @@ import javax.swing.event.MouseInputAdapter;
  * @since 1.0
  * $Revision: 1.2 $
  */
-abstract public class RubberBand extends MouseInputAdapter {
+public class RubberBand extends MouseInputAdapter {
     /**
      * Creates a new <code>RubberBand</code> and sets the canvas
      * @param canvas    the <code>RubberBandCanvas</code> on which the rubber band
@@ -49,23 +49,6 @@ abstract public class RubberBand extends MouseInputAdapter {
     public RubberBand(JComponent canvas) {
         this.canvas = canvas;
         this.bounds = new Rectangle();
-    }
-
-    /** Enables or disables the rubber band.
-     * @return if {@code true}, the status of the rubber band was changed as
-     * a result of this call
-     */
-    public boolean setEnabled(boolean enabled) {
-        boolean result = this.enabled != enabled;
-        if (result) {
-            this.enabled = enabled;
-            if (enabled) {
-                this.canvas.addMouseListener(this);
-            } else {
-                this.canvas.removeMouseListener(this);
-            }
-        }
-        return result;
     }
 
     /** Returns the bounds of the rubber band. */
@@ -99,7 +82,7 @@ abstract public class RubberBand extends MouseInputAdapter {
         }
 
         // update rubber band size and location
-        update(x, y, w, h, true);
+        update(x, y, w, h);
     }
 
     @Override
@@ -107,8 +90,8 @@ abstract public class RubberBand extends MouseInputAdapter {
         if (isAllowed(e)) {
             this.pressX = e.getX();
             this.pressY = e.getY();
-            update(this.pressX, this.pressY, 0, 0, false);
-            this.canvas.addMouseMotionListener(this);
+            this.bounds.setBounds(this.pressX, this.pressY, 0, 0);
+            //            this.canvas.addMouseMotionListener(this);
             this.active = true;
         }
     }
@@ -120,7 +103,7 @@ abstract public class RubberBand extends MouseInputAdapter {
             if (this.bounds.width > 3 && this.bounds.height > 3) {
                 stopRubberBand(e);
             }
-            update(-1, -1, 0, 0, true);
+            update(-1, -1, 0, 0);
             this.canvas.removeMouseMotionListener(this);
             this.active = false;
         }
@@ -130,18 +113,21 @@ abstract public class RubberBand extends MouseInputAdapter {
      * Updates the bounds of the rubber band,
      * and optionally repaints the dirty area.
      */
-    private void update(int x, int y, int width, int height, boolean repaint) {
+    private void update(int x, int y, int width, int height) {
         Rectangle dirty = (Rectangle) this.bounds.clone();
         this.bounds.setBounds(x, y, width, height);
-        if (repaint) {
-            dirty = dirty.union(this.bounds);
-            // make sure the dirty area includes the contour of the rubber band
-            dirty.x -= 1;
-            dirty.y -= 1;
-            dirty.height += 2;
-            dirty.width += 2;
-            this.canvas.repaint(dirty);
-        }
+        dirty = dirty.union(this.bounds);
+        // make sure the dirty area includes the contour of the rubber band
+        dirty.x -= 1;
+        dirty.y -= 1;
+        dirty.height += 2;
+        dirty.width += 2;
+        repaint(dirty);
+    }
+
+    /** Callback method that makes sure the dirty rectangle gets repainted. */
+    protected void repaint(Rectangle dirty) {
+        this.canvas.repaint(dirty);
     }
 
     /** Renders the rubber band on the given graphics object. */
@@ -159,12 +145,15 @@ abstract public class RubberBand extends MouseInputAdapter {
     }
 
     /** Callback method to determine whether the rubber band may be started. */
-    abstract protected boolean isAllowed(MouseEvent event);
+    protected boolean isAllowed(MouseEvent event) {
+        return true;
+    }
 
     /** Callback method invoked after the rubber band is released. */
-    abstract protected void stopRubberBand(MouseEvent event);
+    protected void stopRubberBand(MouseEvent event) {
+        // does nothing
+    }
 
-    private boolean enabled;
     private boolean active;
     /** the canvas where the rubber band will be drawn onto */
     private final JComponent canvas;

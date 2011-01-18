@@ -610,8 +610,13 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         if (this.jGraphPanel == null) {
             JGraphPanel<?> result =
                 this.jGraphPanel =
-                    new JGraphPanel<AspectJGraph>(this.jgraph, false, false,
-                        getOptions());
+                    new JGraphPanel<AspectJGraph>(this.jgraph, false,
+                        getOptions()) {
+                        @Override
+                        protected JToolBar createToolBar() {
+                            return null;
+                        }
+                    };
             result.initialise();
             result.addRefreshListener(SHOW_NODE_IDS_OPTION);
             result.addRefreshListener(SHOW_VALUE_NODES_OPTION);

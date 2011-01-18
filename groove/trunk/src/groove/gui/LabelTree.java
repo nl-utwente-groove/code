@@ -16,13 +16,13 @@
  */
 package groove.gui;
 
-import groove.graph.Label;
 import groove.graph.EdgeRole;
+import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.GraphJModel;
 import groove.util.Converter;
 import groove.util.Groove;
 import groove.util.ObservableSet;
@@ -103,12 +103,9 @@ public class LabelTree extends JTree implements GraphModelListener,
      * parameter indicates if the label stree should support subtypes.
      * {@link #updateModel()} should be called before the list can be used.
      * @param jgraph the jgraph with which this list is to be associated
-     * @param supportsSubtypes if <code>true</code>, the tree should support
-     *        subtype display and operations, by using the jgraph's label store.
      */
-    public LabelTree(GraphJGraph jgraph, boolean supportsSubtypes) {
+    public LabelTree(GraphJGraph jgraph) {
         this.jgraph = jgraph;
-        this.supportsSubtypes = supportsSubtypes;
         this.filteredLabels = jgraph.getFilteredLabels();
         this.filtering = this.filteredLabels != null;
         if (this.filtering) {
@@ -154,18 +151,16 @@ public class LabelTree extends JTree implements GraphModelListener,
     /** Creates a tool bar for the label tree. */
     JToolBar createToolBar() {
         JToolBar result = null;
-        if (isSupportsSubtypes()) {
-            result = new JToolBar();
-            result.setFloatable(false);
-            result.add(getShowSubtypesButton());
-            result.add(getShowSupertypesButton());
-            result.addSeparator();
-            result.add(getShowAllLabelsButton());
-            // put the sub- and supertype buttons in a button group
-            ButtonGroup modeButtonGroup = new ButtonGroup();
-            modeButtonGroup.add(getShowSubtypesButton());
-            modeButtonGroup.add(getShowSupertypesButton());
-        }
+        result = new JToolBar();
+        result.setFloatable(false);
+        result.add(getShowSubtypesButton());
+        result.add(getShowSupertypesButton());
+        result.addSeparator();
+        result.add(getShowAllLabelsButton());
+        // put the sub- and supertype buttons in a button group
+        ButtonGroup modeButtonGroup = new ButtonGroup();
+        modeButtonGroup.add(getShowSubtypesButton());
+        modeButtonGroup.add(getShowSupertypesButton());
         return result;
     }
 
@@ -615,13 +610,6 @@ public class LabelTree extends JTree implements GraphModelListener,
     }
 
     /**
-     * Indicates if this tree supports subtypes.
-     */
-    private boolean isSupportsSubtypes() {
-        return this.supportsSubtypes;
-    }
-
-    /**
      * Indicates if this tree is currently showing all labels, or just those
      * existing in the graph.
      */
@@ -716,8 +704,6 @@ public class LabelTree extends JTree implements GraphModelListener,
         }
     };
 
-    /** Flag indicating if this instance of the label tree supports subtypes. */
-    private final boolean supportsSubtypes;
     /** 
      * Flag indicating that the selection model is changing.
      * This means the listener should not be active.
@@ -1290,7 +1276,7 @@ public class LabelTree extends JTree implements GraphModelListener,
         @Override
         protected Transferable createTransferable(JComponent c) {
             Transferable result = null;
-            if (isSupportsSubtypes() && !isSelectionEmpty()) {
+            if (!isSelectionEmpty()) {
                 StringBuffer content = new StringBuffer();
                 List<TreePath> keepSelection = new ArrayList<TreePath>();
                 for (TreePath path : getSelectionPaths()) {
