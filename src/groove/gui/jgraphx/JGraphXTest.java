@@ -45,7 +45,7 @@ public class JGraphXTest {
         try {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
             RuleView ruleView = view.getRuleView(new RuleName("del"));
-            AspectGraph rule = ruleView.getView();
+            AspectGraph rule = ruleView.getAspectGraph();
             showRule(rule);
         } catch (IOException e) {
             e.printStackTrace();

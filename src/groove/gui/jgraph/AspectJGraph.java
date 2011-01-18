@@ -361,6 +361,15 @@ final public class AspectJGraph extends GraphJGraph {
     }
 
     /**
+     * Convenience method to retrieve a j-edge view as a {@link JEdgeView}.
+     * @param jEdge the JEdge for which to retrieve the JEdgeView
+     * @return the JEdgeView corresponding to <code>jEdge</code>
+     */
+    private JEdgeView getJEdgeView(GraphJEdge jEdge) {
+        return (JEdgeView) getGraphLayoutCache().getMapping(jEdge, false);
+    }
+
+    /**
      * Resets the label position of a given a given j-edge to the default
      * position.
      * @param jEdge the j-edge to be modified
@@ -412,10 +421,14 @@ final public class AspectJGraph extends GraphJGraph {
                 size.getWidth(), size.getHeight()));
         // add the cell to the jGraph
         Object[] insert = new Object[] {jVertex};
+        if (this.startEditingNewNode) {
+            setInserting(true);
+        }
         getModel().insert(insert, null, null, null, null);
         setSelectionCell(jVertex);
         // immediately add a label, if so indicated by startEditingNewNode
         if (this.startEditingNewNode) {
+            setInserting(false);
             startEditingAtCell(jVertex);
         }
     }
@@ -463,10 +476,14 @@ final public class AspectJGraph extends GraphJGraph {
             GraphConstants.setPoints(edgeAttr, endpointList);
         }
         // add the cell to the jGraph
+        if (this.startEditingNewEdge) {
+            setInserting(true);
+        }
         getModel().insert(insert, null, cs, null, null);
         setSelectionCell(newEdge);
         // immediately add a label
         if (this.startEditingNewEdge) {
+            setInserting(false);
             startEditingAtCell(newEdge);
         }
     }
@@ -480,7 +497,8 @@ final public class AspectJGraph extends GraphJGraph {
     boolean isEdgeMode(MouseEvent evt) {
         boolean result = false;
         if (this.editor != null && getMode() == EDGE_MODE) {
-            result = isVertex(getFirstCellForLocation(evt.getX(), evt.getY()));
+            result =
+                getFirstCellForLocation(evt.getX(), evt.getY()) instanceof GraphJVertex;
         }
         return result;
     }
@@ -496,6 +514,26 @@ final public class AspectJGraph extends GraphJGraph {
         if (evt.getButton() == MouseEvent.BUTTON1 && this.editor != null
             && getMode() == NODE_MODE) {
             result = getFirstCellForLocation(evt.getX(), evt.getY()) == null;
+        }
+        return result;
+    }
+
+    /** 
+     * Indicates if the graph is in the process of inserting an element.
+     * During this time (which will be concluded with a model change event)
+     * some status updates can be skipped.
+     */
+    public boolean isInserting() {
+        return this.inserting;
+    }
+
+    /** 
+     * Sets the insertion mode.
+     */
+    private boolean setInserting(boolean inserting) {
+        boolean result = this.inserting != inserting;
+        if (result) {
+            this.inserting = inserting;
         }
         return result;
     }
@@ -524,6 +562,8 @@ final public class AspectJGraph extends GraphJGraph {
     /** The role for which this {@link GraphJGraph} will display graphs. */
     private final GraphRole graphRole;
 
+    /** Flag indicating that the graph is in the process of inserting an element. */
+    private boolean inserting;
     /** Map from line style names to corresponding actions. */
     private final Map<String,JCellEditAction> setLineStyleActionMap =
         new HashMap<String,JCellEditAction>();

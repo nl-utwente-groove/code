@@ -69,7 +69,7 @@ public class DefaultGraphView implements GraphView {
     }
 
     @Override
-    public AspectGraph getView() {
+    public AspectGraph getAspectGraph() {
         return this.view;
     }
 
@@ -138,8 +138,8 @@ public class DefaultGraphView implements GraphView {
     private void initialise() {
         // first test if there is something to be done
         if (this.errors == null) {
-            if (getView().hasErrors()) {
-                this.errors = getView().getErrors();
+            if (getAspectGraph().hasErrors()) {
+                this.errors = getAspectGraph().getErrors();
             } else {
                 this.labelSet = new HashSet<TypeLabel>();
                 Pair<DefaultHostGraph,ViewToHostMap> modelPlusMap =

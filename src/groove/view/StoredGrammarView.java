@@ -334,7 +334,7 @@ public class StoredGrammarView implements GrammarView, Observer {
                     for (FormatError error : exc.getErrors()) {
                         errors.add(new FormatError(
                             "Error in type graph '%s': %s", typeView.getName(),
-                            error, typeView.getView()));
+                            error, typeView.getAspectGraph()));
                     }
                 }
             }
@@ -379,7 +379,7 @@ public class StoredGrammarView implements GrammarView, Observer {
             } catch (FormatException exc) {
                 for (FormatError error : exc.getErrors()) {
                     errors.add(new FormatError("Error in rule '%s': %s",
-                        ruleView.getName(), error, ruleView.getView()));
+                        ruleView.getName(), error, ruleView.getAspectGraph()));
                 }
             }
         }
@@ -427,7 +427,7 @@ public class StoredGrammarView implements GrammarView, Observer {
             }
             for (FormatError error : startGraphErrors) {
                 errors.add(new FormatError("Error in start graph: %s", error,
-                    getStartGraphView().getView()));
+                    getStartGraphView().getAspectGraph()));
             }
         }
         try {

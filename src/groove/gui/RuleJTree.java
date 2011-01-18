@@ -846,7 +846,7 @@ public class RuleJTree extends JTree implements SimulationListener {
             result.append("Rule ");
             result.append(Converter.STRONG_TAG.on(getRule().getName()));
             GraphProperties properties =
-                GraphInfo.getProperties(getRule().getView(), false);
+                GraphInfo.getProperties(getRule().getAspectGraph(), false);
             if (properties != null && !properties.isEmpty()) {
                 boolean hasProperties;
                 String remark = properties.getRemark();

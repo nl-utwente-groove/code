@@ -125,6 +125,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             throw new IllegalArgumentException(
                 "Could not create properties file.");
         }
+        prop.setShowLoopsAsLabels(false);
     }
 
     @Override

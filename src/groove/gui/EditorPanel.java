@@ -67,7 +67,7 @@ public class EditorPanel extends JPanel {
                 protected void updateStatus() {
                     super.updateStatus();
                     getTabbedPane().getTabComponentOf(EditorPanel.this).setError(
-                        !toView().getErrors().isEmpty());
+                        !getModel().getErrorMap().isEmpty());
                 }
 
             };

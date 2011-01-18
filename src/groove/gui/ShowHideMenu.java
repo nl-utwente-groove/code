@@ -59,9 +59,6 @@ import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
-import org.jgraph.graph.DefaultEdge;
-import org.jgraph.graph.DefaultPort;
-
 /**
  * Menu to control the visibility of nodes and edges in a jgraph.
  * @author Arend Rensink
@@ -467,22 +464,21 @@ public class ShowHideMenu extends JMenu {
         @Override
         protected boolean isInvolved(GraphJCell cell) {
             boolean result = false;
-            if (this.jgraph.isEdge(cell)) {
-                DefaultEdge edge = (DefaultEdge) cell;
-                GraphJCell sourcePort =
-                    (GraphJCell) ((DefaultPort) edge.getSource()).getParent();
-                GraphJCell targetPort =
-                    (GraphJCell) ((DefaultPort) edge.getTarget()).getParent();
+            if (cell instanceof GraphJEdge) {
+                GraphJEdge edge = (GraphJEdge) cell;
+                GraphJCell sourceVertex = edge.getSourceVertex();
+                GraphJCell targetVertex = edge.getTargetVertex();
                 Object[] selectedCellArray = this.jgraph.getSelectionCells();
                 if (selectedCellArray.length == 0) {
                     result =
-                        !sourcePort.isGrayedOut() || !targetPort.isGrayedOut();
+                        !sourceVertex.isGrayedOut()
+                            || !targetVertex.isGrayedOut();
                 } else {
                     Set<Object> selectedCells =
                         new HashSet<Object>(Arrays.asList(selectedCellArray));
                     result =
-                        selectedCells.contains(sourcePort)
-                            || selectedCells.contains(targetPort);
+                        selectedCells.contains(sourceVertex)
+                            || selectedCells.contains(targetVertex);
                 }
             }
             return result;

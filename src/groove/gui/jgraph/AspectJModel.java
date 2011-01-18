@@ -23,9 +23,11 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.Node;
+import groove.graph.TypeGraph;
 import groove.gui.Editor;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
+import groove.util.Groove;
 import groove.view.FormatError;
 import groove.view.View;
 import groove.view.aspect.AspectEdge;
@@ -34,7 +36,6 @@ import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -100,7 +101,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         for (AspectJCell root : getRoots()) {
             root.saveToUserObject();
         }
-        setExtraErrors(((AspectGraph) graph).toView().getErrors());
+        loadViewErrors();
         this.loading = false;
     }
 
@@ -161,37 +162,63 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         GraphInfo.setProperties(graph, getProperties());
         graph.setFixed();
         setGraph(graph, nodeJVertexMap, edgeJCellMap);
+        loadViewErrors();
         if (GUI_DEBUG) {
             System.out.printf("Graph resynchronised with model %s%n", getName());
+            Groove.printStackTrace(System.out);
         }
+    }
+
+    /** Sets a type graph for this JModel.
+     * The type graph is needed to correctly compute the errors in the graph.
+     * @return {@code true} if the type graph changed as a result of this call.
+     */
+    public boolean setType(TypeGraph type) {
+        boolean result = this.type != type;
+        if (result) {
+            this.type = type;
+            if (getGraph() != null) {
+                syncGraph();
+            }
+        }
+        return result;
     }
 
     /** 
      * Sets the extra-error flags of all the cells, based
-     * on a list of errors.
-     * @return a mapping from the errors to cells involved in them
+     * on the errors in the view.
      */
-    public Map<FormatError,AspectJCell> setExtraErrors(
-            Collection<FormatError> errors) {
+    private void loadViewErrors() {
         for (AspectJCell jCell : getRoots()) {
             jCell.setExtraError(false);
         }
-        Map<FormatError,AspectJCell> result =
-            new HashMap<FormatError,AspectJCell>();
-        for (FormatError error : errors) {
+        this.errorMap.clear();
+        View<?> view = getGraph().toView();
+        if (this.type != null) {
+            view.setType(this.type);
+        }
+        for (FormatError error : view.getErrors()) {
             for (Element errorObject : error.getElements()) {
                 AspectJCell errorCell = getJCell(errorObject);
                 if (errorCell == null && errorObject instanceof Edge) {
                     errorCell = getJCell(((Edge<?>) errorObject).source());
                 }
                 if (errorCell != null) {
-                    result.put(error, errorCell);
+                    this.errorMap.put(error, errorCell);
                     errorCell.setExtraError(true);
                     break;
                 }
             }
         }
-        return result;
+    }
+
+    /** 
+     * Returns the mapping from errors to JCells with that error
+     * computed during the last call to {@link #loadGraph(Graph)} 
+     * or {@link #syncGraph()}.
+     */
+    public Map<FormatError,AspectJCell> getErrorMap() {
+        return this.errorMap;
     }
 
     /** Changes the name of the model (and the underlying graph). */
@@ -263,6 +290,8 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      */
     @Override
     protected void fireGraphChanged(Object source, GraphModelChange edit) {
+        // synchronise the graph to match the edits,
+        // unless the model is busy loading the graph
         if (!this.loading) {
             // only reload if the edit changed the graph structure
             // (and not just the layout)
@@ -290,6 +319,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         }
         if (GUI_DEBUG) {
             System.out.printf("Firing graph change in %s%n", getName());
+            Groove.printStackTrace(System.out);
         }
         super.fireGraphChanged(source, edit);
     }
@@ -361,8 +391,15 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     /** The associated editor. */
     private final Editor editor;
+    /** 
+     * The (possibly {@code null}) type graph, needed to correctly 
+     * compute the errors in the graph.
+     */
+    private TypeGraph type;
     /** Properties map of the graph being displayed or edited. */
     private GraphProperties properties;
+    private Map<FormatError,AspectJCell> errorMap =
+        new HashMap<FormatError,AspectJCell>();
     /** The set of used node numbers. */
     private Set<Integer> usedNrs;
     /** Flag indicating that we are loading a new aspect graph,

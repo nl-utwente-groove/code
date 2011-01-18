@@ -253,7 +253,10 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     @Override
     public void setExtraError(boolean error) {
-        this.extraError = error;
+        if (this.extraError != error) {
+            this.extraError = error;
+            refreshAttributes();
+        }
     }
 
     /** Returns the (possibly empty) set of errors in this JEdge. */

@@ -74,14 +74,15 @@ public class AspectJObject extends ArrayList<String> {
      *        <tt>null</tt>
      */
     public void load(String value) {
-        List<String> labelList = new ArrayList<String>();
         for (String text : value.split(NEWLINE)) {
             text = text.trim();
             if (text.length() > 0) {
-                labelList.add(text);
+                add(text);
             }
         }
-        addAll(labelList);
+        if (isEmpty()) {
+            add("");
+        }
     }
 
     /**

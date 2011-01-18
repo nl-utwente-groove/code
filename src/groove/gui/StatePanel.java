@@ -308,7 +308,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         if (graphView != null && graphName != this.selectedGraph) {
             this.selectedGraph = graphName;
             this.selectedState = null;
-            setJModel(getAspectJModel(graphView.getView()));
+            setJModel(getAspectJModel(graphView.getAspectGraph()));
             setEnabled(true);
             refreshStatus();
         }
@@ -419,7 +419,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                 assert state instanceof StartGraphState;
                 // this is the start state
                 AspectGraph startGraph =
-                    this.simulator.getGrammarView().getStartGraphView().getView();
+                    this.simulator.getGrammarView().getStartGraphView().getAspectGraph();
                 AspectJModel startModel = getAspectJModel(startGraph);
                 for (AspectNode node : startGraph.nodeSet()) {
                     AspectJVertex stateVertex = result.getJCellForNode(node);
