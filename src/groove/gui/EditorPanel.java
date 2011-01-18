@@ -183,9 +183,10 @@ public class EditorPanel extends JPanel {
         boolean result = true;
         if (this.editor.isDirty()) {
             int confirm =
-                JOptionPane.showConfirmDialog(this, String.format(
-                    "%s '%s' has been modified. Save changes?",
-                    this.editor.getRoleName(true), getGraph().getName()), null,
+                JOptionPane.showConfirmDialog(this,
+                    String.format("%s '%s' has been modified. Save changes?",
+                        this.editor.getRole().toString(true),
+                        getGraph().getName()), null,
                     JOptionPane.YES_NO_CANCEL_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
                 handleOk();

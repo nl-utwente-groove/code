@@ -50,6 +50,22 @@ public enum GraphRole {
         return this.name;
     }
 
+    /**
+     * Returns the name of this role, with the first letter
+     * capitalised on demand.
+     * @param upper if <code>true</code>, the first letter is capitalised
+     */
+    public String toString(boolean upper) {
+        String roleName = toString();
+        if (upper) {
+            char[] result = roleName.toCharArray();
+            result[0] = Character.toUpperCase(result[0]);
+            return String.valueOf(result);
+        } else {
+            return roleName;
+        }
+    }
+
     /** 
      * Indicates if this is a grammar-related role.
      * @see #grammarRoles 

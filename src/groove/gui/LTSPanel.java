@@ -18,6 +18,8 @@ package groove.gui;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
+import static groove.gui.jgraph.JGraphMode.PAN_MODE;
+import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.Element;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.LTSJEdge;
@@ -34,21 +36,16 @@ import groove.util.Groove;
 import groove.view.StoredGrammarView;
 
 import java.awt.BorderLayout;
-import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ButtonGroup;
-import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
 /**
@@ -70,6 +67,13 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         getJGraph().addMouseListener(mouseListener);
         getJGraph().addMouseMotionListener(mouseListener);
         getJGraph().addMouseWheelListener(mouseListener);
+        getJGraph().addJGraphModeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                getScrollPane().setWheelScrollingEnabled(
+                    evt.getNewValue() == SELECT_MODE);
+            }
+        });
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_STATE_IDS_OPTION);
         simulator.addSimulationListener(this);
@@ -80,36 +84,18 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
 
     private JToolBar createToolbar() {
         JToolBar result = new JToolBar();
-        result.add(getSelectButton());
-        result.add(getPanButton());
-        ButtonGroup modeButtonGroup = new ButtonGroup();
-        modeButtonGroup.add(getSelectButton());
-        modeButtonGroup.add(getPanButton());
-        return result;
-    }
-
-    /**
-     * Creates a button around an action that is resized in case the action
-     * doesn't have an icon.
-     */
-    private JToggleButton createButton(Action action) {
-        JToggleButton result = new JToggleButton(action);
-        if (action.getValue(Action.SMALL_ICON) == null) {
-            result.setMargin(new Insets(4, 2, 4, 2));
-        } else {
-            result.setHideActionText(true);
-        }
-        result.setEnabled(false);
+        result.add(getJGraph().getModeButton(SELECT_MODE));
+        result.add(getJGraph().getModeButton(PAN_MODE));
         return result;
     }
 
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
-        getSelectAction().setEnabled(enabled);
-        getPanAction().setEnabled(enabled);
+        getJGraph().getModeAction(SELECT_MODE).setEnabled(enabled);
+        getJGraph().getModeAction(PAN_MODE).setEnabled(enabled);
         if (enabled) {
-            getSelectButton().doClick();
+            getJGraph().getModeButton(SELECT_MODE).doClick();
         }
     }
 
@@ -328,10 +314,6 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         return message;
     }
 
-    private boolean isPanMode() {
-        return getPanButton().isSelected();
-    }
-
     /**
      * The underlying lts of ltsJModel.
      * 
@@ -419,7 +401,8 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
 
         @Override
         public void mousePressed(MouseEvent e) {
-            if (isPanMode() && e.getButton() == MouseEvent.BUTTON1) {
+            if (getJGraph().getMode() == PAN_MODE
+                && e.getButton() == MouseEvent.BUTTON1) {
                 this.origX = e.getX();
                 this.origY = e.getY();
                 getJGraph().setCursor(Groove.CLOSED_HAND_CURSOR);
@@ -428,7 +411,8 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
 
         @Override
         public void mouseReleased(MouseEvent e) {
-            if (isPanMode() && e.getButton() == MouseEvent.BUTTON1) {
+            if (getJGraph().getMode() == PAN_MODE
+                && e.getButton() == MouseEvent.BUTTON1) {
                 this.origX = -1;
                 this.origY = -1;
                 getJGraph().setCursor(Groove.OPEN_HAND_CURSOR);
@@ -437,7 +421,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
 
         @Override
         public void mouseWheelMoved(MouseWheelEvent e) {
-            if (isPanMode()) {
+            if (getJGraph().getMode() == PAN_MODE) {
                 int change = -e.getWheelRotation();
                 getJGraph().changeScale(change);
             }
@@ -445,7 +429,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
 
         @Override
         public void mouseDragged(MouseEvent e) {
-            if (isPanMode()) {
+            if (getJGraph().getMode() == PAN_MODE) {
                 if (this.origX == -1) {
                     return; // never happens ??
                 }
@@ -474,7 +458,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
 
         @Override
         public void mouseClicked(MouseEvent evt) {
-            if (getJGraph().isSelectMode()
+            if (getJGraph().getMode() == SELECT_MODE
                 && evt.getButton() == MouseEvent.BUTTON1) {
                 if (!isEnabled()
                     && getSimulator().getStartSimulationAction().isEnabled()) {
@@ -505,83 +489,5 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
 
         /** The coordinates of a point where panning started. */
         private int origX = -1, origY = -1;
-    }
-
-    /** Lazily creates and returns a button wrapping {@link #getSelectAction()}. */
-    private JToggleButton getSelectButton() {
-        if (this.selectButton == null) {
-            this.selectButton = createButton(getSelectAction());
-            this.selectButton.doClick();
-        }
-        return this.selectButton;
-    }
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link SelectAction}.
-     */
-    private SelectAction getSelectAction() {
-        if (this.selectAction == null) {
-            this.selectAction = new SelectAction();
-            this.selectAction.setEnabled(isEnabled());
-        }
-        return this.selectAction;
-    }
-
-    /** Button wrapping {@link #selectAction}. */
-    private JToggleButton selectButton;
-
-    /** Singular instance of the SelectAction. */
-    private SelectAction selectAction;
-
-    /** Action to disable the currently displayed control program. */
-    private class SelectAction extends AbstractAction {
-        public SelectAction() {
-            super(Options.SELECT_MODE_NAME, Groove.SELECT_ICON);
-        }
-
-        public void actionPerformed(ActionEvent arg0) {
-            getJGraph().setCursor(Cursor.getDefaultCursor());
-            getJGraph().setSelectMode();
-            getScrollPane().setWheelScrollingEnabled(true);
-        }
-    }
-
-    /** Lazily creates and returns a button wrapping {@link #getPanAction()}. */
-    private JToggleButton getPanButton() {
-        if (this.panButton == null) {
-            this.panButton = createButton(getPanAction());
-        }
-        return this.panButton;
-    }
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link SelectAction}.
-     */
-    private PanAction getPanAction() {
-        if (this.panAction == null) {
-            this.panAction = new PanAction();
-            this.panAction.setEnabled(isEnabled());
-        }
-        return this.panAction;
-    }
-
-    /** Button wrapping {@link #panAction}. */
-    private JToggleButton panButton;
-
-    /** Singular instance of the PanAction. */
-    private PanAction panAction;
-
-    /** Action to disable the currently displayed control program. */
-    private class PanAction extends AbstractAction {
-        public PanAction() {
-            super(Options.PAN_MODE_NAME, Groove.OPEN_HAND_ICON);
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            getJGraph().setPanMode();
-            getScrollPane().setWheelScrollingEnabled(false);
-        }
     }
 }

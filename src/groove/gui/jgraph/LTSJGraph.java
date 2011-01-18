@@ -16,6 +16,7 @@
  */
 package groove.gui.jgraph;
 
+import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.Element;
 import groove.gui.ModelCheckingMenu;
 import groove.gui.Options;
@@ -28,7 +29,6 @@ import groove.lts.GraphTransition;
 import groove.util.Colors;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -42,14 +42,8 @@ import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JComponent;
 import javax.swing.JMenu;
 
-import net.java.swingfx.rubberband.canvas.RubberBandCanvas;
-import net.java.swingfx.rubberband.rubberbands.RectangularRubberBand;
-import net.java.swingfx.rubberband.rubberbands.RubberBand;
-
-import org.jgraph.JGraph;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphModel;
 import org.jgraph.plaf.basic.BasicGraphUI;
@@ -59,7 +53,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
  * an instance, setupPopupMenu() should be called after all global final
  * variables have been set.
  */
-public class LTSJGraph extends GraphJGraph implements RubberBandCanvas {
+public class LTSJGraph extends GraphJGraph {
     /** Constructs an instance of the j-graph for a given simulator. */
     public LTSJGraph(Simulator simulator) {
         super(simulator.getOptions(), true);
@@ -67,56 +61,6 @@ public class LTSJGraph extends GraphJGraph implements RubberBandCanvas {
         // turn off double buffering to improve performance
         setDoubleBuffered(false);
         setExporter(simulator.getExporter());
-        setRubberBand(new RectangularRubberBand(this) {
-
-            @Override
-            public void draw(Graphics g) {
-                Color oldColor = g.getColor();
-                g.setColor(JAttr.RUBBER_FOREGROUND);
-                super.draw(g);
-                g.setColor(JAttr.RUBBER_BACKGROUND);
-                g.fillRect(this.rubberband.x, this.rubberband.y,
-                    this.rubberband.width, this.rubberband.height);
-                g.setColor(oldColor);
-            }
-
-        });
-    }
-
-    @Override
-    public JComponent getCanvas() {
-        return this;
-    }
-
-    @Override
-    public void setRubberBand(RubberBand rubberband) {
-        this.rubberBand = rubberband;
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        if (this.rubberBand != null) {
-            this.rubberBand.draw(g);
-        }
-    }
-
-    private RubberBand rubberBand;
-
-    /**
-     * Sets the view mode to select.
-     * @see #isSelectMode() 
-     */
-    public void setSelectMode() {
-        this.selectMode = true;
-    }
-
-    /**
-     * Sets the view mode to pan-and-zoom.
-     * @see #isSelectMode() 
-     */
-    public void setPanMode() {
-        this.selectMode = false;
     }
 
     @Override
@@ -184,7 +128,7 @@ public class LTSJGraph extends GraphJGraph implements RubberBandCanvas {
     @Override
     public JMenu createPopupMenu(Point atPoint) {
         JMenu result = new JMenu("Popup");
-        if (isSelectMode()) {
+        if (getMode() == SELECT_MODE) {
             addSubmenu(result, createExploreMenu());
             addSubmenu(result, createGotoMenu());
             addSubmenu(result, super.createPopupMenu(atPoint));
@@ -313,15 +257,6 @@ public class LTSJGraph extends GraphJGraph implements RubberBandCanvas {
         }
     }
 
-    /** 
-     * Indicates if the {@link JGraph} is in selection mode.
-     * Otherwise, it is in pan-and-zoom mode.
-     */
-    public boolean isSelectMode() {
-        return this.selectMode;
-    }
-
-    private boolean selectMode;
     /**
      * The active state of the LTS. Is null if there is no active state.
      * @invariant activeState == null || ltsJModel.graph().contains(activeState)
@@ -499,28 +434,31 @@ public class LTSJGraph extends GraphJGraph implements RubberBandCanvas {
 
                 @Override
                 public void mousePressed(MouseEvent e) {
-                    if (isSelectMode() || e.getButton() == MouseEvent.BUTTON2) {
+                    if (getMode() == SELECT_MODE
+                        || e.getButton() == MouseEvent.BUTTON2) {
                         super.mousePressed(e);
                     }
                 }
 
                 @Override
                 public void mouseDragged(MouseEvent e) {
-                    if (isSelectMode() || e.getButton() == MouseEvent.BUTTON2) {
+                    if (getMode() == SELECT_MODE
+                        || e.getButton() == MouseEvent.BUTTON2) {
                         super.mouseDragged(e);
                     }
                 }
 
                 @Override
                 public void mouseMoved(MouseEvent e) {
-                    if (isSelectMode()) {
+                    if (getMode() == SELECT_MODE) {
                         super.mouseMoved(e);
                     }
                 }
 
                 @Override
                 public void mouseReleased(MouseEvent e) {
-                    if (isSelectMode() || e.getButton() == MouseEvent.BUTTON2) {
+                    if (getMode() == SELECT_MODE
+                        || e.getButton() == MouseEvent.BUTTON2) {
                         super.mouseReleased(e);
                     }
                 }

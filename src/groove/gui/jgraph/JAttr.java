@@ -260,7 +260,7 @@ public class JAttr {
     /** Foreground (= border) colour of the rubber band selector. */
     static public final Color RUBBER_FOREGROUND = new Color(150, 150, 150);
     /** Foreground (= border) colour of the rubber band selector. */
-    static public final Color RUBBER_BACKGROUND = new Color(202, 212, 224, 40);
+    static public final Color RUBBER_BACKGROUND = new Color(100, 212, 224, 40);
 
     /** Maximum value of the colour dimensions. */
     static private final int MAX_VALUE = 255;
