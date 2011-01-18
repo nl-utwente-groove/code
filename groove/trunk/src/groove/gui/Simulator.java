@@ -694,7 +694,7 @@ public class Simulator {
         // Copy the selected rules to avoid concurrent modifications
         List<RuleView> rules = new ArrayList<RuleView>(getCurrentRuleSet());
         for (RuleView rule : rules) {
-            AspectGraph ruleGraph = rule.getView();
+            AspectGraph ruleGraph = rule.getAspectGraph();
             GraphProperties properties =
                 GraphInfo.getProperties(ruleGraph, true).clone();
             properties.setEnabled(!properties.isEnabled());
@@ -1157,7 +1157,7 @@ public class Simulator {
                 if (startGraphName != null) {
                     newView.setStartGraph(startGraphName);
                 } else if (startGraphView != null) {
-                    newView.setStartGraph(startGraphView.getView());
+                    newView.setStartGraph(startGraphView.getAspectGraph());
                 }
                 setGrammarView(newView);
                 setTitle();
@@ -3120,7 +3120,7 @@ public class Simulator {
                         askNewGraphName("Select new graph name", oldGraphName,
                             true);
                     if (newGraphName != null) {
-                        doAddGraph(oldGraphView.getView().rename(newGraphName));
+                        doAddGraph(oldGraphView.getAspectGraph().rename(newGraphName));
                     }
                 }
             }
@@ -3168,7 +3168,7 @@ public class Simulator {
                     new ArrayList<RuleView>(getCurrentRuleSet());
                 RuleName savedRule = null;
                 for (RuleView rule : rules) {
-                    AspectGraph oldRuleGraph = rule.getView();
+                    AspectGraph oldRuleGraph = rule.getAspectGraph();
                     newRuleName =
                         askNewRuleName("Select new rule name", rule.getName(),
                             true);
@@ -3404,7 +3404,7 @@ public class Simulator {
             // INVARIANT: related elements in the arrays are stored at
             // the same position.
             for (int i = 0; i < ruleViews.length; i++) {
-                ruleGraphs[i] = ruleViews[i].getView();
+                ruleGraphs[i] = ruleViews[i].getAspectGraph();
                 ruleProperties[i] =
                     GraphInfo.getProperties(ruleGraphs[i], true).clone();
             }
@@ -3532,7 +3532,7 @@ public class Simulator {
          * @require <tt>getCurrentRule != null</tt>.
          */
         public void actionPerformed(ActionEvent e) {
-            handleEditGraph(getCurrentRule().getView(), false);
+            handleEditGraph(getCurrentRule().getAspectGraph(), false);
         }
     }
 
@@ -4644,7 +4644,7 @@ public class Simulator {
                             false);
                     if (newGraphName != null
                         && !oldGraphName.equals(newGraphName)) {
-                        doRenameGraph(graph.getView(), newGraphName);
+                        doRenameGraph(graph.getAspectGraph(), newGraphName);
                     }
                 }
             }
@@ -4700,7 +4700,7 @@ public class Simulator {
                     new ArrayList<RuleView>(getCurrentRuleSet());
                 for (RuleView rule : rules) {
                     RuleName oldRuleName = rule.getRuleName();
-                    AspectGraph ruleGraph = rule.getView();
+                    AspectGraph ruleGraph = rule.getAspectGraph();
                     newRuleName =
                         askNewRuleName("Select new rule name",
                             oldRuleName.toString(), true);

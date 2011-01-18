@@ -20,6 +20,7 @@ import groove.graph.Edge;
 import groove.graph.ElementFactory;
 import groove.graph.ElementMap;
 import groove.graph.Node;
+import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
@@ -42,7 +43,12 @@ public interface View<Model> {
     /**
      * Returns the actual view graph.
      */
-    AspectGraph getView();
+    AspectGraph getAspectGraph();
+
+    /** 
+     * Sets a type graph for this view.
+     */
+    void setType(TypeGraph type);
 
     /**
      * Returns a mapping from the nodes in the view to the corresponding nodes

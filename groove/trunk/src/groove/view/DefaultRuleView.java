@@ -122,20 +122,20 @@ public class DefaultRuleView implements RuleView {
     }
 
     public int getPriority() {
-        return GraphProperties.getPriority(getView());
+        return GraphProperties.getPriority(getAspectGraph());
     }
 
     /** Convenience method */
     public String getTransitionLabel() {
-        return GraphProperties.getTransitionLabel(getView());
+        return GraphProperties.getTransitionLabel(getAspectGraph());
     }
 
     public boolean isEnabled() {
-        return GraphProperties.isEnabled(getView());
+        return GraphProperties.isEnabled(getAspectGraph());
     }
 
     public boolean isConfluent() {
-        return GraphProperties.isConfluent(getView());
+        return GraphProperties.isConfluent(getAspectGraph());
     }
 
     public int compareTo(RuleView o) {
@@ -178,7 +178,7 @@ public class DefaultRuleView implements RuleView {
     }
 
     @Override
-    final public AspectGraph getView() {
+    final public AspectGraph getAspectGraph() {
         return this.graph;
     }
 
@@ -274,7 +274,7 @@ public class DefaultRuleView implements RuleView {
         // only do something if there is something to be done
         if (this.ruleErrors == null) {
             this.ruleErrors = new ArrayList<FormatError>();
-            this.ruleErrors.addAll(getView().getErrors());
+            this.ruleErrors.addAll(getAspectGraph().getErrors());
             // trying to initialise with view errors, e.g. an
             // at-edge from a forall:-node, may throw exceptions
             if (this.ruleErrors.isEmpty()) {
@@ -408,7 +408,7 @@ public class DefaultRuleView implements RuleView {
 
     /**
      * Callback method to create a graph that can serve as LHS or RHS of a rule.
-     * @see #getView()
+     * @see #getAspectGraph()
      */
     RuleGraph createGraph(String name) {
         return new RuleGraph(name);
@@ -649,7 +649,7 @@ public class DefaultRuleView implements RuleView {
             Map<LevelIndex,Set<LevelIndex>> metaNodeTree =
                 new HashMap<LevelIndex,Set<LevelIndex>>();
             metaNodeTree.put(this.topLevelIndex, createChildren());
-            for (AspectNode node : getView().nodeSet()) {
+            for (AspectNode node : getAspectGraph().nodeSet()) {
                 AspectKind nodeKind = node.getKind();
                 if (nodeKind.isQuantifier()) {
                     LevelIndex nodeLevel = getIndex(node);
@@ -751,7 +751,7 @@ public class DefaultRuleView implements RuleView {
             this.viewToRuleMap.clear();
             Set<FormatError> errors = new TreeSet<FormatError>();
             // add nodes to nesting data structures
-            for (AspectNode node : getView().nodeSet()) {
+            for (AspectNode node : getAspectGraph().nodeSet()) {
                 if (!node.getKind().isMeta()) {
                     try {
                         Level level = getLevel(node);
@@ -762,7 +762,7 @@ public class DefaultRuleView implements RuleView {
                 }
             }
             // add edges to nesting data structures
-            for (AspectEdge edge : getView().edgeSet()) {
+            for (AspectEdge edge : getAspectGraph().edgeSet()) {
                 if (!edge.getKind().isMeta()) {
                     try {
                         Level level = getLevel(edge);
@@ -1898,7 +1898,7 @@ public class DefaultRuleView implements RuleView {
                 new HashMap<Integer,CtrlPar.Var>();
             int parCount = 0;
             // add nodes to nesting data structures
-            for (AspectNode node : getView().nodeSet()) {
+            for (AspectNode node : getAspectGraph().nodeSet()) {
                 // check if the node is a parameter
                 if (node.hasParam()) {
                     Integer nr = (Integer) node.getParam().getContent();

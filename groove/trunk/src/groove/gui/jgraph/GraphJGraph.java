@@ -277,46 +277,6 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
     }
 
     /**
-     * Tests whether a given object is a j-node according to the criteria of
-     * this j-graph. This implementation tests whether the object is an instance
-     * of {@link GraphJVertex}.
-     * @param jCell the object to be tested
-     * @return true if <tt>cell instanceof GraphJVertex</tt>
-     */
-    public boolean isVertex(Object jCell) {
-        return jCell instanceof GraphJVertex;
-    }
-
-    /**
-     * Tests whether a given object is a j-edge according to the criteria of
-     * this j-graph. This implementation tests whether the object is an instance
-     * of {@link GraphJEdge}.
-     * @param jCell the object to be tested
-     * @return true if <tt>cell instanceof JEdge</tt>
-     */
-    public boolean isEdge(Object jCell) {
-        return (jCell instanceof GraphJEdge);
-    }
-
-    /**
-     * Convenience method to retrieve a j-edge view as a {@link JEdgeView}.
-     * @param jEdge the JEdge for which to retrieve the JEdgeView
-     * @return the JEdgeView corresponding to <code>jEdge</code>
-     */
-    public final JEdgeView getJEdgeView(GraphJEdge jEdge) {
-        return (JEdgeView) getGraphLayoutCache().getMapping(jEdge, false);
-    }
-
-    /**
-     * Convenience method to retrieve a j-node view as a {@link JVertexView}.
-     * @param jNode the GraphJVertex for which to retrieve the JVertexView
-     * @return the JVertexView corresponding to <code>jNode</code>
-     */
-    public final JVertexView getJNodeView(GraphJVertex jNode) {
-        return (JVertexView) getGraphLayoutCache().getMapping(jNode, false);
-    }
-
-    /**
      * Overrides the super method to make sure hidden cells ae never editable.
      * If the specified cell is hidden (according to the underlying model),
      * returns false; otherwise, passes on the query to super.
@@ -336,7 +296,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
         List<Object> res = new LinkedList<Object>();
         for (Object element : cells) {
             res.add(element);
-            if (isVertex(element)) {
+            if (element instanceof GraphJVertex) {
                 res.add(((GraphJVertex) element).getChildAt(0));
             }
         }
@@ -438,7 +398,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
                 changedJCells.add(jCell);
                 if (grayedOut) {
                     // also gray out incident edges
-                    if (!isEdge(jCell)) {
+                    if (jCell instanceof GraphJVertex) {
                         Iterator<?> jEdgeIter =
                             ((GraphJVertex) jCell).getPort().edges();
                         while (jEdgeIter.hasNext()) {
@@ -450,7 +410,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
                     }
                 } else {
                     // also revive end nodes
-                    if (isEdge(jCell)) {
+                    if (jCell instanceof GraphJEdge) {
                         GraphJCell sourceJVertex =
                             ((GraphJEdge) jCell).getSourceVertex();
                         if (sourceJVertex.setGrayedOut(false)) {
@@ -1357,6 +1317,16 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
             return super.getEditorLocation(cell, editorSize,
                 new Point2D.Double(pt.getX() + scale * (EXTRA_BORDER_SPACE + 4)
                     - 4, pt.getY() + scale * (EXTRA_BORDER_SPACE + 3) - 3));
+        }
+
+        /** 
+         * Makes sure that cancelled edits are nevertheless passed on to 
+         * the JGraph.
+         */
+        @Override
+        protected void completeEditing(boolean messageStop,
+                boolean messageCancel, boolean messageGraph) {
+            super.completeEditing(messageStop, messageCancel, true);
         }
     }
 

@@ -98,8 +98,7 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
             for (RuleName ruleName : grammar.getRuleNames()) {
                 RuleView ruleView = grammar.getRuleView(ruleName);
                 AspectJModel jModel = getJGraph().newModel();
-                jModel.loadGraph(ruleView.getView());
-                jModel.setExtraErrors(ruleView.getErrors());
+                jModel.loadGraph(ruleView.getAspectGraph());
                 this.ruleJModelMap.put(ruleName, jModel);
             }
             newLabelStore = grammar.getLabelStore();
@@ -207,7 +206,7 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
             } catch (FormatException exc) {
                 // don't add the anchor
             }
-            String remark = GraphProperties.getRemark(view.getView());
+            String remark = GraphProperties.getRemark(view.getAspectGraph());
             if (remark != null) {
                 text.append(": ");
                 text.append(Converter.toHtml(remark));

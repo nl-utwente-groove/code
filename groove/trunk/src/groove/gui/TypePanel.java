@@ -211,7 +211,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         AspectJModel result = this.typeJModelMap.get(graph);
         if (result == null) {
             result = getJGraph().newModel();
-            result.loadGraph(graph.getView());
+            result.loadGraph(graph.getAspectGraph());
             this.typeJModelMap.put(graph, result);
         }
         return result;
@@ -373,7 +373,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
                     oldName, true);
             if (newName != null) {
                 TypeView oldTypeView = getGrammarView().getTypeView(oldName);
-                AspectGraph newType = oldTypeView.getView().rename(newName);
+                AspectGraph newType = oldTypeView.getAspectGraph().rename(newName);
                 getSimulator().doAddType(newType);
                 getNameListModel().addType(newName, false, false);
                 getNameListModel().selectMostAppropriateType();
@@ -516,7 +516,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
 
         public void actionPerformed(ActionEvent e) {
             final AspectGraph initType =
-                getGrammarView().getTypeView(getSelectedType()).getView();
+                getGrammarView().getTypeView(getSelectedType()).getAspectGraph();
             TypePanel.this.simulator.handleEditGraph(initType, false);
         }
 
@@ -599,7 +599,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
                 boolean checked =
                     getNameListModel().getElementByName(oldName).checked;
                 getNameListModel().removeType(oldName, true);
-                if (getSimulator().doRenameType(type.getView(), newName)) {
+                if (getSimulator().doRenameType(type.getAspectGraph(), newName)) {
                     getNameListModel().checkType(newName, checked);
                     getNameListModel().setSelectedType(newName);
                 }

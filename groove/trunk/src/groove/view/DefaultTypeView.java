@@ -58,8 +58,13 @@ public class DefaultTypeView implements TypeView {
     }
 
     @Override
-    public AspectGraph getView() {
+    public AspectGraph getAspectGraph() {
         return this.view;
+    }
+
+    @Override
+    public void setType(TypeGraph type) {
+        // does nothing
     }
 
     public TypeGraph toModel() throws FormatException {

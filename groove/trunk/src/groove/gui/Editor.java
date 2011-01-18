@@ -29,7 +29,6 @@ import groove.graph.TypeGraph;
 import groove.gui.dialog.AboutBox;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.PropertiesDialog;
-import groove.gui.jgraph.AspectJCell;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
@@ -45,10 +44,7 @@ import groove.util.Groove;
 import groove.util.Property;
 import groove.view.FormatError;
 import groove.view.FormatException;
-import groove.view.GraphView;
-import groove.view.RuleView;
 import groove.view.StoredGrammarView.TypeViewList;
-import groove.view.View;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
@@ -62,11 +58,11 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
@@ -170,6 +166,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         setRole(graph.getRole());
         if (refreshModel) {
             AspectJModel newModel = getJGraph().newModel();
+            newModel.setType(this.type);
             newModel.loadGraph(graph);
             setModel(newModel);
         } else {
@@ -214,7 +211,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     /** Sets the type graph for this editor. */
     public void setTypeView(TypeViewList typeView) {
-        TypeGraph oldType = this.type;
         this.type = null;
         if (typeView != null) {
             try {
@@ -223,28 +219,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                 // do nothing
             }
         }
-        if (this.type != oldType) {
+        if (getModel().setType(this.type)) {
             updateStatus();
         }
-    }
-
-    /** Returns the type graph set in this editor, if any. */
-    public TypeGraph getType() {
-        return this.type;
-    }
-
-    /**
-     * Creates and returns a view, based on the current aspect graph.
-     */
-    public View<?> toView() {
-        View<?> result = getGraph().toView();
-        if (result instanceof GraphView) {
-            ((GraphView) result).setType(getType());
-        }
-        if (result instanceof RuleView) {
-            ((RuleView) result).setType(getType());
-        }
-        return result;
     }
 
     /**
@@ -879,7 +856,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                 public void update(Observable o, Object arg) {
                     if (arg != null) {
                         GraphJCell errorCell =
-                            Editor.this.errorCellMap.get(arg);
+                            getModel().getErrorMap().get(arg);
                         if (errorCell != null) {
                             getJGraph().setSelectionCell(errorCell);
                         }
@@ -975,32 +952,36 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * with information about the currently edited graph.
      */
     protected void updateStatus() {
-        updateCopyPasteButtons();
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                int nodeCount = getGraph().nodeCount();
-                int edgeCount = getGraph().edgeCount();
-                getStatusBar().setText(
-                    String.format("%s nodes, %s edges", nodeCount, edgeCount));
-                setErrors(toView().getErrors());
-            }
-        });
+        if (!getJGraph().isInserting()) {
+            updateCopyPasteButtons();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    int nodeCount = getGraph().nodeCount();
+                    int edgeCount = getGraph().edgeCount();
+                    getStatusBar().setText(
+                        String.format("%s nodes, %s edges", nodeCount,
+                            edgeCount));
+                    setErrors(getModel().getErrorMap().keySet());
+                }
+            });
+        }
     }
 
     /**
      * Displays a list of errors, or hides the error panel if the list is empty.
      */
-    private void setErrors(List<FormatError> errors) {
-        this.errorCellMap = getModel().setExtraErrors(errors);
+    private void setErrors(Collection<FormatError> errors) {
         getErrorPanel().setErrors(errors);
-        if (getErrorPanel().isVisible()) {
-            getMainPanel().setBottomComponent(getErrorPanel());
-            getMainPanel().setDividerSize(1);
-            getMainPanel().resetToPreferredSizes();
-        } else {
-            getMainPanel().remove(getErrorPanel());
-            getMainPanel().setDividerSize(0);
+        if (!getJGraph().isInserting()) {
+            if (getErrorPanel().isVisible()) {
+                getMainPanel().setBottomComponent(getErrorPanel());
+                getMainPanel().setDividerSize(1);
+                getMainPanel().resetToPreferredSizes();
+            } else {
+                getMainPanel().remove(getErrorPanel());
+                getMainPanel().setDividerSize(0);
+            }
         }
     }
 
@@ -1110,6 +1091,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * The options object of this editor.
      */
     private Options options;
+    /** The (optional) type graph against which he edited model is checked. */
+    private TypeGraph type;
 
     /** The frame of the editor. */
     private final JFrame frame;
@@ -1136,14 +1119,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** Indicates whether jgraph has been modified since the last save. */
     private boolean anyGraphSaved;
 
-    /** Mapping from error messages to the corresponding cells. */
-    private Map<FormatError,AspectJCell> errorCellMap =
-        new HashMap<FormatError,AspectJCell>();
     /** Index of the currently set editor role */
     private GraphRole graphRole = HOST;
-    /** Type against which the edited graph is checked. */
-    private TypeGraph type;
-
     /** The undo manager of the editor. */
     private transient GraphUndoManager undoManager;
 

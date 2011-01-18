@@ -27,7 +27,7 @@ import java.awt.Dimension;
 import java.awt.SystemColor;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.util.List;
+import java.util.Collection;
 import java.util.Observer;
 
 import javax.swing.DefaultListCellRenderer;
@@ -65,7 +65,7 @@ public class ErrorListPanel extends JPanel {
      * Shows or appends a list of error messages in the error window.
      * @param errors the list of error messages to be shown
      */
-    public void setErrors(List<FormatError> errors) {
+    public void setErrors(Collection<FormatError> errors) {
         if (errors.isEmpty()) {
             if (isVisible()) {
                 setVisible(false);
