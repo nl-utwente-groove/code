@@ -50,6 +50,9 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -82,6 +85,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
+import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
@@ -606,6 +610,21 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
      */
     protected BasicGraphUI createGraphUI() {
         return new MyGraphUI();
+    }
+
+    /** 
+     * Returns the nearest ancestor that is a {@link JViewport},
+     * if there is any.
+     */
+    protected JViewport getViewPort() {
+        JViewport result = null;
+        for (JComponent parent = this; parent != null && result != null; parent =
+            (JComponent) parent.getParent()) {
+            if (parent instanceof JViewport) {
+                result = (JViewport) parent;
+            }
+        }
+        return result;
     }
 
     @Override
@@ -1260,6 +1279,10 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
             // empty
         }
 
+        private GraphJGraph getJGraph() {
+            return (GraphJGraph) this.graph;
+        }
+
         /**
          * Taken from <code>com.jgraph.example.fastgraph.FastGraphUI</code>.
          * Updates the <code>preferredSize</code> instance variable, which is
@@ -1292,11 +1315,12 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
             Point2D psize =
                 new Point2D.Double(size.getX() + size.getWidth(), size.getY()
                     + size.getHeight());
-            Dimension d = this.graph.getMinimumSize();
+            Dimension d = getJGraph().getMinimumSize();
             Point2D min =
-                (d != null) ? this.graph.toScreen(new Point(d.width, d.height))
+                (d != null)
+                        ? getJGraph().toScreen(new Point(d.width, d.height))
                         : new Point(0, 0);
-            Point2D scaled = this.graph.toScreen(psize);
+            Point2D scaled = getJGraph().toScreen(psize);
             this.preferredSize =
                 new Dimension((int) Math.max(min.getX(), scaled.getX()),
                     (int) Math.max(min.getY(), scaled.getY()));
@@ -1312,7 +1336,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
         @Override
         protected Point2D getEditorLocation(Object cell,
                 Dimension2D editorSize, Point2D pt) {
-            double scale = this.graph.getScale();
+            double scale = getJGraph().getScale();
             // shift the location by the extra border space
             return super.getEditorLocation(cell, editorSize,
                 new Point2D.Double(pt.getX() + scale * (EXTRA_BORDER_SPACE + 4)
@@ -1327,6 +1351,120 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
         protected void completeEditing(boolean messageStop,
                 boolean messageCancel, boolean messageGraph) {
             super.completeEditing(messageStop, messageCancel, true);
+        }
+
+        @Override
+        protected void installListeners() {
+            super.installListeners();
+            this.graph.addMouseWheelListener((MouseWheelListener) this.mouseListener);
+        }
+
+        @Override
+        protected MouseListener createMouseListener() {
+            return new MyMouseHandler();
+        }
+
+        private final class MyMouseHandler extends MouseHandler {
+            /** The JGraph's ancestor viewport, if any. */
+            private JViewport viewport = getJGraph().getViewPort();
+            /** The coordinates of a point where panning started. */
+            private int origX = -1, origY = -1;
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (getJGraph().getMode() != PAN_MODE) {
+                    super.mousePressed(e);
+                } else if (isPanEnabled()
+                    && e.getButton() == MouseEvent.BUTTON1) {
+                    startPan(e);
+                }
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (getJGraph().getMode() != PAN_MODE) {
+                    super.mouseDragged(e);
+                } else if (isPanEnabled()) {
+                    doPan(e);
+                }
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                if (getJGraph().getMode() != PAN_MODE) {
+                    super.mouseMoved(e);
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (getJGraph().getMode() != PAN_MODE) {
+                    super.mouseReleased(e);
+                } else if (isPanEnabled()
+                    && e.getButton() == MouseEvent.BUTTON1) {
+                    endPan();
+                }
+            }
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (getJGraph().getMode() == PAN_MODE) {
+                    int change = -e.getWheelRotation();
+                    getJGraph().changeScale(change);
+                }
+            }
+
+            /**
+             * Start panning.
+             */
+            private void startPan(MouseEvent e) {
+                this.origX = e.getX();
+                this.origY = e.getY();
+                getJGraph().setCursor(Groove.CLOSED_HAND_CURSOR);
+            }
+
+            /**
+             * Finish panning.
+             */
+            private void endPan() {
+                this.origX = -1;
+                this.origY = -1;
+                getJGraph().setCursor(Groove.OPEN_HAND_CURSOR);
+            }
+
+            /**
+             * Shift the viewport according to the panned distance.
+             */
+            private void doPan(MouseEvent e) {
+                if (this.origX == -1) {
+                    return; // never happens ??
+                }
+                Point p = this.viewport.getViewPosition();
+                p.x -= (e.getX() - this.origX);
+                p.y -= (e.getY() - this.origY);
+
+                Dimension size = getJGraph().getSize();
+                Dimension vsize = this.viewport.getExtentSize();
+
+                if (p.x + vsize.width > size.width) {
+                    p.x = size.width - vsize.width;
+                }
+                if (p.y + vsize.height > size.height) {
+                    p.y = size.height - vsize.height;
+                }
+                if (p.x < 0) {
+                    p.x = 0;
+                }
+                if (p.y < 0) {
+                    p.y = 0;
+                }
+                this.viewport.setViewPosition(p);
+            }
+
+            private boolean isPanEnabled() {
+                return getJGraph().getMode() == PAN_MODE
+                    && this.viewport != null;
+            }
         }
     }
 

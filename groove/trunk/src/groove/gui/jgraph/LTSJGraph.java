@@ -32,8 +32,6 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,7 +44,6 @@ import javax.swing.JMenu;
 
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphModel;
-import org.jgraph.plaf.basic.BasicGraphUI;
 
 /**
  * Implementation of MyJGraph that provides the proper popup menu. To construct
@@ -61,11 +58,6 @@ public class LTSJGraph extends GraphJGraph {
         // turn off double buffering to improve performance
         setDoubleBuffered(false);
         setExporter(simulator.getExporter());
-    }
-
-    @Override
-    protected BasicGraphUI createGraphUI() {
-        return new LTSGraphUI();
     }
 
     @Override
@@ -419,51 +411,6 @@ public class LTSJGraph extends GraphJGraph {
         @Override
         public Layouter newInstance(GraphJGraph jGraph) {
             return new MyForestLayouter(this.name, jGraph);
-        }
-    }
-
-    /** Subclass that makes sure mouse events are only passed on
-     * when the graph is in selection mode.
-     * @author Arend Rensink
-     * @version $Revision $
-     */
-    private class LTSGraphUI extends MyGraphUI {
-        @Override
-        protected MouseListener createMouseListener() {
-            return new MouseHandler() {
-
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    if (getMode() == SELECT_MODE
-                        || e.getButton() == MouseEvent.BUTTON2) {
-                        super.mousePressed(e);
-                    }
-                }
-
-                @Override
-                public void mouseDragged(MouseEvent e) {
-                    if (getMode() == SELECT_MODE
-                        || e.getButton() == MouseEvent.BUTTON2) {
-                        super.mouseDragged(e);
-                    }
-                }
-
-                @Override
-                public void mouseMoved(MouseEvent e) {
-                    if (getMode() == SELECT_MODE) {
-                        super.mouseMoved(e);
-                    }
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    if (getMode() == SELECT_MODE
-                        || e.getButton() == MouseEvent.BUTTON2) {
-                        super.mouseReleased(e);
-                    }
-                }
-
-            };
         }
     }
 }
