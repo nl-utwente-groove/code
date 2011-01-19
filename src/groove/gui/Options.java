@@ -338,7 +338,7 @@ public class Options implements Cloneable {
     /**
      * Save-as action name
      */
-    public static final String SAVE_AS_ACTION_NAME = "Save as...";
+    public static final String SAVE_AS_ACTION_NAME = "Save As...";
     /**
      * Save action name
      */
@@ -346,7 +346,7 @@ public class Options implements Cloneable {
     /**
      * Save grammar action name
      */
-    public static final String SAVE_GRAMMAR_ACTION_NAME = "Save Grammar ...";
+    public static final String SAVE_GRAMMAR_ACTION_NAME = "Save Grammar As ...";
     /**
      * Save lts action name
      */

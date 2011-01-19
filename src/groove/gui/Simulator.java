@@ -1508,6 +1508,7 @@ public class Simulator {
         result.setFloatable(false);
         result.add(getNewRuleAction());
         result.add(getEditRuleAction());
+        result.addSeparator();
         result.add(getCopyRuleAction());
         result.add(getDeleteRuleAction());
         result.add(getRenameRuleAction());
@@ -1552,6 +1553,7 @@ public class Simulator {
         result.setFloatable(false);
         result.add(getNewGraphAction());
         result.add(getEditGraphAction());
+        result.addSeparator();
         result.add(getCopyGraphAction());
         result.add(getDeleteGraphAction());
         result.add(getRenameGraphAction());
@@ -1784,9 +1786,7 @@ public class Simulator {
      * {@link Refreshable#refresh()} on the element.
      */
     void addRefreshable(Refreshable element) {
-        if (this.refreshables.add(element)) {
-            element.refresh();
-        }
+        this.refreshables.add(element);
     }
 
     /**
@@ -3001,6 +3001,7 @@ public class Simulator {
         protected RefreshableAction(String name, Icon icon) {
             super(name, icon);
             putValue(SHORT_DESCRIPTION, name);
+            setEnabled(false);
             addRefreshable(this);
         }
     }
@@ -3120,7 +3121,8 @@ public class Simulator {
                         askNewGraphName("Select new graph name", oldGraphName,
                             true);
                     if (newGraphName != null) {
-                        doAddGraph(oldGraphView.getAspectGraph().rename(newGraphName));
+                        doAddGraph(oldGraphView.getAspectGraph().rename(
+                            newGraphName));
                     }
                 }
             }
@@ -3660,7 +3662,7 @@ public class Simulator {
      */
     private class DefaultExplorationAction extends RefreshableAction {
         DefaultExplorationAction() {
-            super(Options.DEFAULT_EXPLORATION_ACTION_NAME, null);
+            super(Options.DEFAULT_EXPLORATION_ACTION_NAME, Groove.FORWARD_ICON);
             putValue(ACCELERATOR_KEY, Options.DEFAULT_EXPLORATION_KEY);
         }
 
@@ -4936,7 +4938,7 @@ public class Simulator {
     private class StartSimulationAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         StartSimulationAction() {
-            super(Options.START_SIMULATION_ACTION_NAME, null);
+            super(Options.START_SIMULATION_ACTION_NAME, Groove.NEW_LTS_ICON);
             putValue(Action.ACCELERATOR_KEY, Options.START_SIMULATION_KEY);
         }
 

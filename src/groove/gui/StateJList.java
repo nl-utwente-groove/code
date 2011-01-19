@@ -113,14 +113,13 @@ public class StateJList extends JList implements SimulationListener {
         // add rest only if mouse is actually over a graph name
         int index = locationToIndex(atPoint);
         if (index > 0 && getCellBounds(index, index).contains(atPoint)) {
+            result.add(this.simulator.getEditGraphAction());
             result.addSeparator();
             result.add(this.simulator.getCopyGraphAction());
             result.add(this.simulator.getDeleteGraphAction());
             result.add(this.simulator.getRenameGraphAction());
             result.addSeparator();
             result.add(this.simulator.getSetStartGraphAction());
-            // result.add(getPreviewGraphAction());
-            result.add(this.simulator.getEditGraphAction());
         }
         return result;
     }

@@ -30,6 +30,7 @@ import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.GraphJModel;
+import groove.gui.jgraph.JGraphMode;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
@@ -62,6 +63,7 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -88,7 +90,8 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
      * Constructs a new state panel.
      */
     public StatePanel(final Simulator simulator) {
-        super(new AspectJGraph(simulator, GraphRole.HOST), true, simulator.getOptions());
+        super(new AspectJGraph(simulator, GraphRole.HOST), true,
+            simulator.getOptions());
         this.simulator = simulator;
         initialise();
         simulator.addSimulationListener(this);
@@ -135,6 +138,22 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
             }
         });
         setEnabled(false);
+    }
+
+    @Override
+    protected JToolBar createToolBar() {
+        JToolBar result = new JToolBar();
+        result.add(this.simulator.getNewGraphAction());
+        result.add(this.simulator.getEditGraphAction());
+        result.add(this.simulator.getSaveGraphAction());
+        result.addSeparator();
+        result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
+        result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
+        result.addSeparator();
+        result.add(this.simulator.getCopyGraphAction());
+        result.add(this.simulator.getDeleteGraphAction());
+        result.add(this.simulator.getRenameGraphAction());
+        return result;
     }
 
     /**

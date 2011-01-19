@@ -541,15 +541,14 @@ public class RuleJTree extends JTree implements SimulationListener {
         res.setFocusable(false);
         res.add(getSimulator().getNewRuleAction());
         if (node instanceof RuleTreeNode) {
-            res.addSeparator();
-            res.add(getSimulator().getEnableRuleAction());
+            res.add(getSimulator().getEditRuleAction());
             res.addSeparator();
             res.add(getSimulator().getCopyRuleAction());
             res.add(getSimulator().getDeleteRuleAction());
             res.add(getSimulator().getRenameRuleAction());
             res.addSeparator();
+            res.add(getSimulator().getEnableRuleAction());
             res.add(getSimulator().getEditRulePropertiesAction());
-            res.add(getSimulator().getEditRuleAction());
         } else if (node instanceof MatchTreeNode) {
             res.addSeparator();
             res.add(getSimulator().getApplyTransitionAction());

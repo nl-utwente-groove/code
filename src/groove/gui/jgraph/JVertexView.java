@@ -468,7 +468,7 @@ public class JVertexView extends VertexView {
     /**
      * The following is a rather awful hack to ensure the same kind of vertex
      * emphasis throughout editing. It is called from
-     * {@link EditorMarqueeHandler} and from {@link JEdgeView.MyEdgeHandle}.
+     * {@link JEdgeView.MyEdgeHandle}.
      */
     void paintArmed(Graphics g) {
         Graphics2D newG = (Graphics2D) g.create();

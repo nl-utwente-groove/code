@@ -100,14 +100,15 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
     private JToolBar createToolbar() {
         JToolBar result = new JToolBar();
+        result.setFloatable(false);
         result.add(createButton(getNewAction()));
         result.add(createButton(getEditAction()));
+        result.add(createButton(getSaveAction()));
+        result.add(createButton(getCancelAction()));
+        result.addSeparator();
         result.add(createButton(getCopyAction()));
         result.add(createButton(getDeleteAction()));
         result.add(createButton(getRenameAction()));
-        result.addSeparator();
-        result.add(createButton(getSaveAction()));
-        result.add(createButton(getCancelAction()));
         result.addSeparator();
         result.add(new JLabel("Name: "));
         result.add(getNameField());
@@ -871,7 +872,8 @@ public class ControlPanel extends JPanel implements SimulationListener {
             JDialog result = this.dialog;
             if (result == null) {
                 JGraphPanel<?> autPanel =
-                    new JGraphPanel<CtrlJGraph>(getJGraph(), true, getSimulator().getOptions());
+                    new JGraphPanel<CtrlJGraph>(getJGraph(), true,
+                        getSimulator().getOptions());
                 autPanel.initialise();
                 result =
                     this.dialog =

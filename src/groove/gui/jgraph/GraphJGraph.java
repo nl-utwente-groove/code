@@ -17,7 +17,7 @@
 package groove.gui.jgraph;
 
 import static groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
-import static groove.gui.jgraph.JGraphMode.EDGE_MODE;
+import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.GraphRole;
@@ -27,7 +27,6 @@ import groove.graph.TypeLabel;
 import groove.gui.Exporter;
 import groove.gui.LabelTree;
 import groove.gui.Options;
-import groove.gui.RubberBand;
 import groove.gui.SetLayoutMenu;
 import groove.gui.ShowHideMenu;
 import groove.gui.Simulator;
@@ -373,10 +372,10 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
                     //                    getSelectionModel().removeSelectionCells(
                     //                        grayedOutCells.toArray());
                     if (getSelectionCount() > 0) {
-                        Rectangle scope =
-                            Groove.toRectangle(getCellBounds(getSelectionCells()));
+                        Rectangle2D scope =
+                            (Rectangle2D) getCellBounds(getSelectionCells()).clone();
                         if (scope != null) {
-                            scrollRectToVisible(scope);
+                            scrollRectToVisible(toScreen(scope).getBounds());
                         }
                     }
                     GraphJGraph.this.modelRefreshing = false;
@@ -446,30 +445,31 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
     /**
      * Helper method for {@link #getFirstCellForLocation(double, double)} and
      * {@link #getPortViewAt(double, double)}. Returns the topmost visible cell
-     * at a given point. A flag controls if we want only vertices.
+     * at a given point. A flag controls if we want only vertices or only edges.
      * @param x x-coordinate of the location we want to find a cell at
      * @param y y-coordinate of the location we want to find a cell at
      * @param vertex <tt>true</tt> if we are not interested in edges
+     * @param edge <tt>true</tt> if we are not interested in vertice
      * @return the topmost visible cell at a given point
      */
     protected GraphJCell getFirstCellForLocation(double x, double y,
-            boolean vertex) {
+            boolean vertex, boolean edge) {
         x /= this.scale;
         y /= this.scale;
         GraphJCell result = null;
-        Rectangle xyArea = new Rectangle((int) (x - .5), (int) (y - .5), 1, 1);
+        Rectangle xyArea = new Rectangle((int) (x - 2), (int) (y - 2), 4, 4);
         // iterate over the roots and query the visible ones
         CellView[] viewRoots = this.graphLayoutCache.getRoots();
         for (int i = viewRoots.length - 1; result == null && i >= 0; i--) {
             CellView jCellView = viewRoots[i];
-            Object jCell = jCellView.getCell();
+            GraphJCell jCell = (GraphJCell) jCellView.getCell();
             boolean typeCorrect =
-                vertex ? jCell instanceof GraphJVertex
-                        : jCell instanceof GraphJCell;
-            if (typeCorrect && !((GraphJCell) jCell).isGrayedOut()) {
+                vertex ? jCell instanceof GraphJVertex : edge
+                        ? jCell instanceof GraphJEdge : true;
+            if (typeCorrect && !jCell.isGrayedOut()) {
                 // now see if this jCell is sufficiently close to the point
                 if (jCellView.intersects(this, xyArea)) {
-                    result = (GraphJCell) jCell;
+                    result = jCell;
                 }
             }
         }
@@ -482,7 +482,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
      */
     @Override
     public GraphJCell getFirstCellForLocation(double x, double y) {
-        return getFirstCellForLocation(x, y, false);
+        return getFirstCellForLocation(x, y, false, false);
     }
 
     /**
@@ -491,7 +491,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
     @Override
     public PortView getPortViewAt(double x, double y) {
         GraphJVertex vertex =
-            (GraphJVertex) getFirstCellForLocation(x, y, true);
+            (GraphJVertex) getFirstCellForLocation(x, y, true, false);
         if (vertex != null) {
             return (PortView) getGraphLayoutCache().getMapping(
                 vertex.getPort(), false);
@@ -588,14 +588,14 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
             } else if (this.enabledBackground != null) {
                 setBackground(this.enabledBackground);
             }
+            getLabelTree().setEnabled(enabled);
+            getExportAction().setEnabled(enabled);
+            for (JToggleButton button : getModeButtonMap().values()) {
+                button.setEnabled(enabled);
+            }
+            getModeButton(SELECT_MODE).setSelected(true);
+            super.setEnabled(enabled);
         }
-        getLabelTree().setEnabled(enabled);
-        getExportAction().setEnabled(enabled);
-        for (JToggleButton button : getModeButtonMap().values()) {
-            button.setEnabled(enabled);
-        }
-        getModeButton(SELECT_MODE).setSelected(true);
-        super.setEnabled(enabled);
     }
 
     /**
@@ -728,7 +728,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
         // set the value if it has changed
         if (result) {
             this.mode = mode;
-            if (mode == EDGE_MODE) {
+            if (mode == EDIT_MODE) {
                 clearSelection();
             }
             stopEditing();
@@ -796,61 +796,37 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
         return this.labelTree;
     }
 
-    /** Lazily creates and returns the rubber band selector for this JGraph. */
-    public RubberBand getRubberBand() {
-        if (this.rubberBand == null) {
-            this.rubberBand = new RubberBand(this) {
-                @Override
-                protected boolean isAllowed(MouseEvent event) {
-                    return getMode() == PAN_MODE
-                        && event.getButton() == MouseEvent.BUTTON2;
-                }
-
-                @Override
-                protected void stopRubberBand(MouseEvent event) {
-                    if (getMode() == PAN_MODE) {
-                        zoomTo(getBounds());
-                    } else {
-                        CellView[] views =
-                            getGraphLayoutCache().getRoots(getBounds());
-                        ArrayList<Object> list = new ArrayList<Object>();
-                        for (int i = 0; i < views.length; i++) {
-                            // above returns intersection, we want containment
-                            if (getBounds().contains(views[i].getBounds())) {
-                                list.add(views[i].getCell());
-                            }
-                        }
-                        Object[] cells = list.toArray();
-                        setSelectionCells(cells);
-                    }
-                }
-            };
-        }
-        return this.rubberBand;
-    }
-
     /** 
      * Zooms and centres a given portion of the JGraph, as
      * defined by a certain rectangle. 
      */
-    private void zoomTo(Rectangle2D bounds) {
+    public void zoomTo(Rectangle2D bounds) {
         Rectangle2D viewBounds = getViewPortBounds();
         double widthScale = viewBounds.getWidth() / bounds.getWidth();
         double heightScale = viewBounds.getHeight() / bounds.getHeight();
         double scale = Math.min(widthScale, heightScale);
         double oldScale = getScale();
         setScale(oldScale * scale);
-        double scaledHeight = scale * bounds.getHeight();
-        double scaledWidth = scale * bounds.getWidth();
-        // choose new origin so the selected bounds are centred
-        double newX =
-            bounds.getX() * scale - (viewBounds.getWidth() - scaledWidth) / 2;
-        double newY =
-            bounds.getY() * scale - (viewBounds.getHeight() - scaledHeight) / 2;
-        Rectangle newBounds =
-            new Rectangle((int) newX, (int) newY, (int) viewBounds.getWidth(),
-                (int) viewBounds.getHeight());
+        int newX = (int) (bounds.getX() * scale);
+        int newY = (int) (bounds.getY() * scale);
+        int newWidth = (int) (scale * bounds.getWidth());
+        int newHeight = (int) (scale * bounds.getHeight());
+        Rectangle newBounds = new Rectangle(newX, newY, newWidth, newHeight);
         scrollRectToVisible(newBounds);
+    }
+
+    /** This implementation makes sure the rectangle gets centred on the viewport,
+     * if it is not already contained in the viewport. */
+    @Override
+    public void scrollRectToVisible(Rectangle aRect) {
+        Rectangle viewBounds = getViewPortBounds().getBounds();
+        if (!viewBounds.contains(aRect)) {
+            int newX = aRect.x - (viewBounds.width - aRect.width) / 2;
+            int newY = aRect.y - (viewBounds.height - aRect.height) / 2;
+            Rectangle newRect =
+                new Rectangle(newX, newY, viewBounds.width, viewBounds.height);
+            super.scrollRectToVisible(newRect);
+        }
     }
 
     /** Returns the action to export this JGraph in various formats. */
@@ -1113,10 +1089,11 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
                 JToggleButton button = new JToggleButton(getModeAction(any));
                 button.setText(null);
                 button.setToolTipText(any.getName());
-                button.setEnabled(false);
+                button.setEnabled(isEnabled());
                 this.modeButtonMap.put(any, button);
                 modeButtonGroup.add(button);
             }
+            this.modeButtonMap.get(SELECT_MODE).setSelected(true);
         }
         return this.modeButtonMap;
     }
@@ -1129,8 +1106,6 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
     private final Options options;
     /** The set of labels currently filtered from view. */
     private final ObservableSet<Label> filteredLabels;
-    /** The selection rubber band for this JGraph. */
-    private RubberBand rubberBand;
     /** Object providing the core functionality for property changes. */
     private PropertyChangeSupport propertyChangeSupport;
     /** Boolean indicating if the JGraph is in select mode or in pan+zoom mode. */

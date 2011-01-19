@@ -42,9 +42,7 @@ import groove.view.StoredGrammarView;
 import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -174,6 +172,9 @@ public class Groove {
     /** Icon for a New Graph action. */
     public static final ImageIcon NEW_GRAPH_ICON = new ImageIcon(
         getResource("new-G.gif"));
+    /** Icon for a Start Simulation action. */
+    public static final ImageIcon NEW_LTS_ICON = new ImageIcon(
+        getResource("new-LTS.gif"));
     /** Icon for a New Rule action. */
     public static final ImageIcon NEW_RULE_ICON = new ImageIcon(
         getResource("new-R.gif"));
@@ -201,6 +202,9 @@ public class Groove {
     /** Icon for Control Files. */
     public static final ImageIcon CONTROL_FILE_ICON = new ImageIcon(
         getResource("control-file.gif"));
+    /** Icon starting automatic simulation. */
+    public static final ImageIcon FORWARD_ICON = new ImageIcon(
+        Groove.getResource("forward.gif"));
     /** Icon for graphs. */
     public static final ImageIcon GRAPH_ICON = new ImageIcon(
         getResource("graph.gif"));
@@ -936,17 +940,6 @@ public class Groove {
      */
     static public String pad(String text, int length) {
         return pad(text, length, true);
-    }
-
-    /**
-     * Converts a {@link Rectangle2D} to a {@link Rectangle}.
-     */
-    static public Rectangle toRectangle(Rectangle2D r) {
-        if (r != null) {
-            return new Rectangle((int) r.getX(), (int) r.getY(),
-                (int) r.getWidth(), (int) r.getHeight());
-        }
-        return null;
     }
 
     /**

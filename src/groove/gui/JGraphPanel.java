@@ -29,6 +29,7 @@ import groove.util.Pair;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
@@ -46,6 +47,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
+import javax.swing.JViewport;
 
 import org.jgraph.JGraph;
 import org.jgraph.event.GraphSelectionEvent;
@@ -82,6 +84,13 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
                 getLabelTree().clearSelection();
             }
         });
+        getJGraph().addJGraphModeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                getScrollPane().setWheelScrollingEnabled(
+                    evt.getNewValue() != PAN_MODE);
+            }
+        });
     }
 
     /** 
@@ -94,6 +103,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         this.setPane(withLabelPanel ? createSplitPane() : this.createSoloPane());
         JToolBar toolBar = createToolBar();
         if (toolBar != null) {
+            toolBar.setFloatable(false);
             add(toolBar, BorderLayout.NORTH);
         }
         if (this.statusBar != null) {
@@ -260,7 +270,34 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      */
     protected JScrollPane getScrollPane() {
         if (this.scrollPane == null) {
-            this.scrollPane = new JScrollPane(getJGraph());
+            this.scrollPane = new JScrollPane(getJGraph()) {
+
+                @Override
+                protected JViewport createViewport() {
+                    return new JViewport() {
+
+                        @Override
+                        public void setViewPosition(Point p) {
+                            // TODO Auto-generated method stub
+                            super.setViewPosition(p);
+                        }
+
+                        @Override
+                        public Dimension toViewCoordinates(Dimension size) {
+                            // TODO Auto-generated method stub
+                            return super.toViewCoordinates(size);
+                        }
+
+                        @Override
+                        public Point toViewCoordinates(Point p) {
+                            // TODO Auto-generated method stub
+                            return super.toViewCoordinates(p);
+                        }
+
+                    };
+                }
+
+            };
         }
         return this.scrollPane;
     }
