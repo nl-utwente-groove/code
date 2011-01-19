@@ -30,9 +30,7 @@ import groove.util.Colors;
 
 import java.awt.Color;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -100,16 +98,7 @@ public class LTSJGraph extends GraphJGraph {
     public void scrollTo(Element nodeOrEdge) {
         GraphJCell cell = getModel().getJCell(nodeOrEdge);
         assert cell != null;
-        Rectangle2D bounds = getCellBounds(cell);
-        if (bounds != null) {
-            int extraSpace = 100;
-            Rectangle scrollRect =
-                new Rectangle((int) bounds.getX() - extraSpace,
-                    (int) bounds.getY() - extraSpace, (int) bounds.getWidth()
-                        + 2 * extraSpace, (int) bounds.getHeight() + 2
-                        * extraSpace);
-            scrollRectToVisible(scrollRect);
-        }
+        scrollCellToVisible(cell);
     }
 
     /**

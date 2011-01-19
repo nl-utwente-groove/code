@@ -17,7 +17,6 @@
 package groove.gui;
 
 import groove.gui.jgraph.GraphJGraph;
-import groove.util.Groove;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -101,7 +100,7 @@ public class ZoomMenu extends JMenu {
                     Math.min(viewportBounds.width / graphBounds.getWidth(),
                         viewportBounds.height / graphBounds.getHeight());
                 ZoomMenu.this.jgraph.setScale(Math.min(scale, 1.0));
-                ZoomMenu.this.jgraph.scrollRectToVisible(Groove.toRectangle(graphBounds));
+                ZoomMenu.this.jgraph.scrollRectToVisible(graphBounds.getBounds());
                 setActionsEnabled();
             }
         }

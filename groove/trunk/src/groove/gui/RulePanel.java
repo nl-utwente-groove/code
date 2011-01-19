@@ -26,6 +26,7 @@ import groove.graph.GraphRole;
 import groove.graph.LabelStore;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
+import groove.gui.jgraph.JGraphMode;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -47,6 +48,8 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.TreeMap;
 
+import javax.swing.JToolBar;
+
 /**
  * Window that displays and controls the current rule graph. Auxiliary class for
  * Simulator.
@@ -62,7 +65,8 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
      * Constructs a new rule frame on the basis of a given graph.
      */
     public RulePanel(final Simulator simulator) {
-        super(new AspectJGraph(simulator, GraphRole.RULE), true, simulator.getOptions());
+        super(new AspectJGraph(simulator, GraphRole.RULE), true,
+            simulator.getOptions());
         this.simulator = simulator;
         setEnabled(false);
         addRefreshListener(SHOW_ANCHORS_OPTION);
@@ -83,6 +87,22 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
             }
         });
         initialise();
+    }
+
+    @Override
+    protected JToolBar createToolBar() {
+        JToolBar result = new JToolBar();
+        result.setFloatable(false);
+        result.add(this.simulator.getNewRuleAction());
+        result.add(this.simulator.getEditRuleAction());
+        result.addSeparator();
+        result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
+        result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
+        result.addSeparator();
+        result.add(this.simulator.getCopyRuleAction());
+        result.add(this.simulator.getDeleteRuleAction());
+        result.add(this.simulator.getRenameRuleAction());
+        return result;
     }
 
     /**

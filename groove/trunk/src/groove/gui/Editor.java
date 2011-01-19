@@ -19,8 +19,7 @@ import static groove.gui.Options.HELP_MENU_NAME;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import static groove.gui.jgraph.JGraphMode.EDGE_MODE;
-import static groove.gui.jgraph.JGraphMode.NODE_MODE;
+import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.GraphProperties;
@@ -676,8 +675,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         result.add(getDeleteAction());
         result.addSeparator();
         result.add(getJGraph().getModeAction(SELECT_MODE));
-        result.add(getJGraph().getModeAction(NODE_MODE));
-        result.add(getJGraph().getModeAction(EDGE_MODE));
+        result.add(getJGraph().getModeAction(EDIT_MODE));
         result.add(getJGraph().getModeAction(PREVIEW_MODE));
         getJGraph().addSubmenu(result, getJGraph().createPopupMenu(null));
         return result;
@@ -775,8 +773,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         // Mode block
         toolbar.addSeparator();
         toolbar.add(getJGraph().getModeButton(SELECT_MODE));
-        toolbar.add(getJGraph().getModeButton(NODE_MODE));
-        toolbar.add(getJGraph().getModeButton(EDGE_MODE));
+        toolbar.add(getJGraph().getModeButton(EDIT_MODE));
         toolbar.add(getJGraph().getModeButton(PREVIEW_MODE));
     }
 

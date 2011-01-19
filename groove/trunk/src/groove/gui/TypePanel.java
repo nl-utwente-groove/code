@@ -24,6 +24,7 @@ import groove.graph.LabelStore;
 import groove.gui.JTypeNameList.CheckBoxListModel;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
+import groove.gui.jgraph.JGraphMode;
 import groove.io.SystemStore;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -65,7 +66,8 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
      * @param simulator The simulator this type panel belongs to.
      */
     public TypePanel(final Simulator simulator) {
-        super(new AspectJGraph(simulator, GraphRole.TYPE), true, simulator.getOptions());
+        super(new AspectJGraph(simulator, GraphRole.TYPE), true,
+            simulator.getOptions());
         setFocusable(false);
         initialise();
         this.simulator = simulator;
@@ -81,6 +83,10 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         result.setFloatable(false);
         result.add(createButton(getNewAction()));
         result.add(createButton(getEditAction()));
+        result.addSeparator();
+        result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
+        result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
+        result.addSeparator();
         result.add(createButton(getCopyAction()));
         result.add(createButton(getDeleteAction()));
         result.add(createButton(getRenameAction()));

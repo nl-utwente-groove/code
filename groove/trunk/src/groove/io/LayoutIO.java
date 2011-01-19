@@ -381,8 +381,7 @@ public class LayoutIO {
     private String toString(Node node, JVertexLayout layout) {
         StringBuffer result = new StringBuffer();
         result.append(NODE_PREFIX + " " + node + " ");
-        Rectangle nodeBounds = Groove.toRectangle(layout.getBounds());
-        // nodeBounds.setSize(JAttr.DEFAULT_NODE_SIZE);
+        Rectangle nodeBounds = layout.getBounds().getBounds();
         result.append(toString(nodeBounds));
         return result.toString();
     }

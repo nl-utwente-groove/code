@@ -16,8 +16,7 @@
  */
 package groove.gui.jgraph;
 
-import static groove.gui.jgraph.JGraphMode.EDGE_MODE;
-import static groove.gui.jgraph.JGraphMode.NODE_MODE;
+import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
 import static groove.view.aspect.AspectKind.ADDER;
 import static groove.view.aspect.AspectKind.CREATOR;
@@ -37,9 +36,7 @@ import groove.view.aspect.AspectKind;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
@@ -88,7 +85,7 @@ final public class AspectJGraph extends GraphJGraph {
         this.simulator = null;
         this.editor = editor;
         this.graphRole = null;
-        addMouseListener(new MyMouseListener());
+        //        addMouseListener(new MyMouseListener());
         getGraphLayoutCache().setSelectsLocalInsertedCells(true);
         setCloneable(true);
         setConnectable(true);
@@ -275,54 +272,6 @@ final public class AspectJGraph extends GraphJGraph {
     }
 
     /**
-     * This implementation returns a {@link EditorMarqueeHandler}.
-     * @see groove.gui.jgraph.GraphJGraph#createMarqueeHandler()
-     */
-    @Override
-    protected EditorMarqueeHandler createMarqueeHandler() {
-        return new EditorMarqueeHandler(this);
-    }
-
-    /**
-     * Callback method to determine whether a given event is a menu popup event.
-     * This implementation checks for the right hand mouse button. To be
-     * overridden by subclasses.
-     * @param evt the event that could be a popup menu event
-     * @return <tt>true</tt> if <tt>e</tt> is a popup menu event
-     */
-    protected boolean isAddPointEvent(MouseEvent evt) {
-        return Options.isPointEditEvent(evt) && !isRemovePointEvent(evt);
-    }
-
-    /**
-     * Callback method to determine whether a given event is a menu popup event.
-     * This implementation checks for the right hand mouse button. To be
-     * overridden by subclasses.
-     * @param evt the event that could be a popup menu event
-     * @return <tt>true</tt> if <tt>e</tt> is a popup menu event
-     */
-    protected boolean isRemovePointEvent(MouseEvent evt) {
-        if (Options.isPointEditEvent(evt)) {
-            Object jCell = getSelectionCell();
-            if (jCell instanceof GraphJEdge) {
-                // check if an intermediate point is in the neighbourhood of evt
-                Rectangle r =
-                    new Rectangle(evt.getX() - this.tolerance, evt.getY()
-                        - this.tolerance, 2 * this.tolerance,
-                        2 * this.tolerance);
-                List<?> points = getJEdgeView((GraphJEdge) jCell).getPoints();
-                for (int i = 1; i < points.size() - 1; i++) {
-                    Point2D point = (Point2D) points.get(i);
-                    if (r.intersects(point.getX(), point.getY(), 1, 1)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * Adds an intermediate point to a given j-edge, controlled by a given
      * location. If the location if <tt>null</tt>, the point is added directly
      * after the initial point of the edge, at a slightly randomized position.
@@ -496,7 +445,7 @@ final public class AspectJGraph extends GraphJGraph {
      */
     boolean isEdgeMode(MouseEvent evt) {
         boolean result = false;
-        if (this.editor != null && getMode() == EDGE_MODE) {
+        if (this.editor != null && getMode() == EDIT_MODE) {
             result =
                 getFirstCellForLocation(evt.getX(), evt.getY()) instanceof GraphJVertex;
         }
@@ -512,7 +461,7 @@ final public class AspectJGraph extends GraphJGraph {
     boolean isNodeMode(MouseEvent evt) {
         boolean result = false;
         if (evt.getButton() == MouseEvent.BUTTON1 && this.editor != null
-            && getMode() == NODE_MODE) {
+            && getMode() == EDIT_MODE) {
             result = getFirstCellForLocation(evt.getX(), evt.getY()) == null;
         }
         return result;
@@ -634,31 +583,6 @@ final public class AspectJGraph extends GraphJGraph {
             AspectJGraph.ASPECT_NODE_ATTR.get(CREATOR));
         AspectJGraph.ASPECT_EDGE_ATTR.get(ADDER).put("line2map",
             AspectJGraph.ASPECT_EDGE_ATTR.get(CREATOR));
-    }
-
-    /**
-     * Mouse listener that creates the popup menu and adds and deletes points on
-     * appropriate events.
-     */
-    private class MyMouseListener extends MouseAdapter {
-        /** Empty constructor wit the correct visibility. */
-        MyMouseListener() {
-            // empty
-        }
-
-        @Override
-        public void mousePressed(MouseEvent evt) {
-            Object jCell = getSelectionCell();
-            if (isAddPointEvent(evt)) {
-                if (jCell instanceof GraphJEdge) {
-                    addPoint((GraphJEdge) jCell, evt.getPoint());
-                }
-            } else if (isRemovePointEvent(evt)) {
-                if (jCell instanceof GraphJEdge) {
-                    removePoint((GraphJEdge) jCell, evt.getPoint());
-                }
-            }
-        }
     }
 
     /**

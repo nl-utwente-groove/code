@@ -22,6 +22,7 @@ import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.Element;
 import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.JGraphMode;
 import groove.gui.jgraph.LTSJEdge;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
@@ -32,18 +33,14 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
-import groove.util.Groove;
 import groove.view.StoredGrammarView;
 
-import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.swing.JToolBar;
 
 /**
  * Window that displays and controls the current lts graph. Auxiliary class for
@@ -60,22 +57,24 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         super(new LTSJGraph(simulator), true, simulator.getOptions());
         this.simulator = simulator;
         getJGraph().setEnabled(false);
-        MyMouseListener mouseListener = new MyMouseListener();
-        getJGraph().addMouseListener(mouseListener);
-        getJGraph().addMouseMotionListener(mouseListener);
-        getJGraph().addMouseWheelListener(mouseListener);
-        getJGraph().addJGraphModeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                getScrollPane().setWheelScrollingEnabled(
-                    evt.getNewValue() == SELECT_MODE);
-            }
-        });
+        getJGraph().addMouseListener(new MyMouseListener());
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_STATE_IDS_OPTION);
         simulator.addSimulationListener(this);
         getJGraph().setToolTipEnabled(true);
         initialise();
+    }
+
+    @Override
+    protected JToolBar createToolBar() {
+        JToolBar result = new JToolBar();
+        result.add(this.simulator.getStartSimulationAction());
+        result.add(this.simulator.getDefaultExplorationAction());
+        result.add(this.simulator.getSaveGraphAction());
+        result.addSeparator();
+        result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
+        result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
+        return result;
     }
 
     @Override
@@ -389,63 +388,6 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         }
 
         @Override
-        public void mousePressed(MouseEvent e) {
-            if (getJGraph().getMode() == PAN_MODE
-                && e.getButton() == MouseEvent.BUTTON1) {
-                this.origX = e.getX();
-                this.origY = e.getY();
-                getJGraph().setCursor(Groove.CLOSED_HAND_CURSOR);
-            }
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-            if (getJGraph().getMode() == PAN_MODE
-                && e.getButton() == MouseEvent.BUTTON1) {
-                this.origX = -1;
-                this.origY = -1;
-                getJGraph().setCursor(Groove.OPEN_HAND_CURSOR);
-            }
-        }
-
-        @Override
-        public void mouseWheelMoved(MouseWheelEvent e) {
-            if (getJGraph().getMode() == PAN_MODE) {
-                int change = -e.getWheelRotation();
-                getJGraph().changeScale(change);
-            }
-        }
-
-        @Override
-        public void mouseDragged(MouseEvent e) {
-            if (getJGraph().getMode() == PAN_MODE) {
-                if (this.origX == -1) {
-                    return; // never happens ??
-                }
-                Point p = getScrollPane().getViewport().getViewPosition();
-                p.x -= (e.getX() - this.origX);
-                p.y -= (e.getY() - this.origY);
-
-                Dimension size = getJGraph().getSize();
-                Dimension vsize = getScrollPane().getViewport().getExtentSize();
-
-                if (p.x + vsize.width > size.width) {
-                    p.x = size.width - vsize.width;
-                }
-                if (p.y + vsize.height > size.height) {
-                    p.y = size.height - vsize.height;
-                }
-                if (p.x < 0) {
-                    p.x = 0;
-                }
-                if (p.y < 0) {
-                    p.y = 0;
-                }
-                getScrollPane().getViewport().setViewPosition(p);
-            }
-        }
-
-        @Override
         public void mouseClicked(MouseEvent evt) {
             if (getJGraph().getMode() == SELECT_MODE
                 && evt.getButton() == MouseEvent.BUTTON1) {
@@ -475,8 +417,5 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
                 }
             }
         }
-
-        /** The coordinates of a point where panning started. */
-        private int origX = -1, origY = -1;
     }
 }
