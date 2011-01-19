@@ -20,6 +20,7 @@ import groove.util.DefaultFixable;
 import groove.util.ExprParser;
 import groove.view.FormatException;
 
+import java.awt.Color;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -498,6 +499,17 @@ public class LabelStore extends DefaultFixable implements Cloneable {
         return false;
     }
 
+    /** Returns the (possibly {@code null}) colour associated with a given type label. */
+    public Color getColor(TypeLabel label) {
+        Color result = this.colorMap.get(label);
+        if (result == null && RANDOM_COLORS) {
+            this.colorMap.put(label, result =
+                new Color((int) (Math.random() * 256),
+                    (int) (Math.random() * 256), (int) (Math.random() * 256)));
+        }
+        return result;
+    }
+
     @Override
     public LabelStore clone() {
         LabelStore result = new LabelStore();
@@ -526,6 +538,8 @@ public class LabelStore extends DefaultFixable implements Cloneable {
     private Map<TypeLabel,Set<TypeLabel>> dirSuperMap;
     /** Mapping from a type label to its set of subtypes (including itself). */
     private Map<TypeLabel,Set<TypeLabel>> superMap;
+    private final Map<TypeLabel,Color> colorMap =
+        new HashMap<TypeLabel,Color>();
 
     /** Creates and prints a label store out of a property string. */
     static public void main(String[] args) {
@@ -591,7 +605,8 @@ public class LabelStore extends DefaultFixable implements Cloneable {
                         throw new FormatException(
                             "Invalid node type identifier '%s'", subtype);
                     }
-                    subtypes.add(TypeLabel.createLabel(EdgeRole.NODE_TYPE, subtype));
+                    subtypes.add(TypeLabel.createLabel(EdgeRole.NODE_TYPE,
+                        subtype));
                 }
             }
         }
@@ -606,4 +621,6 @@ public class LabelStore extends DefaultFixable implements Cloneable {
     static public final char SUBTYPE_SEPARATOR = ',';
     /** Separator between supertype and the list of subtypes. */
     static public final char SUPERTYPE_SYMBOL = '>';
+    /** Temporary flag for testing the node type colour functionality. */
+    static public boolean RANDOM_COLORS = false;
 }

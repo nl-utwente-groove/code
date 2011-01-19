@@ -78,6 +78,11 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         this.graphRole = label.getGraphRole();
     }
 
+    /** Returns the graph role set for this aspect edge. */
+    public GraphRole getGraphRole() {
+        return this.graphRole;
+    }
+
     @Override
     public void setFixed() {
         if (!isFixed()) {

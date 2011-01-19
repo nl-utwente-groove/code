@@ -20,6 +20,7 @@ import groove.view.aspect.AspectLabel;
 import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectParser;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -110,6 +111,18 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             AspectJEdge jEdge = (AspectJEdge) edgeObject;
             if (jEdge.getSourceVertex() == this && jEdge.isSourceLabel()) {
                 result.addAll(jEdge.getEdges());
+            }
+        }
+        return result;
+    }
+
+    /** Retrieves the (first) node type label of this JVertex, if any. */
+    TypeLabel getNodeType() {
+        TypeLabel result = null;
+        for (AspectEdge edge : getJVertexLabels()) {
+            if (edge.getRole() == EdgeRole.NODE_TYPE) {
+                result = edge.getTypeLabel();
+                break;
             }
         }
         return result;
@@ -436,6 +449,16 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             AspectJGraph.ASPECT_NODE_ATTR.get(this.aspect).clone();
         if (getJGraph().hasActiveEditor()) {
             GraphConstants.setEditable(result, true);
+        }
+        if (getNode().getGraphRole() != GraphRole.RULE
+            && getJGraph().getLabelStore() != null) {
+            Color nodeColor =
+                getJGraph().getLabelStore().getColor(getNodeType());
+            if (nodeColor != null) {
+                GraphConstants.setForeground(result, nodeColor);
+                GraphConstants.setLineColor(result, nodeColor);
+                GraphConstants.setBackground(result, JAttr.whitewash(nodeColor));
+            }
         }
         return result;
     }

@@ -6,6 +6,7 @@ import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.GraphRole;
 import groove.graph.Label;
+import groove.graph.TypeLabel;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.trans.RuleLabel;
 import groove.util.Converter;
@@ -16,6 +17,7 @@ import groove.view.aspect.AspectLabel;
 import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectParser;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -283,6 +285,17 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
             GraphConstants.setEditable(result, true);
             GraphConstants.setConnectable(result, true);
             GraphConstants.setDisconnectable(result, true);
+        }
+        if (getSourceVertex() != null
+            && getEdge().getGraphRole() != GraphRole.RULE
+            && getJGraph().getLabelStore() != null) {
+            TypeLabel sourceType =
+                ((AspectJVertex) getSourceVertex()).getNodeType();
+            Color typeColor = getJGraph().getLabelStore().getColor(sourceType);
+            if (typeColor != null) {
+                GraphConstants.setForeground(result, typeColor);
+                GraphConstants.setLineColor(result, typeColor);
+            }
         }
         return result;
     }

@@ -963,7 +963,7 @@ public class LabelTree extends JTree implements GraphModelListener,
             this.jLabel.setIcon(labelIcon);
             // set tool tip text
             if (this.labelNode != null) {
-                Label label = ((LabelTreeNode) value).getLabel();
+                Label label = this.labelNode.getLabel();
                 StringBuilder toolTipText = new StringBuilder();
                 Set<GraphJCell> occurrences =
                     LabelTree.this.labelCellMap.get(label);
@@ -985,6 +985,13 @@ public class LabelTree extends JTree implements GraphModelListener,
                 }
                 if (toolTipText.length() != 0) {
                     result.setToolTipText(Converter.HTML_TAG.on(toolTipText).toString());
+                }
+                if (label instanceof TypeLabel && label.isNodeType()
+                    && getLabelStore() != null) {
+                    Color color = getLabelStore().getColor((TypeLabel) label);
+                    if (color != null) {
+                        this.jLabel.setForeground(color);
+                    }
                 }
             }
             return result;
