@@ -1,9 +1,0 @@
-# Layout information for .\test\graph\.new\iso-0.gxl
-# Each line contains layout information about a node or edge
-# Node Format: n <node id> <bounds>
-# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
-e n116 n114 "a" 500 500 146 81 164 195 11
-n n114 156 186 18 18 
-n n116 138 72 18 18 
-e n116 n115 "b" 500 500 146 81 272 87 11
-n n115 264 78 18 18 
