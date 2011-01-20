@@ -1151,16 +1151,16 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
         }
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private static void compareGraphs(String name1, String name2) {
         try {
             DefaultGraph graph1 = Groove.loadGraph(name1);
             DefaultGraph graph2 = Groove.loadGraph(name2);
             System.out.printf("Graphs '%s' and '%s' isomorphic?%n", name1,
                 name2);
-            System.out.printf(
-                "Done. Result: %b%n",
-                (IsoChecker.<DefaultNode,DefaultEdge>getInstance(true)).areIsomorphic(
-                    graph1, graph2));
+            System.out.printf("Done. Result: %b%n",
+                (IsoChecker.getInstance(true)).areIsomorphic((Graph) graph1,
+                    (Graph) graph2));
             System.out.printf("Certification time: %d%n", getCertifyingTime());
             System.out.printf("Simulation time: %d%n", getSimCheckTime());
         } catch (IOException e) {
