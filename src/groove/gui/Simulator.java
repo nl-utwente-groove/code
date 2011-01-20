@@ -4740,7 +4740,7 @@ public class Simulator {
         /** Constructs an instance of the action. */
         SaveGrammarAction() {
             super(Options.SAVE_GRAMMAR_ACTION_NAME, null);
-            putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
+            putValue(ACCELERATOR_KEY, Options.SAVE_GRAMMAR_AS_KEY);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -4802,7 +4802,7 @@ public class Simulator {
         /** Constructs an instance of the action. */
         SaveGraphAction() {
             super(Options.SAVE_ACTION_NAME, Groove.SAVE_ICON);
-            putValue(ACCELERATOR_KEY, Options.SAVE_GRAPH_KEY);
+            putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
         }
 
         public void actionPerformed(ActionEvent e) {

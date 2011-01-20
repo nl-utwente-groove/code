@@ -16,14 +16,14 @@
  */
 package groove.gui;
 
-import groove.graph.GraphRole;
 import groove.util.Groove;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -42,7 +42,8 @@ public class EditorPanel extends JPanel {
      * @param fresh if {@code true}, the graph is fresh (and therefore the
      * editor is immediately dirty)
      */
-    public EditorPanel(Simulator simulator, AspectGraph graph, boolean fresh) {
+    public EditorPanel(Simulator simulator, final AspectGraph graph,
+            boolean fresh) {
         setName(graph.getName());
         this.simulator = simulator;
         this.options = simulator.getOptions();
@@ -70,6 +71,18 @@ public class EditorPanel extends JPanel {
                         !getModel().getErrorMap().isEmpty());
                 }
 
+                @Override
+                JToolBar createToolBar() {
+                    JToolBar toolbar = new JToolBar();
+                    toolbar.setFloatable(false);
+                    toolbar.add(getOkButton());
+                    toolbar.add(getCancelButton());
+                    addModeButtons(toolbar);
+                    addUndoButtons(toolbar);
+                    addCopyPasteButtons(toolbar);
+                    addGridButtons(toolbar);
+                    return toolbar;
+                }
             };
         this.graph = graph;
         this.fresh = fresh;
@@ -81,12 +94,12 @@ public class EditorPanel extends JPanel {
         this.editor.setGraph(this.graph, true);
         this.editor.setDirty(this.fresh);
         setLayout(new BorderLayout());
-        add(this.editor.createContentPanel(createToolBar(this.graph.getRole())));
+        add(this.editor.getMainPanel());
     }
 
     /** Returns the resulting aspect graph of the editor. */
     public AspectGraph getGraph() {
-        return this.editor.getGraph();
+        return this.graph;
     }
 
     /** Changes the type graph in the editor,
@@ -106,31 +119,20 @@ public class EditorPanel extends JPanel {
         return this.simulator.getSimulatorPanel();
     }
 
-    /**
-     * Creates and returns the tool bar.
-     */
-    private JToolBar createToolBar(GraphRole role) {
-        JToolBar toolbar = new JToolBar();
-        toolbar.setFloatable(false);
-        toolbar.add(getOkButton());
-        toolbar.add(getCancelButton());
-        this.editor.addModeButtons(toolbar);
-        this.editor.addUndoButtons(toolbar);
-        this.editor.addCopyPasteButtons(toolbar);
-        this.editor.addGridButtons(toolbar);
-        return toolbar;
-    }
-
     /** Creates and returns a Cancel button, for use on the tool bar. */
     private JButton getCancelButton() {
         if (this.cancelButton == null) {
-            JButton result = new JButton(Groove.CANCEL_ICON);
+            Action cancelAction =
+                new AbstractAction(Options.CANCEL_EDIT_ACTION_NAME,
+                    Groove.CANCEL_ICON) {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        handleCancel();
+                    }
+                };
+            JButton result = new JButton(cancelAction);
+            result.setText(null);
             result.setToolTipText("Cancel editing");
-            result.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    handleCancel();
-                }
-            });
             this.cancelButton = result;
         }
         return this.cancelButton;
@@ -139,13 +141,17 @@ public class EditorPanel extends JPanel {
     /** Creates and returns an OK button, for use on the tool bar. */
     private JButton getOkButton() {
         if (this.okButton == null) {
-            JButton result = new JButton(Groove.SAVE_ICON);
+            Action saveAction =
+                new AbstractAction(Options.SAVE_ACTION_NAME, Groove.SAVE_ICON) {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        handleOk();
+                    }
+                };
+            saveAction.putValue(Action.ACCELERATOR_KEY, Options.SAVE_KEY);
+            JButton result = new JButton(saveAction);
+            result.setText(null);
             result.setToolTipText("Save changes");
-            result.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    handleOk();
-                }
-            });
             this.okButton = result;
         }
         return this.okButton;
