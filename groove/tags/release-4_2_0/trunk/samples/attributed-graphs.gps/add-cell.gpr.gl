@@ -1,0 +1,14 @@
+# Layout information for C:\local\groove\samples\attributed-graphs.gps\add-cell.gpr
+# Each line contains layout information about a node or edge
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+n n1 304 288 18 18 
+e n8 n1 "int:lt" 381 579 224 295 333 297 11
+n n8 206 286 18 18 
+n n6 132 234 18 18 
+n n4 181 157 18 18 
+n n3 287 157 18 18 
+n n7 123 86 18 18 
+n n0 133 329 18 18 
+n n5 279 84 18 18 
+n n2 238 233 18 18 

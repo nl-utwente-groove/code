@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph id="r" role="rule" edgeids="false" edgemode="directed">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n56952"/>
+        <node id="n56953"/>
+        <edge from="n56952" to="n56952">
+            <attr name="label">
+                <string>par=$2:</string>
+            </attr>
+        </edge>
+        <edge from="n56952" to="n56952">
+            <attr name="label">
+                <string>del:</string>
+            </attr>
+        </edge>
+        <edge from="n56953" to="n56953">
+            <attr name="label">
+                <string>par=$1:</string>
+            </attr>
+        </edge>
+        <edge from="n56953" to="n56953">
+            <attr name="label">
+                <string>A</string>
+            </attr>
+        </edge>
+        <edge from="n56953" to="n56952">
+            <attr name="label">
+                <string>not:=</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

@@ -1,0 +1,57 @@
+Here is a design for the next generation label grammar.
+
+This design takes little contextual information into account. It can be refined
+e.g. by distinguishing graph and rule labels; currently this is left to typing.
+
+Label
+ ::= (NEW | DEL | NOT | USE) COLON [EQUALS Ident] [Label]
+   | (FORALL | FORALLX | EXISTS) COLON [EQUALS Ident] [Label]
+   | NESTED COLON [IN | AT]
+   | PAR COLON [EQUALS DOLLAR Digit+]
+   | COLON Char*
+   | REM COLON Char*
+   | INT COLON [Ident | Digit+]
+   | REAL COLON [Ident | Digit* [DOT Digit*]]
+   | STRING COLON [Ident | DQuotedText]
+   | BOOL COLON [Ident | TRUE | FALSE]
+   | ARG COLON Digit+
+   | PROD COLON
+   | [PATH COLON] [PLING] RegExpr
+RegExpr
+ ::= Wildcard
+   | EQUALS
+   | [(FLAG | TYPE) COLON] Ident
+   | Atom
+   | Sequence
+   | Choice
+   | Star
+   | Plus
+   | Inverse
+   | LPAR RegExpr RPAR
+Wildcard
+ ::= [(FLAG | TYPE):COLON] QUERY [Ident] [Constraint]
+Constraint
+ ::= LSQUARE [HAT] Atom (COMMA Atom)* RSQUARE
+Sequence
+ ::= RegExpr (DOT RegExpr)+
+Choice
+ ::= RegExpr (BAR RegExpr)+
+Star
+ ::= RegExpr STAR
+Plus
+ ::= RegExpr PLUS
+Inverse
+ ::= MINUS RegExpr
+Atom
+ ::= SQuotedText
+   | IdentChar*
+
+SQuotedText
+ ::= SQUOTE (Char\{SQUOTE,BSLASH} | BSLASH (BSLASH|SQUOTE))* SQUOTE
+DQuotedText
+ ::= DQUOTE (Char\{DQUOTE,BSLASH} | BSLASH (BSLASH|DQUOTE))* DQUOTE
+Ident
+ ::= Letter IdentChar*
+IdentChar
+ ::= Letter | Digit | DOLLAR | UNDER
+ 
