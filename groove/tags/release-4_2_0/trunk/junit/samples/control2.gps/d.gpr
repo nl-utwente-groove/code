@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph id="makeLine" role="rule" edgeids="false" edgemode="directed">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n56285"/>
+        <node id="n56286"/>
+        <edge from="n56286" to="n56286">
+            <attr name="label">
+                <string>par=$1:</string>
+            </attr>
+        </edge>
+        <edge from="n56286" to="n56285">
+            <attr name="label">
+                <string>not:=</string>
+            </attr>
+        </edge>
+        <edge from="n56286" to="n56285">
+            <attr name="label">
+                <string>new:a</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

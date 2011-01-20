@@ -1,0 +1,10 @@
+# Layout information for c:\local\Eclipse\groove\samples\append.gps\next.gpr
+# Each line contains layout information about a node or edge
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+n n79 210 144 18 18 
+e n77 n77 "del:control" 284 227 107 205 49 251 104 268 107 205 12
+n n76 294 38 18 18 
+n n78 105 39 18 18 
+n n77 82 196 18 18 
+n n75 282 187 18 18 

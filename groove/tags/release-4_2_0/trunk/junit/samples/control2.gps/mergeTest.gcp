@@ -1,0 +1,4 @@
+node par1, par2;
+addNode;
+merge(out par1, out par2)+;
+b(par1,par2);
