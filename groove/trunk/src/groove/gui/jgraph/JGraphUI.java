@@ -209,6 +209,7 @@ public class JGraphUI extends BasicGraphUI {
             if (!isMyEvent(e)) {
                 return;
             }
+            getJGraph().requestFocus();
             stopEditing(getJGraph());
             // determine the drag mode (although dragging does not yet start)
             if (getJGraphMode() == PAN_MODE && e.getButton() == BUTTON1) {

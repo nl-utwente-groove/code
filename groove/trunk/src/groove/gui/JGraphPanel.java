@@ -28,8 +28,8 @@ import groove.gui.jgraph.GraphJModel;
 import groove.util.Pair;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
@@ -38,7 +38,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.accessibility.AccessibleState;
+import javax.swing.Action;
 import javax.swing.Box;
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -47,7 +49,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
-import javax.swing.JViewport;
 
 import org.jgraph.JGraph;
 import org.jgraph.event.GraphSelectionEvent;
@@ -105,6 +106,18 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         if (toolBar != null) {
             toolBar.setFloatable(false);
             add(toolBar, BorderLayout.NORTH);
+            // add all menu actions as key accelerators to the JGraph
+            for (int i = 0; i < toolBar.getComponentCount(); i++) {
+                Component component = toolBar.getComponent(i);
+                if (component instanceof JButton) {
+                    JButton button = (JButton) component;
+                    button.setFocusable(false);
+                    Action action = button.getAction();
+                    if (action != null) {
+                        getJGraph().addAccelerator(action);
+                    }
+                }
+            }
         }
         if (this.statusBar != null) {
             add(this.statusBar, BorderLayout.SOUTH);
@@ -270,34 +283,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      */
     protected JScrollPane getScrollPane() {
         if (this.scrollPane == null) {
-            this.scrollPane = new JScrollPane(getJGraph()) {
-
-                @Override
-                protected JViewport createViewport() {
-                    return new JViewport() {
-
-                        @Override
-                        public void setViewPosition(Point p) {
-                            // TODO Auto-generated method stub
-                            super.setViewPosition(p);
-                        }
-
-                        @Override
-                        public Dimension toViewCoordinates(Dimension size) {
-                            // TODO Auto-generated method stub
-                            return super.toViewCoordinates(size);
-                        }
-
-                        @Override
-                        public Point toViewCoordinates(Point p) {
-                            // TODO Auto-generated method stub
-                            return super.toViewCoordinates(p);
-                        }
-
-                    };
-                }
-
-            };
+            this.scrollPane = new JScrollPane(getJGraph());
         }
         return this.scrollPane;
     }

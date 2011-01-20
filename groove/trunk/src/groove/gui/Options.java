@@ -280,12 +280,6 @@ public class Options implements Cloneable {
     /** Preview control action name */
     public static final String PREVIEW_CONTROL_ACTION_NAME =
         "Preview Control ...";
-    /** Preview graph action name */
-    public static final String PREVIEW_GRAPH_ACTION_NAME = "Preview Graph ...";
-    /** Preview rule action name */
-    public static final String PREVIEW_RULE_ACTION_NAME = "Preview Rule ...";
-    /** Preview type action name */
-    public static final String PREVIEW_TYPE_ACTION_NAME = "Preview Type ...";
     /** Provide ctl formula action name */
     public static final String PROVIDE_CTL_FORMULA_ACTION_NAME =
         "CTL Formula ...";
@@ -424,7 +418,7 @@ public class Options implements Cloneable {
     /** Back keystroke */
     public static final KeyStroke BACK_KEY =
         KeyStroke.getKeyStroke("control LEFT");
-    /** Save keystroke */
+    /** Cancel keystroke */
     public static final KeyStroke CANCEL_KEY = KeyStroke.getKeyStroke("ESCAPE");
 
     /**
@@ -499,7 +493,7 @@ public class Options implements Cloneable {
      * Preview keystroke
      */
     public static final KeyStroke PREVIEW_MODE_KEY =
-        KeyStroke.getKeyStroke("control P");
+        KeyStroke.getKeyStroke("alt P");
     /** Quit keystroke */
     public static final KeyStroke QUIT_KEY =
         KeyStroke.getKeyStroke("control Q");
@@ -524,7 +518,7 @@ public class Options implements Cloneable {
     public static final KeyStroke SAVE_KEY =
         KeyStroke.getKeyStroke("control S");
     /** Save keystroke */
-    public static final KeyStroke SAVE_GRAPH_KEY =
+    public static final KeyStroke SAVE_GRAMMAR_AS_KEY =
         KeyStroke.getKeyStroke("control shift S");
     /** Select mode keystroke */
     public static final KeyStroke SELECT_MODE_KEY =

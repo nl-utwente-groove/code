@@ -74,7 +74,6 @@ import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -440,20 +439,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             }
         });
         getFrame().setJMenuBar(createMenuBar());
-        getFrame().setContentPane(createContentPanel(createToolBar()));
-    }
-
-    /**
-     * Creates a panel showing a given toolbar, and the graph and status panels
-     * of the editor.
-     */
-    JPanel createContentPanel(JToolBar toolBar) {
-        JPanel result = new JPanel(new BorderLayout(), false);
-        // initialize the main editor panel
-        // Add a ToolBar
-        result.add(toolBar, BorderLayout.NORTH);
-        result.add(getMainPanel());
-        return result;
+        getFrame().setContentPane(getMainPanel());
     }
 
     /**
@@ -613,7 +599,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                         getOptions()) {
                         @Override
                         protected JToolBar createToolBar() {
-                            return null;
+                            return Editor.this.createToolBar();
                         }
                     };
             result.initialise();
@@ -1341,11 +1327,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             super(name, icon);
             putValue(Action.SHORT_DESCRIPTION, name);
             putValue(ACCELERATOR_KEY, acceleratorKey);
-            getGraphPanel().getInputMap(
-                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-                acceleratorKey, name);
-            getJGraph().getInputMap().put(acceleratorKey, name);
-            getGraphPanel().getActionMap().put(name, this);
         }
 
         public void actionPerformed(ActionEvent evt) {

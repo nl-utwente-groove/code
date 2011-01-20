@@ -1024,13 +1024,18 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
      * of this JGraph.
      * @param action the action to be added
      */
-    protected void addAccelerator(Action action) {
-        ActionMap am = getActionMap();
-        am.put(action.getValue(Action.NAME), action);
-        InputMap im =
-            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        im.put((KeyStroke) action.getValue(Action.ACCELERATOR_KEY),
-            action.getValue(Action.NAME));
+    public void addAccelerator(Action action) {
+        Object actionName = action.getValue(Action.NAME);
+        KeyStroke actionKey =
+            (KeyStroke) action.getValue(Action.ACCELERATOR_KEY);
+        if (actionName != null && actionKey != null) {
+            ActionMap am = getActionMap();
+            am.put(actionName, action);
+            InputMap im = getInputMap(JComponent.WHEN_FOCUSED);
+            im.put(actionKey, actionName);
+            im = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+            im.put(actionKey, actionName);
+        }
     }
 
     /**

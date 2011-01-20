@@ -98,10 +98,6 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
         result.addSeparator();
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
-        result.addSeparator();
-        result.add(this.simulator.getCopyRuleAction());
-        result.add(this.simulator.getDeleteRuleAction());
-        result.add(this.simulator.getRenameRuleAction());
         return result;
     }
 

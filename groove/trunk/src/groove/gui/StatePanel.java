@@ -149,10 +149,6 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         result.addSeparator();
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
-        result.addSeparator();
-        result.add(this.simulator.getCopyGraphAction());
-        result.add(this.simulator.getDeleteGraphAction());
-        result.add(this.simulator.getRenameGraphAction());
         return result;
     }
 
