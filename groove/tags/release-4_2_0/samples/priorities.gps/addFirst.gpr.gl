@@ -1,7 +1,0 @@
-# Layout information for C:\Eclipse-3\groove\samples\priorities.gps\1.addFirst.gpr
-# Each line contains layout information about a node or edge
-# Node Format: n <node id> <bounds>
-# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
-n n40 136 83 18 18 
-n n41 48 80 18 18 
-n n42 135 170 18 18 

@@ -1,7 +1,0 @@
-# Layout information for C:\local\Eclipse\workspace\groove\samples\embargo.gps\creator.gpr
-# Each line contains layout information about a node or edge
-# Node Format: n <node id> <bounds>
-# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
-e n25 n24 "a" 216 576 58 89 114 129 190 93 11
-n n25 49 80 18 18 
-n n24 181 84 18 18 
