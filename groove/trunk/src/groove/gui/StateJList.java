@@ -150,7 +150,7 @@ public class StateJList extends JList implements SimulationListener {
     }
 
     public void setStateUpdate(GraphState state) {
-        refreshCurrentState(false);
+        refreshCurrentState(true);
     }
 
     public void setTransitionUpdate(GraphTransition transition) {
