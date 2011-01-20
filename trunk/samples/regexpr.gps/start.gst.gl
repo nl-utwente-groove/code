@@ -1,0 +1,11 @@
+# Layout information for D:\Eclipse\groove\samples\regexpr.gps\start.gst
+# Each line contains layout information about a node or edge
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+n n2 255 93 18 18 
+n n4 171 165 18 18 
+n n3 345 93 18 18 
+n n6 357 159 18 18 
+n n1 183 93 18 18 
+n n5 261 159 18 18 
+n n0 93 93 18 18 

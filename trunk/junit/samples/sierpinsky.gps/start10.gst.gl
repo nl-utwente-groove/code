@@ -1,0 +1,22 @@
+# Layout information for C:\local\groove\nested\sierpinsky.gps\start10.gst
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n1 425 30 6 14 
+n n3 498 29 6 14 
+n n6 342 30 6 14 
+n n9 419 104 12 14 
+n n2 571 29 6 14 
+n n12 647 30 6 14 
+n n4 649 104 6 14 
+n n5 153 135 15 15 
+n n8 139 25 35 28 
+n n10 205 237 15 15 
+n n11 105 237 15 15 
+n n7 238 28 6 14 
+n n13 498 105 6 14 
+n n0 574 104 6 14 

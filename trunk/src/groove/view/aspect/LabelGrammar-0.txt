@@ -1,0 +1,89 @@
+Here is current grammar for labels, reconstructed from the class AspectParser 
+and the various implementing classes of LabelParser, in particular RegExprLabelParser.
+
+Label ::= GraphLabel | RuleLabel.
+
+GraphLabel
+ ::= Prefix* ActualGraphLabel
+Prefix
+ ::= (Char\{COLON,EQUALS})+ [ EQUALS (Char\{COLON})* ] COLON
+ActualGraphLabel
+ ::= EmptyPrefix Char*
+   | RemarkPrefix Char*
+   | ValueLabel
+   | NodeLabel
+   | (Char\{COLON})+
+ValueLabel
+   | IntPrefix Digit+
+   | RealPrefix (Digit+ [DOT Digit*] | DOT Digit+)
+   | StringPrefix DQuotedText
+   | BoolPrefix (TRUE | FALSE)
+NodeLabel
+ ::= TypePrefix Ident
+   | FlagPrefix Ident
+
+RuleLabel
+ ::= Prefix* ActualRuleLabel
+ActualRuleLabel
+ ::= EmptyPrefix Char*
+   | RemarkPrefix Char*
+   | ParamPrefix
+   | PathPrefix [PLING] RegExpr
+   | ValueLabel
+   | NodeLabel
+   | AttrLabel
+   | NegLabel
+   | PosLabel
+AttrLabel
+ ::= IntPrefix [Ident]
+   | RealPrefix [Ident]
+   | StringPrefix [Ident]
+   | BoolPrefix [Ident]
+   | AttrPrefix
+   | ProdPrefix
+   | ArgPrefix Digit+
+NegLabel
+ ::= PLING PosLabel
+PosLabel
+ ::= Wildcard
+   | EQUALS
+   | LCURLY RegExpr RCURLY
+   | SQUOTE SQuotedText SQUOTE
+   | (Char\{SQUOTE,LCURLY,RCURLY,BSLASH,COLON})*
+RegExpr
+ ::= Wildcard
+   | EQUALS
+   | Atom
+   | Sequence
+   | Choice
+   | Star
+   | Plus
+   | Inverse
+   | LPAR RegExpr RPAR
+Wildcard
+ ::= QUERY [Ident] [Constraint]
+Constraint
+ ::= LSQUARE [HAT] Atom (COMMA Atom)* RSQUARE
+Sequence
+ ::= RegExpr (DOT RegExpr)+
+Choice
+ ::= RegExpr (BAR RegExpr)+
+Star
+ ::= RegExpr STAR
+Plus
+ ::= RegExpr PLUS
+Inverse
+ ::= MINUS RegExpr
+Atom
+ ::= SQuotedText
+   | IdentChar*
+
+SQuotedText
+ ::= SQUOTE (Char\{SQUOTE,BSLASH} | BSLASH (BSLASH|SQUOTE))* SQUOTE
+DQuotedText
+ ::= DQUOTE (Char\{DQUOTE,BSLASH} | BSLASH (BSLASH|DQUOTE))* DQUOTE
+Ident
+ ::= Letter IdentChar*
+IdentChar
+ ::= Letter | Digit | DOLLAR | UNDER
+ 
