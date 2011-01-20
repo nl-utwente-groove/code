@@ -174,6 +174,7 @@ public class LabelTree extends JTree implements GraphModelListener,
                 new JToggleButton(new ShowModeAction(true));
             this.showSubtypesButton.setSelected(true);
             this.showSubtypesButton.setMargin(new Insets(1, 1, 1, 1));
+            this.showSubtypesButton.setFocusable(false);
         }
         return this.showSubtypesButton;
     }
@@ -187,6 +188,7 @@ public class LabelTree extends JTree implements GraphModelListener,
             this.showSupertypesButton =
                 new JToggleButton(new ShowModeAction(false));
             this.showSupertypesButton.setMargin(new Insets(1, 1, 1, 1));
+            this.showSupertypesButton.setFocusable(false);
         }
         return this.showSupertypesButton;
     }
@@ -200,7 +202,7 @@ public class LabelTree extends JTree implements GraphModelListener,
             this.showAllLabelsButton =
                 new JToggleButton(new ShowAllLabelsAction());
             this.showAllLabelsButton.setMargin(new Insets(1, 1, 1, 1));
-            // this.showAllLabelsButton.setMargin(new Insets(4, 4, 4, 4));
+            this.showAllLabelsButton.setFocusable(false);
         }
         return this.showAllLabelsButton;
     }

@@ -1158,6 +1158,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         if (this.ruleRoleButton == null) {
             final JToggleButton result =
                 this.ruleRoleButton = new JToggleButton(getSetRuleRoleAction());
+            result.setFocusable(false);
             result.setText(null);
         }
         return this.ruleRoleButton;
@@ -1173,6 +1174,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         if (this.typeRoleButton == null) {
             final JToggleButton result =
                 this.typeRoleButton = new JToggleButton(getSetTypeRoleAction());
+            result.setFocusable(false);
             result.setText(null);
         }
         return this.typeRoleButton;
@@ -1189,6 +1191,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     JToggleButton getSnapToGridButton() {
         if (this.snapToGridButton == null) {
             this.snapToGridButton = new JToggleButton(getSnapToGridAction());
+            this.snapToGridButton.setFocusable(false);
             this.snapToGridButton.setText(null);
         }
         return this.snapToGridButton;
@@ -1196,6 +1199,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     JToggleButton getSnapToGridButton(GraphJGraph jgraph) {
         JToggleButton button = new JToggleButton(new SnapToGridAction(jgraph));
+        button.setFocusable(false);
         button.setText(null);
         return button;
     }

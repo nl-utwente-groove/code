@@ -1092,6 +1092,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
             ButtonGroup modeButtonGroup = new ButtonGroup();
             for (JGraphMode any : EnumSet.allOf(JGraphMode.class)) {
                 JToggleButton button = new JToggleButton(getModeAction(any));
+                button.setFocusable(false);
                 button.setText(null);
                 button.setToolTipText(any.getName());
                 button.setEnabled(isEnabled());
