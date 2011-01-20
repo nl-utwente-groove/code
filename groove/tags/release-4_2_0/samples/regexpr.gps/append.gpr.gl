@@ -1,0 +1,9 @@
+# Layout information for E:\Eclipse\groove\samples\regexpr.gps\append.gpr
+# Each line contains layout information about a node or edge
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+n n67 285 207 47 18 
+n n65 147 15 28 18 
+n n66 129 105 18 18 
+n n68 249 63 18 18 
+n n69 321 57 18 18 

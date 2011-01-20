@@ -1,0 +1,25 @@
+# Layout information for C:\local\groove\nested\sierpinsky.gps\transform.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n3 241 117 15 15 
+n n1 249 375 24 14 
+n n6 253 22 15 15 
+n n2 126 198 24 14 
+n n5 361 199 24 14 
+n n4 135 318 15 15 
+n n7 361 314 15 15 
+n n8 499 92 28 14 
+n n0 123 23 15 15 
+e n3 n8 "nested:at" 500 0 250 117 250 96 499 96 14
+e n2 n8 "nested:at" 500 0 145 198 145 57 502 92 14
+e n4 n8 "nested:at" 500 0 143 335 143 428 525 427 525 112 14
+e n7 n8 "nested:at" 500 0 378 322 505 322 505 112 14
+e n0 n0 "del:current" 500 0 123 34 89 45 90 20 123 29 12
+e n6 n6 "new:current" 500 0 261 30 295 43 295 17 261 30 12
+e n5 n8 "nested:at" 500 0 380 199 380 104 499 104 14
+e n1 n8 "nested:at" 500 0 283 387 515 387 515 112 14

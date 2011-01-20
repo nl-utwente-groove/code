@@ -1,0 +1,10 @@
+# Layout information for /home/fmg/bonevai/Documents/current/Workspace/Groove/junit/samples/matchesiter.gps/g.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n88 200 197 8 16 
+e n88 n88 "new:x" 500 0 209 208 256 228 261 195 209 208 12

@@ -1,0 +1,21 @@
+# Layout information for C:\local\groove\nested\petrinet.gps\smartRule.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n3 388 230 24 14 
+n n1 138 157 25 14 
+n n6 388 99 32 14 
+n n2 209 85 45 14 
+n n5 35 228 18 14 
+n n4 299 39 28 14 
+n n7 294 159 25 14 
+n n8 34 109 32 14 
+n n0 140 38 28 14 
+e n7 n4 "nested:at" 480 7 313 169 307 47 11
+e n5 n5 "token" 500 0 40 245 28 289 62 288 46 245 12
+e n5 n8 "nested:at" 519 5 43 236 42 117 11
+e n3 n3 "token" 500 0 398 240 384 280 417 281 398 240 12
