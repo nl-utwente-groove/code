@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph id="e" role="rule" edgeids="false" edgemode="directed">
+        <attr name="priority">
+            <string>1</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n28"/>
+        <edge from="n28" to="n28">
+            <attr name="label">
+                <string>e</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

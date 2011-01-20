@@ -1,0 +1,8 @@
+# Layout information for ferryman.gps\unload.gpr
+# Each line contains layout information about a node or edge
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+n n185 89 130 18 18 
+n n183 256 83 18 18 
+e n185 n184 "del:go" 135 470 105 139 106 195 184 207 12
+n n184 166 198 18 18 
