@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph id="graph" role="rule" edgeids="false" edgemode="directed">
+        <attr name="priority">
+            <string>0</string>
+        </attr>
+        <node id="n0"/>
+        <node id="n1"/>
+        <node id="n2"/>
+        <edge from="n1" to="n2">
+            <attr name="label">
+                <string>new:now</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n2">
+            <attr name="label">
+                <string>c</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n0">
+            <attr name="label">
+                <string>del:now</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

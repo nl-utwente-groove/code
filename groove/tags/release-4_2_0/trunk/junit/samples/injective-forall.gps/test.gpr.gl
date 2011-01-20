@@ -1,0 +1,11 @@
+# Layout information for D:\Eclipse\workspace\groove\junit\samples\injective-nac.gps\test.gpr
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n59010 430 162 15 15 
+n n59012 283 162 15 15 
+n n59011 420 248 15 15 

@@ -1,0 +1,7 @@
+# Layout information for C:\local\eclipse\workspace\groove\samples\attributed-graphs.gps\start.gst
+# Each line contains layout information about a node or edge
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+n n0 160 183 18 18 
+n n1 229 93 18 18 
+e n1 n0 "length" 349 500 250 102 176 192 11
