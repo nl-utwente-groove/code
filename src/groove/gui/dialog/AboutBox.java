@@ -84,27 +84,12 @@ public class AboutBox extends JDialog {
         result.append("GROOVE tool set\n");
         result.append("Version: ");
         result.append(Version.NUMBER);
-        result.append("\n(c) University of Twente, 2002, 2010\n\n");
+        result.append("\n(c) University of Twente, 2002, 2011\n\n");
         result.append("Libraries used: \n* ");
-        //        result.append(getCastorText());
-        //        result.append("\n* ");
-        //        result.append(getXercesText());
-        //        result.append("\n* ");
         result.append(getJGraphText());
         result.append("\n");
         return result.toString();
     }
-
-    //
-    //    /** Returns a description of the Castor component. */
-    //    private String getCastorText() {
-    //        return "Castor " + org.exolab.castor.util.Version.getBuildVersion();
-    //    }
-    //
-    //    /** Returns a description of the Xerces component. */
-    //    private String getXercesText() {
-    //        return org.apache.xerces.impl.Version.getVersion();
-    //    }
 
     /** Returns a description of the JGraph component. */
     private String getJGraphText() {
