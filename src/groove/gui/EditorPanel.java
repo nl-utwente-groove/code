@@ -45,6 +45,7 @@ public class EditorPanel extends JPanel {
     public EditorPanel(Simulator simulator, final AspectGraph graph,
             boolean fresh) {
         setName(graph.getName());
+        setFocusCycleRoot(true);
         this.simulator = simulator;
         this.options = simulator.getOptions();
         this.editor =

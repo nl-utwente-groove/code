@@ -1068,14 +1068,18 @@ public class Groove {
         }
     }
 
-    /** Prints the own-code part of the stack trace to the given output. */
-    static public void printStackTrace(PrintStream out) {
+    /** Prints the own-code part of the stack trace to the given output. 
+     * @param allLines if {@code true}, print all lines, otherwise just
+     * those that are in own code
+     */
+    static public void printStackTrace(PrintStream out, boolean allLines) {
         StackTraceElement[] stackTrace = new Exception().getStackTrace();
         String method = stackTrace[1].getMethodName();
         out.printf("%s called from: %n", method);
-        for (int myCode = 2; myCode < stackTrace.length
-            && stackTrace[myCode].getLineNumber() >= 0; myCode++) {
-            out.printf("  %s%n", stackTrace[myCode]);
+        for (int myCode = 2; myCode < stackTrace.length; myCode++) {
+            if (allLines || stackTrace[myCode].getLineNumber() >= 0) {
+                out.printf("  %s%n", stackTrace[myCode]);
+            }
         }
     }
 

@@ -310,7 +310,7 @@ public class StateJList extends JList implements SimulationListener {
      * refreshes the actions.
      */
     private void switchSimulatorToStatePanel() {
-        getSimulator().setGraphPanel(getSimulator().getStatePanel());
+        getSimulator().switchTabs(getSimulator().getStatePanel());
         getSimulator().refreshActions();
     }
 

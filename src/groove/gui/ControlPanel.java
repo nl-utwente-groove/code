@@ -82,6 +82,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         // create the layout for this JPanel
         this.setLayout(new BorderLayout());
         this.setFocusable(false);
+        this.setFocusCycleRoot(true);
         // fill in the GUI
         RTextScrollPane scroller =
             new RTextScrollPane(500, 400, getControlTextArea(), true);
@@ -126,12 +127,21 @@ public class ControlPanel extends JPanel implements SimulationListener {
      */
     private JButton createButton(Action action) {
         JButton result = new JButton(action);
+        result.setFocusable(false);
         if (action.getValue(Action.SMALL_ICON) == null) {
             result.setMargin(new Insets(4, 2, 4, 2));
         } else {
             result.setHideActionText(true);
         }
         return result;
+    }
+
+    @Override
+    public void setVisible(boolean aFlag) {
+        super.setVisible(aFlag);
+        if (aFlag && getControlTextArea() != null) {
+            getControlTextArea().requestFocus();
+        }
     }
 
     /**

@@ -291,7 +291,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         }
         // reset lts display visibility
         if (this.isVisible) {
-            getSimulator().setGraphPanel(this);
+            getSimulator().switchTabs(this);
         }
         Set<GraphJCell> jCells = new HashSet<GraphJCell>();
         for (GraphState counterExample : counterExamples) {
@@ -395,7 +395,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
                     && getSimulator().getStartSimulationAction().isEnabled()) {
                     getSimulator().startSimulation();
                 } else if (evt.isControlDown()) {
-                    getSimulator().setGraphPanel(getSimulator().getStatePanel());
+                    getSimulator().switchTabs(getSimulator().getStatePanel());
                 } else {
                     // scale from screen to model
                     java.awt.Point loc = evt.getPoint();
