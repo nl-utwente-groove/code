@@ -771,7 +771,7 @@ public class Simulator {
             // re-enable rule application
             getApplyTransitionAction().setEnabled(applyEnabled);
             // reset lts display visibility
-            setGraphPanel(getLtsPanel());
+            switchTabs(getLtsPanel());
         }
         LTSJGraph ltsJGraph = getLtsPanel().getJGraph();
         if (ltsJGraph.getLayouter() != null) {
@@ -1115,7 +1115,7 @@ public class Simulator {
             // re-enable rule application
             getApplyTransitionAction().setEnabled(applyEnabled);
             // reset lts display visibility
-            setGraphPanel(getLtsPanel());
+            switchTabs(getLtsPanel());
         }
         LTSJGraph ltsJGraph = getLtsPanel().getJGraph();
         if (ltsJGraph.getLayouter() != null) {
@@ -1504,7 +1504,7 @@ public class Simulator {
 
     /** Creates a tool bar for the rule tree. */
     private JToolBar createRuleTreeToolBar() {
-        JToolBar result = new JToolBar();
+        JToolBar result = createToolBar();
         result.setFloatable(false);
         result.add(getNewRuleAction());
         result.add(getEditRuleAction());
@@ -1549,7 +1549,7 @@ public class Simulator {
 
     /** Creates a tool bar for the rule tree. */
     private JToolBar createStatesListToolBar() {
-        JToolBar result = new JToolBar();
+        JToolBar result = createToolBar();
         result.setFloatable(false);
         result.add(getNewGraphAction());
         result.add(getEditGraphAction());
@@ -1561,6 +1561,18 @@ public class Simulator {
         result.add(getSetStartGraphAction());
         // make sure tool tips get displayed
         ToolTipManager.sharedInstance().registerComponent(result);
+        return result;
+    }
+
+    private JToolBar createToolBar() {
+        JToolBar result = new JToolBar() {
+            @Override
+            protected JButton createActionComponent(Action a) {
+                JButton result = super.createActionComponent(a);
+                result.setFocusable(false);
+                return result;
+            }
+        };
         return result;
     }
 
@@ -1601,7 +1613,7 @@ public class Simulator {
                                         break;
                                     }
                                 }
-                                setGraphPanel(panel);
+                                switchTabs(panel);
                             }
                         } else if (error.getControl() != null) {
                             getControlPanel().setSelectedControl(
@@ -1641,7 +1653,7 @@ public class Simulator {
     /**
      * Returns the simulator panel on which the current state is displayed. Note
      * that this panel may currently not be visible.
-     * @see #setGraphPanel(JGraphPanel)
+     * @see #switchTabs(JGraphPanel)
      */
     public StatePanel getStatePanel() {
         if (this.statePanel == null) {
@@ -1663,7 +1675,7 @@ public class Simulator {
     /**
      * Returns the simulator panel on which the currently selected production
      * rule is displayed. Note that this panel may currently not be visible.
-     * @see #setGraphPanel(JGraphPanel)
+     * @see #switchTabs(JGraphPanel)
      */
     RulePanel getRulePanel() {
         if (this.rulePanel == null) {
@@ -1679,7 +1691,7 @@ public class Simulator {
      * Returns the simulator panel on which the LTS. Note that: - this panel may
      * currently not be visible. - this panel is always contained in the
      * ConditionalLTSPanel.
-     * @see #setGraphPanel(JGraphPanel)
+     * @see #switchTabs(JGraphPanel)
      */
     LTSPanel getLtsPanel() {
         if (this.ltsPanel == null) {
@@ -1704,7 +1716,7 @@ public class Simulator {
     /**
      * Returns the simulator panel on which the current state is displayed. Note
      * that this panel may currently not be visible.
-     * @see #setGraphPanel(JGraphPanel)
+     * @see #switchTabs(JGraphPanel)
      */
     TypePanel getTypePanel() {
         if (this.typePanel == null) {
@@ -1749,7 +1761,7 @@ public class Simulator {
      * @see #getStatePanel()
      * @see #getRulePanel()
      * @see #getLtsPanel()
-     * @see #setGraphPanel(JGraphPanel)
+     * @see #switchTabs(JGraphPanel)
      */
     JGraphPanel<?> getGraphPanel() {
         Component selectedComponent =
@@ -1775,10 +1787,21 @@ public class Simulator {
      * @see #getLtsPanel()
      * @see #getGraphPanel()
      */
-    public void setGraphPanel(JGraphPanel<?> component) {
+    public void switchTabs(JGraphPanel<?> component) {
         if (getSimulatorPanel().indexOfComponent(component) >= 0) {
+            this.switchingTabs = true;
             getSimulatorPanel().setSelectedComponent(component);
+            this.switchingTabs = false;
         }
+    }
+
+    /**
+     * Indicates that the simulator is processing a 
+     * {@link #switchTabs(JGraphPanel)}.
+     * This may affect the newly selected component's behaviour. 
+     */
+    public boolean isSwitchingTabs() {
+        return this.switchingTabs;
     }
 
     /**
@@ -2693,6 +2716,9 @@ public class Simulator {
 
     /** Flag to indicate that one of the simulation events is underway. */
     private boolean updating;
+
+    /** Flag to indicate that a {@link #switchTabs(JGraphPanel)} request is underway. */
+    private boolean switchingTabs;
 
     /** Flag to indicate that the Simulator is in abstraction mode. */
     private boolean isAbstractionMode = false;

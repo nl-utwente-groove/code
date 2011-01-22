@@ -511,7 +511,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
      */
     @Override
     public void setModel(GraphModel model) {
-        if (model instanceof GraphJModel<?,?>) {
+        if (model == null || model instanceof GraphJModel<?,?>) {
             GraphJModel<?,?> jModel = (GraphJModel<?,?>) model;
             if (getModel() != null) {
                 if (this.layouter != null) {
@@ -523,7 +523,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
             }
             super.setModel(jModel);
             getLabelTree().updateModel();
-            if (this.layouter != null) {
+            if (model != null && this.layouter != null) {
                 int layoutCount = freeze();
                 if (layoutCount > 0) {
                     Layouter layouter =
@@ -542,7 +542,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
                     }, MAX_LAYOUT_DURATION);
                 }
             }
-            setEnabled(true);
+            setEnabled(model != null);
         }
     }
 

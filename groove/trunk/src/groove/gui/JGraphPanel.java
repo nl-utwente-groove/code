@@ -32,6 +32,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
@@ -75,23 +77,11 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     public JGraphPanel(JG jGraph, boolean withStatusBar, Options options) {
         super(false);
         setFocusable(false);
+        setFocusCycleRoot(true);
         // right now we always want label panels; keep this option
         this.jGraph = jGraph;
         this.options = options;
         this.statusBar = withStatusBar ? new JLabel(" ") : null;
-        this.jGraph.addGraphSelectionListener(new GraphSelectionListener() {
-            @Override
-            public void valueChanged(GraphSelectionEvent e) {
-                getLabelTree().clearSelection();
-            }
-        });
-        getJGraph().addJGraphModeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                getScrollPane().setWheelScrollingEnabled(
-                    evt.getNewValue() != PAN_MODE);
-            }
-        });
     }
 
     /** 
@@ -105,6 +95,16 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         JToolBar toolBar = createToolBar();
         if (toolBar != null) {
             toolBar.setFloatable(false);
+            // ensure the JGraph gets focus as soon as the graph panel
+            // is clicked anywhere
+            // for reasons not clear to me, mouse listeners do not work on
+            // the level of the JGraphPanel
+            toolBar.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    getJGraph().requestFocus();
+                }
+            });
             add(toolBar, BorderLayout.NORTH);
             // add all menu actions as key accelerators to the JGraph
             for (int i = 0; i < toolBar.getComponentCount(); i++) {
@@ -122,7 +122,25 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         if (this.statusBar != null) {
             add(this.statusBar, BorderLayout.SOUTH);
         }
+        installListeners();
+    }
+
+    /** Callback method that adds the required listeners to this panel. */
+    protected void installListeners() {
         addRefreshListener(Options.SHOW_BACKGROUND_OPTION);
+        getJGraph().addGraphSelectionListener(new GraphSelectionListener() {
+            @Override
+            public void valueChanged(GraphSelectionEvent e) {
+                getLabelTree().clearSelection();
+            }
+        });
+        getJGraph().addJGraphModeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                getScrollPane().setWheelScrollingEnabled(
+                    evt.getNewValue() != PAN_MODE);
+            }
+        });
     }
 
     /** Creates a tool bar for this JGraphPanel.
@@ -133,6 +151,14 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         result.add(getJGraph().getModeButton(SELECT_MODE));
         result.add(getJGraph().getModeButton(PAN_MODE));
         return result;
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        // the JGraphPanel itself is not focusable
+        // but when it is made visible, the JGraph inside should get focus
+        super.setVisible(visible);
+        getJGraph().requestFocus();
     }
 
     /**

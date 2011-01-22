@@ -165,7 +165,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         loadViewErrors();
         if (GUI_DEBUG) {
             System.out.printf("Graph resynchronised with model %s%n", getName());
-            Groove.printStackTrace(System.out);
+            Groove.printStackTrace(System.out, false);
         }
     }
 
@@ -319,7 +319,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         }
         if (GUI_DEBUG) {
             System.out.printf("Firing graph change in %s%n", getName());
-            Groove.printStackTrace(System.out);
+            Groove.printStackTrace(System.out, false);
         }
         super.fireGraphChanged(source, edit);
     }

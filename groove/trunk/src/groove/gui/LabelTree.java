@@ -243,11 +243,13 @@ public class LabelTree extends JTree implements GraphModelListener,
         }
         this.jmodel = this.jgraph.getModel();
         this.labelCellMap.clear();
-        this.jmodel.addGraphModelListener(this);
-        for (int i = 0; i < this.jmodel.getRootCount(); i++) {
-            GraphJCell cell = (GraphJCell) this.jmodel.getRootAt(i);
-            if (isListable(cell)) {
-                addToLabels(cell);
+        if (this.jmodel != null) {
+            this.jmodel.addGraphModelListener(this);
+            for (int i = 0; i < this.jmodel.getRootCount(); i++) {
+                GraphJCell cell = (GraphJCell) this.jmodel.getRootAt(i);
+                if (isListable(cell)) {
+                    addToLabels(cell);
+                }
             }
         }
         updateTree();

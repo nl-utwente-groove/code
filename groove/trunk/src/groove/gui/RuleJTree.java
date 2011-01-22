@@ -118,6 +118,11 @@ public class RuleJTree extends JTree implements SimulationListener {
             @Override
             public void focusGained(FocusEvent e) {
                 RuleJTree.this.repaint();
+            }
+        });
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
                 triggerSelectionUpdate();
             }
         });
@@ -587,7 +592,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * refreshes the actions.
      */
     void switchSimulatorToRulePanel() {
-        getSimulator().setGraphPanel(getSimulator().getRulePanel());
+        getSimulator().switchTabs(getSimulator().getRulePanel());
         getSimulator().refreshActions();
     }
 
@@ -635,7 +640,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                     getSimulator().setEvent(event);
                 }
                 if (getSimulator().getGraphPanel() == getSimulator().getRulePanel()) {
-                    getSimulator().setGraphPanel(getSimulator().getStatePanel());
+                    getSimulator().switchTabs(getSimulator().getStatePanel());
                 }
             }
         }
