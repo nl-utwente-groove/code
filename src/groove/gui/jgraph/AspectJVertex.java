@@ -1,5 +1,6 @@
 package groove.gui.jgraph;
 
+import static groove.util.Converter.ITALIC_TAG;
 import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
@@ -213,6 +214,18 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             }
         }
         return result;
+    }
+
+    @Override
+    protected List<StringBuilder> getNodeIdLines() {
+        if (getNode().hasId()) {
+            List<StringBuilder> result = new ArrayList<StringBuilder>();
+            result.add(ITALIC_TAG.on(new StringBuilder(
+                getNode().getId().getContentString())));
+            return result;
+        } else {
+            return super.getNodeIdLines();
+        }
     }
 
     /** Returns lines describing any data content of the JVertex. */

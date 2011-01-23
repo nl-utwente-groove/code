@@ -196,7 +196,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      * according to the current setting.
      * @see GraphJGraph#isShowNodeIdentities()
      */
-    final protected List<StringBuilder> getNodeIdLines() {
+    protected List<StringBuilder> getNodeIdLines() {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
         if (getJGraph().isShowNodeIdentities()) {
             String id = getNodeIdString();

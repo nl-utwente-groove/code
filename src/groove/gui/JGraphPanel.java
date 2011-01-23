@@ -28,6 +28,7 @@ import groove.gui.jgraph.GraphJModel;
 import groove.util.Pair;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -92,8 +93,9 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         // error panel, and an optional status bar.
         setLayout(new BorderLayout());
         add(createMainPane());
-        JToolBar toolBar = constructToolBar();
+        JToolBar toolBar = createToolBar();
         if (toolBar != null) {
+            processToolBar(toolBar);
             add(toolBar, BorderLayout.NORTH);
         }
         if (this.statusBar != null) {
@@ -120,44 +122,41 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         });
     }
 
-    /**
-     * Creates and fills a tool bar for this JGraphPanel.
-     * If the method returns {@code null}, no tool bar is used.
+    /** Post-processes an already constructed toolbar.
      */
-    protected JToolBar constructToolBar() {
-        JToolBar result = createToolBar();
-        result.add(getJGraph().getModeButton(SELECT_MODE));
-        result.add(getJGraph().getModeButton(PAN_MODE));
-        return result;
-    }
-
-    /** 
-     * Callback factory method to create a tool bar object.
-     * This implementation makes sure that all buttons are unfocusable,
-     * and that all actions added to the tool bar are also added as 
-     * keyboard accelerators to the JGraph.
-     */
-    protected JToolBar createToolBar() {
-        JToolBar result = new JToolBar() {
-            @Override
-            public JButton add(Action a) {
-                JButton result = super.add(a);
-                result.setFocusable(false);
-                getJGraph().addAccelerator(a);
-                return result;
+    private void processToolBar(JToolBar toolBar) {
+        toolBar.setFloatable(false);
+        for (int i = 0; i < toolBar.getComponentCount(); i++) {
+            Component element = toolBar.getComponent(i);
+            if (element instanceof JButton) {
+                JButton button = (JButton) element;
+                button.setFocusable(false);
+                Action action = button.getAction();
+                if (action != null) {
+                    getJGraph().addAccelerator(action);
+                }
             }
-        };
-        result.setFloatable(false);
+        }
         // ensure the JGraph gets focus as soon as the graph panel
         // is clicked anywhere
         // for reasons not clear to me, mouse listeners do not work on
         // the level of the JGraphPanel
-        result.addMouseListener(new MouseAdapter() {
+        toolBar.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 getJGraph().requestFocus();
             }
         });
+    }
+
+    /**
+     * Creates and fills a tool bar for this JGraphPanel.
+     * If the method returns {@code null}, no tool bar is used.
+     */
+    protected JToolBar createToolBar() {
+        JToolBar result = new JToolBar();
+        result.add(getJGraph().getModeButton(SELECT_MODE));
+        result.add(getJGraph().getModeButton(PAN_MODE));
         return result;
     }
 

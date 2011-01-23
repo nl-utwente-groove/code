@@ -31,6 +31,7 @@ import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -194,6 +195,12 @@ public class DefaultTypeView implements TypeView {
             TypeNode typeNode = this.typeNodeMap.get(modelLabel);
             if (typeNode == null) {
                 typeNode = new TypeNode(viewNode.getNumber(), modelLabel);
+                if (viewNode.getKind() == ABSTRACT) {
+                    typeNode.setAbstract();
+                }
+                if (viewNode.hasColor()) {
+                    typeNode.setColor((Color) viewNode.getColor().getContent());
+                }
                 this.model.addNode(typeNode);
                 this.typeNodeMap.put(modelLabel, typeNode);
                 this.modelTypeMap.put(typeNode, modelLabel);

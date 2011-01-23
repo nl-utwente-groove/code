@@ -75,7 +75,6 @@ import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -600,8 +599,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                     new JGraphPanel<AspectJGraph>(this.jgraph, false,
                         getOptions()) {
                         @Override
-                        protected JToolBar constructToolBar() {
-                            return Editor.this.computeToolBar();
+                        protected JToolBar createToolBar() {
+                            return Editor.this.createToolBar();
                         }
                     };
             result.initialise();
@@ -718,33 +717,14 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /**
      * Creates and returns the tool bar.
      */
-    JToolBar computeToolBar() {
-        JToolBar result = createToolBar();
+    JToolBar createToolBar() {
+        JToolBar result = new JToolBar();
         addFileButtons(result);
         addTypeButtons(result);
         addModeButtons(result);
         addUndoButtons(result);
         addCopyPasteButtons(result);
         addGridButtons(result);
-        return result;
-    }
-
-    /**
-     * Callback method to create a toolbar that
-     * sets all buttons to non-focusable and adds keyboard accelerators
-     * to the JGraph.
-     */
-    JToolBar createToolBar() {
-        JToolBar result = new JToolBar() {
-            @Override
-            public JButton add(Action a) {
-                JButton result = super.add(a);
-                result.setFocusable(false);
-                getJGraph().addAccelerator(a);
-                return result;
-            }
-        };
-        result.setFloatable(false);
         return result;
     }
 

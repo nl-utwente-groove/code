@@ -17,7 +17,9 @@
 package groove.view.aspect;
 
 import static groove.view.aspect.AspectKind.ABSTRACT;
+import static groove.view.aspect.AspectKind.COLOR;
 import static groove.view.aspect.AspectKind.EMBARGO;
+import static groove.view.aspect.AspectKind.ID;
 import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.PRODUCT;
 import static groove.view.aspect.AspectKind.READER;
@@ -211,10 +213,6 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         assert value.isForNode(getGraphRole()) : String.format(
             "Inappropriate node aspect %s", value, this);
         AspectKind kind = value.getKind();
-        //        if (!kind.isForNode(getGraphRole())) {
-        //            throw new FormatException("Aspect %s is not allowed on nodes",
-        //                value, this);
-        //        } else 
         if (kind.isAttrKind()) {
             if (hasAttrAspect()) {
                 throw new FormatException("Conflicting node aspects %s and %s",
@@ -236,6 +234,10 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         } else if (kind.isRole() && value.getContent() != null) {
             throw new FormatException(
                 "Node aspect %s should not have quantifier name", value, this);
+        } else if (kind == ID) {
+            setId(value);
+        } else if (kind == COLOR) {
+            setColor(value);
         } else {
             setAspect(value);
         }
@@ -448,6 +450,46 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         return this.param != null;
     }
 
+    /** Sets the identifier aspect of this node. */
+    private void setId(Aspect id) throws FormatException {
+        assert id.getKind() == ID : String.format(
+            "Aspect %s is not an identifier", id);
+        if (this.id != null) {
+            throw new FormatException("Duplicate node identifier");
+        }
+        this.id = id;
+    }
+
+    /** Returns the identifier aspect of this node, if any. */
+    public Aspect getId() {
+        return this.id;
+    }
+
+    /** Indicates if this node has an identifier. */
+    public boolean hasId() {
+        return this.id != null;
+    }
+
+    /** Sets the colour aspect of this node. */
+    private void setColor(Aspect color) throws FormatException {
+        assert color.getKind() == COLOR : String.format(
+            "Aspect %s is not a color", color);
+        if (this.color != null) {
+            throw new FormatException("Duplicate colour specification");
+        }
+        this.color = color;
+    }
+
+    /** Returns the colour aspect of this node, if any. */
+    public Aspect getColor() {
+        return this.color;
+    }
+
+    /** Indicates if this node has an colour. */
+    public boolean hasColor() {
+        return this.color != null;
+    }
+
     /** Returns the parameter kind of this node, if any. */
     public AspectKind getParamKind() {
         assert hasParam();
@@ -532,6 +574,10 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     private Aspect attr;
     /** The parameter aspect of this node, if any. */
     private Aspect param;
+    /** The identifier aspect of this node, if any. */
+    private Aspect id;
+    /** The colour aspect of this node, if any. */
+    private Aspect color;
     /** The aspect node representing the nesting level of this node. */
     private AspectNode nestingLevel;
     /** The aspect node representing the parent of this node in the nesting

@@ -55,6 +55,7 @@ public class LabelStore extends DefaultFixable implements Cloneable {
                 addSubtype(dirSubEntry.getKey(), subtype);
             }
         }
+        this.colorMap.putAll(other.colorMap);
     }
 
     /** Adds a label to the set of known labels. */
@@ -508,6 +509,12 @@ public class LabelStore extends DefaultFixable implements Cloneable {
                     (int) (Math.random() * 256), (int) (Math.random() * 256)));
         }
         return result;
+    }
+
+    /** Associates a colour with a node type label. */
+    public void setColor(TypeLabel label, Color colour) {
+        assert label.isNodeType();
+        this.colorMap.put(label, colour);
     }
 
     @Override

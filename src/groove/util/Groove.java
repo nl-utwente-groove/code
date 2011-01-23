@@ -864,11 +864,25 @@ public class Groove {
      * space-separated sub-strings, or does not convert to <tt>int</tt> values.
      */
     static public int[] toIntArray(String text) {
+        return toIntArray(text, null);
+    }
+
+    /**
+     * Converts a delimiter-separated string value to an <tt>int</tt> array. Returns
+     * <tt>null</tt> if the string is <tt>null</tt>, does not decompose into
+     * space-separated sub-strings, or does not convert to <tt>int</tt> values.
+     * @param text the text to be decomposed
+     * @param delims string consisting of characters that will be considered delimiters.
+     * If {@code null}, all whitespace characters are considered delimiters 
+     */
+    static public int[] toIntArray(String text, String delims) {
         if (text == null) {
             return null;
         }
         try {
-            StringTokenizer tokenizer = new StringTokenizer(text);
+            StringTokenizer tokenizer =
+                delims == null ? new StringTokenizer(text)
+                        : new StringTokenizer(text, delims);
             int[] result = new int[tokenizer.countTokens()];
             int count = 0;
             while (tokenizer.hasMoreTokens()) {
