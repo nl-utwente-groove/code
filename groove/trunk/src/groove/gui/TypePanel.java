@@ -78,9 +78,8 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
     }
 
     @Override
-    protected JToolBar createToolBar() {
-        JToolBar result = new JToolBar();
-        result.setFloatable(false);
+    protected JToolBar constructToolBar() {
+        JToolBar result = createToolBar();
         result.add(createButton(getNewAction()));
         result.add(createButton(getEditAction()));
         result.addSeparator();

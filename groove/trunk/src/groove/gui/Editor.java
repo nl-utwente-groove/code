@@ -600,7 +600,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                     new JGraphPanel<AspectJGraph>(this.jgraph, false,
                         getOptions()) {
                         @Override
-                        protected JToolBar createToolBar() {
+                        protected JToolBar constructToolBar() {
                             return Editor.this.computeToolBar();
                         }
                     };
@@ -702,8 +702,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         result.setMnemonic(Options.DISPLAY_MENU_MNEMONIC);
         result.add(getSnapToGridAction());
         this.jgraph.addSubmenu(result, this.jgraph.createDisplayMenu());
-        result.addSeparator();
-        result.add(getGraphPanel().getViewLabelListItem());
         return result;
     }
 

@@ -56,7 +56,7 @@ import javax.swing.JToolBar;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class RulePanel extends JGraphPanel<AspectJGraph> implements
+final public class RulePanel extends JGraphPanel<AspectJGraph> implements
         SimulationListener {
     /** Frame name when no rule is selected. */
     protected static final String INITIAL_FRAME_NAME = "No rule selected";
@@ -68,36 +68,40 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
         super(new AspectJGraph(simulator, GraphRole.RULE), true,
             simulator.getOptions());
         this.simulator = simulator;
-        addRefreshListener(SHOW_ANCHORS_OPTION);
-        addRefreshListener(SHOW_ASPECTS_OPTION);
-        addRefreshListener(SHOW_NODE_IDS_OPTION);
-        addRefreshListener(SHOW_REMARKS_OPTION);
-        addRefreshListener(SHOW_VALUE_NODES_OPTION);
-        simulator.addSimulationListener(this);
-        this.jGraph.setToolTipEnabled(true);
-        getJGraph().getLabelTree().addLabelStoreObserver(new Observer() {
-            @Override
-            public void update(Observable o, Object arg) {
-                assert arg instanceof LabelStore;
-                SystemProperties newProperties =
-                    simulator.getGrammarView().getProperties().clone();
-                newProperties.setSubtypes(((LabelStore) arg).toDirectSubtypeString());
-                simulator.doSaveProperties(newProperties);
-            }
-        });
         initialise();
     }
 
     @Override
-    protected JToolBar createToolBar() {
-        JToolBar result = new JToolBar();
-        result.setFloatable(false);
+    protected JToolBar constructToolBar() {
+        JToolBar result = createToolBar();
         result.add(this.simulator.getNewRuleAction());
         result.add(this.simulator.getEditRuleAction());
         result.addSeparator();
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
         return result;
+    }
+
+    @Override
+    protected void installListeners() {
+        super.installListeners();
+        this.simulator.addSimulationListener(this);
+        addRefreshListener(SHOW_ANCHORS_OPTION);
+        addRefreshListener(SHOW_ASPECTS_OPTION);
+        addRefreshListener(SHOW_NODE_IDS_OPTION);
+        addRefreshListener(SHOW_REMARKS_OPTION);
+        addRefreshListener(SHOW_VALUE_NODES_OPTION);
+        getJGraph().setToolTipEnabled(true);
+        getJGraph().getLabelTree().addLabelStoreObserver(new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                assert arg instanceof LabelStore;
+                SystemProperties newProperties =
+                    RulePanel.this.simulator.getGrammarView().getProperties().clone();
+                newProperties.setSubtypes(((LabelStore) arg).toDirectSubtypeString());
+                RulePanel.this.simulator.doSaveProperties(newProperties);
+            }
+        });
     }
 
     /**
