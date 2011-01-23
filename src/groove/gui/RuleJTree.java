@@ -278,6 +278,19 @@ public class RuleJTree extends JTree implements SimulationListener {
         super.setEnabled(enabled);
     }
 
+    /** 
+     * Sets the selection to a rule with a given name.
+     * If the rule does not exist, merely switches the simulator to rule view.
+     */
+    public void setSelectedRule(RuleName rule) {
+        RuleTreeNode ruleNode = this.ruleNodeMap.get(rule);
+        if (ruleNode == null) {
+            switchSimulatorToRulePanel();
+        } else {
+            setSelectionPath(new TreePath(ruleNode.getPath()));
+        }
+    }
+
     /** Returns the list of currently selected rule names. */
     public List<RuleView> getSelectedRules() {
         List<RuleView> result = new ArrayList<RuleView>();
@@ -375,7 +388,7 @@ public class RuleJTree extends JTree implements SimulationListener {
             setSelectionPath(new TreePath(treeNode.getPath()));
         }
         setEnabled(this.displayedGrammar != null);
-        setBackground(getCurrentGTS() == null ? null : TREE_ENABLED_COLOR);
+        //        setBackground(getCurrentGTS() == null ? null : TREE_ENABLED_COLOR);
         this.listenToSelectionChanges = oldListenToSelectionChanges;
     }
 

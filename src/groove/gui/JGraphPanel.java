@@ -153,14 +153,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         return result;
     }
 
-    @Override
-    public void setVisible(boolean visible) {
-        // the JGraphPanel itself is not focusable
-        // but when it is made visible, the JGraph inside should get focus
-        super.setVisible(visible);
-        getJGraph().requestFocus();
-    }
-
     /**
      * Returns a menu item that allows to switch the label list view on and off.
      */
@@ -224,6 +216,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     public void setEnabled(boolean enabled) {
         this.jGraph.setEnabled(enabled);
         this.statusBar.setEnabled(enabled);
+        this.labelTree.setEnabled(enabled);
         super.setEnabled(enabled);
     }
 

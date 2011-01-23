@@ -94,15 +94,33 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
             simulator.getOptions());
         this.simulator = simulator;
         initialise();
-        simulator.addSimulationListener(this);
-        simulator.getStateList().addListSelectionListener(this);
+        getJGraph().setToolTipEnabled(true);
+        setEnabled(false);
+    }
+
+    @Override
+    protected JToolBar createToolBar() {
+        JToolBar result = new JToolBar();
+        result.add(this.simulator.getNewGraphAction());
+        result.add(this.simulator.getEditGraphAction());
+        result.add(this.simulator.getSaveGraphAction());
+        result.addSeparator();
+        result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
+        result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
+        return result;
+    }
+
+    @Override
+    protected void installListeners() {
+        super.installListeners();
+        this.simulator.addSimulationListener(this);
+        this.simulator.getStateList().addListSelectionListener(this);
         addRefreshListener(SHOW_NODE_IDS_OPTION);
         addRefreshListener(SHOW_ASPECTS_OPTION);
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_REMARKS_OPTION);
         addRefreshListener(SHOW_VALUE_NODES_OPTION);
         addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
-        getJGraph().setToolTipEnabled(true);
         // make sure that removals from the selection model
         // also deselect the match
         getJGraph().addGraphSelectionListener(new GraphSelectionListener() {
@@ -127,29 +145,16 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
             public void update(Observable o, Object arg) {
                 assert arg instanceof LabelStore;
                 final SystemProperties newProperties =
-                    simulator.getGrammarView().getProperties().clone();
+                    StatePanel.this.simulator.getGrammarView().getProperties().clone();
                 newProperties.setSubtypes(((LabelStore) arg).toDirectSubtypeString());
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        simulator.doSaveProperties(newProperties);
+                        StatePanel.this.simulator.doSaveProperties(newProperties);
                     }
                 });
             }
         });
-        setEnabled(false);
-    }
-
-    @Override
-    protected JToolBar createToolBar() {
-        JToolBar result = new JToolBar();
-        result.add(this.simulator.getNewGraphAction());
-        result.add(this.simulator.getEditGraphAction());
-        result.add(this.simulator.getSaveGraphAction());
-        result.addSeparator();
-        result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
-        result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
-        return result;
     }
 
     /**

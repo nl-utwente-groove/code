@@ -68,7 +68,6 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements
         super(new AspectJGraph(simulator, GraphRole.RULE), true,
             simulator.getOptions());
         this.simulator = simulator;
-        setEnabled(false);
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_ASPECTS_OPTION);
         addRefreshListener(SHOW_NODE_IDS_OPTION);
