@@ -28,7 +28,6 @@ import groove.gui.jgraph.GraphJModel;
 import groove.util.Pair;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -43,7 +42,6 @@ import javax.accessibility.AccessibleState;
 import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -89,35 +87,14 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      * Should be called immediately after the constructor.
      */
     public void initialise() {
-        boolean withLabelPanel = true;
+        // a JGraphPanel consists of an optional tool bar,
+        // a main pane containing the graph, label tree and (possibly)
+        // error panel, and an optional status bar.
         setLayout(new BorderLayout());
-        this.setPane(withLabelPanel ? createSplitPane() : this.createSoloPane());
-        JToolBar toolBar = createToolBar();
+        add(createMainPane());
+        JToolBar toolBar = constructToolBar();
         if (toolBar != null) {
-            toolBar.setFloatable(false);
-            // ensure the JGraph gets focus as soon as the graph panel
-            // is clicked anywhere
-            // for reasons not clear to me, mouse listeners do not work on
-            // the level of the JGraphPanel
-            toolBar.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    getJGraph().requestFocus();
-                }
-            });
             add(toolBar, BorderLayout.NORTH);
-            // add all menu actions as key accelerators to the JGraph
-            for (int i = 0; i < toolBar.getComponentCount(); i++) {
-                Component component = toolBar.getComponent(i);
-                if (component instanceof JButton) {
-                    JButton button = (JButton) component;
-                    button.setFocusable(false);
-                    Action action = button.getAction();
-                    if (action != null) {
-                        getJGraph().addAccelerator(action);
-                    }
-                }
-            }
         }
         if (this.statusBar != null) {
             add(this.statusBar, BorderLayout.SOUTH);
@@ -143,36 +120,98 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         });
     }
 
-    /** Creates a tool bar for this JGraphPanel.
+    /**
+     * Creates and fills a tool bar for this JGraphPanel.
      * If the method returns {@code null}, no tool bar is used.
      */
-    protected JToolBar createToolBar() {
-        JToolBar result = new JToolBar();
+    protected JToolBar constructToolBar() {
+        JToolBar result = createToolBar();
         result.add(getJGraph().getModeButton(SELECT_MODE));
         result.add(getJGraph().getModeButton(PAN_MODE));
         return result;
     }
 
-    /**
-     * Returns a menu item that allows to switch the label list view on and off.
+    /** 
+     * Callback factory method to create a tool bar object.
+     * This implementation makes sure that all buttons are unfocusable,
+     * and that all actions added to the tool bar are also added as 
+     * keyboard accelerators to the JGraph.
      */
-    public JMenuItem getViewLabelListItem() {
-        if (this.viewLabelListItem == null) {
-            this.viewLabelListItem = new JCheckBoxMenuItem("Label list", true);
-            this.viewLabelListItem.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent evt) {
-                    if (evt.getStateChange() == ItemEvent.SELECTED) {
-                        setPane(createSplitPane());
-                        // splitEditorPane.revalidate();
-                    } else {
-                        setPane(createSoloPane());
-                        // realEditorPane.revalidate();
-                    }
-                    revalidate();
-                }
-            });
+    protected JToolBar createToolBar() {
+        JToolBar result = new JToolBar() {
+            @Override
+            public JButton add(Action a) {
+                JButton result = super.add(a);
+                result.setFocusable(false);
+                getJGraph().addAccelerator(a);
+                return result;
+            }
+        };
+        result.setFloatable(false);
+        // ensure the JGraph gets focus as soon as the graph panel
+        // is clicked anywhere
+        // for reasons not clear to me, mouse listeners do not work on
+        // the level of the JGraphPanel
+        result.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                getJGraph().requestFocus();
+            }
+        });
+        return result;
+    }
+
+    /** Component on which the graph and the label tree are displayed. */
+    protected JComponent createMainPane() {
+        Box labelPaneTop = Box.createVerticalBox();
+        JLabel labelPaneTitle =
+            new JLabel(" " + Options.LABEL_PANE_TITLE + " ");
+        labelPaneTitle.setAlignmentX(LEFT_ALIGNMENT);
+        labelPaneTop.add(labelPaneTitle);
+        JToolBar labelTreeToolbar = getLabelTree().createToolBar();
+        if (labelTreeToolbar != null) {
+            labelTreeToolbar.setAlignmentX(LEFT_ALIGNMENT);
+            labelPaneTop.add(labelTreeToolbar);
         }
-        return this.viewLabelListItem;
+        JScrollPane labelScrollPane = new JScrollPane(getLabelTree()) {
+            @Override
+            public Dimension getMinimumSize() {
+                return new Dimension(MINIMUM_LABEL_PANE_WIDTH, 0);
+            }
+        };
+        JPanel labelPane = new JPanel(new BorderLayout(), false);
+        labelPane.add(labelPaneTop, BorderLayout.NORTH);
+        labelPane.add(labelScrollPane, BorderLayout.CENTER);
+        // set up the split editor pane
+        JSplitPane result =
+            new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, createGraphPane(),
+                labelPane);
+        result.setOneTouchExpandable(true);
+        result.setResizeWeight(1.0);
+        return result;
+    }
+
+    /**
+     * Creates and returns a new pane, on which only the jgraph is shown (and no
+     * label list).
+     */
+    protected JComponent createGraphPane() {
+        // set up the real editor pane
+        JScrollPane result = getScrollPane();
+        result.setDoubleBuffered(false);
+        result.setPreferredSize(new Dimension(500, 400));
+        return result;
+    }
+
+    /**
+     * Lazily creates and returns the scroll pane within which the {@link JGraph}
+     * is displayed.
+     */
+    protected JScrollPane getScrollPane() {
+        if (this.scrollPane == null) {
+            this.scrollPane = new JScrollPane(getJGraph());
+        }
+        return this.scrollPane;
     }
 
     /**
@@ -249,76 +288,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      */
     public void dispose() {
         removeOptionListeners();
-    }
-
-    /**
-     * Creates and returns a new pane, on which only the jgraph is shown (and no
-     * label list).
-     */
-    protected JComponent createSoloPane() {
-        // set up the real editor pane
-        JScrollPane result = getScrollPane();
-        result.setDoubleBuffered(false);
-        result.setPreferredSize(new Dimension(500, 400));
-        return result;
-    }
-
-    /**
-     * Creates and returns a new split pane, on which both the jgraph and label
-     * list are shown.
-     */
-    protected JComponent createSplitPane() {
-        Box labelPaneTop = Box.createVerticalBox();
-        JLabel labelPaneTitle =
-            new JLabel(" " + Options.LABEL_PANE_TITLE + " ");
-        labelPaneTitle.setAlignmentX(LEFT_ALIGNMENT);
-        labelPaneTop.add(labelPaneTitle);
-        JToolBar labelTreeToolbar = getLabelTree().createToolBar();
-        if (labelTreeToolbar != null) {
-            labelTreeToolbar.setAlignmentX(LEFT_ALIGNMENT);
-            labelPaneTop.add(labelTreeToolbar);
-        }
-        JScrollPane labelScrollPane = new JScrollPane(getLabelTree()) {
-            @Override
-            public Dimension getMinimumSize() {
-                return new Dimension(MINIMUM_LABEL_PANE_WIDTH, 0);
-            }
-        };
-        JPanel labelPane = new JPanel(new BorderLayout(), false);
-        labelPane.add(labelPaneTop, BorderLayout.NORTH);
-        labelPane.add(labelScrollPane, BorderLayout.CENTER);
-        // set up the split editor pane
-        JSplitPane result =
-            new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, createSoloPane(),
-                labelPane);
-        result.setOneTouchExpandable(true);
-        result.setResizeWeight(1.0);
-        return result;
-    }
-
-    /**
-     * Lazily creates and returns the scroll pane within which the {@link JGraph}
-     * is displayed.
-     */
-    protected JScrollPane getScrollPane() {
-        if (this.scrollPane == null) {
-            this.scrollPane = new JScrollPane(getJGraph());
-        }
-        return this.scrollPane;
-    }
-
-    /**
-     * Adds a given component as center component to the panel. Removes the
-     * previous pane, if any, and revalidates the panel. The current pane is
-     * stored in {@link #currentPane}.
-     */
-    protected void setPane(JComponent editorPane) {
-        if (this.currentPane != null) {
-            remove(this.currentPane);
-        }
-        add(editorPane, BorderLayout.CENTER);
-        this.currentPane = editorPane;
-        revalidate();
     }
 
     /**
@@ -430,17 +399,10 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      */
     private final JLabel statusBar;
 
-    /** The menu item to switch the label list on and off. */
-    private JMenuItem viewLabelListItem;
-
     private final List<Pair<JMenuItem,ItemListener>> listeners =
         new LinkedList<Pair<JMenuItem,ItemListener>>();
     /**
-     * The editor pane most recently installed by {@link #setPane}.
-     */
-    private JComponent currentPane;
-    /**
-     * The editor pane most recently installed by {@link #setPane}.
+     * The scroll pane in which the JGraph is displayed.
      */
     private JScrollPane scrollPane;
 

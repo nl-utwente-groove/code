@@ -66,8 +66,8 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     }
 
     @Override
-    protected JToolBar createToolBar() {
-        JToolBar result = new JToolBar();
+    protected JToolBar constructToolBar() {
+        JToolBar result = createToolBar();
         result.add(this.simulator.getStartSimulationAction());
         result.add(this.simulator.getDefaultExplorationAction());
         result.add(this.simulator.getSaveGraphAction());
