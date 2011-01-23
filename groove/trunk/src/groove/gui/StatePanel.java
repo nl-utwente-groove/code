@@ -317,6 +317,13 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         }
     }
 
+    /** Indicates if the panel is currently showing a state (rather than
+     * one of the host graphs in the grammar view).
+     */
+    public boolean isShowingState() {
+        return this.selectedState != null;
+    }
+
     /**
      * Changes the display to the graph with a given name, if there is such a
      * graph in the current grammar.
