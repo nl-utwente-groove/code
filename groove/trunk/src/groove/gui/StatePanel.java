@@ -99,8 +99,8 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     }
 
     @Override
-    protected JToolBar constructToolBar() {
-        JToolBar result = createToolBar();
+    protected JToolBar createToolBar() {
+        JToolBar result = new JToolBar();
         result.add(this.simulator.getNewGraphAction());
         result.add(this.simulator.getEditGraphAction());
         result.add(this.simulator.getSaveGraphAction());

@@ -16,6 +16,8 @@
  */
 package groove.graph;
 
+import java.awt.Color;
+
 /**
  * Node in a type graph.
  * As added functionality w.r.t. default nodes, a type node stores its type
@@ -104,8 +106,20 @@ public class TypeNode implements Node {
         this.abstractType = true;
     }
 
+    /** Returns the (possibly {@code null}) colour of this type node. */
+    public final Color getColor() {
+        return this.colour;
+    }
+
+    /** Sets the colour of this type node. */
+    public final void setColor(Color colour) {
+        this.colour = colour;
+    }
+
     /** Flag indicating if this edge type is abstract. */
     private boolean abstractType;
+    /** The display colour of this node, if any. */
+    private Color colour;
     /** The number of this node. */
     private final int nr;
     /** The type of this node. */

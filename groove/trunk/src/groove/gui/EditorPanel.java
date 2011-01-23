@@ -75,8 +75,8 @@ public class EditorPanel extends JPanel {
                 }
 
                 @Override
-                JToolBar computeToolBar() {
-                    JToolBar toolbar = createToolBar();
+                JToolBar createToolBar() {
+                    JToolBar toolbar = new JToolBar();
                     toolbar.add(getOkButton());
                     toolbar.add(getCancelButton());
                     addModeButtons(toolbar);

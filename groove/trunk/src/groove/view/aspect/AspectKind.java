@@ -22,9 +22,11 @@ import groove.algebra.Algebras;
 import groove.algebra.Constant;
 import groove.algebra.Operator;
 import groove.graph.GraphRole;
+import groove.util.Colors;
 import groove.util.Pair;
 import groove.view.FormatException;
 
+import java.awt.Color;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -106,7 +108,11 @@ public enum AspectKind {
     /** Existential quantifier. */
     EXISTS("exists", ContentKind.LEVEL),
     /** Nesting edge. */
-    NESTED("nested", ContentKind.NESTED);
+    NESTED("nested", ContentKind.NESTED),
+    /** Node identity. */
+    ID("id", ContentKind.NAME),
+    /** Node type colour. */
+    COLOR("color", ContentKind.COLOR);
 
     /** Creates a new aspect kind, without content. */
     private AspectKind(String name) {
@@ -360,14 +366,14 @@ public enum AspectKind {
                 allowedNodeKinds.put(role, EnumSet.of(REMARK, READER, ERASER,
                     CREATOR, ADDER, EMBARGO, UNTYPED, BOOL, INT, REAL, STRING,
                     PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, FORALL, FORALL_POS,
-                    EXISTS));
+                    EXISTS, ID));
                 allowedEdgeKinds.put(role, EnumSet.of(REMARK, READER, ERASER,
                     CREATOR, ADDER, EMBARGO, BOOL, INT, REAL, STRING, ARGUMENT,
                     PATH, LITERAL, FORALL, FORALL_POS, EXISTS, NESTED));
                 break;
             case TYPE:
-                allowedNodeKinds.put(role,
-                    EnumSet.of(NONE, REMARK, INT, BOOL, REAL, STRING, ABSTRACT));
+                allowedNodeKinds.put(role, EnumSet.of(NONE, REMARK, INT, BOOL,
+                    REAL, STRING, ABSTRACT, COLOR));
                 allowedEdgeKinds.put(role,
                     EnumSet.of(NONE, REMARK, ABSTRACT, SUBTYPE));
                 break;
@@ -409,23 +415,6 @@ public enum AspectKind {
                 return text;
             }
 
-            /**
-             * Indicates if a given character is allowed in level names. Currently
-             * allowed are: letters, digits, currency symbols, underscores and periods.
-             * @param c the character to be tested
-             */
-            private boolean isValidFirstChar(char c) {
-                return Character.isJavaIdentifierStart(c);
-            }
-
-            /**
-             * Indicates if a given character is allowed in level names. Currently
-             * allowed are: letters, digits, currency symbols, underscores and periods.
-             * @param c the character to be tested
-             */
-            private boolean isValidNextChar(char c) {
-                return Character.isJavaIdentifierPart(c);
-            }
         },
         /** 
          * String constant, used in a typed value aspect. 
@@ -563,6 +552,59 @@ public enum AspectKind {
                 }
                 return content;
             }
+        },
+        /** Colour name or RGB value. */
+        COLOR {
+            @Override
+            Pair<Object,String> parse(String text, int pos)
+                throws FormatException {
+                if (text.charAt(pos) != SEPARATOR) {
+                    throw new FormatException("Can't parse colour value");
+                }
+                return new Pair<Object,String>(
+                    parseContent(text.substring(pos + 1)), "");
+            }
+
+            @Override
+            Color parseContent(String text) throws FormatException {
+                Color result = Colors.findColor(text);
+                if (result == null) {
+                    throw new FormatException("Can't parse '%s' as colour",
+                        text);
+                }
+                return result;
+            }
+        },
+        /** Node identifier. */
+        NAME {
+            @Override
+            Pair<Object,String> parse(String text, int pos)
+                throws FormatException {
+                if (text.charAt(pos) != SEPARATOR) {
+                    throw new FormatException("Can't parse identifier");
+                }
+                return new Pair<Object,String>(
+                    parseContent(text.substring(pos + 1)), "");
+            }
+
+            @Override
+            String parseContent(String text) throws FormatException {
+                boolean reserved = true;
+                for (int i = 0; i < text.length(); i++) {
+                    char c = text.charAt(i);
+                    if (i == 0 ? !isValidFirstChar(c) : !isValidNextChar(c)) {
+                        throw new FormatException(
+                            "Invalid node identifier '%s'", text);
+                    }
+                    reserved &=
+                        i == 0 ? Character.isLetter(c) : Character.isDigit(c);
+                }
+                if (reserved) {
+                    throw new FormatException("Reserved node identifier '%s'",
+                        text);
+                }
+                return text;
+            }
         };
 
         /** Default, empty constructor. */
@@ -637,6 +679,14 @@ public enum AspectKind {
                 return ((Constant) content).getSymbol();
             } else if (content instanceof Operator) {
                 return ((Operator) content).getName();
+            } else if (content instanceof Color) {
+                Color color = (Color) content;
+                int red = color.getRed();
+                int green = color.getGreen();
+                int blue = color.getBlue();
+                int alpha = color.getAlpha();
+                String colorString = alpha == 255 ? "%s,%s,%s" : "%s,%s,%s,%s";
+                return String.format(colorString, red, green, blue, alpha);
             } else {
                 return "" + content;
             }
@@ -655,6 +705,24 @@ public enum AspectKind {
             } else {
                 return aspect.getPrefix() + toString(content);
             }
+        }
+
+        /**
+         * Indicates if a given character is allowed in level names. Currently
+         * allowed are: letters, digits, currency symbols, underscores and periods.
+         * @param c the character to be tested
+         */
+        static private boolean isValidFirstChar(char c) {
+            return Character.isJavaIdentifierStart(c);
+        }
+
+        /**
+         * Indicates if a given character is allowed in level names. Currently
+         * allowed are: letters, digits, currency symbols, underscores and periods.
+         * @param c the character to be tested
+         */
+        static private boolean isValidNextChar(char c) {
+            return Character.isJavaIdentifierPart(c);
         }
 
         private final String signature;

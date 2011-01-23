@@ -92,15 +92,13 @@ public class Colors {
         }
         // try decompose the color as a sequence of red green blue [alpha]
         int[] val = Groove.toIntArray(name);
-        // String[] values = name.split(" ");
-        if (val != null && val.length >= 3 && val.length <= 4) {
-            // int red = val[0];
-            // int green = Integer.parseInt(values[1]);
-            // int blue = Integer.parseInt(values[2]);
+        if (val == null) {
+            val = Groove.toIntArray(name, ",");
+        }
+        if (val != null) {
             if (val.length == 3) {
                 return new Color(val[0], val[1], val[2]);
-            } else {
-                // int alpha = Integer.parseInt(values[3]);
+            } else if (val.length == 4) {
                 return new Color(val[0], val[1], val[2], val[3]);
             }
         }
