@@ -20,6 +20,7 @@ import groove.control.ControlView;
 import groove.control.CtrlAut;
 import groove.control.parse.CtrlTokenMaker;
 import groove.gui.jgraph.CtrlJGraph;
+import groove.gui.jgraph.JAttr;
 import groove.io.SystemStore;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -279,6 +280,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         } else {
             assert !isDirty();
         }
+        getControlTextArea().setBackground(JAttr.EDITOR_BACKGROUND);
         return result;
     }
 
@@ -289,6 +291,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
     private void startEditing() {
         assert !isEditing();
         this.editing = true;
+        getControlTextArea().setBackground(Color.white);
         refreshAll();
     }
 

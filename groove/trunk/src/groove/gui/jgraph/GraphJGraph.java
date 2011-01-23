@@ -47,6 +47,7 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -131,6 +132,12 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
         addMouseListener(new MyMouseListener());
         setConnectable(false);
         setDisconnectable(false);
+    }
+
+    @Override
+    public ActionListener getActionForKeyStroke(KeyStroke aKeyStroke) {
+        // TODO Auto-generated method stub
+        return super.getActionForKeyStroke(aKeyStroke);
     }
 
     /**
@@ -1033,7 +1040,7 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
             am.put(actionName, action);
             InputMap im = getInputMap(JComponent.WHEN_FOCUSED);
             im.put(actionKey, actionName);
-            im = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+            im = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
             im.put(actionKey, actionName);
         }
     }

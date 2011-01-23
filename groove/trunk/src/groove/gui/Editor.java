@@ -32,6 +32,7 @@ import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraphMode;
 import groove.io.AspectGxl;
 import groove.io.ExtensionFilter;
@@ -74,6 +75,7 @@ import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -439,7 +441,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             }
         });
         getFrame().setJMenuBar(createMenuBar());
-        getFrame().setContentPane(getMainPanel());
+        getFrame().setContentPane(getContentPane());
     }
 
     /**
@@ -599,13 +601,15 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                         getOptions()) {
                         @Override
                         protected JToolBar createToolBar() {
-                            return Editor.this.createToolBar();
+                            return Editor.this.computeToolBar();
                         }
                     };
             result.initialise();
             result.addRefreshListener(SHOW_NODE_IDS_OPTION);
             result.addRefreshListener(SHOW_VALUE_NODES_OPTION);
             result.addRefreshListener(SHOW_ASPECTS_OPTION);
+            result.getJGraph().setBackground(JAttr.EDITOR_BACKGROUND);
+            result.getLabelTree().setBackground(JAttr.EDITOR_BACKGROUND);
         }
         return this.jGraphPanel;
     }
@@ -716,16 +720,34 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /**
      * Creates and returns the tool bar.
      */
+    JToolBar computeToolBar() {
+        JToolBar result = createToolBar();
+        addFileButtons(result);
+        addTypeButtons(result);
+        addModeButtons(result);
+        addUndoButtons(result);
+        addCopyPasteButtons(result);
+        addGridButtons(result);
+        return result;
+    }
+
+    /**
+     * Callback method to create a toolbar that
+     * sets all buttons to non-focusable and adds keyboard accelerators
+     * to the JGraph.
+     */
     JToolBar createToolBar() {
-        JToolBar toolbar = new JToolBar();
-        toolbar.setFloatable(false);
-        addFileButtons(toolbar);
-        addTypeButtons(toolbar);
-        addModeButtons(toolbar);
-        addUndoButtons(toolbar);
-        addCopyPasteButtons(toolbar);
-        addGridButtons(toolbar);
-        return toolbar;
+        JToolBar result = new JToolBar() {
+            @Override
+            public JButton add(Action a) {
+                JButton result = super.add(a);
+                result.setFocusable(false);
+                getJGraph().addAccelerator(a);
+                return result;
+            }
+        };
+        result.setFloatable(false);
+        return result;
     }
 
     /**
@@ -811,27 +833,26 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /** Creates a panel consisting of the error panel and the status bar. */
+    JPanel getContentPane() {
+        JPanel result = new JPanel();
+        result.setLayout(new BorderLayout());
+        result.add(getMainPanel());
+        result.add(getStatusBar(), BorderLayout.SOUTH);
+        return result;
+    }
+
+    /** Creates a panel consisting of the error panel and the status bar. */
     JSplitPane getMainPanel() {
         if (this.mainPanel == null) {
             this.mainPanel =
                 new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphPanel(),
-                    getStatusPanel());
+                    getErrorPanel());
             this.mainPanel.setDividerSize(1);
             this.mainPanel.setContinuousLayout(true);
             this.mainPanel.setResizeWeight(0.9);
             this.mainPanel.resetToPreferredSizes();
         }
         return this.mainPanel;
-    }
-
-    /** Creates a panel consisting of the error panel and the status bar. */
-    JPanel getStatusPanel() {
-        if (this.statusPanel == null) {
-            this.statusPanel = new JPanel(new BorderLayout());
-            this.statusPanel.add(getErrorPanel());
-            this.statusPanel.add(getStatusBar(), BorderLayout.SOUTH);
-        }
-        return this.statusPanel;
     }
 
     /** Lazily creates and returns the error panel. */
@@ -1096,8 +1117,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     /** Panel containing the graph panel and status panel. */
     private JSplitPane mainPanel;
-    /** Panel containing the error panel and status par. */
-    private JPanel statusPanel;
     /** Panel displaying format error messages. */
     private ErrorListPanel errorPanel;
 

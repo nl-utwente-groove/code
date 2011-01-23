@@ -37,8 +37,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.Action;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -128,16 +130,22 @@ public class StateJList extends JList implements SimulationListener {
     // Methods from SimulationListener Interface
     // -----------------------------------------
 
+    @Override
+    protected ListSelectionModel createSelectionModel() {
+        return new MySelectionModel();
+    }
+
     public void applyTransitionUpdate(GraphTransition transition) {
         refreshCurrentState(false);
     }
 
     public void setGrammarUpdate(StoredGrammarView grammar) {
         this.removeAll();
-        this.setEnabled(false);
-        if (grammar != null) {
+        if (grammar == null) {
+            setEnabled(false);
+        } else {
+            setEnabled(true);
             refreshList(true);
-            this.setEnabled(true);
         }
     }
 
@@ -161,6 +169,14 @@ public class StateJList extends JList implements SimulationListener {
         refreshCurrentState(false);
     }
 
+    @Override
+    public void setSelectedIndex(int index) {
+        // don't select the first item if there is no GTS
+        if (index != 0 || getCurrentGTS() != null) {
+            super.setSelectedIndex(index);
+        }
+    }
+
     /**
      * Refreshes the list of names by reloading it from the current grammar.
      * Either the currently selected item is kept, or the start graph is
@@ -171,7 +187,7 @@ public class StateJList extends JList implements SimulationListener {
      */
     public void refreshList(boolean keepSelection) {
         setList(getGrammarView().getGraphNames(), keepSelection);
-        setBackground(getCurrentGTS() == null ? null : LIST_ENABLED_COLOR);
+        //        setBackground(getCurrentGTS() == null ? null : LIST_ENABLED_COLOR);
     }
 
     /** Returns the list of selected graph names. */
@@ -185,6 +201,19 @@ public class StateJList extends JList implements SimulationListener {
             }
         }
         return result;
+    }
+
+    /** 
+     * Switches the state view to a graph with a given name.
+     */
+    void setSelectedGraph(String name) {
+        int index = this.listModel.indexOf(name);
+        if (index < 0 || getSelectedIndices().length == 1
+            && getSelectedIndex() == index) {
+            requestFocus();
+        } else {
+            setSelectedIndex(index);
+        }
     }
 
     /**
@@ -237,17 +266,29 @@ public class StateJList extends JList implements SimulationListener {
             this.listModel.addElement(name);
         }
         refreshCurrentState(false);
-        if (keepSelection && currentSelection.length > 0) {
-            int[] selectedIndices = new int[currentSelection.length];
+        int[] newSelection = new int[currentSelection.length];
+        int newSelectionCount = 0;
+        if (keepSelection) {
             for (int i = 0; i < currentSelection.length; i++) {
-                selectedIndices[i] =
+                int newIndex =
                     Arrays.asList(sortedNames).indexOf(currentSelection[i]) + 1;
+                if (newIndex > 0) {
+                    newSelection[newSelectionCount] = newIndex;
+                    newSelectionCount++;
+                }
             }
-            setSelectedIndices(selectedIndices);
-        } else if (getStartGraphName() != null) {
-            setSelectedValue(getStartGraphName(), true);
         }
-        restoreListeners();
+        if (newSelectionCount == 0) {
+            restoreListeners();
+            if (getStartGraphName() != null) {
+                setSelectedValue(getStartGraphName(), true);
+            } else {
+                clearSelection();
+            }
+        } else {
+            setSelectedIndices(newSelection);
+            restoreListeners();
+        }
     }
 
     /**
@@ -257,10 +298,15 @@ public class StateJList extends JList implements SimulationListener {
     private void refreshCurrentState(boolean select) {
         String text;
         if (this.simulator.getCurrentState() == null) {
-            text = "simulation not enabled";
+            String startKey =
+                this.simulator.getStartSimulationAction().getValue(
+                    Action.ACCELERATOR_KEY).toString();
+            text =
+                String.format("Press %s to start simulation",
+                    startKey.substring(startKey.indexOf(" ") + 1));
         } else {
             text =
-                String.format("simulation state: %s",
+                String.format("Simulation state: %s",
                     this.simulator.getCurrentState());
         }
         this.listModel.setElementAt(text, 0);
@@ -333,7 +379,6 @@ public class StateJList extends JList implements SimulationListener {
      */
     private Color enabledBackground;
 
-    static private final Color LIST_ENABLED_COLOR = Color.WHITE;
     /** The background colour of a selected cell if the list does not have focus. */
     static private final Color SELECTION_NON_FOCUS_COLOR = Color.LIGHT_GRAY;
     /** The background colour of the start graph. */
@@ -434,5 +479,28 @@ public class StateJList extends JList implements SimulationListener {
         }
 
         private final Border emptyBorder = new EmptyBorder(0, 3, 0, 0);
+    }
+
+    /** Variation on the selection model that makes sure the first item
+     * only gets selected if there is a GTS.
+     */
+    private class MySelectionModel extends DefaultListSelectionModel {
+        @Override
+        public void setSelectionInterval(int index0, int index1) {
+            if (index0 == 0 && getCurrentGTS() == null) {
+                index0 = 1;
+            }
+            if (index0 <= index1) {
+                super.setSelectionInterval(index0, index1);
+            }
+        }
+
+        @Override
+        public void setLeadSelectionIndex(int leadIndex) {
+            if (leadIndex != 0 || getCurrentGTS() != null) {
+                super.setLeadSelectionIndex(leadIndex);
+            }
+        }
+
     }
 }

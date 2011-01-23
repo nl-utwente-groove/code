@@ -496,13 +496,20 @@ public class Simulator {
     }
 
     /** 
-     * Attempts to close the dirty editors, asking the user what should happen.
-     * @return {@code true} if all the direty editors were closed
+     * Attempts to save the dirty editors, asking the user what should happen.
+     * Optionally disposes the editors.
+     * @param dispose if {@code true}, all editors are disposed (unless 
+     * the operation was cancelled)
+     * @return {@code true} if the operation was not cancelled
      */
-    boolean abandonEditors() {
+    boolean saveEditors(boolean dispose) {
         boolean result = true;
         for (EditorPanel editor : getSimulatorPanel().getEditors()) {
-            if (!editor.handleCancel()) {
+            if (editor.askAndSave()) {
+                if (dispose) {
+                    editor.dispose();
+                }
+            } else {
                 result = false;
                 break;
             }
@@ -844,7 +851,7 @@ public class Simulator {
      * Loads in a given system store.
      */
     void doLoadGrammar(final SystemStore store, final String startGraphName) {
-        if (!abandonEditors()) {
+        if (!saveEditors(true)) {
             return;
         }
         final ProgressBarDialog dialog =
@@ -938,7 +945,7 @@ public class Simulator {
      */
     void doNewGrammar(File grammarFile) {
         try {
-            if (abandonEditors()) {
+            if (saveEditors(true)) {
                 StoredGrammarView grammar =
                     StoredGrammarView.newInstance(grammarFile, true);
                 // now we know loading succeeded, we can set the current names &
@@ -963,7 +970,7 @@ public class Simulator {
      * itself is successful. 
      */
     public boolean doQuit() {
-        boolean result = abandonEditors();
+        boolean result = saveEditors(true);
         if (result) {
             groove.gui.UserSettings.synchSettings(this.frame);
             // Saves the current user settings.
@@ -1096,6 +1103,13 @@ public class Simulator {
     public void doRunExploration(Exploration exploration) {
         setDefaultExploration(exploration);
         LTSJModel ltsJModel = getLtsPanel().getJModel();
+        if (ltsJModel == null) {
+            if (startSimulation()) {
+                ltsJModel = getLtsPanel().getJModel();
+            } else {
+                return;
+            }
+        }
         synchronized (ltsJModel) {
             // unhook the lts' jmodel from the lts, for efficiency's sake
             getGTS().removeLTSListener(ltsJModel);
@@ -1149,7 +1163,7 @@ public class Simulator {
      */
     void doSaveGrammar(File grammarFile) {
         try {
-            if (abandonEditors()) {
+            if (saveEditors(true)) {
                 SystemStore newStore = getGrammarStore().save(grammarFile);
                 StoredGrammarView newView = newStore.toGrammarView();
                 String startGraphName = getGrammarView().getStartGraphName();
@@ -1238,11 +1252,7 @@ public class Simulator {
         changeEditorTypes();
         refresh();
         List<FormatError> grammarErrors = getGrammarView().getErrors();
-        boolean grammarCorrect = grammarErrors.isEmpty();
         setErrors(grammarErrors);
-        if (grammarCorrect && confirmBehaviourOption(START_SIMULATION_OPTION)) {
-            startSimulation();
-        }
         this.history.updateLoadGrammar();
     }
 
@@ -1268,21 +1278,26 @@ public class Simulator {
      * 
      * @see #fireSetGrammar(StoredGrammarView)
      */
-    public synchronized void startSimulation() {
-        try {
-            GTS gts;
-            if (this.isAbstractionMode()) {
-                gts = new AGTS(getGrammarView().toGrammar());
-            } else {
-                gts = new GTS(getGrammarView().toGrammar());
+    public synchronized boolean startSimulation() {
+        boolean result = false;
+        if (saveEditors(false)) {
+            try {
+                GTS gts;
+                if (this.isAbstractionMode()) {
+                    gts = new AGTS(getGrammarView().toGrammar());
+                } else {
+                    gts = new GTS(getGrammarView().toGrammar());
+                }
+                gts.getRecord().setRandomAccess(true);
+                setGTS(gts);
+                fireStartSimulation(getGTS());
+                refresh();
+                result = true;
+            } catch (FormatException exc) {
+                showErrorDialog("Error while starting simulation", exc);
             }
-            gts.getRecord().setRandomAccess(true);
-            setGTS(gts);
-            fireStartSimulation(getGTS());
-            refresh();
-        } catch (FormatException exc) {
-            showErrorDialog("Error while starting simulation", exc);
         }
+        return result;
     }
 
     /**
@@ -1444,7 +1459,16 @@ public class Simulator {
                 new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel,
                     rightPanel);
 
-            JSplitPane contentPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+            JSplitPane contentPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT) {
+
+                @Override
+                public ActionListener getActionForKeyStroke(KeyStroke aKeyStroke) {
+                    ActionListener result =
+                        super.getActionForKeyStroke(aKeyStroke);
+                    return result;
+                }
+
+            };
             contentPane.setTopComponent(splitPane);
             contentPane.setResizeWeight(0.8);
             contentPane.setDividerSize(0);
@@ -4374,14 +4398,11 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (confirmAbandon(false)) {
-                final RuleName ruleName =
-                    askNewRuleName(null, NEW_RULE_NAME, true);
-                if (ruleName != null) {
-                    AspectGraph newRule =
-                        AspectGraph.emptyGraph(ruleName.toString(), RULE);
-                    handleEditGraph(newRule, true);
-                }
+            final RuleName ruleName = askNewRuleName(null, NEW_RULE_NAME, true);
+            if (ruleName != null) {
+                AspectGraph newRule =
+                    AspectGraph.emptyGraph(ruleName.toString(), RULE);
+                handleEditGraph(newRule, true);
             }
         }
 

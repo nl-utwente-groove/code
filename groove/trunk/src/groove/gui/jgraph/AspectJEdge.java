@@ -285,8 +285,9 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
             GraphConstants.setEditable(result, true);
             GraphConstants.setConnectable(result, true);
             GraphConstants.setDisconnectable(result, true);
+            GraphConstants.setBackground(result, JAttr.EDITOR_BACKGROUND);
         }
-        if (getSourceVertex() != null
+        if (getSourceVertex() != null && getEdge() != null
             && getEdge().getGraphRole() != GraphRole.RULE
             && getJGraph().getLabelStore() != null) {
             TypeLabel sourceType =

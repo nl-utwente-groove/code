@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import groove.trans.RuleName;
 import groove.util.Groove;
 import groove.view.aspect.AspectGraph;
 
@@ -27,6 +28,7 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 
 /**
@@ -53,7 +55,7 @@ public class EditorPanel extends JPanel {
                 simulator.getGrammarView().getProperties()) {
                 @Override
                 protected void doQuit() {
-                    handleCancel();
+                    askAndSave();
                 }
 
                 @Override
@@ -73,9 +75,8 @@ public class EditorPanel extends JPanel {
                 }
 
                 @Override
-                JToolBar createToolBar() {
-                    JToolBar toolbar = new JToolBar();
-                    toolbar.setFloatable(false);
+                JToolBar computeToolBar() {
+                    JToolBar toolbar = createToolBar();
                     toolbar.add(getOkButton());
                     toolbar.add(getCancelButton());
                     addModeButtons(toolbar);
@@ -95,7 +96,9 @@ public class EditorPanel extends JPanel {
         this.editor.setGraph(this.graph, true);
         this.editor.setDirty(this.fresh);
         setLayout(new BorderLayout());
-        add(this.editor.getMainPanel());
+        JSplitPane mainPanel = this.editor.getMainPanel();
+        mainPanel.setBorder(null);
+        add(mainPanel);
     }
 
     /** Returns the resulting aspect graph of the editor. */
@@ -113,6 +116,11 @@ public class EditorPanel extends JPanel {
     /** Returns the editor instance of this panel. */
     public Editor getEditor() {
         return this.editor;
+    }
+
+    /** Indicates if the editor has unsaved changes. */
+    public boolean isDirty() {
+        return getEditor().isDirty();
     }
 
     /** Returns the tabbed view pane of the simulator (on which this panel is displayed). */
@@ -146,7 +154,11 @@ public class EditorPanel extends JPanel {
                 new AbstractAction(Options.SAVE_ACTION_NAME, Groove.SAVE_ICON) {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        handleOk();
+                        if (isDirty() && confirmSave()) {
+                            doSave();
+                            switchToEditedGraph();
+                            dispose();
+                        }
                     }
                 };
             saveAction.putValue(Action.ACCELERATOR_KEY, Options.SAVE_KEY);
@@ -158,10 +170,41 @@ public class EditorPanel extends JPanel {
         return this.okButton;
     }
 
+    /** Does the cancel action. */
+    void handleCancel() {
+        if (askAndSave()) {
+            switchToEditedGraph();
+            dispose();
+        }
+    }
+
     /**
-     * Implements the effect of pressing the OK button.
+     * If the editor is dirty, asks if it should be saved, and does so if
+     * the answer is yes.
+     * Optionally disposes the editor if not cancelled.
+     * @return {@code true} if the operation was not cancelled
      */
-    void handleOk() {
+    boolean askAndSave() {
+        boolean result = true;
+        if (this.editor.isDirty()) {
+            int confirm =
+                JOptionPane.showConfirmDialog(this,
+                    String.format("%s '%s' has been modified. Save changes?",
+                        this.editor.getRole().toString(true),
+                        getGraph().getName()), null,
+                    JOptionPane.YES_NO_CANCEL_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                doSave();
+            }
+            result = (confirm != JOptionPane.CANCEL_OPTION);
+        }
+        return result;
+    }
+
+    /**
+     * Saves the editor if it is dirty.
+     */
+    void doSave() {
         if (this.editor.isDirty()) {
             boolean success = false;
             switch (this.editor.getRole()) {
@@ -182,33 +225,42 @@ public class EditorPanel extends JPanel {
     }
 
     /**
-     * Implements the effect of cancelling.
-     * @return {@code true} if the editor panel was closed as an effect of
-     * this call
+     * Asks whether it is OK to stop the current simulation (if any).
      */
-    boolean handleCancel() {
-        boolean result = true;
-        if (this.editor.isDirty()) {
-            int confirm =
-                JOptionPane.showConfirmDialog(this,
-                    String.format("%s '%s' has been modified. Save changes?",
-                        this.editor.getRole().toString(true),
-                        getGraph().getName()), null,
-                    JOptionPane.YES_NO_CANCEL_OPTION);
-            if (confirm == JOptionPane.YES_OPTION) {
-                handleOk();
-            }
-            result = (confirm != JOptionPane.CANCEL_OPTION);
+    private boolean confirmSave() {
+        if (this.simulator.getGTS() != null) {
+            String question =
+                String.format(
+                    "Saving %s '%s' may stop current simulation. Proceed?",
+                    this.editor.getRole(), getName());
+            int response =
+                JOptionPane.showConfirmDialog(this.simulator.getFrame(),
+                    question, null, JOptionPane.OK_CANCEL_OPTION);
+            return response == JOptionPane.OK_OPTION;
+
+        } else {
+            return true;
         }
-        if (result) {
-            dispose();
-        }
-        return result;
     }
 
-    /** Besides calling the super method, also disposes the editor frame. */
-    private void dispose() {
+    /** Removes the editor from the simulator pane. */
+    void dispose() {
         getTabbedPane().remove(this);
+    }
+
+    /** Switches the view in the simulator to the graph being edited here. */
+    private void switchToEditedGraph() {
+        switch (getEditor().getRole()) {
+        case HOST:
+            this.simulator.getStateList().setSelectedGraph(getName());
+            break;
+        case RULE:
+            this.simulator.getRuleTree().setSelectedRule(
+                new RuleName(getName()));
+            break;
+        case TYPE:
+            this.simulator.getTypePanel().setSelectedType(getName());
+        }
     }
 
     private JButton okButton;
