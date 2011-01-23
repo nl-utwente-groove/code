@@ -187,7 +187,6 @@ public class StateJList extends JList implements SimulationListener {
      */
     public void refreshList(boolean keepSelection) {
         setList(getGrammarView().getGraphNames(), keepSelection);
-        //        setBackground(getCurrentGTS() == null ? null : LIST_ENABLED_COLOR);
     }
 
     /** Returns the list of selected graph names. */

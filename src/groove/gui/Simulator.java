@@ -3407,8 +3407,16 @@ public class Simulator {
          * panel.
          */
         public void actionPerformed(ActionEvent e) {
-            AspectJModel stateModel = getStatePanel().getJModel();
-            handleEditGraph(stateModel.getGraph(), false);
+            AspectGraph graph = getStatePanel().getJModel().getGraph();
+            if (getStatePanel().isShowingState()) {
+                String newGraphName =
+                    askNewGraphName("Select graph name", graph.getName(), true);
+                if (newGraphName != null) {
+                    handleEditGraph(graph, true);
+                }
+            } else {
+                handleEditGraph(graph, false);
+            }
         }
     }
 
