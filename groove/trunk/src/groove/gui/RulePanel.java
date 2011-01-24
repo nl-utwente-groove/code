@@ -112,12 +112,22 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
         // create a mapping from rule names to (fresh) rule models
         this.ruleJModelMap.clear();
         if (grammar != null) {
-            LabelStore newLabelStore = grammar.getLabelStore();
+            // reset the graph model so it doesn't get mixed up with the new type
+            getJGraph().setModel(null);
+            // set either the type or the label store of the associated JGraph
+            if (grammar.getActiveTypeNames().isEmpty()) {
+                getJGraph().setLabelStore(grammar.getLabelStore());
+            } else {
+                try {
+                    getJGraph().setType(grammar.toModel().getType(), null);
+                } catch (FormatException e) {
+                    getJGraph().setLabelStore(grammar.getLabelStore());
+                }
+            }
             for (RuleName ruleName : grammar.getRuleNames()) {
                 RuleView ruleView = grammar.getRuleView(ruleName);
                 AspectJModel jModel = getJGraph().newModel();
                 jModel.loadGraph(ruleView.getAspectGraph());
-                jModel.setLabelStore(newLabelStore, null);
                 this.ruleJModelMap.put(ruleName, jModel);
             }
         }

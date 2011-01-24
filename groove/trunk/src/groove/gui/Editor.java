@@ -165,7 +165,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         setRole(graph.getRole());
         if (refreshModel) {
             AspectJModel newModel = getJGraph().newModel();
-            newModel.setType(this.type);
             newModel.loadGraph(graph);
             setModel(newModel);
         } else {
@@ -218,8 +217,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                 // do nothing
             }
         }
-        if (getModel().setType(this.type)) {
-            updateStatus();
+        if (getJGraph().setType(this.type, null)) {
+            refresh();
         }
     }
 
@@ -242,30 +241,31 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * {@link GraphJGraph#JGRAPH_MODE_PROPERTY}.
      */
     public void propertyChange(PropertyChangeEvent evt) {
-        boolean refresh = false;
         if (evt.getPropertyName().equals(ROLE_PROPERTY)) {
             getGraphRoleButton().setSelected(getRole() == HOST);
             getRuleRoleButton().setSelected(getRole() == RULE);
             getTypeRoleButton().setSelected(getRole() == TYPE);
             // we need to refresh because the errors may have changed
-            refresh = true;
+            refresh();
         } else {
             assert evt.getPropertyName().equals(
                 GraphJGraph.JGRAPH_MODE_PROPERTY);
             JGraphMode mode = getJGraph().getMode();
             if (mode == PREVIEW_MODE || evt.getOldValue() == PREVIEW_MODE) {
                 getJGraph().setEditable(mode != PREVIEW_MODE);
-                refresh = true;
+                refresh();
             }
         }
-        if (refresh) {
-            getModel().syncGraph();
-            updateStatus();
-            Editor.this.refreshing = true;
-            getGraphPanel().refresh();
-            Editor.this.refreshing = false;
-            updateTitle();
-        }
+    }
+
+    /** Refreshes the editor display. */
+    public void refresh() {
+        getModel().syncGraph();
+        updateStatus();
+        Editor.this.refreshing = true;
+        getGraphPanel().refresh();
+        Editor.this.refreshing = false;
+        updateTitle();
     }
 
     /**

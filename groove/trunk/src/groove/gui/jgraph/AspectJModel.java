@@ -171,22 +171,12 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     /** Sets a type graph for this JModel.
      * The type graph is needed to correctly compute the errors in the graph.
-     * @return {@code true} if the type graph changed as a result of this call.
      */
-    public boolean setType(TypeGraph type) {
-        boolean result = this.type != type;
-        if (result) {
-            this.type = type;
-            if (type == null) {
-                setLabelStore(null, null);
-            } else {
-                setLabelStore(type.getLabelStore(), null);
-            }
-            if (getGraph() != null) {
-                syncGraph();
-            }
+    public void setType(TypeGraph type) {
+        this.type = type;
+        if (getGraph() != null) {
+            syncGraph();
         }
-        return result;
     }
 
     /** 

@@ -74,6 +74,7 @@ import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
+import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.io.AspectGxl;
@@ -113,6 +114,7 @@ import groove.view.StoredGrammarView.TypeViewList;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -146,6 +148,7 @@ import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -4942,6 +4945,86 @@ public class Simulator {
                 putValue(NAME, Options.SAVE_ACTION_NAME);
             }
         }
+    }
+
+    /**
+     * Returns the undo action permanently associated with this simulator.
+     */
+    public Action getSelectColorAction() {
+        if (this.selectColorAction == null) {
+            this.selectColorAction = new SelectColorAction();
+        }
+        return this.selectColorAction;
+    }
+
+    /**
+     * The undo action permanently associated with this simulator.
+     */
+    private SelectColorAction selectColorAction;
+
+    /**
+     * Action for undoing an edit to the grammar.
+     */
+    private class SelectColorAction extends AbstractAction implements
+            GraphSelectionListener, TreeSelectionListener {
+        /** Constructs an instance of the action. */
+        SelectColorAction() {
+            super(Options.SELECT_COLOR_ACTION_NAME);
+            putValue(SHORT_DESCRIPTION, Options.SELECT_COLOR_ACTION_NAME);
+            getStatePanel().getJGraph().addGraphSelectionListener(this);
+            getStatePanel().getLabelTree().addTreeSelectionListener(this);
+            getRulePanel().getJGraph().addGraphSelectionListener(this);
+            getRulePanel().getLabelTree().addTreeSelectionListener(this);
+            getTypePanel().getJGraph().addGraphSelectionListener(this);
+            getTypePanel().getLabelTree().addTreeSelectionListener(this);
+            setEnabled(false);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            Color colour =
+                JColorChooser.showDialog(getSimulatorPanel(),
+                    "Choose colour for type", JAttr.DEFAULT_BACKGROUND);
+        }
+
+        /** Sets {@link #label} based on the {@link GraphJGraph} selection. */
+        @Override
+        public void valueChanged(GraphSelectionEvent e) {
+            this.label = null;
+            Object[] selection =
+                ((GraphJGraph) e.getSource()).getSelectionCells();
+            if (selection != null) {
+                choose: for (Object cell : selection) {
+                    for (Label label : ((GraphJCell) cell).getListLabels()) {
+                        if (label instanceof TypeLabel && label.isNodeType()) {
+                            this.label = (TypeLabel) label;
+                            break choose;
+                        }
+                    }
+                }
+            }
+            setEnabled(this.label != null);
+        }
+
+        @Override
+        public void valueChanged(TreeSelectionEvent e) {
+            this.label = null;
+            TreePath[] selection =
+                ((LabelTree) e.getSource()).getSelectionPaths();
+            if (selection != null) {
+                for (TreePath path : selection) {
+                    Label label =
+                        ((LabelTree.LabelTreeNode) path.getLastPathComponent()).getLabel();
+                    if (label instanceof TypeLabel && label.isNodeType()) {
+                        this.label = (TypeLabel) label;
+                        break;
+                    }
+                }
+            }
+            setEnabled(this.label != null);
+        }
+
+        /** The label for which a colour is chosen; may be {@code null}. */
+        private TypeLabel label;
     }
 
     /**
