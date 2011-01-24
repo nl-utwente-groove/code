@@ -208,7 +208,7 @@ public class JAttr {
     public static final int DEFAULT_LINE_WIDTH = 1;
 
     /** Default background for the simulator (non-editor) panels. */
-    public static final Color EDITOR_BACKGROUND = new Color(255, 255, 235);
+    public static final Color EDITOR_BACKGROUND = new Color(255, 255, 240);
 
     /** The size of the rounded corners for rounded-rectangle vertices. */
     public static final int ARC_SIZE = 5;
@@ -224,7 +224,7 @@ public class JAttr {
      * The default background colour used for nodes.
      */
     public static final Color DEFAULT_BACKGROUND =
-        Colors.findColor("250 250 250");
+        Colors.findColor("243 243 243");
 
     /**
      * The standard bounds used for nodes.
@@ -290,6 +290,11 @@ public class JAttr {
     static public final Border NESTED_BORDER = createNodeBorder(
         new StrokedLineBorder(DEFAULT_CELL_COLOR, createStroke(
             DEFAULT_LINE_WIDTH, NESTED_DASH)), false);
+    /** 
+     * Static flag determining if gradient background paint should be used.
+     * Gradient paint looks better, but there is a performance hit. 
+     */
+    static final private boolean GRADIENT_PAINT = false;
 
     /** Creates a stroke with a given line width and dash pattern. */
     public static Stroke createStroke(float width, float[] dash) {
@@ -323,7 +328,7 @@ public class JAttr {
      */
     static public Paint createPaint(Rectangle b, Color c) {
         // only bother with special paint if the vertex is not too small to notice
-        if (b.width < 10 && b.height < 10) {
+        if (!GRADIENT_PAINT || b.width < 10 && b.height < 10) {
             return c;
         } else {
             int cx = b.x + b.width / 2;

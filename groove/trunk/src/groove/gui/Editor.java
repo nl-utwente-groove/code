@@ -25,7 +25,6 @@ import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.TypeGraph;
-import groove.gui.dialog.AboutBox;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.PropertiesDialog;
 import groove.gui.jgraph.AspectJGraph;
@@ -42,6 +41,7 @@ import groove.io.PriorityFileName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.util.Property;
+import groove.util.Version;
 import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView.TypeViewList;
@@ -420,6 +420,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                     }
                     if (relevant) {
                         super.undoableEditHappened(e);
+                        setDirty(true);
                         updateHistoryButtons();
                     }
                 }
@@ -488,7 +489,13 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * @see #isDirty()
      */
     protected void setDirty(boolean dirty) {
-        this.dirty = dirty;
+        if (dirty) {
+            // if the dirt count was negative, this cannot be
+            // undone any more, so change to positive
+            this.dirtCount = Math.abs(this.dirtCount) + 1;
+        } else {
+            this.dirtCount = 0;
+        }
         updateTitle();
     }
 
@@ -497,7 +504,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * @see #setDirty(boolean)
      */
     protected boolean isDirty() {
-        return this.dirty;
+        return this.dirtCount != 0;
     }
 
     /**
@@ -884,7 +891,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         // The View Argument Defines the Context
         getUndoAction().setEnabled(getUndoManager().canUndo());
         getRedoAction().setEnabled(getUndoManager().canRedo());
-        setDirty(getUndoManager().canUndo());
     }
 
     /**
@@ -914,7 +920,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             modelName = TITLE.get(getRole());
         }
         String title =
-            (this.dirty ? MODIFIED_INDICATOR : "") + modelName + " - "
+            (isDirty() ? MODIFIED_INDICATOR : "") + modelName + " - "
                 + EDITOR_NAME;
         Component window = getRootComponent();
         if (window instanceof JFrame) {
@@ -989,16 +995,20 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     protected void undoLastEdit() {
         setSelectInsertedCells(false);
         getUndoManager().undo();
+        this.dirtCount--;
         setSelectInsertedCells(true);
         updateHistoryButtons();
+        updateTitle();
     }
 
     /** Redoes the latest undone change to the Model or the View. */
     protected void redoLastEdit() {
         setSelectInsertedCells(false);
         getUndoManager().redo();
+        this.dirtCount++;
         setSelectInsertedCells(true);
         updateHistoryButtons();
+        updateTitle();
     }
 
     /**
@@ -1098,8 +1108,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /** Panel displaying format error messages. */
     private ErrorListPanel errorPanel;
 
-    /** Indicates whether jgraph has been modified since the last save. */
-    private boolean dirty;
+    /** 
+     * The number of edit steps the editor state is removed
+     * from a saved graph.
+     * This can be negative, if undos happened since the last save. 
+     */
+    private int dirtCount;
 
     /** Indicates whether jgraph has been modified since the last save. */
     private boolean anyGraphSaved;
@@ -1279,8 +1293,10 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                     redoIcon) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
-                        super.actionPerformed(evt);
-                        redoLastEdit();
+                        if (isEnabled()) {
+                            super.actionPerformed(evt);
+                            redoLastEdit();
+                        }
                     }
                 };
             this.redoAction.setEnabled(false);
@@ -1302,8 +1318,10 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                     undoIcon) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
-                        super.actionPerformed(evt);
-                        undoLastEdit();
+                        if (isEnabled()) {
+                            super.actionPerformed(evt);
+                            undoLastEdit();
+                        }
                     }
                 };
             this.undoAction.setEnabled(false);
@@ -1345,7 +1363,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         }
 
         public void actionPerformed(ActionEvent evt) {
-            new AboutBox(getFrame());
+            JOptionPane.showMessageDialog(null, Version.getAboutHTML(),
+                "About", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
@@ -1413,7 +1432,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                 getModel().setProperties(
                     new GraphProperties(dialog.getEditedProperties()));
                 setDirty(true);
-                updateTitle();
             }
         }
     }

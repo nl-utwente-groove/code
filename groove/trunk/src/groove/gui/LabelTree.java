@@ -125,7 +125,6 @@ public class LabelTree extends JTree implements GraphModelListener,
         setRootVisible(false);
         setShowsRootHandles(true);
         // set drag and drop
-        setDragEnabled(getLabelStore() != null && !getLabelStore().isFixed());
         setDropMode(DropMode.ON_OR_INSERT);
         setTransferHandler(new MyTransferHandler());
         // make sure the checkbox never selects the label
@@ -216,12 +215,13 @@ public class LabelTree extends JTree implements GraphModelListener,
 
     /** Convenience method to return the label store of the jgraph. */
     private LabelStore getLabelStore() {
-        return this.jgraph.getLabelStore();
+        return getJGraph().getModel() == null ? null
+                : getJGraph().getModel().getLabelStore();
     }
 
     /** Convenience method to return the labels map of the jgraph. */
     private Map<String,Set<TypeLabel>> getLabelsMap() {
-        return this.jgraph.getLabelsMap();
+        return getJGraph().getModel().getLabelsMap();
     }
 
     /**

@@ -22,7 +22,9 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
+import groove.graph.LabelStore;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
 import groove.gui.layout.JCellLayout;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
@@ -89,6 +91,34 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
         }
         assert result != null : String.format("Cell %s has no attributes", node);
         return result;
+    }
+
+    /**
+     * Changes the label store of this {@link GraphJGraph}.
+     * @param store the global label stores
+     * @param labelStoreMap map from names to subsets of labels; may be {@code null}
+     */
+    public final void setLabelStore(LabelStore store,
+            Map<String,Set<TypeLabel>> labelStoreMap) {
+        this.labelStore = store;
+        this.labelsMap = labelStoreMap;
+    }
+
+    /**
+     * Returns the set of labels and subtypes in the graph. May be
+     * <code>null</code>.
+     */
+    public final LabelStore getLabelStore() {
+        return this.labelStore;
+    }
+
+    /**
+     * Returns a map from names to subsets of labels.
+     * This can be used to filter labels.
+     * May be {@code null} even if {@link #getLabelStore()} is not.
+     */
+    public final Map<String,Set<TypeLabel>> getLabelsMap() {
+        return this.labelsMap;
     }
 
     /**
@@ -422,6 +452,10 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
      * @invariant graph != null
      */
     private Graph<N,E> graph;
+    /** Set of all labels and subtypes in the graph. */
+    private LabelStore labelStore;
+    /** Mapping from names to sub-label stores. */
+    private Map<String,Set<TypeLabel>> labelsMap;
     /**
      * The layout map for the underlying graph. It maps {@link Element}s to
      * {@link JCellLayout}s. This is set to an empty map if the graph is not a

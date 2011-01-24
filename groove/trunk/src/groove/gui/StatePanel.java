@@ -189,17 +189,15 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
             setEnabled(false);
         } else {
             GraphView startGraphView = grammar.getStartGraphView();
-            Map<String,Set<TypeLabel>> labelsMap =
-                new HashMap<String,Set<TypeLabel>>();
+            this.labelsMap.clear();
             for (String typeName : grammar.getActiveTypeNames()) {
                 try {
                     TypeView view = grammar.getTypeView(typeName);
-                    labelsMap.put(typeName, view.getLabels());
+                    this.labelsMap.put(typeName, view.getLabels());
                 } catch (FormatException e) {
                     // don't add labels from this type view
                 }
             }
-            this.jGraph.setLabelStore(grammar.getLabelStore(), labelsMap);
             setGraphModel(startGraphView.getName());
             setEnabled(true);
         }
@@ -501,6 +499,8 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     private AspectJModel createAspectJModel(AspectGraph graph) {
         AspectJModel result = getJGraph().newModel();
         result.loadGraph(graph);
+        result.setLabelStore(this.simulator.getGrammarView().getLabelStore(),
+            this.labelsMap);
         return result;
     }
 
@@ -590,7 +590,8 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
      */
     private final Map<GraphState,HostToAspectMap> stateToAspectMap =
         new HashMap<GraphState,HostToAspectMap>();
-
+    private final Map<String,Set<TypeLabel>> labelsMap =
+        new HashMap<String,Set<TypeLabel>>();
     /** The currently emphasised match (nullable). */
     private RuleMatch selectedMatch;
 

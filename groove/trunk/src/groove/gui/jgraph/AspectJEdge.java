@@ -6,7 +6,6 @@ import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.GraphRole;
 import groove.graph.Label;
-import groove.graph.TypeLabel;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.trans.RuleLabel;
 import groove.util.Converter;
@@ -270,6 +269,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     protected AttributeMap createAttributes() {
         AttributeMap result =
             AspectJGraph.ASPECT_EDGE_ATTR.get(this.aspect).clone();
+        GraphConstants.setBackground(result, getJGraph().getBackground());
         AspectEdge edge = getEdge();
         RuleLabel ruleModelLabel = edge == null ? null : edge.getRuleLabel();
         if (ruleModelLabel != null) {
@@ -285,14 +285,12 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
             GraphConstants.setEditable(result, true);
             GraphConstants.setConnectable(result, true);
             GraphConstants.setDisconnectable(result, true);
-            GraphConstants.setBackground(result, JAttr.EDITOR_BACKGROUND);
         }
         if (getSourceVertex() != null && getEdge() != null
             && getEdge().getGraphRole() != GraphRole.RULE
-            && getJGraph().getLabelStore() != null) {
-            TypeLabel sourceType =
-                ((AspectJVertex) getSourceVertex()).getNodeType();
-            Color typeColor = getJGraph().getLabelStore().getColor(sourceType);
+            && getJGraph().getModel().getLabelStore() != null) {
+            Color typeColor =
+                ((AspectJVertex) getSourceVertex()).getNodeColor();
             if (typeColor != null) {
                 GraphConstants.setForeground(result, typeColor);
                 GraphConstants.setLineColor(result, typeColor);

@@ -20,7 +20,6 @@ import static groove.graph.GraphRole.TYPE;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.GraphRole;
-import groove.graph.LabelStore;
 import groove.gui.JTypeNameList.CheckBoxListModel;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
@@ -147,13 +146,10 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
      * compute a new type graph.
      */
     public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
-        LabelStore labelStore = null;
         this.typeJModelMap.clear();
         if (grammar != null) {
-            labelStore = grammar.getLabelStore();
             this.getNameList().refresh();
         }
-        this.jGraph.setLabelStore(labelStore, null);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -215,6 +211,8 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         if (result == null) {
             result = getJGraph().newModel();
             result.loadGraph(graph.getAspectGraph());
+            result.setLabelStore(
+                this.simulator.getGrammarView().getLabelStore(), null);
             this.typeJModelMap.put(graph, result);
         }
         return result;
@@ -247,14 +245,17 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         AspectJModel newModel =
             isTypeSelected() ? getTypeJModel(getGrammarView().getTypeView(
                 getSelectedType())) : getJGraph().newModel();
-        if (newModel != getJModel()) {
-            this.jGraph.setModel(newModel);
-        }
         if (newModel.getGraph() == null) {
             setEnabled(false);
         } else {
             setEnabled(getNameListModel().isSelectedChecked());
         }
+        // first set the enabling, then the model
+        // in order to get the background right.
+        if (newModel != getJModel()) {
+            this.jGraph.setModel(newModel);
+        }
+        setEnabled(isEnabled());
         refreshActions();
         refreshStatus();
     }
