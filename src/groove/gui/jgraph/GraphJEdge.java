@@ -34,7 +34,6 @@ import java.util.TreeSet;
 
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultPort;
-import org.jgraph.graph.GraphConstants;
 
 /**
  * Extends DefaultEdge to store a collection of graph Edges. The graph edges are
@@ -157,7 +156,6 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
      */
     protected AttributeMap createAttributes() {
         AttributeMap result = GraphJGraph.DEFAULT_EDGE_ATTR.clone();
-        GraphConstants.setBackground(result, getJGraph().getBackground());
         return result;
     }
 

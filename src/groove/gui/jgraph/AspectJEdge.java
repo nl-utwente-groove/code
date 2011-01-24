@@ -269,7 +269,6 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     protected AttributeMap createAttributes() {
         AttributeMap result =
             AspectJGraph.ASPECT_EDGE_ATTR.get(this.aspect).clone();
-        GraphConstants.setBackground(result, getJGraph().getBackground());
         AspectEdge edge = getEdge();
         RuleLabel ruleModelLabel = edge == null ? null : edge.getRuleLabel();
         if (ruleModelLabel != null) {
@@ -287,8 +286,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
             GraphConstants.setDisconnectable(result, true);
         }
         if (getSourceVertex() != null && getEdge() != null
-            && getEdge().getGraphRole() != GraphRole.RULE
-            && getJGraph().getModel().getLabelStore() != null) {
+            && getEdge().getGraphRole() != GraphRole.RULE) {
             Color typeColor =
                 ((AspectJVertex) getSourceVertex()).getNodeColor();
             if (typeColor != null) {

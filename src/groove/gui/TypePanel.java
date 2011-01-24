@@ -32,6 +32,7 @@ import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
+import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 import groove.view.TypeView;
 import groove.view.aspect.AspectGraph;
@@ -148,7 +149,18 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
     public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
         this.typeJModelMap.clear();
         if (grammar != null) {
-            this.getNameList().refresh();
+            getJGraph().setModel(null);
+            getNameList().refresh();
+            // set either the type or the label store of the associated JGraph
+            if (grammar.getActiveTypeNames().isEmpty()) {
+                getJGraph().setLabelStore(grammar.getLabelStore());
+            } else {
+                try {
+                    getJGraph().setType(grammar.toModel().getType(), null);
+                } catch (FormatException e) {
+                    getJGraph().setLabelStore(grammar.getLabelStore());
+                }
+            }
         }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -211,8 +223,6 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         if (result == null) {
             result = getJGraph().newModel();
             result.loadGraph(graph.getAspectGraph());
-            result.setLabelStore(
-                this.simulator.getGrammarView().getLabelStore(), null);
             this.typeJModelMap.put(graph, result);
         }
         return result;

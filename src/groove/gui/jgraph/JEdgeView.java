@@ -533,6 +533,8 @@ public class JEdgeView extends EdgeView {
                 lineWidth += JAttr.EMPH_INCREMENT;
             }
             this.lineWidth = lineWidth;
+            // if the specified background is null, use the graph background
+            this.defaultBackground = jGraph.getBackground();
             return this;
         }
 

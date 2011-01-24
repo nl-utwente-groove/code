@@ -165,7 +165,7 @@ public class JAttr {
 
     AttributeMap getEdgeAttrs() {
         AttributeMap result = getAttrs().clone();
-        GraphConstants.setBackground(result, Color.white);
+        result.remove(GraphConstants.BACKGROUND);
         return result;
     }
 

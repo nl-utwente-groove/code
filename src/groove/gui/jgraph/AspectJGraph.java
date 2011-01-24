@@ -21,6 +21,9 @@ import static groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
 import static groove.view.aspect.AspectKind.ADDER;
 import static groove.view.aspect.AspectKind.CREATOR;
 import groove.graph.GraphRole;
+import groove.graph.LabelStore;
+import groove.graph.TypeGraph;
+import groove.graph.TypeLabel;
 import groove.gui.Editor;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
@@ -46,6 +49,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -109,8 +113,70 @@ final public class AspectJGraph extends GraphJGraph {
 
     @Override
     public AspectJModel newModel() {
-        return new AspectJModel(AspectJVertex.getPrototype(this),
-            AspectJEdge.getPrototype(this), this.editor);
+        AspectJModel result =
+            new AspectJModel(AspectJVertex.getPrototype(this),
+                AspectJEdge.getPrototype(this), this.editor);
+        result.setType(getType());
+        return result;
+    }
+
+    /**
+     * Changes the label store of this {@link GraphJGraph}.
+     * @param store the global label stores
+     */
+    public final void setLabelStore(LabelStore store) {
+        this.type = null;
+        this.labelsMap = null;
+        this.labelStore = store;
+    }
+
+    /**
+     * Returns the set of labels and subtypes in the graph. May be
+     * <code>null</code>.
+     */
+    public final LabelStore getLabelStore() {
+        return this.labelStore;
+    }
+
+    /** Sets a type graph for this JModel.
+     * The type graph is needed to correctly compute the errors in the graph.
+     * @param labelsMap map from names to subsets of labels; may be {@code null}
+     * @return {@code true} if the type graph changed as a result of this call.
+     */
+    public boolean setType(TypeGraph type, Map<String,Set<TypeLabel>> labelsMap) {
+        boolean result = this.type != type;
+        if (result) {
+            this.type = type;
+            if (type == null) {
+                this.labelStore = null;
+            } else {
+                this.labelStore = type.getLabelStore();
+            }
+            if (getModel() != null) {
+                getModel().setType(type);
+            }
+            this.labelsMap = labelsMap;
+        }
+        return result;
+    }
+
+    /** Returns the type graph set for this JGraph. */
+    public TypeGraph getType() {
+        return this.type;
+    }
+
+    /** Indicates if this JGraph has a non-{@code null} type. */
+    public boolean hasType() {
+        return getType() != null;
+    }
+
+    /**
+     * Returns a map from names to subsets of labels.
+     * This can be used to filter labels.
+     * May be {@code null} even if {@link #getLabelStore()} is not.
+     */
+    public final Map<String,Set<TypeLabel>> getLabelsMap() {
+        return this.labelsMap;
     }
 
     /**
@@ -520,6 +586,15 @@ final public class AspectJGraph extends GraphJGraph {
     /** The role for which this {@link GraphJGraph} will display graphs. */
     private final GraphRole graphRole;
 
+    /** Set of all labels and subtypes in the graph. */
+    private LabelStore labelStore;
+    /** 
+     * The (possibly {@code null}) type graph, needed to correctly 
+     * compute the errors in the graph.
+     */
+    private TypeGraph type;
+    /** Mapping from names to sub-label stores. */
+    private Map<String,Set<TypeLabel>> labelsMap;
     /** Flag indicating that the graph is in the process of inserting an element. */
     private boolean inserting;
     /** Map from line style names to corresponding actions. */

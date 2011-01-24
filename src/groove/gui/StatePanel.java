@@ -185,21 +185,32 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         this.selectedGraph = null;
         this.jGraph.getFilteredLabels().clear();
         if (grammar == null || grammar.getStartGraphView() == null) {
-            setJModel(getJGraph().newModel());
             setEnabled(false);
+            getJGraph().setType(null, null);
+            setJModel(getJGraph().newModel());
         } else {
-            GraphView startGraphView = grammar.getStartGraphView();
-            this.labelsMap.clear();
-            for (String typeName : grammar.getActiveTypeNames()) {
-                try {
-                    TypeView view = grammar.getTypeView(typeName);
-                    this.labelsMap.put(typeName, view.getLabels());
-                } catch (FormatException e) {
-                    // don't add labels from this type view
-                }
-            }
-            setGraphModel(startGraphView.getName());
+            // first enable so the edge label background is set correctly
             setEnabled(true);
+            // reset the model so it doesn't get mixed up with the new type
+            getJGraph().setModel(null);
+            // set the type or the label store for the JGraph
+            if (!grammar.getActiveTypeNames().isEmpty()) {
+                Map<String,Set<TypeLabel>> labelsMap =
+                    new HashMap<String,Set<TypeLabel>>();
+                try {
+                    for (String typeName : grammar.getActiveTypeNames()) {
+                        TypeView view = grammar.getTypeView(typeName);
+                        labelsMap.put(typeName, view.getLabels());
+                    }
+                    getJGraph().setType(grammar.toModel().getType(), labelsMap);
+                } catch (FormatException e) {
+                    getJGraph().setLabelStore(grammar.getLabelStore());
+                }
+            } else {
+                getJGraph().setLabelStore(grammar.getLabelStore());
+            }
+            GraphView startGraphView = grammar.getStartGraphView();
+            setGraphModel(startGraphView.getName());
         }
         refreshStatus();
     }
@@ -499,8 +510,6 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     private AspectJModel createAspectJModel(AspectGraph graph) {
         AspectJModel result = getJGraph().newModel();
         result.loadGraph(graph);
-        result.setLabelStore(this.simulator.getGrammarView().getLabelStore(),
-            this.labelsMap);
         return result;
     }
 
@@ -590,8 +599,6 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
      */
     private final Map<GraphState,HostToAspectMap> stateToAspectMap =
         new HashMap<GraphState,HostToAspectMap>();
-    private final Map<String,Set<TypeLabel>> labelsMap =
-        new HashMap<String,Set<TypeLabel>>();
     /** The currently emphasised match (nullable). */
     private RuleMatch selectedMatch;
 

@@ -20,6 +20,7 @@ import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
+import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
@@ -215,13 +216,14 @@ public class LabelTree extends JTree implements GraphModelListener,
 
     /** Convenience method to return the label store of the jgraph. */
     private LabelStore getLabelStore() {
-        return getJGraph().getModel() == null ? null
-                : getJGraph().getModel().getLabelStore();
+        return getJGraph() instanceof AspectJGraph
+                ? ((AspectJGraph) getJGraph()).getLabelStore() : null;
     }
 
     /** Convenience method to return the labels map of the jgraph. */
     private Map<String,Set<TypeLabel>> getLabelsMap() {
-        return getJGraph().getModel().getLabelsMap();
+        return getJGraph() instanceof AspectJGraph
+                ? ((AspectJGraph) getJGraph()).getLabelsMap() : null;
     }
 
     /**
@@ -454,6 +456,11 @@ public class LabelTree extends JTree implements GraphModelListener,
         if (selectedValues != null && selectedValues.length == 1
             && simulator != null) {
             result.add(simulator.getRelabelAction());
+            if (getJGraph() instanceof AspectJGraph
+                && ((AspectJGraph) getJGraph()).hasType()
+                && simulator.getSelectColorAction().isEnabled()) {
+                result.add(simulator.getSelectColorAction());
+            }
             result.addSeparator();
         }
         if (isFiltering() && getLabelsMap() != null) {

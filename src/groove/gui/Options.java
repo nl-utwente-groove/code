@@ -312,6 +312,8 @@ public class Options implements Cloneable {
     /** Edit properties action name */
     public static final String RULE_PROPERTIES_ACTION_NAME =
         "Rule Properties ...";
+    /** Select colour action name */
+    public static final String SELECT_COLOR_ACTION_NAME = "Select Color...";
     /** Use as start graph action name */
     public static final String START_GRAPH_ACTION_NAME = "Use as Start Graph";
     /**
