@@ -463,15 +463,24 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         if (getJGraph().hasActiveEditor()) {
             GraphConstants.setEditable(result, true);
         }
-        if (getNode().getGraphRole() != GraphRole.RULE
-            && getJGraph().getLabelStore() != null) {
-            Color nodeColor =
-                getJGraph().getLabelStore().getColor(getNodeType());
+        if (getNode().getGraphRole() != GraphRole.RULE) {
+            Color nodeColor = getNodeColor();
             if (nodeColor != null) {
                 GraphConstants.setForeground(result, nodeColor);
                 GraphConstants.setLineColor(result, nodeColor);
                 GraphConstants.setBackground(result, JAttr.whitewash(nodeColor));
             }
+        }
+        return result;
+    }
+
+    /** Retrieves a node color from the model's label store, if any. */
+    Color getNodeColor() {
+        Color result = null;
+        if (getJGraph().getModel() != null
+            && getJGraph().getModel().getLabelStore() != null) {
+            result =
+                getJGraph().getModel().getLabelStore().getColor(getNodeType());
         }
         return result;
     }

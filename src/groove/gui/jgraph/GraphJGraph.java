@@ -22,8 +22,6 @@ import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.GraphRole;
 import groove.graph.Label;
-import groove.graph.LabelStore;
-import groove.graph.TypeLabel;
 import groove.gui.Exporter;
 import groove.gui.LabelTree;
 import groove.gui.Options;
@@ -148,34 +146,6 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
     public boolean isFiltering(Label label) {
         return this.filteredLabels != null
             && this.filteredLabels.contains(label);
-    }
-
-    /**
-     * Changes the label store of this {@link GraphJGraph}.
-     * @param store the global label stores
-     * @param labelStoreMap map from names to subsets of labels; may be {@code null}
-     */
-    public final void setLabelStore(LabelStore store,
-            Map<String,Set<TypeLabel>> labelStoreMap) {
-        this.labelStore = store;
-        this.labelsMap = labelStoreMap;
-    }
-
-    /**
-     * Returns the set of labels and subtypes in the graph. May be
-     * <code>null</code>.
-     */
-    public final LabelStore getLabelStore() {
-        return this.labelStore;
-    }
-
-    /**
-     * Returns a map from names to subsets of labels.
-     * This can be used to filter labels.
-     * May be {@code null} even if {@link #getLabelStore()} is not.
-     */
-    public final Map<String,Set<TypeLabel>> getLabelsMap() {
-        return this.labelsMap;
     }
 
     /** Returns the object holding the display options for this {@link GraphJGraph}. */
@@ -1118,10 +1088,6 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
     private PropertyChangeSupport propertyChangeSupport;
     /** Boolean indicating if the JGraph is in select mode or in pan+zoom mode. */
     private JGraphMode mode = SELECT_MODE;
-    /** Set of all labels and subtypes in the graph. */
-    private LabelStore labelStore;
-    /** Mapping from names to sub-label stores. */
-    private Map<String,Set<TypeLabel>> labelsMap;
     /** The fixed refresh listener of this {@link GraphJModel}. */
     private final RefreshListener refreshListener = new RefreshListener();
     /** Flag indicating that a model refresh is being executed. */

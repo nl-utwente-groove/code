@@ -65,24 +65,8 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
     @Override
     public Component getGraphCellEditorComponent(JGraph graph, Object cell,
             boolean isSelected) {
-
         Component component =
             super.getGraphCellEditorComponent(graph, cell, isSelected);
-
-        // set the size of an editor to that of a view
-        //        CellView view = graph.getGraphLayoutCache().getMapping(cell, false);
-        //        Rectangle2D tmp = view.getBounds();
-        //        this.editingComponent.setBounds((int) tmp.getX()
-        //            + JAttr.EXTRA_BORDER_SPACE, (int) tmp.getY()
-        //            + JAttr.EXTRA_BORDER_SPACE, (int) tmp.getWidth(),
-        //            (int) tmp.getHeight());
-
-        // I have to set a font here instead of in the
-        // RealCellEditor.getGraphCellEditorComponent() because
-        // I don't know what cell is being edited when in the
-        // RealCellEditor.getGraphCellEditorComponent().
-        //        Font font = GraphConstants.getFont(view.getAllAttributes());
-        //        this.editingComponent.setFont((font != null) ? font : graph.getFont());
         return component;
     }
 

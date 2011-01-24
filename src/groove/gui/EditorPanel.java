@@ -156,8 +156,6 @@ public class EditorPanel extends JPanel {
                     public void actionPerformed(ActionEvent e) {
                         if (isDirty() && confirmSave()) {
                             doSave();
-                            switchToEditedGraph();
-                            dispose();
                         }
                     }
                 };

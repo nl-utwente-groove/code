@@ -191,7 +191,7 @@ public class Options implements Cloneable {
     /** Name of the "Disable Type Graph" action. */
     public static final String DISABLE_TYPE_ACTION_NAME = "Disable Typing";
     /** Edge mode action name */
-    public static final String EDGE_MODE_NAME = "Edge mode";
+    public static final String EDIT_MODE_NAME = "Edit mode";
     /** Edit action name */
     public static final String EDIT_ACTION_NAME = "Edit ...";
     /** Edit control action name */
@@ -442,7 +442,7 @@ public class Options implements Cloneable {
     /**
      * Edge mode keystroke
      */
-    public static final KeyStroke EDGE_MODE_KEY =
+    public static final KeyStroke EDIT_MODE_KEY =
         KeyStroke.getKeyStroke("alt E");
     /**
      * Edit keystroke

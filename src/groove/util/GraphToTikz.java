@@ -30,10 +30,10 @@ import groove.gui.jgraph.CtrlJEdge;
 import groove.gui.jgraph.CtrlJVertex;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJEdge;
+import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JAttr;
-import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.LTSJVertex;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
@@ -515,7 +515,7 @@ public final class GraphToTikz {
                 }
             }
         } else {
-            appendNode(tgtNode, s);
+            GraphToTikz.<N,E>appendNode(tgtNode, s);
         }
     }
 

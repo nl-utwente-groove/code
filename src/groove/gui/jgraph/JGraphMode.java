@@ -17,7 +17,7 @@ public enum JGraphMode {
     PAN_MODE(Options.PAN_MODE_NAME, null, Groove.OPEN_HAND_ICON,
             Groove.OPEN_HAND_CURSOR, Groove.CLOSED_HAND_CURSOR),
     /** Edge edit mode. */
-    EDIT_MODE(Options.EDGE_MODE_NAME, Options.EDGE_MODE_KEY,
+    EDIT_MODE(Options.EDIT_MODE_NAME, Options.EDIT_MODE_KEY,
             Groove.createIcon("edge.gif")),
     /** JGraph preview mode. */
     PREVIEW_MODE(Options.PREVIEW_MODE_NAME, Options.PREVIEW_MODE_KEY,

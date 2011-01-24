@@ -121,15 +121,16 @@ public class JGraphUI extends BasicGraphUI {
                     + scale * (EXTRA_BORDER_SPACE + 3) - 3));
     }
 
-    /** 
-     * Makes sure that cancelled edits are nevertheless passed on to 
-     * the JGraph.
-     */
-    @Override
-    protected void completeEditing(boolean messageStop, boolean messageCancel,
-            boolean messageGraph) {
-        super.completeEditing(messageStop, messageCancel, true);
-    }
+    //
+    //    /** 
+    //     * Makes sure that cancelled edits are nevertheless passed on to 
+    //     * the JGraph.
+    //     */
+    //    @Override
+    //    protected void completeEditing(boolean messageStop, boolean messageCancel,
+    //            boolean messageGraph) {
+    //        super.completeEditing(messageStop, messageCancel, true);
+    //    }
 
     @Override
     protected void installListeners() {
@@ -210,7 +211,7 @@ public class JGraphUI extends BasicGraphUI {
                 return;
             }
             getJGraph().requestFocus();
-            stopEditing(getJGraph());
+            cancelEditing(getJGraph());
             // determine the drag mode (although dragging does not yet start)
             if (getJGraphMode() == PAN_MODE && e.getButton() == BUTTON1) {
                 this.dragMode = PAN;

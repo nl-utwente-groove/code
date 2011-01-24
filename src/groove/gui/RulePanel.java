@@ -109,19 +109,18 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
      * and stores a model for each rule in the system.
      */
     public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
-        LabelStore newLabelStore = null;
         // create a mapping from rule names to (fresh) rule models
         this.ruleJModelMap.clear();
         if (grammar != null) {
+            LabelStore newLabelStore = grammar.getLabelStore();
             for (RuleName ruleName : grammar.getRuleNames()) {
                 RuleView ruleView = grammar.getRuleView(ruleName);
                 AspectJModel jModel = getJGraph().newModel();
                 jModel.loadGraph(ruleView.getAspectGraph());
+                jModel.setLabelStore(newLabelStore, null);
                 this.ruleJModelMap.put(ruleName, jModel);
             }
-            newLabelStore = grammar.getLabelStore();
         }
-        this.jGraph.setLabelStore(newLabelStore, null);
         // reset the display
         RuleView currentRule = this.simulator.getCurrentRule();
         displayRule(currentRule == null ? null : currentRule.getRuleName(),
@@ -191,15 +190,10 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
             || !ruleName.equals(this.displayedRule)) {
             AspectJModel ruleJModel =
                 ruleName == null ? null : this.ruleJModelMap.get(ruleName);
-            //            if (ruleJModel == null) {
-            //                // apparently the rule name is unknown
-            //                ruleName = null;
-            //                ruleJModel = getJGraph().newModel();
-            //            }
             // display new rule
+            setEnabled(ruleJModel != null);
             this.displayedRule = ruleName;
             this.jGraph.setModel(ruleJModel);
-            setEnabled(ruleJModel != null);
             refreshStatus();
         }
     }

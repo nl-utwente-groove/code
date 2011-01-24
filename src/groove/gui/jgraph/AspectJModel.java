@@ -177,6 +177,11 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         boolean result = this.type != type;
         if (result) {
             this.type = type;
+            if (type == null) {
+                setLabelStore(null, null);
+            } else {
+                setLabelStore(type.getLabelStore(), null);
+            }
             if (getGraph() != null) {
                 syncGraph();
             }

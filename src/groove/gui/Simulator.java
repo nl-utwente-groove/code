@@ -58,7 +58,6 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
-import groove.gui.dialog.AboutBox;
 import groove.gui.dialog.BoundedModelCheckingDialog;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.ExplorationDialog;
@@ -3066,7 +3065,8 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent evt) {
-            new AboutBox(getFrame());
+            JOptionPane.showMessageDialog(null, Version.getAboutHTML(),
+                "About", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
