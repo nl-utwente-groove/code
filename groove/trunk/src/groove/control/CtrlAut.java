@@ -18,9 +18,11 @@ package groove.control;
 
 import static groove.graph.GraphRole.CTRL;
 import groove.graph.AbstractGraph;
+import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
+import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.util.AbstractSet;
@@ -62,6 +64,7 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
         super(name);
         this.startState = addState();
         this.finalState = addState();
+        GraphInfo.setErrors(this, new ArrayList<FormatError>());
     }
 
     @Override
@@ -116,6 +119,7 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
             result.addTransition(stateMap.get(trans.source()), trans.label(),
                 stateMap.get(trans.target()));
         }
+        result.getInfo().getErrors().addAll(this.getInfo().getErrors());
         return result;
     }
 
@@ -139,12 +143,17 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
 
     /** 
      * Convenience method for adding a control transition between given states and with a given label.
+     * @return the new transition, or {@code null} if it was not added
+     * due to a nondeterminism
      */
     CtrlTransition addTransition(CtrlState source, CtrlLabel label,
             CtrlState target) {
         CtrlTransition result = createTransition(source, label, target);
-        addTransition(result);
-        return result;
+        if (addTransition(result)) {
+            return result;
+        } else {
+            return null;
+        }
     }
 
     /** Adds a control state to this automaton. */
@@ -240,10 +249,14 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
      * @throws FormatException if the automaton is not deterministic
      */
     public CtrlAut normalise() throws FormatException {
-        Set<Set<CtrlState>> equivalence = computeEquivalence();
-        Map<CtrlState,Set<CtrlState>> partition = computePartition(equivalence);
-        CtrlAut result = computeQuotient(partition);
-        result.setBoundVars();
+        CtrlAut result = this;
+        if (getInfo().getErrors().isEmpty()) {
+            Set<Set<CtrlState>> equivalence = computeEquivalence();
+            Map<CtrlState,Set<CtrlState>> partition =
+                computePartition(equivalence);
+            result = computeQuotient(partition);
+            result.setBoundVars();
+        }
         return result;
     }
 

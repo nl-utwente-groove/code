@@ -50,7 +50,11 @@ public class ControlView {
             this.lastAut = this.parser.runString(this.program, grammar);
             this.lastGrammar = grammar;
         }
-        return this.lastAut;
+        if (!this.lastAut.getInfo().getErrors().isEmpty()) {
+            throw new FormatException(this.lastAut.getInfo().getErrors());
+        } else {
+            return this.lastAut;
+        }
     }
 
     /**
