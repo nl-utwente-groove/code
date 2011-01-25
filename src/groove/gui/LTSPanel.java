@@ -56,11 +56,6 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     public LTSPanel(Simulator simulator) {
         super(new LTSJGraph(simulator), true, simulator.getOptions());
         this.simulator = simulator;
-        getJGraph().setEnabled(false);
-        getJGraph().addMouseListener(new MyMouseListener());
-        addRefreshListener(SHOW_ANCHORS_OPTION);
-        addRefreshListener(SHOW_STATE_IDS_OPTION);
-        simulator.addSimulationListener(this);
         getJGraph().setToolTipEnabled(true);
         initialise();
     }
@@ -75,6 +70,15 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
         return result;
+    }
+
+    @Override
+    protected void installListeners() {
+        super.installListeners();
+        addRefreshListener(SHOW_ANCHORS_OPTION);
+        addRefreshListener(SHOW_STATE_IDS_OPTION);
+        getJGraph().addMouseListener(new MyMouseListener());
+        getSimulator().addSimulationListener(this);
     }
 
     @Override

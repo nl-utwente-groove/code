@@ -752,7 +752,6 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
      */
     public LabelTree initLabelTree() {
         this.labelTree = new LabelTree(this);
-        this.labelTree.setEnabled(isEnabled());
         return this.labelTree;
     }
 

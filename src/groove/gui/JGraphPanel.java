@@ -102,6 +102,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
             add(this.statusBar, BorderLayout.SOUTH);
         }
         installListeners();
+        setEnabled(false);
     }
 
     /** Callback method that adds the required listeners to this panel. */
@@ -243,7 +244,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     /**
      * Returns the status bar of this panel, if any.
      */
-    public JLabel getStatusBar() {
+    private JLabel getStatusBar() {
         return this.statusBar;
     }
 
@@ -253,7 +254,9 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     @Override
     public void setEnabled(boolean enabled) {
         this.jGraph.setEnabled(enabled);
-        this.statusBar.setEnabled(enabled);
+        if (getStatusBar() != null) {
+            getStatusBar().setEnabled(enabled);
+        }
         this.labelTree.setEnabled(enabled);
         super.setEnabled(enabled);
     }

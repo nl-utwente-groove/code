@@ -614,6 +614,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             result.addRefreshListener(SHOW_NODE_IDS_OPTION);
             result.addRefreshListener(SHOW_VALUE_NODES_OPTION);
             result.addRefreshListener(SHOW_ASPECTS_OPTION);
+            result.setEnabled(true);
             result.getJGraph().setBackground(JAttr.EDITOR_BACKGROUND);
             result.getLabelTree().setBackground(JAttr.EDITOR_BACKGROUND);
         }

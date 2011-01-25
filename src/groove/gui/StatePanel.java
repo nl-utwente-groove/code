@@ -95,7 +95,6 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         this.simulator = simulator;
         initialise();
         getJGraph().setToolTipEnabled(true);
-        setEnabled(false);
     }
 
     @Override
@@ -187,7 +186,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         if (grammar == null || grammar.getStartGraphView() == null) {
             setEnabled(false);
             getJGraph().setType(null, null);
-            setJModel(getJGraph().newModel());
+            setJModel(null);
         } else {
             // first enable so the edge label background is set correctly
             setEnabled(true);
