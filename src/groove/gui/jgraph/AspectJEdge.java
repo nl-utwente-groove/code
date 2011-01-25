@@ -4,6 +4,7 @@ import static groove.view.aspect.AspectKind.ARGUMENT;
 import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
+import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.gui.jgraph.JAttr.AttributeMap;
@@ -112,20 +113,31 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     private boolean addEdge(Edge<?> edge, boolean mustAdd) {
         AspectEdge aspectEdge = (AspectEdge) edge;
         boolean first = getEdges().isEmpty();
-        boolean compatible = first || aspectEdge.equalsAspects(getEdge());
-        boolean result = (compatible || mustAdd) && super.addEdge(edge);
+        AspectEdge oldEdge = getEdge();
+        boolean compatible = first || aspectEdge.equalsAspects(oldEdge);
+        boolean result = (compatible || mustAdd) && super.addEdge(aspectEdge);
         if (result) {
             if (first) {
                 this.aspect = aspectEdge.getKind();
             }
-            if (!compatible) {
+            FormatError error = null;
+            if (edge.getRole() != EdgeRole.BINARY) {
+                error =
+                    new FormatError("Node label '%s' not allowed on edges",
+                        edge.label(), this);
+            } else if (!compatible) {
+                error =
+                    new FormatError(
+                        "Conflicting aspects in edge labels %s and %s",
+                        oldEdge.label(), edge.label(), this);
+            }
+            if (error != null) {
                 aspectEdge =
                     new AspectEdge(aspectEdge.source(), aspectEdge.label(),
                         aspectEdge.target());
-                aspectEdge.addError(new FormatError(
-                    "Conflicting aspects in edge labels %s and %s",
-                    getEdge().label(), edge.label(), this));
+                aspectEdge.addError(error);
                 aspectEdge.setFixed();
+                replaceEdge(aspectEdge);
             }
             this.errors.addAll(aspectEdge.getErrors());
         }
