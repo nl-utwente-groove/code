@@ -498,16 +498,23 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         AspectNode node = new AspectNode(getNode().getNumber(), role);
         reset(node);
         AspectParser parser = AspectParser.getInstance();
+        List<AspectLabel> edgeLabels = new ArrayList<AspectLabel>();
         for (String text : getUserObject()) {
             AspectLabel label = parser.parse(text, role);
             if (label.isNodeOnly()) {
                 node.setAspects(label);
             } else {
-                AspectEdge edge = new AspectEdge(node, label, node);
-                edge.setFixed();
-                boolean added = addJVertexLabel(edge);
-                assert added;
+                // don't process the edge labels yet, as the node is not
+                // yet completely determined
+                edgeLabels.add(label);
             }
+        }
+        // now process the edge labels
+        for (AspectLabel label : edgeLabels) {
+            AspectEdge edge = new AspectEdge(node, label, node);
+            edge.setFixed();
+            boolean added = addJVertexLabel(edge);
+            assert added;
         }
         this.aspect = node.getKind();
         // attributes will be refreshed upon the call to setNodeFixed()
