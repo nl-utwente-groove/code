@@ -110,6 +110,12 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
         return this.edges.add(edge);
     }
 
+    /** Replaces an edge with another, equal one. */
+    void replaceEdge(Edge<?> edge) {
+        this.edges.remove(edge);
+        this.edges.add(edge);
+    }
+
     /** 
      * The cloned object is equal to this one after a reset. 
      */

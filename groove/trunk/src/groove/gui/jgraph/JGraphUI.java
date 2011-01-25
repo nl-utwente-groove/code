@@ -283,7 +283,7 @@ public class JGraphUI extends BasicGraphUI {
                 return;
             }
             // if the drag start has been consumed, end the drag session
-            if (this.dragStart == null) {
+            if (this.dragStart == null && this.dragMode != null) {
                 switch (this.dragMode) {
                 case EDGE:
                     completeEdge(e.getPoint());
