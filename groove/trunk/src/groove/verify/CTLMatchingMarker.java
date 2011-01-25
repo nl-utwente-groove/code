@@ -16,6 +16,7 @@
  */
 package groove.verify;
 
+import groove.graph.EdgeRole;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -271,7 +272,7 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
             // if there exists at least one satisfying successor-state
             // this state satisfies the given property
             for (GraphTransition outTransition : nextState.getTransitionSet()) {
-                if (outTransition.getEvent().getRule().isModifying()) {
+                if (outTransition.getRole() == EdgeRole.BINARY) {
                     GraphState successorState = outTransition.target();
                     if (marking.satisfies(successorState, operand)) {
                         marking.set(nextState, property, true);

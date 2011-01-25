@@ -43,7 +43,8 @@ public class ModelCheckingScenario extends DefaultScenario {
         if (getStrategy() instanceof BoundedModelCheckingStrategy) {
             ((BoundedModelCheckingStrategy) getStrategy()).setBoundary(getBoundary());
         }
-        super.prepare(gts, state);
+        // model checking always starts at the initial state
+        super.prepare(gts, gts.startState());
     }
 
     @Override
@@ -129,5 +130,5 @@ public class ModelCheckingScenario extends DefaultScenario {
      * Global flag to determine if counter-examples are reported on
      * {@link System#err}.
      */
-    static private final boolean REPORT_COUNTER_EXAMPLE = false;
+    static private final boolean REPORT_COUNTER_EXAMPLE = true;
 }

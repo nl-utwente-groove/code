@@ -16,6 +16,7 @@
  */
 package groove.verify;
 
+import groove.graph.EdgeRole;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -329,7 +330,7 @@ public class CTLModelChecker extends CommandLineTool {
             this.gts.edgeSet().iterator();
         while (transitionIter.hasNext()) {
             GraphTransition nextTransition = transitionIter.next();
-            if (nextTransition.getEvent().getRule().isModifying()) {
+            if (nextTransition.getRole() == EdgeRole.BINARY) {
                 GraphState sourceState = nextTransition.source();
                 GraphState targetState = nextTransition.target();
                 // add this source-state to the collection of predecessors

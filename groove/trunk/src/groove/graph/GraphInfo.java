@@ -251,6 +251,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
 
     /**
      * Convenience method to retrieve the list of format errors of a graph.
+     * @return a list of errors, of {@code null} if the errors were not initialised
      * @see #getErrors()
      */
     public static <N extends Node,E extends Edge<N>> List<FormatError> getErrors(
