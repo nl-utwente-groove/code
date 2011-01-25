@@ -1814,7 +1814,8 @@ public class Simulator {
      * @see #getGraphPanel()
      */
     public void switchTabs(JGraphPanel<?> component) {
-        if (getSimulatorPanel().indexOfComponent(component) >= 0) {
+        if (getSimulatorPanel().getSelectedComponent() != component
+            && getSimulatorPanel().indexOfComponent(component) >= 0) {
             this.switchingTabs = true;
             getSimulatorPanel().setSelectedComponent(component);
             this.switchingTabs = false;
@@ -3393,9 +3394,7 @@ public class Simulator {
          * {@link #setEnabled(boolean)}.
          */
         public void refresh() {
-            boolean enabled =
-                getGraphPanel() == getStatePanel()
-                    && getStatePanel().getJModel() != null;
+            boolean enabled = getStatePanel().getJModel() != null;
             if (enabled != isEnabled()) {
                 setEnabled(enabled);
             }

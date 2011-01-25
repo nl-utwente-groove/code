@@ -103,11 +103,11 @@ public class LabelTree extends JTree implements GraphModelListener,
      * Constructs a label list associated with a given jgraph. A further
      * parameter indicates if the label stree should support subtypes.
      * {@link #updateModel()} should be called before the list can be used.
-     * @param jgraph the jgraph with which this list is to be associated
+     * @param jGraph the jgraph with which this list is to be associated
      */
-    public LabelTree(GraphJGraph jgraph) {
-        this.jgraph = jgraph;
-        this.filteredLabels = jgraph.getFilteredLabels();
+    public LabelTree(GraphJGraph jGraph) {
+        this.jGraph = jGraph;
+        this.filteredLabels = jGraph.getFilteredLabels();
         this.filtering = this.filteredLabels != null;
         if (this.filtering) {
             this.filteredLabels.addObserver(new Observer() {
@@ -145,7 +145,7 @@ public class LabelTree extends JTree implements GraphModelListener,
         // make sure tool tips get displayed
         ToolTipManager.sharedInstance().registerComponent(this);
         addMouseListener(new MyMouseListener());
-        setEnabled(false);
+        setEnabled(jGraph.isEnabled());
     }
 
     /** Creates a tool bar for the label tree. */
@@ -211,7 +211,7 @@ public class LabelTree extends JTree implements GraphModelListener,
      * Returns the jgraph with which this label list is associated.
      */
     public GraphJGraph getJGraph() {
-        return this.jgraph;
+        return this.jGraph;
     }
 
     /** Convenience method to return the label store of the jgraph. */
@@ -240,15 +240,15 @@ public class LabelTree extends JTree implements GraphModelListener,
      * model and adds them to this label list.
      */
     public void updateModel() {
-        if (this.jmodel != null) {
-            this.jmodel.removeGraphModelListener(this);
+        if (this.jModel != null) {
+            this.jModel.removeGraphModelListener(this);
         }
-        this.jmodel = this.jgraph.getModel();
+        this.jModel = this.jGraph.getModel();
         this.labelCellMap.clear();
-        if (this.jmodel != null) {
-            this.jmodel.addGraphModelListener(this);
-            for (int i = 0; i < this.jmodel.getRootCount(); i++) {
-                GraphJCell cell = (GraphJCell) this.jmodel.getRootAt(i);
+        if (this.jModel != null) {
+            this.jModel.addGraphModelListener(this);
+            for (int i = 0; i < this.jModel.getRootCount(); i++) {
+                GraphJCell cell = (GraphJCell) this.jModel.getRootAt(i);
                 if (isListable(cell)) {
                     addToLabels(cell);
                 }
@@ -256,7 +256,7 @@ public class LabelTree extends JTree implements GraphModelListener,
         }
         updateTree();
         setDragEnabled(getLabelStore() != null && !getLabelStore().isFixed());
-        setEnabled(true);
+        setEnabled(this.jModel != null);
     }
 
     @Override
@@ -297,12 +297,6 @@ public class LabelTree extends JTree implements GraphModelListener,
     @Override
     public void setEnabled(boolean enabled) {
         if (enabled != isEnabled()) {
-            // if (!enabled) {
-            // this.enabledBackground = getBackground();
-            // setBackground(null);
-            // } else if (this.enabledBackground != null) {
-            // setBackground(this.enabledBackground);
-            // }
             setBackground(getColor(enabled));
         }
         getShowAllLabelsButton().setEnabled(enabled);
@@ -388,7 +382,7 @@ public class LabelTree extends JTree implements GraphModelListener,
                 }
             }
         }
-        this.jgraph.setSelectionCells(emphSet.toArray());
+        this.jGraph.setSelectionCells(emphSet.toArray());
     }
 
     /**
@@ -476,7 +470,7 @@ public class LabelTree extends JTree implements GraphModelListener,
             result.addSeparator();
         }
         // add the show/hide menu
-        JPopupMenu restMenu = new ShowHideMenu(this.jgraph).getPopupMenu();
+        JPopupMenu restMenu = new ShowHideMenu(this.jGraph).getPopupMenu();
         while (restMenu.getComponentCount() > 0) {
             result.add(restMenu.getComponent(0));
         }
@@ -687,12 +681,12 @@ public class LabelTree extends JTree implements GraphModelListener,
     /**
      * The {@link GraphJGraph}associated to this label list.
      */
-    private final GraphJGraph jgraph;
+    private final GraphJGraph jGraph;
 
     /**
      * The {@link GraphJModel}currently being viewed by this label list.
      */
-    private GraphJModel<?,?> jmodel;
+    private GraphJModel<?,?> jModel;
 
     /**
      * The bag of labels in this jmodel.

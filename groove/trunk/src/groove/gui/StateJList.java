@@ -82,6 +82,11 @@ public class StateJList extends JList implements SimulationListener {
             @Override
             public void focusGained(FocusEvent e) {
                 StateJList.this.repaint();
+            }
+        });
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
                 switchSimulatorToStatePanel();
             }
         });
@@ -209,7 +214,7 @@ public class StateJList extends JList implements SimulationListener {
         int index = this.listModel.indexOf(name);
         if (index < 0 || getSelectedIndices().length == 1
             && getSelectedIndex() == index) {
-            requestFocus();
+            switchSimulatorToStatePanel();
         } else {
             setSelectedIndex(index);
         }
