@@ -503,6 +503,7 @@ public class CtrlFactory {
             Collection<CtrlCall> guard) {
         // if the guard is degenerate, the second automaton is unreachable
         if (guard != null) {
+            List<FormatError> errors = new ArrayList<FormatError>();
             Map<CtrlState,CtrlState> secondToFirstMap =
                 copyStates(second, first);
             // copy transitions from second to first
@@ -511,14 +512,22 @@ public class CtrlFactory {
                 CtrlState targetImage = secondToFirstMap.get(trans.target());
                 CtrlLabel label = trans.label();
                 // initial transitions have to be treated separately
+                boolean error;
                 if (sourceImage.equals(first.getStart())) {
                     // create an augmented transition, 
                     CtrlLabel newLabel = createLabel(label, guard);
-                    first.addTransition(sourceImage, newLabel, targetImage);
+                    error =
+                        first.addTransition(sourceImage, newLabel, targetImage) == null;
                 } else {
-                    first.addTransition(sourceImage, label, targetImage);
+                    error =
+                        first.addTransition(sourceImage, label, targetImage) == null;
+                }
+                if (error) {
+                    errors.add(new FormatError("Non-determinism for rule '%s'",
+                        label, trans));
                 }
             }
+            first.getInfo().addErrors(errors);
         }
         return first;
     }
@@ -544,6 +553,7 @@ public class CtrlFactory {
             }
             secondToFirstMap.put(state, image);
         }
+        toAut.getInfo().addErrors(fromAut.getInfo().getErrors());
         return secondToFirstMap;
     }
 
