@@ -163,7 +163,8 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
                     nodeImage.setAspects(label);
                 } catch (FormatException e) {
                     // this is sure not to raise an exception
-                    assert false;
+                    assert false : String.format(
+                        "Unexpected format exception: %s", e.getMessage());
                 }
             }
         }

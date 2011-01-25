@@ -18,12 +18,13 @@ package groove.explore.strategy;
 
 import groove.explore.result.CycleAcceptor;
 import groove.explore.util.RandomChooserInSequence;
+import groove.graph.EdgeRole;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.util.LTLBenchmarker;
-import groove.verify.ProductState;
 import groove.verify.BuchiTransition;
 import groove.verify.ModelChecking;
+import groove.verify.ProductState;
 import groove.verify.ProductTransition;
 
 import java.util.Iterator;
@@ -106,7 +107,7 @@ public class BoundedNestedDFSStrategy extends
                     boolean finalState = true;
                     for (GraphTransition nextTransition : getGTS().outEdgeSet(
                         getAtBuchiState().getGraphState())) {
-                        if (nextTransition.getEvent().getRule().isModifying()) {
+                        if (nextTransition.getRole() == EdgeRole.BINARY) {
                             finalState = false;
 
                             ProductTransition productTransition =
@@ -361,8 +362,7 @@ public class BoundedNestedDFSStrategy extends
     /**
      * Returns a random buchi transition from a given state.
      */
-    protected ProductTransition getRandomOpenBuchiTransition(
-            ProductState state) {
+    protected ProductTransition getRandomOpenBuchiTransition(ProductState state) {
         RandomChooserInSequence<ProductTransition> chooser =
             new RandomChooserInSequence<ProductTransition>();
         for (ProductTransition p : state.outTransitions()) {

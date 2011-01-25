@@ -16,10 +16,11 @@
  */
 package groove.explore.strategy;
 
+import groove.graph.EdgeRole;
 import groove.lts.GraphTransition;
-import groove.verify.ProductState;
 import groove.verify.BuchiTransition;
 import groove.verify.ModelChecking;
+import groove.verify.ProductState;
 import groove.verify.ProductTransition;
 
 import java.util.Set;
@@ -66,7 +67,7 @@ public class NestedDFSStrategy extends AbstractModelCheckingStrategy {
                 boolean finalState = true;
                 for (GraphTransition nextTransition : getGTS().outEdgeSet(
                     getAtBuchiState().getGraphState())) {
-                    if (nextTransition.getEvent().getRule().isModifying()) {
+                    if (nextTransition.getRole() == EdgeRole.BINARY) {
                         finalState = false;
                         ProductTransition productTransition =
                             addProductTransition(nextTransition,
