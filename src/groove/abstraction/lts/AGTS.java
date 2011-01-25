@@ -77,7 +77,7 @@ public final class AGTS extends GTS {
     }
 
     @Override
-    protected GraphCache<?,?> createCache() {
+    protected GraphCache<GraphState,GraphTransition> createCache() {
         throw new UnsupportedOperationException();
     }
 
