@@ -125,14 +125,6 @@ public final class Shape extends DefaultHostGraph {
      * materialisation phase.
      */
     private final Set<ShapeEdge> frozenEdges;
-    /**
-     * Flag to indicate if the shape has been frozen. A shape is frozen when
-     * it is stored in a ShapeState of the transition system, to avoid unwanted
-     * modifications. Once frozen a shape cannot be thawed, the only way to
-     * perform modifications is by cloning the frozen shape and changing the
-     * clone.
-     */
-    private boolean frozen;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -150,7 +142,6 @@ public final class Shape extends DefaultHostGraph {
         this.inEdgeMultMap = new HashMap<EdgeSignature,Multiplicity>();
         this.edgeSigSet = new HashSet<EdgeSignature>();
         this.frozenEdges = new HashSet<ShapeEdge>();
-        this.frozen = false;
         if (graph != null) {
             this.buildShape(false);
         }
@@ -179,7 +170,6 @@ public final class Shape extends DefaultHostGraph {
             new HashMap<ShapeNode,Multiplicity>(shape.nodeMultMap);
         this.equivRel = new EquivRelation<ShapeNode>(shape.equivRel);
         this.frozenEdges = new HashSet<ShapeEdge>(shape.frozenEdges);
-        this.frozen = false;
 
         // Clone the edge signature set.
         this.edgeSigSet = new HashSet<EdgeSignature>();
@@ -278,7 +268,7 @@ public final class Shape extends DefaultHostGraph {
      */
     @Override
     public boolean addNode(HostNode node) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         boolean added = super.addNode(node);
         if (added) {
             ShapeNode nodeS = (ShapeNode) node;
@@ -294,7 +284,7 @@ public final class Shape extends DefaultHostGraph {
      */
     @Override
     public boolean addEdgeWithoutCheck(HostEdge edge) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         boolean added = super.addEdgeWithoutCheck(edge);
         if (added && edge.getRole() == BINARY) {
             ShapeEdge edgeS = (ShapeEdge) edge;
@@ -320,7 +310,7 @@ public final class Shape extends DefaultHostGraph {
     /** Removes the node from the shape and updates all related structures. */
     @Override
     public boolean removeNode(HostNode node) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         assert this.nodeSet().contains(node);
 
         ShapeNode nodeS = (ShapeNode) node;
@@ -368,7 +358,7 @@ public final class Shape extends DefaultHostGraph {
     /** Removes the edge from the shape and updates all related structures. */
     @Override
     public boolean removeEdge(HostEdge edge) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         assert edge instanceof ShapeEdge;
         ShapeEdge edgeS = (ShapeEdge) edge;
         assert !this.isFrozen(edgeS);
@@ -391,7 +381,7 @@ public final class Shape extends DefaultHostGraph {
     @Override
     public boolean removeNodeSetWithoutCheck(
             Collection<? extends HostNode> nodeSet) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         boolean removed = false;
         for (HostNode node : nodeSet) {
             removed |= this.removeNode(node);
@@ -463,7 +453,7 @@ public final class Shape extends DefaultHostGraph {
      * Builds a shape from a concrete graph or a shape.  
      */
     private void buildShape(boolean fromShape) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         int radius = Parameters.getAbsRadius();
         // The iterations on the equivalence relation computation.
         GraphNeighEquiv er[] = new GraphNeighEquiv[radius + 1];
@@ -503,7 +493,7 @@ public final class Shape extends DefaultHostGraph {
      */
     private void createShapeNodes(GraphNeighEquiv currGraphNeighEquiv,
             boolean fromShape) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         // Each node of the shape correspond to an equivalence class
         // of the graph.
         for (EquivClass<HostNode> nodeEquivClass : currGraphNeighEquiv) {
@@ -534,7 +524,7 @@ public final class Shape extends DefaultHostGraph {
      * equivalence relation given.
      */
     private void createShapeNodesEquivRel(GraphNeighEquiv prevGraphNeighEquiv) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         // We use the previous (i-1) graph equivalence relation.
         for (EquivClass<HostNode> nodeEquivClass : prevGraphNeighEquiv) {
             EquivClass<ShapeNode> shapeEquivClass = new EquivClass<ShapeNode>();
@@ -549,7 +539,7 @@ public final class Shape extends DefaultHostGraph {
      * Creates the edges of this shape based on the equivalence relation given. 
      */
     private void createShapeEdges(EquivRelation<HostEdge> edgeEquivRel) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         // Each edge of the shape correspond to an equivalence class
         // of the graph.
         for (EquivClass<HostEdge> edgeEquivClassG : edgeEquivRel) {
@@ -576,7 +566,7 @@ public final class Shape extends DefaultHostGraph {
      * Creates the edge multiplicity maps from a graph neighbourhood relation.
      */
     private void createEdgeMultMaps(GraphNeighEquiv currGraphNeighEquiv) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         // For all binary labels.
         for (TypeLabel label : Util.getBinaryLabels(this.graph)) {
             // For all nodes in the graph.
@@ -614,7 +604,7 @@ public final class Shape extends DefaultHostGraph {
      * See item 6 of Def. 22 on page 17 of the Technical Report.
      */
     private void createEdgeMultMaps(ShapeNeighEquiv currGraphNeighEquiv) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         // Original shape (S).
         Shape origShape = (Shape) this.graph;
         // For all binary labels.
@@ -675,7 +665,7 @@ public final class Shape extends DefaultHostGraph {
      * the node is removed from the shape.
      */
     public void setNodeMult(ShapeNode node, Multiplicity mult) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         assert this.nodeSet().contains(node) : "Node " + node
             + " is not in the shape!";
         if (mult.isPositive()) {
@@ -689,7 +679,7 @@ public final class Shape extends DefaultHostGraph {
 
     /** Sets the edge outgoing multiplicity. */
     public void setEdgeOutMult(EdgeSignature es, Multiplicity mult) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         if (mult.isPositive()) {
             this.outEdgeMultMap.put(es, mult);
         } else {
@@ -710,7 +700,7 @@ public final class Shape extends DefaultHostGraph {
 
     /** Sets the edge incoming multiplicity. */
     public void setEdgeInMult(EdgeSignature es, Multiplicity mult) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         if (mult.isPositive()) {
             this.inEdgeMultMap.put(es, mult);
         } else {
@@ -878,7 +868,7 @@ public final class Shape extends DefaultHostGraph {
 
     /** Creates a new equivalence class and adds the given node in it. */
     private EquivClass<ShapeNode> addToNewEquivClass(ShapeNode node) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         EquivClass<ShapeNode> newEc = new EquivClass<ShapeNode>();
         newEc.add(node);
         this.equivRel.add(newEc);
@@ -938,7 +928,7 @@ public final class Shape extends DefaultHostGraph {
 
     /** Duplicate all unary edges occurring in the given 'from' node. */
     private void copyUnaryEdges(ShapeNode from, ShapeNode to) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         for (HostEdge edge : this.outEdgeSet(from)) {
             if (edge.getRole() != BINARY) {
                 TypeLabel label = edge.label();
@@ -971,7 +961,7 @@ public final class Shape extends DefaultHostGraph {
 
     /** The method name is self-explanatory. */
     public void setShapeAndCreateIdentityMorphism(HostGraph graph) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         assert graph instanceof Shape : "Cannot create a shaping morphism from a non-abstract graph.";
 
         this.graph = graph;
@@ -1024,7 +1014,7 @@ public final class Shape extends DefaultHostGraph {
      */
     public Set<Multiplicity> materialiseNode(ShapeNode nodeS,
             Multiplicity mult, int copies) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         assert this.nodeSet().contains(nodeS);
         assert mult != null && mult.isPositive();
         assert copies > 0;
@@ -1281,7 +1271,7 @@ public final class Shape extends DefaultHostGraph {
      */
     public void splitEc(EquivClass<ShapeNode> origEc,
             EquivClass<ShapeNode> singEc, EquivClass<ShapeNode> remEc) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         assert singEc.size() == 1 && origEc.containsAll(singEc)
             && origEc.containsAll(remEc);
         assert this.equivRel.contains(origEc);
@@ -1368,7 +1358,7 @@ public final class Shape extends DefaultHostGraph {
      * method, the caller will ensure that the invariant is true.  
      */
     public void freeze(ShapeEdge edgeToFreeze) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         assert this.edgeSet().contains(edgeToFreeze);
         EdgeSignature outEs = this.getEdgeOutSignature(edgeToFreeze);
         if (this.isOutEdgeSigUnique(outEs)) {
@@ -1390,25 +1380,15 @@ public final class Shape extends DefaultHostGraph {
      * method, the called will ensure that the invariant is true.  
      */
     public void freeze(Set<ShapeEdge> edgesToFreeze) {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         for (ShapeEdge edgeToFreeze : edgesToFreeze) {
             this.freeze(edgeToFreeze);
         }
     }
 
-    /** Freezes the shape, making it unmutable. */
-    public void freeze() {
-        this.frozen = true;
-    }
-
     /** Returns true if the given edge is frozen in the shape. */
     public boolean isFrozen(ShapeEdge edge) {
         return this.frozenEdges.contains(edge);
-    }
-
-    /** Returns true is the shape is frozen. */
-    public boolean isFrozen() {
-        return this.frozen;
     }
 
     /**
@@ -1417,7 +1397,7 @@ public final class Shape extends DefaultHostGraph {
      * again and the edge multiplicity maps are properly updated.
      */
     public void unfreezeEdges() {
-        assert !this.isFrozen();
+        assert !this.isFixed();
         for (ShapeEdge frozenEdge : this.frozenEdges) {
             Multiplicity oneMult = Multiplicity.getMultOf(1);
             ShapeNode src = frozenEdge.source();
@@ -1442,7 +1422,6 @@ public final class Shape extends DefaultHostGraph {
 
     /** Normalise the shape object and returns the newly modified shape. */
     public Shape normalise() {
-        assert !this.isFrozen();
         Shape normalisedShape = new Shape(getFactory());
         normalisedShape.buildShapeFromShape(this);
         return normalisedShape;

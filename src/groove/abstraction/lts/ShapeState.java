@@ -72,7 +72,7 @@ public class ShapeState extends AbstractGraphState {
         setCtrlState(ctrlState);
         this.shape = shape.clone();
         this.shape.setName(toString());
-        this.shape.freeze();
+        this.shape.setFixed();
         this.closed = false;
     }
 
@@ -82,7 +82,7 @@ public class ShapeState extends AbstractGraphState {
 
     @Override
     public Shape getGraph() {
-        assert this.shape.isFrozen();
+        assert this.shape.isFixed();
         return this.shape;
     }
 
