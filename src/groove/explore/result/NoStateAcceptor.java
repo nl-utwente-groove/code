@@ -17,15 +17,14 @@
 
 package groove.explore.result;
 
+import groove.lts.GTSAdapter;
+
 /**
  * Acceptor that accepts no state that is added to the LTS.
- * 
- * Implements the following methods:
- * - addUpdate (overridden) - add a state to the result set whenever a new node
- *                            is created in the LTS
+ * This is the default behaviour of super class {@link GTSAdapter} so there is
+ * nothing to be done here.
  * 
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public class NoStateAcceptor extends Acceptor {
     /**
@@ -37,7 +36,6 @@ public class NoStateAcceptor extends Acceptor {
 
     /**
      * Constructor. Only calls super method.
-     * @param result - the result set in which the accepted states will be stored
      */
     public NoStateAcceptor(Result result) {
         super(result);
