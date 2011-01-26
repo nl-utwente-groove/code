@@ -67,8 +67,6 @@ public class StateJList extends JList implements SimulationListener {
         this.listModel = new DefaultListModel();
         setModel(this.listModel);
         this.setEnabled(false);
-        // this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        // Multiple selection - mzimakova
         this.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.setCellRenderer(new MyCellRenderer());
         this.addMouseListener(new MyMouseListener());
@@ -409,7 +407,6 @@ public class StateJList extends JList implements SimulationListener {
                 if (evt.getButton() == MouseEvent.BUTTON3) { // Right click
                     // Determine if index was really selected
                     if (index >= 0 && cellSelected) {
-                        // Multiple selection - mzimakova
                         if (getSelectedIndices().length < 2) {
                             // Adjust list selection accordingly.
                             setSelectedIndex(index);

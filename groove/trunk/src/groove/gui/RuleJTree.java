@@ -85,7 +85,6 @@ public class RuleJTree extends JTree implements SimulationListener {
         setEnabled(false);
         setToggleClickCount(0);
         setCellRenderer(new MyTreeCellRenderer());
-        // mzimakova - Multiple selection
         getSelectionModel().setSelectionMode(
             TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         // set icons

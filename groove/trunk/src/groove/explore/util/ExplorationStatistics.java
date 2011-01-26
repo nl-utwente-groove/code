@@ -22,10 +22,10 @@ import groove.graph.iso.IsoChecker;
 import groove.graph.iso.PartitionRefiner;
 import groove.lts.AbstractGraphState;
 import groove.lts.GTS;
+import groove.lts.GTSAdapter;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.GTSAdapter;
 import groove.trans.DefaultApplication;
 import groove.trans.HostFactory;
 import groove.trans.SPOEvent;
@@ -52,7 +52,7 @@ public class ExplorationStatistics {
     // Static Fields
     // ------------------------------------------------------------------------
 
-    /** Number of bytes in a kilobyte */
+    /** Number of bytes in a kilobyte. */
     static private final int BYTES_PER_KB = 1024;
 
     // ------------------------------------------------------------------------
