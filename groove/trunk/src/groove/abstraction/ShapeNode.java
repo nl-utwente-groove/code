@@ -20,8 +20,8 @@ import groove.trans.DefaultHostNode;
 
 /**
  * Class that implements the nodes of a shape.
- * This class is essentially a DefaultNode and it was created just to improve
- * the code readability.
+ * This class is essentially a {@link DefaultHostNode} and it was created just 
+ * to improve the code readability.
  * 
  * @author Eduardo Zambon
  */
