@@ -157,7 +157,7 @@ public class Converter {
     /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
     static public <N extends Node,E extends Edge<N>> void graphToTikz(
             GraphJGraph graph, PrintWriter writer) {
-        writer.print(GraphToTikz.convertGraphToTikzStr(graph));
+        writer.print(GraphToTikz.convert(graph));
     }
 
     /** Writes a graph in a simple .kth format to a print writer. */

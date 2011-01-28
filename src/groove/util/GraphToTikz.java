@@ -59,96 +59,173 @@ import org.jgraph.util.Bezier;
  */
 public final class GraphToTikz {
 
+    // ------------------------------------------------------------------------
+    // Object fields
+    // ------------------------------------------------------------------------
+
+    /** The jGraph to be output. */
+    private final GraphJGraph jGraph;
+    /** The underlying model for jGraph. */
+    private final GraphJModel<Node,Edge<Node>> model;
+    /** The underlying Groove graph connected to the jGraph. */
+    private final Graph<Node,Edge<Node>> graph;
+    /** The layout map of the graph. */
+    private final LayoutMap<Node,Edge<Node>> layoutMap;
+    /** The builder that holds the Tikz string. */
+    private final StringBuilder result;
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
+    /**
+     * The constructor is private. To perform the conversion just call the
+     * static method {@link #convert(GraphJGraph)}.
+     */
+    @SuppressWarnings("unchecked")
+    private GraphToTikz(GraphJGraph jGraph) {
+        this.jGraph = jGraph;
+        this.model = (GraphJModel<Node,Edge<Node>>) this.jGraph.getModel();
+        this.graph = this.model.getGraph();
+        this.layoutMap = GraphInfo.getLayoutMap(this.graph);
+        this.result = new StringBuilder();
+    }
+
+    // ------------------------------------------------------------------------
+    // Static methods
+    // ------------------------------------------------------------------------
+
     /**
      * Converts a graph to a Tikz representation.
      * @param jGraph the graph to be converted.
      * @return a string with the Tikz encoding of the graph.
      */
-    public static <N extends Node,E extends Edge<N>> String convertGraphToTikzStr(
-            GraphJGraph jGraph) {
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        GraphJModel<N,E> model = (GraphJModel) jGraph.getModel();
-        Graph<N,E> graph = model.getGraph();
-        LayoutMap<N,E> layoutMap = GraphInfo.getLayoutMap(graph);
-        boolean showBackground =
-            jGraph.getOptionValue(Options.SHOW_BACKGROUND_OPTION);
-        StringBuilder result = new StringBuilder();
+    public static String convert(GraphJGraph jGraph) {
+        return new GraphToTikz(jGraph).doConvert();
+    }
 
-        result.append(beginTikzFig());
-
-        for (N node : graph.nodeSet()) {
-            GraphJVertex vertex = model.getJCellForNode(node);
-            model.synchroniseLayout(vertex);
-            JVertexLayout layout = null;
-            if (layoutMap != null) {
-                layout = layoutMap.getLayout(node);
-            }
-            result.append(convertNodeToTikzStr(vertex, layout, showBackground,
-                jGraph.getSelectionModel().isCellSelected(vertex)));
+    /**
+     * Square brackets are tricky because they are sometimes interpreted in
+     * different ways by LaTeX and Tikz and sometimes they need to be escaped.
+     * This method undoes the escaping on the given string. 
+     */
+    private static String unescapeSquareBrack(String string) {
+        StringBuilder result = new StringBuilder(string);
+        int i = result.indexOf(LEFT_SQUARE);
+        while (i > -1) {
+            result.replace(i, i + LEFT_SQUARE.length(), "[");
+            i = result.indexOf(LEFT_SQUARE);
         }
-
-        for (E edge : graph.edgeSet()) {
-            JEdgeLayout layout = null;
-            if (layoutMap != null) {
-                layout = layoutMap.getLayout(edge);
-            }
-            GraphJCell jCell = model.getJCellForEdge(edge);
-            result.append(convertEdgeToTikzStr(jCell, layout, layoutMap,
-                jGraph.getSelectionModel().isCellSelected(jCell)));
+        i = result.indexOf(RIGHT_SQUARE);
+        while (i > -1) {
+            result.replace(i, i + RIGHT_SQUARE.length(), "]");
+            i = result.indexOf(RIGHT_SQUARE);
         }
-
-        result.append(endTikzFig());
-
         return result.toString();
     }
 
-    /**
-     * Converts a jGraph node to a Tikz string representation. 
-     * @param node the node to be converted.
-     * @param layout information regarding layout of the node. 
-     * @param showBackground flag to indicate if the node should be filled.
-     * @param selected flag to indicate that the node should be drawn as selected
-     * @return a StringBuilder filled with the Tikz string.
-     */
-    private static <N extends Node,E extends Edge<N>> StringBuilder convertNodeToTikzStr(
-            GraphJVertex node, JVertexLayout layout, boolean showBackground,
-            boolean selected) {
+    // BEGIN
+    // Methods to enclose a string with extra characters.
 
+    private static String enclose(String string, String start, String end) {
+        return start + string + end;
+    }
+
+    private static String enclosePar(String string) {
+        return enclose(string, "(", ")");
+    }
+
+    private static String encloseBrack(String string) {
+        return enclose(string, "[", "]");
+    }
+
+    private static String encloseCurly(String string) {
+        return enclose(string, "{", "}");
+    }
+
+    private static String encloseSpace(String string) {
+        return enclose(string, " ", " ");
+    }
+
+    private static String encloseItalicStyle(String string) {
+        return enclose(unescapeSquareBrack(string), ITALIC_STYLE, "}");
+    }
+
+    private static String encloseBoldStyle(String string) {
+        return enclose(unescapeSquareBrack(string), BOLD_STYLE, "}");
+    }
+
+    // Methods to enclose a string with extra characters.
+    // END
+
+    /**
+     * Escapes the special LaTeX characters in the line and copies the rest.
+     * @param line the string to be escaped.
+     * @return the line with escaped characters, if any.
+     */
+    private static StringBuilder escapeSpecialChars(StringBuilder line) {
         StringBuilder result = new StringBuilder();
 
-        if (node.isVisible()) {
-            result.append(BEGIN_NODE);
-
-            // Styles.
-            result.append(convertStyles(node, selected, showBackground));
-
-            // Node ID.
-            appendNode(node, result);
-
-            // Node Coordinates.
-            if (layout != null) {
-                result.append(encloseSpace(AT_KEYWORD));
-                Rectangle2D bounds = layout.getBounds();
-                double x = bounds.getCenterX();
-                double y = bounds.getCenterY();
-                appendPoint(x, y, true, result);
-            }
-
-            // Node Labels.
-            List<StringBuilder> lines = node.getLines();
-            if (lines.isEmpty()) {
-                result.append(EMPTY_NODE_LAB);
-            } else {
-                result.append(BEGIN_NODE_LAB);
-                for (StringBuilder line : lines) {
-                    result.append(convertHtmlToTikz(line));
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            switch (c) {
+            case '&': // We have to check if the & is part of a special
+                // HTML char.
+                if (line.charAt(i + 1) == '#') {
+                    // Yes, it is. Keep it.
+                    result.append("&#");
+                    i++;
+                } else { // It's not.
+                    result.append(AMP);
                 }
-                // Remove the last \\, if it exists
-                if (result.lastIndexOf(CRLF) == result.length() - 2) {
-                    result.deleteCharAt(result.length() - 1);
-                    result.deleteCharAt(result.length() - 1);
-                }
-                result.append(END_NODE_LAB);
+                break;
+            case '$':
+                result.append(DOLLAR);
+                break;
+            case '#':
+                result.append(NUMBER);
+                break;
+            case '|':
+                result.append(VERT_BAR);
+                break;
+            case '%':
+                result.append(PERCENT);
+                break;
+            case '_':
+                result.append(UNDERSCORE);
+                break;
+            case '{':
+                result.append(LEFT_CURLY);
+                break;
+            case '}':
+                result.append(RIGHT_CURLY);
+                break;
+            case '[':
+                result.append(LEFT_SQUARE);
+                break;
+            case ']':
+                result.append(RIGHT_SQUARE);
+                break;
+            case '^':
+                result.append(CIRCUNFLEX);
+                break;
+            case '~':
+                result.append(TILDE);
+                break;
+            case '+':
+                result.append(PLUS);
+                break;
+            case '-':
+                result.append(MINUS);
+                break;
+            case '\\':
+                result.append(BACKSLASH);
+                break;
+            case Groove.LC_PI:
+                result.append(PI);
+                break;
+            default:
+                result.append(c);
             }
         }
 
@@ -156,475 +233,95 @@ public final class GraphToTikz {
     }
 
     /**
-     * Helper method to perform safe JCell casting.
-     * @param cell the edge to be converted.
-     * @param layout information regarding layout of the node.
-     * @param layoutMap the layout information associated with the graph.
-     * @param selected flag to indicate that the edge should be drawn as selected
-     * @return a StringBuilder filled with the Tikz string if the JCell could
-     *         cast into a valid sub-type or an empty StringBuilder otherwise.
+     * Escapes the special LaTeX characters in the line and copies the rest.
+     * @param line the string to be escaped.
+     * @return the line with escaped characters, if any.
      */
-    private static <N extends Node,E extends Edge<N>> StringBuilder convertEdgeToTikzStr(
-            GraphJCell cell, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
-            boolean selected) {
-
-        if (cell instanceof GraphJEdge) {
-            GraphJEdge graphCell = (GraphJEdge) cell;
-            return convertEdgeToTikzStr(graphCell, layout, layoutMap, selected);
-        } else {
-            return new StringBuilder();
-        }
+    private static String escapeSpecialChars(String line) {
+        return escapeSpecialChars(new StringBuilder(line)).toString();
     }
 
     /**
-     * Converts a jGraph edge to a Tikz string representation. 
-     * @param edge the edge to be converted.
-     * @param layout information regarding layout of the edge.
-     * @param layoutMap the layout information associated with the graph.
-     * @param selected flag to indicate that the edge should be drawn as selected
-     * @return a StringBuilder filled with the Tikz string.
+     * Removes all occurrences of the given tag on the given line.
+     * @param line the line to be processed.
+     * @param tag the tag to be removed.
+     * @return the original line that was passed to the method.
      */
-    private static <N extends Node,E extends Edge<N>> StringBuilder convertEdgeToTikzStr(
-            GraphJEdge edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
-            boolean selected) {
+    private static String removeAllTags(StringBuilder line,
+            Converter.HTMLTag tag) {
+        String origLine = line.toString();
+        StringBuilder newLine = new StringBuilder(line);
+        tag.off(newLine);
+        while (!newLine.toString().equals(origLine)) {
+            origLine = newLine.toString();
+            tag.off(newLine);
+        }
+        return origLine;
+    }
 
-        StringBuilder result = new StringBuilder();
+    /**
+     * Checks on which side of a rectangle a point lies. To avoid anchoring in
+     * points very close to an angle we take a 0.9 scale on each side.
+     * @param bounds the bounding box.
+     * @param point the point to be checked.
+     * @return 1 if the point lies east, 2 if it lies north, 3 if it lies west,
+     *         4 if it lies south, and 0 if its outside a proper position.
+     */
+    private static int getSide(Rectangle2D bounds, Point2D point) {
+        double x = point.getX();
+        double y = point.getY();
+        double ulx = bounds.getX();
+        double uly = bounds.getY();
+        double brx = bounds.getMaxX();
+        double bry = bounds.getMaxY();
+        double scale = 0.1;
+        double dx = (bounds.getWidth() * scale) / 2;
+        double dy = (bounds.getHeight() * scale) / 2;
+        double minX = ulx + dx;
+        double minY = uly + dy;
+        double maxX = brx - dx;
+        double maxY = bry - dy;
 
-        if (edge.isVisible()) {
-            ArrayList<String> styles = convertStyles(edge, selected);
-            String edgeStyle = styles.get(0);
-            String labStyle = styles.get(1);
+        int side = 0;
 
-            result.append(BEGIN_EDGE);
-            result.append(encloseBrack(edgeStyle));
-
-            if (layout != null) {
-                switch (layout.getLineStyle()) {
-                case GraphConstants.STYLE_ORTHOGONAL:
-                    appendOrthogonalLayout(edge, layout, layoutMap, labStyle,
-                        result);
-                    break;
-                case GraphConstants.STYLE_BEZIER:
-                    appendBezierLayout(edge, layout, layoutMap, labStyle,
-                        result);
-                    break;
-                case GraphConstants.STYLE_SPLINE:
-                    appendSplineLayout(edge, layout, layoutMap, labStyle,
-                        result);
-                    break;
-                case JAttr.STYLE_MANHATTAN:
-                    appendManhattanLayout(edge, layout, layoutMap, labStyle,
-                        result);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown line style!");
-                }
-            } else {
-                appendDefaultLayout(edge, layoutMap, labStyle, result);
-            }
+        if (x >= brx && y >= minY && y <= maxY) {
+            side = 1;
+        } else if (y <= uly && x >= minX && x <= maxX) {
+            side = 2;
+        } else if (x <= ulx && y >= minY && y <= maxY) {
+            side = 3;
+        } else if (y >= bry && x >= minX && x <= maxX) {
+            side = 4;
         }
 
+        return side;
+    }
+
+    /**
+     * Provides the string that is to be appended at a node name.
+     * @param side the side of the node where a point lies.
+     * @return the empty string if side is 0 and one of the four coordinates
+     *         otherwise.
+     */
+    private static String getCoordString(int side) {
+        String result;
+        switch (side) {
+        case 1:
+            result = EAST;
+            break;
+        case 2:
+            result = NORTH;
+            break;
+        case 3:
+            result = WEST;
+            break;
+        case 4:
+            result = SOUTH;
+            break;
+        default:
+            result = "";
+        }
         return result;
-    }
-
-    /**
-     * Creates an edge with a default layout. The edge is drawn as a straight
-     * line from source to target node and the label is placed half-way.
-     * @param edge the edge to be converted.
-     * @param layoutMap the layout information associated with the graph.
-     * @param labStyle a string describing the style to be used in the label.
-     * @param s a StringBuilder where the Tikz string will be appended.
-     */
-    private static <N extends Node,E extends Edge<N>> void appendDefaultLayout(
-            GraphJEdge edge, LayoutMap<N,E> layoutMap, String labStyle,
-            StringBuilder s) {
-
-        GraphJVertex srcVertex = edge.getSourceVertex();
-        GraphJVertex tgtVertex = edge.getTargetVertex();
-
-        appendSourceNode(srcVertex, tgtVertex, layoutMap, s);
-        s.append(encloseSpace(DOUBLE_DASH));
-        appendEdgeLabelInPath(edge, labStyle, s);
-        appendTargetNode(srcVertex, tgtVertex, layoutMap, s);
-        s.append(END_EDGE);
-    }
-
-    /**
-     * Creates an edge with orthogonal lines. Only the intermediate points of
-     * the layout information are used, the first and last points are discarded
-     * and replaced by Tikz node names and we let Tikz find the anchors.
-     * @param edge the edge to be converted.
-     * @param layout information regarding layout of the edge.
-     * @param layoutMap the layout information associated with the graph.
-     * @param labStyle a string describing the style to be used in the label.
-     * @param connection the string with the type of Tikz connection to be used.
-     * @param s a StringBuilder where the Tikz string will be appended.
-     */
-    private static <N extends Node,E extends Edge<N>> void appendOrthogonalLayout(
-            GraphJEdge edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
-            String labStyle, String connection, StringBuilder s) {
-
-        GraphJVertex srcVertex = edge.getSourceVertex();
-        GraphJVertex tgtVertex = edge.getTargetVertex();
-        List<Point2D> points = layout.getPoints();
-
-        if (points.size() == 2) {
-            appendSourceNode(srcVertex, tgtVertex, layoutMap, s);
-            s.append(encloseSpace(connection));
-            appendTargetNode(srcVertex, tgtVertex, layoutMap, s);
-            s.append(END_PATH);
-            appendEdgeLabel(edge, layout, labStyle, points, s);
-            s.append(END_EDGE);
-            return;
-        }
-
-        int firstPoint = 1;
-        int lastPoint = points.size() - 2;
-
-        appendNode(srcVertex, points.get(firstPoint), layoutMap, s);
-        s.append(encloseSpace(connection));
-        // Intermediate points
-        for (int i = firstPoint; i <= lastPoint; i++) {
-            appendPoint(points, i, s);
-            // When using the MANHATTAN style sometimes we cannot use the ANGLE
-            // routing when going from the last point to the node because the
-            // arrow will be in the wrong direction.
-            // We test this condition here.
-            if (i == lastPoint && connection.equals(ANGLE)
-                && isHorizontalOrVertical(points, i, tgtVertex, layoutMap)) {
-                // We are in this special case, use straight routing.
-                s.append(encloseSpace(DOUBLE_DASH));
-            } else {
-                // A normal case, just use the provided connection string.
-                s.append(encloseSpace(connection));
-            }
-        }
-        appendNode(tgtVertex, points.get(lastPoint), layoutMap, s);
-        s.append(END_PATH);
-        appendEdgeLabel(edge, layout, labStyle, points, s);
-        s.append(END_EDGE);
-    }
-
-    /**
-     * Creates an edge with orthogonal lines. Only the intermediate points of
-     * the layout information are used, the first and last points are discarded
-     * and replaced by Tikz node names and we let Tikz find the anchors.
-     * @param edge the edge to be converted.
-     * @param layout information regarding layout of the edge.
-     * @param layoutMap the layout information associated with the graph.
-     * @param labStyle a string describing the style to be used in the label.
-     * @param s a StringBuilder where the Tikz string will be appended.
-     */
-    private static <N extends Node,E extends Edge<N>> void appendOrthogonalLayout(
-            GraphJEdge edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
-            String labStyle, StringBuilder s) {
-        appendOrthogonalLayout(edge, layout, layoutMap, labStyle, DOUBLE_DASH,
-            s);
-    }
-
-    /**
-     * Creates an edge with bezier lines. Only the intermediate points of
-     * the layout information are used, the first and last points are discarded
-     * and replaced by Tikz node names and we let Tikz find the anchors.
-     * Each point of the layout information is interspersed with control points
-     * from the bezier lines.
-     * @param edge the edge to be converted.
-     * @param layout information regarding layout of the edge.
-     * @param layoutMap the layout information associated with the graph.
-     * @param labStyle a string describing the style to be used in the label.
-     * @param s a StringBuilder where the Tikz string will be appended.
-     */
-    private static <N extends Node,E extends Edge<N>> void appendBezierLayout(
-            GraphJEdge edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
-            String labStyle, StringBuilder s) {
-
-        GraphJVertex srcVertex = edge.getSourceVertex();
-        GraphJVertex tgtVertex = edge.getTargetVertex();
-        List<Point2D> points = layout.getPoints();
-        boolean isLoop = srcVertex.getNode().equals(tgtVertex.getNode());
-
-        // Compute the bezier line.
-        Bezier bezier = new Bezier(points.toArray(new Point2D[points.size()]));
-        Point2D[] bPoints = bezier.getPoints();
-
-        if (bPoints == null) {
-            // The edge is with a bezier style but it does not have any bezier
-            // points, just use standard layout.
-            appendDefaultLayout(edge, layoutMap, labStyle, s);
-            return;
-        }
-
-        appendNode(srcVertex, s);
-
-        int i = 1; // Index for edge points.
-        for (int j = 0; j < bPoints.length - 1; j++) {
-            s.append(BEGIN_CONTROLS);
-            if (isLoop && i == points.size() - 1) {
-                // This is the LAST control entry and we are drawing a loop
-                // edge, we need to use a point of the edge instead of a bezier
-                // point, otherwise the loop is drawn incorrectly.
-                appendPoint(points, i - 1, s);
-            } else {
-                // No special case, just use a bezier point.
-                appendPoint(bPoints[j], s);
-            }
-            s.append(AND);
-            if (i == 1 && isLoop) {
-                // This is the FIRST control entry and we are drawing a loop
-                // edge, we need to use a point of the edge instead of a bezier
-                // point, otherwise the loop is drawn incorrectly.
-                appendPoint(points, i, s);
-            } else {
-                // No special case, just use a bezier point.
-                appendPoint(bPoints[j + 1], s);
-            }
-            s.append(END_CONTROLS);
-            if (i != points.size() - 1 && points.size() > 3) {
-                // Intermediate point
-                appendPoint(points, i, s);
-            }
-            i++;
-        }
-
-        appendNode(tgtVertex, s);
-        s.append(END_PATH);
-        appendEdgeLabel(edge, layout, labStyle, points, s);
-        s.append(END_EDGE);
-    }
-
-    /**
-     * This is not implemented yet. The Bezier style is used instead.
-     * @param edge the edge to be converted.
-     * @param layout information regarding layout of the edge.
-     * @param layoutMap the layout information associated with the graph.
-     * @param labStyle a string describing the style to be used in the label.
-     * @param s a StringBuilder where the Tikz string will be appended.
-     */
-    private static <N extends Node,E extends Edge<N>> void appendSplineLayout(
-            GraphJEdge edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
-            String labStyle, StringBuilder s) {
-
-        System.err.println("Sorry, the SPLINE line style is not yet "
-            + "supported, using BEZIER style...");
-        appendBezierLayout(edge, layout, layoutMap, labStyle, s);
-    }
-
-    /**
-     * Creates an edge with Manhattan lines. Only the intermediate points of
-     * the layout information are used, the first and last points are discarded
-     * and replaced by Tikz node names and we let Tikz find the anchors.
-     * @param edge the edge to be converted.
-     * @param layout information regarding layout of the edge.
-     * @param layoutMap the layout information associated with the graph.
-     * @param labStyle a string describing the style to be used in the label.
-     * @param s a StringBuilder where the Tikz string will be appended.
-     */
-    private static <N extends Node,E extends Edge<N>> void appendManhattanLayout(
-            GraphJEdge edge, JEdgeLayout layout, LayoutMap<N,E> layoutMap,
-            String labStyle, StringBuilder s) {
-        appendOrthogonalLayout(edge, layout, layoutMap, labStyle, ANGLE, s);
-    }
-
-    /* Helper methods */
-
-    /**
-     * Appends the node name to the given string builder.
-     */
-    private static <N extends Node,E extends Edge<N>> void appendNode(
-            GraphJVertex node, StringBuilder s) {
-        s.append(encloseSpace(enclosePar(node.getNode().toString())));
-    }
-
-    /**
-     * Checks whether the given point is in a proper position with respect to
-     * the given node and appends the node to the string builder, together
-     * with a node anchor that keeps the edge horizontal or vertical.
-     */
-    private static <N extends Node,E extends Edge<N>> void appendNode(
-            GraphJVertex node, Point2D point, LayoutMap<N,E> layoutMap,
-            StringBuilder s) {
-
-        int side = getSide(node, point, layoutMap);
-        if (side == 0) {
-            // The point is not aligned with the node, just use normal routing.
-            appendNode(node, s);
-        } else {
-            String coord = getCoordString(side);
-            String nodeName = node.getNode().toString();
-            s.append(enclosePar(nodeName + coord + appendPoint(point, false)));
-        }
-    }
-
-    /**
-     * Checks whether the given target node is in a proper position with
-     * respect to the given source node and appends the source node to the
-     * string builder, together with a node anchor that keeps the edge
-     * horizontal or vertical.
-     */
-    private static <N extends Node,E extends Edge<N>> void appendSourceNode(
-            GraphJVertex srcNode, GraphJVertex tgtNode,
-            LayoutMap<N,E> layoutMap, StringBuilder s) {
-
-        if (layoutMap != null) {
-            @SuppressWarnings("unchecked")
-            JVertexLayout tgtLayout =
-                layoutMap.getLayout((N) tgtNode.getNode());
-            if (tgtLayout != null) {
-                Rectangle2D tgtBounds = tgtLayout.getBounds();
-                Point2D tgtCenter =
-                    new Point2D.Double(tgtBounds.getCenterX(),
-                        tgtBounds.getCenterY());
-                appendNode(srcNode, tgtCenter, layoutMap, s);
-            }
-        } else {
-            appendNode(srcNode, s);
-        }
-    }
-
-    /**
-     * Checks whether the given source node is in a proper position with
-     * respect to the given target node and appends the target node to the
-     * string builder, together with a node anchor that keeps the edge
-     * horizontal or vertical.
-     */
-    private static <N extends Node,E extends Edge<N>> void appendTargetNode(
-            GraphJVertex srcNode, GraphJVertex tgtNode,
-            LayoutMap<N,E> layoutMap, StringBuilder s) {
-
-        if (layoutMap != null) {
-            @SuppressWarnings("unchecked")
-            JVertexLayout srcLayout =
-                layoutMap.getLayout((N) srcNode.getNode());
-            @SuppressWarnings("unchecked")
-            JVertexLayout tgtLayout =
-                layoutMap.getLayout((N) tgtNode.getNode());
-            if (srcLayout != null && tgtLayout != null) {
-                Rectangle2D tgtBounds = tgtLayout.getBounds();
-                Point2D tgtCenter =
-                    new Point2D.Double(tgtBounds.getCenterX(),
-                        tgtBounds.getCenterY());
-                int side = getSide(srcNode, tgtCenter, layoutMap);
-                if (side == 0) {
-                    Rectangle2D srcBounds = srcLayout.getBounds();
-                    Point2D srcCenter =
-                        new Point2D.Double(srcBounds.getCenterX(),
-                            srcBounds.getCenterY());
-                    appendNode(tgtNode, srcCenter, layoutMap, s);
-                } else {
-                    appendNode(tgtNode, s);
-                }
-            }
-        } else {
-            GraphToTikz.<N,E>appendNode(tgtNode, s);
-        }
-    }
-
-    private static void appendEdgeLabel(GraphJEdge edge, StringBuilder s) {
-        Edge<?> e = edge.getEdge();
-        if (e instanceof AspectEdge) {
-            RuleLabel ruleLabel = ((AspectEdge) e).getRuleLabel();
-            if (ruleLabel != null && ruleLabel.isMatchable()
-                && !ruleLabel.isAtom() && !ruleLabel.isSharp()) {
-                // We have a regular expression on the label, make it italic.
-                s.append(encloseCurly(encloseItalicStyle(escapeSpecialChars(edge.getText()))));
-            } else {
-                // This is a normal AspectEdge.
-                s.append(encloseCurly(escapeSpecialChars(edge.getText())));
-            }
-        } else {
-            s.append(encloseCurly(escapeSpecialChars(edge.getText())));
-        }
-    }
-
-    /**
-     * Appends the edge label along the path that is being drawn.
-     */
-    private static <N extends Node,E extends Edge<N>> void appendEdgeLabelInPath(
-            GraphJEdge edge, String labStyle, StringBuilder s) {
-
-        if (!labStyle.equals(INHERITANCE_LABEL_STYLE)) {
-            s.append(NODE);
-            s.append(encloseBrack(labStyle));
-            appendEdgeLabel(edge, s);
-        }
-    }
-
-    /**
-     * Creates an extra path to place the edge label which has especial
-     * placement requirements.
-     */
-    private static <N extends Node,E extends Edge<N>> void appendEdgeLabel(
-            GraphJEdge edge, JEdgeLayout layout, String labStyle,
-            List<Point2D> points, StringBuilder s) {
-
-        if (!labStyle.equals(INHERITANCE_LABEL_STYLE)) {
-            Point2D labelPos =
-                convertRelativeLabelPositionToAbsolute(
-                    layout.getLabelPosition(), points);
-            // Extra path for the label position.
-            s.append(BEGIN_NODE);
-            s.append(encloseBrack(labStyle));
-            s.append(encloseSpace(AT_KEYWORD));
-            appendPoint(labelPos, s);
-            appendEdgeLabel(edge, s);
-        }
-    }
-
-    /**
-     * Appends the point in position i of a list of points to a string builder.
-     */
-    private static void appendPoint(List<Point2D> points, int i, StringBuilder s) {
-        appendPoint(points.get(i), s);
-    }
-
-    /**
-     * Converts a point to a string.
-     * @param point the point to be converted.
-     * @param usePar flag to indicate whether the point coordinates should be
-
-     *               enclosed in parentheses or not.
-     * @return the string representation of the given point.
-     */
-    private static String appendPoint(Point2D point, boolean usePar) {
-        double x = point.getX();
-        double y = point.getY();
-        StringBuilder s = new StringBuilder();
-        appendPoint(x, y, usePar, s);
-        return s.toString();
-    }
-
-    /**
-     * Appends the given point to the string builder.
-     */
-    private static void appendPoint(Point2D point, StringBuilder s) {
-        double x = point.getX();
-        double y = point.getY();
-        appendPoint(x, y, true, s);
-    }
-
-    /**
-     * Appends the given points to the string builder. The coordinates are
-     * scaled by a constant factor and the y-coordinate is inverted as the
-     * jGraph and Tikz representation are different.
-     * @param x the x coordinate of the point.
-     * @param y the y coordinate of the point.
-     * @param usePar flag to indicate whether the point coordinates should be
-     *               enclosed in parentheses or not.
-     * @param s a StringBuilder where the Tikz string will be appended.
-     */
-    private static void appendPoint(double x, double y, boolean usePar,
-            StringBuilder s) {
-
-        double scale = 100.0;
-        double adjX = x / scale;
-        double adjY = -1.0 * (y / scale);
-        String format = "%5.3f, %5.3f";
-        Formatter f = new Formatter();
-
-        if (usePar) {
-            format = enclosePar(format);
-        }
-        s.append(f.format(Locale.US, format, adjX, adjY).toString());
     }
 
     /**
@@ -714,152 +411,307 @@ public final class GraphToTikz {
         return null;
     }
 
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
     /**
-     * Checks if two points or a point and a node form an horizontal or
-     * vertical edge.
-     * @param points a list of points.
-     * @param index the index of the point to be checked.
-     * @param tgtVertex the target node.
-     * @param layoutMap the layout information associated with the graph.
-     * @return true if the edge is horizontal or vertical and false otherwise.
+     * Performs the entire conversion to Tikz and returns the resulting string.
      */
-    private static <N extends Node,E extends Edge<N>> boolean isHorizontalOrVertical(
-            List<Point2D> points, int index, GraphJVertex tgtVertex,
-            LayoutMap<N,E> layoutMap) {
+    private String doConvert() {
+        this.appendTikzHeader();
 
-        boolean result = false;
-
-        if (layoutMap != null) {
-            @SuppressWarnings("unchecked")
-            JVertexLayout layout = layoutMap.getLayout((N) tgtVertex.getNode());
-            if (layout != null) {
-                Rectangle2D tgtBounds = layout.getBounds();
-                if (points.get(index).getY() == points.get(index + 1).getY()
-                    || getSide(tgtBounds, points.get(index)) != 0) {
-                    result = true;
-                }
+        for (Node node : this.graph.nodeSet()) {
+            GraphJVertex vertex = this.model.getJCellForNode(node);
+            this.model.synchroniseLayout(vertex);
+            JVertexLayout layout = null;
+            if (this.layoutMap != null) {
+                layout = this.layoutMap.getLayout(node);
             }
+            this.appendTikzNode(vertex, layout,
+                this.jGraph.getSelectionModel().isCellSelected(vertex));
         }
 
-        return result;
+        for (Edge<Node> edge : this.graph.edgeSet()) {
+            JEdgeLayout layout = null;
+            if (this.layoutMap != null) {
+                layout = this.layoutMap.getLayout(edge);
+            }
+            GraphJCell jCell = this.model.getJCellForEdge(edge);
+            this.appendTikzEdge(jCell, layout,
+                this.jGraph.getSelectionModel().isCellSelected(jCell));
+        }
+
+        this.appendTikzFooter();
+
+        return this.result.toString();
     }
 
-    /**
-     * Checks on which side of a node a point lies.
-     * @param vertex the node to be checked.
-     * @param point the point to be checked.
-     * @param layoutMap the layout information associated with the graph.
-     * @return 1 if the point lies east, 2 if it lies north, 3 if it lies west,
-     *         4 if it lies south, and 0 if its outside a proper position.
-     */
-    private static <N extends Node,E extends Edge<N>> int getSide(
-            GraphJVertex vertex, Point2D point, LayoutMap<N,E> layoutMap) {
+    private void appendTikzHeader() {
+        this.result.append(DOC + BEGIN_TIKZ_FIG + ENTER);
+    }
 
-        int side = 0;
-        if (layoutMap != null) {
-            @SuppressWarnings("unchecked")
-            JVertexLayout layout = layoutMap.getLayout((N) vertex.getNode());
+    private void appendTikzFooter() {
+        this.result.append(END_TIKZ_FIG + ENTER);
+    }
+
+    // -------------------------- Nodes ---------------------------------------
+
+    /**
+     * Converts a jGraph node to a Tikz string representation. 
+     * @param node the node to be converted.
+     * @param layout information regarding layout of the node. 
+     * @param selected flag to indicate that the node should be drawn as
+     *                 selected.
+     */
+    private void appendTikzNode(GraphJVertex node, JVertexLayout layout,
+            boolean selected) {
+        if (node.isVisible()) {
+            this.result.append(BEGIN_NODE);
+
+            // Styles.
+            this.appendNodeStyles(node, selected);
+
+            // Node ID.
+            this.appendNode(node);
+
+            // Node Coordinates.
             if (layout != null) {
+                this.result.append(encloseSpace(AT_KEYWORD));
                 Rectangle2D bounds = layout.getBounds();
-                side = getSide(bounds, point);
+                double x = bounds.getCenterX();
+                double y = bounds.getCenterY();
+                this.appendPoint(x, y, true);
+            }
+
+            // Node Labels.
+            List<StringBuilder> lines = node.getLines();
+            if (lines.isEmpty()) {
+                this.result.append(EMPTY_NODE_LAB);
+            } else {
+                this.result.append(BEGIN_NODE_LAB);
+                for (StringBuilder line : lines) {
+                    this.appendNodeInscription(line);
+                }
+                // Remove the last \\, if it exists
+                if (this.result.lastIndexOf(CRLF) == this.result.length() - 2) {
+                    this.result.deleteCharAt(this.result.length() - 1);
+                    this.result.deleteCharAt(this.result.length() - 1);
+                }
+                this.result.append(END_NODE_LAB);
             }
         }
-        return side;
     }
 
     /**
-     * Checks on which side of a rectangle a point lies. To avoid anchoring in
-     * points very close to an angle we take a 0.9 scale on each side.
-     * @param bounds the bounding box.
-     * @param point the point to be checked.
-     * @return 1 if the point lies east, 2 if it lies north, 3 if it lies west,
-     *         4 if it lies south, and 0 if its outside a proper position.
+     * Produces a string with the proper Tikz styles of a given node.
+     * @param node the node to be converted.
+     * @param selected flag to indicate that the node should be drawn as selected
      */
-    private static int getSide(Rectangle2D bounds, Point2D point) {
-        double x = point.getX();
-        double y = point.getY();
-        double ulx = bounds.getX();
-        double uly = bounds.getY();
-        double brx = bounds.getMaxX();
-        double bry = bounds.getMaxY();
-        double scale = 0.1;
-        double dx = (bounds.getWidth() * scale) / 2;
-        double dy = (bounds.getHeight() * scale) / 2;
-        double minX = ulx + dx;
-        double minY = uly + dy;
-        double maxX = brx - dx;
-        double maxY = bry - dy;
+    private void appendNodeStyles(GraphJVertex node, boolean selected) {
+        ArrayList<String> styles = new ArrayList<String>();
+        boolean isControlNode = false;
 
-        int side = 0;
-
-        if (x >= brx && y >= minY && y <= maxY) {
-            side = 1;
-        } else if (y <= uly && x >= minX && x <= maxX) {
-            side = 2;
-        } else if (x <= ulx && y >= minY && y <= maxY) {
-            side = 3;
-        } else if (y >= bry && x >= minX && x <= maxX) {
-            side = 4;
+        if (node instanceof CtrlJVertex) {
+            // Node from control automaton.
+            this.getControlNodeStyles((CtrlJVertex) node, styles);
+            isControlNode = true;
         }
 
-        return side;
-    }
-
-    /**
-     * Provides the string that is to be appended at a node name.
-     * @param side the side of the node where a point lies.
-     * @return the empty string if side is 0 and one of the four coordinates
-     *         otherwise.
-     */
-    private static String getCoordString(int side) {
-        String result;
-
-        switch (side) {
-        case 1:
-            result = EAST;
+        AspectKind nodeKind =
+            node instanceof AspectJVertex
+                    ? ((AspectJVertex) node).getNode().getKind() : NONE;
+        switch (nodeKind) {
+        case ERASER: // Eraser node
+            styles.add(ERASER_NODE_STYLE);
             break;
-        case 2:
-            result = NORTH;
+        case CREATOR: // Creator node
+            styles.add(CREATOR_NODE_STYLE);
             break;
-        case 3:
-            result = WEST;
+        case EMBARGO: // Embargo node
+            styles.add(EMBARGO_NODE_STYLE);
             break;
-        case 4:
-            result = SOUTH;
+        case REMARK: // Remark node
+            styles.add(REMARK_NODE_STYLE);
+            break;
+        case ABSTRACT: // Abstract type node
+            styles.add(ABS_NODE_STYLE);
+            break;
+        case EXISTS:
+        case FORALL:
+        case FORALL_POS:
+            styles.add(QUANTIFIER_NODE_STYLE);
             break;
         default:
-            result = "";
+            if (node.isGrayedOut()) {
+                styles.add(THIN_NODE_STYLE);
+            } else if (!isControlNode) {
+                styles.add(BASIC_NODE_STYLE);
+            }
         }
 
-        return result;
+        if (node instanceof LTSJVertex) {
+            // Node from LTS.
+            this.getLTSNodeStyles((LTSJVertex) node, styles);
+        }
+
+        AspectKind attrKind =
+            node instanceof AspectJVertex
+                    ? ((AspectJVertex) node).getNode().getAttrKind() : NONE;
+        if (attrKind.isData()) {
+            styles.add(ATTRIBUTE_NODE_STYLE);
+        } else if (attrKind == PRODUCT) {
+            styles.add(PRODUCT_NODE_STYLE);
+        }
+
+        if (selected) {
+            if (nodeKind == AspectKind.CREATOR
+                || nodeKind == AspectKind.EMBARGO) {
+                styles.add(ULTRA_BOLD_LINE);
+            } else {
+                styles.add(BOLD_LINE);
+            }
+        }
+
+        if (!this.isShowBackground()) {
+            styles.add(WHITE_FILL);
+        }
+
+        this.result.append(styles.toString());
     }
 
     /**
-     * Scans the HTML string of a node and convert the tags to Tikz.
-     * @param htmlLine the HTML string to be converted.
-     * @return a produced Tikz string as a StringBuilder.
+     * Produces a string with the proper Tikz styles of a given control node.
+     * @param node the control node to be converted.
      */
-    private static StringBuilder convertHtmlToTikz(StringBuilder htmlLine) {
-        StringBuilder result = new StringBuilder();
+    private void getControlNodeStyles(CtrlJVertex node, ArrayList<String> styles) {
+        if (node.isStart()) {
+            styles.add(CONTROL_START_NODE_STYLE);
+        } else if (node.isFinal()) {
+            styles.add(CONTROL_SUCCESS_NODE_STYLE);
+        } else {
+            styles.add(CONTROL_NODE_STYLE);
+        }
+    }
 
+    /**
+     * Produces a string with the proper Tikz styles of a given LTS node.
+     * @param node the LTS node to be converted.
+     */
+    private void getLTSNodeStyles(LTSJVertex node, ArrayList<String> styles) {
+        if (node.isResult()) {
+            styles.add(RESULT_NODE_STYLE);
+        } else if (node.isStart()) {
+            styles.add(START_NODE_STYLE);
+        } else if (node.isFinal()) {
+            styles.add(FINAL_NODE_STYLE);
+        } else if (!node.isClosed()) {
+            styles.add(OPEN_NODE_STYLE);
+        }
+    }
+
+    private boolean isShowBackground() {
+        return this.jGraph.getOptionValue(Options.SHOW_BACKGROUND_OPTION);
+    }
+
+    /** Appends the node name to the result string. */
+    private void appendNode(GraphJVertex node) {
+        this.result.append(encloseSpace(enclosePar(node.getNode().toString())));
+    }
+
+    /**
+     * Checks whether the given point is in a proper position with respect to
+     * the given node and appends the node to the string builder, together
+     * with a node anchor that keeps the edge horizontal or vertical.
+     */
+    private void appendNode(GraphJVertex node, Point2D point) {
+        int side = this.getSide(node, point);
+        if (side == 0) {
+            // The point is not aligned with the node, just use normal routing.
+            this.appendNode(node);
+        } else {
+            String coord = getCoordString(side);
+            String nodeName = node.getNode().toString();
+            this.result.append(enclosePar(nodeName + coord
+                + this.getPointString(point, false)));
+        }
+    }
+
+    /** Appends the point in position i of a list of points. */
+    private void appendPoint(List<Point2D> points, int i) {
+        this.appendPoint(points.get(i));
+    }
+
+    /** Appends the given point. */
+    private void appendPoint(Point2D point) {
+        double x = point.getX();
+        double y = point.getY();
+        this.appendPoint(x, y, true, this.result);
+    }
+
+    private void appendPoint(double x, double y, boolean usePar) {
+        this.appendPoint(x, y, usePar, this.result);
+    }
+
+    /**
+     * Appends the given points to the string builder. The coordinates are
+     * scaled by a constant factor and the y-coordinate is inverted as the
+     * jGraph and Tikz representation are different.
+     * @param x the x coordinate of the point.
+     * @param y the y coordinate of the point.
+     * @param usePar flag to indicate whether the point coordinates should be
+     *               enclosed in parentheses or not.
+     */
+    private void appendPoint(double x, double y, boolean usePar, StringBuilder s) {
+        double scale = 100.0;
+        double adjX = x / scale;
+        double adjY = -1.0 * (y / scale);
+        String format = "%5.3f, %5.3f";
+        Formatter f = new Formatter();
+        if (usePar) {
+            format = enclosePar(format);
+        }
+        s.append(f.format(Locale.US, format, adjX, adjY).toString());
+    }
+
+    /**
+     * Converts a point to a string.
+     * @param point the point to be converted.
+     * @param usePar flag to indicate whether the point coordinates should be
+     *               enclosed in parentheses or not.
+     * @return the string representation of the given point.
+     */
+    private String getPointString(Point2D point, boolean usePar) {
+        double x = point.getX();
+        double y = point.getY();
+        StringBuilder s = new StringBuilder();
+        appendPoint(x, y, usePar, s);
+        return s.toString();
+    }
+
+    /**
+     * Scans the HTML string of a node and converts the tags to Tikz.
+     * @param htmlLine the HTML string to be converted.
+     */
+    private void appendNodeInscription(StringBuilder htmlLine) {
         int color = Converter.removeColorTags(htmlLine);
         StringBuilder line = escapeSpecialChars(htmlLine);
         int font = Converter.removeFontTags(line);
         String aux = "";
         int i = line.indexOf(Converter.HTML_EXISTS);
         if (i > -1) {
-            result.append(line.substring(0, i));
+            this.result.append(line.substring(0, i));
             String sub = removeAllTags(line, Converter.SUB_TAG).substring(7);
             if ("".equals(sub)) {
-                result.append(EXISTS_STR + "$");
+                this.result.append(EXISTS_STR + "$");
             } else {
-                result.append(EXISTS_STR + "_\\mathsf{" + sub + "}$");
+                this.result.append(EXISTS_STR + "_\\mathsf{" + sub + "}$");
             }
         } else if (line.indexOf(Converter.HTML_FORALL) > -1) {
             if (line.indexOf(Converter.SUPER_TAG.tagBegin) > -1) {
-                result.append(FORALLX_STR);
+                this.result.append(FORALLX_STR);
             } else {
-                result.append(FORALL_STR);
+                this.result.append(FORALL_STR);
             }
         } else {
             aux = line.toString();
@@ -882,387 +734,164 @@ public final class GraphToTikz {
 
         switch (color) {
         case 0:
-            result.append(aux);
+            this.result.append(aux);
             break;
         case 1:
-            result.append(enclose(aux, BEGIN_COLOR_BLUE, "}"));
+            this.result.append(enclose(aux, BEGIN_COLOR_BLUE, "}"));
             break;
         case 2:
-            result.append(enclose(aux, BEGIN_COLOR_GREEN, "}"));
+            this.result.append(enclose(aux, BEGIN_COLOR_GREEN, "}"));
             break;
         case 3:
-            result.append(enclose(aux, BEGIN_COLOR_RED, "}"));
+            this.result.append(enclose(aux, BEGIN_COLOR_RED, "}"));
             break;
         }
 
-        result.append(CRLF);
-
-        return result;
-    }
-
-    private static String removeAllTags(StringBuilder line,
-            Converter.HTMLTag tag) {
-        String origLine = line.toString();
-        StringBuilder newLine = new StringBuilder(line);
-        tag.off(newLine);
-        while (!newLine.toString().equals(origLine)) {
-            origLine = newLine.toString();
-            tag.off(newLine);
-        }
-        return origLine;
+        this.result.append(CRLF);
     }
 
     /**
-     * Escapes the special LaTeX characters in the line and copies the rest.
-     * @param line the string to be escaped.
-     * @return the line with escaped characters, if any.
+     * Checks on which side of a node a point lies.
+     * @param vertex the node to be checked.
+     * @param point the point to be checked.
+     * @return 1 if the point lies east, 2 if it lies north, 3 if it lies west,
+     *         4 if it lies south, and 0 if its outside a proper position.
      */
-    private static StringBuilder escapeSpecialChars(StringBuilder line) {
-        StringBuilder result = new StringBuilder();
+    private int getSide(GraphJVertex vertex, Point2D point) {
+        int side = 0;
+        if (this.layoutMap != null) {
+            JVertexLayout layout = this.layoutMap.getLayout(vertex.getNode());
+            if (layout != null) {
+                Rectangle2D bounds = layout.getBounds();
+                side = getSide(bounds, point);
+            }
+        }
+        return side;
+    }
 
-        for (int i = 0; i < line.length(); i++) {
-            char c = line.charAt(i);
-            switch (c) {
-            case '&': // We have to check if the & is part of a special
-                // HTML char.
-                if (line.charAt(i + 1) == '#') {
-                    // Yes, it is. Keep it.
-                    result.append("&#");
-                    i++;
-                } else { // It's not.
-                    result.append(AMP);
+    // -------------------------- Edges ---------------------------------------
+
+    /**
+     * Helper method to perform safe JCell casting.
+     * @param cell the edge to be converted.
+     * @param layout information regarding layout of the node.
+     * @param selected flag to indicate that the edge should be drawn as
+     *                 selected.
+     */
+    private void appendTikzEdge(GraphJCell cell, JEdgeLayout layout,
+            boolean selected) {
+        if (cell instanceof GraphJEdge) {
+            GraphJEdge graphCell = (GraphJEdge) cell;
+            this.appendTikzEdge(graphCell, layout, selected);
+        }
+    }
+
+    /**
+     * Converts a jGraph edge to a Tikz string representation. 
+     * @param edge the edge to be converted.
+     * @param layout information regarding layout of the edge.
+     * @param selected flag to indicate that the edge should be drawn as selected
+     */
+    private void appendTikzEdge(GraphJEdge edge, JEdgeLayout layout,
+            boolean selected) {
+        if (edge.isVisible()) {
+            Duo<String> styles = this.getEdgeStyles(edge, selected);
+            String edgeStyle = styles.one();
+            String labStyle = styles.two();
+
+            this.result.append(BEGIN_EDGE);
+            this.result.append(encloseBrack(edgeStyle));
+
+            if (layout != null) {
+                switch (layout.getLineStyle()) {
+                case GraphConstants.STYLE_ORTHOGONAL:
+                    this.appendOrthogonalLayout(edge, layout, labStyle);
+                    break;
+                case GraphConstants.STYLE_BEZIER:
+                    this.appendBezierLayout(edge, layout, labStyle);
+                    break;
+                case GraphConstants.STYLE_SPLINE:
+                    this.appendSplineLayout(edge, layout, labStyle);
+                    break;
+                case JAttr.STYLE_MANHATTAN:
+                    this.appendManhattanLayout(edge, layout, labStyle);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown line style!");
                 }
-                break;
-            case '$':
-                result.append(DOLLAR);
-                break;
-            case '#':
-                result.append(NUMBER);
-                break;
-            case '|':
-                result.append(VERT_BAR);
-                break;
-            case '%':
-                result.append(PERCENT);
-                break;
-            case '_':
-                result.append(UNDERSCORE);
-                break;
-            case '{':
-                result.append(LEFT_CURLY);
-                break;
-            case '}':
-                result.append(RIGHT_CURLY);
-                break;
-            case '[':
-                result.append(LEFT_SQUARE);
-                break;
-            case ']':
-                result.append(RIGHT_SQUARE);
-                break;
-            case '^':
-                result.append(CIRCUNFLEX);
-                break;
-            case '~':
-                result.append(TILDE);
-                break;
-            case '+':
-                result.append(PLUS);
-                break;
-            case '-':
-                result.append(MINUS);
-                break;
-            case '\\':
-                result.append(BACKSLASH);
-                break;
-            case Groove.LC_PI:
-                result.append(PI);
-                break;
-            default:
-                result.append(c);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Escapes the special LaTeX characters in the line and copies the rest.
-     * @param line the string to be escaped.
-     * @return the line with escaped characters, if any.
-     */
-    private static String escapeSpecialChars(String line) {
-        return escapeSpecialChars(new StringBuilder(line)).toString();
-    }
-
-    private static String unescapeSquareBrack(String string) {
-        StringBuilder result = new StringBuilder(string);
-
-        int i = result.indexOf(LEFT_SQUARE);
-        while (i > -1) {
-            result.replace(i, i + LEFT_SQUARE.length(), "[");
-            i = result.indexOf(LEFT_SQUARE);
-        }
-        i = result.indexOf(RIGHT_SQUARE);
-        while (i > -1) {
-            result.replace(i, i + RIGHT_SQUARE.length(), "]");
-            i = result.indexOf(RIGHT_SQUARE);
-        }
-
-        return result.toString();
-    }
-
-    // Methods to enclose a string with extra characters.
-    private static String enclose(String string, String start, String end) {
-        return start + string + end;
-    }
-
-    private static String enclosePar(String string) {
-        return enclose(string, "(", ")");
-    }
-
-    private static String encloseBrack(String string) {
-        return enclose(string, "[", "]");
-    }
-
-    private static String encloseCurly(String string) {
-        return enclose(string, "{", "}");
-    }
-
-    private static String encloseSpace(String string) {
-        return enclose(string, " ", " ");
-    }
-
-    private static String encloseItalicStyle(String string) {
-        return enclose(unescapeSquareBrack(string), ITALIC_STYLE, "}");
-    }
-
-    private static String encloseBoldStyle(String string) {
-        return enclose(unescapeSquareBrack(string), BOLD_STYLE, "}");
-    }
-
-    /**
-     * Produces a string with the proper Tikz styles of a given node.
-     * @param node the node to be converted.
-     * @param selected flag to indicate that the node should be drawn as selected
-     * @param showBackground flag to indicate if the node should be filled.
-     * @return a string with all the Tikz styles to be used.
-     */
-    private static <N extends Node,E extends Edge<N>> String convertStyles(
-            GraphJVertex node, boolean selected, boolean showBackground) {
-
-        if (node instanceof CtrlJVertex) {
-            // Node from control automaton.
-            return convertControlNodeStyles((CtrlJVertex) node, selected,
-                showBackground);
-        }
-
-        if (node instanceof LTSJVertex) {
-            // Node from LTS.
-            return convertLTSNodeStyles((LTSJVertex) node, selected,
-                showBackground);
-        }
-
-        // If we got to this point we have either a node from a rule,
-        // a state graph or a type graph.
-        ArrayList<String> styles = new ArrayList<String>();
-
-        AspectKind nodeKind =
-            node instanceof AspectJVertex
-                    ? ((AspectJVertex) node).getNode().getKind() : NONE;
-        switch (nodeKind) {
-        case ERASER:
-            // Eraser node
-            styles.add(ERASER_NODE_STYLE);
-            break;
-        case CREATOR:
-            // Creator node
-            styles.add(CREATOR_NODE_STYLE);
-            break;
-        case EMBARGO:
-            // Embargo node
-            styles.add(EMBARGO_NODE_STYLE);
-            break;
-        case REMARK:
-            // Remark node
-            styles.add(REMARK_NODE_STYLE);
-            break;
-        case ABSTRACT:
-            // Abstract type node
-            styles.add(ABS_NODE_STYLE);
-            break;
-        case EXISTS:
-        case FORALL:
-        case FORALL_POS:
-            styles.add(QUANTIFIER_NODE_STYLE);
-            break;
-        default:
-            if (node.isGrayedOut()) {
-                styles.add(THIN_NODE_STYLE);
             } else {
-                styles.add(BASIC_NODE_STYLE);
+                this.appendDefaultLayout(edge, labStyle);
             }
         }
-
-        AspectKind attrKind =
-            node instanceof AspectJVertex
-                    ? ((AspectJVertex) node).getNode().getAttrKind() : NONE;
-        if (attrKind.isData()) {
-            styles.add(ATTRIBUTE_NODE_STYLE);
-        } else if (attrKind == PRODUCT) {
-            styles.add(PRODUCT_NODE_STYLE);
-        }
-
-        if (selected) {
-            styles.add(BOLD_LINE);
-        }
-
-        if (!showBackground) {
-            styles.add(WHITE_FILL);
-        }
-
-        return styles.toString();
-    }
-
-    /**
-     * Produces a string with the proper Tikz styles of a given control node.
-     * @param node the control node to be converted.
-     * @param selected flag to indicate that the node should be drawn as selected
-     * @param showBackground flag to indicate if the node should be filled.
-     * @return a string with all the Tikz styles to be used.
-     */
-    private static String convertControlNodeStyles(CtrlJVertex node,
-            boolean selected, boolean showBackground) {
-
-        ArrayList<String> styles = new ArrayList<String>();
-
-        if (node.isStart()) {
-            styles.add(CONTROL_START_NODE_STYLE);
-        } else if (node.isFinal()) {
-            styles.add(CONTROL_SUCCESS_NODE_STYLE);
-        } else {
-            styles.add(CONTROL_NODE_STYLE);
-        }
-
-        if (selected) {
-            styles.add(BOLD_LINE);
-        }
-
-        if (node.isGrayedOut()) {
-            styles.add(THIN_NODE_STYLE);
-        }
-
-        if (!showBackground) {
-            styles.add(WHITE_FILL);
-        }
-
-        return styles.toString();
-    }
-
-    /**
-     * Produces a string with the proper Tikz styles of a given LTS node.
-     * @param node the LTS node to be converted.
-     * @param selected flag to indicate that the node should be drawn as selected
-     * @param showBackground flag to indicate if the node should be filled.
-     * @return a string with all the Tikz styles to be used.
-     */
-    private static String convertLTSNodeStyles(LTSJVertex node,
-            boolean selected, boolean showBackground) {
-
-        ArrayList<String> styles = new ArrayList<String>();
-
-        if (node.isGrayedOut()) {
-            styles.add(THIN_NODE_STYLE);
-        } else {
-            styles.add(BASIC_NODE_STYLE);
-        }
-
-        if (node.isResult()) {
-            styles.add(RESULT_NODE_STYLE);
-        } else if (node.isStart()) {
-            styles.add(START_NODE_STYLE);
-        } else if (node.isFinal()) {
-            styles.add(FINAL_NODE_STYLE);
-        } else if (!node.isClosed()) {
-            styles.add(OPEN_NODE_STYLE);
-        }
-
-        if (selected) {
-            styles.add(BOLD_LINE);
-        }
-
-        if (!showBackground) {
-            styles.add(WHITE_FILL);
-        }
-
-        return styles.toString();
     }
 
     /**
      * Find the proper Tikz styles for a given edge.
      * @param edge the edge to be analysed.
      * @param selected flag to indicate that the edge should be drawn as selected
-     * @return an array of size two. The first string is the edge style and the
-     *         second one is the label style.
      */
-    private static <N extends Node,E extends Edge<N>> ArrayList<String> convertStyles(
-            GraphJEdge edge, boolean selected) {
+    private Duo<String> getEdgeStyles(GraphJEdge edge, boolean selected) {
+        Duo<String> styles = new Duo<String>("", "");
 
         if (edge instanceof CtrlJEdge) {
-            return convertStyles((CtrlJEdge) edge, selected);
+            this.getControlEdgeStyles((CtrlJEdge) edge, styles);
         }
-        ArrayList<String> styles = new ArrayList<String>();
 
         AspectKind edgeKind =
             edge instanceof AspectJEdge
                     ? ((AspectJEdge) edge).getEdge().getKind() : NONE;
         switch (edgeKind) {
         case ERASER:
-            styles.add(ERASER_EDGE_STYLE);
-            styles.add(ERASER_LABEL_STYLE);
+            styles.setOne(ERASER_EDGE_STYLE);
+            styles.setTwo(ERASER_LABEL_STYLE);
             break;
         case CREATOR:
-            styles.add(CREATOR_EDGE_STYLE);
-            styles.add(CREATOR_LABEL_STYLE);
+            styles.setOne(CREATOR_EDGE_STYLE);
+            styles.setTwo(CREATOR_LABEL_STYLE);
             break;
         case EMBARGO:
-            styles.add(EMBARGO_EDGE_STYLE);
-            styles.add(EMBARGO_LABEL_STYLE);
+            styles.setOne(EMBARGO_EDGE_STYLE);
+            styles.setTwo(EMBARGO_LABEL_STYLE);
             break;
         case REMARK:
-            styles.add(REMARK_EDGE_STYLE);
-            styles.add(REMARK_LABEL_STYLE);
+            styles.setOne(REMARK_EDGE_STYLE);
+            styles.setTwo(REMARK_LABEL_STYLE);
             break;
         case SUBTYPE:
-            styles.add(INHERITANCE_EDGE_STYLE);
-            styles.add(INHERITANCE_LABEL_STYLE);
+            styles.setOne(INHERITANCE_EDGE_STYLE);
+            styles.setTwo(INHERITANCE_LABEL_STYLE);
             break;
         case ABSTRACT:
-            styles.add(ABS_EDGE_STYLE);
-            styles.add(ABS_LABEL_STYLE);
+            styles.setOne(ABS_EDGE_STYLE);
+            styles.setTwo(ABS_LABEL_STYLE);
             break;
         case NESTED:
-            styles.set(0, QUANTIFIER_EDGE_STYLE);
-            styles.set(1, BASIC_LABEL_STYLE);
+            styles.setOne(QUANTIFIER_EDGE_STYLE);
+            styles.setTwo(BASIC_LABEL_STYLE);
             break;
         default:
-            styles.add(BASIC_EDGE_STYLE);
-            styles.add(BASIC_LABEL_STYLE);
+            styles.setOne(BASIC_EDGE_STYLE);
+            styles.setTwo(BASIC_LABEL_STYLE);
         }
 
         if (edge.isGrayedOut()) {
-            styles.set(0, THIN_EDGE_STYLE);
-            styles.set(1, THIN_LABEL_STYLE);
+            styles.setOne(THIN_EDGE_STYLE);
+            styles.setTwo(THIN_LABEL_STYLE);
         }
 
         if (selected) {
-            styles.set(0, styles.get(0) + ", " + BOLD_LINE);
+            if (edgeKind == AspectKind.CREATOR
+                || edgeKind == AspectKind.EMBARGO) {
+                styles.setOne(styles.one() + ", " + ULTRA_BOLD_LINE);
+            } else {
+                styles.setOne(styles.one() + ", " + BOLD_LINE);
+            }
         }
 
         // Check if we should draw the end arrow of the edge.
         AttributeMap attrMap = edge.getAttributes();
         if (GraphConstants.getLineEnd(attrMap) == GraphConstants.ARROW_NONE) {
-            styles.set(0, styles.get(0) + ", " + UNDIRECTED_EDGE_STYLE);
+            styles.setOne(styles.one() + ", " + UNDIRECTED_EDGE_STYLE);
         }
 
         return styles;
@@ -1271,68 +900,339 @@ public final class GraphToTikz {
     /**
      * Find the proper Tikz styles for a given control edge.
      * @param edge the control edge to be analysed.
-     * @param selected flag to indicate that the edge should be drawn as selected
-     * @return an array of size two. The first string is the edge style and the
-     *         second one is the label style.
      */
-    private static ArrayList<String> convertStyles(CtrlJEdge edge,
-            boolean selected) {
-
-        ArrayList<String> styles = new ArrayList<String>();
-
+    private void getControlEdgeStyles(CtrlJEdge edge, Duo<String> styles) {
         CtrlTransition t = edge.getEdge();
         if (!t.label().getGuard().isEmpty()) {
-            styles.add(CONTROL_FAILURE_EDGE_STYLE);
+            styles.setOne(CONTROL_FAILURE_EDGE_STYLE);
         } else {
-            styles.add(CONTROL_EDGE_STYLE);
+            styles.setOne(CONTROL_EDGE_STYLE);
         }
-        styles.add(CONTROL_LABEL_STYLE);
-
-        if (edge.isGrayedOut()) {
-            styles.set(0, THIN_EDGE_STYLE);
-            styles.set(1, THIN_LABEL_STYLE);
-        }
-
-        if (selected) {
-            styles.set(0, styles.get(0) + ", " + BOLD_LINE);
-        }
-
-        return styles;
+        styles.setTwo(CONTROL_LABEL_STYLE);
     }
 
     /**
-     * @return the line necessary to begin a Tikz figure.
+     * Creates an edge with a default layout. The edge is drawn as a straight
+     * line from source to target node and the label is placed half-way.
+     * @param edge the edge to be converted.
+     * @param labStyle a string describing the style to be used in the label.
      */
-    public static String beginTikzFig() {
-        return DOC + BEGIN_TIKZ_FIG + "\n";
+    private void appendDefaultLayout(GraphJEdge edge, String labStyle) {
+        GraphJVertex srcVertex = edge.getSourceVertex();
+        GraphJVertex tgtVertex = edge.getTargetVertex();
+        this.appendSourceNode(srcVertex, tgtVertex);
+        this.result.append(encloseSpace(DOUBLE_DASH));
+        this.appendEdgeLabelInPath(edge, labStyle);
+        this.appendTargetNode(srcVertex, tgtVertex);
+        this.result.append(END_EDGE);
     }
 
     /**
-     * @return the line necessary to end a Tikz figure.
+     * Creates an edge with orthogonal lines. Only the intermediate points of
+     * the layout information are used, the first and last points are discarded
+     * and replaced by Tikz node names and we let Tikz find the anchors.
+     * @param edge the edge to be converted.
+     * @param layout information regarding layout of the edge.
+     * @param labStyle a string describing the style to be used in the label.
+     * @param connection the string with the type of Tikz connection to be used.
      */
-    public static String endTikzFig() {
-        return END_TIKZ_FIG + "\n";
+    private void appendOrthogonalLayout(GraphJEdge edge, JEdgeLayout layout,
+            String labStyle, String connection) {
+
+        GraphJVertex srcVertex = edge.getSourceVertex();
+        GraphJVertex tgtVertex = edge.getTargetVertex();
+        List<Point2D> points = layout.getPoints();
+
+        if (points.size() == 2) {
+            this.appendSourceNode(srcVertex, tgtVertex);
+            this.result.append(encloseSpace(connection));
+            this.appendTargetNode(srcVertex, tgtVertex);
+            this.result.append(END_PATH);
+            this.appendEdgeLabel(edge, layout, labStyle, points);
+            this.result.append(END_EDGE);
+            return;
+        }
+
+        int firstPoint = 1;
+        int lastPoint = points.size() - 2;
+
+        this.appendNode(srcVertex, points.get(firstPoint));
+        this.result.append(encloseSpace(connection));
+        // Intermediate points
+        for (int i = firstPoint; i <= lastPoint; i++) {
+            this.appendPoint(points, i);
+            // When using the MANHATTAN style sometimes we cannot use the ANGLE
+            // routing when going from the last point to the node because the
+            // arrow will be in the wrong direction.
+            // We test this condition here.
+            if (i == lastPoint && connection.equals(ANGLE)
+                && this.isHorizontalOrVertical(points, i, tgtVertex)) {
+                // We are in this special case, use straight routing.
+                this.result.append(encloseSpace(DOUBLE_DASH));
+            } else {
+                // A normal case, just use the provided connection string.
+                this.result.append(encloseSpace(connection));
+            }
+        }
+        this.appendNode(tgtVertex, points.get(lastPoint));
+        this.result.append(END_PATH);
+        this.appendEdgeLabel(edge, layout, labStyle, points);
+        this.result.append(END_EDGE);
     }
 
-    // Tikz output
+    /**
+     * Creates an edge with orthogonal lines. Only the intermediate points of
+     * the layout information are used, the first and last points are discarded
+     * and replaced by Tikz node names and we let Tikz find the anchors.
+     * @param edge the edge to be converted.
+     * @param layout information regarding layout of the edge.
+     * @param labStyle a string describing the style to be used in the label.
+     */
+    private void appendOrthogonalLayout(GraphJEdge edge, JEdgeLayout layout,
+            String labStyle) {
+        this.appendOrthogonalLayout(edge, layout, labStyle, DOUBLE_DASH);
+    }
+
+    /**
+     * Creates an edge with bezier lines. Only the intermediate points of
+     * the layout information are used, the first and last points are discarded
+     * and replaced by Tikz node names and we let Tikz find the anchors.
+     * Each point of the layout information is interspersed with control points
+     * from the bezier lines.
+     * @param edge the edge to be converted.
+     * @param layout information regarding layout of the edge.
+     * @param labStyle a string describing the style to be used in the label.
+     */
+    private void appendBezierLayout(GraphJEdge edge, JEdgeLayout layout,
+            String labStyle) {
+        GraphJVertex srcVertex = edge.getSourceVertex();
+        GraphJVertex tgtVertex = edge.getTargetVertex();
+        List<Point2D> points = layout.getPoints();
+        boolean isLoop = srcVertex.getNode().equals(tgtVertex.getNode());
+
+        // Compute the bezier line.
+        Bezier bezier = new Bezier(points.toArray(new Point2D[points.size()]));
+        Point2D[] bPoints = bezier.getPoints();
+
+        if (bPoints == null) {
+            // The edge is with a bezier style but it does not have any bezier
+            // points, just use standard layout.
+            this.appendDefaultLayout(edge, labStyle);
+            return;
+        }
+
+        this.appendNode(srcVertex);
+
+        int i = 1; // Index for edge points.
+        for (int j = 0; j < bPoints.length - 1; j++) {
+            this.result.append(BEGIN_CONTROLS);
+            if (isLoop && i == points.size() - 1) {
+                // This is the LAST control entry and we are drawing a loop
+                // edge, we need to use a point of the edge instead of a bezier
+                // point, otherwise the loop is drawn incorrectly.
+                this.appendPoint(points, i - 1);
+            } else {
+                // No special case, just use a bezier point.
+                this.appendPoint(bPoints[j]);
+            }
+            this.result.append(AND);
+            if (i == 1 && isLoop) {
+                // This is the FIRST control entry and we are drawing a loop
+                // edge, we need to use a point of the edge instead of a bezier
+                // point, otherwise the loop is drawn incorrectly.
+                this.appendPoint(points, i);
+            } else {
+                // No special case, just use a bezier point.
+                this.appendPoint(bPoints[j + 1]);
+            }
+            this.result.append(END_CONTROLS);
+            if (i != points.size() - 1 && points.size() > 3) {
+                // Intermediate point
+                this.appendPoint(points, i);
+            }
+            i++;
+        }
+
+        this.appendNode(tgtVertex);
+        this.result.append(END_PATH);
+        this.appendEdgeLabel(edge, layout, labStyle, points);
+        this.result.append(END_EDGE);
+    }
+
+    /**
+     * This is not implemented yet. The Bezier style is used instead.
+     * @param edge the edge to be converted.
+     * @param layout information regarding layout of the edge.
+     * @param labStyle a string describing the style to be used in the label.
+     */
+    private void appendSplineLayout(GraphJEdge edge, JEdgeLayout layout,
+            String labStyle) {
+        System.err.println("Sorry, the SPLINE line style is not yet "
+            + "supported, using BEZIER style...");
+        this.appendBezierLayout(edge, layout, labStyle);
+    }
+
+    /**
+     * Creates an edge with Manhattan lines. Only the intermediate points of
+     * the layout information are used, the first and last points are discarded
+     * and replaced by Tikz node names and we let Tikz find the anchors.
+     * @param edge the edge to be converted.
+     * @param layout information regarding layout of the edge.
+     * @param labStyle a string describing the style to be used in the label.
+     */
+    private void appendManhattanLayout(GraphJEdge edge, JEdgeLayout layout,
+            String labStyle) {
+        this.appendOrthogonalLayout(edge, layout, labStyle, ANGLE);
+    }
+
+    /**
+     * Checks whether the given target node is in a proper position with
+     * respect to the given source node and appends the source node to the
+     * string builder, together with a node anchor that keeps the edge
+     * horizontal or vertical.
+     */
+    private void appendSourceNode(GraphJVertex srcNode, GraphJVertex tgtNode) {
+        if (this.layoutMap != null) {
+            JVertexLayout tgtLayout =
+                this.layoutMap.getLayout(tgtNode.getNode());
+            if (tgtLayout != null) {
+                Rectangle2D tgtBounds = tgtLayout.getBounds();
+                Point2D tgtCenter =
+                    new Point2D.Double(tgtBounds.getCenterX(),
+                        tgtBounds.getCenterY());
+                this.appendNode(srcNode, tgtCenter);
+            }
+        } else {
+            this.appendNode(srcNode);
+        }
+    }
+
+    /**
+     * Checks whether the given source node is in a proper position with
+     * respect to the given target node and appends the target node to the
+     * string builder, together with a node anchor that keeps the edge
+     * horizontal or vertical.
+     */
+    private void appendTargetNode(GraphJVertex srcNode, GraphJVertex tgtNode) {
+        if (this.layoutMap != null) {
+            JVertexLayout srcLayout =
+                this.layoutMap.getLayout(srcNode.getNode());
+            JVertexLayout tgtLayout =
+                this.layoutMap.getLayout(tgtNode.getNode());
+            if (srcLayout != null && tgtLayout != null) {
+                Rectangle2D tgtBounds = tgtLayout.getBounds();
+                Point2D tgtCenter =
+                    new Point2D.Double(tgtBounds.getCenterX(),
+                        tgtBounds.getCenterY());
+                int side = this.getSide(srcNode, tgtCenter);
+                if (side == 0) {
+                    Rectangle2D srcBounds = srcLayout.getBounds();
+                    Point2D srcCenter =
+                        new Point2D.Double(srcBounds.getCenterX(),
+                            srcBounds.getCenterY());
+                    this.appendNode(tgtNode, srcCenter);
+                } else {
+                    this.appendNode(tgtNode);
+                }
+            }
+        } else {
+            this.appendNode(tgtNode);
+        }
+    }
+
+    private void appendEdgeLabel(GraphJEdge edge) {
+        Edge<?> e = edge.getEdge();
+        if (e instanceof AspectEdge) {
+            RuleLabel ruleLabel = ((AspectEdge) e).getRuleLabel();
+            if (ruleLabel != null && ruleLabel.isMatchable()
+                && !ruleLabel.isAtom() && !ruleLabel.isSharp()) {
+                // We have a regular expression on the label, make it italic.
+                this.result.append(encloseCurly(encloseItalicStyle(escapeSpecialChars(edge.getText()))));
+            } else {
+                // This is a normal AspectEdge.
+                this.result.append(encloseCurly(escapeSpecialChars(edge.getText())));
+            }
+        } else {
+            this.result.append(encloseCurly(escapeSpecialChars(edge.getText())));
+        }
+    }
+
+    /**
+     * Creates an extra path to place the edge label which has special
+     * placement requirements.
+     */
+    private void appendEdgeLabel(GraphJEdge edge, JEdgeLayout layout,
+            String labStyle, List<Point2D> points) {
+        if (!labStyle.equals(INHERITANCE_LABEL_STYLE)) {
+            Point2D labelPos =
+                convertRelativeLabelPositionToAbsolute(
+                    layout.getLabelPosition(), points);
+            // Extra path for the label position.
+            this.result.append(BEGIN_NODE);
+            this.result.append(encloseBrack(labStyle));
+            this.result.append(encloseSpace(AT_KEYWORD));
+            this.appendPoint(labelPos);
+            this.appendEdgeLabel(edge);
+        }
+    }
+
+    /** Appends the edge label along the path that is being drawn. */
+    private void appendEdgeLabelInPath(GraphJEdge edge, String labStyle) {
+        if (!labStyle.equals(INHERITANCE_LABEL_STYLE)) {
+            this.result.append(NODE);
+            this.result.append(encloseBrack(labStyle));
+            this.appendEdgeLabel(edge);
+        }
+    }
+
+    /**
+     * Checks if two points or a point and a node form an horizontal or
+     * vertical edge.
+     * @param points a list of points.
+     * @param index the index of the point to be checked.
+     * @param tgtVertex the target node.
+     * @return true if the edge is horizontal or vertical and false otherwise.
+     */
+    private boolean isHorizontalOrVertical(List<Point2D> points, int index,
+            GraphJVertex tgtVertex) {
+        boolean result = false;
+        if (this.layoutMap != null) {
+            JVertexLayout layout =
+                this.layoutMap.getLayout(tgtVertex.getNode());
+            if (layout != null) {
+                Rectangle2D tgtBounds = layout.getBounds();
+                if (points.get(index).getY() == points.get(index + 1).getY()
+                    || getSide(tgtBounds, points.get(index)) != 0) {
+                    result = true;
+                }
+            }
+        }
+        return result;
+    }
+
+    // ------------------------------------------------------------------------
+    // Tikz output strings
+    // ------------------------------------------------------------------------
+
+    private static final String ENTER = "\n";
     private static final String CRLF = "\\\\";
     private static final String BEGIN_TIKZ_FIG =
         "\\begin{tikzpicture}[scale=\\tikzscale]";
-    private static final String END_TIKZ_FIG = "\\userdefinedmacro\n"
-        + "\\end{tikzpicture}\n"
+    private static final String END_TIKZ_FIG = "\\userdefinedmacro" + ENTER
+        + "\\end{tikzpicture}" + ENTER
         + "\\renewcommand{\\userdefinedmacro}{\\relax}";
     private static final String BEGIN_NODE = "\\node";
     private static final String AT_KEYWORD = "at";
     private static final String BEGIN_NODE_LAB = " {\\ml{";
-    private static final String END_NODE_LAB = "}};\n";
-    private static final String EMPTY_NODE_LAB = "{};\n";
+    private static final String END_NODE_LAB = "}};" + ENTER;
+    private static final String EMPTY_NODE_LAB = "{};" + ENTER;
     private static final String EXISTS_STR = "$\\exists";
     private static final String FORALL_STR = "$\\forall$";
     private static final String FORALLX_STR = "$\\forall^{>0}$";
     private static final String ITALIC_STYLE = "\\textit{";
     private static final String BOLD_STYLE = "\\textbf{";
     private static final String BEGIN_EDGE = "\\path";
-    private static final String END_PATH = ";\n";
+    private static final String END_PATH = ";" + ENTER;
     private static final String END_EDGE = END_PATH;
     private static final String NODE = "node";
     private static final String BEGIN_COLOR_BLUE = "{\\color{\\blue}";
@@ -1378,6 +1278,7 @@ public final class GraphToTikz {
     private static final String OPEN_NODE_STYLE = "open";
     private static final String WHITE_FILL = "whitefill";
     private static final String BOLD_LINE = "bold";
+    private static final String ULTRA_BOLD_LINE = "ultrabold";
     private static final String DOUBLE_DASH = "--";
     private static final String ANGLE = "-|";
     private static final String BEGIN_CONTROLS = ".. controls ";
@@ -1404,5 +1305,6 @@ public final class GraphToTikz {
     private static final String EAST = ".east |- ";
     private static final String WEST = ".west |- ";
     private static final String DOC = "% To use this figure in your LaTeX "
-        + "document\n% import the package groove/resources/groove2tikz.sty\n";
+        + "document\n% import the package groove/resources/groove2tikz.sty"
+        + ENTER;
 }
