@@ -4020,7 +4020,7 @@ public class Simulator {
      */
     private class LaunchThread extends CancellableThread {
         /**
-         * Constructs a generate thread for a given exploration strategy.
+         * Constructs a generate thread for a given (model checking) scenario.
          * @param scenario the scenario handler of this thread
          */
         LaunchThread(Scenario scenario) {
@@ -4095,6 +4095,21 @@ public class Simulator {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     getLtsPanel().emphasiseStates(states, true);
+                    if (LaunchThread.this.scenario instanceof ModelCheckingScenario) {
+                        String property =
+                            ((ModelCheckingScenario) LaunchThread.this.scenario).getProperty();
+                        if (states.isEmpty()) {
+                            JOptionPane.showMessageDialog(getFrame(),
+                                String.format(
+                                    "The property %s holds for this LTS",
+                                    property));
+                        } else {
+                            JOptionPane.showMessageDialog(getFrame(),
+                                String.format(
+                                    "A counter-example to %s is highlighted",
+                                    property));
+                        }
+                    }
                 }
             });
         }

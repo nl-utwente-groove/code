@@ -104,7 +104,7 @@ public class ModelCheckingScenario extends DefaultScenario {
     }
 
     /** Callback method to get a property for the scenario. */
-    protected String getProperty() {
+    public String getProperty() {
         return this.property;
     }
 
