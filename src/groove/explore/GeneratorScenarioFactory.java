@@ -73,7 +73,7 @@ public class GeneratorScenarioFactory {
         ModelCheckingScenario result =
             new ModelCheckingScenario(strategy, name, description) {
                 @Override
-                protected String getProperty() {
+                public String getProperty() {
                     System.out.println("Enter the LTL formula to verify:");
                     Scanner keyboard = new Scanner(System.in);
                     return keyboard.nextLine();
