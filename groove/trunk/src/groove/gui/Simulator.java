@@ -1255,6 +1255,9 @@ public class Simulator {
         refresh();
         List<FormatError> grammarErrors = getGrammarView().getErrors();
         setErrors(grammarErrors);
+        if (grammarErrors.isEmpty() && confirmBehaviourOption(START_SIMULATION_OPTION)) {
+            startSimulation();
+        }
         this.history.updateLoadGrammar();
     }
 
