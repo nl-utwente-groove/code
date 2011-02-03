@@ -67,8 +67,6 @@ public class StringDialog {
      * property; otherwise it is a CTL property
      */
     public String showDialog(Component frame, StringParser parser) {
-        this.dialog = createDialog(frame);
-        this.parser = parser;
         if (this.title != null) {
             String[] storedValues = Options.getUserPrefs(this.title);
             this.history.clear();
@@ -76,11 +74,15 @@ public class StringDialog {
                 this.history.add(value);
             }
         }
+        this.dialog = createDialog(frame);
+        this.parser = parser;
         getChoiceBox().setSelectedItem("");
         getEditor().setText("");
+        processTextChange();
         getChoiceBox().revalidate();
         getEditor().selectAll();
         this.dialog.pack();
+        this.dialog.setResizable(true);
         this.dialog.setVisible(true);
         if (this.title != null) {
             String[] storedValues =
@@ -351,7 +353,7 @@ public class StringDialog {
                         ListDataEvent.CONTENTS_CHANGED, 0, getSize()));
                 }
                 getChoiceBox().hidePopup();
-                if (getSize() > 0) {
+                if (getSize() > 0 && filterText.length() > 0) {
                     getChoiceBox().showPopup();
                 }
                 getChoiceBox().doConfigure(true);
