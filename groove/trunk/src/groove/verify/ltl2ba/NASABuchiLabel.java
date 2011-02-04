@@ -16,17 +16,17 @@
  */
 package groove.verify.ltl2ba;
 
+import gov.nasa.ltl.graph.Guard;
 import groove.verify.BuchiLabel;
 
 /**
  * @author Harmen Kastenberg
  * @version $Revision $
  */
-public class NASABuchiLabel implements BuchiLabel
-{
+public class NASABuchiLabel implements BuchiLabel {
     private String action;
 
-    private String guard;
+    private Guard<String> guard;
 
     /**
      * Constructor.
@@ -36,8 +36,7 @@ public class NASABuchiLabel implements BuchiLabel
      * @param guard
      *          the guard for the label
      */
-    public NASABuchiLabel(String action, String guard)
-    {
+    public NASABuchiLabel(String action, Guard<String> guard) {
         this.action = action;
         this.guard = guard;
     }
@@ -47,8 +46,7 @@ public class NASABuchiLabel implements BuchiLabel
      * 
      * @return the <code>action</code> of this label.
      */
-    public String action()
-    {
+    public String action() {
         return this.action;
     }
 
@@ -57,14 +55,12 @@ public class NASABuchiLabel implements BuchiLabel
      * 
      * @return the <code>guard</code> of this label
      */
-    public String guard()
-    {
+    public Guard<String> guard() {
         return this.guard;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "--[" + this.action() + "]/[" + this.guard() + "]-->";
     }
 }

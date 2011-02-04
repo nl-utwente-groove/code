@@ -24,6 +24,7 @@ import gov.nasa.ltl.trans.ParseErrorException;
 import groove.verify.BuchiLocation;
 import groove.verify.BuchiTransition;
 import groove.verify.DefaultBuchiLocation;
+import groove.verify.LTLParser;
 import groove.view.FormatException;
 
 import java.util.HashMap;
@@ -36,13 +37,13 @@ import java.util.Set;
  * @version $Revision $
  */
 public class NASABuchiGraph extends AbstractBuchiGraph {
-    private final Map<Node,BuchiLocation> node2location;
+    private final Map<Node<String>,BuchiLocation> node2location;
     /** Set of already visited nodes. */
-    private final Set<Node> visitedNodes;
+    private final Set<Node<String>> visitedNodes;
 
     private NASABuchiGraph() {
-        this.node2location = new HashMap<Node,BuchiLocation>();
-        this.visitedNodes = new HashSet<Node>();
+        this.node2location = new HashMap<Node<String>,BuchiLocation>();
+        this.visitedNodes = new HashSet<Node<String>>();
     }
 
     /**
@@ -61,8 +62,8 @@ public class NASABuchiGraph extends AbstractBuchiGraph {
     public BuchiGraph newBuchiGraph(String formula) throws FormatException {
         final BuchiGraph result = new NASABuchiGraph();
         try {
-            Graph graph = LTL2Buchi.translate(formula);
-            Node init = graph.getInit();
+            Graph<String> graph = LTL2Buchi.translate(LTLParser.parse(formula));
+            Node<String> init = graph.getInit();
             IVisitor visitor = new Visitor(result);
             visitor.visitNode(init);
             result.addInitialLocation(getLocation(init));
@@ -76,12 +77,12 @@ public class NASABuchiGraph extends AbstractBuchiGraph {
      * Indicates if a given node has already been visited.
      * also sets the status to visited. 
      */
-    private boolean isVisited(Node node) {
+    private boolean isVisited(Node<String> node) {
         return !this.visitedNodes.add(node);
 
     }
 
-    private BuchiLocation getLocation(Node node) {
+    private BuchiLocation getLocation(Node<String> node) {
         BuchiLocation result = null;
         if (this.node2location.containsKey(node)) {
             result = this.node2location.get(node);
@@ -97,13 +98,13 @@ public class NASABuchiGraph extends AbstractBuchiGraph {
          * Visit the provided node.
          * @param node the node to visit
          */
-        public void visitNode(Node node);
+        public void visitNode(Node<String> node);
 
         /**
          * Visit the provided edge;
          * @param edge the edge to visit
          */
-        public void visitEdge(Edge edge);
+        public void visitEdge(Edge<String> edge);
     }
 
     private class Visitor implements IVisitor {
@@ -113,11 +114,11 @@ public class NASABuchiGraph extends AbstractBuchiGraph {
             this.graph = graph;
         }
 
-        public void visitNode(Node node) {
+        public void visitNode(Node<String> node) {
             // only do something if the node has not already been visited
             if (!isVisited(node)) {
                 BuchiLocation location = getLocation(node);
-                for (Edge edge : node.getOutgoingEdges()) {
+                for (Edge<String> edge : node.getOutgoingEdges()) {
                     visitEdge(edge);
                 }
                 if (node.getAttributes().getBoolean("accepting")) {
@@ -127,11 +128,11 @@ public class NASABuchiGraph extends AbstractBuchiGraph {
             }
         }
 
-        public void visitEdge(Edge edge) {
+        public void visitEdge(Edge<String> edge) {
             NASABuchiLabel label =
                 new NASABuchiLabel(edge.getAction(), edge.getGuard());
-            Node source = edge.getSource();
-            Node target = edge.getNext();
+            Node<String> source = edge.getSource();
+            Node<String> target = edge.getNext();
             BuchiTransition transition =
                 new NASABuchiTransition(getLocation(source), label,
                     getLocation(target));

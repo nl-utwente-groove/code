@@ -26,29 +26,17 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.verify.BuchiLocation;
-import groove.verify.DefaultBuchiLocation;
-import groove.verify.DefaultBuchiTransition;
 import groove.verify.ModelChecking;
 import groove.verify.ProductState;
 import groove.verify.ProductStateSet;
 import groove.verify.ProductTransition;
 import groove.verify.ltl2ba.BuchiGraph;
 import groove.verify.ltl2ba.BuchiGraphFactory;
-import groove.verify.ltl2ba.LTL2BuchiGraph;
-import groove.verify.ltl2ba.LTL2BuchiLabel;
-import groove.verify.ltl2ba.LTL2BuchiTransition;
-import groove.verify.ltl2ba.NASABuchiGraph;
 import groove.view.FormatException;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-
-import rwth.i2.ltl2ba4j.model.IState;
-import rwth.i2.ltl2ba4j.model.ITransition;
 
 /**
  * This class provides some default implementations for the methods that are
@@ -184,52 +172,6 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
             new ProductState(getGTS().startState(), this.initialLocation);
         setStartBuchiState(startState);
         this.productGTS.addState(startState);
-    }
-
-    /**
-     * Constructs an automaton-graph from a collection of {@link ITransition}s.
-     * @param automaton the collection of {@link ITransition}s
-     */
-    protected void processAutomaton(Collection<ITransition> automaton) {
-        Map<IState,DefaultBuchiLocation> state2location =
-            new HashMap<IState,DefaultBuchiLocation>();
-        // BuchiAutomatonGraph result = (BuchiAutomatonGraph) prototype;
-
-        for (ITransition t : automaton) {
-            IState sourceState = t.getSourceState();
-            DefaultBuchiLocation sourceLocation;
-            IState targetState = t.getTargetState();
-            DefaultBuchiLocation targetLocation;
-
-            if (state2location.containsKey(sourceState)) {
-                sourceLocation = state2location.get(sourceState);
-            } else {
-                sourceLocation = new DefaultBuchiLocation();
-                state2location.put(sourceState, sourceLocation);
-            }
-
-            if (state2location.containsKey(targetState)) {
-                targetLocation = state2location.get(targetState);
-            } else {
-                targetLocation = new DefaultBuchiLocation();
-                state2location.put(targetState, targetLocation);
-            }
-            LTL2BuchiLabel label = new LTL2BuchiLabel(t.getLabels());
-            DefaultBuchiTransition transition =
-                new LTL2BuchiTransition(sourceLocation, label, targetLocation);
-            sourceLocation.addTransition(transition);
-
-            // register the initial and final states
-            if (sourceState.isInitial()) {
-                this.initialLocation = sourceLocation;
-            }
-            if (sourceState.isFinal()) {
-                sourceLocation.setAccepting();
-            }
-            if (targetState.isFinal()) {
-                targetLocation.setAccepting();
-            }
-        }
     }
 
     /**
@@ -418,23 +360,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
         assert property != null;
         this.property = property;
 
-        BuchiGraphFactory graphFactory;
-
-        switch (LTL2BUCHI_METHOD) {
-        case LTL2BA:
-            graphFactory =
-                BuchiGraphFactory.getInstance(LTL2BuchiGraph.getPrototype());
-            break;
-        case NASABUCHI:
-            // this is the default Buchi graph factory but nevertheless we set
-            // it explicitely
-            graphFactory =
-                BuchiGraphFactory.getInstance(NASABuchiGraph.getPrototype());
-            break;
-        default:
-            graphFactory = BuchiGraphFactory.getInstance();
-            assert false;
-        }
+        BuchiGraphFactory graphFactory = BuchiGraphFactory.getInstance();
 
         try {
             BuchiGraph buchiGraph =

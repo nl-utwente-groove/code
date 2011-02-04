@@ -20,7 +20,6 @@ import groove.verify.BuchiLocation;
 import groove.verify.BuchiTransition;
 import groove.verify.ltl2ba.BuchiGraph;
 import groove.verify.ltl2ba.BuchiGraphFactory;
-import groove.verify.ltl2ba.LTL2BuchiGraph;
 import groove.verify.ltl2ba.NASABuchiGraph;
 import groove.view.FormatException;
 
@@ -115,9 +114,6 @@ public class LTL2BuchiGraphTest {
     private void testFormula(String formula, String[] rules) {
         System.out.printf("Formula: %s%n", formula);
         System.out.printf("--------%n", formula);
-        if (isLTL2BuchiEnabled()) {
-            testGraph(formula, rules, this.ltl2baFactory);
-        }
         testGraph(formula, rules, this.ltl2buchiFactory);
         System.out.printf("========%n%n", formula);
     }
@@ -140,12 +136,6 @@ public class LTL2BuchiGraphTest {
         }
     }
 
-    static private boolean isLTL2BuchiEnabled() {
-        return System.getProperty("os.name").startsWith("Windows")
-            || System.getProperty("os.name").startsWith("Linux")
-            || System.getProperty("os.name").startsWith("FreeBSD");
-    }
-
     private void testAllTransitions(BuchiLocation location,
             Set<String> applicableRules, Set<BuchiLocation> done) {
         if (!done.contains(location)) {
@@ -163,9 +153,6 @@ public class LTL2BuchiGraphTest {
         }
     }
 
-    /** The ltl2ba factory for creating  Büchi graphs. */
-    private final BuchiGraphFactory ltl2baFactory =
-        BuchiGraphFactory.getInstance(LTL2BuchiGraph.getPrototype());
     /** The ltl2buchi factory for creating  Büchi graphs. */
     private final BuchiGraphFactory ltl2buchiFactory =
         BuchiGraphFactory.getInstance(NASABuchiGraph.getPrototype());

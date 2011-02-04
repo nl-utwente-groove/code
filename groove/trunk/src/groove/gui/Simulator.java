@@ -34,7 +34,6 @@ import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
-import gov.nasa.ltl.trans.Formula;
 import gov.nasa.ltl.trans.ParseErrorException;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.lts.AGTS;
@@ -48,7 +47,6 @@ import groove.explore.StrategyEnumerator;
 import groove.explore.strategy.Boundary;
 import groove.explore.strategy.BoundedModelCheckingStrategy;
 import groove.explore.strategy.ExploreStateStrategy;
-import groove.explore.strategy.ModelCheckingStrategy;
 import groove.explore.util.ExplorationStatistics;
 import groove.explore.util.MatchApplier;
 import groove.explore.util.RuleEventApplier;
@@ -104,6 +102,7 @@ import groove.util.GrooveModules;
 import groove.util.Version;
 import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
+import groove.verify.LTLParser;
 import groove.verify.TemporalFormula;
 import groove.view.FormatError;
 import groove.view.FormatException;
@@ -730,13 +729,10 @@ public class Simulator {
                         @Override
                         public String parse(String text) {
                             String result = null;
-                            switch (ModelCheckingStrategy.LTL2BUCHI_METHOD) {
-                            case ModelCheckingStrategy.NASABUCHI:
-                                try {
-                                    Formula.parse(text);
-                                } catch (ParseErrorException e) {
-                                    result = e.getMessage();
-                                }
+                            try {
+                                LTLParser.parse(text);
+                            } catch (ParseErrorException e) {
+                                result = e.getMessage();
                             }
                             return result;
                         }
@@ -1255,7 +1251,8 @@ public class Simulator {
         refresh();
         List<FormatError> grammarErrors = getGrammarView().getErrors();
         setErrors(grammarErrors);
-        if (grammarErrors.isEmpty() && confirmBehaviourOption(START_SIMULATION_OPTION)) {
+        if (grammarErrors.isEmpty()
+            && confirmBehaviourOption(START_SIMULATION_OPTION)) {
             startSimulation();
         }
         this.history.updateLoadGrammar();
