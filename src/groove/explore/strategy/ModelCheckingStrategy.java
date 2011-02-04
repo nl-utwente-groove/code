@@ -17,8 +17,8 @@
 package groove.explore.strategy;
 
 import groove.explore.result.Result;
-import groove.verify.ProductState;
 import groove.verify.BuchiLocation;
+import groove.verify.ProductState;
 import groove.verify.ProductStateSet;
 
 import java.util.List;
@@ -30,21 +30,6 @@ import java.util.List;
  * @version $Revision$
  */
 public interface ModelCheckingStrategy extends Strategy {
-    /** 
-     * Value indicating that the ltl2ba library is used for generating 
-     * Büchi automata.
-     */
-    public static final int LTL2BA = 1;
-    /** 
-     * Value indicating that the ltlbuchi library is used for generating 
-     * Büchi automata.
-     */
-    public static final int NASABUCHI = 2;
-    /** Method using for generating Büchi automata.
-     * Possible values are {@link #LTL2BA} and {@link #NASABUCHI}.
-     */
-    public static final int LTL2BUCHI_METHOD = NASABUCHI;
-
     /**
      * Returns the product gts.
      */

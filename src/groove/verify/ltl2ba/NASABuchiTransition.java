@@ -16,6 +16,8 @@
  */
 package groove.verify.ltl2ba;
 
+import gov.nasa.ltl.graph.Guard;
+import gov.nasa.ltl.graph.Literal;
 import groove.verify.BuchiLocation;
 import groove.verify.DefaultBuchiTransition;
 
@@ -28,14 +30,8 @@ import junit.framework.Assert;
  * @version $Revision $
  */
 public class NASABuchiTransition extends DefaultBuchiTransition {
-    /** symbol used for unguarded enabledness */
-    private static final String TRUE_SYMBOL = "-";
-
-    /** symbol used for negation */
-    private static final String NEGATION_SYMBOL = "!";
-
     /**
-     * Constructor for creating a new Buchi
+     * Constructor for creating a new Buchi transition
      */
     public NASABuchiTransition(BuchiLocation source, NASABuchiLabel label,
             BuchiLocation target) {
@@ -44,16 +40,14 @@ public class NASABuchiTransition extends DefaultBuchiTransition {
 
     @Override
     public boolean isEnabled(Set<String> applicableRules) {
-        String guard = ((NASABuchiLabel) label()).guard();
-        if (guard.equals(TRUE_SYMBOL)) {
+        Guard<String> guard = ((NASABuchiLabel) label()).guard();
+        if (guard.isEmpty()) {
             return true;
         } else {
-            // extract all components of the conjunction
-            String[] args = guard.split("&");
             boolean result = true;
-            for (String arg : args) {
-                if (isNegated(arg)) {
-                    String nArg = arg.substring(1);
+            for (Literal<String> arg : guard) {
+                if (arg.isNegated()) {
+                    String nArg = arg.getAtom();
                     // if applicable and negated, the transition is not enabled
                     // we can return value false
                     if (applicableRules.contains(nArg)) {
@@ -67,7 +61,7 @@ public class NASABuchiTransition extends DefaultBuchiTransition {
                 } else {
                     // if applicable and not negated, transition can still be enabled
                     // the below else-statement could be left out
-                    if (applicableRules.contains(arg)) {
+                    if (applicableRules.contains(arg.getAtom())) {
                         result &= true;
                     } else {
                         return false;
@@ -80,14 +74,6 @@ public class NASABuchiTransition extends DefaultBuchiTransition {
                 result);
             return result;
         }
-    }
-
-    private boolean isNegated(String argument) {
-        if (argument.startsWith(NEGATION_SYMBOL)) {
-            return true;
-        }
-
-        return false;
     }
 
     @Override
