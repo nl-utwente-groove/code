@@ -37,7 +37,9 @@ import groove.view.StoredGrammarView;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.JToolBar;
@@ -271,14 +273,16 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
      *        property verified
      * @param allStates flag to indicate if all states (or just the start state)
      *        should be emphasised
+     * @param inTransitions flag to indicate that the canonical incoming transition
+     * should also be highlighted.
      * @return message describing the size of the counterexample
      */
-    protected String emphasiseStates(Set<GraphState> counterExamples,
-            boolean allStates) {
+    protected String emphasiseStates(List<GraphState> counterExamples,
+            boolean allStates, boolean inTransitions) {
         if (!allStates) {
             GraphState initial = getGTS().startState();
             boolean initialIsCounterexample = counterExamples.contains(initial);
-            counterExamples = new HashSet<GraphState>();
+            counterExamples = new ArrayList<GraphState>(1);
             if (initialIsCounterexample) {
                 counterExamples.add(initial);
             }
@@ -298,8 +302,18 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
             getSimulator().switchTabs(this);
         }
         Set<GraphJCell> jCells = new HashSet<GraphJCell>();
-        for (GraphState counterExample : counterExamples) {
-            jCells.add(getJModel().getJCellForNode(counterExample));
+        for (int i = 0; i < counterExamples.size(); i++) {
+            GraphState state = counterExamples.get(i);
+            jCells.add(getJModel().getJCellForNode(state));
+            if (inTransitions && i + 1 < counterExamples.size()) {
+                // find transition to next state
+                for (GraphTransition trans : state.getTransitionSet()) {
+                    if (trans.target() == counterExamples.get(i + 1)) {
+                        jCells.add(getJModel().getJCellForEdge(trans));
+                        break;
+                    }
+                }
+            }
         }
         getJGraph().setSelectionCells(jCells.toArray());
         //        getJModel().setEmphasised(jCells);

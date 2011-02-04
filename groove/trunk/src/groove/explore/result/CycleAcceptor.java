@@ -20,11 +20,14 @@ package groove.explore.result;
 import groove.explore.strategy.ModelCheckingStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.verify.ModelChecking;
 import groove.verify.ProductListener;
 import groove.verify.ProductState;
-import groove.verify.ModelChecking;
 import groove.verify.ProductStateSet;
 import groove.verify.ProductTransition;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Acceptor that is notified on closing a Büchi graph-state in a
@@ -39,14 +42,9 @@ import groove.verify.ProductTransition;
 public class CycleAcceptor extends Acceptor implements ProductListener {
     /** Creates a new acceptor with a 1-bounded {@link Result}. */
     public CycleAcceptor(ModelCheckingStrategy strategy) {
-        this(new Result(1), strategy);
-    }
-
-    /** Creates a new acceptor with a given {@link Result}. */
-    private CycleAcceptor(Result result, ModelCheckingStrategy strategy) {
-        super(result);
+        super(new CycleResult());
         this.strategy = strategy;
-        this.strategy.setResult(result);
+        this.strategy.setResult(getResult());
     }
 
     @Override
@@ -106,10 +104,30 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
      */
     @Override
     public Acceptor newInstance() {
-        CycleAcceptor result =
-            new CycleAcceptor(getResult().newInstance(), this.strategy);
+        CycleAcceptor result = new CycleAcceptor(this.strategy);
         return result;
     }
 
     private final ModelCheckingStrategy strategy;
+
+    /** 
+     * Type of the result object for the {@link CycleAcceptor}.
+     * The result is a list rather than a set, allowing for the multiple
+     * occurrence of the same graph state in a counter-example.
+     */
+    static private class CycleResult extends Result {
+        public CycleResult() {
+            super(1);
+        }
+
+        @Override
+        protected Collection<GraphState> createResultSet() {
+            return new ArrayList<GraphState>();
+        }
+
+        @Override
+        public Result newInstance() {
+            return new CycleResult();
+        }
+    }
 }

@@ -20,7 +20,7 @@ import groove.explore.Scenario;
 import groove.lts.GraphState;
 
 import java.util.Collection;
-import java.util.TreeSet;
+import java.util.LinkedHashSet;
 
 /**
  * A set of objects that are the result of the execution of some
@@ -89,7 +89,7 @@ public class Result {
 
     /** Callback factory method for the result set. */
     protected Collection<GraphState> createResultSet() {
-        return new TreeSet<GraphState>();
+        return new LinkedHashSet<GraphState>();
     }
 
     /** The elements stored in this result. */

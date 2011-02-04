@@ -1205,14 +1205,15 @@ public class Simulator {
                 CTLModelChecker modelChecker =
                     new CTLModelChecker(getGTS(), formula);
                 modelChecker.verify();
-                Set<GraphState> counterExamples = formula.getCounterExamples();
+                List<GraphState> counterExamples =
+                    new ArrayList<GraphState>(formula.getCounterExamples());
                 boolean reportForAllStates =
                     confirmBehaviour(
                         VERIFY_ALL_STATES_OPTION,
                         "Verify all states? Choosing 'No' will verify formula only on start state of LTS.");
                 String message =
                     getLtsPanel().emphasiseStates(counterExamples,
-                        reportForAllStates);
+                        reportForAllStates, false);
                 JOptionPane.showMessageDialog(getFrame(), message,
                     "Verification results", JOptionPane.INFORMATION_MESSAGE,
                     Groove.GROOVE_BLUE_ICON_32x32);
@@ -4091,10 +4092,10 @@ public class Simulator {
                 result = this.exploration.getLastResult().getValue();
             }
 
-            final Set<GraphState> states = new HashSet<GraphState>(result);
+            final List<GraphState> states = new ArrayList<GraphState>(result);
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    getLtsPanel().emphasiseStates(states, true);
+                    getLtsPanel().emphasiseStates(states, true, true);
                     if (LaunchThread.this.scenario instanceof ModelCheckingScenario) {
                         String property =
                             ((ModelCheckingScenario) LaunchThread.this.scenario).getProperty();
