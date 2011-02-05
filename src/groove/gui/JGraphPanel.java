@@ -20,6 +20,7 @@ import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.Edge;
 import groove.graph.Element;
+import groove.graph.Graph;
 import groove.graph.Node;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.GraphJCell;
@@ -44,6 +45,7 @@ import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -69,17 +71,15 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      * @param jGraph the jgraph on which this panel is a view
      * @param withStatusBar <tt>true</tt> if a status bar should be added to the
      *        panel
-     * @param options Options object used to create menu item listeners. If
-     *        <code>null</code>, no listeners are created.
      * @ensure <tt>getJGraph() == jGraph</tt>
      */
-    public JGraphPanel(JG jGraph, boolean withStatusBar, Options options) {
+    public JGraphPanel(JG jGraph, boolean withStatusBar) {
         super(false);
         setFocusable(false);
         setFocusCycleRoot(true);
         // right now we always want label panels; keep this option
         this.jGraph = jGraph;
-        this.options = options;
+        this.options = jGraph.getOptions();
         this.statusBar = withStatusBar ? new JLabel(" ") : null;
     }
 
@@ -407,6 +407,31 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      * The scroll pane in which the JGraph is displayed.
      */
     private JScrollPane scrollPane;
+
+    /** Shows a dialog displaying an arbitrary JGraph. */
+    public static void displayGraph(GraphJGraph jGraph) {
+        jGraph.doGraphLayout();
+        JGraphPanel<?> panel = new JGraphPanel<GraphJGraph>(jGraph, false);
+        panel.initialise();
+        panel.setEnabled(true);
+        JDialog dialog =
+            new JDialog((JDialog) null, "Graph " + jGraph.getName(), false);
+        dialog.add(panel);
+        dialog.pack();
+        dialog.setVisible(true);
+    }
+
+    /** Shows a dialog displaying an arbitrary GROOVE graph. */
+    public static void displayGraph(Graph<?,?> graph) {
+        displayGraph(GraphJGraph.createJGraph(graph));
+    }
+
+    /** Shows a dialog displaying an arbitrary GROOVE graph, with
+     * some control over the display attributes of the graph elements. */
+    public static void displayGraph(Graph<?,?> graph,
+            GraphJGraph.AttributeFactory factory) {
+        displayGraph(GraphJGraph.createJGraph(graph, factory));
+    }
 
     /**
      * The minimum width of the label pane. If the label list is empty, the

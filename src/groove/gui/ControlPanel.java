@@ -885,8 +885,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
             JDialog result = this.dialog;
             if (result == null) {
                 JGraphPanel<?> autPanel =
-                    new JGraphPanel<CtrlJGraph>(getJGraph(), true,
-                        getSimulator().getOptions());
+                    new JGraphPanel<CtrlJGraph>(getJGraph(), true);
                 autPanel.initialise();
                 result =
                     this.dialog =

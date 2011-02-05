@@ -20,8 +20,11 @@ import static groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
 import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
+import groove.graph.Edge;
+import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.Label;
+import groove.graph.Node;
 import groove.gui.Exporter;
 import groove.gui.LabelTree;
 import groove.gui.Options;
@@ -88,6 +91,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 
 import org.jgraph.JGraph;
+import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.CellView;
 import org.jgraph.graph.DefaultGraphModel;
@@ -104,7 +108,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-05 13:27:59 $
  */
-abstract public class GraphJGraph extends org.jgraph.JGraph {
+public class GraphJGraph extends org.jgraph.JGraph {
     /**
      * Constructs a JGraph.
      * @param options display options object to be used
@@ -492,6 +496,9 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
                 clearSelection();
             }
             super.setModel(jModel);
+            if (jModel != null) {
+                setName(jModel.getName());
+            }
             getLabelTree().updateModel();
             if (model != null && this.layouter != null) {
                 int layoutCount = freeze();
@@ -542,7 +549,10 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
     /** Callback factory method to create an appropriate JModel
      * instance for this JGraph.
      */
-    public abstract GraphJModel<?,?> newModel();
+    public GraphJModel<?,?> newModel() {
+        return new GraphJModel<Node,Edge<Node>>(
+            GraphJVertex.getPrototype(this), GraphJEdge.getPrototype(this));
+    }
 
     /**
      * In addition to delegating the method to the label list and to
@@ -1125,6 +1135,31 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
     private final Layouter incrementalLayouter =
         new SpringLayouter().newInstance(this);
 
+    /** Creates a plain JGraph for a given GROOVE graph. */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    static public GraphJGraph createJGraph(Graph<?,?> graph) {
+        GraphJGraph result = new GraphJGraph(null, false);
+        GraphJModel<?,?> jModel = result.newModel();
+        jModel.loadGraph((Graph) graph);
+        result.setModel(jModel);
+        return result;
+    }
+
+    /**
+     * Constructs a JGraph for a given graph,
+     * using given GraphJVertex and GraphJEdge prototypes
+     * for displaying the nodes and edges.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    static public GraphJGraph createJGraph(Graph<?,?> graph,
+            AttributeFactory factory) {
+        GraphJGraph result = new AttrJGraph(factory);
+        GraphJModel<?,?> jModel = result.newModel();
+        jModel.loadGraph((Graph) graph);
+        result.setModel(jModel);
+        return result;
+    }
+
     /** Maximum duration for layouting a new model. */
     static private final long MAX_LAYOUT_DURATION = 1000;
 
@@ -1540,5 +1575,104 @@ abstract public class GraphJGraph extends org.jgraph.JGraph {
             }
             refreshCells(changedCellSet);
         }
+    }
+
+    /**
+     * Specialisation of JGraph that allows a simple modification of the
+     * display attributes.
+     */
+    static private class AttrJGraph extends GraphJGraph {
+        AttrJGraph(final AttributeFactory factory) {
+            super(null, false);
+            this.factory = factory;
+            this.jVertexPrototype = new AttrJVertex(null);
+            this.jEdgePrototype = new AttrJEdge();
+        }
+
+        @Override
+        public GraphJModel<?,?> newModel() {
+            return new GraphJModel<Node,Edge<Node>>(this.jVertexPrototype,
+                this.jEdgePrototype);
+        }
+
+        private final AttributeFactory factory;
+        private final GraphJVertex jVertexPrototype;
+        private final GraphJEdge jEdgePrototype;
+
+        /** JVertex specialisation that can be used as a prototype. */
+        private class AttrJVertex extends GraphJVertex {
+            /**
+             * Creates a new instance.
+             */
+            public AttrJVertex(Node node) {
+                super(AttrJGraph.this, node);
+            }
+
+            @Override
+            public GraphJVertex newJVertex(Node node) {
+                return new AttrJVertex(node);
+            }
+
+            @Override
+            protected AttributeMap createAttributes() {
+                AttributeMap result = super.createAttributes();
+                AttributeMap modification =
+                    AttrJGraph.this.factory.getAttributes(getNode());
+                if (modification != null) {
+                    result.applyMap(modification);
+                }
+                return result;
+            }
+
+        }
+
+        /** JEdge specialisation that can be used as a prototype. */
+        private class AttrJEdge extends GraphJEdge {
+            /**
+             * Constructor for a prototype.
+             */
+            private AttrJEdge() {
+                super(AttrJGraph.this);
+            }
+
+            /**
+             * Creates a new instance.
+             */
+            public AttrJEdge(Edge<?> edge) {
+                super(AttrJGraph.this, edge);
+            }
+
+            @Override
+            public GraphJEdge newJEdge(Edge<?> edge) {
+                return new AttrJEdge(edge);
+            }
+
+            @Override
+            protected AttributeMap createAttributes() {
+                AttributeMap result = super.createAttributes();
+                AttributeMap modification =
+                    AttrJGraph.this.factory.getAttributes(getEdge());
+                if (modification != null) {
+                    result.applyMap(modification);
+                }
+                return result;
+            }
+
+        }
+    }
+
+    /** Interface for obtaining display attributes for graph elements. */
+    static public interface AttributeFactory {
+        /** 
+         * Returns display attributes for a given graph node.
+         * If {@code null}, the default attributes will be used. 
+         */
+        AttributeMap getAttributes(Node node);
+
+        /** 
+         * Returns display attributes for a given graph edge.
+         * If {@code null}, the default attributes will be used. 
+         */
+        AttributeMap getAttributes(Edge<?> edge);
     }
 }

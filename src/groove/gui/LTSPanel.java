@@ -56,7 +56,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
 
     /** Creates a LTS panel for a given simulator. */
     public LTSPanel(Simulator simulator) {
-        super(new LTSJGraph(simulator), true, simulator.getOptions());
+        super(new LTSJGraph(simulator), true);
         this.simulator = simulator;
         getJGraph().setToolTipEnabled(true);
         initialise();

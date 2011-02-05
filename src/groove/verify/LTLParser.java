@@ -21,6 +21,8 @@ package groove.verify;
 import gov.nasa.ltl.trans.Formula;
 import gov.nasa.ltl.trans.ParseErrorException;
 
+import java.util.Stack;
+
 /**
  * Written by Dimitra Giannakopoulou, 19 Jan 2001
  * Parser by Flavio Lerda, 8 Feb 2001
@@ -71,7 +73,28 @@ public class LTLParser {
 
         Input i = new Input(str);
 
-        return parse(i, P_ALL);
+        Formula<String> result = parse(i, P_ALL);
+        StringBuilder suffix = new StringBuilder();
+        boolean empty = true;
+        try {
+            while (true) {
+                if (!empty || i.get() != ' ') {
+                    empty = false;
+                    suffix.append(i.get());
+                }
+                i.skip();
+            }
+        } catch (EndOfInputException e) {
+            // we're at the end of input, as expected
+        }
+        if (!empty) {
+            throw new ParseErrorException("unparsed formula suffix: " + suffix);
+        }
+        if (DEBUG) {
+            System.out.println("Formula: " + result);
+            System.out.print(toString(result));
+        }
+        return result;
     }
 
     private static Formula<String> parse(Input i, int precedence)
@@ -386,6 +409,58 @@ public class LTLParser {
             throw new ParseErrorException("unexpected end of input");
         }
     }
+
+    /** Returns the syntax tree of the formula. */
+    public static final String toString(Formula<String> formula) {
+        StringBuilder result = new StringBuilder();
+        toString(formula, new Stack<Boolean>(), result);
+        result.append('\n');
+        return result.toString();
+    }
+
+    private static final void toString(Formula<String> formula,
+            Stack<Boolean> indent, StringBuilder result) {
+        switch (formula.getContent()) {
+        case AND:
+        case OR:
+        case RELEASE:
+        case UNTIL:
+        case WEAK_UNTIL:
+            result.append(formula.getContent() + "+-");
+            indent.push(true);
+            toString(formula.getSub1(), indent, result);
+            result.append('\n');
+            addIndent(indent, result);
+            indent.pop();
+            indent.push(false);
+            toString(formula.getSub2(), indent, result);
+            indent.pop();
+            break;
+        case NEXT:
+        case NOT:
+            result.append(formula.getContent() + "--");
+            indent.push(false);
+            toString(formula.getSub1(), indent, result);
+            indent.pop();
+            break;
+        case FALSE:
+        case TRUE:
+            result.append(formula.getContent());
+            break;
+        case PROPOSITION:
+            result.append(formula.getName());
+        }
+    }
+
+    private static final void addIndent(Stack<Boolean> indent,
+            StringBuilder result) {
+        for (int i = 0; i < indent.size(); i++) {
+            boolean b = indent.get(i);
+            result.append(b ? (i == indent.size() - 1 ? " +-" : " | ") : "   ");
+        }
+    }
+
+    private final static boolean DEBUG = false;
 
     private static final int P_ALL = 0;
     private static final int P_IMPLIES = 1;

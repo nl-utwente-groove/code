@@ -130,5 +130,5 @@ public class ModelCheckingScenario extends DefaultScenario {
      * Global flag to determine if counter-examples are reported on
      * {@link System#err}.
      */
-    static private final boolean REPORT_COUNTER_EXAMPLE = true;
+    static private final boolean REPORT_COUNTER_EXAMPLE = false;
 }

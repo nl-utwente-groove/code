@@ -23,16 +23,22 @@ import gov.nasa.ltl.trans.LTL2Buchi;
 import gov.nasa.ltl.trans.ParseErrorException;
 import groove.graph.AbstractGraph;
 import groove.graph.GraphRole;
+import groove.gui.JGraphPanel;
+import groove.gui.jgraph.GraphJGraph.AttributeFactory;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
 import groove.view.FormatException;
 
+import java.awt.Color;
 import java.util.AbstractSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.GraphConstants;
 
 /**
  * @author Harmen Kastenberg
@@ -119,13 +125,13 @@ public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition> {
                 Node<String> node = newNodeIter.next();
                 newNodeIter.remove();
                 BuchiLocation location = getLocation(node2location, node);
-                if (nodeSet().contains(location)) {
+                if (result.nodeSet().contains(location)) {
                     continue;
                 }
                 if (node.getAttributes().getBoolean("accepting")) {
                     location.setAccepting();
                 }
-                addNode(location);
+                result.addNode(location);
                 for (Edge<String> edge : node.getOutgoingEdges()) {
                     assert edge.getSource().equals(node);
                     BuchiLabel label =
@@ -134,14 +140,42 @@ public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition> {
                     BuchiTransition transition =
                         new BuchiTransition(location, label, getLocation(
                             node2location, target));
-                    addEdgeWithoutCheck(transition);
+                    result.addEdgeWithoutCheck(transition);
                     newNodes.add(target);
                 }
+            }
+            if (DEBUG) {
+                result.display();
             }
         } catch (ParseErrorException e) {
             throw new FormatException(e.getMessage());
         }
         return result;
+    }
+
+    /**
+     * Shows a dialog displaying this Büchi graph.
+     */
+    public void display() {
+        JGraphPanel.displayGraph(this, new AttributeFactory() {
+            @Override
+            public AttributeMap getAttributes(groove.graph.Edge<?> edge) {
+                return null;
+            }
+
+            @Override
+            public AttributeMap getAttributes(groove.graph.Node node) {
+                BuchiLocation location = (BuchiLocation) node;
+                AttributeMap result = new AttributeMap();
+                if (location.isAccepting()) {
+                    GraphConstants.setBackground(result, Color.orange);
+                }
+                if (location.equals(getInitial())) {
+                    GraphConstants.setLineWidth(result, 3);
+                }
+                return result;
+            }
+        });
     }
 
     private BuchiLocation getLocation(
@@ -179,6 +213,8 @@ public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition> {
     static public BuchiGraph getPrototype() {
         return new BuchiGraph("");
     }
+
+    static final private boolean DEBUG = false;
 
     /** 
      * Offers a modifiable view on the transitions stored in the locations 
