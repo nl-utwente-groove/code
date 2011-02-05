@@ -134,7 +134,7 @@ public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition> {
                     BuchiTransition transition =
                         new BuchiTransition(location, label, getLocation(
                             node2location, target));
-                    addEdge(transition);
+                    addEdgeWithoutCheck(transition);
                     newNodes.add(target);
                 }
             }
