@@ -39,7 +39,9 @@ public enum GraphRole {
     /** RETE graph role. */
     RETE("rete"),
     /** Control automaton role. */
-    CTRL("control");
+    CTRL("control"),
+    /** Büchi automaton role. */
+    BUCHI("büchi");
 
     private GraphRole(String name) {
         this.name = name;
