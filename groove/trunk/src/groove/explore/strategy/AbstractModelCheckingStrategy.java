@@ -27,11 +27,10 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.verify.BuchiLocation;
 import groove.verify.ModelChecking;
+import groove.verify.BuchiGraph;
 import groove.verify.ProductState;
 import groove.verify.ProductStateSet;
 import groove.verify.ProductTransition;
-import groove.verify.ltl2ba.BuchiGraph;
-import groove.verify.ltl2ba.BuchiGraphFactory;
 import groove.view.FormatException;
 
 import java.util.HashSet;
@@ -359,12 +358,10 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
     public void setProperty(String property) {
         assert property != null;
         this.property = property;
-
-        BuchiGraphFactory graphFactory = BuchiGraphFactory.getInstance();
-
         try {
             BuchiGraph buchiGraph =
-                graphFactory.newBuchiGraph("!(" + this.property + ")");
+                BuchiGraph.getPrototype().newBuchiGraph(
+                    "!(" + this.property + ")");
             this.initialLocation =
                 buchiGraph.initialLocations().iterator().next();
         } catch (FormatException e) {
