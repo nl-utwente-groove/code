@@ -41,8 +41,6 @@ import java.util.Set;
 public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition> {
     private BuchiGraph(String name) {
         super(name);
-        this.node2location = new HashMap<Node<String>,BuchiLocation>();
-        this.visitedNodes = new HashSet<Node<String>>();
     }
 
     @Override
@@ -88,17 +86,12 @@ public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition> {
     @Override
     public BuchiGraph clone() {
         BuchiGraph result = newGraph(getName());
+        result.setInitial(getInitial());
         for (BuchiLocation node : nodeSet()) {
             result.addNode(node);
         }
         for (BuchiTransition edge : edgeSet()) {
             result.addEdge(edge);
-        }
-        for (BuchiLocation initial : initialLocations()) {
-            result.addInitialLocation(initial);
-        }
-        for (BuchiLocation accepting : acceptingLocations()) {
-            result.addAcceptingLocation(accepting);
         }
         return result;
     }
@@ -115,125 +108,76 @@ public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition> {
         final BuchiGraph result = new BuchiGraph(formula);
         try {
             Graph<String> graph = LTL2Buchi.translate(LTLParser.parse(formula));
+            Map<Node<String>,BuchiLocation> node2location =
+                new HashMap<Node<String>,BuchiLocation>();
             Node<String> init = graph.getInit();
-            Visitor visitor = new Visitor(result);
-            visitor.visitNode(init);
-            result.addInitialLocation(getLocation(init));
+            result.setInitial(getLocation(node2location, init));
+            Set<Node<String>> newNodes = new HashSet<Node<String>>();
+            newNodes.add(init);
+            while (!newNodes.isEmpty()) {
+                Iterator<Node<String>> newNodeIter = newNodes.iterator();
+                Node<String> node = newNodeIter.next();
+                newNodeIter.remove();
+                BuchiLocation location = getLocation(node2location, node);
+                if (nodeSet().contains(location)) {
+                    continue;
+                }
+                if (node.getAttributes().getBoolean("accepting")) {
+                    location.setAccepting();
+                }
+                addNode(location);
+                for (Edge<String> edge : node.getOutgoingEdges()) {
+                    assert edge.getSource().equals(node);
+                    BuchiLabel label =
+                        new BuchiLabel(edge.getAction(), edge.getGuard());
+                    Node<String> target = edge.getNext();
+                    BuchiTransition transition =
+                        new BuchiTransition(location, label, getLocation(
+                            node2location, target));
+                    addEdge(transition);
+                    newNodes.add(target);
+                }
+            }
         } catch (ParseErrorException e) {
             throw new FormatException(e.getMessage());
         }
         return result;
     }
 
-    /** 
-     * Indicates if a given node has already been visited.
-     * also sets the status to visited. 
-     */
-    private boolean isVisited(Node<String> node) {
-        return !this.visitedNodes.add(node);
-
-    }
-
-    private BuchiLocation getLocation(Node<String> node) {
-        BuchiLocation result = null;
-        if (this.node2location.containsKey(node)) {
-            result = this.node2location.get(node);
-        } else {
-            result = new BuchiLocation(this.node2location.size());
-            this.node2location.put(node, result);
+    private BuchiLocation getLocation(
+            Map<Node<String>,BuchiLocation> node2location, Node<String> node) {
+        BuchiLocation result = node2location.get(node);
+        if (result == null) {
+            result = new BuchiLocation(node2location.size());
+            node2location.put(node, result);
         }
         return result;
     }
 
     /**
-     * Returns the set of initial locations.
+     * Returns the initial location.
      */
-    public Set<BuchiLocation> initialLocations() {
-        return this.initialLocations;
+    public BuchiLocation getInitial() {
+        return this.initial;
     }
 
     /**
-     * Returns the set of accepting locations.
+     * Sets the initial location.
      */
-    public Set<BuchiLocation> acceptingLocations() {
-        return this.acceptingLocations;
+    public void setInitial(BuchiLocation location) {
+        this.initial = location;
     }
-
-    /**
-     * Add the provided Büchi location to the set of initial locations.
-     * @return see {@link Set#add(Object)}
-     */
-    public boolean addInitialLocation(BuchiLocation location) {
-        return initialLocations().add(location);
-    }
-
-    /**
-     * Add the provided Buechi location to the set of accepting locations.
-     * @return see {@link Set#add(Object)}
-     */
-    public boolean addAcceptingLocation(BuchiLocation location) {
-        return acceptingLocations().add(location);
-    }
-
-    /**
-     * @return see {@link Set#add(Object)}
-     */
-    public boolean addTransition(BuchiTransition transition) {
-        return transition.source().addTransition(transition);
-    }
-
-    private final Map<Node<String>,BuchiLocation> node2location;
-    /** Set of already visited nodes. */
-    private final Set<Node<String>> visitedNodes;
 
     /** The set of all locations. */
     private final Set<BuchiLocation> locations = new HashSet<BuchiLocation>();
-    /** The set of initial locations. */
-    private final Set<BuchiLocation> initialLocations =
-        new HashSet<BuchiLocation>();
-    /** The set of accepting locations. */
-    private final Set<BuchiLocation> acceptingLocations =
-        new HashSet<BuchiLocation>();
+    /** The initial location. */
+    private BuchiLocation initial;
 
     /**
      * Return the prototype graph of this class.
      */
     static public BuchiGraph getPrototype() {
         return new BuchiGraph("");
-    }
-
-    private class Visitor {
-        private BuchiGraph graph;
-
-        public Visitor(BuchiGraph graph) {
-            this.graph = graph;
-        }
-
-        public void visitNode(Node<String> node) {
-            // only do something if the node has not already been visited
-            if (!isVisited(node)) {
-                BuchiLocation location = getLocation(node);
-                for (Edge<String> edge : node.getOutgoingEdges()) {
-                    visitEdge(edge);
-                }
-                if (node.getAttributes().getBoolean("accepting")) {
-                    location.setAccepting();
-                    this.graph.addAcceptingLocation(location);
-                }
-            }
-        }
-
-        public void visitEdge(Edge<String> edge) {
-            BuchiLabel label =
-                new BuchiLabel(edge.getAction(), edge.getGuard());
-            Node<String> source = edge.getSource();
-            Node<String> target = edge.getNext();
-            BuchiTransition transition =
-                new BuchiTransition(getLocation(source), label,
-                    getLocation(target));
-            this.graph.addTransition(transition);
-            visitNode(target);
-        }
     }
 
     /** 

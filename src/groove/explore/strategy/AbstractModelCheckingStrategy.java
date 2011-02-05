@@ -25,9 +25,9 @@ import groove.explore.util.RandomNewStateChooser;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.verify.BuchiGraph;
 import groove.verify.BuchiLocation;
 import groove.verify.ModelChecking;
-import groove.verify.BuchiGraph;
 import groove.verify.ProductState;
 import groove.verify.ProductStateSet;
 import groove.verify.ProductTransition;
@@ -362,8 +362,7 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
             BuchiGraph buchiGraph =
                 BuchiGraph.getPrototype().newBuchiGraph(
                     "!(" + this.property + ")");
-            this.initialLocation =
-                buchiGraph.initialLocations().iterator().next();
+            this.initialLocation = buchiGraph.getInitial();
         } catch (FormatException e) {
             throw new IllegalStateException(String.format(
                 "Property %s not parsed correctly", property), e);
