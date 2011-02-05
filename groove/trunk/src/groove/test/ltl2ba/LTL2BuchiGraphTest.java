@@ -16,8 +16,8 @@
  */
 package groove.test.ltl2ba;
 
-import groove.verify.BuchiLocation;
 import groove.verify.BuchiGraph;
+import groove.verify.BuchiLocation;
 import groove.verify.BuchiTransition;
 import groove.view.FormatException;
 
@@ -122,12 +122,10 @@ public class LTL2BuchiGraphTest {
             BuchiGraph buchiGraph = this.prototype.newBuchiGraph(formula);
             Set<String> set = new HashSet<String>(Arrays.asList(rules));
             // check whether the Büchi-graph is the one we expected
-            for (BuchiLocation initialLocation : buchiGraph.initialLocations()) {
-                testAllTransitions(initialLocation, set,
-                    new HashSet<BuchiLocation>());
-            }
-            System.out.printf("Accepting locations: %s%n",
-                buchiGraph.acceptingLocations());
+            testAllTransitions(buchiGraph.getInitial(), set,
+                new HashSet<BuchiLocation>());
+            System.out.printf("Initial location: %s%n",
+                buchiGraph.getInitial());
         } catch (FormatException e) {
             assert false;
         }
