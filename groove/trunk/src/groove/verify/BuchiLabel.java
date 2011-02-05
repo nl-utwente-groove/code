@@ -17,6 +17,7 @@
 package groove.verify;
 
 import gov.nasa.ltl.graph.Guard;
+import gov.nasa.ltl.graph.Literal;
 import groove.graph.AbstractLabel;
 
 /**
@@ -61,11 +62,21 @@ public class BuchiLabel extends AbstractLabel {
 
     @Override
     public String text() {
-        return "[" + this.action() + "]/" + this.guard();
-    }
-
-    @Override
-    public String toString() {
-        return "--[" + this.action() + "]/[" + this.guard() + "]-->";
+        StringBuilder result = new StringBuilder();
+        result.append(this.action());
+        result.append("/[");
+        boolean first = true;
+        for (Literal<String> literal : guard()) {
+            if (!first) {
+                result.append(",");
+                first = false;
+            }
+            if (literal.isNegated()) {
+                result.append("!");
+            }
+            result.append(literal.getAtom());
+        }
+        result.append("]");
+        return result.toString();
     }
 }

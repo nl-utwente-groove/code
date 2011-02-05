@@ -21,7 +21,6 @@ import static groove.util.Converter.STRONG_TAG;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.util.Converter;
 import groove.util.Groove;
 
@@ -32,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultPort;
 
