@@ -22,8 +22,8 @@ import groove.graph.EdgeRole;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.util.LTLBenchmarker;
-import groove.verify.BuchiTransition;
 import groove.verify.ModelChecking;
+import groove.verify.BuchiTransition;
 import groove.verify.ProductState;
 import groove.verify.ProductTransition;
 

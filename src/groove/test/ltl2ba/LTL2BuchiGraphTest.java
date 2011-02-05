@@ -17,10 +17,8 @@
 package groove.test.ltl2ba;
 
 import groove.verify.BuchiLocation;
+import groove.verify.BuchiGraph;
 import groove.verify.BuchiTransition;
-import groove.verify.ltl2ba.BuchiGraph;
-import groove.verify.ltl2ba.BuchiGraphFactory;
-import groove.verify.ltl2ba.NASABuchiGraph;
 import groove.view.FormatException;
 
 import java.util.Arrays;
@@ -114,17 +112,16 @@ public class LTL2BuchiGraphTest {
     private void testFormula(String formula, String[] rules) {
         System.out.printf("Formula: %s%n", formula);
         System.out.printf("--------%n", formula);
-        testGraph(formula, rules, this.ltl2buchiFactory);
+        testGraph(formula, rules);
         System.out.printf("========%n%n", formula);
     }
 
     /** Tests the graph to be created from a given formula, using a given factory. */
-    private void testGraph(String formula, String[] rules,
-            BuchiGraphFactory factory) {
+    private void testGraph(String formula, String[] rules) {
         try {
-            BuchiGraph buchiGraph = factory.newBuchiGraph(formula);
+            BuchiGraph buchiGraph = this.prototype.newBuchiGraph(formula);
             Set<String> set = new HashSet<String>(Arrays.asList(rules));
-            // check whether the Buchi-graph is the one we expected
+            // check whether the Büchi-graph is the one we expected
             for (BuchiLocation initialLocation : buchiGraph.initialLocations()) {
                 testAllTransitions(initialLocation, set,
                     new HashSet<BuchiLocation>());
@@ -154,6 +151,5 @@ public class LTL2BuchiGraphTest {
     }
 
     /** The ltl2buchi factory for creating  Büchi graphs. */
-    private final BuchiGraphFactory ltl2buchiFactory =
-        BuchiGraphFactory.getInstance(NASABuchiGraph.getPrototype());
+    private final BuchiGraph prototype = BuchiGraph.getPrototype();
 }

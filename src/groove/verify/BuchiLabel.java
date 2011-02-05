@@ -16,15 +16,56 @@
  */
 package groove.verify;
 
-import groove.verify.ltl2ba.BuchiGraph;
+import gov.nasa.ltl.graph.Guard;
+import groove.graph.AbstractLabel;
 
 /**
- * Empty interface for labels on transitions in {@link BuchiGraph}s.
- *
  * @author Harmen Kastenberg
  * @version $Revision $
  */
-public interface BuchiLabel
-{
-	// empty interface (for now)
+public class BuchiLabel extends AbstractLabel {
+    private String action;
+
+    private Guard<String> guard;
+
+    /**
+     * Constructor.
+     * 
+     * @param action
+     *          the action for the label
+     * @param guard
+     *          the guard for the label
+     */
+    public BuchiLabel(String action, Guard<String> guard) {
+        this.action = action;
+        this.guard = guard;
+    }
+
+    /**
+     * Returns the <code>action</code> of this label.
+     * 
+     * @return the <code>action</code> of this label.
+     */
+    public String action() {
+        return this.action;
+    }
+
+    /**
+     * Returns the <code>guard</code> of this label.
+     * 
+     * @return the <code>guard</code> of this label
+     */
+    public Guard<String> guard() {
+        return this.guard;
+    }
+
+    @Override
+    public String text() {
+        return "[" + this.action() + "]/" + this.guard();
+    }
+
+    @Override
+    public String toString() {
+        return "--[" + this.action() + "]/[" + this.guard() + "]-->";
+    }
 }

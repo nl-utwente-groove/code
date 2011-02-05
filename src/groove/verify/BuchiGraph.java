@@ -14,17 +14,13 @@
  * 
  * $Id$
  */
-package groove.verify.ltl2ba;
+package groove.verify;
 
 import gov.nasa.ltl.graph.Edge;
 import gov.nasa.ltl.graph.Graph;
 import gov.nasa.ltl.graph.Node;
 import gov.nasa.ltl.trans.LTL2Buchi;
 import gov.nasa.ltl.trans.ParseErrorException;
-import groove.verify.BuchiLocation;
-import groove.verify.BuchiTransition;
-import groove.verify.DefaultBuchiLocation;
-import groove.verify.LTLParser;
 import groove.view.FormatException;
 
 import java.util.HashMap;
@@ -36,31 +32,22 @@ import java.util.Set;
  * @author Harmen Kastenberg
  * @version $Revision $
  */
-public class NASABuchiGraph extends AbstractBuchiGraph {
-    private final Map<Node<String>,BuchiLocation> node2location;
-    /** Set of already visited nodes. */
-    private final Set<Node<String>> visitedNodes;
-
-    private NASABuchiGraph() {
+public class BuchiGraph {
+    private BuchiGraph() {
         this.node2location = new HashMap<Node<String>,BuchiLocation>();
         this.visitedNodes = new HashSet<Node<String>>();
     }
 
     /**
-     * Return the prototype graph of this class.
+     * Create a {@link BuchiGraph} from the provided LTL formula.
+     * 
+     * @param formula the formula for which to create an equivalent
+     *        {@link BuchiGraph}
+     * @return the {@link BuchiGraph}
+     * @throws FormatException if the formula contains (parsing) errors
      */
-    static public BuchiGraph getPrototype() {
-        return new NASABuchiGraph();
-    }
-
-    @Override
-    public boolean isEnabled(BuchiTransition transition,
-            Set<String> applicableRules) {
-        return false;
-    }
-
     public BuchiGraph newBuchiGraph(String formula) throws FormatException {
-        final BuchiGraph result = new NASABuchiGraph();
+        final BuchiGraph result = new BuchiGraph();
         try {
             Graph<String> graph = LTL2Buchi.translate(LTLParser.parse(formula));
             Node<String> init = graph.getInit();
@@ -87,10 +74,68 @@ public class NASABuchiGraph extends AbstractBuchiGraph {
         if (this.node2location.containsKey(node)) {
             result = this.node2location.get(node);
         } else {
-            result = new DefaultBuchiLocation();
+            result = new BuchiLocation(this.node2location.size());
             this.node2location.put(node, result);
         }
         return result;
+    }
+
+    /**
+     * Returns the set of initial locations.
+     */
+    public Set<BuchiLocation> initialLocations() {
+        if (null == this.initialLocations) {
+            this.initialLocations = new HashSet<BuchiLocation>();
+        }
+        return this.initialLocations;
+    }
+
+    /**
+     * Returns the set of accepting locations.
+     */
+    public Set<BuchiLocation> acceptingLocations() {
+        if (null == this.acceptingLocations) {
+            this.acceptingLocations = new HashSet<BuchiLocation>();
+        }
+        return this.acceptingLocations;
+    }
+
+    /**
+     * Add the provided Büchi location to the set of initial locations.
+     * @return see {@link Set#add(Object)}
+     */
+    public boolean addInitialLocation(BuchiLocation location) {
+        return initialLocations().add(location);
+    }
+
+    /**
+     * Add the provided Buechi location to the set of accepting locations.
+     * @return see {@link Set#add(Object)}
+     */
+    public boolean addAcceptingLocation(BuchiLocation location) {
+        return acceptingLocations().add(location);
+    }
+
+    /**
+     * @return see {@link Set#add(Object)}
+     */
+    public boolean addTransition(BuchiTransition transition) {
+        return transition.source().addTransition(transition);
+    }
+
+    private final Map<Node<String>,BuchiLocation> node2location;
+    /** Set of already visited nodes. */
+    private final Set<Node<String>> visitedNodes;
+
+    private Set<BuchiLocation> initialLocations;
+
+    private Set<BuchiLocation> acceptingLocations;
+
+    /**
+     * Return the prototype graph of this class.
+     */
+    static public BuchiGraph getPrototype() {
+        return new BuchiGraph();
     }
 
     private interface IVisitor {
@@ -129,12 +174,12 @@ public class NASABuchiGraph extends AbstractBuchiGraph {
         }
 
         public void visitEdge(Edge<String> edge) {
-            NASABuchiLabel label =
-                new NASABuchiLabel(edge.getAction(), edge.getGuard());
+            BuchiLabel label =
+                new BuchiLabel(edge.getAction(), edge.getGuard());
             Node<String> source = edge.getSource();
             Node<String> target = edge.getNext();
             BuchiTransition transition =
-                new NASABuchiTransition(getLocation(source), label,
+                new BuchiTransition(getLocation(source), label,
                     getLocation(target));
             this.graph.addTransition(transition);
             visitNode(target);
