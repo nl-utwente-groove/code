@@ -16,14 +16,8 @@
  */
 package groove.calc;
 
-import groove.explore.DefaultScenario;
-import groove.explore.Scenario;
-import groove.explore.result.Acceptor;
-import groove.explore.result.FinalStateAcceptor;
+import groove.explore.Exploration;
 import groove.explore.result.Result;
-import groove.explore.strategy.BFSStrategy;
-import groove.explore.strategy.DFSStrategy;
-import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.Strategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -74,11 +68,6 @@ public class DefaultGraphCalculator implements GraphCalculator {
         this.prototype = prototype;
     }
 
-    private Scenario createScenario(Strategy strategy, Acceptor acceptor) {
-        DefaultScenario scenario = new DefaultScenario(strategy, acceptor);
-        return scenario;
-    }
-
     /**
      * Final states are all states with only transitions of unmodifying rules.
      */
@@ -91,20 +80,12 @@ public class DefaultGraphCalculator implements GraphCalculator {
             result = this.gts.getFinalStates().iterator().next();
         } else {
             // try linear
-            Scenario sc =
-                createScenario(new LinearStrategy(), new FinalStateAcceptor(
-                    new Result(1)));
-            sc.prepare(getGTS());
-            Result scenarioResult = sc.play();
+            Result scenarioResult = play("linear", "final", 1);
             if (scenarioResult.done()) {
                 result = scenarioResult.getValue().iterator().next();
             } else {
                 // try depth first
-                sc =
-                    createScenario(new DFSStrategy(), new FinalStateAcceptor(
-                        new Result(1)));
-                sc.prepare(getGTS());
-                scenarioResult = sc.play();
+                scenarioResult = play("dfs", "final", 1);
                 if (scenarioResult.done()) {
                     result = scenarioResult.getValue().iterator().next();
                 }
@@ -119,17 +100,13 @@ public class DefaultGraphCalculator implements GraphCalculator {
      */
     public GraphState getMax(Strategy strategy) {
         testPrototype();
-
         GraphState result = null;
         // any final state is maximal; try that first
         if (this.gts.getFinalStates().size() > 0) {
             result = this.gts.getFinalStates().iterator().next();
         } else {
             // try linear
-            Scenario scenatioResult =
-                createScenario(strategy, new FinalStateAcceptor(new Result(1)));
-            scenatioResult.prepare(getGTS());
-            Result results = scenatioResult.play();
+            Result results = play("bfs", "final", 1);
             if (results.done()) {
                 result = results.getValue().iterator().next();
             }
@@ -139,11 +116,19 @@ public class DefaultGraphCalculator implements GraphCalculator {
 
     public Collection<GraphState> getAllFinal() {
         testPrototype();
-        Scenario scenario =
-            createScenario(new BFSStrategy(), new FinalStateAcceptor());
-        scenario.prepare(getGTS());
-        return scenario.play().getValue();
+        return play("bfs", "final", 1).getValue();
+    }
 
+    /** Plays a given exploration on the GTS, and returns the result. */
+    private Result play(String strategy, String acceptor, int count) {
+        Exploration exploration = new Exploration(strategy, acceptor, count);
+        try {
+            exploration.play(getGTS(), getGTS().startState());
+        } catch (FormatException e) {
+            // there can be no incompatibility
+            assert false;
+        }
+        return exploration.getLastResult();
     }
 
     public Collection<GraphState> getAll(String conditionName) {
@@ -184,15 +169,6 @@ public class DefaultGraphCalculator implements GraphCalculator {
         } else {
             return this.gts.startState().getGraph();
         }
-    }
-
-    /**
-     * Returns the result from running the passed scenario.
-     */
-    public Result getResult(Scenario scenario) {
-        testPrototype();
-        scenario.prepare(getGTS());
-        return scenario.play();
     }
 
     public GraphCalculator newInstance(DefaultHostGraph start)

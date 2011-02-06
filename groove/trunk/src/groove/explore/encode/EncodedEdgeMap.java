@@ -19,7 +19,7 @@ package groove.explore.encode;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.gui.Simulator;
-import groove.lts.GTS;
+import groove.trans.RuleSystem;
 import groove.view.FormatException;
 
 import java.util.Map;
@@ -81,7 +81,7 @@ public class EncodedEdgeMap implements
      * Throws a <code>FormatException</code> if parsing fails.
      */
     @Override
-    public Map<TypeLabel,Integer> parse(GTS gts, String source)
+    public Map<TypeLabel,Integer> parse(RuleSystem rules, String source)
         throws FormatException {
 
         // Disallow the empty string.
@@ -94,7 +94,7 @@ public class EncodedEdgeMap implements
         Map<TypeLabel,Integer> edgeMap = new TreeMap<TypeLabel,Integer>();
 
         // Get the LabelStore from the GTS.
-        LabelStore store = gts.getGrammar().getRuleSystem().getLabelStore();
+        LabelStore store = rules.getLabelStore();
 
         // Split the source String (assumed to be a comma separated list).
         String[] units = source.split(",");

@@ -20,7 +20,7 @@ import groove.explore.encode.Template.Visibility;
 import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.layout.SpringUtilities;
-import groove.lts.GTS;
+import groove.trans.RuleSystem;
 import groove.util.Version;
 import groove.view.FormatException;
 
@@ -88,11 +88,12 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
     }
 
     /**
-     * Add a template. The keyword of the template is assumed to be unique
+     * Adds a template. The keyword of the template is assumed to be unique
      * with respect to the already stored templates.
      */
-    public void addTemplate(Template<A> template) {
-        this.templates.add(template);
+    protected void addTemplate(Template<A> template) {
+        boolean fresh = this.templates.add(template);
+        assert fresh;
     }
 
     /**
@@ -123,10 +124,10 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      * with the given keyword and then using its parse method.
      */
     @Override
-    public A parse(GTS gts, Serialized source) throws FormatException {
+    public A parse(RuleSystem rules, Serialized source) throws FormatException {
         for (Template<A> template : this.templates) {
             if (template.getKeyword().equals(source.getKeyword())) {
-                return template.parse(gts, source);
+                return template.parse(rules, source);
             }
         }
 

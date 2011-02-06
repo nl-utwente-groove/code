@@ -16,14 +16,13 @@
  */
 package groove.samples;
 
-import groove.explore.Scenario;
-import groove.explore.ScenarioFactory;
-import groove.explore.strategy.BFSStrategy;
-import groove.explore.strategy.DFSStrategy;
+import groove.explore.AcceptorValue;
+import groove.explore.Exploration;
+import groove.explore.StrategyValue;
 import groove.lts.GTS;
+import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.GTSAdapter;
 import groove.trans.GraphGrammar;
 import groove.util.GenerateProgressMonitor;
 import groove.util.Groove;
@@ -64,10 +63,13 @@ public class GTSComparator {
     static private GTS runScenario1(GraphGrammar grammar) {
         GTS result = new GTS(grammar);
         result.addLTSListener(new GenerateProgressMonitor());
-        Scenario scenario1 =
-            ScenarioFactory.getScenario(new BFSStrategy(), null, null, null);
-        scenario1.prepare(result);
-        scenario1.play();
+        Exploration scenario1 =
+            new Exploration(StrategyValue.BFS, AcceptorValue.ANY, 0);
+        try {
+            scenario1.play(result, result.startState());
+        } catch (FormatException e) {
+            assert false;
+        }
         System.out.printf("%nStates: %d, transitions: %d%n%n",
             result.nodeCount(), result.edgeCount());
         return result;
@@ -103,10 +105,13 @@ public class GTSComparator {
                 }
             }
         });
-        Scenario scenario2 =
-            ScenarioFactory.getScenario(new DFSStrategy(), null, null, null);
-        scenario2.prepare(result);
-        scenario2.play();
+        Exploration scenario2 =
+            new Exploration(StrategyValue.DFS, AcceptorValue.ANY, 0);
+        try {
+            scenario2.play(result, result.startState());
+        } catch (FormatException e) {
+            assert false;
+        }
         System.out.printf("%nStates: %d, transitions: %d%n%n",
             result.nodeCount(), result.edgeCount());
     }

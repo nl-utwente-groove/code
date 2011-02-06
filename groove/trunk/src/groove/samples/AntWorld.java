@@ -16,17 +16,17 @@
  */
 package groove.samples;
 
-import groove.explore.DefaultScenario;
-import groove.explore.Scenario;
+import groove.explore.AcceptorValue;
+import groove.explore.Exploration;
+import groove.explore.StrategyValue;
 import groove.explore.result.Result;
-import groove.explore.strategy.RandomLinearStrategy;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.lts.GTS;
-import groove.lts.GraphTransition;
 import groove.lts.GTSAdapter;
 import groove.lts.GTSListener;
+import groove.lts.GraphTransition;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
 import groove.util.Groove;
@@ -63,11 +63,11 @@ public class AntWorld {
             GraphGrammar grammar = grammarView.toGrammar();
             GTS gts = new GTS(grammar);
             gts.addLTSListener(getStatisticsListener());
-            Scenario scenario =
-                new DefaultScenario(new RandomLinearStrategy(), null);
-            scenario.prepare(gts);
+            Exploration scenario =
+                new Exploration(StrategyValue.RANDOM, AcceptorValue.ANY, 0);
             long startTime = System.currentTimeMillis();
-            Result result = scenario.play();
+            scenario.play(gts, gts.startState());
+            Result result = scenario.getLastResult();
             long endTime = System.currentTimeMillis();
             HostGraph graph = result.getValue().iterator().next().getGraph();
             //            System.out.println(graph);

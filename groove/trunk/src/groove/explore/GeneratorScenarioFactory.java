@@ -16,20 +16,15 @@
  */
 package groove.explore;
 
-import groove.explore.result.Acceptor;
-import groove.explore.result.FinalStateAcceptor;
-import groove.explore.result.Result;
 import groove.explore.strategy.Boundary;
 import groove.explore.strategy.BoundedModelCheckingStrategy;
 import groove.explore.strategy.GraphNodeSizeBoundary;
 import groove.explore.strategy.ModelCheckingStrategy;
 import groove.explore.strategy.RuleSetBorderBoundary;
 import groove.explore.strategy.RuleSetStartBoundary;
-import groove.explore.strategy.Strategy;
 import groove.trans.Rule;
 import groove.verify.ModelChecking;
 
-import java.util.Scanner;
 import java.util.Set;
 
 /**
@@ -38,51 +33,6 @@ import java.util.Set;
  * @author Iovka Boneva
  */
 public class GeneratorScenarioFactory {
-    /**
-     * Creates a scenario handler collecting all final states, and with the
-     * strategy given as parameter.
-     */
-    public static Scenario getScenarioHandler(final Strategy strategy,
-            final String description, final String name) {
-        return new DefaultScenario(strategy, new FinalStateAcceptor(), name,
-            description);
-    }
-
-    /**
-     * Creates a scenario handler finding a single final state, with the
-     * strategy given as parameter.
-     */
-    public static Scenario getFinalStateScenarioHandler(
-            final Strategy strategy, final String description, final String name) {
-        Acceptor acceptor = new FinalStateAcceptor(new Result(1));
-        return new DefaultScenario(strategy, acceptor, name, description);
-    }
-
-    /**
-     * Constructs a bounded model checking scenario with a fixed bound. The
-     * property to be checked is obtained from the command line.
-     * @param strategy Strategy for the scenario.
-     * @param description A one-sentence description of the scenario.
-     * @param name A short (one or few words) description of the scenario. Is to
-     *        be used in menus, or as identification (for instance in
-     *        command-line options).
-     */
-    public static ModelCheckingScenario getBoundedModelCheckingScenario(
-            final BoundedModelCheckingStrategy strategy,
-            final String description, final String name) {
-        ModelCheckingScenario result =
-            new ModelCheckingScenario(strategy, name, description) {
-                @Override
-                public String getProperty() {
-                    System.out.println("Enter the LTL formula to verify:");
-                    Scanner keyboard = new Scanner(System.in);
-                    return keyboard.nextLine();
-                }
-            };
-        result.setBoundary(new GraphNodeSizeBoundary(8, 2));
-        return result;
-    }
-
     /**
      * Constructs a bounded model checking scenario for a given property. The
      * bound is a {@link GraphNodeSizeBoundary} with given initial bound and

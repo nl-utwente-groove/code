@@ -149,7 +149,8 @@ public class ExplorationDialog extends JDialog implements ActionListener,
         this.exploreButton = new JButton(EXPLORE_COMMAND);
 
         // Create the strategy editor.
-        StrategyEnumerator strategyEnumerator = new StrategyEnumerator();
+        StrategyEnumerator strategyEnumerator =
+            StrategyEnumerator.getInstance();
         strategyEnumerator.setMask(strategyMask);
         strategyEnumerator.addListener(this);
         this.strategyEditor = strategyEnumerator.createEditor(simulator);
@@ -157,7 +158,8 @@ public class ExplorationDialog extends JDialog implements ActionListener,
             this.simulator.getDefaultExploration().getStrategy();
 
         // Create the acceptor editor.
-        AcceptorEnumerator acceptorEnumerator = new AcceptorEnumerator();
+        AcceptorEnumerator acceptorEnumerator =
+            AcceptorEnumerator.getInstance();
         acceptorEnumerator.setMask(acceptorMask);
         acceptorEnumerator.addListener(this);
         this.acceptorEditor = acceptorEnumerator.createEditor(simulator);

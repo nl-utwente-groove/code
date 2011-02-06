@@ -18,8 +18,8 @@ package groove.explore.strategy;
 
 import groove.graph.EdgeRole;
 import groove.lts.GraphTransition;
-import groove.verify.ModelChecking;
 import groove.verify.BuchiTransition;
+import groove.verify.ModelChecking;
 import groove.verify.ProductState;
 import groove.verify.ProductTransition;
 
@@ -58,20 +58,18 @@ public class NestedDFSStrategy extends AbstractModelCheckingStrategy {
         // current state with the current Buchi location and add
         // the resulting combined transition to the product GTS
 
-        Set<? extends GraphTransition> outTransitions =
-            getGTS().outEdgeSet(getAtState());
+        Set<GraphTransition> outTransitions = getAtState().getTransitionSet();
         Set<String> applicableRules = filterRuleNames(outTransitions);
 
-        for (BuchiTransition nextPropertyTransition : getAtBuchiLocation().outTransitions()) {
-            if (nextPropertyTransition.isEnabled(applicableRules)) {
+        for (BuchiTransition buchiTrans : getAtBuchiLocation().outTransitions()) {
+            if (buchiTrans.isEnabled(applicableRules)) {
                 boolean finalState = true;
-                for (GraphTransition nextTransition : getGTS().outEdgeSet(
-                    getAtBuchiState().getGraphState())) {
+                for (GraphTransition nextTransition : outTransitions) {
                     if (nextTransition.getRole() == EdgeRole.BINARY) {
                         finalState = false;
                         ProductTransition productTransition =
                             addProductTransition(nextTransition,
-                                nextPropertyTransition.target());
+                                buchiTrans.target());
                         if (counterExample(getAtBuchiState(),
                             productTransition.target())) {
                             // notify counter-example
@@ -83,7 +81,7 @@ public class NestedDFSStrategy extends AbstractModelCheckingStrategy {
                     }
                 }
                 if (finalState) {
-                    processFinalState(nextPropertyTransition);
+                    processFinalState(buchiTrans);
                 }
             }
             // if the transition of the property automaton is not enabled

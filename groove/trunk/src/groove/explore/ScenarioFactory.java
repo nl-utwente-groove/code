@@ -16,10 +16,8 @@
  */
 package groove.explore;
 
-import groove.explore.result.Acceptor;
 import groove.explore.strategy.BoundedModelCheckingStrategy;
 import groove.explore.strategy.ModelCheckingStrategy;
-import groove.explore.strategy.Strategy;
 import groove.gui.Simulator;
 
 /**
@@ -29,22 +27,6 @@ import groove.gui.Simulator;
  * @version $Revision$
  */
 public class ScenarioFactory {
-    /**
-     * Retrieves a scenario handler for a scenario constructed from its
-     * components.
-     * @param <T> Type of the result of the scenario.
-     * @param strategy Strategy for the scenario.
-     * @param acceptor Acceptor for the scenario.
-     * @param description A one-sentence description of the scenario.
-     * @param name A short (one or few words) description of the scenario. Is to
-     *        be used in menus, or as identification (for instance in
-     *        command-line options).
-     */
-    public static <T> Scenario getScenario(final Strategy strategy,
-            final Acceptor acceptor, final String description, final String name) {
-        return new DefaultScenario(strategy, acceptor, name, description);
-    }
-
     /**
      * Retrieves a scenario handler for a scenario constructed from its
      * components.

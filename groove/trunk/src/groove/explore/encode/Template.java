@@ -21,7 +21,7 @@ import groove.explore.prettyparse.StringConsumer;
 import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.layout.SpringUtilities;
-import groove.lts.GTS;
+import groove.trans.RuleSystem;
 import groove.view.FormatException;
 
 import java.awt.Dimension;
@@ -145,7 +145,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
     /**
      * Create a parse error message for a specific argument.
      */
-    public String argumentError(String argName) {
+    String argumentError(String argName) {
         return "Unable to parse the " + argName + " argument of "
             + getKeyword() + ".";
     }
@@ -154,7 +154,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
      * Parses a command line argument into a <code>Serialized</code> that
      * represents this template. Returns <code>null</code> if parsing fails.
      */
-    public Serialized parseCommandline(String text) {
+    Serialized parseCommandline(String text) {
         StringConsumer stream = new StringConsumer(text);
         if (!stream.consumeLiteral(this.keyword)) {
             return null;
@@ -181,7 +181,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
      * on the command line. The grammar is displayed as a (pretty-printed)
      * regular expression. 
      */
-    public String describeCommandlineGrammar() {
+    String describeCommandlineGrammar() {
         StringBuffer desc = new StringBuffer();
         desc.append(this.keyword);
         if (this.argumentNames.length != 0) {
@@ -307,18 +307,19 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         }
 
         @Override
-        public X parse(GTS gts, Serialized source) throws FormatException {
+        public X parse(RuleSystem rules, Serialized source)
+            throws FormatException {
             if (!source.getKeyword().equals(getKeyword())) {
                 throw new FormatException("Type mismatch between '"
                     + source.getKeyword() + "' and '" + getKeyword() + "'.");
             }
-            return create(gts);
+            return create();
         }
 
         /**
          * Typed version of the parse method. To be implemented by subclass.
          */
-        public abstract X create(GTS gts);
+        public abstract X create();
     }
 
     /**
@@ -348,7 +349,8 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         }
 
         @Override
-        public X parse(GTS gts, Serialized source) throws FormatException {
+        public X parse(RuleSystem rules, Serialized source)
+            throws FormatException {
             P1 v1;
 
             if (!source.getKeyword().equals(getKeyword())) {
@@ -357,19 +359,19 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
             }
 
             try {
-                v1 = this.type1.parse(gts, source.getArgument(this.name1));
+                v1 = this.type1.parse(rules, source.getArgument(this.name1));
             } catch (FormatException exc) {
                 exc.insert(new FormatException(argumentError(this.name1)));
                 throw exc;
             }
 
-            return create(gts, v1);
+            return create(v1);
         }
 
         /**
          * Typed version of the parse method. To be implemented by subclass.
          */
-        public abstract X create(GTS gts, P1 arg1);
+        public abstract X create(P1 arg1);
     }
 
     /**
@@ -406,7 +408,8 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         }
 
         @Override
-        public X parse(GTS gts, Serialized source) throws FormatException {
+        public X parse(RuleSystem rules, Serialized source)
+            throws FormatException {
             P1 v1;
             P2 v2;
 
@@ -416,25 +419,25 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
             }
 
             try {
-                v1 = this.type1.parse(gts, source.getArgument(this.name1));
+                v1 = this.type1.parse(rules, source.getArgument(this.name1));
             } catch (FormatException exc) {
                 exc.insert(new FormatException(argumentError(this.name1)));
                 throw exc;
             }
 
             try {
-                v2 = this.type2.parse(gts, source.getArgument(this.name2));
+                v2 = this.type2.parse(rules, source.getArgument(this.name2));
             } catch (FormatException exc) {
                 exc.insert(new FormatException(argumentError(this.name2)));
                 throw exc;
             }
 
-            return create(gts, v1, v2);
+            return create(v1, v2);
         }
 
         /**
          * Typed version of the parse method. To be implemented by subclass.
          */
-        public abstract X create(GTS gts, P1 arg1, P2 arg2);
+        public abstract X create(P1 arg1, P2 arg2);
     }
 }

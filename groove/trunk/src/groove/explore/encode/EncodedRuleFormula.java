@@ -18,7 +18,6 @@ package groove.explore.encode;
 
 import groove.explore.result.Predicate;
 import groove.gui.Simulator;
-import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.Rule;
 import groove.trans.RuleSystem;
@@ -50,12 +49,12 @@ public class EncodedRuleFormula implements
     }
 
     @Override
-    public Predicate<GraphState> parse(GTS gts, String text)
+    public Predicate<GraphState> parse(RuleSystem rules, String text)
         throws FormatException {
         this.text = text;
         this.i = 0;
         this.last_i = this.text.length() - 1;
-        this.ruleSystem = gts.getGrammar().getRuleSystem();
+        this.ruleSystem = rules;
         Predicate<GraphState> predicate = parseFormula();
         this.ruleSystem = null; // erase local reference to rule system
         if (this.i <= this.last_i) {

@@ -17,7 +17,7 @@
 package groove.explore.encode;
 
 import groove.gui.Simulator;
-import groove.lts.GTS;
+import groove.trans.RuleSystem;
 import groove.view.FormatException;
 
 /**
@@ -51,7 +51,7 @@ public class EncodedInt implements EncodedType<Integer,String> {
     }
 
     @Override
-    public Integer parse(GTS gts, String source) throws FormatException {
+    public Integer parse(RuleSystem rules, String source) throws FormatException {
         Integer value;
 
         try {
