@@ -16,7 +16,7 @@
  */
 package groove.explore.util;
 
-import groove.explore.DefaultScenario;
+import groove.explore.Exploration;
 import groove.graph.AbstractGraph;
 import groove.graph.iso.IsoChecker;
 import groove.graph.iso.PartitionRefiner;
@@ -277,7 +277,7 @@ public class ExplorationStatistics {
         // Timing figures.
         long total = (this.endTime - this.startTime);
         long matching = SPORule.getMatchingTime();
-        long running = DefaultScenario.getRunningTime();
+        long running = Exploration.getRunningTime();
         long overhead = total - running;
         long isoChecking = IsoChecker.getTotalTime();
         long generateTime = MatchApplier.getGenerateTime();

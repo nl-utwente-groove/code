@@ -17,7 +17,7 @@
  */
 package groove.util;
 
-import groove.explore.DefaultScenario;
+import groove.explore.Exploration;
 import groove.explore.GeneratorScenarioFactory;
 import groove.explore.ModelCheckingScenario;
 import groove.explore.strategy.BFSStrategy;
@@ -1214,7 +1214,7 @@ public class LTLBenchmarker extends CommandLineTool {
         // timing figures
         long total = (this.endTime - this.startTime);
         long matching = SPORule.getMatchingTime();
-        long running = DefaultScenario.getRunningTime();
+        long running = Exploration.getRunningTime();
         long overhead = total - running;
         long isoChecking = IsoChecker.getTotalTime();
         long building = MatchApplier.getGenerateTime() - isoChecking;

@@ -55,8 +55,15 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
         }
         super.prepare(gts, state);
         this.productGTS = new ProductStateSet();
-        this.productGTS.addListener(this.collector);
-        setup();
+        this.productGTS.addListener(this.collector); // currentPath = new Stack<GraphTransition>();
+        this.searchStack = new Stack<ProductState>();
+        this.transitionStack = new Stack<ProductTransition>();
+        assert (this.initialLocation != null) : "The property automaton should have an initial state";
+        ProductState startState =
+            new ProductState(getGTS().startState(), this.initialLocation);
+        setStartBuchiState(startState);
+        this.productGTS.addState(startState);
+
     }
 
     public void setResult(Result result) {
@@ -157,20 +164,6 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
             }
         }
         return chooser.pickRandom();
-    }
-
-    /**
-     * Initialise the data structures used during exploration.
-     */
-    public void setup() {
-        // currentPath = new Stack<GraphTransition>();
-        this.searchStack = new Stack<ProductState>();
-        this.transitionStack = new Stack<ProductTransition>();
-        assert (this.initialLocation != null) : "The property automaton should have an initial state";
-        ProductState startState =
-            new ProductState(getGTS().startState(), this.initialLocation);
-        setStartBuchiState(startState);
-        this.productGTS.addState(startState);
     }
 
     /**
@@ -328,14 +321,6 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
 
     public Stack<ProductState> searchStack() {
         return this.searchStack;
-    }
-
-    /**
-     * Pushes the given state on the search stack.
-     * @param state the state to push
-     */
-    public void pushState(ProductState state) {
-        searchStack().push(state);
     }
 
     /**

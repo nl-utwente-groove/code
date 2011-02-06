@@ -22,6 +22,7 @@ import groove.explore.result.Result;
 import groove.explore.strategy.Strategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.trans.RuleSystem;
 import groove.util.Reporter;
 import groove.view.FormatException;
 
@@ -43,13 +44,12 @@ public class Exploration {
     private Result lastResult;
 
     private boolean interrupted;
-    static private final Reporter playReporter = DefaultScenario.playReporter;
 
     /**
-     * Initialize to a given exploration. 
-     * @param strategy - strategy component of the exploration
-     * @param acceptor - acceptor component of the exploration
-     * @param nrResults - nrResults component of the exploration
+     * Initialise to a given exploration. 
+     * @param strategy strategy component of the exploration
+     * @param acceptor acceptor component of the exploration
+     * @param nrResults number of results: {@code 0} means unbounded
      */
     public Exploration(Serialized strategy, Serialized acceptor, int nrResults) {
         this.strategy = strategy;
@@ -59,11 +59,33 @@ public class Exploration {
     }
 
     /**
-     * Initialize to the default exploration, which is formed by the default
-     * strategy, the default acceptor and 0 (=infinite) results.  
+     * Initialise to a given exploration, by named strategy and acceptor
+     * @param strategy name of the strategy component
+     * @param acceptor name of the acceptor component
+     * @param nrResults number of results: {@code 0} means unbounded
+     */
+    public Exploration(String strategy, String acceptor, int nrResults) {
+        this(new Serialized(strategy), new Serialized(acceptor), nrResults);
+    }
+
+    /**
+     * Initialise to a given exploration, by named strategy and acceptor
+     * @param strategy strategy component value
+     * @param acceptor acceptor component value
+     * @param nrResults number of results: {@code 0} means unbounded
+     */
+    public Exploration(StrategyValue strategy, AcceptorValue acceptor,
+            int nrResults) {
+        this(new Serialized(strategy.getKeyword()), new Serialized(
+            acceptor.getKeyword()), nrResults);
+    }
+
+    /**
+     * Initialises to the default exploration, which is formed by the BFS
+     * strategy, the final acceptor and 0 (=infinite) results.  
      */
     public Exploration() {
-        this(new Serialized("bfs"), new Serialized("final"), 0);
+        this("bfs", "final", 0);
     }
 
     /**
@@ -120,21 +142,34 @@ public class Exploration {
         return buffer.toString();
     }
 
+    /** 
+     * Tests if this exploration is compatible with a given rule system.
+     * If this method does not throw an exception, then neither will {@link #play(GTS, GraphState)}.
+     * @throws FormatException if the rule system is not compatible
+     */
+    public void test(RuleSystem rules) throws FormatException {
+        StrategyEnumerator.parseStrategy(rules, this.strategy);
+        AcceptorEnumerator.parseAcceptor(rules, this.acceptor);
+    }
+
     /**
      * Executes the exploration.
      * Expects that a LaunchThread (see Simulator.java) is currently active.
      * @param gts - the GTS on which the exploration will be performed
      * @param state - the state in which exploration will start (may be null)
+     * @throws FormatException if the rule system of {@code gts} is not
+     * compatible with this exploration
+     * @see #test(RuleSystem)
      */
     public void play(GTS gts, GraphState state) throws FormatException {
-
+        RuleSystem rules = gts.getGrammar().getRuleSystem();
         // parse the strategy
         Strategy parsedStrategy =
-            new StrategyEnumerator().parse(gts, this.strategy);
+            StrategyEnumerator.parseStrategy(rules, this.strategy);
 
         // parse the acceptor
         Acceptor parsedAcceptor =
-            new AcceptorEnumerator().parse(gts, this.acceptor);
+            AcceptorEnumerator.parseAcceptor(rules, this.acceptor);
 
         // initialize acceptor and GTS
         parsedAcceptor.setResult(new Result(this.nrResults));
@@ -164,7 +199,13 @@ public class Exploration {
      * This information can be used for profiling.
      * @return the long holding the running time in number of seconds 
      */
-    public long getRunningTime() {
+    static public long getRunningTime() {
         return playReporter.getTotalTime();
     }
+
+    /** Reporter for profiling information. */
+    static private final Reporter reporter =
+        Reporter.register(Exploration.class);
+    /** Handle for profiling {@link #play(GTS, GraphState)}. */
+    static final Reporter playReporter = reporter.register("playScenario()");
 }

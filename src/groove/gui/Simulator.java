@@ -2112,8 +2112,7 @@ public class Simulator {
         JMenu result = new JMenu();
 
         result.setMnemonic(Options.EXPLORE_MENU_MNEMONIC);
-        JMenu exploreMenu = new ScenarioMenu(this, false);
-        result.setText(exploreMenu.getText());
+        result.setText(Options.EXPLORE_MENU_NAME);
         result.add(new JMenuItem(getBackAction()));
         result.add(new JMenuItem(getForwardAction()));
 

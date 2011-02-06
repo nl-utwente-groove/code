@@ -25,8 +25,6 @@ public class ModelChecking {
 
     /** constant for non-toggled state colour white */
     public static final int NO_COLOUR = 0;
-    /** constant for state colour black (so-called pocket state) */
-    // public static final int BLACK = 1;
     /** constant for non-toggled state colour white */
     public static final int WHITE = 2;
     /** constant for non-toggled state colour cyan */
@@ -120,14 +118,6 @@ public class ModelChecking {
     }
 
     /**
-     * Return the constant for the colour black. This colour is shared by all
-     * colour-schemes.
-     * @return the constant {@link ModelChecking#BLACK}
-     */
-    // public static int black() {
-    // return BLACK;
-    // }
-    /**
      * Toggle the colour-scheme used.
      */
     public static void toggle() {
@@ -157,14 +147,6 @@ public class ModelChecking {
      */
     public static void nextIteration() {
         CURRENT_ITERATION++;
-        // updateColourScheme();
-    }
-
-    /** Updates the color scheme */
-    public static void updateColourScheme() {
-        if (ModelChecking.START_FROM_BORDER_STATES) {
-            nextColourScheme();
-        }
     }
 
     /**
@@ -185,15 +167,4 @@ public class ModelChecking {
     private static int nextFreeColour() {
         return NEXT_FREE_COLOUR++;
     }
-
-    /** Reporter for profiling information. */
-    // static public final Reporter reporter =
-    // Reporter.register(ModelChecking.class);
-    // static public final int POCKET_STATE_REPORTER =
-    // reporter.newMethod("blackPainting()");
-    // public static int NEXT = reporter.newMethod("ModelChecking.next");
-    // public static int UPDATE =
-    // reporter.newMethod("ModelChecking.updateNext");
-    // public static int BACKTRACK =
-    // reporter.newMethod("ModelChecking.backtrack");
 }

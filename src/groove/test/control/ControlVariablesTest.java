@@ -19,9 +19,7 @@ package groove.test.control;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import groove.explore.GeneratorScenarioFactory;
-import groove.explore.Scenario;
-import groove.explore.strategy.BFSStrategy;
+import groove.explore.Exploration;
 import groove.lts.GTS;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
@@ -72,11 +70,8 @@ public class ControlVariablesTest {
             sp.setUseControl(true);
             GTS lts = new GTS(sgv.toGrammar());
 
-            Scenario scenario =
-                GeneratorScenarioFactory.getScenarioHandler(new BFSStrategy(),
-                    "Breadth first full exploration.", "full");
-            scenario.prepare(lts);
-            scenario.play();
+            Exploration scenario = new Exploration("bfs", "final", 0);
+            scenario.play(lts, lts.startState());
 
             assertFalse(scenario.isInterrupted());
             assertEquals(expectedNodes, lts.nodeCount());

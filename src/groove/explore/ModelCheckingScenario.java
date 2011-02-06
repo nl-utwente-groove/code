@@ -16,6 +16,7 @@
  */
 package groove.explore;
 
+import groove.explore.result.Acceptor;
 import groove.explore.result.CycleAcceptor;
 import groove.explore.result.Result;
 import groove.explore.strategy.Boundary;
@@ -23,18 +24,62 @@ import groove.explore.strategy.BoundedModelCheckingStrategy;
 import groove.explore.strategy.ModelCheckingStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.util.Reporter;
 
 /**
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ModelCheckingScenario extends DefaultScenario {
+public class ModelCheckingScenario implements Scenario {
     /**
      * Creates a new named instance from a given strategy and acceptor.
      */
     public ModelCheckingScenario(ModelCheckingStrategy strategy, String name,
             String description) {
-        super(strategy, new CycleAcceptor(strategy), name, description);
+        this.strategy = strategy;
+        this.acceptor = new CycleAcceptor(strategy);
+        this.name = name;
+        this.description = description;
+    }
+
+    public void prepare(GTS gts) {
+        prepare(gts, null);
+    }
+
+    /**
+     * Returns the result of this scenario. The result is retrieved from the
+     * acceptor; it is an error to call this method if no acceptor is set.
+     */
+    public Result getResult() {
+        return this.acceptor.getResult();
+    }
+
+    public boolean isInterrupted() {
+        return this.interrupted;
+    }
+
+    /** Returns the acceptor for this scenario. */
+    protected Acceptor getAcceptor() {
+        return this.acceptor;
+    }
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    /** Returns the scenario description. */
+    @Override
+    public String toString() {
+        return getDescription();
+    }
+
+    /** Returns the GTS for which this scenario was last prepared. */
+    protected GTS getGTS() {
+        return this.gts;
     }
 
     @Override
@@ -44,15 +89,33 @@ public class ModelCheckingScenario extends DefaultScenario {
             ((BoundedModelCheckingStrategy) getStrategy()).setBoundary(getBoundary());
         }
         // model checking always starts at the initial state
-        super.prepare(gts, gts.startState());
+        assert this.acceptor != null && this.strategy != null : "The scenario is not correctly initialized with a result, a strategy and an acceptor.";
+        assert (gts != null) : "The GTS of the scenario has not been initialized.";
+        this.gts = gts;
+        this.acceptor = this.acceptor.newInstance();
+        // make sure strategy and acceptor are reset and up to date
+        this.strategy.prepare(gts, gts.startState());
     }
 
     @Override
     public Result play() {
-        Result result = super.play();
+        playReporter.start();
+
+        this.strategy.addGTSListener(this.acceptor);
+        this.interrupted = false;
+
+        // start working until done or nothing to do
+        while (!this.interrupted && !getResult().done() && this.strategy.next()) {
+            this.interrupted = Thread.currentThread().isInterrupted();
+        }
+
+        this.strategy.removeGTSListener(this.acceptor);
+        playReporter.stop();
+
+        // return result
         reportMemory();
         reportCounterExample();
-        return result;
+        return getResult();
     }
 
     /**
@@ -84,7 +147,7 @@ public class ModelCheckingScenario extends DefaultScenario {
 
     @Override
     public ModelCheckingStrategy getStrategy() {
-        return (ModelCheckingStrategy) super.getStrategy();
+        return this.strategy;
     }
 
     /**
@@ -113,6 +176,27 @@ public class ModelCheckingScenario extends DefaultScenario {
         return this.boundary;
     }
 
+    /** The GTS for which this scenario was last prepared. */
+    private GTS gts;
+    /**
+     * Flag indicating that the last invocation of {@link #prepare(GTS)} was
+     * interrupted.
+     */
+    private boolean interrupted;
+    /**
+     * The acceptor of the scenario.
+     */
+    private Acceptor acceptor;
+    /**
+     * The strategy used by this scenario.
+     */
+    private final ModelCheckingStrategy strategy;
+    /** Name of this scenario. */
+    private final String name;
+    /** One-line description of this scenario. */
+    private final String description;
+    /** Reporter for profiling information. */
+    static private final Reporter playReporter = Exploration.playReporter;
     /**
      * The boundary for model checking, in case the strategy is a
      * {@link BoundedModelCheckingStrategy}.
