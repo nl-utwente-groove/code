@@ -29,7 +29,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
-import groove.util.GrooveModules;
 import groove.view.StoredGrammarView;
 
 import java.util.HashMap;
@@ -77,74 +76,37 @@ public class ModelCheckingMenu extends JMenu implements SimulationListener {
      * exploration scenarios.
      */
     protected void createAddMenuItems() {
-        Scenario scenario;
+        Scenario scenario =
+            ScenarioFactory.getModelCheckingScenario(new NestedDFSStrategy(),
+                "", "Nested Depth-First Search", this.simulator);
+        addScenarioHandler(scenario);
 
-        /*
-        // Maarten de Mol - temporary fix to test GUI on the MAC
         scenario =
-            ScenarioFactory.getModelCheckingScenario(
-                new NestedDFSStrategy(), "", "Nested Depth-First Search",
+            ScenarioFactory.getBoundedModelCheckingScenario(
+                new BoundedNestedDFSStrategy(),
+                // new GraphNodeSizeBoundary(10,5),
+                "", "Bounded Nested Depth-First Search (naive)", this.simulator);
+        addScenarioHandler(scenario);
+
+        scenario =
+            ScenarioFactory.getBoundedModelCheckingScenario(
+                new BoundedNestedDFSPocketStrategy(),
+                // new GraphNodeSizeBoundary(10,5),
+                "", "Bounded Nested Depth-First Search (naive)", this.simulator);
+        addScenarioHandler(scenario);
+
+        scenario =
+            ScenarioFactory.getBoundedModelCheckingScenario(
+                new OptimizedBoundedNestedDFSStrategy(), "",
+                "Bounded Nested Depth-First Search (optimized)", this.simulator);
+        addScenarioHandler(scenario);
+
+        scenario =
+            ScenarioFactory.getBoundedModelCheckingScenario(
+                new OptimizedBoundedNestedDFSPocketStrategy(), "",
+                "Bounded Nested Depth-First Search (optimized + pocket)",
                 this.simulator);
         addScenarioHandler(scenario);
-        */
-
-        // the following explore-strategies are only provided
-        // if the LTL module is loaded
-        if (System.getProperty(GrooveModules.GROOVE_MODULE_LTL_VERIFICATION).equals(
-            GrooveModules.GROOVE_MODULE_ENABLED)) {
-            scenario =
-                ScenarioFactory.getModelCheckingScenario(
-                    new NestedDFSStrategy(), "", "Nested Depth-First Search",
-                    this.simulator);
-            addScenarioHandler(scenario);
-
-            // handler = ScenarioHandlerFactory.getModelCheckingScenario(
-            // new BreadthFirstModelCheckingStrategy(),
-            // new SizedResult<GraphState>(1),
-            // new CycleAcceptor<GraphState>(),
-            // "", "Breadth-First Search", simulator);
-            // addScenarioHandler(handler);
-
-            scenario =
-                ScenarioFactory.getBoundedModelCheckingScenario(
-                    new BoundedNestedDFSStrategy(),
-                    // new GraphNodeSizeBoundary(10,5),
-                    "", "Bounded Nested Depth-First Search (naive)",
-                    this.simulator);
-            addScenarioHandler(scenario);
-
-            scenario =
-                ScenarioFactory.getBoundedModelCheckingScenario(
-                    new BoundedNestedDFSPocketStrategy(),
-                    // new GraphNodeSizeBoundary(10,5),
-                    "", "Bounded Nested Depth-First Search (naive)",
-                    this.simulator);
-            addScenarioHandler(scenario);
-
-            scenario =
-                ScenarioFactory.getBoundedModelCheckingScenario(
-                    new OptimizedBoundedNestedDFSStrategy(), "",
-                    "Bounded Nested Depth-First Search (optimized)",
-                    this.simulator);
-            addScenarioHandler(scenario);
-
-            scenario =
-                ScenarioFactory.getBoundedModelCheckingScenario(
-                    new OptimizedBoundedNestedDFSPocketStrategy(), "",
-                    "Bounded Nested Depth-First Search (optimized + pocket)",
-                    this.simulator);
-            addScenarioHandler(scenario);
-        }
-
-        // handler = ScenarioHandlerFactory.getConditionalScenario(
-        // new RuleBoundedStrategy(), "Only explore states in which a rule is
-        // applicable", "Bounded", false);
-        // addScenarioHandler(handler);
-        //        
-        // handler = ScenarioHandlerFactory.getConditionalScenario(
-        // new RuleBoundedStrategy(), "Only explore states in which a rule is
-        // applicable", "Bounded", true);
-        // addScenarioHandler(handler);
     }
 
     /**
