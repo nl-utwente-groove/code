@@ -388,7 +388,19 @@ public enum AspectKind {
     /** Type of content that can be wrapped inside an aspect. */
     static public enum ContentKind {
         /** No content. */
-        NONE,
+        NONE {
+            @Override
+            Pair<Object,String> parse(String text, int pos) {
+                assert text.charAt(pos) == SEPARATOR;
+                return new Pair<Object,String>(null, text.substring(pos + 1));
+            }
+
+            @Override
+            Object parseContent(String text) {
+                // there is no content, so this method should never be called
+                throw new UnsupportedOperationException();
+            }
+        },
         /** Quantifier level name. */
         LEVEL {
             @Override
