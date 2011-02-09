@@ -19,6 +19,7 @@ package groove.gui;
 import groove.util.Groove;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -70,10 +71,10 @@ public class SimulatorPanel extends JTabbedPane {
                 int index = indexAtLocation(e.getX(), e.getY());
                 if (index >= 0 && e.getButton() == MouseEvent.BUTTON3) {
                     Component panel = getComponentAt(index);
-                    if (SimulatorPanel.this.seqNrMap.containsKey(panel)) {
-                        createDetachMenu(panel).show(SimulatorPanel.this,
-                            e.getX(), e.getY());
-                    }
+                    //                    if (SimulatorPanel.this.seqNrMap.containsKey(panel)) {
+                    createDetachMenu(panel).show(SimulatorPanel.this, e.getX(),
+                        e.getY());
+                    //                    }
                 }
             }
         });
@@ -90,19 +91,23 @@ public class SimulatorPanel extends JTabbedPane {
         addTab(null, tabIcon, component, title);
     }
 
-    /** Reattaches a known component at its proper place. */
+    /** Reattaches a component at its proper place. */
     public void attach(Component component) {
-        int mySeqNr = this.seqNrMap.get(component);
-        int index;
-        for (index = 0; index < getTabCount(); index++) {
-            Integer otherSeqNr = this.seqNrMap.get(getComponentAt(index));
-            if (otherSeqNr == null || otherSeqNr > mySeqNr) {
-                // insert here
-                break;
+        if (component instanceof EditorPanel) {
+            add((EditorPanel) component);
+        } else {
+            int mySeqNr = this.seqNrMap.get(component);
+            int index;
+            for (index = 0; index < getTabCount(); index++) {
+                Integer otherSeqNr = this.seqNrMap.get(getComponentAt(index));
+                if (otherSeqNr == null || otherSeqNr > mySeqNr) {
+                    // insert here
+                    break;
+                }
             }
+            insertTab(null, this.tabIconMap.get(component), component,
+                this.titleMap.get(component), index);
         }
-        insertTab(null, this.tabIconMap.get(component), component,
-            this.titleMap.get(component), index);
     }
 
     /** Detaches a component (presumably shown as a tab) into its own window. */
@@ -126,14 +131,35 @@ public class SimulatorPanel extends JTabbedPane {
         addTab("", panel);
         int index = indexOfComponent(panel);
         Component tabComponent =
-            new ButtonTabComponent(panel, icon, panel.getName());
+            new ButtonTabComponent(panel, icon, panel.getTitle());
         setTabComponentAt(index, tabComponent);
         setSelectedIndex(index);
     }
 
-    /** Returns the tab component of a given editor panel. */
+    /** 
+     * Returns the tab component of a given editor panel, if it 
+     * is currently attached to the simulator panel.
+     * @return the tab component, of {@code null} if the editor panel
+     * is not attached
+     */
     public ButtonTabComponent getTabComponentOf(EditorPanel panel) {
-        return (ButtonTabComponent) getTabComponentAt(indexOfComponent(panel));
+        int index = indexOfComponent(panel);
+        return index >= 0 ? (ButtonTabComponent) getTabComponentAt(index)
+                : null;
+    }
+
+    /** Returns the parent frame of an editor panel, if the editor is not
+     * displayed in a tab. */
+    public JFrame getFrameOf(EditorPanel panel) {
+        if (indexOfComponent(panel) < 0) {
+            Container window = panel.getParent();
+            while (!(window instanceof JGraphWindow)) {
+                window = window.getParent();
+            }
+            return (JFrame) window;
+        } else {
+            return null;
+        }
     }
 
     /** Returns a list of all editor panels currently displayed. */
@@ -191,6 +217,9 @@ public class SimulatorPanel extends JTabbedPane {
             ImageIcon icon = SimulatorPanel.this.frameIconMap.get(panel);
             if (icon != null) {
                 setIconImage(icon.getImage());
+            }
+            if (panel instanceof EditorPanel) {
+                setTitle(((EditorPanel) panel).getName());
             }
             pack();
             setDefaultCloseOperation(DISPOSE_ON_CLOSE);

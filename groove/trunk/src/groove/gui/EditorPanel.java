@@ -60,18 +60,26 @@ public class EditorPanel extends JPanel {
 
                 @Override
                 protected void updateTitle() {
-                    String title =
-                        (isDirty() ? "*" : "") + getGraph().getName();
-                    getTabbedPane().getTabComponentOf(EditorPanel.this).setTitle(
-                        title);
+                    ButtonTabComponent tab =
+                        getTabbedPane().getTabComponentOf(EditorPanel.this);
+                    if (tab == null) {
+                        getTabbedPane().getFrameOf(EditorPanel.this).setTitle(
+                            getTitle());
+                    } else {
+                        tab.setTitle(getTitle());
+                    }
                     getOkButton().setEnabled(isDirty());
                 }
 
                 @Override
                 protected void updateStatus() {
                     super.updateStatus();
-                    getTabbedPane().getTabComponentOf(EditorPanel.this).setError(
-                        !getModel().getErrorMap().isEmpty());
+                    ButtonTabComponent tab =
+                        getTabbedPane().getTabComponentOf(EditorPanel.this);
+                    if (tab != null) {
+                        tab.setError(!getModel().getErrorMap().isEmpty());
+
+                    }
                 }
 
                 @Override
@@ -99,6 +107,14 @@ public class EditorPanel extends JPanel {
         JSplitPane mainPanel = this.editor.getMainPanel();
         mainPanel.setBorder(null);
         add(mainPanel);
+    }
+
+    /** Returns the title of this panel. The title is the name plus an optional
+     * indication of the (dirty) status of the editor.
+     */
+    public String getTitle() {
+        String title = (isDirty() ? "*" : "") + getGraph().getName();
+        return title;
     }
 
     /** Returns the resulting aspect graph of the editor. */
@@ -243,7 +259,13 @@ public class EditorPanel extends JPanel {
 
     /** Removes the editor from the simulator pane. */
     void dispose() {
-        getTabbedPane().remove(this);
+        if (getTabbedPane().indexOfComponent(this) >= 0) {
+            // we're displayed on a tab in the simulator
+            getTabbedPane().remove(this);
+        } else {
+            // we're displayed in a JGraphWindow
+            getTabbedPane().getFrameOf(this).dispose();
+        }
     }
 
     /** Switches the view in the simulator to the graph being edited here. */
