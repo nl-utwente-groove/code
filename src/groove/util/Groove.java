@@ -16,8 +16,6 @@
  */
 package groove.util;
 
-import groove.calc.DefaultGraphCalculator;
-import groove.calc.GraphCalculator;
 import groove.graph.DefaultGraph;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -32,6 +30,8 @@ import groove.io.DefaultGxl;
 import groove.io.ExtensionFilter;
 import groove.io.Xml;
 import groove.match.GraphSearchPlanFactory;
+import groove.samples.calc.DefaultGraphCalculator;
+import groove.samples.calc.GraphCalculator;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
 import groove.trans.RuleGraph;

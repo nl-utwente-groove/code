@@ -14,7 +14,7 @@
  * 
  * $Id: DefaultGraphCalculator.java,v 1.16 2008-02-12 15:29:54 fladder Exp $
  */
-package groove.calc;
+package groove.samples.calc;
 
 import groove.explore.Exploration;
 import groove.explore.result.Result;
