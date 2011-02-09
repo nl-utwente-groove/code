@@ -1491,7 +1491,9 @@ public class DefaultRuleView implements RuleView {
                 this.nacNodeSet, this.nacEdgeSet)) {
                 Set<RuleNode> nacNodes = nacPair.one();
                 Set<RuleEdge> nacEdges = nacPair.two();
-                if (isTyped()) {
+                // to avoid duplicate error messages, only check typing if
+                // the positive part of the rule was error-free
+                if (errors.isEmpty() && isTyped()) {
                     try {
                         // check NAC typing
                         // first add end nodes of NAC edges
