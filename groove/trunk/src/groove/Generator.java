@@ -18,7 +18,7 @@ package groove;
 
 /**
  * Wrapper class for the generator utility.
- * @see groove.util.Generator
+ * @see groove.explore.Generator
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -28,6 +28,6 @@ public class Generator {
      * @param args list of command-line arguments
      */
     static public void main(String[] args) {
-        groove.util.Generator.main(args);
+        groove.explore.Generator.main(args);
     }
 }

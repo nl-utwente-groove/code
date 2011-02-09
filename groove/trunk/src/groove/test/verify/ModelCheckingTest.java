@@ -18,8 +18,8 @@
 package groove.test.verify;
 
 import static org.junit.Assert.assertEquals;
+import groove.explore.Generator;
 import groove.lts.GTS;
-import groove.util.Generator;
 import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
 import groove.verify.TemporalFormula;

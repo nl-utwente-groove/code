@@ -14,11 +14,8 @@
 /*
  * $Id $
  */
-package groove.util;
+package groove.explore;
 
-import groove.explore.AcceptorEnumerator;
-import groove.explore.Exploration;
-import groove.explore.StrategyEnumerator;
 import groove.explore.encode.EncodedRuleMode;
 import groove.explore.encode.Serialized;
 import groove.explore.encode.TemplateList;
@@ -30,6 +27,11 @@ import groove.io.ExtensionFilter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.GraphGrammar;
+import groove.util.CommandLineTool;
+import groove.util.GenerateProgressMonitor;
+import groove.util.GraphReporter;
+import groove.util.Groove;
+import groove.util.StoreCommandLineOption;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
@@ -56,7 +58,7 @@ import java.util.TreeMap;
  * individual files containing graph rules, from a given location | presumably
  * the top level directory containing the rule files.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 3108 $
  */
 public class Generator extends CommandLineTool {
     /**
