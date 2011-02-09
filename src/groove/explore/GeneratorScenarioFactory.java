@@ -29,7 +29,7 @@ import java.util.Set;
 
 /**
  * Offers factory methods for different {@link Scenario}s needed by the
- * {@link groove.util.Generator}.
+ * {@link groove.explore.Generator}.
  * @author Iovka Boneva
  */
 public class GeneratorScenarioFactory {

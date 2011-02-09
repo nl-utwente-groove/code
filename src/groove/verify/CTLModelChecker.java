@@ -16,6 +16,7 @@
  */
 package groove.verify;
 
+import groove.explore.Generator;
 import groove.graph.EdgeRole;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -25,7 +26,6 @@ import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.trans.RuleName;
 import groove.util.CommandLineTool;
-import groove.util.Generator;
 import groove.util.Groove;
 import groove.view.FormatException;
 
