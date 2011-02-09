@@ -1,9 +1,9 @@
 package groove.test;
 
 import static org.junit.Assert.assertNull;
-import groove.calc.DefaultGraphCalculator;
-import groove.calc.GraphCalculator;
 import groove.lts.GraphState;
+import groove.samples.calc.DefaultGraphCalculator;
+import groove.samples.calc.GraphCalculator;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 import groove.view.GrammarView;

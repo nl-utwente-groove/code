@@ -14,7 +14,7 @@
  * 
  * $Id: GraphCalculator.java,v 1.5 2008-01-30 09:33:18 iovka Exp $
  */
-package groove.calc;
+package groove.samples.calc;
 
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -30,7 +30,7 @@ import java.util.Collection;
  * A graph calculator is loaded with a grammar, i.e., a rule system and a basis
  * graph. Essentially it gives an easier interface to the underlying GTS.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 2971 $
  */
 public interface GraphCalculator {
     /**
