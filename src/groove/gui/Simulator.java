@@ -1070,8 +1070,9 @@ public class Simulator {
     /**
      * Run a given exploration. Can be called from outside the Simulator.
      * @param exploration - the exploration strategy to be used
+     * @param emphasise if {@code true}, the result of the exploration will be emphasised
      */
-    public void doRunExploration(Exploration exploration) {
+    public void doRunExploration(Exploration exploration, boolean emphasise) {
         setDefaultExploration(exploration);
         LTSJModel ltsJModel = getLtsPanel().getJModel();
         if (ltsJModel == null) {
@@ -1088,7 +1089,7 @@ public class Simulator {
             boolean applyEnabled = getApplyTransitionAction().isEnabled();
             getApplyTransitionAction().setEnabled(false);
             // create a thread to do the work in the background
-            Thread generateThread = new LaunchThread(exploration);
+            Thread generateThread = new LaunchThread(exploration, emphasise);
             // go!
             this.getExplorationStats().start();
             generateThread.start();
@@ -1161,41 +1162,6 @@ public class Simulator {
             updateGrammar();
         } catch (IOException exc) {
             showErrorDialog("Error while saving edited properties", exc);
-        }
-    }
-
-    /**
-     * Directs the actual verification process.
-     * @param property the property to be checked
-     */
-    void doVerifyProperty(String property) {
-        try {
-            TemporalFormula formula = CTLFormula.parseFormula(property);
-            String invalidAtom =
-                TemporalFormula.validAtoms(formula,
-                    getGrammarView().getRuleNames());
-            if (invalidAtom == null) {
-                CTLModelChecker modelChecker =
-                    new CTLModelChecker(getGTS(), formula);
-                modelChecker.verify();
-                List<GraphState> counterExamples =
-                    new ArrayList<GraphState>(formula.getCounterExamples());
-                boolean reportForAllStates =
-                    confirmBehaviour(
-                        VERIFY_ALL_STATES_OPTION,
-                        "Verify all states? Choosing 'No' will verify formula only on start state of LTS.");
-                String message =
-                    getLtsPanel().emphasiseStates(counterExamples,
-                        reportForAllStates, false);
-                JOptionPane.showMessageDialog(getFrame(), message,
-                    "Verification results", JOptionPane.INFORMATION_MESSAGE,
-                    Groove.GROOVE_BLUE_ICON_32x32);
-            } else {
-                showErrorDialog("Invalid atomic proposition", new Exception("'"
-                    + invalidAtom + "' is not a valid atomic proposition."));
-            }
-        } catch (FormatException efe) {
-            showErrorDialog("Format error in temporal formula", efe);
         }
     }
 
@@ -2111,7 +2077,10 @@ public class Simulator {
      * Creates and returns a verification menu for the menu bar.
      */
     private JMenu createVerifyMenu() {
-        JMenu result = new VerifyMenu(this);
+        JMenu result = new JMenu(Options.VERIFY_MENU_NAME);
+        result.setMnemonic(Options.VERIFY_MENU_MNEMONIC);
+        result.add(getCheckCTLAction(true));
+        result.add(getCheckCTLAction(false));
         result.addSeparator();
         JMenu mcScenarioMenu = new ModelCheckingMenu(this, false);
         for (Component menuComponent : mcScenarioMenu.getMenuComponents()) {
@@ -3700,7 +3669,7 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent evt) {
-            doRunExploration(getDefaultExploration());
+            doRunExploration(getDefaultExploration(), true);
         }
 
         public void refresh() {
@@ -4001,17 +3970,20 @@ public class Simulator {
             this.scenario = scenario;
             this.exploration = null;
             this.progressListener = createProgressListener();
+            this.emphasise = true;
         }
 
         /**
          * Constructs a generate thread for a given exploration strategy.
          * @param exploration the exploration handler of this thread
+         * @param emphasise if {@code true}, the result of the exploration should
+         * be emphasised
          */
-        LaunchThread(Exploration exploration) {
+        LaunchThread(Exploration exploration, boolean emphasise) {
             super(getLtsPanel(), "Exploring state space");
-
             this.scenario = null;
             this.exploration = exploration;
+            this.emphasise = emphasise;
             this.progressListener = createProgressListener();
         }
 
@@ -4067,7 +4039,9 @@ public class Simulator {
             final List<GraphState> states = new ArrayList<GraphState>(result);
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    getLtsPanel().emphasiseStates(states, true, true);
+                    if (LaunchThread.this.emphasise) {
+                        getLtsPanel().emphasiseStates(states, true);
+                    }
                     if (LaunchThread.this.scenario instanceof ModelCheckingScenario) {
                         String property =
                             ((ModelCheckingScenario) LaunchThread.this.scenario).getProperty();
@@ -4149,6 +4123,8 @@ public class Simulator {
         private final Scenario scenario;
         /** LTS generation strategy of this thread. (new version) */
         private final Exploration exploration;
+        /** Flag indicating if the result states should be emphasised after exploration */
+        private final boolean emphasise;
         /** Progress listener for the generate thread. */
         private final GTSListener progressListener;
         /** Label displaying the number of states generated so far. */
@@ -5179,52 +5155,134 @@ public class Simulator {
     /**
      * Returns the CTL formula providing action permanently associated with this
      * simulator.
+     * @param full if {@code true}, the action first generates the full state
+     * space.
      */
-    public Action getVerifyAction() {
-        if (this.verifyAction == null) {
-            this.verifyAction = new VerifyCTLAction();
+    public Action getCheckCTLAction(boolean full) {
+        CheckCTLAction result =
+            full ? this.checkCTLFreshAction : this.checkCTLAsIsAction;
+        if (result == null) {
+            result = new CheckCTLAction(full);
+            if (full) {
+                this.checkCTLFreshAction = result;
+            } else {
+                this.checkCTLAsIsAction = result;
+            }
         }
-        return this.verifyAction;
+        return result;
     }
 
     /**
-     * The CTL formula providing action permanently associated with this
-     * simulator.
+     * Action to check a CTL property on a fully explored state space.
      */
-    private VerifyCTLAction verifyAction;
+    private CheckCTLAction checkCTLFreshAction;
+
+    /**
+     * Action to check a CTL property on the current state space.
+     */
+    private CheckCTLAction checkCTLAsIsAction;
 
     /**
      * Action for verifying a CTL formula.
      */
-    private class VerifyCTLAction extends RefreshableAction {
+    private class CheckCTLAction extends RefreshableAction {
         /** Constructs an instance of the action. */
-        VerifyCTLAction() {
-            super(Options.PROVIDE_CTL_FORMULA_ACTION_NAME, null);
+        CheckCTLAction(boolean full) {
+            super(full ? Options.CHECK_CTL_FULL_ACTION_NAME
+                    : Options.CHECK_CTL_AS_IS_ACTION_NAME, null);
+            this.full = full;
         }
 
         public void actionPerformed(ActionEvent evt) {
-            int goOn = 0;
-            // If there are still open states the result might be different as
-            // expected. Ask the user whether really to continue.
-            if (getGTS().hasOpenStates()) {
-                String message =
-                    "The transition system still contains open states. Do you want to continue verifying it?";
-                goOn =
-                    JOptionPane.showConfirmDialog(getFrame(), message,
-                        "Open states", JOptionPane.YES_NO_OPTION);
-            }
-            if (goOn == JOptionPane.YES_OPTION) {
-                String property =
-                    getFormulaDialog().showDialog(getFrame(), null);
-                if (property != null) {
-                    doVerifyProperty(property);
+            String property =
+                getFormulaDialog().showDialog(getFrame(),
+                    new StringDialog.StringParser() {
+                        @Override
+                        public String parse(String text) {
+                            String result = null;
+                            try {
+                                TemporalFormula formula =
+                                    CTLFormula.parseFormula(text);
+                                String invalidAtom =
+                                    TemporalFormula.validAtoms(formula,
+                                        getGrammarView().getRuleNames());
+                                if (invalidAtom != null) {
+                                    result =
+                                        String.format("Invalid proposition %s",
+                                            invalidAtom);
+                                }
+                            } catch (FormatException efe) {
+                                result = efe.getMessage();
+                            }
+                            return result;
+                        }
+                    });
+            if (property != null) {
+                boolean doCheck = true;
+                if (getGTS().hasOpenStates() && this.full) {
+                    startSimulation();
+                    doRunExploration(getDefaultExploration(), false);
+                    doCheck = !getGTS().hasOpenStates();
+                }
+                if (doCheck) {
+                    doCheckProperty(property);
                 }
             }
+        }
+
+        private void doCheckProperty(String property) {
+            TemporalFormula formula;
+            try {
+                formula = CTLFormula.parseFormula(property);
+            } catch (FormatException e) {
+                // since the property passed the parser, we can't land here
+                assert false;
+                formula = null;
+            }
+            CTLModelChecker modelChecker =
+                new CTLModelChecker(getGTS(), formula);
+            modelChecker.verify();
+            List<GraphState> counterExamples =
+                new ArrayList<GraphState>(formula.getCounterExamples());
+            boolean reportForAllStates =
+                confirmBehaviour(
+                    VERIFY_ALL_STATES_OPTION,
+                    "Verify all states? Choosing 'No' will verify formula only on start state of LTS.");
+            if (!reportForAllStates) {
+                GraphState initial = getGTS().startState();
+                boolean initialIsCounterexample =
+                    counterExamples.contains(initial);
+                counterExamples = new ArrayList<GraphState>(1);
+                if (initialIsCounterexample) {
+                    counterExamples.add(initial);
+                }
+            }
+            getLtsPanel().emphasiseStates(counterExamples, false);
+            String message;
+            if (counterExamples.isEmpty()) {
+                message =
+                    String.format("The property '%s' holds for %s of this LTS",
+                        property, reportForAllStates ? "all states"
+                                : "the initial state");
+            } else if (reportForAllStates) {
+                message =
+                    String.format(
+                        "The property '%s' fails to hold in the %d highlighted states",
+                        property, counterExamples.size());
+            } else {
+                message =
+                    String.format(
+                        "The property '%s' fails to hold in the initial state",
+                        property);
+            }
+            JOptionPane.showMessageDialog(getFrame(), message);
         }
 
         public void refresh() {
             setEnabled(getGTS() != null);
         }
+
+        private final boolean full;
     }
 
     /** Class wrapping a menu of recently opened files. */

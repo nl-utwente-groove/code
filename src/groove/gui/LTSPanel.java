@@ -37,7 +37,6 @@ import groove.view.StoredGrammarView;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -271,32 +270,11 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
      * Returns a message to be displayed in a dialog.
      * @param counterExamples the collection of states that do not satisfy the
      *        property verified
-     * @param allStates flag to indicate if all states (or just the start state)
-     *        should be emphasised
      * @param inTransitions flag to indicate that the canonical incoming transition
      * should also be highlighted.
-     * @return message describing the size of the counterexample
      */
-    protected String emphasiseStates(List<GraphState> counterExamples,
-            boolean allStates, boolean inTransitions) {
-        if (!allStates) {
-            GraphState initial = getGTS().startState();
-            boolean initialIsCounterexample = counterExamples.contains(initial);
-            counterExamples = new ArrayList<GraphState>(1);
-            if (initialIsCounterexample) {
-                counterExamples.add(initial);
-            }
-        }
-        String message;
-        if (counterExamples.isEmpty()) {
-            message = "There were no counter-examples.";
-        } else if (counterExamples.size() == 1) {
-            message = "There was 1 counter-example.";
-        } else {
-            message =
-                String.format("There were %d counter-examples.",
-                    counterExamples.size());
-        }
+    protected void emphasiseStates(List<GraphState> counterExamples,
+            boolean inTransitions) {
         // reset lts display visibility
         if (this.isVisible) {
             getSimulator().switchTabs(this);
@@ -316,8 +294,6 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
             }
         }
         getJGraph().setSelectionCells(jCells.toArray());
-        //        getJModel().setEmphasised(jCells);
-        return message;
     }
 
     /**

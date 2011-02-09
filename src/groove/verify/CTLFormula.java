@@ -243,7 +243,9 @@ public class CTLFormula extends CTLStarFormula {
         CTLStarFormula parser = CTLFormula.getInstance();
         TemporalFormula.setFactory(parser);
         TemporalFormula result = parser.parse(expr);
-        if (result instanceof TemporalOperator) {
+        if (result == null) {
+            throw new FormatException("Can't parse formula %s", expr);
+        } else if (result instanceof TemporalOperator) {
             throw new FormatException(
                 "Temporal operator should always be preceded by a path quantifier: "
                     + result.getOperator());

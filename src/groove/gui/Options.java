@@ -157,6 +157,27 @@ public class Options implements Cloneable {
     public static final String BACK_ACTION_NAME = "Back";
     /** Action name for cancelling an edit. */
     public static final String CANCEL_EDIT_ACTION_NAME = "Cancel Edit";
+    /** Action name for checking CTL on full state space */
+    public static final String CHECK_CTL_FULL_ACTION_NAME =
+        "Check CTL property (full state space)";
+    /** Action name for checking CTL on current state space */
+    public static final String CHECK_CTL_AS_IS_ACTION_NAME =
+        "Check CTL property (current state space)";
+    /** Action name for checking LTL. */
+    public static final String CHECK_LTL_ACTION_NAME =
+        "Check LTL property (full state space)";
+    /** Action name for checking LTL on bounded state space */
+    public static final String CHECK_LTL_BOUNDED_ACTION_NAME =
+        "Check LTL property (bounded state space)";
+    /** Action name for checking LTL on bounded state space */
+    public static final String CHECK_LTL_POCKET_ACTION_NAME =
+        "Check LTL property (bounded pocket strategy)";
+    /** Action name for checking LTL on bounded state space */
+    public static final String CHECK_LTL_OPTIMIZED_ACTION_NAME =
+        "Check LTL property (optimised bounded state space)";
+    /** Action name for checking LTL on bounded state space */
+    public static final String CHECK_LTL_OPTMIZED_POCKET_ACTION_NAME =
+        "Check LTL property (optimised bounded pocket strategy)";
     /** Close action name */
     public static final String CLOSE_ACTION_NAME = "Close";
     /** Copy action name */
@@ -280,9 +301,6 @@ public class Options implements Cloneable {
     /** Preview control action name */
     public static final String PREVIEW_CONTROL_ACTION_NAME =
         "Preview Control ...";
-    /** Provide ctl formula action name */
-    public static final String PROVIDE_CTL_FORMULA_ACTION_NAME =
-        "CTL Formula ...";
     /** Quit action name */
     public static final String QUIT_ACTION_NAME = "Quit";
     /** Redo action name */

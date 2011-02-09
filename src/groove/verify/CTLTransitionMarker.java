@@ -54,10 +54,12 @@ public class CTLTransitionMarker extends CTLMatchingMarker {
                     DerivationLabel label = transitionIter.next().label();
                     if (label.toString().equals(name)) {
                         satisfies = true;
-                        property.getCounterExamples().add(nextState);
                     }
                 }
                 marking.set(nextState, property, satisfies);
+                if (!satisfies) {
+                    property.getCounterExamples().add(nextState);
+                }
             }
         }
     }
