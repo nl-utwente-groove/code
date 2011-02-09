@@ -593,7 +593,7 @@ public enum AspectKind {
             Pair<Object,String> parse(String text, int pos)
                 throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
-                    throw new FormatException("Can't parse identifier");
+                    throw new FormatException("Can't parse node name");
                 }
                 return new Pair<Object,String>(
                     parseContent(text.substring(pos + 1)), "");
@@ -601,19 +601,19 @@ public enum AspectKind {
 
             @Override
             String parseContent(String text) throws FormatException {
-                boolean reserved = true;
+                boolean reserved = text.length() > 1;
                 for (int i = 0; i < text.length(); i++) {
                     char c = text.charAt(i);
                     if (i == 0 ? !isValidFirstChar(c) : !isValidNextChar(c)) {
-                        throw new FormatException(
-                            "Invalid node identifier '%s'", text);
+                        throw new FormatException("Invalid node name '%s'",
+                            text);
                     }
                     reserved &=
                         i == 0 ? Character.isLetter(c) : Character.isDigit(c);
                 }
                 if (reserved) {
-                    throw new FormatException("Reserved node identifier '%s'",
-                        text);
+                    throw new FormatException(
+                        "Reserved node name '%s' (letter digit+)", text);
                 }
                 return text;
             }
