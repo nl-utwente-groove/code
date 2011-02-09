@@ -342,6 +342,49 @@ public class CTLStarFormula {
      * Boolean conjunction of two expressions. Example syntax: given phi and
      * psi, then "phi and psi" is denoted by "phi & psi"
      */
+    static public class DoubleAnd extends Infix {
+
+        /**
+         * Creates a new instance of the boolean and operator given the list of
+         * operands on which it will be applied.
+         * @param operands the list of operands on which this operator will be
+         *        applied
+         */
+        public DoubleAnd(List<TemporalFormula> operands) {
+            super("" + AND_OPERATOR + AND_OPERATOR, AND_SYMBOLIC_NAME, operands);
+        }
+
+        /**
+         * Empty constructor.
+         */
+        protected DoubleAnd() {
+            this(new ArrayList<TemporalFormula>());
+        }
+
+        @Override
+        protected TemporalFormula newInstance(List<TemporalFormula> operands)
+            throws FormatException {
+            return FACTORY.createAnd(operands);
+        }
+
+        /**
+         * @return a fresh AND-instance
+         */
+        static protected TemporalFormula createInstance(
+                List<TemporalFormula> operands) {
+            return new DoubleAnd(operands);
+        }
+
+        @Override
+        public void mark(CTLFormulaMarker marker, Marking marking, GTS gts) {
+            marker.markAnd(marking, this, gts);
+        }
+    }
+
+    /**
+     * Boolean conjunction of two expressions. Example syntax: given phi and
+     * psi, then "phi and psi" is denoted by "phi & psi"
+     */
     static public class And extends Infix {
 
         /**
@@ -418,6 +461,51 @@ public class CTLStarFormula {
         static protected TemporalFormula createInstance(
                 List<TemporalFormula> operands) {
             return new Or(operands);
+        }
+
+        @Override
+        public void mark(CTLFormulaMarker marker, Marking marking, GTS gts) {
+            marker.markOr(marking, this, gts);
+        }
+    }
+
+    /**
+     * Boolean disjunction of two expressions. Example syntax: given phi and
+     * psi, then "phi or psi" is denoted by "phi | spi"
+     */
+    static public class DoubleOr extends Infix {
+
+        /**
+         * Creates a new instance of the boolean or operator given the list of
+         * operands on which it will be applied.
+         * @param operands the list of operands on which this operator will be
+         *        applied
+         */
+        public DoubleOr(List<TemporalFormula> operands) {
+            super("" + OR_OPERATOR + OR_OPERATOR, OR_SYMBOLIC_NAME, operands);
+        }
+
+        /**
+         * Constructor.
+         */
+        protected DoubleOr() {
+            this(new ArrayList<TemporalFormula>());
+        }
+
+        @Override
+        protected TemporalFormula newInstance(List<TemporalFormula> operands)
+            throws FormatException {
+            return FACTORY.createOr(operands);
+        }
+
+        /**
+         * Creates a fresh instance of the logical or-operator.
+         * @param operands the operands for the or-operator
+         * @return the freshly created or-operator
+         */
+        static protected TemporalFormula createInstance(
+                List<TemporalFormula> operands) {
+            return new DoubleOr(operands);
         }
 
         @Override
@@ -842,8 +930,9 @@ public class CTLStarFormula {
      * Comment for <code>prototypes</code>
      */
     protected final TemporalFormula[] prototypes = new TemporalFormula[] {
-        new And(), new Or(), new Exists(), new All(), new Finally(),
-        new Globally(), new Next(), new Until(), new Neg(), new Atom()};
+        new And(), new DoubleOr(), new Or(), new Exists(), new All(),
+        new Finally(), new Globally(), new Next(), new Until(), new Neg(),
+        new Atom()};
 
     /**
      * Parses the string given to this method. It throws a
