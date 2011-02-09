@@ -96,7 +96,6 @@ import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Duo;
 import groove.util.Groove;
-import groove.util.GrooveModules;
 import groove.util.Version;
 import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
@@ -189,7 +188,6 @@ public class Simulator {
      * Constructs a simulator with an empty graph grammar.
      */
     public Simulator() {
-        loadModules();
         initGrammarLoaders();
         getFrame();
         setDefaultExploration(new Exploration());
@@ -247,29 +245,6 @@ public class Simulator {
         getFrame().pack();
         groove.gui.UserSettings.applyUserSettings(this.frame);
         getFrame().setVisible(true);
-    }
-
-    /**
-     * Load the different modules.
-     */
-    private void loadModules() {
-        loadLTLModule();
-    }
-
-    /**
-     * LTL verification is only supported on a selection of platforms.
-     */
-    private void loadLTLModule() {
-        if (System.getProperty("os.name").startsWith("Windows")
-            || System.getProperty("os.name").startsWith("Linux")
-            || System.getProperty("os.name").startsWith("FreeBSD")) {
-            // TODO change here to enable LTL model checking
-            System.setProperty(GrooveModules.GROOVE_MODULE_LTL_VERIFICATION,
-                GrooveModules.GROOVE_MODULE_ENABLED);
-        } else {
-            System.setProperty(GrooveModules.GROOVE_MODULE_LTL_VERIFICATION,
-                GrooveModules.GROOVE_MODULE_DISABLED);
-        }
     }
 
     /**
@@ -5233,7 +5208,7 @@ public class Simulator {
             // expected. Ask the user whether really to continue.
             if (getGTS().hasOpenStates()) {
                 String message =
-                    "The transition system still contains open states. Do you want to contiue verifying it?";
+                    "The transition system still contains open states. Do you want to continue verifying it?";
                 goOn =
                     JOptionPane.showConfirmDialog(getFrame(), message,
                         "Open states", JOptionPane.YES_NO_OPTION);
