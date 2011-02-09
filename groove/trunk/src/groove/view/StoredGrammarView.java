@@ -17,7 +17,6 @@
 package groove.view;
 
 import static groove.graph.GraphRole.HOST;
-import groove.control.ControlView;
 import groove.control.CtrlFactory;
 import groove.graph.DefaultGraph;
 import groove.graph.GraphInfo;
@@ -117,7 +116,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         return Collections.unmodifiableSet(getStore().getTypes().keySet());
     }
 
-    public ControlView getControlView(String name) {
+    public CtrlView getControlView(String name) {
         return this.controlMap.get(name);
     }
 
@@ -189,7 +188,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     @Override
-    public ControlView getControlView() {
+    public CtrlView getControlView() {
         return isUseControl() ? getControlView(getControlName()) : null;
     }
 
@@ -385,7 +384,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         }
         // set control
         if (isUseControl()) {
-            ControlView controlView = getControlView(getControlName());
+            CtrlView controlView = getControlView(getControlName());
             if (controlView == null) {
                 errors.add(new FormatError(
                     "Control program '%s' cannot be found", getControlName()));
@@ -464,7 +463,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     private void loadControlMap() {
         this.controlMap.clear();
         for (Map.Entry<String,String> storedRuleEntry : this.store.getControls().entrySet()) {
-            this.controlMap.put(storedRuleEntry.getKey(), new ControlView(
+            this.controlMap.put(storedRuleEntry.getKey(), new CtrlView(
                 storedRuleEntry.getValue(), storedRuleEntry.getKey()));
         }
     }
@@ -479,8 +478,8 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     /** Mapping from control names to views on the corresponding automata. */
-    final Map<String,ControlView> controlMap =
-        new HashMap<String,ControlView>();
+    final Map<String,CtrlView> controlMap =
+        new HashMap<String,CtrlView>();
 
     /** The store backing this view. */
     private final SystemStore store;

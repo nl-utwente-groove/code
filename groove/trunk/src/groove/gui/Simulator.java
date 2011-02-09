@@ -37,7 +37,6 @@ import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import gov.nasa.ltl.trans.ParseErrorException;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.lts.AGTS;
-import groove.control.ControlView;
 import groove.explore.AcceptorEnumerator;
 import groove.explore.Exploration;
 import groove.explore.ModelCheckingScenario;
@@ -103,6 +102,7 @@ import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
 import groove.verify.LTLParser;
 import groove.verify.TemporalFormula;
+import groove.view.CtrlView;
 import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.GraphView;
@@ -1145,7 +1145,7 @@ public class Simulator {
      */
     boolean doSaveControl(String controlProgram, File file) {
         try {
-            ControlView.store(controlProgram, new FileOutputStream(file));
+            CtrlView.store(controlProgram, new FileOutputStream(file));
             return true;
         } catch (IOException exc) {
             showErrorDialog("Error while saving to " + file, exc);
