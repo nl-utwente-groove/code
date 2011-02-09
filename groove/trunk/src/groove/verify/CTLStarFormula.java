@@ -725,6 +725,9 @@ public class CTLStarFormula {
         protected TemporalFormula parseOperator(String expr)
             throws FormatException {
             expr = expr.trim();
+            if (expr.length() == 0) {
+                return null;
+            }
             if (expr.charAt(0) == LEFT_PARENTHESIS_CHAR) {
                 return getFactory().parse(expr.substring(1, expr.length() - 1));
             } else if (expr.charAt(0) == SINGLE_QUOTE_CHAR) {

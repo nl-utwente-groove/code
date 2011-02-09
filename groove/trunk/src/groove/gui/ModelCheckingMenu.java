@@ -78,34 +78,33 @@ public class ModelCheckingMenu extends JMenu implements SimulationListener {
     protected void createAddMenuItems() {
         Scenario scenario =
             ScenarioFactory.getModelCheckingScenario(new NestedDFSStrategy(),
-                "", "Nested Depth-First Search", this.simulator);
+                "", Options.CHECK_LTL_ACTION_NAME, this.simulator);
         addScenarioHandler(scenario);
 
         scenario =
             ScenarioFactory.getBoundedModelCheckingScenario(
                 new BoundedNestedDFSStrategy(),
                 // new GraphNodeSizeBoundary(10,5),
-                "", "Bounded Nested Depth-First Search (naive)", this.simulator);
+                "", Options.CHECK_LTL_BOUNDED_ACTION_NAME, this.simulator);
         addScenarioHandler(scenario);
 
         scenario =
             ScenarioFactory.getBoundedModelCheckingScenario(
                 new BoundedNestedDFSPocketStrategy(),
                 // new GraphNodeSizeBoundary(10,5),
-                "", "Bounded Nested Depth-First Search (naive)", this.simulator);
+                "", Options.CHECK_LTL_POCKET_ACTION_NAME, this.simulator);
         addScenarioHandler(scenario);
 
         scenario =
             ScenarioFactory.getBoundedModelCheckingScenario(
                 new OptimizedBoundedNestedDFSStrategy(), "",
-                "Bounded Nested Depth-First Search (optimized)", this.simulator);
+                Options.CHECK_LTL_OPTIMIZED_ACTION_NAME, this.simulator);
         addScenarioHandler(scenario);
 
         scenario =
             ScenarioFactory.getBoundedModelCheckingScenario(
                 new OptimizedBoundedNestedDFSPocketStrategy(), "",
-                "Bounded Nested Depth-First Search (optimized + pocket)",
-                this.simulator);
+                Options.CHECK_LTL_OPTMIZED_POCKET_ACTION_NAME, this.simulator);
         addScenarioHandler(scenario);
     }
 

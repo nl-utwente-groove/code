@@ -343,8 +343,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
                         invisibleCells.toArray());
                     getGraphLayoutCache().setSelectsLocalInsertedCells(
                         selectsInsertedCells);
-                    //                    getSelectionModel().removeSelectionCells(
-                    //                        grayedOutCells.toArray());
                     if (getSelectionCount() > 0) {
                         Rectangle2D scope =
                             (Rectangle2D) getCellBounds(getSelectionCells()).clone();

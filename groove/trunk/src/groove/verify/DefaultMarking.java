@@ -68,21 +68,14 @@ public class DefaultMarking extends HashMap<GraphState,Set<TemporalFormula>>
      *         CTL-expression, <tt>false</tt> otherwise
      */
     protected boolean setTrue(GraphState state, TemporalFormula property) {
-        boolean added = false;
         // if this marking does not yet contain an entry for this state
         // create one and add the give predicate as the only marking so far
-        if (!containsKey(state)) {
-            Set<TemporalFormula> predicates = new HashSet<TemporalFormula>();
-            added = predicates.add(property);
+        Set<TemporalFormula> predicates = get(state);
+        if (predicates == null) {
+            predicates = new HashSet<TemporalFormula>();
             put(state, predicates);
         }
-        // add this predicate to the marking of this state
-        else {
-            Set<TemporalFormula> currentPredicates = get(state);
-            added = currentPredicates.add(property);
-            put(state, currentPredicates);
-        }
-        return added;
+        return predicates.add(property);
     }
 
     /**
@@ -98,11 +91,9 @@ public class DefaultMarking extends HashMap<GraphState,Set<TemporalFormula>>
      */
     protected boolean setFalse(GraphState state, TemporalFormula property) {
         boolean removed = false;
-        if (containsKey(state)) {
-            Set<TemporalFormula> predicates = get(state);
-            if (predicates.contains(property)) {
-                removed = predicates.remove(property);
-            }
+        Set<TemporalFormula> predicates = get(state);
+        if (predicates != null) {
+            removed = predicates.remove(property);
         }
         return removed;
     }
