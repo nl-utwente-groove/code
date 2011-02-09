@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.util;
+package groove.io.importers;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
@@ -25,6 +25,7 @@ import groove.io.ExtensionFilter;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
+import groove.util.Groove;
 
 import java.io.BufferedReader;
 import java.io.File;

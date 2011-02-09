@@ -22,6 +22,8 @@ import groove.graph.Graph;
 import groove.graph.Node;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJGraph;
+import groove.io.exporters.GraphToKth;
+import groove.io.exporters.GraphToTikz;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Color;
@@ -497,7 +499,7 @@ public class Converter {
         }
 
         /** Start text of this tag. */
-        final String tagBegin;
+        public final String tagBegin;
         /** End text of this tag. */
         final String tagEnd;
     }

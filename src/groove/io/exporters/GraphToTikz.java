@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.util;
+package groove.io.exporters;
 
 import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.PRODUCT;
@@ -39,6 +39,9 @@ import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.trans.RuleLabel;
+import groove.util.Converter;
+import groove.util.Duo;
+import groove.util.Groove;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
 
