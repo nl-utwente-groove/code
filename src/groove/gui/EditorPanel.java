@@ -200,7 +200,7 @@ public class EditorPanel extends JPanel {
      */
     boolean askAndSave() {
         boolean result = true;
-        if (this.editor.isDirty()) {
+        if (this.editor.isDirty() && !this.saving) {
             int confirm =
                 JOptionPane.showConfirmDialog(this,
                     String.format("%s '%s' has been modified. Save changes?",
@@ -220,6 +220,7 @@ public class EditorPanel extends JPanel {
      */
     void doSave() {
         if (this.editor.isDirty()) {
+            this.saving = true;
             boolean success = false;
             switch (this.editor.getRole()) {
             case HOST:
@@ -235,6 +236,7 @@ public class EditorPanel extends JPanel {
             if (success) {
                 this.editor.setDirty(false);
             }
+            this.saving = false;
         }
     }
 
@@ -295,4 +297,6 @@ public class EditorPanel extends JPanel {
     private final Simulator simulator;
     /** The editor wrapped in the panel. */
     private final Editor editor;
+    /** Flag indicating that the editor is in the process of saving. */
+    private boolean saving;
 }
