@@ -126,9 +126,13 @@ public class CTLStarFormula {
     static public final char RIGHT_PARENTHESIS_CHAR =
         ExprParser.ROUND_BRACKETS[1];
     /**
-     * Comment for <code>SINGLE_QUOTE_CHAR</code>
+     * Single quote.
      */
     static public final char SINGLE_QUOTE_CHAR = '\'';
+    /**
+     * Double quote.
+     */
+    static public final char DOUBLE_QUOTE_CHAR = '"';
     /**
      * Left parenthesis string used for enclosing relation-parts.
      */
@@ -726,6 +730,9 @@ public class CTLStarFormula {
             } else if (expr.charAt(0) == SINGLE_QUOTE_CHAR) {
                 return newInstance(ExprParser.toUnquoted(expr,
                     SINGLE_QUOTE_CHAR));
+            } else if (expr.charAt(0) == DOUBLE_QUOTE_CHAR) {
+                return newInstance(ExprParser.toUnquoted(expr,
+                    DOUBLE_QUOTE_CHAR));
             } else {
                 assertAtom(expr);
                 if (expr.equals(TRUE)) {

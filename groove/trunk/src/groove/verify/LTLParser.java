@@ -179,14 +179,43 @@ public class LTLParser {
 
                 break;
 
-            case '"':
-
+            case '\'':
+                // single-quoted propositions
                 StringBuilder sb = new StringBuilder();
+                i.skip();
+
+                while ((ch = i.get()) != '\'') {
+                    if (ch == '\\') {
+                        // test if this is an escaped single quote or escape
+                        i.skip();
+                        ch = i.get();
+                        switch (ch) {
+                        case '\\':
+                        case '\'':
+                            break;
+                        default:
+                            throw new ParseErrorException(
+                                "invalid escaped character: " + ch);
+                        }
+                    }
+                    sb.append(ch);
+                    i.skip();
+                }
+
+                i.skip();
+
+                formula = Formula.Proposition(sb.toString());
+
+                break;
+
+            case '"':
+                // double-quoted propositions
+                sb = new StringBuilder();
                 i.skip();
 
                 while ((ch = i.get()) != '"') {
                     if (ch == '\\') {
-                        // test if this is an escaped quote or escape
+                        // test if this is an escaped double quote or escape
                         i.skip();
                         ch = i.get();
                         switch (ch) {
