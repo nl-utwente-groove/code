@@ -69,9 +69,12 @@ public class AspectParser {
                 prefixBuilder.append(c);
             }
             String prefix = prefixBuilder.toString();
+            // only continue parsing for aspects if the candidate aspect
+            // prefix starts with a nonempty identifier that is not an 
+            // edge role prefix
             stopParsing =
-                pos != 0 && EdgeRole.getRole(prefix) != null
-                    && pos == nextSeparator;
+                pos == 0 && nextSeparator != 0 || pos != 0
+                    && EdgeRole.getRole(prefix) != null && pos == nextSeparator;
             if (!stopParsing) {
                 AspectKind kind = AspectKind.getKind(prefix);
                 if (kind == null) {
