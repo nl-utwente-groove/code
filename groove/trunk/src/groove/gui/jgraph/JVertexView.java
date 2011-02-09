@@ -652,7 +652,9 @@ public class JVertexView extends VertexView {
             if (this.adornment != null) {
                 g2.setColor(getForeground());
                 int offset = 2;
-                g2.fillRect(0, 0, this.adornWidth + offset, this.adornHeight);
+                // make sure anonymous parameters are adorned correctly
+                int width = Math.max(this.adornWidth, 6) + offset;
+                g2.fillRect(0, 0, width, this.adornHeight);
                 g2.setFont(ADORNMENT_FONT);
                 g2.setColor(Color.white);
                 g2.drawString(this.adornment, 1, this.adornHeight - offset);
