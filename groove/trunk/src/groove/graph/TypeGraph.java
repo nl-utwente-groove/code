@@ -269,14 +269,20 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         // add parent node types
         for (N untypedNode : untypedNodes) {
             Set<TypeLabel> parentTypes = parentTypeMap.get(untypedNode);
+            TypeLabel type = null;
             if (parentTypes != null && !parentTypes.isEmpty()) {
                 // find minimum type among the parent types
-                TypeLabel type = null;
                 for (TypeLabel parentType : parentTypes) {
-                    if (type == null || isSubtype(parentType, type)) {
+                    if (!isNodeType(parentType)) {
+                        errors.add(new FormatError(
+                            "Unknown node type %s for node '%s'", parentType,
+                            untypedNode));
+                    } else if (type == null || isSubtype(parentType, type)) {
                         type = parentType;
                     }
                 }
+            }
+            if (type != null) {
                 nodeTypeMap.put(untypedNode, type);
             } else {
                 errors.add(new FormatError("Untyped node '%s'", untypedNode));
@@ -312,9 +318,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 } else if (ruleEdgeType.isEmpty()) {
                     // this is a (possibly negative) comparison of nodes
                     // which can only be correct if they have a common subtype
+                    Set<TypeLabel> subtypes =
+                        getLabelStore().getSubtypes(sourceType);
                     Set<TypeLabel> commonSubtypes =
-                        new HashSet<TypeLabel>(getLabelStore().getSubtypes(
-                            sourceType));
+                        new HashSet<TypeLabel>(subtypes);
                     commonSubtypes.retainAll(getLabelStore().getSubtypes(
                         targetType));
                     if (commonSubtypes.isEmpty()) {
