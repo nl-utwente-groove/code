@@ -14,7 +14,9 @@
  *
  * $Id$
  */
-package groove.util;
+package groove.io.exporters;
+
+import groove.util.Groove;
 
 import java.io.IOException;
 
