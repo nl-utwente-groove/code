@@ -280,7 +280,6 @@ public class ControlPanel extends JPanel implements SimulationListener {
         } else {
             assert !isDirty();
         }
-        getControlTextArea().setBackground(JAttr.EDITOR_BACKGROUND);
         return result;
     }
 
@@ -291,7 +290,6 @@ public class ControlPanel extends JPanel implements SimulationListener {
     private void startEditing() {
         assert !isEditing();
         this.editing = true;
-        getControlTextArea().setBackground(Color.white);
         refreshAll();
     }
 
@@ -466,7 +464,16 @@ public class ControlPanel extends JPanel implements SimulationListener {
         @Override
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
-            setBackground(enabled ? ENABLED_COLOUR : DISABLED_COLOUR);
+            setBackground();
+        }
+
+        private void setBackground() {
+            if (isEnabled()) {
+                setBackground(isEditable() ? JAttr.EDITOR_BACKGROUND
+                        : ENABLED_COLOUR);
+            } else {
+                setBackground(DISABLED_COLOUR);
+            }
         }
 
         @Override
