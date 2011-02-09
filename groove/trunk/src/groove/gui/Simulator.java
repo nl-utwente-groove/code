@@ -39,7 +39,6 @@ import groove.abstraction.Multiplicity;
 import groove.abstraction.lts.AGTS;
 import groove.control.ControlView;
 import groove.explore.AcceptorEnumerator;
-import groove.explore.DefaultExplorationValidator;
 import groove.explore.Exploration;
 import groove.explore.ModelCheckingScenario;
 import groove.explore.Scenario;
@@ -193,7 +192,6 @@ public class Simulator {
         loadModules();
         initGrammarLoaders();
         getFrame();
-        addSimulationListener(new DefaultExplorationValidator(this));
         setDefaultExploration(new Exploration());
     }
 
