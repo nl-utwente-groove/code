@@ -229,6 +229,7 @@ public class ExprParser {
             if (next == split.charAt(0) && parseExpr.startsWith(split, i)) {
                 result.add(subResult.toString());
                 subResult.clear();
+                i += split.length() - 1;
             } else if (next == this.placeholder) {
                 // append the next replacement to the subresult
                 String replacement = replacements.next();
