@@ -183,9 +183,7 @@ public abstract class TemporalFormula {
                 } catch (FormatException e) {
                     trimmedAtomString = null;
                 }
-                if (trimmedAtomString == null) {
-                    return atomString;
-                } else {
+                if (trimmedAtomString != null) {
                     atomString = trimmedAtomString;
                 }
             }
