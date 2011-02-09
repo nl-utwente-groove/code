@@ -74,8 +74,8 @@ public class StringDialog {
                 this.history.add(value);
             }
         }
-        this.dialog = createDialog(frame);
         this.parser = parser;
+        this.dialog = createDialog(frame);
         getChoiceBox().setSelectedItem("");
         getEditor().setText("");
         processTextChange();
