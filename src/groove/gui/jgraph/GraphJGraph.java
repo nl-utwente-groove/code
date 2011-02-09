@@ -943,6 +943,9 @@ public class GraphJGraph extends org.jgraph.JGraph {
         boolean itemAdded = false;
         if (cells != null && cells.length > 0 && getSimulator() != null) {
             result.add(getSimulator().getRelabelAction());
+            if (getSimulator().getSelectColorAction().isEnabled()) {
+                result.add(getSimulator().getSelectColorAction());
+            }
             itemAdded = true;
         }
         if (this.filteredLabels != null && cells != null && cells.length > 0) {

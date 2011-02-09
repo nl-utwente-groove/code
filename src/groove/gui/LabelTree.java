@@ -451,7 +451,6 @@ public class LabelTree extends JTree implements GraphModelListener,
             && simulator != null) {
             result.add(simulator.getRelabelAction());
             if (getJGraph() instanceof AspectJGraph
-                && ((AspectJGraph) getJGraph()).hasType()
                 && simulator.getSelectColorAction().isEnabled()) {
                 result.add(simulator.getSelectColorAction());
             }

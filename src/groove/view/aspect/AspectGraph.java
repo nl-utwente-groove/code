@@ -24,6 +24,7 @@ import groove.graph.DefaultFactory;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
+import groove.graph.EdgeRole;
 import groove.graph.ElementFactory;
 import groove.graph.ElementMap;
 import groove.graph.GraphInfo;
@@ -311,6 +312,67 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
             DefaultEdge edgeImage =
                 result.addEdge(sourceImage, edgeLabel.toString(), targetImage);
             elementMap.putEdge(edge, edgeImage);
+        }
+        if (!graphChanged) {
+            return this;
+        } else {
+            GraphInfo.transfer(this, result, elementMap);
+            GraphInfo.setErrors(result, Collections.<FormatError>emptyList());
+            result.setFixed();
+            return fromPlainGraph(result);
+        }
+    }
+
+    /**
+     * Returns an aspect graph obtained from this one by changing the colour
+     * of one of the node types.
+     * This is only valid for type graphs.
+     * @param label the node type label to be changed; must satisfy {@link Label#isNodeType()}.
+     * @param colour the new colour for the node type; may be {@code null}
+     * if the colour is to be reset to default
+     * @return a clone of this aspect graph with changed labels, or this graph
+     *         if {@code label} did not occur
+     */
+    public AspectGraph colour(TypeLabel label, Aspect colour) {
+        assert getRole() == TYPE;
+        // create a plain graph under relabelling
+        DefaultGraph result = createPlainGraph();
+        AspectToPlainMap elementMap = new AspectToPlainMap();
+        // flag registering if anything changed due to relabelling
+        boolean graphChanged = false;
+        // construct the plain graph for the aspect nodes,
+        // except for the colour aspects
+        for (AspectNode node : nodeSet()) {
+            DefaultNode image = result.addNode(node.getNumber());
+            elementMap.putNode(node, image);
+            for (AspectLabel nodeLabel : node.getNodeLabels()) {
+                List<Aspect> nodeAspects = nodeLabel.getAspects();
+                if (nodeAspects.isEmpty()
+                    || nodeAspects.get(0).getKind() != AspectKind.COLOR) {
+                    result.addEdge(image, nodeLabel.toString(), image);
+                }
+            }
+        }
+        // construct the plain edges, adding colour edges when a node
+        // type is found
+        for (AspectEdge edge : edgeSet()) {
+            AspectLabel edgeLabel = edge.label();
+            DefaultNode sourceImage = elementMap.getNode(edge.source());
+            DefaultNode targetImage = elementMap.getNode(edge.target());
+            DefaultEdge edgeImage =
+                result.addEdge(sourceImage, edgeLabel.toString(), targetImage);
+            elementMap.putEdge(edge, edgeImage);
+            if (edge.getRole() == EdgeRole.NODE_TYPE) {
+                TypeLabel nodeType = edge.getTypeLabel();
+                boolean labelChanged = nodeType.equals(label);
+                graphChanged |= labelChanged;
+                Aspect newColour =
+                    labelChanged ? colour : edge.source().getColor();
+                if (newColour != null) {
+                    result.addEdge(sourceImage, newColour.toString(),
+                        targetImage);
+                }
+            }
         }
         if (!graphChanged) {
             return this;
