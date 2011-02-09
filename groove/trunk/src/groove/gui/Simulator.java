@@ -70,7 +70,6 @@ import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.io.AspectGxl;
@@ -108,7 +107,9 @@ import groove.view.GraphView;
 import groove.view.RuleView;
 import groove.view.StoredGrammarView;
 import groove.view.StoredGrammarView.TypeViewList;
+import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectKind;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -4934,27 +4935,80 @@ public class Simulator {
         SelectColorAction() {
             super(Options.SELECT_COLOR_ACTION_NAME);
             putValue(SHORT_DESCRIPTION, Options.SELECT_COLOR_ACTION_NAME);
-            getStatePanel().getJGraph().addGraphSelectionListener(this);
-            getStatePanel().getLabelTree().addTreeSelectionListener(this);
-            getRulePanel().getJGraph().addGraphSelectionListener(this);
-            getRulePanel().getLabelTree().addTreeSelectionListener(this);
-            getTypePanel().getJGraph().addGraphSelectionListener(this);
-            getTypePanel().getLabelTree().addTreeSelectionListener(this);
-            setEnabled(false);
+            addAsListener(getStatePanel());
+            addAsListener(getRulePanel());
+            addAsListener(getTypePanel());
+            refresh();
+            this.chooser = new JColorChooser();
+        }
+
+        /** Adds this action as a listener to the JGraph and label tree of a 
+         * given JGraphPanel.
+         */
+        private void addAsListener(JGraphPanel<?> jPanel) {
+            jPanel.getJGraph().addGraphSelectionListener(this);
+            if (this.label == null) {
+                checkJGraph(jPanel.getJGraph());
+            }
+            jPanel.getLabelTree().addTreeSelectionListener(this);
+            if (this.label == null) {
+                checkLabelTree(jPanel.getLabelTree());
+            }
         }
 
         public void actionPerformed(ActionEvent evt) {
-            Color colour =
-                JColorChooser.showDialog(getSimulatorPanel(),
-                    "Choose colour for type", JAttr.DEFAULT_BACKGROUND);
+            Color initColour =
+                getGrammarView().getLabelStore().getColor(this.label);
+            if (initColour != null) {
+                this.chooser.setColor(initColour);
+            }
+            JDialog dialog =
+                JColorChooser.createDialog(getSimulatorPanel(),
+                    "Choose colour for type", false, this.chooser,
+                    new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            setColour(SelectColorAction.this.chooser.getColor());
+                        }
+                    }, null);
+            dialog.setVisible(true);
+        }
+
+        private void setColour(Color newColour) {
+            Aspect colourAspect = null;
+            if (!newColour.equals(Color.black)) {
+                String colourString =
+                    String.format("%s,%s,%s", newColour.getRed(),
+                        newColour.getGreen(), newColour.getBlue());
+                try {
+                    colourAspect =
+                        AspectKind.COLOR.getAspect().newInstance(colourString);
+                } catch (FormatException e) {
+                    // this can't happen, as the colour string is constructed correctly
+                    assert false;
+                }
+            }
+            for (String typeViewName : getGrammarView().getActiveTypeNames()) {
+                AspectGraph typeView =
+                    getGrammarView().getTypeView(typeViewName).getAspectGraph();
+                AspectGraph newTypeView =
+                    typeView.colour(this.label, colourAspect);
+                if (newTypeView != typeView) {
+                    doAddType(newTypeView);
+                }
+            }
         }
 
         /** Sets {@link #label} based on the {@link GraphJGraph} selection. */
         @Override
         public void valueChanged(GraphSelectionEvent e) {
+            checkJGraph((GraphJGraph) e.getSource());
+        }
+
+        /** Checks if in a given JGraph a type label is selected. */
+        private void checkJGraph(GraphJGraph jGraph) {
             this.label = null;
-            Object[] selection =
-                ((GraphJGraph) e.getSource()).getSelectionCells();
+            Object[] selection = jGraph.getSelectionCells();
             if (selection != null) {
                 choose: for (Object cell : selection) {
                     for (Label label : ((GraphJCell) cell).getListLabels()) {
@@ -4965,14 +5019,18 @@ public class Simulator {
                     }
                 }
             }
-            setEnabled(this.label != null);
+            refresh();
         }
 
         @Override
         public void valueChanged(TreeSelectionEvent e) {
+            checkLabelTree((LabelTree) e.getSource());
+        }
+
+        /** Checks if in a given {@link LabelTree} a type label is selected. */
+        private void checkLabelTree(LabelTree tree) {
             this.label = null;
-            TreePath[] selection =
-                ((LabelTree) e.getSource()).getSelectionPaths();
+            TreePath[] selection = tree.getSelectionPaths();
             if (selection != null) {
                 for (TreePath path : selection) {
                     Label label =
@@ -4983,11 +5041,18 @@ public class Simulator {
                     }
                 }
             }
-            setEnabled(this.label != null);
+            refresh();
+        }
+
+        private void refresh() {
+            super.setEnabled(this.label != null
+                && !getGrammarView().getActiveTypeNames().isEmpty());
         }
 
         /** The label for which a colour is chosen; may be {@code null}. */
         private TypeLabel label;
+
+        private final JColorChooser chooser;
     }
 
     /**
