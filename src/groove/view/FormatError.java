@@ -16,7 +16,6 @@
  */
 package groove.view;
 
-import groove.control.ControlView;
 import groove.graph.Element;
 import groove.view.aspect.AspectGraph;
 
@@ -57,8 +56,8 @@ public class FormatError implements Comparable<FormatError> {
             this.elements.addAll(((FormatError) par).getElements());
         } else if (par instanceof AspectGraph) {
             this.graph = (AspectGraph) par;
-        } else if (par instanceof ControlView) {
-            this.control = (ControlView) par;
+        } else if (par instanceof CtrlView) {
+            this.control = (CtrlView) par;
         } else if (par instanceof Element) {
             this.elements.add((Element) par);
         } else if (par instanceof Object[]) {
@@ -137,7 +136,7 @@ public class FormatError implements Comparable<FormatError> {
     }
 
     /** Returns the control view in which the error occurs. May be {@code null}. */
-    public final ControlView getControl() {
+    public final CtrlView getControl() {
         return this.control;
     }
 
@@ -170,7 +169,7 @@ public class FormatError implements Comparable<FormatError> {
     }
 
     /** The control view in which the error occurs. */
-    private ControlView control;
+    private CtrlView control;
     /** The graph in which the error occurs. */
     private AspectGraph graph;
     /** The erroneous element. */

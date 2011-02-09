@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import groove.control.ControlView;
 import groove.control.CtrlAut;
 import groove.control.parse.CtrlTokenMaker;
 import groove.gui.jgraph.CtrlJGraph;
@@ -30,6 +29,7 @@ import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
+import groove.view.CtrlView;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
@@ -494,7 +494,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
                 setEnabled(enabled);
                 String program = "";
                 if (isControlSelected()) {
-                    ControlView cv =
+                    CtrlView cv =
                         getGrammarView().getControlView(getSelectedControl());
                     if (cv != null) {
                         program = cv.getProgram();
@@ -908,7 +908,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
             StoredGrammarView grammarView = getGrammarView();
             if (grammarView != null) {
                 GraphGrammar grammar = grammarView.toGrammar();
-                ControlView controlView =
+                CtrlView controlView =
                     grammarView.getControlView(getSelectedControl());
                 result =
                     controlView == null

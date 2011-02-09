@@ -16,7 +16,6 @@
  */
 package groove.view;
 
-import groove.control.ControlView;
 import groove.graph.TypeGraph;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
@@ -81,7 +80,7 @@ public interface GenericGrammarView<GV extends View<? extends HostGraph>,RV exte
      * @return the corresponding control program view, or <code>null</code> if
      *         no program by that name exists
      */
-    public ControlView getControlView(String name);
+    public CtrlView getControlView(String name);
 
     /**
      * Returns the control view set for the grammar.

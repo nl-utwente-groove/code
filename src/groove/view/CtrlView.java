@@ -14,10 +14,11 @@
  * 
  * $Id: ControlView.java,v 1.10 2008-03-18 12:17:29 fladder Exp $
  */
-package groove.control;
+package groove.view;
 
+import groove.control.CtrlAut;
+import groove.control.CtrlLoader;
 import groove.trans.GraphGrammar;
-import groove.view.FormatException;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -27,13 +28,13 @@ import java.io.PrintWriter;
  * automata.
  * @author Staijen
  */
-public class ControlView {
+public class CtrlView {
     /**
      * Constructs a control view from a given control program.
      * @param program the control program; non-null
      * @param name the name of the control program
      */
-    public ControlView(String program, String name) {
+    public CtrlView(String program, String name) {
         this.name = name;
         this.program = program;
     }
