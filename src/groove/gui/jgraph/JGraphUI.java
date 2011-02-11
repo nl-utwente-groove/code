@@ -197,7 +197,8 @@ public class JGraphUI extends BasicGraphUI {
                 } else {
                     startEditing(jCell, e);
                 }
-            } else if (e.getButton() == BUTTON1 && getJGraphMode() == EDIT_MODE) {
+            } else if (e.getButton() == BUTTON1 && getJGraphMode() == EDIT_MODE
+                && getJGraph().getSelectionCell() == null) {
                 // add vertex
                 ((AspectJGraph) getJGraph()).addVertex(e.getPoint());
             } else {
