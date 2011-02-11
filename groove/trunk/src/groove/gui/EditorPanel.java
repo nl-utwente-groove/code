@@ -245,18 +245,20 @@ public class EditorPanel extends JPanel {
      */
     private boolean confirmSave() {
         if (this.simulator.getGTS() != null) {
-            String question =
-                String.format(
-                    "Saving %s '%s' may stop current simulation. Proceed?",
-                    this.editor.getRole(), getName());
-            int response =
-                JOptionPane.showConfirmDialog(this.simulator.getFrame(),
-                    question, null, JOptionPane.OK_CANCEL_OPTION);
-            return response == JOptionPane.OK_OPTION;
-
-        } else {
-            return true;
+            BehaviourOption option =
+                (BehaviourOption) this.options.getItem(Options.STOP_SIMULATION_OPTION);
+            if (option.getValue() == BehaviourOption.ASK) {
+                String question =
+                    String.format(
+                        "Saving %s '%s' may stop current simulation. Proceed?",
+                        this.editor.getRole(), getName());
+                int response =
+                    JOptionPane.showConfirmDialog(this.simulator.getFrame(),
+                        question, null, JOptionPane.OK_CANCEL_OPTION);
+                return response == JOptionPane.OK_OPTION;
+            }
         }
+        return true;
     }
 
     /** Removes the editor from the simulator pane. */
