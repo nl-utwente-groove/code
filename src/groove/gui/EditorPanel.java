@@ -139,6 +139,11 @@ public class EditorPanel extends JPanel {
         return getEditor().isDirty();
     }
 
+    /** Indicates if the editor is currently saving changes. */
+    public boolean isSaving() {
+        return this.saving;
+    }
+
     /** Returns the tabbed view pane of the simulator (on which this panel is displayed). */
     private SimulatorPanel getTabbedPane() {
         return this.simulator.getSimulatorPanel();

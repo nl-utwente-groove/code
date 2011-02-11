@@ -492,6 +492,18 @@ public class Simulator {
         return result;
     }
 
+    /** Tests if there is a dirty editor. */
+    boolean isEditorDirty() {
+        boolean result = false;
+        for (EditorPanel editor : getSimulatorPanel().getEditors()) {
+            if (editor.isDirty() && !editor.isSaving()) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
     /** Tests if a given file refers to a graph within the current system store. */
     private boolean isFileInStore(File file, SystemStore store) {
         boolean result = false;
@@ -1192,7 +1204,7 @@ public class Simulator {
         refresh();
         List<FormatError> grammarErrors = getGrammarView().getErrors();
         setErrors(grammarErrors);
-        if (grammarErrors.isEmpty()
+        if (grammarErrors.isEmpty() && !isEditorDirty()
             && confirmBehaviourOption(START_SIMULATION_OPTION)) {
             startSimulation();
         }
