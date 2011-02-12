@@ -765,7 +765,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     void addModeButtons(JToolBar toolbar) {
         // Mode block
         toolbar.addSeparator();
-        toolbar.add(getJGraph().getModeButton(SELECT_MODE));
         toolbar.add(getJGraph().getModeButton(EDIT_MODE));
         toolbar.add(getJGraph().getModeButton(PREVIEW_MODE));
     }

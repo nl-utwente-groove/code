@@ -40,7 +40,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
@@ -512,34 +511,9 @@ final public class AspectJGraph extends GraphJGraph {
         }
     }
 
-    /**
-     * Callback method to determine whether an event concerns edge creation. To
-     * be overridden by subclasses.
-     * @param evt the event on the basis of which the judgement is made
-     * @return <tt>true</tt> if edge creation mode is available and enabled
-     */
-    boolean isEdgeMode(MouseEvent evt) {
-        boolean result = false;
-        if (this.editor != null && getMode() == EDIT_MODE) {
-            result =
-                getFirstCellForLocation(evt.getX(), evt.getY()) instanceof GraphJVertex;
-        }
-        return result;
-    }
-
-    /**
-     * Callback method to determine whether an event concerns node creation. To
-     * be overridden by subclasses.
-     * @param evt evt the event on the basis of which the judgement is made
-     * @return <tt>true</tt> if node creation mode is available and enabled
-     */
-    boolean isNodeMode(MouseEvent evt) {
-        boolean result = false;
-        if (evt.getButton() == MouseEvent.BUTTON1 && this.editor != null
-            && getMode() == EDIT_MODE) {
-            result = getFirstCellForLocation(evt.getX(), evt.getY()) == null;
-        }
-        return result;
+    @Override
+    protected JGraphMode getDefaultMode() {
+        return getEditor() == null ? super.getDefaultMode() : EDIT_MODE;
     }
 
     /** 
