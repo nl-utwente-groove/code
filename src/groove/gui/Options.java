@@ -59,7 +59,7 @@ public class Options implements Cloneable {
      * Callback method to determine whether a mouse event could be intended to
      * edit edge points.
      */
-    static public boolean isPointEditEvent(MouseEvent evt) {
+    static public boolean isEdgeEditEvent(MouseEvent evt) {
         return evt.getButton() == MouseEvent.BUTTON1 && evt.isAltDown();
     }
 

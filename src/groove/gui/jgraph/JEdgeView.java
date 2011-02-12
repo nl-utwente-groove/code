@@ -440,27 +440,27 @@ public class JEdgeView extends EdgeView {
 
         @Override
         public void mousePressed(MouseEvent evt) {
-            if (!Options.isPointEditEvent(evt)) {
+            if (!Options.isEdgeEditEvent(evt)) {
                 super.mousePressed(evt);
             }
         }
 
         @Override
         public void mouseReleased(MouseEvent evt) {
-            if (!Options.isPointEditEvent(evt)) {
+            if (!Options.isEdgeEditEvent(evt)) {
                 super.mouseReleased(evt);
             }
         }
 
         @Override
         public boolean isAddPointEvent(MouseEvent event) {
-            return Options.isPointEditEvent(event)
+            return Options.isEdgeEditEvent(event)
                 && super.isAddPointEvent(event);
         }
 
         @Override
         public boolean isRemovePointEvent(MouseEvent event) {
-            return Options.isPointEditEvent(event)
+            return Options.isEdgeEditEvent(event)
                 && super.isRemovePointEvent(event);
         }
 

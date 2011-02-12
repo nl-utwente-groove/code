@@ -175,7 +175,7 @@ public class JGraphUI extends BasicGraphUI {
             if (!isMyEvent(e)) {
                 return;
             }
-            if (getJGraphMode() == EDIT_MODE && Options.isPointEditEvent(e)) {
+            if (getJGraphMode() == EDIT_MODE && Options.isEdgeEditEvent(e)) {
                 // add or remove an edge point
                 GraphJCell jEdge = getJEdgeAt(e.getPoint());
                 Object selectedCell = getJGraph().getSelectionCell();
@@ -192,10 +192,10 @@ public class JGraphUI extends BasicGraphUI {
             } else if (getJCellAt(e.getPoint()) != null) {
                 GraphJCell jCell = getJCellAt(e.getPoint());
                 // select (on first click) or edit (on further clicks)
-                if (e.getClickCount() == 1) {
-                    selectCellsForEvent(Collections.singleton(jCell), e);
-                } else {
+                if (getJGraph().getSelectionModel().isCellSelected(jCell)) {
                     startEditing(jCell, e);
+                } else {
+                    selectCellsForEvent(Collections.singleton(jCell), e);
                 }
             } else if (e.getButton() == BUTTON1 && getJGraphMode() == EDIT_MODE
                 && getJGraph().getSelectionCell() == null) {
@@ -219,7 +219,13 @@ public class JGraphUI extends BasicGraphUI {
             } else if (getJGraphMode() == EDIT_MODE && e.getButton() == BUTTON1
                 && getJEdgeAt(e.getPoint()) == null
                 && getJVertexAt(e.getPoint()) != null) {
-                this.dragMode = EDGE;
+                if (getJGraph().getSelectionModel().isCellSelected(
+                    getJVertexAt(e.getPoint()))
+                    && !Options.isEdgeEditEvent(e)) {
+                    this.dragMode = MOVE;
+                } else {
+                    this.dragMode = EDGE;
+                }
             } else if (getJCellAt(e.getPoint()) != null) {
                 this.dragMode = MOVE;
             } else {

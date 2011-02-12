@@ -571,7 +571,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
             for (JToggleButton button : getModeButtonMap().values()) {
                 button.setEnabled(enabled);
             }
-            getModeButton(SELECT_MODE).setSelected(true);
+            getModeButton(getDefaultMode()).setSelected(true);
             super.setEnabled(enabled);
         }
     }
@@ -723,7 +723,15 @@ public class GraphJGraph extends org.jgraph.JGraph {
      * Returns the current JGraph mode.
      */
     public JGraphMode getMode() {
+        if (this.mode == null) {
+            this.mode = getDefaultMode();
+        }
         return this.mode;
+    }
+
+    /** Callback method to create the default initial mode for this JGraph. */
+    protected JGraphMode getDefaultMode() {
+        return SELECT_MODE;
     }
 
     /**
@@ -1081,7 +1089,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
                 this.modeButtonMap.put(any, button);
                 modeButtonGroup.add(button);
             }
-            this.modeButtonMap.get(SELECT_MODE).setSelected(true);
+            this.modeButtonMap.get(EDIT_MODE).setSelected(true);
         }
         return this.modeButtonMap;
     }
@@ -1096,8 +1104,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
     private final ObservableSet<Label> filteredLabels;
     /** Object providing the core functionality for property changes. */
     private PropertyChangeSupport propertyChangeSupport;
-    /** Boolean indicating if the JGraph is in select mode or in pan+zoom mode. */
-    private JGraphMode mode = SELECT_MODE;
+    /** The manipulation mode of the JGraph. */
+    private JGraphMode mode;
     /** The fixed refresh listener of this {@link GraphJModel}. */
     private final RefreshListener refreshListener = new RefreshListener();
     /** Flag indicating that a model refresh is being executed. */
