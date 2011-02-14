@@ -85,6 +85,7 @@ public class Imager extends CommandLineTool {
             this.imagerFrame.setVisible(true);
         } else {
             this.imagerFrame = null;
+            addOption(getEditorViewOption());
             addOption(getFormatOption());
         }
     }
@@ -184,7 +185,9 @@ public class Imager extends CommandLineTool {
                         AspectGraph.newInstance(plainGraph);
                     Options options = new Options();
                     options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(
-                        false);
+                        isEditorView());
+                    options.getItem(Options.SHOW_ASPECTS_OPTION).setSelected(
+                        isEditorView());
                     AspectJGraph jGraph =
                         new AspectJGraph(null, aspectGraph.getRole());
                     AspectJModel model = jGraph.newModel();
@@ -363,6 +366,18 @@ public class Imager extends CommandLineTool {
     /** Name of the image format to which the imager converts. */
     private String imageFormat;
 
+    /** Indicates whether the image should show all label prefixes. */
+    public final boolean isEditorView() {
+        return this.editorView;
+    }
+
+    /** Makes sure the image shows all label prefixes. */
+    public final void setEditorView(boolean editorView) {
+        this.editorView = editorView;
+    }
+
+    private boolean editorView;
+
     /**
      * The imager frame if the invocation is gui-based; <tt>null</tt> if it is
      * command-line based.
@@ -372,6 +387,20 @@ public class Imager extends CommandLineTool {
     private File inFile;
     /** The intended location of the image file(s). */
     private File outFile;
+
+    /** Lazily creates and returns the format option associated with this Imager. */
+    private EditorViewOption getEditorViewOption() {
+        if (this.editorViewOption == null) {
+            this.editorViewOption = new EditorViewOption();
+        }
+        return this.editorViewOption;
+    }
+
+    /** 
+     * The option that makes prefixes visible in the imaged graph.
+     * Lazily created by {@link #getEditorViewOption()}.
+     */
+    private EditorViewOption editorViewOption;
 
     /** Lazily creates and returns the format option associated with this Imager. */
     private FormatOption getFormatOption() {
@@ -437,6 +466,38 @@ public class Imager extends CommandLineTool {
     /** An array of all filters identifying files that can be imaged. */
     static final ExtensionFilter[] acceptFilters = new ExtensionFilter[] {
         gpsFilter, ruleFilter, typeFilter, stateFilter, gxlFilter};
+
+    private class EditorViewOption implements CommandLineOption {
+        @Override
+        public String[] getDescription() {
+            return new String[] {DESCRIPTION};
+        }
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+
+        @Override
+        public String getParameterName() {
+            return null;
+        }
+
+        @Override
+        public boolean hasParameter() {
+            return false;
+        }
+
+        @Override
+        public void parse(String parameter) throws IllegalArgumentException {
+            setEditorView(true);
+        }
+
+        /** Abbreviation of the editor view option. */
+        static public final String NAME = "e";
+        /** Short description of the editor view option. */
+        static public final String DESCRIPTION = "Enforces editor view export";
+    }
 
     /**
      * Option to set the output format for the imager.
