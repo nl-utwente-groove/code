@@ -224,7 +224,7 @@ final public class AspectJGraph extends GraphJGraph {
     @Override
     SystemProperties getProperties() {
         SystemProperties result = super.getProperties();
-        if (result == null) {
+        if (result == null && getEditor() != null) {
             result = getEditor().getProperties();
         }
         return result;
