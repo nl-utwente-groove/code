@@ -77,7 +77,9 @@ final public class AspectJGraph extends GraphJGraph {
         this.editor = null;
         assert role.inGrammar();
         this.graphRole = role;
-        setExporter(simulator.getExporter());
+        if (simulator != null) {
+            setExporter(simulator.getExporter());
+        }
     }
 
     /**
