@@ -16,14 +16,21 @@
  */
 package groove.abstraction.lts;
 
+import groove.abstraction.Parameters;
 import groove.abstraction.Shape;
+import groove.graph.EdgeRole;
 import groove.graph.GraphCache;
+import groove.graph.TypeLabel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.DefaultHostGraph;
 import groove.trans.GraphGrammar;
 import groove.util.TreeHashSet;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The graph transition system for abstract exploration. All states of this
@@ -41,6 +48,7 @@ public final class AGTS extends GTS {
     public AGTS(GraphGrammar grammar) {
         super(grammar);
         this.getRecord().setCheckIso(true);
+        this.storeAbsLabels();
     }
 
     // ------------------------------------------------------------------------
@@ -99,6 +107,31 @@ public final class AGTS extends GTS {
     @Override
     public boolean checkDiamonds() {
         return false;
+    }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    /** Store the abstraction labels in the parameters, if any. */
+    private void storeAbsLabels() {
+        Set<TypeLabel> unaryLabels = new HashSet<TypeLabel>();
+        unaryLabels.addAll(this.getGrammar().getLabelStore().getLabels(
+            EdgeRole.NODE_TYPE));
+        unaryLabels.addAll(this.getGrammar().getLabelStore().getLabels(
+            EdgeRole.FLAG));
+
+        List<String> absLabelsStr =
+            this.getGrammar().getProperties().getAbstractionLabels();
+        Set<TypeLabel> absLabels = new HashSet<TypeLabel>();
+
+        for (TypeLabel unaryLabel : unaryLabels) {
+            if (absLabelsStr.contains(unaryLabel.text())) {
+                absLabels.add(unaryLabel);
+            }
+        }
+
+        Parameters.setAbsLabels(absLabels);
     }
 
     // ------------------------------------------------------------------------

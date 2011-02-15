@@ -365,6 +365,29 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     }
 
     /**
+     * Returns a list of node labels that are to be used in the abstraction.
+     * @see #ABSTRACTION_LABELS_KEY
+     */
+    public List<String> getAbstractionLabels() {
+        String abstractionLabels =
+            getProperty(SystemProperties.ABSTRACTION_LABELS_KEY);
+        if (abstractionLabels == null) {
+            return Collections.emptyList();
+        } else {
+            return Arrays.asList(abstractionLabels.split("\\s"));
+        }
+    }
+
+    /**
+     * Sets the abstraction labels property.
+     * @see #ABSTRACTION_LABELS_KEY
+     */
+    public void setAbstractionLabels(List<String> abstractionLabels) {
+        setProperty(ABSTRACTION_LABELS_KEY,
+            Groove.toString(abstractionLabels.toArray(), "", "", " "));
+    }
+
+    /**
      * Before calling the super method, tests if the properties are fixed and
      * throws an {@link IllegalStateException} if this is the case.
      * @throws IllegalStateException if the graph has been fixed.
@@ -593,6 +616,13 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     static public final String COMMON_LABELS_KEY = "commonLabels";
 
     /**
+     * Property name of the list of abstraction node labels of a graph grammar.
+     * These labels are used to define the level zero neighbourhood relation
+     * between nodes.
+     */
+    static public final String ABSTRACTION_LABELS_KEY = "abstractionLabels";
+
+    /**
      * Property name of the list subtypes of a graph grammar. The property must
      * be formatted according to {@link LabelStore#addDirectSubtypes(String)}.
      */
@@ -760,6 +790,8 @@ public class SystemProperties extends java.util.Properties implements Fixable {
             new Property.IsBoolean(
                 "Flag controlling if binary self-edges may be shown as vertex labels",
                 true));
+        defaultKeys.put(ABSTRACTION_LABELS_KEY, new Property.True<String>(
+            "A list of node labels, used by neighbourhood abstraction"));
         DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);
     }
 

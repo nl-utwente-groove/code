@@ -16,6 +16,11 @@
  */
 package groove.abstraction;
 
+import groove.graph.TypeLabel;
+
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Class that stores the parameters of the abstraction.
  * 
@@ -33,6 +38,11 @@ public final class Parameters {
     private static int edgeMultBound = 1;
     /** The radius of the abstraction (i). Is a natural number. Defaults to 1. */
     private static int absRadius = 1;
+    /**
+     * The labels to be used in the abstraction.
+     * Taken from the grammar properties.
+     */
+    private static Set<TypeLabel> absLabels = new HashSet<TypeLabel>();
 
     // ------------------------------------------------------------------------
     // Static methods
@@ -53,6 +63,11 @@ public final class Parameters {
         return absRadius;
     }
 
+    /** Basic getter method. */
+    public static Set<TypeLabel> getAbsLabels() {
+        return absLabels;
+    }
+
     /** Basic setter method. The bound given must be positive. */
     public static void setNodeMultBound(int nodeMultBound) {
         assert nodeMultBound > 0 : "Invalid node multiplicity bound.";
@@ -69,6 +84,12 @@ public final class Parameters {
     public static void setAbsRadius(int absRadius) {
         assert absRadius > 0 : "Invalid abstraction radius.";
         Parameters.absRadius = absRadius;
+    }
+
+    /** Basic setter method. */
+    public static void setAbsLabels(Set<TypeLabel> absLabels) {
+        Parameters.absLabels.clear();
+        Parameters.absLabels.addAll(absLabels);
     }
 
 }
