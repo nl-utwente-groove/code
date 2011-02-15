@@ -40,6 +40,7 @@ import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
 import java.awt.Cursor;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -299,7 +300,7 @@ public class Groove {
 
     /** Custom cursor in the shape of an open hand. */
     public static final Cursor OPEN_HAND_CURSOR = createCursor("Open Hand",
-        createIcon("openhand.gif"));
+        OPEN_HAND_ICON);
     /** Custom cursor in the shape of a closed hand. */
     public static final Cursor CLOSED_HAND_CURSOR = createCursor("Closed Hand",
         CLOSED_HAND_ICON);
@@ -323,9 +324,17 @@ public class Groove {
 
     /** Creates a named cursor from a given file. */
     static public Cursor createCursor(String name, ImageIcon icon) {
-        Toolkit tk = Toolkit.getDefaultToolkit();
-        Image cursorImage = icon.getImage();
-        return tk.createCustomCursor(cursorImage, new Point(0, 0), name);
+        if (GraphicsEnvironment.isHeadless()) {
+            // The environtment variable DISPLAY is not set. We can't call
+            // createCustomCursor from the awt toolkit because this causes
+            // a java.awt.HeadlessException. In any case we don't need the
+            // cursor because we are running without GUI, so we just abort.
+            return null;
+        } else {
+            Toolkit tk = Toolkit.getDefaultToolkit();
+            Image cursorImage = icon.getImage();
+            return tk.createCustomCursor(cursorImage, new Point(0, 0), name);
+        }
     }
 
     /**
