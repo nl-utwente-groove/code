@@ -86,17 +86,29 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
 
     /** Computes the initial equivalence classes, based on node labels. */
     private Collection<EquivClass<HostNode>> computeInitialEquivClasses() {
+        Set<EquivClass<HostNode>> result = new HashSet<EquivClass<HostNode>>();
         // Map from node labels to equivalence classes.
         Map<Set<TypeLabel>,EquivClass<HostNode>> labelsToClass =
             new HashMap<Set<TypeLabel>,EquivClass<HostNode>>();
+        Set<TypeLabel> absLabels = Parameters.getAbsLabels();
 
         // Compute the equivalence classes.
         for (HostNode node : this.graph.nodeSet()) {
             // Collect node labels.
             Set<TypeLabel> nodeLabels = Util.getNodeLabels(this.graph, node);
 
-            // Look in all label sets and try to find an equivalence class.
             EquivClass<HostNode> ec = null;
+            if (!absLabels.isEmpty() && !absLabels.containsAll(nodeLabels)) {
+                // We have a node label that should not be grouped by the
+                // abstraction. This means that the node will be put in a
+                // singleton equivalence class.
+                ec = new EquivClass<HostNode>();
+                ec.add(node);
+                result.add(ec);
+                continue;
+            }
+
+            // Look in all label sets and try to find an equivalence class.
             for (Entry<Set<TypeLabel>,EquivClass<HostNode>> entry : labelsToClass.entrySet()) {
                 Set<TypeLabel> labels = entry.getKey();
                 if (labels.equals(nodeLabels)) {
@@ -111,13 +123,14 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
                 ec = new EquivClass<HostNode>();
                 ec.add(node);
                 labelsToClass.put(nodeLabels, ec);
+                result.add(ec);
             } else {
                 // The equivalence class already exists, just put the node in.
                 ec.add(node);
             }
         }
 
-        return labelsToClass.values();
+        return result;
     }
 
     /**
