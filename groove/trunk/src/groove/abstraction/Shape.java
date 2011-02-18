@@ -431,6 +431,16 @@ public final class Shape extends DefaultHostGraph {
         return result;
     }
 
+    @Override
+    public void setFixed() {
+        super.setFixed();
+        // Clear some objects fields to free some memory and help GC.
+        this.graph = null;
+        this.nodeShaping.clear();
+        this.edgeShaping.clear();
+        this.frozenEdges.clear();
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
