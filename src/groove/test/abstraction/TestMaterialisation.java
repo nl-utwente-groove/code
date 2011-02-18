@@ -160,7 +160,7 @@ public class TestMaterialisation {
                 for (Materialisation mat : mats) {
                     assertEquals(5, mat.getShape().nodeSet().size());
                     assertEquals(7, getBinaryEdges(mat.getShape()).size());
-                    Shape result = mat.applyMatch();
+                    Shape result = mat.applyMatch(null);
                     assertEquals(6, result.nodeSet().size());
                     assertEquals(8, getBinaryEdges(result).size());
                     Shape normalisedShape = result.normalise();

@@ -17,6 +17,7 @@
 package groove.abstraction;
 
 import groove.trans.RuleEvent;
+import groove.trans.SystemRecord;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -54,7 +55,8 @@ public final class Transform {
      *         The return set is empty if the pre-match is not valid or if the
      *         host does not admit a valid materialisation w.r.t. the rule.
      */
-    public static Set<Shape> transform(Shape shape, RuleEvent event) {
+    public static Set<Shape> transform(Shape shape, RuleEvent event,
+            SystemRecord record) {
         Set<Shape> result = new HashSet<Shape>();
 
         if (shape.isValidPreMatch(event)) {
@@ -65,7 +67,7 @@ public final class Transform {
             // For all materialisations.
             for (Materialisation mat : mats) {
                 // Transform the shape.
-                Shape transformedShape = mat.applyMatch();
+                Shape transformedShape = mat.applyMatch(record);
                 Shape normalisedShape = transformedShape.normalise();
                 result.add(normalisedShape);
             }
