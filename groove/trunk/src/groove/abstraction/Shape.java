@@ -507,7 +507,22 @@ public final class Shape extends DefaultHostGraph {
         // Each node of the shape correspond to an equivalence class
         // of the graph.
         for (EquivClass<HostNode> nodeEquivClass : currGraphNeighEquiv) {
-            ShapeNode shapeNode = getFactory().createNode();
+            ShapeNode shapeNode;
+            // First check if we can re-use shape nodes.
+            if (!fromShape) {
+                // We are building a shape from a graph, this means that the
+                // graph nodes are from a different type and therefore are
+                // stored in a different node factory. Thus we have to create
+                // shape nodes.
+                shapeNode = getFactory().createNode();
+            } else {
+                // We are building a shape from another shape so we can re-use
+                // nodes. Since shape morphisms are non-injective w.r.t. the
+                // equivalence relation, we can pick an arbitrary node from
+                // the equivalence class to be the representative of the class
+                // in the new shape we are creating.
+                shapeNode = (ShapeNode) nodeEquivClass.iterator().next();
+            }
             // Add a shape node to the shape.
             // Call the super method because we have additional information on
             // the node to be added.
@@ -1607,14 +1622,12 @@ public final class Shape extends DefaultHostGraph {
 
     @Override
     protected boolean isTypeCorrect(Node node) {
-        return node instanceof ShapeNode
-            && !getFactory().addNode((ShapeNode) node);
+        return node instanceof ShapeNode;
     }
 
     @Override
     protected boolean isTypeCorrect(Edge<?> edge) {
-        return edge instanceof ShapeEdge
-            && !getFactory().addEdge((ShapeEdge) edge);
+        return edge instanceof ShapeEdge;
     }
 
 }

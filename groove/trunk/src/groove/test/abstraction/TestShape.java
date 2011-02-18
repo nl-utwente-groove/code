@@ -212,7 +212,7 @@ public class TestShape {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape0, preMatch);
                 for (Materialisation mat : mats) {
-                    Shape result = mat.applyMatch();
+                    Shape result = mat.applyMatch(null);
                     // The shape after rule application is different.
                     assertFalse(shape0.equals(result));
                     Shape normalisedShape = result.normalise();

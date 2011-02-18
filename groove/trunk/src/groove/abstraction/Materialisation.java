@@ -27,6 +27,7 @@ import groove.trans.RuleMatch;
 import groove.trans.RuleNode;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
+import groove.trans.SystemRecord;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -268,8 +269,11 @@ public final class Materialisation implements Cloneable {
      * Applies the rule match defined by this materialisation and returns the
      * transformed shape. This shape is not yet normalised.
      */
-    public Shape applyMatch() {
-        RuleEvent event = new SPOEvent(this.matchedRule, this.match, false);
+    public Shape applyMatch(SystemRecord record) {
+        RuleEvent event = new SPOEvent(this.matchedRule, this.match, true);
+        if (record != null) {
+            event = record.normaliseEvent(event);
+        }
         DefaultApplication app = new DefaultApplication(event, this.shape);
         Shape result = (Shape) app.getTarget();
         return result;

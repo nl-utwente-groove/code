@@ -39,7 +39,7 @@ public final class ShapeStateGenerator implements RuleEventApplier {
     // ------------------------------------------------------------------------
 
     /** Debug flag. If set to true, text will be printed in stdout. */
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
     /** Debug flag. If set to true, the shapes will be shown in a dialog. */
     private static final boolean USE_GUI = false;
 
@@ -80,7 +80,8 @@ public final class ShapeStateGenerator implements RuleEventApplier {
             new ShapeDialog(host, "0");
         }
 
-        Set<Shape> targets = Transform.transform(host, event);
+        Set<Shape> targets =
+            Transform.transform(host, event, getGTS().getRecord());
         for (Shape target : targets) {
             GraphTransition trans;
             ShapeNextState newState =
