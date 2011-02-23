@@ -42,7 +42,6 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
 import org.jgraph.graph.GraphConstants;
@@ -800,8 +799,8 @@ public class Options implements Cloneable {
             Options.DEFAULT_FONT =
                 MetalLookAndFeel.getCurrentTheme().getUserTextFont();
             // Set the look and feel
-            UIManager.setLookAndFeel(new com.jgoodies.looks.plastic.PlasticLookAndFeel());
-        } catch (UnsupportedLookAndFeelException e) {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
             // nothing to do here except not crash on the exception
         }
     }
