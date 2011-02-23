@@ -3,8 +3,8 @@ package groove.gui.jgraph;
 import groove.control.CtrlTransition;
 import groove.graph.Edge;
 import groove.gui.jgraph.JAttr.AttributeMap;
+import groove.io.HTMLConverter;
 import groove.lts.GraphTransition;
-import groove.util.Converter;
 import groove.util.Groove;
 
 /**
@@ -56,7 +56,7 @@ public class CtrlJEdge extends GraphJEdge {
             String description;
             description = trans.label().text();
             displayedLabels[labelIndex] =
-                Converter.STRONG_TAG.on(description, true);
+                HTMLConverter.STRONG_TAG.on(description, true);
             labelIndex++;
         }
         if (displayedLabels.length == 1) {

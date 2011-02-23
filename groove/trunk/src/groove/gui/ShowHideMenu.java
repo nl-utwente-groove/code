@@ -29,6 +29,7 @@ import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.LTSJGraph;
 import groove.io.GrooveFileChooser;
+import groove.io.HTMLConverter;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -36,7 +37,6 @@ import groove.rel.RegExpr;
 import groove.rel.RelationCalculator;
 import groove.rel.SupportedNodeRelation;
 import groove.rel.SupportedSetNodeRelation;
-import groove.util.Converter;
 import groove.util.Groove;
 import groove.view.FormatException;
 
@@ -504,7 +504,7 @@ public class ShowHideMenu extends JMenu {
             super(jgraph, showMode, "");
             putValue(NAME,
                 label.text().length() == 0 ? Options.EMPTY_LABEL_TEXT
-                        : Converter.HTML_TAG.on(TypeLabel.toHtmlString(label)));
+                        : HTMLConverter.HTML_TAG.on(TypeLabel.toHtmlString(label)));
             this.label = label;
         }
 

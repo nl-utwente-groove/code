@@ -24,7 +24,7 @@ import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
-import groove.util.Converter;
+import groove.io.HTMLConverter;
 import groove.util.Groove;
 import groove.util.ObservableSet;
 
@@ -595,12 +595,12 @@ public class LabelTree extends JTree implements GraphModelListener,
             text.append(TypeLabel.toHtmlString(label));
         }
         if (specialLabelColour) {
-            Converter.createColorTag(SPECIAL_COLOR).on(text);
+            HTMLConverter.createColorTag(SPECIAL_COLOR).on(text);
         }
         if (isFiltered(label)) {
-            Converter.STRIKETHROUGH_TAG.on(text);
+            HTMLConverter.STRIKETHROUGH_TAG.on(text);
         }
-        return Converter.HTML_TAG.on(text).toString();
+        return HTMLConverter.HTML_TAG.on(text).toString();
     }
 
     /** Indicates if this label tree supports filtering of labels. */
@@ -979,7 +979,7 @@ public class LabelTree extends JTree implements GraphModelListener,
                 }
                 if (isFiltering()) {
                     if (toolTipText.length() != 0) {
-                        toolTipText.append(Converter.HTML_LINEBREAK);
+                        toolTipText.append(HTMLConverter.HTML_LINEBREAK);
                     }
                     if (LabelTree.this.filteredLabels.contains(label)) {
                         toolTipText.append("Filtered label; doubleclick to show");
@@ -988,7 +988,7 @@ public class LabelTree extends JTree implements GraphModelListener,
                     }
                 }
                 if (toolTipText.length() != 0) {
-                    result.setToolTipText(Converter.HTML_TAG.on(toolTipText).toString());
+                    result.setToolTipText(HTMLConverter.HTML_TAG.on(toolTipText).toString());
                 }
                 if (label instanceof TypeLabel && label.isNodeType()
                     && getLabelStore() != null) {

@@ -18,12 +18,12 @@ package groove.gui.jgraph;
 
 import static groove.gui.jgraph.JAttr.ADORNMENT_FONT;
 import static groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
-import static groove.util.Converter.HTML_TAG;
-import static groove.util.Converter.createColorTag;
-import static groove.util.Converter.createSpanTag;
+import static groove.io.HTMLConverter.HTML_TAG;
+import static groove.io.HTMLConverter.createColorTag;
+import static groove.io.HTMLConverter.createSpanTag;
 import static groove.view.aspect.AspectKind.PRODUCT;
 import groove.graph.GraphRole;
-import groove.util.Converter.HTMLTag;
+import groove.io.HTMLConverter.HTMLTag;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
 

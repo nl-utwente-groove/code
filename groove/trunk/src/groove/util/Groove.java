@@ -103,8 +103,6 @@ public class Groove {
     public static final String FSM_EXTENSION = ".fsm";
     /** Extension for JPG image files. */
     public static final String JPG_EXTENSION = ".jpg";
-    /** Extension for Lisp layout files. */
-    public static final String LISP_EXTENSION = ".lsp";
     /** Extension for PNG (Portable Network Graphics) files. */
     public static final String PNG_EXTENSION = ".png";
     /** Extension for EPS (Embedded PostScript) files. */

@@ -19,7 +19,7 @@ package groove.gui.dialog;
 import groove.graph.EdgeRole;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
-import groove.util.Converter;
+import groove.io.HTMLConverter;
 import groove.view.FormatException;
 
 import java.awt.BorderLayout;
@@ -239,7 +239,7 @@ public class RelabelDialog {
                         boolean cellHasFocus) {
                     if (value instanceof TypeLabel) {
                         value =
-                            Converter.HTML_TAG.on(TypeLabel.toHtmlString((TypeLabel) value));
+                            HTMLConverter.HTML_TAG.on(TypeLabel.toHtmlString((TypeLabel) value));
                     }
                     return super.getListCellRendererComponent(list, value,
                         index, isSelected, cellHasFocus);

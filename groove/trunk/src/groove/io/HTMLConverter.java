@@ -14,160 +14,26 @@
 /*
  * $Id: Converter.java,v 1.10 2008-01-30 09:32:02 iovka Exp $
  */
-package groove.util;
+package groove.io;
 
 import static groove.view.aspect.AspectKind.REMARK;
-import groove.graph.Edge;
-import groove.graph.Graph;
-import groove.graph.Node;
 import groove.gui.jgraph.AspectJGraph;
-import groove.gui.jgraph.GraphJGraph;
-import groove.io.exporters.GraphToKth;
-import groove.io.exporters.GraphToTikz;
-import groove.view.aspect.AspectGraph;
+import groove.util.Colors;
+import groove.util.Groove;
 
 import java.awt.Color;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.util.BitSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.jgraph.graph.GraphConstants;
 
 /**
- * Performs conversions to and from groove.graph.Graph.
+ * Performs conversions to and from HTML code.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 3122 $
  */
-public class Converter {
-    /** Main method to test this class. */
-    static public void main(String[] args) {
-        System.out.println(blue.on("Text"));
-        System.out.println(red.on("Text"));
-        System.out.println(green.on("Text"));
-    }
+public class HTMLConverter {
 
-    /** Writes a graph in FSM format to a print writer. */
-    static public void graphToFsm(Graph<?,?> graph, PrintWriter writer) {
-        // mapping from nodes of graphs to integers
-        Map<Node,Integer> nodeMap = new HashMap<Node,Integer>();
-        writer.println("NodeNumber(0)");
-        writer.println("---");
-        int nr = 1;
-        for (Node node : graph.nodeSet()) {
-            nodeMap.put(node, nr);
-            writer.println(nr);
-            nr++;
-        }
-        writer.println("---");
-        for (Edge<?> edge : graph.edgeSet()) {
-            writer.println(nodeMap.get(edge.source()) + " "
-                + nodeMap.get(edge.target()) + " " + "\"" + edge.label() + "\"");
-        }
-    }
-
-    /** Writes a graph in CADP .aut format to a print writer. */
-    static public void graphToAut(Graph<?,?> graph, PrintWriter writer) {
-        // collect the node numbers, to be able to number them consecutively
-        int nodeCount = graph.nodeCount();
-        // list marking which node numbers have been used
-        BitSet nodeList = new BitSet(nodeCount);
-        // mapping from nodes to node numbers
-        Map<Node,Integer> nodeNrMap = new HashMap<Node,Integer>();
-        // nodes that do not have a valid number (in the range 0..nodeCount-1)
-        Set<Node> restNodes = new HashSet<Node>();
-        // iterate over the existing nodes
-        for (Node node : graph.nodeSet()) {
-            int nodeNr = node.getNumber();
-            if (nodeNr >= 0 && nodeNr < nodeCount) {
-                nodeList.set(nodeNr);
-                nodeNrMap.put(node, nodeNr);
-            } else {
-                restNodes.add(node);
-            }
-        }
-        int nextNodeNr = -1;
-        for (Node restNode : restNodes) {
-            do {
-                nextNodeNr++;
-            } while (nodeList.get(nextNodeNr));
-            nodeNrMap.put(restNode, nextNodeNr);
-        }
-        writer.printf("des (%d, %d, %d)%n", 0, graph.edgeCount(),
-            graph.nodeCount());
-        for (Edge<?> edge : graph.edgeSet()) {
-            String format;
-            if (edge.label().text().indexOf(',') >= 0) {
-                format = "(%d,\"%s\",%d)%n";
-            } else {
-                format = "(%d,%s,%d)%n";
-            }
-            writer.printf(format, nodeNrMap.get(edge.source()), edge.label(),
-                nodeNrMap.get(edge.target()));
-        }
-    }
-
-    /** Reads in a graph from CADP .aut format. */
-    static public <N extends Node> Map<String,N> autToGraph(InputStream reader,
-            Graph<N,?> graph) throws IOException {
-        Map<String,N> result = new HashMap<String,N>();
-        BufferedReader in = new BufferedReader(new InputStreamReader(reader));
-        int linenr = 0;
-        try {
-            String line = in.readLine();
-            linenr++;
-            int rootStart = line.indexOf('(') + 1;
-            int edgeCountStart = line.indexOf(',') + 1;
-            int root =
-                Integer.parseInt(line.substring(rootStart, edgeCountStart - 1).trim());
-            N rootNode = graph.addNode(root);
-            result.put("" + root, rootNode);
-            graph.addEdge(rootNode, ROOT_LABEL, rootNode);
-            for (line = in.readLine(); line != null; line = in.readLine()) {
-                linenr++;
-                if (line.trim().length() > 0) {
-                    int sourceStart = line.indexOf('(') + 1;
-                    int labelStart = line.indexOf(',') + 1;
-                    int targetStart = line.lastIndexOf(',') + 1;
-                    int source =
-                        Integer.parseInt(line.substring(sourceStart,
-                            labelStart - 1).trim());
-                    String label = line.substring(labelStart, targetStart - 1);
-                    int target =
-                        Integer.parseInt(line.substring(targetStart,
-                            line.lastIndexOf(')')).trim());
-                    N sourceNode = graph.addNode(source);
-                    N targetNode = graph.addNode(target);
-                    result.put("" + source, sourceNode);
-                    result.put("" + target, targetNode);
-                    graph.addEdge(sourceNode, label, targetNode);
-                }
-            }
-        } catch (Exception e) {
-            throw new IOException(String.format("Format error in line %d: %s",
-                linenr, e.getMessage()));
-        }
-        return result;
-    }
-
-    /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
-    static public <N extends Node,E extends Edge<N>> void graphToTikz(
-            GraphJGraph graph, PrintWriter writer) {
-        writer.print(GraphToTikz.convert(graph));
-    }
-
-    /** Writes a graph in a simple .kth format to a print writer. */
-    static public void graphToKth(AspectGraph graph, PrintWriter writer) {
-        writer.print(GraphToKth.convertGraph(graph));
-    }
-
-    // html defs
     /**
      * Converts a piece of text to HTML by replacing special characters to their
      * HTML encodings.
@@ -257,7 +123,7 @@ public class Converter {
                 arg.append(alphaFraction);
                 arg.append(";");
             }
-            result = Converter.createSpanTag(arg.toString());
+            result = HTMLConverter.createSpanTag(arg.toString());
             colorTagMap.put(color, result);
         }
         return result;
@@ -388,9 +254,6 @@ public class Converter {
         new HashMap<Color,HTMLTag>();
     /** The maximum alpha value according to {@link Color#getAlpha()}. */
     private static final int MAX_ALPHA = 255;
-
-    /** Label used to identify the start state, when reading in from .aut */
-    private static final String ROOT_LABEL = "$ROOT$";
 
     /** Blue color tag. */
     public static final HTMLTag blue = createColorTag(Colors.findColor("blue"));

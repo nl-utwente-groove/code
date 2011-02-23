@@ -38,8 +38,8 @@ import groove.gui.jgraph.LTSJVertex;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
+import groove.io.HTMLConverter;
 import groove.trans.RuleLabel;
-import groove.util.Converter;
 import groove.util.Duo;
 import groove.util.Groove;
 import groove.view.aspect.AspectEdge;
@@ -47,6 +47,7 @@ import groove.view.aspect.AspectKind;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.List;
@@ -97,6 +98,12 @@ public final class GraphToTikz {
     // ------------------------------------------------------------------------
     // Static methods
     // ------------------------------------------------------------------------
+
+    /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
+    static public <N extends Node,E extends Edge<N>> void export(
+            GraphJGraph graph, PrintWriter writer) {
+        writer.print(GraphToTikz.convert(graph));
+    }
 
     /**
      * Converts a graph to a Tikz representation.
@@ -251,7 +258,7 @@ public final class GraphToTikz {
      * @return the original line that was passed to the method.
      */
     private static String removeAllTags(StringBuilder line,
-            Converter.HTMLTag tag) {
+            HTMLConverter.HTMLTag tag) {
         String origLine = line.toString();
         StringBuilder newLine = new StringBuilder(line);
         tag.off(newLine);
@@ -697,21 +704,22 @@ public final class GraphToTikz {
      * @param htmlLine the HTML string to be converted.
      */
     private void appendNodeInscription(StringBuilder htmlLine) {
-        int color = Converter.removeColorTags(htmlLine);
+        int color = HTMLConverter.removeColorTags(htmlLine);
         StringBuilder line = escapeSpecialChars(htmlLine);
-        int font = Converter.removeFontTags(line);
+        int font = HTMLConverter.removeFontTags(line);
         String aux = "";
-        int i = line.indexOf(Converter.HTML_EXISTS);
+        int i = line.indexOf(HTMLConverter.HTML_EXISTS);
         if (i > -1) {
             this.result.append(line.substring(0, i));
-            String sub = removeAllTags(line, Converter.SUB_TAG).substring(7);
+            String sub =
+                removeAllTags(line, HTMLConverter.SUB_TAG).substring(7);
             if ("".equals(sub)) {
                 this.result.append(EXISTS_STR + "$");
             } else {
                 this.result.append(EXISTS_STR + "_\\mathsf{" + sub + "}$");
             }
-        } else if (line.indexOf(Converter.HTML_FORALL) > -1) {
-            if (line.indexOf(Converter.SUPER_TAG.tagBegin) > -1) {
+        } else if (line.indexOf(HTMLConverter.HTML_FORALL) > -1) {
+            if (line.indexOf(HTMLConverter.SUPER_TAG.tagBegin) > -1) {
                 this.result.append(FORALLX_STR);
             } else {
                 this.result.append(FORALL_STR);

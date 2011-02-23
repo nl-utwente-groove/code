@@ -17,8 +17,8 @@
 package groove.graph;
 
 import groove.algebra.Algebras;
+import groove.io.HTMLConverter;
 import groove.trans.RuleLabel;
-import groove.util.Converter;
 import groove.util.ExprParser;
 import groove.view.FormatException;
 
@@ -139,15 +139,15 @@ public final class TypeLabel extends AbstractLabel {
      * type and is set to italic if the label is a flag.
      */
     static public String toHtmlString(Label label) {
-        String result = Converter.toHtml(label.text());
+        String result = HTMLConverter.toHtml(label.text());
         if (label.isNodeType()) {
-            result = Converter.STRONG_TAG.on(result);
+            result = HTMLConverter.STRONG_TAG.on(result);
         } else if (label.isFlag()) {
-            result = Converter.ITALIC_TAG.on(result);
+            result = HTMLConverter.ITALIC_TAG.on(result);
         } else if (label instanceof RuleLabel) {
             RuleLabel ruleLabel = (RuleLabel) label;
             if (!ruleLabel.isAtom() && !ruleLabel.isSharp()) {
-                result = Converter.ITALIC_TAG.on(result);
+                result = HTMLConverter.ITALIC_TAG.on(result);
             }
         }
         return result;
