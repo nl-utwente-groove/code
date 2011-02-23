@@ -16,15 +16,15 @@
  */
 package groove.abstraction.gui.jgraph;
 
-import static groove.util.Converter.HTML_TAG;
-import static groove.util.Converter.ITALIC_TAG;
+import static groove.io.HTMLConverter.HTML_TAG;
+import static groove.io.HTMLConverter.ITALIC_TAG;
 import groove.abstraction.Shape;
 import groove.abstraction.ShapeNode;
 import groove.abstraction.Util;
 import groove.graph.TypeLabel;
 import groove.gui.Options;
 import groove.gui.jgraph.JAttr;
-import groove.util.Converter;
+import groove.io.HTMLConverter;
 
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
@@ -60,14 +60,14 @@ public class ShapeJVertex extends DefaultGraphCell {
             && options.getValue(Options.SHOW_NODE_IDS_OPTION) == 1) {
             int nr = this.node.getNumber();
             result.append(ITALIC_TAG.on("n" + nr));
-            result.append(Converter.HTML_LINEBREAK);
+            result.append(HTMLConverter.HTML_LINEBREAK);
         }
         String mult = this.shape.getNodeMult(this.node).toString();
-        result.append(Converter.createSpanTag("color: rgb(50,50,255)").on(
+        result.append(HTMLConverter.createSpanTag("color: rgb(50,50,255)").on(
             ITALIC_TAG.on(mult)));
         Set<TypeLabel> labels = Util.getNodeLabels(this.shape, this.node);
         for (TypeLabel label : labels) {
-            result.append(Converter.HTML_LINEBREAK);
+            result.append(HTMLConverter.HTML_LINEBREAK);
             result.append(label.text());
         }
         return HTML_TAG.on(result).toString();

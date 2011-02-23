@@ -18,11 +18,14 @@ package groove.gui;
 
 import groove.graph.Graph;
 import groove.gui.jgraph.AspectJGraph;
-import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.GraphJModel;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
-import groove.util.Converter;
+import groove.io.exporters.GraphToAut;
+import groove.io.exporters.GraphToFsm;
+import groove.io.exporters.GraphToKth;
+import groove.io.exporters.GraphToTikz;
 import groove.util.Groove;
 import groove.view.aspect.AspectGraph;
 
@@ -174,7 +177,7 @@ public class Exporter {
 
         public void export(Graph<?,?> graph, File file) throws IOException {
             PrintWriter writer = new PrintWriter(new FileWriter(file));
-            Converter.graphToFsm(graph, writer);
+            GraphToFsm.export(graph, writer);
             writer.close();
         }
 
@@ -316,9 +319,7 @@ public class Exporter {
         }
 
         /**
-         * Exports the jgraph by calling
-         * {@link Converter#graphToAut(Graph, PrintWriter)} on
-         * the graph contained therein.
+         * Exports the jgraph.
          */
         public void export(GraphJGraph jGraph, File file) throws IOException {
             Graph<?,?> graph =
@@ -327,12 +328,11 @@ public class Exporter {
         }
 
         /**
-         * Exports the graph by calling
-         * {@link Converter#graphToAut(Graph, PrintWriter)}.
+         * Exports the graph.
          */
         public void export(Graph<?,?> graph, File file) throws IOException {
             PrintWriter writer = new PrintWriter(new FileWriter(file));
-            Converter.graphToAut(graph, writer);
+            GraphToAut.export(graph, writer);
             writer.close();
         }
 
@@ -363,12 +363,11 @@ public class Exporter {
         }
 
         /**
-         * Exports the graph by calling
-         * {@link Converter#graphToTikz(GraphJGraph, PrintWriter)}.
+         * Exports the graph.
          */
         public void export(GraphJGraph jGraph, File file) throws IOException {
             PrintWriter writer = new PrintWriter(new FileWriter(file));
-            Converter.graphToTikz(jGraph, writer);
+            GraphToTikz.export(jGraph, writer);
             writer.close();
         }
 
@@ -399,9 +398,7 @@ public class Exporter {
         }
 
         /**
-         * Exports the jgraph by calling
-         * {@link Converter#graphToKth(AspectGraph, PrintWriter)} on
-         * the graph contained therein.
+         * Exports the jgraph.
          */
         public void export(GraphJGraph jGraph, File file) throws IOException {
             if (jGraph instanceof AspectJGraph) {
@@ -416,12 +413,11 @@ public class Exporter {
         }
 
         /**
-         * Exports the graph by calling
-         * {@link Converter#graphToAut(Graph, PrintWriter)}.
+         * Exports the graph.
          */
         public void export(Graph<?,?> graph, File file) throws IOException {
             PrintWriter writer = new PrintWriter(new FileWriter(file));
-            Converter.graphToKth((AspectGraph) graph, writer);
+            GraphToKth.export((AspectGraph) graph, writer);
             writer.close();
         }
 

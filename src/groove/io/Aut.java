@@ -20,7 +20,8 @@ import groove.graph.DefaultGraph;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.util.Converter;
+import groove.io.exporters.GraphToAut;
+import groove.io.importers.AutToGraph;
 import groove.util.Groove;
 
 import java.io.File;
@@ -39,7 +40,7 @@ public class Aut implements Xml<DefaultGraph> {
         String name = extractName(url.getPath());
         DefaultGraph result = createGraph(name);
         InputStream in = url.openStream();
-        Converter.autToGraph(in, result);
+        AutToGraph.convert(in, result);
         in.close();
         return result;
     }
@@ -60,7 +61,7 @@ public class Aut implements Xml<DefaultGraph> {
     public <N extends Node,E extends Edge<N>> void marshalGraph(
             Graph<N,E> graph, File file) throws IOException {
         PrintWriter out = new PrintWriter(file);
-        Converter.graphToAut(graph, out);
+        GraphToAut.export(graph, out);
         out.close();
     }
 

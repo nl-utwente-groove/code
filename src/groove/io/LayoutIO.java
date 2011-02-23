@@ -24,7 +24,6 @@ import groove.gui.jgraph.JAttr;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
-import groove.util.Converter;
 import groove.util.ExprParser;
 import groove.util.Groove;
 import groove.view.FormatError;
@@ -210,7 +209,7 @@ public class LayoutIO {
                 lineStyle));
         } catch (NumberFormatException exc) {
             throw new FormatException("Number format error "
-                + Converter.toUppercase(exc.getMessage(), false));
+                + HTMLConverter.toUppercase(exc.getMessage(), false));
         }
         return edge;
     }

@@ -37,7 +37,7 @@ import java.io.IOException;
  * See <a href="http://mat.gsia.cmu.edu/COLOR/instances.html">http://mat.gsia.cmu.edu/COLOR/instances.html</a>
  * for example graphs in this format. 
  */
-public class ColConverter {
+public class ColToGraph {
 
     /**
      * Should be called with a list of filenames and/or directories to be converted.

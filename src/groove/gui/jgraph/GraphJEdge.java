@@ -16,12 +16,12 @@
  */
 package groove.gui.jgraph;
 
-import static groove.util.Converter.HTML_TAG;
-import static groove.util.Converter.STRONG_TAG;
+import static groove.io.HTMLConverter.HTML_TAG;
+import static groove.io.HTMLConverter.STRONG_TAG;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.util.Converter;
+import groove.io.HTMLConverter;
 import groove.util.Groove;
 
 import java.util.ArrayList;
@@ -327,19 +327,19 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     StringBuilder getEdgeDescription() {
         StringBuilder result = getEdgeKindDescription();
         if (getListLabels().size() > 1) {
-            Converter.toUppercase(result, false);
+            HTMLConverter.toUppercase(result, false);
             result.insert(0, "Multiple ");
             result.append("s");
         }
         String sourceIdentity = getSourceVertex().getNodeIdString();
         if (sourceIdentity != null) {
             result.append(" from ");
-            result.append(Converter.ITALIC_TAG.on(sourceIdentity));
+            result.append(HTMLConverter.ITALIC_TAG.on(sourceIdentity));
         }
         String targetIdentity = getTargetVertex().getNodeIdString();
         if (targetIdentity != null) {
             result.append(" to ");
-            result.append(Converter.ITALIC_TAG.on(targetIdentity));
+            result.append(HTMLConverter.ITALIC_TAG.on(targetIdentity));
         }
         return result;
     }

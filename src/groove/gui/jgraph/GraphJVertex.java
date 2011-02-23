@@ -17,11 +17,11 @@
 package groove.gui.jgraph;
 
 import static groove.graph.EdgeRole.BINARY;
-import static groove.util.Converter.ITALIC_TAG;
+import static groove.io.HTMLConverter.ITALIC_TAG;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.util.Converter;
+import groove.io.HTMLConverter;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -230,7 +230,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      */
     protected StringBuilder getLine(Edge<?> edge) {
         StringBuilder result = new StringBuilder(edge.label().text());
-        Converter.toHtml(result);
+        HTMLConverter.toHtml(result);
         return result;
     }
 
@@ -295,7 +295,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
         StringBuilder result = new StringBuilder();
         for (StringBuilder line : getLines()) {
             if (result.length() > 0) {
-                result.append(Converter.HTML_LINEBREAK);
+                result.append(HTMLConverter.HTML_LINEBREAK);
             }
             result.append(line);
         }
@@ -312,7 +312,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      * Returns the tool tip text for this vertex.
      */
     public String getToolTipText() {
-        return Converter.HTML_TAG.on(getNodeDescription()).toString();
+        return HTMLConverter.HTML_TAG.on(getNodeDescription()).toString();
     }
 
     @Override

@@ -27,6 +27,7 @@ import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -58,6 +59,11 @@ public final class GraphToKth {
     // ------------------------------------------------------------------------
     // Public methods.
     // ------------------------------------------------------------------------
+
+    /** Export graph in a simple .kth format to a print writer. */
+    static public void export(AspectGraph graph, PrintWriter writer) {
+        writer.print(GraphToKth.convertGraph(graph));
+    }
 
     /**
      * Converts a graph to a serialized string representation.

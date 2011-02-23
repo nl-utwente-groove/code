@@ -2,9 +2,9 @@ package groove.gui.jgraph;
 
 import groove.graph.Edge;
 import groove.gui.jgraph.JAttr.AttributeMap;
+import groove.io.HTMLConverter;
 import groove.lts.DerivationLabel;
 import groove.lts.GraphTransition;
-import groove.util.Converter;
 import groove.util.Groove;
 
 /**
@@ -62,7 +62,7 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
                 description = trans.getEvent().getRule().getName().toString();
             }
             displayedLabels[labelIndex] =
-                Converter.STRONG_TAG.on(description, true);
+                HTMLConverter.STRONG_TAG.on(description, true);
             labelIndex++;
         }
         if (displayedLabels.length == 1) {

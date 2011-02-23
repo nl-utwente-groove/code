@@ -19,6 +19,7 @@ package groove.gui;
 import groove.explore.util.MatchSetCollector;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
+import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -28,7 +29,6 @@ import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.SystemRecord;
-import groove.util.Converter;
 import groove.util.Groove;
 import groove.view.GrammarView;
 import groove.view.RuleView;
@@ -860,7 +860,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         public String getToolTipText() {
             StringBuilder result = new StringBuilder();
             result.append("Rule ");
-            result.append(Converter.STRONG_TAG.on(getRule().getName()));
+            result.append(HTMLConverter.STRONG_TAG.on(getRule().getName()));
             GraphProperties properties =
                 GraphInfo.getProperties(getRule().getAspectGraph(), false);
             if (properties != null && !properties.isEmpty()) {
@@ -868,7 +868,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                 String remark = properties.getRemark();
                 if (remark != null) {
                     result.append(": ");
-                    result.append(Converter.toHtml(remark));
+                    result.append(HTMLConverter.toHtml(remark));
                     hasProperties = properties.size() > 1;
                 } else {
                     hasProperties = true;
@@ -877,14 +877,14 @@ public class RuleJTree extends JTree implements SimulationListener {
                     for (String key : properties.getPropertyKeys()) {
                         if (!GraphProperties.isSystemKey(key)
                             && !key.equals(GraphProperties.REMARK_KEY)) {
-                            result.append(Converter.HTML_LINEBREAK);
+                            result.append(HTMLConverter.HTML_LINEBREAK);
                             result.append(propertyToString(key,
                                 properties.getProperty(key)));
                         }
                     }
                 }
             }
-            Converter.HTML_TAG.on(result);
+            HTMLConverter.HTML_TAG.on(result);
             return result.toString();
         }
 

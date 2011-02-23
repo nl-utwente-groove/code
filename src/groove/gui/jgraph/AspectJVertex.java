@@ -1,6 +1,6 @@
 package groove.gui.jgraph;
 
-import static groove.util.Converter.ITALIC_TAG;
+import static groove.io.HTMLConverter.ITALIC_TAG;
 import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
@@ -11,8 +11,8 @@ import groove.graph.TypeLabel;
 import groove.graph.algebra.ProductNode;
 import groove.gui.Options;
 import groove.gui.jgraph.JAttr.AttributeMap;
+import groove.io.HTMLConverter;
 import groove.trans.RuleLabel;
-import groove.util.Converter;
 import groove.view.FormatError;
 import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
@@ -173,7 +173,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             result.append(super.getNodeDescription());
         }
         if (AspectJModel.ROLE_NAMES.containsKey(this.aspect)) {
-            Converter.toUppercase(result, false);
+            HTMLConverter.toUppercase(result, false);
             result.insert(0, " ");
             result.insert(0, AspectJModel.ROLE_NAMES.get(this.aspect));
             result.append("<br>"
@@ -259,18 +259,18 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             StringBuilder line = new StringBuilder();
             switch (this.aspect) {
             case FORALL:
-                line.append(Converter.HTML_FORALL);
+                line.append(HTMLConverter.HTML_FORALL);
                 break;
             case FORALL_POS:
-                line.append(Converter.HTML_FORALL);
-                line.append(Converter.SUPER_TAG.on(Converter.HTML_GT + "0"));
+                line.append(HTMLConverter.HTML_FORALL);
+                line.append(HTMLConverter.SUPER_TAG.on(HTMLConverter.HTML_GT + "0"));
                 break;
             case EXISTS:
-                line.append(Converter.HTML_EXISTS);
+                line.append(HTMLConverter.HTML_EXISTS);
             }
             String level = (String) getNode().getAspect().getContent();
             if (level != null && level.length() != 0) {
-                line.append(Converter.SUB_TAG.on(level));
+                line.append(HTMLConverter.SUB_TAG.on(level));
             }
             if (line.length() > 0) {
                 result.add(line);
@@ -293,7 +293,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             result.append(TypeLabel.toHtmlString(aspectEdge.getDisplayLabel()));
         }
         if (aspectEdge.getKind() == AspectKind.ABSTRACT) {
-            result = Converter.ITALIC_TAG.on(result);
+            result = HTMLConverter.ITALIC_TAG.on(result);
         }
         if (edge.target() != edge.source()) {
             // this is an attribute edge displayed as a node label
@@ -306,7 +306,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                     ASSIGN_TEXT
                         + actualTarget.getAttrAspect().getContentString();
             }
-            result.append(Converter.toHtml(suffix));
+            result.append(HTMLConverter.toHtml(suffix));
         }
         // use special node label prefixes to indicate edge role
         Aspect edgeAspect = aspectEdge.getAspect();
@@ -324,23 +324,23 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         switch (edgeRole) {
         case ERASER:
             text.insert(0, "- ");
-            Converter.blue.on(text);
+            HTMLConverter.blue.on(text);
             break;
         case ADDER:
             text.insert(0, "+! ");
-            Converter.green.on(text);
+            HTMLConverter.green.on(text);
             break;
         case CREATOR:
             text.insert(0, "+ ");
-            Converter.green.on(text);
+            HTMLConverter.green.on(text);
             break;
         case EMBARGO:
             text.insert(0, "! ");
-            Converter.red.on(text);
+            HTMLConverter.red.on(text);
             break;
         case REMARK:
             text.insert(0, "// ");
-            Converter.remark.on(text);
+            HTMLConverter.remark.on(text);
             break;
         }
     }

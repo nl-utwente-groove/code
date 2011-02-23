@@ -27,6 +27,7 @@ import groove.graph.LabelStore;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.JGraphMode;
+import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -35,7 +36,6 @@ import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.SPORule;
 import groove.trans.SystemProperties;
-import groove.util.Converter;
 import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.RuleView;
@@ -216,7 +216,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
         RuleView view = this.simulator.getCurrentRule();
         if (view != null) {
             text.append("Rule ");
-            text.append(Converter.STRONG_TAG.on(view.getName()));
+            text.append(HTMLConverter.STRONG_TAG.on(view.getName()));
             try {
                 Rule rule = view.toRule();
                 if (rule instanceof SPORule
@@ -230,12 +230,12 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
             String remark = GraphProperties.getRemark(view.getAspectGraph());
             if (remark != null) {
                 text.append(": ");
-                text.append(Converter.toHtml(remark));
+                text.append(HTMLConverter.toHtml(remark));
             }
         } else {
             text.append(INITIAL_FRAME_NAME);
         }
-        return Converter.HTML_TAG.on(text).toString();
+        return HTMLConverter.HTML_TAG.on(text).toString();
     }
 
     /** Returns a string description of the anchors of a given rule. */

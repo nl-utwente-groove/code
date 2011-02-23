@@ -8,8 +8,8 @@ import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.gui.jgraph.JAttr.AttributeMap;
+import groove.io.HTMLConverter;
 import groove.trans.RuleLabel;
-import groove.util.Converter;
 import groove.view.FormatError;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
@@ -176,7 +176,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     StringBuilder getEdgeKindDescription() {
         StringBuilder result = super.getEdgeKindDescription();
         if (AspectJModel.ROLE_NAMES.containsKey(this.aspect)) {
-            Converter.toUppercase(result, false);
+            HTMLConverter.toUppercase(result, false);
             result.insert(0, " ");
             result.insert(0, AspectJModel.ROLE_NAMES.get(this.aspect));
         }

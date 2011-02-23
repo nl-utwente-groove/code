@@ -3,11 +3,11 @@ package groove.gui.jgraph;
 import groove.control.CtrlState;
 import groove.graph.Edge;
 import groove.graph.Node;
+import groove.io.HTMLConverter;
 import groove.lts.DerivationLabel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.util.Converter;
 
 import java.util.List;
 
@@ -62,7 +62,7 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     @Override
     StringBuilder getNodeDescription() {
         StringBuilder result = new StringBuilder("State ");
-        result.append(Converter.UNDERLINE_TAG.on(getNode()));
+        result.append(HTMLConverter.UNDERLINE_TAG.on(getNode()));
         // if a control location is available, add this to the tooltip
         // if( this.getNode().getLocation() != null ) {
         // result.append("ctrl: " + this.getNode().getLocation());
@@ -106,7 +106,7 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
         CtrlState ctrlState = getNode().getCtrlState();
         if (ctrlState.getAut().getProgram() != null) {
             result.add(new StringBuilder("ctrl: "
-                + Converter.toHtml(ctrlState.toString())));
+                + HTMLConverter.toHtml(ctrlState.toString())));
         }
         return result;
     }
@@ -122,7 +122,7 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
                 ((GraphTransition) edge).getEvent()).text()
                     : edge.label().text();
         StringBuilder result = new StringBuilder(text);
-        Converter.toHtml(result);
+        HTMLConverter.toHtml(result);
         return result;
 
     }

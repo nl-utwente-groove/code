@@ -31,6 +31,7 @@ import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraphMode;
+import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
@@ -43,7 +44,6 @@ import groove.trans.HostNode;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
-import groove.util.Converter;
 import groove.view.FormatException;
 import groove.view.GraphView;
 import groove.view.StoredGrammarView;
@@ -391,11 +391,11 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         StringBuilder result = new StringBuilder();
         if (this.selectedGraph != null) {
             result.append("Graph: ");
-            result.append(Converter.STRONG_TAG.on(this.selectedGraph));
+            result.append(HTMLConverter.STRONG_TAG.on(this.selectedGraph));
         } else if (this.selectedState != null) {
             result.append(FRAME_NAME);
             result.append(": ");
-            result.append(Converter.STRONG_TAG.on(this.selectedState.toString()));
+            result.append(HTMLConverter.STRONG_TAG.on(this.selectedState.toString()));
             GraphTransition trans = this.simulator.getCurrentTransition();
             if (trans != null) {
                 if (getOptions().isSelected(SHOW_ANCHORS_OPTION)) {
@@ -409,7 +409,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         } else {
             result.append(FRAME_NAME);
         }
-        return Converter.HTML_TAG.on(result).toString();
+        return HTMLConverter.HTML_TAG.on(result).toString();
     }
 
     /**
