@@ -23,6 +23,9 @@ import java.util.HashMap;
  * been inserted in the set.
  * 
  * @author Eduardo Zambon
+ * 
+ * EDUARDO: Pimp this.
+ * Use a better data structure...
  */
 public final class CountingSet<T> extends HashMap<T,Integer> {
 
