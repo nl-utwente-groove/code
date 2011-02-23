@@ -353,14 +353,14 @@ public class GraphSearchPlanFactory {
                     result =
                         createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
                 }
-            } else if (label.isNodeType()) {
-                result = new NodeTypeSearchItem(edge, this.labelStore);
-            } else if (label.isSharp() || label.isAtom()) {
-                result = new Edge2SearchItem(edge);
             } else if (label.getWildcardId() != null) {
                 result = new VarEdgeSearchItem(edge);
             } else if (label.isWildcard()) {
                 result = new WildcardEdgeSearchItem(edge);
+            } else if (label.isNodeType()) {
+                result = new NodeTypeSearchItem(edge, this.labelStore);
+            } else if (label.isSharp() || label.isAtom()) {
+                result = new Edge2SearchItem(edge);
             } else if (label.isOperator()) {
                 result =
                     new OperatorEdgeSearchItem((OperatorEdge) edge,
