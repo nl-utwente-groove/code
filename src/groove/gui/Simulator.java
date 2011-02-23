@@ -417,7 +417,7 @@ public class Simulator {
      */
     private boolean setCurrentRule(RuleView rule) {
         boolean result = this.getCurrentRule() != rule;
-        this.currentRuleName = rule.getRuleName();
+        this.currentRuleName = rule == null ? null : rule.getRuleName();
         return result;
     }
 
