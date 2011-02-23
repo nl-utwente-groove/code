@@ -21,9 +21,8 @@ import groove.explore.util.RandomChooserInSequence;
 import groove.graph.EdgeRole;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.util.LTLBenchmarker;
-import groove.verify.ModelChecking;
 import groove.verify.BuchiTransition;
+import groove.verify.ModelChecking;
 import groove.verify.ProductState;
 import groove.verify.ProductTransition;
 
@@ -350,9 +349,7 @@ public class BoundedNestedDFSStrategy extends
      */
     @Override
     public boolean finished() {
-        if (LTLBenchmarker.RESTART) {
-            return true;
-        } else if (ModelChecking.CURRENT_ITERATION > ModelChecking.MAX_ITERATIONS) {
+        if (ModelChecking.CURRENT_ITERATION > ModelChecking.MAX_ITERATIONS) {
             return true;
         } else {
             return !getProductGTS().hasOpenStates();
