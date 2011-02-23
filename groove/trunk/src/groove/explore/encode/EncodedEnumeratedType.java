@@ -19,6 +19,7 @@ package groove.explore.encode;
 import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
 
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.util.Map;
 
@@ -68,6 +69,7 @@ public abstract class EncodedEnumeratedType<A> implements EncodedType<A,String> 
             super(new FlowLayout(FlowLayout.LEFT, 0, 0));
             setBackground(ExplorationDialog.INFO_BG_COLOR);
             this.selector = new JComboBox();
+            this.selector.setMinimumSize(new Dimension(50, 20));
             this.selector.setBackground(ExplorationDialog.INFO_BOX_BG_COLOR);
             this.keys = new String[options.size()];
             this.nrKeys = 0;
