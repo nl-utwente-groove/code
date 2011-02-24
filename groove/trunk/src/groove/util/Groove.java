@@ -43,7 +43,9 @@ import java.awt.Cursor;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -653,6 +655,17 @@ public class Groove {
         throws IOException {
         File dir = new File(createRuleSystemFilter().addExtension(dirname));
         return StoredGrammarView.newInstance(dir, false);
+    }
+
+    /**
+     * Converts a {@link Rectangle2D} to a {@link Rectangle}.
+     */
+    static public Rectangle toRectangle(Rectangle2D r) {
+        if (r != null) {
+            return new Rectangle((int) r.getX(), (int) r.getY(),
+                (int) r.getWidth(), (int) r.getHeight());
+        }
+        return null;
     }
 
     /**

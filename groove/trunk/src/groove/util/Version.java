@@ -78,7 +78,7 @@ public class Version {
      * </ul>
      * A '+' sign at the end of the number indicates a development version.
      */
-    public static final String NUMBER = "4.2.0+";
+    public static final String NUMBER = "4.3.0+";
 
     /** Minimum Java JRE version required. */
     static public final String NUMBER_JAVAMIN = "1.6";
@@ -101,7 +101,7 @@ public class Version {
      * @return the latest grammar version.
      */
     public static String getCurrentGrammarVersion() {
-        return GRAMMAR_VERSION_2_0;
+        return GRAMMAR_VERSION_3_0;
     }
 
     /**
@@ -136,21 +136,23 @@ public class Version {
     }
 
     /**
-     * Compares two strings with version information and returns an integer
-     * from the comparison. The strings should be well formed version strings: 
+     * Compares the given grammar version with the current grammar version.
+     * The strings should be well formed version strings:
      * numbers separated with dots, with same length.
-     * @param s1 Version string of the form 0.0.0...
-     * @param s2 Version string of the form 0.0.0...
-     * @return 0 if the versions are equal, 1 if s1 > s2, and -1 otherwise.
+     * @param version String of the form 0.0.0...
+     * @return 0 if the versions are equal,
+     *         1 if current > version,
+     *         -1 if version < current
      */
-    public static int compareGrammarVersions(String s1, String s2) {
+    public static int compareGrammarVersion(String version) {
         int result = -1;
-        if (s1.equals(s2)) {
+        String current = getCurrentGrammarVersion();
+        if (current.equals(version)) {
             // The strings are equal, no need to look into version numbers.
             result = 0;
         } else {
-            String[] as1 = s1.split("\\.");
-            String[] as2 = s2.split("\\.");
+            String[] as1 = current.split("\\.");
+            String[] as2 = version.split("\\.");
             if (as1.length == as2.length) {
                 for (int i = 0; i < as1.length; i++) {
                     int n1 = Integer.parseInt(as1[i]);
@@ -168,14 +170,6 @@ public class Version {
         return result;
     }
 
-    /**
-     * Checks whether version s1 can open version s2.
-     * @return true if s1 can open s2, false otherwise.
-     */
-    public static boolean canOpen(String s1, String s2) {
-        return compareGrammarVersions(s1, s2) != -1;
-    }
-
     // Grammar Versions
     // IMPORTANT: Do not forget to create a proper FileFilterAction for the
     // save grammar as option.
@@ -186,9 +180,14 @@ public class Version {
      */
     public static final String GRAMMAR_VERSION_1_0 = "1.0";
     /**
-     * This is the grammar version associated with Groove version 4.0.0 or more.
+     * This is the grammar version introduced with Groove version 4.0.0.
      * This version introduced typing.
      */
     public static final String GRAMMAR_VERSION_2_0 = "2.0";
+    /**
+     * This is the grammar version introduced with Groove version 4.2.0.
+     * This version integrated layout into the .gxl files.
+     */
+    public static final String GRAMMAR_VERSION_3_0 = "3.0";
 
 }

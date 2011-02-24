@@ -64,7 +64,7 @@ import groove.gui.dialog.ProgressBarDialog;
 import groove.gui.dialog.PropertiesDialog;
 import groove.gui.dialog.RelabelDialog;
 import groove.gui.dialog.StringDialog;
-import groove.gui.dialog.VersionErrorDialog;
+import groove.gui.dialog.VersionDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
@@ -78,7 +78,6 @@ import groove.io.DefaultFileSystemStore;
 import groove.io.DefaultGxl;
 import groove.io.ExtensionFilter;
 import groove.io.FileFilterAction;
-import groove.io.Grammar_1_0_Action;
 import groove.io.GrooveFileChooser;
 import groove.io.LayedOutXml;
 import groove.io.SystemStore;
@@ -775,24 +774,9 @@ public class Simulator {
      */
     void doLoadGrammar(File grammarFile, String startGraphName) {
         try {
+            // Load the grammar.
             final SystemStore store =
                 SystemStoreFactory.newStore(grammarFile, false);
-            store.reload();
-
-            // First we check if the versions are compatible.
-            SystemProperties grammarProperties = store.getProperties();
-            String fileGrammarVersion = grammarProperties.getGrammarVersion();
-            String currentGrammarVersion = Version.getCurrentGrammarVersion();
-            if (!Version.canOpen(currentGrammarVersion, fileGrammarVersion)) {
-                // They are not. Show an error dialog.
-                int buttonPressed =
-                    VersionErrorDialog.show(this.getFrame(), grammarProperties);
-                if (buttonPressed == JOptionPane.NO_OPTION) {
-                    return;
-                }
-            }
-
-            // Load the grammar.
             doLoadGrammar(store, startGraphName);
             // now we know loading succeeded, we can set the current
             // names & files
@@ -831,13 +815,83 @@ public class Simulator {
         }
     }
 
+    /** 
+     * Helper method for doLoadGrammar. Asks the user to select a new name for
+     * saving the grammar after it has been loaded (and converted).
+     */
+    private File selectSaveAs(File oldGrammarFile) {
+        if (oldGrammarFile != null) {
+            getGrammarFileChooser().getSelectedFile();
+            getGrammarFileChooser().setSelectedFile(oldGrammarFile);
+        }
+        int result = getGrammarFileChooser().showSaveDialog(getFrame());
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return null;
+        }
+        File selected = getGrammarFileChooser().getSelectedFile();
+        if (selected.exists()) {
+            if (confirmOverwriteGrammar(selected)) {
+                return selected;
+            } else {
+                return selectSaveAs(oldGrammarFile);
+            }
+        } else {
+            return selected;
+        }
+    }
+
     /**
      * Loads in a given system store.
      */
-    void doLoadGrammar(final SystemStore store, final String startGraphName) {
+    void doLoadGrammar(final SystemStore store, final String startGraphName)
+        throws IOException {
         if (!saveEditors(true)) {
             return;
         }
+
+        // First we check if the versions are compatible.
+        store.reload();
+        SystemProperties props = store.getProperties();
+        String fileGrammarVersion = props.getGrammarVersion();
+        int compare = Version.compareGrammarVersion(fileGrammarVersion);
+        final boolean saveAfterLoading = (compare != 0);
+        final File newGrammarFile;
+        if (compare < 0) {
+            // Trying to load a newer grammar.
+            if (!VersionDialog.showNew(this.getFrame(), props)) {
+                return;
+            }
+            newGrammarFile = null;
+        } else if (compare > 0 && store.getLocation() instanceof File) {
+            // Trying to load an older grammar from a file.
+            File grammarFile = (File) store.getLocation();
+            switch (VersionDialog.showOldFile(this.getFrame(), props)) {
+            case 0: // save and overwrite
+                newGrammarFile = grammarFile;
+                break;
+            case 1: // save under different name
+                newGrammarFile = selectSaveAs(grammarFile);
+                if (newGrammarFile == null) {
+                    return;
+                }
+                break;
+            default: // cancel
+                return;
+            }
+        } else if (compare > 0) {
+            // Trying to load an older grammar from a URL.
+            if (!VersionDialog.showOldURL(this.getFrame(), props)) {
+                return;
+            }
+            newGrammarFile = selectSaveAs(null);
+            if (newGrammarFile == null) {
+                return;
+            }
+        } else {
+            // Loading an up-to-date grammar.
+            newGrammarFile = null;
+        }
+
         final ProgressBarDialog dialog =
             new ProgressBarDialog(getFrame(), "Load Progress");
         final Observer loadListener = new Observer() {
@@ -858,7 +912,9 @@ public class Simulator {
 
             private int size;
         };
+
         SwingUtilities.invokeLater(new Thread() {
+
             @Override
             public void run() {
                 dialog.activate(1000);
@@ -866,7 +922,7 @@ public class Simulator {
                     if (store instanceof Observable) {
                         ((Observable) store).addObserver(loadListener);
                     }
-                    store.reload();
+                    // store.reload(); - MdM - moved to version check code
                     final StoredGrammarView grammar = store.toGrammarView();
                     if (startGraphName != null) {
                         grammar.setStartGraph(startGraphName);
@@ -875,17 +931,15 @@ public class Simulator {
                         public void run() {
                             setGrammarView(grammar);
                             updateGrammar();
+                            grammar.getProperties().setCurrentVersionProperties();
+                            if (saveAfterLoading && newGrammarFile != null) {
+                                doSaveGrammar(newGrammarFile);
+                            }
                         }
                     });
                     if (store instanceof Observable) {
                         ((Observable) store).deleteObserver(loadListener);
                     }
-                } catch (final IOException exc) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            showErrorDialog(exc.getMessage(), exc);
-                        }
-                    });
                 } catch (final IllegalArgumentException exc) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
@@ -2240,7 +2294,6 @@ public class Simulator {
         this.grammarExtensions.clear();
         // loader for directories representing grammars
         this.grammarExtensions.add(GPS_FILTER);
-        this.grammarExtensions.add(GPS_1_0_FILTER);
         // loader for archives (jar/zip) containing directories representing
         // grammmars
         this.grammarExtensions.add(JAR_FILTER);
@@ -5574,9 +5627,6 @@ public class Simulator {
     /** Filter for rule system files. */
     static private final ExtensionFilter GPS_FILTER =
         Groove.createRuleSystemFilter();
-    /** Filter for rule system files. Old version. */
-    static private final ExtensionFilter GPS_1_0_FILTER = new ExtensionFilter(
-        "Groove production system Version 1.0", ".gps", true);
     /** File filter for jar files. */
     static private final ExtensionFilter JAR_FILTER = new ExtensionFilter(
         "Jar-file containing Groove production system", ".gps.jar", false) {
@@ -5609,12 +5659,6 @@ public class Simulator {
         };
 
     /**
-     * FileFilterAction for saving under grammar version 1.0.
-     */
-    private static final FileFilterAction grammar_1_0_Action =
-        new Grammar_1_0_Action();
-
-    /**
      * Mapping from extension filters to actions.
      */
     private static final Map<ExtensionFilter,FileFilterAction> extensionsToActions =
@@ -5624,7 +5668,6 @@ public class Simulator {
         extensionsToActions.put(GPS_FILTER, dummyFileFilterAction);
         extensionsToActions.put(JAR_FILTER, dummyFileFilterAction);
         extensionsToActions.put(ZIP_FILTER, dummyFileFilterAction);
-        extensionsToActions.put(GPS_1_0_FILTER, grammar_1_0_Action);
     }
 
     /**

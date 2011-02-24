@@ -34,11 +34,18 @@ import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
+import groove.gui.jgraph.JAttr;
+import groove.gui.layout.JEdgeLayout;
+import groove.gui.layout.JVertexLayout;
+import groove.gui.layout.LayoutMap;
+import groove.util.Groove;
 import groove.util.Pair;
 import groove.util.Version;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
+import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -124,8 +131,7 @@ public class JaxbGxlIO implements GxlIO {
     }
 
     /** Adds a layout attribute to a gxlNode. */
-    /* MdM -
-    private void layout(LayoutMap<Node,Edge> map, Node node, NodeType gxl) {
+    private void layout(LayoutMap<?,?> map, Node node, NodeType gxl) {
         if (map == null) {
             return;
         }
@@ -140,11 +146,9 @@ public class JaxbGxlIO implements GxlIO {
             + " " + bounds.height);
         gxl.getAttr().add(layoutAttr);
     }
-    */
 
     /** Adds a layout attribute to a gxlEdge. */
-    /* MdM -
-    private void layout(LayoutMap<Node,Edge> map, Edge edge, EdgeType gxl) {
+    private void layout(LayoutMap<?,?> map, Edge<?> edge, EdgeType gxl) {
         if (map == null) {
             return;
         }
@@ -158,17 +162,13 @@ public class JaxbGxlIO implements GxlIO {
             + toString(layout.getPoints()) + " " + layout.getLineStyle());
         gxl.getAttr().add(layoutAttr);
     }
-    */
 
     /** Converts a {@link Point2D} to a text. */
-    /* MdM -
     private String toString(Point2D point) {
         return (int) point.getX() + " " + (int) point.getY();
     }
-    */
 
     /** Converts a list of {@link Point2D} to a text. */
-    /* MdM -
     private String toString(List<Point2D> points) {
         boolean first = true;
         StringBuilder result = new StringBuilder();
@@ -184,7 +184,6 @@ public class JaxbGxlIO implements GxlIO {
 
         return result.toString();
     }
-    */
 
     /**
      * Converts a graph to an untyped GXL graph.
@@ -201,14 +200,11 @@ public class JaxbGxlIO implements GxlIO {
         List<GraphElementType> nodesEdges = gxlGraph.getNodeOrEdgeOrRel();
         // add the nodes
         Map<Node,NodeType> nodeMap = new HashMap<Node,NodeType>();
-
-        /* MdM -
         // get the layout map
-        LayoutMap<Node,Edge> layoutMap = null;
+        LayoutMap<?,?> layoutMap = null;
         if (GraphInfo.hasLayoutMap(graph)) {
             layoutMap = GraphInfo.getLayoutMap(graph);
         }
-        */
 
         for (Node node : graph.nodeSet()) {
             // create an xml element for this node
@@ -216,7 +212,7 @@ public class JaxbGxlIO implements GxlIO {
             // give the element an id
             gxlNode.setId(node.toString());
             // store the layout
-            // MdM - layout(layoutMap, node, gxlNode);
+            layout(layoutMap, node, gxlNode);
 
             nodeMap.put(node, gxlNode);
             nodesEdges.add(gxlNode);
@@ -244,7 +240,7 @@ public class JaxbGxlIO implements GxlIO {
                     edge.target());
             nodesEdges.add(gxlEdge);
             // store the layout
-            // MdM - layout(layoutMap, edge, gxlEdge);
+            layout(layoutMap, edge, gxlEdge);
         }
         // add subtype edges if the graph is a type graph
         if (graph instanceof TypeGraph) {
@@ -339,7 +335,8 @@ public class JaxbGxlIO implements GxlIO {
         // Initialize the new objects to be created.
         DefaultGraph graph = createGraph(gxlGraph.getId());
         Map<String,DefaultNode> nodeIds = new HashMap<String,DefaultNode>();
-        // MdM - LayoutMap<Node,Edge> layoutMap = new LayoutMap();
+        LayoutMap<DefaultNode,DefaultEdge> layoutMap =
+            new LayoutMap<DefaultNode,DefaultEdge>();
 
         // Extract nodes out of the gxl elements.
         for (GraphElementType gxlElement : gxlGraph.getNodeOrEdgeOrRel()) {
@@ -352,12 +349,20 @@ public class JaxbGxlIO implements GxlIO {
                 }
                 DefaultNode node = createNode(nodeId);
                 // Extract the layout from the gxlElement attributes.
-                /* MdM -
                 List<AttrType> attrs = ((NodeType) gxlElement).getAttr();
-                MdM - String layout =
-                MdM -     getAttrValue(LAYOUT_ATTR_NAME, attrs, "node " + nodeId);
-                MdM - TODO - create layout (if not null)
-                */
+
+                // Save the layout.
+                String layout =
+                    getAttrValue(LAYOUT_ATTR_NAME, attrs, "node " + nodeId);
+                if (layout != null) {
+                    String[] parts = layout.split(" ");
+                    Rectangle bounds = LayoutIO.toBounds(parts, 0);
+                    if (bounds == null) {
+                        throw new FormatException("Bounds for " + parts[1]
+                            + " cannot be parsed");
+                    }
+                    layoutMap.putNode(node, new JVertexLayout(bounds));
+                }
                 // Add the node to the graph and the idMap.
                 if (node == null || !graph.addNode(node)) {
                     node = graph.addNode(); // create fresh node
@@ -385,6 +390,7 @@ public class JaxbGxlIO implements GxlIO {
                     throw new FormatException(
                         "Unable to find edge target node " + sourceId + ".");
                 }
+
                 // Set context for error messages.
                 String context = "edge " + sourceId + "->" + targetId;
                 // Extract the label and the layout from the gxlElement attributes.
@@ -394,10 +400,38 @@ public class JaxbGxlIO implements GxlIO {
                     throw new FormatException("The " + context
                         + " must have a " + LABEL_ATTR_NAME + " attribute.");
                 }
-                // MdM - String layout = getAttrValue(LAYOUT_ATTR_NAME, attrs, context);
-                // MdM - TODO - create layout (if not null)
+
+                // Create the edge object.
+                DefaultEdge edge = createEdge(sourceNode, label, targetNode);
+
+                // Save the layout.
+                String layout = getAttrValue(LAYOUT_ATTR_NAME, attrs, context);
+                if (layout != null) {
+                    String[] parts = layout.split(" ");
+                    List<Point2D> points;
+                    int lineStyle;
+                    if (parts.length > 2) {
+                        points = LayoutIO.toPoints(parts, 2);
+                        // if we have fewer than 2 points, something is wrong
+                        if (points.size() <= 1) {
+                            throw new FormatException(
+                                "Edge layout needs at least 2 points");
+                        }
+                        lineStyle = Integer.parseInt(parts[parts.length - 1]);
+                        if (!JAttr.isLineStyle(lineStyle)) {
+                            lineStyle = JAttr.DEFAULT_LINE_STYLE;
+                        }
+                        Point2D labelPosition =
+                            LayoutIO.calculateLabelPosition(
+                                LayoutIO.toPoint(parts, 0), points,
+                                LayoutIO.VERSION2, sourceNode == targetNode);
+                        layoutMap.putEdge(edge, new JEdgeLayout(points,
+                            labelPosition, lineStyle));
+                    }
+                }
+
                 // Add the edge to the graph.
-                graph.addEdge(createEdge(sourceNode, label, targetNode));
+                graph.addEdge(edge);
             }
         }
         // add the graph attributes
@@ -425,7 +459,7 @@ public class JaxbGxlIO implements GxlIO {
         String roleName = gxlGraph.getRole();
         graph.setRole(roleName == null ? GraphRole.HOST
                 : GraphRole.roles.get(roleName));
-        // MdM - GraphInfo.setLayoutMap(graph, layoutMap);
+        GraphInfo.setLayoutMap(graph, layoutMap);
         return new Pair<DefaultGraph,Map<String,DefaultNode>>(graph, nodeIds);
     }
 
@@ -523,7 +557,6 @@ public class JaxbGxlIO implements GxlIO {
     /** Attribute name for node and edge identities. */
     static private final String LABEL_ATTR_NAME = "label";
     /** Attribute name for layout information. */
-    @SuppressWarnings("unused")
     static private final String LAYOUT_ATTR_NAME = "layout";
     /** Subtype label. */
     static private final String ABSTRACT_PREFIX =
