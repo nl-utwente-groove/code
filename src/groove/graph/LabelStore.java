@@ -488,18 +488,6 @@ public class LabelStore extends DefaultFixable implements Cloneable {
         return false;
     }
 
-    /**
-     * Indicates if the store has at least one unary label (i.e., node type or flag).
-     */
-    public boolean hasUnaryLabels() {
-        for (Label label : this.getLabels()) {
-            if (!label.isBinary()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     /** Returns the (possibly {@code null}) colour associated with a given type label. */
     public Color getColor(TypeLabel label) {
         Color result = this.colorMap.get(label);

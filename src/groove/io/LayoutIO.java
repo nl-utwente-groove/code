@@ -219,8 +219,8 @@ public class LayoutIO {
      * file.
      * @param isLoop flag indicating that the onderlying edge is a loop
      */
-    private Point2D calculateLabelPosition(Point2D label, List<Point2D> points,
-            int version, boolean isLoop) {
+    public static Point2D calculateLabelPosition(Point2D label,
+            List<Point2D> points, int version, boolean isLoop) {
         Point2D result;
         if (version == VERSION1) {
             // the y is now an offset rather than a percentile
@@ -245,7 +245,8 @@ public class LayoutIO {
      * @param label the version 1 label position info
      * @param points the list of points comprising the edge
      */
-    private Point2D version1RelativePos(Point2D label, List<Point2D> points) {
+    private static Point2D version1RelativePos(Point2D label,
+            List<Point2D> points) {
         // we're trying to reconstruct the label position from the JGraph 5.2
         // method,
         // but at this point we don't have the view available which means we
@@ -284,7 +285,7 @@ public class LayoutIO {
      * Returns the bounds of a list of points. The bounds is the minimal
      * rectangle containing all points.
      */
-    private Rectangle2D version1PaintBounds(List<Point2D> points) {
+    private static Rectangle2D version1PaintBounds(List<Point2D> points) {
         double minX = Double.MAX_VALUE;
         double maxX = Double.MIN_VALUE;
         double minY = Double.MAX_VALUE;
@@ -308,7 +309,8 @@ public class LayoutIO {
      * @param isLoop flag indicating that the underlying edge is a loop
      * @see EdgeView#getLabelVector()
      */
-    private Point2D version2LabelVector(List<Point2D> points, boolean isLoop) {
+    private static Point2D version2LabelVector(List<Point2D> points,
+            boolean isLoop) {
         Point2D result = null;
         // first try a vector from the first to the last point
         Point2D begin = points.get(0);
@@ -344,7 +346,7 @@ public class LayoutIO {
      * @param pos the relative label position
      * @param edge the edge vector; should not be <code>(0,0)</code>
      */
-    private Point2D version2LabelPos(Point2D pos, Point2D edge) {
+    private static Point2D version2LabelPos(Point2D pos, Point2D edge) {
         // the square of the length of the edge vector
         double vector2 = edge.getX() * edge.getX() + edge.getY() * edge.getY();
         // the ratio of the label vector to the edge vector
@@ -435,7 +437,7 @@ public class LayoutIO {
     /**
      * Converts four elements of a string array to a rectangle.
      */
-    private Rectangle toBounds(String[] s, int i) {
+    public static Rectangle toBounds(String[] s, int i) {
         if (s.length - i < 4) {
             return null;
         } else {
@@ -448,7 +450,7 @@ public class LayoutIO {
     /**
      * Converts two elements of a string array to a point.
      */
-    private Point toPoint(String[] s, int i) {
+    public static Point toPoint(String[] s, int i) {
         if (s.length - i < 2) {
             return null;
         } else {
@@ -460,7 +462,7 @@ public class LayoutIO {
     /**
      * Converts pairs of elements of a string array to a list of points.
      */
-    private List<Point2D> toPoints(String[] s, int i) {
+    public static List<Point2D> toPoints(String[] s, int i) {
         List<Point2D> result = new LinkedList<Point2D>();
         for (int j = i; j < s.length - 1; j += 2) {
             result.add(toPoint(s, j));
@@ -491,12 +493,12 @@ public class LayoutIO {
     /**
      * Symbolic name for first layout version.
      */
-    static private final int VERSION1 = 1;
+    static public final int VERSION1 = 1;
     /**
      * Symbolic name for second layout version. The difference with the first
      * version is that the label position is calculated differently.
      */
-    static private final int VERSION2 = 2;
+    static public final int VERSION2 = 2;
 
     /** The current version number. */
     static public final int CURRENT_VERSION_NUMBER = VERSION2;

@@ -29,7 +29,6 @@ import groove.util.Pair;
 import groove.view.FormatException;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -87,25 +86,10 @@ public class LayedOutXml implements Xml<DefaultGraph> {
         deleteFile(file);
     }
 
-    /** First marshals the graph; then the layout map if there is one. */
     public <N extends Node,E extends Edge<N>> void marshalGraph(
             Graph<N,E> graph, File file) throws IOException {
-        // deleteVariants(file);
-        if (GraphInfo.hasLayoutMap(graph)) {
-            this.marshaller.marshalGraph(graph, file);
-            FileOutputStream out = new FileOutputStream(toLayoutFile(file));
-            try {
-                LayoutIO.getInstance().writeLayout(
-                    GraphInfo.getLayoutMap(graph), out);
-            } finally {
-                out.close();
-            }
-        } else {
-            // first marshal the graph
-            this.marshaller.marshalGraph(graph, file);
-            // now delete any pre-existing layout information
-            toLayoutFile(file).delete();
-        }
+        this.marshaller.marshalGraph(graph, file);
+        toLayoutFile(file).delete();
     }
 
     /** Deletes the file itself as well as the layout file. */
