@@ -23,12 +23,12 @@ import groove.graph.LabelStore;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.iso.IsoChecker;
-import groove.gui.Exporter;
-import groove.gui.Exporter.StructuralFormat;
 import groove.io.Aut;
 import groove.io.DefaultGxl;
 import groove.io.ExtensionFilter;
 import groove.io.Xml;
+import groove.io.exporters.Exporter;
+import groove.io.exporters.Exporter.StructuralFormat;
 import groove.match.GraphSearchPlanFactory;
 import groove.samples.calc.DefaultGraphCalculator;
 import groove.samples.calc.GraphCalculator;
@@ -499,14 +499,13 @@ public class Groove {
      */
     public static ExtensionFilter getFilter(String description,
             String extension, boolean acceptDirectories) {
-        Pair<ExtensionFilter,ExtensionFilter> result =
-            extensionFilterMap.get(extension);
+        Duo<ExtensionFilter> result = extensionFilterMap.get(extension);
         if (result == null) {
             ExtensionFilter first =
                 new ExtensionFilter(description, extension, false);
             ExtensionFilter second =
                 new ExtensionFilter(description, extension, true);
-            result = new Pair<ExtensionFilter,ExtensionFilter>(first, second);
+            result = new Duo<ExtensionFilter>(first, second);
             extensionFilterMap.put(extension, result);
         }
         return acceptDirectories ? result.two() : result.one();
@@ -1142,8 +1141,8 @@ public class Groove {
      * Mapping from extensions to pairs of filters recognising/not recognising
      * directories.
      */
-    static private final Map<String,Pair<ExtensionFilter,ExtensionFilter>> extensionFilterMap =
-        new HashMap<String,Pair<ExtensionFilter,ExtensionFilter>>();
+    static private final Map<String,Duo<ExtensionFilter>> extensionFilterMap =
+        new HashMap<String,Duo<ExtensionFilter>>();
     /**
      * The fixed GXL graph loader.
      */

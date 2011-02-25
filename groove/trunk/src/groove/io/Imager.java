@@ -17,10 +17,10 @@
 package groove.io;
 
 import groove.graph.DefaultGraph;
-import groove.gui.Exporter;
 import groove.gui.Options;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
+import groove.io.exporters.Exporter;
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
 import groove.util.Groove;
