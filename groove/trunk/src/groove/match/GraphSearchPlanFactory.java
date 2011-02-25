@@ -22,7 +22,6 @@ import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.OperatorEdge;
-import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
@@ -252,7 +251,8 @@ public class GraphSearchPlanFactory {
             Iterator<RuleNode> unmatchedNodeIter = unmatchedNodes.iterator();
             while (unmatchedNodeIter.hasNext()) {
                 RuleNode node = unmatchedNodeIter.next();
-                if (node instanceof ValueNode) {
+                if (node instanceof VariableNode
+                    && ((VariableNode) node).getConstant() != null) {
                     result.add(createNodeSearchItem(node));
                     unmatchedNodeIter.remove();
                 }
