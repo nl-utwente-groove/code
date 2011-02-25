@@ -137,37 +137,38 @@ public class Version {
 
     /**
      * Compares the given grammar version with the current grammar version.
+     * Only the first digit of the version is compared (a difference in the
+     * second digit is not supposed to affect loading/saving graphs).
      * The strings should be well formed version strings:
      * numbers separated with dots, with same length.
      * @param version String of the form 0.0.0...
-     * @return 0 if the versions are equal,
+     * @return 0 if the major versions are equal,
      *         1 if current > version,
      *         -1 if version < current
      */
     public static int compareGrammarVersion(String version) {
-        int result = -1;
         String current = getCurrentGrammarVersion();
         if (current.equals(version)) {
             // The strings are equal, no need to look into version numbers.
-            result = 0;
+            return 0;
         } else {
             String[] as1 = current.split("\\.");
             String[] as2 = version.split("\\.");
-            if (as1.length == as2.length) {
-                for (int i = 0; i < as1.length; i++) {
-                    int n1 = Integer.parseInt(as1[i]);
-                    int n2 = Integer.parseInt(as2[i]);
-                    if (n1 > n2) {
-                        result = 1;
-                        break;
-                    } else if (n1 < n2) {
-                        result = -1;
-                        break;
-                    }
-                }
+            int n1 = 0, n2 = 0;
+            if (as1.length > 0) {
+                n1 = Integer.parseInt(as1[0]);
+            }
+            if (as2.length > 0) {
+                n2 = Integer.parseInt(as2[0]);
+            }
+            if (n1 < n2) {
+                return -1;
+            } else if (n1 == n2) {
+                return 0;
+            } else {
+                return 1;
             }
         }
-        return result;
     }
 
     // Grammar Versions
