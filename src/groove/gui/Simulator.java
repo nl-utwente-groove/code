@@ -83,6 +83,7 @@ import groove.io.LayedOutXml;
 import groove.io.SystemStore;
 import groove.io.SystemStoreFactory;
 import groove.io.Xml;
+import groove.io.exporters.Exporter;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GTSListener;

@@ -38,6 +38,7 @@ import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.io.LayedOutXml;
 import groove.io.PriorityFileName;
+import groove.io.exporters.Exporter;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.util.Property;

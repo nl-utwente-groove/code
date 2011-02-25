@@ -42,12 +42,10 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
-import javax.swing.plaf.metal.MetalLookAndFeel;
 
 import org.jgraph.graph.GraphConstants;
 
 import com.jgoodies.looks.plastic.PlasticLookAndFeel;
-import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
@@ -794,14 +792,21 @@ public class Options implements Cloneable {
         try {
             // LAF specific options that should be done before setting the LAF
             // go here
-            MetalLookAndFeel.setCurrentTheme(new DesertBlue());
+            //MetalLookAndFeel.setCurrentTheme(new DesertBlue());
             // set default font to LAF font
-            Options.DEFAULT_FONT =
-                MetalLookAndFeel.getCurrentTheme().getUserTextFont();
+            //Options.DEFAULT_FONT =
+            //MetalLookAndFeel.getCurrentTheme().getUserTextFont();
             // Set the look and feel
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            /*UIManager.installLookAndFeel("GTKLookAndFeel",
+                "com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+            System.out.println(UIManager.getSystemLookAndFeelClassName());
+            System.out.println(UIManager.getLookAndFeel());*/
+            //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
         } catch (Exception e) {
             // nothing to do here except not crash on the exception
+            System.out.println("Exception");
+            e.printStackTrace();
         }
     }
 
