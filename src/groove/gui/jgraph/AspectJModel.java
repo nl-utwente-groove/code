@@ -102,6 +102,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             root.saveToUserObject();
         }
         loadViewErrors();
+        this.properties = GraphInfo.getProperties(graph, false);
         this.loading = false;
     }
 
