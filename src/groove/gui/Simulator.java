@@ -934,7 +934,8 @@ public class Simulator {
                             updateGrammar();
                             grammar.getProperties().setCurrentVersionProperties();
                             if (saveAfterLoading && newGrammarFile != null) {
-                                doSaveGrammar(newGrammarFile);
+                                doSaveGrammar(newGrammarFile,
+                                    !newGrammarFile.equals(store.getLocation()));
                             }
                         }
                     });
@@ -1201,10 +1202,11 @@ public class Simulator {
      * Saves the current grammar to a given file.
      * @param grammarFile the grammar file to be used
      */
-    void doSaveGrammar(File grammarFile) {
+    void doSaveGrammar(File grammarFile, boolean clearDir) {
         try {
             if (saveEditors(true)) {
-                SystemStore newStore = getGrammarStore().save(grammarFile);
+                SystemStore newStore =
+                    getGrammarStore().save(grammarFile, clearDir);
                 StoredGrammarView newView = newStore.toGrammarView();
                 String startGraphName = getGrammarView().getStartGraphName();
                 GraphView startGraphView = getGrammarView().getStartGraphView();
@@ -2554,7 +2556,6 @@ public class Simulator {
                     "Overwrite existing grammar?", null,
                     JOptionPane.OK_CANCEL_OPTION);
             return response == JOptionPane.OK_OPTION;
-
         } else {
             return true;
         }
@@ -4849,7 +4850,7 @@ public class Simulator {
                     action.modify(getGrammarView());
                 }
                 if (confirmOverwriteGrammar(selectedFile)) {
-                    doSaveGrammar(selectedFile);
+                    doSaveGrammar(selectedFile, true);
                 }
             }
         }

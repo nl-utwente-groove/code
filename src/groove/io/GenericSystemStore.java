@@ -211,7 +211,7 @@ public interface GenericSystemStore<R,G,T,C> {
      *         already exists, or if something goes wrong during saving. If an
      *         exception is thrown, any partial results are deleted.
      */
-    public SystemStore save(File file) throws IOException;
+    public SystemStore save(File file, boolean clearDir) throws IOException;
 
     /** Returns a stored grammar view backed up by this store. */
     public StoredGrammarView toGrammarView();
