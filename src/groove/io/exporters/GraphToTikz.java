@@ -252,6 +252,21 @@ public final class GraphToTikz {
     }
 
     /**
+     * Converts special HTML chars that show inside a node.
+     * @param line the string to be converted.
+     * @return the line with converted characters, if any.
+     */
+    private static StringBuilder convertInscriptedHtml(StringBuilder line) {
+        // Convert the pi in product nodes.
+        int i = line.indexOf(HTMLConverter.HTML_PI);
+        while (i != -1) {
+            line.replace(i, i + 6, PI);
+            i = line.indexOf(HTMLConverter.HTML_PI);
+        }
+        return line;
+    }
+
+    /**
      * Removes all occurrences of the given tag on the given line.
      * @param line the line to be processed.
      * @param tag the tag to be removed.
@@ -705,7 +720,8 @@ public final class GraphToTikz {
      */
     private void appendNodeInscription(StringBuilder htmlLine) {
         int color = HTMLConverter.removeColorTags(htmlLine);
-        StringBuilder line = escapeSpecialChars(htmlLine);
+        StringBuilder line =
+            convertInscriptedHtml(escapeSpecialChars(htmlLine));
         int font = HTMLConverter.removeFontTags(line);
         String aux = "";
         int i = line.indexOf(HTMLConverter.HTML_EXISTS);
