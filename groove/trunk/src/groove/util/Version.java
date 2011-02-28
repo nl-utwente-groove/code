@@ -65,7 +65,7 @@ public class Version {
     // during Ant compilation!
 
     /** Release date of this version (date format dd.MM.yyyy). */
-    public static final String DATE = "20.01.2011"; // eventually automatically
+    public static final String DATE = "28.02.2011"; // eventually automatically
     // set during Ant
     // compilation!
 
