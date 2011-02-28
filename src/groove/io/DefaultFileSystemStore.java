@@ -1029,10 +1029,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                     new File(newFile.getParent(), "Copy of "
                         + newFile.getName());
             } while (newFile.exists());
-            if (!file.renameTo(newFile)) {
-                throw new IOException(String.format(
-                    "Can't save grammar to existing file '%s'", file));
-            }
+            Util.copyDirectory(file, newFile, true);
         }
         try {
             DefaultFileSystemStore result =
