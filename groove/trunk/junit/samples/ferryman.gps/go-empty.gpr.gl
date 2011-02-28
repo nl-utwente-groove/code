@@ -1,7 +1,0 @@
-# Layout information for C:\Eclipse-3\groove\samples\ferryman.gps\go-empty.gpr
-# Each line contains layout information about a node or edge
-# Node Format: n <node id> <bounds>
-# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
-n n60 153 24 18 18 
-n n62 242 152 18 18 
-n n61 84 151 18 18 
