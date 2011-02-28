@@ -666,8 +666,8 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         }
     }
 
-    public SystemStore save(File file) throws IOException {
-        return save(file, this);
+    public SystemStore save(File file, boolean clearDir) throws IOException {
+        return save(file, this, clearDir);
     }
 
     /** This type of system store is modifiable. */
@@ -1013,8 +1013,8 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     };
 
     /** Saves the content of a given system store to file. */
-    static public SystemStore save(File file, SystemStore store)
-        throws IOException {
+    static public SystemStore save(File file, SystemStore store,
+            boolean clearDir) throws IOException {
         if (!GRAMMAR_FILTER.accept(file)) {
             throw new IOException(String.format(
                 "File '%s' does not refer to a production system", file));
@@ -1029,7 +1029,14 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                     new File(newFile.getParent(), "Copy of "
                         + newFile.getName());
             } while (newFile.exists());
-            Util.copyDirectory(file, newFile, true);
+            if (clearDir) {
+                if (!file.renameTo(newFile)) {
+                    throw new IOException(String.format(
+                        "Can't save grammar to existing file '%s'", file));
+                }
+            } else {
+                Util.copyDirectory(file, newFile, true);
+            }
         }
         try {
             DefaultFileSystemStore result =

@@ -378,8 +378,8 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         return this.location;
     }
 
-    public SystemStore save(File file) throws IOException {
-        return DefaultFileSystemStore.save(file, this);
+    public SystemStore save(File file, boolean clearDir) throws IOException {
+        return DefaultFileSystemStore.save(file, this, clearDir);
     }
 
     /** This type of system store is not modifiable. */
