@@ -52,9 +52,9 @@ public final class EdgeMatEqSystem extends EquationSystem {
     // ------------------------------------------------------------------------
 
     /** The set of outgoing edge signatures involved in the operation. */
-    private final CountingSet<EdgeSignature> outEsSet;
+    private final CountingSet outEsSet;
     /** The set of incoming edge signatures involved in the operation. */
-    private final CountingSet<EdgeSignature> inEsSet;
+    private final CountingSet inEsSet;
     /** The set of edges that will be frozen by the operation. */
     private final Set<ShapeEdge> frozenEdges;
 
@@ -75,8 +75,8 @@ public final class EdgeMatEqSystem extends EquationSystem {
      *                  from the edge signature multiplicity.
      * @param frozenEdges - set of edges that will be frozen by this operation.
      */
-    public EdgeMatEqSystem(Shape shape, CountingSet<EdgeSignature> outEsSet,
-            CountingSet<EdgeSignature> inEsSet, Set<ShapeEdge> frozenEdges) {
+    public EdgeMatEqSystem(Shape shape, CountingSet outEsSet,
+            CountingSet inEsSet, Set<ShapeEdge> frozenEdges) {
         super(shape);
         this.outEsSet = outEsSet;
         this.inEsSet = inEsSet;
@@ -110,10 +110,8 @@ public final class EdgeMatEqSystem extends EquationSystem {
     void buildEquationSystem() {
         // For each signature in the counting sets, create a pair of variables.
         // Outgoing.
-        for (Entry<EdgeSignature,Integer> entry : this.outEsSet.entrySet()) {
-            EdgeSignature es = entry.getKey();
+        for (EdgeSignature es : this.outEsSet.keys()) {
             Multiplicity oM = this.shape.getEdgeSigOutMult(es);
-
             // Outgoing MultVar for the frozen edges.
             MultVar p = this.newMultVar();
             // Outgoing MultVar for the remaining edges.
@@ -121,7 +119,7 @@ public final class EdgeMatEqSystem extends EquationSystem {
             // Create the equation: q = oM - p
             this.newEquation(p, q, oM);
             // Create the constraint: p \in {pM}
-            Multiplicity pM = Multiplicity.getMultOf(entry.getValue());
+            Multiplicity pM = Multiplicity.getMultOf(this.outEsSet.get(es));
             Set<Multiplicity> pMSet = new HashSet<Multiplicity>();
             pMSet.add(pM);
             this.newSetConstr(p, pMSet);
@@ -130,10 +128,8 @@ public final class EdgeMatEqSystem extends EquationSystem {
             this.outMap.put(es, pair);
         }
         // Incoming.
-        for (Entry<EdgeSignature,Integer> entry : this.inEsSet.entrySet()) {
-            EdgeSignature es = entry.getKey();
+        for (EdgeSignature es : this.inEsSet.keys()) {
             Multiplicity iM = this.shape.getEdgeSigInMult(es);
-
             // Incoming MultVar for the frozen edges.
             MultVar r = this.newMultVar();
             // Incoming MultVar for the remaining edges.
@@ -141,7 +137,7 @@ public final class EdgeMatEqSystem extends EquationSystem {
             // Create the equation: s = iM - r
             this.newEquation(r, s, iM);
             // Create the constraint: r \in {rM}
-            Multiplicity rM = Multiplicity.getMultOf(entry.getValue());
+            Multiplicity rM = Multiplicity.getMultOf(this.inEsSet.get(es));
             Set<Multiplicity> rMSet = new HashSet<Multiplicity>();
             rMSet.add(rM);
             this.newSetConstr(r, rMSet);

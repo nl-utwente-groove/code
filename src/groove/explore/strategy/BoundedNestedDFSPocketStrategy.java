@@ -17,8 +17,8 @@
 package groove.explore.strategy;
 
 import groove.verify.BuchiTransition;
-import groove.verify.ProductState;
 import groove.verify.ModelChecking;
+import groove.verify.ProductState;
 import groove.verify.ProductTransition;
 
 /**

@@ -16,9 +16,9 @@
  */
 package groove.rel;
 
-import java.util.Map;
-
 import groove.graph.TypeLabel;
+
+import java.util.Map;
 
 /**
  * Add-on interface that specifies support for mapping variables (given by

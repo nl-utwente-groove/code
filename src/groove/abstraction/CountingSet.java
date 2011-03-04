@@ -16,32 +16,31 @@
  */
 package groove.abstraction;
 
-import java.util.HashMap;
+import gnu.trove.TObjectIntHashMap;
 
 /**
  * Class that keeps track of the number of times a certain element has
  * been inserted in the set.
  * 
  * @author Eduardo Zambon
- * 
- * EDUARDO: Pimp this.
- * Use a better data structure...
  */
-public final class CountingSet<T> extends HashMap<T,Integer> {
+public final class CountingSet extends TObjectIntHashMap<EdgeSignature> {
+
+    /** Used only to adjust the return type of the {@link #keys()} method. */
+    private static final EdgeSignature esArray[] = new EdgeSignature[0];
 
     /**
      * Keeps track of the number of times a certain element has been inserted
      * in the set.
      */
-    public void add(T key) {
-        Integer count = this.get(key);
-        int i;
-        if (count != null) {
-            i = count.intValue() + 1;
-        } else {
-            i = 1;
-        }
-        this.put(key, Integer.valueOf(i));
+    public void add(EdgeSignature key) {
+        this.adjustOrPutValue(key, 1, 1);
+    }
+
+    /** Overriden to properly adjust the return type. */
+    @Override
+    public EdgeSignature[] keys() {
+        return super.keys(esArray);
     }
 
 }

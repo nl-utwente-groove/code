@@ -18,9 +18,9 @@ package groove.explore.strategy;
 
 import groove.lts.DefaultGraphNextState;
 import groove.lts.GTS;
+import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.GTSAdapter;
 import groove.lts.MatchResult;
 import groove.match.SearchEngineFactory;
 import groove.match.SearchEngineFactory.EngineType;

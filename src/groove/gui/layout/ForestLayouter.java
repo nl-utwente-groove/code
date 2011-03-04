@@ -17,8 +17,8 @@
 package groove.gui.layout;
 
 import groove.gui.jgraph.GraphJEdge;
-import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.GraphJVertex;
 import groove.util.CollectionOfCollections;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;

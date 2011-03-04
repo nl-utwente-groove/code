@@ -17,9 +17,9 @@
 package groove.gui.layout;
 
 import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JEdgeView;
-import groove.gui.jgraph.GraphJGraph;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
