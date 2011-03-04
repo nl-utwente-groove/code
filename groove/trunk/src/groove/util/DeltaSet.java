@@ -16,12 +16,11 @@
  */
 package groove.util;
 
-import java.util.Set;
-
 import java.util.AbstractSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * Implements a set whose operations work on an underlying (lower) set, but

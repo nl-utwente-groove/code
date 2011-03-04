@@ -21,8 +21,8 @@ import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.lts.GTS;
-import groove.lts.GraphTransition;
 import groove.lts.GTSAdapter;
+import groove.lts.GraphTransition;
 import groove.rel.RegExpr.Sharp;
 
 import java.util.HashMap;

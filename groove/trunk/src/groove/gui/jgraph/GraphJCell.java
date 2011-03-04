@@ -16,8 +16,8 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.Label;
 import groove.graph.EdgeRole;
+import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.trans.RuleLabel;
 

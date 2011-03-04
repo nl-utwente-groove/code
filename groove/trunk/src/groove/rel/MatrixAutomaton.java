@@ -17,9 +17,9 @@
 package groove.rel;
 
 import groove.graph.Edge;
+import groove.graph.EdgeRole;
 import groove.graph.Element;
 import groove.graph.ElementFactory;
-import groove.graph.EdgeRole;
 import groove.graph.LabelStore;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.TypeLabel;

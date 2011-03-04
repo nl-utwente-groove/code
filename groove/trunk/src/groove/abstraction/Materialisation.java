@@ -1028,10 +1028,8 @@ public final class Materialisation implements Cloneable {
             Shape shape = this.mat.shape;
 
             // Collect all signatures that will be affected by this operation.
-            CountingSet<EdgeSignature> outEsSet =
-                new CountingSet<EdgeSignature>();
-            CountingSet<EdgeSignature> inEsSet =
-                new CountingSet<EdgeSignature>();
+            CountingSet outEsSet = new CountingSet();
+            CountingSet inEsSet = new CountingSet();
             Set<ShapeEdge> frozenEdges = new HashSet<ShapeEdge>();
             // For each involved edge in the rule.
             for (RuleEdge edgeR : this.edgesR) {

@@ -18,8 +18,8 @@
 package groove.explore.strategy;
 
 import groove.explore.result.CycleAcceptor;
-import groove.verify.ProductState;
 import groove.verify.ModelChecking;
+import groove.verify.ProductState;
 import groove.verify.ProductTransition;
 
 import java.util.Iterator;

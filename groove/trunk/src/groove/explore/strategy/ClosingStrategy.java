@@ -17,8 +17,8 @@
 package groove.explore.strategy;
 
 import groove.lts.GTS;
-import groove.lts.GraphState;
 import groove.lts.GTSAdapter;
+import groove.lts.GraphState;
 
 /**
  * Strategy that closes every state it explores, and adds the newly generated
