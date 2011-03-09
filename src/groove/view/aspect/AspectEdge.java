@@ -228,10 +228,10 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         if (sourceKind == REMARK || targetKind == REMARK) {
             setAspect(REMARK.getAspect());
         } else if (sourceKind.isQuantifier() || targetKind.isQuantifier()) {
-            if (getKind() != NESTED) {
+            if (getKind() != NESTED && getKind() != REMARK) {
                 setAspect(NESTED.getAspect().newInstance(getInnerText()));
             }
-        } else {
+        } else if (getKind() != REMARK) {
             AspectKind sourceRole = null;
             AspectKind targetRole = null;
             if (sourceKind.isRole() && sourceKind != READER) {
