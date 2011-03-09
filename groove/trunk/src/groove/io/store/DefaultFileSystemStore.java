@@ -14,13 +14,26 @@ t * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  * 
  * $Id$
  */
-package groove.io;
+package groove.io.store;
 
 import static groove.graph.GraphRole.RULE;
+import static groove.io.FilterList.CONTROL_FILTER;
+import static groove.io.FilterList.GRAMMAR_FILTER;
+import static groove.io.FilterList.PROPERTIES_FILTER;
+import static groove.io.FilterList.RULE_FILTER;
+import static groove.io.FilterList.STATE_FILTER;
+import static groove.io.FilterList.TYPE_FILTER;
 import groove.graph.DefaultGraph;
 import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
 import groove.gui.Options;
+import groove.io.ExtensionFilter;
+import groove.io.ExtensionList;
+import groove.io.PriorityFileName;
+import groove.io.Util;
+import groove.io.xml.DefaultGxl;
+import groove.io.xml.LayedOutXml;
+import groove.io.xml.Xml;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
@@ -65,7 +78,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         SystemStore {
     /**
      * Constructs a store from a given file. The file should be a directory with
-     * extension {@link Groove#RULE_SYSTEM_EXTENSION}. The store is writable.
+     * extension {@link ExtensionList#RULE_SYSTEM_EXTENSION}. The store is writable.
      * @param file source directory of the underlying persistent storage
      * @param create if <code>true</code> and <code>file</code> does not yet
      *        exist, attempt to create it.
@@ -104,7 +117,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     /**
      * Constructs a store from a given URL. The URL should specify the
      * <code>file:</code> protocol, and the file should be a directory with
-     * extension {@link Groove#RULE_SYSTEM_EXTENSION}. The store is writable.
+     * extension {@link ExtensionList#RULE_SYSTEM_EXTENSION}. The store is writable.
      * @param location source location of the underlying persistent storage;
      *        should refer to a file.
      * @throws IllegalArgumentException if <code>location</code> does not
@@ -716,7 +729,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         if (layouted) {
             return new LayedOutXml();
         } else {
-            return new DefaultGxl();
+            return DefaultGxl.getInstance();
         }
     }
 
@@ -1114,30 +1127,6 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                 "URL '%s' is not a valid file: %s", url, exc.getMessage()));
         }
     }
-
-    /** File filter for graph grammars in the GPS format. */
-    static private final ExtensionFilter GRAMMAR_FILTER =
-        Groove.createRuleSystemFilter();
-
-    /** File filter for transformation rules in the GPR format. */
-    static private final ExtensionFilter RULE_FILTER =
-        Groove.createRuleFilter();
-
-    /** File filter for state files. */
-    static private final ExtensionFilter STATE_FILTER =
-        Groove.createStateFilter();
-
-    /** File filter for type files. */
-    static private final ExtensionFilter TYPE_FILTER =
-        Groove.createTypeFilter();
-
-    /** File filter for property files. */
-    static private final ExtensionFilter PROPERTIES_FILTER =
-        Groove.createPropertyFilter();
-
-    /** File filter for control files. */
-    static private final ExtensionFilter CONTROL_FILTER =
-        Groove.createControlFilter();
 
     /** Error message if a grammar cannot be loaded. */
     static private final String LOAD_ERROR = "Can't load graph grammar";

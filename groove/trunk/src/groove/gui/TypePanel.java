@@ -24,7 +24,7 @@ import groove.gui.JTypeNameList.CheckBoxListModel;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.JGraphMode;
-import groove.io.SystemStore;
+import groove.io.store.SystemStore;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;

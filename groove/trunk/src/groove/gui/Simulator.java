@@ -34,6 +34,12 @@ import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
+import static groove.io.FilterList.GRAMMAR_FILTER;
+import static groove.io.FilterList.GXL_FILTER;
+import static groove.io.FilterList.JAR_FILTER;
+import static groove.io.FilterList.RULE_FILTER;
+import static groove.io.FilterList.STATE_FILTER;
+import static groove.io.FilterList.ZIP_FILTER;
 import gov.nasa.ltl.trans.ParseErrorException;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.lts.AGTS;
@@ -72,18 +78,16 @@ import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
-import groove.io.AspectGxl;
-import groove.io.Aut;
-import groove.io.DefaultFileSystemStore;
-import groove.io.DefaultGxl;
+import groove.io.Exporter;
 import groove.io.ExtensionFilter;
-import groove.io.FileFilterAction;
 import groove.io.GrooveFileChooser;
-import groove.io.LayedOutXml;
-import groove.io.SystemStore;
-import groove.io.SystemStoreFactory;
-import groove.io.Xml;
-import groove.io.exporters.Exporter;
+import groove.io.store.DefaultFileSystemStore;
+import groove.io.store.SystemStore;
+import groove.io.store.SystemStoreFactory;
+import groove.io.xml.AspectGxl;
+import groove.io.xml.DefaultGxl;
+import groove.io.xml.LayedOutXml;
+import groove.io.xml.Xml;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GTSListener;
@@ -127,11 +131,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
@@ -219,8 +221,7 @@ public class Simulator {
         this();
         if (grammarLocation != null) {
             final File location =
-                new File(Groove.createRuleSystemFilter().addExtension(
-                    grammarLocation)).getAbsoluteFile();
+                new File(GRAMMAR_FILTER.addExtension(grammarLocation)).getAbsoluteFile();
 
             URL locationURL = Groove.toURL(location);
             final URL grammarURL;
@@ -1240,11 +1241,7 @@ public class Simulator {
     }
 
     private Xml<AspectGraph> getGraphLoader(File file) {
-        if (this.autFilter.accept(file)) {
-            return this.autLoader;
-        } else {
-            return this.aspectLoader;
-        }
+        return this.aspectLoader;
     }
 
     /**
@@ -2252,10 +2249,9 @@ public class Simulator {
     JFileChooser getStateFileChooser() {
         if (this.stateFileChooser == null) {
             this.stateFileChooser = new GrooveFileChooser();
-            this.stateFileChooser.addChoosableFileFilter(this.stateFilter);
-            this.stateFileChooser.addChoosableFileFilter(this.gxlFilter);
-            this.stateFileChooser.addChoosableFileFilter(this.autFilter);
-            this.stateFileChooser.setFileFilter(this.stateFilter);
+            this.stateFileChooser.addChoosableFileFilter(STATE_FILTER);
+            this.stateFileChooser.addChoosableFileFilter(GXL_FILTER);
+            this.stateFileChooser.setFileFilter(STATE_FILTER);
         }
         return this.stateFileChooser;
     }
@@ -2266,8 +2262,8 @@ public class Simulator {
     JFileChooser getRuleFileChooser() {
         if (this.ruleFileChooser == null) {
             this.ruleFileChooser = new GrooveFileChooser();
-            this.ruleFileChooser.addChoosableFileFilter(this.ruleFilter);
-            this.ruleFileChooser.setFileFilter(this.ruleFilter);
+            this.ruleFileChooser.addChoosableFileFilter(RULE_FILTER);
+            this.ruleFileChooser.setFileFilter(RULE_FILTER);
         }
         return this.ruleFileChooser;
     }
@@ -2296,9 +2292,9 @@ public class Simulator {
     private void initGrammarLoaders() {
         this.grammarExtensions.clear();
         // loader for directories representing grammars
-        this.grammarExtensions.add(GPS_FILTER);
+        this.grammarExtensions.add(GRAMMAR_FILTER);
         // loader for archives (jar/zip) containing directories representing
-        // grammmars
+        // grammars.
         this.grammarExtensions.add(JAR_FILTER);
         this.grammarExtensions.add(ZIP_FILTER);
     }
@@ -2776,12 +2772,7 @@ public class Simulator {
     /**
      * The graph loader used for saving arbitrary graphs.
      */
-    private final DefaultGxl graphLoader = new DefaultGxl();
-
-    /**
-     * The graph loader used for graphs in .aut format
-     */
-    private final Xml<AspectGraph> autLoader = new AspectGxl(new Aut());
+    private final DefaultGxl graphLoader = DefaultGxl.getInstance();
 
     /**
      * File chooser for grammar files.
@@ -2807,27 +2798,6 @@ public class Simulator {
      * Graph exporter.
      */
     private final Exporter exporter = new Exporter();
-
-    /**
-     * Extension filter for state files.
-     */
-    private final ExtensionFilter stateFilter = Groove.createStateFilter();
-
-    /**
-     * Extension filter for CADP <code>.aut</code> files.
-     */
-    private final ExtensionFilter autFilter = new ExtensionFilter(
-        "CADP .aut files", Groove.AUT_EXTENSION);
-
-    /**
-     * Extension filter for rule files.
-     */
-    private final ExtensionFilter ruleFilter = Groove.createRuleFilter();
-
-    /**
-     * Extension filter used for exporting the LTS in jpeg format.
-     */
-    private final ExtensionFilter gxlFilter = Groove.createGxlFilter();
 
     /**
      * Set of registered simulation listeners.
@@ -4342,7 +4312,7 @@ public class Simulator {
                         new File(grammarFile.getParentFile(), NEW_GRAMMAR_NAME);
                 }
                 getGrammarFileChooser().setSelectedFile(newGrammar);
-                getGrammarFileChooser().setFileFilter(GPS_FILTER);
+                getGrammarFileChooser().setFileFilter(GRAMMAR_FILTER);
                 boolean ok = false;
                 while (!ok) {
                     if (getGrammarFileChooser().showOpenDialog(getFrame()) == JFileChooser.APPROVE_OPTION) {
@@ -4837,18 +4807,6 @@ public class Simulator {
             // now save, if so required
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = getGrammarFileChooser().getSelectedFile();
-                FileFilter filter = getGrammarFileChooser().getFileFilter();
-                FileFilterAction action = getActionFromFilter(filter);
-                if (!action.test(getGrammarView())) {
-                    // The test from the filter failed. Cannot change grammar.
-                    JOptionPane.showMessageDialog(getFrame(), action.text(),
-                        "Save error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                } else {
-                    // The test from the filter passed. Modify the grammar
-                    // accordingly.
-                    action.modify(getGrammarView());
-                }
                 if (confirmOverwriteGrammar(selectedFile)) {
                     doSaveGrammar(selectedFile, true);
                 }
@@ -4869,14 +4827,6 @@ public class Simulator {
             this.saveGraphAction = new SaveGraphAction();
         }
         return this.saveGraphAction;
-    }
-
-    /**
-     * @param filter the filter to search.
-     * @return the action associated with the filter.
-     */
-    public FileFilterAction getActionFromFilter(FileFilter filter) {
-        return extensionsToActions.get(filter);
     }
 
     /**
@@ -4905,7 +4855,7 @@ public class Simulator {
         }
 
         private void actionForState(AspectGraph graph) {
-            ExtensionFilter filter = Simulator.this.stateFilter;
+            ExtensionFilter filter = STATE_FILTER;
             String name = graph.getName();
             getStateFileChooser().setFileFilter(filter);
             getStateFileChooser().setSelectedFile(new File(name));
@@ -4935,8 +4885,8 @@ public class Simulator {
         }
 
         private void actionForLTS(GTS gts) {
-            ExtensionFilter filter = Simulator.this.gxlFilter;
-            getStateFileChooser().setFileFilter(Simulator.this.gxlFilter);
+            ExtensionFilter filter = GXL_FILTER;
+            getStateFileChooser().setFileFilter(filter);
             getStateFileChooser().setSelectedFile(new File(LTS_FILE_NAME));
             File selectedFile =
                 ExtensionFilter.showSaveDialog(getStateFileChooser(),
@@ -4952,7 +4902,7 @@ public class Simulator {
         /** Saves a given graph to a given file. */
         private void doSaveGTS(GTS gts, File selectedFile) {
             try {
-                Simulator.this.graphLoader.marshalGraph(gts, selectedFile);
+                Simulator.this.graphLoader.marshalAnyGraph(gts, selectedFile);
             } catch (IOException exc) {
                 showErrorDialog(String.format("Error while saving LTS to '%s'",
                     selectedFile), exc);
@@ -5625,52 +5575,6 @@ public class Simulator {
 
     /** Name of this application. */
     private static final String APPLICATION_NAME = "Production Simulator";
-
-    /** Filter for rule system files. */
-    static private final ExtensionFilter GPS_FILTER =
-        Groove.createRuleSystemFilter();
-    /** File filter for jar files. */
-    static private final ExtensionFilter JAR_FILTER = new ExtensionFilter(
-        "Jar-file containing Groove production system", ".gps.jar", false) {
-        @Override
-        public boolean accept(File file) {
-            return super.accept(file) || file.isDirectory()
-                && !GPS_FILTER.hasExtension(file.getName());
-        }
-    };
-    /** File filter for zip files. */
-    static private final ExtensionFilter ZIP_FILTER = new ExtensionFilter(
-        "Zip-file containing Groove production system", ".gps.zip", false) {
-        @Override
-        public boolean accept(File file) {
-            return super.accept(file) || file.isDirectory()
-                && !GPS_FILTER.hasExtension(file.getName());
-        }
-
-    };
-
-    /**
-     * Empty FileFilterAction.
-     */
-    private static final FileFilterAction dummyFileFilterAction =
-        new FileFilterAction() {
-            @Override
-            public String text() {
-                return "";
-            }
-        };
-
-    /**
-     * Mapping from extension filters to actions.
-     */
-    private static final Map<ExtensionFilter,FileFilterAction> extensionsToActions =
-        new HashMap<ExtensionFilter,FileFilterAction>();
-
-    static {
-        extensionsToActions.put(GPS_FILTER, dummyFileFilterAction);
-        extensionsToActions.put(JAR_FILTER, dummyFileFilterAction);
-        extensionsToActions.put(ZIP_FILTER, dummyFileFilterAction);
-    }
 
     /**
      * Minimum width of the rule tree component.

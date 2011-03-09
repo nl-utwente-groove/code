@@ -14,8 +14,17 @@
  * 
  * $Id$
  */
-package groove.io;
+package groove.io.store;
 
+import static groove.io.FilterList.CONTROL_FILTER;
+import static groove.io.FilterList.GRAMMAR_FILTER;
+import static groove.io.FilterList.JAR_FILTER;
+import static groove.io.FilterList.LAYOUT_FILTER;
+import static groove.io.FilterList.PROPERTIES_FILTER;
+import static groove.io.FilterList.RULE_FILTER;
+import static groove.io.FilterList.STATE_FILTER;
+import static groove.io.FilterList.TYPE_FILTER;
+import static groove.io.FilterList.ZIP_FILTER;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
@@ -23,6 +32,10 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
 import groove.gui.layout.LayoutMap;
+import groove.io.ExtensionFilter;
+import groove.io.ExtensionList;
+import groove.io.LayoutIO;
+import groove.io.xml.JaxbGxlIO;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
@@ -63,7 +76,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     /**
      * Constructs a store from a given file. The file should be a JAR or ZIP
      * file containing a single subdirectory with extension
-     * {@link Groove#RULE_SYSTEM_EXTENSION}. The store is immutable.
+     * {@link ExtensionList#RULE_SYSTEM_EXTENSION}. The store is immutable.
      * @param file source JAR or ZIP file containing the rule system
      * @throws IllegalArgumentException if <code>file</code> is not a correct
      *         archive
@@ -148,26 +161,6 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
                     connection.getJarFileURL().getPath()));
         }
         return result;
-        // if (jarEntryName == null) {
-        // }
-        // // look inside the jar
-        // JarFile jarFile = connection.getJarFile();
-        // JarEntry jarEntry = jarFile.entries().nextElement();
-        // if (jarEntry == null) {
-        // throw new IllegalArgumentException("Archive is empty");
-        // } else {
-        // // take the first part of the entry name as grammar name
-        // File fileFromEntry = new File(jarEntry.getName());
-        // while (fileFromEntry.getParent() != null) {
-        // fileFromEntry = fileFromEntry.getParentFile();
-        // }
-        // result = fileFromEntry.getName();
-        // }
-        // } else {
-        // // take the last part of the entry name as grammar name
-        // result = new File(jarEntryName).getName();
-        // }
-        // return result;
     }
 
     @Override
@@ -634,42 +627,8 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     private final Observable observable = new Observable();
 
     /** Name of the JAR protocol and file extension. */
-    static private final String JAR_PROTOCOL = "jar";
-    /** Name of the ZIP protocol and file extension. */
-    static private final String ZIP_PROTOCOL = "zip";
-    /** File filter to accept JAR files. */
-    static private final ExtensionFilter JAR_FILTER = new ExtensionFilter("."
-        + JAR_PROTOCOL);
-    /** File filter to accept ZIP files. */
-    static private final ExtensionFilter ZIP_FILTER = new ExtensionFilter("."
-        + ZIP_PROTOCOL);
-    /** File filter for graph grammars in the GPS format. */
-    static private final ExtensionFilter GRAMMAR_FILTER =
-        Groove.createRuleSystemFilter();
-
-    /** File filter for transformation rules in the GPR format. */
-    static private final ExtensionFilter RULE_FILTER =
-        Groove.createRuleFilter();
-
-    /** File filter for state files. */
-    static private final ExtensionFilter STATE_FILTER =
-        Groove.createStateFilter();
-
-    /** File filter for type files. */
-    static private final ExtensionFilter TYPE_FILTER =
-        Groove.createTypeFilter();
-
-    /** File filter for property files. */
-    static private final ExtensionFilter PROPERTIES_FILTER =
-        Groove.createPropertyFilter();
-
-    /** File filter for control files. */
-    static private final ExtensionFilter CONTROL_FILTER =
-        Groove.createControlFilter();
-
-    /** File filter for layout files. */
-    static private final ExtensionFilter LAYOUT_FILTER = new ExtensionFilter(
-        Groove.LAYOUT_EXTENSION);
+    static private final String JAR_PROTOCOL =
+        ExtensionList.JAR_EXTENSION.substring(1);
 
     private static class MyEdit extends AbstractUndoableEdit implements Edit {
         public MyEdit(int change) {

@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.io.importers;
+package groove.io;
 
 /**
  * @author Eduardo Zambon

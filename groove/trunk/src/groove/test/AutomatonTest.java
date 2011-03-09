@@ -23,8 +23,8 @@ import static org.junit.Assert.fail;
 import groove.graph.EdgeRole;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
-import groove.io.DefaultGxl;
-import groove.io.Xml;
+import groove.io.xml.DefaultGxl;
+import groove.io.xml.Xml;
 import groove.rel.LabelVar;
 import groove.rel.RegAut;
 import groove.rel.RegAut.Result;
@@ -69,7 +69,7 @@ public class AutomatonTest {
     /**
      * Graph loader used in this test case.
      */
-    static final Xml loader = new DefaultGxl();
+    static final Xml loader = DefaultGxl.getInstance();
     static final String testGraphName = "regexpr-test-graph";
     static HostGraph testGraph;
 

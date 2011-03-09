@@ -17,14 +17,16 @@
 package groove.io.format;
 
 import groove.graph.Graph;
+import groove.gui.jgraph.GraphJGraph;
 import groove.io.ExtensionFilter;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
  * @author Eduardo Zambon
  */
-public interface FileFormat {
+public interface FileFormat<G extends Graph<?,?>> {
 
     public String getDescription();
 
@@ -34,8 +36,14 @@ public interface FileFormat {
 
     public ExtensionFilter getFilter();
 
-    public Graph<?,?> load(String fileName);
+    public void load(G graph, String fileName) throws IOException;
 
-    public void save(Graph<?,?> graph, String fileName) throws IOException;
+    public void load(G graph, File file) throws IOException;
+
+    public void save(G graph, String fileName) throws IOException;
+
+    public void save(G graph, File file) throws IOException;
+
+    public void save(GraphJGraph jGraph, File file) throws IOException;
 
 }

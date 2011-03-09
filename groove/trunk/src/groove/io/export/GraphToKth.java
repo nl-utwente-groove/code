@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.io.exporters;
+package groove.io.export;
 
 import groove.algebra.StringAlgebra;
 import groove.graph.EdgeRole;
@@ -52,7 +52,6 @@ import java.util.Map;
  *   FlowNodes.
  *   
  * @author Eduardo Zambon
- * @version $Revision $
  */
 public final class GraphToKth {
 

@@ -16,6 +16,7 @@
  */
 package groove.test.graph;
 
+import static groove.io.FilterList.GXL_FILTER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -27,9 +28,7 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.iso.IsoChecker;
 import groove.graph.iso.PartitionMap;
-import groove.io.DefaultGxl;
-import groove.io.ExtensionFilter;
-import groove.util.Groove;
+import groove.io.xml.DefaultGxl;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,8 +54,6 @@ public abstract class GraphTest<N extends Node,E extends Edge<N>> {
     static public final int ISO_GRAPH_COUNT = 4;
 
     static private final File GraphTestDir = new File(GRAPH_TEST_DIR);
-
-    static private final ExtensionFilter gxlFilter = Groove.createGxlFilter();
 
     /**
      * The graph upon which most tests are done. It has three nodes, one of
@@ -136,7 +133,7 @@ public abstract class GraphTest<N extends Node,E extends Edge<N>> {
     }
 
     private File testFile(String fileName) {
-        return new File(GraphTestDir, gxlFilter.addExtension(fileName));
+        return new File(GraphTestDir, GXL_FILTER.addExtension(fileName));
     }
 
     @Test
@@ -487,6 +484,6 @@ public abstract class GraphTest<N extends Node,E extends Edge<N>> {
         // so there is little else to do here
     }
 
-    private final DefaultGxl xml = new DefaultGxl();
+    private final DefaultGxl xml = DefaultGxl.getInstance();
     private final DefaultFactory factory = DefaultFactory.instance();
 }

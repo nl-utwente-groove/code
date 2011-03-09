@@ -16,6 +16,12 @@
  */
 package groove.io;
 
+import static groove.io.FilterList.CONTROL_FILTER;
+import static groove.io.FilterList.GRAMMAR_FILTER;
+import static groove.io.FilterList.GXL_FILTER;
+import static groove.io.FilterList.RULE_FILTER;
+import static groove.io.FilterList.STATE_FILTER;
+import static groove.io.FilterList.TYPE_FILTER;
 import groove.util.Groove;
 
 import java.io.File;
@@ -77,7 +83,6 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      */
     @Override
     public String getDescription(File f) {
-        String name = f.getName();
         if (isControlFile(f)) {
             return "A control program";
         } else if (isRuleFile(f)) {
@@ -90,8 +95,6 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
             return "A graph production system";
         } else if (isGxlFile(f)) {
             return "A GXL-formatted graph";
-        } else if (name.endsWith(Groove.FSM_EXTENSION)) {
-            return "An FSM-formatted graph";
         } else {
             return null;
         }
@@ -152,7 +155,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @return <tt>true</tt> if <code>f</code> is a control program file
      */
     static protected boolean isControlFile(File f) {
-        return controlFilter.accept(f);
+        return CONTROL_FILTER.accept(f);
     }
 
     /**
@@ -173,7 +176,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @require <tt>f != null</tt>
      */
     static protected boolean isStateFile(File f) {
-        return stateFilter.accept(f);
+        return STATE_FILTER.accept(f);
     }
 
     /**
@@ -183,7 +186,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @require <tt>f != null</tt>
      */
     static protected boolean isGxlFile(File f) {
-        return gxlFilter.accept(f);
+        return GXL_FILTER.accept(f);
     }
 
     /**
@@ -193,7 +196,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @require <tt>f != null</tt>
      */
     static protected boolean isRuleFile(File f) {
-        return ruleFilter.accept(f);
+        return RULE_FILTER.accept(f);
     }
 
     /**
@@ -202,7 +205,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @return <tt>true</tt> if <code>f</code> is a graph type file
      */
     static protected boolean isTypeFile(File f) {
-        return typeFilter.accept(f);
+        return TYPE_FILTER.accept(f);
     }
 
     /**
@@ -213,19 +216,6 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @require <tt>f != null</tt>
      */
     static protected boolean isGpsFolder(File f) {
-        return ruleSystemFilter.accept(f);
+        return GRAMMAR_FILTER.accept(f);
     }
-
-    static private final java.io.FileFilter controlFilter =
-        Groove.createControlFilter(false);
-    static private final java.io.FileFilter gxlFilter =
-        Groove.createGxlFilter(false);
-    static private final java.io.FileFilter stateFilter =
-        Groove.createStateFilter(false);
-    static private final java.io.FileFilter ruleFilter =
-        Groove.createRuleFilter(false);
-    static private final java.io.FileFilter typeFilter =
-        Groove.createTypeFilter(false);
-    static private final java.io.FileFilter ruleSystemFilter =
-        Groove.createRuleSystemFilter(false);
 }

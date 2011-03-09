@@ -18,8 +18,8 @@ package groove.ecore2groove;
 
 import groove.algebra.AlgebraFamily;
 import groove.graph.DefaultGraph;
-import groove.io.SystemStore;
-import groove.io.SystemStoreFactory;
+import groove.io.store.SystemStore;
+import groove.io.store.SystemStoreFactory;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.view.aspect.AspectGraph;

@@ -16,6 +16,8 @@
  */
 package groove.explore;
 
+import static groove.io.FilterList.GRAMMAR_FILTER;
+import static groove.io.FilterList.STATE_FILTER;
 import groove.explore.encode.EncodedRuleMode;
 import groove.explore.encode.Serialized;
 import groove.explore.encode.TemplateList;
@@ -300,8 +302,7 @@ public class Generator extends CommandLineTool {
 
         URL url;
 
-        File f =
-            new File(this.ruleSystemFilter.addExtension(this.grammarLocation));
+        File f = new File(GRAMMAR_FILTER.addExtension(this.grammarLocation));
         try {
             if (f.exists()) {
                 url = Groove.toURL(f);
@@ -564,7 +565,7 @@ public class Generator extends CommandLineTool {
             } else {
                 for (GraphState finalState : getGTS().getFinalStates()) {
                     String outFileName = getFinalSaveName() + "-" + finalState;
-                    outFileName = this.gstFilter.addExtension(outFileName);
+                    outFileName = STATE_FILTER.addExtension(outFileName);
                     Groove.saveGraph(finalState.getGraph(), outFileName);
                 }
                 printfMedium("Resulting graphs saved: %s%n",
@@ -577,9 +578,7 @@ public class Generator extends CommandLineTool {
             }
             DefaultGraph gtsGraph =
                 getGTS().toPlainGraph(true, true, true, false);
-            if (!Groove.exportGraph(gtsGraph, getOutputFileName())) {
-                Groove.saveGraph(gtsGraph, getOutputFileName());
-            }
+            Groove.saveGraph(gtsGraph, getOutputFileName());
         }
     }
 
@@ -603,9 +602,8 @@ public class Generator extends CommandLineTool {
      */
     protected String getGrammarName() {
         StringBuilder result =
-            new StringBuilder(
-                new File(
-                    this.ruleSystemFilter.stripExtension(this.grammarLocation)).getName());
+            new StringBuilder(new File(
+                GRAMMAR_FILTER.stripExtension(this.grammarLocation)).getName());
         if (this.startStateName != null) {
             result.append(START_STATE_SEPARATOR);
             result.append(this.startStateName);
@@ -655,13 +653,6 @@ public class Generator extends CommandLineTool {
     /** The graph grammar used for the generation. */
     private GraphGrammar grammar;
 
-    /** File filter for rule systems. */
-    protected final ExtensionFilter ruleSystemFilter =
-        Groove.createRuleSystemFilter();
-    /** File filter for graph files (GXL). */
-    protected final ExtensionFilter gxlFilter = Groove.createGxlFilter();
-    /** File filter for graph state files (GST). */
-    protected final ExtensionFilter gstFilter = Groove.createStateFilter();
     /** File filter for graph files (GXL or GST). */
     protected final ExtensionFilter graphFilter = new ExtensionFilter(
         "Serialized graph files", GRAPH_FILE_EXTENSION);
