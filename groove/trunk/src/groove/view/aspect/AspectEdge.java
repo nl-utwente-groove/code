@@ -36,6 +36,7 @@ import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
 import groove.trans.RuleLabel;
+import groove.util.Duo;
 import groove.util.ExprParser;
 import groove.util.Fixable;
 import groove.view.FormatError;
@@ -407,6 +408,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     }
 
     /** Setter for the aspect type. */
+    @SuppressWarnings("unchecked")
     private void setAspect(Aspect aspect) throws FormatException {
         AspectKind kind = aspect.getKind();
         assert !kind.isAttrKind() && kind != AspectKind.PATH
@@ -437,7 +439,13 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         }
         // actually set the type, if the passed-in value was not a quantifier
         // (which we use only for its level name)
-        if (!kind.isQuantifier()) {
+        if (kind == AspectKind.MULT_IN) {
+            this.inMult = (Duo<Integer>) aspect.getContent();
+        } else if (kind == AspectKind.MULT_OUT) {
+            this.outMult = (Duo<Integer>) aspect.getContent();
+        } else if (kind == AspectKind.COMPOSITE) {
+            this.composite = true;
+        } else if (!kind.isQuantifier()) {
             if (this.aspect == null) {
                 this.aspect = aspect;
             } else if (!this.aspect.equals(aspect)) {
@@ -546,6 +554,21 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         return this.operator;
     }
 
+    /** Indicates if this is a composite type edge. */
+    public boolean isComposite() {
+        return this.composite;
+    }
+
+    /** Returns the incoming multiplicity of this (type) edge, if any. */
+    public Duo<Integer> getInMult() {
+        return this.inMult;
+    }
+
+    /** Returns the outgoing multiplicity of this (type) edge, if any. */
+    public Duo<Integer> getOutMult() {
+        return this.outMult;
+    }
+
     /** Setter for the label mode. */
     private void setLabelMode(Aspect type) throws FormatException {
         AspectKind kind = type.getKind();
@@ -599,6 +622,16 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     private int argumentNr = -1;
     /** Algebraic operator, if this is an operator edge. */
     private Operator operator = null;
+    /** The incoming multiplicity of this (type) edge.
+     * {@code null} if there is no incoming multiplicity declared.
+     */
+    private Duo<Integer> inMult;
+    /** The outgoing multiplicity of this (type) edge.
+     * {@code null} if there is no outgoing multiplicity declared.
+     */
+    private Duo<Integer> outMult;
+    /** Flag indicating that this is a composite type edge. */
+    private boolean composite;
     /** Flag indicating if the edge is fixed. */
     private boolean fixed;
     /** List of syntax errors in this edge. */

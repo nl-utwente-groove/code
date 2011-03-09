@@ -23,6 +23,7 @@ import groove.algebra.Constant;
 import groove.algebra.Operator;
 import groove.graph.GraphRole;
 import groove.util.Colors;
+import groove.util.Duo;
 import groove.util.Pair;
 import groove.view.FormatException;
 
@@ -93,6 +94,12 @@ public enum AspectKind {
     ABSTRACT("abs"),
     /** Indicates a subtype relation. */
     SUBTYPE("sub"),
+    /** Indicates an incoming multiplicity. */
+    MULT_IN("in", ContentKind.MULTIPLICITY),
+    /** Indicates an outgoing multiplicity. */
+    MULT_OUT("out", ContentKind.MULTIPLICITY),
+    /** Indicates an outgoing multiplicity. */
+    COMPOSITE("part"),
 
     // label-related aspects
     /** Indicates that the remainder of the label is a regular expression. */
@@ -374,8 +381,8 @@ public enum AspectKind {
             case TYPE:
                 allowedNodeKinds.put(role, EnumSet.of(NONE, REMARK, INT, BOOL,
                     REAL, STRING, ABSTRACT, COLOR));
-                allowedEdgeKinds.put(role,
-                    EnumSet.of(NONE, REMARK, ABSTRACT, SUBTYPE));
+                allowedEdgeKinds.put(role, EnumSet.of(NONE, REMARK, ABSTRACT,
+                    SUBTYPE, MULT_IN, MULT_OUT, COMPOSITE));
                 break;
             default:
                 assert !role.inGrammar();
@@ -444,6 +451,74 @@ public enum AspectKind {
          * Real number constant, used in a typed value aspect. 
          */
         REAL_LITERAL("real"),
+        /**
+         * Multiplicity: either a single number,
+         * or of the form {@code n..m} where {@code n<m} or {@code m=*}.
+         */
+        MULTIPLICITY {
+            @Override
+            Pair<Object,String> parse(String text, int pos)
+                throws FormatException {
+                int end = text.indexOf(SEPARATOR, pos);
+                assert end >= 0;
+                if (end == pos) {
+                    throw new FormatException("Malformed multiplicity");
+                }
+                Duo<Integer> content =
+                    parseContent(text.substring(pos + 1, end));
+                return new Pair<Object,String>(content, text.substring(end + 1));
+            }
+
+            @Override
+            Duo<Integer> parseContent(String text) throws FormatException {
+                int dotdot = text.indexOf(MULT_SEPARATOR);
+                int lower, upper;
+                try {
+                    if (dotdot < 0) {
+                        // the multiplicity is a single value
+                        lower = upper = Integer.parseInt(text);
+                    } else {
+                        lower = Integer.parseInt(text.substring(0, dotdot));
+                        String upperText =
+                            text.substring(dotdot + MULT_SEPARATOR.length());
+                        if (upperText.equals("*")) {
+                            upper = Integer.MAX_VALUE;
+                        } else {
+                            upper = Integer.parseInt(upperText);
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    throw new FormatException(
+                        "Malformed multiplicity value %s", text);
+                }
+                if (lower < 0) {
+                    throw new FormatException("Negative lower bound %d", lower);
+                } else if (lower > upper) {
+                    throw new FormatException(
+                        "Lower bound %d larger than upper bound %d", lower,
+                        upper);
+                }
+                return new Duo<Integer>(lower, upper);
+            }
+
+            @Override
+            String toString(Object content) {
+                String result;
+                @SuppressWarnings("unchecked")
+                Duo<Integer> mult = (Duo<Integer>) content;
+                int lower = mult.one();
+                int upper = mult.two();
+                if (lower == upper) {
+                    result = "" + lower;
+                } else {
+                    boolean unbounded = upper == Integer.MAX_VALUE;
+                    result =
+                        "" + lower + MULT_SEPARATOR
+                            + (unbounded ? MULT_UNBOUNDED : upper);
+                }
+                return result;
+            }
+        },
         /** 
          * Parameter number, starting with a dollar sign.
          * The content is a non-negative value of type {@link Integer}. 
@@ -739,6 +814,10 @@ public enum AspectKind {
 
         private final String signature;
 
+        /** Symbolic representation of unbounded multiplicity. */
+        static public final String MULT_UNBOUNDED = "*";
+        /** Separator sequence in a multiplicity value. */
+        static public final String MULT_SEPARATOR = "..";
         /** Start character of parameter strings. */
         static public final char PARAM_START_CHAR = '$';
     }
