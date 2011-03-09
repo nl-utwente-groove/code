@@ -56,6 +56,7 @@ public final class EdgeMatEqSystem extends EquationSystem {
     /** The set of incoming edge signatures involved in the operation. */
     private final CountingSet inEsSet;
     /** The set of edges that will be frozen by the operation. */
+    // EDUARDO: Pimp this... Use a better data structure.
     private final Set<ShapeEdge> frozenEdges;
 
     // ------------------------------------------------------------------------

@@ -26,6 +26,7 @@ import java.util.HashSet;
  * 
  * @author Eduardo Zambon
  */
+//EDUARDO: Pimp this... Use a better data structure. Make it non-generic?
 public class EquivRelation<T> extends HashSet<EquivClass<T>> {
 
     // ------------------------------------------------------------------------
