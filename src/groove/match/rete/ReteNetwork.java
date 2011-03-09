@@ -21,7 +21,8 @@ import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
-import groove.io.DefaultGxl;
+import groove.io.FilterList;
+import groove.io.xml.DefaultGxl;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.AbstractCondition;
@@ -38,7 +39,6 @@ import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleName;
 import groove.trans.RuleNode;
-import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
@@ -942,9 +942,9 @@ public class ReteNetwork {
     public void save(String filePath, String name) {
         DefaultGraph graph = toPlainGraph();
         graph.setName(name);
-        File file = new File(Groove.createGxlFilter().addExtension(filePath));
+        File file = new File(FilterList.GXL_FILTER.addExtension(filePath));
         try {
-            DefaultGxl graphLoader = new DefaultGxl();
+            DefaultGxl graphLoader = DefaultGxl.getInstance();
             graphLoader.marshalGraph(graph, file);
         } catch (IOException exc) {
             throw new RuntimeException(String.format(

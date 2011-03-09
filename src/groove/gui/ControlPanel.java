@@ -20,7 +20,7 @@ import groove.control.CtrlAut;
 import groove.control.parse.CtrlTokenMaker;
 import groove.gui.jgraph.CtrlJGraph;
 import groove.gui.jgraph.JAttr;
-import groove.io.SystemStore;
+import groove.io.store.SystemStore;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;

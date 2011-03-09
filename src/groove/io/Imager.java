@@ -16,11 +16,16 @@
  */
 package groove.io;
 
+import static groove.io.FilterList.GRAMMAR_FILTER;
+import static groove.io.FilterList.GXL_FILTER;
+import static groove.io.FilterList.RULE_FILTER;
+import static groove.io.FilterList.STATE_FILTER;
+import static groove.io.FilterList.TYPE_FILTER;
 import groove.graph.DefaultGraph;
 import groove.gui.Options;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
-import groove.io.exporters.Exporter;
+import groove.io.xml.LayedOutXml;
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
 import groove.util.Groove;
@@ -224,9 +229,6 @@ public class Imager extends CommandLineTool {
      * {@link Groove}gxl filter, state filter or rule filter.
      * @param file the file to be tested for acceptance
      * @return a filter that accepts <tt>file</tt>, or <tt>null</tt>.
-     * @see Groove#createGxlFilter()
-     * @see Groove#createStateFilter()
-     * @see Groove#createRuleFilter()
      */
     public ExtensionFilter accept(File file) {
         for (ExtensionFilter element : acceptFilters) {
@@ -448,24 +450,9 @@ public class Imager extends CommandLineTool {
     /** The loader used for the xml files. */
     static final LayedOutXml graphLoader = new LayedOutXml();
 
-    /** The rule filter. */
-    static final ExtensionFilter ruleFilter = Groove.createRuleFilter();
-
-    /** The type filter. */
-    static final ExtensionFilter typeFilter = Groove.createTypeFilter();
-
-    /** The state filter. */
-    static final ExtensionFilter stateFilter = Groove.createStateFilter();
-
-    /** The gxl filter. */
-    static final ExtensionFilter gxlFilter = Groove.createGxlFilter();
-
-    /** The production system filter. */
-    static final ExtensionFilter gpsFilter = Groove.createRuleSystemFilter();
-
     /** An array of all filters identifying files that can be imaged. */
     static final ExtensionFilter[] acceptFilters = new ExtensionFilter[] {
-        gpsFilter, ruleFilter, typeFilter, stateFilter, gxlFilter};
+        GRAMMAR_FILTER, RULE_FILTER, TYPE_FILTER, STATE_FILTER, GXL_FILTER};
 
     private class EditorViewOption implements CommandLineOption {
         @Override
@@ -768,7 +755,7 @@ public class Imager extends CommandLineTool {
             for (ExtensionFilter filter : acceptFilters) {
                 this.browseChooser.addChoosableFileFilter(filter);
             }
-            this.browseChooser.setFileFilter(gpsFilter);
+            this.browseChooser.setFileFilter(GRAMMAR_FILTER);
         }
 
         /** Initialises the actions of the imager. */

@@ -16,6 +16,7 @@
  */
 package groove.test.control;
 
+import static groove.io.FilterList.CONTROL_FILTER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
@@ -28,7 +29,6 @@ import groove.control.CtrlLabel;
 import groove.control.CtrlLoader;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlTransition;
-import groove.io.ExtensionFilter;
 import groove.trans.GraphGrammar;
 import groove.trans.SPORule;
 import groove.util.Groove;
@@ -49,8 +49,6 @@ import org.junit.Test;
 public class CtrlBuildTest {
     private static final String GRAMMAR_DIR = "junit/samples/";
     private static final String CONTROL_DIR = "junit/control/";
-    private static final ExtensionFilter CONTROL_FILTER =
-        Groove.createControlFilter();
 
     private final CtrlLoader parser = CtrlLoader.getInstance();
     private GraphGrammar testGrammar;

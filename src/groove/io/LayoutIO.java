@@ -25,7 +25,6 @@ import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.util.ExprParser;
-import groove.util.Groove;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
@@ -507,7 +506,7 @@ public class LayoutIO {
         VERSION_PREFIX, CURRENT_VERSION_NUMBER);
     /** Error message in case an error is detected in the layout file. */
     static private final String LAYOUT_FORMAT_ERROR = String.format(
-        "Error in %s file", Groove.LAYOUT_EXTENSION);
+        "Error in %s file", ExtensionList.LAYOUT_EXTENSION);
     /** Double quote character. */
     static private final char DOUBLE_QUOTE = '\"';
     /** Splitting expression for non-empty white space. */

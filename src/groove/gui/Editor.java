@@ -22,6 +22,13 @@ import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
+import static groove.io.ExtensionList.GXL_EXTENSION;
+import static groove.io.ExtensionList.RULE_EXTENSION;
+import static groove.io.ExtensionList.STATE_EXTENSION;
+import static groove.io.ExtensionList.TYPE_EXTENSION;
+import static groove.io.FilterList.RULE_FILTER;
+import static groove.io.FilterList.STATE_FILTER;
+import static groove.io.FilterList.TYPE_FILTER;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.TypeGraph;
@@ -33,12 +40,13 @@ import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraphMode;
-import groove.io.AspectGxl;
+import groove.io.Exporter;
 import groove.io.ExtensionFilter;
+import groove.io.FilterList;
 import groove.io.GrooveFileChooser;
-import groove.io.LayedOutXml;
 import groove.io.PriorityFileName;
-import groove.io.exporters.Exporter;
+import groove.io.xml.AspectGxl;
+import groove.io.xml.LayedOutXml;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.util.Property;
@@ -1835,16 +1843,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
          * /** Lazily creates and returns the GXL filter.
          */
         private ExtensionFilter getGxlFilter() {
-            if (this.gxlFilter == null) {
-                this.gxlFilter = Groove.createGxlFilter();
-            }
-            return this.gxlFilter;
+            return FilterList.GXL_FILTER;
         }
-
-        /**
-         * Extension filter used for the gxl format.
-         */
-        private ExtensionFilter gxlFilter;
 
         /** Lazily creates and returns the graph filter. */
         private ExtensionFilter getGraphFilter() {
@@ -1869,8 +1869,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
                     public String getDescription() {
                         return String.format(
                             "Graph files (*%s, *%s, *%s, *%s)",
-                            Groove.STATE_EXTENSION, Groove.RULE_EXTENSION,
-                            Groove.TYPE_EXTENSION, Groove.GXL_EXTENSION);
+                            STATE_EXTENSION, RULE_EXTENSION, TYPE_EXTENSION,
+                            GXL_EXTENSION);
                     }
 
                     @Override
@@ -1900,42 +1900,18 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
         /** Lazily creates and returns the rule filter. */
         private ExtensionFilter getRuleFilter() {
-            if (this.ruleFilter == null) {
-                this.ruleFilter = Groove.createRuleFilter();
-            }
-            return this.ruleFilter;
+            return RULE_FILTER;
         }
-
-        /**
-         * Extension filter for rule files.
-         */
-        private ExtensionFilter ruleFilter;
 
         /** Lazily creates and returns the state filter. */
         private ExtensionFilter getStateFilter() {
-            if (this.stateFilter == null) {
-                this.stateFilter = Groove.createStateFilter();
-            }
-            return this.stateFilter;
+            return STATE_FILTER;
         }
-
-        /**
-         * Extension filter for state files.
-         */
-        private ExtensionFilter stateFilter;
 
         /** Lazily creates and returns the type filter. */
         private ExtensionFilter getTypeFilter() {
-            if (this.typeFilter == null) {
-                this.typeFilter = Groove.createTypeFilter();
-            }
-            return this.typeFilter;
+            return TYPE_FILTER;
         }
-
-        /**
-         * Extension filter for type files.
-         */
-        private ExtensionFilter typeFilter;
 
         /** Map of graph roles to extension filters. */
         private final Map<GraphRole,ExtensionFilter> filters =

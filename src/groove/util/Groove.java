@@ -16,6 +16,10 @@
  */
 package groove.util;
 
+import static groove.io.ExtensionList.PROPERTY_EXTENSION;
+import static groove.io.FilterList.GRAMMAR_FILTER;
+import static groove.io.FilterList.GXL_FILTER;
+import static groove.io.FilterList.STATE_FILTER;
 import groove.graph.DefaultGraph;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -23,12 +27,8 @@ import groove.graph.LabelStore;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.iso.IsoChecker;
-import groove.io.Aut;
-import groove.io.DefaultGxl;
 import groove.io.ExtensionFilter;
-import groove.io.Xml;
-import groove.io.exporters.Exporter;
-import groove.io.exporters.Exporter.StructuralFormat;
+import groove.io.xml.DefaultGxl;
 import groove.match.GraphSearchPlanFactory;
 import groove.samples.calc.DefaultGraphCalculator;
 import groove.samples.calc.GraphCalculator;
@@ -54,9 +54,7 @@ import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -91,35 +89,8 @@ public class Groove {
     public static final String SAMPLE_DIR = WORKING_DIR + FILE_SEPARATOR
         + "samples";
 
-    /** Extension for GXL (Graph eXchange Language) files. */
-    public static final String GXL_EXTENSION = ".gxl";
-    /** Extension for GPR (Graph Production Rule) files. */
-    public static final String RULE_EXTENSION = ".gpr";
-    /** Extension for GST (Graph STate) files. */
-    public static final String STATE_EXTENSION = ".gst";
-    /** Extension for GTP (Graph TYpe) files. */
-    public static final String TYPE_EXTENSION = ".gty";
-    /** Extension for GPS (Graph Production System) files. */
-    public static final String RULE_SYSTEM_EXTENSION = ".gps";
-    /** Extension for FSM (Finite State Machine) files. */
-    public static final String FSM_EXTENSION = ".fsm";
-    /** Extension for JPG image files. */
-    public static final String JPG_EXTENSION = ".jpg";
-    /** Extension for PNG (Portable Network Graphics) files. */
-    public static final String PNG_EXTENSION = ".png";
-    /** Extension for EPS (Embedded PostScript) files. */
-    public static final String EPS_EXTENSION = ".eps";
-    /** Extension for CADP <code>.aut</code> files. */
-    public static final String AUT_EXTENSION = ".aut";
-    /** Extension for Graph Layout files. */
-    public static final String LAYOUT_EXTENSION = ".gl";
     /** Extension for text files. */
     public static final String TEXT_EXTENSION = ".txt";
-
-    /** Extension for KTH <code>.kth</code> files.
-     *  Used by the program analysis tool by Marieke et al. 
-     */
-    public static final String KTH_EXTENSION = ".kth";
 
     /** Default name for the start graph. */
     public static final String DEFAULT_START_GRAPH_NAME = "start";
@@ -129,14 +100,10 @@ public class Groove {
 
     /** Default name for the type graph */
     public static final String DEFAULT_TYPE_NAME = "type";
-    /** Extension for control files. */
-    public static final String CONTROL_EXTENSION = ".gcp";
 
     /** Default name for property files. */
     public static final String PROPERTY_NAME = "system";
 
-    /** Extension for property files. */
-    public static final String PROPERTY_EXTENSION = ".properties";
     /** File name for GUI properties. */
     public static final String GUI_PROPERTIES_FILE = "groove.gui"
         + PROPERTY_EXTENSION;
@@ -338,177 +305,11 @@ public class Groove {
     }
 
     /**
-     * Returns a fresh extension filter for {@link #AUT_EXTENSION}.
-     * @see #AUT_EXTENSION
-     */
-    public static ExtensionFilter createAutFilter() {
-        return getFilter("CADP .aut files", AUT_EXTENSION, true);
-    }
-
-    /**
-     * Returns a fresh extension filer for <tt>CONTROL_EXTENSION</tt>. By
-     * default, the filter accepts directories.
-     */
-    public static ExtensionFilter createControlFilter() {
-        return createControlFilter(true);
-    }
-
-    /**
-     * Returns a fresh extension filer for <tt>CONTROL_EXTENSION</tt>. A switch
-     * controls whether the filter accepts directories.
-     * @param acceptDirectories if true, the filter accepts directories.
-     */
-    public static ExtensionFilter createControlFilter(boolean acceptDirectories) {
-        return new ExtensionFilter("Groove control files", CONTROL_EXTENSION,
-            acceptDirectories);
-    }
-
-    /**
-     * Returns a fresh extension filter for <tt>GXL_EXTENSION</tt>. By default,
-     * the filter accepts directories.
-     * @see #GXL_EXTENSION
-     */
-    public static ExtensionFilter createGxlFilter() {
-        return createGxlFilter(true);
-    }
-
-    /**
-     * Returns a fresh an extension filter for <tt>GXL_EXTENSION</tt>. A switch
-     * controls whether the filter accepts directories.
-     * @param acceptDirectories if true, the filter accepts directories.
-     * @see #GXL_EXTENSION
-     */
-    public static ExtensionFilter createGxlFilter(boolean acceptDirectories) {
-        return getFilter("GXL files", GXL_EXTENSION, acceptDirectories);
-    }
-
-    /**
-     * Returns a fresh extension filter for <tt>RULE_EXTENSION</tt>. By default,
-     * the filter accepts directories.
-     * @see #RULE_EXTENSION
-     */
-    public static ExtensionFilter createRuleFilter() {
-        return createRuleFilter(true);
-    }
-
-    /**
-     * Returns a fresh an extension filter for <tt>RULE_EXTENSION</tt>. A switch
-     * controls whether the filter accepts directories.
-     * @param acceptDirectories if true, the filter accepts directries.
-     * @see #RULE_EXTENSION
-     */
-    public static ExtensionFilter createRuleFilter(boolean acceptDirectories) {
-        return getFilter("Groove production rules", RULE_EXTENSION,
-            acceptDirectories);
-    }
-
-    /**
-     * Returns a fresh extension filter for <tt>RULE_SYSTEM_EXTENSION</tt>. By
-     * default, the filter accepts directories.
-     * @see #RULE_SYSTEM_EXTENSION
-     */
-    public static ExtensionFilter createRuleSystemFilter() {
-        return createRuleSystemFilter(true);
-    }
-
-    /**
-     * Returns a fresh an extension filter for <tt>RULE_SYSTEM_EXTENSION</tt>. A
-     * switch controls whether the filter accepts directories.
-     * @param acceptDirectories if true, the filter accepts directories.
-     * @see #RULE_SYSTEM_EXTENSION
-     */
-    public static ExtensionFilter createRuleSystemFilter(
-            boolean acceptDirectories) {
-        return getFilter("Groove production systems", RULE_SYSTEM_EXTENSION,
-            acceptDirectories);
-    }
-
-    /**
-     * Returns a fresh extension filter for <tt>FSM_EXTENSION</tt>. By default,
-     * the filter accepts directories.
-     * @see #FSM_EXTENSION
-     */
-    public static ExtensionFilter createFsmFilter() {
-        return getFilter("FSM layout files", FSM_EXTENSION, true);
-    }
-
-    /**
-     * Returns a fresh extension filter for <tt>STATE_EXTENSION</tt>. By
-     * default, the filter accepts directories.
-     * @see #STATE_EXTENSION
-     */
-    public static ExtensionFilter createStateFilter() {
-        return createStateFilter(true);
-    }
-
-    /**
-     * Returns a fresh an extension filter for <tt>STATE_EXTENSION</tt>. A
-     * switch controls whether the filter accepts directories.
-     * @param acceptDirectories if true, the filter accepts directories.
-     * @see #STATE_EXTENSION
-     */
-    public static ExtensionFilter createStateFilter(boolean acceptDirectories) {
-        return getFilter("Groove state graphs", STATE_EXTENSION,
-            acceptDirectories);
-    }
-
-    /**
-     * Returns a fresh extension filter for {@link #TYPE_EXTENSION}. By default,
-     * the filter accepts directories.
-     * @see #TYPE_EXTENSION
-     */
-    public static ExtensionFilter createTypeFilter() {
-        return createTypeFilter(true);
-    }
-
-    /**
-     * Returns a fresh extension filter for {@link #TYPE_EXTENSION}. A switch
-     * controls whether the filter accepts directories.
-     * @param acceptDirectories if true, the filter accepts directories.
-     * @see #TYPE_EXTENSION
-     */
-    public static ExtensionFilter createTypeFilter(boolean acceptDirectories) {
-        return getFilter("Groove type graphs", TYPE_EXTENSION,
-            acceptDirectories);
-    }
-
-    /**
      * Returns a fresh extension filer for <tt>TEXT_EXTENSION</tt>. By default,
      * the filter accepts directories.
      */
     public static ExtensionFilter createTextFilter() {
         return new ExtensionFilter("Text files", TEXT_EXTENSION);
-    }
-
-    /**
-     * Returns a fresh extension filter for <tt>PROPERTIES_EXTENSION</tt>. By
-     * default, the filter accepts directories.
-     * @see #STATE_EXTENSION
-     */
-    public static ExtensionFilter createPropertyFilter() {
-        return new ExtensionFilter("Groove property files", PROPERTY_EXTENSION);
-    }
-
-    /**
-     * Returns an extension filter with the required properties.
-     * @param description general description of the filter
-     * @param extension the extension to be filtered
-     * @param acceptDirectories flag controlling whether directories should be
-     *        accepted by the filter.
-     * @return a filter with the required properties
-     */
-    public static ExtensionFilter getFilter(String description,
-            String extension, boolean acceptDirectories) {
-        Duo<ExtensionFilter> result = extensionFilterMap.get(extension);
-        if (result == null) {
-            ExtensionFilter first =
-                new ExtensionFilter(description, extension, false);
-            ExtensionFilter second =
-                new ExtensionFilter(description, extension, true);
-            result = new Duo<ExtensionFilter>(first, second);
-            extensionFilterMap.put(extension, result);
-        }
-        return acceptDirectories ? result.two() : result.one();
     }
 
     /**
@@ -533,11 +334,10 @@ public class Groove {
     static public DefaultGraph loadGraph(String filename) throws IOException {
         // attempt to find the intended file
         File file = new File(filename);
-        if (!(createAutFilter().accept(file) || createGxlFilter().accept(file) || createStateFilter().accept(
-            file))) {
-            file = new File(createGxlFilter().addExtension(filename));
+        if (GXL_FILTER.accept(file) || STATE_FILTER.accept(file)) {
+            file = new File(GXL_FILTER.addExtension(filename));
             if (!file.exists()) {
-                file = new File(createStateFilter().addExtension(filename));
+                file = new File(STATE_FILTER.addExtension(filename));
             }
         }
         return loadGraph(file);
@@ -551,45 +351,7 @@ public class Groove {
      * @throws IOException if <code>file</code> cannot be parsed as a graph
      */
     static public DefaultGraph loadGraph(File file) throws IOException {
-        Xml<DefaultGraph> marshaller;
-        if (createAutFilter().accept(file)) {
-            marshaller = autGraphLoader;
-        } else {
-            marshaller = gxlGraphLoader;
-        }
-        return marshaller.unmarshalGraph(file.toURI().toURL());
-    }
-
-    /**
-     * Indicates if a given file is a rule file as recognized by the GROOVE
-     * system.
-     */
-    static public boolean isRuleFile(File file) {
-        return createRuleFilter().accept(file);
-    }
-
-    /**
-     * Indicates if a given file is a state file as recognized by the GROOVE
-     * system.
-     */
-    static public boolean isStateURL(URL url) {
-        return createStateFilter().hasExtension(url.getFile());
-    }
-
-    /**
-     * Indicates if a given file is a rule file as recognized by the GROOVE
-     * system.
-     */
-    static public boolean isRuleURL(URL url) {
-        return createRuleFilter().hasExtension(url.getFile());
-    }
-
-    /**
-     * Indicates if a given file is a state file as recognized by the GROOVE
-     * system.
-     */
-    static public boolean isStateFile(File file) {
-        return createStateFilter().accept(file);
+        return gxlGraphLoader.unmarshalGraph(file.toURI().toURL());
     }
 
     /**
@@ -601,11 +363,10 @@ public class Groove {
      */
     static public File saveGraph(Graph<?,?> graph, String filename)
         throws IOException {
-        if (!createStateFilter().hasExtension(filename)) {
-            filename = createGxlFilter().addExtension(filename);
+        if (!STATE_FILTER.hasExtension(filename)) {
+            filename = GXL_FILTER.addExtension(filename);
         }
         File file = new File(filename);
-        // System.err.println("Storing graph as " + file.getAbsolutePath());
         saveGraph(graph, file);
         return file;
     }
@@ -618,27 +379,11 @@ public class Groove {
      */
     static public void saveGraph(Graph<?,?> graph, File file)
         throws IOException {
-        gxlGraphLoader.marshalGraph(graph, file);
-    }
-
-    /**
-     * Attempts to export a graph to a file with a given name. The export format
-     * is determined by the file extension. Returns a flag indicating if the
-     * file could be exported.
-     * @param graph the graph to be saved
-     * @param filename the intended filename
-     * @return <code>true</code> if the format was known
-     * @throws IOException if saving ran into problems
-     */
-    static public boolean exportGraph(Graph<?,?> graph, String filename)
-        throws IOException {
-        for (StructuralFormat exportFormat : new Exporter().getStructuralFormats()) {
-            if (exportFormat.getFilter().hasExtension(filename)) {
-                exportFormat.export(graph, new File(filename));
-                return true;
-            }
+        if (graph instanceof DefaultGraph) {
+            gxlGraphLoader.marshalGraph((DefaultGraph) graph, file);
+        } else {
+            throw new IOException("Invalid graph type.");
         }
-        return false;
     }
 
     /**
@@ -652,7 +397,7 @@ public class Groove {
      */
     static public StoredGrammarView loadGrammar(String dirname)
         throws IOException {
-        File dir = new File(createRuleSystemFilter().addExtension(dirname));
+        File dir = new File(GRAMMAR_FILTER.addExtension(dirname));
         return StoredGrammarView.newInstance(dir, false);
     }
 
@@ -719,8 +464,7 @@ public class Groove {
      */
     static public StoredGrammarView loadGrammar(String dirname,
             String startfilename) throws IOException {
-        File dir = new File(createRuleSystemFilter().addExtension(dirname));
-
+        File dir = new File(GRAMMAR_FILTER.addExtension(dirname));
         return StoredGrammarView.newInstance(dir, startfilename, false);
     }
 
@@ -1138,17 +882,7 @@ public class Groove {
     }
 
     /**
-     * Mapping from extensions to pairs of filters recognising/not recognising
-     * directories.
-     */
-    static private final Map<String,Duo<ExtensionFilter>> extensionFilterMap =
-        new HashMap<String,Duo<ExtensionFilter>>();
-    /**
      * The fixed GXL graph loader.
      */
-    static private final DefaultGxl gxlGraphLoader = new DefaultGxl();
-    /**
-     * The fixed AUT graph loader.
-     */
-    static private final Aut autGraphLoader = new Aut();
+    static private final DefaultGxl gxlGraphLoader = DefaultGxl.getInstance();
 }

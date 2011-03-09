@@ -17,14 +17,21 @@
 package groove.io.format;
 
 import groove.graph.Graph;
+import groove.gui.jgraph.GraphJGraph;
 import groove.io.ExtensionFilter;
+import groove.io.FilterList;
+import groove.io.xml.Xml;
+import groove.util.Groove;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 /**
  * @author Eduardo Zambon
  */
-public abstract class AbsFileFormat implements FileFormat {
+public abstract class AbsFileFormat<G extends Graph<?,?>> implements
+        FileFormat<G>, Xml<G> {
 
     private final String description;
     private final String extension;
@@ -35,7 +42,7 @@ public abstract class AbsFileFormat implements FileFormat {
         this.description = description;
         this.extension = extension;
         this.acceptDir = acceptDir;
-        this.filter = new ExtensionFilter(description, extension, acceptDir);
+        this.filter = FilterList.getFilter(description, extension, acceptDir);
     }
 
     @Override
@@ -58,10 +65,56 @@ public abstract class AbsFileFormat implements FileFormat {
         return this.filter;
     }
 
-    @Override
-    abstract public Graph<?,?> load(String fileName);
+    // Methods from FileFormat.
 
     @Override
-    abstract public void save(Graph<?,?> graph, String fileName)
-        throws IOException;
+    public final void load(G graph, String fileName) throws IOException {
+        File file = new File(fileName);
+        this.load(graph, file);
+    }
+
+    @Override
+    abstract public void load(G graph, File file) throws IOException;
+
+    @Override
+    public final void save(G graph, String fileName) throws IOException {
+        File file = new File(fileName);
+        this.save(graph, file);
+    }
+
+    @Override
+    abstract public void save(G graph, File file) throws IOException;
+
+    @Override
+    abstract public void save(GraphJGraph jGraph, File file) throws IOException;
+
+    // Methods from Xml
+
+    @Override
+    public final G unmarshalGraph(URL url) throws IOException {
+        String fileName = url.getPath();
+        String graphName = ExtensionFilter.getPureName(fileName);
+        G graph = createGraph(graphName);
+        this.load(graph, fileName);
+        return graph;
+    }
+
+    @Override
+    public final G unmarshalGraph(File file) throws IOException {
+        return this.unmarshalGraph(Groove.toURL(file));
+    }
+
+    @Override
+    public final void deleteGraph(File file) {
+        file.delete();
+    }
+
+    @Override
+    public void marshalGraph(G graph, File file) throws IOException {
+        this.save(graph, file);
+    }
+
+    @Override
+    public abstract G createGraph(String graphName);
+
 }

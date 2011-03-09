@@ -168,6 +168,7 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
      *        loaded; <code>null</code> if there is none such
      * @return the chosen file, if any; if null, no file has been chosen
      */
+    // EDUARDO: Move this to the gui package?
     public static File showSaveDialog(JFileChooser chooser,
             java.awt.Component parent, File originalFile) {
         // HARMEN: what if original file is null ?

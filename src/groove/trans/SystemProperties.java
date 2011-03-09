@@ -3,6 +3,7 @@ package groove.trans;
 import groove.algebra.AlgebraFamily;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
+import groove.io.FilterList;
 import groove.util.Fixable;
 import groove.util.Groove;
 import groove.util.Property;
@@ -263,7 +264,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
         // for compatibility, strip the extension from the stored control name
         String result = getProperty(CONTROL_NAME_KEY);
         if (result != null) {
-            result = Groove.createControlFilter().stripExtension(result);
+            result = FilterList.CONTROL_FILTER.stripExtension(result);
         }
         return stringOrNull(result);
     }

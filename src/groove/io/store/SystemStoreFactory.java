@@ -14,7 +14,7 @@
  * 
  * $Id$
  */
-package groove.io;
+package groove.io.store;
 
 import java.io.File;
 import java.io.IOException;
