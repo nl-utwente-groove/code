@@ -29,6 +29,7 @@ import java.util.Set;
  * 
  * @author Eduardo Zambon
  */
+// EDUARDO: Pimp this... Use a better data structure. Make it non-generic?
 public final class EquivClass<T> extends HashSet<T> {
 
     /** 

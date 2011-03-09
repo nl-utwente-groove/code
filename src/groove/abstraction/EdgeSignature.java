@@ -98,6 +98,7 @@ public final class EdgeSignature {
      * for outgoing edges, contains the edge (e) given as argument.
      * The test is true if n == src(e) && l == lbl(e) && tgt(e) \in C .
      */
+    // EDUARDO: Pimp this... Use hash codes instead of equalities.
     public boolean asOutSigContains(ShapeEdge edge) {
         return this.node.equals(edge.source())
             && this.label.equals(edge.label())
@@ -109,6 +110,7 @@ public final class EdgeSignature {
      * for incoming edges, contains the edge (e) given as argument.
      * The test is true if n == tgt(e) && l == lbl(e) && src(e) \in C .
      */
+    // EDUARDO: Pimp this... Use hash codes instead of equalities.
     public boolean asInSigContains(ShapeEdge edge) {
         return this.node.equals(edge.target())
             && this.label.equals(edge.label())
