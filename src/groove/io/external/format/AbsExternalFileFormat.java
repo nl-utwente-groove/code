@@ -14,11 +14,12 @@
  *
  * $Id$
  */
-package groove.io.format;
+package groove.io.external.format;
 
 import groove.graph.Graph;
 import groove.gui.jgraph.GraphJGraph;
 import groove.io.ExtensionFilter;
+import groove.io.FileType;
 import groove.io.FilterList;
 import groove.io.xml.Xml;
 import groove.util.Groove;
@@ -28,44 +29,29 @@ import java.io.IOException;
 import java.net.URL;
 
 /**
+ * Abstract class implementing the common functionality of the
+ * ExternalFileFormat interface.
+ * This class also acts as a XML marshaler.
+ * 
  * @author Eduardo Zambon
  */
-public abstract class AbsFileFormat<G extends Graph<?,?>> implements
-        FileFormat<G>, Xml<G> {
+public abstract class AbsExternalFileFormat<G extends Graph<?,?>> implements
+        ExternalFileFormat<G>, Xml<G> {
 
-    private final String description;
-    private final String extension;
-    private final boolean acceptDir;
+    /** The filter associated with this format. */
     private final ExtensionFilter filter;
 
-    AbsFileFormat(String description, String extension, boolean acceptDir) {
-        this.description = description;
-        this.extension = extension;
-        this.acceptDir = acceptDir;
-        this.filter = FilterList.getFilter(description, extension, acceptDir);
+    /** Default constructor. */
+    AbsExternalFileFormat(FileType fileType) {
+        this.filter = FilterList.getFilter(fileType);
     }
 
     @Override
-    public String getDescription() {
-        return this.description;
-    }
-
-    @Override
-    public String getExtension() {
-        return this.extension;
-    }
-
-    @Override
-    public boolean isAcceptDir() {
-        return this.acceptDir;
-    }
-
-    @Override
-    public ExtensionFilter getFilter() {
+    public final ExtensionFilter getFilter() {
         return this.filter;
     }
 
-    // Methods from FileFormat.
+    // Methods from ExternalFileFormat.
 
     @Override
     public final void load(G graph, String fileName) throws IOException {
@@ -110,7 +96,7 @@ public abstract class AbsFileFormat<G extends Graph<?,?>> implements
     }
 
     @Override
-    public void marshalGraph(G graph, File file) throws IOException {
+    public final void marshalGraph(G graph, File file) throws IOException {
         this.save(graph, file);
     }
 

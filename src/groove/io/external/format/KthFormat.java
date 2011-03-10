@@ -14,39 +14,38 @@
  *
  * $Id$
  */
-package groove.io.format;
+package groove.io.external.format;
 
 import groove.graph.Graph;
+import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJGraph;
+import groove.io.FileType;
+import groove.io.external.export.GraphToKth;
+import groove.view.aspect.AspectGraph;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-
-import javax.imageio.ImageIO;
+import java.io.PrintWriter;
 
 /** 
- * Class that implements saving graphs as PNG (Portable Network Graphics) images.
+ * Class that implements saving graphs in the KTH file format,
+ * used by Marieke et al. 
  * Loading in this format is unsupported.
  * 
- * @author Arend Rensink 
+ * @author Eduardo Zambon 
  */
+public class KthFormat extends AbsExternalFileFormat<Graph<?,?>> {
 
-public class PngFormat extends AbsFileFormat<Graph<?,?>> {
-
-    private static final String DESCRIPTION = "PNG image files";
-    private static final String EXTENSION = ".png";
-    private static final boolean ACCEPT_DIR = false;
-
-    private static final PngFormat INSTANCE = new PngFormat();
+    private static final KthFormat INSTANCE = new KthFormat();
 
     /** Returns the singleton instance of this class. */
-    public static final PngFormat getInstance() {
+    public static final KthFormat getInstance() {
         return INSTANCE;
     }
 
-    private PngFormat() {
-        super(DESCRIPTION, EXTENSION, ACCEPT_DIR);
+    private KthFormat() {
+        super(FileType.KTH);
     }
 
     // Methods from FileFormat.
@@ -58,17 +57,20 @@ public class PngFormat extends AbsFileFormat<Graph<?,?>> {
 
     @Override
     public void save(GraphJGraph jGraph, File file) throws IOException {
-        BufferedImage image = jGraph.toImage();
-        if (image == null) {
-            throw new IOException("Cannot export blank image");
+        if (jGraph instanceof AspectJGraph) {
+            Graph<?,?> graph = ((AspectJGraph) jGraph).getModel().getGraph();
+            this.save(graph, file);
+        } else {
+            throw new IOException(
+                "This exporter can only be used with state graphs");
         }
-        String format = this.getFilter().getExtension().substring(1);
-        ImageIO.write(image, format, file);
     }
 
     @Override
     public void save(Graph<?,?> graph, File file) throws IOException {
-        throw new UnsupportedOperationException();
+        PrintWriter writer = new PrintWriter(new FileWriter(file));
+        GraphToKth.export((AspectGraph) graph, writer);
+        writer.close();
     }
 
     // Methods from Xml

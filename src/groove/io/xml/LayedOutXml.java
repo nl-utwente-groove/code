@@ -45,9 +45,16 @@ public class LayedOutXml implements Xml<DefaultGraph> {
      * to deal with layout information. The graphs constructed by
      * {@link #unmarshalGraph(File)} are as directed by the default graph
      * factory, except that layout information is also taken into account.
+     * The constructor is private to avoid object creation. Use the method
+     * {@link #getInstance()} instead.
      */
-    public LayedOutXml() {
+    private LayedOutXml() {
         this.marshaller = DefaultGxl.getInstance();
+    }
+
+    /** Returns the singleton instance of this class. */
+    public static LayedOutXml getInstance() {
+        return INSTANCE;
     }
 
     public DefaultGraph unmarshalGraph(URL url) throws IOException {
@@ -125,5 +132,7 @@ public class LayedOutXml implements Xml<DefaultGraph> {
      * The inner (un)marshaller.
      */
     private final DefaultGxl marshaller;
+
+    private static final LayedOutXml INSTANCE = new LayedOutXml();
 
 }

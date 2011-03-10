@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.io.format;
+package groove.io.external.format;
 
 import groove.graph.Graph;
 import groove.gui.jgraph.GraphJGraph;
@@ -24,26 +24,50 @@ import java.io.File;
 import java.io.IOException;
 
 /**
+ * A common interface for external (non-native to Groove) file formats.
+ * The interface defines load and save methods but formats that can only be
+ * imported or exported will throw an UnsupportedOperationException.
+ * 
  * @author Eduardo Zambon
  */
-public interface FileFormat<G extends Graph<?,?>> {
+public interface ExternalFileFormat<G extends Graph<?,?>> {
 
-    public String getDescription();
-
-    public String getExtension();
-
-    public boolean isAcceptDir();
-
+    /** Returns the extension filter associated with this format. */
     public ExtensionFilter getFilter();
 
+    /**
+     * Loads a graph from a file.
+     * @param graph the graph object to load into.
+     * @param fileName the file name to read.
+     */
     public void load(G graph, String fileName) throws IOException;
 
+    /**
+     * Loads a graph from a file.
+     * @param graph the graph object to load into.
+     * @param file the file object to read.
+     */
     public void load(G graph, File file) throws IOException;
 
+    /**
+     * Saves a graph into a file.
+     * @param graph the graph object to be saved.
+     * @param fileName the file name to write.
+     */
     public void save(G graph, String fileName) throws IOException;
 
+    /**
+     * Saves a graph into a file.
+     * @param graph the graph object to be saved.
+     * @param file the file object to write.
+     */
     public void save(G graph, File file) throws IOException;
 
+    /**
+     * Saves a j-graph into a file.
+     * @param jGraph the j-graph object to be saved.
+     * @param file the file object to write.
+     */
     public void save(GraphJGraph jGraph, File file) throws IOException;
 
 }

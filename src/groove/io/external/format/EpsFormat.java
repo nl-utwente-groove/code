@@ -14,10 +14,11 @@
  *
  * $Id$
  */
-package groove.io.format;
+package groove.io.external.format;
 
 import groove.graph.Graph;
 import groove.gui.jgraph.GraphJGraph;
+import groove.io.FileType;
 
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -36,11 +37,7 @@ import net.sf.epsgraphics.EpsGraphics;
  * @author Arend Rensink 
  */
 
-public class EpsFormat extends AbsFileFormat<Graph<?,?>> {
-
-    private static final String DESCRIPTION = "EPS image files";
-    private static final String EXTENSION = ".eps";
-    private static final boolean ACCEPT_DIR = false;
+public class EpsFormat extends AbsExternalFileFormat<Graph<?,?>> {
 
     private static final EpsFormat INSTANCE = new EpsFormat();
 
@@ -50,7 +47,7 @@ public class EpsFormat extends AbsFileFormat<Graph<?,?>> {
     }
 
     private EpsFormat() {
-        super(DESCRIPTION, EXTENSION, ACCEPT_DIR);
+        super(FileType.EPS);
     }
 
     // Methods from FileFormat.

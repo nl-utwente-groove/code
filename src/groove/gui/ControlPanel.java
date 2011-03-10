@@ -561,7 +561,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
      */
     private class CancelAction extends RefreshableAction {
         public CancelAction() {
-            super(Options.CANCEL_EDIT_ACTION_NAME, Groove.CANCEL_ICON);
+            super(Options.CANCEL_EDIT_ACTION_NAME, Icons.CANCEL_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -592,7 +592,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
      */
     private class CopyAction extends RefreshableAction {
         public CopyAction() {
-            super(Options.COPY_CONTROL_ACTION_NAME, Groove.COPY_ICON);
+            super(Options.COPY_CONTROL_ACTION_NAME, Icons.COPY_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -638,7 +638,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
      */
     private class DeleteAction extends RefreshableAction {
         public DeleteAction() {
-            super(Options.DELETE_CONTROL_ACTION_NAME, Groove.DELETE_ICON);
+            super(Options.DELETE_CONTROL_ACTION_NAME, Icons.DELETE_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -691,7 +691,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
     /** Action to disable the currently displayed control program. */
     private class DisableAction extends RefreshableAction {
         public DisableAction() {
-            super(Options.DISABLE_CONTROL_ACTION_NAME, Groove.DISABLE_ICON);
+            super(Options.DISABLE_CONTROL_ACTION_NAME, Icons.DISABLE_ICON);
         }
 
         public void actionPerformed(ActionEvent arg0) {
@@ -728,7 +728,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
     /** Action to enable the currently displayed control program. */
     private class EnableAction extends RefreshableAction {
         public EnableAction() {
-            super(Options.ENABLE_CONTROL_ACTION_NAME, Groove.ENABLE_ICON);
+            super(Options.ENABLE_CONTROL_ACTION_NAME, Icons.ENABLE_ICON);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -771,7 +771,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
     /** Action to start editing the currently displayed control program. */
     private class EditAction extends RefreshableAction {
         public EditAction() {
-            super(Options.EDIT_CONTROL_ACTION_NAME, Groove.EDIT_ICON);
+            super(Options.EDIT_CONTROL_ACTION_NAME, Icons.EDIT_ICON);
             putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
         }
 
@@ -805,7 +805,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
     /** Action to create and start editing a new control program. */
     private class NewAction extends RefreshableAction {
         public NewAction() {
-            super(Options.NEW_CONTROL_ACTION_NAME, Groove.NEW_ICON);
+            super(Options.NEW_CONTROL_ACTION_NAME, Icons.NEW_ICON);
         }
 
         @Override
@@ -849,7 +849,8 @@ public class ControlPanel extends JPanel implements SimulationListener {
      */
     private class CtrlPreviewAction extends RefreshableAction {
         public CtrlPreviewAction() {
-            super(Options.PREVIEW_CONTROL_ACTION_NAME, Groove.CONTROL_MODE_ICON);
+            super(Options.PREVIEW_CONTROL_ACTION_NAME,
+                Icons.CONTROL_MODE_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -945,7 +946,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
      */
     private class RenameAction extends RefreshableAction {
         public RenameAction() {
-            super(Options.RENAME_CONTROL_ACTION_NAME, Groove.RENAME_ICON);
+            super(Options.RENAME_CONTROL_ACTION_NAME, Icons.RENAME_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -993,7 +994,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
     private class SaveAction extends RefreshableAction {
         public SaveAction() {
-            super(Options.SAVE_CONTROL_ACTION_NAME, Groove.SAVE_ICON);
+            super(Options.SAVE_CONTROL_ACTION_NAME, Icons.SAVE_ICON);
             putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
         }
 

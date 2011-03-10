@@ -14,11 +14,12 @@
  *
  * $Id$
  */
-package groove.io.format;
+package groove.io.external.format;
 
 import groove.graph.Graph;
 import groove.gui.jgraph.GraphJGraph;
-import groove.io.export.GraphToTikz;
+import groove.io.FileType;
+import groove.io.external.export.GraphToTikz;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -31,11 +32,7 @@ import java.io.PrintWriter;
  * 
  * @author Eduardo Zambon 
  */
-public class TikzFormat extends AbsFileFormat<Graph<?,?>> {
-
-    private static final String DESCRIPTION = "LaTeX Tikz files";
-    private static final String EXTENSION = ".tikz";
-    private static final boolean ACCEPT_DIR = false;
+public class TikzFormat extends AbsExternalFileFormat<Graph<?,?>> {
 
     private static final TikzFormat INSTANCE = new TikzFormat();
 
@@ -45,7 +42,7 @@ public class TikzFormat extends AbsFileFormat<Graph<?,?>> {
     }
 
     private TikzFormat() {
-        super(DESCRIPTION, EXTENSION, ACCEPT_DIR);
+        super(FileType.TIKZ);
     }
 
     // Methods from FileFormat.

@@ -28,6 +28,7 @@ import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.LTSJGraph;
+import groove.io.FilterList;
 import groove.io.GrooveFileChooser;
 import groove.io.HTMLConverter;
 import groove.lts.GraphNextState;
@@ -37,7 +38,6 @@ import groove.rel.RegExpr;
 import groove.rel.RelationCalculator;
 import groove.rel.SupportedNodeRelation;
 import groove.rel.SupportedSetNodeRelation;
-import groove.util.Groove;
 import groove.view.FormatException;
 
 import java.awt.event.ActionEvent;
@@ -502,8 +502,10 @@ public class ShowHideMenu extends JMenu {
         protected LabelAction(GraphJGraph jgraph, int showMode, Label label)
             throws IllegalArgumentException {
             super(jgraph, showMode, "");
-            putValue(NAME,
-                label.text().length() == 0 ? Options.EMPTY_LABEL_TEXT
+            putValue(
+                NAME,
+                label.text().length() == 0
+                        ? Options.EMPTY_LABEL_TEXT
                         : HTMLConverter.HTML_TAG.on(TypeLabel.toHtmlString(label)));
             this.label = label;
         }
@@ -654,7 +656,7 @@ public class ShowHideMenu extends JMenu {
         @Override
         public void actionPerformed(ActionEvent evt) {
             GrooveFileChooser fileChooser = new GrooveFileChooser();
-            fileChooser.addChoosableFileFilter(Groove.createTextFilter());
+            fileChooser.addChoosableFileFilter(FilterList.TEXT_FILTER);
             int result = fileChooser.showOpenDialog(this.jgraph);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File labelsFile = fileChooser.getSelectedFile();

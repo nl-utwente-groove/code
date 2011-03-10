@@ -25,6 +25,7 @@ import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.gui.Icons;
 import groove.gui.LabelTree;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
@@ -32,13 +33,12 @@ import groove.gui.ShowHideMenu;
 import groove.gui.Simulator;
 import groove.gui.ZoomMenu;
 import groove.gui.dialog.ErrorDialog;
+import groove.gui.dialog.SaveDialog;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
-import groove.io.Exporter;
-import groove.io.ExtensionFilter;
+import groove.io.external.Exporter;
 import groove.trans.SystemProperties;
 import groove.util.Colors;
-import groove.util.Groove;
 import groove.util.ObservableSet;
 
 import java.awt.Color;
@@ -1226,7 +1226,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
                     new File(fileName));
             }
             File selectedFile =
-                ExtensionFilter.showSaveDialog(this.exporter.getFileChooser(),
+                SaveDialog.show(this.exporter.getFileChooser(),
                     GraphJGraph.this, null);
             // now save, if so required
             if (selectedFile != null) {
@@ -1412,7 +1412,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
             private void startPan(MouseEvent e) {
                 this.origX = e.getX();
                 this.origY = e.getY();
-                getJGraph().setCursor(Groove.CLOSED_HAND_CURSOR);
+                getJGraph().setCursor(Icons.CLOSED_HAND_CURSOR);
             }
 
             /**
@@ -1421,7 +1421,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
             private void endPan() {
                 this.origX = -1;
                 this.origY = -1;
-                getJGraph().setCursor(Groove.OPEN_HAND_CURSOR);
+                getJGraph().setCursor(Icons.OPEN_HAND_CURSOR);
             }
 
             /**

@@ -14,17 +14,18 @@
  * 
  * $Id: Exporter.java,v 1.10 2008-03-04 22:03:36 rensink Exp $
  */
-package groove.io;
+package groove.io.external;
 
 import groove.gui.jgraph.GraphJGraph;
-import groove.io.format.AutFormat;
-import groove.io.format.EpsFormat;
-import groove.io.format.FileFormat;
-import groove.io.format.FsmFormat;
-import groove.io.format.JpgFormat;
-import groove.io.format.KthFormat;
-import groove.io.format.PngFormat;
-import groove.io.format.TikzFormat;
+import groove.io.GrooveFileChooser;
+import groove.io.external.format.AutFormat;
+import groove.io.external.format.EpsFormat;
+import groove.io.external.format.ExternalFileFormat;
+import groove.io.external.format.FsmFormat;
+import groove.io.external.format.JpgFormat;
+import groove.io.external.format.KthFormat;
+import groove.io.external.format.PngFormat;
+import groove.io.external.format.TikzFormat;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +48,7 @@ public class Exporter {
         if (this.fileChooser == null) {
             this.fileChooser = new GrooveFileChooser();
             this.fileChooser.setAcceptAllFileFilterUsed(false);
-            for (FileFormat<?> format : this.getFormatList()) {
+            for (ExternalFileFormat<?> format : this.getFormatList()) {
                 this.fileChooser.addChoosableFileFilter(format.getFilter());
             }
             this.fileChooser.setFileFilter(this.getDefaultFormat().getFilter());
@@ -60,7 +61,7 @@ public class Exporter {
      * the file name, using known file filters.
      */
     public void export(GraphJGraph jGraph, File file) throws IOException {
-        FileFormat<?> format = this.getAcceptingFormat(file);
+        ExternalFileFormat<?> format = this.getAcceptingFormat(file);
         if (format != null) {
             format.save(jGraph, file);
         }
@@ -69,9 +70,9 @@ public class Exporter {
     /**
      * Returns a file format that accepts the file.
      */
-    public FileFormat<?> getAcceptingFormat(File file) {
-        FileFormat<?> result = null;
-        for (FileFormat<?> format : this.getFormatList()) {
+    public ExternalFileFormat<?> getAcceptingFormat(File file) {
+        ExternalFileFormat<?> result = null;
+        for (ExternalFileFormat<?> format : this.getFormatList()) {
             if (format.getFilter().accept(file)) {
                 result = format;
                 break;
@@ -83,21 +84,21 @@ public class Exporter {
     /** Returns the list of file extensions of the supported formats. */
     public List<String> getExtensions() {
         List<String> result = new ArrayList<String>();
-        for (FileFormat<?> format : this.getFormatList()) {
+        for (ExternalFileFormat<?> format : this.getFormatList()) {
             result.add(format.getFilter().getExtension());
         }
         return result;
     }
 
     /** Returns the default format. */
-    public FileFormat<?> getDefaultFormat() {
+    public ExternalFileFormat<?> getDefaultFormat() {
         return PngFormat.getInstance();
     }
 
     /** Returns the (modifiable) list of currently supported formats. */
-    private List<FileFormat<?>> getFormatList() {
+    private List<ExternalFileFormat<?>> getFormatList() {
         if (this.formats == null) {
-            this.formats = new ArrayList<FileFormat<?>>();
+            this.formats = new ArrayList<ExternalFileFormat<?>>();
             this.formats.add(AutFormat.getInstance());
             this.formats.add(FsmFormat.getInstance());
             this.formats.add(JpgFormat.getInstance());
@@ -112,6 +113,6 @@ public class Exporter {
     /** The file chooser of this exporter. */
     private GrooveFileChooser fileChooser;
     /** List of the supported export formats. */
-    private List<FileFormat<?>> formats;
+    private List<ExternalFileFormat<?>> formats;
 
 }

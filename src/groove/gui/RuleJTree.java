@@ -29,7 +29,6 @@ import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.SystemRecord;
-import groove.util.Groove;
 import groove.view.GrammarView;
 import groove.view.RuleView;
 import groove.view.StoredGrammarView;
@@ -90,9 +89,9 @@ public class RuleJTree extends JTree implements SimulationListener {
         // set icons
         DefaultTreeCellRenderer renderer =
             (DefaultTreeCellRenderer) this.cellRenderer;
-        renderer.setLeafIcon(Groove.GRAPH_MATCH_ICON);
-        renderer.setOpenIcon(Groove.RULE_SMALL_ICON);
-        renderer.setClosedIcon(Groove.RULE_SMALL_ICON);
+        renderer.setLeafIcon(Icons.GRAPH_MATCH_ICON);
+        renderer.setOpenIcon(Icons.RULE_SMALL_ICON);
+        renderer.setClosedIcon(Icons.RULE_SMALL_ICON);
         addTreeSelectionListener(createRuleSelectionListener());
         this.listenToSelectionChanges = true;
         addMouseListener(new MyMouseListener());
@@ -985,7 +984,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                 leaf, row, hasFocus);
 
             if (value instanceof DirectoryTreeNode) {
-                setIcon(Groove.GPS_FOLDER_ICON);
+                setIcon(Icons.GPS_FOLDER_ICON);
             } else if (value instanceof PriorityTreeNode) {
                 setIcon(null);
             }

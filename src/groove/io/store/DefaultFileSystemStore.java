@@ -28,7 +28,7 @@ import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
 import groove.gui.Options;
 import groove.io.ExtensionFilter;
-import groove.io.ExtensionList;
+import groove.io.FileType;
 import groove.io.PriorityFileName;
 import groove.io.Util;
 import groove.io.xml.DefaultGxl;
@@ -78,7 +78,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         SystemStore {
     /**
      * Constructs a store from a given file. The file should be a directory with
-     * extension {@link ExtensionList#RULE_SYSTEM_EXTENSION}. The store is writable.
+     * extension {@link FileType#GRAMMAR}. The store is writable.
      * @param file source directory of the underlying persistent storage
      * @param create if <code>true</code> and <code>file</code> does not yet
      *        exist, attempt to create it.
@@ -117,7 +117,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     /**
      * Constructs a store from a given URL. The URL should specify the
      * <code>file:</code> protocol, and the file should be a directory with
-     * extension {@link ExtensionList#RULE_SYSTEM_EXTENSION}. The store is writable.
+     * extension {@link FileType#GRAMMAR}. The store is writable.
      * @param location source location of the underlying persistent storage;
      *        should refer to a file.
      * @throws IllegalArgumentException if <code>location</code> does not
@@ -727,7 +727,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     /** Callback factory method for creating a graph marshaller. */
     private Xml<DefaultGraph> createGraphMarshaller(boolean layouted) {
         if (layouted) {
-            return new LayedOutXml();
+            return LayedOutXml.getInstance();
         } else {
             return DefaultGxl.getInstance();
         }

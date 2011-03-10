@@ -1,7 +1,7 @@
 package groove.gui.jgraph;
 
+import groove.gui.Icons;
 import groove.gui.Options;
-import groove.util.Groove;
 
 import java.awt.Cursor;
 
@@ -12,16 +12,15 @@ import javax.swing.KeyStroke;
 public enum JGraphMode {
     /** Selection and possibly label edit mode. */
     SELECT_MODE(Options.SELECT_MODE_NAME, Options.SELECT_MODE_KEY,
-            Groove.createIcon("select.gif")),
+            Icons.SELECT_ICON),
     /** Panning and zooming. */
-    PAN_MODE(Options.PAN_MODE_NAME, null, Groove.OPEN_HAND_ICON,
-            Groove.OPEN_HAND_CURSOR, Groove.CLOSED_HAND_CURSOR),
+    PAN_MODE(Options.PAN_MODE_NAME, null, Icons.OPEN_HAND_ICON,
+            Icons.OPEN_HAND_CURSOR, Icons.CLOSED_HAND_CURSOR),
     /** Edge edit mode. */
-    EDIT_MODE(Options.EDIT_MODE_NAME, Options.EDIT_MODE_KEY,
-            Groove.createIcon("edge.gif")),
+    EDIT_MODE(Options.EDIT_MODE_NAME, Options.EDIT_MODE_KEY, Icons.EDGE_ICON),
     /** JGraph preview mode. */
     PREVIEW_MODE(Options.PREVIEW_MODE_NAME, Options.PREVIEW_MODE_KEY,
-            Groove.createIcon("preview.gif"));
+            Icons.PREVIEW_ICON);
 
     private JGraphMode(String text, KeyStroke acceleratorKey, ImageIcon icon,
             Cursor moveCursor, Cursor dragCursor) {

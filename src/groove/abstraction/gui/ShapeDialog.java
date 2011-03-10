@@ -19,8 +19,8 @@ package groove.abstraction.gui;
 import groove.abstraction.Shape;
 import groove.abstraction.gui.jgraph.ShapeJGraph;
 import groove.abstraction.gui.jgraph.ShapeJModel;
+import groove.gui.Icons;
 import groove.gui.Options;
-import groove.util.Groove;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -72,7 +72,7 @@ public class ShapeDialog {
     private JFrame getFrame() {
         if (this.frame == null) {
             this.frame = new JFrame(this.title);
-            this.frame.setIconImage(Groove.GROOVE_ICON_16x16.getImage());
+            this.frame.setIconImage(Icons.GROOVE_ICON_16x16.getImage());
             this.frame.setPreferredSize(new Dimension(600, 450));
             this.frame.setMinimumSize(this.frame.getPreferredSize());
 

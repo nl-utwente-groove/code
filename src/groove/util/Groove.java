@@ -16,49 +16,25 @@
  */
 package groove.util;
 
-import static groove.io.ExtensionList.PROPERTY_EXTENSION;
 import static groove.io.FilterList.GRAMMAR_FILTER;
 import static groove.io.FilterList.GXL_FILTER;
 import static groove.io.FilterList.STATE_FILTER;
 import groove.graph.DefaultGraph;
-import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.LabelStore;
-import groove.graph.Morphism;
-import groove.graph.Node;
-import groove.graph.iso.IsoChecker;
-import groove.io.ExtensionFilter;
+import groove.io.FileType;
 import groove.io.xml.DefaultGxl;
-import groove.match.GraphSearchPlanFactory;
-import groove.samples.calc.DefaultGraphCalculator;
-import groove.samples.calc.GraphCalculator;
-import groove.trans.GraphGrammar;
-import groove.trans.HostGraph;
-import groove.trans.RuleGraph;
-import groove.trans.RuleToHostMap;
-import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
-import java.awt.Cursor;
-import java.awt.GraphicsEnvironment;
-import java.awt.Image;
-import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Iterator;
-import java.util.Properties;
 import java.util.StringTokenizer;
-
-import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
@@ -70,213 +46,25 @@ public class Groove {
     public static final String WORKING_DIR = System.getProperty("user.dir");
     /** The last accessed working directory. */
     public static String CURRENT_WORKING_DIR = WORKING_DIR;
-    /** The user's home directory. */
-    public static final String HOME = System.getProperty("user.home");
     /** The system's file separator. */
     public static final String FILE_SEPARATOR =
         System.getProperty("file.separator");
+
     /** Lower case letter pi. */
     public static final char LC_PI = '\u03C0';
-    /** Unicode character for up-triangle. */
-    public static final char UP_TRIANGLE = '\u25B3';
-    /** Unicode character for down-triangle. */
-    public static final char DOWN_TRIANGLE = '\u25BD';
-    /** Unicode character for down-triangle. */
-    public static final char UP_ARROW = '\u2191';
-    /** Unicode character for down-triangle. */
-    public static final char DOWN_ARROW = '\u2193';
-    /** The default sample directory. */
-    public static final String SAMPLE_DIR = WORKING_DIR + FILE_SEPARATOR
-        + "samples";
-
-    /** Extension for text files. */
-    public static final String TEXT_EXTENSION = ".txt";
 
     /** Default name for the start graph. */
     public static final String DEFAULT_START_GRAPH_NAME = "start";
-
     /** Default name for control files. */
     public static final String DEFAULT_CONTROL_NAME = "control";
-
     /** Default name for the type graph */
     public static final String DEFAULT_TYPE_NAME = "type";
-
     /** Default name for property files. */
     public static final String PROPERTY_NAME = "system";
 
-    /** File name for GUI properties. */
-    public static final String GUI_PROPERTIES_FILE = "groove.gui"
-        + PROPERTY_EXTENSION;
     /** File name for XML properties. */
     public static final String XML_PROPERTIES_FILE = "groove.xml"
-        + PROPERTY_EXTENSION;
-
-    // Icons
-
-    /** Cancel action icon. */
-    public static final ImageIcon CANCEL_ICON = new ImageIcon(
-        Groove.getResource("cancel-smaller.gif"));
-    /** Copy action icon. */
-    public static final ImageIcon COPY_ICON = new ImageIcon(
-        Groove.getResource("copy.gif"));
-    /** Cut action icon. */
-    public static final ImageIcon CUT_ICON = new ImageIcon(
-        Groove.getResource("cut.gif"));
-    /** Delete action icon. */
-    public static final ImageIcon DELETE_ICON = new ImageIcon(
-        Groove.getResource("delete.gif"));
-    /** Disable action icon. */
-    public static final ImageIcon DISABLE_ICON = new ImageIcon(
-        Groove.getResource("disable-smaller.gif"));
-    /** Edit action icon. */
-    public static final ImageIcon EDIT_ICON = new ImageIcon(
-        Groove.getResource("edit.gif"));
-    /** Enable action icon. */
-    public static final ImageIcon ENABLE_ICON = new ImageIcon(
-        Groove.getResource("enable.gif"));
-    /** Icon for a New action. */
-    public static final ImageIcon NEW_ICON = new ImageIcon(
-        getResource("new.gif"));
-    /** Icon for a New Graph action. */
-    public static final ImageIcon NEW_GRAPH_ICON = new ImageIcon(
-        getResource("new-G.gif"));
-    /** Icon for a Start Simulation action. */
-    public static final ImageIcon NEW_LTS_ICON = new ImageIcon(
-        getResource("new-LTS.gif"));
-    /** Icon for a New Rule action. */
-    public static final ImageIcon NEW_RULE_ICON = new ImageIcon(
-        getResource("new-R.gif"));
-    /** Icon for a New Type action. */
-    public static final ImageIcon NEW_TYPE_ICON = new ImageIcon(
-        getResource("new-T.gif"));
-    /** Rename action icon. */
-    public static final ImageIcon RENAME_ICON = new ImageIcon(
-        Groove.getResource("rename.gif"));
-    /** Redo action icon. */
-    public static final ImageIcon REDO_ICON = new ImageIcon(
-        Groove.getResource("redo.gif"));
-    /** Undo action icon. */
-    public static final ImageIcon UNDO_ICON = new ImageIcon(
-        Groove.getResource("undo.gif"));
-    /** Icon for GPS folders. */
-    public static final ImageIcon GPS_FOLDER_ICON = new ImageIcon(
-        getResource("gps.gif"));
-    /** Control automaton preview icon. */
-    public static final ImageIcon CONTROL_MODE_ICON = new ImageIcon(
-        getResource("graph-mode.gif"));
-    /** Icon for Control Panel. */
-    public static final ImageIcon CONTROL_FRAME_ICON = new ImageIcon(
-        getResource("cp-frame.gif"));
-    /** Icon for Control Files. */
-    public static final ImageIcon CONTROL_FILE_ICON = new ImageIcon(
-        getResource("control-file.gif"));
-    /** Icon starting automatic simulation. */
-    public static final ImageIcon FORWARD_ICON = new ImageIcon(
-        Groove.getResource("forward.gif"));
-    /** Icon for graphs. */
-    public static final ImageIcon GRAPH_ICON = new ImageIcon(
-        getResource("graph.gif"));
-    /** Icon for graph (GXL or GST) files. */
-    public static final ImageIcon GRAPH_FILE_ICON = new ImageIcon(
-        getResource("graph-file.gif"));
-    /** Icon for the state panel of the simulator. */
-    public static final ImageIcon GRAPH_FRAME_ICON = new ImageIcon(
-        getResource("graph-frame.gif"));
-    /** Icon for graph with emphasised match. */
-    public static final ImageIcon GRAPH_MATCH_ICON = new ImageIcon(
-        getResource("graph-match.gif"));
-    /** Graph editing mode icon. */
-    public static final ImageIcon GRAPH_MODE_ICON = new ImageIcon(
-        getResource("graph-mode.gif"));
-    /** Icon for snap to grid action. */
-    public static final ImageIcon GRID_ICON = new ImageIcon(
-        getResource("grid.gif"));
-    /** Small icon for production rules. */
-    public static final ImageIcon RULE_SMALL_ICON = new ImageIcon(
-        getResource("rule-small.gif"));
-    /** Icon for production rules. */
-    public static final ImageIcon RULE_ICON = new ImageIcon(
-        getResource("rule.gif"));
-    /** Icon for rule (GPR) files. */
-    public static final ImageIcon RULE_FILE_ICON = new ImageIcon(
-        getResource("rule-file.gif"));
-    /** Icon for the rule panel of the simulator. */
-    public static final ImageIcon RULE_FRAME_ICON = new ImageIcon(
-        getResource("rule-frame.gif"));
-    /** Rule editing mode icon. */
-    public static final ImageIcon RULE_MODE_ICON = new ImageIcon(
-        getResource("rule-mode.gif"));
-    /** Icon for the LTS panel of the simulator. */
-    public static final ImageIcon LTS_FRAME_ICON = new ImageIcon(
-        getResource("lts-frame.gif"));
-    /** Icon for type (GTY) files. */
-    public static final ImageIcon TYPE_FILE_ICON = new ImageIcon(
-        getResource("type-file.gif"));
-    /** Icon for Type Panel. */
-    public static final ImageIcon TYPE_FRAME_ICON = new ImageIcon(
-        getResource("type-frame.gif"));
-    /** Type editing mode icon. */
-    public static final ImageIcon TYPE_MODE_ICON = new ImageIcon(
-        getResource("type-mode.gif"));
-    /** GROOVE project icon in 16x16 format. */
-    public static final ImageIcon GROOVE_ICON_16x16 = new ImageIcon(
-        getResource("groove-g-16x16.gif"));
-    /** GROOVE project icon in 32x32 format. */
-    public static final ImageIcon GROOVE_ICON_32x32 = new ImageIcon(
-        getResource("groove-g-32x32.gif"));
-    /** GROOVE project icon in blue colour - 32x32 format. */
-    public static final ImageIcon GROOVE_BLUE_ICON_32x32 = new ImageIcon(
-        getResource("groove-blue-g-32x32.gif"));
-    /** Transparent open up-arrow icon. */
-    public static final ImageIcon OPEN_UP_ARROW_ICON = new ImageIcon(
-        getResource("open-up-arrow.gif"));
-    /** Transparent open down-arrow icon. */
-    public static final ImageIcon OPEN_DOWN_ARROW_ICON = new ImageIcon(
-        getResource("open-down-arrow.gif"));
-    /** Paste action icon. */
-    public static final ImageIcon PASTE_ICON = new ImageIcon(
-        Groove.getResource("paste.gif"));
-    /** Special icon denoting choice e/a. */
-    public static final ImageIcon E_A_CHOICE_ICON = new ImageIcon(
-        getResource("e-a-choice.gif"));
-    /** Save action icon. */
-    public static final ImageIcon SAVE_ICON = new ImageIcon(
-        Groove.getResource("save.gif"));
-    /** Save as action icon. */
-    public static final ImageIcon SAVE_AS_ICON = new ImageIcon(
-        Groove.getResource("saveas.gif"));
-    /** Selection (arrow) icon. */
-    public static final ImageIcon SELECT_ICON = new ImageIcon(
-        Groove.getResource("select.gif"));
-    /** Start action icon. */
-    public static final ImageIcon START_ICON = new ImageIcon(
-        Groove.getResource("start.gif"));
-
-    /** Icon in the shape of an open hand. */
-    public static final ImageIcon OPEN_HAND_ICON = new ImageIcon(
-        Groove.getResource("openhand-small.gif"));
-    /** Icon in the shape of a closed hand. */
-    public static final ImageIcon CLOSED_HAND_ICON = new ImageIcon(
-        Groove.getResource("closedhand.gif"));
-    /** Icon in the shape of a + magnifying class. */
-    public static final ImageIcon ZOOM_IN_ICON = new ImageIcon(
-        Groove.getResource("zoomin.gif"));
-    /** Icon in the shape of a - magnifying class. */
-    public static final ImageIcon ZOOM_OUT_ICON = new ImageIcon(
-        Groove.getResource("zoomout.gif"));
-
-    /** Custom cursor in the shape of an open hand. */
-    public static final Cursor OPEN_HAND_CURSOR = createCursor("Open Hand",
-        OPEN_HAND_ICON);
-    /** Custom cursor in the shape of a closed hand. */
-    public static final Cursor CLOSED_HAND_CURSOR = createCursor("Closed Hand",
-        CLOSED_HAND_ICON);
-    /** Custom cursor in the shape of a + magnifying class. */
-    public static final Cursor ZOOM_IN_CURSOR = createCursor("Zoom In",
-        ZOOM_IN_ICON);
-    /** Custom cursor in the shape of a - magnifying class. */
-    public static final Cursor ZOOM_OUT_CURSOR = createCursor("Zoom Out",
-        ZOOM_OUT_ICON);
+        + FileType.PROPERTY.getExtension();
 
     /**
      * Flag to indicate if various types of statistics should be computed. This
@@ -284,48 +72,11 @@ public class Groove {
      */
     static public final boolean GATHER_STATISTICS = true;
 
-    /** Creates a named cursor from a given file. */
-    static public ImageIcon createIcon(String filename) {
-        return new ImageIcon(getResource(filename));
-    }
-
-    /** Creates a named cursor from a given file. */
-    static public Cursor createCursor(String name, ImageIcon icon) {
-        if (GraphicsEnvironment.isHeadless()) {
-            // The environtment variable DISPLAY is not set. We can't call
-            // createCustomCursor from the awt toolkit because this causes
-            // a java.awt.HeadlessException. In any case we don't need the
-            // cursor because we are running without GUI, so we just abort.
-            return null;
-        } else {
-            Toolkit tk = Toolkit.getDefaultToolkit();
-            Image cursorImage = icon.getImage();
-            return tk.createCustomCursor(cursorImage, new Point(0, 0), name);
-        }
-    }
-
-    /**
-     * Returns a fresh extension filer for <tt>TEXT_EXTENSION</tt>. By default,
-     * the filter accepts directories.
-     */
-    public static ExtensionFilter createTextFilter() {
-        return new ExtensionFilter("Text files", TEXT_EXTENSION);
-    }
-
-    /**
-     * Retrieves a property from the xml properties file
-     * @param key the property description
-     * @return the value associated with <tt>key</tt> in the xml properties file
-     */
-    static public String getXMLProperty(String key) {
-        return xmlProperties.getProperty(key);
-    }
-
     /**
      * Attempts to load in a graph from a given <tt>.gst</tt> file and return
      * it. Tries out the <tt>.gxl</tt> and <tt>.gst</tt> extensions if the
      * filename has no extension.
-     * @param filename the name of the file to lod the graph from
+     * @param filename the name of the file to load the graph from
      * @return the graph contained in <code>filename</code>, or
      *         <code>null</code> if no file with this name can be found
      * @throws IOException if <code>filename</code> does not exist or is wrongly
@@ -413,44 +164,6 @@ public class Groove {
     }
 
     /**
-     * Creates and returns a calculator on the basis of a graph grammar given by
-     * a filename.
-     * @param filename the name of the file where the grammar is located
-     * @return A graph calculator based on the graph grammar found at
-     *         <code>filename</code>
-     * @throws IOException if no grammar can be found at <code>filename</code>
-     */
-    static public GraphCalculator createCalculator(String filename)
-        throws IOException, FormatException {
-        return createCalculator(loadGrammar(filename).toGrammar());
-    }
-
-    /**
-     * Creates and returns a calculator on the basis of a graph grammar and
-     * start graph given by filenames.
-     * @param grammarFilename the name of the file where the grammar is located
-     * @param startfilename the name of the start graph, interpreted relative to
-     *        <code>grammarFilename</code>
-     * @return A graph calculator based on the graph grammar found at
-     *         <code>grammarFilename</code> and <code>startFilename</code>
-     * @throws IOException if no grammar can be found at
-     *         <code>grammarFilename</code>
-     */
-    static public GraphCalculator createCalculator(String grammarFilename,
-            String startfilename) throws IOException, FormatException {
-        return createCalculator(loadGrammar(grammarFilename, startfilename).toGrammar());
-    }
-
-    /**
-     * Creates a new graph calculator based on a given graph grammar.
-     * @param grammar the graph grammar to be used as the basis
-     * @return a calculator based on <code>grammar</code>
-     */
-    static public GraphCalculator createCalculator(GraphGrammar grammar) {
-        return new DefaultGraphCalculator(grammar);
-    }
-
-    /**
      * Attempts to load in a graph grammar from a given <tt>.gps</tt> directory,
      * with an explicitly given start graph name, and return it. Adds the
      * <tt>.gps</tt> extension if the file has no extension.
@@ -466,84 +179,6 @@ public class Groove {
             String startfilename) throws IOException {
         File dir = new File(GRAMMAR_FILTER.addExtension(dirname));
         return StoredGrammarView.newInstance(dir, startfilename, false);
-    }
-
-    /**
-     * Returns an iterator over all (non-injective) embeddings of one graph into
-     * another. The source graph may contain regular expression edges, as well
-     * as variable edges.
-     * @param source the graph to be embedded
-     * @param target the graph into which it is to be embedded
-     * @return an iterator over maps from the source to the target graph.
-     * @see #getEmbeddings(RuleGraph, HostGraph, LabelStore, boolean)
-     */
-    static public Iterator<RuleToHostMap> getEmbeddings(RuleGraph source,
-            HostGraph target) {
-        return getEmbeddings(source, target, null);
-    }
-
-    /**
-     * Returns an iterator over all (non-injective) embeddings of one graph into
-     * another. The source graph may contain regular expression edges, as well
-     * as variable edges. Label subtyping can be taken into account.
-     * @param source the graph to be embedded
-     * @param target the graph into which it is to be embedded
-     * @param labelStore subtype relation; if <code>null</code>, no subtyping
-     *        exists
-     * @return an iterator over maps from the source to the target graph.
-     * @see #getEmbeddings(RuleGraph, HostGraph, LabelStore, boolean)
-     */
-    static public Iterator<RuleToHostMap> getEmbeddings(RuleGraph source,
-            HostGraph target, LabelStore labelStore) {
-        return getEmbeddings(source, target, labelStore, false);
-    }
-
-    /**
-     * Returns an iterator over all (injective or non-injective) embeddings of
-     * one graph into another. The source graph may contain regular expression
-     * edges, as well as variable edges.
-     * @param source the graph to be embedded
-     * @param target the graph into which it is to be embedded
-     * @param injective flag to indicate whether the embeddings should be
-     *        injective
-     * @return an iterator over maps from the source to the target graph.
-     */
-    static public Iterator<RuleToHostMap> getEmbeddings(RuleGraph source,
-            HostGraph target, boolean injective) {
-        return getEmbeddings(source, target, null, injective);
-    }
-
-    /**
-     * Returns an iterator over all (injective or non-injective) embeddings of
-     * one graph into another. The source graph may contain regular expression
-     * edges, as well as variable edges. Label subtyping can be taken into
-     * account.
-     * @param source the graph to be embedded
-     * @param target the graph into which it is to be embedded
-     * @param labelStore subtype relation; if <code>null</code>, no subtyping
-     *        exists
-     * @param injective flag to indicate whether the embeddings should be
-     *        injective
-     * @return an iterator over maps from the source to the target graph.
-     */
-    static public Iterator<RuleToHostMap> getEmbeddings(RuleGraph source,
-            HostGraph target, LabelStore labelStore, boolean injective) {
-        return GraphSearchPlanFactory.getInstance(injective, false).createMatcher(
-            source, null, null, labelStore).getMatchIter(target, null);
-    }
-
-    /**
-     * Constructs an isomorphism between two graphs, in the form of a mapping
-     * between their nodes and edges.
-     * @param source the first graph to be compared
-     * @param target the second graph to be compared
-     * @return an isomorphism from <code>source</code> to <code>target</code>,
-     *         or <code>null</code> if
-     *         {@link IsoChecker#areIsomorphic(Graph, Graph)} fails.
-     */
-    static public <N extends Node,E extends Edge<N>> Morphism<N,E> getIsomorphism(
-            Graph<N,E> source, Graph<N,E> target) {
-        return IsoChecker.<N,E>getInstance(true).getIsomorphism(source, target);
     }
 
     /**
@@ -610,18 +245,6 @@ public class Groove {
     }
 
     /**
-     * Creates a comparator that corresponds to the alphabetical order of the
-     * object's descriptions (according to <tt>toString()</tt>).
-     */
-    public static <T> java.util.Comparator<T> createAlphaComparator() {
-        return new java.util.Comparator<T>() {
-            public int compare(T o1, T o2) {
-                return o1.toString().compareTo(o2.toString());
-            }
-        };
-    }
-
-    /**
      * Converts a space-separated string value to an <tt>int</tt> array. Returns
      * <tt>null</tt> if the string is <tt>null</tt>, does not decompose into
      * space-separated sub-strings, or does not convert to <tt>int</tt> values.
@@ -651,31 +274,6 @@ public class Groove {
             while (tokenizer.hasMoreTokens()) {
                 String nextToken = tokenizer.nextToken();
                 result[count] = Integer.parseInt(nextToken);
-                count++;
-            }
-            return result;
-        } catch (NumberFormatException exc) {
-            return null;
-        }
-    }
-
-    /**
-     * Converts a space-separated string value to a <tt>float</tt> array.
-     * Returns <tt>null</tt> if the string is <tt>null</tt>, does not decompose
-     * into space-separated sub-strings, or does not convert to <tt>float</tt>
-     * values.
-     */
-    static public float[] toFloatArray(String text) {
-        if (text == null) {
-            return null;
-        }
-        try {
-            StringTokenizer tokenizer = new StringTokenizer(text);
-            float[] result = new float[tokenizer.countTokens()];
-            int count = 0;
-            while (tokenizer.hasMoreTokens()) {
-                String nextToken = tokenizer.nextToken();
-                result[count] = Float.parseFloat(nextToken);
                 count++;
             }
             return result;
@@ -858,27 +456,6 @@ public class Groove {
                 out.printf("  %s%n", stackTrace[myCode]);
             }
         }
-    }
-
-    /** Properties object for the XML properties. */
-    static public final Properties xmlProperties = new Properties();
-
-    /** Loads a properties object from a URL given as a string. */
-    static private void loadProperties(Properties properties,
-            String propertiesName) {
-        try {
-            URL propertiesURL = getResource(propertiesName);
-            InputStream in = propertiesURL.openStream();
-            properties.load(in);
-            in.close();
-        } catch (IOException e) {
-            System.err.println("Could not open properties file: "
-                + propertiesName);
-        }
-    }
-
-    static {
-        loadProperties(xmlProperties, XML_PROPERTIES_FILE);
     }
 
     /**
