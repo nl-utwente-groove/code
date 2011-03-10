@@ -85,11 +85,11 @@ public final class CompositeExtensionFilter extends ExtensionFilter {
 
     /**
      * There is no single extension associated with a composite filter.
-     * This method throws an UnsupportedOperationException.
+     * This method always returns the empty string.
      */
     @Override
     public String getExtension() {
-        throw new UnsupportedOperationException();
+        return "";
     }
 
     /** 

@@ -19,6 +19,7 @@ package groove.io.external.format;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
+import groove.graph.Graph;
 import groove.graph.Node;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
@@ -41,7 +42,7 @@ import java.util.Set;
  * Class that implements load/save of graphs in the CADP .aut format.
  * @author Eduardo Zambon
  */
-public final class AutFormat extends AbsExternalFileFormat<DefaultGraph> {
+public final class AutFormat extends AbsExternalFileFormat<Graph<?,?>> {
 
     /** Label used to identify the start state, when reading in from .aut */
     private static final String ROOT_LABEL = "$ROOT$";
@@ -60,7 +61,7 @@ public final class AutFormat extends AbsExternalFileFormat<DefaultGraph> {
     // Methods from FileFormat.
 
     @Override
-    public void load(DefaultGraph graph, File file) throws IOException {
+    public void load(Graph<?,?> graph, File file) throws IOException {
         FileInputStream fis = null;
         BufferedReader reader = null;
         try {
@@ -79,11 +80,12 @@ public final class AutFormat extends AbsExternalFileFormat<DefaultGraph> {
         }
     }
 
-    private void load(DefaultGraph graph, BufferedReader reader)
+    private void load(Graph<?,?> origGraph, BufferedReader reader)
         throws IOException {
         Map<String,DefaultNode> result = new HashMap<String,DefaultNode>();
         int linenr = 0;
         try {
+            DefaultGraph graph = (DefaultGraph) origGraph;
             String line = reader.readLine();
             linenr++;
             int rootStart = line.indexOf('(') + 1;
@@ -122,13 +124,12 @@ public final class AutFormat extends AbsExternalFileFormat<DefaultGraph> {
 
     @Override
     public void save(GraphJGraph jGraph, File file) throws IOException {
-        DefaultGraph graph =
-            (DefaultGraph) ((GraphJModel<?,?>) jGraph.getModel()).getGraph();
+        Graph<?,?> graph = ((GraphJModel<?,?>) jGraph.getModel()).getGraph();
         this.save(graph, file);
     }
 
     @Override
-    public void save(DefaultGraph graph, File file) throws IOException {
+    public void save(Graph<?,?> graph, File file) throws IOException {
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(file);
@@ -140,7 +141,7 @@ public final class AutFormat extends AbsExternalFileFormat<DefaultGraph> {
         }
     }
 
-    private void save(DefaultGraph graph, PrintWriter writer) {
+    private void save(Graph<?,?> graph, PrintWriter writer) {
         // collect the node numbers, to be able to number them consecutively
         int nodeCount = graph.nodeCount();
         // list marking which node numbers have been used
