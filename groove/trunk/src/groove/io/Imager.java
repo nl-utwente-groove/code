@@ -22,9 +22,11 @@ import static groove.io.FilterList.RULE_FILTER;
 import static groove.io.FilterList.STATE_FILTER;
 import static groove.io.FilterList.TYPE_FILTER;
 import groove.graph.DefaultGraph;
+import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
+import groove.io.external.Exporter;
 import groove.io.xml.LayedOutXml;
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
@@ -111,7 +113,6 @@ public class Imager extends CommandLineTool {
         } else {
             makeImage(inFile, outFile);
         }
-        // jframe.dispose();
     }
 
     /**
@@ -123,8 +124,7 @@ public class Imager extends CommandLineTool {
      */
     public void makeImage(File inFile, File outFile) {
         // if the given input-file is a directory, call this method recursively
-        // for each file it contains
-        // but ensure:
+        // for each file it contains but ensure:
         // --> output-file exists or can be created
         if (inFile.isDirectory()) {
             File[] files = inFile.listFiles();
@@ -139,8 +139,7 @@ public class Imager extends CommandLineTool {
         // or the input-file is an ordinary Groove-file (state or rule)
         // here ensure:
         // --> output-file exists and will be overwritten or the directory in
-        // which
-        // it will be placed exists or can be created
+        // which it will be placed exists or can be created
         else {
             if (outFile.getParentFile() != null
                 && !outFile.getParentFile().exists()
@@ -173,16 +172,14 @@ public class Imager extends CommandLineTool {
                     String outFileName =
                         acceptingFilter.stripExtension(outFile.getName());
                     outFile =
-                        new File(
-                            outFileParent,
-                            new ExtensionFilter(imageFormat).addExtension(outFileName));
+                        new File(outFileParent, outFileName + imageFormat);
                     DefaultGraph plainGraph =
                         graphLoader.unmarshalGraph(inFile);
 
                     if (plainGraph.size() == 0) {
                         // fix to skip empty graphs and rules, since
-                        // they cause a nullpointer
-                        printlnMedium("Skpping empty graph " + inFile);
+                        // they cause a null pointer exception.
+                        printlnMedium("Skiping empty graph " + inFile);
                         return;
                     }
 
@@ -199,11 +196,9 @@ public class Imager extends CommandLineTool {
                     model.loadGraph(aspectGraph);
                     jGraph.setModel(model);
                     // Ugly hack to prevent clipping of the image. We set the
-                    // jGraph size
-                    // to twice its normal size. This does not affect the final
-                    // size of
-                    // the exported figure, hence it can be considered
-                    // harmless... ;P
+                    // jGraph size to twice its normal size. This does not
+                    // affect the final size of the exported figure, hence
+                    // it can be considered harmless... ;P
                     Dimension oldPrefSize = jGraph.getPreferredSize();
                     Dimension newPrefSize =
                         new Dimension(oldPrefSize.width * 2,
@@ -432,23 +427,11 @@ public class Imager extends CommandLineTool {
 
     /** Name of the imager application. */
     static public final String APPLICATION_NAME = "Imager";
-    // /** Name of the png (Portable Network Graphic) image format. */
-    // static public final String PNG_FORMAT = "png";
-    // /** Name of the jpeg image format. */
-    // static public final String JPG_FORMAT = "jpg";
-    // /** Name of the eps image format. */
-    // static public final String EPS_FORMAT = "eps";
-    //
-    // /** The default format of the imager. */
-    // static public final String DEFAULT_FORMAT = PNG_FORMAT;
-    // /** List of all supported image formats. */
-    // static public final String[] FORMATS = new String[] { JPG_FORMAT,
-    // PNG_FORMAT, EPS_FORMAT} ;
     /** Label for the browse buttons. */
     static public final String BROWSE_LABEL = "Browse...";
 
     /** The loader used for the xml files. */
-    static final LayedOutXml graphLoader = new LayedOutXml();
+    static final LayedOutXml graphLoader = LayedOutXml.getInstance();
 
     /** An array of all filters identifying files that can be imaged. */
     static final ExtensionFilter[] acceptFilters = new ExtensionFilter[] {
@@ -548,7 +531,7 @@ public class Imager extends CommandLineTool {
         /** Constructs an instanceof the frame, with GUI components set. */
         public ImagerFrame() {
             super(APPLICATION_NAME);
-            setIconImage(Groove.GROOVE_ICON_16x16.getImage());
+            setIconImage(Icons.GROOVE_ICON_16x16.getImage());
             initComponents();
             initActions();
             setContentPane(createContentPane());
@@ -742,16 +725,13 @@ public class Imager extends CommandLineTool {
 
         /** Initialises the GUI components. */
         protected void initComponents() {
-            // outFileField.setBorder(BorderFactory.createEtchedBorder());
             setInFile(Groove.WORKING_DIR);
             setOutFile(Groove.WORKING_DIR);
             this.inFileField.setPreferredSize(new Dimension(300, 0));
             this.outFileField.setEditable(false);
             this.logArea.setEditable(false);
             this.logArea.setRows(10);
-            // outFileField.setEnabled(false);
             this.browseChooser.setCurrentDirectory(new File(Groove.WORKING_DIR));
-            // browseChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             for (ExtensionFilter filter : acceptFilters) {
                 this.browseChooser.addChoosableFileFilter(filter);
             }
@@ -768,24 +748,12 @@ public class Imager extends CommandLineTool {
             };
             Action imageAction = new AbstractAction(Options.IMAGE_ACTION_NAME) {
                 public void actionPerformed(ActionEvent evt) {
-                    // imageButton.setEnabled(false);
-                    // new Thread() {
-                    // public void run() {
                     handleImageAction();
-                    // imageButton.setEnabled(true);
-                    // }
-                    // }.start();
                 }
             };
             ItemListener enableItemListener = new ItemListener() {
                 public void itemStateChanged(ItemEvent evt) {
                     ImagerFrame.this.outFileField.setEditable(ImagerFrame.this.outFileEnabler.isSelected());
-                    // outFileField.setEnabled(outFileEnabler.isSelected());
-                    // if (outFileEnabler.isSelected()) {
-                    // outFileField.setBorder(BorderFactory.createEtchedBorder());
-                    // } else {
-                    // outFileField.setBorder(null);
-                    // }
                     ImagerFrame.this.outFileBrowseButton.setEnabled(ImagerFrame.this.outFileEnabler.isSelected());
                 }
             };

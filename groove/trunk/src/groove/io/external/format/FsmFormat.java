@@ -14,13 +14,14 @@
  *
  * $Id$
  */
-package groove.io.format;
+package groove.io.external.format;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
+import groove.io.FileType;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,11 +37,7 @@ import java.util.Map;
  * @author Arend Rensink 
  */
 
-public class FsmFormat extends AbsFileFormat<Graph<?,?>> {
-
-    private static final String DESCRIPTION = "FSM layout files";
-    private static final String EXTENSION = ".fsm";
-    private static final boolean ACCEPT_DIR = true;
+public class FsmFormat extends AbsExternalFileFormat<Graph<?,?>> {
 
     private static final FsmFormat INSTANCE = new FsmFormat();
 
@@ -50,7 +47,7 @@ public class FsmFormat extends AbsFileFormat<Graph<?,?>> {
     }
 
     private FsmFormat() {
-        super(DESCRIPTION, EXTENSION, ACCEPT_DIR);
+        super(FileType.FSM);
     }
 
     // Methods from FileFormat.

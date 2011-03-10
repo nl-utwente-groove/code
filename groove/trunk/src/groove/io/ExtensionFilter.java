@@ -18,52 +18,23 @@ package groove.io;
 
 import java.io.File;
 
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-
 /**
  * Implements a file filter based on filename extension.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-03-11 15:46:59 $
  */
-public class ExtensionFilter extends javax.swing.filechooser.FileFilter
-        implements java.io.FileFilter {
-
-    /**
-     * Constructs a new extension file filter, with empty description. This is
-     * only good for adding and stripping extensions. The filter initially also
-     * accepts directories.
-     * @param extension the filename extension (including any preceding ".") of
-     *        the files to be accepted
-     */
-    public ExtensionFilter(String extension) {
-        this("", extension);
-    }
-
-    /**
-     * Constructs a new extension file filter, with a given description and
-     * filename extension. The filter initially also accepts directories.
-     * @param description the textual description of the files to be accepted
-     * @param extension the filename extension (including any preceding ".") of
-     *        the files to be accepted
-     */
-    public ExtensionFilter(String description, String extension) {
-        this(description, extension, true);
-    }
+public abstract class ExtensionFilter extends
+        javax.swing.filechooser.FileFilter implements java.io.FileFilter {
 
     /**
      * Constructs a new extension file filter, with a given description and
      * filename extension, and a flag to set whether directories are accepted.
      * @param description the textual description of the files to be accepted
-     * @param extension the filename extension (including any preceding ".") of
-     *        the files to be accepted
      * @param acceptDirectories <tt>true</tt> if the filter is to accept
      *        directories
      */
-    public ExtensionFilter(String description, String extension,
-            boolean acceptDirectories) {
-        this.description = description + " (*" + extension + ")";
-        this.extension = extension;
+    public ExtensionFilter(String description, boolean acceptDirectories) {
+        this.description = description;
         setAcceptDirectories(acceptDirectories);
     }
 
@@ -75,16 +46,14 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
      */
     @Override
     public boolean accept(java.io.File file) {
-        return acceptExtension(file)
-            || (this.acceptDirectories && file.isDirectory());
+        return this.acceptExtension(file)
+            || (this.isAcceptDirectories() && file.isDirectory());
     }
 
     /**
      * Accepts a file if its name ends on this filter's extension.
      */
-    public boolean acceptExtension(java.io.File file) {
-        return file.getName().endsWith(this.extension);
-    }
+    abstract public boolean acceptExtension(java.io.File file);
 
     /**
      * Returns this filter's description.
@@ -97,17 +66,16 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
     /**
      * Returns this filter's extension.
      */
-    public String getExtension() {
-        return this.extension;
-    }
+    abstract public String getExtension();
 
     /**
      * Strips an extension from a filename, if the extension is in fact there.
      * @param filename the filename to be stripped
      */
     public String stripExtension(String filename) {
-        if (filename.endsWith(this.extension)) {
-            return filename.substring(0, filename.lastIndexOf(this.extension));
+        if (filename.endsWith(this.getExtension())) {
+            return filename.substring(0,
+                filename.lastIndexOf(this.getExtension()));
         } else {
             return filename;
         }
@@ -121,7 +89,7 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
         if (hasExtension(filename)) {
             return filename;
         } else {
-            return filename + this.extension;
+            return filename + this.getExtension();
         }
     }
 
@@ -132,7 +100,7 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
      *         of this filter
      */
     public boolean hasExtension(String filename) {
-        return filename.endsWith(this.extension);
+        return filename.endsWith(this.getExtension());
     }
 
     /**
@@ -148,80 +116,14 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
      * ending on the required extension.
      * @param accept if true, this filter will accept directories
      */
-    public void setAcceptDirectories(boolean accept) {
+    public final void setAcceptDirectories(boolean accept) {
         this.acceptDirectories = accept;
     }
 
     /** The description of this filter. */
     private final String description;
-    /** The filenam extension on which this filter selects. */
-    private final String extension;
     /** Indicates whether this filter also accepts directories. */
     private boolean acceptDirectories;
-
-    /**
-     * Brings up a save dialog based on a given file chooser filter. The chosen
-     * filename is appended with the required extension. Confirmation is asked
-     * if the chosen filename already exists and does not equal the original
-     * file (also passed in as a parameter).
-     * @param originalFile the file from which the object to be saved has been
-     *        loaded; <code>null</code> if there is none such
-     * @return the chosen file, if any; if null, no file has been chosen
-     */
-    // EDUARDO: Move this to the gui package?
-    public static File showSaveDialog(JFileChooser chooser,
-            java.awt.Component parent, File originalFile) {
-        // HARMEN: what if original file is null ?
-        chooser.rescanCurrentDirectory();
-        // choose a file name to save to,
-        // asking confirmation if an existing file is to be overwritten
-        boolean doSave; // indicates that the save should be carried through
-        boolean noChoice; // indicates that a definite choice has not been
-        // made
-        File res = null; // the file to save to (if doSave)
-        do {
-            doSave =
-                (chooser.showSaveDialog(parent) == JFileChooser.APPROVE_OPTION);
-            if (doSave) {
-                // apparently we're set to save
-                res = chooser.getSelectedFile();
-                // if the file exists, defer definite choice
-                noChoice =
-                    res.exists()
-                        && (originalFile != null)
-                        && !res.getAbsoluteFile().equals(
-                            originalFile.getAbsoluteFile());
-                if (noChoice) {
-                    // ask for confirmation before overwriting file
-                    int overwrite =
-                        JOptionPane.showConfirmDialog(parent,
-                            "Overwrite existing file \"" + res.getName()
-                                + "\"?");
-                    // any answer but NO is a definite choice
-                    noChoice = (overwrite == JOptionPane.NO_OPTION);
-                    // any answer but YES means don't save
-                    doSave = (overwrite == JOptionPane.YES_OPTION);
-                }
-                // extend file name if chosen under an extension filter
-                javax.swing.filechooser.FileFilter filter =
-                    chooser.getFileFilter();
-                if (filter instanceof ExtensionFilter) {
-                    res =
-                        new File(
-                            ((ExtensionFilter) filter).addExtension(res.getPath()));
-                }
-            } else {
-                // a choice not to save is a definite choice
-                noChoice = false;
-            }
-        } while (noChoice);
-        // return the file if the choice is to save, null otherwise
-        if (doSave) {
-            return res;
-        } else {
-            return null;
-        }
-    }
 
     /**
      * Returns the extension part of a file name. The extension is taken to be

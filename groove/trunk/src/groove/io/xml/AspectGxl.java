@@ -15,14 +15,14 @@ import java.net.URL;
  * @version $Revision $
  */
 public class AspectGxl implements Xml<AspectGraph> {
-    /** Constructs a reader on top of an {@link DefaultGxl}. */
-    public AspectGxl() {
-        this(DefaultGxl.getInstance());
+
+    private AspectGxl() {
+        this.marshaller = LayedOutXml.getInstance();
     }
 
-    /** Constructs a reader on top of a given graph marshaller. */
-    public AspectGxl(Xml<DefaultGraph> innerMarshaller) {
-        this.marshaller = innerMarshaller;
+    /** Returns the singleton instance of this class. */
+    public static AspectGxl getInstance() {
+        return INSTANCE;
     }
 
     /**
@@ -84,4 +84,6 @@ public class AspectGxl implements Xml<AspectGraph> {
      * aspect graphs.
      */
     private final Xml<DefaultGraph> marshaller;
+
+    private static final AspectGxl INSTANCE = new AspectGxl();
 }

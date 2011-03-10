@@ -25,7 +25,6 @@ import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.io.HTMLConverter;
-import groove.util.Groove;
 import groove.util.ObservableSet;
 
 import java.awt.BorderLayout;
@@ -730,8 +729,8 @@ public class LabelTree extends JTree implements GraphModelListener,
      * parameter.
      */
     private static Icon getModeIcon(boolean subtypes) {
-        return subtypes ? Groove.OPEN_UP_ARROW_ICON
-                : Groove.OPEN_DOWN_ARROW_ICON;
+        return subtypes ? Icons.OPEN_UP_ARROW_ICON
+                : Icons.OPEN_DOWN_ARROW_ICON;
     }
 
     /**
@@ -1356,7 +1355,7 @@ public class LabelTree extends JTree implements GraphModelListener,
      */
     private class ShowAllLabelsAction extends AbstractAction {
         public ShowAllLabelsAction() {
-            super(null, Groove.E_A_CHOICE_ICON);
+            super(null, Icons.E_A_CHOICE_ICON);
             putValue(Action.SHORT_DESCRIPTION, computeName());
         }
 

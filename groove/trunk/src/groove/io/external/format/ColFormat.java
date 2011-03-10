@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.io.format;
+package groove.io.external.format;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
@@ -22,6 +22,7 @@ import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.gui.jgraph.GraphJGraph;
+import groove.io.FileType;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -46,11 +47,7 @@ import java.io.InputStreamReader;
  * 
  * @author Arend Rensink 
  */
-public class ColFormat extends AbsFileFormat<HostGraph> {
-
-    private static final String DESCRIPTION = "DIMACS graph format";
-    private static final String EXTENSION = ".col";
-    private static final boolean ACCEPT_DIR = false;
+public class ColFormat extends AbsExternalFileFormat<HostGraph> {
 
     private static final ColFormat INSTANCE = new ColFormat();
 
@@ -60,7 +57,7 @@ public class ColFormat extends AbsFileFormat<HostGraph> {
     }
 
     private ColFormat() {
-        super(DESCRIPTION, EXTENSION, ACCEPT_DIR);
+        super(FileType.COL);
     }
 
     // Methods from FileFormat.

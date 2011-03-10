@@ -22,7 +22,7 @@ import static groove.io.FilterList.GXL_FILTER;
 import static groove.io.FilterList.RULE_FILTER;
 import static groove.io.FilterList.STATE_FILTER;
 import static groove.io.FilterList.TYPE_FILTER;
-import groove.util.Groove;
+import groove.gui.Icons;
 
 import java.io.File;
 
@@ -60,16 +60,16 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      */
     @Override
     public Icon getIcon(File f) {
-        if (isGraphFile(f)) {
-            return Groove.GRAPH_FILE_ICON;
+        if (isGpsFolder(f)) {
+            return Icons.GPS_FOLDER_ICON;
+        } else if (isGraphFile(f)) {
+            return Icons.GRAPH_FILE_ICON;
         } else if (isRuleFile(f)) {
-            return Groove.RULE_FILE_ICON;
+            return Icons.RULE_FILE_ICON;
         } else if (isTypeFile(f)) {
-            return Groove.TYPE_FILE_ICON;
+            return Icons.TYPE_FILE_ICON;
         } else if (isControlFile(f)) {
-            return Groove.CONTROL_FILE_ICON;
-        } else if (isGpsFolder(f)) {
-            return Groove.GPS_FOLDER_ICON;
+            return Icons.CONTROL_FILE_ICON;
         } else {
             return null;
         }
@@ -155,7 +155,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @return <tt>true</tt> if <code>f</code> is a control program file
      */
     static protected boolean isControlFile(File f) {
-        return CONTROL_FILTER.accept(f);
+        return CONTROL_FILTER.acceptExtension(f);
     }
 
     /**
@@ -176,7 +176,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @require <tt>f != null</tt>
      */
     static protected boolean isStateFile(File f) {
-        return STATE_FILTER.accept(f);
+        return STATE_FILTER.acceptExtension(f);
     }
 
     /**
@@ -186,7 +186,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @require <tt>f != null</tt>
      */
     static protected boolean isGxlFile(File f) {
-        return GXL_FILTER.accept(f);
+        return GXL_FILTER.acceptExtension(f);
     }
 
     /**
@@ -196,7 +196,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @require <tt>f != null</tt>
      */
     static protected boolean isRuleFile(File f) {
-        return RULE_FILTER.accept(f);
+        return RULE_FILTER.acceptExtension(f);
     }
 
     /**
@@ -205,7 +205,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @return <tt>true</tt> if <code>f</code> is a graph type file
      */
     static protected boolean isTypeFile(File f) {
-        return TYPE_FILTER.accept(f);
+        return TYPE_FILTER.acceptExtension(f);
     }
 
     /**
@@ -216,6 +216,6 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @require <tt>f != null</tt>
      */
     static protected boolean isGpsFolder(File f) {
-        return GRAMMAR_FILTER.accept(f);
+        return GRAMMAR_FILTER.acceptExtension(f);
     }
 }

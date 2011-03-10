@@ -22,33 +22,25 @@ import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
-import static groove.io.ExtensionList.GXL_EXTENSION;
-import static groove.io.ExtensionList.RULE_EXTENSION;
-import static groove.io.ExtensionList.STATE_EXTENSION;
-import static groove.io.ExtensionList.TYPE_EXTENSION;
-import static groove.io.FilterList.RULE_FILTER;
-import static groove.io.FilterList.STATE_FILTER;
-import static groove.io.FilterList.TYPE_FILTER;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.TypeGraph;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.PropertiesDialog;
+import groove.gui.dialog.SaveDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraphMode;
-import groove.io.Exporter;
 import groove.io.ExtensionFilter;
 import groove.io.FilterList;
 import groove.io.GrooveFileChooser;
 import groove.io.PriorityFileName;
+import groove.io.external.Exporter;
 import groove.io.xml.AspectGxl;
-import groove.io.xml.LayedOutXml;
 import groove.trans.SystemProperties;
-import groove.util.Groove;
 import groove.util.Property;
 import groove.util.Version;
 import groove.view.FormatError;
@@ -308,8 +300,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         File toFile = getCurrentFile();
         if (as || toFile == null) {
             toFile =
-                ExtensionFilter.showSaveDialog(getGraphChooser(),
-                    getGraphPanel(), toFile);
+                SaveDialog.show(getGraphChooser(), getGraphPanel(), toFile);
         }
         if (toFile != null) {
             try {
@@ -440,7 +431,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     /** Initialises the GUI. */
     protected void initGUI() {
-        getFrame().setIconImage(Groove.GROOVE_ICON_16x16.getImage());
+        getFrame().setIconImage(Icons.GROOVE_ICON_16x16.getImage());
         // Set Close Operation to Exit
         getFrame().setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         getFrame().addWindowListener(new WindowAdapter() {
@@ -1145,7 +1136,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /**
      * The GXL converter used for marshalling and unmarshalling layouted graphs.
      */
-    private final AspectGxl layoutGxl = new AspectGxl(new LayedOutXml());
+    private final AspectGxl layoutGxl = AspectGxl.getInstance();
 
     /**
      * File chooser for graph opening.
@@ -1245,7 +1236,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             this.cutAction =
                 new TransferAction(action, Options.CUT_KEY,
                     Options.CUT_ACTION_NAME);
-            this.cutAction.putValue(Action.SMALL_ICON, Groove.CUT_ICON);
+            this.cutAction.putValue(Action.SMALL_ICON, Icons.CUT_ICON);
         }
         return this.cutAction;
     }
@@ -1263,7 +1254,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             this.copyAction =
                 new TransferAction(action, Options.COPY_KEY,
                     Options.COPY_ACTION_NAME);
-            this.copyAction.putValue(Action.SMALL_ICON, Groove.COPY_ICON);
+            this.copyAction.putValue(Action.SMALL_ICON, Icons.COPY_ICON);
         }
         return this.copyAction;
     }
@@ -1281,7 +1272,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             this.pasteAction =
                 new TransferAction(action, Options.PASTE_KEY,
                     Options.PASTE_ACTION_NAME);
-            this.pasteAction.putValue(Action.SMALL_ICON, Groove.PASTE_ICON);
+            this.pasteAction.putValue(Action.SMALL_ICON, Icons.PASTE_ICON);
             this.pasteAction.setEnabled(true);
         }
         return this.pasteAction;
@@ -1295,10 +1286,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      */
     private Action getRedoAction() {
         if (this.redoAction == null) {
-            ImageIcon redoIcon = new ImageIcon(Groove.getResource("redo.gif"));
             this.redoAction =
                 new ToolbarAction(Options.REDO_ACTION_NAME, Options.REDO_KEY,
-                    redoIcon) {
+                    Icons.REDO_ICON) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
                         if (isEnabled()) {
@@ -1320,10 +1310,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      */
     private Action getUndoAction() {
         if (this.undoAction == null) {
-            ImageIcon undoIcon = new ImageIcon(Groove.getResource("undo.gif"));
             this.undoAction =
                 new ToolbarAction(Options.UNDO_ACTION_NAME, Options.UNDO_KEY,
-                    undoIcon) {
+                    Icons.REDO_ICON) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
                         if (isEnabled()) {
@@ -1397,7 +1386,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         /** Constructs an instance of the action. */
         protected DeleteAction() {
             super(Options.DELETE_ACTION_NAME, Options.DELETE_KEY,
-                Groove.DELETE_ICON);
+                Icons.DELETE_ICON);
             setEnabled(false);
         }
 
@@ -1463,7 +1452,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     private class NewGraphAction extends ToolbarAction {
         /** Constructs an instance of the action. */
         NewGraphAction() {
-            super(Options.NEW_ACTION_NAME, Options.NEW_KEY, Groove.NEW_ICON);
+            super(Options.NEW_ACTION_NAME, Options.NEW_KEY, Icons.NEW_ICON);
             putValue(MNEMONIC_KEY, Options.NEW_MNEMONIC);
         }
 
@@ -1496,8 +1485,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     private class OpenGraphAction extends ToolbarAction {
         /** Constructs an instance of the action. */
         protected OpenGraphAction() {
-            super(Options.OPEN_ACTION_NAME, Options.OPEN_KEY, new ImageIcon(
-                Groove.getResource("open.gif")));
+            super(Options.OPEN_ACTION_NAME, Options.OPEN_KEY, Icons.OPEN_ICON);
             putValue(MNEMONIC_KEY, Options.OPEN_MNEMONIC);
         }
 
@@ -1518,8 +1506,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         return this.quitAction;
     }
 
-    // /** Action to close the editor. Only if the editor is auxiliary. */
-    // private Action closeAction;
     /** Action to quit the editor. */
     private Action quitAction;
 
@@ -1562,7 +1548,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     private class SaveGraphAction extends ToolbarAction {
         /** Constructs an instance of the action. */
         protected SaveGraphAction() {
-            super(Options.SAVE_ACTION_NAME, Options.SAVE_KEY, Groove.SAVE_ICON);
+            super(Options.SAVE_ACTION_NAME, Options.SAVE_KEY, Icons.SAVE_ICON);
             putValue(MNEMONIC_KEY, Options.SAVE_MNEMONIC);
         }
 
@@ -1621,7 +1607,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         /** Constructs an instance of the action. */
         protected SetGraphRoleAction() {
             super(Options.SET_GRAPH_ROLE_ACTION_NAME, null,
-                Groove.GRAPH_MODE_ICON);
+                Icons.GRAPH_MODE_ICON);
         }
 
         /**
@@ -1652,8 +1638,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     private class SetRuleRoleAction extends ToolbarAction {
         /** Constructs an instance of the action. */
         protected SetRuleRoleAction() {
-            super(Options.SET_RULE_ROLE_ACTION_NAME, null,
-                Groove.RULE_MODE_ICON);
+            super(Options.SET_RULE_ROLE_ACTION_NAME, null, Icons.RULE_MODE_ICON);
         }
 
         /**
@@ -1684,8 +1669,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     private class SetTypeRoleAction extends ToolbarAction {
         /** Constructs an instance of the action. */
         protected SetTypeRoleAction() {
-            super(Options.SET_TYPE_ROLE_ACTION_NAME, null,
-                Groove.TYPE_MODE_ICON);
+            super(Options.SET_TYPE_ROLE_ACTION_NAME, null, Icons.TYPE_MODE_ICON);
         }
 
         @Override
@@ -1747,7 +1731,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
         /** Constructs an instance of the action. */
         protected SnapToGridAction(GraphJGraph jgraph) {
-            super(Options.SNAP_TO_GRID_NAME, null, Groove.GRID_ICON);
+            super(Options.SNAP_TO_GRID_NAME, null, Icons.GRID_ICON);
             this.jgraph = jgraph;
         }
 
@@ -1848,69 +1832,22 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
         /** Lazily creates and returns the graph filter. */
         private ExtensionFilter getGraphFilter() {
-            if (this.graphFilter == null) {
-                this.graphFilter = new ExtensionFilter("Graph files", "") {
-                    @Override
-                    public boolean accept(File file) {
-                        boolean result =
-                            isAcceptDirectories() && file.isDirectory();
-                        if (!result) {
-                            for (ExtensionFilter filter : MyFileChooser.this.filters.values()) {
-                                if (filter.acceptExtension(file)) {
-                                    result = true;
-                                    break;
-                                }
-                            }
-                        }
-                        return result;
-                    }
-
-                    @Override
-                    public String getDescription() {
-                        return String.format(
-                            "Graph files (*%s, *%s, *%s, *%s)",
-                            STATE_EXTENSION, RULE_EXTENSION, TYPE_EXTENSION,
-                            GXL_EXTENSION);
-                    }
-
-                    @Override
-                    public boolean acceptExtension(File file) {
-                        return false;
-                    }
-
-                    @Override
-                    public String stripExtension(String fileName) {
-                        File file = new File(fileName);
-                        for (ExtensionFilter filter : MyFileChooser.this.filters.values()) {
-                            if (filter.acceptExtension(file)) {
-                                return filter.stripExtension(fileName);
-                            }
-                        }
-                        return fileName;
-                    }
-                };
-            }
-            return this.graphFilter;
+            return FilterList.GRAPHS_FILTER;
         }
-
-        /**
-         * Extension filter for all known kinds of graph files.
-         */
-        private ExtensionFilter graphFilter;
 
         /** Lazily creates and returns the rule filter. */
         private ExtensionFilter getRuleFilter() {
-            return RULE_FILTER;
+            return FilterList.RULE_FILTER;
         }
 
         /** Lazily creates and returns the state filter. */
         private ExtensionFilter getStateFilter() {
-            return STATE_FILTER;
+            return FilterList.STATE_FILTER;
         }
 
         /** Lazily creates and returns the type filter. */
         private ExtensionFilter getTypeFilter() {
-            return TYPE_FILTER;
+            return FilterList.TYPE_FILTER;
         }
 
         /** Map of graph roles to extension filters. */

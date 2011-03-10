@@ -33,7 +33,7 @@ import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
 import groove.gui.layout.LayoutMap;
 import groove.io.ExtensionFilter;
-import groove.io.ExtensionList;
+import groove.io.FileType;
 import groove.io.LayoutIO;
 import groove.io.xml.JaxbGxlIO;
 import groove.trans.RuleName;
@@ -76,7 +76,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     /**
      * Constructs a store from a given file. The file should be a JAR or ZIP
      * file containing a single subdirectory with extension
-     * {@link ExtensionList#RULE_SYSTEM_EXTENSION}. The store is immutable.
+     * {@link FileType#GRAMMAR}. The store is immutable.
      * @param file source JAR or ZIP file containing the rule system
      * @throws IllegalArgumentException if <code>file</code> is not a correct
      *         archive
@@ -627,8 +627,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     private final Observable observable = new Observable();
 
     /** Name of the JAR protocol and file extension. */
-    static private final String JAR_PROTOCOL =
-        ExtensionList.JAR_EXTENSION.substring(1);
+    static private final String JAR_PROTOCOL = FileType.JAR.getExtensionName();
 
     private static class MyEdit extends AbstractUndoableEdit implements Edit {
         public MyEdit(int change) {

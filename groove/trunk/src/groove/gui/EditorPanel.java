@@ -17,7 +17,6 @@
 package groove.gui;
 
 import groove.trans.RuleName;
-import groove.util.Groove;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
@@ -154,7 +153,7 @@ public class EditorPanel extends JPanel {
         if (this.cancelButton == null) {
             Action cancelAction =
                 new AbstractAction(Options.CANCEL_EDIT_ACTION_NAME,
-                    Groove.CANCEL_ICON) {
+                    Icons.CANCEL_ICON) {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         handleCancel();
@@ -172,7 +171,7 @@ public class EditorPanel extends JPanel {
     private JButton getOkButton() {
         if (this.okButton == null) {
             Action saveAction =
-                new AbstractAction(Options.SAVE_ACTION_NAME, Groove.SAVE_ICON) {
+                new AbstractAction(Options.SAVE_ACTION_NAME, Icons.SAVE_ICON) {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         if (isDirty() && confirmSave()) {

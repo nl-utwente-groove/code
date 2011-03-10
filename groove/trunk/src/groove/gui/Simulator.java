@@ -69,6 +69,7 @@ import groove.gui.dialog.FreshNameDialog;
 import groove.gui.dialog.ProgressBarDialog;
 import groove.gui.dialog.PropertiesDialog;
 import groove.gui.dialog.RelabelDialog;
+import groove.gui.dialog.SaveDialog;
 import groove.gui.dialog.StringDialog;
 import groove.gui.dialog.VersionDialog;
 import groove.gui.jgraph.AspectJGraph;
@@ -78,15 +79,14 @@ import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
-import groove.io.Exporter;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
+import groove.io.external.Exporter;
 import groove.io.store.DefaultFileSystemStore;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
 import groove.io.xml.AspectGxl;
 import groove.io.xml.DefaultGxl;
-import groove.io.xml.LayedOutXml;
 import groove.io.xml.Xml;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
@@ -1431,7 +1431,7 @@ public class Simulator {
             // set up the frame
             this.frame = new JFrame(APPLICATION_NAME);
             // small icon doesn't look nice due to shadow
-            this.frame.setIconImage(Groove.GROOVE_ICON_16x16.getImage());
+            this.frame.setIconImage(Icons.GROOVE_ICON_16x16.getImage());
             this.frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
             // register doQuit() for the Command-Q shortcut on MacOS 
@@ -2766,8 +2766,7 @@ public class Simulator {
     /**
      * The graph loader used for saving aspect graphs.
      */
-    private final Xml<AspectGraph> aspectLoader = new AspectGxl(
-        new LayedOutXml());
+    private final Xml<AspectGraph> aspectLoader = AspectGxl.getInstance();
 
     /**
      * The graph loader used for saving arbitrary graphs.
@@ -3126,7 +3125,7 @@ public class Simulator {
 
     private class CopyGraphAction extends RefreshableAction {
         CopyGraphAction() {
-            super(Options.COPY_GRAPH_ACTION_NAME, Groove.COPY_ICON);
+            super(Options.COPY_GRAPH_ACTION_NAME, Icons.COPY_ICON);
             putValue(ACCELERATOR_KEY, Options.COPY_KEY);
         }
 
@@ -3182,7 +3181,7 @@ public class Simulator {
 
     private class CopyRuleAction extends RefreshableAction {
         CopyRuleAction() {
-            super(Options.COPY_RULE_ACTION_NAME, Groove.COPY_ICON);
+            super(Options.COPY_RULE_ACTION_NAME, Icons.COPY_ICON);
             putValue(ACCELERATOR_KEY, Options.COPY_KEY);
         }
 
@@ -3243,7 +3242,7 @@ public class Simulator {
 
     private class DeleteGraphAction extends RefreshableAction {
         DeleteGraphAction() {
-            super(Options.DELETE_GRAPH_ACTION_NAME, Groove.DELETE_ICON);
+            super(Options.DELETE_GRAPH_ACTION_NAME, Icons.DELETE_ICON);
             putValue(ACCELERATOR_KEY, Options.DELETE_KEY);
             addAccelerator(this);
         }
@@ -3306,7 +3305,7 @@ public class Simulator {
 
     private class DeleteRuleAction extends RefreshableAction {
         DeleteRuleAction() {
-            super(Options.DELETE_RULE_ACTION_NAME, Groove.DELETE_ICON);
+            super(Options.DELETE_RULE_ACTION_NAME, Icons.DELETE_ICON);
             putValue(ACCELERATOR_KEY, Options.DELETE_KEY);
             addAccelerator(this);
         }
@@ -3365,7 +3364,7 @@ public class Simulator {
     private class EditGraphAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         EditGraphAction() {
-            super(Options.EDIT_STATE_ACTION_NAME, Groove.EDIT_ICON);
+            super(Options.EDIT_STATE_ACTION_NAME, Icons.EDIT_ICON);
             putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
         }
 
@@ -3517,7 +3516,7 @@ public class Simulator {
                     }
                 }
                 // We are done with the rule changes.
-                // Update the grammar, but just once... :P
+                // Update the grammar, but just once.. :P
                 updateGrammar();
             }
         }
@@ -3546,7 +3545,7 @@ public class Simulator {
     private class EditRuleAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         EditRuleAction() {
-            super(Options.EDIT_RULE_ACTION_NAME, Groove.EDIT_ICON);
+            super(Options.EDIT_RULE_ACTION_NAME, Icons.EDIT_ICON);
             putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
         }
 
@@ -3702,7 +3701,8 @@ public class Simulator {
      */
     private class DefaultExplorationAction extends RefreshableAction {
         DefaultExplorationAction() {
-            super(Options.DEFAULT_EXPLORATION_ACTION_NAME, Groove.FORWARD_ICON);
+            super(Options.DEFAULT_EXPLORATION_ACTION_NAME,
+                Icons.FORWARD_ICON);
             putValue(ACCELERATOR_KEY, Options.DEFAULT_EXPLORATION_KEY);
         }
 
@@ -3806,7 +3806,7 @@ public class Simulator {
 
     private class ExportAction extends RefreshableAction {
         ExportAction() {
-            super("Export Simulation ...", null);
+            super("Export Simulation ..", null);
         }
 
         public void actionPerformed(ActionEvent arg0) {
@@ -4367,7 +4367,7 @@ public class Simulator {
 
     private class NewGraphAction extends RefreshableAction {
         NewGraphAction() {
-            super(Options.NEW_GRAPH_ACTION_NAME, Groove.NEW_GRAPH_ICON);
+            super(Options.NEW_GRAPH_ACTION_NAME, Icons.NEW_GRAPH_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -4406,7 +4406,7 @@ public class Simulator {
 
     private class NewRuleAction extends RefreshableAction {
         NewRuleAction() {
-            super(Options.NEW_RULE_ACTION_NAME, Groove.NEW_RULE_ICON);
+            super(Options.NEW_RULE_ACTION_NAME, Icons.NEW_RULE_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -4484,7 +4484,7 @@ public class Simulator {
     private class RedoAction extends AbstractAction {
         /** Constructs an instance of the action. */
         RedoAction() {
-            super(Options.REDO_ACTION_NAME, Groove.REDO_ICON);
+            super(Options.REDO_ACTION_NAME, Icons.REDO_ICON);
             putValue(SHORT_DESCRIPTION, Options.REDO_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.REDO_KEY);
             setEnabled(false);
@@ -4598,7 +4598,7 @@ public class Simulator {
     private class RelabelAction extends RefreshableAction implements
             GraphSelectionListener, TreeSelectionListener {
         RelabelAction() {
-            super(Options.RELABEL_ACTION_NAME, Groove.RENAME_ICON);
+            super(Options.RELABEL_ACTION_NAME, Icons.RENAME_ICON);
             getStatePanel().getJGraph().addGraphSelectionListener(this);
             getStatePanel().getLabelTree().addTreeSelectionListener(this);
             getRulePanel().getJGraph().addGraphSelectionListener(this);
@@ -4675,7 +4675,7 @@ public class Simulator {
 
     private class RenameGraphAction extends RefreshableAction {
         RenameGraphAction() {
-            super(Options.RENAME_GRAPH_ACTION_NAME, Groove.RENAME_ICON);
+            super(Options.RENAME_GRAPH_ACTION_NAME, Icons.RENAME_ICON);
             putValue(ACCELERATOR_KEY, Options.RENAME_KEY);
         }
 
@@ -4731,7 +4731,7 @@ public class Simulator {
 
     private class RenameRuleAction extends RefreshableAction {
         RenameRuleAction() {
-            super(Options.RENAME_RULE_ACTION_NAME, Groove.RENAME_ICON);
+            super(Options.RENAME_RULE_ACTION_NAME, Icons.RENAME_ICON);
             putValue(ACCELERATOR_KEY, Options.RENAME_KEY);
         }
 
@@ -4840,7 +4840,7 @@ public class Simulator {
     private class SaveGraphAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         SaveGraphAction() {
-            super(Options.SAVE_ACTION_NAME, Groove.SAVE_ICON);
+            super(Options.SAVE_ACTION_NAME, Icons.SAVE_ICON);
             putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
         }
 
@@ -4860,8 +4860,7 @@ public class Simulator {
             getStateFileChooser().setFileFilter(filter);
             getStateFileChooser().setSelectedFile(new File(name));
             File selectedFile =
-                ExtensionFilter.showSaveDialog(getStateFileChooser(),
-                    getFrame(), null);
+                SaveDialog.show(getStateFileChooser(), getFrame(), null);
             // now save, if so required
             if (selectedFile != null) {
                 name = filter.stripExtension(selectedFile.getName());
@@ -4889,8 +4888,7 @@ public class Simulator {
             getStateFileChooser().setFileFilter(filter);
             getStateFileChooser().setSelectedFile(new File(LTS_FILE_NAME));
             File selectedFile =
-                ExtensionFilter.showSaveDialog(getStateFileChooser(),
-                    getFrame(), null);
+                SaveDialog.show(getStateFileChooser(), getFrame(), null);
             // now save, if so required
             if (selectedFile != null) {
                 String name = filter.stripExtension(selectedFile.getName());
@@ -5090,7 +5088,7 @@ public class Simulator {
     private class SetStartGraphAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         SetStartGraphAction() {
-            super(Options.START_GRAPH_ACTION_NAME, Groove.START_ICON);
+            super(Options.START_GRAPH_ACTION_NAME, Icons.START_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -5121,7 +5119,7 @@ public class Simulator {
     private class StartSimulationAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         StartSimulationAction() {
-            super(Options.START_SIMULATION_ACTION_NAME, Groove.NEW_LTS_ICON);
+            super(Options.START_SIMULATION_ACTION_NAME, Icons.NEW_LTS_ICON);
             putValue(Action.ACCELERATOR_KEY, Options.START_SIMULATION_KEY);
         }
 
@@ -5211,7 +5209,7 @@ public class Simulator {
     private class UndoAction extends AbstractAction {
         /** Constructs an instance of the action. */
         UndoAction() {
-            super(Options.UNDO_ACTION_NAME, Groove.UNDO_ICON);
+            super(Options.UNDO_ACTION_NAME, Icons.UNDO_ICON);
             putValue(SHORT_DESCRIPTION, Options.UNDO_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.UNDO_KEY);
             setEnabled(false);

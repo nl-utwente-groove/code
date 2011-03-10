@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.io.export;
+package groove.io.external.export;
 
 import groove.algebra.StringAlgebra;
 import groove.graph.EdgeRole;

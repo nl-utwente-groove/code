@@ -14,10 +14,11 @@
  *
  * $Id$
  */
-package groove.io.format;
+package groove.io.external.format;
 
 import groove.graph.Graph;
 import groove.gui.jgraph.GraphJGraph;
+import groove.io.FileType;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -32,11 +33,7 @@ import javax.imageio.ImageIO;
  * @author Arend Rensink 
  */
 
-public class JpgFormat extends AbsFileFormat<Graph<?,?>> {
-
-    private static final String DESCRIPTION = "JPEG image files";
-    private static final String EXTENSION = ".jpg";
-    private static final boolean ACCEPT_DIR = false;
+public class JpgFormat extends AbsExternalFileFormat<Graph<?,?>> {
 
     private static final JpgFormat INSTANCE = new JpgFormat();
 
@@ -46,7 +43,7 @@ public class JpgFormat extends AbsFileFormat<Graph<?,?>> {
     }
 
     private JpgFormat() {
-        super(DESCRIPTION, EXTENSION, ACCEPT_DIR);
+        super(FileType.JPG);
     }
 
     // Methods from FileFormat.

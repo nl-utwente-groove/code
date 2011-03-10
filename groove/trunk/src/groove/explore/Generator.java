@@ -25,7 +25,7 @@ import groove.explore.result.Acceptor;
 import groove.explore.strategy.Strategy;
 import groove.explore.util.ExplorationStatistics;
 import groove.graph.DefaultGraph;
-import groove.io.ExtensionFilter;
+import groove.io.FileType;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.GraphGrammar;
@@ -74,10 +74,6 @@ public class Generator extends CommandLineTool {
      */
     static public final String ID_PREFIX = "gts";
 
-    /**
-     * Graphs file extension.
-     */
-    static public final String GRAPH_FILE_EXTENSION = ".graphs";
     /** Error message in case grammar cannot be found. */
     static public final String LOAD_ERROR = "Can't load graph grammar";
     /** Usage message for the generator. */
@@ -496,10 +492,11 @@ public class Generator extends CommandLineTool {
 
         // Perform the export itself.
         try {
-            Groove.saveGraph(lts, path + "/lts.gxl");
+            Groove.saveGraph(lts, path + "/lts" + FileType.GXL.getExtension());
             for (GraphState state : export) {
                 String name = state.toString();
-                Groove.saveGraph(state.getGraph(), path + "/" + name + ".gst");
+                Groove.saveGraph(state.getGraph(), path + "/" + name
+                    + FileType.STATE.getExtension());
             }
         } catch (IOException exc) {
             exc.printStackTrace();
@@ -653,10 +650,6 @@ public class Generator extends CommandLineTool {
     /** The graph grammar used for the generation. */
     private GraphGrammar grammar;
 
-    /** File filter for graph files (GXL or GST). */
-    protected final ExtensionFilter graphFilter = new ExtensionFilter(
-        "Serialized graph files", GRAPH_FILE_EXTENSION);
-
     /**
      * The <code>ExportSimulationPathOption</code> is the command line option
      * to export the simulation to an explicitly specified absolute path. It is
@@ -782,10 +775,6 @@ public class Generator extends CommandLineTool {
         }
     }
 
-    /**
-     * The grammar loader.
-     */
-    // protected final FileGps loader = createGrammarLoader();
     /**
      * The <code>FinalSaveOption</code> is the command line option for saving
      * all final states in separate files. It is implemented by means of a

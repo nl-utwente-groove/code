@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.io.format;
+package groove.io.external.format;
 
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
@@ -22,6 +22,7 @@ import groove.graph.Edge;
 import groove.graph.Node;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
+import groove.io.FileType;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -40,11 +41,7 @@ import java.util.Set;
  * Class that implements load/save of graphs in the CADP .aut format.
  * @author Eduardo Zambon
  */
-public final class AutFormat extends AbsFileFormat<DefaultGraph> {
-
-    private static final String DESCRIPTION = "CADP .aut files";
-    private static final String EXTENSION = ".aut";
-    private static final boolean ACCEPT_DIR = false;
+public final class AutFormat extends AbsExternalFileFormat<DefaultGraph> {
 
     /** Label used to identify the start state, when reading in from .aut */
     private static final String ROOT_LABEL = "$ROOT$";
@@ -57,7 +54,7 @@ public final class AutFormat extends AbsFileFormat<DefaultGraph> {
     }
 
     private AutFormat() {
-        super(DESCRIPTION, EXTENSION, ACCEPT_DIR);
+        super(FileType.AUT);
     }
 
     // Methods from FileFormat.

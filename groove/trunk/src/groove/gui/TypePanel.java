@@ -376,7 +376,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
      */
     private class CopyAction extends RefreshableAction {
         public CopyAction() {
-            super(Options.COPY_TYPE_ACTION_NAME, Groove.COPY_ICON);
+            super(Options.COPY_TYPE_ACTION_NAME, Icons.COPY_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -422,7 +422,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
      */
     private class DeleteAction extends RefreshableAction {
         public DeleteAction() {
-            super(Options.DELETE_TYPE_ACTION_NAME, Groove.DELETE_ICON);
+            super(Options.DELETE_TYPE_ACTION_NAME, Icons.DELETE_ICON);
             putValue(ACCELERATOR_KEY, Options.DELETE_KEY);
         }
 
@@ -462,7 +462,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
     /** Action to disable the currently displayed type graph. */
     private class UncheckAllAction extends RefreshableAction {
         public UncheckAllAction() {
-            super("Uncheck all type graphs", Groove.DISABLE_ICON);
+            super("Uncheck all type graphs", Icons.DISABLE_ICON);
         }
 
         public void actionPerformed(ActionEvent arg0) {
@@ -493,7 +493,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
     /** Action to enable the currently displayed type graph. */
     private class CheckAllAction extends RefreshableAction {
         public CheckAllAction() {
-            super("Check all type graphs", Groove.ENABLE_ICON);
+            super("Check all type graphs", Icons.ENABLE_ICON);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -524,7 +524,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
     /** Action to start editing the currently displayed type graph. */
     private class EditAction extends RefreshableAction {
         public EditAction() {
-            super(Options.EDIT_TYPE_ACTION_NAME, Groove.EDIT_ICON);
+            super(Options.EDIT_TYPE_ACTION_NAME, Icons.EDIT_ICON);
             putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
         }
 
@@ -560,7 +560,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
     /** Action to create and start editing a new type graph. */
     private class NewAction extends RefreshableAction {
         public NewAction() {
-            super(Options.NEW_TYPE_ACTION_NAME, Groove.NEW_TYPE_ICON);
+            super(Options.NEW_TYPE_ACTION_NAME, Icons.NEW_TYPE_ICON);
         }
 
         @Override
@@ -599,7 +599,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
      */
     private class RenameAction extends RefreshableAction {
         public RenameAction() {
-            super(Options.RENAME_TYPE_ACTION_NAME, Groove.RENAME_ICON);
+            super(Options.RENAME_TYPE_ACTION_NAME, Icons.RENAME_ICON);
             putValue(ACCELERATOR_KEY, Options.RENAME_KEY);
         }
 

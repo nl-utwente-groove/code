@@ -16,8 +16,6 @@
  */
 package groove.gui;
 
-import groove.util.Groove;
-
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
@@ -47,16 +45,16 @@ import javax.swing.event.ChangeListener;
 public class SimulatorPanel extends JTabbedPane {
     /** Constructs a fresh instance, for a given simulator. */
     public SimulatorPanel(final Simulator simulator) {
-        add(simulator.getStatePanel(), Groove.GRAPH_FRAME_ICON,
-            Groove.GRAPH_FILE_ICON, "Current graph state");
-        add(simulator.getRulePanel(), Groove.RULE_FRAME_ICON,
-            Groove.RULE_FILE_ICON, "Selected rule");
-        add(simulator.getLtsPanel(), Groove.LTS_FRAME_ICON, null,
+        add(simulator.getStatePanel(), Icons.GRAPH_FRAME_ICON,
+            Icons.GRAPH_FILE_ICON, "Current graph state");
+        add(simulator.getRulePanel(), Icons.RULE_FRAME_ICON,
+            Icons.RULE_FILE_ICON, "Selected rule");
+        add(simulator.getLtsPanel(), Icons.LTS_FRAME_ICON, null,
             "Labelled transition system");
-        add(simulator.getControlPanel(), Groove.CONTROL_FRAME_ICON,
-            Groove.CONTROL_FILE_ICON, "Control specification");
-        add(simulator.getTypePanel(), Groove.TYPE_FRAME_ICON,
-            Groove.TYPE_FILE_ICON, "Type graph");
+        add(simulator.getControlPanel(), Icons.CONTROL_FRAME_ICON,
+            Icons.CONTROL_FILE_ICON, "Control specification");
+        add(simulator.getTypePanel(), Icons.TYPE_FRAME_ICON,
+            Icons.TYPE_FILE_ICON, "Type graph");
         // add the change listener only now, as otherwise the add actions
         // above will trigger it
         addChangeListener(new ChangeListener() {
@@ -120,13 +118,13 @@ public class SimulatorPanel extends JTabbedPane {
         Icon icon = null;
         switch (panel.getGraph().getRole()) {
         case HOST:
-            icon = Groove.GRAPH_MODE_ICON;
+            icon = Icons.GRAPH_MODE_ICON;
             break;
         case RULE:
-            icon = Groove.RULE_MODE_ICON;
+            icon = Icons.RULE_MODE_ICON;
             break;
         case TYPE:
-            icon = Groove.TYPE_MODE_ICON;
+            icon = Icons.TYPE_MODE_ICON;
         }
         addTab("", panel);
         int index = indexOfComponent(panel);
