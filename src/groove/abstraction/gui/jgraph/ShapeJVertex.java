@@ -35,7 +35,10 @@ import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
 
 /**
- * EDUARDO: Comment this...
+ * Class that connects to the JGraph library for displaying ShapeNodes.
+ * Nodes are displayed as usual, with the addition of the multiplicity on the
+ * first line of the node.
+ * 
  * @author Eduardo Zambon
  */
 public class ShapeJVertex extends DefaultGraphCell {
@@ -44,7 +47,10 @@ public class ShapeJVertex extends DefaultGraphCell {
     private ShapeNode node;
 
     /**
-     * EDUARDO: Comment this...
+     * Constructs a ShapeJVextex for a given ShapeNode.
+     * @param shape the shape of parameter edge.
+     * @param node the ShapeNode that is to be displayed.
+     * @param options the options from the GUI.
      */
     public ShapeJVertex(Shape shape, ShapeNode node, Options options) {
         super(null);

@@ -24,7 +24,8 @@ import org.jgraph.graph.PortRenderer;
 import org.jgraph.graph.PortView;
 
 /**
- * EDUARDO: Comment this...
+ * View renderer for shape ports.
+ * 
  * @author Eduardo Zambon
  */
 public class ShapeJPortView extends PortView {
@@ -36,9 +37,7 @@ public class ShapeJPortView extends PortView {
 
     private Shape shape;
 
-    /**
-     * EDUARDO: Comment this...
-     */
+    /** Basic constructor, defers to super class. */
     public ShapeJPortView(Object cell) {
         super(cell);
         this.getShape();
@@ -51,9 +50,7 @@ public class ShapeJPortView extends PortView {
         return this.shape;
     }
 
-    /** 
-    * Returns the bounds for the port view. 
-    */
+    /** Returns the bounds for the port view. */
     @Override
     public Rectangle2D getBounds() {
         if (this.shape != null) {
@@ -109,9 +106,7 @@ public class ShapeJPortView extends PortView {
         return new Point2D.Double(x, y);
     }
 
-    /**
-     * EDUARDO: Comment this...
-     */
+    /** Port renderer. Draws a small black circle. */
     public static class EdgeSigPortRenderer extends PortRenderer {
 
         private ShapeJPortView view;

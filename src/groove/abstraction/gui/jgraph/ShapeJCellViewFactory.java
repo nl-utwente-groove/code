@@ -22,7 +22,9 @@ import org.jgraph.graph.PortView;
 import org.jgraph.graph.VertexView;
 
 /**
- * EDUARDO: Comment this...
+ * Cell view factory that dispatches to the proper view constructors
+ * depending on the given object.
+ * 
  * @author Eduardo Zambon
  */
 public class ShapeJCellViewFactory extends DefaultCellViewFactory {

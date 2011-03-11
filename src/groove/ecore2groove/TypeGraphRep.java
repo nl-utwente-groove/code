@@ -69,7 +69,6 @@ public class TypeGraphRep {
      * Constructor method. given a handle to a ModelHandler, create a type
      * graph representation of the Ecore meta model that was loaded by the
      * ModelHandler. 
-     * @param name TODO
      * @param m the ModelHandler.
      */
     public TypeGraphRep(String name, ModelHandler m) {

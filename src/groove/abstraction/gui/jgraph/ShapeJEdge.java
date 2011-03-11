@@ -25,7 +25,12 @@ import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.Port;
 
 /**
- * EDUARDO: Comment this...
+ * Class that connects to the JGraph library for displaying ShapeEdges.
+ * Objects of this class can be flagged as the main edge for the source and/or
+ * target edge bundles. A main edge is the one that is used when calculating
+ * the relative position of ports on node boundaries. If a main edge is dragged,
+ * the ports move accordingly.
+ * 
  * @author Eduardo Zambon
  */
 public class ShapeJEdge extends DefaultEdge {
@@ -34,7 +39,11 @@ public class ShapeJEdge extends DefaultEdge {
     private boolean mainTgt;
 
     /**
-     * EDUARDO: Comment this...
+     * Constructs a ShapeJEdge for a given ShapeEdge.
+     * @param shape the shape of parameter edge.
+     * @param edge the ShapeEdge that is to be displayed.
+     * @param source the source port for the ShapeJEdge to connect.
+     * @param target the target port for the ShapeJEdge to connect.
      */
     public ShapeJEdge(Shape shape, ShapeEdge edge, Port source, Port target) {
         super(edge.label().text());
@@ -47,7 +56,11 @@ public class ShapeJEdge extends DefaultEdge {
     }
 
     /**
-     * EDUARDO: Comment this...
+     * Constructs a ShapeJEdge for a given ShapeEdge.
+     * @param shape the shape of parameter edge.
+     * @param edge the ShapeEdge that is to be displayed.
+     * @param source the source vertex for the ShapeJEdge to connect.
+     * @param target the target vertex for the ShapeJEdge to connect.
      */
     public ShapeJEdge(Shape shape, ShapeEdge edge, ShapeJVertex source,
             ShapeJVertex target) {
@@ -65,29 +78,27 @@ public class ShapeJEdge extends DefaultEdge {
         GraphConstants.setEndFill(attrMap, true);
     }
 
-    /**
-     * EDUARDO: Comment this...
-     */
+    /** Toggles the mainSrc flag. */
     public void setMainSrc(boolean mainSrc) {
         this.mainSrc = mainSrc;
     }
 
-    /**
-     * EDUARDO: Comment this...
-     */
+    /** Toggles the mainTgt flag. */
     public void setMainTgt(boolean mainTgt) {
         this.mainTgt = mainTgt;
     }
 
     /**
-     * EDUARDO: Comment this...
+     * Checks if this edge is flagged as a main edge for a bundle of source
+     * edges.
      */
     public boolean isMainSrc() {
         return this.mainSrc;
     }
 
     /**
-     * EDUARDO: Comment this...
+     * Checks if this edge is flagged as a main edge for a bundle of target
+     * edges.
      */
     public boolean isMainTgt() {
         return this.mainTgt;
