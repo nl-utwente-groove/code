@@ -19,21 +19,17 @@ package groove.abstraction.gui.jgraph;
 import org.jgraph.graph.VertexView;
 
 /**
- * EDUARDO: Comment this...
+ * View renderer for ShapeJVertex.
  * @author Eduardo Zambon
  */
 public class ShapeJVertexView extends VertexView {
 
-    /**
-     * EDUARDO: Comment this...
-     */
+    /** Basic constructor, delegates to super class. */
     public ShapeJVertexView(Object cell) {
         super(cell);
     }
 
-    /**
-     * EDUARDO: Comment this...
-     */
+    /** Basic getter method. */
     public ShapeJVertex getShapeJVertex() {
         return (ShapeJVertex) this.getCell();
     }

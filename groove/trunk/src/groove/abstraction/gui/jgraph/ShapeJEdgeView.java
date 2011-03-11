@@ -19,14 +19,13 @@ package groove.abstraction.gui.jgraph;
 import org.jgraph.graph.EdgeView;
 
 /**
- * EDUARDO: Comment this...
+ * View renderer for ShapeJEdges.
+ * 
  * @author Eduardo Zambon
  */
 public class ShapeJEdgeView extends EdgeView {
 
-    /**
-     * EDUARDO: Comment this...
-     */
+    /** Basic constructor, delegates to super class. */
     public ShapeJEdgeView(Object cell) {
         super(cell);
     }
@@ -44,9 +43,7 @@ public class ShapeJEdgeView extends EdgeView {
         }
     }
 
-    /**
-     * EDUARDO: Comment this...
-     */
+    /** Basic getter method. */
     public ShapeJEdge getShapeJEdge() {
         return (ShapeJEdge) this.getCell();
     }
@@ -60,7 +57,8 @@ public class ShapeJEdgeView extends EdgeView {
     }
 
     /**
-     * EDUARDO: Comment this...
+     * Returns true if the vertex associated with the given vertex view
+     * corresponds to the source of this edge view.
      */
     public boolean isSrcVertex(ShapeJVertexView vertexView) {
         ShapeJVertex srcVertex = vertexView.getShapeJVertex();
@@ -69,7 +67,8 @@ public class ShapeJEdgeView extends EdgeView {
     }
 
     /**
-     * EDUARDO: Comment this...
+     * Returns true if the vertex associated with the given vertex view
+     * corresponds to the target of this edge view.
      */
     public boolean isTgtVertex(ShapeJVertexView vertexView) {
         ShapeJVertex tgtVertex = vertexView.getShapeJVertex();

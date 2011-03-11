@@ -22,7 +22,8 @@ import groove.gui.Options;
 import org.jgraph.graph.DefaultGraphModel;
 
 /**
- * EDUARDO: Comment this...
+ * A JGraph model for Shapes.
+ * 
  * @author Eduardo Zambon
  */
 public class ShapeJModel extends DefaultGraphModel {
@@ -30,24 +31,18 @@ public class ShapeJModel extends DefaultGraphModel {
     private Shape shape;
     private Options options;
 
-    /**
-     * EDUARDO: Comment this...
-     */
+    /** Basic constructor. */
     public ShapeJModel(Shape shape, Options options) {
         this.shape = shape;
         this.options = options;
     }
 
-    /**
-     * EDUARDO: Comment this...
-     */
+    /** Basic getter method. */
     public Shape getShape() {
         return this.shape;
     }
 
-    /**
-     * EDUARDO: Comment this...
-     */
+    /** Basic getter method. */
     public Options getOptions() {
         return this.options;
     }

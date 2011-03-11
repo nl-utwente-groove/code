@@ -48,7 +48,8 @@ import com.jgraph.layout.JGraphFacade;
 import com.jgraph.layout.organic.JGraphFastOrganicLayout;
 
 /**
- * EDUARDO: Comment this...
+ * JGraph class for displaying Shapes. 
+ * 
  * @author Eduardo Zambon
  */
 public class ShapeJGraph extends JGraph {
@@ -59,9 +60,7 @@ public class ShapeJGraph extends JGraph {
     private final HashMap<EdgeSignature,ShapeJPort> outEsMap;
     private final HashMap<EdgeSignature,ShapeJPort> inEsMap;
 
-    /**
-     * EDUARDO: Comment this...
-     */
+    /** Basic constructor. */
     public ShapeJGraph() {
         super();
 
@@ -95,9 +94,7 @@ public class ShapeJGraph extends JGraph {
         return new Dimension((int) maxX, (int) maxY);
     }
 
-    /**
-     * EDUARDO: Comment this...
-     */
+    /** Stores the given JModel in this JGraph. */
     public void setJModel(ShapeJModel model) {
         super.setModel(model);
 
@@ -207,9 +204,6 @@ public class ShapeJGraph extends JGraph {
             AttributeMap attrMap = jEdge.getAttributes();
             GraphConstants.setExtraLabelPositions(attrMap, labelPositions);
             GraphConstants.setExtraLabels(attrMap, labels);
-            /*if (main) {
-                GraphConstants.setLineColor(attrMap, Color.BLUE);
-            }*/
         }
     }
 
@@ -238,7 +232,9 @@ public class ShapeJGraph extends JGraph {
     }
 
     /**
-     * EDUARDO: Comment this...
+     * Layouts the shape. Standard layout classes like Spring or Forest don't
+     * work well with shapes, so we use a different layouting algorithm, namely
+     * JGraphFastOrganicLayout.
      */
     public void runLayout() {
         Object roots[] = this.getRoots();
@@ -318,7 +314,7 @@ public class ShapeJGraph extends JGraph {
 
     private class MyMouseListener extends MouseAdapter {
 
-        /** Empty constructor wit the correct visibility. */
+        /** Empty constructor with the correct visibility. */
         MyMouseListener() {
             // empty
         }

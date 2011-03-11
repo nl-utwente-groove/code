@@ -25,13 +25,23 @@ import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
 
 /**
- * EDUARDO: Comment this...
+ * A visible JGraph port that is associated with an edge signature (bundle).
+ * This departs from the usual mode of handling ports in Groove. Normally
+ * a node has only one port that is not shown. For shapes, a shape node has one
+ * port for each edge signature. This allows us to draw edges from a bundle
+ * together.
+ *
  * @author Eduardo Zambon
  */
 public class ShapeJPort extends DefaultPort {
 
     /**
-     * EDUARDO: Comment this...
+     * Constructor.
+     * @param shape the shape of the edge signature.
+     * @param es the edge signature associated with this port.
+     * @param vertex the vertex to add this port to.
+     * @param outgoing flag controlling if the edges are coming in or out from
+     *                 the port. 
      */
     public ShapeJPort(Shape shape, EdgeSignature es, ShapeJVertex vertex,
             boolean outgoing) {
