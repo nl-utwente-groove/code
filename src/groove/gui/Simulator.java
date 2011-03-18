@@ -1760,6 +1760,18 @@ public class Simulator {
         return this.typePanel;
     }
 
+    /**
+     * Returns the prolog panel.
+     * @see #switchTabs(JGraphPanel)
+     */
+    public PrologPanel getPrologPanel() {
+        if (this.prologPanel == null) {
+            this.prologPanel = new PrologPanel(this);
+            this.prologPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
+        }
+        return this.prologPanel;
+    }
+
     StateJList getStateList() {
         if (this.stateJList == null) {
             this.stateJList = new StateJList(this);
@@ -2835,6 +2847,9 @@ public class Simulator {
 
     /** Type graph display panel. */
     private TypePanel typePanel;
+
+    /** Prolog display panel. */
+    private PrologPanel prologPanel;
 
     /** Undo history. */
     private UndoHistory undoHistory;

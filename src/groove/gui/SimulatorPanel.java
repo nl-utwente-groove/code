@@ -55,6 +55,8 @@ public class SimulatorPanel extends JTabbedPane {
             Icons.CONTROL_FILE_ICON, "Control specification");
         add(simulator.getTypePanel(), Icons.TYPE_FRAME_ICON,
             Icons.TYPE_FILE_ICON, "Type graph");
+        add(simulator.getPrologPanel(), Icons.PROLOG_FRAME_ICON, null, "Prolog");
+
         // add the change listener only now, as otherwise the add actions
         // above will trigger it
         addChangeListener(new ChangeListener() {
