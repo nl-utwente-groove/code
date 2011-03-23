@@ -19,7 +19,7 @@ package groove.io.external.format;
 import groove.graph.Graph;
 import groove.gui.jgraph.GraphJGraph;
 import groove.io.FileType;
-import groove.io.external.export.GraphToTikz;
+import groove.io.external.util.GraphToTikz;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -32,7 +32,7 @@ import java.io.PrintWriter;
  * 
  * @author Eduardo Zambon 
  */
-public class TikzFormat extends AbsExternalFileFormat<Graph<?,?>> {
+public class TikzFormat extends AbstractExternalFileFormat<Graph<?,?>> {
 
     private static final TikzFormat INSTANCE = new TikzFormat();
 

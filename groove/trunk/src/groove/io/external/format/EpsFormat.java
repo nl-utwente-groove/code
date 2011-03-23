@@ -37,7 +37,7 @@ import net.sf.epsgraphics.EpsGraphics;
  * @author Arend Rensink 
  */
 
-public class EpsFormat extends AbsExternalFileFormat<Graph<?,?>> {
+public class EpsFormat extends AbstractExternalFileFormat<Graph<?,?>> {
 
     private static final EpsFormat INSTANCE = new EpsFormat();
 

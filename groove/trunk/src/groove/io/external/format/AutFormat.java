@@ -42,7 +42,7 @@ import java.util.Set;
  * Class that implements load/save of graphs in the CADP .aut format.
  * @author Eduardo Zambon
  */
-public final class AutFormat extends AbsExternalFileFormat<Graph<?,?>> {
+public final class AutFormat extends AbstractExternalFileFormat<Graph<?,?>> {
 
     /** Label used to identify the start state, when reading in from .aut */
     private static final String ROOT_LABEL = "$ROOT$";

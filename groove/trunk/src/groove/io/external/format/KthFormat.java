@@ -20,7 +20,7 @@ import groove.graph.Graph;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJGraph;
 import groove.io.FileType;
-import groove.io.external.export.GraphToKth;
+import groove.io.external.util.GraphToKth;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
@@ -35,7 +35,7 @@ import java.io.PrintWriter;
  * 
  * @author Eduardo Zambon 
  */
-public class KthFormat extends AbsExternalFileFormat<Graph<?,?>> {
+public class KthFormat extends AbstractExternalFileFormat<Graph<?,?>> {
 
     private static final KthFormat INSTANCE = new KthFormat();
 

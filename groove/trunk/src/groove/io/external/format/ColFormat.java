@@ -47,7 +47,7 @@ import java.io.InputStreamReader;
  * 
  * @author Arend Rensink 
  */
-public class ColFormat extends AbsExternalFileFormat<HostGraph> {
+public class ColFormat extends AbstractExternalFileFormat<HostGraph> {
 
     private static final ColFormat INSTANCE = new ColFormat();
 
