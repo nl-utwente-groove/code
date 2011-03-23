@@ -174,7 +174,7 @@ public class BoundedModelCheckingDialog {
     public void showDialog(JFrame frame) {
         // createContentPane();
         this.dialog = createContentPane().createDialog(frame, createTitle());
-        this.dialog.setResizable(false);
+        this.dialog.setResizable(true);
         // dialog.setSize(200,200);
         this.dialog.pack();
         this.dialog.setVisible(true);
