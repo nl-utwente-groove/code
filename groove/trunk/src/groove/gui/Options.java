@@ -18,6 +18,7 @@ package groove.gui;
 
 import groove.gui.jgraph.JAttr;
 import groove.util.ExprParser;
+import groove.util.Groove;
 import groove.view.FormatException;
 
 import java.awt.Font;
@@ -46,7 +47,6 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 
 import org.jgraph.graph.GraphConstants;
 
-import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
@@ -787,26 +787,28 @@ public class Options implements Cloneable {
         }
     }
 
-    /**
-     * Sets the look-and-feel to default (i.e., {@link PlasticLookAndFeel}).
-     */
+    /** Sets the look-and-feel. */
     public static void initLookAndFeel() {
         try {
-            // LAF specific options that should be done before setting the LAF
-            // go here
-            MetalLookAndFeel.setCurrentTheme(new DesertBlue());
-            // set default font to LAF font
-            Options.DEFAULT_FONT =
-                MetalLookAndFeel.getCurrentTheme().getUserTextFont();
-            // Set the look and feel
-            UIManager.setLookAndFeel(new com.jgoodies.looks.plastic.PlasticLookAndFeel());
-
-            // Changes for native LaF.
-            // EDUARDO: This works for Mac and Windows...
-            // UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            // EDUARDO: For Linux we have to force the proper theme because
-            // getSystemLookAndFeelClassName() always returns the MetalLaF...
-            // UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+            if (Groove.USE_NATIVE_LNF) {
+                // Changes for native LaF.
+                if (Groove.IS_PLATFORM_LINUX) {
+                    // For Linux we have to force the proper theme because
+                    // getSystemLookAndFeelClassName() always returns the MetalLaF...
+                    UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+                } else { //  This works for Mac and Windows...
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                }
+            } else { // Use the old look and feel.
+                // LAF specific options that should be done before setting the LAF
+                // go here
+                MetalLookAndFeel.setCurrentTheme(new DesertBlue());
+                // set default font to LAF font
+                Options.DEFAULT_FONT =
+                    MetalLookAndFeel.getCurrentTheme().getUserTextFont();
+                // Set the look and feel
+                UIManager.setLookAndFeel(new com.jgoodies.looks.plastic.PlasticLookAndFeel());
+            }
         } catch (Exception e) {
             // nothing to do here except not crash on the exception
             System.out.println("Exception");
