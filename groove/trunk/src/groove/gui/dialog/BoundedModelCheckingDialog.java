@@ -21,11 +21,11 @@ import groove.explore.strategy.Boundary;
 import groove.explore.strategy.GraphNodeSizeBoundary;
 import groove.explore.strategy.RuleSetBorderBoundary;
 import groove.explore.strategy.RuleSetStartBoundary;
+import groove.gui.layout.SpringUtilities;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.verify.ModelChecking;
 
-import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -41,13 +41,13 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SpringLayout;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-import com.jhlabs.awt.ParagraphLayout;
 
 /**
  * @author Harmen Kastenberg
@@ -63,11 +63,10 @@ public class BoundedModelCheckingDialog {
         return this.pane;
     }
 
-    private Panel createPanel() {
-        Panel panel = new Panel();
-        panel.setLayout(new ParagraphLayout());
+    private JPanel createPanel() {
+        SpringLayout layout = new SpringLayout();
+        JPanel panel = new JPanel(layout);
 
-        this.emptyLabel = new JLabel("");
         ButtonGroup group = new ButtonGroup();
         this.graphBoundButton = new JRadioButton("graph size");
         this.graphBoundButton.addActionListener(this.selectionListener);
@@ -101,8 +100,34 @@ public class BoundedModelCheckingDialog {
         group.add(this.graphBoundButton);
         group.add(this.ruleSetBoundButton);
 
-        panel.add(this.graphBoundButton, ParagraphLayout.NEW_PARAGRAPH);
+        panel.add(this.graphBoundButton);
+        panel.add(new JLabel(""));
+        panel.add(new JLabel(""));
+        panel.add(new JLabel(""));
+        panel.add(new JLabel(""));
+        panel.add(this.boundLabel);
+        panel.add(this.boundField);
+        panel.add(new JLabel(""));
+        panel.add(new JLabel(""));
+        panel.add(new JLabel(""));
+        panel.add(this.deltaLabel);
+        panel.add(this.deltaField);
+        panel.add(new JLabel(""));
+        panel.add(new JLabel(""));
+        panel.add(new JLabel(""));
+        panel.add(this.ruleSetBoundButton);
+        panel.add(new JLabel(""));
+        panel.add(new JLabel(""));
+        panel.add(new JLabel(""));
+        panel.add(new JLabel(""));
+        panel.add(new JLabel(""));
+        panel.add(this.ruleList);
+        panel.add(this.deleteButton);
+        panel.add(this.addButton);
+        panel.add(this.selectedRuleList);
+        SpringUtilities.makeCompactGrid(panel, 5, 5, 5, 5, 10, 10);
 
+        /*
         panel.add(this.boundLabel, ParagraphLayout.NEW_PARAGRAPH);
         panel.add(this.boundField);
 
@@ -115,6 +140,7 @@ public class BoundedModelCheckingDialog {
         panel.add(this.deleteButton);
         panel.add(this.addButton);
         panel.add(this.selectedRuleList);
+        */
         return panel;
     }
 
@@ -148,7 +174,7 @@ public class BoundedModelCheckingDialog {
     public void showDialog(JFrame frame) {
         // createContentPane();
         this.dialog = createContentPane().createDialog(frame, createTitle());
-        this.dialog.setResizable(true);
+        this.dialog.setResizable(false);
         // dialog.setSize(200,200);
         this.dialog.pack();
         this.dialog.setVisible(true);
@@ -204,7 +230,6 @@ public class BoundedModelCheckingDialog {
     JDialog dialog = new JDialog();
     JOptionPane pane;
 
-    private JLabel emptyLabel;
     /** The OK button on the option pane. */
     private JButton okButton;
     /** The CANCEL button on the option pane. */
