@@ -64,7 +64,7 @@ import groove.gui.dialog.BoundedModelCheckingDialog;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.dialog.ExplorationStatsDialog;
-import groove.gui.dialog.ExportDialog;
+import groove.gui.dialog.SaveLTSAsDialog;
 import groove.gui.dialog.FreshNameDialog;
 import groove.gui.dialog.ProgressBarDialog;
 import groove.gui.dialog.PropertiesDialog;
@@ -1940,7 +1940,6 @@ public class Simulator {
         result.add(new JMenuItem(getSaveGrammarAction()));
         result.add(new JMenuItem(getSaveGraphAction()));
         result.add(getExportGraphMenuItem());
-        result.add(new JMenuItem(getExportAction()));
 
         result.addSeparator();
 
@@ -2151,7 +2150,11 @@ public class Simulator {
         this.defaultExplorationMenuItem =
             result.add(this.getDefaultExplorationAction());
         result.add(this.getExplorationDialogAction());
+
+        result.addSeparator();
+
         result.add(this.getExplorationStatsDialogAction());
+        result.add(new JMenuItem(getSaveLTSAsAction()));
 
         return result;
     }
@@ -3809,26 +3812,26 @@ public class Simulator {
     }
 
     /**
-     * Returns the LTS export action permanently associated with this simulator.
+     * Returns the Save LTS As action permanently associated with this simulator.
      */
-    public ExportAction getExportAction() {
+    public SaveLTSAsAction getSaveLTSAsAction() {
         // lazily create the action
-        if (this.exportAction == null) {
-            this.exportAction = new ExportAction();
+        if (this.saveLtsAsAction == null) {
+            this.saveLtsAsAction = new SaveLTSAsAction();
         }
-        return this.exportAction;
+        return this.saveLtsAsAction;
     }
 
-    /** The LTS export action permanently associated with this simulator. */
-    private ExportAction exportAction;
+    /** The LTS Save As action permanently associated with this simulator. */
+    private SaveLTSAsAction saveLtsAsAction;
 
-    private class ExportAction extends RefreshableAction {
-        ExportAction() {
-            super("Export Simulation ..", null);
+    private class SaveLTSAsAction extends RefreshableAction {
+        SaveLTSAsAction() {
+            super("Save LTS As...", null);
         }
 
         public void actionPerformed(ActionEvent arg0) {
-            ExportDialog dialog = new ExportDialog(Simulator.this);
+            SaveLTSAsDialog dialog = new SaveLTSAsDialog(Simulator.this);
             if (getLastGrammarFile() != null) {
                 dialog.setCurrentDirectory(getLastGrammarFile().getAbsolutePath());
             }
@@ -3849,9 +3852,9 @@ public class Simulator {
 
                 Collection<GraphState> export = new HashSet<GraphState>(0);
 
-                if (exportStates == ExportDialog.STATES_ALL) {
+                if (exportStates == SaveLTSAsDialog.STATES_ALL) {
                     export = gts.getStateSet();
-                } else if (exportStates == ExportDialog.STATES_FINAL) {
+                } else if (exportStates == SaveLTSAsDialog.STATES_FINAL) {
                     export = gts.getFinalStates();
                 }
 
@@ -3860,8 +3863,9 @@ public class Simulator {
                         new File(file, "lts.gxl").getAbsolutePath());
                     for (GraphState state : export) {
                         String name = state.toString();
-                        Groove.saveGraph(state.getGraph(), new File(file, name
-                            + ".gst").getAbsolutePath());
+                        Groove.saveGraph(
+                            state.getGraph().toAspectMap().getAspectGraph().toPlainGraph(),
+                            new File(file, name + ".gst").getAbsolutePath());
                     }
 
                 } catch (IOException e) {
