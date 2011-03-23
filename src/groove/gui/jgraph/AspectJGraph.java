@@ -141,6 +141,7 @@ final public class AspectJGraph extends GraphJGraph {
 
     /** Sets a type graph for this JModel.
      * The type graph is needed to correctly compute the errors in the graph.
+     * @param type the new type graph; may be {@code null}
      * @param labelsMap map from names to subsets of labels; may be {@code null}
      * @return {@code true} if the type graph changed as a result of this call.
      */

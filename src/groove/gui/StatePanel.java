@@ -184,8 +184,8 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         this.jGraph.getFilteredLabels().clear();
         if (grammar == null || grammar.getStartGraphView() == null) {
             setEnabled(false);
-            getJGraph().setType(null, null);
             setJModel(null);
+            getJGraph().setType(null, null);
         } else {
             // first enable so the edge label background is set correctly
             setEnabled(true);
