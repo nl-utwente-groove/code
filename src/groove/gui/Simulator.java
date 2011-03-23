@@ -64,12 +64,12 @@ import groove.gui.dialog.BoundedModelCheckingDialog;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.dialog.ExplorationStatsDialog;
-import groove.gui.dialog.SaveLTSAsDialog;
 import groove.gui.dialog.FreshNameDialog;
 import groove.gui.dialog.ProgressBarDialog;
 import groove.gui.dialog.PropertiesDialog;
 import groove.gui.dialog.RelabelDialog;
 import groove.gui.dialog.SaveDialog;
+import groove.gui.dialog.SaveLTSAsDialog;
 import groove.gui.dialog.StringDialog;
 import groove.gui.dialog.VersionDialog;
 import groove.gui.jgraph.AspectJGraph;
@@ -1435,7 +1435,7 @@ public class Simulator {
             this.frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
             // register doQuit() for the Command-Q shortcut on MacOS 
-            if (MAC_OS_X) {
+            if (Groove.IS_PLATFORM_MAC) {
                 try {
                     OSXAdapter.setQuitHandler(this,
                         this.getClass().getDeclaredMethod("doQuit"));
@@ -5626,9 +5626,5 @@ public class Simulator {
      */
     static private final Dimension GRAPH_VIEW_PREFERRED_SIZE = new Dimension(
         GRAPH_VIEW_PREFERRED_WIDTH, GRAPH_VIEW_PREFERRED_HEIGHT);
-
-    /** Detect if we are on MacOS (used for hooking doQuit() properly.  */
-    private static boolean MAC_OS_X =
-        System.getProperty("os.name").toLowerCase().startsWith("mac os x");
 
 }

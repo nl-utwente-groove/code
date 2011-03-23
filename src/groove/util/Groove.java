@@ -42,6 +42,9 @@ import java.util.StringTokenizer;
  * @version Arend Rensink
  */
 public class Groove {
+    /** Toggle this flag to shift between native Look'n'Feel and old one. */
+    public static boolean USE_NATIVE_LNF = false;
+
     /** The working directory of the application. */
     public static final String WORKING_DIR = System.getProperty("user.dir");
     /** The last accessed working directory. */
@@ -458,4 +461,19 @@ public class Groove {
      * The fixed GXL graph loader.
      */
     static private final DefaultGxl gxlGraphLoader = DefaultGxl.getInstance();
+
+    // Platform dependent information.
+
+    /** Detect if we are on Windows.  */
+    public static boolean IS_PLATFORM_WINDOWS =
+        System.getProperty("os.name").toLowerCase().indexOf("windows") > -1;
+
+    /** Detect if we are on Mac.  */
+    public static boolean IS_PLATFORM_MAC =
+        System.getProperty("os.name").toLowerCase().indexOf("mac os x") > -1;
+
+    /** Detect if we are on Linux.  */
+    public static boolean IS_PLATFORM_LINUX =
+        System.getProperty("os.name").toLowerCase().indexOf("linux") > -1;
+
 }
