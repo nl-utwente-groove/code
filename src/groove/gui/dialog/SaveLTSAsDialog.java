@@ -38,7 +38,7 @@ import javax.swing.JTextField;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class ExportDialog {
+public class SaveLTSAsDialog {
 
     /** The current Grammar Directory */
     private String currentDirectory;
@@ -49,7 +49,7 @@ public class ExportDialog {
     private JButton cancelButton;
 
     /** Title of the dialog. */
-    public static final String DIALOG_TITLE = "LTS Exporter";
+    public static final String DIALOG_TITLE = "Save LTS As";
 
     /** The option pane creating the dialog. */
     private JOptionPane pane;
@@ -84,7 +84,7 @@ public class ExportDialog {
     public static final int STATES_ALL = 2;
 
     /** Creates a new dialog for options to export the LTS * */
-    public ExportDialog(Simulator simulator) {
+    public SaveLTSAsDialog(Simulator simulator) {
         // nothing to do
     }
 
@@ -135,7 +135,7 @@ public class ExportDialog {
 
         // editing formula
 
-        JLabel exportLabel = new JLabel("Exporting directory:");
+        JLabel exportLabel = new JLabel("Target directory:");
         panel.add(exportLabel);
 
         JPanel filePanel = new JPanel();
@@ -148,12 +148,12 @@ public class ExportDialog {
         panel.add(filePanel);
 
         panel.add(new JLabel(" "));
-        panel.add(new JLabel("LTS Exporting options:"));
+        panel.add(new JLabel("Saving options:"));
 
         this.startCheck = new JCheckBox("Label start state");
         this.finalCheck = new JCheckBox("Label final states");
         this.openCheck = new JCheckBox("Label open states");
-        this.nameCheck = new JCheckBox("Export state names");
+        this.nameCheck = new JCheckBox("Save state names");
 
         panel.add(this.startCheck);
         panel.add(this.finalCheck);
@@ -161,7 +161,7 @@ public class ExportDialog {
         panel.add(this.nameCheck);
 
         panel.add(new JLabel(" "));
-        panel.add(new JLabel("Export States:"));
+        panel.add(new JLabel("Save States:"));
 
         this.list0 = new JRadioButton("None", true);
         this.list1 = new JRadioButton("All states", false);
@@ -283,15 +283,15 @@ public class ExportDialog {
     class BrowseButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             JFileChooser chooser =
-                new JFileChooser(ExportDialog.this.dirField.getText());
+                new JFileChooser(SaveLTSAsDialog.this.dirField.getText());
             chooser.setMultiSelectionEnabled(false);
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
             int result =
-                chooser.showOpenDialog(ExportDialog.this.simulator.getFrame());
+                chooser.showOpenDialog(SaveLTSAsDialog.this.simulator.getFrame());
             // now load, if so required
             if (result == JFileChooser.APPROVE_OPTION) {
-                ExportDialog.this.dirField.setText(chooser.getSelectedFile().getAbsolutePath());
+                SaveLTSAsDialog.this.dirField.setText(chooser.getSelectedFile().getAbsolutePath());
             }
             if (result == JFileChooser.CANCEL_OPTION) {
                 // System.out.println("Cancelled");
