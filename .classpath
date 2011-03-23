@@ -14,10 +14,9 @@
 	<classpathentry kind="lib" path="lib/rsyntaxtextarea.jar"/>
 	<classpathentry kind="lib" path="lib/antlr-3.2.jar" sourcepath="lib/src/antlr-3.2-src.zip"/>
 	<classpathentry kind="lib" path="lib/looks-2.1.4.jar"/>
-	<classpathentry kind="lib" path="lib/layouts.jar"/>
 	<classpathentry kind="lib" path="lib/jgraphx-1_5_1.jar" sourcepath="lib/src/jgraphx-1.5.1.0-src.zip"/>
 	<classpathentry kind="lib" path="lib/ltl2buchi-2010-12.jar" sourcepath="lib/src/ltl2buchi-2010-12.zip"/>
-    <classpathentry kind="lib" path="lib/trove-2_1_0.jar" sourcepath="lib/src/trove-2.1.0-src.zip"/>
-    <classpathentry kind="lib" path="lib/gnuprologjava-0.2.6.jar" sourcepath="lib/src/gnuprologjava-0.2.6-src.zip"/>
+	<classpathentry kind="lib" path="lib/trove-2_1_0.jar" sourcepath="lib/src/trove-2.1.0-src.zip"/>
+	<classpathentry kind="lib" path="lib/gnuprologjava-0.2.6.jar" sourcepath="lib/src/gnuprologjava-0.2.6-src.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
