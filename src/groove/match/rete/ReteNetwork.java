@@ -21,7 +21,7 @@ import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
-import groove.io.FilterList;
+import groove.io.FileType;
 import groove.io.xml.DefaultGxl;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.match.rete.ReteNetworkNode.Action;
@@ -942,7 +942,7 @@ public class ReteNetwork {
     public void save(String filePath, String name) {
         DefaultGraph graph = toPlainGraph();
         graph.setName(name);
-        File file = new File(FilterList.GXL_FILTER.addExtension(filePath));
+        File file = new File(FileType.GXL_FILTER.addExtension(filePath));
         try {
             DefaultGxl graphLoader = DefaultGxl.getInstance();
             graphLoader.marshalGraph(graph, file);

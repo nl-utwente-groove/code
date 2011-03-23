@@ -17,12 +17,12 @@ t * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
 package groove.io.store;
 
 import static groove.graph.GraphRole.RULE;
-import static groove.io.FilterList.CONTROL_FILTER;
-import static groove.io.FilterList.GRAMMAR_FILTER;
-import static groove.io.FilterList.PROPERTIES_FILTER;
-import static groove.io.FilterList.RULE_FILTER;
-import static groove.io.FilterList.STATE_FILTER;
-import static groove.io.FilterList.TYPE_FILTER;
+import static groove.io.FileType.CONTROL_FILTER;
+import static groove.io.FileType.GRAMMAR_FILTER;
+import static groove.io.FileType.PROPERTIES_FILTER;
+import static groove.io.FileType.RULE_FILTER;
+import static groove.io.FileType.STATE_FILTER;
+import static groove.io.FileType.TYPE_FILTER;
 import groove.graph.DefaultGraph;
 import groove.graph.GraphRole;
 import groove.graph.TypeLabel;

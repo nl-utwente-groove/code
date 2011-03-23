@@ -16,15 +16,15 @@
  */
 package groove.io.store;
 
-import static groove.io.FilterList.CONTROL_FILTER;
-import static groove.io.FilterList.GRAMMAR_FILTER;
-import static groove.io.FilterList.JAR_FILTER;
-import static groove.io.FilterList.LAYOUT_FILTER;
-import static groove.io.FilterList.PROPERTIES_FILTER;
-import static groove.io.FilterList.RULE_FILTER;
-import static groove.io.FilterList.STATE_FILTER;
-import static groove.io.FilterList.TYPE_FILTER;
-import static groove.io.FilterList.ZIP_FILTER;
+import static groove.io.FileType.CONTROL_FILTER;
+import static groove.io.FileType.GRAMMAR_FILTER;
+import static groove.io.FileType.JAR_FILTER;
+import static groove.io.FileType.LAYOUT_FILTER;
+import static groove.io.FileType.PROPERTIES_FILTER;
+import static groove.io.FileType.RULE_FILTER;
+import static groove.io.FileType.STATE_FILTER;
+import static groove.io.FileType.TYPE_FILTER;
+import static groove.io.FileType.ZIP_FILTER;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;

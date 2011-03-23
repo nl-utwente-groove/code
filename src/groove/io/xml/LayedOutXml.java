@@ -16,7 +16,7 @@
  */
 package groove.io.xml;
 
-import static groove.io.FilterList.LAYOUT_FILTER;
+import static groove.io.FileType.LAYOUT_FILTER;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;

@@ -16,7 +16,7 @@
  */
 package groove.test.control;
 
-import static groove.io.FilterList.CONTROL_FILTER;
+import static groove.io.FileType.CONTROL_FILTER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;

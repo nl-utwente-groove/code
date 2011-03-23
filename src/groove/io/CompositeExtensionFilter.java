@@ -41,7 +41,7 @@ public final class CompositeExtensionFilter extends ExtensionFilter {
         fileTypes.toArray(fileType);
         this.filters = new ExtensionFilter[size];
         for (int i = 0; i < size; i++) {
-            this.filters[i] = FilterList.getFilter(fileType[i]);
+            this.filters[i] = FileType.getFilter(fileType[i]);
         }
     }
 

@@ -35,7 +35,7 @@ import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraphMode;
 import groove.io.ExtensionFilter;
-import groove.io.FilterList;
+import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.io.PriorityFileName;
 import groove.io.external.Exporter;
@@ -1827,27 +1827,27 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
          * /** Lazily creates and returns the GXL filter.
          */
         private ExtensionFilter getGxlFilter() {
-            return FilterList.GXL_FILTER;
+            return FileType.GXL_FILTER;
         }
 
         /** Lazily creates and returns the graph filter. */
         private ExtensionFilter getGraphFilter() {
-            return FilterList.GRAPHS_FILTER;
+            return FileType.GRAPHS_FILTER;
         }
 
         /** Lazily creates and returns the rule filter. */
         private ExtensionFilter getRuleFilter() {
-            return FilterList.RULE_FILTER;
+            return FileType.RULE_FILTER;
         }
 
         /** Lazily creates and returns the state filter. */
         private ExtensionFilter getStateFilter() {
-            return FilterList.STATE_FILTER;
+            return FileType.STATE_FILTER;
         }
 
         /** Lazily creates and returns the type filter. */
         private ExtensionFilter getTypeFilter() {
-            return FilterList.TYPE_FILTER;
+            return FileType.TYPE_FILTER;
         }
 
         /** Map of graph roles to extension filters. */

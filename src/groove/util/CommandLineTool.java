@@ -17,7 +17,7 @@
 package groove.util;
 
 import groove.io.ExtensionFilter;
-import groove.io.FilterList;
+import groove.io.FileType;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -520,7 +520,7 @@ public class CommandLineTool {
     private final List<String> args;
 
     /** Filter for log files. */
-    protected final ExtensionFilter logFilter = FilterList.LOG_FILTER;
+    protected final ExtensionFilter logFilter = FileType.LOG_FILTER;
 
     /** List of command options classes. */
     protected final List<CommandLineOption> optionsList =

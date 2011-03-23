@@ -16,8 +16,8 @@
  */
 package groove.explore;
 
-import static groove.io.FilterList.GRAMMAR_FILTER;
-import static groove.io.FilterList.STATE_FILTER;
+import static groove.io.FileType.GRAMMAR_FILTER;
+import static groove.io.FileType.STATE_FILTER;
 import groove.explore.encode.EncodedRuleMode;
 import groove.explore.encode.Serialized;
 import groove.explore.encode.TemplateList;

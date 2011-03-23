@@ -16,9 +16,9 @@
  */
 package groove.util;
 
-import static groove.io.FilterList.GRAMMAR_FILTER;
-import static groove.io.FilterList.GXL_FILTER;
-import static groove.io.FilterList.STATE_FILTER;
+import static groove.io.FileType.GRAMMAR_FILTER;
+import static groove.io.FileType.GXL_FILTER;
+import static groove.io.FileType.STATE_FILTER;
 import groove.graph.DefaultGraph;
 import groove.graph.Graph;
 import groove.io.FileType;
