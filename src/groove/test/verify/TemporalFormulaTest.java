@@ -18,9 +18,11 @@
 package groove.test.verify;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import gov.nasa.ltl.trans.ParseErrorException;
 import groove.verify.CTLFormula;
 import groove.verify.CTLStarFormula;
-import groove.verify.LTLFormula;
+import groove.verify.LTLParser;
 import groove.verify.TemporalFormula;
 import groove.view.FormatException;
 
@@ -75,11 +77,19 @@ public class TemporalFormulaTest {
             formula = CTLFormula.parseFormula("A(get U (empty | full))");
 
             // LTL formulae
-            formula = LTLFormula.parseFormula("G(empty | full)");
-            formula = LTLFormula.parseFormula("F(full | error)");
-            formula = LTLFormula.parseFormula("F(error & !(full))");
+            testLTL("G(empty | full)");
+            testLTL("F(full | error)");
+            testLTL("F(error & !(full))");
         } catch (FormatException efe) {
             efe.printStackTrace();
+        }
+    }
+
+    private void testLTL(String formula) {
+        try {
+            LTLParser.parse(formula);
+        } catch (ParseErrorException e) {
+            fail();
         }
     }
 }
