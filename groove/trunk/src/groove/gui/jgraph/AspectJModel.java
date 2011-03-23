@@ -117,7 +117,8 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         if (this.loading) {
             return;
         }
-        GraphRole role = this.editor.getRole();
+        GraphRole role =
+            this.editor == null ? getGraph().getRole() : this.editor.getRole();
         Map<AspectNode,AspectJVertex> nodeJVertexMap =
             new HashMap<AspectNode,AspectJVertex>();
         Map<AspectEdge,GraphJCell> edgeJCellMap =
@@ -172,6 +173,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     /** Sets a type graph for this JModel.
      * The type graph is needed to correctly compute the errors in the graph.
+     * @param type the new type graph; may be {@code null}
      */
     public void setType(TypeGraph type) {
         this.type = type;
