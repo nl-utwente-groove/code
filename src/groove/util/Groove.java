@@ -130,11 +130,7 @@ public class Groove {
      */
     static public void saveGraph(Graph<?,?> graph, File file)
         throws IOException {
-        if (graph instanceof DefaultGraph) {
-            gxlGraphLoader.marshalGraph((DefaultGraph) graph, file);
-        } else {
-            throw new IOException("Invalid graph type.");
-        }
+        gxlGraphLoader.marshalAnyGraph(graph, file);
     }
 
     /**
