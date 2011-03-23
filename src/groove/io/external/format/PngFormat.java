@@ -33,7 +33,7 @@ import javax.imageio.ImageIO;
  * @author Arend Rensink 
  */
 
-public class PngFormat extends AbsExternalFileFormat<Graph<?,?>> {
+public class PngFormat extends AbstractExternalFileFormat<Graph<?,?>> {
 
     private static final PngFormat INSTANCE = new PngFormat();
 

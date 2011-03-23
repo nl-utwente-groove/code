@@ -37,7 +37,7 @@ import java.util.Map;
  * @author Arend Rensink 
  */
 
-public class FsmFormat extends AbsExternalFileFormat<Graph<?,?>> {
+public class FsmFormat extends AbstractExternalFileFormat<Graph<?,?>> {
 
     private static final FsmFormat INSTANCE = new FsmFormat();
 

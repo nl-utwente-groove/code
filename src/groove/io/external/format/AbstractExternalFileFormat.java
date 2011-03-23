@@ -35,14 +35,14 @@ import java.net.URL;
  * 
  * @author Eduardo Zambon
  */
-public abstract class AbsExternalFileFormat<G extends Graph<?,?>> implements
+public abstract class AbstractExternalFileFormat<G extends Graph<?,?>> implements
         ExternalFileFormat<G>, Xml<G> {
 
     /** The filter associated with this format. */
     private final ExtensionFilter filter;
 
     /** Default constructor. */
-    AbsExternalFileFormat(FileType fileType) {
+    AbstractExternalFileFormat(FileType fileType) {
         this.filter = FilterList.getFilter(fileType);
     }
 

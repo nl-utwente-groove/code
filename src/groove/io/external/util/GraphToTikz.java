@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.io.external.export;
+package groove.io.external.util;
 
 import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.PRODUCT;
