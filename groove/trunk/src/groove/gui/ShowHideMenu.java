@@ -28,7 +28,7 @@ import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.LTSJGraph;
-import groove.io.FilterList;
+import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.io.HTMLConverter;
 import groove.lts.GraphNextState;
@@ -656,7 +656,7 @@ public class ShowHideMenu extends JMenu {
         @Override
         public void actionPerformed(ActionEvent evt) {
             GrooveFileChooser fileChooser = new GrooveFileChooser();
-            fileChooser.addChoosableFileFilter(FilterList.TEXT_FILTER);
+            fileChooser.addChoosableFileFilter(FileType.TEXT_FILTER);
             int result = fileChooser.showOpenDialog(this.jgraph);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File labelsFile = fileChooser.getSelectedFile();

@@ -16,7 +16,7 @@
  */
 package groove.test.graph;
 
-import static groove.io.FilterList.GXL_FILTER;
+import static groove.io.FileType.GXL_FILTER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

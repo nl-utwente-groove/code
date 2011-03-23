@@ -16,11 +16,11 @@
  */
 package groove.io;
 
-import static groove.io.FilterList.GRAMMAR_FILTER;
-import static groove.io.FilterList.GXL_FILTER;
-import static groove.io.FilterList.RULE_FILTER;
-import static groove.io.FilterList.STATE_FILTER;
-import static groove.io.FilterList.TYPE_FILTER;
+import static groove.io.FileType.GRAMMAR_FILTER;
+import static groove.io.FileType.GXL_FILTER;
+import static groove.io.FileType.RULE_FILTER;
+import static groove.io.FileType.STATE_FILTER;
+import static groove.io.FileType.TYPE_FILTER;
 import groove.graph.DefaultGraph;
 import groove.gui.Icons;
 import groove.gui.Options;

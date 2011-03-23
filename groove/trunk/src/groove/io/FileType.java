@@ -22,6 +22,7 @@ import java.util.Map;
 
 /**
  * Enumeration of file types supported by Groove.
+ * Each element of the enumeration has an associated file filter. 
  * 
  * @author Eduardo Zambon
  */
@@ -46,7 +47,6 @@ public enum FileType {
     PROPERTY(".properties", "Groove property files"),
 
     // Text files.
-
     /** Log files. */
     LOG(".log", "Log files"),
     /** Simple text files. */
@@ -117,6 +117,139 @@ public enum FileType {
     /** Returns the description associated with this file type. */
     public String getDescription() {
         return this.description;
+    }
+
+    // ------------------------------------------------------------------------
+    // List of all file filters.
+    // ------------------------------------------------------------------------
+
+    /**
+     * Mapping from extensions to pairs of filters recognising/not recognising
+     * directories.
+     */
+    private static final Map<FileType,ExtensionFilter> simpleFilterMap =
+        new HashMap<FileType,ExtensionFilter>();
+
+    private static final Map<EnumSet<FileType>,ExtensionFilter> compositeFilterMap =
+        new HashMap<EnumSet<FileType>,ExtensionFilter>();
+
+    // Native Groove files.
+
+    /** Filter for GXL files. */
+    public static final ExtensionFilter GXL_FILTER = createFilter(GXL, true);
+
+    /** Filter for rule files. */
+    public static final ExtensionFilter RULE_FILTER = createFilter(RULE, true);
+
+    /** Filter for state graph files. */
+    public static final ExtensionFilter STATE_FILTER =
+        createFilter(STATE, true);
+
+    /** Filter for type graph files. */
+    public static final ExtensionFilter TYPE_FILTER = createFilter(TYPE, true);
+
+    /** Filter for grammar files. */
+    public static final ExtensionFilter GRAMMAR_FILTER = createFilter(GRAMMAR,
+        true);
+
+    /** Filter for layout files. */
+    public static final ExtensionFilter LAYOUT_FILTER = createFilter(LAYOUT,
+        true);
+
+    /** Filter for control files. */
+    public static final ExtensionFilter CONTROL_FILTER = createFilter(CONTROL,
+        true);
+
+    /** Filter for property files. */
+    public static final ExtensionFilter PROPERTIES_FILTER = createFilter(
+        PROPERTY, true);
+
+    // Text files.
+
+    /** Filter for log files. */
+    public static final ExtensionFilter LOG_FILTER = createFilter(LOG, true);
+    /** Filter for simple text files. */
+    public static final ExtensionFilter TEXT_FILTER = createFilter(TEXT, true);
+
+    // Compressed files.
+
+    /** Filter for ZIP files. */
+    public static final ExtensionFilter ZIP_FILTER = createFilter(ZIP, true);
+
+    /** Filter for JAR files. */
+    public static final ExtensionFilter JAR_FILTER = createFilter(JAR, true);
+
+    // External file formats.
+
+    /** Filter for AUT files. */
+    public static final ExtensionFilter AUT_FILTER = createFilter(AUT, true);
+
+    /** Filter for COL files. */
+    public static final ExtensionFilter COL_FILTER = createFilter(COL, true);
+
+    /** Filter for EPS files. */
+    public static final ExtensionFilter EPS_FILTER = createFilter(EPS, true);
+
+    /** Filter for FSM files. */
+    public static final ExtensionFilter FSM_FILTER = createFilter(FSM, true);
+
+    /** Filter for JPG files. */
+    public static final ExtensionFilter JPG_FILTER = createFilter(JPG, true);
+
+    /** Filter for PNG files. */
+    public static final ExtensionFilter PNG_FILTER = createFilter(PNG, true);
+
+    /** Filter for Tikz files. */
+    public static final ExtensionFilter TIKZ_FILTER = createFilter(TIKZ, true);
+
+    /** Filter for KTH files. */
+    public static final ExtensionFilter KTH_FILTER = createFilter(KTH, true);
+
+    // Composite filters.
+
+    /** Filter for all Groove graphs. */
+    public static final ExtensionFilter GRAPHS_FILTER = createFilter(graphs,
+        true);
+
+    /**
+     * Returns an extension filter with the required properties.
+     * @param fileType the file type for which the filter is associated
+     * @param acceptDir flag controlling whether directories should be
+     *        accepted by the filter.
+     * @return a filter with the required properties
+     */
+    private static ExtensionFilter createFilter(FileType fileType,
+            boolean acceptDir) {
+        ExtensionFilter result =
+            new SimpleExtensionFilter(fileType.getDescription(),
+                fileType.getExtension(), acceptDir);
+        simpleFilterMap.put(fileType, result);
+        return result;
+    }
+
+    /**
+     * Returns an extension filter with the required properties.
+     * @param fileTypes the file type for which the filter is associated
+     * @param acceptDir flag controlling whether directories should be
+     *        accepted by the filter.
+     * @return a filter with the required properties
+     */
+    private static ExtensionFilter createFilter(EnumSet<FileType> fileTypes,
+            boolean acceptDir) {
+        ExtensionFilter result =
+            new CompositeExtensionFilter(fileTypes, acceptDir);
+        compositeFilterMap.put(fileTypes, result);
+        return result;
+    }
+
+    /** Returns the extension filter associated with the given file type. */
+    public static ExtensionFilter getFilter(FileType fileTypes) {
+        return simpleFilterMap.get(fileTypes);
+    }
+
+    /** Returns the extension filter associated with the given file type. */
+    public static ExtensionFilter getFilter(EnumSet<FileType> fileTypes) {
+        return compositeFilterMap.get(fileTypes);
     }
 
 }

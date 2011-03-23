@@ -20,7 +20,6 @@ import groove.graph.Graph;
 import groove.gui.jgraph.GraphJGraph;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
-import groove.io.FilterList;
 import groove.io.xml.Xml;
 import groove.util.Groove;
 
@@ -35,15 +34,15 @@ import java.net.URL;
  * 
  * @author Eduardo Zambon
  */
-public abstract class AbstractExternalFileFormat<G extends Graph<?,?>> implements
-        ExternalFileFormat<G>, Xml<G> {
+public abstract class AbstractExternalFileFormat<G extends Graph<?,?>>
+        implements ExternalFileFormat<G>, Xml<G> {
 
     /** The filter associated with this format. */
     private final ExtensionFilter filter;
 
     /** Default constructor. */
     AbstractExternalFileFormat(FileType fileType) {
-        this.filter = FilterList.getFilter(fileType);
+        this.filter = FileType.getFilter(fileType);
     }
 
     @Override

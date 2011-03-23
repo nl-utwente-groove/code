@@ -34,12 +34,12 @@ import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
-import static groove.io.FilterList.GRAMMAR_FILTER;
-import static groove.io.FilterList.GXL_FILTER;
-import static groove.io.FilterList.JAR_FILTER;
-import static groove.io.FilterList.RULE_FILTER;
-import static groove.io.FilterList.STATE_FILTER;
-import static groove.io.FilterList.ZIP_FILTER;
+import static groove.io.FileType.GRAMMAR_FILTER;
+import static groove.io.FileType.GXL_FILTER;
+import static groove.io.FileType.JAR_FILTER;
+import static groove.io.FileType.RULE_FILTER;
+import static groove.io.FileType.STATE_FILTER;
+import static groove.io.FileType.ZIP_FILTER;
 import gov.nasa.ltl.trans.ParseErrorException;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.lts.AGTS;
@@ -3716,8 +3716,7 @@ public class Simulator {
      */
     private class DefaultExplorationAction extends RefreshableAction {
         DefaultExplorationAction() {
-            super(Options.DEFAULT_EXPLORATION_ACTION_NAME,
-                Icons.FORWARD_ICON);
+            super(Options.DEFAULT_EXPLORATION_ACTION_NAME, Icons.FORWARD_ICON);
             putValue(ACCELERATOR_KEY, Options.DEFAULT_EXPLORATION_KEY);
         }
 
