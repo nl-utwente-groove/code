@@ -2080,15 +2080,19 @@ public class Simulator {
             @Override
             public void menuSelectionChanged(boolean selected) {
                 removeAll();
+                GraphJGraph jGraph;
                 if (getGraphPanel() != null) {
-                    GraphJGraph jGraph = getGraphPanel().getJGraph();
+                    jGraph = getGraphPanel().getJGraph();
                     if (jGraph instanceof AspectJGraph) {
                         jGraph.addSubmenu(this,
                             ((AspectJGraph) jGraph).createEditMenu(null));
                     }
                     jGraph.addSubmenu(this, jGraph.createDisplayMenu());
-                    jGraph.addSubmenu(this, createOptionsMenu());
+                } else {
+                    // create a dummy JGraph to add the rest of the menu
+                    jGraph = new GraphJGraph(null, false);
                 }
+                jGraph.addSubmenu(this, createOptionsMenu());
                 super.menuSelectionChanged(selected);
             }
         };

@@ -115,7 +115,7 @@ public final class Icons {
     public static final ImageIcon TYPE_MODE_ICON = createIcon("type-mode.gif");
     /** Icon for Prolog Panel. */
     public static final ImageIcon PROLOG_FRAME_ICON =
-        createIcon("type-frame.gif");
+        createIcon("prolog-frame.gif");
     /** GROOVE project icon in 16x16 format. */
     public static final ImageIcon GROOVE_ICON_16x16 =
         createIcon("groove-g-16x16.gif");
