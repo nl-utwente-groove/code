@@ -20,7 +20,6 @@ import gov.nasa.ltl.graph.Edge;
 import gov.nasa.ltl.graph.Graph;
 import gov.nasa.ltl.graph.Node;
 import gov.nasa.ltl.trans.LTL2Buchi;
-import gov.nasa.ltl.trans.ParseErrorException;
 import groove.graph.AbstractGraph;
 import groove.graph.GraphRole;
 import groove.gui.JGraphPanel;
@@ -113,7 +112,8 @@ public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition> {
     public BuchiGraph newBuchiGraph(String formula) throws FormatException {
         final BuchiGraph result = new BuchiGraph(formula);
         try {
-            Graph<String> graph = LTL2Buchi.translate(LTLParser.parse(formula));
+            Graph<String> graph =
+                LTL2Buchi.translate(FormulaParser.parse(formula).toLtlFormula());
             Map<Node<String>,BuchiLocation> node2location =
                 new HashMap<Node<String>,BuchiLocation>();
             Node<String> init = graph.getInit();
@@ -147,7 +147,7 @@ public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition> {
             if (DEBUG) {
                 result.display();
             }
-        } catch (ParseErrorException e) {
+        } catch (ParseException e) {
             throw new FormatException(e.getMessage());
         }
         return result;

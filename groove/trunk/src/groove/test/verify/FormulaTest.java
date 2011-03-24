@@ -37,20 +37,19 @@ import static groove.verify.Formula.Until;
 import static groove.verify.Formula.WUntil;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import gov.nasa.ltl.trans.ParseErrorException;
 import groove.verify.CTLFormula;
 import groove.verify.CTLStarFormula;
 import groove.verify.Formula;
 import groove.verify.FormulaParser;
-import groove.verify.LTLParser;
+import groove.verify.ParseException;
 import groove.verify.TemporalFormula;
 import groove.view.FormatException;
 
 import org.junit.Test;
 
 /**
- * Tests the CTLStarFormula class.
- * @author Harmen Kastenberg
+ * Tests the Formula class.
+ * @author Harmen Kastenberg and Arend Rensink
  * @version $Revision$
  */
 public class FormulaTest {
@@ -75,19 +74,25 @@ public class FormulaTest {
         testParse("a|c<-(b&dc)", "a|c<-b&dc");
         testParse("a->b<->c", "a->b<->c");
         //
-        testParse("(a U b) R c V (d M e)", "(a U b)R c V d M e");
+        testParse("(a U b) M c V (d M e)", "(a U b)M c V d M e");
         //
         testParse("AFG X true", "A F G X true");
         // errors
+        testParseError("a=");
         testParseError("a(");
+        testParseError("(a)A");
+        testParseError("(a)U");
+        testParseError("AX");
+        testParseError("'a");
+        testParseError("'\\a'");
     }
 
     private void testParse(String text, String expected) {
         try {
             Formula result = FormulaParser.parse(text);
             assertEquals(expected, result.toString());
-        } catch (ParseErrorException e) {
-            fail();
+        } catch (ParseException e) {
+            fail(e.getMessage());
         }
     }
 
@@ -95,7 +100,7 @@ public class FormulaTest {
         try {
             FormulaParser.parse(text);
             fail();
-        } catch (ParseErrorException e) {
+        } catch (ParseException e) {
             // success
         }
     }
@@ -181,21 +186,8 @@ public class FormulaTest {
             formula = CTLFormula.parseFormula("EG(AF(empty))");
             formula = CTLFormula.parseFormula("EX(AX(empty | full))");
             formula = CTLFormula.parseFormula("A(get U (empty | full))");
-
-            // LTL formulae
-            testLTL("G(empty | full)");
-            testLTL("F(full | error)");
-            testLTL("F(error & !(full))");
         } catch (FormatException efe) {
             efe.printStackTrace();
-        }
-    }
-
-    private void testLTL(String formula) {
-        try {
-            LTLParser.parse(formula);
-        } catch (ParseErrorException e) {
-            fail();
         }
     }
 }

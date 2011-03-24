@@ -40,7 +40,6 @@ import static groove.io.FileType.JAR_FILTER;
 import static groove.io.FileType.RULE_FILTER;
 import static groove.io.FileType.STATE_FILTER;
 import static groove.io.FileType.ZIP_FILTER;
-import gov.nasa.ltl.trans.ParseErrorException;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.lts.AGTS;
 import groove.explore.AcceptorEnumerator;
@@ -102,7 +101,8 @@ import groove.util.Groove;
 import groove.util.Version;
 import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
-import groove.verify.LTLParser;
+import groove.verify.FormulaParser;
+import groove.verify.ParseException;
 import groove.verify.TemporalFormula;
 import groove.view.CtrlView;
 import groove.view.FormatError;
@@ -717,8 +717,8 @@ public class Simulator {
                         public String parse(String text) {
                             String result = null;
                             try {
-                                LTLParser.parse(text);
-                            } catch (ParseErrorException e) {
+                                FormulaParser.parse(text).toLtlFormula();
+                            } catch (ParseException e) {
                                 result = e.getMessage();
                             }
                             return result;
