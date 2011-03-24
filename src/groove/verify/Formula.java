@@ -37,7 +37,6 @@ import static groove.verify.FormulaParser.Token.UNTIL;
 import static groove.verify.FormulaParser.Token.W_UNTIL;
 import groove.util.ExprParser;
 import groove.verify.FormulaParser.Token;
-import groove.view.FormatException;
 
 import java.util.Stack;
 
@@ -48,24 +47,27 @@ import java.util.Stack;
  */
 public class Formula {
     /** Default constructor filling all fields. */
-    private Formula(Token kind, Formula arg1, Formula arg2, String prop) {
+    Formula(Token kind, Formula arg1, Formula arg2, String prop) {
         this.token = kind;
         this.arg1 = arg1;
         this.arg2 = arg2;
         this.prop = prop;
     }
 
-    private Formula(Token operator) {
+    /** Constructor for a logical constant (not an atom). */
+    Formula(Token operator) {
         this(operator, null, null, null);
         assert operator.getArity() == 0 && operator != ATOM;
     }
 
-    private Formula(Token operator, Formula arg) {
+    /** Constructor for a unary operator. */
+    Formula(Token operator, Formula arg) {
         this(operator, arg, null, null);
         assert operator.getArity() == 1;
     }
 
-    private Formula(Token token, Formula arg1, Formula arg2) {
+    /** Constructor for a binary operator. */
+    Formula(Token token, Formula arg1, Formula arg2) {
         this(token, arg1, arg2, null);
         assert token.getArity() == 2;
     }
@@ -257,10 +259,10 @@ public class Formula {
      * formula are immediately nested inside a path quantifier, and
      * vice versa.
      * @return the CTL formula corresponding to this formula
-     * @throws FormatException if this formula contains combinations of operators
+     * @throws ParseException if this formula contains combinations of operators
      * that are illegal in CTL.
      */
-    public Formula toCtlFormula() throws FormatException {
+    public Formula toCtlFormula() throws ParseException {
         switch (getToken()) {
         case ATOM:
         case TRUE:
@@ -286,7 +288,7 @@ public class Formula {
         case S_RELEASE:
         case ALWAYS:
         case EVENTUALLY:
-            throw new FormatException(
+            throw new ParseException(
                 "Temporal operator '%s' should be nested inside path quantifier in CTL formula",
                 getToken());
         case FORALL:
@@ -310,13 +312,12 @@ public class Formula {
             case S_RELEASE:
                 return Not(WUntil(Not(subArg2), Not(subArg1))).toCtlFormula();
             default:
-                throw new FormatException(
+                throw new ParseException(
                     "Path quantifier '%s' must have nested temporal operator in CTL formula",
                     getToken());
             }
         default:
-            throw new FormatException("Unknown temporal operator %s",
-                getToken());
+            throw new ParseException("Unknown temporal operator %s", getToken());
         }
     }
 
@@ -325,11 +326,11 @@ public class Formula {
      * This succeeds if and only if the formula does not contain
      * {@link Token#FORALL} or {@link Token#EXISTS} operators.
      * @return the NASA LTL formula corresponding to this formula
-     * @throws FormatException if this formula contains operators
+     * @throws ParseException if this formula contains operators
      * that are illegal in LTL.
      */
     public gov.nasa.ltl.trans.Formula<String> toLtlFormula()
-        throws FormatException {
+        throws ParseException {
         gov.nasa.ltl.trans.Formula<String> arg1 =
             getArg1() == null ? null : getArg1().toLtlFormula();
         gov.nasa.ltl.trans.Formula<String> arg2 =
@@ -337,7 +338,7 @@ public class Formula {
         switch (getToken()) {
         case FORALL:
         case EXISTS:
-            throw new FormatException(
+            throw new ParseException(
                 "Path quantifier '%s' not allowed in LTL formula", getToken());
         case ATOM:
             return gov.nasa.ltl.trans.Formula.Proposition(getProp());
@@ -373,7 +374,7 @@ public class Formula {
         case IMPLIES:
             return Or(Not(getArg1()), getArg2()).toLtlFormula();
         }
-        throw new FormatException("Unknown temporal operator %s", getToken());
+        throw new ParseException("Unknown temporal operator %s", getToken());
     }
 
     private final Token token;

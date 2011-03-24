@@ -22,7 +22,6 @@ import static groove.verify.FormulaParser.Token.ATOM;
 import static groove.verify.FormulaParser.Token.LPAR;
 import static groove.verify.FormulaParser.Token.NOT;
 import static groove.verify.FormulaParser.Token.RPAR;
-import gov.nasa.ltl.trans.ParseErrorException;
 import groove.util.Pair;
 
 import java.util.EnumSet;
@@ -43,15 +42,14 @@ import java.util.Set;
  */
 public class FormulaParser {
     /** Parses a string into a formula over strings. */
-    public static Formula parse(String str) throws ParseErrorException { // "aObAc"
+    public static Formula parse(String str) throws ParseException { // "aObAc"
 
         Input i = new Input(str);
 
         Formula result = parse(i, 0);
         String suffix = i.rest();
         if (suffix.length() > 0) {
-            throw new ParseErrorException("unparsed formula suffix: "
-                + i.rest());
+            throw new ParseException("unparsed formula suffix: " + i.rest());
         }
         if (DEBUG) {
             System.out.println("Formula: " + result);
@@ -60,151 +58,71 @@ public class FormulaParser {
         return result;
     }
 
-    private static Formula parse(Input i, int precedence)
-        throws ParseErrorException {
+    private static Formula parse(Input i, int precedence) throws ParseException {
         Formula formula;
-        Token ch;
+        Token token;
         int priority = i.get().getPriority();
-        switch (ch = i.get()) {
-        case NOT: // not
+        switch (token = i.get()) {
+        // constants
+        case TRUE:
+        case FALSE:
+            formula = new Formula(token);
             i.skip();
-            formula = Formula.Not(parse(i, priority));
             break;
 
-        case NEXT: // next
+        case ATOM:
+            formula = Formula.Atom(i.text());
             i.skip();
-            formula = Formula.Next(parse(i, priority));
             break;
 
-        case ALWAYS: // always
+        // unary operators
+        case NOT:
+        case NEXT:
+        case ALWAYS:
+        case EVENTUALLY:
+        case FORALL:
+        case EXISTS:
             i.skip();
-            formula = Formula.Always(parse(i, priority));
-            break;
-
-        case EVENTUALLY: // eventually
-            i.skip();
-            formula = Formula.Eventually(parse(i, priority));
-            break;
-
-        case FORALL: // eventually
-            i.skip();
-            formula = Formula.Forall(parse(i, priority));
-            break;
-
-        case EXISTS: // eventually
-            i.skip();
-            formula = Formula.Exists(parse(i, priority));
+            formula = new Formula(token, parse(i, priority));
             break;
 
         case LPAR:
             i.skip();
             formula = parse(i, priority);
             if (i.get() != RPAR) {
-                throw new ParseErrorException("Expected " + RPAR);
+                throw new ParseException("Expected " + RPAR);
             }
             i.skip();
             break;
 
-        case TRUE:
-            formula = Formula.True();
-            i.skip();
-            break;
-        case FALSE:
-            formula = Formula.False();
-            i.skip();
-            break;
-        case ATOM:
-            formula = Formula.Atom(i.text());
-            i.skip();
-            break;
-
         default:
-            throw new ParseErrorException("Unexpected token: " + ch);
+            throw new ParseException("Unexpected token: " + token);
         }
 
         while (!i.done()) {
             priority = i.get().getPriority();
-            switch (ch = i.get()) {
-            case AND: // and
+            switch (token = i.get()) {
+            case AND:
+            case OR:
+            case IMPLIES:
+            case FOLLOWS:
+            case EQUIV:
+            case UNTIL:
+            case W_UNTIL:
+            case S_RELEASE:
+            case RELEASE:
                 if (precedence > priority) {
                     return formula;
                 }
                 i.skip();
-                formula = Formula.And(formula, parse(i, priority));
-                break;
-
-            case OR: // or
-                if (precedence > priority) {
-                    return formula;
-                }
-                i.skip();
-                formula = Formula.Or(formula, parse(i, priority));
-                break;
-
-            case UNTIL: // until
-                if (precedence > priority) {
-                    return formula;
-                }
-                i.skip();
-                formula = Formula.Until(formula, parse(i, priority));
-                break;
-
-            case W_UNTIL: // weak until
-
-                if (precedence > priority) {
-                    return formula;
-                }
-
-                i.skip();
-                formula = Formula.WUntil(formula, parse(i, priority));
-
-                break;
-
-            case S_RELEASE: // release
-                if (precedence > priority) {
-                    return formula;
-                }
-                i.skip();
-                formula = Formula.SRelease(formula, parse(i, priority));
-                break;
-
-            case RELEASE: // weak_release
-                if (precedence > priority) {
-                    return formula;
-                }
-                i.skip();
-                formula = Formula.Release(formula, parse(i, priority));
-                break;
-
-            case IMPLIES: // implies
-                if (precedence > priority) {
-                    return formula;
-                }
-                i.skip();
-                formula = Formula.Implies(formula, parse(i, priority));
-                break;
-
-            case FOLLOWS: // follows
-                if (precedence > priority) {
-                    return formula;
-                }
-                i.skip();
-                formula = Formula.Follows(formula, parse(i, priority));
-                break;
-
-            case EQUIV: // equivalence
-                if (precedence > priority) {
-                    return formula;
-                }
-                i.skip();
-                formula = Formula.Equiv(formula, parse(i, priority));
+                formula = new Formula(token, formula, parse(i, priority));
                 break;
 
             case RPAR:
                 return formula;
 
             default:
-                throw new ParseErrorException("Unexpected token: " + ch);
+                throw new ParseException("Unexpected token: " + token);
             }
         }
         return formula;
@@ -236,32 +154,41 @@ public class FormulaParser {
          * If the token is a {@link Token#ATOM}, the
          * corresponding text can be retrieved by a subsequent call to
          * #text().
-         * @throws ParseErrorException if there is no more token 
+         * @throws ParseException if there is no more token 
          */
-        public Token get() throws ParseErrorException {
-            readNext();
-            Pair<Token,String> next = this.q.peek();
-            return next.one();
+        public Token get() throws ParseException {
+            if (readNext()) {
+                Pair<Token,String> next = this.q.peek();
+                return next.one();
+            } else {
+                throw new ParseException("Unexpected end of text");
+            }
         }
 
         /**
          * Returns the text of the front token in the input stream
          * if that is a {@link Token#ATOM}, or {@code null} if it is not.
-         * @throws ParseErrorException if there is no more token 
+         * @throws ParseException if there is no more token 
          */
-        public String text() throws ParseErrorException {
-            readNext();
-            Pair<Token,String> next = this.q.peek();
-            return next.two();
+        public String text() throws ParseException {
+            if (readNext()) {
+                Pair<Token,String> next = this.q.peek();
+                return next.two();
+            } else {
+                throw new ParseException("Unexpected end of text");
+            }
         }
 
         /** 
          * Skips to the next token in the input stream.
-         * @throws ParseErrorException if there is no token to skip.
+         * @throws ParseException if there is no token to skip.
          */
-        public void skip() throws ParseErrorException {
-            readNext();
-            this.q.poll();
+        public void skip() throws ParseException {
+            if (readNext()) {
+                this.q.poll();
+            } else {
+                throw new ParseException("Unexpected end of text");
+            }
         }
 
         /** Returns the remainder (i.e., the unparsed part) of the input string. */
@@ -282,31 +209,26 @@ public class FormulaParser {
         }
 
         /** Tests if the input stream is empty. */
-        public boolean done() {
-            try {
-                readNext();
-                return false;
-            } catch (ParseErrorException e) {
-                return true;
-            }
+        public boolean done() throws ParseException {
+            return !readNext();
         }
 
         /**
          * Scans the next tokens from the input stream and appends them
          * to the token queue.
-         * @throws ParseErrorException if there is no more token, or 
+         * @throws ParseException if there is no more token, or 
          * the input string cannot be parsed into tokens
          */
-        private void readNext() throws ParseErrorException {
+        private boolean readNext() throws ParseException {
             if (!this.q.isEmpty()) {
-                return;
+                return true;
             }
             while (this.sb.length() > 0
                 && Character.isWhitespace(this.sb.charAt(0))) {
                 this.sb.deleteCharAt(0);
             }
             if (this.sb.length() == 0) {
-                throw new ParseErrorException("Unexpected end of text");
+                return false;
             }
             char c = this.sb.charAt(0);
             if (Character.isJavaIdentifierStart(c)) {
@@ -316,14 +238,15 @@ public class FormulaParser {
             } else {
                 readNextOther(c);
             }
+            return true;
         }
 
         /**
          * Reads a token consisting of non-letter characters.
          * @param c the first character
-         * @throws ParseErrorException if an unknown token is found
+         * @throws ParseException if an unknown token is found
          */
-        private void readNextOther(char c) throws ParseErrorException {
+        private void readNextOther(char c) throws ParseException {
             StringBuffer text = new StringBuffer();
             text.append(c);
             // concatenate other chars, if and when appropriate
@@ -342,9 +265,9 @@ public class FormulaParser {
          * This could constitute a sequence of temporal operators,
          * or an atom.
          * @param c the first character out of the sequence.
-         * @throws ParseErrorException if an unknown temporal operator is found
+         * @throws ParseException if an unknown temporal operator is found
          */
-        private void readNextWord(char c) throws ParseErrorException {
+        private void readNextWord(char c) throws ParseException {
             StringBuffer text = new StringBuffer();
             text.append(c);
             boolean allCaps = Character.isUpperCase(c);
@@ -367,10 +290,10 @@ public class FormulaParser {
         /**
          * Reads a quoted atom.
          * @param c the opening quote character
-         * @throws ParseErrorException if the end of text is read before
+         * @throws ParseException if the end of text is read before
          * the atom is closed
          */
-        private void readNextQuotedAtom(char c) throws ParseErrorException {
+        private void readNextQuotedAtom(char c) throws ParseException {
             StringBuffer text = new StringBuffer();
             char quote = c;
             int i;
@@ -380,18 +303,18 @@ public class FormulaParser {
                     // test if this is an escaped single quote or escape
                     i++;
                     if (i == this.sb.length()) {
-                        throw new ParseErrorException("Unexpected end of text");
+                        throw new ParseException("Unexpected end of text");
                     }
                     c = this.sb.charAt(i);
                     if (c != '\\' && c != quote) {
-                        throw new ParseErrorException(
-                            "Invalid escaped character: " + c);
+                        throw new ParseException("Invalid escaped character: "
+                            + c);
                     }
                 }
                 text.append(c);
             }
             if (i == this.sb.length()) {
-                throw new ParseErrorException(
+                throw new ParseException(
                     "Unexpected end of text while scanning for closing "
                         + quote);
             }
@@ -403,13 +326,13 @@ public class FormulaParser {
          * Creates a token/string pair consisting of the token with a given
          * symbol, and a {@code null} string.
          * @param symbol the symbol of the requested token
-         * @throws ParseErrorException if no token with {@code symbol} exists
+         * @throws ParseException if no token with {@code symbol} exists
          */
         private Pair<Token,String> createToken(String symbol)
-            throws ParseErrorException {
+            throws ParseException {
             Token token = tokenMap.get(symbol);
             if (token == null) {
-                throw new ParseErrorException("Can't parse token " + symbol);
+                throw new ParseException("Can't parse token '%s'", symbol);
             }
             return new Pair<Token,String>(token, null);
         }
