@@ -306,11 +306,10 @@ public class LTLParser {
 
                     i.skip();
 
-                    if (i.get() != '&') {
-                        throw new ParseErrorException("expected &&");
+                    if (i.get() == '&') {
+                        i.skip();
                     }
 
-                    i.skip();
                     formula = Formula.And(formula, parse(i, P_AND));
 
                     break;
@@ -340,11 +339,10 @@ public class LTLParser {
 
                     i.skip();
 
-                    if (i.get() != '|') {
-                        throw new ParseErrorException("expected ||");
+                    if (i.get() == '|') {
+                        i.skip();
                     }
 
-                    i.skip();
                     formula = Formula.Or(formula, parse(i, P_OR));
 
                     break;
