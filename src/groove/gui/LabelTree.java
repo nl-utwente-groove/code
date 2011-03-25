@@ -729,8 +729,7 @@ public class LabelTree extends JTree implements GraphModelListener,
      * parameter.
      */
     private static Icon getModeIcon(boolean subtypes) {
-        return subtypes ? Icons.OPEN_UP_ARROW_ICON
-                : Icons.OPEN_DOWN_ARROW_ICON;
+        return subtypes ? Icons.OPEN_UP_ARROW_ICON : Icons.OPEN_DOWN_ARROW_ICON;
     }
 
     /**
@@ -945,6 +944,7 @@ public class LabelTree extends JTree implements GraphModelListener,
             boolean isDropCell = isDropCell(tree, row);
             // this.jLabel.setBackgroundNonSelectionColor(background);
             this.jLabel.setOpaque(!sel && !isDropCell);
+            this.jLabel.setBackground(ENABLED_COLOUR);
             this.labelNode =
                 value instanceof LabelTree.LabelTreeNode
                         ? (LabelTree.LabelTreeNode) value : null;
