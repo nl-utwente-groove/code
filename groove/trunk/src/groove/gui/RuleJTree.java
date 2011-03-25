@@ -58,6 +58,7 @@ import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
@@ -969,11 +970,17 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Class to provide proper icons for directory nodes
      */
     private class MyTreeCellRenderer extends DefaultTreeCellRenderer {
+
+        /** The background colour of an enabled component. */
+        private final Color ENABLED_COLOUR;
+
         /**
          * Empty constructor with the correct visibility.
          */
         public MyTreeCellRenderer() {
-            // empty
+            JTextField enabledField = new JTextField();
+            enabledField.setEditable(true);
+            this.ENABLED_COLOUR = enabledField.getBackground();
         }
 
         @Override
@@ -994,6 +1001,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                 setToolTipText(null);
             }
             setOpaque(!sel);
+            setBackground(this.ENABLED_COLOUR);
             return this;
         }
 
