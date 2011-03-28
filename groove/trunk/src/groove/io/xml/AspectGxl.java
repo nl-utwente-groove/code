@@ -2,7 +2,9 @@
 package groove.io.xml;
 
 import groove.graph.DefaultGraph;
+import groove.graph.GraphRole;
 import groove.io.ExtensionFilter;
+import groove.io.FileType;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
@@ -64,6 +66,12 @@ public class AspectGxl implements Xml<AspectGraph> {
      */
     public AspectGraph unmarshalGraph(File file) throws IOException {
         DefaultGraph plainGraph = this.marshaller.unmarshalGraph(file);
+        if (!plainGraph.getRole().equals(GraphRole.HOST)
+            && FileType.GXL_FILTER.acceptExtension(file)) {
+            // .gxl files can only be loaded as host graphs so we need to
+            // override the role that was loaded from the file.
+            plainGraph.setRole(GraphRole.HOST);
+        }
         plainGraph.setName(extractName(file.toString()));
         return AspectGraph.newInstance(plainGraph);
     }
