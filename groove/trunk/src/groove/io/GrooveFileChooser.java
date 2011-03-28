@@ -39,16 +39,7 @@ public class GrooveFileChooser extends JFileChooser {
     /**
      * File chooser with given initial directory.
      */
-    public GrooveFileChooser(File currentDirectory) {
-        super(currentDirectory);
-        setFileView(createFileView());
-        ToolTipManager.sharedInstance().registerComponent(this);
-    }
-
-    /**
-     * File chooser with given initial directory.
-     */
-    public GrooveFileChooser(String currentDirectoryPath) {
+    private GrooveFileChooser(String currentDirectoryPath) {
         super(currentDirectoryPath);
         setFileView(createFileView());
         ToolTipManager.sharedInstance().registerComponent(this);
@@ -76,9 +67,10 @@ public class GrooveFileChooser extends JFileChooser {
         if (currDir != null) {
             Groove.CURRENT_WORKING_DIR = currDir.getAbsolutePath();
         }
-        
+
         File result = super.getSelectedFile();
-        if (result != null && !result.exists() && getFileFilter() instanceof ExtensionFilter) {
+        if (result != null && !result.exists()
+            && getFileFilter() instanceof ExtensionFilter) {
             ExtensionFilter fileFilter = (ExtensionFilter) getFileFilter();
             String resultName = fileFilter.addExtension(result.getName());
             result = new File(result.getParentFile(), resultName);
