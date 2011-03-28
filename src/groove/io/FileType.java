@@ -94,6 +94,15 @@ public enum FileType {
             RULE.getExtension(), TYPE.getExtension(), GXL.getExtension()));
     }
 
+    /** Set of grammar files. */
+    public static EnumSet<FileType> grammars = EnumSet.of(GRAMMAR, ZIP, JAR);
+    static {
+        compositeDescriptions.put(
+            grammars,
+            String.format("Grammar files (*%s, *%s, *%s)",
+                GRAMMAR.getExtension(), ZIP.getExtension(), JAR.getExtension()));
+    }
+
     // Fields and methods.
 
     private final String extension;
@@ -148,7 +157,7 @@ public enum FileType {
     /** Filter for type graph files. */
     public static final ExtensionFilter TYPE_FILTER = createFilter(TYPE, true);
 
-    /** Filter for grammar files. */
+    /** Filter for uncompressed grammar files (.gps). */
     public static final ExtensionFilter GRAMMAR_FILTER = createFilter(GRAMMAR,
         true);
 
@@ -210,6 +219,10 @@ public enum FileType {
     /** Filter for all Groove graphs. */
     public static final ExtensionFilter GRAPHS_FILTER = createFilter(graphs,
         true);
+
+    /** Filter for all grammar files, including compressed grammars. */
+    public static final ExtensionFilter GRAMMARS_FILTER = createFilter(
+        grammars, true);
 
     /**
      * Returns an extension filter with the required properties.

@@ -82,7 +82,7 @@ public class Options implements Cloneable {
     /** File menu mnemonic. */
     static public final int FILE_MENU_MNEMONIC = KeyEvent.VK_F;
     /** Open Recent menu name * */
-    public static final String OPEN_RECENT_MENU_NAME = "Open Recent..";
+    public static final String OPEN_RECENT_MENU_NAME = "Open Recent";
     /** Open Recent menu mnemonic. */
     static public final int OPEN_RECENT_MENU_MNEMONIC = KeyEvent.VK_R;
     /** Help menu name */
@@ -286,7 +286,7 @@ public class Options implements Cloneable {
     /** New graph action name */
     public static final String NEW_GRAPH_ACTION_NAME = "New Graph";
     /** New grammar action name */
-    public static final String NEW_GRAMMAR_ACTION_NAME = "New Grammar";
+    public static final String NEW_GRAMMAR_ACTION_NAME = "New Grammar ...";
     /** New rule action name */
     public static final String NEW_RULE_ACTION_NAME = "New Rule";
     /** New type action name */
@@ -351,7 +351,7 @@ public class Options implements Cloneable {
     /**
      * Save-as action name
      */
-    public static final String SAVE_AS_ACTION_NAME = "Save As...";
+    public static final String SAVE_AS_ACTION_NAME = "Save As ...";
     /**
      * Save action name
      */

@@ -36,10 +36,8 @@ import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.GXL_FILTER;
-import static groove.io.FileType.JAR_FILTER;
 import static groove.io.FileType.RULE_FILTER;
 import static groove.io.FileType.STATE_FILTER;
-import static groove.io.FileType.ZIP_FILTER;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.lts.AGTS;
 import groove.explore.AcceptorEnumerator;
@@ -79,6 +77,7 @@ import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.io.ExtensionFilter;
+import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.io.external.Exporter;
 import groove.io.store.DefaultFileSystemStore;
@@ -132,7 +131,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -191,7 +189,6 @@ public class Simulator {
      * Constructs a simulator with an empty graph grammar.
      */
     public Simulator() {
-        initGrammarLoaders();
         getFrame();
         setDefaultExploration(new Exploration());
     }
@@ -1923,9 +1920,12 @@ public class Simulator {
      */
     private JMenu createFileMenu() {
         JMenu result = new JMenu(Options.FILE_MENU_NAME);
-
         result.setMnemonic(Options.FILE_MENU_MNEMONIC);
+
         result.add(new JMenuItem(getNewGrammarAction()));
+
+        result.addSeparator();
+
         result.add(new JMenuItem(getLoadGrammarAction()));
         result.add(new JMenuItem(new LoadURLAction()));
         result.add(createOpenRecentMenu());
@@ -2224,23 +2224,24 @@ public class Simulator {
         return result;
     }
 
+    JFileChooser getGrammarFileChooser() {
+        return this.getGrammarFileChooser(false);
+    }
+
     /**
-     * Returns the file chooser for grammar (GPR) files, lazily creating it
+     * Returns the file chooser for grammar (GPS) files, lazily creating it
      * first.
      */
-    JFileChooser getGrammarFileChooser() {
+    JFileChooser getGrammarFileChooser(boolean includeArchives) {
         if (this.grammarFileChooser == null) {
             this.grammarFileChooser = new GrooveFileChooser();
             this.grammarFileChooser.setAcceptAllFileFilterUsed(false);
-            FileFilter firstFilter = null;
-            for (FileFilter filter : this.grammarExtensions) {
-                this.grammarFileChooser.addChoosableFileFilter(filter);
-                if (firstFilter == null) {
-                    firstFilter = filter;
-                }
-            }
-            this.grammarFileChooser.setFileFilter(firstFilter);
             this.grammarFileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            if (includeArchives) {
+                this.grammarFileChooser.setFileFilter(FileType.GRAMMARS_FILTER);
+            } else {
+                this.grammarFileChooser.setFileFilter(FileType.GRAMMAR_FILTER);
+            }
         }
         return this.grammarFileChooser;
     }
@@ -2303,19 +2304,6 @@ public class Simulator {
             this.exploreStateStrategy = new ExploreStateStrategy();
         }
         return this.exploreStateStrategy;
-    }
-
-    /**
-     * Adds all implemented grammar loaders to the menu.
-     */
-    private void initGrammarLoaders() {
-        this.grammarExtensions.clear();
-        // loader for directories representing grammars
-        this.grammarExtensions.add(GRAMMAR_FILTER);
-        // loader for archives (jar/zip) containing directories representing
-        // grammars.
-        this.grammarExtensions.add(JAR_FILTER);
-        this.grammarExtensions.add(ZIP_FILTER);
     }
 
     /**
@@ -2774,13 +2762,6 @@ public class Simulator {
 
     /** Flag to indicate that the Simulator is in abstraction mode. */
     private boolean isAbstractionMode = false;
-
-    /**
-     * A mapping from extension filters (recognizing the file formats from the
-     * names) to the corresponding grammar loaders.
-     */
-    private final Set<ExtensionFilter> grammarExtensions =
-        new LinkedHashSet<ExtensionFilter>();
 
     /**
      * The graph loader used for saving aspect graphs.
