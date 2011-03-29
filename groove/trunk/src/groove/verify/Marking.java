@@ -35,7 +35,7 @@ public interface Marking {
      * @return <tt>true</tt> if nothing unexpected happens, <tt>false</tt>
      *         otherwise
      */
-    public boolean set(GraphState state, TemporalFormula property, boolean value);
+    public boolean set(GraphState state, Formula property, boolean value);
 
     /**
      * Check wether the given state satisfies the given predicate.
@@ -46,5 +46,5 @@ public interface Marking {
      * @return <tt>true</tt> if the gives state satisfies the predicate,
      *         <tt>false</tt> otherwise
      */
-    public boolean satisfies(GraphState state, TemporalFormula property);
+    public boolean satisfies(GraphState state, Formula property);
 }

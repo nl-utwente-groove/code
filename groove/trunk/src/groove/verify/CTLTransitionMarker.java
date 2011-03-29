@@ -37,7 +37,7 @@ import java.util.Iterator;
  */
 public class CTLTransitionMarker extends CTLMatchingMarker {
     @Override
-    public void markAtom(Marking marking, TemporalFormula property, GTS gts) {
+    public void markAtom(Marking marking, Formula property, GTS gts) {
         boolean specialAtom = markSpecialAtom(marking, property, gts);
         if (!specialAtom) {
             String name = ((CTLStarFormula.Atom) property).predicateName();

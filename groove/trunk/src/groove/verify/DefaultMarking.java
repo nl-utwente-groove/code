@@ -28,15 +28,9 @@ import java.util.Set;
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-02-28 05:59:23 $
  */
-public class DefaultMarking extends HashMap<GraphState,Set<TemporalFormula>>
-        implements Marking {
-
-    /*
-     * (non-Javadoc)
-     * @see groove.verify.Marking#set(groove.lts.State,
-     *      groove.trans.GraphPredicate)
-     */
-    public boolean set(GraphState state, TemporalFormula property, boolean value) {
+public class DefaultMarking extends HashMap<GraphState,Set<Formula>> implements
+        Marking {
+    public boolean set(GraphState state, Formula property, boolean value) {
         if (value) {
             return setTrue(state, property);
         } else {
@@ -44,35 +38,30 @@ public class DefaultMarking extends HashMap<GraphState,Set<TemporalFormula>>
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see groove.verify.Marking#satisfies(groove.lts.State,
-     *      groove.trans.GraphPredicate)
-     */
-    public boolean satisfies(GraphState state, TemporalFormula property) {
+    public boolean satisfies(GraphState state, Formula property) {
         if (!containsKey(state)) {
             return false;
         } else {
-            Set<TemporalFormula> predicates = get(state);
+            Set<Formula> predicates = get(state);
             return predicates.contains(property);
         }
     }
 
     /**
-     * Adds the given CTL-expression to the set of propositions fullfilled of
+     * Adds the given CTL-expression to the set of propositions fulfilled of
      * the given state.
      * @param state the state to which the given CTL-expression applies
      * @param property the CTL-expression to be added to the set of propositions
      *        met by the given state
-     * @return <tt>true</tt> if the given state did not yet fulfill the given
+     * @return <tt>true</tt> if the given state did not yet fulfil the given
      *         CTL-expression, <tt>false</tt> otherwise
      */
-    protected boolean setTrue(GraphState state, TemporalFormula property) {
+    protected boolean setTrue(GraphState state, Formula property) {
         // if this marking does not yet contain an entry for this state
         // create one and add the give predicate as the only marking so far
-        Set<TemporalFormula> predicates = get(state);
+        Set<Formula> predicates = get(state);
         if (predicates == null) {
-            predicates = new HashSet<TemporalFormula>();
+            predicates = new HashSet<Formula>();
             put(state, predicates);
         }
         return predicates.add(property);
@@ -89,9 +78,9 @@ public class DefaultMarking extends HashMap<GraphState,Set<TemporalFormula>>
      *         set of propositions fulfilled by the given state, <tt>false</tt>
      *         otherwise
      */
-    protected boolean setFalse(GraphState state, TemporalFormula property) {
+    protected boolean setFalse(GraphState state, Formula property) {
         boolean removed = false;
-        Set<TemporalFormula> predicates = get(state);
+        Set<Formula> predicates = get(state);
         if (predicates != null) {
             removed = predicates.remove(property);
         }

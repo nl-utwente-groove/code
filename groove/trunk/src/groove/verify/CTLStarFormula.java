@@ -777,7 +777,7 @@ public class CTLStarFormula {
 
         @Override
         public void mark(CTLFormulaMarker marker, Marking marking, GTS gts) {
-            marker.markAll(marking, this, gts);
+            marker.markForall(marking, this, gts);
         }
     }
 

@@ -21,8 +21,7 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.Condition;
-import groove.verify.CTLStarFormula.Next;
-import groove.verify.CTLStarFormula.Until;
+import groove.verify.FormulaParser.Token;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,7 +58,7 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
         }
     }
 
-    public void markTrue(Marking marking, TemporalFormula property, GTS gts) {
+    public void markTrue(Marking marking, Formula property, GTS gts) {
         Iterator<? extends GraphState> stateIter = gts.nodeSet().iterator();
         while (stateIter.hasNext()) {
             GraphState nextState = stateIter.next();
@@ -67,7 +66,7 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
         }
     }
 
-    public void markFalse(Marking marking, TemporalFormula property, GTS gts) {
+    public void markFalse(Marking marking, Formula property, GTS gts) {
         Iterator<? extends GraphState> stateIter = gts.nodeSet().iterator();
         while (stateIter.hasNext()) {
             GraphState nextState = stateIter.next();
@@ -76,11 +75,10 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
         }
     }
 
-    public void markAtom(Marking marking, TemporalFormula property, GTS gts) {
+    public void markAtom(Marking marking, Formula property, GTS gts) {
         boolean specialAtom = markSpecialAtom(marking, property, gts);
         if (!specialAtom) {
-            Condition condition =
-                ((CTLStarFormula.Atom) property).graphCondition();
+            Condition condition = property.getProp();
             Iterator<? extends GraphState> stateIter = gts.nodeSet().iterator();
             while (stateIter.hasNext()) {
                 GraphState nextState = stateIter.next();
@@ -96,8 +94,8 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
         }
     }
 
-    public void markNeg(Marking marking, TemporalFormula property, GTS gts) {
-        TemporalFormula operand = property.getOperands().get(0);
+    public void markNeg(Marking marking, Formula property, GTS gts) {
+        Formula operand = property.getArg1();
         // first mark all states for its operand
         operand.mark(this, marking, gts);
 
@@ -117,24 +115,19 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
         }
     }
 
-    public void markOr(Marking marking, TemporalFormula property, GTS gts) {
-        List<TemporalFormula> operands = property.getOperands();
-
+    public void markOr(Marking marking, Formula property, GTS gts) {
         // perform the marking for each operand
-        for (int i = 0; i < operands.size(); i++) {
-            TemporalFormula nextOperand = operands.get(i);
-            nextOperand.mark(this, marking, gts);
-        }
+        property.getArg1().mark(this, marking, gts);
+        property.getArg2().mark(this, marking, gts);
 
         Iterator<? extends GraphState> stateIter = gts.nodeSet().iterator();
         while (stateIter.hasNext()) {
             GraphState nextState = stateIter.next();
-            boolean satisfies = false;
-            for (int i = 0; (satisfies == false) && (i < operands.size()); i++) {
-                TemporalFormula nextOperand = operands.get(i);
-                satisfies |= marking.satisfies(nextState, nextOperand);
+            boolean satisfies =
+                marking.satisfies(nextState, property.getArg1());
+            if (!satisfies) {
+                satisfies = marking.satisfies(nextState, property.getArg2());
             }
-
             // if the state satisfies one of the predicates
             if (satisfies) {
                 marking.set(nextState, property, true);
@@ -152,24 +145,18 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      * @param property the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
-    public void markAnd(Marking marking, TemporalFormula property, GTS gts) {
-        List<TemporalFormula> operands = property.getOperands();
-
-        // perform the marking for each operand
-        for (int i = 0; i < operands.size(); i++) {
-            TemporalFormula nextOperand = operands.get(i);
-            nextOperand.mark(this, marking, gts);
-        }
+    public void markAnd(Marking marking, Formula property, GTS gts) {
+        property.getArg1().mark(this, marking, gts);
+        property.getArg2().mark(this, marking, gts);
 
         Iterator<? extends GraphState> stateIter = gts.nodeSet().iterator();
         while (stateIter.hasNext()) {
             GraphState nextState = stateIter.next();
-            boolean satisfies = true;
-            for (int i = 0; (satisfies == true) && (i < operands.size()); i++) {
-                TemporalFormula nextOperand = operands.get(i);
-                satisfies &= marking.satisfies(nextState, nextOperand);
+            boolean satisfies =
+                marking.satisfies(nextState, property.getArg1());
+            if (satisfies) {
+                satisfies = marking.satisfies(nextState, property.getArg2());
             }
-
             // if the state satisfies all the predicates
             if (satisfies) {
                 marking.set(nextState, property, true);
@@ -180,75 +167,56 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
         }
     }
 
-    public void markExists(Marking marking, TemporalFormula property, GTS gts) {
-        List<TemporalFormula> operandList = property.getOperands();
-        TemporalFormula firstOperand = operandList.get(0);
-        if (firstOperand instanceof CTLStarFormula.Next) {
+    public void markExists(Marking marking, Formula property, GTS gts) {
+        switch (property.getToken()) {
+        case NEXT:
             markExistsNext(marking, property, gts);
-        } else if (firstOperand instanceof CTLStarFormula.Until) {
+            break;
+        case UNTIL:
             markExistsUntil(marking, property, gts);
-        } else if (firstOperand instanceof CTLStarFormula.Finally) {
+            break;
+        case EVENTUALLY:
             throw new UnsupportedOperationException(
                 "The EF(phi) construction should have been rewritten to a E(true U phi) construction.");
-        } else if (firstOperand instanceof CTLStarFormula.Globally) {
+        case ALWAYS:
             throw new UnsupportedOperationException(
                 "The EG(phi) construction should have been rewritten to a !(AF(!phi)) construction.");
         }
     }
 
-    public void markAll(Marking marking, TemporalFormula property, GTS gts) {
-        List<TemporalFormula> operandList = property.getOperands();
-        TemporalFormula firstOperand = operandList.get(0);
-        if (firstOperand instanceof CTLStarFormula.Next) {
+    public void markForall(Marking marking, Formula property, GTS gts) {
+        switch (property.getToken()) {
+        case NEXT:
             throw new UnsupportedOperationException(
                 "The AX(phi) construction should have been rewritten to a !(EX(!phi)) construction.");
-        } else if (firstOperand instanceof CTLStarFormula.Until) {
+        case UNTIL:
             markAllUntil(marking, property, gts);
-        } else if (firstOperand instanceof CTLStarFormula.Finally) {
+            break;
+        case EVENTUALLY:
             throw new UnsupportedOperationException(
                 "The AF(phi) construction should have been rewritten to a A(true U phi) construction.");
-        } else if (firstOperand instanceof CTLStarFormula.Globally) {
+        case ALWAYS:
             throw new UnsupportedOperationException(
                 "The AG(phi) construction should have been rewritten to a !(EF(!phi)) construction.");
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see groove.verify.CTLFormulaMarker#markNext(groove.verify.Marking,
-     *      groove.verify.TemporalFormula, groove.lts.GTS)
-     */
-    public void markNext(Marking marking, TemporalFormula property, GTS gts) {
+    public void markNext(Marking marking, Formula property, GTS gts) {
         throw new UnsupportedOperationException(
             "In CTL, the Next-operator should be bounded by a path quantifier.");
     }
 
-    /*
-     * (non-Javadoc)
-     * @see groove.verify.CTLFormulaMarker#markUntil(groove.verify.Marking,
-     *      groove.verify.TemporalFormula, groove.lts.GTS)
-     */
-    public void markUntil(Marking marking, TemporalFormula property, GTS gts) {
+    public void markUntil(Marking marking, Formula property, GTS gts) {
         throw new UnsupportedOperationException(
             "In CTL, the Until-operator should be bounded by a path quantifier.");
     }
 
-    /*
-     * (non-Javadoc)
-     * @see groove.verify.CTLFormulaMarker#markFinally(groove.verify.Marking,
-     *      groove.verify.TemporalFormula, groove.lts.GTS)
-     */
-    public void markFinally(Marking marking, TemporalFormula property, GTS gts) {
+    public void markFinally(Marking marking, Formula property, GTS gts) {
         throw new UnsupportedOperationException(
             "In CTL, the Finally-operator should be bounded by a path quantifier.");
     }
 
-    /*
-     * (non-Javadoc)
-     * @see groove.verify.CTLFormulaMarker#markGlobally(groove.verify.Marking,
-     *      groove.verify.TemporalFormula, groove.lts.GTS)
-     */
-    public void markGlobally(Marking marking, TemporalFormula property, GTS gts) {
+    public void markGlobally(Marking marking, Formula property, GTS gts) {
         throw new UnsupportedOperationException(
             "In CTL, the Globally-operator should be bounded by a path quantifier.");
     }
@@ -261,11 +229,10 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      * @param property the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
-    public void markExistsNext(Marking marking, TemporalFormula property,
-            GTS gts) {
-        TemporalFormula next = property.getOperands().get(0);
-        assert (next instanceof Next) : "This method can only be called if the Exists-operator has an Next-formula as its operand.";
-        TemporalFormula operand = next.getOperands().get(0);
+    public void markExistsNext(Marking marking, Formula property, GTS gts) {
+        Formula next = property.getArg1();
+        assert (next.getToken() == Token.NEXT) : "This method can only be called if the Exists-operator has an Next-formula as its operand.";
+        Formula operand = next.getArg1();
         operand.mark(this, marking, gts);
         for (GraphState nextState : gts.nodeSet()) {
             boolean stateSet = false;
@@ -302,23 +269,22 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      * @param property the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
-    public void markExistsUntil(Marking marking, TemporalFormula property,
-            GTS gts) {
-        TemporalFormula until = property.getOperands().get(0);
-        assert (until instanceof Until) : "This method can only be called if the Exists-operator has an Until-formula as its operand.";
-        TemporalFormula firstOperand = until.getOperands().get(0);
-        TemporalFormula secondOperand = until.getOperands().get(1);
+    public void markExistsUntil(Marking marking, Formula property, GTS gts) {
+        Formula until = property.getArg1();
+        assert (until.getToken() == Token.UNTIL) : "This method can only be called if the Exists-operator has an Until-formula as its operand.";
+        Formula arg1 = until.getArg1();
+        Formula arg2 = until.getArg2();
         Set<GraphState> seenBefore = new HashSet<GraphState>();
         List<GraphState> todo = new ArrayList<GraphState>();
 
         // perform the marking for the operands
-        firstOperand.mark(this, marking, gts);
-        secondOperand.mark(this, marking, gts);
+        arg1.mark(this, marking, gts);
+        arg2.mark(this, marking, gts);
 
         Iterator<? extends GraphState> stateIter = gts.nodeSet().iterator();
         while (stateIter.hasNext()) {
             GraphState nextState = stateIter.next();
-            if (marking.satisfies(nextState, secondOperand)) {
+            if (marking.satisfies(nextState, arg2)) {
                 todo.add(nextState);
             }
         }
@@ -336,7 +302,7 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
                 GraphState predecessorState = predecessorIter.next();
                 if (!seenBefore.contains(predecessorState)) {
                     seenBefore.add(predecessorState);
-                    if (marking.satisfies(predecessorState, firstOperand)) {
+                    if (marking.satisfies(predecessorState, arg1)) {
                         todo.add(predecessorState);
                     }
                 }
@@ -361,11 +327,11 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      * @param property the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
-    public void markAllUntil(Marking marking, TemporalFormula property, GTS gts) {
-        TemporalFormula until = property.getOperands().get(0);
-        assert (until instanceof Until) : "This method can only be called if the All-operator has an Until-formula as its operand.";
-        TemporalFormula firstOperand = until.getOperands().get(0);
-        TemporalFormula secondOperand = until.getOperands().get(1);
+    public void markAllUntil(Marking marking, Formula property, GTS gts) {
+        Formula until = property.getArg1();
+        assert (until.getToken() == Token.UNTIL) : "This method can only be called if the All-operator has an Until-formula as its operand.";
+        Formula firstOperand = until.getArg1();
+        Formula secondOperand = until.getArg2();
         List<GraphState> todo = new ArrayList<GraphState>();
 
         firstOperand.mark(this, marking, gts);
@@ -417,15 +383,35 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      * @param gts the graph transition system providing the states and
      *        transitions
      */
-    public void mark(Marking marking, TemporalFormula property, GTS gts) {
-        try {
-            property.mark(this, marking, gts);
-        } catch (UnsupportedOperationException uoe) {
-            System.err.println(uoe.getMessage());
+    public void mark(Marking marking, Formula property, GTS gts) {
+        switch (property.getToken()) {
+        case TRUE:
+            markTrue(marking, property, gts);
+            break;
+        case FALSE:
+            markFalse(marking, property, gts);
+            break;
+        case ATOM:
+            markAtom(marking, property, gts);
+            break;
+        case NOT:
+            markNeg(marking, property, gts);
+            break;
+        case AND:
+            markAnd(marking, property, gts);
+            break;
+        case OR:
+            markOr(marking, property, gts);
+            break;
+        case FORALL:
+            markForall(marking, property, gts);
+            break;
+        case EXISTS:
+            markExists(marking, property, gts);
         }
     }
 
-    public void mark(Marking marking, TemporalFormula property, GTS gts,
+    public void mark(Marking marking, Formula property, GTS gts,
             CTLModelChecker modelChecker) {
         this.modelChecker = modelChecker;
         mark(marking, property, gts);
@@ -442,10 +428,9 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      * @return <tt>true</tt> if the CTL-expression is a special atomic
      *         proposition, <tt>false</tt> otherwise
      */
-    protected boolean markSpecialAtom(Marking marking,
-            TemporalFormula property, GTS gts) {
+    protected boolean markSpecialAtom(Marking marking, Formula property, GTS gts) {
         boolean specialAtom = false;
-        String name = ((CTLStarFormula.Atom) property).predicateName();
+        String name = property.getProp();
         if (name.startsWith(CTLModelChecker.SPECIAL_STATE_PREFIX)) {
             specialAtom = true;
             Iterator<? extends GraphState> stateIter = gts.nodeSet().iterator();

@@ -100,6 +100,7 @@ import groove.util.Groove;
 import groove.util.Version;
 import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
+import groove.verify.Formula;
 import groove.verify.FormulaParser;
 import groove.verify.ParseException;
 import groove.verify.TemporalFormula;
@@ -5314,10 +5315,10 @@ public class Simulator {
         }
 
         private void doCheckProperty(String property) {
-            TemporalFormula formula;
+            Formula formula;
             try {
-                formula = CTLFormula.parseFormula(property);
-            } catch (FormatException e) {
+                formula = FormulaParser.parse(property);
+            } catch (ParseException e) {
                 // since the property passed the parser, we can't land here
                 assert false;
                 formula = null;
