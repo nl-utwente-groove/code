@@ -19,9 +19,11 @@
 package groove.verify;
 
 import static groove.verify.FormulaParser.Token.ATOM;
+import static groove.verify.FormulaParser.Token.FALSE;
 import static groove.verify.FormulaParser.Token.LPAR;
 import static groove.verify.FormulaParser.Token.NOT;
 import static groove.verify.FormulaParser.Token.RPAR;
+import static groove.verify.FormulaParser.Token.TRUE;
 import groove.util.Pair;
 
 import java.util.EnumSet;
@@ -282,7 +284,7 @@ public class FormulaParser {
                     this.q.add(createToken("" + text.charAt(i)));
                 }
             } else {
-                this.q.add(createAtom(text));
+                this.q.add(createAtom(text.toString()));
             }
             this.sb.delete(0, text.length());
         }
@@ -318,7 +320,7 @@ public class FormulaParser {
                     "Unexpected end of text while scanning for closing "
                         + quote);
             }
-            this.q.add(createAtom(text));
+            this.q.add(createAtom(text.toString()));
             this.sb.delete(0, text.length() + 2);
         }
 
@@ -341,8 +343,14 @@ public class FormulaParser {
          * Creates a token/string pair consisting of an {@link Token#ATOM}
          * and a given atom text.
          */
-        private Pair<Token,String> createAtom(StringBuffer text) {
-            return new Pair<Token,String>(ATOM, text.toString());
+        private Pair<Token,String> createAtom(String text) {
+            if (text.equals(TRUE.getSymbol())) {
+                return new Pair<Token,String>(TRUE, null);
+            } else if (text.equals(FALSE.getSymbol())) {
+                return new Pair<Token,String>(FALSE, null);
+            } else {
+                return new Pair<Token,String>(ATOM, text.toString());
+            }
         }
 
         /** Input string. */

@@ -52,41 +52,51 @@ public class FormulaTest {
     /** Tests {@link FormulaParser#parse(String)}. */
     @Test
     public void testParse() {
-        testParse("a", "a");
-        testParse("'a'", "a");
-        testParse("\"a\"", "a");
-        testParse("'a(1)'", "'a(1)'");
-        testParse("true", "true");
-        testParse("false", "false");
+        Formula a = Atom("a");
+        Formula b = Atom("b");
+        Formula c = Atom("c");
+        Formula dc = Atom("dc");
+        Formula d = Atom("d");
+        Formula e = Atom("e");
+        testParse("a", a);
+        testParse("'a'", a);
+        testParse("\"a\"", a);
+        testParse("'a(1)'", Atom("a(1)"));
+        testParse("true", True());
+        testParse("false", False());
         // and/or/not
-        testParse("!!a&!b", "!!a&!b");
-        testParse("a&b&c", "a&b&c");
-        testParse("a&b|c", "a&b|c");
-        testParse("a|b&c", "a|b&c");
-        testParse("(!a)|(b&c)", "!a|b&c");
-        testParse("!((a|b)&c)", "!((a|b)&c)");
+        testParse("!!a&!b", And(Not(Not(a)), Not(b)));
+        testParse("a&b&c", And(a, And(b, c)));
+        testParse("a&b|c", Or(And(a, b), c));
+        testParse("a|b&c", Or(a, And(b, c)));
+        testParse("(!a)|(b&c)", Or(Not(a), And(b, c)));
+        testParse("!((a|b)&c)", Not(And(Or(a, b), c)));
         // implies/follows/equiv
-        testParse("a->b", "a->b");
-        testParse("a|c<-(b&dc)", "a|c<-b&dc");
-        testParse("a->b<->c", "a->b<->c");
+        testParse("a->b", Implies(a, b));
+        testParse("a|c<-(b&dc)", Follows(Or(a, c), And(b, dc)));
+        testParse("a->b<->c", Implies(a, Equiv(b, c)));
         //
-        testParse("(a U b) M c V (d M e)", "(a U b)M c V d M e");
+        testParse("(a U b) M c V (d M e)",
+            SRelease(Until(a, b), Release(c, SRelease(d, e))));
         //
-        testParse("AFG X true", "A F G X true");
+        testParse("AFG X true", Forall(Eventually(Always(Next(True())))));
         // errors
         testParseError("a=");
+        testParseError("(a");
         testParseError("a(");
         testParseError("(a)A");
         testParseError("(a)U");
         testParseError("AX");
         testParseError("'a");
         testParseError("'\\a'");
+        testParseError("Xtrue");
+        testParseError("U true");
     }
 
-    private void testParse(String text, String expected) {
+    private void testParse(String text, Formula expected) {
         try {
             Formula result = FormulaParser.parse(text);
-            assertEquals(expected, result.toString());
+            assertEquals(expected, result);
         } catch (ParseException e) {
             fail(e.getMessage());
         }
