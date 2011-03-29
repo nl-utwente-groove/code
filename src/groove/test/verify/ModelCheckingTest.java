@@ -50,7 +50,8 @@ public class ModelCheckingTest {
             generator.start();
 
             // all states satisfy the following property
-            Formula property = FormulaParser.parse("AG(put|get)");
+            Formula property =
+                FormulaParser.parse("AG(put|get)").toCtlFormula();
             GTS gts = generator.getGTS();
             DefaultMarker modelChecker = new DefaultMarker(property, gts);
             modelChecker.verify();
@@ -75,7 +76,7 @@ public class ModelCheckingTest {
             assertEquals(0, modelChecker.getCount(false));
 
             // not a single state satisfies the following property
-            property = FormulaParser.parse("AG(put)");
+            property = FormulaParser.parse("AG(put)").toCtlFormula();
             modelChecker = new DefaultMarker(property, gts);
             modelChecker.verify();
             assertEquals(gts.nodeCount(), modelChecker.getCount(false));

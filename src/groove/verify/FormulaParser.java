@@ -272,13 +272,18 @@ public class FormulaParser {
         private void readNextWord(char c) throws ParseException {
             StringBuffer text = new StringBuffer();
             text.append(c);
+            boolean caps = Character.isUpperCase(c);
             boolean allCaps = Character.isUpperCase(c);
             for (int i = 1; i < this.sb.length()
                 && Character.isJavaIdentifierPart(c = this.sb.charAt(i)); i++) {
                 text.append(c);
                 allCaps &= Character.isUpperCase(c);
             }
-            if (allCaps) {
+            if (caps) {
+                if (!allCaps) {
+                    throw new ParseException("Uppercase atom '%s' not allowed",
+                        text);
+                }
                 // each letter is parsed as an operator
                 for (int i = 0; i < text.length(); i++) {
                     this.q.add(createToken("" + text.charAt(i)));

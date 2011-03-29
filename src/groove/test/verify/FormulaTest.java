@@ -36,6 +36,8 @@ import static groove.verify.Formula.True;
 import static groove.verify.Formula.Until;
 import static groove.verify.Formula.WUntil;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.verify.Formula;
 import groove.verify.FormulaParser;
@@ -150,5 +152,54 @@ public class FormulaTest {
         assertEquals("E F a", Exists(Eventually(a)).toString());
         assertEquals("A a U b", Forall(Until(a, b)).toString());
         assertEquals("(A a)U b", Until(Forall(a), b).toString());
+    }
+
+    /** Tests if a given formula is ripe for CTL verification. */
+    @Test
+    public void testIsCtlFormula() {
+        Formula a = Atom("a");
+        Formula b = Atom("b");
+        Formula c = Atom("c");
+        // Any simple propositional formula
+        assertTrue(a.isCtlFormula());
+        assertTrue(True().isCtlFormula());
+        assertTrue(False().isCtlFormula());
+        assertTrue(And(Or(Not(a), b), c).isCtlFormula());
+        // implication-like operators
+        assertTrue(Implies(a, b).isCtlFormula());
+        assertTrue(Follows(a, b).isCtlFormula());
+        assertTrue(Equiv(a, b).isCtlFormula());
+        // No next without path quantifier
+        assertFalse(Next(a).isCtlFormula());
+        assertTrue(Exists(Next(a)).isCtlFormula());
+        // No until without path quantifier
+        assertFalse(Until(a, b).isCtlFormula());
+        assertTrue(Forall(Until(a, b)).isCtlFormula());
+        // no weak until or release
+        assertFalse(Forall(WUntil(a, b)).isCtlFormula());
+        assertFalse(Forall(Release(a, b)).isCtlFormula());
+        assertFalse(Forall(SRelease(a, b)).isCtlFormula());
+        assertTrue(Forall(Until(a, b)).isCtlFormula());
+        // No isolated path quantifier
+        assertFalse(Forall(a).isCtlFormula());
+    }
+
+    @Test
+    public void testToCtlFormula() {
+        Formula a = Atom("a");
+        Formula b = Atom("b");
+        Formula c = Atom("c");
+        testToCtlFormula("a->b", Implies(a, b));
+        testToCtlFormula("AX a", Forall(Next(a)));
+        testToCtlFormula("E(true U a)", Exists(Eventually(a)));
+        testToCtlFormula("!E(true U !a)", Forall(Always(a)));
+    }
+
+    private void testToCtlFormula(String expected, Formula f) {
+        try {
+            assertEquals(FormulaParser.parse(expected), f.toCtlFormula());
+        } catch (ParseException e) {
+            fail(e.getMessage());
+        }
     }
 }

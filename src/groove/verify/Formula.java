@@ -256,7 +256,7 @@ public class Formula {
 
     /** 
      * Tests if this formula is of the restricted format corresponding
-     * to a CTL formula.
+     * to a directly model checkable CTL formula.
      */
     public boolean isCtlFormula() {
         switch (getToken()) {
@@ -268,6 +268,9 @@ public class Formula {
             return getArg1().isCtlFormula();
         case OR:
         case AND:
+        case IMPLIES:
+        case FOLLOWS:
+        case EQUIV:
             return getArg1().isCtlFormula() && getArg2().isCtlFormula();
         case EXISTS:
         case FORALL:
@@ -305,25 +308,23 @@ public class Formula {
             return Not(getArg1().toCtlFormula());
         case OR:
         case AND:
+        case IMPLIES:
+        case FOLLOWS:
+        case EQUIV:
             return new Formula(getToken(), getArg1().toCtlFormula(),
                 getArg2().toCtlFormula());
-        case IMPLIES:
-            return Or(Not(getArg1()), getArg2()).toCtlFormula();
-        case FOLLOWS:
-            return Or(getArg1(), Not(getArg2())).toCtlFormula();
-        case EQUIV:
-            return And(Implies(getArg1(), getArg2()),
-                Follows(getArg1(), getArg2())).toCtlFormula();
         case NEXT:
         case UNTIL:
-        case W_UNTIL:
-        case RELEASE:
-        case S_RELEASE:
         case ALWAYS:
         case EVENTUALLY:
             throw new ParseException(
                 "Temporal operator '%s' should be nested inside path quantifier in CTL formula",
                 getToken());
+        case W_UNTIL:
+        case RELEASE:
+        case S_RELEASE:
+            throw new ParseException(
+                "Temporal operator '%s' not allowed in CTL formula", getToken());
         case FORALL:
         case EXISTS:
             FormulaParser.Token subKind = getArg1().getToken();
@@ -331,19 +332,23 @@ public class Formula {
             Formula subArg2 = getArg1().getArg2();
             switch (subKind) {
             case NEXT:
+                return new Formula(getToken(), Next(subArg1.toCtlFormula()));
             case ALWAYS:
+                Token dual = getToken() == EXISTS ? FORALL : EXISTS;
+                return Not(new Formula(dual, Until(True(),
+                    Not(subArg1.toCtlFormula()))));
             case EVENTUALLY:
-                return new Formula(getToken(), new Formula(subKind,
+                return new Formula(getToken(), Until(True(),
                     subArg1.toCtlFormula()));
             case UNTIL:
                 return new Formula(getToken(), Until(subArg1.toCtlFormula(),
                     subArg2.toCtlFormula()));
             case W_UNTIL:
-                return Or(Until(subArg1, subArg2), Always(subArg1)).toCtlFormula();
             case RELEASE:
-                return Not(Until(Not(subArg2), Not(subArg1))).toCtlFormula();
             case S_RELEASE:
-                return Not(WUntil(Not(subArg2), Not(subArg1))).toCtlFormula();
+                throw new ParseException(
+                    "Temporal operator '%s' not allowed in CTL formula",
+                    subKind);
             default:
                 throw new ParseException(
                     "Path quantifier '%s' must have nested temporal operator in CTL formula",
