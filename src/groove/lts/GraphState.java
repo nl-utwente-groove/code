@@ -76,6 +76,9 @@ public interface GraphState extends Node {
      */
     public Map<CtrlCall,Collection<GraphTransition>> getTransitionMap();
 
+    /** Returns the number of (currently generated) outgoing transitions. */
+    public int getTransitionCount();
+
     /**
      * Returns (a copy of) the set of next states reachable from this state,
      * according to the currently generated outgoing transitions.
