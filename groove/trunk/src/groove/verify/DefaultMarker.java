@@ -16,9 +16,13 @@
  */
 package groove.verify;
 
+import static groove.verify.FormulaParser.Token.FALSE;
+import static groove.verify.FormulaParser.Token.NOT;
+import static groove.verify.FormulaParser.Token.TRUE;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.verify.FormulaParser.Token;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -27,6 +31,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Set;
 
@@ -120,6 +125,9 @@ public class DefaultMarker {
             this.formulaNr.put(formula, result);
             switch (formula.getToken().getArity()) {
             case 0:
+                if (formula.getToken() == TRUE || formula.getToken() == FALSE) {
+                    break;
+                }
                 String prop = formula.getProp();
                 assert prop != null;
                 if (isRuleName(prop)) {
@@ -146,78 +154,83 @@ public class DefaultMarker {
         return this.gts.getGrammar().getRule(text) != null;
     }
 
-    /** Mark each state as true for the given formula. */
-    private BitSet markTrue(Formula property) {
-        int formulaNr = this.formulaNr.get(property);
-        BitSet result = this.marking[formulaNr];
-        if (result == null) {
-            result = new BitSet(this.stateCount);
-            for (int i = 0; i < result.size(); i++) {
-                result.set(i);
+    /**
+     * Verifies the top-level property.
+     */
+    public void verify() {
+        mark(this.formula);
+    }
+
+    /**
+     * Delegates the marking process to the given CTL-expression.
+     * @param property the CTL-expression to which the marking is delegated
+     */
+    private BitSet mark(Formula property) {
+        int nr = this.formulaNr.get(property);
+        // use the existing result, if any
+        BitSet result = this.marking[nr];
+        if (result != null) {
+            return result;
+        }
+        Token token = property.getToken();
+        // compute the arguments, if any
+        BitSet arg1 = null;
+        BitSet arg2 = null;
+        switch (token.getArity()) {
+        case 1:
+            if (token == NOT) {
+                arg1 = mark(property.getArg1());
             }
-            this.marking[formulaNr] = result;
+            break;
+        case 2:
+            arg1 = mark(property.getArg1());
+            arg2 = mark(property.getArg2());
         }
-        return result;
-    }
-
-    /** Mark each state as false for the given formula. */
-    private BitSet markFalse(Formula property) {
-        int formulaNr = this.formulaNr.get(property);
-        BitSet result = this.marking[formulaNr];
-        if (result == null) {
-            result = new BitSet(this.stateCount);
-            this.marking[formulaNr] = result;
+        // compose the arguments according to the top level operator
+        switch (token) {
+        case TRUE:
+            result = computeTrue();
+            break;
+        case FALSE:
+            result = computeFalse();
+            break;
+        case NOT:
+            result = computeNeg(arg1);
+            break;
+        case OR:
+            result = computeOr(arg1, arg2);
+            break;
+        case AND:
+            result = computeAnd(arg1, arg2);
+            break;
+        case IMPLIES:
+            result = computeImplies(arg1, arg2);
+            break;
+        case FOLLOWS:
+            result = computeImplies(arg2, arg1);
+            break;
+        case EQUIV:
+            result = computeEquiv(arg1, arg2);
+            break;
+        case FORALL:
+            result = markForall(property.getArg1());
+            break;
+        case EXISTS:
+            result = markExists(property.getArg1());
+            break;
+        default:
+            throw new IllegalArgumentException();
         }
-        return result;
-    }
-
-    /** Mark the atomic proposition wrapped in the given formula. */
-    private BitSet markAtom(Formula property) {
-        return this.marking[this.formulaNr.get(property)];
-    }
-
-    /** Mark according to the given (negated) formula. */
-    private BitSet markNeg(Formula property) {
-        int formulaNr = this.formulaNr.get(property);
-        BitSet result = this.marking[formulaNr];
-        if (result == null) {
-            result = ((BitSet) mark(property.getArg1()).clone());
-            result.flip(0, result.size());
-            this.marking[formulaNr] = result;
-        }
-        return result;
-    }
-
-    /** Mark according to the given (disjunctive) formula. */
-    private BitSet markOr(Formula property) {
-        int formulaNr = this.formulaNr.get(property);
-        BitSet result = this.marking[formulaNr];
-        if (result == null) {
-            result = (BitSet) mark(property.getArg1()).clone();
-            result.or(mark(property.getArg2()));
-            this.marking[formulaNr] = result;
-        }
-        return result;
-    }
-
-    /** Mark according to the given (conjunctive) formula. */
-    private BitSet markAnd(Formula property) {
-        int formulaNr = this.formulaNr.get(property);
-        BitSet result = this.marking[formulaNr];
-        if (result == null) {
-            result = (BitSet) mark(property.getArg1()).clone();
-            result.and(mark(property.getArg2()));
-            this.marking[formulaNr] = result;
-        }
+        this.marking[nr] = result;
         return result;
     }
 
     private BitSet markExists(Formula property) {
         switch (property.getToken()) {
         case NEXT:
-            return markExistsNext(property);
+            return computeEX(mark(property.getArg1()));
         case UNTIL:
-            return markExistsUntil(property);
+            return computeEU(mark(property.getArg1()), mark(property.getArg2()));
         case EVENTUALLY:
             throw new UnsupportedOperationException(
                 "The EF(phi) construction should have been rewritten to a E(true U phi) construction.");
@@ -232,10 +245,9 @@ public class DefaultMarker {
     private BitSet markForall(Formula property) {
         switch (property.getToken()) {
         case NEXT:
-            throw new UnsupportedOperationException(
-                "The AX(phi) construction should have been rewritten to a !(EX(!phi)) construction.");
+            return computeAX(mark(property.getArg1()));
         case UNTIL:
-            return markAllUntil(property);
+            return computeAU(mark(property.getArg1()), mark(property.getArg2()));
         case EVENTUALLY:
             throw new UnsupportedOperationException(
                 "The AF(phi) construction should have been rewritten to a A(true U phi) construction.");
@@ -247,57 +259,161 @@ public class DefaultMarker {
         }
     }
 
-    /**
-     * Mark each state of the given state-space according the exists next
-     * operator.
-     */
-    private BitSet markExistsNext(Formula property) {
-        int formulaNr = this.formulaNr.get(property);
-        BitSet result = this.marking[formulaNr];
-        if (result == null) {
-            result = new BitSet(this.stateCount);
-            BitSet argMarking = mark(property.getArg1().getArg1());
-            for (int i = 0; i < result.size(); i++) {
-                if (argMarking.get(i)) {
-                    int[] preds = this.backward[i];
-                    for (int p = 0; p < preds.length; p++) {
-                        result.set(p);
-                    }
-                }
+    /** Returns the (bit) set of all states. */
+    private BitSet computeTrue() {
+        BitSet result = new BitSet(this.stateCount);
+        for (int i = 0; i < this.stateCount; i++) {
+            result.set(i);
+        }
+        return result;
+    }
+
+    /** Returns the empty (bit) set. */
+    private BitSet computeFalse() {
+        return new BitSet(this.stateCount);
+    }
+
+    /** Returns the negation of a (bit) set. */
+    private BitSet computeNeg(BitSet arg) {
+        BitSet result = (BitSet) arg.clone();
+        result.flip(0, this.stateCount);
+        return result;
+    }
+
+    /** Returns the disjunction of two bit sets. */
+    private BitSet computeOr(BitSet arg1, BitSet arg2) {
+        BitSet result = (BitSet) arg1.clone();
+        result.or(arg2);
+        return result;
+    }
+
+    /** Returns the conjunction of two bit sets */
+    private BitSet computeAnd(BitSet arg1, BitSet arg2) {
+        BitSet result = (BitSet) arg1.clone();
+        result.and(arg2);
+        return result;
+    }
+
+    /** Returns the implication of two bit sets */
+    private BitSet computeImplies(BitSet arg1, BitSet arg2) {
+        BitSet result = (BitSet) arg2.clone();
+        for (int i = 0; i < this.stateCount; i++) {
+            if (!result.get(i)) {
+                result.set(i, arg1.get(i));
             }
-            this.marking[formulaNr] = result;
+        }
+        return result;
+    }
+
+    /** Returns the implication of two bit sets */
+    private BitSet computeEquiv(BitSet arg1, BitSet arg2) {
+        BitSet result = new BitSet(this.stateCount);
+        for (int i = 0; i < this.stateCount; i++) {
+            result.set(i, arg1.get(i) == arg1.get(i));
         }
         return result;
     }
 
     /**
-     * Mark each state of the given state-space according the exists
-     * until-operator.
+     * Returns the bit set for the EX operator.
      */
-    private BitSet markExistsUntil(Formula property) {
-        int formulaNr = this.formulaNr.get(property);
-        BitSet result = this.marking[formulaNr];
-        if (result == null) {
-            BitSet arg1Marking = mark(property.getArg1().getArg1());
-            BitSet arg2Marking = mark(property.getArg1().getArg2());
-            result = new BitSet(this.stateCount);
-            // mark the states that satisfy the second operand
-            Queue<Integer> newStates = new LinkedList<Integer>();
-            for (int i = 0; i < this.stateCount; i++) {
-                if (arg2Marking.get(i)) {
-                    result.set(i);
-                    newStates.add(i);
+    private BitSet computeEX(BitSet arg) {
+        BitSet result = new BitSet(this.stateCount);
+        for (int i = 0; i < this.stateCount; i++) {
+            if (arg.get(i)) {
+                int[] preds = this.backward[i];
+                for (int p = 0; p < preds.length; p++) {
+                    result.set(preds[p]);
                 }
             }
-            // recurse to the predecessors of newly marked states
-            while (!newStates.isEmpty()) {
-                int newState = newStates.poll();
-                int[] preds = this.backward[newState];
-                for (int b = 0; b < preds.length; b++) {
-                    int pred = preds[b];
-                    // mark the predecessor, if it satisfies the first operand
-                    // and it is not yet marked
-                    if (arg1Marking.get(pred) && !result.get(pred)) {
+        }
+        return result;
+    }
+
+    /**
+     * Returns the bit set for the AX operator.
+     */
+    private BitSet computeAX(BitSet arg) {
+        BitSet result = new BitSet(this.stateCount);
+        int[] nextCounts = new int[this.stateCount];
+        for (int i = 0; i < this.stateCount; i++) {
+            if (arg.get(i)) {
+                int[] preds = this.backward[i];
+                for (int p = 0; p < preds.length; p++) {
+                    int pred = preds[p];
+                    nextCounts[pred]++;
+                    if (this.states[pred].getTransitionCount() == nextCounts[pred]) {
+                        result.set(pred);
+                    }
+                }
+            }
+            // the property vacuously holds for deadlocked states
+            if (this.states[i].getTransitionCount() == 0) {
+                result.set(i);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Constructs the bit set for the EU operator.
+     */
+    private BitSet computeEU(BitSet arg1, BitSet arg2) {
+        BitSet result = new BitSet(this.stateCount);
+        BitSet arg1Marking = arg1;
+        BitSet arg2Marking = arg2;
+        // mark the states that satisfy the second operand
+        Queue<Integer> newStates = new LinkedList<Integer>();
+        for (int i = 0; i < this.stateCount; i++) {
+            if (arg2Marking.get(i)) {
+                result.set(i);
+                newStates.add(i);
+            }
+        }
+        // recurse to the predecessors of newly marked states
+        while (!newStates.isEmpty()) {
+            int newState = newStates.poll();
+            int[] preds = this.backward[newState];
+            for (int b = 0; b < preds.length; b++) {
+                int pred = preds[b];
+                // mark the predecessor, if it satisfies the first operand
+                // and it is not yet marked
+                if (arg1Marking.get(pred) && !result.get(pred)) {
+                    result.set(pred);
+                    newStates.add(pred);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Constructs the bit set for the AU operator.
+     */
+    private BitSet computeAU(BitSet arg1, BitSet arg2) {
+        BitSet result = new BitSet(this.stateCount);
+        int[] markedNextCount = new int[this.stateCount];
+        // mark the states that satisfy the second operand
+        Queue<Integer> newStates = new LinkedList<Integer>();
+        for (int i = 0; i < this.stateCount; i++) {
+            if (arg2.get(i)) {
+                result.set(i);
+                newStates.add(i);
+            }
+        }
+        // recurse to the predecessors of newly marked states
+        while (!newStates.isEmpty()) {
+            int newState = newStates.poll();
+            int[] preds = this.backward[newState];
+            for (int b = 0; b < preds.length; b++) {
+                int pred = preds[b];
+                // mark the predecessor, if all successors have now been
+                // marked, it satisfies the first operand and has not yet
+                // been marked
+                if (arg1.get(pred) && !result.get(pred)) {
+                    markedNextCount[pred]++;
+                    int nextTotal = this.states[pred].getTransitionCount();
+                    if (markedNextCount[pred] == nextTotal) {
                         result.set(pred);
                         newStates.add(pred);
                     }
@@ -305,83 +421,6 @@ public class DefaultMarker {
             }
         }
         return result;
-    }
-
-    /**
-     * Mark each state of the given state-space according the exists
-     * until-operator.
-     */
-    private BitSet markAllUntil(Formula property) {
-        int formulaNr = this.formulaNr.get(property);
-        BitSet result = this.marking[formulaNr];
-        if (result == null) {
-            BitSet arg1Marking = mark(property.getArg1().getArg1());
-            BitSet arg2Marking = mark(property.getArg1().getArg2());
-            int[] markedNextCount = new int[this.stateCount];
-            result = new BitSet(this.stateCount);
-            // mark the states that satisfy the second operand
-            Queue<Integer> newStates = new LinkedList<Integer>();
-            for (int i = 0; i < this.stateCount; i++) {
-                if (arg2Marking.get(i)) {
-                    result.set(i);
-                    newStates.add(i);
-                }
-            }
-            // recurse to the predecessors of newly marked states
-            while (!newStates.isEmpty()) {
-                int newState = newStates.poll();
-                int[] preds = this.backward[newState];
-                for (int b = 0; b < preds.length; b++) {
-                    int pred = preds[b];
-                    // mark the predecessor, if all successors have now been
-                    // marked, it satisfies the first operand and has not yet
-                    // been marked
-                    if (arg1Marking.get(pred) && !result.get(pred)) {
-                        int nextCount = markedNextCount[pred]++;
-                        int nextTotal = this.states[pred].getTransitionCount();
-                        if (nextCount == nextTotal) {
-                            result.set(pred);
-                            newStates.add(pred);
-                        }
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Delegates the marking process to the given CTL-expression.
-     * @param property the CTL-expression to which the marking is delegated
-     */
-    private BitSet mark(Formula property) {
-        switch (property.getToken()) {
-        case TRUE:
-            return markTrue(property);
-        case FALSE:
-            return markFalse(property);
-        case ATOM:
-            return markAtom(property);
-        case NOT:
-            return markNeg(property);
-        case AND:
-            return markAnd(property);
-        case OR:
-            return markOr(property);
-        case FORALL:
-            return markForall(property);
-        case EXISTS:
-            return markExists(property);
-        default:
-            throw new IllegalArgumentException();
-        }
-    }
-
-    /**
-     * Verifies the top-level property.
-     */
-    public void verify() {
-        mark(this.formula);
     }
 
     /** Tests the satisfaction of the top-level formula for the initial state. */
@@ -439,16 +478,20 @@ public class DefaultMarker {
                 return new Iterator<GraphState>() {
                     @Override
                     public boolean hasNext() {
-                        return this.stateIx >= 0;
+                        return this.stateIx >= 0
+                            && this.stateIx < DefaultMarker.this.stateCount;
                     }
 
                     @Override
                     public GraphState next() {
+                        if (!hasNext()) {
+                            throw new NoSuchElementException();
+                        }
                         GraphState result =
                             DefaultMarker.this.states[this.stateIx];
                         this.stateIx =
-                            value ? sat.nextSetBit(this.stateIx)
-                                    : sat.nextClearBit(this.stateIx);
+                            value ? sat.nextSetBit(this.stateIx + 1)
+                                    : sat.nextClearBit(this.stateIx + 1);
                         return result;
                     }
 
@@ -482,7 +525,7 @@ public class DefaultMarker {
     private BitSet[] marking;
     /** Backward reachability matrix. */
     private int[][] backward;
-    /** Forward state count. */
+    /** State number-indexed array of states in the GTS. */
     private GraphState[] states;
     /** State count of the transition system. */
     private int stateCount;

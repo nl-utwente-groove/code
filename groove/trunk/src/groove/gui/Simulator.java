@@ -5283,7 +5283,7 @@ public class Simulator {
                         public String parse(String text) {
                             String result = null;
                             try {
-                                FormulaParser.parse(text);
+                                FormulaParser.parse(text).toCtlFormula();
                             } catch (ParseException efe) {
                                 result = efe.getMessage();
                             }
@@ -5306,7 +5306,7 @@ public class Simulator {
         private void doCheckProperty(String property) {
             Formula formula;
             try {
-                formula = FormulaParser.parse(property);
+                formula = FormulaParser.parse(property).toCtlFormula();
             } catch (ParseException e) {
                 // since the property passed the parser, we can't land here
                 assert false;
