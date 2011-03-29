@@ -98,12 +98,10 @@ import groove.trans.SystemProperties;
 import groove.util.Duo;
 import groove.util.Groove;
 import groove.util.Version;
-import groove.verify.CTLFormula;
-import groove.verify.CTLModelChecker;
+import groove.verify.DefaultMarker;
 import groove.verify.Formula;
 import groove.verify.FormulaParser;
 import groove.verify.ParseException;
-import groove.verify.TemporalFormula;
 import groove.view.CtrlView;
 import groove.view.FormatError;
 import groove.view.FormatException;
@@ -5285,17 +5283,8 @@ public class Simulator {
                         public String parse(String text) {
                             String result = null;
                             try {
-                                TemporalFormula formula =
-                                    CTLFormula.parseFormula(text);
-                                String invalidAtom =
-                                    TemporalFormula.validAtoms(formula,
-                                        getGrammarView().getRuleNames());
-                                if (invalidAtom != null) {
-                                    result =
-                                        String.format("Invalid proposition %s",
-                                            invalidAtom);
-                                }
-                            } catch (FormatException efe) {
+                                FormulaParser.parse(text);
+                            } catch (ParseException efe) {
                                 result = efe.getMessage();
                             }
                             return result;
@@ -5323,42 +5312,43 @@ public class Simulator {
                 assert false;
                 formula = null;
             }
-            CTLModelChecker modelChecker =
-                new CTLModelChecker(getGTS(), formula);
+            DefaultMarker modelChecker = new DefaultMarker(formula, getGTS());
             modelChecker.verify();
+            int counterExampleCount = modelChecker.getCount(false);
             List<GraphState> counterExamples =
-                new ArrayList<GraphState>(formula.getCounterExamples());
-            boolean reportForAllStates =
-                confirmBehaviour(
-                    VERIFY_ALL_STATES_OPTION,
-                    "Verify all states? Choosing 'No' will verify formula only on start state of LTS.");
-            if (!reportForAllStates) {
-                GraphState initial = getGTS().startState();
-                boolean initialIsCounterexample =
-                    counterExamples.contains(initial);
-                counterExamples = new ArrayList<GraphState>(1);
-                if (initialIsCounterexample) {
-                    counterExamples.add(initial);
+                new ArrayList<GraphState>(counterExampleCount);
+            String message;
+            if (counterExampleCount == 0) {
+                message =
+                    String.format("The property '%s' holds for all states",
+                        property);
+            } else {
+                boolean allStates =
+                    confirmBehaviour(VERIFY_ALL_STATES_OPTION,
+                        "Verify all states? Choosing 'No' will report only on the start state.");
+                if (allStates) {
+                    for (GraphState state : modelChecker.getStates(false)) {
+                        counterExamples.add(state);
+                    }
+                    message =
+                        String.format(
+                            "The property '%s' fails to hold in the %d highlighted states",
+                            property, counterExampleCount);
+                } else if (modelChecker.hasValue(false)) {
+                    counterExamples.add(getGTS().startState());
+                    message =
+                        String.format(
+                            "The property '%s' fails to hold in the initial state",
+                            property);
+                } else {
+                    message =
+                        String.format(
+                            "The property '%s' holds in the initial state",
+                            property);
+
                 }
             }
             getLtsPanel().emphasiseStates(counterExamples, false);
-            String message;
-            if (counterExamples.isEmpty()) {
-                message =
-                    String.format("The property '%s' holds for %s of this LTS",
-                        property, reportForAllStates ? "all states"
-                                : "the initial state");
-            } else if (reportForAllStates) {
-                message =
-                    String.format(
-                        "The property '%s' fails to hold in the %d highlighted states",
-                        property, counterExamples.size());
-            } else {
-                message =
-                    String.format(
-                        "The property '%s' fails to hold in the initial state",
-                        property);
-            }
             JOptionPane.showMessageDialog(getFrame(), message);
         }
 

@@ -104,14 +104,14 @@ public class CTLModelChecker extends CommandLineTool {
         super(Collections.<String>emptyList());
         this.gts = gts;
         this.property = property;
-        this.marker = new CTLTransitionMarker();
+        this.marker = new DefaultMarker(property, gts);
     }
 
     /**
      * Starts the marking process.
      */
     public void verify() {
-        this.marker.mark(new DefaultMarking(), getProperty(), this.gts, this);
+        this.marker.verify();
     }
 
     /**
@@ -123,7 +123,7 @@ public class CTLModelChecker extends CommandLineTool {
         this.generator.start();
         this.gts = this.generator.getGTS();
         this.grammar = this.generator.getGrammar();
-        this.marker = new CTLTransitionMarker();
+        this.marker = new DefaultMarker(this.property, this.gts);
         /*
          * if (this.checkSingleProperty) { this.marker.mark(this.marking,
          * getProperty(), this.gts, this); if
@@ -145,9 +145,8 @@ public class CTLModelChecker extends CommandLineTool {
         while (this.properties.size() > 0) {
             this.setProperty(this.properties.remove(0));
             System.out.println("Checking CTL formula: " + this.property);
-            this.marker.mark(this.marking, getProperty(), this.gts, this);
-            if (this.property.getCounterExamples().contains(
-                this.gts.startState())) {
+            this.marker.verify();
+            if (this.marker.hasValue(false)) {
                 System.out.println("The model violates the given property.");
             } else {
                 System.out.println("The model satisfies the given property.");
@@ -295,7 +294,7 @@ public class CTLModelChecker extends CommandLineTool {
      * Sets the new marker.
      * @param marker the new marker
      */
-    public void setMarkingVisitor(CTLFormulaMarker marker) {
+    public void setMarkingVisitor(DefaultMarker marker) {
         this.marker = marker;
     }
 
@@ -380,13 +379,16 @@ public class CTLModelChecker extends CommandLineTool {
      * Prints the collection of counter-example states.
      */
     protected void counterExamples() {
-        if (this.property.hasCounterExamples()) {
-            System.out.println("The following "
-                + this.property.getCounterExamples().size() + " (out of "
+        List<GraphState> result = new LinkedList<GraphState>();
+        for (GraphState state : this.marker.getStates(false)) {
+            result.add(state);
+        }
+        if (!result.isEmpty()) {
+            System.out.println("The following " + result.size() + " (out of "
                 + this.gts.nodeCount()
                 + ") states do not satisfy the property "
                 + this.property.toString());
-            System.out.println(this.property.getCounterExamples());
+            System.out.println(result);
         } else {
             System.out.println("No counter-examples have been found.");
         }
@@ -438,10 +440,6 @@ public class CTLModelChecker extends CommandLineTool {
      */
     private Map<GraphState,Collection<GraphState>> predecessorMap;
     /**
-     * The marking of the state space.
-     */
-    private final Marking marking = new DefaultMarking();
-    /**
      * The location of the graph-grammar.
      */
     private String grammarLocation = null;
@@ -467,5 +465,5 @@ public class CTLModelChecker extends CommandLineTool {
     /**
      * The state marker.
      */
-    private CTLFormulaMarker marker;
+    private DefaultMarker marker;
 }

@@ -61,10 +61,11 @@ abstract public class AbstractGraphState extends
         return getRecord().getGTS();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see groove.lts.GraphState#getOutTransitionIter()
-     */
+    @Override
+    public int getTransitionCount() {
+        return getCachedTransitionStubs().size();
+    }
+
     public Iterator<GraphTransition> getTransitionIter() {
         // the iterator is created as a transformation of the iterator on the
         // stored OutGraphTransitions.

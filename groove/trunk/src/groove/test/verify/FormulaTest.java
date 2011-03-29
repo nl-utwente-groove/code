@@ -37,13 +37,9 @@ import static groove.verify.Formula.Until;
 import static groove.verify.Formula.WUntil;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import groove.verify.CTLFormula;
-import groove.verify.CTLStarFormula;
 import groove.verify.Formula;
 import groove.verify.FormulaParser;
 import groove.verify.ParseException;
-import groove.verify.TemporalFormula;
-import groove.view.FormatException;
 
 import org.junit.Test;
 
@@ -144,50 +140,5 @@ public class FormulaTest {
         assertEquals("E F a", Exists(Eventually(a)).toString());
         assertEquals("A a U b", Forall(Until(a, b)).toString());
         assertEquals("(A a)U b", Until(Forall(a), b).toString());
-    }
-
-    /** test the creation of ctl formulae */
-    @Test
-    public void testFormulaCreation() {
-        try {
-            TemporalFormula formula;
-
-            // CTL* formulae
-            formula = CTLStarFormula.parseFormula("empty");
-            formula = CTLStarFormula.parseFormula("(empty | non-empty)");
-            formula = CTLStarFormula.parseFormula("F(empty & final)");
-            formula = CTLStarFormula.parseFormula("G(get U empty)");
-
-            formula = CTLStarFormula.parseFormula("AX(empty)");
-            assertEquals("A(X(empty))", formula.toString());
-            formula = CTLStarFormula.parseFormula("EX(empty)");
-            assertEquals("E(X(empty))", formula.toString());
-            formula = CTLStarFormula.parseFormula("A(non-empty U empty)");
-            assertEquals("A(non-empty U (empty))", formula.toString());
-            formula = CTLStarFormula.parseFormula("E(non-empty U empty)");
-            assertEquals("E(non-empty U (empty))", formula.toString());
-            formula = CTLStarFormula.parseFormula("AF(empty)");
-            assertEquals("A(F(empty))", formula.toString());
-            formula = CTLStarFormula.parseFormula("EF(empty)");
-            assertEquals("E(F(empty))", formula.toString());
-            formula = CTLStarFormula.parseFormula("AG(empty)");
-            assertEquals("A(G(empty))", formula.toString());
-            formula = CTLStarFormula.parseFormula("EG(empty)");
-            assertEquals("E(G(empty))", formula.toString());
-            formula = CTLStarFormula.parseFormula("X(empty)");
-            assertEquals("X(empty)", formula.toString());
-            formula = CTLStarFormula.parseFormula("G(F(empty))");
-            assertEquals("G(F(empty))", formula.toString());
-            formula = CTLStarFormula.parseFormula("GX(empty)");
-            assertEquals("G(X(empty))", formula.toString());
-
-            // CTL formulae
-            formula = CTLFormula.parseFormula("EG(empty)");
-            formula = CTLFormula.parseFormula("EG(AF(empty))");
-            formula = CTLFormula.parseFormula("EX(AX(empty | full))");
-            formula = CTLFormula.parseFormula("A(get U (empty | full))");
-        } catch (FormatException efe) {
-            efe.printStackTrace();
-        }
     }
 }

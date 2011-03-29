@@ -20,7 +20,7 @@ package groove.test.verify;
 import static org.junit.Assert.assertEquals;
 import groove.explore.Generator;
 import groove.lts.GTS;
-import groove.verify.CTLModelChecker;
+import groove.verify.DefaultMarker;
 import groove.verify.Formula;
 import groove.verify.FormulaParser;
 import groove.verify.ParseException;
@@ -52,33 +52,33 @@ public class ModelCheckingTest {
             // all states satisfy the following property
             Formula property = FormulaParser.parse("AG(put|get)");
             GTS gts = generator.getGTS();
-            CTLModelChecker modelChecker = new CTLModelChecker(gts, property);
+            DefaultMarker modelChecker = new DefaultMarker(property, gts);
             modelChecker.verify();
-            assertEquals(0, property.getCounterExamples().size());
+            assertEquals(0, modelChecker.getCount(false));
 
             // there is one state that does not satisfy the following property
             property = FormulaParser.parse("AX(put)");
-            modelChecker = new CTLModelChecker(gts, property);
+            modelChecker = new DefaultMarker(property, gts);
             modelChecker.verify();
-            assertEquals(1, property.getCounterExamples().size());
+            assertEquals(1, modelChecker.getCount(false));
 
             // all states satisfy the following property
             property = FormulaParser.parse("EX(put)");
-            modelChecker = new CTLModelChecker(gts, property);
+            modelChecker = new DefaultMarker(property, gts);
             modelChecker.verify();
-            assertEquals(0, property.getCounterExamples().size());
+            assertEquals(0, modelChecker.getCount(false));
 
             // all states satisfy the following property
             property = FormulaParser.parse("!put | EX(get)");
-            modelChecker = new CTLModelChecker(gts, property);
+            modelChecker = new DefaultMarker(property, gts);
             modelChecker.verify();
-            assertEquals(0, property.getCounterExamples().size());
+            assertEquals(0, modelChecker.getCount(false));
 
             // not a single state satisfies the following property
             property = FormulaParser.parse("AG(put)");
-            modelChecker = new CTLModelChecker(gts, property);
+            modelChecker = new DefaultMarker(property, gts);
             modelChecker.verify();
-            assertEquals(gts.nodeCount(), property.getCounterExamples().size());
+            assertEquals(gts.nodeCount(), modelChecker.getCount(false));
         } catch (ParseException efe) {
             efe.printStackTrace();
         }
