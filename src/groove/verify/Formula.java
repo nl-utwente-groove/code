@@ -254,6 +254,38 @@ public class Formula {
     }
 
     /** 
+     * Tests if this formula is of the restricted format corresponding
+     * to a CTL formula.
+     */
+    public boolean isCtlFormula() {
+        switch (getToken()) {
+        case ATOM:
+        case TRUE:
+        case FALSE:
+            return true;
+        case NOT:
+            return getArg1().isCtlFormula();
+        case OR:
+        case AND:
+            return getArg1().isCtlFormula() && getArg2().isCtlFormula();
+        case EXISTS:
+        case FORALL:
+            Formula arg = getArg1();
+            switch (arg.getToken()) {
+            case NEXT:
+                return arg.getArg1().isCtlFormula();
+            case UNTIL:
+                return arg.getArg1().isCtlFormula()
+                    && arg.getArg2().isCtlFormula();
+            default:
+                return false;
+            }
+        default:
+            return false;
+        }
+    }
+
+    /** 
      * Converts this formula to a CTL formula, if possible.
      * This succeeds if and only if all temporal operators in this
      * formula are immediately nested inside a path quantifier, and

@@ -28,7 +28,7 @@ public interface CTLFormulaMarker {
     /**
      * Starts the marking process.
      */
-    public void mark(Marking marking, TemporalFormula expr, GTS gts,
+    public void mark(Marking marking, Formula expr, GTS gts,
             CTLModelChecker modelChecker);
 
     /**
@@ -38,7 +38,7 @@ public interface CTLFormulaMarker {
      * @param expr the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
-    public void mark(Marking marking, TemporalFormula expr, GTS gts);
+    public void mark(Marking marking, Formula expr, GTS gts);
 
     /**
      * Mark each state of the given state-space with the given CTL-expression.
@@ -47,7 +47,7 @@ public interface CTLFormulaMarker {
      * @param expr the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
-    public void markTrue(Marking marking, TemporalFormula expr, GTS gts);
+    public void markTrue(Marking marking, Formula expr, GTS gts);
 
     /**
      * Unmark the states of the given state-space with the given CTL-expression.
@@ -56,7 +56,7 @@ public interface CTLFormulaMarker {
      * @param expr the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
-    public void markFalse(Marking marking, TemporalFormula expr, GTS gts);
+    public void markFalse(Marking marking, Formula expr, GTS gts);
 
     /**
      * Mark each state of the given state-space if that state does satisfies the
@@ -66,7 +66,7 @@ public interface CTLFormulaMarker {
      * @param expr the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
-    public void markAtom(Marking marking, TemporalFormula expr, GTS gts);
+    public void markAtom(Marking marking, Formula expr, GTS gts);
 
     /**
      * Mark each state of the given state-space according the negation-operator.
@@ -75,7 +75,7 @@ public interface CTLFormulaMarker {
      * @param expr the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
-    public void markNeg(Marking marking, TemporalFormula expr, GTS gts);
+    public void markNeg(Marking marking, Formula expr, GTS gts);
 
     /**
      * Mark each state of the given state-space according the or-operator.
@@ -84,7 +84,7 @@ public interface CTLFormulaMarker {
      * @param expr the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
-    public void markOr(Marking marking, TemporalFormula expr, GTS gts);
+    public void markOr(Marking marking, Formula expr, GTS gts);
 
     /**
      * Mark each state of the given state-space according the and-operator.
@@ -93,7 +93,7 @@ public interface CTLFormulaMarker {
      * @param expr the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
-    public void markAnd(Marking marking, TemporalFormula expr, GTS gts);
+    public void markAnd(Marking marking, Formula expr, GTS gts);
 
     /**
      * Mark each state of the given state-space according the exists-operator.
@@ -102,7 +102,7 @@ public interface CTLFormulaMarker {
      * @param expr the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
-    public void markExists(Marking marking, TemporalFormula expr, GTS gts);
+    public void markExists(Marking marking, Formula expr, GTS gts);
 
     /**
      * Mark each state of the given state-space according the all-operator.
@@ -111,7 +111,7 @@ public interface CTLFormulaMarker {
      * @param expr the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
-    public void markAll(Marking marking, TemporalFormula expr, GTS gts);
+    public void markForall(Marking marking, Formula expr, GTS gts);
 
     /**
      * Mark each state of the given state-space according the next-operator.
@@ -120,7 +120,7 @@ public interface CTLFormulaMarker {
      * @param expr the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
-    public void markNext(Marking marking, TemporalFormula expr, GTS gts);
+    public void markNext(Marking marking, Formula expr, GTS gts);
 
     /**
      * Mark each state of the given state-space according the until-operator.
@@ -129,7 +129,7 @@ public interface CTLFormulaMarker {
      * @param expr the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
-    public void markUntil(Marking marking, TemporalFormula expr, GTS gts);
+    public void markUntil(Marking marking, Formula expr, GTS gts);
 
     /**
      * Mark each state of the given state-space according the finally-operator.
@@ -138,7 +138,7 @@ public interface CTLFormulaMarker {
      * @param expr the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
-    public void markFinally(Marking marking, TemporalFormula expr, GTS gts);
+    public void markFinally(Marking marking, Formula expr, GTS gts);
 
     /**
      * Mark each state of the given state-space according the globally-operator.
@@ -147,5 +147,5 @@ public interface CTLFormulaMarker {
      * @param expr the CTL-expression in question.
      * @param gts the state space as a graph transition system.
      */
-    public void markGlobally(Marking marking, TemporalFormula expr, GTS gts);
+    public void markGlobally(Marking marking, Formula expr, GTS gts);
 }

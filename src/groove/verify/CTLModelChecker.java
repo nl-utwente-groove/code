@@ -96,11 +96,11 @@ public class CTLModelChecker extends CommandLineTool {
     public CTLModelChecker(List<String> checkerArgs, List<String> genArgs) {
         super(checkerArgs);
         this.genArgs = genArgs;
-        this.properties = new LinkedList<TemporalFormula>();
+        this.properties = new LinkedList<Formula>();
     }
 
     /** Constructs a model checker for a given LTS and property. */
-    public CTLModelChecker(GTS gts, TemporalFormula property) {
+    public CTLModelChecker(GTS gts, Formula property) {
         super(Collections.<String>emptyList());
         this.gts = gts;
         this.property = property;
@@ -234,15 +234,15 @@ public class CTLModelChecker extends CommandLineTool {
      * Returns the CTL-expression to be model-checked.
      * @return the CTL-expression to be model-checked.
      */
-    public TemporalFormula getProperty() {
+    public Formula getProperty() {
         return this.property;
     }
 
     /** Sets the property to be checked (as a string). */
     public void setProperty(String property) {
         try {
-            setProperty(CTLFormula.parseFormula(property));
-        } catch (FormatException efe) {
+            setProperty(FormulaParser.parse(property).toCtlFormula());
+        } catch (ParseException efe) {
             print("Format error in property: " + efe.getMessage());
         }
     }
@@ -250,8 +250,8 @@ public class CTLModelChecker extends CommandLineTool {
     /** Adds the string property to the list of properties to be checked. */
     public void addProperty(String property) {
         try {
-            this.properties.add(CTLFormula.parseFormula(property));
-        } catch (FormatException efe) {
+            this.properties.add(FormulaParser.parse(property).toCtlFormula());
+        } catch (ParseException efe) {
             print("Format error in property: " + efe.getMessage());
         }
     }
@@ -260,7 +260,7 @@ public class CTLModelChecker extends CommandLineTool {
      * Ordinary set-method.
      * @param property the property to be checked
      */
-    public void setProperty(TemporalFormula property) {
+    public void setProperty(Formula property) {
         this.property = property;
     }
 
@@ -278,12 +278,12 @@ public class CTLModelChecker extends CommandLineTool {
                 + "' to quit):\n> ");
             String expression = in.readLine();
             if (!(expression.equals(QUIT_OPTION))) {
-                setProperty(CTLFormula.parseFormula(expression));
+                setProperty(FormulaParser.parse(expression).toCtlFormula());
                 result = true;
             }
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (FormatException efe) {
+        } catch (ParseException efe) {
             System.err.println("Wrong format. Retry.");
             return nextProperty();
             // efe.printStackTrace();
@@ -457,12 +457,12 @@ public class CTLModelChecker extends CommandLineTool {
     /**
      * The CTL-expression to be checked for.
      */
-    private TemporalFormula property;
+    private Formula property;
 
     /**
      * The list of CTL formulas to be checked.
      */
-    private List<TemporalFormula> properties;
+    private List<Formula> properties;
 
     /**
      * The state marker.
