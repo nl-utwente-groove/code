@@ -30,11 +30,7 @@ import groove.trans.RuleMatch;
  * @author Michiel Hendriks
  */
 public class Predicate_rulematch_rule extends TransPrologCode {
-    /*
-     * (non-Javadoc)
-     * @see gnu.prolog.vm.PrologCode#execute(gnu.prolog.vm.Interpreter, boolean,
-     * gnu.prolog.term.Term[])
-     */
+    @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         RuleMatch re = getRuleMatch(args[0]);

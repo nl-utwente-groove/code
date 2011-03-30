@@ -30,11 +30,7 @@ import groove.lts.GTS;
  * @author Michiel Hendriks
  */
 public class Predicate_gts_start_state extends LtsPrologCode {
-    /*
-     * (non-Javadoc)
-     * @see gnu.prolog.vm.PrologCode#execute(gnu.prolog.vm.Interpreter, boolean,
-     * gnu.prolog.term.Term[])
-     */
+    @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         GTS lts = getLTS(args[0]);

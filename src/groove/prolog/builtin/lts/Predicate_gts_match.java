@@ -61,11 +61,7 @@ public class Predicate_gts_match extends LtsPrologCode {
         return FAIL;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see gnu.prolog.vm.PrologCode#execute(gnu.prolog.vm.Interpreter, boolean,
-     * gnu.prolog.term.Term[])
-     */
+    @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         if (backtrackMode) {

@@ -32,11 +32,7 @@ import groove.prolog.util.PrologUtils;
  * @author Michiel Hendriks
  */
 public class Predicate_graph_node_set extends GraphPrologCode {
-    /*
-     * (non-Javadoc)
-     * @see gnu.prolog.vm.PrologCode#execute(gnu.prolog.vm.Interpreter, boolean,
-     * gnu.prolog.term.Term[])
-     */
+    @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         Graph<?,?> graph = getGraph(args[0]);

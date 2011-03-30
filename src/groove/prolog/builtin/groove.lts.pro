@@ -46,75 +46,76 @@ RuleMatch:
 
 % Success if the argument is a JavaObjectTerm with a GraphState
 % is_graphstate(@State)
-:-build_in(is_graphstate/1,'groove.prolog.builtin.lts.Predicate_is_graphstate').
+:-build_in(is_state/1,'groove.prolog.builtin.lts.Predicate_is_state').
 
 % Success if the argument is a JavaObjectTerm with a Transition
 % is_transition(@Trans)
 :-build_in(is_transition/1,'groove.prolog.builtin.lts.Predicate_is_transition').
 
-% Success if the argument is a JavaObjectTerm with a Location
-% is_location(@Loc)
-:-build_in(is_location/1,'groove.prolog.builtin.lts.Predicate_is_location').
+% Retrieves one state from the GTS
+% state(?State)
+% @param	A state fromt the GTS
+:-build_in(state/1,'groove.prolog.builtin.lts.Predicate_state').
 
-% The current graph state. Might not always be available.
-% graphstate(-State)
-% @param the graph state
-:-build_in(graphstate/1,'groove.prolog.builtin.lts.Predicate_graphstate').
+% Retrieves the currently selected state from the GTS
+% active_state(?State)
+% @param	The active state in the GTS
+:-build_in(active_state/1,'groove.prolog.builtin.lts.Predicate_active_state').
 
-% The graph of a graph state
-% graphstate_graph(+State,?Graph)
-% @param the graph state
-% @param the graph 
+% Retrieves the graph for a state
+% state_graph(+State,?Graph)
+% @param A state
+% @param The graph belonging to the state
 % @groove.lts.GraphState#getGraph()
-:-build_in(graphstate_graph/2,'groove.prolog.builtin.lts.Predicate_graphstate_graph').
-graphstate_graph(G):-graphstate(GS),graphstate_graph(GS,G).
+:-build_in(state_graph/2,'groove.prolog.builtin.lts.Predicate_state_graph').
+state_graph(G):-state(GS),state_graph(GS,G).
 
 % Success if the graph state is closed (i.e. all transitions have been found)
-% graphstate_is_closed(+State)
+% state_is_closed(+State)
 % @param the graph state
 % @groove.lts.GraphState#isClosed()
-:-build_in(graphstate_is_closed/1,'groove.prolog.builtin.lts.Predicate_graphstate_is_closed').
-graphstate_is_closed:-graphstate(GS),graphstate_is_closed(GS).
+:-build_in(state_is_closed/1,'groove.prolog.builtin.lts.Predicate_state_is_closed').
+state_is_closed:-state(GS),state_is_closed(GS).
 
 % The location of a graph state
 % graphstate_location(+State,?Loc)
 % @param the graph state
 % @param the location
 % @groove.lts.GraphState#getLocation()
-:-build_in(graphstate_location/2,'groove.prolog.builtin.lts.Predicate_graphstate_location').
-graphstate_location(L):-graphstate(GS),graphstate_location(GS,L).
+:-build_in(state_location/2,'groove.prolog.builtin.lts.Predicate_state_location').
+state_location(L):-state(GS),state_location(GS,L).
 
 % A transition in a state
 % graphstate_transition(+State,?Trans)
 % @param the state
 % @param the transition
 % @groove.lts.GraphState#getTransitionSet()
-:-build_in(graphstate_transition/2,'groove.prolog.builtin.lts.Predicate_graphstate_transition').
-graphstate_transition(T):-graphstate(GS),graphstate_transition(GS,T).
+:-build_in(state_transition/2,'groove.prolog.builtin.lts.Predicate_state_transition').
+state_transition(T):-state(GS),state_transition(GS,T).
 
 % All current transitions in a state
 % graphstate_transition(+State,?TransSet)
 % @param the state
 % @param the transition set
 % @groove.lts.GraphState#getTransitionSet()
-:-build_in(graphstate_transition_set/2,'groove.prolog.builtin.lts.Predicate_graphstate_transition_set').
-graphstate_transition_set(T):-graphstate(GS),graphstate_transition_set(GS,T).
+:-build_in(state_transition_set/2,'groove.prolog.builtin.lts.Predicate_state_transition_set').
+state_transition_set(T):-state(GS),state_transition_set(GS,T).
 
 % A next state from this state
 % graphstate_next(+State,?NextState)
 % @param the state
 % @param the next state
 % @groove.lts.GraphState#getNextState()
-:-build_in(graphstate_next/2,'groove.prolog.builtin.lts.Predicate_graphstate_next').
-graphstate_next(T):-graphstate(GS),graphstate_next(GS,T).
+:-build_in(state_next/2,'groove.prolog.builtin.lts.Predicate_state_next').
+state_next(T):-state(GS),state_next(GS,T).
 
 % All next states from this state
 % graphstate_next_set(+State,?NextStateSet)
 % @param the state
 % @param the next state set
 % @groove.lts.GraphState#getNextState()
-:-build_in(graphstate_next_set/2,'groove.prolog.builtin.lts.Predicate_graphstate_next_set').
-graphstate_next_set(T):-graphstate(GS),graphstate_next_set(GS,T).
+:-build_in(state_next_set/2,'groove.prolog.builtin.lts.Predicate_state_next_set').
+state_next_set(T):-state(GS),state_next_set(GS,T).
 
 % The source of a transition
 % transition_source(+Trans,?State)

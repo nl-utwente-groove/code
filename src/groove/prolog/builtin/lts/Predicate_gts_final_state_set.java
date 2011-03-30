@@ -31,11 +31,7 @@ import groove.prolog.util.PrologUtils;
  * @author Michiel Hendriks
  */
 public class Predicate_gts_final_state_set extends LtsPrologCode {
-    /*
-     * (non-Javadoc)
-     * @see gnu.prolog.vm.PrologCode#execute(gnu.prolog.vm.Interpreter, boolean,
-     * gnu.prolog.term.Term[])
-     */
+    @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         GTS lts = getLTS(args[0]);

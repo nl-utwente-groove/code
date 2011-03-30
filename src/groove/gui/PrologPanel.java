@@ -30,8 +30,6 @@ import groove.explore.result.PrologCondition;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.io.SimpleExtensionFilter;
-import groove.lts.GTS;
-import groove.lts.GraphState;
 import groove.prolog.GrooveState;
 import groove.prolog.PrologQuery;
 import groove.prolog.QueryResult;
@@ -46,7 +44,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -66,7 +63,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.prefs.Preferences;
 
-import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -74,12 +70,10 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
@@ -107,20 +101,6 @@ public class PrologPanel extends JPanel {
 
     static final Preferences PREFS =
         Preferences.userNodeForPackage(PrologPanel.class);
-
-    /**
-     * TODO
-     */
-    public enum QueryMode {
-        /**
-         * Query the current graph state
-         */
-        GRAPH_STATE,
-        /**
-         * Query the current LTS
-         */
-        LTS
-    }
 
     /**
      * Data structure to keep track of the open/loaded prolog files
@@ -160,10 +140,7 @@ public class PrologPanel extends JPanel {
      * time "reconsult" action is performed.
      */
     protected PrologQuery prolog;
-    /**
-     * Selected query mode
-     */
-    protected QueryMode mode = QueryMode.GRAPH_STATE;
+
     /**
      * If true the user code should also be consulted. Otherwise only the
      * standard prolog files are consulted.
@@ -259,39 +236,12 @@ public class PrologPanel extends JPanel {
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
 
-        toolBar.add(new JLabel("Query:"));
-        toolBar.addSeparator();
-
-        JToggleButton graphButton =
-            new JToggleButton(Icons.GRAPH_FRAME_ICON, true);
-        toolBar.add(graphButton);
-        graphButton.setToolTipText("Query the graph state currently visible in the graph panel.");
-        graphButton.setEnabled(true);
-        graphButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                PrologPanel.this.mode = QueryMode.GRAPH_STATE;
-            }
-        });
-
-        JToggleButton ltsButton = new JToggleButton(Icons.LTS_FRAME_ICON);
-        toolBar.add(ltsButton);
-        ltsButton.setToolTipText("Query the LTS");
-        ltsButton.setEnabled(true);
-        ltsButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                PrologPanel.this.mode = QueryMode.LTS;
-            }
-        });
-
-        ButtonGroup modeSelection = new ButtonGroup();
-        modeSelection.add(graphButton);
-        modeSelection.add(ltsButton);
-
         // TODO: Fix this
+        /*
         final JPopupMenu explorePopup = new JPopupMenu();
         // explorePopup.add(new JMenuItem(createExploreGraphStateAction()));
         // explorePopup.add(new JMenuItem(createExploreRuleEventsAction()));
-
+        
         JButton exploreBtn = new JButton("Explore");
         exploreBtn.setToolTipText("Explore the LTL for each state which has a result with the given query.");
         exploreBtn.addMouseListener(new MouseAdapter() {
@@ -318,9 +268,11 @@ public class PrologPanel extends JPanel {
                 explorePopup.show(c, 0, c.getHeight());
             }
         });
+        
 
         toolBar.addSeparator();
         toolBar.add(exploreBtn);
+        */
 
         this.query = new JComboBox(PREFS.get("queryHistory", "").split("\\n"));
         this.query.setFont(editFont);
@@ -1059,28 +1011,8 @@ public class PrologPanel extends JPanel {
             return;
         }
 
-        switch (this.mode) {
-        case GRAPH_STATE:
-            GraphState gs = this.sim.getCurrentState();
-            if (gs == null) {
-                this.results.append("% Warning: no graph\n");
-                this.prolog.setGrooveState(null);
-            } else {
-                this.prolog.setGrooveState(new GrooveState(gs));
-            }
-            break;
-        case LTS:
-            // Changed from sim.getCurrentGTS()
-            GTS gts = this.sim.getGTS();
-            if (gts == null) {
-                this.results.append("% Warning: no LTS\n");
-                this.prolog.setGrooveState(null);
-            } else {
-                this.prolog.setGrooveState(new GrooveState(gts,
-                    this.sim.getCurrentState()));
-            }
-            break;
-        }
+        this.prolog.setGrooveState(new GrooveState(this.sim.getGrammarView(),
+            this.sim.getGTS(), this.sim.getCurrentState()));
 
         try {
             this.solutionCount = 0;

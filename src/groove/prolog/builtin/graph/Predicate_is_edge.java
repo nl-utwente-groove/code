@@ -30,11 +30,7 @@ import groove.graph.Edge;
  * @author Michiel Hendriks
  */
 public class Predicate_is_edge extends GraphPrologCode {
-    /*
-     * (non-Javadoc)
-     * @see gnu.prolog.vm.PrologCode#execute(gnu.prolog.vm.Interpreter, boolean,
-     * gnu.prolog.term.Term[])
-     */
+    @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         if (args[0] instanceof JavaObjectTerm) {

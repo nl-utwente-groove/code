@@ -18,10 +18,10 @@
  */
 package groove.prolog;
 
-import groove.graph.Graph;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.RuleEvent;
+import groove.view.GrammarView;
 
 import java.util.Collections;
 import java.util.Set;
@@ -32,86 +32,61 @@ import java.util.Set;
  * @author Michiel Hendriks
  */
 public class GrooveState {
-    // TODO: Lesley, Should be specialized
     /**
      * TODO
      */
-    protected Graph<?,?> graph;
+    private GrammarView grammarView;
 
     /**
      * TODO
      */
-    protected GraphState state;
+    private GraphState state;
 
     /**
      * TODO
      */
-    protected GTS gts;
+    private GTS gts;
 
     /**
      * TODO
      */
-    protected Set<RuleEvent> ruleEvents;
+    private Set<RuleEvent> ruleEvents;
 
     /**
-     * TODO
+     * Constructs a groove state from a graph, a GTS and the current state
+     * @param grammarView       A grammar view
+     * @param gts               A GTS
+     * @param state             The current state in the GTS
      */
-    public GrooveState(Graph<?,?> forGraph) {
-        this.graph = forGraph;
+    public GrooveState(GrammarView grammarView, GTS gts, GraphState state) {
+        if (grammarView == null) {
+            throw new NullPointerException();
+        }
+
+        this.grammarView = grammarView;
+        this.gts = gts;
+        this.state = state;
     }
 
     /**
-     * TODO
+     * @return The grammar view
      */
-    public GrooveState(GraphState forState) {
-        this(forState.getGraph());
-        this.state = forState;
+    public GrammarView getGrammarView() {
+        return this.grammarView;
     }
 
     /**
-     * TODO
-     */
-    public GrooveState(GTS forGTS) {
-        this.graph = this.gts = forGTS;
-    }
-
-    /**
-     * TODO
-     */
-    public GrooveState(GTS forGTS, GraphState currentState) {
-        this(forGTS);
-        this.state = currentState;
-    }
-
-    /**
-     * TODO
-     */
-    public GrooveState(GTS forGTS, GraphState currentState,
-            Set<RuleEvent> matches) {
-        this(forGTS);
-        this.state = currentState;
-        this.ruleEvents = matches;
-    }
-
-    /**
-     * @return the graph
-     */
-    public Graph<?,?> getGraph() {
-        return this.graph;
-    }
-
-    /**
-     * @return the state
-     */
-    public GraphState getState() {
-        return this.state;
-    }
-
-    /**
-     * @return the gts
+     * @return The GTS
      */
     public GTS getGts() {
         return this.gts;
+    }
+
+    /**
+     * @return The currently selected state in the GTS
+     */
+    public GraphState getState() {
+        return this.state;
     }
 
     /**
