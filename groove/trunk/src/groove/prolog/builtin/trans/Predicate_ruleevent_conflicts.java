@@ -29,11 +29,7 @@ import groove.trans.RuleEvent;
  * @author Michiel Hendriks
  */
 public class Predicate_ruleevent_conflicts extends TransPrologCode {
-    /*
-     * (non-Javadoc)
-     * @see gnu.prolog.vm.PrologCode#execute(gnu.prolog.vm.Interpreter, boolean,
-     * gnu.prolog.term.Term[])
-     */
+    @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         RuleEvent re1 = getRuleEvent(args[0]);

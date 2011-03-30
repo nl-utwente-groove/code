@@ -36,24 +36,14 @@ import groove.prolog.util.PrologUtils;
  * @author Michiel Hendriks
  */
 public class Predicate_label_edge_set extends GraphPrologCode {
-    /*
-     * (non-Javadoc)
-     * @see gnu.prolog.vm.PrologCode#execute(gnu.prolog.vm.Interpreter, boolean,
-     * gnu.prolog.term.Term[])
-     */
+    @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         Graph<?,?> graph = getGraph(args[0]);
 
         Label label = null;
         if (args[1] instanceof AtomTerm) {
-            /* TODO: Can this be removed?
-            if (graph instanceof GTS) {
-                label = new DefaultLabel(((AtomTerm) args[1]).value);
-            } else {
-            */
             label = DefaultLabel.createLabel(((AtomTerm) args[1]).value);
-            // }
         } else {
             PrologException.typeError(TermConstants.atomAtom, args[1]);
         }

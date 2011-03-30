@@ -33,11 +33,7 @@ import java.util.Set;
  * @author Michiel Hendriks
  */
 public class Predicate_ruleevent extends TransPrologCode {
-    /*
-     * (non-Javadoc)
-     * @see gnu.prolog.vm.PrologCode#execute(gnu.prolog.vm.Interpreter, boolean,
-     * gnu.prolog.term.Term[])
-     */
+    @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         if (backtrackMode) {

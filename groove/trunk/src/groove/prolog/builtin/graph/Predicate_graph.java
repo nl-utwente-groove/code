@@ -1,50 +1,67 @@
-/*
- * Groove Prolog Interface
- * Copyright (C) 2009 Michiel Hendriks, University of Twente
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2010 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
  * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $Id$
  */
 package groove.prolog.builtin.graph;
 
+import gnu.prolog.term.AtomTerm;
 import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
-import groove.graph.Graph;
 import groove.prolog.GrooveEnvironment;
+import groove.view.GraphView;
 
 /**
- * Retrieve the current graph. <code>graph(Graph)</code>
- * 
- * @author Michiel Hendriks
+ * Predicate graph(+Name,?Graph)
+ * @author Lesley Wevers
  */
 public class Predicate_graph extends GraphPrologCode {
-    /*
-     * (non-Javadoc)
-     * @see gnu.prolog.vm.PrologCode#execute(gnu.prolog.vm.Interpreter, boolean,
-     * gnu.prolog.term.Term[])
-     */
+    @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
+
         if (!(interpreter.getEnvironment() instanceof GrooveEnvironment)) {
             GrooveEnvironment.invalidEnvironment();
         }
-        // ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState() is null
-        Graph<?,?> graph =
-            ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraph();
-        Term value = new JavaObjectTerm(graph);
-        return interpreter.unify(args[0], value);
+
+        try {
+            String name;
+
+            if (args[0] instanceof JavaObjectTerm) {
+                name = (String) ((JavaObjectTerm) args[0]).value;
+            } else if (args[0] instanceof AtomTerm) {
+                name = ((AtomTerm) args[0]).value;
+            } else {
+                name = args[0].toString();
+            }
+
+            GraphView graphView =
+                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGrammarView().getGraphView(
+                    name);
+
+            if (graphView == null) {
+                return FAIL;
+            }
+
+            Term nodeTerm = new JavaObjectTerm(graphView.toModel());
+
+            return interpreter.unify(args[1], nodeTerm);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return FAIL;
+        }
     }
 }

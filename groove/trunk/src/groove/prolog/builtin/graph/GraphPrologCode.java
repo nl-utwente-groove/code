@@ -170,20 +170,14 @@ public abstract class GraphPrologCode implements PrologCode {
      */
     public static final AtomTerm EDGE_ATOM = AtomTerm.get("edge");
 
-    /*
-     * (non-Javadoc)
-     * @see gnu.prolog.vm.PrologCode#install(gnu.prolog.vm.Environment)
-     */
+    @Override
     public void install(Environment env) {
         /**
          * TODO
          */
     }
 
-    /*
-     * (non-Javadoc)
-     * @see gnu.prolog.vm.PrologCode#uninstall(gnu.prolog.vm.Environment)
-     */
+    @Override
     public void uninstall(Environment env) {
         /**
          * TODO

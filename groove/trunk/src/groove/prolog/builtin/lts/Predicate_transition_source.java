@@ -30,11 +30,7 @@ import groove.lts.GraphTransition;
  * @author Michiel Hendriks
  */
 public class Predicate_transition_source extends LtsPrologCode {
-    /*
-     * (non-Javadoc)
-     * @see gnu.prolog.vm.PrologCode#execute(gnu.prolog.vm.Interpreter, boolean,
-     * gnu.prolog.term.Term[])
-     */
+    @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         GraphTransition transition = getTransition(args[0]);

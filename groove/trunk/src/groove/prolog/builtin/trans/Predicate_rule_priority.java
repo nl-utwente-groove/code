@@ -29,19 +29,13 @@ import groove.trans.Rule;
  * 
  * @author Michiel Hendriks
  */
-public class Predicate_rule_priority extends TransPrologCode
-{
-
-	/*
-	 * (non-Javadoc)
-	 * @see gnu.prolog.vm.PrologCode#execute(gnu.prolog.vm.Interpreter, boolean,
-	 * gnu.prolog.term.Term[])
-	 */
-	public int execute(Interpreter interpreter, boolean backtrackMode, Term[] args) throws PrologException
-	{
-		Rule rl = getRule(args[0]);
-		Term res = IntegerTerm.get(rl.getPriority());
-		return interpreter.unify(args[1], res);
-	}
+public class Predicate_rule_priority extends TransPrologCode {
+    @Override
+    public int execute(Interpreter interpreter, boolean backtrackMode,
+            Term[] args) throws PrologException {
+        Rule rl = getRule(args[0]);
+        Term res = IntegerTerm.get(rl.getPriority());
+        return interpreter.unify(args[1], res);
+    }
 
 }

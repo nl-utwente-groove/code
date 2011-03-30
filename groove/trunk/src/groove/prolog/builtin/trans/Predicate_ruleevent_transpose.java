@@ -36,11 +36,7 @@ import groove.trans.SPOEvent;
  * @author Michiel Hendriks
  */
 public class Predicate_ruleevent_transpose extends TransPrologCode {
-    /*
-     * (non-Javadoc)
-     * @see gnu.prolog.vm.PrologCode#execute(gnu.prolog.vm.Interpreter, boolean,
-     * gnu.prolog.term.Term[])
-     */
+    @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         RuleEvent re = getRuleEvent(args[0]);

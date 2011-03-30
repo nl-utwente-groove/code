@@ -26,12 +26,6 @@ import java.util.List;
  * @author Michiel Hendriks
  */
 public class Predicate_node_self_edges_excl extends Predicate_node_self_edges {
-    /*
-     * (non-Javadoc)
-     * @see
-     * groove.prolog.builtin.graph.Predicate_node_self_edges#isValidList(java
-     * .util.List, java.util.List)
-     */
     @Override
     protected boolean isValidList(List<String> testSet, List<String> curSet) {
         // TODO: not completely correct

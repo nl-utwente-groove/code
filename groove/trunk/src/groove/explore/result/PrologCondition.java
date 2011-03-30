@@ -90,7 +90,7 @@ public class PrologCondition extends ExploreCondition<String> {
             if (this.query == null) {
                 initProlog();
             }
-            this.query.setGrooveState(new GrooveState(value));
+            this.query.setGrooveState(new GrooveState(null, null, value));
             this.query.newQuery(this.condition);
             // the graphstate is accepted when the prolog query succeeds
             return this.query.lastReturnValue() == QueryReturnValue.SUCCESS

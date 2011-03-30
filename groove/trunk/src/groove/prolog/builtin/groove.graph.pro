@@ -46,10 +46,18 @@ Edge:
 % is_graph(@Edge)
 :-build_in(is_edge/1,'groove.prolog.builtin.graph.Predicate_is_edge').
 
-% Retrieve the current graph
-% graph(-Graph)
+
+
+:-build_in(start_graph_name/1,'groove.prolog.builtin.graph.Predicate_start_graph_name').
+
+:-build_in(graph_name/1,'groove.prolog.builtin.graph.Predicate_graph_name').
+
+:-build_in(graph/2,'groove.prolog.builtin.graph.Predicate_graph').
+
+% Retrieve the start graph
+% start_graph(?Graph)
 % @param the graph
-:-build_in(graph/1,'groove.prolog.builtin.graph.Predicate_graph').
+start_graph(SG) :- start_graph_name(SGN), graph(SGN,SG).
 
 % Get a node from the graph
 % graph_node(+Graph,?Node)
