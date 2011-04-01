@@ -1312,7 +1312,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         if (this.undoAction == null) {
             this.undoAction =
                 new ToolbarAction(Options.UNDO_ACTION_NAME, Options.UNDO_KEY,
-                    Icons.REDO_ICON) {
+                    Icons.UNDO_ICON) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
                         if (isEnabled()) {
