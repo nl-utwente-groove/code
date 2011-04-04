@@ -28,6 +28,7 @@ import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.LTSJGraph;
+import groove.gui.jgraph.LTSJModel;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.io.HTMLConverter;
@@ -726,8 +727,11 @@ public class ShowHideMenu extends JMenu {
                     (GraphTransition) state));
                 state = ((GraphNextState) state).source();
             }
-            this.trace.add(jGraph.getModel().getJCellForNode(state));
-            super.actionPerformed(evt);
+            LTSJModel model = jGraph.getModel();
+            if (model != null) {
+                this.trace.add(model.getJCellForNode(state));
+                super.actionPerformed(evt);
+            }
         }
 
         @Override
