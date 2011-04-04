@@ -50,6 +50,7 @@ import org.junit.Test;
  * @author Harmen Kastenberg and Arend Rensink
  * @version $Revision$
  */
+@SuppressWarnings("all")
 public class FormulaTest {
     /** Tests {@link FormulaParser#parse(String)}. */
     @Test

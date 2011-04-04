@@ -342,11 +342,9 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
 
     public void setProperty(String property) {
         assert property != null;
-        this.property = property;
         try {
             BuchiGraph buchiGraph =
-                BuchiGraph.getPrototype().newBuchiGraph(
-                    "!(" + this.property + ")");
+                BuchiGraph.getPrototype().newBuchiGraph("!(" + property + ")");
             this.initialLocation = buchiGraph.getInitial();
         } catch (FormatException e) {
             throw new IllegalStateException(String.format(
@@ -365,7 +363,6 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
     /** State collector which randomly provides unexplored states. */
     protected RandomNewStateChooser collector = new RandomNewStateChooser();
 
-    private String property;
     private BuchiLocation initialLocation;
     private Stack<ProductState> searchStack;
     private Stack<ProductTransition> transitionStack;

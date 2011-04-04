@@ -23,7 +23,7 @@ import org.junit.runners.Suite;
  * @author Eduardo Zambon
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({ModelCheckingTest.class, FormulaTest.class})
+@Suite.SuiteClasses({CTLTest.class, LTLTest.class, FormulaTest.class})
 public class AllVerifyTests {
     // Empty by design.
 }
