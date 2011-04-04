@@ -3109,6 +3109,131 @@ public class Simulator {
     private Action backAction;
 
     /**
+     * Returns the CTL formula providing action permanently associated with this
+     * simulator.
+     * @param full if {@code true}, the action first generates the full state
+     * space.
+     */
+    public Action getCheckCTLAction(boolean full) {
+        CheckCTLAction result =
+            full ? this.checkCTLFreshAction : this.checkCTLAsIsAction;
+        if (result == null) {
+            result = new CheckCTLAction(full);
+            if (full) {
+                this.checkCTLFreshAction = result;
+            } else {
+                this.checkCTLAsIsAction = result;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Action to check a CTL property on a fully explored state space.
+     */
+    private CheckCTLAction checkCTLFreshAction;
+
+    /**
+     * Action to check a CTL property on the current state space.
+     */
+    private CheckCTLAction checkCTLAsIsAction;
+
+    /**
+     * Action for verifying a CTL formula.
+     */
+    private class CheckCTLAction extends RefreshableAction {
+        /** Constructs an instance of the action. */
+        CheckCTLAction(boolean full) {
+            super(full ? Options.CHECK_CTL_FULL_ACTION_NAME
+                    : Options.CHECK_CTL_AS_IS_ACTION_NAME, null);
+            this.full = full;
+        }
+    
+        public void actionPerformed(ActionEvent evt) {
+            String property =
+                getFormulaDialog().showDialog(getFrame(),
+                    new StringDialog.StringParser() {
+                        @Override
+                        public String parse(String text) {
+                            String result = null;
+                            try {
+                                FormulaParser.parse(text).toCtlFormula();
+                            } catch (ParseException efe) {
+                                result = efe.getMessage();
+                            }
+                            return result;
+                        }
+                    });
+            if (property != null) {
+                boolean doCheck = true;
+                if (getGTS().hasOpenStates() && this.full) {
+                    startSimulation();
+                    doRunExploration(getDefaultExploration(), false);
+                    doCheck = !getGTS().hasOpenStates();
+                }
+                if (doCheck) {
+                    doCheckProperty(property);
+                }
+            }
+        }
+    
+        private void doCheckProperty(String property) {
+            Formula formula;
+            try {
+                formula = FormulaParser.parse(property).toCtlFormula();
+            } catch (ParseException e) {
+                // since the property passed the parser, we can't land here
+                assert false;
+                formula = null;
+            }
+            DefaultMarker modelChecker = new DefaultMarker(formula, getGTS());
+            modelChecker.verify();
+            int counterExampleCount = modelChecker.getCount(false);
+            List<GraphState> counterExamples =
+                new ArrayList<GraphState>(counterExampleCount);
+            String message;
+            if (counterExampleCount == 0) {
+                message =
+                    String.format("The property '%s' holds for all states",
+                        property);
+            } else {
+                boolean allStates =
+                    confirmBehaviour(VERIFY_ALL_STATES_OPTION,
+                        "Verify all states? Choosing 'No' will report only on the start state.");
+                if (allStates) {
+                    for (GraphState state : modelChecker.getStates(false)) {
+                        counterExamples.add(state);
+                    }
+                    message =
+                        String.format(
+                            "The property '%s' fails to hold in the %d highlighted states",
+                            property, counterExampleCount);
+                } else if (modelChecker.hasValue(false)) {
+                    counterExamples.add(getGTS().startState());
+                    message =
+                        String.format(
+                            "The property '%s' fails to hold in the initial state",
+                            property);
+                } else {
+                    message =
+                        String.format(
+                            "The property '%s' holds in the initial state",
+                            property);
+    
+                }
+            }
+            getLtsPanel().emphasiseStates(counterExamples, false);
+            JOptionPane.showMessageDialog(getFrame(), message);
+        }
+    
+        public void refresh() {
+            setEnabled(getGTS() != null);
+        }
+    
+        private final boolean full;
+    }
+
+    /**
      * Returns the graph copying action permanently associated with this
      * simulator.
      */
@@ -5232,131 +5357,6 @@ public class Simulator {
                 putValue(Action.NAME, Options.UNDO_ACTION_NAME);
             }
         }
-    }
-
-    /**
-     * Returns the CTL formula providing action permanently associated with this
-     * simulator.
-     * @param full if {@code true}, the action first generates the full state
-     * space.
-     */
-    public Action getCheckCTLAction(boolean full) {
-        CheckCTLAction result =
-            full ? this.checkCTLFreshAction : this.checkCTLAsIsAction;
-        if (result == null) {
-            result = new CheckCTLAction(full);
-            if (full) {
-                this.checkCTLFreshAction = result;
-            } else {
-                this.checkCTLAsIsAction = result;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Action to check a CTL property on a fully explored state space.
-     */
-    private CheckCTLAction checkCTLFreshAction;
-
-    /**
-     * Action to check a CTL property on the current state space.
-     */
-    private CheckCTLAction checkCTLAsIsAction;
-
-    /**
-     * Action for verifying a CTL formula.
-     */
-    private class CheckCTLAction extends RefreshableAction {
-        /** Constructs an instance of the action. */
-        CheckCTLAction(boolean full) {
-            super(full ? Options.CHECK_CTL_FULL_ACTION_NAME
-                    : Options.CHECK_CTL_AS_IS_ACTION_NAME, null);
-            this.full = full;
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            String property =
-                getFormulaDialog().showDialog(getFrame(),
-                    new StringDialog.StringParser() {
-                        @Override
-                        public String parse(String text) {
-                            String result = null;
-                            try {
-                                FormulaParser.parse(text).toCtlFormula();
-                            } catch (ParseException efe) {
-                                result = efe.getMessage();
-                            }
-                            return result;
-                        }
-                    });
-            if (property != null) {
-                boolean doCheck = true;
-                if (getGTS().hasOpenStates() && this.full) {
-                    startSimulation();
-                    doRunExploration(getDefaultExploration(), false);
-                    doCheck = !getGTS().hasOpenStates();
-                }
-                if (doCheck) {
-                    doCheckProperty(property);
-                }
-            }
-        }
-
-        private void doCheckProperty(String property) {
-            Formula formula;
-            try {
-                formula = FormulaParser.parse(property).toCtlFormula();
-            } catch (ParseException e) {
-                // since the property passed the parser, we can't land here
-                assert false;
-                formula = null;
-            }
-            DefaultMarker modelChecker = new DefaultMarker(formula, getGTS());
-            modelChecker.verify();
-            int counterExampleCount = modelChecker.getCount(false);
-            List<GraphState> counterExamples =
-                new ArrayList<GraphState>(counterExampleCount);
-            String message;
-            if (counterExampleCount == 0) {
-                message =
-                    String.format("The property '%s' holds for all states",
-                        property);
-            } else {
-                boolean allStates =
-                    confirmBehaviour(VERIFY_ALL_STATES_OPTION,
-                        "Verify all states? Choosing 'No' will report only on the start state.");
-                if (allStates) {
-                    for (GraphState state : modelChecker.getStates(false)) {
-                        counterExamples.add(state);
-                    }
-                    message =
-                        String.format(
-                            "The property '%s' fails to hold in the %d highlighted states",
-                            property, counterExampleCount);
-                } else if (modelChecker.hasValue(false)) {
-                    counterExamples.add(getGTS().startState());
-                    message =
-                        String.format(
-                            "The property '%s' fails to hold in the initial state",
-                            property);
-                } else {
-                    message =
-                        String.format(
-                            "The property '%s' holds in the initial state",
-                            property);
-
-                }
-            }
-            getLtsPanel().emphasiseStates(counterExamples, false);
-            JOptionPane.showMessageDialog(getFrame(), message);
-        }
-
-        public void refresh() {
-            setEnabled(getGTS() != null);
-        }
-
-        private final boolean full;
     }
 
     /** Class wrapping a menu of recently opened files. */

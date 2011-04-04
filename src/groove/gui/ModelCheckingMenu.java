@@ -16,8 +16,8 @@
  */
 package groove.gui;
 
+import groove.explore.ModelCheckingScenario;
 import groove.explore.Scenario;
-import groove.explore.ScenarioFactory;
 import groove.explore.strategy.BoundedNestedDFSPocketStrategy;
 import groove.explore.strategy.BoundedNestedDFSStrategy;
 import groove.explore.strategy.NestedDFSStrategy;
@@ -77,34 +77,29 @@ public class ModelCheckingMenu extends JMenu implements SimulationListener {
      */
     protected void createAddMenuItems() {
         Scenario scenario =
-            ScenarioFactory.getModelCheckingScenario(new NestedDFSStrategy(),
-                "", Options.CHECK_LTL_ACTION_NAME, this.simulator);
+            new ModelCheckingScenario(new NestedDFSStrategy(), "",
+                Options.CHECK_LTL_ACTION_NAME);
         addScenarioHandler(scenario);
 
         scenario =
-            ScenarioFactory.getBoundedModelCheckingScenario(
-                new BoundedNestedDFSStrategy(),
-                // new GraphNodeSizeBoundary(10,5),
-                "", Options.CHECK_LTL_BOUNDED_ACTION_NAME, this.simulator);
+            new ModelCheckingScenario(new BoundedNestedDFSStrategy(), "",
+                Options.CHECK_LTL_BOUNDED_ACTION_NAME);
         addScenarioHandler(scenario);
 
         scenario =
-            ScenarioFactory.getBoundedModelCheckingScenario(
-                new BoundedNestedDFSPocketStrategy(),
-                // new GraphNodeSizeBoundary(10,5),
-                "", Options.CHECK_LTL_POCKET_ACTION_NAME, this.simulator);
+            new ModelCheckingScenario(new BoundedNestedDFSPocketStrategy(), "",
+                Options.CHECK_LTL_POCKET_ACTION_NAME);
         addScenarioHandler(scenario);
 
         scenario =
-            ScenarioFactory.getBoundedModelCheckingScenario(
-                new OptimizedBoundedNestedDFSStrategy(), "",
-                Options.CHECK_LTL_OPTIMIZED_ACTION_NAME, this.simulator);
+            new ModelCheckingScenario(new OptimizedBoundedNestedDFSStrategy(),
+                "", Options.CHECK_LTL_OPTIMIZED_ACTION_NAME);
         addScenarioHandler(scenario);
 
         scenario =
-            ScenarioFactory.getBoundedModelCheckingScenario(
+            new ModelCheckingScenario(
                 new OptimizedBoundedNestedDFSPocketStrategy(), "",
-                Options.CHECK_LTL_OPTMIZED_POCKET_ACTION_NAME, this.simulator);
+                Options.CHECK_LTL_OPTMIZED_POCKET_ACTION_NAME);
         addScenarioHandler(scenario);
     }
 
