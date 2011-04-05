@@ -546,23 +546,22 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
 
     /**
      * Creates a graph or rule view from this aspect graph, depending on the
-     * role of the aspect graph.
-     * @see #toGraphView(SystemProperties)
-     * @see #toRuleView(SystemProperties)
+     * role of the aspect graph and a given system properties object.
      */
-    public View<?> toView() {
+    public View<?> toView(SystemProperties properties) {
         switch (getRole()) {
         case RULE:
-            return toRuleView(null);
+            return toRuleView(properties);
         case TYPE:
-            return toTypeView(null);
+            return toTypeView(properties);
         case HOST:
-            return toGraphView(null);
+            return toGraphView(properties);
         }
         assert false;
         return null;
     }
 
+    /** The graph role of the aspect graph. */
     private final GraphRole role;
     /** Auxiliary object for converting this aspect graph to a type graph. */
     private TypeView typeView;

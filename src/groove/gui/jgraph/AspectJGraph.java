@@ -114,9 +114,13 @@ final public class AspectJGraph extends GraphJGraph {
 
     @Override
     public AspectJModel newModel() {
+        SystemProperties properties =
+            this.editor == null
+                    ? this.simulator.getGrammarView().getProperties()
+                    : this.editor.getProperties();
         AspectJModel result =
             new AspectJModel(AspectJVertex.getPrototype(this),
-                AspectJEdge.getPrototype(this), this.editor);
+                AspectJEdge.getPrototype(this), properties, this.editor);
         result.setType(getType());
         return result;
     }

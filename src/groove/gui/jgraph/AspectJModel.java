@@ -27,6 +27,7 @@ import groove.graph.TypeGraph;
 import groove.gui.Editor;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
+import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.FormatError;
 import groove.view.View;
@@ -59,8 +60,10 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      * Creates an new model, initially without a graph loaded.
      * @param editor if non-{@code null}, the model is editable
      */
-    AspectJModel(AspectJVertex jVertexProt, AspectJEdge jEdgeProt, Editor editor) {
+    AspectJModel(AspectJVertex jVertexProt, AspectJEdge jEdgeProt,
+            SystemProperties systemProperties, Editor editor) {
         super(jVertexProt, jEdgeProt);
+        this.systemProperties = systemProperties;
         this.editor = editor;
     }
 
@@ -191,7 +194,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             jCell.setExtraError(false);
         }
         this.errorMap.clear();
-        View<?> view = getGraph().toView();
+        View<?> view = getGraph().toView(this.systemProperties);
         if (this.type != null) {
             view.setType(this.type);
         }
@@ -387,6 +390,8 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         return result;
     }
 
+    /** The associated system properties. */
+    private final SystemProperties systemProperties;
     /** The associated editor. */
     private final Editor editor;
     /** 
