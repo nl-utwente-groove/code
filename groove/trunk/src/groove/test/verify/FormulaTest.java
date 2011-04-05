@@ -79,7 +79,7 @@ public class FormulaTest {
         testParse("a|c<-(b&dc)", Follows(Or(a, c), And(b, dc)));
         testParse("a->b<->c", Implies(a, Equiv(b, c)));
         //
-        testParse("(a U b) M c V (d M e)",
+        testParse("(a U b) M c R (d M e)",
             SRelease(Until(a, b), Release(c, SRelease(d, e))));
         //
         testParse("AFG X true", Forall(Eventually(Always(Next(True())))));
@@ -142,7 +142,7 @@ public class FormulaTest {
         assertEquals("X X a", Next(Next(a)).toString());
         assertEquals("F G a", Eventually(Always(a)).toString());
         // until/release
-        assertEquals("a V b", Release(a, b).toString());
+        assertEquals("a R b", Release(a, b).toString());
         assertEquals("a M b", SRelease(a, b).toString());
         assertEquals("a U b", Until(a, b).toString());
         assertEquals("a W b", WUntil(a, b).toString());
