@@ -407,7 +407,7 @@ public class FormulaParser {
         /** Weak temporal until (second operand may never hold). */
         W_UNTIL("W", 2, 4),
         /** Temporal release. */
-        RELEASE("V", 2, 4),
+        RELEASE("R", 2, 4),
         /** Strong temporal release (second operand must eventually hold). */
         S_RELEASE("M", 2, 4),
         /** Everywhere along a path. */
