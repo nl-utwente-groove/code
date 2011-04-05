@@ -77,28 +77,28 @@ public class ModelCheckingMenu extends JMenu implements SimulationListener {
      */
     protected void createAddMenuItems() {
         Scenario scenario =
-            new ModelCheckingScenario(new NestedDFSStrategy(), "",
+            new ModelCheckingScenario(new NestedDFSStrategy(),
                 Options.CHECK_LTL_ACTION_NAME);
         addScenarioHandler(scenario);
 
         scenario =
-            new ModelCheckingScenario(new BoundedNestedDFSStrategy(), "",
+            new ModelCheckingScenario(new BoundedNestedDFSStrategy(),
                 Options.CHECK_LTL_BOUNDED_ACTION_NAME);
         addScenarioHandler(scenario);
 
         scenario =
-            new ModelCheckingScenario(new BoundedNestedDFSPocketStrategy(), "",
+            new ModelCheckingScenario(new BoundedNestedDFSPocketStrategy(),
                 Options.CHECK_LTL_POCKET_ACTION_NAME);
         addScenarioHandler(scenario);
 
         scenario =
             new ModelCheckingScenario(new OptimizedBoundedNestedDFSStrategy(),
-                "", Options.CHECK_LTL_OPTIMIZED_ACTION_NAME);
+                Options.CHECK_LTL_OPTIMIZED_ACTION_NAME);
         addScenarioHandler(scenario);
 
         scenario =
             new ModelCheckingScenario(
-                new OptimizedBoundedNestedDFSPocketStrategy(), "",
+                new OptimizedBoundedNestedDFSPocketStrategy(),
                 Options.CHECK_LTL_OPTMIZED_POCKET_ACTION_NAME);
         addScenarioHandler(scenario);
     }
@@ -113,7 +113,7 @@ public class ModelCheckingMenu extends JMenu implements SimulationListener {
         generateAction.setEnabled(false);
         this.scenarioActionMap.put(scenario, generateAction);
         JMenuItem menuItem = add(generateAction);
-        menuItem.setToolTipText(scenario.getDescription());
+        menuItem.setToolTipText(scenario.getName());
     }
 
     // ----------------------------- simulation listener methods

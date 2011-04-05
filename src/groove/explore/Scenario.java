@@ -39,9 +39,6 @@ public interface Scenario {
     /** Returns then name of this scenario. */
     public String getName();
 
-    /** Returns a one-line description of this scenario. */
-    public String getDescription();
-
     /** Returns the strategy this scenario uses. */
     public Strategy getStrategy();
 
