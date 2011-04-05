@@ -79,6 +79,7 @@ import groove.gui.jgraph.LTSJModel;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
+import groove.io.HTMLConverter;
 import groove.io.external.Exporter;
 import groove.io.store.DefaultFileSystemStore;
 import groove.io.store.SystemStore;
@@ -384,9 +385,12 @@ public class Simulator {
      */
     public void setDefaultExploration(Exploration exploration) {
         this.defaultExploration = exploration;
-        this.defaultExplorationMenuItem.setToolTipText("<HTML>"
-            + Options.DEFAULT_EXPLORATION_ACTION_NAME + " by means of <B>"
-            + exploration.getIdentifier() + "</B></HTML>");
+        String toolTipText =
+            HTMLConverter.HTML_TAG.on(String.format("%s (%s)",
+                Options.DEFAULT_EXPLORATION_ACTION_NAME,
+                HTMLConverter.STRONG_TAG.on(exploration.getIdentifier())));
+        getDefaultExplorationAction().putValue(Action.SHORT_DESCRIPTION,
+            toolTipText);
     }
 
     /**
@@ -2146,8 +2150,6 @@ public class Simulator {
 
         result.addSeparator();
 
-        this.defaultExplorationMenuItem =
-            result.add(this.getDefaultExplorationAction());
         result.add(this.getExplorationDialogAction());
 
         result.addSeparator();
@@ -2742,12 +2744,6 @@ public class Simulator {
      */
     private Exploration defaultExploration;
 
-    /**
-     * The menu item associated with the 'default exploration' action. This
-     * variable is used for setting the tool-tip.
-     */
-    private JMenuItem defaultExplorationMenuItem;
-
     /** The rule event applier for the current GTS. */
     private RuleEventApplier eventApplier;
 
@@ -3148,7 +3144,7 @@ public class Simulator {
                     : Options.CHECK_CTL_AS_IS_ACTION_NAME, null);
             this.full = full;
         }
-    
+
         public void actionPerformed(ActionEvent evt) {
             String property =
                 getFormulaDialog().showDialog(getFrame(),
@@ -3176,7 +3172,7 @@ public class Simulator {
                 }
             }
         }
-    
+
         private void doCheckProperty(String property) {
             Formula formula;
             try {
@@ -3219,17 +3215,17 @@ public class Simulator {
                         String.format(
                             "The property '%s' holds in the initial state",
                             property);
-    
+
                 }
             }
             getLtsPanel().emphasiseStates(counterExamples, false);
             JOptionPane.showMessageDialog(getFrame(), message);
         }
-    
+
         public void refresh() {
             setEnabled(getGTS() != null);
         }
-    
+
         private final boolean full;
     }
 
@@ -4173,10 +4169,10 @@ public class Simulator {
                     int response =
                         JOptionPane.showOptionDialog(Simulator.this.getFrame(),
                             message, "Invalid Exploration",
-                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.OK_CANCEL_OPTION,
                             JOptionPane.QUESTION_MESSAGE, null, options,
                             options[0]);
-                    if (response == 0) {
+                    if (response == JOptionPane.OK_OPTION) {
                         Exploration newExplore = new Exploration();
                         setDefaultExploration(newExplore);
                         try {
