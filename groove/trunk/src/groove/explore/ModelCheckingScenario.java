@@ -34,12 +34,10 @@ public class ModelCheckingScenario implements Scenario {
     /**
      * Creates a new named instance from a given strategy and acceptor.
      */
-    public ModelCheckingScenario(ModelCheckingStrategy strategy, String name,
-            String description) {
+    public ModelCheckingScenario(ModelCheckingStrategy strategy, String name) {
         this.strategy = strategy;
         this.acceptor = new CycleAcceptor(strategy);
         this.name = name;
-        this.description = description;
     }
 
     public void prepare(GTS gts) {
@@ -63,10 +61,6 @@ public class ModelCheckingScenario implements Scenario {
         return this.acceptor;
     }
 
-    public String getDescription() {
-        return this.description;
-    }
-
     public String getName() {
         return this.name;
     }
@@ -74,7 +68,7 @@ public class ModelCheckingScenario implements Scenario {
     /** Returns the scenario description. */
     @Override
     public String toString() {
-        return getDescription();
+        return getName();
     }
 
     /** Returns the GTS for which this scenario was last prepared. */
@@ -193,8 +187,6 @@ public class ModelCheckingScenario implements Scenario {
     private final ModelCheckingStrategy strategy;
     /** Name of this scenario. */
     private final String name;
-    /** One-line description of this scenario. */
-    private final String description;
     /** Reporter for profiling information. */
     static private final Reporter playReporter = Exploration.playReporter;
     /**

@@ -264,12 +264,16 @@ public class BoundedModelCheckingDialog {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == getOkButton()) {
-                setBoundary();
+            try {
+                if (e.getSource() == getOkButton()) {
+                    setBoundary();
+                }
+                BoundedModelCheckingDialog.this.dialog.getContentPane().setVisible(
+                    false);
+                BoundedModelCheckingDialog.this.dialog.dispose();
+            } catch (NumberFormatException e1) {
+                // invalid entries in the dialog, do not do anything
             }
-            BoundedModelCheckingDialog.this.dialog.getContentPane().setVisible(
-                false);
-            BoundedModelCheckingDialog.this.dialog.dispose();
         }
 
         private void setBoundary() {
