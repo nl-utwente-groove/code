@@ -348,7 +348,8 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
                 throw new FormatException(
                     "Conflicting operator signatures for %s and %s",
                     this.operatorEdge.label(), edgeLabel, this);
-            } else {
+            } else if (!hasErrors()) {
+                // only go here if there are no (signature) errors
                 // infer operand types of present argument edges
                 for (int i = 0; i < this.argNodes.size(); i++) {
                     AspectNode argNode = this.argNodes.get(i);
