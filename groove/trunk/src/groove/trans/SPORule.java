@@ -1200,7 +1200,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
             RuleNode node = it.next();
             boolean resolved = false;
             for (CtrlPar.Var par : getSignature()) {
-                if (par.getRuleNode() == node && !par.isOutOnly()) {
+                if (par.getRuleNode() == node && par.isInOnly()) {
                     resolved = true;
                     break;
                 }
