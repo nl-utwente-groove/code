@@ -1418,8 +1418,10 @@ public class DefaultRuleView implements RuleView {
             // check if label variables are bound
             Set<LabelVar> boundVars =
                 VarSupport.getSimpleVarBinders(this.lhs).keySet();
-            Set<RuleEdge> varEdges = VarSupport.getVarEdges(this.lhs);
-            varEdges.addAll(VarSupport.getVarEdges(this.rhs));
+            Set<RuleEdge> lhsVarEdges = VarSupport.getVarEdges(this.lhs);
+            Set<RuleEdge> rhsVarEdges = VarSupport.getVarEdges(this.rhs);
+            Set<RuleEdge> varEdges = new HashSet<RuleEdge>(lhsVarEdges);
+            varEdges.addAll(rhsVarEdges);
             varEdges.addAll(this.nacEdgeSet);
             Map<String,LabelVar> varNames = new HashMap<String,LabelVar>();
             for (RuleEdge varEdge : varEdges) {
@@ -1443,6 +1445,24 @@ public class DefaultRuleView implements RuleView {
             }
             // check typing
             if (isTyped()) {
+                // check use of variables
+                lhsVarEdges.removeAll(this.ruleMorph.edgeMap().keySet());
+                for (RuleEdge eraserVarEdge : lhsVarEdges) {
+                    for (LabelVar var : VarSupport.getAllVars(eraserVarEdge)) {
+                        errors.add(new FormatError(
+                            "Typed rule cannot contain variable eraser '%s'",
+                            var, eraserVarEdge));
+                    }
+                }
+                rhsVarEdges.removeAll(this.ruleMorph.edgeMap().values());
+                for (RuleEdge creatorVarEdge : rhsVarEdges) {
+                    for (LabelVar var : VarSupport.getAllVars(creatorVarEdge)) {
+                        errors.add(new FormatError(
+                            "Typed rule cannot contain variable creator '%s'",
+                            var, creatorVarEdge));
+                    }
+                }
+                // check type specialisation
                 try {
                     TypeGraph.Typing<RuleNode,RuleEdge> lhsTypeMap =
                         getType().getTyping(this.lhs, this.parentTypeMap);
@@ -1545,6 +1565,7 @@ public class DefaultRuleView implements RuleView {
                 TypeGraph.Typing<RuleNode,RuleEdge> rhsTyping)
             throws FormatException {
             Set<FormatError> errors = new TreeSet<FormatError>();
+            // check for type changes
             for (Map.Entry<RuleNode,TypeLabel> lhsTypeEntry : lhsTyping.getTypeMap().entrySet()) {
                 RuleNode lhsNode = lhsTypeEntry.getKey();
                 TypeLabel lhsType = lhsTypeEntry.getValue();

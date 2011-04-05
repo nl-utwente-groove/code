@@ -311,11 +311,12 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             if (edgeType instanceof RuleLabel
                 && !((RuleLabel) edgeType).isAtom()) {
                 RuleLabel ruleEdgeType = (RuleLabel) edgeType;
-                if (ruleEdgeType.getWildcardId() != null) {
-                    errors.add(new FormatError(
-                        "Wildcard expression '%s' not supported in typed rules",
-                        edgeType, edge));
-                } else if (ruleEdgeType.isEmpty()) {
+                //                if (ruleEdgeType.getWildcardId() != null) {
+                //                    errors.add(new FormatError(
+                //                        "Wildcard expression '%s' not supported in typed rules",
+                //                        edgeType, edge));
+                //                } else 
+                if (ruleEdgeType.isEmpty()) {
                     // this is a (possibly negative) comparison of nodes
                     // which can only be correct if they have a common subtype
                     Set<TypeLabel> subtypes =
