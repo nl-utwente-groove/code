@@ -49,6 +49,7 @@ public class GrooveFileChooser extends JFileChooser {
     private GrooveFileChooser(String currentDirectoryPath) {
         super(currentDirectoryPath);
         setFileView(createFileView());
+        setAcceptAllFileFilterUsed(false);
         ToolTipManager.sharedInstance().registerComponent(this);
     }
 
@@ -104,8 +105,8 @@ public class GrooveFileChooser extends JFileChooser {
         GrooveFileChooser chooser = simpleMap.get(filter);
         if (chooser == null) {
             chooser = new GrooveFileChooser();
-            chooser.setAcceptAllFileFilterUsed(false);
             chooser.addChoosableFileFilter(filter);
+            chooser.setFileSelectionMode(filter.getFileSelectionMode());
             simpleMap.put(filter, chooser);
         }
         chooser.setCurrentDirectory(chooser.getFileSystemView().createFileObject(
@@ -118,11 +119,11 @@ public class GrooveFileChooser extends JFileChooser {
         GrooveFileChooser chooser = listMap.get(filters);
         if (chooser == null) {
             chooser = new GrooveFileChooser();
-            chooser.setAcceptAllFileFilterUsed(false);
             for (ExtensionFilter filter : filters) {
                 chooser.addChoosableFileFilter(filter);
             }
             chooser.setFileFilter(filters.get(0));
+            chooser.setFileSelectionMode(filters.get(0).getFileSelectionMode());
             listMap.put(filters, chooser);
         }
         chooser.setCurrentDirectory(chooser.getFileSystemView().createFileObject(
