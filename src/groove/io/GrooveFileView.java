@@ -29,6 +29,7 @@ import java.io.File;
 import javax.swing.Icon;
 
 /**
+ * EDUARDO: Refactor this class...
  * Implements a file view that displays the correct icons and descriptions for
  * graph files, rules files and grammar directories.
  * @version $Date: 2008-01-30 09:33:42 $ $Revision$

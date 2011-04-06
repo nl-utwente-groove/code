@@ -36,7 +36,6 @@ import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.GXL_FILTER;
-import static groove.io.FileType.RULE_FILTER;
 import static groove.io.FileType.STATE_FILTER;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.lts.AGTS;
@@ -168,7 +167,6 @@ import javax.swing.WindowConstants;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.UndoableEditEvent;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.TreePath;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -989,11 +987,6 @@ public class Simulator {
             if (saveEditors(true)) {
                 StoredGrammarView grammar =
                     StoredGrammarView.newInstance(grammarFile, true);
-                // now we know loading succeeded, we can set the current names &
-                // files
-                getStateFileChooser().setCurrentDirectory(grammarFile);
-                getStateFileChooser().setSelectedFile(new File(""));
-                getGrammarFileChooser().setSelectedFile(grammarFile);
                 setGrammarView(grammar);
                 updateGrammar();
             }
@@ -2225,6 +2218,7 @@ public class Simulator {
         return result;
     }
 
+    // EDUARDO: remove this?
     JFileChooser getGrammarFileChooser() {
         return this.getGrammarFileChooser(false);
     }
@@ -2234,17 +2228,11 @@ public class Simulator {
      * first.
      */
     JFileChooser getGrammarFileChooser(boolean includeArchives) {
-        if (this.grammarFileChooser == null) {
-            this.grammarFileChooser = new GrooveFileChooser();
-            this.grammarFileChooser.setAcceptAllFileFilterUsed(false);
-            this.grammarFileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            if (includeArchives) {
-                this.grammarFileChooser.setFileFilter(FileType.GRAMMARS_FILTER);
-            } else {
-                this.grammarFileChooser.setFileFilter(FileType.GRAMMAR_FILTER);
-            }
+        if (includeArchives) {
+            return GrooveFileChooser.getFileChooser(FileType.GRAMMARS_FILTER);
+        } else {
+            return GrooveFileChooser.getFileChooser(FileType.GRAMMAR_FILTER);
         }
-        return this.grammarFileChooser;
     }
 
     /**
@@ -2268,25 +2256,14 @@ public class Simulator {
      * first.
      */
     JFileChooser getStateFileChooser() {
-        if (this.stateFileChooser == null) {
-            this.stateFileChooser = new GrooveFileChooser();
-            this.stateFileChooser.addChoosableFileFilter(STATE_FILTER);
-            this.stateFileChooser.addChoosableFileFilter(GXL_FILTER);
-            this.stateFileChooser.setFileFilter(STATE_FILTER);
-        }
-        return this.stateFileChooser;
+        return GrooveFileChooser.getFileChooser(FileType.HOSTS_FILTER);
     }
 
     /**
      * Returns the file chooser for rule (GPR) files, lazily creating it first.
      */
     JFileChooser getRuleFileChooser() {
-        if (this.ruleFileChooser == null) {
-            this.ruleFileChooser = new GrooveFileChooser();
-            this.ruleFileChooser.addChoosableFileFilter(RULE_FILTER);
-            this.ruleFileChooser.setFileFilter(RULE_FILTER);
-        }
-        return this.ruleFileChooser;
+        return GrooveFileChooser.getFileChooser(FileType.RULE_FILTER);
     }
 
     /** Returns a dialog that will ask for a formula to be entered. */
@@ -2767,21 +2744,6 @@ public class Simulator {
      * The graph loader used for saving arbitrary graphs.
      */
     private final DefaultGxl graphLoader = DefaultGxl.getInstance();
-
-    /**
-     * File chooser for grammar files.
-     */
-    private JFileChooser grammarFileChooser;
-
-    /**
-     * File chooser for state files and LTS.
-     */
-    private JFileChooser stateFileChooser;
-
-    /**
-     * File chooser for control files.
-     */
-    private JFileChooser ruleFileChooser;
 
     /**
      * Dialog for entering temporal formulae.
@@ -4365,10 +4327,11 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent evt) {
-            int result = getGrammarFileChooser().showOpenDialog(getFrame());
+            JFileChooser fileChooser = getGrammarFileChooser(true);
+            int result = fileChooser.showOpenDialog(getFrame());
             // now load, if so required
             if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
-                File selectedFile = getGrammarFileChooser().getSelectedFile();
+                File selectedFile = fileChooser.getSelectedFile();
                 doLoadGrammar(selectedFile, null);
             }
         }
@@ -4434,22 +4397,17 @@ public class Simulator {
                     newGrammar =
                         new File(grammarFile.getParentFile(), NEW_GRAMMAR_NAME);
                 }
-                getGrammarFileChooser().setSelectedFile(newGrammar);
-                getGrammarFileChooser().setFileFilter(GRAMMAR_FILTER);
+                JFileChooser fileChooser = getGrammarFileChooser(false);
+                fileChooser.setSelectedFile(newGrammar);
                 boolean ok = false;
                 while (!ok) {
-                    if (getGrammarFileChooser().showOpenDialog(getFrame()) == JFileChooser.APPROVE_OPTION) {
-                        File selectedFile =
-                            getGrammarFileChooser().getSelectedFile();
-
-                        FileFilter filter =
-                            getGrammarFileChooser().getFileFilter();
-
-                        if (filter instanceof ExtensionFilter) {
-                            String extendedName =
-                                ((ExtensionFilter) filter).addExtension(selectedFile.getPath());
-                            selectedFile = new File(extendedName);
-                        }
+                    if (fileChooser.showDialog(getFrame(), "New") == JFileChooser.APPROVE_OPTION) {
+                        File selectedFile = fileChooser.getSelectedFile();
+                        ExtensionFilter filter =
+                            (ExtensionFilter) fileChooser.getFileFilter();
+                        String extendedName =
+                            filter.addExtension(selectedFile.getPath());
+                        selectedFile = new File(extendedName);
                         if (selectedFile.exists()) {
                             int response =
                                 JOptionPane.showConfirmDialog(getFrame(),

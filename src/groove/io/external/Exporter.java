@@ -17,6 +17,7 @@
 package groove.io.external;
 
 import groove.gui.jgraph.GraphJGraph;
+import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.io.external.format.AutFormat;
 import groove.io.external.format.EpsFormat;
@@ -46,11 +47,8 @@ public class Exporter {
      */
     public JFileChooser getFileChooser() {
         if (this.fileChooser == null) {
-            this.fileChooser = new GrooveFileChooser();
-            this.fileChooser.setAcceptAllFileFilterUsed(false);
-            for (ExternalFileFormat<?> format : this.getFormatList()) {
-                this.fileChooser.addChoosableFileFilter(format.getFilter());
-            }
+            this.fileChooser =
+                GrooveFileChooser.getFileChooser(this.getFilters());
             this.fileChooser.setFileFilter(this.getDefaultFormat().getFilter());
         }
         return this.fileChooser;
@@ -93,6 +91,15 @@ public class Exporter {
     /** Returns the default format. */
     public ExternalFileFormat<?> getDefaultFormat() {
         return PngFormat.getInstance();
+    }
+
+    /** Returns the list of extension filters of the supported formats. */
+    private List<ExtensionFilter> getFilters() {
+        List<ExtensionFilter> result = new ArrayList<ExtensionFilter>();
+        for (ExternalFileFormat<?> format : this.getFormatList()) {
+            result.add(format.getFilter());
+        }
+        return result;
     }
 
     /** Returns the (modifiable) list of currently supported formats. */
