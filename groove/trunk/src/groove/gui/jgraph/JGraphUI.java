@@ -348,15 +348,17 @@ public class JGraphUI extends BasicGraphUI {
          * Completes the select drag action.
          */
         private void completeSelect(MouseEvent evt) {
-            Rectangle selectBounds = this.selectHandler.getBounds();
+            Rectangle bounds = this.selectHandler.getBounds();
             if (getJGraphMode() == PAN_MODE) {
-                getJGraph().zoomTo(selectBounds);
+                getJGraph().zoomTo(bounds);
             } else {
+                // adapt the bound to the scale
+                bounds = getJGraph().fromScreen(bounds).getBounds();
                 // collect the cells that are entirely in the bounds
                 ArrayList<GraphJCell> list = new ArrayList<GraphJCell>();
                 CellView[] views = getJGraph().getGraphLayoutCache().getRoots();
                 for (int i = 0; i < views.length; i++) {
-                    if (selectBounds.contains(views[i].getBounds())) {
+                    if (bounds.contains(views[i].getBounds())) {
                         list.add((GraphJCell) views[i].getCell());
                     }
                 }

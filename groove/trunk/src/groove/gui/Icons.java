@@ -141,6 +141,9 @@ public final class Icons {
     /** Preview action icon. */
     public static final ImageIcon PREVIEW_ICON = createIcon("preview.gif");
 
+    /** Icon in the shape of an open hand, to be used as cursor. */
+    public static final ImageIcon OPEN_HAND_CURSOR_ICON =
+        createIcon("openhand.gif");
     /** Icon in the shape of an open hand. */
     public static final ImageIcon OPEN_HAND_ICON =
         createIcon("openhand-small.gif");
@@ -154,7 +157,7 @@ public final class Icons {
 
     /** Custom cursor in the shape of an open hand. */
     public static final Cursor OPEN_HAND_CURSOR = createCursor("Open Hand",
-        OPEN_HAND_ICON);
+        OPEN_HAND_CURSOR_ICON);
     /** Custom cursor in the shape of a closed hand. */
     public static final Cursor CLOSED_HAND_CURSOR = createCursor("Closed Hand",
         CLOSED_HAND_ICON);

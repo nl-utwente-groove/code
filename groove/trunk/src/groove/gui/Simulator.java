@@ -2143,6 +2143,7 @@ public class Simulator {
 
         result.addSeparator();
 
+        result.add(this.getDefaultExplorationAction());
         result.add(this.getExplorationDialogAction());
 
         result.addSeparator();
