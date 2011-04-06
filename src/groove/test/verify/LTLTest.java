@@ -57,9 +57,9 @@ public class LTLTest {
         testFormula("GF q", true);
         testFormula("FG p", false);
         testFormula("!FG p", false);
-        //testFormula("(p|r) M q", true);
-        testFormula("p V r", false);
-        // testFormula("(p|q) V r", true);
+        testFormula("q M (p|r)", true);
+        testFormula("p R r", false);
+        //        testFormula("r R (p|q)", true);
         testFormula("G p", false);
         testFormula("G(p|q)", true);
         testFormula("G(p|X(q|X q))", true);
@@ -76,7 +76,7 @@ public class LTLTest {
         generator.start();
         this.gts = generator.getGTS();
         ModelCheckingStrategy strategy = new NestedDFSStrategy();
-        this.scenario = new ModelCheckingScenario(strategy, null, null);
+        this.scenario = new ModelCheckingScenario(strategy, "");
     }
 
     /** Tests the number of counterexamples in the current;y
