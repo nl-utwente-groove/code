@@ -285,9 +285,13 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     /** Tests if this edge has the same aspect type as another aspect element. */
     public boolean equalsAspects(AspectElement other) {
         assert isFixed() && other.isFixed();
-        boolean result = getAspect().equals(other.getAspect());
+        boolean result =
+            getAspect() == null ? other.getAspect() == null
+                    : getAspect().equals(other.getAspect());
         if (result) {
-            result = getAttrAspect().equals(other.getAttrAspect());
+            result =
+                getAttrAspect() == null ? other.getAttrAspect() == null
+                        : getAttrAspect().equals(other.getAttrAspect());
         }
         if (result && other instanceof AspectEdge) {
             Aspect otherMode = ((AspectEdge) other).getLabelMode();
