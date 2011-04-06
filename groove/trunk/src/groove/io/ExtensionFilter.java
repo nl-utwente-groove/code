@@ -18,6 +18,8 @@ package groove.io;
 
 import java.io.File;
 
+import javax.swing.JFileChooser;
+
 /**
  * Implements a file filter based on filename extension.
  * @author Arend Rensink
@@ -118,6 +120,17 @@ public abstract class ExtensionFilter extends
      */
     public final void setAcceptDirectories(boolean accept) {
         this.acceptDirectories = accept;
+    }
+
+    /** Returns the proper mode for a file chooser dialog. */
+    public final int getFileSelectionMode() {
+        int result;
+        if (this.isAcceptDirectories()) {
+            result = JFileChooser.FILES_AND_DIRECTORIES;
+        } else {
+            result = JFileChooser.FILES_ONLY;
+        }
+        return result;
     }
 
     /** The description of this filter. */

@@ -4403,11 +4403,6 @@ public class Simulator {
                 while (!ok) {
                     if (fileChooser.showDialog(getFrame(), "New") == JFileChooser.APPROVE_OPTION) {
                         File selectedFile = fileChooser.getSelectedFile();
-                        ExtensionFilter filter =
-                            (ExtensionFilter) fileChooser.getFileFilter();
-                        String extendedName =
-                            filter.addExtension(selectedFile.getPath());
-                        selectedFile = new File(extendedName);
                         if (selectedFile.exists()) {
                             int response =
                                 JOptionPane.showConfirmDialog(getFrame(),
