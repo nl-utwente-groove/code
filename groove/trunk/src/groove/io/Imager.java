@@ -18,7 +18,6 @@ package groove.io;
 
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.GXL_FILTER;
-import static groove.io.FileType.RULE_FILTER;
 import static groove.io.FileType.STATE_FILTER;
 import static groove.io.FileType.TYPE_FILTER;
 import groove.graph.DefaultGraph;
@@ -43,6 +42,7 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -431,11 +431,17 @@ public class Imager extends CommandLineTool {
     static public final String BROWSE_LABEL = "Browse...";
 
     /** The loader used for the xml files. */
-    static final LayedOutXml graphLoader = LayedOutXml.getInstance();
+    private static final LayedOutXml graphLoader = LayedOutXml.getInstance();
 
     /** An array of all filters identifying files that can be imaged. */
-    static final ExtensionFilter[] acceptFilters = new ExtensionFilter[] {
-        GRAMMAR_FILTER, RULE_FILTER, TYPE_FILTER, STATE_FILTER, GXL_FILTER};
+    private static final List<ExtensionFilter> acceptFilters;
+    static {
+        acceptFilters = new ArrayList<ExtensionFilter>(4);
+        acceptFilters.add(GRAMMAR_FILTER);
+        acceptFilters.add(TYPE_FILTER);
+        acceptFilters.add(STATE_FILTER);
+        acceptFilters.add(GXL_FILTER);
+    }
 
     private class EditorViewOption implements CommandLineOption {
         @Override
@@ -731,11 +737,6 @@ public class Imager extends CommandLineTool {
             this.outFileField.setEditable(false);
             this.logArea.setEditable(false);
             this.logArea.setRows(10);
-            this.browseChooser.setCurrentDirectory(new File(Groove.WORKING_DIR));
-            for (ExtensionFilter filter : acceptFilters) {
-                this.browseChooser.addChoosableFileFilter(filter);
-            }
-            this.browseChooser.setFileFilter(GRAMMAR_FILTER);
         }
 
         /** Initialises the actions of the imager. */
@@ -789,7 +790,8 @@ public class Imager extends CommandLineTool {
         final JCheckBox outFileEnabler = new JCheckBox();
 
         /** File chooser for the browse actions. */
-        final JFileChooser browseChooser = new GrooveFileChooser();
+        final JFileChooser browseChooser =
+            GrooveFileChooser.getFileChooser(acceptFilters);
 
         /** File chooser for the browse actions. */
         private final JTextArea logArea = new JTextArea();

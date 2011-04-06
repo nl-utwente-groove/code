@@ -51,6 +51,10 @@ public enum FileType {
     LOG(".log", "Log files"),
     /** Simple text files. */
     TEXT(".txt", "Simple text files"),
+    /** Prolog files. */
+    PROLOG1("Prolog files", ".pro"),
+    /** Prolog files. */
+    PROLOG2("Prolog files", ".pl"),
 
     // Compressed files.
     /** ZIP files. */
@@ -86,7 +90,7 @@ public enum FileType {
         return compositeDescriptions.get(fileTypes);
     }
 
-    /** Set of graph files. */
+    /** Enum of graph files. */
     public static EnumSet<FileType> graphs = EnumSet.of(STATE, RULE, TYPE, GXL);
     static {
         compositeDescriptions.put(graphs, String.format(
@@ -94,13 +98,30 @@ public enum FileType {
             RULE.getExtension(), TYPE.getExtension(), GXL.getExtension()));
     }
 
-    /** Set of grammar files. */
+    /** Enum of grammar files. */
     public static EnumSet<FileType> grammars = EnumSet.of(GRAMMAR, ZIP, JAR);
     static {
         compositeDescriptions.put(
             grammars,
             String.format("Grammar files (*%s, *%s, *%s)",
                 GRAMMAR.getExtension(), ZIP.getExtension(), JAR.getExtension()));
+    }
+
+    /** Enum of Prolog files. */
+    public static EnumSet<FileType> prolog = EnumSet.of(PROLOG1, PROLOG2);
+    static {
+        compositeDescriptions.put(prolog, String.format(
+            "Prolog files (*%s, *%s)", PROLOG1.getExtension(),
+            PROLOG2.getExtension()));
+    }
+
+    /** Enum of host graphs. */
+    public static EnumSet<FileType> hosts = EnumSet.of(STATE, GXL);
+    static {
+        compositeDescriptions.put(
+            hosts,
+            String.format("Host graphs (*%s, *%s)", STATE.getExtension(),
+                GXL.getExtension()));
     }
 
     // Fields and methods.
@@ -179,6 +200,7 @@ public enum FileType {
     public static final ExtensionFilter LOG_FILTER = createFilter(LOG, true);
     /** Filter for simple text files. */
     public static final ExtensionFilter TEXT_FILTER = createFilter(TEXT, true);
+    // The filter for Prolog files is composite, see below.
 
     // Compressed files.
 
@@ -223,6 +245,14 @@ public enum FileType {
     /** Filter for all grammar files, including compressed grammars. */
     public static final ExtensionFilter GRAMMARS_FILTER = createFilter(
         grammars, true);
+
+    /** Filter for Prolog files. */
+    public static final ExtensionFilter PROLOG_FILTER = createFilter(prolog,
+        true);
+
+    /** Filter for host graphs. */
+    public static final ExtensionFilter HOSTS_FILTER =
+        createFilter(hosts, true);
 
     /**
      * Returns an extension filter with the required properties.

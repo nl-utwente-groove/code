@@ -27,9 +27,8 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.PrologException;
 import groove.explore.result.PrologCondition;
-import groove.io.ExtensionFilter;
+import groove.io.FileType;
 import groove.io.GrooveFileChooser;
-import groove.io.SimpleExtensionFilter;
 import groove.prolog.GrooveState;
 import groove.prolog.PrologQuery;
 import groove.prolog.QueryResult;
@@ -374,6 +373,7 @@ public class PrologPanel extends JPanel {
                 // select a filename
                 if (proFile.file == null) {
                     JFileChooser fc = getPrologFileChooser();
+                    fc.setMultiSelectionEnabled(false);
                     fc.setSelectedFile(null);
                     do {
                         int result =
@@ -875,13 +875,8 @@ public class PrologPanel extends JPanel {
      */
     protected JFileChooser getPrologFileChooser() {
         if (this.prologFileChooser == null) {
-            this.prologFileChooser = new GrooveFileChooser();
-            ExtensionFilter prologFilter =
-                new SimpleExtensionFilter("Prolog files", ".pro", false);
-            this.prologFileChooser.addChoosableFileFilter(prologFilter);
-            this.prologFileChooser.addChoosableFileFilter(new SimpleExtensionFilter(
-                "Prolog files", ".pl", false));
-            this.prologFileChooser.setFileFilter(prologFilter);
+            this.prologFileChooser =
+                GrooveFileChooser.getFileChooser(FileType.PROLOG_FILTER);
         }
         return this.prologFileChooser;
     }

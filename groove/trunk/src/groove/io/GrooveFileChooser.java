@@ -19,20 +19,27 @@ package groove.io;
 import groove.util.Groove;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.JFileChooser;
 import javax.swing.ToolTipManager;
 import javax.swing.filechooser.FileView;
 
 /**
+ * 
  * A file chooser with a {@link GrooveFileView}, which prevents traversal of
  * directories if these are selectable by the current file filter.
  * @author Arend Rensink
  * @version $Revision$
  */
 public class GrooveFileChooser extends JFileChooser {
+
     /** File chooser with initial directory {@link Groove#WORKING_DIR}. */
-    public GrooveFileChooser() {
+    // This class is now protected, what you probably want are the static
+    // methods in the end of this class.
+    protected GrooveFileChooser() {
         this(Groove.CURRENT_WORKING_DIR);
     }
 
@@ -85,4 +92,42 @@ public class GrooveFileChooser extends JFileChooser {
     protected FileView createFileView() {
         return new GrooveFileView();
     }
+
+    // Maps from filters to choosers.
+    private static final Map<ExtensionFilter,GrooveFileChooser> simpleMap =
+        new HashMap<ExtensionFilter,GrooveFileChooser>();
+    private static final Map<List<ExtensionFilter>,GrooveFileChooser> listMap =
+        new HashMap<List<ExtensionFilter>,GrooveFileChooser>();
+
+    /** Returns the file chooser object associated with the given filter. */
+    public static GrooveFileChooser getFileChooser(ExtensionFilter filter) {
+        GrooveFileChooser chooser = simpleMap.get(filter);
+        if (chooser == null) {
+            chooser = new GrooveFileChooser();
+            chooser.setAcceptAllFileFilterUsed(false);
+            chooser.addChoosableFileFilter(filter);
+            simpleMap.put(filter, chooser);
+        }
+        chooser.setCurrentDirectory(chooser.getFileSystemView().createFileObject(
+            Groove.CURRENT_WORKING_DIR));
+        return chooser;
+    }
+
+    /** Returns the file chooser object associated with the given filter list. */
+    public static GrooveFileChooser getFileChooser(List<ExtensionFilter> filters) {
+        GrooveFileChooser chooser = listMap.get(filters);
+        if (chooser == null) {
+            chooser = new GrooveFileChooser();
+            chooser.setAcceptAllFileFilterUsed(false);
+            for (ExtensionFilter filter : filters) {
+                chooser.addChoosableFileFilter(filter);
+            }
+            chooser.setFileFilter(filters.get(0));
+            listMap.put(filters, chooser);
+        }
+        chooser.setCurrentDirectory(chooser.getFileSystemView().createFileObject(
+            Groove.CURRENT_WORKING_DIR));
+        return chooser;
+    }
+
 }
