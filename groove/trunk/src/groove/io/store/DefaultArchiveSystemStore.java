@@ -460,7 +460,6 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         for (Map.Entry<String,AspectGraph> entry : loadObjects(file, rules,
             RULE_FILTER, GraphRole.RULE).entrySet()) {
             RuleName name = createRuleName(entry.getKey());
-            entry.getValue().setName(name.toString());
             this.ruleMap.put(name, entry.getValue());
         }
     }
