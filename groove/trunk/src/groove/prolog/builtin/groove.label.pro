@@ -15,12 +15,4 @@
 % License along with this library; if not, write to the Free Software
 % Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-:-build_in(rule_name/1,'groove.prolog.builtin.rule.Predicate_rule_name').
-:-build_in(rule/2,'groove.prolog.builtin.rule.Predicate_rule').
-:-build_in(rule_enabled/1,'groove.prolog.builtin.rule.Predicate_rule_enabled').
-:-build_in(rule_confluent/1,'groove.prolog.builtin.rule.Predicate_rule_confluent').
-
-enabled_rule_name(RN) :- rule_name(RN), rule_enabled(RN).
-confluent_rule_name(RN) :- rule_name(RN), rule_confluent(RN).
-enabled_rule(R) :- enabled_rule_name(RN), rule(RN,R).
-confluent_rule(R) :- confluent_rule_name(RN), rule(RN,R).
+:-build_in(label/2,'groove.prolog.builtin.label.Predicate_label').

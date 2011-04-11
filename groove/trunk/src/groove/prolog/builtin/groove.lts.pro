@@ -77,14 +77,6 @@ state_graph(G):-state(GS),state_graph(GS,G).
 :-build_in(state_is_closed/1,'groove.prolog.builtin.lts.Predicate_state_is_closed').
 state_is_closed:-state(GS),state_is_closed(GS).
 
-% The location of a graph state
-% graphstate_location(+State,?Loc)
-% @param the graph state
-% @param the location
-% @groove.lts.GraphState#getLocation()
-:-build_in(state_location/2,'groove.prolog.builtin.lts.Predicate_state_location').
-state_location(L):-state(GS),state_location(GS,L).
-
 % A transition in a state
 % graphstate_transition(+State,?Trans)
 % @param the state
@@ -158,8 +150,8 @@ state_next_set(T):-state(GS),state_next_set(GS,T).
 % @param the gts
 % @param the start GraphState
 % @see groove.lts.LTS#startState()
-:-build_in(gts_start_state/2,'groove.prolog.builtin.lts.Predicate_gts_start_state').
-gts_start_state(GS):-gts(G),gts_start_state(G,GS).
+:-build_in(start_state/2,'groove.prolog.builtin.lts.Predicate_start_state').
+start_state(GS):-gts(G),start_state(G,GS).
 
 % The final states of a GTS
 % gts_final_state(+GTS,?State)
@@ -167,16 +159,16 @@ gts_start_state(GS):-gts(G),gts_start_state(G,GS).
 % @param the start GraphState
 % @see groove.lts.LTS#getFinalStates()
 % @see groove.lts.LTS#isFinal()
-:-build_in(gts_final_state/2,'groove.prolog.builtin.lts.Predicate_gts_final_state').
-gts_final_state(GS):-gts(G),gts_final_state(G,GS).
+:-build_in(final_state/2,'groove.prolog.builtin.lts.Predicate_final_state').
+final_state(GS):-gts(G),final_state(G,GS).
 
 % The final states of a GTS
 % gts_final_state_set(+GTS,?StateSet)
 % @param the gts
 % @param the start GraphState
 % @see groove.lts.LTS#getFinalStates()
-:-build_in(gts_final_state_set/2,'groove.prolog.builtin.lts.Predicate_gts_final_state_set').
-gts_final_state_set(GS):-gts(G),gts_final_state_set(G,GS).
+:-build_in(final_state_set/2,'groove.prolog.builtin.lts.Predicate_final_state_set').
+final_state_set(GS):-gts(G),final_state_set(G,GS).
 
 % Get a matching rule event for a given graph state
 % gts_match(+GTS,+GraphState,?RuleEvent)
@@ -185,4 +177,4 @@ gts_final_state_set(GS):-gts(G),gts_final_state_set(G,GS).
 % @param the ruleevent
 :-build_in(gts_match/3,'groove.prolog.builtin.lts.Predicate_gts_match').
 gts_match(GS,RE):-gts(G),gts_match(G,GS,RE).
-gts_match(RE):-gts(G),graphstate(GS),gts_match(G,GS,RE).
+gts_match(RE):-gts(G),state(GS),gts_match(G,GS,RE).

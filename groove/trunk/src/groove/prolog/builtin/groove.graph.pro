@@ -197,6 +197,30 @@ label_edge_set(L,E):-graph(G),label_edge_set(G,L,E).
 % @see groove.graph.Edge#label()
 :-build_in(edge_label/2,'groove.prolog.builtin.graph.Predicate_edge_label').
 
+% Checks if the edge has a binary role
+% edge_role_binary(+Edge)
+:-build_in(edge_role_binary/1,'groove.prolog.builtin.graph.Predicate_edge_role_binary').
+
+% Checks if the edge has a flag role
+% edge_role_flag(+Edge)
+:-build_in(edge_role_flag/1,'groove.prolog.builtin.graph.Predicate_edge_role_flag').
+
+% Checks if the edge has a node type role
+% edge_role_node_type(+Edge)
+:-build_in(edge_role_node_type/1,'groove.prolog.builtin.graph.Predicate_edge_role_node_type').
+
+% Gets all binary edges in the graph
+% graph_binary(+Graph, ?Edge)
+graph_binary(G,E) :- graph_edge(G,E), edge_role_binary(E).
+
+% Gets all flag edges in the graph
+% graph_flag(+Graph, ?Edge)
+graph_flag(G,E) :- graph_edge(G,E), edge_role_flag(E).
+
+% Gets all node type edges in the graph
+% graph_node_type(+Graph, ?Edge)
+graph_node_type(G,E) :- graph_edge(G,E), edge_role_node_type(E).
+
 % Helper predicate, stop processing when the start node is reached
 node_path(Graph,From,From,[],_).
 

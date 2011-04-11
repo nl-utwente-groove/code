@@ -57,8 +57,10 @@ public class GrooveState {
      * @param grammarView       A grammar view
      * @param gts               A GTS
      * @param state             The current state in the GTS
+     * @param ruleEvents        Rule events
      */
-    public GrooveState(GrammarView grammarView, GTS gts, GraphState state) {
+    public GrooveState(GrammarView grammarView, GTS gts, GraphState state,
+            Set<RuleEvent> ruleEvents) {
         if (grammarView == null) {
             throw new NullPointerException();
         }
@@ -66,6 +68,7 @@ public class GrooveState {
         this.grammarView = grammarView;
         this.gts = gts;
         this.state = state;
+        this.ruleEvents = ruleEvents;
     }
 
     /**
