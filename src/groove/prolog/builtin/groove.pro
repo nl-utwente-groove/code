@@ -27,3 +27,4 @@
 :-ensure_loaded(resource('/groove/prolog/builtin/groove.algebra.pro')).
 :-ensure_loaded(resource('/groove/prolog/builtin/groove.type.pro')).
 :-ensure_loaded(resource('/groove/prolog/builtin/groove.rule.pro')).
+:-ensure_loaded(resource('/groove/prolog/builtin/groove.label.pro')).

@@ -34,6 +34,7 @@ import groove.prolog.PrologQuery;
 import groove.prolog.QueryResult;
 import groove.prolog.exception.GroovePrologException;
 import groove.prolog.exception.GroovePrologLoadingException;
+import groove.trans.RuleEvent;
 import groove.util.Groove;
 
 import java.awt.BorderLayout;
@@ -1006,8 +1007,12 @@ public class PrologPanel extends JPanel {
             return;
         }
 
+        // TODO: Should this be a set?
+        Set<RuleEvent> ruleEvents = new HashSet<RuleEvent>();
+        ruleEvents.add(this.sim.getCurrentEvent());
+
         this.prolog.setGrooveState(new GrooveState(this.sim.getGrammarView(),
-            this.sim.getGTS(), this.sim.getCurrentState()));
+            this.sim.getGTS(), this.sim.getCurrentState(), ruleEvents));
 
         try {
             this.solutionCount = 0;

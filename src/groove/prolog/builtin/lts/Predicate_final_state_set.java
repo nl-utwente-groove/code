@@ -30,7 +30,7 @@ import groove.prolog.util.PrologUtils;
  * 
  * @author Michiel Hendriks
  */
-public class Predicate_gts_final_state_set extends LtsPrologCode {
+public class Predicate_final_state_set extends LtsPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {

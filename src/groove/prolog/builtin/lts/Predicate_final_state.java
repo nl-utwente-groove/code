@@ -18,23 +18,32 @@
  */
 package groove.prolog.builtin.lts;
 
-import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
+import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
 import groove.lts.GTS;
 
 /**
- * <code>graphstate_next(GraphState,GraphState)</code>
+ * Predicate final_state(?State)
  * 
  * @author Michiel Hendriks
  */
-public class Predicate_gts_start_state extends LtsPrologCode {
+public class Predicate_final_state extends LtsPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
-        GTS lts = getLTS(args[0]);
-        Term result = new JavaObjectTerm(lts.startState());
-        return interpreter.unify(args[1], result);
+        if (backtrackMode) {
+            PrologCollectionIterator bi =
+                (PrologCollectionIterator) interpreter.popBacktrackInfo();
+            interpreter.undo(bi.getUndoPosition());
+            return bi.nextSolution(interpreter);
+        } else {
+            GTS lts = getLTS(args[0]);
+            PrologCollectionIterator it =
+                new PrologCollectionIterator(lts.getFinalStates(), args[1],
+                    interpreter.getUndoPosition());
+            return it.nextSolution(interpreter);
+        }
     }
 }
