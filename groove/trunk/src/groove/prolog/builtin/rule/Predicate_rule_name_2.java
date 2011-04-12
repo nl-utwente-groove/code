@@ -16,12 +16,13 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package groove.prolog.builtin.trans;
+package groove.prolog.builtin.rule;
 
 import gnu.prolog.term.AtomTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
+import groove.prolog.builtin.trans.TransPrologCode;
 import groove.trans.Rule;
 
 /**
@@ -29,7 +30,7 @@ import groove.trans.Rule;
  * 
  * @author Michiel Hendriks
  */
-public class Predicate_rule_name extends TransPrologCode {
+public class Predicate_rule_name_2 extends TransPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {

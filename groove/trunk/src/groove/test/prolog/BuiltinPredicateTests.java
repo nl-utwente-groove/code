@@ -129,7 +129,31 @@ public class BuiltinPredicateTests {
      */
     @Test
     public void testRule() {
-        // TODO
+        // Assert that all rule names can be retrieved
+        // succ("rule_name('rule-a')");
+        // succ("rule_name('rule-b')");
+
+        // Assert that all enabled rule names can be checked
+        // fail("rule_enabled('rule-a')");
+        // succ("rule_enabled('rule-b')");
+
+        // Assert that confluent rule names can be checked
+        // succ("rule_confluent('rule-a')");
+        // fail("rule_confluent('rule-b')");
+
+        // Assert that rules can be retrieved
+        succ("rule_name(N), rule(N,R), is_rule(R)");
+
+        // Assert that the RHS and LHS of a rule are graphs
+        succ("rule_name(N), rule(N,R), rule_lhs(R,G), is_graph(G)");
+        succ("rule_name(N), rule(N,R), rule_rhs(R,G), is_graph(G)");
+
+        // Assert that the name of the rules are 'rule-a' and 'rule-b'
+        succ("rule_name(N), rule(N,R), rule_name(R,'rule-a')");
+        succ("rule_name(N), rule(N,R), rule_name(R,'rule-b')");
+
+        // Assert that rule_priority returns 0 for some rule
+        succ("rule_name(N), rule(N,R), rule_priority(R,0)");
     }
 
     /**

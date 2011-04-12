@@ -16,12 +16,13 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package groove.prolog.builtin.trans;
+package groove.prolog.builtin.rule;
 
-import gnu.prolog.term.JavaObjectTerm;
+import gnu.prolog.term.IntegerTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
+import groove.prolog.builtin.trans.TransPrologCode;
 import groove.trans.Rule;
 
 /**
@@ -29,12 +30,12 @@ import groove.trans.Rule;
  * 
  * @author Michiel Hendriks
  */
-public class Predicate_rule_rhs extends TransPrologCode {
+public class Predicate_rule_priority extends TransPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         Rule rl = getRule(args[0]);
-        Term res = new JavaObjectTerm(rl.rhs());
+        Term res = IntegerTerm.get(rl.getPriority());
         return interpreter.unify(args[1], res);
     }
 

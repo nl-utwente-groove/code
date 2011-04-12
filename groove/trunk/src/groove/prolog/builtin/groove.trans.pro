@@ -40,10 +40,6 @@ Rule:
 % is_ruleevent(@RuleMatch)
 :-build_in(is_rulematch/1,'groove.prolog.builtin.trans.Predicate_is_rulematch').
 
-% Success if the argument is a JavaObjectTerm with a Rule
-% is_ruleevent(@Rule)
-:-build_in(is_rule/1,'groove.prolog.builtin.trans.Predicate_is_rule').
-
 % Get the current rule events. This only returns results during exploration based
 % on selection of rule events. Otherwise it will simply fail.
 % ruleevent(?RuleEvent)
@@ -131,7 +127,7 @@ Rule:
 % :-build_in(ruleevent_conflicts/2, 'groove.prolog.builtin.trans.Predicate_ruleevent_conflicts').
 
 % Get all current rule matches
-rulematch(RM):-gts(GTS),graphstate(GS),graphstate_graph(GS,G),gts_match(GTS,GS,RE),ruleevent_match(RE,G,RM).
+rulematch(RM):-gts(GTS),state(GS),state_graph(GS,G),gts_match(GTS,GS,RE),ruleevent_match(RE,G,RM).
 
 % The edges in a rule match
 % rulematch_edge(+RuleMatch,?Edge)
@@ -150,34 +146,3 @@ rulematch(RM):-gts(GTS),graphstate(GS),graphstate_graph(GS,G),gts_match(GTS,GS,R
 % @param the rulematch
 % @param the rule
 :-build_in(rulematch_rule/2,'groove.prolog.builtin.trans.Predicate_rulematch_rule').
-
-% The name of the rule
-% rule_name(+Rule, ?Name)
-% @param the rule
-% @param the name
-% @see groove.trans.Rule#getName()
-:-build_in(rule_name/2, 'groove.prolog.builtin.trans.Predicate_rule_name').
-
-% The priority of the rule
-% rule_priority(+Rule, ?Integer)
-% @param the rule
-% @param the priority
-% @see groove.trans.Rule#getPriority()
-:-build_in(rule_priority/2, 'groove.prolog.builtin.trans.Predicate_rule_priority').
-
-% The left hand side of this Rule. The start graph. Note: this does not use the same
-% nodes as the current graph.
-% rule_lhs(+Rule, ?Graph)
-% @param the rule
-% @param the graph
-% @see groove.trans.Rule#getLhs()
-:-build_in(rule_lhs/2, 'groove.prolog.builtin.trans.Predicate_rule_lhs').
-
-% The right hand side of this Rule. The target graph. Note: this does not use the same
-% nodes as the current graph.
-% rule_rhs(+Rule, ?Graph)
-% @param the rule
-% @param the graph
-% @see groove.trans.Rule#getRhs()
-:-build_in(rule_rhs/2, 'groove.prolog.builtin.trans.Predicate_rule_rhs').
-
