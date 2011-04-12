@@ -25,7 +25,7 @@ import gnu.prolog.vm.PrologException;
 import groove.graph.Edge;
 
 /**
- * Get the source node of an edge. <code>edge_source(Edge,Node)</code>
+ * Get the label of an edge. <code>edge_source(Edge,Node)</code>
  * 
  * @author Michiel Hendriks
  */

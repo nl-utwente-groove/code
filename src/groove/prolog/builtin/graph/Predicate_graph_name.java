@@ -18,9 +18,9 @@ package groove.prolog.builtin.graph;
 
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
-import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
 import groove.prolog.GrooveEnvironment;
+import groove.prolog.util.PrologStringCollectionIterator;
 
 import java.util.Set;
 
@@ -33,8 +33,8 @@ public class Predicate_graph_name extends GraphPrologCode {
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         if (backtrackMode) {
-            PrologCollectionIterator it =
-                (PrologCollectionIterator) interpreter.popBacktrackInfo();
+            PrologStringCollectionIterator it =
+                (PrologStringCollectionIterator) interpreter.popBacktrackInfo();
             interpreter.undo(it.getUndoPosition());
             return it.nextSolution(interpreter);
         } else {
@@ -45,8 +45,8 @@ public class Predicate_graph_name extends GraphPrologCode {
                 ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGrammarView().getGraphNames();
 
             try {
-                PrologCollectionIterator it =
-                    new PrologCollectionIterator(graphNames, args[0],
+                PrologStringCollectionIterator it =
+                    new PrologStringCollectionIterator(graphNames, args[0],
                         interpreter.getUndoPosition());
                 return it.nextSolution(interpreter);
             } catch (Exception e) {

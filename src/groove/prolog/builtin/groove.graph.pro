@@ -65,7 +65,7 @@ start_graph(SG) :- start_graph_name(SGN), graph(SGN,SG).
 % @param the node
 % @see groove.graph.GraphShape#nodeSet()
 :-build_in(graph_node/2,'groove.prolog.builtin.graph.Predicate_graph_node').
-graph_node(N):-graph(G),graph_node(G,N).
+graph_node(N):-start_graph(G),graph_node(G,N).
 
 % Get the complete node set of the graph
 % graph_node_set(+Graph,?NodeSet)
@@ -73,7 +73,7 @@ graph_node(N):-graph(G),graph_node(G,N).
 % @param the list of nodes
 % @see groove.graph.GraphShape#nodeSet()
 :-build_in(graph_node_set/2,'groove.prolog.builtin.graph.Predicate_graph_node_set').
-graph_node_set(N):-graph(G),graph_node_set(G,N).
+graph_node_set(N):-start_graph(G),graph_node_set(G,N).
 
 % Get the number of nodes in the graph
 % graph_node_count(+Graph,?Count)
@@ -81,7 +81,7 @@ graph_node_set(N):-graph(G),graph_node_set(G,N).
 % @param the number of nodes
 % @see groove.graph.GraphShape#nodeCount()
 :-build_in(graph_node_count/2,'groove.prolog.builtin.graph.Predicate_graph_node_count').
-graph_node_count(N):-graph(G),graph_node_count(G,N).
+graph_node_count(N):-start_graph(G),graph_node_count(G,N).
 
 % Get a edge from a graph
 % graph_edge(+Graph,?Edge)
@@ -89,7 +89,7 @@ graph_node_count(N):-graph(G),graph_node_count(G,N).
 % @param the edge
 % @see groove.graph.GraphShape#edgeSet()
 :-build_in(graph_edge/2,'groove.prolog.builtin.graph.Predicate_graph_edge').
-graph_edge(E):-graph(G),graph_edge(G,E).
+graph_edge(E):-start_graph(G),graph_edge(G,E).
 
 % Get a set of edges from either a graph
 % graph_edge_set(+Graph,?EdgeSet)
@@ -97,7 +97,7 @@ graph_edge(E):-graph(G),graph_edge(G,E).
 % @param the list of edges
 % @see groove.graph.GraphShape#edgeSet()
 :-build_in(graph_edge_set/2,'groove.prolog.builtin.graph.Predicate_graph_edge_set').
-graph_edge_set(E):-graph(G),graph_edge_set(G,E).
+graph_edge_set(E):-start_graph(G),graph_edge_set(G,E).
 
 % Get the number of edges in a graph
 % graph_edge_count(+Graph,?Count)
@@ -105,7 +105,7 @@ graph_edge_set(E):-graph(G),graph_edge_set(G,E).
 % @param the number of edges
 % @see groove.graph.GraphShape#edgeCount
 :-build_in(graph_edge_count/2,'groove.prolog.builtin.graph.Predicate_graph_edge_count').
-graph_edge_count(E):-graph(G),graph_edge_count(G,E).
+graph_edge_count(E):-start_graph(G),graph_edge_count(G,E).
 
 % Get an edge from a node, can be incoming or outgoing
 % node_edge(+Graph,+Node,?Edge)
@@ -114,7 +114,7 @@ graph_edge_count(E):-graph(G),graph_edge_count(G,E).
 % @param the edge
 % @see groove.graph.GraphShape#edgeSet(Node,int)
 :-build_in(node_edge/3,'groove.prolog.builtin.graph.Predicate_node_edge').
-node_edge(N,E):-graph(G),node_edge(G,N,E).
+node_edge(N,E):-start_graph(G),node_edge(G,N,E).
 
 % Get the set of edges for a single node. Both incoming and outgoing edges.
 % node_edge_set(+Graph,+Node,?EdgeSet)
@@ -123,7 +123,7 @@ node_edge(N,E):-graph(G),node_edge(G,N,E).
 % @param the list of edges
 % @see groove.graph.GraphShape#edgeSet(Node,int)
 :-build_in(node_edge_set__/3,'groove.prolog.builtin.graph.Predicate_node_edge_set').
-node_edge_set(N,E):-graph(G),node_edge_set__(G,N,E).
+node_edge_set(N,E):-start_graph(G),node_edge_set__(G,N,E).
 
 % Get a certain set of edges for a node
 % node_edge_set(+Graph,+Node,?EdgeSet,?Position)
@@ -136,7 +136,7 @@ node_edge_set(N,E):-graph(G),node_edge_set__(G,N,E).
 
 % Call either node_edge_set__/3 or node_edge_set/4 depending on the first argument
 node_edge_set(GN,A1,A2):-
-	is_node(GN), graph(G), call(node_edge_set(G,GN,A1,A2)).
+	is_node(GN), start_graph(G), call(node_edge_set(G,GN,A1,A2)).
 node_edge_set(GN,A1,A2):-
 	call(node_edge_set__(GN,A1,A2)).
 
@@ -248,7 +248,7 @@ node_path(From,To,Path):-
 % Nodes from the graph that contain self edges with labels from the list.
 % All the labels must be present, but more are allowed. 
 % node_self_edges(+Graph,?Node,?Labels)
-% example: graph(G),node_self_edges(G,Node,['Feature','includedFeature'])
+% example: start_graph(G),node_self_edges(G,Node,['Feature','includedFeature'])
 % @param the graph to query
 % @param the node
 % @param the list of labels of the self edges
@@ -262,7 +262,7 @@ node_self_edges(Node,Labels):-graph(G),node_self_edges(G,Node,Labels).
 % @param the node
 % @param the list of labels of the self edges
 :-build_in(node_self_edges_excl/3,'groove.prolog.builtin.graph.Predicate_node_self_edges_excl').
-node_self_edges_excl(Node,Labels):-graph(G),node_self_edges_excl(G,Node,Labels).
+node_self_edges_excl(Node,Labels):-start_graph(G),node_self_edges_excl(G,Node,Labels).
 
 % Get the "internal" number of a node. Node numbers are volatile information,
 % "similar" nodes in different graph states do not share the same number. You should

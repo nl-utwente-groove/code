@@ -18,20 +18,18 @@
  */
 package groove.prolog.builtin.graph;
 
-import gnu.prolog.term.AtomTerm;
+import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
-import gnu.prolog.vm.TermConstants;
-import groove.graph.DefaultLabel;
 import groove.graph.Graph;
 import groove.graph.Label;
 
 /**
  * Get an edge with a given label <code>label_edge(Graph,Label,Edge)</code>
  * 
- * @author Michiel Hendriks
+ * @author Michiel Hendriks, Lesley Wevers
  */
 public class Predicate_label_edge extends GraphPrologCode {
     @Override
@@ -43,19 +41,18 @@ public class Predicate_label_edge extends GraphPrologCode {
             interpreter.undo(it.getUndoPosition());
             return it.nextSolution(interpreter);
         } else {
-            Graph<?,?> graph = getGraph(args[0]);
+            try {
+                Graph<?,?> graph = getGraph(args[0]);
 
-            Label label = null;
-            if (args[1] instanceof AtomTerm) {
-                label = DefaultLabel.createLabel(((AtomTerm) args[1]).value);
-            } else {
-                PrologException.typeError(TermConstants.atomAtom, args[1]);
+                Label label = (Label) ((JavaObjectTerm) args[1]).value;
+
+                PrologCollectionIterator it =
+                    new PrologCollectionIterator(graph.labelEdgeSet(label),
+                        args[2], interpreter.getUndoPosition());
+                return it.nextSolution(interpreter);
+            } catch (Exception e) {
+                return FAIL;
             }
-
-            PrologCollectionIterator it =
-                new PrologCollectionIterator(graph.labelEdgeSet(label),
-                    args[2], interpreter.getUndoPosition());
-            return it.nextSolution(interpreter);
         }
     }
 }

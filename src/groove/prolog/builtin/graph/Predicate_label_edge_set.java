@@ -18,13 +18,11 @@
  */
 package groove.prolog.builtin.graph;
 
-import gnu.prolog.term.AtomTerm;
 import gnu.prolog.term.CompoundTerm;
+import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
-import gnu.prolog.vm.TermConstants;
-import groove.graph.DefaultLabel;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.prolog.util.PrologUtils;
@@ -33,24 +31,22 @@ import groove.prolog.util.PrologUtils;
  * Get the edge set of a graph with a given label.
  * <code>label_edge_set(Graph,Atom,Edge)</code>
  * 
- * @author Michiel Hendriks
+ * @author Michiel Hendriks, Lesley Wevers
  */
 public class Predicate_label_edge_set extends GraphPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
-        Graph<?,?> graph = getGraph(args[0]);
+        try {
+            Graph<?,?> graph = getGraph(args[0]);
 
-        Label label = null;
-        if (args[1] instanceof AtomTerm) {
-            label = DefaultLabel.createLabel(((AtomTerm) args[1]).value);
-        } else {
-            PrologException.typeError(TermConstants.atomAtom, args[1]);
+            Label label = (Label) ((JavaObjectTerm) args[1]).value;
+
+            Term edgeSetTerm =
+                CompoundTerm.getList(PrologUtils.createJOTlist(graph.labelEdgeSet(label)));
+            return interpreter.unify(edgeSetTerm, args[2]);
+        } catch (Exception e) {
+            return FAIL;
         }
-
-        Term edgeSetTerm =
-            CompoundTerm.getList(PrologUtils.createJOTlist(graph.labelEdgeSet(label)));
-        return interpreter.unify(edgeSetTerm, args[2]);
-
     }
 }

@@ -19,12 +19,15 @@
 :-build_in(type_graph_name/1,'groove.prolog.builtin.type.Predicate_type_graph_name').
 :-build_in(active_type_graph_name/1,'groove.prolog.builtin.type.Predicate_active_type_graph_name').
 :-build_in(type_graph/2,'groove.prolog.builtin.type.Predicate_type_graph').
-:-build_in(type_label/2,'groove.prolog.builtin.type.Predicate_type_label').
 :-build_in(subtype/3,'groove.prolog.builtin.type.Predicate_subtype').
 :-build_in(direct_subtype/3,'groove.prolog.builtin.type.Predicate_direct_subtype').
 
+% Convert a string into a label, or a label into a string
+% label(+Text, ?Label), label(?Text, +Label)
+:-build_in(label/2,'groove.prolog.builtin.type.Predicate_label').
+
 % Derived predicates
 type_graph(TG) :- type_graph_name(L), type_graph(L,TG).
-subtype_label(TG,A,B) :- type_label(A,AL), type_label(B,BL), subtype(TG,AL,BL).
-direct_subtype_label(TG,A,B) :- type_label(A,AL), type_label(B,BL), direct_subtype(TG,AL,BL).
+subtype_label(TG,A,B) :- label(A,AL), label(B,BL), subtype(TG,AL,BL).
+direct_subtype_label(TG,A,B) :- label(A,AL), label(B,BL), direct_subtype(TG,AL,BL).
 active_type_graph(TG) :- active_type_graph_name(TGN), type_graph(TGN,TG).
