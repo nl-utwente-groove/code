@@ -30,7 +30,7 @@ import java.util.Set;
  * Predicate rule_name(?Name)
  * @author Lesley Wevers
  */
-public class Predicate_rule_name extends GraphPrologCode {
+public class Predicate_rule_name_1 extends GraphPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
