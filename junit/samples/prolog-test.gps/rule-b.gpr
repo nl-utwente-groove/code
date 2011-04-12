@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
     <graph edgemode="directed" edgeids="false" role="rule" id="rule-b">
-        <attr name="enabled">
-            <string>false</string>
-        </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -25,6 +22,29 @@
                 <string>147 180 29 34</string>
             </attr>
         </node>
+        <edge to="n1" from="n0">
+            <attr name="label">
+                <string>new:a</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 201 79 179 126 161 197 12</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>not:</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>type:B</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>type:A</string>
+            </attr>
+        </edge>
         <edge to="n2" from="n0">
             <attr name="label">
                 <string>a</string>
@@ -38,29 +58,6 @@
         <edge to="n1" from="n1">
             <attr name="label">
                 <string>new:</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>type:A</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n0">
-            <attr name="label">
-                <string>new:a</string>
-            </attr>
-            <attr name="layout">
-                <string>500 0 201 79 179 126 161 197 12</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>type:B</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>not:</string>
             </attr>
         </edge>
     </graph>

@@ -18,7 +18,7 @@
  */
 package groove.prolog.builtin.lts;
 
-import gnu.prolog.term.JavaObjectTerm;
+import gnu.prolog.term.CompoundTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
@@ -36,8 +36,7 @@ public class Predicate_final_state_set extends LtsPrologCode {
             Term[] args) throws PrologException {
         GTS lts = getLTS(args[0]);
         Term resultSet =
-            new JavaObjectTerm(
-                PrologUtils.createJOTlist(PrologUtils.createJOTlist(lts.getFinalStates())));
+            CompoundTerm.getList(PrologUtils.createJOTlist(lts.getFinalStates()));
         return interpreter.unify(args[1], resultSet);
     }
 }
