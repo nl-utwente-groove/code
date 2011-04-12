@@ -14,12 +14,12 @@
         </node>
         <edge to="n0" from="n0">
             <attr name="label">
-                <string>type:A</string>
+                <string>flag:a</string>
             </attr>
         </edge>
         <edge to="n0" from="n0">
             <attr name="label">
-                <string>flag:a</string>
+                <string>type:A</string>
             </attr>
         </edge>
     </graph>

@@ -18,8 +18,10 @@ package groove.test.prolog;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import groove.explore.Exploration;
+import groove.lts.GTS;
 import groove.prolog.GrooveState;
-import groove.prolog.exception.GroovePrologException;
+import groove.view.GrammarView;
 
 import org.junit.Test;
 
@@ -32,7 +34,7 @@ public class BuiltinPredicateTests {
      * Runs all tests in test-graph.pro
      */
     @Test
-    public void testGraph() throws GroovePrologException {
+    public void testGraph() {
         // Assert that we can see all graph names
         succ("graph_name('a')");
         succ("graph_name('b')");
@@ -135,7 +137,53 @@ public class BuiltinPredicateTests {
      */
     @Test
     public void testLts() {
-        // TODO
+        // Assert that gts gives a gts
+        succ("gts(S), is_gts(S)");
+
+        // Assert that the active state is a graph state
+        succ("active_state(S), is_state(S)");
+
+        // Assert that the start state is a state
+        succ("start_state(S), is_state(S)");
+
+        // Assert that the final state is a graph state
+        succ("final_state(S), is_state(S)");
+        succ("final_state_set(S), length(S,1)");
+
+        // Assert that the final state is not the initial state
+        fail("start_state(S), final_state(S)");
+        fail("active_state(S), final_state(S)");
+        succ("start_state(S), active_state(S)");
+
+        // Assert that state gives all states
+        succ("state(S), start_state(S)");
+        succ("state(S), final_state(S)");
+
+        // Assert that state_graph gives the start graph for the start state
+        succ("start_state(S), state_graph(S,G), is_graph(G)");
+        // succ("start_state(S), state_graph(S,G), start_graph(G)");
+
+        // Assert that the start state is closed
+        succ("start_state(S), state_is_closed(S)");
+
+        // Assert that the next state of the start state is the final state
+        succ("start_state(S), state_next(S,N), final_state(N)");
+        fail("start_state(S), state_next(S,S)");
+        succ("start_state(S), state_next_set(S,N), length(N,1), member(F,N), final_state(F)");
+
+        // Assert that the start state has a transition
+        succ("start_state(S), state_transition(S,T), is_transition(T)");
+        succ("start_state(S), state_transition_set(S,T), length(T,1), member(X,T), state_transition(S,X)");
+
+        // Assert that the source and target of a transition are right
+        succ("start_state(S), state_transition(S,T), transition_source(T,S), transition_target(T,F), final_state(F)");
+
+        // Assert that transition_event gives a rule event
+        succ("start_state(S), state_transition(S,T), transition_event(T,E), is_ruleevent(E)");
+
+        // Test gts match
+        succ("gts(G), start_state(S), gts_match(G,S,R), is_ruleevent(R)");
+
     }
 
     /**
@@ -150,7 +198,7 @@ public class BuiltinPredicateTests {
      * Test the type predicates
      */
     @Test
-    public void testType() throws GroovePrologException {
+    public void testType() {
         // Test composite_type_graph
         succ("composite_type_graph(G), is_graph(G)");
 
@@ -172,15 +220,28 @@ public class BuiltinPredicateTests {
         succ("label('type:A',A), label(X,A), =(X,'type:A')");
     }
 
-    private void succ(String predicate) throws GroovePrologException {
-        assertTrue(PrologTestUtil.test(
-            new GrooveState(PrologTestUtil.testGrammar("b"), null, null, null),
-            predicate));
+    private void succ(String predicate) {
+        assertTrue(test(predicate));
     }
 
-    private void fail(String predicate) throws GroovePrologException {
-        assertFalse(PrologTestUtil.test(
-            new GrooveState(PrologTestUtil.testGrammar("b"), null, null, null),
-            predicate));
+    private void fail(String predicate) {
+        assertFalse(test(predicate));
+    }
+
+    private boolean test(String predicate) {
+        try {
+            GrammarView gv = PrologTestUtil.testGrammar("b");
+            GTS gts = new GTS(gv.toGrammar());
+            Exploration exploration = new Exploration();
+
+            exploration.play(gts, null);
+
+            return PrologTestUtil.test(
+                new GrooveState(gv, gts, gts.startState(), null), predicate);
+        } catch (Exception e) {
+            e.printStackTrace();
+            org.junit.Assert.fail(e.getMessage());
+            return false;
+        }
     }
 }

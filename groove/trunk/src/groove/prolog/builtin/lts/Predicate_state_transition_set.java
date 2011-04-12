@@ -18,7 +18,7 @@
  */
 package groove.prolog.builtin.lts;
 
-import gnu.prolog.term.JavaObjectTerm;
+import gnu.prolog.term.CompoundTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
@@ -36,8 +36,7 @@ public class Predicate_state_transition_set extends LtsPrologCode {
             Term[] args) throws PrologException {
         GraphState graphState = getGraphState(args[0]);
         Term resultSet =
-            new JavaObjectTerm(
-                PrologUtils.createJOTlist(graphState.getTransitionSet()));
+            CompoundTerm.getList(PrologUtils.createJOTlist(graphState.getTransitionSet()));
         return interpreter.unify(args[1], resultSet);
     }
 }

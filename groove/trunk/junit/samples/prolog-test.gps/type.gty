@@ -12,14 +12,14 @@
                 <string>225 124 29 52</string>
             </attr>
         </node>
-        <node id="n3">
-            <attr name="layout">
-                <string>232 313 30 34</string>
-            </attr>
-        </node>
         <node id="n2">
             <attr name="layout">
                 <string>230 226 28 34</string>
+            </attr>
+        </node>
+        <node id="n3">
+            <attr name="layout">
+                <string>232 313 30 34</string>
             </attr>
         </node>
         <node id="n1">
@@ -35,6 +35,26 @@
                 <string>500 0 344 141 292 110 240 141 12</string>
             </attr>
         </edge>
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>type:D</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>flag:a</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n3">
+            <attr name="label">
+                <string>sub:</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>type:B</string>
+            </attr>
+        </edge>
         <edge to="n2" from="n2">
             <attr name="label">
                 <string>type:C</string>
@@ -45,16 +65,6 @@
                 <string>sub:</string>
             </attr>
         </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>type:A</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>type:D</string>
-            </attr>
-        </edge>
         <edge to="n1" from="n0">
             <attr name="label">
                 <string>b</string>
@@ -62,17 +72,7 @@
         </edge>
         <edge to="n0" from="n0">
             <attr name="label">
-                <string>flag:a</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>type:B</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n3">
-            <attr name="label">
-                <string>sub:</string>
+                <string>type:A</string>
             </attr>
         </edge>
     </graph>
