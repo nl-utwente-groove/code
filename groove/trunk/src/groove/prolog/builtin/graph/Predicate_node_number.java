@@ -22,9 +22,6 @@ import gnu.prolog.term.IntegerTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
-import groove.graph.DefaultNode;
-import groove.graph.Node;
-import groove.lts.AbstractGraphState;
 
 /**
  * 
@@ -35,17 +32,12 @@ public class Predicate_node_number extends GraphPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
-        Node node = getNode(args[0]);
-        int nr;
-        if (node instanceof DefaultNode) {
-            nr = ((DefaultNode) node).getNumber();
-        } else if (node instanceof AbstractGraphState) {
-            nr = ((AbstractGraphState) node).getNumber();
-        } else {
-            // no node number
+        try {
+            int nr = getNode(args[0]).getNumber();
+            IntegerTerm term = IntegerTerm.get(nr);
+            return interpreter.unify(args[1], term);
+        } catch (Exception e) {
             return FAIL;
         }
-        IntegerTerm term = IntegerTerm.get(nr);
-        return interpreter.unify(args[1], term);
     }
 }

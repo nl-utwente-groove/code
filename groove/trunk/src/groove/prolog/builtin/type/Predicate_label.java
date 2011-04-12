@@ -14,19 +14,18 @@
  *
  * $Id$
  */
-package groove.prolog.builtin.label;
+package groove.prolog.builtin.type;
 
 import gnu.prolog.term.AtomTerm;
 import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
-import groove.graph.DefaultLabel;
-import groove.graph.Label;
+import groove.graph.TypeLabel;
 import groove.prolog.builtin.graph.GraphPrologCode;
 
 /**
- * Predicate label(+Text,?Label), label(?Text,+Label)
+ * Predicate type_label(+Text,?Label), type_label(?Text,+Label)
  * @author Lesley Wevers
  */
 public class Predicate_label extends GraphPrologCode {
@@ -34,11 +33,11 @@ public class Predicate_label extends GraphPrologCode {
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
 
-        // label(+Text,?Label)
+        // type_label(+Text,?Label)
         if (args[0] instanceof AtomTerm) {
             try {
-                Label label =
-                    DefaultLabel.createLabel(((AtomTerm) args[0]).value);
+                TypeLabel label =
+                    TypeLabel.createLabel(((AtomTerm) args[0]).value);
 
                 return interpreter.unify(new JavaObjectTerm(label), args[1]);
             } catch (Exception e) {
@@ -46,12 +45,13 @@ public class Predicate_label extends GraphPrologCode {
             }
         }
 
-        // label(?Text,+Label)
+        // type_label(?Text,+Label)
         if (args[1] instanceof JavaObjectTerm) {
             try {
-                Label label = (Label) ((JavaObjectTerm) args[1]).value;
+                TypeLabel label = (TypeLabel) ((JavaObjectTerm) args[1]).value;
 
-                return interpreter.unify(AtomTerm.get(label.text()), args[0]);
+                return interpreter.unify(AtomTerm.get(label.toString()),
+                    args[0]);
             } catch (Exception e) {
                 return FAIL;
             }
