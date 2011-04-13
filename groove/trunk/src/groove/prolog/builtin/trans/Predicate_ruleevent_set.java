@@ -18,21 +18,13 @@
  */
 package groove.prolog.builtin.trans;
 
-import gnu.prolog.term.CompoundTerm;
-import gnu.prolog.term.Term;
-import gnu.prolog.vm.Interpreter;
-import gnu.prolog.vm.PrologException;
-import groove.prolog.GrooveEnvironment;
-import groove.prolog.util.PrologUtils;
-import groove.trans.RuleEvent;
-
-import java.util.Set;
 
 /**
  * 
  * 
  * @author Michiel Hendriks
  */
+/*
 public class Predicate_ruleevent_set extends TransPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
@@ -47,3 +39,4 @@ public class Predicate_ruleevent_set extends TransPrologCode {
         return interpreter.unify(args[0], eventsTerm);
     }
 }
+*/

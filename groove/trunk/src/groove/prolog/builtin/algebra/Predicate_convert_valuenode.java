@@ -47,24 +47,28 @@ public class Predicate_convert_valuenode extends AlgebraPrologCode {
      */
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
-        ValueNode node = getValueNode(args[0]);
+        try {
+            ValueNode node = getValueNode(args[0]);
 
-        Term result = null;
-        Algebra<?> alg = node.getAlgebra();
-        if (alg instanceof StringAlgebra) {
-            result = AtomTerm.get((String) node.getValue());
-        } else if (alg instanceof BigIntAlgebra
-            || alg instanceof JavaIntAlgebra) {
-            Integer val = (Integer) node.getValue();
-            result = IntegerTerm.get(val);
-        } else if (alg instanceof BigDoubleAlgebra
-            || alg instanceof JavaDoubleAlgebra) {
-            Double val = (Double) node.getValue();
-            result = new FloatTerm(val);
-        } else {
-            result = new JavaObjectTerm(node.getValue());
+            Term result = null;
+            Algebra<?> alg = node.getAlgebra();
+            if (alg instanceof StringAlgebra) {
+                result = AtomTerm.get((String) node.getValue());
+            } else if (alg instanceof BigIntAlgebra
+                || alg instanceof JavaIntAlgebra) {
+                Integer val = (Integer) node.getValue();
+                result = IntegerTerm.get(val);
+            } else if (alg instanceof BigDoubleAlgebra
+                || alg instanceof JavaDoubleAlgebra) {
+                Double val = (Double) node.getValue();
+                result = new FloatTerm(val);
+            } else {
+                result = new JavaObjectTerm(node.getValue());
+            }
+            return interpreter.unify(args[1], result);
+        } catch (Exception e) {
+            return FAIL;
         }
-        return interpreter.unify(args[1], result);
     }
 
     /*

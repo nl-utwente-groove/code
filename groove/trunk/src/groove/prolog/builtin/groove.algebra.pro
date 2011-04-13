@@ -37,10 +37,6 @@ ValueNode (extends Node):
 % @param the term
 :-build_in(convert_valuenode/2,'groove.prolog.builtin.algebra.Predicate_convert_valuenode').
 
-% Only convert when it is a value node. Will never fail.
-% try_convert_valuenode(+Node,?Term)
-try_convert_valuenode(Node,Term):-(is_valuenode(Node) -> convert_valuenode(Node,Term)).
-
 % Get all nodes with a given attribute
 % node_with_attribute(+Graph,?Node,+AttrName,?AttrValue)
 % @param the graph
@@ -49,16 +45,10 @@ try_convert_valuenode(Node,Term):-(is_valuenode(Node) -> convert_valuenode(Node,
 % @param the value of the attribute
 node_with_attribute(Graph,Node,AttrName,AttrValue):-
 	label_edge(Graph,AttrName,Edge), % get all edges with a given label
-	edge_opposite(Edge,ValNode), % get the destination of the edge
+	edge_target(Edge,ValNode), % get the destination of the edge
 	is_valuenode(ValNode), % make sure it's a value node
 	convert_valuenode(ValNode,AttrValue), % convert it to a term
 	edge_source(Edge,Node). % get the node that has this attribute
 
-% When X is a Graph, then Y is the Node and Z is the AttrName
-% Otherwise X is the Node, Y is the AttrName, and Z is the AttrValue
-node_with_attribute(X,Y,Z):-
-	is_graph(X)->node_with_attribute(X,Y,Z,_);
-	graph(Graph),node_with_attribute(Graph,X,Y,Z).
-
-node_with_attribute(Node,AttrName):-
-	graph(Graph),node_with_attribute(Graph,Node,AttrName,_).
+% node_with_attribute(+Graph,?Node,+AttrName)
+node_with_attribute(X,Y,Z) :- node_with_attribute(X,Y,Z,_).

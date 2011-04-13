@@ -40,17 +40,10 @@ Rule:
 % is_ruleevent(@RuleMatch)
 :-build_in(is_rulematch/1,'groove.prolog.builtin.trans.Predicate_is_rulematch').
 
-% Get the current rule events. This only returns results during exploration based
-% on selection of rule events. Otherwise it will simply fail.
-% ruleevent(?RuleEvent)
+% Get the currently selected rule event.
+% active_ruleevent(?RuleEvent)
 % @param the rule event
-:-build_in(ruleevent/1,'groove.prolog.builtin.trans.Predicate_ruleevent').
-
-% Get the current rule events. This only returns results during exploration based
-% on selection of rule events. Otherwise it will simply return an empty set.
-% ruleevent_label(?RuleEventSet)
-% @param the rule event set
-:-build_in(ruleevent_set/1,'groove.prolog.builtin.trans.Predicate_ruleevent_set').
+:-build_in(active_ruleevent/1,'groove.prolog.builtin.trans.Predicate_active_ruleevent').
 
 % The label of a rule event
 % ruleevent_label(+RuleEvent,?Label)
@@ -72,9 +65,9 @@ Rule:
 % @param the rule event
 % @param node/edge as used in the rule's graph
 % @param node/edge in the graph
-% :-build_in(ruleevent_transpose/3,'groove.prolog.builtin.trans.Predicate_ruleevent_transpose').
+:-build_in(ruleevent_transpose/3,'groove.prolog.builtin.trans.Predicate_ruleevent_transpose').
 
-% Node anchors in this event. Anchors are the 
+% Node anchors in this event. Anchors are the  
 % ruleevent_anchor_node(+RuleEvent,?Node)
 % @param the rule event
 % @param the node
@@ -116,15 +109,15 @@ Rule:
 % @param the graph to match against
 % @param the rule match
 % @see groove.trans.RuleEvent#getMatch()
-% :-build_in(ruleevent_match/3,'groove.prolog.builtin.trans.Predicate_ruleevent_match').
-% ruleevent_match(RE,RM):-graphstate(GS),graphstate_graph(GS,G),ruleevent_match(RE,G,RM).
+:-build_in(ruleevent_match/3,'groove.prolog.builtin.trans.Predicate_ruleevent_match').
+ruleevent_match(RE,RM):-state(GS),state_graph(GS,G),ruleevent_match(RE,G,RM).
 
 % Fail if the ruleevents do not conflict
 % ruleevent_conflicts(+RuleEvent,+RuleEvent)
 % @param a rule event
 % @param a rule event
 % @see groove.trans.RuleEvent#conflicts(RuleEvent)
-% :-build_in(ruleevent_conflicts/2, 'groove.prolog.builtin.trans.Predicate_ruleevent_conflicts').
+:-build_in(ruleevent_conflicts/2, 'groove.prolog.builtin.trans.Predicate_ruleevent_conflicts').
 
 % Get all current rule matches
 rulematch(RM):-gts(GTS),state(GS),state_graph(GS,G),gts_match(GTS,GS,RE),ruleevent_match(RE,G,RM).
