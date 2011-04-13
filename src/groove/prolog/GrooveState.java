@@ -23,9 +23,6 @@ import groove.lts.GraphState;
 import groove.trans.RuleEvent;
 import groove.view.GrammarView;
 
-import java.util.Collections;
-import java.util.Set;
-
 /**
  * The current state in groove.
  * 
@@ -50,17 +47,17 @@ public class GrooveState {
     /**
      * TODO
      */
-    private Set<RuleEvent> ruleEvents;
+    private RuleEvent activeRuleEvent;
 
     /**
      * Constructs a groove state from a graph, a GTS and the current state
      * @param grammarView       A grammar view
      * @param gts               A GTS
-     * @param state             The current state in the GTS
-     * @param ruleEvents        Rule events
+     * @param state             The currently selected state in the GTS
+     * @param activeRuleEvent   The currently selected rule event in the GTS
      */
     public GrooveState(GrammarView grammarView, GTS gts, GraphState state,
-            Set<RuleEvent> ruleEvents) {
+            RuleEvent activeRuleEvent) {
         if (grammarView == null) {
             throw new NullPointerException();
         }
@@ -68,7 +65,7 @@ public class GrooveState {
         this.grammarView = grammarView;
         this.gts = gts;
         this.state = state;
-        this.ruleEvents = ruleEvents;
+        this.activeRuleEvent = activeRuleEvent;
     }
 
     /**
@@ -97,11 +94,7 @@ public class GrooveState {
      * 
      * TODO
      */
-    public Set<RuleEvent> getRuleEvents() {
-        if (this.ruleEvents == null) {
-            return Collections.emptySet();
-        } else {
-            return Collections.unmodifiableSet(this.ruleEvents);
-        }
+    public RuleEvent getActiveRuleEvent() {
+        return this.activeRuleEvent;
     }
 }

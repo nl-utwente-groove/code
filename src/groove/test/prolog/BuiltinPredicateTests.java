@@ -205,7 +205,7 @@ public class BuiltinPredicateTests {
         // Assert that transition_event gives a rule event
         succ("start_state(S), state_transition(S,T), transition_event(T,E), is_ruleevent(E)");
 
-        // Test gts match
+        // Assert that gts_match gives a rule event
         succ("gts(G), start_state(S), gts_match(G,S,R), is_ruleevent(R)");
 
     }
@@ -215,7 +215,23 @@ public class BuiltinPredicateTests {
      */
     @Test
     public void testTrans() {
-        // TODO
+        // Assert that ruleevent gives a rule event
+        // succ("ruleevent(RE), is_ruleevent(E)");
+        // succ("ruleevent_set(RE), length(RE,1)");
+
+        // Assert that created_edge and created_node give a edge and node
+        succ("start_state(S), state_transition(S,T), transition_event(T,RE), ruleevent_created_edge(RE,E), is_edge(E)");
+        succ("start_state(S), state_transition(S,T), transition_event(T,RE), ruleevent_created_node(RE,N), is_node(N)");
+
+        // Assert that ruleevent_rule gives rule-b
+        succ("start_state(S), state_transition(S,T), transition_event(T,RE), ruleevent_rule(RE,R), rule_name(R,'rule-b')");
+
+        // Assert that ruleevent_label gives 'rule-b'
+        succ("start_state(S), state_transition(S,T), transition_event(T,RE), ruleevent_label(RE,'rule-b')");
+
+        // TODO: ruleevent_erased_*, rulematch_* 
+
+        // @deprecated: ruleevent_anchor_edge, ruleevent_anchor_node, ruleevent_conflicts, rulevent_match, ruleevent_transpose
     }
 
     /**
