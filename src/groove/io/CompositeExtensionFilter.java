@@ -34,8 +34,8 @@ public final class CompositeExtensionFilter extends ExtensionFilter {
      * @param acceptDir <tt>true</tt> if the filter is to accept directories
      */
     public CompositeExtensionFilter(EnumSet<FileType> fileTypes,
-            boolean acceptDir) {
-        super(FileType.getDescription(fileTypes), acceptDir);
+            String description, boolean acceptDir) {
+        super(description, acceptDir);
         int size = fileTypes.size();
         FileType fileType[] = new FileType[size];
         fileTypes.toArray(fileType);

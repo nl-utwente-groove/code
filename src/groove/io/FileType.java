@@ -52,9 +52,9 @@ public enum FileType {
     /** Simple text files. */
     TEXT(".txt", "Simple text files"),
     /** Prolog files. */
-    PROLOG1("Prolog files", ".pro"),
+    PROLOG1(".pro", "Prolog files"),
     /** Prolog files. */
-    PROLOG2("Prolog files", ".pl"),
+    PROLOG2(".pl", "Prolog files"),
 
     // Compressed files.
     /** ZIP files. */
@@ -86,7 +86,7 @@ public enum FileType {
         new HashMap<EnumSet<FileType>,String>();
 
     /** Returns the description associated with the given enum of file types. */
-    public static String getDescription(EnumSet<FileType> fileTypes) {
+    private static String getDescription(EnumSet<FileType> fileTypes) {
         return compositeDescriptions.get(fileTypes);
     }
 
@@ -200,7 +200,14 @@ public enum FileType {
     public static final ExtensionFilter LOG_FILTER = createFilter(LOG, true);
     /** Filter for simple text files. */
     public static final ExtensionFilter TEXT_FILTER = createFilter(TEXT, true);
-    // The filter for Prolog files is composite, see below.
+
+    // See also the composite Prolog filter below.
+    /** Filter for Prolog files. */
+    public static final ExtensionFilter PROLOG1_FILTER = createFilter(PROLOG1,
+        true);
+    /** Filter for Prolog files. */
+    public static final ExtensionFilter PROLOG2_FILTER = createFilter(PROLOG2,
+        true);
 
     // Compressed files.
 
@@ -280,7 +287,8 @@ public enum FileType {
     private static ExtensionFilter createFilter(EnumSet<FileType> fileTypes,
             boolean acceptDir) {
         ExtensionFilter result =
-            new CompositeExtensionFilter(fileTypes, acceptDir);
+            new CompositeExtensionFilter(fileTypes, getDescription(fileTypes),
+                acceptDir);
         compositeFilterMap.put(fileTypes, result);
         return result;
     }
