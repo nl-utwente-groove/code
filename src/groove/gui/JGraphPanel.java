@@ -210,6 +210,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     protected JScrollPane getScrollPane() {
         if (this.scrollPane == null) {
             this.scrollPane = new JScrollPane(getJGraph());
+            this.scrollPane.getVerticalScrollBar().setUnitIncrement(10);
         }
         return this.scrollPane;
     }
