@@ -195,9 +195,7 @@ public class DefaultTypeView implements TypeView {
             TypeNode typeNode = this.typeNodeMap.get(modelLabel);
             if (typeNode == null) {
                 typeNode = new TypeNode(viewNode.getNumber(), modelLabel);
-                if (viewNode.getKind() == ABSTRACT) {
-                    typeNode.setAbstract();
-                }
+                typeNode.setAbstract(viewNode.getKind() == ABSTRACT);
                 if (viewNode.hasColor()) {
                     typeNode.setColor((Color) viewNode.getColor().getContent());
                 }
@@ -228,9 +226,7 @@ public class DefaultTypeView implements TypeView {
             TypeLabel modelLabel = viewEdge.getTypeLabel();
             TypeEdge modelEdge =
                 model.addEdge(modelSource, modelLabel, modelTarget);
-            if (viewEdge.getKind() == ABSTRACT) {
-                modelEdge.setAbstract();
-            }
+            modelEdge.setAbstract(viewEdge.getKind() == ABSTRACT);
             elementMap.putEdge(viewEdge, modelEdge);
         }
     }

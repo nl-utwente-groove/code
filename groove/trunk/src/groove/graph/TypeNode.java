@@ -102,8 +102,8 @@ public class TypeNode implements Node {
     }
 
     /** Sets this node type to abstract. */
-    public final void setAbstract() {
-        this.abstractType = true;
+    public final void setAbstract(boolean value) {
+        this.abstractType = value;
     }
 
     /** Returns the (possibly {@code null}) colour of this type node. */

@@ -38,8 +38,8 @@ public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel> {
     }
 
     /** Sets this edge type to abstract. */
-    public final void setAbstract() {
-        this.abstractType = true;
+    public final void setAbstract(boolean value) {
+        this.abstractType = value;
     }
 
     /** Flag indicating if this edge type is abstract. */
