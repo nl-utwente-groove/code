@@ -80,6 +80,10 @@ public enum AspectKind {
     ARGUMENT("arg", ContentKind.NUMBER),
     /** Indicates a product node. */
     PRODUCT("prod"),
+    /** Indicates an attribute value. */
+    PRED("pred", ContentKind.PRED_VAL),
+    /** Indicates an attribute operation. */
+    LET("let", ContentKind.LET_EXPR),
 
     // rule parameters
     /** Indicates a bidirectional rule parameter. */
@@ -366,14 +370,14 @@ public enum AspectKind {
             switch (role) {
             case HOST:
                 allowedNodeKinds.put(role,
-                    EnumSet.of(NONE, REMARK, INT, BOOL, REAL, STRING));
+                    EnumSet.of(NONE, REMARK, INT, BOOL, REAL, STRING, PRED));
                 allowedEdgeKinds.put(role, EnumSet.of(NONE, REMARK, LITERAL));
                 break;
             case RULE:
                 allowedNodeKinds.put(role, EnumSet.of(REMARK, READER, ERASER,
                     CREATOR, ADDER, EMBARGO, UNTYPED, BOOL, INT, REAL, STRING,
                     PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, FORALL, FORALL_POS,
-                    EXISTS, ID));
+                    EXISTS, ID, PRED, LET));
                 allowedEdgeKinds.put(role, EnumSet.of(REMARK, READER, ERASER,
                     CREATOR, ADDER, EMBARGO, BOOL, INT, REAL, STRING, ARGUMENT,
                     PATH, LITERAL, FORALL, FORALL_POS, EXISTS, NESTED));
@@ -690,6 +694,48 @@ public enum AspectKind {
                     throw new FormatException(
                         "Reserved node name '%s' (letter digit+)", text);
                 }
+                return text;
+            }
+        },
+        /** Predicate (attribute) value. */
+        PRED_VAL {
+            @Override
+            Pair<Object,String> parse(String text, int pos)
+                throws FormatException {
+                if (text.charAt(pos) != SEPARATOR) {
+                    throw new FormatException("Can't parse attribute predicate");
+                }
+                return new Pair<Object,String>(
+                    parseContent(text.substring(pos + 1)), "");
+            }
+
+            @Override
+            String parseContent(String text) throws FormatException {
+                // EDUARDO: Implement this.
+                FormatException formatExc =
+                    new FormatException("Invalid attribute predicate %s", text);
+                String parts[] = text.split(ASSIGN + "");
+                if (parts.length != 2) {
+                    throw formatExc;
+                }
+                return text;
+            }
+        },
+        /** Let expression content. */
+        LET_EXPR {
+            @Override
+            Pair<Object,String> parse(String text, int pos)
+                throws FormatException {
+                if (text.charAt(pos) != SEPARATOR) {
+                    throw new FormatException("Can't parse let expression");
+                }
+                return new Pair<Object,String>(
+                    parseContent(text.substring(pos + 1)), "");
+            }
+
+            @Override
+            String parseContent(String text) throws FormatException {
+                // EDUARDO: Implement this.
                 return text;
             }
         };
