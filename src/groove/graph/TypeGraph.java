@@ -67,15 +67,15 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         for (Node otherNode : other.nodeSet()) {
             TypeNode otherTypeNode = (TypeNode) otherNode;
             TypeNode image = addNode(otherTypeNode.getType());
+            image.setAbstract(otherTypeNode.isAbstract());
+            image.setColor(otherTypeNode.getColor());
             otherToThis.put(otherTypeNode, image);
         }
         for (TypeEdge otherEdge : other.edgeSet()) {
             TypeEdge image =
                 addEdge(otherToThis.get(otherEdge.source()), otherEdge.label(),
                     otherToThis.get(otherEdge.target()));
-            if (otherEdge.isAbstract()) {
-                image.setAbstract();
-            }
+            image.setAbstract(otherEdge.isAbstract());
         }
         this.labelStore.add(other.labelStore);
     }

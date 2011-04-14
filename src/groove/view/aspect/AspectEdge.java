@@ -232,7 +232,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             if (getKind() != NESTED && getKind() != REMARK) {
                 setAspect(NESTED.getAspect().newInstance(getInnerText()));
             }
-        } else if (getKind() != REMARK) {
+        } else if (getKind() != REMARK && getKind() != SUBTYPE) {
             AspectKind sourceRole = null;
             AspectKind targetRole = null;
             if (sourceKind.isRole() && sourceKind != READER) {
@@ -257,6 +257,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
                     source().getAspect(), target().getAspect());
             }
             if (inferredAspect != null
+                && inferredAspect.getKind().isRole()
                 && inferredAspect.getKind() != READER
                 && !(inferredAspect.getKind() == ERASER && getKind() == EMBARGO)) {
                 setAspect(inferredAspect);
