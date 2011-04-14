@@ -121,17 +121,6 @@ public class JGraphUI extends BasicGraphUI {
                     + scale * (EXTRA_BORDER_SPACE + 3) - 3));
     }
 
-    //
-    //    /** 
-    //     * Makes sure that cancelled edits are nevertheless passed on to 
-    //     * the JGraph.
-    //     */
-    //    @Override
-    //    protected void completeEditing(boolean messageStop, boolean messageCancel,
-    //            boolean messageGraph) {
-    //        super.completeEditing(messageStop, messageCancel, true);
-    //    }
-
     @Override
     protected void installListeners() {
         super.installListeners();
@@ -327,6 +316,8 @@ public class JGraphUI extends BasicGraphUI {
             if (getJGraph().getMode() == PAN_MODE) {
                 int change = -e.getWheelRotation();
                 getJGraph().changeScale(change);
+            } else {
+                getJGraph().getParent().dispatchEvent(e);
             }
         }
 
