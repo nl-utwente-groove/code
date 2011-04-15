@@ -1749,7 +1749,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         @Override
         public String toString() {
             return EdgeRole.NODE_TYPE.getPrefix() + super.toString()
-                + getTypeLabel();
+                + getTypeLabel().text();
         }
 
         /**
@@ -1774,7 +1774,8 @@ abstract public class RegExpr { // implements VarSetSupport {
                     "Sharp operator '%s' must be preceded by '%s'",
                     getOperator(), EdgeRole.NODE_TYPE.getPrefix());
             }
-            return newInstance(TypeLabel.createLabel(EdgeRole.NODE_TYPE, text, true));
+            return newInstance(TypeLabel.createLabel(EdgeRole.NODE_TYPE, text,
+                true));
         }
 
         /** Returns a {@link Wildcard} with a given identifier. */

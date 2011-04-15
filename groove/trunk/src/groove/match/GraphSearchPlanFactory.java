@@ -357,9 +357,11 @@ public class GraphSearchPlanFactory {
                 result = new VarEdgeSearchItem(edge);
             } else if (label.isWildcard()) {
                 result = new WildcardEdgeSearchItem(edge);
+            } else if (label.isSharp()) {
+                result = new Edge2SearchItem(edge);
             } else if (label.isNodeType()) {
                 result = new NodeTypeSearchItem(edge, this.labelStore);
-            } else if (label.isSharp() || label.isAtom()) {
+            } else if (label.isAtom()) {
                 result = new Edge2SearchItem(edge);
             } else if (label.isOperator()) {
                 result =
