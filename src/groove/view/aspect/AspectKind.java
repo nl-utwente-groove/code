@@ -356,7 +356,7 @@ public enum AspectKind {
         FORALL_POS, EXISTS);
     /** Set of attribute-related aspects. */
     public static EnumSet<AspectKind> attributers = EnumSet.of(PRODUCT,
-        ARGUMENT, UNTYPED, STRING, INT, BOOL, REAL);
+        ARGUMENT, UNTYPED, STRING, INT, BOOL, REAL, PRED);
 
     /** Mapping from graph roles to the node aspects allowed therein. */
     public static EnumMap<GraphRole,Set<AspectKind>> allowedNodeKinds =
@@ -370,14 +370,15 @@ public enum AspectKind {
             switch (role) {
             case HOST:
                 allowedNodeKinds.put(role,
-                    EnumSet.of(NONE, REMARK, INT, BOOL, REAL, STRING, PRED));
-                allowedEdgeKinds.put(role, EnumSet.of(NONE, REMARK, LITERAL));
+                    EnumSet.of(NONE, REMARK, INT, BOOL, REAL, STRING));
+                allowedEdgeKinds.put(role,
+                    EnumSet.of(NONE, REMARK, LITERAL, PRED));
                 break;
             case RULE:
                 allowedNodeKinds.put(role, EnumSet.of(REMARK, READER, ERASER,
                     CREATOR, ADDER, EMBARGO, UNTYPED, BOOL, INT, REAL, STRING,
                     PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, FORALL, FORALL_POS,
-                    EXISTS, ID, PRED, LET));
+                    EXISTS, ID));
                 allowedEdgeKinds.put(role, EnumSet.of(REMARK, READER, ERASER,
                     CREATOR, ADDER, EMBARGO, BOOL, INT, REAL, STRING, ARGUMENT,
                     PATH, LITERAL, FORALL, FORALL_POS, EXISTS, NESTED));
@@ -710,15 +711,44 @@ public enum AspectKind {
             }
 
             @Override
-            String parseContent(String text) throws FormatException {
-                // EDUARDO: Implement this.
-                FormatException formatExc =
-                    new FormatException("Invalid attribute predicate %s", text);
+            Predicate parseContent(String text) throws FormatException {
+                String excPrefix =
+                    "Invalid attribute predicate '" + text + "', ";
                 String parts[] = text.split(ASSIGN + "");
                 if (parts.length != 2) {
-                    throw formatExc;
+                    throw new FormatException(excPrefix
+                        + "char '%c' not present", ASSIGN);
                 }
-                return text;
+                String attrName = parts[0].trim();
+                String typedVal = parts[1].trim();
+                Constant constant;
+                parts = typedVal.split(SEPARATOR + "");
+                if (parts.length != 2) {
+                    throw new FormatException(excPrefix
+                        + "char '%c' not present", SEPARATOR);
+                } else {
+                    String signature = parts[0].trim();
+                    String value = parts[1].trim();
+                    if (signature.equals(BOOL_LITERAL.signature)) {
+                        constant = (Constant) BOOL_LITERAL.parseContent(value);
+                    } else if (signature.equals(INT_LITERAL.signature)) {
+                        constant = (Constant) INT_LITERAL.parseContent(value);
+                    } else if (signature.equals(REAL_LITERAL.signature)) {
+                        constant = (Constant) REAL_LITERAL.parseContent(value);
+                    } else if (signature.equals(STRING_LITERAL.signature)) {
+                        constant =
+                            (Constant) STRING_LITERAL.parseContent(value);
+                    } else {
+                        throw new FormatException(excPrefix
+                            + "unknown data signature '%s'", signature);
+                    }
+                }
+                return new Predicate(attrName, constant);
+            }
+
+            @Override
+            String toString(Object content) {
+                return ((Predicate) content).toString();
             }
         },
         /** Let expression content. */
