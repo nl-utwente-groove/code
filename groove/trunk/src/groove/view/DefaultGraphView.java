@@ -38,6 +38,7 @@ import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
+import groove.view.aspect.Predicate;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -281,6 +282,23 @@ public class DefaultGraphView implements GraphView {
             elementMap);
         TypeLabel modelLabel = viewEdge.getTypeLabel();
         assert !modelLabel.isDataType();
+
+        if (viewEdge.hasAttrAspect()
+            && viewEdge.getAttrKind() == AspectKind.PRED) {
+            Predicate pred = (Predicate) viewEdge.getAttrAspect().getContent();
+            // Create the value node.
+            Algebra<?> nodeAlgebra =
+                this.algebraFamily.getAlgebra(pred.getSignature());
+            modelTarget =
+                model.getFactory().createNode(-1, nodeAlgebra, pred.getValue());
+            model.addNode(modelTarget);
+            // EDUARDO: How to update the element map?
+            //elementMap.putNode(viewEdge.target(), modelTarget);
+
+            // Update the label for the edge.
+            modelLabel = model.getFactory().createLabel(pred.getName());
+        }
+
         HostEdge modelEdge =
             model.addEdge(modelSource, modelLabel, modelTarget);
         this.labelSet.add(modelLabel);

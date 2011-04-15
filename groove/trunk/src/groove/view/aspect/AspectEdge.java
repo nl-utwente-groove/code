@@ -31,6 +31,7 @@ import static groove.view.aspect.AspectKind.SUBTYPE;
 import groove.algebra.Operator;
 import groove.graph.AbstractEdge;
 import groove.graph.DefaultLabel;
+import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
@@ -91,6 +92,16 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             if (!hasErrors()) {
                 setAspectsFixed();
             }
+        }
+    }
+
+    @Override
+    public EdgeRole getRole() {
+        if (this.hasAttrAspect() && this.getAttrKind() == AspectKind.PRED) {
+            // We just want the edge role to be non-binary...
+            return EdgeRole.NODE_TYPE;
+        } else {
+            return super.getRole();
         }
     }
 
