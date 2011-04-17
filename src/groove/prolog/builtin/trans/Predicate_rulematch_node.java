@@ -18,6 +18,7 @@
  */
 package groove.prolog.builtin.trans;
 
+import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologCollectionIterator;
@@ -39,11 +40,15 @@ public class Predicate_rulematch_node extends TransPrologCode {
             interpreter.undo(it.getUndoPosition());
             return it.nextSolution(interpreter);
         } else {
-            RuleMatch rm = getRuleMatch(args[0]);
-            PrologCollectionIterator it =
-                new PrologCollectionIterator(rm.getNodeValues(), args[1],
-                    interpreter.getUndoPosition());
-            return it.nextSolution(interpreter);
+            try {
+                RuleMatch rm = (RuleMatch) ((JavaObjectTerm) args[0]).value;
+                PrologCollectionIterator it =
+                    new PrologCollectionIterator(rm.getNodeValues(), args[1],
+                        interpreter.getUndoPosition());
+                return it.nextSolution(interpreter);
+            } catch (Exception e) {
+                return FAIL;
+            }
         }
     }
 

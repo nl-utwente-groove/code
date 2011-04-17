@@ -1,66 +1,69 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2010 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
+/*
+ * Groove Prolog Interface
+ * Copyright (C) 2009 Michiel Hendriks, University of Twente
  * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
- * $Id$
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package groove.prolog.builtin.rule;
 
+import gnu.prolog.term.AtomTerm;
 import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import groove.prolog.GrooveEnvironment;
-import groove.prolog.builtin.graph.GraphPrologCode;
+import groove.prolog.builtin.trans.TransPrologCode;
+import groove.trans.Rule;
 import groove.trans.RuleName;
 import groove.view.RuleView;
 
 /**
- * Predicate type_rule(+Name,?Rule)
- * @author Lesley Wevers
+ * Predicate rule_name(+Name, ?Rule) and rule_name(?Name, +Rule)
  */
-public class Predicate_rule extends GraphPrologCode {
+public class Predicate_rule extends TransPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
-
-        if (!(interpreter.getEnvironment() instanceof GrooveEnvironment)) {
-            GrooveEnvironment.invalidEnvironment();
-        }
-
         try {
-            RuleName ruleName = null;
-
-            try {
-                ruleName = (RuleName) ((JavaObjectTerm) args[0]).value;
-            } catch (Exception e) {
-                return FAIL;
-            }
-
-            RuleView ruleView =
-                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGrammarView().getRuleView(
-                    ruleName);
-
-            if (ruleView == null) {
-                return FAIL;
-            }
-
-            Term nodeTerm = new JavaObjectTerm(ruleView.toModel());
-
-            return interpreter.unify(args[1], nodeTerm);
+            Rule rl = (Rule) ((JavaObjectTerm) args[1]).value;
+            Term res = AtomTerm.get(rl.getName().toString());
+            return interpreter.unify(args[0], res);
         } catch (Exception e) {
-            e.printStackTrace();
-            return FAIL;
+            try {
+                RuleName ruleName = null;
+
+                try {
+                    ruleName = new RuleName(((AtomTerm) args[0]).value);
+                } catch (Exception ee) {
+                    return FAIL;
+                }
+
+                RuleView ruleView =
+                    ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGrammarView().getRuleView(
+                        ruleName);
+
+                if (ruleView == null) {
+                    return FAIL;
+                }
+
+                Term nodeTerm = new JavaObjectTerm(ruleView.toModel());
+
+                return interpreter.unify(args[1], nodeTerm);
+            } catch (Exception ee) {
+                return FAIL;
+            }
         }
     }
 }

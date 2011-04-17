@@ -16,27 +16,34 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package groove.prolog.builtin.rule;
+package groove.prolog.builtin.trans;
 
-import gnu.prolog.term.AtomTerm;
+import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
-import groove.prolog.builtin.trans.TransPrologCode;
-import groove.trans.Rule;
+import groove.prolog.GrooveEnvironment;
+import groove.trans.RuleEvent;
 
 /**
  * 
  * 
  * @author Michiel Hendriks
  */
-public class Predicate_rule_name_2 extends TransPrologCode {
+public class Predicate_active_ruleevent extends TransPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
-        Rule rl = getRule(args[0]);
-        Term res = AtomTerm.get(rl.getName().toString());
-        return interpreter.unify(args[1], res);
-    }
 
+        if (!(interpreter.getEnvironment() instanceof GrooveEnvironment)) {
+            GrooveEnvironment.invalidEnvironment();
+        }
+        RuleEvent ruleEvent =
+            ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getActiveRuleEvent();
+        if (ruleEvent == null) {
+            return FAIL;
+        }
+        Term value = new JavaObjectTerm(ruleEvent);
+        return interpreter.unify(args[0], value);
+    }
 }

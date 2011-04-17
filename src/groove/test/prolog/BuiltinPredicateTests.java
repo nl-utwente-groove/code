@@ -130,16 +130,16 @@ public class BuiltinPredicateTests {
     @Test
     public void testRule() {
         // Assert that all rule names can be retrieved
-        // succ("rule_name('rule-a')");
-        // succ("rule_name('rule-b')");
+        succ("rule_name('rule-a')");
+        succ("rule_name('rule-b')");
 
         // Assert that all enabled rule names can be checked
-        // fail("rule_enabled('rule-a')");
-        // succ("rule_enabled('rule-b')");
+        fail("rule_enabled('rule-a')");
+        succ("rule_enabled('rule-b')");
 
         // Assert that confluent rule names can be checked
-        // succ("rule_confluent('rule-a')");
-        // fail("rule_confluent('rule-b')");
+        succ("rule_confluent('rule-a')");
+        fail("rule_confluent('rule-b')");
 
         // Assert that rules can be retrieved
         succ("rule_name(N), rule(N,R), is_rule(R)");
@@ -149,8 +149,8 @@ public class BuiltinPredicateTests {
         succ("rule_name(N), rule(N,R), rule_rhs(R,G), is_graph(G)");
 
         // Assert that the name of the rules are 'rule-a' and 'rule-b'
-        succ("rule_name(N), rule(N,R), rule_name(R,'rule-a')");
-        succ("rule_name(N), rule(N,R), rule_name(R,'rule-b')");
+        succ("rule_name(N), rule(N,R), rule('rule-a',R)");
+        succ("rule_name(N), rule(N,R), rule('rule-b',R)");
 
         // Assert that rule_priority returns 0 for some rule
         succ("rule_name(N), rule(N,R), rule_priority(R,0)");
@@ -216,22 +216,37 @@ public class BuiltinPredicateTests {
     @Test
     public void testTrans() {
         // Assert that ruleevent gives a rule event
-        // succ("ruleevent(RE), is_ruleevent(E)");
-        // succ("ruleevent_set(RE), length(RE,1)");
+        succ("active_ruleevent(RE), is_ruleevent(RE)");
 
         // Assert that created_edge and created_node give a edge and node
-        succ("start_state(S), state_transition(S,T), transition_event(T,RE), ruleevent_created_edge(RE,E), is_edge(E)");
-        succ("start_state(S), state_transition(S,T), transition_event(T,RE), ruleevent_created_node(RE,N), is_node(N)");
+        succ("active_ruleevent(RE), ruleevent_created_edge(RE,E), is_edge(E)");
+        succ("active_ruleevent(RE), ruleevent_created_node(RE,N), is_node(N)");
 
         // Assert that ruleevent_rule gives rule-b
-        succ("start_state(S), state_transition(S,T), transition_event(T,RE), ruleevent_rule(RE,R), rule_name(R,'rule-b')");
+        succ("active_ruleevent(RE), ruleevent_rule(RE,R), rule('rule-b',R)");
 
         // Assert that ruleevent_label gives 'rule-b'
-        succ("start_state(S), state_transition(S,T), transition_event(T,RE), ruleevent_label(RE,'rule-b')");
+        succ("active_ruleevent(RE), ruleevent_label(RE,'rule-b')");
 
-        // TODO: ruleevent_erased_*, rulematch_* 
+        // Assert that the match of a ruleevent is a rulematch
+        succ("active_ruleevent(RE), ruleevent_match(RE,M), is_rulematch(M)");
 
-        // @deprecated: ruleevent_anchor_edge, ruleevent_anchor_node, ruleevent_conflicts, rulevent_match, ruleevent_transpose
+        // Assert that rulematch_rule gives the executed rule
+        succ("active_ruleevent(RE), ruleevent_match(RE,M), rulematch_rule(M,R), rule('rule-b',R)");
+        fail("active_ruleevent(RE), ruleevent_match(RE,M), rulematch_rule(M,R), rule('rule-a',R)");
+
+        // Assert that rulematch_edge gives an edge
+        succ("active_ruleevent(RE), ruleevent_match(RE,M), rulematch_edge(M,E), is_edge(E)");
+
+        // Assert that rulematch_node gives a node
+        succ("active_ruleevent(RE), ruleevent_match(RE,M), rulematch_node(M,N), is_node(N)");
+
+        // Assert that the anchor node of this ruleevent is a node
+        succ("active_ruleevent(RE), ruleevent_anchor_node(RE,N), is_node(N)");
+
+        // succ("active_ruleevent(RE), rule('rule-b',R), rule_rhs(R,RHS), graph_node(RHS, N), ruleevent_transpose(RE,N,T)")
+
+        // TODO: ruleevent_erased_*, ruleevent_anchor_edge, ruleevent_conflicts
     }
 
     /**
@@ -277,7 +292,9 @@ public class BuiltinPredicateTests {
             exploration.play(gts, null);
 
             return PrologTestUtil.test(
-                new GrooveState(gv, gts, gts.startState(), null), predicate);
+                new GrooveState(gv, gts, gts.startState(),
+                    gts.startState().getTransitionIter().next().getEvent()),
+                predicate);
         } catch (Exception e) {
             e.printStackTrace();
             org.junit.Assert.fail(e.getMessage());
