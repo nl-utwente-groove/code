@@ -18,25 +18,26 @@ package groove.prolog.builtin.rule;
 
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
-import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.builtin.graph.GraphPrologCode;
+import groove.prolog.util.PrologStringCollectionIterator;
 import groove.trans.RuleName;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
  * Predicate rule_name(?Name)
  * @author Lesley Wevers
  */
-public class Predicate_rule_name_1 extends GraphPrologCode {
+public class Predicate_rule_name extends GraphPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         if (backtrackMode) {
-            PrologCollectionIterator it =
-                (PrologCollectionIterator) interpreter.popBacktrackInfo();
+            PrologStringCollectionIterator it =
+                (PrologStringCollectionIterator) interpreter.popBacktrackInfo();
             interpreter.undo(it.getUndoPosition());
             return it.nextSolution(interpreter);
         } else {
@@ -46,10 +47,15 @@ public class Predicate_rule_name_1 extends GraphPrologCode {
             Set<RuleName> ruleNames =
                 ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGrammarView().getRuleNames();
 
+            Set<String> ruleNameStrings = new HashSet<String>();
+            for (RuleName rn : ruleNames) {
+                ruleNameStrings.add(rn.toString());
+            }
+
             try {
-                PrologCollectionIterator it =
-                    new PrologCollectionIterator(ruleNames, args[0],
-                        interpreter.getUndoPosition());
+                PrologStringCollectionIterator it =
+                    new PrologStringCollectionIterator(ruleNameStrings,
+                        args[0], interpreter.getUndoPosition());
                 return it.nextSolution(interpreter);
             } catch (Exception e) {
                 e.printStackTrace();

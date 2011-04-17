@@ -26,8 +26,7 @@ import groove.prolog.builtin.trans.TransPrologCode;
 import groove.trans.Rule;
 
 /**
- * <code>is_rulevent(X)</code>
- * 
+ * Predicate is_rule(+Rule)
  * @author Michiel Hendriks
  */
 public class Predicate_is_rule extends TransPrologCode {

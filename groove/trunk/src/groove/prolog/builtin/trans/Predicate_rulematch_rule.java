@@ -33,9 +33,13 @@ public class Predicate_rulematch_rule extends TransPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
-        RuleMatch re = getRuleMatch(args[0]);
-        Term res = new JavaObjectTerm(re.getRule());
-        return interpreter.unify(args[1], res);
+        try {
+            RuleMatch re = (RuleMatch) ((JavaObjectTerm) args[0]).value;
+            Term res = new JavaObjectTerm(re.getRule());
+            return interpreter.unify(args[1], res);
+        } catch (Exception e) {
+            return FAIL;
+        }
     }
 
 }

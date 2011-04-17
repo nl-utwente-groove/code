@@ -71,13 +71,13 @@ Rule:
 % ruleevent_anchor_node(+RuleEvent,?Node)
 % @param the rule event
 % @param the node
-% :-build_in(ruleevent_anchor_node/2,'groove.prolog.builtin.trans.Predicate_ruleevent_anchor_node').
+:-build_in(ruleevent_anchor_node/2,'groove.prolog.builtin.trans.Predicate_ruleevent_anchor_node').
 
 % Edge anchors in this event according to the rule
 % ruleevent_anchor_edge(+RuleEvent,?Edge)
 % @param the rule event
 % @param the edge
-% :-build_in(ruleevent_anchor_edge/2,'groove.prolog.builtin.trans.Predicate_ruleevent_anchor_edge').
+:-build_in(ruleevent_anchor_edge/2,'groove.prolog.builtin.trans.Predicate_ruleevent_anchor_edge').
 
 % Erased edges in this event
 % ruleevent_erased_edge(+RuleEvent,?Edge)

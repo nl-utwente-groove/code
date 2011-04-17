@@ -16,7 +16,7 @@
  */
 package groove.prolog.builtin.rule;
 
-import gnu.prolog.term.JavaObjectTerm;
+import gnu.prolog.term.AtomTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
@@ -39,7 +39,7 @@ public class Predicate_rule_enabled extends TransPrologCode {
         }
 
         try {
-            RuleName name = (RuleName) ((JavaObjectTerm) args[0]).value;
+            RuleName name = new RuleName(((AtomTerm) args[0]).value);
 
             RuleView ruleView =
                 ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGrammarView().getRuleView(

@@ -221,7 +221,6 @@ public class PrologQuery {
      */
     public QueryResult next() throws GroovePrologException {
         if (this.currentResult == null) {
-            // TODO: error
             return null;
         }
         if (this.currentResult.isLastResult()) {
@@ -234,6 +233,7 @@ public class PrologQuery {
         try {
             rc = this.interpreter.execute(this.currentResult.goal);
         } catch (PrologException e) {
+            e.printStackTrace();
             throw new GroovePrologException(e);
         }
         long stopTime = System.nanoTime();

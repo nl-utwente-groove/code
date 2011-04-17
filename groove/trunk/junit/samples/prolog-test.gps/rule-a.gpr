@@ -28,6 +28,11 @@
                 <string>147 180 28 34</string>
             </attr>
         </node>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>not:</string>
+            </attr>
+        </edge>
         <edge to="n1" from="n0">
             <attr name="label">
                 <string>new:b</string>
@@ -38,17 +43,12 @@
         </edge>
         <edge to="n1" from="n1">
             <attr name="label">
-                <string>new:</string>
+                <string>type:B</string>
             </attr>
         </edge>
         <edge to="n2" from="n2">
             <attr name="label">
                 <string>type:B</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>type:A</string>
             </attr>
         </edge>
         <edge to="n2" from="n0">
@@ -58,12 +58,12 @@
         </edge>
         <edge to="n1" from="n1">
             <attr name="label">
-                <string>type:B</string>
+                <string>new:</string>
             </attr>
         </edge>
-        <edge to="n2" from="n2">
+        <edge to="n0" from="n0">
             <attr name="label">
-                <string>not:</string>
+                <string>type:A</string>
             </attr>
         </edge>
     </graph>
