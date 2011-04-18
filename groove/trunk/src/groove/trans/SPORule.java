@@ -428,6 +428,9 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
             for (RuleMatch oldMatch : oldResult) {
                 result.addAll(oldMatch.addSubMatchChoice(subMatches));
             }
+            if (result.isEmpty()) {
+                break;
+            }
         }
         return result;
     }

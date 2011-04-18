@@ -1800,7 +1800,7 @@ public class DefaultRuleView implements RuleView {
                 RuleGraphMorphism rootMap, String name, boolean positive) {
             ForallCondition result =
                 new ForallCondition(new RuleName(name), target, rootMap,
-                    getSystemProperties());
+                    getSystemProperties(), null);
             if (positive) {
                 result.setPositive();
             }

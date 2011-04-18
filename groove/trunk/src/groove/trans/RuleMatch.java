@@ -24,7 +24,7 @@ import java.util.Collection;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RuleMatch extends CompositeMatch {
+public class RuleMatch extends AbstractMatch {
     /** Constructs a match for a given {@link SPORule}. */
     public RuleMatch(SPORule rule, RuleToHostMap elementMap) {
         super(elementMap);
@@ -107,7 +107,7 @@ public class RuleMatch extends CompositeMatch {
     }
 
     @Override
-    public RuleMatch createMatch() {
+    protected RuleMatch createMatch() {
         return new RuleMatch(getRule(), getElementMap());
     }
 
