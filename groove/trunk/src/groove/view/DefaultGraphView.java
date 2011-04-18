@@ -290,10 +290,9 @@ public class DefaultGraphView implements GraphView {
             Algebra<?> nodeAlgebra =
                 this.algebraFamily.getAlgebra(pred.getSignature());
             modelTarget =
-                model.getFactory().createNode(-1, nodeAlgebra, pred.getValue());
+                model.getFactory().createNode(-1, nodeAlgebra,
+                    nodeAlgebra.getValue(pred.getValue().getSymbol()));
             model.addNode(modelTarget);
-            // EDUARDO: How to update the element map?
-            //elementMap.putNode(viewEdge.target(), modelTarget);
 
             // Update the label for the edge.
             modelLabel = model.getFactory().createLabel(pred.getName());
