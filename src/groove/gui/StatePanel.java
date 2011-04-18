@@ -198,7 +198,11 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                 try {
                     for (String typeName : grammar.getActiveTypeNames()) {
                         TypeView view = grammar.getTypeView(typeName);
-                        labelsMap.put(typeName, view.getLabels());
+                        // the view may be null if type names
+                        // overlap modulo upper/lowercase
+                        if (view != null) {
+                            labelsMap.put(typeName, view.getLabels());
+                        }
                     }
                     getJGraph().setType(grammar.toModel().getType(), labelsMap);
                 } catch (FormatException e) {
