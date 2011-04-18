@@ -53,4 +53,10 @@ public class Predicate {
             + this.getValue().toString();
     }
 
+    /** Returns the string to be used by the GUI. */
+    public String getContentString() {
+        return this.getName() + " " + AspectParser.ASSIGN + " "
+            + this.getValue().getSymbol();
+    }
+
 }

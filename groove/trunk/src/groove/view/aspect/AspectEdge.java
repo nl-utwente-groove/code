@@ -97,7 +97,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
 
     @Override
     public EdgeRole getRole() {
-        if (this.hasAttrAspect() && this.getAttrKind() == AspectKind.PRED) {
+        if (this.isPredicate()) {
             // We just want the edge role to be non-binary...
             return EdgeRole.NODE_TYPE;
         } else {
@@ -338,9 +338,15 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             result = getTypeLabel();
         }
         if (result == null) {
-            String text =
-                getKind() == NESTED ? getAspect().getContentString()
-                        : getInnerText();
+            String text;
+            if (getKind() == NESTED) {
+                text = getAspect().getContentString();
+            } else if (isPredicate()) {
+                text =
+                    ((Predicate) getAttrAspect().getContent()).getContentString();
+            } else {
+                text = getInnerText();
+            }
             result = DefaultLabel.createLabel(text);
         }
         return result;
@@ -389,7 +395,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
      */
     private TypeLabel createTypeLabel() throws FormatException {
         TypeLabel result;
-        if (getKind() == REMARK) {
+        if (getKind() == REMARK || isPredicate()) {
             result = null;
         } else if (!getKind().isRole() && getLabelKind() != PATH) {
             if (getLabelKind() == LITERAL) {
@@ -547,6 +553,11 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     /** Indicates if this is an argument edge. */
     public boolean isArgument() {
         return this.argumentNr >= 0;
+    }
+
+    /** Indicates if this is an attribute predicate edge. */
+    public boolean isPredicate() {
+        return this.hasAttrAspect() && this.getAttrKind() == AspectKind.PRED;
     }
 
     /**
