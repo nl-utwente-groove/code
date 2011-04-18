@@ -281,7 +281,7 @@ public class DefaultGraphView implements GraphView {
             "Target of '%s' is not in element map %s", viewEdge.target(),
             elementMap);
         TypeLabel modelLabel = viewEdge.getTypeLabel();
-        assert !modelLabel.isDataType();
+        assert modelLabel == null || !modelLabel.isDataType();
 
         if (viewEdge.hasAttrAspect()
             && viewEdge.getAttrKind() == AspectKind.PRED) {
