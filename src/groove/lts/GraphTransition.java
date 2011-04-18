@@ -21,6 +21,7 @@ import groove.graph.Edge;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.RuleMatch;
+import groove.view.FormatException;
 
 /**
  * 
@@ -36,6 +37,16 @@ public interface GraphTransition extends Edge<GraphState>, MatchResult {
 
     /** Overrides the method to specialise the result type. */
     DerivationLabel label();
+
+    /** 
+     * Returns a string to be sent to the standard output
+     * on adding a transition with this event to a GTS. 
+     * @return a standard output string, or {@code null} if
+     * there is no standard output for the rule of this event.
+     * @throws FormatException if the format string of the rule
+     * does not correspond to the actual rule parameters
+     */
+    public String getOutputString() throws FormatException;
 
     /** Returns the (possibly {@code null} control transition associated with this transition. */
     CtrlTransition getCtrlTransition();

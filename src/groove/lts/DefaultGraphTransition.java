@@ -24,6 +24,7 @@ import groove.graph.EdgeRole;
 import groove.graph.Element;
 import groove.graph.Morphism;
 import groove.graph.iso.IsoChecker;
+import groove.trans.AbstractEvent;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
@@ -32,6 +33,7 @@ import groove.trans.HostNode;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
+import groove.view.FormatException;
 
 /**
  * Models a transition built upon a rule application
@@ -69,6 +71,11 @@ public class DefaultGraphTransition extends
 
     public RuleEvent getEvent() {
         return this.event;
+    }
+
+    @Override
+    public String getOutputString() throws FormatException {
+        return ((AbstractEvent<?,?>) getEvent()).getOutputString(getAddedNodes());
     }
 
     public boolean isSymmetry() {

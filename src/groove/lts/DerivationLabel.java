@@ -32,14 +32,6 @@ public class DerivationLabel extends AbstractLabel {
         this.text = getLabelText(event, addedNodes);
     }
 
-    /** 
-     * Constructs a new label on the basis of a given rule event,
-     * appended by the list of anchors
-     */
-    public DerivationLabel(RuleEvent event) {
-        this.text = getLabelText(event, null);
-    }
-
     /** Constructs the label text. */
     private String getLabelText(RuleEvent event, HostNode[] addedNodes) {
         StringBuilder result = new StringBuilder();
@@ -49,12 +41,7 @@ public class DerivationLabel extends AbstractLabel {
         if (brackets) {
             result.append(BEGIN_CHAR);
         }
-        if (addedNodes == null) {
-            result.append(rule.getTransitionLabel());
-            result.append(event.getAnchorImageString());
-        } else {
-            result.append(((AbstractEvent<?,?>) event).getLabelText(addedNodes));
-        }
+        result.append(((AbstractEvent<?,?>) event).getLabelText(addedNodes));
         if (brackets) {
             result.append(END_CHAR);
         }
@@ -67,6 +54,26 @@ public class DerivationLabel extends AbstractLabel {
     }
 
     private final String text;
+
+    /** 
+     * Returns a label text consisting of the anchors, rather than
+     * the rule parameters.
+     */
+    public static final String getAnchorText(RuleEvent event) {
+        StringBuilder result = new StringBuilder();
+        Rule rule = event.getRule();
+        boolean brackets =
+            rule.getSystemProperties().isShowTransitionBrackets();
+        if (brackets) {
+            result.append(BEGIN_CHAR);
+        }
+        result.append(rule.getTransitionLabel());
+        result.append(event.getAnchorImageString());
+        if (brackets) {
+            result.append(END_CHAR);
+        }
+        return result.toString();
+    }
 
     /** The obligatory first character of a rule name. */
     private static final char BEGIN_CHAR = '<';

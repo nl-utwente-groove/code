@@ -230,6 +230,29 @@ public class GraphProperties extends Properties {
     }
 
     /**
+     * Retrieves the {@link #FORMAT_KEY} value in this properties object.
+     * @return the current value for {@link #FORMAT_KEY}; may be
+     *         <code>null</code>
+     */
+    public String getFormatString() {
+        return getProperty(FORMAT_KEY);
+    }
+
+    /**
+     * Sets the {@link #FORMAT_KEY} property to a given value.
+     * @param format the new remark; may be <code>null</code>
+     * @return the previous value for {@link #FORMAT_KEY}; may be
+     *         <code>null</code>
+     */
+    public String setFormatString(String format) {
+        if (format == null) {
+            return (String) remove(FORMAT_KEY);
+        } else {
+            return (String) super.setProperty(FORMAT_KEY, format);
+        }
+    }
+
+    /**
      * Retrieves the {@link #TRANSITION_LABEL_KEY} value in this properties
      * object.
      * @return the current value for {@link #TRANSITION_LABEL_KEY}; may be
@@ -368,6 +391,21 @@ public class GraphProperties extends Properties {
     }
 
     /**
+     * Returns the string format property from a given graph. The property is stored
+     * under {@link #FORMAT_KEY}. Yields <code>null</code> if the graph has
+     * no properties, or the properties contain no remark value.
+     * @see #getFormatString()
+     */
+    static public String getFormatString(Graph<?,?> graph) {
+        GraphProperties properties = GraphInfo.getProperties(graph, false);
+        if (properties == null) {
+            return null;
+        } else {
+            return properties.getFormatString();
+        }
+    }
+
+    /**
      * Returns the transition label from a given graph. The property is stored
      * under {@link #TRANSITION_LABEL_KEY}. Yields <code>null</code> if the
      * graph has no properties, or the properties contain no label value.
@@ -431,6 +469,10 @@ public class GraphProperties extends Properties {
     static public final String CONFLUENT_KEY = "confluent";
 
     /**
+     * Format string for stdout.
+     */
+    static public final String FORMAT_KEY = "printFormat";
+    /**
      * Transition label for the rule application.
      * The corresponding value should be a string.
      */
@@ -469,6 +511,22 @@ public class GraphProperties extends Properties {
             @Override
             public String getComment() {
                 return "A one-line description of the rule, shown e.g. as tool tip";
+            }
+        });
+        defaultKeys.put(FORMAT_KEY, new Property<String>() {
+            @Override
+            public boolean isSatisfied(String value) {
+                return value.trim().length() > 0;
+            }
+
+            @Override
+            public String getDescription() {
+                return "a format string for standard output on rule application";
+            }
+
+            @Override
+            public String getComment() {
+                return "A format string for standard output";
             }
         });
         defaultKeys.put(PRIORITY_KEY, new Property<String>() {

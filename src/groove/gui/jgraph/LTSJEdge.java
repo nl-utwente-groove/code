@@ -77,8 +77,8 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
     @Override
     protected StringBuilder getLine(Edge<?> edge) {
         String text =
-            getJGraph().isShowAnchors() ? new DerivationLabel(
-                ((GraphTransition) edge).getEvent()).text()
+            getJGraph().isShowAnchors()
+                    ? DerivationLabel.getAnchorText(((GraphTransition) edge).getEvent())
                     : edge.label().text();
         return new StringBuilder(text);
     }

@@ -161,7 +161,7 @@ public class Exploration {
      * compatible with this exploration
      * @see #test(RuleSystem)
      */
-    public void play(GTS gts, GraphState state) throws FormatException {
+    final public void play(GTS gts, GraphState state) throws FormatException {
         RuleSystem rules = gts.getGrammar().getRuleSystem();
         // parse the strategy
         Strategy parsedStrategy =
