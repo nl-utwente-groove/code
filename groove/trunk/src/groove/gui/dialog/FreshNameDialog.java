@@ -48,6 +48,10 @@ abstract public class FreshNameDialog<Name> {
     public FreshNameDialog(Set<Name> existingNames, String suggestion,
             boolean mustBeFresh) {
         this.existingNames = new HashSet<Name>(existingNames);
+        this.existingLowerCaseNames = new HashSet<String>();
+        for (Name name : existingNames) {
+            this.existingLowerCaseNames.add(name.toString().toLowerCase());
+        }
         this.suggestion =
             mustBeFresh ? generateNewName(suggestion, existingNames)
                     : createName(suggestion);
@@ -113,9 +117,13 @@ abstract public class FreshNameDialog<Name> {
         if (label.toString().length() == 0) {
             errorText = "Empty name is not allowed";
             enabled = false;
-        } else if (this.existingNames.contains(label)
-            && !this.suggestion.equals(label)) {
-            errorText = "Name already exists";
+        } else if (this.existingNames.contains(label)) {
+            if (!this.suggestion.equals(label)) {
+                errorText = "Name already exists";
+                enabled = false;
+            }
+        } else if (this.existingLowerCaseNames.contains(label.toString().toLowerCase())) {
+            errorText = "Name already exists (with different case)";
             enabled = false;
         }
         getErrorLabel().setText(errorText);
@@ -199,9 +207,11 @@ abstract public class FreshNameDialog<Name> {
     /** Label displaying the current error in the renaming (if any). */
     private JLabel errorLabel;
 
-    /** Set of existing rule names. */
+    /** Set of existing names. */
     private final Set<Name> existingNames;
 
+    /** Set of existing names, in lower case. */
+    private final Set<String> existingLowerCaseNames;
     /** Suggested name. */
     private final Name suggestion;
 
