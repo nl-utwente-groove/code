@@ -16,6 +16,11 @@
  */
 package groove.trans;
 
+import groove.algebra.Algebra;
+import groove.algebra.AlgebraFamily;
+import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,10 +32,21 @@ import java.util.List;
  * @version $Revision $
  */
 public class ForallCondition extends AbstractCondition<CompositeMatch> {
-    /** Constructs an instance based on a given target and root map. */
+    /**
+     * Constructs an instance based on a given target and root map. 
+     * @param countNode node specifying the number of matches of this condition.
+     */
     public ForallCondition(RuleName name, RuleGraph target,
-            RuleGraphMorphism rootMap, SystemProperties properties) {
+            RuleGraphMorphism rootMap, SystemProperties properties,
+            VariableNode countNode) {
         super(name, target, rootMap, properties);
+        this.countNode = countNode;
+        this.intAlgebra =
+            AlgebraFamily.getInstance(properties.getAlgebraFamily()).getAlgebra(
+                "int");
+        this.count =
+            countNode == null || countNode.getConstant() == null ? -1
+                    : Integer.parseInt(countNode.getConstant().getSymbol());
     }
 
     @Override
@@ -60,19 +76,30 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
      */
     Collection<CompositeMatch> computeMatches(HostGraph host,
             Iterator<RuleToHostMap> matchMapIter) {
-        Collection<CompositeMatch> result = new ArrayList<CompositeMatch>();
+        List<CompositeMatch> result = new ArrayList<CompositeMatch>();
         // add the empty match if the condition is not positive
         if (!this.positive) {
-            result.add(new CompositeMatch());
+            result.add(new CompositeMatch(host));
         }
         boolean first = this.positive;
+        int count = this.count;
+        boolean lookupCount = count < 0 && this.countNode != null;
         while (matchMapIter.hasNext() && (first || !result.isEmpty())) {
             // add the empty match if the condition is positive
             if (first) {
-                result.add(new CompositeMatch());
+                result.add(new CompositeMatch(host));
                 first = false;
             }
             RuleToHostMap matchMap = matchMapIter.next();
+            // see if the required match count is predetermined
+            if (lookupCount) {
+                HostNode countImage = matchMap.getNode(this.countNode);
+                if (countImage != null) {
+                    count =
+                        Integer.parseInt(((ValueNode) countImage).getSymbol());
+                }
+                lookupCount = false;
+            }
             Collection<Match> subResults = new ArrayList<Match>();
             for (Condition subCondition : getSubConditions()) {
                 if (subCondition instanceof PositiveCondition<?>) {
@@ -82,12 +109,32 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
                     }
                 }
             }
-            Collection<CompositeMatch> newResult =
-                new ArrayList<CompositeMatch>();
+            List<CompositeMatch> newResult = new ArrayList<CompositeMatch>();
             for (CompositeMatch current : result) {
                 newResult.addAll(current.addSubMatchChoice(subResults));
             }
             result = newResult;
+        }
+        if (count >= 0) {
+            // filter out the matches of the wrong size
+            List<CompositeMatch> newResult = new ArrayList<CompositeMatch>();
+            for (CompositeMatch current : result) {
+                if (current.getSubMatches().size() == count) {
+                    newResult.add(current);
+                }
+            }
+            result = newResult;
+        } else if (this.countNode != null) {
+            // add the appropriate count to the matches
+            for (int i = 0; i < result.size(); i++) {
+                ValueNode countImage =
+                    host.getFactory().createNode(
+                        this.intAlgebra,
+                        this.intAlgebra.getValue(""
+                            + result.get(i).getSubMatches().size()));
+                result.get(i).getElementMap().putNode(this.countNode,
+                    countImage);
+            }
         }
         return result;
     }
@@ -122,6 +169,11 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
         return this.positive;
     }
 
+    /** Node capturing the match count of this condition. */
+    private final RuleNode countNode;
+    private final Algebra<?> intAlgebra;
+    /** Required number of matches, or {@code -1} if the count is unspecified */
+    private final int count;
     /**
      * Flag indicating whether the condition is positive, i.e., cannot be
      * vacuously true.
