@@ -513,22 +513,6 @@ public class GraphProperties extends Properties {
                 return "A one-line description of the rule, shown e.g. as tool tip";
             }
         });
-        defaultKeys.put(FORMAT_KEY, new Property<String>() {
-            @Override
-            public boolean isSatisfied(String value) {
-                return value.trim().length() > 0;
-            }
-
-            @Override
-            public String getDescription() {
-                return "a format string for standard output on rule application";
-            }
-
-            @Override
-            public String getComment() {
-                return "A format string for standard output";
-            }
-        });
         defaultKeys.put(PRIORITY_KEY, new Property<String>() {
             @Override
             public boolean isSatisfied(String value) {
@@ -598,6 +582,22 @@ public class GraphProperties extends Properties {
             public String getComment() {
                 return "A string to be used as the transition label in the "
                     + "LTS. If empty, defaults to the rule name.";
+            }
+        });
+        defaultKeys.put(FORMAT_KEY, new Property<String>() {
+            @Override
+            public boolean isSatisfied(String value) {
+                return value.trim().length() > 0;
+            }
+
+            @Override
+            public String getDescription() {
+                return "a format string for standard output on rule application";
+            }
+
+            @Override
+            public String getComment() {
+                return "If nonempty, rule application prints this (instantiated) string";
             }
         });
         DEFAULT_USER_KEYS = Collections.unmodifiableMap(defaultKeys);
