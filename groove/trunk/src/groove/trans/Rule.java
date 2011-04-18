@@ -42,6 +42,13 @@ public interface Rule extends Comparable<Rule>, Condition {
      */
     public String getTransitionLabel();
 
+    /** 
+     * Returns a format string for the standard output.
+     * Whenever a transition with this rule is added to a GTS, a 
+     * corresponding string is sent to the standard output.
+     */
+    public String getFormatString();
+
     /**
      * Returns the priority of this object. A higher number means higher
      * priority, with {@link #DEFAULT_PRIORITY} the lowest.

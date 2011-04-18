@@ -114,36 +114,7 @@ public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition> {
         try {
             Graph<String> graph =
                 LTL2Buchi.translate(FormulaParser.parse(formula).toLtlFormula());
-            Map<Node<String>,BuchiLocation> node2location =
-                new HashMap<Node<String>,BuchiLocation>();
-            Node<String> init = graph.getInit();
-            result.setInitial(getLocation(node2location, init));
-            Set<Node<String>> newNodes = new HashSet<Node<String>>();
-            newNodes.add(init);
-            while (!newNodes.isEmpty()) {
-                Iterator<Node<String>> newNodeIter = newNodes.iterator();
-                Node<String> node = newNodeIter.next();
-                newNodeIter.remove();
-                BuchiLocation location = getLocation(node2location, node);
-                if (result.nodeSet().contains(location)) {
-                    continue;
-                }
-                if (node.getAttributes().getBoolean("accepting")) {
-                    location.setAccepting();
-                }
-                result.addNode(location);
-                for (Edge<String> edge : node.getOutgoingEdges()) {
-                    assert edge.getSource().equals(node);
-                    BuchiLabel label =
-                        new BuchiLabel(edge.getAction(), edge.getGuard());
-                    Node<String> target = edge.getNext();
-                    BuchiTransition transition =
-                        new BuchiTransition(location, label, getLocation(
-                            node2location, target));
-                    result.addEdgeWithoutCheck(transition);
-                    newNodes.add(target);
-                }
-            }
+            newBuchiGraph(graph, result);
             if (DEBUG) {
                 result.display();
             }
@@ -151,6 +122,42 @@ public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition> {
             throw new FormatException(e.getMessage());
         }
         return result;
+    }
+
+    /**
+     * Constructs a {@link BuchiGraph} from a (NASA ltl2buchi) graph.
+     */
+    private void newBuchiGraph(Graph<String> graph, final BuchiGraph result) {
+        Map<Node<String>,BuchiLocation> node2location =
+            new HashMap<Node<String>,BuchiLocation>();
+        Node<String> init = graph.getInit();
+        result.setInitial(getLocation(node2location, init));
+        Set<Node<String>> newNodes = new HashSet<Node<String>>();
+        newNodes.add(init);
+        while (!newNodes.isEmpty()) {
+            Iterator<Node<String>> newNodeIter = newNodes.iterator();
+            Node<String> node = newNodeIter.next();
+            newNodeIter.remove();
+            BuchiLocation location = getLocation(node2location, node);
+            if (result.nodeSet().contains(location)) {
+                continue;
+            }
+            if (node.getAttributes().getBoolean("accepting")) {
+                location.setAccepting();
+            }
+            result.addNode(location);
+            for (Edge<String> edge : node.getOutgoingEdges()) {
+                assert edge.getSource().equals(node);
+                BuchiLabel label =
+                    new BuchiLabel(edge.getAction(), edge.getGuard());
+                Node<String> target = edge.getNext();
+                BuchiTransition transition =
+                    new BuchiTransition(location, label, getLocation(
+                        node2location, target));
+                result.addEdgeWithoutCheck(transition);
+                newNodes.add(target);
+            }
+        }
     }
 
     /**

@@ -28,6 +28,7 @@ import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
+import groove.view.FormatException;
 
 /**
  * Combines a {@link ShapeState} and a {@link ShapeTransition}.
@@ -128,6 +129,11 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     @Override
     public RuleEvent getEvent() {
         return this.transition.getEvent();
+    }
+
+    @Override
+    public String getOutputString() throws FormatException {
+        return this.transition.getOutputString();
     }
 
     @Override

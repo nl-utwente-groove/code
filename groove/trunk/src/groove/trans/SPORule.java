@@ -146,6 +146,16 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         this.ruleProperties.setTransitionLabel(label);
     }
 
+    @Override
+    public String getFormatString() {
+        return this.ruleProperties.getFormatString();
+    }
+
+    /** Sets the format string for this rule. */
+    public void setFormatString(String format) {
+        this.ruleProperties.setFormatString(format);
+    }
+
     /**
      * Returns the parent rule of this rule. The parent may be this rule itself.
      */

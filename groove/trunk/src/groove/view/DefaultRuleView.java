@@ -130,6 +130,11 @@ public class DefaultRuleView implements RuleView {
         return GraphProperties.getTransitionLabel(getAspectGraph());
     }
 
+    /** Convenience method */
+    public String getFormatString() {
+        return GraphProperties.getFormatString(getAspectGraph());
+    }
+
     public boolean isEnabled() {
         return GraphProperties.isEnabled(getAspectGraph());
     }
@@ -336,6 +341,7 @@ public class DefaultRuleView implements RuleView {
             rule.setPriority(getPriority());
             rule.setConfluent(isConfluent());
             rule.setTransitionLabel(getTransitionLabel());
+            rule.setFormatString(getFormatString());
             Parameters parameters = new Parameters();
             try {
                 rule.setSignature(parameters.getSignature(),

@@ -41,6 +41,7 @@ import groove.util.FilterIterator;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
 import groove.util.TreeHashSet;
+import groove.view.FormatException;
 
 import java.util.AbstractSet;
 import java.util.Arrays;
@@ -372,6 +373,14 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> {
         } else if (transition instanceof GraphNextState) {
             this.transitionCount++;
             fireAddEdge(transition);
+        }
+        try {
+            String outputString = transition.getOutputString();
+            if (outputString != null) {
+                System.out.print(outputString);
+            }
+        } catch (FormatException e) {
+            System.err.println(e.getMessage());
         }
     }
 

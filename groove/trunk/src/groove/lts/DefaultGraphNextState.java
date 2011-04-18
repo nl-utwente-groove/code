@@ -17,6 +17,7 @@ package groove.lts;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.graph.EdgeRole;
+import groove.trans.AbstractEvent;
 import groove.trans.DefaultApplication;
 import groove.trans.DeltaApplier;
 import groove.trans.DeltaHostGraph;
@@ -27,6 +28,7 @@ import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.SPORule;
+import groove.view.FormatException;
 
 /**
  * 
@@ -55,6 +57,11 @@ public class DefaultGraphNextState extends AbstractGraphState implements
 
     public RuleEvent getEvent() {
         return this.event;
+    }
+
+    @Override
+    public String getOutputString() throws FormatException {
+        return ((AbstractEvent<?,?>) getEvent()).getOutputString(getAddedNodes());
     }
 
     public HostNode[] getAddedNodes() {

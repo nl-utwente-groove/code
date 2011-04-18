@@ -22,7 +22,11 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
+import groove.view.FormatException;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.MissingFormatArgumentException;
 import java.util.Set;
 
 /**
@@ -72,6 +76,33 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
             result.append(')');
         }
         return result.toString();
+    }
+
+    /**
+     * Returns the instantiated output string for this rule, if any. 
+     * @throws FormatException if the format string of the rule
+     * does not correspond to the actual rule parameters. 
+     */
+    public String getOutputString(HostNode[] addedNodes) throws FormatException {
+        String result = null;
+        String formatString = getRule().getFormatString();
+        if (formatString != null) {
+            List<Object> args = new ArrayList<Object>();
+            for (HostNode arg : getArguments(addedNodes)) {
+                if (arg instanceof ValueNode) {
+                    args.add(((ValueNode) arg).getValue());
+                } else {
+                    args.add(arg.toString());
+                }
+            }
+            try {
+                result = String.format(formatString, args.toArray());
+            } catch (MissingFormatArgumentException e) {
+                throw new FormatException("Error in rule output string: %s",
+                    e.getMessage());
+            }
+        }
+        return result;
     }
 
     public R getRule() {

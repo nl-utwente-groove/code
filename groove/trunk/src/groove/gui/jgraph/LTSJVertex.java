@@ -118,8 +118,8 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     @Override
     public StringBuilder getLine(Edge<?> edge) {
         String text =
-            getJGraph().isShowAnchors() ? new DerivationLabel(
-                ((GraphTransition) edge).getEvent()).text()
+            getJGraph().isShowAnchors()
+                    ? DerivationLabel.getAnchorText(((GraphTransition) edge).getEvent())
                     : edge.label().text();
         StringBuilder result = new StringBuilder(text);
         HTMLConverter.toHtml(result);
