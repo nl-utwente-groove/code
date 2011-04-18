@@ -903,7 +903,9 @@ public enum AspectKind {
         /** Embedding of one nesting level in another. */
         IN("in"),
         /** Assignment of a nesting level to a rule node. */
-        AT("at");
+        AT("at"),
+        /** Count of the number of matches of a universal quantifier. */
+        COUNT("count");
 
         private NestedValue(String text) {
             this.text = text;

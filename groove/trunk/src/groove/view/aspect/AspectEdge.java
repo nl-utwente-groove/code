@@ -513,6 +513,12 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             && getAspect().getContent() == NestedValue.IN;
     }
 
+    /** Indicates if this edge is a "nested:count". */
+    public boolean isNestedCount() {
+        return hasAspect() && getKind() == NESTED
+            && getAspect().getContent() == NestedValue.COUNT;
+    }
+
     /** Indicates that this is a creator element with a merge label ("="). */
     public boolean isMerger() {
         testFixed(true);

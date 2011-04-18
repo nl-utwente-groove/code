@@ -76,10 +76,9 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
             Collection<Match> subResults = new ArrayList<Match>();
             for (Condition subCondition : getSubConditions()) {
                 if (subCondition instanceof PositiveCondition<?>) {
-                    Iterator<? extends Match> subResultIter =
-                        subCondition.getMatchIter(host, matchMap);
-                    while (subResultIter.hasNext()) {
-                        subResults.add(subResultIter.next());
+                    for (Match subResult : ((PositiveCondition<?>) subCondition).getMatches(
+                        host, matchMap)) {
+                        subResults.add(subResult);
                     }
                 }
             }
@@ -108,7 +107,8 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
         return "Universal " + super.toString();
     }
 
-    /** Sets this universal condition to positive. */
+    /** Sets this universal condition to positive (meaning that
+     * it should have at least one match). */
     public void setPositive() {
         this.positive = true;
     }
