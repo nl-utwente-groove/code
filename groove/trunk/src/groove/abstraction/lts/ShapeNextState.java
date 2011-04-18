@@ -133,7 +133,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
 
     @Override
     public String getOutputString() throws FormatException {
-        return this.transition.getOutputString();
+        return null;
     }
 
     @Override

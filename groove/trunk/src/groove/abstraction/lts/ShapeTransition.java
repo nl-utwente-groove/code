@@ -21,6 +21,7 @@ import groove.lts.GraphTransitionStub;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.RuleEvent;
+import groove.view.FormatException;
 
 /**
  * Implements a transition in the abstract GTS.
@@ -78,6 +79,11 @@ public final class ShapeTransition extends DefaultGraphTransition {
     @Override
     public GraphTransitionStub toStub() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getOutputString() throws FormatException {
+        return null;
     }
 
     @Override
