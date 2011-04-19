@@ -356,38 +356,6 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
         return this.hiddenPars;
     }
 
-    /**
-     * Apart from calling the super method, also maintains the subset of complex
-     * sub-conditions.
-     * @see #addComplexSubCondition(AbstractCondition)
-     */
-    @Override
-    public void addSubCondition(Condition condition) {
-        super.addSubCondition(condition);
-        if (!(condition instanceof NotCondition)) {
-            addComplexSubCondition((AbstractCondition<?>) condition);
-        }
-    }
-
-    /**
-     * Adds a graph condition to the complex sub-conditions, which are those
-     * that are not edge or merge embargoes.
-     */
-    private void addComplexSubCondition(AbstractCondition<?> condition) {
-        getComplexSubConditions().add(condition);
-    }
-
-    /**
-     * Returns the set of sub-conditions that are <i>not</i>
-     * {@link NotCondition}s.
-     */
-    private Collection<AbstractCondition<?>> getComplexSubConditions() {
-        if (this.complexSubConditions == null) {
-            this.complexSubConditions = new ArrayList<AbstractCondition<?>>();
-        }
-        return this.complexSubConditions;
-    }
-
     /** Creates the search plan using the rule's search plan factory. */
     public MatchStrategy<RuleToHostMap> getEventMatcher() {
         if (this.eventMatcher == null) {
@@ -1272,10 +1240,6 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
      * {@link #getDirectSubRules()}.
      */
     private Collection<SPORule> directSubRules;
-    /**
-     * The sub-conditions that are not negative application conditions.
-     */
-    private Collection<AbstractCondition<?>> complexSubConditions;
     /** The nesting level of this rule. */
     private int[] level;
     /**
