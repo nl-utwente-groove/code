@@ -16,9 +16,10 @@
  */
 package groove.trans;
 
+import groove.algebra.Algebra;
+import groove.algebra.AlgebraFamily;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
-import groove.match.MatchStrategy;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,6 +44,22 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
         this.count =
             countNode == null || countNode.getConstant() == null ? -1
                     : Integer.parseInt(countNode.getConstant().getSymbol());
+        this.intAlgebra =
+            AlgebraFamily.getInstance(getSystemProperties().getAlgebraFamily()).getAlgebra(
+                "int");
+    }
+
+    @Override
+    public void addSubCondition(Condition condition) {
+        // sub-conditions of universal conditions must be rules or negatives
+        assert !(condition instanceof ForallCondition);
+        super.addSubCondition(condition);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected Collection<SPORule> getComplexSubConditions() {
+        return super.getComplexSubConditions();
     }
 
     @Override
@@ -67,19 +84,6 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
         return result;
     }
 
-    @Override
-    MatchStrategy<RuleToHostMap> createMatcher() {
-        if (this.countNode == null) {
-            return super.createMatcher();
-        } else {
-            // if the condition is counted, all nodes are relevant
-            // and should be made part of the anchor
-            testFixed(true);
-            return getMatcherFactory().createMatcher(this, null, null,
-                getTarget().nodeSet());
-        }
-    }
-
     /**
      * Returns the matches of this condition, given an iterator of match maps.
      */
@@ -88,7 +92,7 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
         List<CompositeMatch> result = new ArrayList<CompositeMatch>();
         // add the empty match if the condition is not positive
         if (!this.positive) {
-            result.add(new CompositeMatch());
+            result.add(new CompositeMatch(this));
         }
         boolean first = this.positive;
         int count = this.count;
@@ -96,42 +100,45 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
         while (matchMapIter.hasNext() && (first || !result.isEmpty())) {
             // add the empty match if the condition is positive
             if (first) {
-                result.add(new CompositeMatch());
+                result.add(new CompositeMatch(this));
                 first = false;
             }
             RuleToHostMap matchMap = matchMapIter.next();
             // look up the match count, if there is any
             if (lookupCount) {
                 HostNode countImage = matchMap.getNode(this.countNode);
-                assert countImage != null;
-                count = Integer.parseInt(((ValueNode) countImage).getSymbol());
-                assert count >= 0;
+                if (countImage != null) {
+                    count =
+                        Integer.parseInt(((ValueNode) countImage).getSymbol());
+                    assert count >= 0;
+                }
                 lookupCount = false;
             }
             // the subconditions are interpreted disjunctively,
             // so we have to collect all of their possible matches
-            Collection<Match> subResults = new ArrayList<Match>();
-            for (AbstractCondition<?> subCondition : getComplexSubConditions()) {
-                for (Match subResult : subCondition.getMatches(host, matchMap)) {
+            Collection<RuleMatch> subResults = new ArrayList<RuleMatch>();
+            for (SPORule subCondition : getComplexSubConditions()) {
+                for (RuleMatch subResult : subCondition.getMatches(host,
+                    matchMap)) {
                     subResults.add(subResult);
                 }
             }
             List<CompositeMatch> newResult = new ArrayList<CompositeMatch>();
             for (CompositeMatch current : result) {
-                newResult.addAll(current.addSubMatchChoice(subResults));
+                newResult.addAll(current.addMatchChoice(subResults));
             }
             result = newResult;
         }
-        if (count >= 0) {
-            // filter out the matches of the wrong size
-            List<CompositeMatch> newResult = new ArrayList<CompositeMatch>();
-            for (CompositeMatch current : result) {
-                if (current.getSubMatches().size() == count) {
-                    newResult.add(current);
-                }
-            }
-            result = newResult;
-        }
+        //        if (count >= 0) {
+        //            // filter out the matches of the wrong size
+        //            List<CompositeMatch> newResult = new ArrayList<CompositeMatch>();
+        //            for (CompositeMatch current : result) {
+        //                if (current.getSubMatches().size() == count) {
+        //                    newResult.add(current);
+        //                }
+        //            }
+        //            result = newResult;
+        //        }
         return result;
     }
 
@@ -148,6 +155,16 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
     @Override
     public String toString() {
         return "Universal " + super.toString();
+    }
+
+    /** Returns the match count node of this universal condition, if any. */
+    public RuleNode getCountNode() {
+        return this.countNode;
+    }
+
+    /** Returns the integer algebra corresponding to the system properties. */
+    public Algebra<?> getIntAlgebra() {
+        return this.intAlgebra;
     }
 
     /** Sets this universal condition to positive (meaning that
@@ -169,6 +186,8 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
     private final RuleNode countNode;
     /** Required number of matches, or {@code -1} if the count is unspecified */
     private final int count;
+    /** The integer algebra corresponding to the system properties. */
+    private final Algebra<?> intAlgebra;
     /**
      * Flag indicating whether the condition is positive, i.e., cannot be
      * vacuously true.

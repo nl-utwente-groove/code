@@ -21,7 +21,6 @@ import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.graph.Element;
 import groove.graph.GraphProperties;
-import groove.graph.algebra.VariableNode;
 import groove.match.MatchStrategy;
 import groove.match.SearchPlanStrategy;
 import groove.rel.LabelVar;
@@ -29,6 +28,7 @@ import groove.rel.VarSupport;
 import groove.util.Groove;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
+import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -413,6 +413,12 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    protected Collection<ForallCondition> getComplexSubConditions() {
+        return super.getComplexSubConditions();
+    }
+
     /**
      * Returns a collection of matches extending a given match with matches for
      * the sub-conditions.
@@ -421,13 +427,13 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
             RuleMatch simpleMatch) {
         Collection<RuleMatch> result = Collections.singleton(simpleMatch);
         RuleToHostMap matchMap = simpleMatch.getElementMap();
-        for (AbstractCondition<?> condition : getComplexSubConditions()) {
-            Iterable<? extends Match> subMatches =
+        for (ForallCondition condition : getComplexSubConditions()) {
+            Iterable<CompositeMatch> subMatches =
                 condition.getMatches(host, matchMap);
             Collection<RuleMatch> oldResult = result;
             result = new ArrayList<RuleMatch>();
             for (RuleMatch oldMatch : oldResult) {
-                result.addAll(oldMatch.addSubMatchChoice(subMatches));
+                result.addAll(oldMatch.addForallChoice(condition, subMatches));
             }
             if (result.isEmpty()) {
                 break;
@@ -1209,19 +1215,36 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
     protected void computeUnresolvedNodes() {
         super.computeUnresolvedNodes();
         // a variable node may be resolved because it is an input parameter
-        Iterator<VariableNode> it = this.unresolvedVariableNodes.iterator();
-        while (it.hasNext()) {
-            RuleNode node = it.next();
-            boolean resolved = false;
-            for (CtrlPar.Var par : getSignature()) {
-                if (par.getRuleNode() == node && par.isInOnly()) {
-                    resolved = true;
-                    break;
+        for (CtrlPar.Var par : getSignature()) {
+            if (par.isInOnly()) {
+                this.unresolvedVariableNodes.remove(par.getRuleNode());
+            }
+        }
+    }
+
+    @Override
+    protected void stabilizeUnresolvedNodes() throws FormatException {
+        super.stabilizeUnresolvedNodes();
+        // a variable may be resolved because it is the count node of a universal condition
+        Set<FormatError> errors = new HashSet<FormatError>();
+        for (ForallCondition subCondition : getComplexSubConditions()) {
+            RuleNode countNode = subCondition.getCountNode();
+            if (countNode != null) {
+                if (this.unresolvedVariableNodes.remove(countNode)) {
+                    // check that the node is not used in any of the subconditions
+                    for (ForallCondition sub2 : getComplexSubConditions()) {
+                        if (sub2.getRootMap().containsNodeKey(countNode)) {
+                            errors.add(new FormatError(
+                                "Unresolved count node should not be used in subcondition",
+                                countNode));
+                            break;
+                        }
+                    }
                 }
             }
-            if (resolved) {
-                it.remove();
-            }
+        }
+        if (!errors.isEmpty()) {
+            throw new FormatException(errors);
         }
     }
 

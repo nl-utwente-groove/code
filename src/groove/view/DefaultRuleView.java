@@ -772,6 +772,14 @@ public class DefaultRuleView implements RuleView {
         private void initData() throws FormatException {
             this.viewToRuleMap.clear();
             Set<FormatError> errors = new TreeSet<FormatError>();
+            // initialise the match count nodes
+            // this is done straight away, to ensure that the rule graph
+            // of counted subconditions is pushed to the existential level
+            for (Map.Entry<LevelIndex,AspectNode> matchCountEntry : this.matchCountMap.entrySet()) {
+                AspectNode matchCount = matchCountEntry.getValue();
+                this.indexLevelMap.get(matchCountEntry.getKey()).setMatchCount(
+                    matchCount, (VariableNode) getNodeImage(matchCount));
+            }
             // add nodes to nesting data structures
             for (AspectNode node : getAspectGraph().nodeSet()) {
                 if (!node.getKind().isMeta()) {
@@ -796,15 +804,6 @@ public class DefaultRuleView implements RuleView {
                         errors.addAll(exc.getErrors());
                     }
                 }
-            }
-            // initialise the match count nodes
-            // this is done after the edges to allow us to test for the
-            // (illegal) usage of the match count images inside the level itself
-            for (Map.Entry<LevelIndex,AspectNode> matchCountEntry : this.matchCountMap.entrySet()) {
-                AspectNode matchCount = matchCountEntry.getValue();
-                this.indexLevelMap.get(matchCountEntry.getKey()).setMatchCount(
-                    matchCount,
-                    (VariableNode) getViewToRuleMap().getNode(matchCount));
             }
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
@@ -1095,8 +1094,6 @@ public class DefaultRuleView implements RuleView {
                 VariableNode matchCountImage) {
             assert getIndex().isUniversal();
             assert matchCountImage != null;
-            this.viewToLevelMap.putNode(matchCount, matchCountImage);
-            addNodeToParents(matchCount, matchCountImage);
             this.matchCountImage = matchCountImage;
         }
 
@@ -1163,7 +1160,9 @@ public class DefaultRuleView implements RuleView {
             if (elem instanceof AspectNode) {
                 // we need to push non-attribute nodes down in injective mode
                 // to be able to compare images of nodes at different levels
-                result = isInjective() && elem.getKind().inLHS();
+                result =
+                    isInjective() && elem.getKind().inLHS()
+                        && elem.getAttrAspect() == null;
             } else {
                 // we need to push down edges that bind wildcards
                 // to ensure the bound value is known at sublevels
@@ -1176,7 +1175,7 @@ public class DefaultRuleView implements RuleView {
             if (!result) {
                 result =
                     this.index.isUniversal()
-                        && (kind.isEraser() || kind.isCreator());
+                        && (kind.isEraser() || kind.isCreator() || this.matchCountImage != null);
             }
             return result;
         }

@@ -133,48 +133,8 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * This implementation does nothing
      */
     public void testConsistent() throws FormatException {
-        // String attributeKey = SystemProperties.ATTRIBUTES_KEY;
-        // String attributeProperty = getProperties().getProperty(attributeKey);
-        // if (getProperties().isAttributed()) {
-        // if (hasIsolatedNodes()) {
-        // throw new FormatException(
-        // "Condition tests isolated nodes, conflicting with \"%s=%s\"",
-        // attributeKey, attributeProperty);
-        // }
-        // } else if (hasAttributes()) {
-        // // if(getProperties().useParameters()) {
-        // // throw new FormatException(
-        // // "LTS Parameters are enabled without support for attributes");
-        // // }
-        // //
-        // if (attributeProperty == null) {
-        // throw new FormatException(
-        // "Condition uses attributes, but \"%s\" not declared",
-        // attributeKey);
-        // } else {
-        // throw new FormatException(
-        // "Condition uses attributes, violating \"%s=%s\"",
-        // attributeKey, attributeProperty);
-        // }
-        // }
+        // empty
     }
-
-    //
-    // /**
-    // * Returns <code>true</code> if the target graph of the condition contains
-    // * {@link ValueNode}s, or the negative conjunct is attributed.
-    // */
-    // private boolean hasAttributes() {
-    // boolean result = ValueNode.hasValueNodes(getTarget());
-    // if (result) {
-    // Iterator<AbstractCondition<?>> subConditionIter =
-    // getSubConditions().iterator();
-    // while (!result && subConditionIter.hasNext()) {
-    // result = subConditionIter.next().hasAttributes();
-    // }
-    // }
-    // return result;
-    // }
 
     /**
      * Tests if the target graph of the condition contains nodes without
@@ -227,11 +187,12 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * These are the conditions that are not part of the search plan,
      * and so have to be matched explicitly.
      */
-    protected Collection<AbstractCondition<?>> getComplexSubConditions() {
+    @SuppressWarnings("unchecked")
+    protected <C extends AbstractCondition<?>> Collection<C> getComplexSubConditions() {
         if (this.complexSubConditions == null) {
             this.complexSubConditions = new ArrayList<AbstractCondition<?>>();
         }
-        return this.complexSubConditions;
+        return (Collection<C>) this.complexSubConditions;
     }
 
     /** Fixes the sub-predicate and this morphism. */
@@ -529,9 +490,10 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * look at each node in unresolvedProductNodes; if all of its arguments have
      * been resolved it will remove all of the product "targets" from the
      * {@code unresolvedVariableNodes} Set. It will keep doing this until both
-     * collections are stable. 
+     * collections are stable.
+     * @throws FormatException if an error is detected during stabilisation
      */
-    private void stabilizeUnresolvedNodes() {
+    protected void stabilizeUnresolvedNodes() throws FormatException {
         // now resolve nodes until stable
         boolean stable = false;
         while (!stable) {

@@ -33,17 +33,4 @@ public interface Match {
 
     /** Returns the set of matches of sub-rules. */
     Collection<RuleMatch> getSubMatches();
-
-    /** Extends this match with a given sub-match. */
-    void addSubMatch(Match match);
-
-    /**
-     * Returns a set of copies of this composite match, each augmented with an
-     * additional sub-match taken from a given set of choices. For efficiency,
-     * the last match in the result is actually a (modified) alias of this
-     * object, meaning that no references to this object should be kept after
-     * invoking this method.
-     */
-    Collection<? extends Match> addSubMatchChoice(
-            Iterable<? extends Match> choices);
 }

@@ -16,8 +16,12 @@
  */
 package groove.trans;
 
+import groove.algebra.Algebra;
+import groove.graph.algebra.ValueNode;
+
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * Match of an {@link SPORule}.
@@ -118,11 +122,41 @@ public class RuleMatch extends AbstractMatch {
         }
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public Collection<RuleMatch> addSubMatchChoice(
-            Iterable<? extends Match> choices) {
-        return (Collection<RuleMatch>) super.addSubMatchChoice(choices);
+    /**
+     * Returns a set of copies of this rule match, each augmented with 
+     * additional sub-matches taken from a given set of composite matches. For efficiency,
+     * the last match in the result is actually a (modified) alias of this
+     * object, meaning that no references to this object should be kept after
+     * invoking this method.
+     */
+    public Collection<RuleMatch> addForallChoice(ForallCondition condition,
+            Iterable<CompositeMatch> choices) {
+        Collection<RuleMatch> result = new ArrayList<RuleMatch>();
+        Iterator<CompositeMatch> choiceIter = choices.iterator();
+        while (choiceIter.hasNext()) {
+            CompositeMatch choice = choiceIter.next();
+            assert condition == choice.getCondition();
+            if (condition.getCountNode() != null) {
+                int newCount = choice.getSubMatches().size();
+                ValueNode oldCountImage =
+                    ((ValueNode) getElementMap().getNode(
+                        condition.getCountNode()));
+                if (oldCountImage == null) {
+                    Algebra<?> intAlgebra = condition.getIntAlgebra();
+                    HostNode newCountImage =
+                        getElementMap().getFactory().createNode(intAlgebra,
+                            intAlgebra.getValue("" + newCount));
+                    getElementMap().putNode(condition.getCountNode(),
+                        newCountImage);
+                } else if (newCount != Integer.parseInt(oldCountImage.getSymbol())) {
+                    continue;
+                }
+            }
+            RuleMatch copy = choiceIter.hasNext() ? clone() : this;
+            copy.getSubMatches().addAll(choice.getSubMatches());
+            result.add(copy);
+        }
+        return result;
     }
 
     @Override

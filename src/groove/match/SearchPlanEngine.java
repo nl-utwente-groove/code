@@ -383,14 +383,19 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
          * Callback factory method for creating a node search item.
          */
         protected AbstractSearchItem createNodeSearchItem(RuleNode node) {
+            AbstractSearchItem result = null;
             if (node instanceof VariableNode) {
-                return new ValueNodeSearchItem((VariableNode) node,
-                    SearchPlanEngine.this.algebraFamily);
+                if (((VariableNode) node).getSymbol() != null) {
+                    result =
+                        new ValueNodeSearchItem((VariableNode) node,
+                            SearchPlanEngine.this.algebraFamily);
+                }
+                // otherwise, the node must be among the count nodes of
+                // the subconditions
             } else if (node instanceof DefaultNode) {
-                return new NodeSearchItem(node);
-            } else {
-                return null;
+                result = new NodeSearchItem(node);
             }
+            return result;
         }
 
         /**

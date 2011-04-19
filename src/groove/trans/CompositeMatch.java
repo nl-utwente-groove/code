@@ -16,7 +16,9 @@
  */
 package groove.trans;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * The match of a {@link ForallCondition} or {@link NotCondition}.
@@ -24,16 +26,48 @@ import java.util.Collection;
  * @version $Revision $
  */
 public class CompositeMatch extends AbstractMatch {
-    @SuppressWarnings("unchecked")
+    /** Constructs a match object for a given condition. */
+    public CompositeMatch(Condition condition) {
+        this.condition = condition;
+    }
+
+    /**
+     * Returns a set of copies of this composite match, each augmented with an
+     * additional rule match taken from a given set of choices. For efficiency,
+     * the last match in the result is actually a (modified) alias of this
+     * object, meaning that no references to this object should be kept after
+     * invoking this method.
+     */
+    public Collection<CompositeMatch> addMatchChoice(Iterable<RuleMatch> choices) {
+        Collection<CompositeMatch> result = new ArrayList<CompositeMatch>();
+        Iterator<RuleMatch> choiceIter = choices.iterator();
+        while (choiceIter.hasNext()) {
+            RuleMatch choice = choiceIter.next();
+            CompositeMatch copy = choiceIter.hasNext() ? clone() : this;
+            copy.getSubMatches().add(choice);
+            result.add(copy);
+        }
+        return result;
+    }
+
     @Override
-    public Collection<CompositeMatch> addSubMatchChoice(
-            Iterable<? extends Match> choices) {
-        return (Collection<CompositeMatch>) super.addSubMatchChoice(choices);
+    protected CompositeMatch clone() {
+        return (CompositeMatch) super.clone();
     }
 
     /** Callback factory method for a cloned match. */
     @Override
     protected CompositeMatch createMatch() {
-        return new CompositeMatch();
+        return new CompositeMatch(this.condition);
     }
+
+    /**
+     * Returns the {@link ForallCondition} or {@link NotCondition} for which
+     * this is a match.
+     */
+    public Condition getCondition() {
+        return this.condition;
+    }
+
+    private final Condition condition;
 }
