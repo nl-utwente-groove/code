@@ -122,7 +122,7 @@ public class CompositeEvent extends
                     RuleMatch parentMatch = matchStack.peek();
                     assert eventDepth <= 2
                         || parentMatch.getRule().getLevel()[eventDepth - 3] == eventLevel[eventDepth - 3];
-                    parentMatch.addSubMatch(match);
+                    parentMatch.getSubMatches().add(match);
                 }
                 // add this match to the stack, to receive its sub-matches
                 matchStack.push(match);

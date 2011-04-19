@@ -16,10 +16,8 @@
  */
 package groove.trans;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -47,31 +45,6 @@ abstract public class AbstractMatch implements Match, Cloneable {
     @Override
     public Collection<RuleMatch> getSubMatches() {
         return this.subMatches;
-    }
-
-    @Override
-    public void addSubMatch(Match match) {
-        // flatten pure composite matches
-        if (match instanceof CompositeMatch) {
-            this.subMatches.addAll(match.getSubMatches());
-        } else {
-            assert match instanceof RuleMatch;
-            this.subMatches.add((RuleMatch) match);
-        }
-    }
-
-    @Override
-    public Collection<? extends Match> addSubMatchChoice(
-            Iterable<? extends Match> choices) {
-        Collection<Match> result = new ArrayList<Match>();
-        Iterator<? extends Match> choiceIter = choices.iterator();
-        while (choiceIter.hasNext()) {
-            Match choice = choiceIter.next();
-            Match copy = choiceIter.hasNext() ? clone() : this;
-            copy.addSubMatch(choice);
-            result.add(copy);
-        }
-        return result;
     }
 
     /** Equality is determined by rule and element map. */

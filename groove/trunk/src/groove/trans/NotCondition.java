@@ -68,5 +68,5 @@ public class NotCondition extends AbstractCondition<CompositeMatch> {
 
     /** Constant empty match. */
     private final Set<CompositeMatch> WRAPPED_EMPTY_MATCH =
-        Collections.singleton(new CompositeMatch());
+        Collections.singleton(new CompositeMatch(this));
 }
