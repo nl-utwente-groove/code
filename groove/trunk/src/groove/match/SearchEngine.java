@@ -16,10 +16,8 @@
  */
 package groove.match;
 
-import groove.graph.LabelStore;
 import groove.trans.Condition;
 import groove.trans.RuleEdge;
-import groove.trans.RuleGraph;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
 
@@ -34,41 +32,19 @@ import java.util.Collection;
  * @version $Revision $
  */
 public abstract class SearchEngine<MatcherType extends AbstractMatchStrategy<RuleToHostMap>> {
-
     /**
      * Factory method returning a search engine for 
-     * a graph condition with negative tests, 
-     * and takes control
-     * and common labels into account (if any).
+     * a graph condition.
      * @param condition the condition for which a search plan is to be
      *        constructed
      */
     public MatcherType createMatcher(Condition condition) {
-        return createMatcher(condition, null, null);
-    }
-
-    /**
-     * Factory method returning a search plan for a graph condition, taking into
-     * account that a certain set of nodes and edges has been matched already.
-     * This extends the ordinary search plan with negative tests. Takes control
-     * and common labels into account (if any).
-     * @param condition the condition for which a search plan is to be
-     *        constructed
-     * @param anchorNodes the nodes of the condition that have been matched
-     *        already
-     * @param anchorEdges the edges of the condition that have been matched
-     *        already
-     */
-    public MatcherType createMatcher(Condition condition,
-            Collection<RuleNode> anchorNodes, Collection<RuleEdge> anchorEdges) {
-        return createMatcher(condition, anchorNodes, anchorEdges, null);
+        return createMatcher(condition, null, null, null);
     }
 
     /**
      * Factory method returning a matcher for a graph condition, taking into
      * account that a certain set of nodes and edges has been matched already.
-     * This extends the ordinary search plan with negative tests. Takes control
-     * and common labels into account (if any).
      * @param condition the condition for which a search plan is to be
      *        constructed
      * @param anchorNodes the nodes of the condition that have been matched
@@ -84,36 +60,4 @@ public abstract class SearchEngine<MatcherType extends AbstractMatchStrategy<Rul
     public abstract MatcherType createMatcher(Condition condition,
             Collection<RuleNode> anchorNodes, Collection<RuleEdge> anchorEdges,
             Collection<RuleNode> relevantNodes);
-
-    /**
-     * Implementations of this method would be factory methods returning 
-     * a search strategy object for matching a given
-     * graph, given also that certain nodes and edges have already been
-     * pre-matched (<i>bound</i>).
-     * 
-     * @param graph the graph that is to be matched
-     * @param anchorNodes the set of pre-matched nodes when searching; may be
-     *        <code>null</code> if there are no pre-matched nodes
-     * @param anchorEdges the set of pre-matched edges when searching; may be
-     *        <code>null</code> if there are no pre-matched edges. It is assumed
-     *        that the end nodes of all pre-matched edges are themselves
-     *        pre-matched.
-     * @param labelStore the node subtype relation in the graph
-     * @return an object capable of returning matches in the <code>graph</code>
-     *         that adhere to the conditions set by the anchors.  
-     *         
-     */
-    public abstract MatcherType createMatcher(RuleGraph graph,
-            Collection<RuleNode> anchorNodes, Collection<RuleEdge> anchorEdges,
-            LabelStore labelStore);
-
-    /** Indicates if the matchers this factory produces are injective. */
-    public abstract boolean isInjective();
-
-    /**
-     * Indicates if the matchers this factory produces ignore negations in the
-     * host graph.
-     */
-    public abstract boolean isIgnoreNeg();
-
 }

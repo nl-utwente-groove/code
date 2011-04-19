@@ -16,7 +16,6 @@
  */
 package groove.match.rete;
 
-import groove.graph.LabelStore;
 import groove.match.SearchEngine;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.Condition;
@@ -27,7 +26,6 @@ import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
-import groove.trans.RuleGraph;
 import groove.trans.RuleMatch;
 import groove.trans.RuleNode;
 import groove.util.Reporter;
@@ -51,8 +49,6 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
     private static ReteSearchEngine lockedInstance = null;
 
     private boolean injective = false;
-    private boolean ignoreNeg = false;
-
     /**
      * The reporter object.
      */
@@ -67,7 +63,7 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
 
     static {
         for (int injective = 0; injective <= 1; injective++) {
-            instances[injective] = new ReteSearchEngine(injective == 1, false);
+            instances[injective] = new ReteSearchEngine(injective == 1);
         }
     }
 
@@ -97,9 +93,8 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
         ReteSearchEngine.lockedInstance = null;
     }
 
-    private ReteSearchEngine(boolean injective, boolean ignoreNeg) {
+    private ReteSearchEngine(boolean injective) {
         this.injective = injective;
-        this.ignoreNeg = ignoreNeg;
     }
 
     /**
@@ -136,7 +131,7 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
      */
     public static ReteSearchEngine createFreshInstance(boolean injective,
             boolean ignoreNeg) {
-        return new ReteSearchEngine(injective, ignoreNeg);
+        return new ReteSearchEngine(injective);
     }
 
     private ReteNetwork network;
@@ -248,20 +243,7 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
         return new ReteStrategy(this, condition);
     }
 
-    @Override
-    public synchronized ReteStrategy createMatcher(RuleGraph graph,
-            Collection<RuleNode> anchorNodes, Collection<RuleEdge> anchorEdges,
-            LabelStore labelStore) {
-        //right now we just assume the graph is actually 
-        return new ReteStrategy(this, null);
-    }
-
-    @Override
-    public final boolean isIgnoreNeg() {
-        return this.ignoreNeg;
-    }
-
-    @Override
+    /** Indicates if the matchers this factory produces are injective. */
     public boolean isInjective() {
         return this.injective;
     }

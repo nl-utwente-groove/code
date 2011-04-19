@@ -33,26 +33,18 @@ import java.util.Iterator;
  * @version $Revision $
  */
 public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
-
-    private ReteSearchEngine owner;
-    private Condition condition = null;
+    private final ReteSearchEngine owner;
+    private final Condition condition;
 
     /**
      * Creates a matching strategy object that uses the RETE algorithm for matching.  
      * @param owner The RETE search engine
-     * @param condition the condition for which this strategy is to be created.
+     * @param condition the condition for which this strategy is to be created; non-{@code null}.
      */
     public ReteStrategy(ReteSearchEngine owner, Condition condition) {
         this.owner = owner;
         this.condition = condition;
-    }
-
-    /**
-     * Creates a matching strategy object that uses the RETE algorithm for matching.  
-     * @param owner The RETE search engine
-     */
-    public ReteStrategy(ReteSearchEngine owner) {
-        this(owner, null);
+        assert condition != null;
     }
 
     @Override
@@ -69,7 +61,7 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         assert graphShapesEqual(host,
             this.owner.getNetwork().getState().getHostGraph());
 
-        if ((this.owner.getNetwork() != null) && (this.condition != null)) {
+        if (this.owner.getNetwork() != null) {
             //iterate through the conflict set of the production node
             //associated with this condition
             ConditionChecker cc =
