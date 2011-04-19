@@ -283,9 +283,8 @@ public class DefaultGraphView implements GraphView {
         TypeLabel modelLabel = viewEdge.getTypeLabel();
         assert modelLabel == null || !modelLabel.isDataType();
 
-        if (viewEdge.hasAttrAspect()
-            && viewEdge.getAttrKind() == AspectKind.PRED) {
-            Predicate pred = (Predicate) viewEdge.getAttrAspect().getContent();
+        if (viewEdge.isPredicate()) {
+            Predicate pred = viewEdge.getPredicate();
             // Create the value node.
             Algebra<?> nodeAlgebra =
                 this.algebraFamily.getAlgebra(pred.getSignature());

@@ -342,8 +342,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             if (getKind() == NESTED) {
                 text = getAspect().getContentString();
             } else if (isPredicate()) {
-                text =
-                    ((Predicate) getAttrAspect().getContent()).getContentString();
+                text = getPredicate().getContentString();
             } else {
                 text = getInnerText();
             }
@@ -564,6 +563,12 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     /** Indicates if this is an attribute predicate edge. */
     public boolean isPredicate() {
         return this.hasAttrAspect() && this.getAttrKind() == AspectKind.PRED;
+    }
+
+    /** Convenience method. */
+    public Predicate getPredicate() {
+        assert this.isPredicate();
+        return (Predicate) this.getAttrAspect().getContent();
     }
 
     /**
