@@ -319,8 +319,6 @@ public class DefaultRuleView implements RuleView {
                 LevelIndex index = level.getIndex();
                 if (!index.isTopLevel()) {
                     Level parentLevel = level.getParent();
-                    // The commented line gives a NPE.
-                    // ruleTree.get(parentLevel).addSubCondition(condition);
                     Condition parentCond = ruleTree.get(parentLevel);
                     if (parentCond != null) {
                         parentCond.addSubCondition(condition);
