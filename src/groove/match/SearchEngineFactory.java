@@ -85,7 +85,9 @@ public class SearchEngineFactory {
             null;
         switch (this.getCurrentEngineType()) {
         case SEARCH_PLAN:
-            result = SearchPlanEngine.getInstance(properties);
+            result =
+                SearchPlanEngine.getInstance(properties.isInjective(),
+                    properties.getAlgebraFamily());
             break;
         case RETE:
             result =
