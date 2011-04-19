@@ -250,7 +250,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         if (getJGraph().isShowValueNodes()) {
             return false;
         }
-        if (this.aspect.isRole()) {
+        if (this.aspect.isRole() || this.aspect == AspectKind.NESTED) {
             // we're in a rule graph; watch for parameters and variable nodes
             return getTargetNode().getAttrAspect().hasContent()
                 && !getTargetNode().hasParam();

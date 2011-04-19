@@ -36,6 +36,7 @@ import groove.graph.Label;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ProductNode;
+import groove.graph.algebra.VariableNode;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
 import groove.rel.VarSupport;
@@ -523,9 +524,9 @@ public class DefaultRuleView implements RuleView {
 
         /**
          * Tests if this level is smaller (i.e., higher up in the nesting tree)
-         * than another. This is the case if the depth of this nesting does not
-         * exceed that of the other, and the indices at every (common) level
-         * coincide.
+         * than another, or equal to it. This is the case if the depth of this 
+         * nesting does not exceed that of the other, and the indices at every 
+         * (common) level coincide.
          */
         public boolean smallerThan(LevelIndex other) {
             testIndexFixed();
@@ -655,6 +656,8 @@ public class DefaultRuleView implements RuleView {
             Map<LevelIndex,Set<LevelIndex>> metaNodeTree =
                 new HashMap<LevelIndex,Set<LevelIndex>>();
             metaNodeTree.put(this.topLevelIndex, createChildren());
+            // Mapping from levels to match count nodes
+            this.matchCountMap = new HashMap<LevelIndex,AspectNode>();
             for (AspectNode node : getAspectGraph().nodeSet()) {
                 AspectKind nodeKind = node.getKind();
                 if (nodeKind.isQuantifier()) {
@@ -680,6 +683,7 @@ public class DefaultRuleView implements RuleView {
                         parentLevel = getIndex(parentNode);
                     }
                     indexParentMap.put(nodeLevel, parentLevel);
+                    this.matchCountMap.put(nodeLevel, node.getMatchCount());
                 }
             }
             // Now fill the tree from the parent map
@@ -718,6 +722,18 @@ public class DefaultRuleView implements RuleView {
                             : this.indexLevelMap.get(index.getParent());
                 Level thisData = new Level(index, parentData);
                 this.indexLevelMap.put(index, thisData);
+            }
+            // check that match count nodes are defined at super-levels
+            for (Map.Entry<LevelIndex,AspectNode> matchCountEntry : this.matchCountMap.entrySet()) {
+                LevelIndex definingLevel =
+                    getLevel(matchCountEntry.getValue()).getIndex();
+                LevelIndex usedLevel = matchCountEntry.getKey();
+                if (!definingLevel.smallerThan(usedLevel)
+                    || definingLevel.equals(usedLevel)) {
+                    throw new FormatException(
+                        "Match count not defined at appropriate level",
+                        matchCountEntry.getValue());
+                }
             }
             // fix the level data
             for (Level level : this.indexLevelMap.values()) {
@@ -780,6 +796,15 @@ public class DefaultRuleView implements RuleView {
                         errors.addAll(exc.getErrors());
                     }
                 }
+            }
+            // initialise the match count nodes
+            // this is done after the edges to allow us to test for the
+            // (illegal) usage of the match count images inside the level itself
+            for (Map.Entry<LevelIndex,AspectNode> matchCountEntry : this.matchCountMap.entrySet()) {
+                AspectNode matchCount = matchCountEntry.getValue();
+                this.indexLevelMap.get(matchCountEntry.getKey()).setMatchCount(
+                    matchCount,
+                    (VariableNode) getViewToRuleMap().getNode(matchCount));
             }
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
@@ -965,6 +990,8 @@ public class DefaultRuleView implements RuleView {
         private Map<String,LevelIndex> nameIndexMap;
         /** Mapping from view nodes to the corresponding nesting level. */
         private Map<AspectNode,Level> nodeLevelMap;
+        /** Mapping from (universal) levels to match count nodes. */
+        private Map<LevelIndex,AspectNode> matchCountMap;
     }
 
     /**
@@ -1061,6 +1088,16 @@ public class DefaultRuleView implements RuleView {
                     sublevel.addParentType(ruleEdge);
                 }
             }
+        }
+
+        /** Initialises the match count for this (universal) level. */
+        public void setMatchCount(AspectNode matchCount,
+                VariableNode matchCountImage) {
+            assert getIndex().isUniversal();
+            assert matchCountImage != null;
+            this.viewToLevelMap.putNode(matchCount, matchCountImage);
+            addNodeToParents(matchCount, matchCountImage);
+            this.matchCountImage = matchCountImage;
         }
 
         /**
@@ -1800,7 +1837,7 @@ public class DefaultRuleView implements RuleView {
                 RuleGraphMorphism rootMap, String name, boolean positive) {
             ForallCondition result =
                 new ForallCondition(new RuleName(name), target, rootMap,
-                    getSystemProperties(), null);
+                    getSystemProperties(), this.matchCountImage);
             if (positive) {
                 result.setPositive();
             }
@@ -1869,6 +1906,8 @@ public class DefaultRuleView implements RuleView {
         /** Set of additional (parent level) node type edges. */
         private final Map<RuleNode,Set<TypeLabel>> parentTypeMap =
             new HashMap<RuleNode,Set<TypeLabel>>();
+        /** The rule node registering the match count. */
+        private VariableNode matchCountImage;
         /** Mapping from view nodes to LHS and NAC nodes. */
         private ViewToRuleMap lhsMap;
         /** Mapping from view nodes to RHS nodes. */
@@ -1930,8 +1969,14 @@ public class DefaultRuleView implements RuleView {
             for (AspectNode node : getAspectGraph().nodeSet()) {
                 // check if the node is a parameter
                 if (node.hasParam()) {
+                    Level level = getLevelTree().getLevel(node);
                     Integer nr = (Integer) node.getParam().getContent();
                     if (nr != null) {
+                        if (!level.getIndex().isTopLevel()) {
+                            throw new FormatException(
+                                "Parameter '%d' only allowed on top existential level",
+                                nr, node);
+                        }
                         parCount = Math.max(parCount, nr + 1);
                         try {
                             processNode(parMap, node, nr);
@@ -1941,6 +1986,11 @@ public class DefaultRuleView implements RuleView {
                     } else {
                         // this is an unnumbered parameter,
                         // which serves as an explicit anchor node
+                        if (!level.getIndex().isTopLevel()) {
+                            throw new FormatException(
+                                "Anchor node only allowed on top existential level",
+                                node);
+                        }
                         if (node.getParamKind() != PARAM_BI) {
                             throw new FormatException(
                                 "Anchor node cannot be input or output", node);
@@ -1949,7 +1999,6 @@ public class DefaultRuleView implements RuleView {
                             throw new FormatException(
                                 "Anchor node must be in LHS", node);
                         }
-                        Level level = getLevelTree().getLevel(node);
                         RuleNode nodeImage = level.getLhsMap().getNode(node);
                         this.hiddenPars.add(nodeImage);
                     }
@@ -1977,12 +2026,6 @@ public class DefaultRuleView implements RuleView {
 
         private void processNode(Map<Integer,CtrlPar.Var> parMap,
                 AspectNode node, Integer nr) throws FormatException {
-            Level level = getLevelTree().getLevel(node);
-            if (!level.getIndex().isTopLevel()) {
-                throw new FormatException(
-                    "Parameter '%d' only allowed on top existential level", nr,
-                    node);
-            }
             AspectKind nodeKind = node.getKind();
             AspectKind paramKind = node.getParamKind();
             boolean hasControl =
@@ -2005,6 +2048,7 @@ public class DefaultRuleView implements RuleView {
                     "Parameter '%d' is a required input, but no control is in use",
                     nr, node);
             }
+            Level level = getLevelTree().getLevel(node);
             RuleNode nodeImage;
             boolean creator;
             if (nodeKind.inLHS()) {

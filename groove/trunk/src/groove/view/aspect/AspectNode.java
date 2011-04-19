@@ -256,6 +256,12 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
             throw new FormatException(
                 "Target node of %s-edge should be quantifier", edge.label(),
                 this);
+        } else if (edge.isNestedCount()) {
+            if (getAttrKind() != AspectKind.INT) {
+                throw new FormatException(
+                    "Target node of %s-edge should be int-node", edge.label(),
+                    this);
+            }
         } else if (edge.isOperator()) {
             Operator operator = edge.getOperator();
             setDataType(operator.getResultType());
@@ -291,20 +297,27 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
                 throw new FormatException(
                     "Source node of %s-edge should be quantifier", edgeLabel,
                     this);
-            } else {
-                // collect collective nesting grandparents to test for circularity
-                Set<AspectNode> grandparents = new HashSet<AspectNode>();
-                AspectNode parent = this.nestingParent;
-                while (parent != null) {
-                    grandparents.add(parent);
-                    parent = parent.getNestingParent();
-                }
-                if (grandparents.contains(this)) {
-                    throw new FormatException(
-                        "Circularity in the nesting hierarchy", this);
-                }
-                this.nestingParent = edge.target();
             }
+            // collect collective nesting grandparents to test for circularity
+            Set<AspectNode> grandparents = new HashSet<AspectNode>();
+            AspectNode parent = this.nestingParent;
+            while (parent != null) {
+                grandparents.add(parent);
+                parent = parent.getNestingParent();
+            }
+            if (grandparents.contains(this)) {
+                throw new FormatException(
+                    "Circularity in the nesting hierarchy", this);
+            }
+            this.nestingParent = edge.target();
+        } else if (edge.isNestedCount()) {
+            if (getKind() != AspectKind.FORALL
+                && getKind() != AspectKind.FORALL_POS) {
+                throw new FormatException(
+                    "Source node of %s-edge should be universal quantifier",
+                    edgeLabel, this);
+            }
+            this.matchCount = edge.target();
         } else if (edge.isArgument()) {
             if (!hasAttrAspect()) {
                 setAttrAspect(PRODUCT.getAspect());
@@ -555,6 +568,14 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         return this.nestingParent;
     }
 
+    /**
+     * Retrieves the node encapsulating the match count for this node.
+     * Only non-{@code null} if this node is a universal quantifier node. 
+     */
+    public AspectNode getMatchCount() {
+        return this.matchCount;
+    }
+
     /** Returns the optional level name, if this is a quantifier node. */
     public String getLevelName() {
         if (getKind().isQuantifier()) {
@@ -584,6 +605,8 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     /** The aspect node representing the parent of this node in the nesting
      * hierarchy. */
     private AspectNode nestingParent;
+    /** The aspect node representing the match count of a universal quantifier. */
+    private AspectNode matchCount;
     /** A list of argument types, if this represents a product node. */
     private List<AspectNode> argNodes;
     /** The operator of an outgoing operator edge. */

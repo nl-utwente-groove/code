@@ -150,13 +150,4 @@ public interface Rule extends Comparable<Rule>, Condition {
             }
 
         };
-
-    /** Input flag */
-    public static final int PARAMETER_INPUT = 1;
-    /** Output flag */
-    public static final int PARAMETER_OUTPUT = 2;
-    /** Both Input/Output flag */
-    public static final int PARAMETER_BOTH = 3;
-    /** Non-existent flag */
-    public static final int PARAMETER_DOES_NOT_EXIST = -1;
 }

@@ -49,7 +49,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
+public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
     /**
      * @param name the name of the new rule
      * @param lhs the left hand side graph of the rule
@@ -356,6 +356,38 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         return this.hiddenPars;
     }
 
+    /**
+     * Apart from calling the super method, also maintains the subset of complex
+     * sub-conditions.
+     * @see #addComplexSubCondition(AbstractCondition)
+     */
+    @Override
+    public void addSubCondition(Condition condition) {
+        super.addSubCondition(condition);
+        if (!(condition instanceof NotCondition)) {
+            addComplexSubCondition((AbstractCondition<?>) condition);
+        }
+    }
+
+    /**
+     * Adds a graph condition to the complex sub-conditions, which are those
+     * that are not edge or merge embargoes.
+     */
+    private void addComplexSubCondition(AbstractCondition<?> condition) {
+        getComplexSubConditions().add(condition);
+    }
+
+    /**
+     * Returns the set of sub-conditions that are <i>not</i>
+     * {@link NotCondition}s.
+     */
+    private Collection<AbstractCondition<?>> getComplexSubConditions() {
+        if (this.complexSubConditions == null) {
+            this.complexSubConditions = new ArrayList<AbstractCondition<?>>();
+        }
+        return this.complexSubConditions;
+    }
+
     /** Creates the search plan using the rule's search plan factory. */
     public MatchStrategy<RuleToHostMap> getEventMatcher() {
         if (this.eventMatcher == null) {
@@ -417,7 +449,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Returns a collection of matches extending a given match with matches for
      * the sub-conditions.
      */
-    Collection<RuleMatch> addSubMatches(HostGraph host, RuleMatch simpleMatch) {
+    private Collection<RuleMatch> addSubMatches(HostGraph host,
+            RuleMatch simpleMatch) {
         Collection<RuleMatch> result = Collections.singleton(simpleMatch);
         RuleToHostMap matchMap = simpleMatch.getElementMap();
         for (AbstractCondition<?> condition : getComplexSubConditions()) {
@@ -443,8 +476,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      *        {@link #getTarget()} into some host graph
      * @return a match constructed on the basis of <code>map</code>
      */
-    @Override
-    protected RuleMatch createMatch(RuleToHostMap matchMap) {
+    private RuleMatch createMatch(RuleToHostMap matchMap) {
         return new RuleMatch(this, matchMap);
     }
 
@@ -457,7 +489,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @return <code>true</code> if <code>matchMap</code> satisfies the
      *         constraints imposed by the rule (if any).
      */
-    boolean isValidMatchMap(HostGraph host, RuleToHostMap matchMap) {
+    private boolean isValidMatchMap(HostGraph host, RuleToHostMap matchMap) {
         boolean result = true;
         if (SystemProperties.isCheckDangling(getSystemProperties())) {
             result = satisfiesDangling(host, matchMap);
@@ -1208,6 +1240,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     @Override
     protected void computeUnresolvedNodes() {
         super.computeUnresolvedNodes();
+        // a variable node may be resolved because it is an input parameter
         Iterator<VariableNode> it = this.unresolvedVariableNodes.iterator();
         while (it.hasNext()) {
             RuleNode node = it.next();
@@ -1239,6 +1272,10 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * {@link #getDirectSubRules()}.
      */
     private Collection<SPORule> directSubRules;
+    /**
+     * The sub-conditions that are not negative application conditions.
+     */
+    private Collection<AbstractCondition<?>> complexSubConditions;
     /** The nesting level of this rule. */
     private int[] level;
     /**
