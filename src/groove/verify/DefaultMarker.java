@@ -105,7 +105,7 @@ public class DefaultMarker {
         // copy the backward structure to the instance variable
         this.backward = new int[stateCount][];
         for (int i = 0; i < stateCount; i++) {
-            int backCount = backward[i].size();
+            int backCount = backward[i] == null ? 0 : backward[i].size();
             int[] backEntry = new int[backCount];
             for (int j = 0; j < backCount; j++) {
                 backEntry[j] = backward[i].get(j);
