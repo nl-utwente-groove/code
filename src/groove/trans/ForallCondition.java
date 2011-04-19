@@ -16,10 +16,9 @@
  */
 package groove.trans;
 
-import groove.algebra.Algebra;
-import groove.algebra.AlgebraFamily;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
+import groove.match.MatchStrategy;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,9 +40,6 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
             VariableNode countNode) {
         super(name, target, rootMap, properties);
         this.countNode = countNode;
-        this.intAlgebra =
-            AlgebraFamily.getInstance(properties.getAlgebraFamily()).getAlgebra(
-                "int");
         this.count =
             countNode == null || countNode.getConstant() == null ? -1
                     : Integer.parseInt(countNode.getConstant().getSymbol());
@@ -71,6 +67,19 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
         return result;
     }
 
+    @Override
+    MatchStrategy<RuleToHostMap> createMatcher() {
+        if (this.countNode == null) {
+            return super.createMatcher();
+        } else {
+            // if the condition is counted, all nodes are relevant
+            // and should be made part of the anchor
+            testFixed(true);
+            return getMatcherFactory().createMatcher(this, null, null,
+                getTarget().nodeSet());
+        }
+    }
+
     /**
      * Returns the matches of this condition, given an iterator of match maps.
      */
@@ -91,19 +100,18 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
                 first = false;
             }
             RuleToHostMap matchMap = matchMapIter.next();
-            // see if the required match count is predetermined
+            // look up the match count, if there is any
             if (lookupCount) {
                 HostNode countImage = matchMap.getNode(this.countNode);
-                if (countImage != null) {
-                    count =
-                        Integer.parseInt(((ValueNode) countImage).getSymbol());
-                }
+                assert countImage != null;
+                count = Integer.parseInt(((ValueNode) countImage).getSymbol());
+                assert count >= 0;
                 lookupCount = false;
             }
             Collection<Match> subResults = new ArrayList<Match>();
             for (Condition subCondition : getSubConditions()) {
-                if (subCondition instanceof PositiveCondition<?>) {
-                    for (Match subResult : ((PositiveCondition<?>) subCondition).getMatches(
+                if (subCondition instanceof SPORule) {
+                    for (RuleMatch subResult : ((SPORule) subCondition).getMatches(
                         host, matchMap)) {
                         subResults.add(subResult);
                     }
@@ -124,17 +132,6 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
                 }
             }
             result = newResult;
-        } else if (this.countNode != null) {
-            // add the appropriate count to the matches
-            for (int i = 0; i < result.size(); i++) {
-                ValueNode countImage =
-                    host.getFactory().createNode(
-                        this.intAlgebra,
-                        this.intAlgebra.getValue(""
-                            + result.get(i).getSubMatches().size()));
-                result.get(i).getElementMap().putNode(this.countNode,
-                    countImage);
-            }
         }
         return result;
     }
@@ -171,7 +168,6 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
 
     /** Node capturing the match count of this condition. */
     private final RuleNode countNode;
-    private final Algebra<?> intAlgebra;
     /** Required number of matches, or {@code -1} if the count is unspecified */
     private final int count;
     /**

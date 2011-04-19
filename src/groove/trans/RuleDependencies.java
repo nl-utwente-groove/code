@@ -500,12 +500,12 @@ public class RuleDependencies {
             Set<TypeLabel> subPositives = new HashSet<TypeLabel>();
             Set<TypeLabel> subNegatives = new HashSet<TypeLabel>();
             collectConditionCharacteristics(negCond, subPositives, subNegatives);
-            if (negCond instanceof PositiveCondition<?> == cond instanceof PositiveCondition<?>
+            if (negCond instanceof SPORule == cond instanceof SPORule
                 || negCond instanceof ForallCondition) {
                 positive.addAll(subPositives);
                 negative.addAll(subNegatives);
             }
-            if (negCond instanceof PositiveCondition<?> != cond instanceof PositiveCondition<?>
+            if (negCond instanceof SPORule != cond instanceof SPORule
                 || negCond instanceof ForallCondition) {
                 negative.addAll(subPositives);
                 positive.addAll(subNegatives);
