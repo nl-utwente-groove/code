@@ -216,6 +216,22 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
             condition.setLabelStore(this.labelStore);
         }
         getSubConditions().add((AbstractCondition<?>) condition);
+        if (!(condition instanceof NotCondition)) {
+            getComplexSubConditions().add((AbstractCondition<?>) condition);
+        }
+    }
+
+    /**
+     * Returns the set of sub-conditions that are <i>not</i>
+     * {@link NotCondition}s.
+     * These are the conditions that are not part of the search plan,
+     * and so have to be matched explicitly.
+     */
+    protected Collection<AbstractCondition<?>> getComplexSubConditions() {
+        if (this.complexSubConditions == null) {
+            this.complexSubConditions = new ArrayList<AbstractCondition<?>>();
+        }
+        return this.complexSubConditions;
     }
 
     /** Fixes the sub-predicate and this morphism. */
@@ -580,6 +596,11 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 
     /** The collection of sub-conditions of this condition. */
     private Collection<AbstractCondition<?>> subConditions;
+
+    /**
+     * The sub-conditions that are not negative application conditions.
+     */
+    private Collection<AbstractCondition<?>> complexSubConditions;
 
     /** Flag indicating if this condition is now fixed, i.e., unchangeable. */
     private boolean fixed;

@@ -28,19 +28,8 @@ import java.util.Set;
  * @version $Revision $
  */
 abstract public class AbstractMatch implements Match, Cloneable {
-    /** Constructs a match wrapping a given element map. */
-    protected AbstractMatch(RuleToHostMap elementMap) {
-        this.elementMap = elementMap;
-    }
-
-    /** Returns the element map constituting the match. */
-    public RuleToHostMap getElementMap() {
-        return this.elementMap;
-    }
-
     public Collection<HostEdge> getEdgeValues() {
-        Set<HostEdge> result =
-            new HashSet<HostEdge>(getElementMap().edgeMap().values());
+        Set<HostEdge> result = new HashSet<HostEdge>();
         for (Match subMatch : this.subMatches) {
             result.addAll(subMatch.getEdgeValues());
         }
@@ -48,45 +37,37 @@ abstract public class AbstractMatch implements Match, Cloneable {
     }
 
     public Collection<HostNode> getNodeValues() {
-        Set<HostNode> result =
-            new HashSet<HostNode>(getElementMap().nodeMap().values());
+        Set<HostNode> result = new HashSet<HostNode>();
         for (Match subMatch : this.subMatches) {
             result.addAll(subMatch.getNodeValues());
         }
         return result;
     }
 
-    /** Returns the set of matches stored in this composite match. */
+    @Override
     public Collection<RuleMatch> getSubMatches() {
         return this.subMatches;
     }
 
-    /** Adds a match to those stored in this composite match. */
+    @Override
     public void addSubMatch(Match match) {
         // flatten pure composite matches
         if (match instanceof CompositeMatch) {
-            this.subMatches.addAll(((CompositeMatch) match).getSubMatches());
-            this.elementMap.putAll(((CompositeMatch) match).getElementMap());
+            this.subMatches.addAll(match.getSubMatches());
         } else {
             assert match instanceof RuleMatch;
             this.subMatches.add((RuleMatch) match);
         }
     }
 
-    /**
-     * Returns a set of copies of this composite match, each augmented with an
-     * additional sub-match taken from a given set of choices. For efficiency,
-     * the last match in the result is actually a (modified) alias of this
-     * object, meaning that no references to this object should be kept after
-     * invoking this method.
-     */
-    public Collection<? extends AbstractMatch> addSubMatchChoice(
+    @Override
+    public Collection<? extends Match> addSubMatchChoice(
             Iterable<? extends Match> choices) {
-        Collection<AbstractMatch> result = new ArrayList<AbstractMatch>();
+        Collection<Match> result = new ArrayList<Match>();
         Iterator<? extends Match> choiceIter = choices.iterator();
         while (choiceIter.hasNext()) {
             Match choice = choiceIter.next();
-            AbstractMatch copy = choiceIter.hasNext() ? clone() : this;
+            Match copy = choiceIter.hasNext() ? clone() : this;
             copy.addSubMatch(choice);
             result.add(copy);
         }
@@ -96,9 +77,8 @@ abstract public class AbstractMatch implements Match, Cloneable {
     /** Equality is determined by rule and element map. */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof AbstractMatch
-            && ((AbstractMatch) obj).getElementMap().equals(getElementMap())
-            && ((AbstractMatch) obj).getSubMatches().equals(getSubMatches());
+        return obj instanceof Match
+            && ((Match) obj).getSubMatches().equals(getSubMatches());
     }
 
     @Override
@@ -117,7 +97,6 @@ abstract public class AbstractMatch implements Match, Cloneable {
     protected AbstractMatch clone() {
         AbstractMatch result = createMatch();
         result.subMatches.addAll(getSubMatches());
-        result.elementMap.putAll(getElementMap());
         return result;
     }
 
@@ -126,7 +105,7 @@ abstract public class AbstractMatch implements Match, Cloneable {
 
     /** Computes a value for the hash code. */
     protected int computeHashCode() {
-        return getSubMatches().hashCode() ^ getElementMap().hashCode();
+        return getSubMatches().hashCode();
     }
 
     @Override
@@ -139,6 +118,4 @@ abstract public class AbstractMatch implements Match, Cloneable {
         new java.util.LinkedHashSet<RuleMatch>();
     /** The (pre-computed) hash code of this match. */
     private int hashCode;
-    /** The map constituting the match. */
-    private final RuleToHostMap elementMap;
 }

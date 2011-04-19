@@ -24,21 +24,6 @@ import java.util.Collection;
  * @version $Revision $
  */
 public class CompositeMatch extends AbstractMatch {
-    /** Constructs an immutable, empty match. */
-    public CompositeMatch() {
-        super(new RuleToHostMap(null));
-    }
-
-    /** Constructs a composite match for a given host graph. */
-    public CompositeMatch(HostGraph host) {
-        super(new RuleToHostMap(host.getFactory()));
-    }
-
-    /** Constructs a match cloning a given element map. */
-    private CompositeMatch(RuleToHostMap elementMap) {
-        super(elementMap);
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public Collection<CompositeMatch> addSubMatchChoice(
@@ -49,6 +34,6 @@ public class CompositeMatch extends AbstractMatch {
     /** Callback factory method for a cloned match. */
     @Override
     protected CompositeMatch createMatch() {
-        return new CompositeMatch(getElementMap());
+        return new CompositeMatch();
     }
 }

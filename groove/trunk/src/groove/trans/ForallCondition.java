@@ -88,7 +88,7 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
         List<CompositeMatch> result = new ArrayList<CompositeMatch>();
         // add the empty match if the condition is not positive
         if (!this.positive) {
-            result.add(new CompositeMatch(host));
+            result.add(new CompositeMatch());
         }
         boolean first = this.positive;
         int count = this.count;
@@ -96,7 +96,7 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
         while (matchMapIter.hasNext() && (first || !result.isEmpty())) {
             // add the empty match if the condition is positive
             if (first) {
-                result.add(new CompositeMatch(host));
+                result.add(new CompositeMatch());
                 first = false;
             }
             RuleToHostMap matchMap = matchMapIter.next();
@@ -108,13 +108,12 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
                 assert count >= 0;
                 lookupCount = false;
             }
+            // the subconditions are interpreted disjunctively,
+            // so we have to collect all of their possible matches
             Collection<Match> subResults = new ArrayList<Match>();
-            for (Condition subCondition : getSubConditions()) {
-                if (subCondition instanceof SPORule) {
-                    for (RuleMatch subResult : ((SPORule) subCondition).getMatches(
-                        host, matchMap)) {
-                        subResults.add(subResult);
-                    }
+            for (AbstractCondition<?> subCondition : getComplexSubConditions()) {
+                for (Match subResult : subCondition.getMatches(host, matchMap)) {
+                    subResults.add(subResult);
                 }
             }
             List<CompositeMatch> newResult = new ArrayList<CompositeMatch>();

@@ -27,13 +27,32 @@ import java.util.Collection;
 public class RuleMatch extends AbstractMatch {
     /** Constructs a match for a given {@link SPORule}. */
     public RuleMatch(SPORule rule, RuleToHostMap elementMap) {
-        super(elementMap);
         this.rule = rule;
+        this.elementMap = elementMap;
     }
 
     /** Returns the rule of which this is a match. */
     public SPORule getRule() {
         return this.rule;
+    }
+
+    /** Returns the element map constituting the match. */
+    public RuleToHostMap getElementMap() {
+        return this.elementMap;
+    }
+
+    @Override
+    public Collection<HostEdge> getEdgeValues() {
+        Collection<HostEdge> result = super.getEdgeValues();
+        result.addAll(this.elementMap.edgeMap().values());
+        return result;
+    }
+
+    @Override
+    public Collection<HostNode> getNodeValues() {
+        Collection<HostNode> result = super.getNodeValues();
+        result.addAll(this.elementMap.nodeMap().values());
+        return result;
     }
 
     /**
@@ -107,6 +126,13 @@ public class RuleMatch extends AbstractMatch {
     }
 
     @Override
+    protected RuleMatch clone() {
+        RuleMatch result = (RuleMatch) super.clone();
+        result.elementMap.putAll(this.elementMap);
+        return result;
+    }
+
+    @Override
     protected RuleMatch createMatch() {
         return new RuleMatch(getRule(), getElementMap());
     }
@@ -116,13 +142,15 @@ public class RuleMatch extends AbstractMatch {
     public boolean equals(Object obj) {
         return obj instanceof RuleMatch
             && ((RuleMatch) obj).getRule().equals(getRule())
+            && ((RuleMatch) obj).getElementMap().equals(getElementMap())
             && super.equals(obj);
     }
 
     /** This implementation takes the rule into account. */
     @Override
     protected int computeHashCode() {
-        return getRule().hashCode() + super.computeHashCode();
+        return getRule().hashCode() + super.computeHashCode()
+            ^ getElementMap().hashCode();
     }
 
     @Override
@@ -146,4 +174,6 @@ public class RuleMatch extends AbstractMatch {
 
     /** The fixed rule of which this is a match. */
     private final SPORule rule;
+    /** The map constituting the match. */
+    private final RuleToHostMap elementMap;
 }

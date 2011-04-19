@@ -683,7 +683,9 @@ public class DefaultRuleView implements RuleView {
                         parentLevel = getIndex(parentNode);
                     }
                     indexParentMap.put(nodeLevel, parentLevel);
-                    this.matchCountMap.put(nodeLevel, node.getMatchCount());
+                    if (node.getMatchCount() != null) {
+                        this.matchCountMap.put(nodeLevel, node.getMatchCount());
+                    }
                 }
             }
             // Now fill the tree from the parent map
