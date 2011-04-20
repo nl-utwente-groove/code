@@ -67,6 +67,11 @@ class ConditionSearchItem extends AbstractSearchItem {
         return -this.condition.getTarget().nodeCount() - this.rootMap.size();
     }
 
+    @Override
+    public boolean isTestsNodes() {
+        return true;
+    }
+
     public void activate(SearchPlanStrategy strategy) {
         this.nodeIxMap = new HashMap<RuleNode,Integer>();
         for (RuleNode node : this.neededNodes) {

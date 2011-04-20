@@ -72,6 +72,12 @@ abstract class AbstractSearchItem implements SearchItem {
         return Collections.emptySet();
     }
 
+    /** This implementation returns {@code false}. */
+    @Override
+    public boolean isTestsNodes() {
+        return false;
+    }
+
     /**
      * This implementation compares items on the basis of their class names, and
      * after that, on the basis of their ratings. A lower rating means a

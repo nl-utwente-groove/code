@@ -40,7 +40,6 @@ import groove.util.Bag;
 import groove.util.HashBag;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -65,14 +64,11 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
     /**
      * Private constructor. Get the instance through
      * {@link #getInstance(boolean,String)}.
-     * @param injective if <code>true</code>, the factory produces injective
-     *        matchers only
      * @param algebraFamily the name of the set of algebras to be used in
      * data value manipulation
      * @see AlgebraFamily#getInstance(String)
      */
-    private SearchPlanEngine(boolean injective, String algebraFamily) {
-        this.injective = injective;
+    private SearchPlanEngine(String algebraFamily) {
         this.ignoreNeg = false;
         this.algebraFamily = AlgebraFamily.getInstance(algebraFamily);
     }
@@ -99,7 +95,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
             }
         }
         SearchPlanStrategy result =
-            new SearchPlanStrategy(condition.getTarget(), plan, this.injective);
+            new SearchPlanStrategy(condition.getTarget(), plan);
         if (PRINT) {
             System.out.print(String.format(
                 "%nPlan for %s, prematched nodes %s, prematched edges %s:%n    %s",
@@ -109,8 +105,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
                 if (i > 0) {
                     System.out.print(", ");
                 }
-                System.out.printf("%d<-%s", i,
-                    Arrays.toString(plan.getDependency(i)));
+                System.out.printf("%d: %s", i, plan.getDependency(i));
             }
             System.out.println("]");
         }
@@ -124,9 +119,6 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
      * @see AlgebraFamily#getInstance(String)
      */
     private final AlgebraFamily algebraFamily;
-    /** Flag indicating if this factory creates injective matchings. */
-    private final boolean injective;
-
     /**
      * Flag indicating if this factory creates matchings that ignore negations
      * in the source graph.
@@ -142,9 +134,8 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
      */
     static public SearchPlanEngine getInstance(boolean injective,
             String algebraFamily) {
-        if (instance == null || instance.injective != injective
-            || instance.algebraFamily.equals(algebraFamily)) {
-            instance = new SearchPlanEngine(injective, algebraFamily);
+        if (instance == null || instance.algebraFamily.equals(algebraFamily)) {
+            instance = new SearchPlanEngine(algebraFamily);
         }
         return instance;
     }
@@ -293,7 +284,9 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
             } else {
                 this.used = true;
             }
-            SearchPlan result = new SearchPlan();
+            SearchPlan result =
+                new SearchPlan(
+                    this.condition.getSystemProperties().isInjective());
             Collection<AbstractSearchItem> items =
                 computeSearchItems(anchorNodes, anchorEdges);
             while (!items.isEmpty()) {

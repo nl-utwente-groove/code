@@ -78,12 +78,18 @@ public interface SearchItem extends Comparable<SearchItem> {
     Collection<RuleEdge> bindsEdges();
 
     /**
+     * Indicates if this item tests for nodes without actually binding them.
+     * This may affect the dependencies in case of injective matching.
+     */
+    boolean isTestsNodes();
+
+    /**
      * Signals if the image of this search item is a relevant part of the match.
      * An attempt is made by the search strategy to return only matches that
      * differ on relevant parts.
      */
     boolean isRelevant();
-    
+
     /**
      * Prepares the search item for actual searching by providing additional
      * information about the strategy.
