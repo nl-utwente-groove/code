@@ -40,6 +40,7 @@ import groove.util.Bag;
 import groove.util.HashBag;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -87,8 +88,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
             anchorEdges = patternMap.edgeMap().values();
         }
         GrammarPlanData planData = new GrammarPlanData(condition);
-        List<AbstractSearchItem> plan =
-            planData.getPlan(anchorNodes, anchorEdges);
+        SearchPlan plan = planData.getPlan(anchorNodes, anchorEdges);
         if (relevantNodes != null) {
             Set<RuleNode> unboundRelevantNodes =
                 new HashSet<RuleNode>(relevantNodes);
@@ -104,6 +104,15 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
             System.out.print(String.format(
                 "%nPlan for %s, prematched nodes %s, prematched edges %s:%n    %s",
                 condition.getName(), anchorNodes, anchorEdges, result));
+            System.out.printf("%n    Dependencies: [");
+            for (int i = 0; i < plan.size(); i++) {
+                if (i > 0) {
+                    System.out.print(", ");
+                }
+                System.out.printf("%d<-%s", i,
+                    Arrays.toString(plan.getDependency(i)));
+            }
+            System.out.println("]");
         }
         result.setFixed();
         return result;
@@ -143,7 +152,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
     static private SearchPlanEngine instance;
 
     /** Flag to control search plan printing. */
-    static private final boolean PRINT = false;
+    static private final boolean PRINT = true;
 
     /**
      * Plan data extension based on a graph condition. Additionally it takes the
@@ -276,8 +285,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
          * @param anchorEdges the set of pre-matched edges; may be
          *        <code>null</code> for an empty set
          */
-        public List<AbstractSearchItem> getPlan(
-                Collection<RuleNode> anchorNodes,
+        public SearchPlan getPlan(Collection<RuleNode> anchorNodes,
                 Collection<RuleEdge> anchorEdges) {
             if (this.used) {
                 throw new IllegalStateException(
@@ -285,8 +293,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
             } else {
                 this.used = true;
             }
-            List<AbstractSearchItem> result =
-                new ArrayList<AbstractSearchItem>();
+            SearchPlan result = new SearchPlan();
             Collection<AbstractSearchItem> items =
                 computeSearchItems(anchorNodes, anchorEdges);
             while (!items.isEmpty()) {
