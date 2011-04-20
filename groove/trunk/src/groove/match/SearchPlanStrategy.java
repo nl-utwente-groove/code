@@ -51,8 +51,8 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
      * @param plan the search items that make up the search plan
      * @param injective flag to indicate that the matching should be injective
      */
-    public SearchPlanStrategy(RuleGraph source,
-            List<? extends SearchItem> plan, boolean injective) {
+    public SearchPlanStrategy(RuleGraph source, SearchPlan plan,
+            boolean injective) {
         this.nodeIxMap = new HashMap<RuleNode,Integer>();
         this.edgeIxMap = new HashMap<RuleEdge,Integer>();
         this.varIxMap = new HashMap<LabelVar,Integer>();
