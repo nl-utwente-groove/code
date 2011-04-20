@@ -160,6 +160,10 @@ abstract class AbstractSearchItem implements SearchItem {
             return AbstractSearchItem.this.isRelevant();
         }
 
+        public void repeat() {
+            reset();
+        }
+
         public void reset() {
             this.found = false;
         }
@@ -184,10 +188,11 @@ abstract class AbstractSearchItem implements SearchItem {
     abstract class BasicRecord implements Record {
         /** Constructs a record for a given search. */
         BasicRecord(Search search) {
-            this.search = search;
             this.host = search.getHost();
+            this.search = search;
         }
 
+        @Override
         public boolean isRelevant() {
             return AbstractSearchItem.this.isRelevant();
         }
@@ -197,10 +202,14 @@ abstract class AbstractSearchItem implements SearchItem {
             return this.host.getFactory().createEdge(source, label, target);
         }
 
-        /** The underlying search for this record. */
-        final Search search;
+        @Override
+        public void repeat() {
+            reset();
+        }
+
         /** The underlying search for this record. */
         final HostGraph host;
+        final Search search;
     }
 
     /**
