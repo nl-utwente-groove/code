@@ -29,7 +29,7 @@ import java.io.File;
 import javax.swing.Icon;
 
 /**
- * EDUARDO: Refactor this class...
+ * EDUARDO: Refactor this class... Move to gui package. 
  * Implements a file view that displays the correct icons and descriptions for
  * graph files, rules files and grammar directories.
  * @version $Date: 2008-01-30 09:33:42 $ $Revision$
@@ -40,17 +40,9 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * Constructs a standard file view, in which production system directories
      * can be traversed.
      */
+    // EDUARDO: Make this private or at least protected.
     public GrooveFileView() {
         setGpsTraversable(true);
-    }
-
-    /**
-     * Constructs a file view, with the traversability of production system
-     * directories set according to a parameter.
-     * @see #isTraversable(File)
-     */
-    public GrooveFileView(boolean gpsTraversable) {
-        setGpsTraversable(gpsTraversable);
     }
 
     /**

@@ -80,6 +80,7 @@ import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.io.HTMLConverter;
 import groove.io.external.Exporter;
+import groove.io.external.Importer;
 import groove.io.store.DefaultFileSystemStore;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
@@ -1784,7 +1785,12 @@ public class Simulator {
 
     /** Returns the exporter of the simulator. */
     public Exporter getExporter() {
-        return this.exporter;
+        return Exporter.getInstance();
+    }
+
+    /** Returns the importer of the simulator. */
+    private Importer getImporter() {
+        return Importer.getInstance();
     }
 
     /** Returns the currently selected simulator panel. */
@@ -1928,14 +1934,16 @@ public class Simulator {
 
         result.addSeparator();
 
-        result.add(new JMenuItem(getLoadStartGraphAction()));
-        result.add(new JMenuItem(getImportRuleAction()));
+        result.add(new JMenuItem(getSaveGrammarAction()));
 
         result.addSeparator();
 
-        result.add(new JMenuItem(getSaveGrammarAction()));
-        result.add(new JMenuItem(getSaveGraphAction()));
-        result.add(getExportGraphMenuItem());
+        result.add(new JMenuItem(getImportAction()));
+        /*result.add(new JMenuItem(getExportAction()));*/
+
+        result.addSeparator();
+
+        result.add(new JMenuItem(getLoadStartGraphAction()));
 
         result.addSeparator();
 
@@ -2528,6 +2536,42 @@ public class Simulator {
     }
 
     /**
+     * Asks whether a given existing type graph should be replaced by a newly
+     * loaded one.
+     */
+    boolean confirmOverwriteType(String typeName) {
+        int response =
+            JOptionPane.showConfirmDialog(getFrame(),
+                String.format("Replace existing type graph '%s'?", typeName),
+                null, JOptionPane.OK_CANCEL_OPTION);
+        return response == JOptionPane.OK_OPTION;
+    }
+
+    /**
+     * Asks whether a given existing control program should be replaced by a 
+     * newly loaded one.
+     */
+    boolean confirmOverwriteControl(String controlName) {
+        int response =
+            JOptionPane.showConfirmDialog(getFrame(), String.format(
+                "Replace existing control program '%s'?", controlName), null,
+                JOptionPane.OK_CANCEL_OPTION);
+        return response == JOptionPane.OK_OPTION;
+    }
+
+    /**
+     * Asks whether a given existing host graph should be replaced by a newly
+     * loaded one.
+     */
+    boolean confirmOverwriteGraph(String graphName) {
+        int response =
+            JOptionPane.showConfirmDialog(getFrame(),
+                String.format("Replace existing host graph '%s'?", graphName),
+                null, JOptionPane.OK_CANCEL_OPTION);
+        return response == JOptionPane.OK_OPTION;
+    }
+
+    /**
      * Asks whether a given existing file should be overwritten by a new
      * grammar.
      */
@@ -2750,11 +2794,6 @@ public class Simulator {
      * Dialog for entering temporal formulae.
      */
     private StringDialog formulaDialog;
-
-    /**
-     * Graph exporter.
-     */
-    private final Exporter exporter = new Exporter();
 
     /**
      * Set of registered simulation listeners.
@@ -3999,60 +4038,6 @@ public class Simulator {
         }
     }
 
-    /**
-     * Returns the rule load action permanently associated with this simulator.
-     */
-    public ImportRuleAction getImportRuleAction() {
-        // lazily create the action
-        if (this.importRuleAction == null) {
-            this.importRuleAction = new ImportRuleAction();
-        }
-        return this.importRuleAction;
-    }
-
-    /**
-     * The rule load action permanently associated with this simulator.
-     */
-    private ImportRuleAction importRuleAction;
-
-    /**
-     * Action for loading and setting a different control program.
-     */
-    private class ImportRuleAction extends RefreshableAction {
-        /** Constructs an instance of the action. */
-        ImportRuleAction() {
-            super(Options.IMPORT_RULE_ACTION_NAME, null);
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            int result = getRuleFileChooser().showOpenDialog(getFrame());
-            // now load, if so required
-            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
-                try {
-                    File ruleFile = getRuleFileChooser().getSelectedFile();
-                    AspectGraph ruleGraph = unmarshalGraph(ruleFile);
-                    RuleName ruleName = new RuleName(ruleGraph.getName());
-                    if (getGrammarView().getRuleView(ruleName) == null
-                        || confirmOverwriteRule(ruleName)) {
-                        if (doAddRule(ruleGraph)) {
-                            setRule(ruleName);
-                        }
-                    }
-                } catch (IOException e) {
-                    showErrorDialog("Error loading rule", e);
-                }
-            }
-        }
-
-        /**
-         * Sets the enabling status of this action, depending on whether a
-         * grammar is currently loaded.
-         */
-        public void refresh() {
-            setEnabled(getGrammarView() != null);
-        }
-    }
-
     /** Creates an action associated to a scenario handler. */
     public LaunchScenarioAction getLaunchScenarioAction(Scenario scenario) {
         // no reuse: the action depends on the scenario
@@ -4297,6 +4282,96 @@ public class Simulator {
          */
         public void refresh() {
             setEnabled(getGrammarView() != null);
+        }
+    }
+
+    /** Returns the import action permanently associated with this simulator. */
+    public ImportAction getImportAction() {
+        // lazily create the action
+        if (this.importAction == null) {
+            this.importAction = new ImportAction();
+        }
+        return this.importAction;
+    }
+
+    /** The import action permanently associated with this simulator. */
+    private ImportAction importAction;
+
+    /**
+     * Action for importing elements in the grammar.
+     * @see Simulator#doLoadStartGraph(File)
+     */
+    private class ImportAction extends RefreshableAction {
+        /** Constructs an instance of the action. */
+        ImportAction() {
+            super(Options.IMPORT_ACTION_NAME, null);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            int result = getImporter().showDialog(getFrame(), true);
+            // now load, if so required
+            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
+                try {
+                    AspectGraph importGraph;
+                    if ((importGraph = getImporter().importRule()) != null) {
+                        this.importRule(importGraph);
+                    } else if ((importGraph = getImporter().importState(true)) != null) {
+                        this.importState(importGraph);
+                    } else if ((importGraph = getImporter().importType()) != null) {
+                        this.importType(importGraph);
+                    } else {
+                        Duo<String> control;
+                        if ((control = getImporter().importControl()) != null) {
+                            this.importControl(control.one(), control.two());
+                        }
+                    }
+                } catch (IOException e) {
+                    showErrorDialog("Error importing file", e);
+                }
+            }
+        }
+
+        /**
+         * Sets the enabling status of this action, depending on whether a
+         * grammar is currently loaded.
+         */
+        public void refresh() {
+            setEnabled(getGrammarView() != null);
+        }
+
+        private void importRule(AspectGraph rule) {
+            RuleName ruleName = new RuleName(rule.getName());
+            if (getGrammarView().getRuleView(ruleName) == null
+                || confirmOverwriteRule(ruleName)) {
+                if (doAddRule(rule)) {
+                    setRule(ruleName);
+                }
+            }
+        }
+
+        private void importState(AspectGraph state) {
+            String stateName = state.getName();
+            if (getGrammarView().getGraphView(stateName) == null
+                || confirmOverwriteGraph(stateName)) {
+                doAddGraph(state);
+            }
+        }
+
+        private void importType(AspectGraph type) {
+            String typeName = type.getName();
+            if (getGrammarView().getTypeView(typeName) == null
+                || confirmOverwriteType(typeName)) {
+                doAddType(type);
+            }
+        }
+
+        private void importControl(String name, String program) {
+            if (getGrammarView().getControlView(name) == null
+                || confirmOverwriteControl(name)) {
+                if (doAddControl(name, program)) {
+                    getControlPanel().setSelectedControl(name);
+                }
+            }
         }
     }
 

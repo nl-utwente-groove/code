@@ -16,10 +16,12 @@
  */
 package groove.io;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -190,6 +192,24 @@ public class Util {
         if (preserveFileDate) {
             destFile.setLastModified(srcFile.lastModified());
         }
+    }
+
+    /**
+     * Reads the contents of a file into a String.
+     *
+     * @param file  the file to read, must not be <code>null</code>
+     * @throws IOException in case of an I/O error
+     */
+    public static String readFileToString(File file) throws IOException {
+        StringBuffer fileData = new StringBuffer(1000);
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        char[] buf = new char[1024];
+        int numRead = 0;
+        while ((numRead = reader.read(buf)) != -1) {
+            fileData.append(buf, 0, numRead);
+        }
+        reader.close();
+        return fileData.toString();
     }
 
     /**

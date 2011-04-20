@@ -1219,11 +1219,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     /** Returns the exporter of this editor. */
     public final Exporter getExporter() {
-        return this.exporter;
+        return Exporter.getInstance();
     }
-
-    /** Exporter used for all {@link GraphJGraph}s in the editor. */
-    private final Exporter exporter = new Exporter();
 
     /**
      * Lazily creates and returns the action to cut graph elements in the

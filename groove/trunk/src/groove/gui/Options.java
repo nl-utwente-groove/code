@@ -266,11 +266,11 @@ public class Options implements Cloneable {
     /** Load control file action name */
     public static final String LOAD_CONTROL_FILE_ACTION_NAME =
         "Load Control ...";
-    /** Load rule action name */
-    public static final String IMPORT_RULE_ACTION_NAME = "Import Rule ...";
     /** Load start state action name */
     public static final String LOAD_START_STATE_ACTION_NAME =
-        "Load Start State ...";
+        "Load External Start State ...";
+    /** Import action name */
+    public static final String IMPORT_ACTION_NAME = "Import ...";
     /** Load grammar action name */
     public static final String LOAD_GRAMMAR_ACTION_NAME = "Load Grammar ...";
     /** Load grammar from url action name */
