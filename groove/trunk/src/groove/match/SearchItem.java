@@ -118,6 +118,13 @@ public interface SearchItem extends Comparable<SearchItem> {
         boolean isSingular();
 
         /**
+         * Indicates that (in the last search) there where no matches of
+         * this record at all. This implies that the search can backtrack
+         * to the most recent dependency of this item.
+         */
+        boolean isEmpty();
+
+        /**
          * Tries to find (and select, if appropriate) the next fit for this
          * search item. Where necessary, the previously selected fit is first
          * undone. The return value indicates if a new fit has been found (and
@@ -144,23 +151,27 @@ public interface SearchItem extends Comparable<SearchItem> {
     /** The state of a search item record. */
     enum State {
         /** The search starts from scratch. */
-        START,
+        START(false),
         /** The search has failed immediately, and is not yet reset. */
-        EMPTY,
+        EMPTY(false),
         /** The (singular) search has succeeded (once); the next time it will fail. */
-        FOUND,
+        FOUND(true),
         /** The (singular) search has succeeded and then failed, and is starting to repeat. */
-        FULL,
+        FULL(false),
         /** The (multiple) search has yielded some first results, but is not yet completed. */
-        PART,
+        PART(true),
         /** The (multiple) search has just started repeating after having yielded some results. */
-        PART_START,
+        PART_START(false),
         /** The (multiple) search is repeating the previously found (partial) results. */
-        PART_REPEAT,
+        PART_REPEAT(true),
         /** The (multiple) search has been concluded after yielding at least one result. */
-        FULL_START,
+        FULL_START(false),
         /** The (multiple) search is repeating the previously found (complete) results. */
-        FULL_REPEAT;
+        FULL_REPEAT(true);
+
+        private State(boolean written) {
+            this.written = written;
+        }
 
         /** Returns the possible next states after a {@link Record#next()} invocation. */
         public final Set<State> getNext() {
@@ -220,5 +231,12 @@ public interface SearchItem extends Comparable<SearchItem> {
         public final State getReset() {
             return START;
         }
+
+        /** Indicates if in this state a value has been written to the search result. */
+        public final boolean isWritten() {
+            return this.written;
+        }
+
+        private final boolean written;
     }
 }

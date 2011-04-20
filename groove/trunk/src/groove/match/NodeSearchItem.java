@@ -107,15 +107,14 @@ class NodeSearchItem extends AbstractSearchItem {
         }
 
         @Override
-        public void reset() {
-            this.imageIter = null;
-            this.selected = null;
-            this.search.putNode(NodeSearchItem.this.nodeIx, null);
+        void init() {
+            this.imageIter = this.host.nodeSet().iterator();
         }
 
         @Override
-        void init() {
-            this.imageIter = this.host.nodeSet().iterator();
+        void erase() {
+            this.search.putNode(NodeSearchItem.this.nodeIx, null);
+            this.selected = null;
         }
 
         /**
@@ -126,7 +125,7 @@ class NodeSearchItem extends AbstractSearchItem {
          * @return <code>true</code> if the selection has succeeded
          */
         @Override
-        boolean setImage(HostNode image) {
+        boolean write(HostNode image) {
             boolean result =
                 this.search.putNode(NodeSearchItem.this.nodeIx, image);
             this.selected = image;

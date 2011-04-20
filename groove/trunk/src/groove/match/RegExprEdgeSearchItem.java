@@ -300,7 +300,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         }
 
         @Override
-        boolean setImage(RegAut.Result image) {
+        boolean write(RegAut.Result image) {
             boolean result = true;
             HostNode source = image.one();
             if (this.sourceFind == null) {
@@ -324,7 +324,6 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
                         }
                     }
                 }
-                this.selected = image;
                 if (result && !RegExprEdgeSearchItem.this.freshVars.isEmpty()) {
                     Map<LabelVar,TypeLabel> valuation = image.getValuation();
                     for (LabelVar var : RegExprEdgeSearchItem.this.freshVars) {
@@ -337,19 +336,18 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             return result;
         }
 
+        @Override
+        void erase() {
+            for (LabelVar var : RegExprEdgeSearchItem.this.freshVars) {
+                this.search.putVar(
+                    RegExprEdgeSearchItem.this.varIxMap.get(var), null);
+            }
+        }
+
         /** Rolls back the image set for the source. */
         private void rollBackTargetImage() {
             if (this.targetFind == null && !RegExprEdgeSearchItem.this.selfEdge) {
                 this.search.putNode(this.targetIx, null);
-            }
-        }
-
-        @Override
-        public void reset() {
-            super.reset();
-            for (LabelVar var : RegExprEdgeSearchItem.this.freshVars) {
-                this.search.putVar(
-                    RegExprEdgeSearchItem.this.varIxMap.get(var), null);
             }
         }
 
@@ -376,8 +374,6 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
          * target, or the target was pre-matched.
          */
         HostNode targetFind;
-        /** Image found by the latest call to {@link #next()}, if any. */
-        RegAut.Result selected;
         private final Map<LabelVar,TypeLabel> valuation;
     }
 }

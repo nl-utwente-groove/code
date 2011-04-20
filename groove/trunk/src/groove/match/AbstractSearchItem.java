@@ -26,9 +26,11 @@ import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Abstract implementation of a search item, offering some basic search
@@ -156,6 +158,11 @@ abstract class AbstractSearchItem implements SearchItem {
             return true;
         }
 
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
+
         public boolean isRelevant() {
             return AbstractSearchItem.this.isRelevant();
         }
@@ -226,6 +233,11 @@ abstract class AbstractSearchItem implements SearchItem {
             return true;
         }
 
+        @Override
+        final public boolean isEmpty() {
+            return this.state == State.EMPTY;
+        }
+
         /**
          * Calls {@link #reset()} and returns <code>false</code> if
          * {@link #next()} was successful at the last call; otherwise, delegates
@@ -255,19 +267,19 @@ abstract class AbstractSearchItem implements SearchItem {
             assert this.state.getNext().contains(nextState) : String.format(
                 "Illegal transition %s -next-> %s", this.state, nextState);
             this.state = nextState;
-            return isFound();
+            return nextState.isWritten();
         }
 
         @Override
         final public void repeat() {
-            if (isFound()) {
+            if (this.state.isWritten()) {
                 erase();
             }
             this.state = this.state.getRepeat();
         }
 
         final public void reset() {
-            if (isFound()) {
+            if (this.state.isWritten()) {
                 erase();
             }
             this.state = this.state.getReset();
@@ -291,15 +303,10 @@ abstract class AbstractSearchItem implements SearchItem {
          */
         abstract void erase();
 
-        /** Returns the return value of the last invocation of {@link #next()}. */
-        final boolean isFound() {
-            return this.state == State.FOUND;
-        }
-
         @Override
         public String toString() {
             return String.format("%s: %b", AbstractSearchItem.this.toString(),
-                isFound());
+                this.state.isWritten());
         }
 
         /** The state of the search record. */
@@ -319,38 +326,107 @@ abstract class AbstractSearchItem implements SearchItem {
         }
 
         /** This implementation returns <code>false</code>. */
-        public boolean isSingular() {
+        final public boolean isSingular() {
             return false;
+        }
+
+        @Override
+        final public boolean isEmpty() {
+            return this.state == State.EMPTY;
         }
 
         /**
          * If {@link #imageIter} is not initialised, first invokes
          * {@link #init()}. Then iterates over the images of {@link #imageIter}
-         * until one is found for which {@link #setImage(Object)} is satisfied.
+         * until one is found for which {@link #write(Object)} is satisfied.
          * Calls {@link #reset()} if no such image is found.
          */
         final public boolean next() {
-            if (this.imageIter == null) {
-                init();
+            State nextState;
+            switch (this.state) {
+            case EMPTY:
+                nextState = State.EMPTY;
+                break;
+            case FULL_REPEAT:
+                int index = this.oldImageIndex;
+                if (index == this.oldImages.size()) {
+                    erase();
+                    nextState = State.FULL_START;
+                } else {
+                    write(this.oldImages.get(index));
+                    this.oldImageIndex = index + 1;
+                    nextState = State.FULL_REPEAT;
+                }
+                break;
+            case FULL_START:
+                write(this.oldImages.get(0));
+                this.oldImageIndex = 1;
+                nextState = State.FULL_REPEAT;
+                break;
+            case PART:
+                E image = find();
+                if (image == null) {
+                    erase();
+                    nextState = State.FULL_START;
+                } else {
+                    this.oldImages.add(image);
+                    nextState = State.PART;
+                }
+                break;
+            case PART_REPEAT:
+                index = this.oldImageIndex;
+                write(this.oldImages.get(index));
+                if (index == this.oldImages.size() - 1) {
+                    nextState = State.PART;
+                } else {
+                    this.oldImageIndex = index + 1;
+                    nextState = State.PART_REPEAT;
+                }
+                break;
+            case PART_START:
+                write(this.oldImages.get(0));
+                if (this.oldImages.size() == 1) {
+                    nextState = State.PART;
+                } else {
+                    this.oldImageIndex = 1;
+                    nextState = State.PART_REPEAT;
+                }
+                break;
+            case START:
+                image = find();
+                if (image == null) {
+                    nextState = State.EMPTY;
+                } else {
+                    this.oldImages.clear();
+                    this.oldImages.add(image);
+                    nextState = State.PART;
+                }
+                break;
+            default:
+                assert false;
+                nextState = null;
             }
-            boolean result = false;
-            while (!result && this.imageIter.hasNext()) {
-                E image = this.imageIter.next();
-                result = setImage(image);
-            }
-            if (!result) {
-                reset();
-            }
-            return result;
+            assert this.state.getNext().contains(nextState) : String.format(
+                "Illegal transition %s -next-> %s", this.state, nextState);
+            this.state = nextState;
+            return nextState.isWritten();
         }
 
         @Override
-        public void repeat() {
-            reset();
+        final public void repeat() {
+            if (this.state.isWritten()) {
+                erase();
+            }
+            this.state = this.state.getRepeat();
         }
 
-        public void reset() {
+        @Override
+        final public void reset() {
+            if (this.state.isWritten()) {
+                erase();
+            }
             this.imageIter = null;
+            this.state = this.state.getReset();
         }
 
         /**
@@ -360,16 +436,47 @@ abstract class AbstractSearchItem implements SearchItem {
         abstract void init();
 
         /**
+         * Callback method from {@link #next()} to find and install an image. 
+         * The return value is the image found, or {@code null} if the find
+         * has not succeeded
+         */
+        final E find() {
+            E result = null;
+            if (this.imageIter == null) {
+                init();
+            }
+            while (result == null && this.imageIter.hasNext()) {
+                result = this.imageIter.next();
+                if (!write(result)) {
+                    result = null;
+                }
+            }
+            return result;
+        }
+
+        /**
          * Callback method from {@link #next()} to install an image. This method
          * is expected to call other methods of the underlying search to store
-         * images of nodes and edges. The return value indicates is this has
+         * images of nodes and edges. The return value indicates if this has
          * been successful.
          */
-        abstract boolean setImage(E image);
+        abstract boolean write(E image);
+
+        /** Erases the last image written in the target map. */
+        abstract void erase();
 
         /**
          * An iterator over the images for the item's edge.
          */
         Iterator<? extends E> imageIter;
+
+        /**
+         * The previously found images.
+         */
+        List<E> oldImages = new ArrayList<E>();
+        /** Index in {@link #oldImages} recording the state of the repetition */
+        int oldImageIndex = 0;
+        /** The state of this search item. */
+        private State state = State.START;
     }
 }

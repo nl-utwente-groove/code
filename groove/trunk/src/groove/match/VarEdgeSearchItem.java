@@ -183,10 +183,9 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         }
 
         @Override
-        boolean setImage(HostEdge image) {
+        boolean write(HostEdge image) {
             boolean result =
-                isLabelConstraintSatisfied(image.label())
-                    && super.setImage(image);
+                isLabelConstraintSatisfied(image.label()) && super.write(image);
             if (result && this.varFind == null) {
                 result = this.search.putVar(this.varIx, image.label());
             }
@@ -194,8 +193,8 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         }
 
         @Override
-        public void reset() {
-            super.reset();
+        void erase() {
+            super.erase();
             if (this.varFind == null) {
                 this.search.putVar(this.varIx, null);
             }
