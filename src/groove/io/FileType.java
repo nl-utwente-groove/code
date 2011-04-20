@@ -80,6 +80,10 @@ public enum FileType {
     /** KTH file format, used by Marieke et al. */
     KTH(".kth", "Simple KTH files");
 
+    /** Enumeration of importable native files. */
+    public static EnumSet<FileType> importNative = EnumSet.of(RULE, STATE,
+        TYPE, CONTROL);
+
     // Composite enumerations.
 
     private static Map<EnumSet<FileType>,String> compositeDescriptions =

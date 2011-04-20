@@ -33,8 +33,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JFileChooser;
-
 /**
  * Class providing functionality to export a {@link GraphJGraph} to a file in
  * different formats.
@@ -42,10 +40,20 @@ import javax.swing.JFileChooser;
  * @version $Revision: 3144 $
  */
 public class Exporter {
+
+    private Exporter() {
+        // Empty by design.
+    }
+
+    /** Returns the singleton instance of this class. */
+    public static Exporter getInstance() {
+        return instance;
+    }
+
     /**
      * Returns a file chooser for exporting, lazily creating it first.
      */
-    public JFileChooser getFileChooser() {
+    public GrooveFileChooser getFileChooser() {
         if (this.fileChooser == null) {
             this.fileChooser =
                 GrooveFileChooser.getFileChooser(this.getFilters());
@@ -121,5 +129,7 @@ public class Exporter {
     private GrooveFileChooser fileChooser;
     /** List of the supported export formats. */
     private List<ExternalFileFormat<?>> formats;
+    /** Singleton instance of this class. */
+    private static Exporter instance = new Exporter();
 
 }

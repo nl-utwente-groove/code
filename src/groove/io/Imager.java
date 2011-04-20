@@ -340,11 +340,8 @@ public class Imager extends CommandLineTool {
 
     /** Returns the exporter associated with this Imager. */
     private Exporter getExporter() {
-        return this.exporter;
+        return Exporter.getInstance();
     }
-
-    /** The image exporter used. */
-    private final Exporter exporter = new Exporter();
 
     /**
      * Returns the image format to which the graphs will be converted.
@@ -798,6 +795,6 @@ public class Imager extends CommandLineTool {
 
         /** Combo box for the available image formats. */
         final JComboBox formatBox = new JComboBox(
-            Imager.this.exporter.getExtensions().toArray());
+            Imager.this.getExporter().getExtensions().toArray());
     }
 }
