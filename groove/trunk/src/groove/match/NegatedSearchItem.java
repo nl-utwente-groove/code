@@ -67,6 +67,12 @@ class NegatedSearchItem extends AbstractSearchItem {
         return this.neededVars;
     }
 
+    /** This implementation returns {@code true} if the inner item does so. */
+    @Override
+    public boolean isTestsNodes() {
+        return this.inner.isTestsNodes();
+    }
+
     /**
      * Since the order of negated search items does not influence the match, all
      * of them have the same rating.

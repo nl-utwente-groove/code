@@ -28,15 +28,18 @@ import java.util.Set;
 
 /** List of search items with backwards dependencies. */
 public class SearchPlan extends ArrayList<AbstractSearchItem> {
+    /** Constructs a search plan with given injectivity. */
+    public SearchPlan(boolean injective) {
+        this.injective = injective;
+    }
+
     /** Constructs dependency information, in addition to appending the search item. */
     @Override
     public boolean add(AbstractSearchItem e) {
         int position = size();
         boolean result = super.add(e);
         // collection of direct dependencies of the new search item
-        BitSet directDepend = new BitSet();
-        // collection of transitive dependencies of the new search item
-        BitSet transDepend = new BitSet();
+        int depend = -1;
         Set<RuleNode> usedNodes = new HashSet<RuleNode>(e.needsNodes());
         usedNodes.addAll(e.bindsNodes());
         Set<LabelVar> usedVars = new HashSet<LabelVar>(e.needsVars());
@@ -45,9 +48,25 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
             // set a dependency if the item at position i binds a required node or variable
             if (usedNodes.removeAll(get(i).bindsNodes())
                 | usedVars.removeAll(get(i).bindsVars())) {
-                directDepend.set(i);
-                transDepend.set(i);
-                transDepend.or(this.transDependencies.get(i));
+                depend = i;
+            }
+        }
+        // add dependencies due to injective matching
+        if (this.injective) {
+            // cumulative set of nodes bound by search items up to i
+            Set<RuleNode> boundNodes = new HashSet<RuleNode>();
+            // for each item, whether it binds new nodes
+            BitSet bindsNewNodes = new BitSet();
+            for (int i = 0; i <= position; i++) {
+                bindsNewNodes.set(i, boundNodes.addAll(get(i).bindsNodes()));
+            }
+            if (bindsNewNodes.get(position) || e.isTestsNodes()) {
+                // the new item depends on all other items that bind new nodes
+                for (int i = 0; i < position; i++) {
+                    if (bindsNewNodes.get(i)) {
+                        depend = i;
+                    }
+                }
             }
         }
         assert !usedNodes.removeAll(e.needsNodes()) : String.format(
@@ -56,16 +75,8 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
         assert !usedVars.removeAll(e.needsVars()) : String.format(
             "Required label variable(s) %s not all bound in search plan %s",
             e.needsVars(), this);
-        int[] dependArray = new int[directDepend.cardinality()];
-        int next = -1;
-        for (int i = 0; i < dependArray.length; i++) {
-            next = directDepend.nextSetBit(next + 1);
-            if (!transDepend.get(i)) {
-                dependArray[i] = next;
-            }
-        }
-        this.dependencies.add(dependArray);
-        this.transDependencies.add(transDepend);
+        this.dependencies.add(depend);
+        // transitively close the indirect dependencies
         return result;
     }
 
@@ -90,16 +101,20 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
     }
 
     /**
-     * Returns an array of (smaller) indices in the search plan 
-     * on which the search item at a given index directly (i.e.,
-     * non-transitively) depends.
+     * Returns the index of the last predecessor on the result of which this one 
+     * depends for its matching, or {@code -1} if there is no such dependency.
      */
-    public int[] getDependency(int i) {
+    public int getDependency(int i) {
         return this.dependencies.get(i);
     }
 
-    /** Transitive dependencies of all search plan items. */
-    private final List<BitSet> transDependencies = new ArrayList<BitSet>();
+    /** Indicates if the search is injective. */
+    public boolean isInjective() {
+        return this.injective;
+    }
+
     /** Direct dependencies of all search plan items. */
-    private final List<int[]> dependencies = new ArrayList<int[]>();
+    private final List<Integer> dependencies = new ArrayList<Integer>();
+    /** Flag indicating that the search should be injective on non-attribute nodes. */
+    private final boolean injective;
 }
