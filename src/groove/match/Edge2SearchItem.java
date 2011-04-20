@@ -222,19 +222,24 @@ class Edge2SearchItem extends AbstractSearchItem {
         }
 
         @Override
-        final boolean set() {
+        boolean find() {
             HostEdge image = getEdgeImage();
             assert image != null;
             boolean result = isImageCorrect(image);
             if (result) {
-                this.search.putEdge(this.edgeIx, image);
+                this.image = image;
+                write();
             }
             return result;
         }
 
         @Override
-        public void reset() {
-            super.reset();
+        final boolean write() {
+            return this.search.putEdge(this.edgeIx, this.image);
+        }
+
+        @Override
+        void erase() {
             this.search.putEdge(this.edgeIx, null);
         }
 
@@ -285,6 +290,8 @@ class Edge2SearchItem extends AbstractSearchItem {
         private final int sourceIx;
         /** The index of the target in the search. */
         private final int targetIx;
+        /** The previously found edge, if the state is {@link SearchItem.State#FOUND} or {@link SearchItem.State#FULL}. */
+        private HostEdge image;
     }
 
     /**
@@ -512,7 +519,7 @@ class Edge2SearchItem extends AbstractSearchItem {
          * search.
          */
         private boolean setEdge;
-        /** Image found by the latest call to {@link #find()}, if any. */
+        /** Image found by the latest call to {@link #next()}, if any. */
         HostEdge selected;
     }
 }

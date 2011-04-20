@@ -110,19 +110,20 @@ class ValueNodeSearchItem extends AbstractSearchItem {
                     algebra.getValue(ValueNodeSearchItem.this.symbol));
         }
 
-        /**
-         * The first call puts #node to itself; the next call returns
-         * <code>false</code>.
-         */
         @Override
-        boolean set() {
-            return this.search.putNode(ValueNodeSearchItem.this.nodeIx,
-                this.image);
+        boolean find() {
+            return write();
         }
 
         @Override
-        public void reset() {
+        void erase() {
             this.search.putNode(ValueNodeSearchItem.this.nodeIx, null);
+        }
+
+        @Override
+        boolean write() {
+            return this.search.putNode(ValueNodeSearchItem.this.nodeIx,
+                this.image);
         }
 
         @Override

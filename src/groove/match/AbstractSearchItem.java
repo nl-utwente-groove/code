@@ -137,7 +137,7 @@ abstract class AbstractSearchItem implements SearchItem {
     private boolean relevant = true;
 
     /**
-     * Dummy search record, which does nothing upon {@link #find()} except
+     * Dummy search record, which does nothing upon {@link #next()} except
      * alternatingly return <code>true</code> and <code>false</code>.
      */
     final class DummyRecord implements Record {
@@ -146,7 +146,7 @@ abstract class AbstractSearchItem implements SearchItem {
          * <code>false</code>, and resets to <code>true</code> upon
          * invocation of {@link #reset()}.
          */
-        public boolean find() {
+        public boolean next() {
             this.found = !this.found;
             return this.found;
         }
@@ -197,14 +197,10 @@ abstract class AbstractSearchItem implements SearchItem {
             return AbstractSearchItem.this.isRelevant();
         }
 
+        /** Convenience method to create an edge for the host graph. */
         final HostEdge createEdge(HostNode source, TypeLabel label,
                 HostNode target) {
             return this.host.getFactory().createEdge(source, label, target);
-        }
-
-        @Override
-        public void repeat() {
-            reset();
         }
 
         /** The underlying search for this record. */
@@ -224,20 +220,6 @@ abstract class AbstractSearchItem implements SearchItem {
         }
 
         /**
-         * Calls {@link #reset()} and returns <code>false</code> if
-         * {@link #find()} was successful at the last call; otherwise, delegates
-         * to {@link #set()}.
-         */
-        final public boolean find() {
-            if (this.found) {
-                reset();
-            } else {
-                this.found = set();
-            }
-            return this.found;
-        }
-
-        /**
          * Always returns <code>true</code>.
          */
         final public boolean isSingular() {
@@ -245,21 +227,73 @@ abstract class AbstractSearchItem implements SearchItem {
         }
 
         /**
-         * Sets {@link #found} to <code>false</code>.
+         * Calls {@link #reset()} and returns <code>false</code> if
+         * {@link #next()} was successful at the last call; otherwise, delegates
+         * to {@link #write()}.
          */
-        public void reset() {
-            this.found = false;
+        final public boolean next() {
+            State nextState = null;
+            switch (this.state) {
+            case START:
+                nextState = find() ? State.FOUND : State.EMPTY;
+                break;
+            case FOUND:
+                nextState = State.FULL;
+                break;
+            case EMPTY:
+                // the state is unchanged
+                nextState = State.EMPTY;
+                break;
+            case FULL:
+                boolean result = write();
+                assert result;
+                nextState = State.FOUND;
+                break;
+            default:
+                assert false;
+            }
+            assert this.state.getNext().contains(nextState) : String.format(
+                "Illegal transition %s -next-> %s", this.state, nextState);
+            this.state = nextState;
+            return isFound();
+        }
+
+        @Override
+        final public void repeat() {
+            if (isFound()) {
+                erase();
+            }
+            this.state = this.state.getRepeat();
+        }
+
+        final public void reset() {
+            if (isFound()) {
+                erase();
+            }
+            this.state = this.state.getReset();
         }
 
         /**
-         * Tries to set the unique solution in the target map.
+         * Tries to find the unique solution and write it to the target map.
+         * This encapsulates {@link #write()}.
+         * @return <code>true</code> if finding and writing the solution was successful.
+         */
+        abstract boolean find();
+
+        /**
+         * Tries to write the previously found unique solution to the target map.
          * @return <code>true</code> if setting the solution was successful.
          */
-        abstract boolean set();
+        abstract boolean write();
 
-        /** Returns the return value of the last invocation of {@link #find()}. */
+        /**
+         * Erases the currently set solution from the target map.
+         */
+        abstract void erase();
+
+        /** Returns the return value of the last invocation of {@link #next()}. */
         final boolean isFound() {
-            return this.found;
+            return this.state == State.FOUND;
         }
 
         @Override
@@ -268,8 +302,8 @@ abstract class AbstractSearchItem implements SearchItem {
                 isFound());
         }
 
-        /** Flag storing the last return value of {@link #find()}. */
-        private boolean found;
+        /** The state of the search record. */
+        private State state = State.START;
     }
 
     /**
@@ -295,7 +329,7 @@ abstract class AbstractSearchItem implements SearchItem {
          * until one is found for which {@link #setImage(Object)} is satisfied.
          * Calls {@link #reset()} if no such image is found.
          */
-        final public boolean find() {
+        final public boolean next() {
             if (this.imageIter == null) {
                 init();
             }
@@ -310,18 +344,23 @@ abstract class AbstractSearchItem implements SearchItem {
             return result;
         }
 
+        @Override
+        public void repeat() {
+            reset();
+        }
+
         public void reset() {
             this.imageIter = null;
         }
 
         /**
-         * Callback method from {@link #find()} to initialise the variables
+         * Callback method from {@link #next()} to initialise the variables
          * necessary for searching; in any case {@link #imageIter}.
          */
         abstract void init();
 
         /**
-         * Callback method from {@link #find()} to install an image. This method
+         * Callback method from {@link #next()} to install an image. This method
          * is expected to call other methods of the underlying search to store
          * images of nodes and edges. The return value indicates is this has
          * been successful.

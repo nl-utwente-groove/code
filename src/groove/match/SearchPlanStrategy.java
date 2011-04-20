@@ -385,7 +385,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
             do {
                 // the outer loop is to filter solutions through
                 while (current > this.lastSingular && current < planSize) {
-                    boolean success = getRecord(current).find();
+                    boolean success = getRecord(current).next();
                     if (success) {
                         for (int i = 0; i < this.influenceCount[current]; i++) {
                             this.influence[current][i].reset();

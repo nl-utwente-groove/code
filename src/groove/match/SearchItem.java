@@ -16,11 +16,14 @@
  */
 package groove.match;
 
+import groove.match.SearchItem.Record;
 import groove.rel.LabelVar;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 
 import java.util.Collection;
+import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * Interface for an item in a search plan. The use of a search item has the
@@ -35,7 +38,7 @@ import java.util.Collection;
  * <li> Record creation (call of {@link #getRecord(SearchPlanStrategy.Search)}).
  * At this time the pre-matched images are known. Found images are also known,
  * but are due to change at subsequent finds.
- * <li> Record usage (call of {@link Record#find()}). At this time the found
+ * <li> Record usage (call of {@link Record#next()}). At this time the found
  * images are known.
  * </ul>
  * @author Arend Rensink
@@ -109,7 +112,7 @@ public interface SearchItem extends Comparable<SearchItem> {
         /**
          * Indicates if this search record is known to be successful no more
          * than once in a row. That is, the record is singular if
-         * {@link #find()} will return <code>true</code> at most once before
+         * {@link #next()} will return <code>true</code> at most once before
          * the next {@link #reset()}.
          */
         boolean isSingular();
@@ -121,12 +124,12 @@ public interface SearchItem extends Comparable<SearchItem> {
          * selected).
          * @return <code>true</code> if a fit has been found
          */
-        boolean find();
+        boolean next();
 
         /**
          * Resets the record so that the previous sequence of find actions
          * is repeated. This is more efficient than {@link #reset()}, but
-         * is only valid no {@link #find()} was invoked on a search item
+         * is only valid no {@link #next()} was invoked on a search item
          * on which this one depends.
          */
         void repeat();
@@ -136,5 +139,86 @@ public interface SearchItem extends Comparable<SearchItem> {
          * restarted.
          */
         void reset();
+    }
+
+    /** The state of a search item record. */
+    enum State {
+        /** The search starts from scratch. */
+        START,
+        /** The search has failed immediately, and is not yet reset. */
+        EMPTY,
+        /** The (singular) search has succeeded (once); the next time it will fail. */
+        FOUND,
+        /** The (singular) search has succeeded and then failed, and is starting to repeat. */
+        FULL,
+        /** The (multiple) search has yielded some first results, but is not yet completed. */
+        PART,
+        /** The (multiple) search has just started repeating after having yielded some results. */
+        PART_START,
+        /** The (multiple) search is repeating the previously found (partial) results. */
+        PART_REPEAT,
+        /** The (multiple) search has been concluded after yielding at least one result. */
+        FULL_START,
+        /** The (multiple) search is repeating the previously found (complete) results. */
+        FULL_REPEAT;
+
+        /** Returns the possible next states after a {@link Record#next()} invocation. */
+        public final Set<State> getNext() {
+            switch (this) {
+            case EMPTY:
+                return EnumSet.of(EMPTY);
+            case FOUND:
+                return EnumSet.of(FULL);
+            case FULL:
+                return EnumSet.of(FOUND);
+            case FULL_REPEAT:
+                return EnumSet.of(FULL_REPEAT, FULL_START);
+            case FULL_START:
+                return EnumSet.of(FULL_REPEAT);
+            case PART:
+                return EnumSet.of(PART, FULL_START);
+            case PART_REPEAT:
+                return EnumSet.of(PART_REPEAT, PART);
+            case PART_START:
+                return EnumSet.of(PART_REPEAT, PART);
+            case START:
+                return EnumSet.of(EMPTY, FOUND, PART);
+            default:
+                assert false;
+                return null;
+            }
+        }
+
+        /** Returns the next state after a {@link Record#repeat()} invocation. */
+        public final State getRepeat() {
+            switch (this) {
+            case EMPTY:
+                return EMPTY;
+            case FOUND:
+                return FULL;
+            case FULL:
+                return FULL;
+            case FULL_REPEAT:
+                return FULL_START;
+            case FULL_START:
+                return FULL_START;
+            case PART:
+                return PART_START;
+            case PART_REPEAT:
+                return PART_START;
+            case PART_START:
+                return PART_START;
+            case START:
+                return START;
+            default:
+                assert false;
+                return null;
+            }
+        }
+
+        /** Returns the next state after a {@link Record#reset()} invocation. */
+        public final State getReset() {
+            return START;
+        }
     }
 }
