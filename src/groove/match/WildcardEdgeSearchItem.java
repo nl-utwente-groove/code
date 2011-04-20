@@ -89,10 +89,10 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
          * <code>false</code>.
          */
         @Override
-        boolean setImage(HostEdge image) {
+        boolean write(HostEdge image) {
             if (WildcardEdgeSearchItem.this.labelConstraint == null
                 || WildcardEdgeSearchItem.this.labelConstraint.isSatisfied(image.label())) {
-                return super.setImage(image);
+                return super.write(image);
             } else {
                 return false;
             }

@@ -348,7 +348,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         }
 
         @Override
-        boolean setImage(HostEdge image) {
+        boolean write(HostEdge image) {
             assert image.target() == image.source();
             if (this.sourceFind == null) {
                 if (!this.search.putNode(this.sourceIx, image.source())) {
@@ -374,17 +374,16 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         }
 
         @Override
-        public void reset() {
-            super.reset();
+        void erase() {
             if (this.setEdge) {
                 this.search.putEdge(this.edgeIx, null);
             }
-            rollBackSourceImage();
+            eraseSourceImage();
             this.selected = null;
         }
 
         /** Rolls back the image set for the source. */
-        private void rollBackSourceImage() {
+        private void eraseSourceImage() {
             if (this.sourceFind == null) {
                 this.search.putNode(this.sourceIx, null);
             }

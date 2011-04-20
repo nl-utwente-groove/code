@@ -390,8 +390,18 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
                         for (int i = 0; i < this.influenceCount[current]; i++) {
                             this.influence[current][i].reset();
                         }
+                        current++;
+                    } else if (getRecord(current).isEmpty()) {
+                        // go back to the last dependency to have any hope
+                        // of finding a match
+                        int dependency =
+                            SearchPlanStrategy.this.plan.getDependency(current);
+                        for (current--; current > dependency; current--) {
+                            getRecord(current).repeat();
+                        }
+                    } else {
+                        current--;
                     }
-                    current += success ? +1 : -1;
                 }
                 // now check if a found solution passes the filter (if there is
                 // one)

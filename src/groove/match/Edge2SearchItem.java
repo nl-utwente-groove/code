@@ -336,12 +336,12 @@ class Edge2SearchItem extends AbstractSearchItem {
         }
 
         @Override
-        boolean setImage(HostEdge image) {
+        boolean write(HostEdge image) {
             HostNode source = image.source();
             if (this.sourceFind == null) {
                 // maybe the prospective source image was used as
                 // target image of this same edge in the previous attempt
-                rollBackTargetImage();
+                eraseTargetImage();
                 if (!this.search.putNode(this.sourceIx, source)) {
                     return false;
                 }
@@ -379,35 +379,33 @@ class Edge2SearchItem extends AbstractSearchItem {
         }
 
         @Override
-        public void reset() {
-            super.reset();
+        void erase() {
             if (this.setEdge) {
                 this.search.putEdge(this.edgeIx, null);
             }
-            rollBackSourceImage();
-            rollBackTargetImage();
+            eraseSourceImage();
+            eraseTargetImage();
             this.selected = null;
         }
 
         /** Rolls back the image set for the source. */
-        private void rollBackSourceImage() {
+        private void eraseSourceImage() {
             if (this.sourceFind == null) {
                 this.search.putNode(this.sourceIx, null);
             }
         }
 
         /** Rolls back the image set for the source. */
-        private void rollBackTargetImage() {
+        private void eraseTargetImage() {
             if (this.targetFind == null && !Edge2SearchItem.this.selfEdge) {
                 this.search.putNode(this.targetIx, null);
             }
         }
 
         /**
-         * IOVKA this comment is not updated ! Returns an iterator over those
+         * Returns an iterator over those
          * images for {@link #edge} that are consistent with the pre-matched
-         * edge ends. The iterator actually selects the returned edges in the
-         * result map, as a side effect.
+         * edge ends.
          */
         void initImages() {
             Set<? extends HostEdge> result = null;
