@@ -246,7 +246,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
     /**
      * A list of domain elements, in the order in which they are to be matched.
      */
-    final List<? extends SearchItem> plan;
+    final SearchPlan plan;
     /** Flag indicating that the matching should be injective. */
     final boolean injective;
     /**
@@ -298,8 +298,10 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         /** Constructs a new record for a given graph and partial match. */
         public Search(HostGraph host, RuleToHostMap anchorMap) {
             this.host = host;
-            this.records =
-                new SearchItem.Record[SearchPlanStrategy.this.plan.size()];
+            int planSize = SearchPlanStrategy.this.plan.size();
+            this.records = new SearchItem.Record[planSize];
+            this.influence = new SearchItem.Record[planSize][];
+            this.influenceCount = new int[planSize];
             this.lastSingular = -1;
             this.nodeImages =
                 new HostNode[SearchPlanStrategy.this.nodeKeys.length];
@@ -374,7 +376,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
                 SearchItem.Record currentRecord;
                 while (current >= 0
                     && !(currentRecord = getRecord(current)).isRelevant()) {
-                    currentRecord.reset();
+                    currentRecord.repeat();
                     current--;
                 }
             } else {
@@ -383,7 +385,13 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
             do {
                 // the outer loop is to filter solutions through
                 while (current > this.lastSingular && current < planSize) {
-                    current += getRecord(current).find() ? +1 : -1;
+                    boolean success = getRecord(current).find();
+                    if (success) {
+                        for (int i = 0; i < this.influenceCount[current]; i++) {
+                            this.influence[current][i].reset();
+                        }
+                    }
+                    current += success ? +1 : -1;
                 }
                 // now check if a found solution passes the filter (if there is
                 // one)
@@ -407,10 +415,20 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         private SearchItem.Record getRecord(int current) {
             SearchItem.Record result = this.records[current];
             if (result == null) {
-                // make a new one
-                result =
-                    SearchPlanStrategy.this.plan.get(current).getRecord(this);
+                SearchItem item = SearchPlanStrategy.this.plan.get(current);
+                // make a new record
+                result = item.getRecord(this);
                 this.records[current] = result;
+                this.influence[current] =
+                    new SearchItem.Record[this.influence.length - current];
+                int dependency =
+                    SearchPlanStrategy.this.plan.getDependency(current);
+                assert dependency < current;
+                if (dependency >= 0) {
+                    this.influence[dependency][this.influenceCount[dependency]] =
+                        result;
+                    this.influenceCount[dependency]++;
+                }
                 if (this.lastSingular == current - 1 && result.isSingular()) {
                     this.lastSingular++;
                 }
@@ -601,6 +619,10 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         private final boolean noMatches;
         /** Search stack. */
         private final SearchItem.Record[] records;
+        /** Forward influences of the records. */
+        private final SearchItem.Record[][] influence;
+        /** Forward influence count of the records. */
+        private final int[] influenceCount;
     }
 
 }

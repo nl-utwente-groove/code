@@ -124,6 +124,14 @@ public interface SearchItem extends Comparable<SearchItem> {
         boolean find();
 
         /**
+         * Resets the record so that the previous sequence of find actions
+         * is repeated. This is more efficient than {@link #reset()}, but
+         * is only valid no {@link #find()} was invoked on a search item
+         * on which this one depends.
+         */
+        void repeat();
+
+        /**
          * Resets the record to the initial state, at which the search can be
          * restarted.
          */
