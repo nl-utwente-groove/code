@@ -187,7 +187,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
         }
 
         @Override
-        boolean set() {
+        boolean find() {
             boolean result;
             Object outcome = calculateResult();
             if (outcome == null) {
@@ -207,23 +207,24 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
                     this.factory.createNode(
                         OperatorEdgeSearchItem.this.operation.getResultAlgebra(),
                         outcome);
-                result =
-                    this.search.putNode(OperatorEdgeSearchItem.this.targetIx,
-                        targetImage);
+                this.image = targetImage;
+                result = write();
             }
             return result;
         }
 
-        /**
-         * Removes the edge added during the last {@link #find()}, if any.
-         */
         @Override
-        public void reset() {
-            super.reset();
-            if (this.targetPreMatch == null
-                && !OperatorEdgeSearchItem.this.targetFound) {
+        void erase() {
+            if (this.image != null) {
                 this.search.putNode(OperatorEdgeSearchItem.this.targetIx, null);
             }
+        }
+
+        @Override
+        boolean write() {
+            return this.image == null
+                || this.search.putNode(OperatorEdgeSearchItem.this.targetIx,
+                    this.image);
         }
 
         /**
@@ -265,6 +266,11 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
         private final HostNode targetPreMatch;
         /** The factory for creating value nodes for the outcomes. */
         private final HostFactory factory;
+        /**
+         * The value node found as the outcome of the operation,
+         * if this was not predetermined.
+         */
+        private ValueNode image;
         /** Flag to control debug printing. */
         static private final boolean PRINT = false;
     }

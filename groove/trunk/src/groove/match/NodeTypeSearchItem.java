@@ -204,7 +204,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         }
 
         @Override
-        final boolean set() {
+        boolean find() {
             boolean result = false;
             if (NodeTypeSearchItem.this.hasProperSubtypes) {
                 // iterate over the subtypes
@@ -213,7 +213,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
                     HostEdge edgeImage = edgeImageIter.next();
                     result = isImageCorrect(edgeImage);
                     if (result) {
-                        this.search.putEdge(this.edgeIx, edgeImage);
+                        this.image = edgeImage;
                         break;
                     }
                 }
@@ -223,16 +223,23 @@ class NodeTypeSearchItem extends AbstractSearchItem {
                 HostEdge edgeImage = getEdgeImage();
                 result = isImageCorrect(edgeImage);
                 if (result) {
-                    this.search.putEdge(this.edgeIx, edgeImage);
+                    this.image = edgeImage;
                 }
+            }
+            if (result) {
+                write();
             }
             return result;
         }
 
         @Override
-        public void reset() {
-            super.reset();
+        void erase() {
             this.search.putEdge(this.edgeIx, null);
+        }
+
+        @Override
+        final boolean write() {
+            return this.search.putEdge(this.edgeIx, this.image);
         }
 
         /** Tests if the (uniquely determined) edge image can be used. */
@@ -304,6 +311,8 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         private final int edgeIx;
         /** The index of the source in the search. */
         private final int sourceIx;
+        /** The previously found type, if the state is {@link SearchItem.State#FOUND} or {@link SearchItem.State#FULL}. */
+        private HostEdge image;
     }
 
     /**
@@ -462,7 +471,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
          * search.
          */
         private boolean setEdge;
-        /** Image found by the latest call to {@link #find()}, if any. */
+        /** Image found by the latest call to {@link #next()}, if any. */
         private HostEdge selected;
     }
 }

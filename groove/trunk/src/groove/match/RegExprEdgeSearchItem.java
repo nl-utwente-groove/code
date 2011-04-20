@@ -198,7 +198,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         }
 
         @Override
-        boolean set() {
+        boolean find() {
             Map<LabelVar,TypeLabel> valuation =
                 new HashMap<LabelVar,TypeLabel>();
             for (LabelVar var : RegExprEdgeSearchItem.this.prematchedVars) {
@@ -208,6 +208,17 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
                 valuation.put(var, image);
             }
             return !computeRelation(valuation).isEmpty();
+        }
+
+        @Override
+        void erase() {
+            // There is nothing to erase
+        }
+
+        @Override
+        boolean write() {
+            // There is nothing to write
+            return true;
         }
 
         /**
@@ -365,7 +376,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
          * target, or the target was pre-matched.
          */
         HostNode targetFind;
-        /** Image found by the latest call to {@link #find()}, if any. */
+        /** Image found by the latest call to {@link #next()}, if any. */
         RegAut.Result selected;
         private final Map<LabelVar,TypeLabel> valuation;
     }

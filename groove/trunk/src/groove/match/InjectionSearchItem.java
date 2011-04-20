@@ -120,13 +120,24 @@ public class InjectionSearchItem extends AbstractSearchItem {
                 InjectionSearchItem.this.node2);
         }
 
+        @Override
+        boolean find() {
+            return this.search.getNode(InjectionSearchItem.this.node1Ix) != this.search.getNode(InjectionSearchItem.this.node2Ix);
+        }
+
+        @Override
+        void erase() {
+            // There is nothing to be erased
+        }
+
         /**
          * Tests if the images of {@link #node1} and {@link #node2} are
          * distinct.
          */
         @Override
-        boolean set() {
-            return this.search.getNode(InjectionSearchItem.this.node1Ix) != this.search.getNode(InjectionSearchItem.this.node2Ix);
+        boolean write() {
+            // There is nothing to be written
+            return true;
         }
     }
 }

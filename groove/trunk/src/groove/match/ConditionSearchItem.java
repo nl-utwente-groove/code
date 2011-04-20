@@ -117,7 +117,7 @@ class ConditionSearchItem extends AbstractSearchItem {
         }
 
         @Override
-        boolean set() {
+        boolean find() {
             RuleToHostMap contextMap =
                 this.host.getFactory().createRuleToHostMap();
             for (Map.Entry<RuleNode,Integer> nodeIxEntry : ConditionSearchItem.this.nodeIxMap.entrySet()) {
@@ -130,6 +130,17 @@ class ConditionSearchItem extends AbstractSearchItem {
             }
             return ConditionSearchItem.this.condition.getMatchIter(this.host,
                 contextMap).hasNext();
+        }
+
+        @Override
+        boolean write() {
+            // There is nothing to write
+            return true;
+        }
+
+        @Override
+        void erase() {
+            // There is nothing to erase
         }
     }
 }

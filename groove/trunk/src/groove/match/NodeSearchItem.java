@@ -135,7 +135,7 @@ class NodeSearchItem extends AbstractSearchItem {
 
         /**
          * The image for {@link #node} set during the last call to
-         * {@link #find()}.
+         * {@link #next()}.
          */
         private HostNode selected;
     }

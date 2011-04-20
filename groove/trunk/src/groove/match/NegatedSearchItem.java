@@ -110,16 +110,21 @@ class NegatedSearchItem extends AbstractSearchItem {
          * immediately to avoid lasting effects.
          */
         @Override
-        boolean set() {
-            boolean result = !this.innerRecord.find();
+        boolean find() {
+            boolean result = !this.innerRecord.next();
             this.innerRecord.reset();
             return result;
         }
 
         @Override
-        public void reset() {
-            super.reset();
-            this.innerRecord.reset();
+        void erase() {
+            // There is nothing to be erased
+        }
+
+        @Override
+        boolean write() {
+            // There is nothing to be written
+            return true;
         }
 
         /**
