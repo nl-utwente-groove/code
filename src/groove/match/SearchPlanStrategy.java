@@ -20,6 +20,8 @@ import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.rel.LabelVar;
+import groove.trans.CompositeMatch;
+import groove.trans.ForallCondition;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -56,6 +58,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         this.varIxMap = new HashMap<LabelVar,Integer>();
         this.plan = plan;
         this.injective = plan.isInjective();
+        this.forallCount = plan.getForallCount();
     }
 
     public Iterator<RuleToHostMap> getMatchIter(HostGraph host,
@@ -249,6 +252,8 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
     final SearchPlan plan;
     /** Flag indicating that the matching should be injective. */
     final boolean injective;
+    /** Number of {@link ForallCondition}s in the search plan. */
+    final int forallCount;
     /**
      * Map from source graph nodes to (distinct) indices.
      */
@@ -315,6 +320,8 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
                 new HostEdge[SearchPlanStrategy.this.edgeKeys.length];
             this.varAnchors =
                 new TypeLabel[SearchPlanStrategy.this.varKeys.length];
+            this.forallMatches =
+                new CompositeMatch[SearchPlanStrategy.this.forallCount];
             this.noMatches = false;
             if (anchorMap != null) {
                 for (Map.Entry<RuleNode,? extends HostNode> nodeEntry : anchorMap.nodeMap().entrySet()) {
@@ -506,6 +513,12 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
             return true;
         }
 
+        /** Sets the composite match for a given index. */
+        final boolean putForallMatch(int index, CompositeMatch match) {
+            this.forallMatches[index] = match;
+            return true;
+        }
+
         /** Returns the current node image at a given index. */
         final HostNode getNode(int index) {
             return this.nodeImages[index];
@@ -519,6 +532,11 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         /** Returns the current variable image at a given index. */
         final TypeLabel getVar(int index) {
             return this.varImages[index];
+        }
+
+        /** Returns the composite match at a given index. */
+        final CompositeMatch getForallMatch(int index) {
+            return this.forallMatches[index];
         }
 
         /**
@@ -599,6 +617,8 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         private final HostEdge[] edgeImages;
         /** Array of variable images. */
         private final TypeLabel[] varImages;
+        /** Array of variable images. */
+        private final CompositeMatch[] forallMatches;
         /**
          * Array indicating, for each index, if the node with that image was
          * pre-matched in the search.
