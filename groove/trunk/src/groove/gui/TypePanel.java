@@ -67,9 +67,9 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
      */
     public TypePanel(final Simulator simulator) {
         super(new AspectJGraph(simulator, GraphRole.TYPE), true);
+        this.simulator = simulator;
         setFocusable(false);
         initialise();
-        this.simulator = simulator;
         simulator.addSimulationListener(this);
         setEnabled(false);
         addRefreshListener(SHOW_NODE_IDS_OPTION);
@@ -81,6 +81,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         JToolBar result = new JToolBar();
         result.add(createButton(getNewAction()));
         result.add(createButton(getEditAction()));
+        result.add(this.simulator.getSaveGraphAction());
         result.addSeparator();
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));

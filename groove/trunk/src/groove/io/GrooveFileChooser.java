@@ -28,7 +28,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.filechooser.FileView;
 
 /**
- *  EDUARDO: Refactor this class... Move to gui package. 
  * A file chooser with a {@link GrooveFileView}, which prevents traversal of
  * directories if these are selectable by the current file filter.
  * @author Arend Rensink

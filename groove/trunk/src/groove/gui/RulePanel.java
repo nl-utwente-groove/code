@@ -75,6 +75,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
         JToolBar result = new JToolBar();
         result.add(this.simulator.getNewRuleAction());
         result.add(this.simulator.getEditRuleAction());
+        result.add(this.simulator.getSaveGraphAction());
         result.addSeparator();
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));

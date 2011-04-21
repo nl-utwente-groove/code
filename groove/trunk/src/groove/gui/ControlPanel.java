@@ -243,12 +243,12 @@ public class ControlPanel extends JPanel implements SimulationListener {
      * Indicates the currently selected control program name
      * @return either <code>null</code> or an existing control program name
      */
-    private final String getSelectedControl() {
+    public final String getSelectedControl() {
         return this.selectedControl;
     }
 
     /** Convenience method to indicate if a control name has been selected. */
-    private final boolean isControlSelected() {
+    public final boolean isControlSelected() {
         return getSelectedControl() != null;
     }
 
@@ -849,8 +849,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
      */
     private class CtrlPreviewAction extends RefreshableAction {
         public CtrlPreviewAction() {
-            super(Options.PREVIEW_CONTROL_ACTION_NAME,
-                Icons.CONTROL_MODE_ICON);
+            super(Options.PREVIEW_CONTROL_ACTION_NAME, Icons.CONTROL_MODE_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {
