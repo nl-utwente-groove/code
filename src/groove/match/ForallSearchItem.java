@@ -122,7 +122,7 @@ class ForallSearchItem extends AbstractSearchItem {
     /** Flag indicating if the match count is predetermined. */
     boolean preCounted;
     /** The index of the count node (if any). */
-    int countNodeIx;
+    int countNodeIx = -1;
     /** The root map of the graph condition. */
     private final RuleGraphMorphism rootMap;
     /** The source nodes of the root map. */
@@ -192,7 +192,8 @@ class ForallSearchItem extends AbstractSearchItem {
 
         @Override
         void erase() {
-            if (!ForallSearchItem.this.preCounted) {
+            if (!ForallSearchItem.this.preCounted
+                && ForallSearchItem.this.countNodeIx >= 0) {
                 this.search.putNode(ForallSearchItem.this.countNodeIx, null);
             }
             this.search.putForallMatch(ForallSearchItem.this.forallIx, null);
