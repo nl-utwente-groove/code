@@ -35,7 +35,7 @@ class NodeSearchItem extends AbstractSearchItem {
         this.boundNodes = Collections.singleton(node);
     }
 
-    public Record getRecord(Search search) {
+    public Record createRecord(Search search) {
         if (this.nodeMatched || search.getNodeAnchor(this.nodeIx) != null) {
             // the node is pre-matched, so there is nothing to do
             return createDummyRecord();
@@ -94,7 +94,7 @@ class NodeSearchItem extends AbstractSearchItem {
      * @author Arend Rensink
      * @version $Revision $
      */
-    class NodeRecord extends MultipleRecord<HostNode> {
+    private class NodeRecord extends MultipleRecord<HostNode> {
         /** Constructs a record for a given matcher. */
         NodeRecord(Search search) {
             super(search);

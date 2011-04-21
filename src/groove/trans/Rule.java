@@ -20,7 +20,9 @@ package groove.trans;
 import groove.control.CtrlPar;
 import groove.graph.GraphProperties;
 import groove.match.MatchStrategy;
+import groove.util.Visitor;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -116,6 +118,21 @@ public interface Rule extends Comparable<Rule>, Condition {
             RuleToHostMap contextMap);
 
     /**
+     * Visits all the matches for a given host graph, given a
+     * matching of the pattern graph.
+     * @param host the graph in which the match is to be found
+     * @param contextMap a matching of the pattern of this condition; may be
+     *        <code>null</code> if the condition is ground.
+     * @param visitor the visitor invoked for all the matches
+     * @throws IllegalArgumentException if <code>patternMatch</code> is
+     *         <code>null</code> and the condition is not ground, or if
+     *         <code>patternMatch</code> is not compatible with the pattern
+     *         graph
+     */
+    public void visitMatches(HostGraph host, RuleToHostMap contextMap,
+            Visitor<RuleMatch> visitor);
+
+    /**
      * Returns the collection of all matches for a given host graph, given a
      * matching of the root context.
      * @param host the graph in which the match is to be found
@@ -125,7 +142,7 @@ public interface Rule extends Comparable<Rule>, Condition {
      *         <code>null</code> and the condition is not ground, or if
      *         <code>contextMap</code> is not compatible with the root map
      */
-    public Iterable<RuleMatch> getMatches(HostGraph host,
+    public Collection<RuleMatch> getAllMatches(HostGraph host,
             RuleToHostMap contextMap);
 
     /**

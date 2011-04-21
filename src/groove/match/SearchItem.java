@@ -18,6 +18,7 @@ package groove.match;
 
 import groove.match.SearchItem.Record;
 import groove.rel.LabelVar;
+import groove.trans.HostGraph;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 
@@ -35,7 +36,7 @@ import java.util.Set;
  * <li> Activation (call of {@link #activate(SearchPlanStrategy)}). At this
  * time the ordering of the items is known, and indices for the parts can be
  * obtained, as well as knowledge about which parts are already found.
- * <li> Record creation (call of {@link #getRecord(SearchPlanStrategy.Search)}).
+ * <li> Record creation (call of {@link #createRecord(SearchPlanStrategy.Search)}).
  * At this time the pre-matched images are known. Found images are also known,
  * but are due to change at subsequent finds.
  * <li> Record usage (call of {@link Record#next()}). At this time the found
@@ -48,7 +49,7 @@ public interface SearchItem extends Comparable<SearchItem> {
     /**
      * Creates an activation record for this search item, for a given search.
      */
-    Record getRecord(SearchPlanStrategy.Search search);
+    Record createRecord(SearchPlanStrategy.Search search);
 
     /**
      * Returns the collection of nodes that should already be matched before
@@ -106,6 +107,9 @@ public interface SearchItem extends Comparable<SearchItem> {
      * @version $Revision $
      */
     interface Record {
+        /** Initialises the record for a given host graph. */
+        void initialise(HostGraph host);
+
         /** Returns the relevance status of the enclosing search item. */
         boolean isRelevant();
 

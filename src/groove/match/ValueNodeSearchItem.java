@@ -21,6 +21,7 @@ import groove.algebra.AlgebraFamily;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.match.SearchPlanStrategy.Search;
+import groove.trans.HostGraph;
 import groove.trans.RuleNode;
 
 import java.util.Collection;
@@ -44,7 +45,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         assert this.symbol != null;
     }
 
-    public ValueNodeRecord getRecord(SearchPlanStrategy.Search matcher) {
+    public ValueNodeRecord createRecord(SearchPlanStrategy.Search matcher) {
         return new ValueNodeRecord(matcher);
     }
 
@@ -104,9 +105,14 @@ class ValueNodeSearchItem extends AbstractSearchItem {
          */
         ValueNodeRecord(Search search) {
             super(search);
+        }
+
+        @Override
+        public void initialise(HostGraph host) {
+            super.initialise(host);
             Algebra<?> algebra = ValueNodeSearchItem.this.algebra;
             this.image =
-                search.getHost().getFactory().createNode(algebra,
+                host.getFactory().createNode(algebra,
                     algebra.getValue(ValueNodeSearchItem.this.symbol));
         }
 
@@ -132,6 +138,6 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         }
 
         /** The constant value of the variable node, if any. */
-        final ValueNode image;
+        private ValueNode image;
     }
 }

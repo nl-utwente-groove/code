@@ -21,53 +21,42 @@ import groove.trans.RuleToHostMap;
 import groove.util.Property;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Class providing basic functionality for match strategies. The only method
  * left to be implemented is
- * {@link #getMatches(HostGraph host, RuleToHostMap anchorMap)}.
+ * {@link #getMatchIter(HostGraph host, RuleToHostMap anchorMap)}.
  * @param <R> the result type of the match
  * @author Arend Rensink
  * @version $Revision $
  */
 public abstract class AbstractMatchStrategy<R> implements MatchStrategy<R> {
-    public void setFilter(Property<R> filter) {
-        this.filter = filter;
-    }
-
-    /**
-     * Returns the filter currently set for the matches found by this strategy.
-     * @return a property which may be <code>null</code>, but if not, is
-     *         guaranteed to hold for all matches returned by any of the search
-     *         methods.
-     * @see #setFilter(Property)
-     */
-    protected Property<R> getFilter() {
-        return this.filter;
-    }
-
-    public Iterable<R> getMatches(final HostGraph host,
-            final RuleToHostMap anchorMap) {
-        return new Iterable<R>() {
-            public Iterator<R> iterator() {
-                return getMatchIter(host, anchorMap);
+    @Override
+    public R find(HostGraph host, RuleToHostMap anchorMap, Property<R> property) {
+        R result = null;
+        Iterator<R> iter = getMatchIter(host, anchorMap);
+        while (result == null && iter.hasNext()) {
+            result = iter.next();
+            if (!property.isSatisfied(result)) {
+                result = null;
             }
-        };
-    }
-
-    public Collection<R> getMatchSet(HostGraph host, RuleToHostMap anchorMap) {
-        Collection<R> result = new ArrayList<R>();
-        for (R match : getMatches(host, anchorMap)) {
-            result.add(match);
         }
         return result;
     }
 
-    /**
-     * Additional property that has to be satisfied by all matches returned by
-     * the matcher.
-     */
-    private Property<R> filter;
+    @Override
+    public List<R> findAll(HostGraph host, RuleToHostMap anchorMap,
+            Property<R> property) {
+        List<R> result = new ArrayList<R>();
+        Iterator<R> iter = getMatchIter(host, anchorMap);
+        while (iter.hasNext()) {
+            R next = iter.next();
+            if (property.isSatisfied(next)) {
+                result.add(next);
+            }
+        }
+        return result;
+    }
 }

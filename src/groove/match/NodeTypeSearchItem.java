@@ -20,6 +20,7 @@ import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.match.SearchPlanStrategy.Search;
 import groove.trans.HostEdge;
+import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
@@ -130,7 +131,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         return this.edge.label().hashCode();
     }
 
-    final public Record getRecord(Search search) {
+    final public Record createRecord(Search search) {
         if (isPreMatched(search)) {
             // the edge is unexpectedly pre-matched
             return createDummyRecord();
@@ -194,13 +195,18 @@ class NodeTypeSearchItem extends AbstractSearchItem {
      * @author Arend Rensink
      * @version $Revision $
      */
-    class NodeTypeSingularRecord extends SingularRecord {
+    private class NodeTypeSingularRecord extends SingularRecord {
         /** Constructs an instance for a given search. */
         public NodeTypeSingularRecord(Search search, int edgeIx, int sourceIx) {
             super(search);
             this.edgeIx = edgeIx;
             this.sourceIx = sourceIx;
-            this.sourcePreMatch = search.getNodeAnchor(sourceIx);
+        }
+
+        @Override
+        public void initialise(HostGraph host) {
+            super.initialise(host);
+            this.sourcePreMatch = this.search.getNodeAnchor(this.sourceIx);
         }
 
         @Override
@@ -306,7 +312,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         }
 
         /** The pre-matched (fixed) source image, if any. */
-        private final HostNode sourcePreMatch;
+        private HostNode sourcePreMatch;
         /** The index of the edge in the search. */
         private final int edgeIx;
         /** The index of the source in the search. */
@@ -321,7 +327,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
      * @author Arend Rensink
      * @version $Revision $
      */
-    class NodeTypeMultipleRecord extends MultipleRecord<HostEdge> {
+    private class NodeTypeMultipleRecord extends MultipleRecord<HostEdge> {
         /**
          * Creates a record based on a given search.
          */
@@ -331,9 +337,14 @@ class NodeTypeSearchItem extends AbstractSearchItem {
             this.edgeIx = edgeIx;
             this.sourceIx = sourceIx;
             this.sourceFound = sourceFound;
-            this.sourcePreMatch = search.getNodeAnchor(sourceIx);
             assert search.getEdge(edgeIx) == null : String.format(
                 "Edge %s already in %s", NodeTypeSearchItem.this.edge, search);
+        }
+
+        @Override
+        public void initialise(HostGraph host) {
+            super.initialise(host);
+            this.sourcePreMatch = this.search.getNodeAnchor(this.sourceIx);
         }
 
         @Override
@@ -442,18 +453,18 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         /** The index of the edge in the search. */
         final private int edgeIx;
         /** The index of the source in the search. */
-        final int sourceIx;
+        final private int sourceIx;
         /** Indicates if the source is found before this item is invoked. */
         final private boolean sourceFound;
 
-        private final HostNode sourcePreMatch;
+        private HostNode sourcePreMatch;
 
         /**
          * The pre-matched image for the edge source, if any. A value of
          * <code>null</code> means that no image is currently selected for the
          * source, or the source was pre-matched.
          */
-        HostNode sourceFind;
+        private HostNode sourceFind;
         /**
          * Flag indicating the if sources of images returned by
          * {@link #initImages()} have to be checked against the found source

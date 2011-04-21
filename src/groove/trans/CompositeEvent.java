@@ -17,6 +17,9 @@
 package groove.trans;
 
 import groove.util.CacheReference;
+import groove.util.Property;
+import groove.util.Visitor;
+import groove.util.Visitor.Finder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -129,10 +132,16 @@ public class CompositeEvent extends
             }
             return matchStack.get(0);
         } else {
-            for (RuleMatch result : getRule().getMatches(source, null)) {
-                if (result.newEvent(null).equals(this)) {
-                    return result;
-                }
+            Finder<RuleMatch> finder =
+                Visitor.createFinder(new Property<RuleMatch>() {
+                    @Override
+                    public boolean isSatisfied(RuleMatch value) {
+                        return value.newEvent(null).equals(CompositeEvent.this);
+                    }
+                });
+            getRule().visitMatches(source, null, finder);
+            if (finder.found()) {
+                return finder.get();
             }
             // if we're here, we failed to reconstruct this event from
             // any of the matches.

@@ -143,6 +143,11 @@ abstract class AbstractSearchItem implements SearchItem {
      * alternatingly return <code>true</code> and <code>false</code>.
      */
     final class DummyRecord implements Record {
+        @Override
+        public void initialise(HostGraph host) {
+            this.found = false;
+        }
+
         /**
          * This record alternates between <code>true</code> and
          * <code>false</code>, and resets to <code>true</code> upon
@@ -195,12 +200,17 @@ abstract class AbstractSearchItem implements SearchItem {
     abstract class BasicRecord implements Record {
         /** Constructs a record for a given search. */
         BasicRecord(Search search) {
-            this.host = search.getHost();
             this.search = search;
         }
 
         @Override
-        public boolean isRelevant() {
+        public void initialise(HostGraph host) {
+            reset();
+            this.host = host;
+        }
+
+        @Override
+        final public boolean isRelevant() {
             return AbstractSearchItem.this.isRelevant();
         }
 
@@ -211,7 +221,7 @@ abstract class AbstractSearchItem implements SearchItem {
         }
 
         /** The underlying search for this record. */
-        final HostGraph host;
+        HostGraph host;
         final Search search;
     }
 
@@ -310,7 +320,7 @@ abstract class AbstractSearchItem implements SearchItem {
         }
 
         /** The state of the search record. */
-        private State state = State.START;
+        State state = State.START;
     }
 
     /**

@@ -20,6 +20,7 @@ import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.match.SearchPlanStrategy.Search;
 import groove.trans.HostEdge;
+import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleLabel;
@@ -134,7 +135,7 @@ class Edge2SearchItem extends AbstractSearchItem {
         return this.edge.label().hashCode();
     }
 
-    final public Record getRecord(Search search) {
+    final public Record createRecord(Search search) {
         if (isPreMatched(search)) {
             // the edge is unexpectedly pre-matched
             return createDummyRecord();
@@ -217,8 +218,13 @@ class Edge2SearchItem extends AbstractSearchItem {
             this.edgeIx = edgeIx;
             this.sourceIx = sourceIx;
             this.targetIx = targetIx;
-            this.sourcePreMatch = search.getNodeAnchor(sourceIx);
-            this.targetPreMatch = search.getNodeAnchor(targetIx);
+        }
+
+        @Override
+        public void initialise(HostGraph host) {
+            super.initialise(host);
+            this.sourcePreMatch = this.search.getNodeAnchor(this.sourceIx);
+            this.targetPreMatch = this.search.getNodeAnchor(this.targetIx);
         }
 
         @Override
@@ -281,9 +287,9 @@ class Edge2SearchItem extends AbstractSearchItem {
         }
 
         /** The pre-matched (fixed) source image, if any. */
-        private final HostNode sourcePreMatch;
+        private HostNode sourcePreMatch;
         /** The pre-matched (fixed) target image, if any. */
-        private final HostNode targetPreMatch;
+        private HostNode targetPreMatch;
         /** The index of the edge in the search. */
         private final int edgeIx;
         /** The index of the source in the search. */
@@ -312,10 +318,15 @@ class Edge2SearchItem extends AbstractSearchItem {
             this.targetIx = targetIx;
             this.sourceFound = sourceFound;
             this.targetFound = targetFound;
-            this.sourcePreMatch = search.getNodeAnchor(sourceIx);
-            this.targetPreMatch = search.getNodeAnchor(targetIx);
             assert search.getEdge(edgeIx) == null : String.format(
                 "Edge %s already in %s", Edge2SearchItem.this.edge, search);
+        }
+
+        @Override
+        public void initialise(HostGraph host) {
+            super.initialise(host);
+            this.sourcePreMatch = this.search.getNodeAnchor(this.sourceIx);
+            this.targetPreMatch = this.search.getNodeAnchor(this.targetIx);
         }
 
         @Override
@@ -481,8 +492,8 @@ class Edge2SearchItem extends AbstractSearchItem {
         /** Indicates if the target is found before this item is invoked. */
         final private boolean targetFound;
 
-        private final HostNode sourcePreMatch;
-        private final HostNode targetPreMatch;
+        private HostNode sourcePreMatch;
+        private HostNode targetPreMatch;
         /**
          * The pre-matched image for the edge source, if any. A value of
          * <code>null</code> means that no image is currently selected for the

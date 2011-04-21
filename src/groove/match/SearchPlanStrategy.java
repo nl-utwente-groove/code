@@ -29,8 +29,10 @@ import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
+import groove.util.Property;
 import groove.util.Reporter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,11 +63,40 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         this.forallCount = plan.getForallCount();
     }
 
+    /** Returns the first matching satisfying a given property. */
+    @Override
+    public RuleToHostMap find(HostGraph host, RuleToHostMap anchorMap,
+            Property<RuleToHostMap> property) {
+        RuleToHostMap result = null;
+        Search search = getSearch(host, anchorMap);
+        while (result == null && search.find()) {
+            result = search.getMatch();
+            if (!property.isSatisfied(result)) {
+                result = null;
+            }
+        }
+        return result;
+    }
+
+    /** Returns all matchings satisfying a given property. */
+    @Override
+    public List<RuleToHostMap> findAll(HostGraph host, RuleToHostMap anchorMap,
+            Property<RuleToHostMap> property) {
+        List<RuleToHostMap> result = new ArrayList<RuleToHostMap>();
+        Search search = getSearch(host, anchorMap);
+        while (search.find()) {
+            RuleToHostMap next = search.getMatch();
+            result.add(next);
+        }
+        return result;
+    }
+
     public Iterator<RuleToHostMap> getMatchIter(HostGraph host,
             RuleToHostMap anchorMap) {
         Iterator<RuleToHostMap> result;
         getMatchIterReporter.start();
-        final Search search = createSearch(host, anchorMap);
+        final Search search = createSearch();
+        search.initialise(host, anchorMap);
         result = new Iterator<RuleToHostMap>() {
             public boolean hasNext() {
                 // test if there is an unreturned next or if we are done
@@ -130,9 +161,20 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
     /**
      * Callback factory method for an auxiliary {@link Search} object.
      */
-    protected Search createSearch(HostGraph host, RuleToHostMap anchorMap) {
+    private Search getSearch(HostGraph host, RuleToHostMap anchorMap) {
+        if (this.search == null) {
+            this.search = createSearch();
+        }
+        this.search.initialise(host, anchorMap);
+        return this.search;
+    }
+
+    /**
+     * Callback factory method for an auxiliary {@link Search} object.
+     */
+    private Search createSearch() {
         testFixed(true);
-        return new Search(host, anchorMap);
+        return new Search();
     }
 
     /**
@@ -246,6 +288,8 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         }
     }
 
+    /** The fixed search object. */
+    private Search search;
     /**
      * A list of domain elements, in the order in which they are to be matched.
      */
@@ -301,8 +345,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
      */
     public class Search {
         /** Constructs a new record for a given graph and partial match. */
-        public Search(HostGraph host, RuleToHostMap anchorMap) {
-            this.host = host;
+        public Search() {
             int planSize = SearchPlanStrategy.this.plan.size();
             this.records = new SearchItem.Record[planSize];
             this.influence = new SearchItem.Record[planSize][];
@@ -322,7 +365,11 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
                 new TypeLabel[SearchPlanStrategy.this.varKeys.length];
             this.forallMatches =
                 new CompositeMatch[SearchPlanStrategy.this.forallCount];
-            this.noMatches = false;
+        }
+
+        /** Initialises the search for a given host graph and anchor map. */
+        public void initialise(HostGraph host, RuleToHostMap anchorMap) {
+            this.host = host;
             if (anchorMap != null) {
                 for (Map.Entry<RuleNode,? extends HostNode> nodeEntry : anchorMap.nodeMap().entrySet()) {
                     assert isNodeFound(nodeEntry.getKey());
@@ -354,6 +401,9 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
                         this.varAnchors[i] = varEntry.getValue();
                 }
             }
+            for (int i = 0; i < this.records.length && this.records[i] != null; i++) {
+                this.records[i].initialise(host);
+            }
         }
 
         @Override
@@ -368,13 +418,8 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
          */
         public boolean find() {
             searchFindReporter.start();
-            if (this.noMatches) {
-                return false;
-            }
             final int planSize = SearchPlanStrategy.this.plan.size();
-            final boolean filtered = getFilter() != null;
             boolean found = this.found;
-            boolean exhausted;
             // if an image was found before, roll back the result
             // until the last relevant search item
             int current;
@@ -389,37 +434,26 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
             } else {
                 current = 0;
             }
-            do {
-                // the outer loop is to filter solutions through
-                while (current > this.lastSingular && current < planSize) {
-                    boolean success = getRecord(current).next();
-                    if (success) {
-                        for (int i = 0; i < this.influenceCount[current]; i++) {
-                            this.influence[current][i].reset();
-                        }
-                        current++;
-                    } else if (getRecord(current).isEmpty()) {
-                        // go back to the last dependency to have any hope
-                        // of finding a match
-                        int dependency =
-                            SearchPlanStrategy.this.plan.getDependency(current);
-                        for (current--; current > dependency; current--) {
-                            getRecord(current).repeat();
-                        }
-                    } else {
-                        current--;
+            while (current > this.lastSingular && current < planSize) {
+                boolean success = getRecord(current).next();
+                if (success) {
+                    for (int i = 0; i < this.influenceCount[current]; i++) {
+                        this.influence[current][i].reset();
                     }
-                }
-                // now check if a found solution passes the filter (if there is
-                // one)
-                found = current == planSize;
-                exhausted = !found;
-                if (found && filtered && !satisfiesFilter()) {
-                    // we have to go on searching
+                    current++;
+                } else if (getRecord(current).isEmpty()) {
+                    // go back to the last dependency to have any hope
+                    // of finding a match
+                    int dependency =
+                        SearchPlanStrategy.this.plan.getDependency(current);
+                    for (current--; current > dependency; current--) {
+                        getRecord(current).repeat();
+                    }
+                } else {
                     current--;
-                    found = false;
                 }
-            } while (!found && !exhausted);
+            }
+            found = current == planSize;
             this.found = found;
             searchFindReporter.stop();
             return found;
@@ -434,7 +468,8 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
             if (result == null) {
                 SearchItem item = SearchPlanStrategy.this.plan.get(current);
                 // make a new record
-                result = item.getRecord(this);
+                result = item.createRecord(this);
+                result.initialise(this.host);
                 this.records[current] = result;
                 this.influence[current] =
                     new SearchItem.Record[this.influence.length - current];
@@ -451,14 +486,6 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
                 }
             }
             return result;
-        }
-
-        /**
-         * Tests if the current search result satisfies the additional filter
-         * (if any).
-         */
-        private boolean satisfiesFilter() {
-            return getFilter() == null || getFilter().isSatisfied(getMatch());
         }
 
         /** Sets the node image for the node key with a given index. */
@@ -595,11 +622,6 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
             return result;
         }
 
-        /** Returns the target graph of the search. */
-        public HostGraph getHost() {
-            return this.host;
-        }
-
         /**
          * Returns the set of nodes already used as images. This is needed for
          * the injectivity check, if any.
@@ -639,14 +661,12 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         /** Index of the last search record known to be singular. */
         private int lastSingular;
         /** The host graph of the search. */
-        private final HostGraph host;
+        private HostGraph host;
         /**
          * The set of non-value nodes already used as images, used for the
          * injectivity test.
          */
         private Set<HostNode> usedNodes;
-        /** */
-        private final boolean noMatches;
         /** Search stack. */
         private final SearchItem.Record[] records;
         /** Forward influences of the records. */

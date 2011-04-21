@@ -30,7 +30,6 @@ import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.MergeEmbargo;
 import groove.trans.NotCondition;
-import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
@@ -41,6 +40,7 @@ import groove.trans.RuleName;
 import groove.trans.RuleNode;
 import groove.trans.SPORule;
 import groove.trans.SystemProperties;
+import groove.util.Visitor;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -270,11 +270,16 @@ public class NACTest {
     }
 
     private Collection<RuleApplication> getDerivations(SPORule rule,
-            HostGraph graph) {
-        Collection<RuleApplication> result = new ArrayList<RuleApplication>();
-        for (RuleMatch match : ((Rule) rule).getMatches(graph, null)) {
-            result.add(match.newEvent(null).newApplication(graph));
-        }
+            final HostGraph graph) {
+        final Collection<RuleApplication> result =
+            new ArrayList<RuleApplication>();
+        rule.visitMatches(graph, null, new Visitor<RuleMatch>() {
+            @Override
+            public boolean visit(RuleMatch match) {
+                result.add(match.newEvent(null).newApplication(graph));
+                return true;
+            }
+        });
         return result;
     }
 

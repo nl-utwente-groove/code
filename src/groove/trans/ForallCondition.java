@@ -18,8 +18,8 @@ package groove.trans;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
-import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
+import groove.util.Visitor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,9 +41,6 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
             VariableNode countNode) {
         super(name, target, rootMap, properties);
         this.countNode = countNode;
-        this.count =
-            countNode == null || countNode.getConstant() == null ? -1
-                    : Integer.parseInt(countNode.getConstant().getSymbol());
         this.intAlgebra =
             AlgebraFamily.getInstance(getSystemProperties().getAlgebraFamily()).getAlgebra(
                 "int");
@@ -63,7 +60,7 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
     }
 
     @Override
-    final public Collection<CompositeMatch> getMatches(HostGraph host,
+    final public Collection<CompositeMatch> getAllMatches(HostGraph host,
             RuleToHostMap contextMap) {
         Collection<CompositeMatch> result = null;
         testFixed(true);
@@ -95,8 +92,6 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
             result.add(new CompositeMatch(this));
         }
         boolean first = this.positive;
-        int count = this.count;
-        boolean lookupCount = count < 0 && this.countNode != null;
         while (matchMapIter.hasNext() && (first || !result.isEmpty())) {
             // add the empty match if the condition is positive
             if (first) {
@@ -104,24 +99,12 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
                 first = false;
             }
             RuleToHostMap matchMap = matchMapIter.next();
-            // look up the match count, if there is any
-            if (lookupCount) {
-                HostNode countImage = matchMap.getNode(this.countNode);
-                if (countImage != null) {
-                    count =
-                        Integer.parseInt(((ValueNode) countImage).getSymbol());
-                    assert count >= 0;
-                }
-                lookupCount = false;
-            }
             // the subconditions are interpreted disjunctively,
             // so we have to collect all of their possible matches
             Collection<RuleMatch> subResults = new ArrayList<RuleMatch>();
             for (SPORule subCondition : getComplexSubConditions()) {
-                for (RuleMatch subResult : subCondition.getMatches(host,
-                    matchMap)) {
-                    subResults.add(subResult);
-                }
+                subCondition.visitMatches(host, matchMap,
+                    Visitor.useCollector(subResults));
             }
             List<CompositeMatch> newResult = new ArrayList<CompositeMatch>();
             for (CompositeMatch current : result) {
@@ -129,22 +112,12 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
             }
             result = newResult;
         }
-        //        if (count >= 0) {
-        //            // filter out the matches of the wrong size
-        //            List<CompositeMatch> newResult = new ArrayList<CompositeMatch>();
-        //            for (CompositeMatch current : result) {
-        //                if (current.getSubMatches().size() == count) {
-        //                    newResult.add(current);
-        //                }
-        //            }
-        //            result = newResult;
-        //        }
         return result;
     }
 
     /**
      * This implementation iterates over the result of
-     * {@link #getMatches(HostGraph, RuleToHostMap)}.
+     * {@link #getAllMatches(HostGraph, RuleToHostMap)}.
      */
     @Override
     public Iterator<CompositeMatch> computeMatchIter(HostGraph host,
@@ -184,8 +157,6 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
 
     /** Node capturing the match count of this condition. */
     private final RuleNode countNode;
-    /** Required number of matches, or {@code -1} if the count is unspecified */
-    private final int count;
     /** The integer algebra corresponding to the system properties. */
     private final Algebra<?> intAlgebra;
     /**

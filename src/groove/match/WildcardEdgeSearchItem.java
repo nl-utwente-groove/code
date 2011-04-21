@@ -63,7 +63,7 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
     final groove.util.Property<TypeLabel> labelConstraint;
 
     /** Record for this type of search item. */
-    class WildcardEdgeRecord extends Edge2MultipleRecord {
+    private class WildcardEdgeRecord extends Edge2MultipleRecord {
         /** Constructs a new record, for a given matcher. */
         WildcardEdgeRecord(Search search, int edgeIx, int sourceIx,
                 int targetIx, boolean sourceFound, boolean targetFound) {
