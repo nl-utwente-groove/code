@@ -24,6 +24,8 @@ import groove.trans.RuleGraph;
 import groove.trans.RuleLabel;
 import groove.trans.RuleMatch;
 import groove.trans.RuleNode;
+import groove.util.Property;
+import groove.util.Visitor;
 
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -58,15 +60,16 @@ public final class PreMatch {
      * Computes and returns the valid pre-matches of a rule into a shape.
      * The given host must be a shape.
      */
-    public static Set<RuleMatch> getPreMatches(Shape shape, Rule rule) {
+    public static Set<RuleMatch> getPreMatches(final Shape shape, Rule rule) {
         Set<RuleMatch> preMatches = new HashSet<RuleMatch>();
         // We use the normal matching algorithms for finding matches.
-        for (RuleMatch match : rule.getMatches(shape, null)) {
-            if (isValidPreMatch(shape, match)) {
-                // We have a pre-match.
-                preMatches.add(match);
-            }
-        }
+        rule.visitMatches(shape, null,
+            Visitor.createCollector(preMatches, new Property<RuleMatch>() {
+                @Override
+                public boolean isSatisfied(RuleMatch value) {
+                    return isValidPreMatch(shape, value);
+                }
+            }));
         return preMatches;
     }
 

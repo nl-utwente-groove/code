@@ -7,6 +7,7 @@ import groove.match.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
 import groove.rel.RegAut;
 import groove.rel.RegExpr;
+import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleLabel;
@@ -48,7 +49,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         this.neededVars.removeAll(this.boundVars);
     }
 
-    final public Record getRecord(Search search) {
+    final public Record createRecord(Search search) {
         if (isSingular(search)) {
             return createSingularRecord(search);
         } else {
@@ -185,16 +186,21 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
     /** Mapping from variables to the corresponding indices in the result. */
     Map<LabelVar,Integer> varIxMap;
 
-    class RegExprEdgeSingularRecord extends SingularRecord {
+    private class RegExprEdgeSingularRecord extends SingularRecord {
         /** Constructs a new record, for a given matcher. */
         RegExprEdgeSingularRecord(Search search) {
             super(search);
-            this.sourcePreMatch =
-                search.getNodeAnchor(RegExprEdgeSearchItem.this.sourceIx);
-            this.targetPreMatch =
-                search.getNodeAnchor(RegExprEdgeSearchItem.this.targetIx);
             assert RegExprEdgeSearchItem.this.varIxMap.keySet().containsAll(
                 needsVars());
+        }
+
+        @Override
+        public void initialise(HostGraph host) {
+            super.initialise(host);
+            this.sourcePreMatch =
+                this.search.getNodeAnchor(RegExprEdgeSearchItem.this.sourceIx);
+            this.targetPreMatch =
+                this.search.getNodeAnchor(RegExprEdgeSearchItem.this.targetIx);
         }
 
         @Override
@@ -243,13 +249,20 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
                 this.host, imageSourceSet, imageTargetSet, valuation);
         }
 
+        @Override
+        public String toString() {
+            return RegExprEdgeSearchItem.this.toString() + ": "
+                + this.state.isWritten();
+        }
+
         /** Pre-matched source image, if any. */
-        private final HostNode sourcePreMatch;
+        private HostNode sourcePreMatch;
         /** Pre-matched target image, if any. */
-        private final HostNode targetPreMatch;
+        private HostNode targetPreMatch;
     }
 
-    class RegExprEdgeMultipleRecord extends MultipleRecord<RegAut.Result> {
+    private class RegExprEdgeMultipleRecord extends
+            MultipleRecord<RegAut.Result> {
         /** Constructs a new record, for a given matcher. */
         RegExprEdgeMultipleRecord(Search search, int sourceIx, int targetIx,
                 boolean sourceFound, boolean targetFound) {
@@ -258,14 +271,19 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             this.targetIx = targetIx;
             this.sourceFound = sourceFound;
             this.targetFound = targetFound;
-            this.sourcePreMatch = search.getNodeAnchor(sourceIx);
-            this.targetPreMatch = search.getNodeAnchor(targetIx);
             assert RegExprEdgeSearchItem.this.varIxMap.keySet().containsAll(
                 RegExprEdgeSearchItem.this.neededVars);
             this.valuation = new HashMap<LabelVar,TypeLabel>();
+        }
+
+        @Override
+        public void initialise(HostGraph host) {
+            super.initialise(host);
+            this.sourcePreMatch = this.search.getNodeAnchor(this.sourceIx);
+            this.targetPreMatch = this.search.getNodeAnchor(this.targetIx);
             for (LabelVar var : RegExprEdgeSearchItem.this.prematchedVars) {
                 TypeLabel image =
-                    this.search.getVar(RegExprEdgeSearchItem.this.varIxMap.get(var));
+                    this.search.getVarAnchor(RegExprEdgeSearchItem.this.varIxMap.get(var));
                 assert image != null;
                 this.valuation.put(var, image);
             }
@@ -351,29 +369,35 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             }
         }
 
+        @Override
+        public String toString() {
+            return RegExprEdgeSearchItem.this.toString() + " = ["
+                + this.sourceFind + ", " + this.targetFind + "]";
+        }
+
         /** The index of the source in the search. */
-        final int sourceIx;
+        private final int sourceIx;
         /** The index of the target in the search. */
-        final int targetIx;
+        private final int targetIx;
         /** Indicates if the source is found before this item is invoked. */
         final private boolean sourceFound;
         /** Indicates if the target is found before this item is invoked. */
         final private boolean targetFound;
 
-        private final HostNode sourcePreMatch;
-        private final HostNode targetPreMatch;
+        private HostNode sourcePreMatch;
+        private HostNode targetPreMatch;
         /**
          * The pre-matched image for the edge source, if any. A value of
          * <code>null</code> means that no image is currently selected for the
          * source, or the source was pre-matched.
          */
-        HostNode sourceFind;
+        private HostNode sourceFind;
         /**
          * The pre-matched image for the edge target, if any. A value of
          * <code>null</code> means that no image is currently selected for the
          * target, or the target was pre-matched.
          */
-        HostNode targetFind;
+        private HostNode targetFind;
         private final Map<LabelVar,TypeLabel> valuation;
     }
 }

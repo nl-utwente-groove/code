@@ -231,7 +231,7 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
      */
     public Iterable<RuleMatch> getRuleMatches(Rule rule) {
         Iterable<RuleMatch> it =
-            rule.getMatches(this.network.getState().getHostGraph(), null);
+            rule.getAllMatches(this.network.getState().getHostGraph(), null);
         return it;
     }
 

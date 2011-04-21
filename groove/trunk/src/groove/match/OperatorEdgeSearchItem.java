@@ -24,6 +24,7 @@ import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.match.SearchPlanStrategy.Search;
 import groove.trans.HostFactory;
+import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleNode;
 
@@ -64,7 +65,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
         }
     }
 
-    public OperatorEdgeRecord getRecord(Search matcher) {
+    public OperatorEdgeRecord createRecord(Search matcher) {
         return new OperatorEdgeRecord(matcher);
     }
 
@@ -174,9 +175,6 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
          */
         OperatorEdgeRecord(Search search) {
             super(search);
-            this.targetPreMatch =
-                search.getNodeAnchor(OperatorEdgeSearchItem.this.targetIx);
-            this.factory = search.getHost().getFactory();
         }
 
         @Override
@@ -184,6 +182,14 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
             return String.format("%s = %s",
                 OperatorEdgeSearchItem.this.toString(),
                 this.search.getNode(OperatorEdgeSearchItem.this.targetIx));
+        }
+
+        @Override
+        public void initialise(HostGraph host) {
+            super.initialise(host);
+            this.factory = host.getFactory();
+            this.targetPreMatch =
+                this.search.getNodeAnchor(OperatorEdgeSearchItem.this.targetIx);
         }
 
         @Override
@@ -263,9 +269,9 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
         }
 
         /** The pre-matched target node, if any. */
-        private final HostNode targetPreMatch;
+        private HostNode targetPreMatch;
         /** The factory for creating value nodes for the outcomes. */
-        private final HostFactory factory;
+        private HostFactory factory;
         /**
          * The value node found as the outcome of the operation,
          * if this was not predetermined.

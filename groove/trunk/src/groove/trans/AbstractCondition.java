@@ -27,6 +27,7 @@ import groove.match.MatchStrategy;
 import groove.match.SearchEngine;
 import groove.rel.LabelVar;
 import groove.rel.VarSupport;
+import groove.util.Visitor;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
@@ -37,6 +38,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -212,20 +214,29 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     }
 
     final public boolean hasMatch(HostGraph host) {
-        return isGround() && getMatchIter(host, null).hasNext();
+        return isGround() && getMatch(host, null) != null;
     }
 
-    /**
-     * Returns an iterable wrapping a call to
-     * {@link #getMatchIter(HostGraph, RuleToHostMap)}.
-     */
-    public Iterable<M> getMatches(final HostGraph host,
-            final RuleToHostMap contextMap) {
-        return new Iterable<M>() {
-            public Iterator<M> iterator() {
-                return getMatchIter(host, contextMap);
-            }
-        };
+    @Override
+    public M getMatch(HostGraph host, RuleToHostMap contextMap) {
+        Iterator<M> iter = getMatchIter(host, contextMap);
+        return iter.hasNext() ? iter.next() : null;
+    }
+
+    public void visitMatches(HostGraph host, RuleToHostMap contextMap,
+            Visitor<M> visitor) {
+        Iterator<M> iter = getMatchIter(host, contextMap);
+        boolean cont = true;
+        while (cont && iter.hasNext()) {
+            cont = visitor.visit(iter.next());
+        }
+    }
+
+    @Override
+    public Collection<M> getAllMatches(HostGraph host, RuleToHostMap contextMap) {
+        List<M> result = new ArrayList<M>();
+        visitMatches(host, contextMap, Visitor.createCollector(result));
+        return result;
     }
 
     final public Iterator<M> getMatchIter(HostGraph host,

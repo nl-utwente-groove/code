@@ -83,7 +83,7 @@ class ConditionSearchItem extends AbstractSearchItem {
         }
     }
 
-    public Record getRecord(Search search) {
+    public Record createRecord(Search search) {
         return new ConditionRecord(search);
     }
 
@@ -110,7 +110,7 @@ class ConditionSearchItem extends AbstractSearchItem {
     /**
      * Search record for a graph condition.
      */
-    public class ConditionRecord extends SingularRecord {
+    private class ConditionRecord extends SingularRecord {
         /** Constructs a record for a given search. */
         public ConditionRecord(Search search) {
             super(search);
@@ -128,8 +128,8 @@ class ConditionSearchItem extends AbstractSearchItem {
                 contextMap.putVar(varIxEntry.getKey(),
                     this.search.getVar(varIxEntry.getValue()));
             }
-            return ConditionSearchItem.this.condition.getMatchIter(this.host,
-                contextMap).hasNext();
+            return ConditionSearchItem.this.condition.getMatch(this.host,
+                contextMap) != null;
         }
 
         @Override

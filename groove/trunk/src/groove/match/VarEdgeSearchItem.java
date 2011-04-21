@@ -20,6 +20,7 @@ import groove.graph.TypeLabel;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
 import groove.trans.HostEdge;
+import groove.trans.HostGraph;
 import groove.trans.RuleEdge;
 
 import java.util.Collection;
@@ -101,7 +102,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
     /** The constraint on the variable valuation, if any. */
     private final groove.util.Property<TypeLabel> labelConstraint;
 
-    class VarEdgeSingularRecord extends Edge2SingularRecord {
+    private class VarEdgeSingularRecord extends Edge2SingularRecord {
         /**
          * Constructs a record from a given search, and (possibly
          * <code>null</code>) pre-matched end node and variable images.
@@ -110,7 +111,12 @@ class VarEdgeSearchItem extends Edge2SearchItem {
                 int targetIx, int varIx) {
             super(search, edgeIx, sourceIx, targetIx);
             this.varIx = varIx;
-            this.varPreMatch = search.getVarAnchor(varIx);
+        }
+
+        @Override
+        public void initialise(HostGraph host) {
+            super.initialise(host);
+            this.varPreMatch = this.search.getVarAnchor(this.varIx);
         }
 
         /** This implementation returns the variable image from the match. */
@@ -130,13 +136,13 @@ class VarEdgeSearchItem extends Edge2SearchItem {
                 && super.isImageCorrect(image);
         }
 
-        private final TypeLabel varPreMatch;
+        private TypeLabel varPreMatch;
         /** The index of {@link #var} in the result. */
         private final int varIx;
     }
 
     /** Record for this type of search item. */
-    class VarEdgeMultipleRecord extends Edge2MultipleRecord {
+    private class VarEdgeMultipleRecord extends Edge2MultipleRecord {
         /** Constructs a new record, for a given matcher. */
         VarEdgeMultipleRecord(Search search, int edgeIx, int sourceIx,
                 int targetIx, int varIx, boolean sourceFound,
@@ -144,13 +150,16 @@ class VarEdgeSearchItem extends Edge2SearchItem {
             super(search, edgeIx, sourceIx, targetIx, sourceFound, targetFound);
             this.varFound = varFound;
             this.varIx = varIx;
-            this.varPreMatch = search.getVarAnchor(varIx);
+        }
+
+        @Override
+        public void initialise(HostGraph host) {
+            super.initialise(host);
+            this.varPreMatch = this.search.getVarAnchor(this.varIx);
         }
 
         @Override
         void init() {
-            // first initialise varFind, otherwise the images will not be set
-            // correctly
             this.varFind = this.varPreMatch;
             if (this.varFind == null && this.varFound) {
                 this.varFind = this.search.getVar(this.varIx);
@@ -203,7 +212,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         /**
          * The pre-matched variable image, if any.
          */
-        private final TypeLabel varPreMatch;
+        private TypeLabel varPreMatch;
         /** The index of {@link #var} in the result. */
         private final int varIx;
         /**

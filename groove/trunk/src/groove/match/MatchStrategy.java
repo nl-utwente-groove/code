@@ -21,8 +21,8 @@ import groove.trans.HostGraph;
 import groove.trans.RuleToHostMap;
 import groove.util.Property;
 
-import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Interface wrapping a match strategy. A class implementing this interface will
@@ -32,22 +32,6 @@ import java.util.Iterator;
  * @version $Revision $
  */
 public interface MatchStrategy<Result> {
-
-    /**
-     * Returns the collection of all matches to a given graph that extend a
-     * given partial match. The partial match should be defined precisely for
-     * the pre-matched elements indicated when constructing the match strategy.
-     * @param host the graph into which the matching is to go
-     * @param anchorMap a predefined mapping to the elements of
-     *        <code>host</code> that all the solutions should respect. May be
-     *        <code>null</code> if there is no predefined mapping
-     * @return the set of all mappings to the elements of <code>host</code>
-     *         that augment <code>preMatch</code> and fulfill the requirements
-     *         to be total matches
-     */
-    public Collection<Result> getMatchSet(HostGraph host,
-            RuleToHostMap anchorMap);
-
     /**
      * Returns an iterator over all matches to a given graph that extend a given
      * partial match. The partial match should be defined precisely for the
@@ -63,25 +47,27 @@ public interface MatchStrategy<Result> {
      */
     public Iterator<Result> getMatchIter(HostGraph host, RuleToHostMap anchorMap);
 
-    /**
-     * Returns the collection of all matches to a given graph that extend a
-     * given partial match. The partial match should be defined precisely for
-     * the pre-matched elements indicated when constructing the match strategy.
+    /** 
+     * Returns the first match that satisfies a given property. 
      * @param host the host graph into which the matching is to go
      * @param anchorMap a predefined mapping to the elements of
      *        <code>host</code> that all the solutions should respect. May be
      *        <code>null</code> if there is no predefined mapping
-     * @return the set of all mappings to the elements of <code>host</code>
-     *         that augment <code>preMatch</code> and fulfil the requirements
-     *         to be total matches
+     * @param property a property used to filter the match. The result
+     *        of the method is guaranteed to satisfy the property.
      */
-    public Iterable<Result> getMatches(HostGraph host, RuleToHostMap anchorMap);
+    public Result find(HostGraph host, RuleToHostMap anchorMap,
+            Property<Result> property);
 
-    /**
-     * Sets a filter for this strategy. A filter is a property that is required
-     * to hold for all search results returned by one of the search methods.
-     * @param filter the filter to be set; may be <code>null</code>, in which
-     *        change no constraints are imposed
+    /** 
+     * Returns the list of all matches that satisfy a given property. 
+     * @param host the host graph into which the matching is to go
+     * @param anchorMap a predefined mapping to the elements of
+     *        <code>host</code> that all the solutions should respect. May be
+     *        <code>null</code> if there is no predefined mapping
+     * @param property a property used to filter the matches. All matches
+     *        in the returned list are guaranteed to satisfy the property.
      */
-    public void setFilter(Property<Result> filter);
+    public List<Result> findAll(HostGraph host, RuleToHostMap anchorMap,
+            Property<Result> property);
 }

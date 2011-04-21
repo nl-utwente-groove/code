@@ -59,7 +59,7 @@ public class InjectionSearchItem extends AbstractSearchItem {
         this.neededNodes = new HashSet<RuleNode>(nodes);
     }
 
-    public InjectionRecord getRecord(Search matcher) {
+    public InjectionRecord createRecord(Search matcher) {
         return new InjectionRecord(matcher);
     }
 

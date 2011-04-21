@@ -32,9 +32,9 @@ import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.RuleToHostMap;
 import groove.trans.SystemRecord;
+import groove.util.Visitor;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -99,15 +99,13 @@ public class MatchSetCollector {
     protected MatchResult getMatch(CtrlTransition ctrlTrans) {
         RuleToHostMap boundMap = extractBinding(ctrlTrans);
         MatchResult result = null;
-        Iterator<RuleMatch> matchIter = null;
         if (boundMap != null) {
-            matchIter =
-                ctrlTrans.getRule().getMatchIter(this.state.getGraph(),
-                    boundMap);
-        }
-        if (matchIter != null && matchIter.hasNext()) {
-            // convert the match to an event
-            result = this.record.getEvent(matchIter.next());
+            RuleMatch match =
+                ctrlTrans.getRule().getMatch(this.state.getGraph(), boundMap);
+            if (match != null) {
+                // convert the match to an event
+                result = this.record.getEvent(match);
+            }
         }
         return result;
     }
@@ -142,7 +140,7 @@ public class MatchSetCollector {
      *         added to <code>result</code>
      */
     protected boolean collectEvents(CtrlTransition ctrlTrans,
-            Collection<MatchResult> result) {
+            final Collection<MatchResult> result) {
         boolean isEnabled = isEnabled(ctrlTrans.getCall());
         // there are three reasons to want to use the parent matches: to
         // save matching time, to reuse added nodes, and to find confluent 
@@ -154,14 +152,19 @@ public class MatchSetCollector {
             // matches
             RuleToHostMap boundMap = extractBinding(ctrlTrans);
             if (boundMap != null) {
-                Iterable<RuleMatch> matches =
-                    ctrlTrans.getRule().getMatches(this.state.getGraph(),
-                        boundMap);
-                for (RuleMatch match : matches) {
-                    RuleEvent event = this.record.getEvent(match);
-                    result.add(event);
-                    hasMatched = true;
-                }
+                final SystemRecord record = MatchSetCollector.this.record;
+                Visitor<RuleMatch> eventCollector = new Visitor<RuleMatch>() {
+                    @Override
+                    public boolean visit(RuleMatch object) {
+                        RuleEvent event = record.getEvent(object);
+                        result.add(event);
+                        setSuccess();
+                        return true;
+                    }
+                };
+                ctrlTrans.getRule().visitMatches(this.state.getGraph(),
+                    boundMap, eventCollector);
+                hasMatched = eventCollector.isSuccess();
             }
         }
         return hasMatched;

@@ -18,6 +18,7 @@ package groove.match;
 
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
+import groove.trans.HostGraph;
 import groove.trans.RuleNode;
 
 import java.util.Collection;
@@ -42,7 +43,7 @@ class NegatedSearchItem extends AbstractSearchItem {
         this.neededVars.addAll(item.bindsVars());
     }
 
-    public NegatedSearchRecord getRecord(Search search) {
+    public NegatedSearchRecord createRecord(Search search) {
         return new NegatedSearchRecord(search);
     }
 
@@ -102,7 +103,13 @@ class NegatedSearchItem extends AbstractSearchItem {
         /** Constructs a new record, for a given matcher. */
         NegatedSearchRecord(Search search) {
             super(search);
-            this.innerRecord = NegatedSearchItem.this.inner.getRecord(search);
+            this.innerRecord = NegatedSearchItem.this.inner.createRecord(search);
+        }
+
+        @Override
+        public void initialise(HostGraph host) {
+            super.initialise(host);
+            this.innerRecord.initialise(host);
         }
 
         /**

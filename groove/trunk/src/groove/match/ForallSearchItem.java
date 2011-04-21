@@ -102,7 +102,7 @@ class ForallSearchItem extends AbstractSearchItem {
         }
     }
 
-    public Record getRecord(Search search) {
+    public Record createRecord(Search search) {
         return new ForallRecord(search);
     }
 
@@ -139,7 +139,7 @@ class ForallSearchItem extends AbstractSearchItem {
     /**
      * Search record for a graph condition.
      */
-    public class ForallRecord extends MultipleRecord<CompositeMatch> {
+    private class ForallRecord extends MultipleRecord<CompositeMatch> {
         /** Constructs a record for a given search. */
         public ForallRecord(Search search) {
             super(search);

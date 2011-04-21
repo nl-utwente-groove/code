@@ -428,8 +428,8 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
         Collection<RuleMatch> result = Collections.singleton(simpleMatch);
         RuleToHostMap matchMap = simpleMatch.getElementMap();
         for (ForallCondition condition : getComplexSubConditions()) {
-            Iterable<CompositeMatch> subMatches =
-                condition.getMatches(host, matchMap);
+            Collection<CompositeMatch> subMatches =
+                condition.getAllMatches(host, matchMap);
             Collection<RuleMatch> oldResult = result;
             result = new ArrayList<RuleMatch>();
             for (RuleMatch oldMatch : oldResult) {

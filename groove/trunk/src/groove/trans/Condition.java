@@ -110,6 +110,33 @@ public interface Condition extends Fixable {
     public boolean hasMatch(HostGraph host);
 
     /**
+     * Returns a match for a given host graph, given a
+     * matching of the pattern graph.
+     * @param host the graph in which the match is to be found
+     * @param contextMap a matching of the pattern of this condition; may be
+     *        <code>null</code> if the condition is ground.
+     * @throws IllegalArgumentException if <code>patternMatch</code> is
+     *         <code>null</code> and the condition is not ground, or if
+     *         <code>patternMatch</code> is not compatible with the pattern
+     *         graph
+     */
+    public Match getMatch(HostGraph host, RuleToHostMap contextMap);
+
+    /**
+     * Returns the collection of all matches for a given host graph, given a
+     * matching of the pattern graph.
+     * @param host the graph in which the match is to be found
+     * @param contextMap a matching of the pattern of this condition; may be
+     *        <code>null</code> if the condition is ground.
+     * @throws IllegalArgumentException if <code>patternMatch</code> is
+     *         <code>null</code> and the condition is not ground, or if
+     *         <code>patternMatch</code> is not compatible with the pattern
+     *         graph
+     */
+    public Collection<? extends Match> getAllMatches(HostGraph host,
+            RuleToHostMap contextMap);
+
+    /**
      * Returns an iterator over all matches for a given host graph, given a
      * matching of the pattern graph.
      * @param host the graph in which the match is to be found
