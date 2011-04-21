@@ -35,8 +35,6 @@ import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static groove.io.FileType.GRAMMAR_FILTER;
-import static groove.io.FileType.GXL_FILTER;
-import static groove.io.FileType.STATE_FILTER;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.lts.AGTS;
 import groove.explore.AcceptorEnumerator;
@@ -499,20 +497,6 @@ public class Simulator {
             if (editor.isDirty() && !editor.isSaving()) {
                 result = true;
                 break;
-            }
-        }
-        return result;
-    }
-
-    /** Tests if a given file refers to a graph within the current system store. */
-    private boolean isFileInStore(File file, SystemStore store) {
-        boolean result = false;
-        if (store instanceof DefaultFileSystemStore) {
-            Object storeLocation = store.getLocation();
-            if (storeLocation instanceof File) {
-                String storePath = ((File) storeLocation).getAbsolutePath();
-                String filePath = file.getParentFile().getAbsolutePath();
-                result = storePath.equals(filePath);
             }
         }
         return result;
@@ -1934,16 +1918,17 @@ public class Simulator {
 
         result.addSeparator();
 
+        result.add(new JMenuItem(getLoadStartGraphAction()));
+
+        result.addSeparator();
+
         result.add(new JMenuItem(getSaveGrammarAction()));
+        result.add(new JMenuItem(getSaveGraphAction()));
 
         result.addSeparator();
 
         result.add(new JMenuItem(getImportAction()));
-        /*result.add(new JMenuItem(getExportAction()));*/
-
-        result.addSeparator();
-
-        result.add(new JMenuItem(getLoadStartGraphAction()));
+        result.add(getExportGraphMenuItem());
 
         result.addSeparator();
 
@@ -4992,70 +4977,86 @@ public class Simulator {
     private class SaveGraphAction extends RefreshableAction {
         /** Constructs an instance of the action. */
         SaveGraphAction() {
-            super(Options.SAVE_ACTION_NAME, Icons.SAVE_ICON);
+            super(Options.SAVE_AS_ACTION_NAME, Icons.SAVE_ICON);
             putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
         }
 
         public void actionPerformed(ActionEvent e) {
-            GraphJModel<?,?> jModel = getGraphPanel().getJModel();
-            if (getGraphPanel() == getLtsPanel()) {
-                actionForLTS(((LTSJModel) jModel).getGraph());
+            if (getPanel() == getControlPanel()) {
+                actionForControl();
             } else {
-                assert getGraphPanel() == getStatePanel();
-                actionForState(((AspectJModel) jModel).getGraph());
-            }
-        }
-
-        private void actionForState(AspectGraph graph) {
-            ExtensionFilter filter = STATE_FILTER;
-            String name = graph.getName();
-            getStateFileChooser().setFileFilter(filter);
-            getStateFileChooser().setSelectedFile(new File(name));
-            File selectedFile =
-                SaveDialog.show(getStateFileChooser(), getFrame(), null);
-            // now save, if so required
-            if (selectedFile != null) {
-                name = filter.stripExtension(selectedFile.getName());
-                graph = graph.rename(name);
-                if (isFileInStore(selectedFile, getGrammarStore())) {
-                    doAddGraph(graph);
-                } else {
-                    doSaveState(graph, selectedFile);
+                GraphJModel<?,?> jModel = getGraphPanel().getJModel();
+                if (getGraphPanel() == getStatePanel()) {
+                    actionForGraphs(((AspectJModel) jModel).getGraph(),
+                        FileType.STATE_FILTER);
+                } else if (getGraphPanel() == getRulePanel()) {
+                    actionForGraphs(((AspectJModel) jModel).getGraph(),
+                        FileType.RULE_FILTER);
+                } else if (getGraphPanel() == getLtsPanel()) {
+                    actionForGTS(((LTSJModel) jModel).getGraph(),
+                        FileType.GXL_FILTER);
+                } else if (getGraphPanel() == getTypePanel()) {
+                    actionForGraphs(((AspectJModel) jModel).getGraph(),
+                        FileType.TYPE_FILTER);
                 }
             }
         }
 
-        /** Saves a given graph to a given file. */
-        private void doSaveState(AspectGraph graph, File selectedFile) {
-            try {
-                Simulator.this.aspectLoader.marshalGraph(graph, selectedFile);
-            } catch (IOException exc) {
-                showErrorDialog(String.format(
-                    "Error while saving graph to '%s'", selectedFile), exc);
+        private void actionForGraphs(AspectGraph graph, ExtensionFilter filter) {
+            String name = graph.getName();
+            GrooveFileChooser chooser =
+                GrooveFileChooser.getFileChooser(filter);
+            chooser.setSelectedFile(new File(name));
+            File selectedFile = SaveDialog.show(chooser, getFrame(), null);
+            // now save, if so required
+            if (selectedFile != null) {
+                name = filter.stripExtension(selectedFile.getName());
+                graph = graph.rename(name);
+                try {
+                    Simulator.this.aspectLoader.marshalGraph(graph,
+                        selectedFile);
+                } catch (IOException exc) {
+                    showErrorDialog(String.format(
+                        "Error while saving graph to '%s'", selectedFile), exc);
+                }
             }
         }
 
-        private void actionForLTS(GTS gts) {
-            ExtensionFilter filter = GXL_FILTER;
-            getStateFileChooser().setFileFilter(filter);
-            getStateFileChooser().setSelectedFile(new File(LTS_FILE_NAME));
-            File selectedFile =
-                SaveDialog.show(getStateFileChooser(), getFrame(), null);
+        private void actionForGTS(GTS gts, ExtensionFilter filter) {
+            GrooveFileChooser chooser =
+                GrooveFileChooser.getFileChooser(filter);
+            chooser.setSelectedFile(new File(LTS_FILE_NAME));
+            File selectedFile = SaveDialog.show(chooser, getFrame(), null);
             // now save, if so required
             if (selectedFile != null) {
                 String name = filter.stripExtension(selectedFile.getName());
                 gts.setName(name);
-                doSaveGTS(gts, selectedFile);
+                try {
+                    Simulator.this.graphLoader.marshalAnyGraph(gts,
+                        selectedFile);
+                } catch (IOException exc) {
+                    showErrorDialog(String.format(
+                        "Error while saving LTS to '%s'", selectedFile), exc);
+                }
             }
         }
 
-        /** Saves a given graph to a given file. */
-        private void doSaveGTS(GTS gts, File selectedFile) {
-            try {
-                Simulator.this.graphLoader.marshalAnyGraph(gts, selectedFile);
-            } catch (IOException exc) {
-                showErrorDialog(String.format("Error while saving LTS to '%s'",
-                    selectedFile), exc);
+        private void actionForControl() {
+            ExtensionFilter filter = FileType.CONTROL_FILTER;
+            GrooveFileChooser chooser =
+                GrooveFileChooser.getFileChooser(filter);
+            String name = getControlPanel().getSelectedControl();
+            String program = getGrammarView().getControlView(name).getProgram();
+            chooser.setSelectedFile(new File(name));
+            File selectedFile = SaveDialog.show(chooser, getFrame(), null);
+            // now save, if so required
+            if (selectedFile != null) {
+                name = filter.stripExtension(selectedFile.getName());
+                if (!Simulator.this.doSaveControl(program, selectedFile)) {
+                    showErrorDialog(String.format(
+                        "Error while saving control to '%s'", selectedFile),
+                        null);
+                }
             }
         }
 
@@ -5065,15 +5066,30 @@ public class Simulator {
          * 
          */
         public void refresh() {
-            if (getGraphPanel() == getLtsPanel()) {
-                setEnabled(getGTS() != null);
-                putValue(NAME, Options.SAVE_LTS_ACTION_NAME);
-            } else if (getGraphPanel() == getStatePanel()) {
+            if (getGraphPanel() == getStatePanel()) {
                 setEnabled(getCurrentState() != null);
                 putValue(NAME, Options.SAVE_STATE_ACTION_NAME);
+                putValue(SHORT_DESCRIPTION, Options.SAVE_STATE_ACTION_NAME);
+            } else if (getGraphPanel() == getRulePanel()) {
+                setEnabled(getCurrentRule() != null);
+                putValue(NAME, Options.SAVE_RULE_ACTION_NAME);
+                putValue(SHORT_DESCRIPTION, Options.SAVE_RULE_ACTION_NAME);
+            } else if (getGraphPanel() == getLtsPanel()) {
+                setEnabled(getGTS() != null);
+                putValue(NAME, Options.SAVE_LTS_ACTION_NAME);
+                putValue(SHORT_DESCRIPTION, Options.SAVE_LTS_ACTION_NAME);
+            } else if (getGraphPanel() == getTypePanel()) {
+                setEnabled(getTypePanel().isTypeSelected());
+                putValue(NAME, Options.SAVE_TYPE_ACTION_NAME);
+                putValue(SHORT_DESCRIPTION, Options.SAVE_TYPE_ACTION_NAME);
+            } else if (getPanel() == getControlPanel()) {
+                setEnabled(getControlPanel().isControlSelected());
+                putValue(NAME, Options.SAVE_CONTROL_ACTION_NAME);
+                putValue(SHORT_DESCRIPTION, Options.SAVE_CONTROL_ACTION_NAME);
             } else {
                 setEnabled(false);
-                putValue(NAME, Options.SAVE_ACTION_NAME);
+                putValue(NAME, Options.SAVE_AS_ACTION_NAME);
+                putValue(SHORT_DESCRIPTION, Options.SAVE_AS_ACTION_NAME);
             }
         }
     }
