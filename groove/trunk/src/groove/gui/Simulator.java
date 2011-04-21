@@ -2212,7 +2212,6 @@ public class Simulator {
         return result;
     }
 
-    // EDUARDO: remove this?
     JFileChooser getGrammarFileChooser() {
         return this.getGrammarFileChooser(false);
     }

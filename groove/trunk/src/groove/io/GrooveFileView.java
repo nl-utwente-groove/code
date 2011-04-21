@@ -39,7 +39,6 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * Constructs a standard file view, in which production system directories
      * can be traversed.
      */
-    // EDUARDO: Make this private or at least protected.
     GrooveFileView() {
         setGpsTraversable(true);
     }
