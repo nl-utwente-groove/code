@@ -28,6 +28,7 @@ import groove.rel.RegExpr;
 import groove.rel.VarSupport;
 import groove.trans.Condition;
 import groove.trans.EdgeEmbargo;
+import groove.trans.ForallCondition;
 import groove.trans.MergeEmbargo;
 import groove.trans.NotCondition;
 import groove.trans.RuleEdge;
@@ -83,7 +84,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
             anchorNodes = patternMap.nodeMap().values();
             anchorEdges = patternMap.edgeMap().values();
         }
-        GrammarPlanData planData = new GrammarPlanData(condition);
+        PlanData planData = new PlanData(condition);
         SearchPlan plan = planData.getPlan(anchorNodes, anchorEdges);
         if (relevantNodes != null) {
             Set<RuleNode> unboundRelevantNodes =
@@ -143,7 +144,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
     static private SearchPlanEngine instance;
 
     /** Flag to control search plan printing. */
-    static private final boolean PRINT = true;
+    static private final boolean PRINT = false;
 
     /**
      * Plan data extension based on a graph condition. Additionally it takes the
@@ -151,14 +152,14 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
      * @author Arend Rensink
      * @version $Revision $
      */
-    class GrammarPlanData extends Observable implements Comparator<SearchItem> {
+    private class PlanData extends Observable implements Comparator<SearchItem> {
         /**
          * Constructs a fresh instance of the plan data, based on a given set of
          * system properties, and sets of already matched nodes and edges.
          * @param condition the graph condition for which we develop the search
          *        plan
          */
-        GrammarPlanData(Condition condition) {
+        PlanData(Condition condition) {
             RuleGraph graph = condition.getTarget();
             // compute the set of remaining (unmatched) nodes
             this.remainingNodes = new LinkedHashSet<RuleNode>(graph.nodeSet());
@@ -168,6 +169,12 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
                 new LinkedHashSet<LabelVar>(VarSupport.getAllVars(graph));
             this.labelStore = condition.getLabelStore();
             this.condition = condition;
+            this.forallConditions = new ArrayList<ForallCondition>();
+            for (Condition subCondition : condition.getSubConditions()) {
+                if (subCondition instanceof ForallCondition) {
+                    this.forallConditions.add((ForallCondition) subCondition);
+                }
+            }
         }
 
         /**
@@ -228,6 +235,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
                     result.add(nodeItem);
                 }
             }
+            int forallConditionCount = 0;
             for (Condition subCondition : this.condition.getSubConditions()) {
                 if (subCondition instanceof MergeEmbargo) {
                     RuleNode node1 = ((MergeEmbargo) subCondition).node1();
@@ -239,6 +247,10 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
                     result.add(createNegatedSearchItem(createEdgeSearchItem(embargoEdge)));
                 } else if (subCondition instanceof NotCondition) {
                     result.add(new ConditionSearchItem(subCondition));
+                } else if (subCondition instanceof ForallCondition) {
+                    result.add(new ForallSearchItem(
+                        (ForallCondition) subCondition, forallConditionCount));
+                    forallConditionCount++;
                 }
             }
             return result;
@@ -409,16 +421,6 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
 
         /**
          * Callback factory method for an injection search item.
-         * @param injection the set of nodes to be matched injectively
-         * @return an instance of {@link InjectionSearchItem}
-         */
-        protected InjectionSearchItem createInjectionSearchItem(
-                Collection<RuleNode> injection) {
-            return new InjectionSearchItem(injection);
-        }
-
-        /**
-         * Callback factory method for an injection search item.
          * @param node1 the first node to be matched injectively
          * @param node2 the second node to be matched injectively
          * @return an instance of {@link InjectionSearchItem}
@@ -428,6 +430,8 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
             return new InjectionSearchItem(node1, node2);
         }
 
+        /** The set of universal conditions. */
+        private final List<ForallCondition> forallConditions;
         /**
          * The set of nodes to be matched.
          */
@@ -705,6 +709,9 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
             int result = 0;
             Class<?> itemClass = item.getClass();
             if (itemClass == NodeSearchItem.class) {
+                return result;
+            }
+            if (itemClass == ForallSearchItem.class) {
                 return result;
             }
             result++;
