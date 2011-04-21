@@ -71,10 +71,8 @@ public class SimulatorPanel extends JTabbedPane {
                 int index = indexAtLocation(e.getX(), e.getY());
                 if (index >= 0 && e.getButton() == MouseEvent.BUTTON3) {
                     Component panel = getComponentAt(index);
-                    //                    if (SimulatorPanel.this.seqNrMap.containsKey(panel)) {
                     createDetachMenu(panel).show(SimulatorPanel.this, e.getX(),
                         e.getY());
-                    //                    }
                 }
             }
         });
