@@ -31,9 +31,11 @@ import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
 import groove.util.Property;
 import groove.util.Reporter;
+import groove.util.Visitor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -63,32 +65,30 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         this.forallCount = plan.getForallCount();
     }
 
+    @Override
+    public <T> T visitAll(HostGraph host, RuleToHostMap anchorMap,
+            Visitor<RuleToHostMap,T> visitor) {
+        Search search = getSearch(host, anchorMap);
+        while (search.find() && visitor.visit(search.getMatch())) {
+            // do nothing
+        }
+        return visitor.getResult();
+    }
+
     /** Returns the first matching satisfying a given property. */
     @Override
     public RuleToHostMap find(HostGraph host, RuleToHostMap anchorMap,
             Property<RuleToHostMap> property) {
-        RuleToHostMap result = null;
-        Search search = getSearch(host, anchorMap);
-        while (result == null && search.find()) {
-            result = search.getMatch();
-            if (!property.isSatisfied(result)) {
-                result = null;
-            }
-        }
-        return result;
+        return visitAll(host, anchorMap, Visitor.createFinder(property));
     }
 
     /** Returns all matchings satisfying a given property. */
     @Override
-    public List<RuleToHostMap> findAll(HostGraph host, RuleToHostMap anchorMap,
-            Property<RuleToHostMap> property) {
+    public Collection<RuleToHostMap> findAll(HostGraph host,
+            RuleToHostMap anchorMap, Property<RuleToHostMap> property) {
         List<RuleToHostMap> result = new ArrayList<RuleToHostMap>();
-        Search search = getSearch(host, anchorMap);
-        while (search.find()) {
-            RuleToHostMap next = search.getMatch();
-            result.add(next);
-        }
-        return result;
+        return visitAll(host, anchorMap,
+            Visitor.createCollector(result, property));
     }
 
     public Iterator<RuleToHostMap> getMatchIter(HostGraph host,
@@ -350,7 +350,6 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
             this.records = new SearchItem.Record[planSize];
             this.influence = new SearchItem.Record[planSize][];
             this.influenceCount = new int[planSize];
-            this.lastSingular = -1;
             this.nodeImages =
                 new HostNode[SearchPlanStrategy.this.nodeKeys.length];
             this.edgeImages =
@@ -370,6 +369,9 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         /** Initialises the search for a given host graph and anchor map. */
         public void initialise(HostGraph host, RuleToHostMap anchorMap) {
             this.host = host;
+            if (isInjective()) {
+                getUsedNodes().clear();
+            }
             if (anchorMap != null) {
                 for (Map.Entry<RuleNode,? extends HostNode> nodeEntry : anchorMap.nodeMap().entrySet()) {
                     assert isNodeFound(nodeEntry.getKey());
@@ -404,6 +406,8 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
             for (int i = 0; i < this.records.length && this.records[i] != null; i++) {
                 this.records[i].initialise(host);
             }
+            this.found = false;
+            this.lastSingular = -1;
         }
 
         @Override

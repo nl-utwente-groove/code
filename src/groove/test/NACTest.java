@@ -273,7 +273,7 @@ public class NACTest {
             final HostGraph graph) {
         final Collection<RuleApplication> result =
             new ArrayList<RuleApplication>();
-        rule.visitMatches(graph, null, new Visitor<RuleMatch>() {
+        rule.visitMatches(graph, null, new Visitor.Simple<RuleMatch>() {
             @Override
             public boolean visit(RuleMatch match) {
                 result.add(match.newEvent(null).newApplication(graph));

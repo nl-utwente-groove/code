@@ -19,9 +19,10 @@ package groove.match;
 import groove.trans.HostGraph;
 import groove.trans.RuleToHostMap;
 import groove.util.Property;
+import groove.util.Visitor;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -35,28 +36,14 @@ import java.util.List;
 public abstract class AbstractMatchStrategy<R> implements MatchStrategy<R> {
     @Override
     public R find(HostGraph host, RuleToHostMap anchorMap, Property<R> property) {
-        R result = null;
-        Iterator<R> iter = getMatchIter(host, anchorMap);
-        while (result == null && iter.hasNext()) {
-            result = iter.next();
-            if (!property.isSatisfied(result)) {
-                result = null;
-            }
-        }
-        return result;
+        return visitAll(host, anchorMap, Visitor.createFinder(property));
     }
 
     @Override
-    public List<R> findAll(HostGraph host, RuleToHostMap anchorMap,
+    public Collection<R> findAll(HostGraph host, RuleToHostMap anchorMap,
             Property<R> property) {
         List<R> result = new ArrayList<R>();
-        Iterator<R> iter = getMatchIter(host, anchorMap);
-        while (iter.hasNext()) {
-            R next = iter.next();
-            if (property.isSatisfied(next)) {
-                result.add(next);
-            }
-        }
-        return result;
+        return visitAll(host, anchorMap,
+            Visitor.createCollector(result, property));
     }
 }
