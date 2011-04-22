@@ -403,14 +403,19 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
                     matchMapIter) {
                     @Override
                     public Iterator<RuleMatch> toOuter(RuleToHostMap matchMap) {
-                        if (isValidMatchMap(host, matchMap)) {
-                            return addSubMatches(host, createMatch(matchMap)).iterator();
-                        } else {
-                            return null;
-                        }
+                        return computeMatchIter(host, matchMap);
                     }
                 });
         return result;
+    }
+
+    public Iterator<RuleMatch> computeMatchIter(HostGraph host,
+            RuleToHostMap matchMap) {
+        if (isValidMatchMap(host, matchMap)) {
+            return addSubMatches(host, createMatch(matchMap)).iterator();
+        } else {
+            return null;
+        }
     }
 
     @SuppressWarnings("unchecked")

@@ -20,9 +20,10 @@ package groove.match;
 import groove.trans.HostGraph;
 import groove.trans.RuleToHostMap;
 import groove.util.Property;
+import groove.util.Visitor;
 
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * Interface wrapping a match strategy. A class implementing this interface will
@@ -68,6 +69,21 @@ public interface MatchStrategy<Result> {
      * @param property a property used to filter the matches. All matches
      *        in the returned list are guaranteed to satisfy the property.
      */
-    public List<Result> findAll(HostGraph host, RuleToHostMap anchorMap,
+    public Collection<Result> findAll(HostGraph host, RuleToHostMap anchorMap,
             Property<Result> property);
+
+    /** 
+     * Traverses the matches, and calls a visit method on them.
+     * The traversal stops when the visit method returns {@code false}.
+     * @param host the host graph into which the matching is to go
+     * @param anchorMap a predefined mapping to the elements of
+     *        <code>host</code> that all the solutions should respect. May be
+     *        <code>null</code> if there is no predefined mapping
+     * @param visitor the object whose visit method is invoked for all matches
+     * @return the result of the visitor after the traversal
+     * @see Visitor#visit(Object)
+     * @see Visitor#getResult()
+     */
+    public <T> T visitAll(HostGraph host, RuleToHostMap anchorMap,
+            Visitor<Result,T> visitor);
 }

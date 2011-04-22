@@ -219,17 +219,21 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 
     @Override
     public M getMatch(HostGraph host, RuleToHostMap contextMap) {
-        Iterator<M> iter = getMatchIter(host, contextMap);
-        return iter.hasNext() ? iter.next() : null;
+        return visitMatches(host, contextMap, Visitor.<M>createFinder(null));
     }
 
-    public void visitMatches(HostGraph host, RuleToHostMap contextMap,
-            Visitor<M> visitor) {
+    /** 
+     * Traverses and visits the matches of this condition
+     * for a given host graph and context map.
+     */
+    public <R> R visitMatches(HostGraph host, RuleToHostMap contextMap,
+            Visitor<M,R> visitor) {
         Iterator<M> iter = getMatchIter(host, contextMap);
         boolean cont = true;
         while (cont && iter.hasNext()) {
             cont = visitor.visit(iter.next());
         }
+        return visitor.getResult();
     }
 
     @Override

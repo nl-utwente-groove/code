@@ -153,18 +153,27 @@ public class MatchSetCollector {
             RuleToHostMap boundMap = extractBinding(ctrlTrans);
             if (boundMap != null) {
                 final SystemRecord record = MatchSetCollector.this.record;
-                Visitor<RuleMatch> eventCollector = new Visitor<RuleMatch>() {
-                    @Override
-                    public boolean visit(RuleMatch object) {
-                        RuleEvent event = record.getEvent(object);
-                        result.add(event);
-                        setSuccess();
-                        return true;
-                    }
-                };
-                ctrlTrans.getRule().visitMatches(this.state.getGraph(),
-                    boundMap, eventCollector);
-                hasMatched = eventCollector.isSuccess();
+                Visitor<RuleMatch,Boolean> eventCollector =
+                    new Visitor<RuleMatch,Boolean>() {
+                        @Override
+                        public boolean visit(RuleMatch object) {
+                            RuleEvent event = record.getEvent(object);
+                            result.add(event);
+                            this.match = true;
+                            return true;
+                        }
+
+                        @Override
+                        public Boolean getResult() {
+                            return this.match;
+                        }
+
+                        /** Flag indicating that at least one match has been visited. */
+                        boolean match;
+                    };
+                hasMatched =
+                    ctrlTrans.getRule().visitMatches(this.state.getGraph(),
+                        boundMap, eventCollector);
             }
         }
         return hasMatched;

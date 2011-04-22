@@ -21,6 +21,7 @@ import groove.graph.algebra.ValueNode;
 import groove.rel.LabelVar;
 import groove.util.CacheReference;
 import groove.util.Groove;
+import groove.util.Visitor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -151,16 +152,29 @@ final public class SPOEvent extends
     /**
      * Computes a match based on the precomputed anchor map.
      */
-    public RuleMatch getMatch(HostGraph host) {
+    public RuleMatch getMatch(final HostGraph host) {
         RuleMatch result = null;
         if (isCorrectFor(host)) {
-            Iterator<RuleToHostMap> eventMatchMapIter =
-                getRule().getEventMatcher().getMatchIter(host, getAnchorMap());
-            Iterator<RuleMatch> matchIter =
-                getRule().computeMatchIter(host, eventMatchMapIter);
-            if (matchIter.hasNext()) {
-                result = matchIter.next();
-            }
+            result =
+                getRule().getEventMatcher().visitAll(host, getAnchorMap(),
+                    new Visitor<RuleToHostMap,RuleMatch>() {
+                        @Override
+                        public boolean visit(RuleToHostMap object) {
+                            Iterator<RuleMatch> iter =
+                                getRule().computeMatchIter(host, object);
+                            if (iter.hasNext()) {
+                                this.result = iter.next();
+                            }
+                            return this.result == null;
+                        }
+
+                        @Override
+                        public RuleMatch getResult() {
+                            return this.result;
+                        }
+
+                        private RuleMatch result;
+                    });
         }
         return result;
     }

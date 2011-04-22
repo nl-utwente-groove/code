@@ -23,6 +23,7 @@ import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleToHostMap;
 import groove.util.TransformIterator;
+import groove.util.Visitor;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -92,6 +93,42 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
 
         }
         return result;
+    }
+
+    @Override
+    public <T> T visitAll(final HostGraph host, RuleToHostMap anchorMap,
+            Visitor<RuleToHostMap,T> visitor) {
+        assert this.owner.getNetwork() != null;
+
+        if (host != this.owner.getNetwork().getState().getHostGraph()) {
+            this.owner.getNetwork().processGraph(host);
+        }
+
+        assert graphShapesEqual(host,
+            this.owner.getNetwork().getState().getHostGraph());
+
+        if (this.owner.getNetwork() != null) {
+            //iterate through the conflict set of the production node
+            //associated with this condition
+            ConditionChecker cc =
+                this.owner.getNetwork().getConditionCheckerNodeFor(
+                    this.condition);
+            if (cc != null) {
+                Iterator<ReteMatch> iter;
+                if ((anchorMap != null) && (!anchorMap.isEmpty())) {
+                    iter = cc.getConflictSetIterator(anchorMap);
+                } else {
+                    iter = cc.getConflictSetIterator();
+                }
+                boolean cont = true;
+                while (cont && iter.hasNext()) {
+                    ReteMatch matchMap = iter.next();
+                    cont =
+                        visitor.visit(matchMap.toRuleToHostMap(host.getFactory()));
+                }
+            }
+        }
+        return visitor.getResult();
     }
 
     private synchronized boolean graphShapesEqual(HostGraph g1, HostGraph g2) {

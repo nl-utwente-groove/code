@@ -19,24 +19,15 @@ package groove.util;
 import java.util.Collection;
 
 /** Visitor for a certain type. */
-abstract public class Visitor<T> {
+abstract public class Visitor<T,R> {
     /** 
      * Visits a (non-{@code null)} object.
      * @return {@code false} if no more objects need to be visited
      */
     abstract public boolean visit(T object);
 
-    /** Sets the internal state of the visitor to success. */
-    public void setSuccess() {
-        this.success = true;
-    }
-
-    /** Indicates if the visitor was successful. */
-    public boolean isSuccess() {
-        return this.success;
-    }
-
-    private boolean success;
+    /** Returns the result of the visits. */
+    abstract public R getResult();
 
     /** Constructs a finder for a given property. */
     static public <T> Finder<T> createFinder(Property<T> property) {
@@ -67,8 +58,16 @@ abstract public class Visitor<T> {
     @SuppressWarnings({"rawtypes", "unchecked"})
     static private Collector reusableCollector = new Collector(null);
 
+    /** Simple visitor that does not have a meaningful result value. */
+    static public abstract class Simple<T> extends Visitor<T,Object> {
+        @Override
+        public Object getResult() {
+            return null;
+        }
+    }
+
     /** A visitor that stores the first visited object satisfying a given property. */
-    static public class Finder<T> extends Visitor<T> {
+    static public class Finder<T> extends Visitor<T,T> {
         /**
          * Constructs a finder for a certain property.
          */
@@ -78,15 +77,18 @@ abstract public class Visitor<T> {
 
         @Override
         public boolean visit(T object) {
-            boolean result = false;
-            if (this.object == null && this.property.isSatisfied(object)) {
+            boolean result = true;
+            if (this.object == null
+                && (this.property == null || this.property.isSatisfied(object))) {
                 this.object = object;
+                result = false;
             }
             return result;
         }
 
         /** Returns the result found, if any. */
-        public final T get() {
+        @Override
+        public final T getResult() {
             return this.object;
         }
 
@@ -110,7 +112,7 @@ abstract public class Visitor<T> {
      * A visitor that collects all visited objects, possibly filtered by 
      * a property of the object. 
      */
-    static public class Collector<T> extends Visitor<T> {
+    static public class Collector<T> extends Visitor<T,Collection<T>> {
         /**
          * Constructs a collector for a given collection and property.
          */
@@ -135,7 +137,8 @@ abstract public class Visitor<T> {
         }
 
         /** Returns the wrapped collection of objects. */
-        public final Collection<T> getAll() {
+        @Override
+        final public Collection<T> getResult() {
             return this.collection;
         }
 
@@ -145,7 +148,9 @@ abstract public class Visitor<T> {
             return this;
         }
 
+        /** The wrapped collection to which elements are added. */
         private Collection<T> collection;
+        /** Filtering property. */
         private final Property<T> property;
     }
 }

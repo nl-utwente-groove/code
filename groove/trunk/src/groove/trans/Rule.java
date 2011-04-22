@@ -118,19 +118,21 @@ public interface Rule extends Comparable<Rule>, Condition {
             RuleToHostMap contextMap);
 
     /**
-     * Visits all the matches for a given host graph, given a
-     * matching of the pattern graph.
+     * Traverses the matches of this rule on a given host graph and for
+     * a given context map, until the first time the visit method returns 
+     * {@code false}.
      * @param host the graph in which the match is to be found
      * @param contextMap a matching of the pattern of this condition; may be
      *        <code>null</code> if the condition is ground.
      * @param visitor the visitor invoked for all the matches
+     * @return the result of the visitor after the traversal
      * @throws IllegalArgumentException if <code>patternMatch</code> is
      *         <code>null</code> and the condition is not ground, or if
      *         <code>patternMatch</code> is not compatible with the pattern
      *         graph
      */
-    public void visitMatches(HostGraph host, RuleToHostMap contextMap,
-            Visitor<RuleMatch> visitor);
+    public <T> T visitMatches(HostGraph host, RuleToHostMap contextMap,
+            Visitor<RuleMatch,T> visitor);
 
     /**
      * Returns the collection of all matches for a given host graph, given a
