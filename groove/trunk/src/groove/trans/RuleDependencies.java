@@ -450,7 +450,7 @@ public class RuleDependencies {
     void collectConditionCharacteristics(Condition cond,
             Set<TypeLabel> positive, Set<TypeLabel> negative) {
         RuleGraphMorphism pattern = cond.getRootMap();
-        RuleGraph target = cond.getTarget();
+        RuleGraph target = cond.getPattern();
         // collected the isolated fresh nodes
         Set<RuleNode> isolatedNodes = new HashSet<RuleNode>(target.nodeSet());
         isolatedNodes.removeAll(pattern.nodeMap().values());

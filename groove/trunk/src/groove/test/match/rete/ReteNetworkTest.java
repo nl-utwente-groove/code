@@ -98,7 +98,7 @@ public class ReteNetworkTest extends TestCase {
         }
         if (ants.size() == 0) {
             if (nnode instanceof ConditionChecker) {
-                assertTrue(((ConditionChecker) nnode).getCondition().getTarget().isEmpty());
+                assertTrue(((ConditionChecker) nnode).getCondition().getPattern().isEmpty());
             } else {
                 assertEquals(nnode.getOwner().getRoot(), nnode);
             }

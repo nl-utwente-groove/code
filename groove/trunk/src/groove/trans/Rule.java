@@ -19,7 +19,6 @@ package groove.trans;
 
 import groove.control.CtrlPar;
 import groove.graph.GraphProperties;
-import groove.match.MatchStrategy;
 import groove.util.Visitor;
 
 import java.util.Collection;
@@ -114,12 +113,14 @@ public interface Rule extends Comparable<Rule>, Condition {
      *         <code>null</code> and the condition is not ground, or if
      *         <code>contextMap</code> is not compatible with the root map
      */
+    @Deprecated
     public Iterator<RuleMatch> getMatchIter(HostGraph host,
             RuleToHostMap contextMap);
 
     /**
      * Traverses the matches of this rule on a given host graph and for
-     * a given context map, until the first time the visit method returns 
+     * a given context map, and calls the visitor's visit method on all
+     * of them, until the first time the visitor returns 
      * {@code false}.
      * @param host the graph in which the match is to be found
      * @param contextMap a matching of the pattern of this condition; may be
@@ -130,8 +131,9 @@ public interface Rule extends Comparable<Rule>, Condition {
      *         <code>null</code> and the condition is not ground, or if
      *         <code>patternMatch</code> is not compatible with the pattern
      *         graph
+     * @see Visitor#visit(Object)
      */
-    public <T> T visitMatches(HostGraph host, RuleToHostMap contextMap,
+    public <T> T traverseMatches(HostGraph host, RuleToHostMap contextMap,
             Visitor<RuleMatch,T> visitor);
 
     /**
@@ -146,12 +148,6 @@ public interface Rule extends Comparable<Rule>, Condition {
      */
     public Collection<RuleMatch> getAllMatches(HostGraph host,
             RuleToHostMap contextMap);
-
-    /**
-     * Lazily creates and returns a matcher for rule events of this rule. The
-     * matcher will try to extend anchor maps to full matches.
-     */
-    public MatchStrategy<RuleToHostMap> getEventMatcher();
 
     /**
      * The lowest rule priority, which is also the default value if no explicit

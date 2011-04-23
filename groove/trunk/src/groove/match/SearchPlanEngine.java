@@ -29,7 +29,6 @@ import groove.rel.VarSupport;
 import groove.trans.Condition;
 import groove.trans.EdgeEmbargo;
 import groove.trans.ForallCondition;
-import groove.trans.MergeEmbargo;
 import groove.trans.NotCondition;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
@@ -76,16 +75,16 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
 
     @Override
     public SearchPlanStrategy createMatcher(Condition condition,
-            Collection<RuleNode> anchorNodes, Collection<RuleEdge> anchorEdges,
+            Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges,
             Collection<RuleNode> relevantNodes) {
-        assert (anchorNodes == null) == (anchorEdges == null) : "Anchor nodes and edges should be null simultaneously";
-        if (anchorNodes == null) {
+        assert (seedNodes == null) == (seedEdges == null) : "Anchor nodes and edges should be null simultaneously";
+        if (seedNodes == null) {
             RuleGraphMorphism patternMap = condition.getRootMap();
-            anchorNodes = patternMap.nodeMap().values();
-            anchorEdges = patternMap.edgeMap().values();
+            seedNodes = patternMap.nodeMap().values();
+            seedEdges = patternMap.edgeMap().values();
         }
         PlanData planData = new PlanData(condition);
-        SearchPlan plan = planData.getPlan(anchorNodes, anchorEdges);
+        SearchPlan plan = planData.getPlan(seedNodes, seedEdges);
         if (relevantNodes != null) {
             Set<RuleNode> unboundRelevantNodes =
                 new HashSet<RuleNode>(relevantNodes);
@@ -95,12 +94,11 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
                     | boundVars.addAll(item.bindsVars()));
             }
         }
-        SearchPlanStrategy result =
-            new SearchPlanStrategy(condition.getTarget(), plan);
+        SearchPlanStrategy result = new SearchPlanStrategy(plan);
         if (PRINT) {
             System.out.print(String.format(
                 "%nPlan for %s, prematched nodes %s, prematched edges %s:%n    %s",
-                condition.getName(), anchorNodes, anchorEdges, result));
+                condition.getName(), seedNodes, seedEdges, result));
             System.out.printf("%n    Dependencies: [");
             for (int i = 0; i < plan.size(); i++) {
                 if (i > 0) {
@@ -143,6 +141,8 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
 
     static private SearchPlanEngine instance;
 
+    /** Flag to control the use of {@link ForallSearchItem}s. */
+    static private final boolean FORALL = false;
     /** Flag to control search plan printing. */
     static private final boolean PRINT = false;
 
@@ -160,7 +160,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
          *        plan
          */
         PlanData(Condition condition) {
-            RuleGraph graph = condition.getTarget();
+            RuleGraph graph = condition.getPattern();
             // compute the set of remaining (unmatched) nodes
             this.remainingNodes = new LinkedHashSet<RuleNode>(graph.nodeSet());
             // compute the set of remaining (unmatched) edges and variables
@@ -171,7 +171,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
             this.condition = condition;
             this.forallConditions = new ArrayList<ForallCondition>();
             for (Condition subCondition : condition.getSubConditions()) {
-                if (subCondition instanceof ForallCondition) {
+                if (FORALL && subCondition instanceof ForallCondition) {
                     this.forallConditions.add((ForallCondition) subCondition);
                 }
             }
@@ -237,17 +237,18 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
             }
             int forallConditionCount = 0;
             for (Condition subCondition : this.condition.getSubConditions()) {
-                if (subCondition instanceof MergeEmbargo) {
-                    RuleNode node1 = ((MergeEmbargo) subCondition).node1();
-                    RuleNode node2 = ((MergeEmbargo) subCondition).node2();
-                    result.add(createInjectionSearchItem(node1, node2));
-                } else if (subCondition instanceof EdgeEmbargo) {
+                if (subCondition instanceof EdgeEmbargo) {
                     RuleEdge embargoEdge =
                         ((EdgeEmbargo) subCondition).getEmbargoEdge();
-                    result.add(createNegatedSearchItem(createEdgeSearchItem(embargoEdge)));
+                    if (embargoEdge.label().isEmpty()) {
+                        result.add(createEqualitySearchItem(
+                            embargoEdge.source(), embargoEdge.target(), false));
+                    } else {
+                        result.add(createNegatedSearchItem(createEdgeSearchItem(embargoEdge)));
+                    }
                 } else if (subCondition instanceof NotCondition) {
                     result.add(new ConditionSearchItem(subCondition));
-                } else if (subCondition instanceof ForallCondition) {
+                } else if (FORALL && subCondition instanceof ForallCondition) {
                     result.add(new ForallSearchItem(
                         (ForallCondition) subCondition, forallConditionCount));
                     forallConditionCount++;
@@ -362,7 +363,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
             RegExpr negOperand = label.getNegOperand();
             if (negOperand instanceof RegExpr.Empty) {
                 if (!SearchPlanEngine.this.ignoreNeg) {
-                    result = createInjectionSearchItem(source, target);
+                    result = createEqualitySearchItem(source, target, false);
                 }
             } else if (negOperand != null) {
                 if (!SearchPlanEngine.this.ignoreNeg) {
@@ -375,6 +376,8 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
                 result = new VarEdgeSearchItem(edge);
             } else if (label.isWildcard()) {
                 result = new WildcardEdgeSearchItem(edge);
+            } else if (label.isEmpty()) {
+                result = new EqualitySearchItem(source, target, true);
             } else if (label.isSharp()) {
                 result = new Edge2SearchItem(edge);
             } else if (label.isNodeType()) {
@@ -420,14 +423,16 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
         }
 
         /**
-         * Callback factory method for an injection search item.
-         * @param node1 the first node to be matched injectively
-         * @param node2 the second node to be matched injectively
-         * @return an instance of {@link InjectionSearchItem}
+         * Callback factory method for an equality search item.
+         * @param node1 the first node to be compared
+         * @param node2 the second node to be compared
+         * @param equals if {@code true}, the images of {@code node1} and 
+         * {@code node2} should be equal, otherwise they should be distinct
+         * @return an instance of {@link EqualitySearchItem}
          */
-        protected InjectionSearchItem createInjectionSearchItem(RuleNode node1,
-                RuleNode node2) {
-            return new InjectionSearchItem(node1, node2);
+        protected EqualitySearchItem createEqualitySearchItem(RuleNode node1,
+                RuleNode node2, boolean equals) {
+            return new EqualitySearchItem(node1, node2, equals);
         }
 
         /** The set of universal conditions. */
@@ -690,7 +695,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
          * <li> {@link VarEdgeSearchItem}s
          * <li> {@link WildcardEdgeSearchItem}s
          * <li> {@link Edge2SearchItem}s
-         * <li> {@link InjectionSearchItem}s
+         * <li> {@link EqualitySearchItem}s
          * <li> {@link NegatedSearchItem}s
          * <li> {@link OperatorEdgeSearchItem}s
          * <li> {@link ValueNodeSearchItem}s
@@ -739,7 +744,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
                 return result;
             }
             result++;
-            if (itemClass == InjectionSearchItem.class) {
+            if (itemClass == EqualitySearchItem.class) {
                 return result;
             }
             result++;

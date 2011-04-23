@@ -189,7 +189,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
             super.initialise(host);
             this.factory = host.getFactory();
             this.targetPreMatch =
-                this.search.getNodeAnchor(OperatorEdgeSearchItem.this.targetIx);
+                this.search.getNodeSeed(OperatorEdgeSearchItem.this.targetIx);
         }
 
         @Override

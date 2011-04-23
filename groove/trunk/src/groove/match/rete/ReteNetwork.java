@@ -153,7 +153,7 @@ public class ReteNetwork {
          * of the RETE network only.
          */
         StaticMap openList = new StaticMap();
-        RuleGraph g = condition.getTarget();
+        RuleGraph g = condition.getPattern();
 
         Collection<RuleEdge> edgeList = getEdgeCollection(condition);
 
@@ -376,9 +376,9 @@ public class ReteNetwork {
      */
     protected Collection<RuleEdge> getEdgeCollection(Condition c) {
 
-        Collection<RuleEdge> result = c.getTarget().edgeSet();
+        Collection<RuleEdge> result = c.getPattern().edgeSet();
 
-        result = new ArrayList<RuleEdge>(c.getTarget().edgeSet());
+        result = new ArrayList<RuleEdge>(c.getPattern().edgeSet());
         Collections.sort((List<RuleEdge>) result, new Comparator<RuleEdge>() {
             @Override
             public int compare(RuleEdge e1, RuleEdge e2) {
@@ -549,9 +549,9 @@ public class ReteNetwork {
             //to avoid in any mix-up in the join-equalities
             //of the entailing composite subgraph checkers.
             RuleGraphMorphism nodeRenumberingMapping =
-                createRuleMorphismForCloning(nac.getTarget());
+                createRuleMorphismForCloning(nac.getPattern());
             RuleGraph newNacGraph =
-                copyAndRenumberNodes(nac.getTarget(), nodeRenumberingMapping);
+                copyAndRenumberNodes(nac.getPattern(), nodeRenumberingMapping);
             RuleGraphMorphism newRootMap =
                 copyRootMap(nac.getRootMap(), nodeRenumberingMapping);
 

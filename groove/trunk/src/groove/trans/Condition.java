@@ -26,8 +26,38 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * Interface for conditions over graphs. Conditions are parts of predicates,
- * effectively constituting disjuncts.
+ * Interface for conditions over graphs.
+ * A condition is a hierarchical structure, the levels of which are
+ * alternating between existentially and universally matched patterns.
+ * The patterns on different levels are connected by morphisms, which
+ * may merge or rename nodes.
+ * <p>
+ * A condition consists of the following elements:
+ * <ul>
+ * <li> The <i>root</i>: the parent graph in the condition hierarchy.
+ * A condition can only be matched relative to a match of its root. A condition
+ * is called <i>ground</i> if its root is the empty graph.
+ * <li> The <i>pattern</i>: the graph describing the structure that is to
+ * be matched in a host graph. The (implicit) morphism between the root and
+ * the pattern is based on node and edge identity, and is not explicitly
+ * stored.
+ * <li> The <i>seed</i>: the intersection of the root and the pattern.
+ * The seed is thus the subgraph of the pattern that is pre-matched
+ * before the condition itself is matched.
+ * <li> The <i>anchor</i>: the subgraph of the pattern whose exact image in the
+ * host graph is relevant. This includes at least the seed and the elements mapped
+ * to the next levels in the condition tree.
+ * <li> The <i>subconditions</i>: the next levels in the condition tree. Each
+ * subcondition has the pattern of this condition as its root.
+ * </ul>
+ * The following concepts play a role when matching a condition:
+ * <ul>
+ * <li> A <i>context map</i>: Mapping from the root to a host graph
+ * <li> A <i>seed map</i>: Mapping from the seed to a host graph. This is
+ * derived from a context map using the condition's root map
+ * <li> A <i>pattern map</i>: Mapping from the pattern to the host graph. This
+ * is determined by searching for an extension to a seed map.
+ * </ul>
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -39,30 +69,29 @@ public interface Condition extends Fixable {
     public RuleName getName();
 
     /**
-     * Indicates if this graph predicate is closed, which is to say that it has
-     * an empty context.
-     * @return <code>true</code> if this predicate has an empty context.
+     * Indicates if this condition is closed, which is to say that it has
+     * an empty root.
+     * @return <code>true</code> if this condition has an empty root.
      */
     public boolean isGround();
 
     /**
-     * Element map from the context of this condition to the condition target.
-     * The root map identifies the elements of the target that are expected to
-     * be matched before the condition is tested.
+     * Morphism from the root of this condition to the condition pattern.
+     * The root map identifies the seed, i.e., the elements of the pattern that 
+     * are matched before the condition is tested.
      */
     public RuleGraphMorphism getRootMap();
 
     /**
-     * Set of variables in the target of this condition that also occur in root
+     * Set of variables in the pattern of this condition that also occur in root
      * elements.
      */
     public Set<LabelVar> getRootVars();
 
     /**
-     * The codomain of the pattern morphism. Convenience method for
-     * <code>getPattern().cod()</code>.
+     * The codomain of the root morphism.
      */
-    public RuleGraph getTarget();
+    public RuleGraph getPattern();
 
     /** Returns the secondary properties of this graph condition. */
     public SystemProperties getSystemProperties();
@@ -110,10 +139,10 @@ public interface Condition extends Fixable {
     public boolean hasMatch(HostGraph host);
 
     /**
-     * Returns a match for a given host graph, given a
-     * matching of the pattern graph.
+     * Returns a match of this condition into a given host graph, given a
+     * matching of the root graph.
      * @param host the graph in which the match is to be found
-     * @param contextMap a matching of the pattern of this condition; may be
+     * @param contextMap a matching of the root of this condition; may be
      *        <code>null</code> if the condition is ground.
      * @throws IllegalArgumentException if <code>patternMatch</code> is
      *         <code>null</code> and the condition is not ground, or if
@@ -123,10 +152,10 @@ public interface Condition extends Fixable {
     public Match getMatch(HostGraph host, RuleToHostMap contextMap);
 
     /**
-     * Returns the collection of all matches for a given host graph, given a
-     * matching of the pattern graph.
+     * Returns the collection of all matches into a given host graph, given a
+     * matching of the root graph.
      * @param host the graph in which the match is to be found
-     * @param contextMap a matching of the pattern of this condition; may be
+     * @param contextMap a matching of the root of this condition; may be
      *        <code>null</code> if the condition is ground.
      * @throws IllegalArgumentException if <code>patternMatch</code> is
      *         <code>null</code> and the condition is not ground, or if
@@ -147,6 +176,7 @@ public interface Condition extends Fixable {
      *         <code>patternMatch</code> is not compatible with the pattern
      *         graph
      */
+    @Deprecated
     public Iterator<? extends Match> getMatchIter(HostGraph host,
             RuleToHostMap contextMap);
 }

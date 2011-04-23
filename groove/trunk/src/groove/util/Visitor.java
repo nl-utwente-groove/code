@@ -18,139 +18,267 @@ package groove.util;
 
 import java.util.Collection;
 
-/** Visitor for a certain type. */
+/** 
+ * Visitor for objects of a certain type.
+ * @param <T> the type of the objects to be visited
+ * @param <R> the type of the result of the visitor 
+ */
 abstract public class Visitor<T,R> {
-    /** 
-     * Visits a (non-{@code null)} object.
-     * @return {@code false} if no more objects need to be visited
-     */
-    abstract public boolean visit(T object);
-
-    /** Returns the result of the visits. */
-    abstract public R getResult();
-
-    /** Constructs a finder for a given property. */
-    static public <T> Finder<T> createFinder(Property<T> property) {
-        return new Finder<T>(property);
+    /** Constructs a visitor with a {@code null} result object. */
+    protected Visitor() {
+        // empty
     }
 
-    /** Constructs a collector for a given property. */
-    static public <T> Collector<T> createCollector(Collection<T> collection,
-            Property<T> property) {
-        return new Collector<T>(collection, property);
+    /** Constructs a visitor with a given (initial) result object. */
+    protected Visitor(R result) {
+        this.result = result;
+    }
+
+    /** 
+     * Callback method from {@link #visit(Object)}
+     * which does the actual processing.
+     * This is the method that has to be overridden in an implementation.
+     * @param object the object to be processed
+     * @return if {@code true}, visiting should continue with the next
+     * object; if {@code false}, the visitor is finished
+     */
+    abstract protected boolean process(T object);
+
+    /** 
+     * Visits a (non-{@code null)} object.
+     * The return value is guaranteed to equal that of 
+     * {@link #isContinue()} and indicates if the traversal should continue.
+     * The implementation calls {@link #process(Object)} for the
+     * actual processing of the object; the return value is stored 
+     * and can be tested afterwards using {@link #isContinue()}.
+     * @param object the visited object
+     * @return {@code false} if no more objects need to be visited
+     * @see #isContinue()
+     */
+    final public boolean visit(T object) {
+        assert !isDisposed() && isContinue();
+        if (!process(object)) {
+            finish();
+        }
+        return isContinue();
+    }
+
+    /** Returns the result of the visits. */
+    final public R getResult() {
+        return this.result;
+    }
+
+    /** Tests if the result object has been set. */
+    final protected boolean hasResult() {
+        return this.result != null;
+    }
+
+    /** Sets the visitor result to a given value. */
+    final protected void setResult(R result) {
+        this.result = result;
+    }
+
+    /**
+     * Invalidates the visitor.
+     * This signals that the object is available for reuse.
+     * Also sets the result object to {@code null}.
+     */
+    public void dispose() {
+        this.disposed = true;
+        this.result = null;
+    }
+
+    /** Indicates whether the visitor has been disposed.
+     * @return {@code true} if the visitor has been disposed.
+     * @see #dispose()
+     */
+    protected final boolean isDisposed() {
+        return this.disposed;
+    }
+
+    /** Resets the disposed flag to {@code false}
+     * and the continuation state to {@code true}. */
+    protected final void resurrect() {
+        this.disposed = false;
+        this.cont = true;
+    }
+
+    /** 
+     * Indicates if the visitor is in the continue state.
+     * This is initially set to {@code true} and subsequently
+     * reflects the last return value of {@link #visit(Object)}.
+     */
+    public final boolean isContinue() {
+        return this.cont;
+    }
+
+    /** 
+     * Sets the continuation state to {@code false}.
+     * @see #isContinue()
+     */
+    private void finish() {
+        this.cont = false;
+    }
+
+    /** The result object. */
+    private R result;
+    /** Flag indicating that the visitor has been disposed. */
+    private boolean disposed;
+    /** 
+     * Flag storing the continuation state of the visitor.
+     */
+    private boolean cont = true;
+
+    /** Constructs a finder for a given property. */
+    @SuppressWarnings("unchecked")
+    static public <T> Finder<T> newFinder(Property<T> property) {
+        return prototypeFinder.newInstance(property);
+    }
+
+    /** Constructs a collector for a given property and collection. */
+    @SuppressWarnings("unchecked")
+    static public <T,C extends Collection<T>> Collector<T,C> newCollector(
+            C collection, Property<T> property) {
+        if (property == null) {
+            return prototypeCollector.newInstance(collection, property);
+        } else {
+            return new Collector<T,C>(collection, property);
+        }
     }
 
     /** Constructs a collector. */
-    static public <T> Collector<T> createCollector(Collection<T> collection) {
-        return new Collector<T>(collection);
+    @SuppressWarnings("unchecked")
+    static public <T,C extends Collection<T>> Collector<T,C> newCollector(
+            C collection) {
+        return prototypeCollector.newInstance(collection);
     }
 
-    /** 
-     * Uses a fixed collector, wrapped around a given collection.
-     * WARNING: only use this locally!
-     */
+    /** Constructs a prototype collector. */
     @SuppressWarnings("unchecked")
-    static public <T> Collector<T> useCollector(Collection<T> collection) {
-        reusableCollector.collection = collection;
-        return reusableCollector;
+    static public <T,C extends Collection<T>> Collector<T,C> newCollector() {
+        Collector<T,C> result = prototypeCollector.newInstance(null);
+        result.dispose();
+        return result;
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    static private Collector reusableCollector = new Collector(null);
+    private static final Collector prototypeCollector = new Collector(null);
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static final Finder prototypeFinder = new Finder(null);
 
     /** Simple visitor that does not have a meaningful result value. */
     static public abstract class Simple<T> extends Visitor<T,Object> {
-        @Override
-        public Object getResult() {
-            return null;
-        }
+        // empty
     }
 
     /** A visitor that stores the first visited object satisfying a given property. */
     static public class Finder<T> extends Visitor<T,T> {
         /**
          * Constructs a finder for a certain property.
+         * @param property the property of the returned object; may be {@code null},
+         * in which case the first object is returned.
          */
         public Finder(Property<T> property) {
             this.property = property;
         }
 
         @Override
-        public boolean visit(T object) {
-            boolean result = true;
-            if (this.object == null
+        protected boolean process(T object) {
+            if (!hasResult()
                 && (this.property == null || this.property.isSatisfied(object))) {
-                this.object = object;
-                result = false;
+                setResult(object);
             }
-            return result;
-        }
-
-        /** Returns the result found, if any. */
-        @Override
-        public final T getResult() {
-            return this.object;
+            return !hasResult();
         }
 
         /** Reports if an object has been found. */
         public boolean found() {
-            return this.object != null;
+            return hasResult();
         }
 
-        /** Resets the result to {@code null}. */
-        public void reset() {
-            this.object = null;
+        /** 
+         * Returns a new finder for a given property.
+         * Reuses this object if it has been disposed.
+         */
+        public Finder<T> newInstance(Property<T> property) {
+            if (isDisposed()) {
+                this.property = property;
+                resurrect();
+                return this;
+            } else {
+                return new Finder<T>(property);
+            }
         }
 
         /** The property of the object to be found. */
-        final private Property<T> property;
-
-        private T object;
+        private Property<T> property;
     }
 
     /**
      * A visitor that collects all visited objects, possibly filtered by 
      * a property of the object. 
      */
-    static public class Collector<T> extends Visitor<T,Collection<T>> {
+    static public class Collector<T,C extends Collection<T>> extends
+            Visitor<T,C> {
         /**
          * Constructs a collector for a given collection and property.
          */
-        public Collector(Collection<T> collection, Property<T> property) {
-            this.collection = collection;
+        public Collector(C collection, Property<T> property) {
+            super(collection);
+            if (collection == null) {
+                dispose();
+            }
             this.property = property;
         }
 
         /**
          * Constructs a collector for a given collection and without filter.
          */
-        public Collector(Collection<T> collection) {
+        public Collector(C collection) {
             this(collection, null);
         }
 
         @Override
-        public boolean visit(T object) {
+        protected boolean process(T object) {
+            assert !isDisposed();
             if (this.property == null || this.property.isSatisfied(object)) {
-                this.collection.add(object);
+                getResult().add(object);
             }
             return true;
         }
 
-        /** Returns the wrapped collection of objects. */
-        @Override
-        final public Collection<T> getResult() {
-            return this.collection;
+        /**
+         * Returns a collector for the given collection and 
+         * the property of the current collector.
+         * Reuses this object if it has been disposed.
+         */
+        public Collector<T,C> newInstance(C collection) {
+            if (isDisposed()) {
+                setResult(collection);
+                resurrect();
+                return this;
+            } else {
+                return new Collector<T,C>(collection, this.property);
+            }
         }
 
-        /** Resets the collector to a different collection. */
-        public Collector<T> reset(Collection<T> collection) {
-            this.collection = collection;
-            return this;
+        /**
+         * Returns a collector for the given collection and property.
+         * Reuses this object if it has been disposed.
+         */
+        public Collector<T,C> newInstance(C collection, Property<T> property) {
+            if (isDisposed()) {
+                setResult(collection);
+                this.property = property;
+                resurrect();
+                return this;
+            } else {
+                return new Collector<T,C>(collection, property);
+            }
         }
 
-        /** The wrapped collection to which elements are added. */
-        private Collection<T> collection;
         /** Filtering property. */
-        private final Property<T> property;
+        private Property<T> property;
     }
 }

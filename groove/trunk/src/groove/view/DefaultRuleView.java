@@ -44,7 +44,6 @@ import groove.trans.AbstractCondition;
 import groove.trans.Condition;
 import groove.trans.EdgeEmbargo;
 import groove.trans.ForallCondition;
-import groove.trans.MergeEmbargo;
 import groove.trans.NotCondition;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
@@ -1692,12 +1691,7 @@ public class DefaultRuleView implements RuleView {
             // in the nacElemSet, which is an edge
             if (nacNodeSet.size() == 0 && nacEdgeSet.size() == 1) {
                 RuleEdge embargoEdge = nacEdgeSet.iterator().next();
-                if (embargoEdge.label().isEmpty()) {
-                    // this is supposed to be a merge embargo
-                    result =
-                        createMergeEmbargo(lhs, embargoEdge.source(),
-                            embargoEdge.target());
-                } else if (VarSupport.getAllVars(embargoEdge).isEmpty()) {
+                if (VarSupport.getAllVars(embargoEdge).isEmpty()) {
                     // this is supposed to be an edge embargo
                     result = createEdgeEmbargo(lhs, embargoEdge);
                 }
@@ -1705,7 +1699,7 @@ public class DefaultRuleView implements RuleView {
             if (result == null) {
                 // if we're here it means we couldn't make an embargo
                 result = createNAC(lhs);
-                RuleGraph nacTarget = result.getTarget();
+                RuleGraph nacTarget = result.getPattern();
                 RuleGraphMorphism nacPatternMap = result.getRootMap();
                 // add all nodes to nacTarget
                 nacTarget.addNodeSet(nacNodeSet);
@@ -1763,19 +1757,6 @@ public class DefaultRuleView implements RuleView {
                 // the node identity in the lhs is the same
                 nacPatternMap.putNode(node, node);
             }
-        }
-
-        /**
-         * Callback method to create a merge embargo.
-         * @param context the context-graph
-         * @param embargoSource the source node of the merge embargo
-         * @return the new {@link groove.trans.MergeEmbargo}
-         * @see #toRule()
-         */
-        private MergeEmbargo createMergeEmbargo(RuleGraph context,
-                RuleNode embargoSource, RuleNode embargoTarget) {
-            return new MergeEmbargo(context, embargoSource, embargoTarget,
-                getSystemProperties());
         }
 
         /**

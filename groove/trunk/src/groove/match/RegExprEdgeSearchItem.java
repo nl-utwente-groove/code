@@ -119,9 +119,9 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
 
     boolean isSingular(Search search) {
         boolean sourceSingular =
-            this.sourceFound || search.getNodeAnchor(this.sourceIx) != null;
+            this.sourceFound || search.getNodeSeed(this.sourceIx) != null;
         boolean targetSingular =
-            this.targetFound || search.getNodeAnchor(this.targetIx) != null;
+            this.targetFound || search.getNodeSeed(this.targetIx) != null;
         return sourceSingular && targetSingular && this.freshVars.isEmpty();
     }
 
@@ -198,9 +198,9 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         public void initialise(HostGraph host) {
             super.initialise(host);
             this.sourcePreMatch =
-                this.search.getNodeAnchor(RegExprEdgeSearchItem.this.sourceIx);
+                this.search.getNodeSeed(RegExprEdgeSearchItem.this.sourceIx);
             this.targetPreMatch =
-                this.search.getNodeAnchor(RegExprEdgeSearchItem.this.targetIx);
+                this.search.getNodeSeed(RegExprEdgeSearchItem.this.targetIx);
         }
 
         @Override
@@ -279,11 +279,11 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         @Override
         public void initialise(HostGraph host) {
             super.initialise(host);
-            this.sourcePreMatch = this.search.getNodeAnchor(this.sourceIx);
-            this.targetPreMatch = this.search.getNodeAnchor(this.targetIx);
+            this.sourcePreMatch = this.search.getNodeSeed(this.sourceIx);
+            this.targetPreMatch = this.search.getNodeSeed(this.targetIx);
             for (LabelVar var : RegExprEdgeSearchItem.this.prematchedVars) {
                 TypeLabel image =
-                    this.search.getVarAnchor(RegExprEdgeSearchItem.this.varIxMap.get(var));
+                    this.search.getVarSeed(RegExprEdgeSearchItem.this.varIxMap.get(var));
                 assert image != null;
                 this.valuation.put(var, image);
             }

@@ -22,13 +22,13 @@ import groove.graph.DefaultNode;
 import groove.graph.GraphProperties;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
+import groove.rel.RegExpr;
 import groove.trans.DefaultHostGraph;
 import groove.trans.EdgeEmbargo;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
-import groove.trans.MergeEmbargo;
 import groove.trans.NotCondition;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEdge;
@@ -115,7 +115,8 @@ public class NACTest {
                 ruleProperties, SystemProperties.DEFAULT_PROPERTIES);
         this.rule.setLabelStore(this.labelStore);
         this.NACs[0] =
-            new MergeEmbargo(lhs, this.ruleNodes[0][0], this.ruleNodes[0][1],
+            new EdgeEmbargo(lhs, new RuleEdge(this.ruleNodes[0][0],
+                new RuleLabel(RegExpr.empty()), this.ruleNodes[0][1]),
                 SystemProperties.getInstance());
 
         this.NACs[3] =
@@ -273,9 +274,9 @@ public class NACTest {
             final HostGraph graph) {
         final Collection<RuleApplication> result =
             new ArrayList<RuleApplication>();
-        rule.visitMatches(graph, null, new Visitor.Simple<RuleMatch>() {
+        rule.traverseMatches(graph, null, new Visitor.Simple<RuleMatch>() {
             @Override
-            public boolean visit(RuleMatch match) {
+            protected boolean process(RuleMatch match) {
                 result.add(match.newEvent(null).newApplication(graph));
                 return true;
             }

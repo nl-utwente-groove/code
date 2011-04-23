@@ -20,30 +20,43 @@ import groove.trans.HostGraph;
 import groove.trans.RuleToHostMap;
 import groove.util.Property;
 import groove.util.Visitor;
+import groove.util.Visitor.Collector;
+import groove.util.Visitor.Finder;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
  * Class providing basic functionality for match strategies. The only method
  * left to be implemented is
- * {@link #getMatchIter(HostGraph host, RuleToHostMap anchorMap)}.
+ * {@link #getMatchIter(HostGraph host, RuleToHostMap seedMap)}.
  * @param <R> the result type of the match
  * @author Arend Rensink
  * @version $Revision $
  */
 public abstract class AbstractMatchStrategy<R> implements MatchStrategy<R> {
     @Override
-    public R find(HostGraph host, RuleToHostMap anchorMap, Property<R> property) {
-        return visitAll(host, anchorMap, Visitor.createFinder(property));
+    public R find(HostGraph host, RuleToHostMap seedMap, Property<R> property) {
+        Finder<R> finder = this.finder.newInstance(property);
+        R result = traverse(host, seedMap, finder);
+        finder.dispose();
+        return result;
     }
 
     @Override
-    public Collection<R> findAll(HostGraph host, RuleToHostMap anchorMap,
+    public List<R> findAll(HostGraph host, RuleToHostMap seedMap,
             Property<R> property) {
         List<R> result = new ArrayList<R>();
-        return visitAll(host, anchorMap,
-            Visitor.createCollector(result, property));
+        Collector<R,List<R>> collector =
+            this.collector.newInstance(result, property);
+        traverse(host, seedMap, collector);
+        collector.dispose();
+        return result;
     }
+
+    /** Reusable finder for {@link #find(HostGraph, RuleToHostMap, Property)}. */
+    private final Finder<R> finder = Visitor.newFinder(null);
+    /** Reusable collector for {@link #findAll(HostGraph, RuleToHostMap, Property)}. */
+    private final Collector<R,List<R>> collector =
+        Visitor.newCollector(null);
 }

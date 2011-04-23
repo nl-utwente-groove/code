@@ -138,8 +138,8 @@ public class CompositeEvent extends
                 }
             };
             RuleMatch result =
-                getRule().visitMatches(source, null,
-                    Visitor.createFinder(isMyMatch));
+                getRule().traverseMatches(source, null,
+                    Visitor.newFinder(isMyMatch));
             if (result != null) {
                 return result;
             }

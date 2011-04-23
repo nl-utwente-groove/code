@@ -79,7 +79,7 @@ class ForallSearchItem extends AbstractSearchItem {
 
     @Override
     int getRating() {
-        return -this.condition.getTarget().nodeCount() - this.rootMap.size();
+        return -this.condition.getPattern().nodeCount() - this.rootMap.size();
     }
 
     @Override
@@ -164,8 +164,8 @@ class ForallSearchItem extends AbstractSearchItem {
                     this.search.getVar(varIxEntry.getValue()));
             }
             this.imageIter =
-                ForallSearchItem.this.condition.getMatchIter(this.host,
-                    contextMap);
+                ForallSearchItem.this.condition.getAllMatches(this.host,
+                    contextMap).iterator();
         }
 
         @Override

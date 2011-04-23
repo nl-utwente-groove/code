@@ -66,7 +66,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
     @Override
     boolean isSingular(Search search) {
         return super.isSingular(search)
-            && (this.varFound || search.getVarAnchor(this.varIx) != null);
+            && (this.varFound || search.getVarSeed(this.varIx) != null);
     }
 
     @Override
@@ -116,7 +116,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         @Override
         public void initialise(HostGraph host) {
             super.initialise(host);
-            this.varPreMatch = this.search.getVarAnchor(this.varIx);
+            this.varPreMatch = this.search.getVarSeed(this.varIx);
         }
 
         /** This implementation returns the variable image from the match. */
@@ -155,7 +155,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         @Override
         public void initialise(HostGraph host) {
             super.initialise(host);
-            this.varPreMatch = this.search.getVarAnchor(this.varIx);
+            this.varPreMatch = this.search.getVarSeed(this.varIx);
         }
 
         @Override

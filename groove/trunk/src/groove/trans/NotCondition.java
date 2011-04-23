@@ -16,6 +16,8 @@
  */
 package groove.trans;
 
+import groove.util.Visitor;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
@@ -55,6 +57,17 @@ public class NotCondition extends AbstractCondition<CompositeMatch> {
     }
 
     @Override
+    public <R> R traverseMatches(HostGraph host, RuleToHostMap contextMap,
+            Visitor<CompositeMatch,R> visitor) {
+        RuleToHostMap seedMap = computeSeedMap(host, contextMap);
+        if (seedMap != null && getMatcher().find(host, seedMap, null) == null) {
+            visitor.visit(this.emptyMatch);
+        }
+        return visitor.getResult();
+    }
+
+    @Override
+    @Deprecated
     Iterator<CompositeMatch> computeMatchIter(final HostGraph host,
             Iterator<RuleToHostMap> matchMapIter) {
         Iterator<CompositeMatch> result = null;
@@ -66,7 +79,8 @@ public class NotCondition extends AbstractCondition<CompositeMatch> {
         return result;
     }
 
+    private final CompositeMatch emptyMatch = new CompositeMatch(this);
     /** Constant empty match. */
     private final Set<CompositeMatch> WRAPPED_EMPTY_MATCH =
-        Collections.singleton(new CompositeMatch(this));
+        Collections.singleton(this.emptyMatch);
 }

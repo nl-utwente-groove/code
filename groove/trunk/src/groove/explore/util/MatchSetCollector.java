@@ -154,25 +154,17 @@ public class MatchSetCollector {
             if (boundMap != null) {
                 final SystemRecord record = MatchSetCollector.this.record;
                 Visitor<RuleMatch,Boolean> eventCollector =
-                    new Visitor<RuleMatch,Boolean>() {
+                    new Visitor<RuleMatch,Boolean>(false) {
                         @Override
-                        public boolean visit(RuleMatch object) {
+                        protected boolean process(RuleMatch object) {
                             RuleEvent event = record.getEvent(object);
                             result.add(event);
-                            this.match = true;
+                            setResult(true);
                             return true;
                         }
-
-                        @Override
-                        public Boolean getResult() {
-                            return this.match;
-                        }
-
-                        /** Flag indicating that at least one match has been visited. */
-                        boolean match;
                     };
                 hasMatched =
-                    ctrlTrans.getRule().visitMatches(this.state.getGraph(),
+                    ctrlTrans.getRule().traverseMatches(this.state.getGraph(),
                         boundMap, eventCollector);
             }
         }

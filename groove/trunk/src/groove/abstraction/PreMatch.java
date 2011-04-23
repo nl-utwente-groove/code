@@ -63,8 +63,8 @@ public final class PreMatch {
     public static Set<RuleMatch> getPreMatches(final Shape shape, Rule rule) {
         Set<RuleMatch> preMatches = new HashSet<RuleMatch>();
         // We use the normal matching algorithms for finding matches.
-        rule.visitMatches(shape, null,
-            Visitor.createCollector(preMatches, new Property<RuleMatch>() {
+        rule.traverseMatches(shape, null,
+            Visitor.newCollector(preMatches, new Property<RuleMatch>() {
                 @Override
                 public boolean isSatisfied(RuleMatch value) {
                     return isValidPreMatch(shape, value);

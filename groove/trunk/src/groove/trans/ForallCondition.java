@@ -20,6 +20,7 @@ import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.graph.algebra.VariableNode;
 import groove.util.Visitor;
+import groove.util.Visitor.Collector;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,18 +29,19 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ * Universally matched condition.
  * @author Arend Rensink
  * @version $Revision $
  */
 public class ForallCondition extends AbstractCondition<CompositeMatch> {
     /**
-     * Constructs an instance based on a given target and root map. 
+     * Constructs an instance based on a given pattern graph and root map. 
      * @param countNode node specifying the number of matches of this condition.
      */
-    public ForallCondition(RuleName name, RuleGraph target,
+    public ForallCondition(RuleName name, RuleGraph pattern,
             RuleGraphMorphism rootMap, SystemProperties properties,
             VariableNode countNode) {
-        super(name, target, rootMap, properties);
+        super(name, pattern, rootMap, properties);
         this.countNode = countNode;
         this.intAlgebra =
             AlgebraFamily.getInstance(getSystemProperties().getAlgebraFamily()).getAlgebra(
@@ -60,30 +62,126 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
     }
 
     @Override
-    final public Collection<CompositeMatch> getAllMatches(HostGraph host,
+    public <R> R traverseMatches(HostGraph host, RuleToHostMap contextMap,
+            Visitor<CompositeMatch,R> visitor) {
+        // for a universal condition, the matches cannot be incrementally
+        // constructed; therefore, we first collect all of them
+        List<CompositeMatch> matches = getAllMatches(host, contextMap);
+        boolean cont = true;
+        for (int i = 0; cont && i < matches.size(); i++) {
+            cont = visitor.visit(matches.get(i));
+        }
+        return visitor.getResult();
+    }
+
+    @Deprecated
+    <R> R traverseSeededMatches(HostGraph host, RuleToHostMap seedMap,
+            Visitor<CompositeMatch,R> visitor) {
+        assert visitor.isContinue();
+        // for a universal condition, the matches cannot be incrementally
+        // constructed; therefore, we first collect all of them
+        List<RuleToHostMap> patternMaps =
+            getMatcher().findAll(host, seedMap, null);
+        int patternCount = patternMaps.size();
+        // construct a matrix of sub-matches extending the pattern maps
+        @SuppressWarnings("unchecked")
+        List<RuleMatch>[] matchMatrix = new List[patternCount];
+        int[] rowSize = new int[patternCount];
+        int matchCount = 1;
+        for (int i = 0; matchCount > 0 && i < patternCount; i++) {
+            List<RuleMatch> subMatches = new ArrayList<RuleMatch>();
+            for (SPORule subRule : getComplexSubConditions()) {
+                subRule.traverseMatches(host, patternMaps.get(i),
+                    Visitor.newCollector(subMatches));
+            }
+            matchMatrix[i] = subMatches;
+            rowSize[i] = subMatches.size();
+            matchCount = matchCount * subMatches.size();
+        }
+        if (matchCount > 0) {
+            int[] vector = new int[patternCount];
+            do {
+                CompositeMatch match = new CompositeMatch(this);
+                for (int i = 0; i < patternCount; i++) {
+                    match.getSubMatches().add(matchMatrix[i].get(vector[i]));
+                }
+                visitor.visit(match);
+            } while (visitor.isContinue() && incVector(vector, rowSize));
+        }
+        return visitor.getResult();
+    }
+
+    @Override
+    final public List<CompositeMatch> getAllMatches(HostGraph host,
             RuleToHostMap contextMap) {
-        Collection<CompositeMatch> result = null;
+        List<CompositeMatch> result;
         testFixed(true);
         // lift the pattern match to a pre-match of this condition's target
-        final RuleToHostMap anchorMap;
-        if (contextMap == null) {
-            testGround();
-            anchorMap = host.getFactory().createRuleToHostMap();
-        } else {
-            anchorMap = createAnchorMap(contextMap);
-        }
-        if (anchorMap == null) {
-            result = Collections.emptySet();
+        RuleToHostMap seedMap = computeSeedMap(host, contextMap);
+        if (seedMap == null) {
+            result = Collections.emptyList();
         } else {
             result =
-                computeMatches(host, getMatcher().getMatchIter(host, anchorMap));
+                getMatcher().traverse(host, seedMap, getMatchCombiner(host));
         }
         return result;
+    }
+
+    /** 
+     * Returns a visitor that constructs composite matches for the universal
+     * condition, by combining matches of the condition's target graph. 
+     * At any point, each composite match in the intermediate result
+     * contains one {@link RuleMatch} (for some sub-rule of this universal 
+     * condition) per target graph match visited so far.
+     * @param host the host graph to which the subrules are matched
+     * @return the visitor that will construct the composite match
+     */
+    private Visitor<RuleToHostMap,List<CompositeMatch>> getMatchCombiner(
+            final HostGraph host) {
+        List<CompositeMatch> matchSet = new ArrayList<CompositeMatch>();
+        if (!this.positive) {
+            matchSet.add(new CompositeMatch(this));
+        }
+        return new Visitor<RuleToHostMap,List<CompositeMatch>>(matchSet) {
+            @Override
+            protected boolean process(RuleToHostMap patternMap) {
+                boolean result = this.firstVisit || !getResult().isEmpty();
+                if (result) {
+                    // add the empty match if the condition is positive
+                    if (getResult().isEmpty()) {
+                        assert this.firstVisit && ForallCondition.this.positive;
+                        getResult().add(
+                            new CompositeMatch(ForallCondition.this));
+                    }
+                    this.firstVisit = false;
+                    // the subconditions are interpreted disjunctively,
+                    // so we have to collect all of their possible matches
+                    Collector<RuleMatch,List<RuleMatch>> matchCollector =
+                        ForallCondition.this.matchCollector;
+                    List<RuleMatch> subRuleMatches = new ArrayList<RuleMatch>();
+                    for (SPORule subCondition : getComplexSubConditions()) {
+                        subCondition.traverseMatches(host, patternMap,
+                            matchCollector.newInstance(subRuleMatches));
+                    }
+                    matchCollector.dispose();
+                    List<CompositeMatch> newMatchSet =
+                        new ArrayList<CompositeMatch>();
+                    for (CompositeMatch current : getResult()) {
+                        newMatchSet.addAll(current.addMatchChoice(subRuleMatches));
+                    }
+                    setResult(newMatchSet);
+                }
+                return result;
+            }
+
+            private boolean firstVisit = true;
+        };
     }
 
     /**
      * Returns the matches of this condition, given an iterator of match maps.
      */
+    @Deprecated
     Collection<CompositeMatch> computeMatches(HostGraph host,
             Iterator<RuleToHostMap> matchMapIter) {
         List<CompositeMatch> result = new ArrayList<CompositeMatch>();
@@ -101,10 +199,10 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
             RuleToHostMap matchMap = matchMapIter.next();
             // the subconditions are interpreted disjunctively,
             // so we have to collect all of their possible matches
-            Collection<RuleMatch> subResults = new ArrayList<RuleMatch>();
+            List<RuleMatch> subResults = new ArrayList<RuleMatch>();
             for (SPORule subCondition : getComplexSubConditions()) {
-                subCondition.visitMatches(host, matchMap,
-                    Visitor.useCollector(subResults));
+                subCondition.traverseMatches(host, matchMap,
+                    this.matchCollector.newInstance(subResults));
             }
             List<CompositeMatch> newResult = new ArrayList<CompositeMatch>();
             for (CompositeMatch current : result) {
@@ -120,6 +218,7 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
      * {@link #getAllMatches(HostGraph, RuleToHostMap)}.
      */
     @Override
+    @Deprecated
     public Iterator<CompositeMatch> computeMatchIter(HostGraph host,
             Iterator<RuleToHostMap> matchMapIter) {
         return computeMatches(host, matchMapIter).iterator();
@@ -155,10 +254,14 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
         return this.positive;
     }
 
+    /** The fixed visitor used in {@link #computeMatches(HostGraph, Iterator)}. */
+    private final Collector<RuleMatch,List<RuleMatch>> matchCollector =
+        Visitor.newCollector();
     /** Node capturing the match count of this condition. */
     private final RuleNode countNode;
     /** The integer algebra corresponding to the system properties. */
     private final Algebra<?> intAlgebra;
+
     /**
      * Flag indicating whether the condition is positive, i.e., cannot be
      * vacuously true.

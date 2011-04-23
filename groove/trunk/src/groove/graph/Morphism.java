@@ -19,7 +19,7 @@ package groove.graph;
 import java.util.Map;
 
 /**
- * Mapping between graph of the same type.
+ * Mapping between graphs of the same type.
  * @author Arend Rensink
  * @version $Revision $
  */
