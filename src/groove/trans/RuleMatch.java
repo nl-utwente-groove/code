@@ -22,6 +22,7 @@ import groove.graph.algebra.ValueNode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Match of an {@link SPORule}.
@@ -129,19 +130,21 @@ public class RuleMatch extends AbstractMatch {
      * object, meaning that no references to this object should be kept after
      * invoking this method.
      */
-    public Collection<RuleMatch> addForallChoice(ForallCondition condition,
-            Iterable<CompositeMatch> choices) {
-        Collection<RuleMatch> result = new ArrayList<RuleMatch>();
+    public List<RuleMatch> addForallChoice(ForallCondition condition,
+            List<CompositeMatch> choices) {
+        List<RuleMatch> result = new ArrayList<RuleMatch>();
         Iterator<CompositeMatch> choiceIter = choices.iterator();
         while (choiceIter.hasNext()) {
             CompositeMatch choice = choiceIter.next();
             assert condition == choice.getCondition();
+            // process the condition count, if any
             if (condition.getCountNode() != null) {
                 int newCount = choice.getSubMatches().size();
                 ValueNode oldCountImage =
                     ((ValueNode) getElementMap().getNode(
                         condition.getCountNode()));
                 if (oldCountImage == null) {
+                    // the count was not resolved; add it to the match map
                     Algebra<?> intAlgebra = condition.getIntAlgebra();
                     HostNode newCountImage =
                         getElementMap().getFactory().createNode(intAlgebra,
@@ -149,6 +152,7 @@ public class RuleMatch extends AbstractMatch {
                     getElementMap().putNode(condition.getCountNode(),
                         newCountImage);
                 } else if (newCount != Integer.parseInt(oldCountImage.getSymbol())) {
+                    // the (pre-resolved) count was resolved; skip this match
                     continue;
                 }
             }

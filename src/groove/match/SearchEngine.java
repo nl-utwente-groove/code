@@ -47,10 +47,10 @@ public abstract class SearchEngine<MatcherType extends AbstractMatchStrategy<Rul
      * account that a certain set of nodes and edges has been matched already.
      * @param condition the condition for which a search plan is to be
      *        constructed
-     * @param anchorNodes the nodes of the condition that have been matched
+     * @param seedNodes the nodes of the condition that have been matched
      *        already; if <code>null</code>, the condition's pattern map values
      *        are used
-     * @param anchorEdges the edges of the condition that have been matched
+     * @param seedEdges the edges of the condition that have been matched
      *        already; if <code>null</code>, the condition's pattern map values
      *        are used
      * @param relevantNodes nodes from the condition whose image should be a
@@ -58,6 +58,6 @@ public abstract class SearchEngine<MatcherType extends AbstractMatchStrategy<Rul
      *        <code>null</code>, all nodes are relevant
      */
     public abstract MatcherType createMatcher(Condition condition,
-            Collection<RuleNode> anchorNodes, Collection<RuleEdge> anchorEdges,
+            Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges,
             Collection<RuleNode> relevantNodes);
 }

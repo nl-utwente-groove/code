@@ -44,25 +44,25 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
+ * Class providing common functionality for {@link Condition} implementations.
  * @author Arend Rensink
  * @version $Revision$
  */
 abstract public class AbstractCondition<M extends Match> implements Condition {
     /**
-     * Constructs a (named) graph condition based on a given graph to be matched
+     * Constructs a (named) graph condition based on a given pattern graph
      * and root map.
      * @param name the name of the condition; may be <code>null</code>
-     * @param target the graph to be matched
-     * @param rootMap element map from the context to the anchor elements of
-     *        <code>target</code>; may be <code>null</code> if the condition is
+     * @param pattern the graph to be matched
+     * @param rootMap element map from the root to the seed elements of
+     *        <code>pattern</code>; may be <code>null</code> if the condition is
      *        ground
      * @param properties properties for matching the condition
      */
-    protected AbstractCondition(RuleName name, RuleGraph target,
+    protected AbstractCondition(RuleName name, RuleGraph pattern,
             RuleGraphMorphism rootMap, SystemProperties properties) {
-        this.ground = (rootMap == null);
-        this.rootMap = this.ground ? new RuleGraphMorphism() : rootMap;
-        this.target = target;
+        this.rootMap = rootMap == null ? new RuleGraphMorphism() : rootMap;
+        this.pattern = pattern;
         this.systemProperties = properties;
         this.name = name;
     }
@@ -92,10 +92,52 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
         return this.rootMap;
     }
 
-    public Set<LabelVar> getRootVars() {
+    /** 
+     * Returns the root nodes of this condition.
+     * These are the nodes that it has in common with its parent
+     * in the condition tree.
+     */
+    final public Set<RuleNode> getRootNodes() {
+        if (this.rootNodes == null) {
+            this.rootNodes = computeRootNodes();
+        }
+        return this.rootNodes;
+    }
+
+    /** 
+     * Computes the root nodes of this condition.
+     * These are the nodes that it has in common with its parent
+     * in the condition tree.
+     */
+    Set<RuleNode> computeRootNodes() {
+        return getRootMap().nodeMap().keySet();
+    }
+
+    /** 
+     * Returns the root edges of this condition.
+     * These are the edges that it has in common with its parent
+     * in the condition tree.
+     */
+    final public Set<RuleEdge> getRootEdges() {
+        if (this.rootEdges == null) {
+            this.rootEdges = computeRootEdges();
+        }
+        return this.rootEdges;
+    }
+
+    /** 
+     * Computes the root edges of this condition.
+     * These are the edges that it has in common with its parent
+     * in the condition tree.
+     */
+    Set<RuleEdge> computeRootEdges() {
+        return getRootMap().edgeMap().keySet();
+    }
+
+    final public Set<LabelVar> getRootVars() {
         if (this.rootVars == null) {
             this.rootVars = new HashSet<LabelVar>();
-            for (RuleEdge rootEdge : getRootMap().edgeMap().keySet()) {
+            for (RuleEdge rootEdge : getRootEdges()) {
                 this.rootVars.addAll(VarSupport.getAllVars(rootEdge));
             }
         }
@@ -105,8 +147,8 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     /**
      * Returns the target set at construction time.
      */
-    public RuleGraph getTarget() {
-        return this.target;
+    public RuleGraph getPattern() {
+        return this.pattern;
     }
 
     /**
@@ -128,6 +170,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     }
 
     public boolean isGround() {
+        assert isFixed();
         return this.ground;
     }
 
@@ -139,18 +182,20 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     }
 
     /**
-     * Tests if the target graph of the condition contains nodes without
-     * incident edges.
+     * Tests if the pattern graph of the condition or any
+     * of its subconditions contains nodes without incident edges
+     * that are not part of the seed.
      */
     private boolean hasIsolatedNodes() {
         boolean result = false;
-        // first test if the pattern target has isolated nodes
+        // first test if the pattern has isolated nodes
         Set<RuleNode> freshTargetNodes =
-            new HashSet<RuleNode>(getTarget().nodeSet());
+            new HashSet<RuleNode>(getPattern().nodeSet());
+        // subtract the seed nodes
         freshTargetNodes.removeAll(getRootMap().nodeMap().values());
         Iterator<RuleNode> nodeIter = freshTargetNodes.iterator();
         while (!result && nodeIter.hasNext()) {
-            result = getTarget().edgeSet(nodeIter.next()).isEmpty();
+            result = getPattern().edgeSet(nodeIter.next()).isEmpty();
         }
         if (!result) {
             // now recursively test the sub-conditions
@@ -197,11 +242,12 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
         return (Collection<C>) this.complexSubConditions;
     }
 
-    /** Fixes the sub-predicate and this morphism. */
+    /** Fixes this condition and all its subconditions. */
     public void setFixed() throws FormatException {
         if (!isFixed()) {
             this.fixed = true;
-            getTarget().setFixed();
+            this.ground = this.getRootNodes().isEmpty();
+            getPattern().setFixed();
             testAlgebra();
             for (AbstractCondition<?> subCondition : getSubConditions()) {
                 subCondition.setFixed();
@@ -219,83 +265,102 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 
     @Override
     public M getMatch(HostGraph host, RuleToHostMap contextMap) {
-        return visitMatches(host, contextMap, Visitor.<M>createFinder(null));
+        return traverseMatches(host, contextMap, Visitor.<M>newFinder(null));
+    }
+
+    @Override
+    public Collection<M> getAllMatches(HostGraph host, RuleToHostMap contextMap) {
+        List<M> result = new ArrayList<M>();
+        traverseMatches(host, contextMap, Visitor.newCollector(result));
+        return result;
     }
 
     /** 
      * Traverses and visits the matches of this condition
      * for a given host graph and context map.
      */
-    public <R> R visitMatches(HostGraph host, RuleToHostMap contextMap,
-            Visitor<M,R> visitor) {
-        Iterator<M> iter = getMatchIter(host, contextMap);
-        boolean cont = true;
-        while (cont && iter.hasNext()) {
-            cont = visitor.visit(iter.next());
-        }
-        return visitor.getResult();
-    }
+    abstract public <R> R traverseMatches(final HostGraph host,
+            RuleToHostMap contextMap, final Visitor<M,R> visitor);
 
-    @Override
-    public Collection<M> getAllMatches(HostGraph host, RuleToHostMap contextMap) {
-        List<M> result = new ArrayList<M>();
-        visitMatches(host, contextMap, Visitor.createCollector(result));
+    /** 
+     * Increments a given vector of values lexicographically,
+     * up to a given maximum value at each index.
+     * @param vector the vector to be incremented
+     * @param size array of maximum values at each vector index
+     * @return {@code true} if the new value is positive
+     */
+    final boolean incVector(int[] vector, int[] size) {
+        boolean result;
+        assert vector.length == size.length;
+        int dim = size.length - 1;
+        // search for the lest significant dimension for which the
+        // vector value does not yet equal the row size
+        while (dim >= 0 && vector[dim] == size[dim] - 1) {
+            vector[dim] = 0;
+            dim--;
+        }
+        result = dim >= 0;
+        if (result) {
+            vector[dim]++;
+        }
         return result;
     }
 
+    @Deprecated
     final public Iterator<M> getMatchIter(HostGraph host,
             RuleToHostMap contextMap) {
-        Iterator<M> result = null;
+        Iterator<M> result;
         testFixed(true);
-        // lift the pattern match to a pre-match of this condition's target
-        final RuleToHostMap anchorMap;
-        if (contextMap == null) {
-            testGround();
-            anchorMap = host.getFactory().createRuleToHostMap();
-        } else {
-            if (isGround()) {
-                anchorMap = contextMap.clone();
-            } else {
-                anchorMap = createAnchorMap(contextMap);
-            }
-        }
-        if (anchorMap == null) {
+        RuleToHostMap seedMap = computeSeedMap(host, contextMap);
+        if (seedMap == null) {
             // the context map could not be lifted to this condition
             result = Collections.<M>emptySet().iterator();
         } else {
             result =
-                computeMatchIter(host,
-                    getMatcher().getMatchIter(host, anchorMap));
+                computeMatchIter(host, getMatcher().getMatchIter(host, seedMap));
         }
         return result;
     }
 
     /**
-     * Returns an iterator over the matches for a given graph, based on a series
-     * of match maps for this condition.
+     * Returns an iterator over the matches into a given graph, based on a series
+     * of pattern maps for this condition.
      */
+    @Deprecated
     abstract Iterator<M> computeMatchIter(HostGraph host,
-            Iterator<RuleToHostMap> matchMaps);
+            Iterator<RuleToHostMap> patternMaps);
+
+    /** Computes the seed map for a given context map. */
+    final RuleToHostMap computeSeedMap(HostGraph host, RuleToHostMap contextMap) {
+        if (isGround()) {
+            return host.getFactory().createRuleToHostMap();
+        } else {
+            return createSeedMap(contextMap);
+        }
+    }
 
     /**
-     * Factors given matching of the condition context through this condition's
-     * root map, to obtain a matching of {@link #getTarget()}.
+     * Factors a given matching of the condition root through this condition's
+     * root map, to obtain a partial matching of {@link #getPattern()}. To be
+     * precise, the result will map the seed of the condition to the host graph.
      * 
      * @return a mapping that, concatenated after this condition's root map, is
      *         a sub-map of <code>contextMap</code>; or <code>null</code> if
      *         there is no such mapping.
      */
-    final RuleToHostMap createAnchorMap(RuleToHostMap contextMap) {
+    private RuleToHostMap createSeedMap(RuleToHostMap contextMap) {
         RuleToHostMap result = contextMap.newMap();
-        for (Map.Entry<RuleNode,RuleNode> entry : getRootMap().nodeMap().entrySet()) {
-            if (!isAnchorable(entry.getKey())) {
+        for (RuleNode node : getRootNodes()) {
+            if (!isSeedable(node)) {
                 continue;
             }
-            HostNode image = contextMap.getNode(entry.getKey());
-            assert image != null : String.format(
-                "Context map %s in condition '%s' does not contain image for root %s",
-                contextMap, getName(), entry.getKey());
-            RuleNode key = entry.getValue();
+            HostNode image = contextMap.getNode(node);
+            if (image == null) {
+                // this root is not a seed;
+                // this may happen if it is an output parameter or count node
+                continue;
+            }
+            RuleNode key = node;
             // result already contains an image for nodeKey
             // if it is not the same as the one we want to insert now,
             // stop the whole thing; otherwise we're fine
@@ -304,15 +369,15 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
                 return null;
             }
         }
-        for (Map.Entry<RuleEdge,RuleEdge> entry : getRootMap().edgeMap().entrySet()) {
-            if (!isAnchorable(entry.getKey())) {
+        for (RuleEdge edge : getRootEdges()) {
+            if (!isSeedable(edge)) {
                 continue;
             }
-            HostEdge image = contextMap.mapEdge(entry.getKey());
+            HostEdge image = contextMap.mapEdge(edge);
             assert image != null : String.format(
                 "Context map %s does not contain image for root %s",
-                contextMap, entry.getKey());
-            RuleEdge key = entry.getValue();
+                contextMap, edge);
+            RuleEdge key = edge;
             // result already contains an image for nodeKey
             // if it is not the same as the one we want to insert now,
             // stop the whole thing; otherwise we're fine
@@ -337,7 +402,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * matched to an actual host graph node. This fails to hold for
      * {@link ProductNode}s that are not {@link VariableNode}s.
      */
-    boolean isAnchorable(RuleNode node) {
+    boolean isSeedable(RuleNode node) {
         return !(node instanceof ProductNode) || node instanceof VariableNode;
     }
 
@@ -346,23 +411,56 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * to an actual host graph edge. This fails to hold for {@link ArgumentEdge}
      * s and {@link OperatorEdge}s.
      */
-    boolean isAnchorable(RuleEdge edge) {
+    boolean isSeedable(RuleEdge edge) {
         return !(edge instanceof ArgumentEdge || edge instanceof OperatorEdge);
     }
 
     /**
-     * Forces the condition and all of its sub-conditions to re-acquire 
-     * a new instance of it's cached matcher object from the matching 
-     * search engine. 
-     * 
-     * This method had to be added to enable exploration strategies
-     * to lock down to a specific matching engine and in turn enable them
-     * to tell all rules and (sub)conditions in the GTS to use the matcher 
-     * that corresponds with the locked-down engine.
-     * 
+     * Returns a (precomputed) match strategy for the target
+     * pattern, given a seed map.
+     * @see #createMatcher(Set, Set)
      */
-    public void resetMatcher() {
-        this.matchStrategy = null;
+    public MatchStrategy<RuleToHostMap> getMatcher() {
+        if (this.matchStrategy == null) {
+            this.matchStrategy = createMatcher(getRootNodes(), getRootEdges());
+        }
+        return this.matchStrategy;
+    }
+
+    /**
+     * Callback method to create a match strategy. Typically invoked once, at
+     * the first invocation of {@link #getMatcher()}. This implementation
+     * retrieves its value from {@link #getMatcherFactory()}.
+     * @param seedNodes the pre-matched rule nodes
+     * @param seedEdges the pre-matched rule edges
+     */
+    MatchStrategy<RuleToHostMap> createMatcher(Set<RuleNode> seedNodes,
+            Set<RuleEdge> seedEdges) {
+        testFixed(true);
+        return getMatcherFactory().createMatcher(this, seedNodes, seedEdges,
+            getRelevantNodes());
+    }
+
+    /** Returns a matcher factory, tuned to the properties of this condition. */
+    SearchEngine<? extends MatchStrategy<RuleToHostMap>> getMatcherFactory() {
+        if (this.matcherFactory == null) {
+            this.matcherFactory =
+                groove.match.SearchEngineFactory.getInstance().getEngine(
+                    getSystemProperties());
+        }
+        return this.matcherFactory;
+    }
+
+    /**
+     * Forces the condition and all of its sub-conditions to re-acquire 
+     * a new instance of its cached matcher object from the  
+     * search engine factory. 
+     * This is necessary to enable exploration strategies
+     * to effectively change the matching engine factory.
+     */
+    final public void resetMatcher() {
+        this.matcherFactory = null;
+        invalidateMatchers();
         if (this.subConditions != null) {
             for (AbstractCondition<?> c : this.getSubConditions()) {
                 c.resetMatcher();
@@ -371,34 +469,11 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     }
 
     /**
-     * Returns the precomputed matching order for the elements of the target
-     * pattern. First creates the order using {@link #createMatcher()} if that
-     * has not been done.
-     * 
-     * @see #createMatcher()
+     * Resets the internally stored matchers, so that next time they will
+     * be recreated from the (possibly changed) matcher factory.
      */
-    final public MatchStrategy<RuleToHostMap> getMatcher() {
-        if (this.matchStrategy == null) {
-            this.matchStrategy = createMatcher();
-        }
-        return this.matchStrategy;
-    }
-
-    /**
-     * Callback method to create a matching factory. Typically invoked once, at
-     * the first invocation of {@link #getMatcher()}. This implementation
-     * retrieves its value from {@link #getMatcherFactory()}.
-     */
-    MatchStrategy<RuleToHostMap> createMatcher() {
-        testFixed(true);
-        return getMatcherFactory().createMatcher(this);
-    }
-
-    /** Returns a matcher factory, tuned to the injectivity of this condition. */
-    SearchEngine<? extends MatchStrategy<RuleToHostMap>> getMatcherFactory() {
-        //return groove.match.ConditionSearchPlanFactory.getInstance();
-        return groove.match.SearchEngineFactory.getInstance().getEngine(
-            getSystemProperties());
+    void invalidateMatchers() {
+        this.matchStrategy = null;
     }
 
     /**
@@ -424,7 +499,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     /**
      * Tests if the condition can be used to tests on graphs rather than
      * morphisms. This is the case if and only if the condition is ground (i.e.,
-     * the context graph is empty), as determined by {@link #isGround()}.
+     * the root graph is empty), as determined by {@link #isGround()}.
      * 
      * @throws IllegalStateException if this condition is not ground.
      * @see #isGround()
@@ -469,18 +544,19 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     }
 
     /**
-     * Calculates whether any VariableNode or ProductNode is unresolved and places
-     * these in the appropriate Set or Map.
+     * Calculates whether any VariableNode or ProductNode is unresolved,
+     * in the sense of not having an incoming attribute edge or being
+     * part of the seed
      */
     protected void computeUnresolvedNodes() {
         this.unresolvedVariableNodes = new HashSet<VariableNode>();
         this.unresolvedProductNodes = new HashMap<ProductNode,BitSet>();
         // test if product nodes have the required arguments
-        for (RuleNode node : getTarget().nodeSet()) {
+        for (RuleNode node : getPattern().nodeSet()) {
             if (node instanceof VariableNode
                 && ((VariableNode) node).getConstant() == null) {
                 boolean hasIncomingNonAttributeEdge = false;
-                for (RuleEdge edge : getTarget().inEdgeSet(node)) {
+                for (RuleEdge edge : getPattern().inEdgeSet(node)) {
                     if (edge.label().isMatchable()) {
                         hasIncomingNonAttributeEdge = true;
                     }
@@ -494,6 +570,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
                     new BitSet(product.arity()));
             }
         }
+        // remove the seed nodes
         this.unresolvedVariableNodes.removeAll(getRootMap().nodeMap().values());
         for (RuleNode node : getRootMap().nodeMap().values()) {
             this.unresolvedProductNodes.remove(node);
@@ -519,7 +596,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
                 Map.Entry<ProductNode,BitSet> productEntry = productIter.next();
                 ProductNode product = productEntry.getKey();
                 BitSet arguments = productEntry.getValue();
-                for (RuleEdge edge : getTarget().outEdgeSet(product)) {
+                for (RuleEdge edge : getPattern().outEdgeSet(product)) {
                     if (edge instanceof ArgumentEdge
                         && !this.unresolvedVariableNodes.contains(edge.target())) {
                         int argumentNumber = ((ArgumentEdge) edge).getNumber();
@@ -529,7 +606,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
                 if (arguments.cardinality() == product.arity()) {
                     // the product node is resolved, so resolve the targets of
                     // the outgoing operations
-                    for (RuleEdge edge : getTarget().outEdgeSet(product)) {
+                    for (RuleEdge edge : getPattern().outEdgeSet(product)) {
                         if (edge instanceof OperatorEdge) {
                             if (this.unresolvedVariableNodes.remove(((OperatorEdge) edge).target())) {
                                 stable = false;
@@ -546,7 +623,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     public String toString() {
         StringBuilder res =
             new StringBuilder(String.format("Condition %s: ", getName()));
-        res.append(String.format("Target: %s", getTarget()));
+        res.append(String.format("Target: %s", getPattern()));
         if (!getRootMap().isEmpty()) {
             res.append(String.format("%nRoot map: %s", getRootMap()));
         }
@@ -560,10 +637,38 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     }
 
     /**
+     * Lazily creates and returns the set of match-relevant nodes of this rule.
+     * These are the nodes whose images are important to distinguish rule
+     * matches. The set consists of the anchor nodes and the root sources of the
+     * universal sub-conditions.
+     */
+    private Set<RuleNode> getRelevantNodes() {
+        if (this.anchorNodes == null) {
+            this.anchorNodes = computeRelevantNodes();
+        }
+        return this.anchorNodes;
+    }
+
+    /**
+     * Computes the match-relevant nodes of this condition
+     * @see #getRelevantNodes()
+     */
+    Set<RuleNode> computeRelevantNodes() {
+        Set<RuleNode> result = new HashSet<RuleNode>();
+        // add the root map sources of the sub-conditions
+        for (AbstractCondition<?> subCondition : getComplexSubConditions()) {
+            result.addAll(subCondition.getRootMap().nodeMap().keySet());
+        }
+        return result;
+    }
+
+    /**
      * The name of this condition. May be <code>code</code> null.
      */
     private RuleName name;
 
+    /** The factory for match strategies. */
+    private SearchEngine<? extends MatchStrategy<RuleToHostMap>> matcherFactory;
     /**
      * The fixed matching strategy for this graph condition. Initially
      * <code>null</code>; set by {@link #getMatcher()} upon its first
@@ -584,18 +689,24 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     /**
      * Flag indicating if the rule is ground.
      */
-    private final boolean ground;
+    private boolean ground;
     /**
-     * The pattern map of this condition, i.e., the element map from the context
-     * graph to the target graph.
+     * The root map of this condition, i.e., the element map from the root
+     * graph to the pattern graph.
      */
     private final RuleGraphMorphism rootMap;
 
+    /** Set of all nodes this condition has in common with its parent. */
+    private Set<RuleNode> rootNodes;
+
     /** Set of all variables occurring in root elements. */
+    private Set<RuleEdge> rootEdges;
+
+    /** Set of all variables occurring in root edges. */
     private Set<LabelVar> rootVars;
 
-    /** The target graph of this morphism. */
-    private final RuleGraph target;
+    /** The pattern graph of this morphism. */
+    private final RuleGraph pattern;
 
     /**
      * Factory instance for creating the correct simulation.
@@ -615,4 +726,10 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * unresolved arguments.
      */
     protected Map<ProductNode,BitSet> unresolvedProductNodes;
+
+    /**
+     * Subgraph of the left hand containing all elements that are used to
+     * distinguish matches.
+     */
+    private Set<RuleNode> anchorNodes;
 }

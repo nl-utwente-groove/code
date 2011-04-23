@@ -148,15 +148,15 @@ class Edge2SearchItem extends AbstractSearchItem {
 
     /** Indicates if the edge is pre-matched in the search. */
     boolean isPreMatched(Search search) {
-        return search.getEdgeAnchor(this.edgeIx) != null;
+        return search.getEdgeSeed(this.edgeIx) != null;
     }
 
     /** Indicates if the edge has a singular image in the search. */
     boolean isSingular(Search search) {
         boolean sourceSingular =
-            this.sourceFound || search.getNodeAnchor(this.sourceIx) != null;
+            this.sourceFound || search.getNodeSeed(this.sourceIx) != null;
         boolean targetSingular =
-            this.targetFound || search.getNodeAnchor(this.targetIx) != null;
+            this.targetFound || search.getNodeSeed(this.targetIx) != null;
         return sourceSingular && targetSingular;
     }
 
@@ -223,8 +223,8 @@ class Edge2SearchItem extends AbstractSearchItem {
         @Override
         public void initialise(HostGraph host) {
             super.initialise(host);
-            this.sourcePreMatch = this.search.getNodeAnchor(this.sourceIx);
-            this.targetPreMatch = this.search.getNodeAnchor(this.targetIx);
+            this.sourcePreMatch = this.search.getNodeSeed(this.sourceIx);
+            this.targetPreMatch = this.search.getNodeSeed(this.targetIx);
         }
 
         @Override
@@ -325,8 +325,8 @@ class Edge2SearchItem extends AbstractSearchItem {
         @Override
         public void initialise(HostGraph host) {
             super.initialise(host);
-            this.sourcePreMatch = this.search.getNodeAnchor(this.sourceIx);
-            this.targetPreMatch = this.search.getNodeAnchor(this.targetIx);
+            this.sourcePreMatch = this.search.getNodeSeed(this.sourceIx);
+            this.targetPreMatch = this.search.getNodeSeed(this.targetIx);
         }
 
         @Override

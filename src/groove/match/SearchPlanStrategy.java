@@ -26,7 +26,6 @@ import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
-import groove.trans.RuleGraph;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
 import groove.util.Property;
@@ -35,7 +34,6 @@ import groove.util.Visitor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,7 +54,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
      * if solutions should be injective.
      * @param plan the search items that make up the search plan
      */
-    public SearchPlanStrategy(RuleGraph source, SearchPlan plan) {
+    public SearchPlanStrategy(SearchPlan plan) {
         this.nodeIxMap = new HashMap<RuleNode,Integer>();
         this.edgeIxMap = new HashMap<RuleEdge,Integer>();
         this.varIxMap = new HashMap<LabelVar,Integer>();
@@ -66,9 +64,9 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
     }
 
     @Override
-    public <T> T visitAll(HostGraph host, RuleToHostMap anchorMap,
+    public <T> T traverse(HostGraph host, RuleToHostMap seedMap,
             Visitor<RuleToHostMap,T> visitor) {
-        Search search = getSearch(host, anchorMap);
+        Search search = getSearch(host, seedMap);
         while (search.find() && visitor.visit(search.getMatch())) {
             // do nothing
         }
@@ -77,26 +75,26 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
 
     /** Returns the first matching satisfying a given property. */
     @Override
-    public RuleToHostMap find(HostGraph host, RuleToHostMap anchorMap,
+    public RuleToHostMap find(HostGraph host, RuleToHostMap seedMap,
             Property<RuleToHostMap> property) {
-        return visitAll(host, anchorMap, Visitor.createFinder(property));
+        return traverse(host, seedMap, Visitor.newFinder(property));
     }
 
     /** Returns all matchings satisfying a given property. */
     @Override
-    public Collection<RuleToHostMap> findAll(HostGraph host,
-            RuleToHostMap anchorMap, Property<RuleToHostMap> property) {
+    public List<RuleToHostMap> findAll(HostGraph host, RuleToHostMap seedMap,
+            Property<RuleToHostMap> property) {
         List<RuleToHostMap> result = new ArrayList<RuleToHostMap>();
-        return visitAll(host, anchorMap,
-            Visitor.createCollector(result, property));
+        return traverse(host, seedMap, Visitor.newCollector(result, property));
     }
 
+    @Deprecated
     public Iterator<RuleToHostMap> getMatchIter(HostGraph host,
-            RuleToHostMap anchorMap) {
+            RuleToHostMap seedMap) {
         Iterator<RuleToHostMap> result;
         getMatchIterReporter.start();
         final Search search = createSearch();
-        search.initialise(host, anchorMap);
+        search.initialise(host, seedMap);
         result = new Iterator<RuleToHostMap>() {
             public boolean hasNext() {
                 // test if there is an unreturned next or if we are done
@@ -161,11 +159,11 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
     /**
      * Callback factory method for an auxiliary {@link Search} object.
      */
-    private Search getSearch(HostGraph host, RuleToHostMap anchorMap) {
-        if (this.search == null) {
-            this.search = createSearch();
-        }
-        this.search.initialise(host, anchorMap);
+    private Search getSearch(HostGraph host, RuleToHostMap seedMap) {
+        //        if (this.search == null) {
+        this.search = createSearch();
+        //        }
+        this.search.initialise(host, seedMap);
         return this.search;
     }
 
@@ -356,51 +354,42 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
                 new HostEdge[SearchPlanStrategy.this.edgeKeys.length];
             this.varImages =
                 new TypeLabel[SearchPlanStrategy.this.varKeys.length];
-            this.nodeAnchors =
+            this.nodeSeeds =
                 new HostNode[SearchPlanStrategy.this.nodeKeys.length];
-            this.edgeAnchors =
+            this.edgeSeeds =
                 new HostEdge[SearchPlanStrategy.this.edgeKeys.length];
-            this.varAnchors =
+            this.varSeeds =
                 new TypeLabel[SearchPlanStrategy.this.varKeys.length];
             this.forallMatches =
                 new CompositeMatch[SearchPlanStrategy.this.forallCount];
         }
 
         /** Initialises the search for a given host graph and anchor map. */
-        public void initialise(HostGraph host, RuleToHostMap anchorMap) {
+        public void initialise(HostGraph host, RuleToHostMap seedMap) {
             this.host = host;
             if (isInjective()) {
                 getUsedNodes().clear();
             }
-            if (anchorMap != null) {
-                for (Map.Entry<RuleNode,? extends HostNode> nodeEntry : anchorMap.nodeMap().entrySet()) {
+            if (seedMap != null) {
+                for (Map.Entry<RuleNode,? extends HostNode> nodeEntry : seedMap.nodeMap().entrySet()) {
                     assert isNodeFound(nodeEntry.getKey());
                     int i = getNodeIx(nodeEntry.getKey());
                     this.nodeImages[i] =
-                        this.nodeAnchors[i] = nodeEntry.getValue();
+                        this.nodeSeeds[i] = nodeEntry.getValue();
                     if (isInjective()) {
                         getUsedNodes().add(nodeEntry.getValue());
                     }
                 }
-                // In case of non injectivity of the anchorMap and injective
-                // strategy, ensure that no matches are found
-                // this cannot be maintained, since the anchorMap may include
-                // attribute nodes
-                // if (injective && getUsedNodes().size() <
-                // anchorMap.nodeMap().size()) {
-                // noMatches = true;
-                // }
-                for (Map.Entry<RuleEdge,? extends HostEdge> edgeEntry : anchorMap.edgeMap().entrySet()) {
+                for (Map.Entry<RuleEdge,? extends HostEdge> edgeEntry : seedMap.edgeMap().entrySet()) {
                     assert isEdgeFound(edgeEntry.getKey());
                     int i = getEdgeIx(edgeEntry.getKey());
                     this.edgeImages[i] =
-                        this.edgeAnchors[i] = edgeEntry.getValue();
+                        this.edgeSeeds[i] = edgeEntry.getValue();
                 }
-                for (Map.Entry<LabelVar,TypeLabel> varEntry : anchorMap.getValuation().entrySet()) {
+                for (Map.Entry<LabelVar,TypeLabel> varEntry : seedMap.getValuation().entrySet()) {
                     assert isVarFound(varEntry.getKey());
                     int i = getVarIx(varEntry.getKey());
-                    this.varImages[i] =
-                        this.varAnchors[i] = varEntry.getValue();
+                    this.varImages[i] = this.varSeeds[i] = varEntry.getValue();
                 }
             }
             for (int i = 0; i < this.records.length && this.records[i] != null; i++) {
@@ -495,9 +484,9 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         /** Sets the node image for the node key with a given index. */
         final boolean putNode(int index, HostNode image) {
             RuleNode nodeKey = SearchPlanStrategy.this.nodeKeys[index];
-            assert this.nodeAnchors[index] == null : String.format(
+            assert image == null || this.nodeSeeds[index] == null : String.format(
                 "Assignment %s=%s replaces pre-matched image %s", nodeKey,
-                image, this.nodeAnchors[index]);
+                image, this.nodeSeeds[index]);
             boolean keyIsVariableNode = nodeKey instanceof VariableNode;
             if (image instanceof ValueNode) {
                 // value nodes only matched by value nodes without signature or of the
@@ -571,27 +560,24 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         }
 
         /**
-         * Indicates if the node at a given index was pre-matched in this
-         * search.
+         * Returns the node seed (i.e., the pre-matched image) at a given index.
          */
-        final HostNode getNodeAnchor(int index) {
-            return this.nodeAnchors[index];
+        final HostNode getNodeSeed(int index) {
+            return this.nodeSeeds[index];
         }
 
         /**
-         * Indicates if the edge at a given index was pre-matched in this
-         * search.
+         * Returns the edge seed (i.e., the pre-matched image) at a given index.
          */
-        final HostEdge getEdgeAnchor(int index) {
-            return this.edgeAnchors[index];
+        final HostEdge getEdgeSeed(int index) {
+            return this.edgeSeeds[index];
         }
 
         /**
-         * Indicates if the variable at a given index was pre-matched in this
-         * search.
+         * Returns the variable seed (i.e., the pre-matched image) at a given index.
          */
-        final TypeLabel getVarAnchor(int index) {
-            return this.varAnchors[index];
+        final TypeLabel getVarSeed(int index) {
+            return this.varSeeds[index];
         }
 
         /**
@@ -649,17 +635,17 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
          * Array indicating, for each index, if the node with that image was
          * pre-matched in the search.
          */
-        private final HostNode[] nodeAnchors;
+        private final HostNode[] nodeSeeds;
         /**
          * Array indicating, for each index, if the variable with that image was
          * pre-matched in the search.
          */
-        private final HostEdge[] edgeAnchors;
+        private final HostEdge[] edgeSeeds;
         /**
          * Array indicating, for each index, if the edge with that image was
          * pre-matched in the search.
          */
-        private final TypeLabel[] varAnchors;
+        private final TypeLabel[] varSeeds;
         /** Flag indicating that a solution has already been found. */
         private boolean found;
         /** Index of the last search record known to be singular. */

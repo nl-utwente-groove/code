@@ -24,9 +24,7 @@ import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
-import groove.trans.Rule;
 import groove.trans.RuleEdge;
-import groove.trans.RuleMatch;
 import groove.trans.RuleNode;
 import groove.util.Reporter;
 import groove.view.StoredGrammarView;
@@ -222,22 +220,9 @@ public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
         transitionOccurredReporter.stop();
     }
 
-    //TODO ARASH: this method should probably be moved into ReteMatchSetCollector
-    //     This does not seem to be right place for it.
-    /** 
-     * @param rule The rule for which the matches are needed. 
-     * @return An {@link Iterable} collection of {@link RuleMatch} objects for a given rule.
-     * 
-     */
-    public Iterable<RuleMatch> getRuleMatches(Rule rule) {
-        Iterable<RuleMatch> it =
-            rule.getAllMatches(this.network.getState().getHostGraph(), null);
-        return it;
-    }
-
     @Override
     public synchronized ReteStrategy createMatcher(Condition condition,
-            Collection<RuleNode> anchorNodes, Collection<RuleEdge> anchorEdges,
+            Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges,
             Collection<RuleNode> relevantNodes) {
         //this will get more complicated when we have complex conditions        
         return new ReteStrategy(this, condition);

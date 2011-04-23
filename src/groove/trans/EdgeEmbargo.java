@@ -34,11 +34,12 @@ public class EdgeEmbargo extends NotCondition {
      */
     public EdgeEmbargo(RuleGraph graph, RuleEdge embargoEdge,
             SystemProperties properties) {
-        super(graph.newGraph(graph.getName() + "-!" + embargoEdge), properties);
+        super(graph.newGraph(String.format("%s:!(%s)", graph.getName(),
+            embargoEdge)), properties);
         this.embargoEdge = embargoEdge;
         RuleNode sourceImage = addRoot(embargoEdge.source());
         RuleNode targetImage = addRoot(embargoEdge.target());
-        getTarget().addEdge(sourceImage, embargoEdge.label(), targetImage);
+        getPattern().addEdge(sourceImage, embargoEdge.label(), targetImage);
         if (CONSTRUCTOR_DEBUG) {
             Groove.message("Edge embargo: " + this);
             Groove.message("Embargo edge: " + embargoEdge);
@@ -51,7 +52,7 @@ public class EdgeEmbargo extends NotCondition {
     private RuleNode addRoot(RuleNode root) {
         RuleNode result = getRootMap().getNode(root);
         if (result == null) {
-            result = getTarget().addNode();
+            result = getPattern().addNode();
             getRootMap().putNode(root, result);
         }
         return result;

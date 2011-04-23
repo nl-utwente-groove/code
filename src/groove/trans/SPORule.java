@@ -17,6 +17,7 @@
 package groove.trans;
 
 import groove.control.CtrlPar;
+import groove.control.CtrlPar.Var;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.graph.Element;
@@ -28,11 +29,13 @@ import groove.rel.VarSupport;
 import groove.util.Groove;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
+import groove.util.Visitor;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -178,6 +181,31 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
             return this;
         } else {
             return getParent().getTop();
+        }
+    }
+
+    @Override
+    Set<RuleNode> computeRootNodes() {
+        // if this is a top-level rule, the (only) root nodes
+        // are the parameter nodes
+        if (isTop()) {
+            Set<RuleNode> result = new HashSet<RuleNode>();
+            for (Var var : getSignature()) {
+                result.add(var.getRuleNode());
+            }
+            return result;
+        } else {
+            return super.computeRootNodes();
+        }
+    }
+
+    @Override
+    Set<RuleEdge> computeRootEdges() {
+        // if this is a top-level rule, there are no root edges
+        if (isTop()) {
+            return Collections.emptySet();
+        } else {
+            return super.computeRootEdges();
         }
     }
 
@@ -356,8 +384,37 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
         return this.hiddenPars;
     }
 
-    /** Creates the search plan using the rule's search plan factory. */
-    public MatchStrategy<RuleToHostMap> getEventMatcher() {
+    /**
+     * Lazily creates and returns a matcher for rule events of this rule. The
+     * matcher will try to extend anchor maps to full matches. This is in 
+     * contrast with the normal (condition) matcher, which is based on the
+     * images of the root map.
+     */
+    public RuleMatch getMatch(SPOEvent event, final HostGraph host) {
+        RuleMatch result =
+            getEventMatcher().traverse(host, event.getAnchorMap(),
+                new Visitor<RuleToHostMap,RuleMatch>() {
+                    @Override
+                    protected boolean process(RuleToHostMap patternMap) {
+                        boolean result = isValidMatchMap(host, patternMap);
+                        if (result) {
+                            // this is a simple event, so there are no subrules;
+                            // the match consists only of the pattern map
+                            setResult(createMatch(patternMap));
+                        }
+                        return result;
+                    }
+                });
+        return result;
+    }
+
+    /**
+     * Lazily creates and returns a matcher for rule events of this rule. The
+     * matcher will try to extend anchor maps to full matches. This is in 
+     * contrast with the normal (condition) matcher, which is based on the
+     * images of the root map.
+     */
+    private MatchStrategy<RuleToHostMap> getEventMatcher() {
         if (this.eventMatcher == null) {
             this.eventMatcher =
                 getMatcherFactory().createMatcher(this,
@@ -367,33 +424,50 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
         return this.eventMatcher;
     }
 
+    /**
+     * Returns the precomputed match strategy for the target
+     * pattern. First creates the order using {@link #createMatcher(Set,Set)} if that
+     * has not been done.
+     * 
+     * @param seedMap mapping from the seed elements to a host graph.
+     * 
+     * @see #createMatcher(Set, Set)
+     */
+    MatchStrategy<RuleToHostMap> getMatcher(RuleToHostMap seedMap) {
+        MatchStrategy<RuleToHostMap> result;
+        if (isTop() && getSignature().size() > 0) {
+            int sigSize = getSignature().size();
+            BitSet initPars = new BitSet(sigSize);
+            for (int i = 0; i < sigSize; i++) {
+                // set initPars if the seed map contains a value
+                // for this parameter
+                initPars.set(
+                    i,
+                    seedMap.containsNodeKey(getSignature().get(i).getRuleNode()));
+            }
+            result = this.matcherMap.get(initPars);
+            if (result == null) {
+                this.matcherMap.put(
+                    initPars,
+                    result =
+                        createMatcher(seedMap.nodeMap().keySet(),
+                            seedMap.edgeMap().keySet()));
+            }
+        } else {
+            result = super.getMatcher();
+        }
+        return result;
+    }
+
     @Override
-    public void resetMatcher() {
+    void invalidateMatchers() {
+        super.invalidateMatchers();
+        this.matcherMap.clear();
         this.eventMatcher = null;
-        super.resetMatcher();
-    }
-
-    /** This implementation sets the anchor graph elements to relevant. */
-    @Override
-    MatchStrategy<RuleToHostMap> createMatcher() {
-        Set<RuleNode> anchorNodes = new HashSet<RuleNode>();
-        Set<RuleEdge> anchorEdges = new HashSet<RuleEdge>();
-        if (getRootMap() != null) {
-            anchorNodes.addAll(getRootMap().nodeMap().values());
-            for (RuleEdge edge : getRootMap().edgeMap().values()) {
-                anchorEdges.add(edge);
-            }
-        }
-        for (CtrlPar.Var par : getSignature()) {
-            if (par.isInOnly()) {
-                anchorNodes.add(par.getRuleNode());
-            }
-        }
-        return getMatcherFactory().createMatcher(this, anchorNodes,
-            anchorEdges, getMatchRelevantNodes());
     }
 
     @Override
+    @Deprecated
     public Iterator<RuleMatch> computeMatchIter(final HostGraph host,
             Iterator<RuleToHostMap> matchMapIter) {
         Iterator<RuleMatch> result = null;
@@ -403,19 +477,86 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
                     matchMapIter) {
                     @Override
                     public Iterator<RuleMatch> toOuter(RuleToHostMap matchMap) {
-                        return computeMatchIter(host, matchMap);
+                        return computeSubMatchIter(host, matchMap);
                     }
                 });
         return result;
     }
 
-    public Iterator<RuleMatch> computeMatchIter(HostGraph host,
-            RuleToHostMap matchMap) {
-        if (isValidMatchMap(host, matchMap)) {
-            return addSubMatches(host, createMatch(matchMap)).iterator();
+    /** Returns an iterator over the rule matches extending
+     * a given match map for the LHS of this rule.
+     * @param host the host graph on which the subrules should be matched
+     * @param patternMap the match of the LHS
+     */
+    @Deprecated
+    public Iterator<RuleMatch> computeSubMatchIter(HostGraph host,
+            RuleToHostMap patternMap) {
+        if (isValidMatchMap(host, patternMap)) {
+            return addSubMatches(host, createMatch(patternMap)).iterator();
         } else {
             return null;
         }
+    }
+
+    /** 
+     * Traverses and visits the matches of this condition
+     * for a given host graph and context map.
+     */
+    @Override
+    public <R> R traverseMatches(final HostGraph host,
+            RuleToHostMap contextMap, final Visitor<RuleMatch,R> visitor) {
+        testFixed(true);
+        RuleToHostMap seedMap = computeSeedMap(host, contextMap);
+        if (seedMap != null) {
+            getMatcher(seedMap).traverse(host, seedMap,
+                new Visitor<RuleToHostMap,R>() {
+                    @Override
+                    protected boolean process(RuleToHostMap patternMap) {
+                        assert visitor.isContinue();
+                        if (isValidMatchMap(host, patternMap)) {
+                            traverseSubMatches(host, patternMap, visitor);
+                        }
+                        return visitor.isContinue();
+                    }
+                });
+        }
+        return visitor.getResult();
+    }
+
+    private <R> R traverseSubMatches(HostGraph host, RuleToHostMap patternMap,
+            Visitor<RuleMatch,R> visitor) {
+        assert visitor.isContinue();
+        if (getComplexSubConditions().isEmpty()) {
+            visitor.visit(createMatch(patternMap));
+        } else {
+            int subMatchCount = getComplexSubConditions().size();
+            // construct a matrix of sub-matches
+            @SuppressWarnings("unchecked")
+            List<CompositeMatch>[] matchMatrix = new List[subMatchCount];
+            int[] rowSize = new int[subMatchCount];
+            int matchCount = 1;
+            int i = 0;
+            for (ForallCondition subCondition : getComplexSubConditions()) {
+                List<CompositeMatch> subMatches =
+                    subCondition.getAllMatches(host, patternMap);
+                matchMatrix[i] = subMatches;
+                rowSize[i] = subMatches.size();
+                matchCount = matchCount * subMatches.size();
+                i++;
+            }
+            if (matchCount > 0) {
+                int[] vector = new int[subMatchCount];
+                do {
+                    RuleMatch match = createMatch(patternMap);
+                    for (i = 0; i < subMatchCount; i++) {
+                        match.getSubMatches().addAll(
+                            matchMatrix[i].get(vector[i]).getSubMatches());
+                    }
+                    visitor.visit(match);
+                } while (visitor.isContinue() && incVector(vector, rowSize));
+            }
+        }
+        return visitor.getResult();
     }
 
     @SuppressWarnings("unchecked")
@@ -428,14 +569,14 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
      * Returns a collection of matches extending a given match with matches for
      * the sub-conditions.
      */
-    private Collection<RuleMatch> addSubMatches(HostGraph host,
-            RuleMatch simpleMatch) {
-        Collection<RuleMatch> result = Collections.singleton(simpleMatch);
+    @Deprecated
+    private List<RuleMatch> addSubMatches(HostGraph host, RuleMatch simpleMatch) {
+        List<RuleMatch> result = Collections.singletonList(simpleMatch);
         RuleToHostMap matchMap = simpleMatch.getElementMap();
         for (ForallCondition condition : getComplexSubConditions()) {
-            Collection<CompositeMatch> subMatches =
+            List<CompositeMatch> subMatches =
                 condition.getAllMatches(host, matchMap);
-            Collection<RuleMatch> oldResult = result;
+            List<RuleMatch> oldResult = result;
             result = new ArrayList<RuleMatch>();
             for (RuleMatch oldMatch : oldResult) {
                 result.addAll(oldMatch.addForallChoice(condition, subMatches));
@@ -452,7 +593,7 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
      * this condition's target.
      * 
      * @param matchMap the mapping, presumably of the elements of
-     *        {@link #getTarget()} into some host graph
+     *        {@link #getPattern()} into some host graph
      * @return a match constructed on the basis of <code>map</code>
      */
     private RuleMatch createMatch(RuleToHostMap matchMap) {
@@ -463,7 +604,7 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
      * Tests whether a given match map satisfies the additional constraints
      * imposed by this rule.
      * @param host the graph to be matched
-     * @param matchMap the proposed map from {@link #getTarget()} to
+     * @param matchMap the proposed map from {@link #getPattern()} to
      *        <code>host</code>
      * @return <code>true</code> if <code>matchMap</code> satisfies the
      *         constraints imposed by the rule (if any).
@@ -1181,37 +1322,14 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
     }
 
     /**
-     * Lazily creates and returns the set of match-relevant nodes of this rule.
-     * These are the nodes whose images are important to distinguish rule
-     * matches. The set consists of the anchor nodes and the root sources of the
-     * universal sub-conditions.
+     * Adds the anchor nodes and the parameter nodes.
      */
-    private Set<RuleNode> getMatchRelevantNodes() {
-        if (this.matchRelevantNodes == null) {
-            this.matchRelevantNodes = computeMatchRelevantGraph();
-        }
-        return this.matchRelevantNodes;
-    }
-
-    /**
-     * Computes the match-relevant nodes of the left hand side.
-     * @see #getMatchRelevantNodes()
-     */
-    private Set<RuleNode> computeMatchRelevantGraph() {
-        Set<RuleNode> result = new HashSet<RuleNode>();
-        for (Element elem : anchor()) {
-            if (elem instanceof RuleNode) {
-                result.add((RuleNode) elem);
-            } else {
-                result.add(((RuleEdge) elem).source());
-                result.add(((RuleEdge) elem).target());
-            }
-        }
-        // add the root map sources of the sub-conditions
-        for (Condition subCondition : getSubConditions()) {
-            if (subCondition instanceof ForallCondition) {
-                result.addAll(subCondition.getRootMap().nodeMap().keySet());
-            }
+    @Override
+    Set<RuleNode> computeRelevantNodes() {
+        Set<RuleNode> result = super.computeRelevantNodes();
+        result.addAll(new HashSet<RuleNode>(getAnchorGraph().nodeSet()));
+        for (Var var : getSignature()) {
+            result.add(var.getRuleNode());
         }
         return result;
     }
@@ -1314,11 +1432,6 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
      */
     private RuleGraph anchorGraph;
     /**
-     * Subgraph of the left hand containing all elements that are used to
-     * distinguish matches.
-     */
-    private Set<RuleNode> matchRelevantNodes;
-    /**
      * A sub-graph of the production rule's right hand side, consisting only of
      * the fresh nodes and edges.
      */
@@ -1403,6 +1516,13 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
      * Set of anonymous (unnumbered) parameters.
      */
     private Set<RuleNode> hiddenPars;
+
+    /**
+     * Mapping from sets of initialised parameters to match strategies.
+     */
+    private final Map<BitSet,MatchStrategy<RuleToHostMap>> matcherMap =
+        new HashMap<BitSet,MatchStrategy<RuleToHostMap>>();
+
     /** The matcher for events of this rule. */
     private MatchStrategy<RuleToHostMap> eventMatcher;
 

@@ -64,7 +64,7 @@ class ConditionSearchItem extends AbstractSearchItem {
 
     @Override
     int getRating() {
-        return -this.condition.getTarget().nodeCount() - this.rootMap.size();
+        return -this.condition.getPattern().nodeCount() - this.rootMap.size();
     }
 
     @Override

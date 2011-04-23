@@ -36,7 +36,7 @@ class NodeSearchItem extends AbstractSearchItem {
     }
 
     public Record createRecord(Search search) {
-        if (this.nodeMatched || search.getNodeAnchor(this.nodeIx) != null) {
+        if (this.nodeMatched || search.getNodeSeed(this.nodeIx) != null) {
             // the node is pre-matched, so there is nothing to do
             return createDummyRecord();
         } else {

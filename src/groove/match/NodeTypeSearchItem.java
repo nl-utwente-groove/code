@@ -144,13 +144,13 @@ class NodeTypeSearchItem extends AbstractSearchItem {
 
     /** Indicates if the edge is pre-matched in the search. */
     boolean isPreMatched(Search search) {
-        return search.getEdgeAnchor(this.edgeIx) != null;
+        return search.getEdgeSeed(this.edgeIx) != null;
     }
 
     /** Indicates if the source node has a singular image in the search. */
     boolean isSingular(Search search) {
         boolean sourceSingular =
-            this.sourceFound || search.getNodeAnchor(this.sourceIx) != null;
+            this.sourceFound || search.getNodeSeed(this.sourceIx) != null;
         return sourceSingular;
     }
 
@@ -206,7 +206,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         @Override
         public void initialise(HostGraph host) {
             super.initialise(host);
-            this.sourcePreMatch = this.search.getNodeAnchor(this.sourceIx);
+            this.sourcePreMatch = this.search.getNodeSeed(this.sourceIx);
         }
 
         @Override
@@ -344,7 +344,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         @Override
         public void initialise(HostGraph host) {
             super.initialise(host);
-            this.sourcePreMatch = this.search.getNodeAnchor(this.sourceIx);
+            this.sourcePreMatch = this.search.getNodeSeed(this.sourceIx);
         }
 
         @Override

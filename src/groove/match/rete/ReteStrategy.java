@@ -49,8 +49,9 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
     }
 
     @Override
+    @Deprecated
     public synchronized Iterator<RuleToHostMap> getMatchIter(
-            final HostGraph host, RuleToHostMap anchorMap) {
+            final HostGraph host, RuleToHostMap seedMap) {
         Iterator<RuleToHostMap> result =
             (new ArrayList<RuleToHostMap>()).iterator();
         assert this.owner.getNetwork() != null;
@@ -69,10 +70,10 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
                 this.owner.getNetwork().getConditionCheckerNodeFor(
                     this.condition);
             if (cc != null) {
-                if ((anchorMap != null) && (!anchorMap.isEmpty())) {
+                if ((seedMap != null) && (!seedMap.isEmpty())) {
                     result =
                         new TransformIterator<ReteMatch,RuleToHostMap>(
-                            cc.getConflictSetIterator(anchorMap)) {
+                            cc.getConflictSetIterator(seedMap)) {
                             @Override
                             public RuleToHostMap toOuter(ReteMatch matchMap) {
                                 return matchMap.toRuleToHostMap(host.getFactory());
@@ -96,7 +97,7 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
     }
 
     @Override
-    public <T> T visitAll(final HostGraph host, RuleToHostMap anchorMap,
+    public <T> T traverse(final HostGraph host, RuleToHostMap seedMap,
             Visitor<RuleToHostMap,T> visitor) {
         assert this.owner.getNetwork() != null;
 
@@ -115,8 +116,8 @@ public class ReteStrategy extends AbstractMatchStrategy<RuleToHostMap> {
                     this.condition);
             if (cc != null) {
                 Iterator<ReteMatch> iter;
-                if ((anchorMap != null) && (!anchorMap.isEmpty())) {
-                    iter = cc.getConflictSetIterator(anchorMap);
+                if ((seedMap != null) && (!seedMap.isEmpty())) {
+                    iter = cc.getConflictSetIterator(seedMap);
                 } else {
                     iter = cc.getConflictSetIterator();
                 }

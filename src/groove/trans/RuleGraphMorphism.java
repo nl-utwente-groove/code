@@ -19,9 +19,7 @@ package groove.trans;
 import groove.graph.Morphism;
 
 /**
- * Default implementation of a generic node-edge-map. The implementation is
- * based on two internally stored hash maps, for the nodes and edges. Labels are
- * not translated.
+ * Mapping between {@link RuleGraph} elements.
  * @author Arend Rensink
  * @version $Revision: 2754 $
  */

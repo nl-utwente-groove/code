@@ -1352,13 +1352,15 @@ public class Simulator {
      * @see #fireSetTransition(GraphTransition)
      */
     public synchronized void setEvent(RuleEvent event) {
-        assert event != null : "The match and the transition cannot be both null.";
-        RuleName ruleName = event.getRule().getName();
-        setCurrentRule(getGrammarView().getRuleView(ruleName));
-        setCurrentTransition(null);
-        setCurrentEvent(event);
-        fireSetMatch(event.getMatch(getCurrentState().getGraph()));
-        refreshActions();
+        if (!event.equals(getCurrentEvent())) {
+            assert event != null : "The match and the transition cannot be both null.";
+            RuleName ruleName = event.getRule().getName();
+            setCurrentRule(getGrammarView().getRuleView(ruleName));
+            setCurrentTransition(null);
+            setCurrentEvent(event);
+            fireSetMatch(event.getMatch(getCurrentState().getGraph()));
+            refreshActions();
+        }
     }
 
     /**

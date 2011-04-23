@@ -26,8 +26,8 @@ import groove.match.SearchEngineFactory;
 import groove.match.SearchEngineFactory.EngineType;
 import groove.match.rete.ReteSearchEngine;
 import groove.trans.DeltaStore;
-import groove.trans.Rule;
 import groove.trans.RuleMatch;
+import groove.trans.SPORule;
 import groove.trans.SystemRecord;
 import groove.util.Reporter;
 
@@ -140,11 +140,12 @@ public class ReteLinearStrategy extends AbstractStrategy {
         SearchEngineFactory.getInstance().setCurrentEngineType(this.oldType);
     }
 
-    @Override
-    protected ReteMatchSetCollector createMatchCollector() {
-        return new ReteMatchSetCollector(getAtState(), getRecord(), this.rete,
-            getGTS().checkDiamonds());
-    }
+    // TODO AREND: I do not see the use of the ReteMatchSetCollector class
+    //    @Override
+    //    protected ReteMatchSetCollector createMatchCollector() {
+    //        return new ReteMatchSetCollector(getAtState(), getRecord(),
+    //            getGTS().checkDiamonds());
+    //    }
 
     /** Return the current value of the "close on exit" setting */
     public boolean closeExit() {
@@ -199,18 +200,15 @@ public class ReteLinearStrategy extends AbstractStrategy {
 
     }
 
-    private static class ReteMatchSetCollector extends MatchSetCollector {
-        private ReteSearchEngine reteEngine;
-
+    static class ReteMatchSetCollector extends MatchSetCollector {
         protected static final Reporter reporter =
             Reporter.register(ReteMatchSetCollector.class);
         protected static final Reporter getMatchReporter =
             reporter.register("getMatch()");
 
         public ReteMatchSetCollector(GraphState state, SystemRecord record,
-                ReteSearchEngine engine, boolean checkDiamonds) {
+                boolean checkDiamonds) {
             super(state, record, checkDiamonds);
-            this.reteEngine = engine;
         }
 
         /** 
@@ -220,9 +218,11 @@ public class ReteLinearStrategy extends AbstractStrategy {
         public MatchResult getMatch() {
             getMatchReporter.start();
             MatchResult result = null;
-            Rule currentRule = firstCall().getRule();
+            SPORule currentRule = firstCall().getRule();
             while (currentRule != null) {
-                for (RuleMatch ruleMatch : this.reteEngine.getRuleMatches(currentRule)) {
+                RuleMatch ruleMatch =
+                    currentRule.getMatch(this.state.getGraph(), null);
+                if (ruleMatch != null) {
                     // convert the match to an event
                     result = this.record.getEvent(ruleMatch);
                     if (result != null) {
