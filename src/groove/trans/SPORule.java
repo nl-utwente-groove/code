@@ -396,7 +396,7 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
                 new Visitor<RuleToHostMap,RuleMatch>() {
                     @Override
                     protected boolean process(RuleToHostMap patternMap) {
-                        boolean result = isValidMatchMap(host, patternMap);
+                        boolean result = isValidPatternMap(host, patternMap);
                         if (result) {
                             // this is a simple event, so there are no subrules;
                             // the match consists only of the pattern map
@@ -491,7 +491,7 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
     @Deprecated
     public Iterator<RuleMatch> computeSubMatchIter(HostGraph host,
             RuleToHostMap patternMap) {
-        if (isValidMatchMap(host, patternMap)) {
+        if (isValidPatternMap(host, patternMap)) {
             return addSubMatches(host, createMatch(patternMap)).iterator();
         } else {
             return null;
@@ -513,7 +513,7 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
                     @Override
                     protected boolean process(RuleToHostMap patternMap) {
                         assert visitor.isContinue();
-                        if (isValidMatchMap(host, patternMap)) {
+                        if (isValidPatternMap(host, patternMap)) {
                             traverseSubMatches(host, patternMap, visitor);
                         }
                         return visitor.isContinue();
@@ -561,7 +561,7 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
 
     @SuppressWarnings("unchecked")
     @Override
-    protected Collection<ForallCondition> getComplexSubConditions() {
+    public Collection<ForallCondition> getComplexSubConditions() {
         return super.getComplexSubConditions();
     }
 
@@ -609,7 +609,7 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
      * @return <code>true</code> if <code>matchMap</code> satisfies the
      *         constraints imposed by the rule (if any).
      */
-    private boolean isValidMatchMap(HostGraph host, RuleToHostMap matchMap) {
+    public boolean isValidPatternMap(HostGraph host, RuleToHostMap matchMap) {
         boolean result = true;
         if (SystemProperties.isCheckDangling(getSystemProperties())) {
             result = satisfiesDangling(host, matchMap);

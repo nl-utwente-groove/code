@@ -17,6 +17,7 @@
 package groove.match;
 
 import groove.rel.LabelVar;
+import groove.trans.Condition;
 import groove.trans.RuleNode;
 
 import java.util.ArrayList;
@@ -29,8 +30,14 @@ import java.util.Set;
 /** List of search items with backwards dependencies. */
 public class SearchPlan extends ArrayList<AbstractSearchItem> {
     /** Constructs a search plan with given injectivity. */
-    public SearchPlan(boolean injective) {
+    public SearchPlan(Condition condition, boolean injective) {
+        this.condition = condition;
         this.injective = injective;
+    }
+
+    /** Returns the condition for which this is the search plan. */
+    public final Condition getCondition() {
+        return this.condition;
     }
 
     /** Constructs dependency information, in addition to appending the search item. */
@@ -121,6 +128,8 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
         return this.forallCount;
     }
 
+    /** The condition for which this is the search plan. */
+    private final Condition condition;
     /** Direct dependencies of all search plan items. */
     private final List<Integer> dependencies = new ArrayList<Integer>();
     /** Flag indicating that the search should be injective on non-attribute nodes. */

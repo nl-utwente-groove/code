@@ -21,7 +21,10 @@ import groove.trans.HostGraph;
 import groove.trans.RuleToHostMap;
 import groove.util.Property;
 import groove.util.Visitor;
+import groove.util.Visitor.Collector;
+import groove.util.Visitor.Finder;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -32,7 +35,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface MatchStrategy<R> {
+abstract public class MatchStrategy<R> {
     /**
      * Returns an iterator over all matches to a given graph that extend a given
      * partial match. The partial match should be defined precisely for the
@@ -47,7 +50,8 @@ public interface MatchStrategy<R> {
      *         fulfil the requirements to be total matches
      */
     @Deprecated
-    public Iterator<R> getMatchIter(HostGraph host, RuleToHostMap seedMap);
+    abstract public Iterator<R> getMatchIter(HostGraph host,
+            RuleToHostMap seedMap);
 
     /** 
      * Returns the first match that satisfies a given property. 
@@ -58,7 +62,12 @@ public interface MatchStrategy<R> {
      * @param property a property used to filter the match. The result
      *        of the method is guaranteed to satisfy the property.
      */
-    public R find(HostGraph host, RuleToHostMap seedMap, Property<R> property);
+    public R find(HostGraph host, RuleToHostMap seedMap, Property<R> property) {
+        Finder<R> finder = this.finder.newInstance(property);
+        R result = traverse(host, seedMap, finder);
+        finder.dispose();
+        return result;
+    }
 
     /** 
      * Returns the list of all matches that satisfy a given property. 
@@ -70,7 +79,14 @@ public interface MatchStrategy<R> {
      *        in the returned list are guaranteed to satisfy the property.
      */
     public List<R> findAll(HostGraph host, RuleToHostMap seedMap,
-            Property<R> property);
+            Property<R> property) {
+        List<R> result = new ArrayList<R>();
+        Collector<R,List<R>> collector =
+            this.collector.newInstance(result, property);
+        traverse(host, seedMap, collector);
+        collector.dispose();
+        return result;
+    }
 
     /** 
      * Traverses the matches, and calls a visit method on them.
@@ -87,6 +103,11 @@ public interface MatchStrategy<R> {
      * @see Visitor#getResult()
      * @see Visitor#dispose()
      */
-    public <T> T traverse(HostGraph host, RuleToHostMap seedMap,
+    abstract public <T> T traverse(HostGraph host, RuleToHostMap seedMap,
             Visitor<R,T> visitor);
+
+    /** Reusable finder for {@link #find(HostGraph, RuleToHostMap, Property)}. */
+    private final Finder<R> finder = Visitor.newFinder(null);
+    /** Reusable collector for {@link #findAll(HostGraph, RuleToHostMap, Property)}. */
+    private final Collector<R,List<R>> collector = Visitor.newCollector(null);
 }
