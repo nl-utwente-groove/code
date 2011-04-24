@@ -79,10 +79,9 @@ public class SearchEngineFactory {
      * @return the currently active engine that matches based on 
      *         the requirements specified in the parameters.
      */
-    public SearchEngine<? extends AbstractMatchStrategy<RuleToHostMap>> getEngine(
+    public SearchEngine<? extends MatchStrategy<RuleToHostMap>> getEngine(
             SystemProperties properties) {
-        SearchEngine<? extends AbstractMatchStrategy<RuleToHostMap>> result =
-            null;
+        SearchEngine<? extends MatchStrategy<RuleToHostMap>> result = null;
         switch (this.getCurrentEngineType()) {
         case SEARCH_PLAN:
             result =

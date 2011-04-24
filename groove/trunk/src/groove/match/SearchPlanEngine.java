@@ -169,12 +169,6 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
                 new LinkedHashSet<LabelVar>(VarSupport.getAllVars(graph));
             this.labelStore = condition.getLabelStore();
             this.condition = condition;
-            this.forallConditions = new ArrayList<ForallCondition>();
-            for (Condition subCondition : condition.getSubConditions()) {
-                if (FORALL && subCondition instanceof ForallCondition) {
-                    this.forallConditions.add((ForallCondition) subCondition);
-                }
-            }
         }
 
         /**
@@ -298,7 +292,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
                 this.used = true;
             }
             SearchPlan result =
-                new SearchPlan(
+                new SearchPlan(this.condition,
                     this.condition.getSystemProperties().isInjective());
             Collection<AbstractSearchItem> items =
                 computeSearchItems(anchorNodes, anchorEdges);
@@ -435,8 +429,6 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
             return new EqualitySearchItem(node1, node2, equals);
         }
 
-        /** The set of universal conditions. */
-        private final List<ForallCondition> forallConditions;
         /**
          * The set of nodes to be matched.
          */

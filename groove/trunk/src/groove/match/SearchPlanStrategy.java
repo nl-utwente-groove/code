@@ -28,11 +28,9 @@ import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
-import groove.util.Property;
 import groove.util.Reporter;
 import groove.util.Visitor;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,7 +46,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
+public class SearchPlanStrategy extends MatchStrategy<RuleToHostMap> {
     /**
      * Constructs a strategy from a given list of search items. A flag controls
      * if solutions should be injective.
@@ -73,21 +71,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<RuleToHostMap> {
         return visitor.getResult();
     }
 
-    /** Returns the first matching satisfying a given property. */
     @Override
-    public RuleToHostMap find(HostGraph host, RuleToHostMap seedMap,
-            Property<RuleToHostMap> property) {
-        return traverse(host, seedMap, Visitor.newFinder(property));
-    }
-
-    /** Returns all matchings satisfying a given property. */
-    @Override
-    public List<RuleToHostMap> findAll(HostGraph host, RuleToHostMap seedMap,
-            Property<RuleToHostMap> property) {
-        List<RuleToHostMap> result = new ArrayList<RuleToHostMap>();
-        return traverse(host, seedMap, Visitor.newCollector(result, property));
-    }
-
     @Deprecated
     public Iterator<RuleToHostMap> getMatchIter(HostGraph host,
             RuleToHostMap seedMap) {

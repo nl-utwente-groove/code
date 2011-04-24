@@ -31,7 +31,7 @@ import java.util.Collection;
  * @author Arash Jalali
  * @version $Revision $
  */
-public abstract class SearchEngine<MatcherType extends AbstractMatchStrategy<RuleToHostMap>> {
+public abstract class SearchEngine<MatcherType extends MatchStrategy<RuleToHostMap>> {
     /**
      * Factory method returning a search engine for 
      * a graph condition.
