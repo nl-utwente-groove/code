@@ -43,7 +43,7 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
     /** Constructs dependency information, in addition to appending the search item. */
     @Override
     public boolean add(AbstractSearchItem e) {
-        if (e instanceof ForallSearchItem) {
+        if (e instanceof ConditionSearchItem) {
             this.forallCount++;
         }
         int position = size();
@@ -123,7 +123,7 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
         return this.injective;
     }
 
-    /** Returns the number of {@link ForallSearchItem}s in the search plan. */
+    /** Returns the number of {@link ConditionSearchItem}s in the search plan. */
     public final int getForallCount() {
         return this.forallCount;
     }
@@ -134,6 +134,6 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
     private final List<Integer> dependencies = new ArrayList<Integer>();
     /** Flag indicating that the search should be injective on non-attribute nodes. */
     private final boolean injective;
-    /** Number of {@link ForallSearchItem}s in the search plan. */
+    /** Number of {@link ConditionSearchItem}s in the search plan. */
     private int forallCount;
 }

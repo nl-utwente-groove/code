@@ -25,20 +25,18 @@ import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.VariableNode;
 import groove.match.MatchStrategy;
 import groove.match.SearchEngine;
+import groove.match.TreeMatch;
 import groove.rel.LabelVar;
 import groove.rel.VarSupport;
-import groove.util.Visitor;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -259,77 +257,6 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
         return this.fixed;
     }
 
-    final public boolean hasMatch(HostGraph host) {
-        return isGround() && getMatch(host, null) != null;
-    }
-
-    @Override
-    public M getMatch(HostGraph host, RuleToHostMap contextMap) {
-        return traverseMatches(host, contextMap, Visitor.<M>newFinder(null));
-    }
-
-    @Override
-    public Collection<M> getAllMatches(HostGraph host, RuleToHostMap contextMap) {
-        List<M> result = new ArrayList<M>();
-        traverseMatches(host, contextMap, Visitor.newCollector(result));
-        return result;
-    }
-
-    /** 
-     * Traverses and visits the matches of this condition
-     * for a given host graph and context map.
-     */
-    abstract public <R> R traverseMatches(final HostGraph host,
-            RuleToHostMap contextMap, final Visitor<M,R> visitor);
-
-    /** 
-     * Increments a given vector of values lexicographically,
-     * up to a given maximum value at each index.
-     * @param vector the vector to be incremented
-     * @param size array of maximum values at each vector index
-     * @return {@code true} if the new value is positive
-     */
-    final boolean incVector(int[] vector, int[] size) {
-        boolean result;
-        assert vector.length == size.length;
-        int dim = size.length - 1;
-        // search for the lest significant dimension for which the
-        // vector value does not yet equal the row size
-        while (dim >= 0 && vector[dim] == size[dim] - 1) {
-            vector[dim] = 0;
-            dim--;
-        }
-        result = dim >= 0;
-        if (result) {
-            vector[dim]++;
-        }
-        return result;
-    }
-
-    @Deprecated
-    final public Iterator<M> getMatchIter(HostGraph host,
-            RuleToHostMap contextMap) {
-        Iterator<M> result;
-        testFixed(true);
-        RuleToHostMap seedMap = computeSeedMap(host, contextMap);
-        if (seedMap == null) {
-            // the context map could not be lifted to this condition
-            result = Collections.<M>emptySet().iterator();
-        } else {
-            result =
-                computeMatchIter(host, getMatcher().getMatchIter(host, seedMap));
-        }
-        return result;
-    }
-
-    /**
-     * Returns an iterator over the matches into a given graph, based on a series
-     * of pattern maps for this condition.
-     */
-    @Deprecated
-    abstract Iterator<M> computeMatchIter(HostGraph host,
-            Iterator<RuleToHostMap> patternMaps);
-
     /** Computes the seed map for a given context map. */
     final RuleToHostMap computeSeedMap(HostGraph host, RuleToHostMap contextMap) {
         if (isGround()) {
@@ -420,7 +347,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * pattern, given a seed map.
      * @see #createMatcher(Set, Set)
      */
-    public MatchStrategy<RuleToHostMap> getMatcher() {
+    public MatchStrategy<TreeMatch> getMatcher() {
         if (this.matchStrategy == null) {
             this.matchStrategy = createMatcher(getRootNodes(), getRootEdges());
         }
@@ -434,7 +361,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * @param seedNodes the pre-matched rule nodes
      * @param seedEdges the pre-matched rule edges
      */
-    MatchStrategy<RuleToHostMap> createMatcher(Set<RuleNode> seedNodes,
+    MatchStrategy<TreeMatch> createMatcher(Set<RuleNode> seedNodes,
             Set<RuleEdge> seedEdges) {
         testFixed(true);
         return getMatcherFactory().createMatcher(this, seedNodes, seedEdges,
@@ -442,7 +369,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     }
 
     /** Returns a matcher factory, tuned to the properties of this condition. */
-    SearchEngine<? extends MatchStrategy<RuleToHostMap>> getMatcherFactory() {
+    SearchEngine<MatchStrategy<TreeMatch>> getMatcherFactory() {
         if (this.matcherFactory == null) {
             this.matcherFactory =
                 groove.match.SearchEngineFactory.getInstance().getEngine(
@@ -668,13 +595,13 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     private RuleName name;
 
     /** The factory for match strategies. */
-    private SearchEngine<? extends MatchStrategy<RuleToHostMap>> matcherFactory;
+    private SearchEngine<MatchStrategy<TreeMatch>> matcherFactory;
     /**
      * The fixed matching strategy for this graph condition. Initially
      * <code>null</code>; set by {@link #getMatcher()} upon its first
      * invocation.
      */
-    private MatchStrategy<RuleToHostMap> matchStrategy;
+    private MatchStrategy<TreeMatch> matchStrategy;
 
     /** The collection of sub-conditions of this condition. */
     private Collection<AbstractCondition<?>> subConditions;

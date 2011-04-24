@@ -16,7 +16,9 @@
  */
 package groove.match.rete;
 
+import groove.match.MatchStrategy;
 import groove.match.SearchEngine;
+import groove.match.TreeMatch;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.Condition;
 import groove.trans.DeltaStore;
@@ -35,7 +37,7 @@ import java.util.Collection;
  * @author Arash Jalali
  * @version $Revision $
  */
-public class ReteSearchEngine extends SearchEngine<ReteStrategy> {
+public class ReteSearchEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
 
     private static ReteSearchEngine instances[] = new ReteSearchEngine[2];
     /**

@@ -43,7 +43,8 @@ class NegatedSearchItem extends AbstractSearchItem {
         this.neededVars.addAll(item.bindsVars());
     }
 
-    public NegatedSearchRecord createRecord(Search search) {
+    public NegatedSearchRecord createRecord(
+            groove.match.SearchPlanStrategy.Search search) {
         return new NegatedSearchRecord(search);
     }
 
@@ -103,7 +104,8 @@ class NegatedSearchItem extends AbstractSearchItem {
         /** Constructs a new record, for a given matcher. */
         NegatedSearchRecord(Search search) {
             super(search);
-            this.innerRecord = NegatedSearchItem.this.inner.createRecord(search);
+            this.innerRecord =
+                NegatedSearchItem.this.inner.createRecord(search);
         }
 
         @Override

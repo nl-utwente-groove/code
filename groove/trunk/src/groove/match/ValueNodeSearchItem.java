@@ -45,7 +45,8 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         assert this.symbol != null;
     }
 
-    public ValueNodeRecord createRecord(SearchPlanStrategy.Search matcher) {
+    public ValueNodeRecord createRecord(
+            groove.match.SearchPlanStrategy.Search matcher) {
         return new ValueNodeRecord(matcher);
     }
 

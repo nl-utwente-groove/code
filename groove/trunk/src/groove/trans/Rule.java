@@ -23,7 +23,6 @@ import groove.util.Visitor;
 
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -104,20 +103,6 @@ public interface Rule extends Comparable<Rule>, Condition {
     public List<CtrlPar.Var> getSignature();
 
     /**
-     * Returns an iterator over the matches for a given host graph, given a
-     * matching of the root context.
-     * @param host the graph in which the match is to be found
-     * @param contextMap a matching of the pattern of this condition; may be
-     *        <code>null</code> if the condition is ground.
-     * @throws IllegalArgumentException if <code>contextMap</code> is
-     *         <code>null</code> and the condition is not ground, or if
-     *         <code>contextMap</code> is not compatible with the root map
-     */
-    @Deprecated
-    public Iterator<RuleMatch> getMatchIter(HostGraph host,
-            RuleToHostMap contextMap);
-
-    /**
      * Traverses the matches of this rule on a given host graph and for
      * a given context map, and calls the visitor's visit method on all
      * of them, until the first time the visitor returns 
@@ -135,6 +120,25 @@ public interface Rule extends Comparable<Rule>, Condition {
      */
     public <T> T traverseMatches(HostGraph host, RuleToHostMap contextMap,
             Visitor<RuleMatch,T> visitor);
+
+    /**
+     * Tests if this condition is ground and has a match to a given host graph.
+     * Convenience method for <code>getMatchIter(host, null).hasNext()</code>
+     */
+    public boolean hasMatch(HostGraph host);
+
+    /**
+     * Returns a match of this condition into a given host graph, given a
+     * matching of the root graph.
+     * @param host the graph in which the match is to be found
+     * @param contextMap a matching of the root of this condition; may be
+     *        <code>null</code> if the condition is ground.
+     * @throws IllegalArgumentException if <code>patternMatch</code> is
+     *         <code>null</code> and the condition is not ground, or if
+     *         <code>patternMatch</code> is not compatible with the pattern
+     *         graph
+     */
+    public Match getMatch(HostGraph host, RuleToHostMap contextMap);
 
     /**
      * Returns the collection of all matches for a given host graph, given a

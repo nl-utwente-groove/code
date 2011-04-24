@@ -28,7 +28,6 @@ import groove.rel.RegExpr;
 import groove.rel.VarSupport;
 import groove.trans.Condition;
 import groove.trans.EdgeEmbargo;
-import groove.trans.ForallCondition;
 import groove.trans.NotCondition;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
@@ -60,7 +59,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
+public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
     /**
      * Private constructor. Get the instance through
      * {@link #getInstance(boolean,String)}.
@@ -71,6 +70,17 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
     private SearchPlanEngine(String algebraFamily) {
         this.ignoreNeg = false;
         this.algebraFamily = AlgebraFamily.getInstance(algebraFamily);
+    }
+
+    /**
+     * Factory method returning a search engine for 
+     * a graph condition.
+     * @param condition the condition for which a search plan is to be
+     *        constructed
+     */
+    @Override
+    public SearchPlanStrategy createMatcher(Condition condition) {
+        return createMatcher(condition, null, null, null);
     }
 
     @Override
@@ -141,8 +151,6 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
 
     static private SearchPlanEngine instance;
 
-    /** Flag to control the use of {@link ForallSearchItem}s. */
-    static private final boolean FORALL = false;
     /** Flag to control search plan printing. */
     static private final boolean PRINT = false;
 
@@ -241,10 +249,10 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
                         result.add(createNegatedSearchItem(createEdgeSearchItem(embargoEdge)));
                     }
                 } else if (subCondition instanceof NotCondition) {
-                    result.add(new ConditionSearchItem(subCondition));
-                } else if (FORALL && subCondition instanceof ForallCondition) {
-                    result.add(new ForallSearchItem(
-                        (ForallCondition) subCondition, forallConditionCount));
+                    result.add(new NotConditionSearchItem(subCondition));
+                } else {
+                    result.add(new ConditionSearchItem(subCondition,
+                        forallConditionCount));
                     forallConditionCount++;
                 }
             }
@@ -682,7 +690,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
          * to best:
          * <ul>
          * <li> {@link NodeSearchItem}s of a non-specialised type
-         * <li> {@link ConditionSearchItem}s
+         * <li> {@link NotConditionSearchItem}s
          * <li> {@link RegExprEdgeSearchItem}s
          * <li> {@link VarEdgeSearchItem}s
          * <li> {@link WildcardEdgeSearchItem}s
@@ -708,7 +716,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
             if (itemClass == NodeSearchItem.class) {
                 return result;
             }
-            if (itemClass == ForallSearchItem.class) {
+            if (itemClass == ConditionSearchItem.class) {
                 return result;
             }
             result++;
@@ -716,7 +724,7 @@ public class SearchPlanEngine extends SearchEngine<SearchPlanStrategy> {
                 return result;
             }
             result++;
-            if (itemClass == ConditionSearchItem.class) {
+            if (itemClass == NotConditionSearchItem.class) {
                 return result;
             }
             result++;

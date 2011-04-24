@@ -16,21 +16,17 @@
  */
 package groove.match;
 
-import groove.graph.algebra.ValueNode;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
 import groove.rel.VarSupport;
-import groove.trans.AbstractCondition;
-import groove.trans.CompositeMatch;
-import groove.trans.ForallCondition;
-import groove.trans.HostNode;
+import groove.trans.Condition;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
+import groove.trans.SystemProperties;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -41,25 +37,24 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-class ForallSearchItem extends AbstractSearchItem {
+class NotConditionSearchItem extends AbstractSearchItem {
     /**
      * Constructs a search item for a given condition.
      * @param condition the condition to be matched
-     * @param conditionIx the index of the condition in the search
      */
-    public ForallSearchItem(ForallCondition condition, int conditionIx) {
+    public NotConditionSearchItem(Condition condition) {
         this.condition = condition;
+        SystemProperties properties = condition.getSystemProperties();
+        this.matcher =
+            SearchPlanEngine.getInstance(properties.isInjective(),
+                properties.getAlgebraFamily()).createMatcher(condition);
         this.rootMap = condition.getRootMap();
+        this.neededEdges = this.rootMap.edgeMap().keySet();
         this.neededNodes = this.rootMap.nodeMap().keySet();
         this.neededVars = new HashSet<LabelVar>();
         for (RuleEdge edge : this.rootMap.edgeMap().keySet()) {
             this.neededVars.addAll(VarSupport.getAllVars(edge));
         }
-        this.countNode = condition.getCountNode();
-        this.boundNodes =
-            this.countNode == null ? Collections.<RuleNode>emptySet()
-                    : Collections.singleton(this.countNode);
-        this.forallIx = conditionIx;
     }
 
     @Override
@@ -70,11 +65,6 @@ class ForallSearchItem extends AbstractSearchItem {
     @Override
     public Collection<LabelVar> needsVars() {
         return this.neededVars;
-    }
-
-    @Override
-    public Collection<RuleNode> bindsNodes() {
-        return this.boundNodes;
     }
 
     @Override
@@ -92,118 +82,81 @@ class ForallSearchItem extends AbstractSearchItem {
         for (RuleNode node : this.neededNodes) {
             this.nodeIxMap.put(node, strategy.getNodeIx(node));
         }
+        this.edgeIxMap = new HashMap<RuleEdge,Integer>();
+        for (RuleEdge node : this.neededEdges) {
+            this.edgeIxMap.put(node, strategy.getEdgeIx(node));
+        }
         this.varIxMap = new HashMap<LabelVar,Integer>();
         for (LabelVar var : this.neededVars) {
             this.varIxMap.put(var, strategy.getVarIx(var));
         }
-        if (this.countNode != null) {
-            this.preCounted = strategy.isNodeFound(this.countNode);
-            this.countNodeIx = strategy.getNodeIx(this.countNode);
-        }
     }
 
     public Record createRecord(Search search) {
-        return new ForallRecord(search);
+        return new NotConditionRecord(search);
     }
 
     @Override
     public String toString() {
-        return String.format(
-            "Universal condition %s",
-            ((SearchPlanStrategy) ((AbstractCondition<?>) this.condition).getMatcher()).getPlan());
+        return String.format("NAC %s", this.matcher.getPlan());
     }
 
     /** The graph condition that should be matched by this search item. */
-    final ForallCondition condition;
-    /** The count node of the universal condition, if any. */
-    final RuleNode countNode;
-    /** The index of the condition in the search. */
-    final int forallIx;
-    /** Flag indicating if the match count is predetermined. */
-    boolean preCounted;
-    /** The index of the count node (if any). */
-    int countNodeIx = -1;
+    final Condition condition;
+    final SearchPlanStrategy matcher;
     /** The root map of the graph condition. */
     private final RuleGraphMorphism rootMap;
     /** The source nodes of the root map. */
     private final Set<RuleNode> neededNodes;
+    /** The source edges of the root map. */
+    private final Set<RuleEdge> neededEdges;
     /** The variables occurring in edges of the root map. */
     private final Set<LabelVar> neededVars;
-    /** The set containing the count node of the universal condition, if any. */
-    private final Set<RuleNode> boundNodes;
     /** Mapping from the needed nodes to indices in the matcher. */
     Map<RuleNode,Integer> nodeIxMap;
+    /** Mapping from the needed edges to indices in the matcher. */
+    Map<RuleEdge,Integer> edgeIxMap;
     /** Mapping from the needed nodes to indices in the matcher. */
     Map<LabelVar,Integer> varIxMap;
 
     /**
      * Search record for a graph condition.
      */
-    private class ForallRecord extends MultipleRecord<CompositeMatch> {
+    private class NotConditionRecord extends SingularRecord {
         /** Constructs a record for a given search. */
-        public ForallRecord(Search search) {
+        public NotConditionRecord(Search search) {
             super(search);
         }
 
         @Override
-        void init() {
-            if (ForallSearchItem.this.preCounted) {
-                HostNode countImage =
-                    this.search.getNode(ForallSearchItem.this.countNodeIx);
-                this.count =
-                    Integer.parseInt(((ValueNode) countImage).getSymbol());
-            }
+        boolean find() {
             RuleToHostMap contextMap =
                 this.host.getFactory().createRuleToHostMap();
-            for (Map.Entry<RuleNode,Integer> nodeIxEntry : ForallSearchItem.this.nodeIxMap.entrySet()) {
+            for (Map.Entry<RuleNode,Integer> nodeIxEntry : NotConditionSearchItem.this.nodeIxMap.entrySet()) {
                 contextMap.putNode(nodeIxEntry.getKey(),
                     this.search.getNode(nodeIxEntry.getValue()));
             }
-            for (Map.Entry<LabelVar,Integer> varIxEntry : ForallSearchItem.this.varIxMap.entrySet()) {
+            for (Map.Entry<RuleEdge,Integer> edgeIxEntry : NotConditionSearchItem.this.edgeIxMap.entrySet()) {
+                contextMap.putEdge(edgeIxEntry.getKey(),
+                    this.search.getEdge(edgeIxEntry.getValue()));
+            }
+            for (Map.Entry<LabelVar,Integer> varIxEntry : NotConditionSearchItem.this.varIxMap.entrySet()) {
                 contextMap.putVar(varIxEntry.getKey(),
                     this.search.getVar(varIxEntry.getValue()));
             }
-            this.imageIter =
-                ForallSearchItem.this.condition.getAllMatches(this.host,
-                    contextMap).iterator();
+            return NotConditionSearchItem.this.matcher.find(this.host,
+                contextMap, null) == null;
         }
 
         @Override
-        boolean write(CompositeMatch image) {
-            boolean result = true;
-            if (ForallSearchItem.this.preCounted) {
-                result = image.getSubMatches().size() == this.count;
-            } else if (ForallSearchItem.this.countNode != null) {
-                ValueNode countImage =
-                    this.host.getFactory().createNode(
-                        ForallSearchItem.this.condition.getIntAlgebra(),
-                        "" + image.getSubMatches().size());
-                result =
-                    this.search.putNode(ForallSearchItem.this.countNodeIx,
-                        countImage);
-            }
-            if (result) {
-                result =
-                    this.search.putForallMatch(ForallSearchItem.this.forallIx,
-                        image);
-            }
-            return result;
+        boolean write() {
+            // There is nothing to write
+            return true;
         }
 
         @Override
         void erase() {
-            if (!ForallSearchItem.this.preCounted
-                && ForallSearchItem.this.countNodeIx >= 0) {
-                this.search.putNode(ForallSearchItem.this.countNodeIx, null);
-            }
-            this.search.putForallMatch(ForallSearchItem.this.forallIx, null);
+            // There is nothing to erase
         }
-
-        @Override
-        public String toString() {
-            return "Match of " + ForallSearchItem.this.toString();
-        }
-
-        private int count;
     }
 }

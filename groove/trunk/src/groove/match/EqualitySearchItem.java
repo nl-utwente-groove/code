@@ -45,7 +45,8 @@ public class EqualitySearchItem extends AbstractSearchItem {
         this.neededNodes.add(node2);
     }
 
-    public EqualityRecord createRecord(Search matcher) {
+    public EqualityRecord createRecord(
+            groove.match.SearchPlanStrategy.Search matcher) {
         return new EqualityRecord(matcher);
     }
 

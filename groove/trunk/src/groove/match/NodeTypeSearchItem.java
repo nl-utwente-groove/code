@@ -131,7 +131,8 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         return this.edge.label().hashCode();
     }
 
-    final public Record createRecord(Search search) {
+    final public Record createRecord(
+            groove.match.SearchPlanStrategy.Search search) {
         if (isPreMatched(search)) {
             // the edge is unexpectedly pre-matched
             return createDummyRecord();
