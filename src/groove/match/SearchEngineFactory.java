@@ -17,7 +17,6 @@
 package groove.match;
 
 import groove.match.rete.ReteSearchEngine;
-import groove.trans.RuleToHostMap;
 import groove.trans.SystemProperties;
 
 /**
@@ -79,9 +78,9 @@ public class SearchEngineFactory {
      * @return the currently active engine that matches based on 
      *         the requirements specified in the parameters.
      */
-    public SearchEngine<? extends MatchStrategy<RuleToHostMap>> getEngine(
+    public SearchEngine<MatchStrategy<TreeMatch>> getEngine(
             SystemProperties properties) {
-        SearchEngine<? extends MatchStrategy<RuleToHostMap>> result = null;
+        SearchEngine<MatchStrategy<TreeMatch>> result = null;
         switch (this.getCurrentEngineType()) {
         case SEARCH_PLAN:
             result =

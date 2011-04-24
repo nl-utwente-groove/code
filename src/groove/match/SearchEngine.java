@@ -19,7 +19,6 @@ package groove.match;
 import groove.trans.Condition;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
-import groove.trans.RuleToHostMap;
 
 import java.util.Collection;
 
@@ -31,7 +30,7 @@ import java.util.Collection;
  * @author Arash Jalali
  * @version $Revision $
  */
-public abstract class SearchEngine<MatcherType extends MatchStrategy<RuleToHostMap>> {
+public abstract class SearchEngine<MatcherType extends MatchStrategy<TreeMatch>> {
     /**
      * Factory method returning a search engine for 
      * a graph condition.

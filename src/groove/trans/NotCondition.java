@@ -16,11 +16,6 @@
  */
 package groove.trans;
 
-import groove.util.Visitor;
-
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
 
 /**
  * A negative graph condition, which tests against the existence of a graph
@@ -55,32 +50,4 @@ public class NotCondition extends AbstractCondition<CompositeMatch> {
     final public void addSubCondition(Condition condition) {
         throw new UnsupportedOperationException();
     }
-
-    @Override
-    public <R> R traverseMatches(HostGraph host, RuleToHostMap contextMap,
-            Visitor<CompositeMatch,R> visitor) {
-        RuleToHostMap seedMap = computeSeedMap(host, contextMap);
-        if (seedMap != null && getMatcher().find(host, seedMap, null) == null) {
-            visitor.visit(this.emptyMatch);
-        }
-        return visitor.getResult();
-    }
-
-    @Override
-    @Deprecated
-    Iterator<CompositeMatch> computeMatchIter(final HostGraph host,
-            Iterator<RuleToHostMap> matchMapIter) {
-        Iterator<CompositeMatch> result = null;
-        if (matchMapIter.hasNext()) {
-            result = Collections.<CompositeMatch>emptySet().iterator();
-        } else {
-            result = this.WRAPPED_EMPTY_MATCH.iterator();
-        }
-        return result;
-    }
-
-    private final CompositeMatch emptyMatch = new CompositeMatch(this);
-    /** Constant empty match. */
-    private final Set<CompositeMatch> WRAPPED_EMPTY_MATCH =
-        Collections.singleton(this.emptyMatch);
 }

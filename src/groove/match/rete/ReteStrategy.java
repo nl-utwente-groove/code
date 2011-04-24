@@ -17,7 +17,9 @@
 package groove.match.rete;
 
 import groove.match.MatchStrategy;
+import groove.match.TreeMatch;
 import groove.trans.Condition;
+import groove.trans.EdgeEmbargo;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -28,15 +30,13 @@ import groove.util.Visitor;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author Arash Jalali
  * @version $Revision $
  */
-public class ReteStrategy extends MatchStrategy<RuleToHostMap> {
-    private final ReteSearchEngine owner;
-    private final Condition condition;
-
+public class ReteStrategy extends MatchStrategy<TreeMatch> {
     /**
      * Creates a matching strategy object that uses the RETE algorithm for matching.  
      * @param owner The RETE search engine
@@ -50,10 +50,9 @@ public class ReteStrategy extends MatchStrategy<RuleToHostMap> {
 
     @Override
     @Deprecated
-    public synchronized Iterator<RuleToHostMap> getMatchIter(
-            final HostGraph host, RuleToHostMap seedMap) {
-        Iterator<RuleToHostMap> result =
-            (new ArrayList<RuleToHostMap>()).iterator();
+    public synchronized Iterator<TreeMatch> getMatchIter(final HostGraph host,
+            RuleToHostMap seedMap) {
+        Iterator<TreeMatch> result = (new ArrayList<TreeMatch>()).iterator();
         assert this.owner.getNetwork() != null;
 
         if (host != this.owner.getNetwork().getState().getHostGraph()) {
@@ -72,20 +71,20 @@ public class ReteStrategy extends MatchStrategy<RuleToHostMap> {
             if (cc != null) {
                 if ((seedMap != null) && (!seedMap.isEmpty())) {
                     result =
-                        new TransformIterator<ReteMatch,RuleToHostMap>(
+                        new TransformIterator<ReteMatch,TreeMatch>(
                             cc.getConflictSetIterator(seedMap)) {
                             @Override
-                            public RuleToHostMap toOuter(ReteMatch matchMap) {
-                                return matchMap.toRuleToHostMap(host.getFactory());
+                            public TreeMatch toOuter(ReteMatch matchMap) {
+                                return createTreeMatch(matchMap, host);
                             }
                         };
                 } else {
                     result =
-                        new TransformIterator<ReteMatch,RuleToHostMap>(
+                        new TransformIterator<ReteMatch,TreeMatch>(
                             cc.getConflictSetIterator()) {
                             @Override
-                            public RuleToHostMap toOuter(ReteMatch matchMap) {
-                                return matchMap.toRuleToHostMap(host.getFactory());
+                            public TreeMatch toOuter(ReteMatch matchMap) {
+                                return createTreeMatch(matchMap, host);
                             }
                         };
                 }
@@ -98,7 +97,7 @@ public class ReteStrategy extends MatchStrategy<RuleToHostMap> {
 
     @Override
     public <T> T traverse(final HostGraph host, RuleToHostMap seedMap,
-            Visitor<RuleToHostMap,T> visitor) {
+            Visitor<TreeMatch,T> visitor) {
         assert this.owner.getNetwork() != null;
 
         if (host != this.owner.getNetwork().getState().getHostGraph()) {
@@ -123,13 +122,39 @@ public class ReteStrategy extends MatchStrategy<RuleToHostMap> {
                 }
                 boolean cont = true;
                 while (cont && iter.hasNext()) {
-                    ReteMatch matchMap = iter.next();
-                    cont =
-                        visitor.visit(matchMap.toRuleToHostMap(host.getFactory()));
+                    cont = visitor.visit(createTreeMatch(iter.next(), host));
                 }
             }
         }
         return visitor.getResult();
+    }
+
+    /**
+     * Constructs a tree match from a top level pattern match.
+     * @param host the host graph into which the condition is matched
+     * @param matchMap matching of the condition pattern
+     * @return a tree match constructed by extending {@code patternMap} with
+     * matchings of all subconditions 
+     */
+    private TreeMatch createTreeMatch(ReteMatch matchMap, HostGraph host) {
+        RuleToHostMap patternMap = matchMap.toRuleToHostMap(host.getFactory());
+        final TreeMatch result = new TreeMatch(this.condition, patternMap);
+        ReteStrategy[] subMatchers = getSubMatchers();
+        if (subMatchers.length != 0) {
+            // add matches for the subconditions
+            Visitor.Simple<TreeMatch> visitor =
+                new Visitor.Simple<TreeMatch>() {
+                    @Override
+                    protected boolean process(TreeMatch subMatch) {
+                        result.addSubMatch(subMatch);
+                        return true;
+                    }
+                };
+            for (int i = 0; i < subMatchers.length; i++) {
+                subMatchers[i].traverse(host, patternMap, visitor);
+            }
+        }
+        return result;
     }
 
     private synchronized boolean graphShapesEqual(HostGraph g1, HostGraph g2) {
@@ -197,4 +222,28 @@ public class ReteStrategy extends MatchStrategy<RuleToHostMap> {
         }
         return result;
     }
+
+    /** 
+     * Lazily constructs and returns an array of match strategies for all 
+     * non-trivial subconditions.
+     */
+    private ReteStrategy[] getSubMatchers() {
+        if (this.subMatchers == null) {
+            List<ReteStrategy> result =
+                new ArrayList<ReteStrategy>(
+                    this.condition.getSubConditions().size());
+            for (Condition subCondition : this.condition.getSubConditions()) {
+                if (!(subCondition instanceof EdgeEmbargo)) {
+                    result.add(new ReteStrategy(this.owner, subCondition));
+                }
+            }
+            this.subMatchers =
+                result.toArray(new ReteStrategy[result.size()]);
+        }
+        return this.subMatchers;
+    }
+
+    private final ReteSearchEngine owner;
+    private final Condition condition;
+    private ReteStrategy[] subMatchers;
 }

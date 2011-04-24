@@ -65,7 +65,8 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
         }
     }
 
-    public OperatorEdgeRecord createRecord(Search matcher) {
+    public OperatorEdgeRecord createRecord(
+            groove.match.SearchPlanStrategy.Search matcher) {
         return new OperatorEdgeRecord(matcher);
     }
 

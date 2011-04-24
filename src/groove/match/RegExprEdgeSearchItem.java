@@ -49,7 +49,8 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         this.neededVars.removeAll(this.boundVars);
     }
 
-    final public Record createRecord(Search search) {
+    final public Record createRecord(
+            groove.match.SearchPlanStrategy.Search search) {
         if (isSingular(search)) {
             return createSingularRecord(search);
         } else {

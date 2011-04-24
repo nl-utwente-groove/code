@@ -20,7 +20,6 @@ import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.rel.LabelVar;
-import groove.trans.CompositeMatch;
 import groove.trans.ForallCondition;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
@@ -32,6 +31,7 @@ import groove.util.Reporter;
 import groove.util.Visitor;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,7 +46,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class SearchPlanStrategy extends MatchStrategy<RuleToHostMap> {
+public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
     /**
      * Constructs a strategy from a given list of search items. A flag controls
      * if solutions should be injective.
@@ -63,7 +63,7 @@ public class SearchPlanStrategy extends MatchStrategy<RuleToHostMap> {
 
     @Override
     public <T> T traverse(HostGraph host, RuleToHostMap seedMap,
-            Visitor<RuleToHostMap,T> visitor) {
+            Visitor<TreeMatch,T> visitor) {
         Search search = getSearch(host, seedMap);
         while (search.find() && visitor.visit(search.getMatch())) {
             // do nothing
@@ -73,13 +73,13 @@ public class SearchPlanStrategy extends MatchStrategy<RuleToHostMap> {
 
     @Override
     @Deprecated
-    public Iterator<RuleToHostMap> getMatchIter(HostGraph host,
+    public Iterator<TreeMatch> getMatchIter(HostGraph host,
             RuleToHostMap seedMap) {
-        Iterator<RuleToHostMap> result;
+        Iterator<TreeMatch> result;
         getMatchIterReporter.start();
         final Search search = createSearch();
         search.initialise(host, seedMap);
-        result = new Iterator<RuleToHostMap>() {
+        result = new Iterator<TreeMatch>() {
             public boolean hasNext() {
                 // test if there is an unreturned next or if we are done
                 if (this.next == null && !this.atEnd) {
@@ -94,9 +94,9 @@ public class SearchPlanStrategy extends MatchStrategy<RuleToHostMap> {
                 return !this.atEnd;
             }
 
-            public RuleToHostMap next() {
+            public TreeMatch next() {
                 if (hasNext()) {
-                    RuleToHostMap result = this.next;
+                    TreeMatch result = this.next;
                     this.next = null;
                     return result;
                 } else {
@@ -109,7 +109,7 @@ public class SearchPlanStrategy extends MatchStrategy<RuleToHostMap> {
             }
 
             /** The next refinement to be returned. */
-            private RuleToHostMap next;
+            private TreeMatch next;
             /**
              * Flag to indicate that the last refinement has been returned, so
              * {@link #next()} henceforth will return <code>false</code>.
@@ -327,6 +327,7 @@ public class SearchPlanStrategy extends MatchStrategy<RuleToHostMap> {
      */
     public class Search {
         /** Constructs a new record for a given graph and partial match. */
+        @SuppressWarnings("unchecked")
         public Search() {
             int planSize = SearchPlanStrategy.this.plan.size();
             this.records = new SearchItem.Record[planSize];
@@ -344,8 +345,8 @@ public class SearchPlanStrategy extends MatchStrategy<RuleToHostMap> {
                 new HostEdge[SearchPlanStrategy.this.edgeKeys.length];
             this.varSeeds =
                 new TypeLabel[SearchPlanStrategy.this.varKeys.length];
-            this.forallMatches =
-                new CompositeMatch[SearchPlanStrategy.this.forallCount];
+            this.subMatches =
+                new Collection[SearchPlanStrategy.this.forallCount];
         }
 
         /** Initialises the search for a given host graph and anchor map. */
@@ -443,7 +444,8 @@ public class SearchPlanStrategy extends MatchStrategy<RuleToHostMap> {
         private SearchItem.Record getRecord(int current) {
             SearchItem.Record result = this.records[current];
             if (result == null) {
-                SearchItem item = SearchPlanStrategy.this.plan.get(current);
+                SearchItem item =
+                    SearchPlanStrategy.this.plan.get(current);
                 // make a new record
                 result = item.createRecord(this);
                 result.initialise(this.host);
@@ -518,8 +520,8 @@ public class SearchPlanStrategy extends MatchStrategy<RuleToHostMap> {
         }
 
         /** Sets the composite match for a given index. */
-        final boolean putForallMatch(int index, CompositeMatch match) {
-            this.forallMatches[index] = match;
+        final boolean putSubMatch(int index, Collection<TreeMatch> match) {
+            this.subMatches[index] = match;
             return true;
         }
 
@@ -539,8 +541,8 @@ public class SearchPlanStrategy extends MatchStrategy<RuleToHostMap> {
         }
 
         /** Returns the composite match at a given index. */
-        final CompositeMatch getForallMatch(int index) {
-            return this.forallMatches[index];
+        final Collection<TreeMatch> getSubMatch(int index) {
+            return this.subMatches[index];
         }
 
         /**
@@ -568,29 +570,38 @@ public class SearchPlanStrategy extends MatchStrategy<RuleToHostMap> {
          * Returns a copy of the search result, or <code>null</code> if the last
          * invocation of {@link #find()} was not successful.
          */
-        public RuleToHostMap getMatch() {
-            RuleToHostMap result = null;
+        public TreeMatch getMatch() {
+            TreeMatch result = null;
             if (this.found) {
-                result = this.host.getFactory().createRuleToHostMap();
+                RuleToHostMap patternMap =
+                    this.host.getFactory().createRuleToHostMap();
                 for (int i = 0; i < this.nodeImages.length; i++) {
                     HostNode image = this.nodeImages[i];
                     if (image != null) {
-                        result.putNode(SearchPlanStrategy.this.nodeKeys[i],
-                            image);
+                        patternMap.putNode(
+                            SearchPlanStrategy.this.nodeKeys[i], image);
                     }
                 }
                 for (int i = 0; i < this.edgeImages.length; i++) {
                     HostEdge image = this.edgeImages[i];
                     if (image != null) {
-                        result.putEdge(SearchPlanStrategy.this.edgeKeys[i],
-                            image);
+                        patternMap.putEdge(
+                            SearchPlanStrategy.this.edgeKeys[i], image);
                     }
                 }
                 for (int i = 0; i < this.varImages.length; i++) {
                     TypeLabel image = this.varImages[i];
                     if (image != null) {
-                        result.putVar(SearchPlanStrategy.this.varKeys[i], image);
+                        patternMap.putVar(
+                            SearchPlanStrategy.this.varKeys[i], image);
                     }
+                }
+                result =
+                    new TreeMatch(
+                        SearchPlanStrategy.this.plan.getCondition(),
+                        patternMap);
+                for (int i = 0; i < this.subMatches.length; i++) {
+                    result.addSubMatches(this.subMatches[i]);
                 }
             }
             return result;
@@ -614,7 +625,7 @@ public class SearchPlanStrategy extends MatchStrategy<RuleToHostMap> {
         /** Array of variable images. */
         private final TypeLabel[] varImages;
         /** Array of variable images. */
-        private final CompositeMatch[] forallMatches;
+        private final Collection<TreeMatch>[] subMatches;
         /**
          * Array indicating, for each index, if the node with that image was
          * pre-matched in the search.

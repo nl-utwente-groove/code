@@ -24,11 +24,10 @@ import groove.graph.Element;
 import groove.graph.GraphProperties;
 import groove.match.MatchStrategy;
 import groove.match.SearchPlanStrategy;
+import groove.match.TreeMatch;
 import groove.rel.LabelVar;
 import groove.rel.VarSupport;
 import groove.util.Groove;
-import groove.util.NestedIterator;
-import groove.util.TransformIterator;
 import groove.util.Visitor;
 import groove.view.FormatError;
 import groove.view.FormatException;
@@ -40,7 +39,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -384,6 +382,11 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
         return this.hiddenPars;
     }
 
+    @Override
+    final public boolean hasMatch(HostGraph host) {
+        return isGround() && getMatch(host, null) != null;
+    }
+
     /**
      * Lazily creates and returns a matcher for rule events of this rule. The
      * matcher will try to extend anchor maps to full matches. This is in 
@@ -393,18 +396,33 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
     public RuleMatch getMatch(SPOEvent event, final HostGraph host) {
         RuleMatch result =
             getEventMatcher().traverse(host, event.getAnchorMap(),
-                new Visitor<RuleToHostMap,RuleMatch>() {
+                new Visitor<TreeMatch,RuleMatch>() {
                     @Override
-                    protected boolean process(RuleToHostMap patternMap) {
-                        boolean result = isValidPatternMap(host, patternMap);
+                    protected boolean process(TreeMatch match) {
+                        boolean result =
+                            isValidPatternMap(host, match.getPatternMap());
                         if (result) {
                             // this is a simple event, so there are no subrules;
                             // the match consists only of the pattern map
-                            setResult(createMatch(patternMap));
+                            setResult(createMatch(match.getPatternMap()));
                         }
                         return result;
                     }
                 });
+        return result;
+    }
+
+    @Override
+    public RuleMatch getMatch(HostGraph host, RuleToHostMap contextMap) {
+        return traverseMatches(host, contextMap,
+            Visitor.<RuleMatch>newFinder(null));
+    }
+
+    @Override
+    public Collection<RuleMatch> getAllMatches(HostGraph host,
+            RuleToHostMap contextMap) {
+        List<RuleMatch> result = new ArrayList<RuleMatch>();
+        traverseMatches(host, contextMap, Visitor.newCollector(result));
         return result;
     }
 
@@ -414,7 +432,7 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
      * contrast with the normal (condition) matcher, which is based on the
      * images of the root map.
      */
-    private MatchStrategy<RuleToHostMap> getEventMatcher() {
+    private MatchStrategy<TreeMatch> getEventMatcher() {
         if (this.eventMatcher == null) {
             this.eventMatcher =
                 getMatcherFactory().createMatcher(this,
@@ -433,8 +451,8 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
      * 
      * @see #createMatcher(Set, Set)
      */
-    MatchStrategy<RuleToHostMap> getMatcher(RuleToHostMap seedMap) {
-        MatchStrategy<RuleToHostMap> result;
+    MatchStrategy<TreeMatch> getMatcher(RuleToHostMap seedMap) {
+        MatchStrategy<TreeMatch> result;
         if (isTop() && getSignature().size() > 0) {
             int sigSize = getSignature().size();
             BitSet initPars = new BitSet(sigSize);
@@ -466,38 +484,6 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
         this.eventMatcher = null;
     }
 
-    @Override
-    @Deprecated
-    public Iterator<RuleMatch> computeMatchIter(final HostGraph host,
-            Iterator<RuleToHostMap> matchMapIter) {
-        Iterator<RuleMatch> result = null;
-        result =
-            new NestedIterator<RuleMatch>(
-                new TransformIterator<RuleToHostMap,Iterator<RuleMatch>>(
-                    matchMapIter) {
-                    @Override
-                    public Iterator<RuleMatch> toOuter(RuleToHostMap matchMap) {
-                        return computeSubMatchIter(host, matchMap);
-                    }
-                });
-        return result;
-    }
-
-    /** Returns an iterator over the rule matches extending
-     * a given match map for the LHS of this rule.
-     * @param host the host graph on which the subrules should be matched
-     * @param patternMap the match of the LHS
-     */
-    @Deprecated
-    public Iterator<RuleMatch> computeSubMatchIter(HostGraph host,
-            RuleToHostMap patternMap) {
-        if (isValidPatternMap(host, patternMap)) {
-            return addSubMatches(host, createMatch(patternMap)).iterator();
-        } else {
-            return null;
-        }
-    }
-
     /** 
      * Traverses and visits the matches of this condition
      * for a given host graph and context map.
@@ -509,12 +495,12 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
         RuleToHostMap seedMap = computeSeedMap(host, contextMap);
         if (seedMap != null) {
             getMatcher(seedMap).traverse(host, seedMap,
-                new Visitor<RuleToHostMap,R>() {
+                new Visitor<TreeMatch,R>() {
                     @Override
-                    protected boolean process(RuleToHostMap patternMap) {
+                    protected boolean process(TreeMatch match) {
                         assert visitor.isContinue();
-                        if (isValidPatternMap(host, patternMap)) {
-                            traverseSubMatches(host, patternMap, visitor);
+                        if (isValidPatternMap(host, match.getPatternMap())) {
+                            match.traverseRuleMatches(visitor);
                         }
                         return visitor.isContinue();
                     }
@@ -523,69 +509,10 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
         return visitor.getResult();
     }
 
-    private <R> R traverseSubMatches(HostGraph host, RuleToHostMap patternMap,
-            Visitor<RuleMatch,R> visitor) {
-        assert visitor.isContinue();
-        if (getComplexSubConditions().isEmpty()) {
-            visitor.visit(createMatch(patternMap));
-        } else {
-            int subMatchCount = getComplexSubConditions().size();
-            // construct a matrix of sub-matches
-            @SuppressWarnings("unchecked")
-            List<CompositeMatch>[] matchMatrix = new List[subMatchCount];
-            int[] rowSize = new int[subMatchCount];
-            int matchCount = 1;
-            int i = 0;
-            for (ForallCondition subCondition : getComplexSubConditions()) {
-                List<CompositeMatch> subMatches =
-                    subCondition.getAllMatches(host, patternMap);
-                matchMatrix[i] = subMatches;
-                rowSize[i] = subMatches.size();
-                matchCount = matchCount * subMatches.size();
-                i++;
-            }
-            if (matchCount > 0) {
-                int[] vector = new int[subMatchCount];
-                do {
-                    RuleMatch match = createMatch(patternMap);
-                    for (i = 0; i < subMatchCount; i++) {
-                        match.getSubMatches().addAll(
-                            matchMatrix[i].get(vector[i]).getSubMatches());
-                    }
-                    visitor.visit(match);
-                } while (visitor.isContinue() && incVector(vector, rowSize));
-            }
-        }
-        return visitor.getResult();
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public Collection<ForallCondition> getComplexSubConditions() {
         return super.getComplexSubConditions();
-    }
-
-    /**
-     * Returns a collection of matches extending a given match with matches for
-     * the sub-conditions.
-     */
-    @Deprecated
-    private List<RuleMatch> addSubMatches(HostGraph host, RuleMatch simpleMatch) {
-        List<RuleMatch> result = Collections.singletonList(simpleMatch);
-        RuleToHostMap matchMap = simpleMatch.getElementMap();
-        for (ForallCondition condition : getComplexSubConditions()) {
-            List<CompositeMatch> subMatches =
-                condition.getAllMatches(host, matchMap);
-            List<RuleMatch> oldResult = result;
-            result = new ArrayList<RuleMatch>();
-            for (RuleMatch oldMatch : oldResult) {
-                result.addAll(oldMatch.addForallChoice(condition, subMatches));
-            }
-            if (result.isEmpty()) {
-                break;
-            }
-        }
-        return result;
     }
 
     /**
@@ -1520,11 +1447,11 @@ public class SPORule extends AbstractCondition<RuleMatch> implements Rule {
     /**
      * Mapping from sets of initialised parameters to match strategies.
      */
-    private final Map<BitSet,MatchStrategy<RuleToHostMap>> matcherMap =
-        new HashMap<BitSet,MatchStrategy<RuleToHostMap>>();
+    private final Map<BitSet,MatchStrategy<TreeMatch>> matcherMap =
+        new HashMap<BitSet,MatchStrategy<TreeMatch>>();
 
     /** The matcher for events of this rule. */
-    private MatchStrategy<RuleToHostMap> eventMatcher;
+    private MatchStrategy<TreeMatch> eventMatcher;
 
     /** Returns the current anchor factory for all rules. */
     public static AnchorFactory<SPORule> getAnchorFactory() {

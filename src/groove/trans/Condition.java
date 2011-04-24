@@ -22,7 +22,6 @@ import groove.util.Fixable;
 import groove.view.FormatException;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -131,52 +130,4 @@ public interface Condition extends Fixable {
      * @see #getSubConditions()
      */
     public void addSubCondition(Condition condition);
-
-    /**
-     * Tests if this condition is ground and has a match to a given host graph.
-     * Convenience method for <code>getMatchIter(host, null).hasNext()</code>
-     */
-    public boolean hasMatch(HostGraph host);
-
-    /**
-     * Returns a match of this condition into a given host graph, given a
-     * matching of the root graph.
-     * @param host the graph in which the match is to be found
-     * @param contextMap a matching of the root of this condition; may be
-     *        <code>null</code> if the condition is ground.
-     * @throws IllegalArgumentException if <code>patternMatch</code> is
-     *         <code>null</code> and the condition is not ground, or if
-     *         <code>patternMatch</code> is not compatible with the pattern
-     *         graph
-     */
-    public Match getMatch(HostGraph host, RuleToHostMap contextMap);
-
-    /**
-     * Returns the collection of all matches into a given host graph, given a
-     * matching of the root graph.
-     * @param host the graph in which the match is to be found
-     * @param contextMap a matching of the root of this condition; may be
-     *        <code>null</code> if the condition is ground.
-     * @throws IllegalArgumentException if <code>patternMatch</code> is
-     *         <code>null</code> and the condition is not ground, or if
-     *         <code>patternMatch</code> is not compatible with the pattern
-     *         graph
-     */
-    public Collection<? extends Match> getAllMatches(HostGraph host,
-            RuleToHostMap contextMap);
-
-    /**
-     * Returns an iterator over all matches for a given host graph, given a
-     * matching of the pattern graph.
-     * @param host the graph in which the match is to be found
-     * @param contextMap a matching of the pattern of this condition; may be
-     *        <code>null</code> if the condition is ground.
-     * @throws IllegalArgumentException if <code>patternMatch</code> is
-     *         <code>null</code> and the condition is not ground, or if
-     *         <code>patternMatch</code> is not compatible with the pattern
-     *         graph
-     */
-    @Deprecated
-    public Iterator<? extends Match> getMatchIter(HostGraph host,
-            RuleToHostMap contextMap);
 }

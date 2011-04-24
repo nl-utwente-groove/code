@@ -35,7 +35,8 @@ class NodeSearchItem extends AbstractSearchItem {
         this.boundNodes = Collections.singleton(node);
     }
 
-    public Record createRecord(Search search) {
+    public Record createRecord(
+            groove.match.SearchPlanStrategy.Search search) {
         if (this.nodeMatched || search.getNodeSeed(this.nodeIx) != null) {
             // the node is pre-matched, so there is nothing to do
             return createDummyRecord();

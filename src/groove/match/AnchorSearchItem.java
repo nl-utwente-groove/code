@@ -134,7 +134,8 @@ class AnchorSearchItem extends AbstractSearchItem {
         return String.format("Check %s", elementList);
     }
 
-    public Record createRecord(Search search) {
+    public Record createRecord(
+            groove.match.SearchPlanStrategy.Search search) {
         assert allElementsMatched(search) : String.format(
             "Elements %s not pre-matched", this.unmatched);
         return new DummyRecord();

@@ -16,12 +16,9 @@
  */
 package groove.match;
 
-import groove.trans.AbstractCondition;
 import groove.trans.Condition;
-import groove.trans.EdgeEmbargo;
 import groove.trans.ForallCondition;
 import groove.trans.HostEdge;
-import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.NotCondition;
 import groove.trans.Rule;
@@ -33,8 +30,10 @@ import groove.trans.RuleToHostMap;
 import groove.trans.SPORule;
 import groove.util.Fixable;
 import groove.util.Visitor;
+import groove.util.Visitor.Collector;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -77,6 +76,12 @@ public class TreeMatch implements Fixable {
         return this.subMatches.add(subMatch);
     }
 
+    /** Adds a sub-match to this tree match. */
+    public final boolean addSubMatches(Collection<TreeMatch> subMatches) {
+        assert !isFixed();
+        return this.subMatches.addAll(subMatches);
+    }
+
     /** 
      * Traverses the rule matches based on this tree match.
      * Each visited rule match consists of the pattern map of this
@@ -97,7 +102,7 @@ public class TreeMatch implements Fixable {
             visitor.visit(createRuleMatch());
         } else {
             @SuppressWarnings("unchecked")
-            List<RuleMatch>[][] matrix = new List[subMatchCount][];
+            List<RuleMatch>[] matrix = new List[subMatchCount];
             int[] rowSize = new int[subMatchCount];
             int resultSize = computeForallMatchMatrix(matrix, rowSize);
             if (resultSize > 0) {
@@ -105,7 +110,7 @@ public class TreeMatch implements Fixable {
                 do {
                     RuleMatch match = createRuleMatch();
                     for (int row = 0; row < subMatchCount; row++) {
-                        match.getSubMatches().addAll(matrix[row][index[row]]);
+                        match.getSubMatches().add(matrix[row].get(index[row]));
                     }
                     if (!visitor.visit(match)) {
                         break;
@@ -137,7 +142,7 @@ public class TreeMatch implements Fixable {
             result.add(createRuleMatch());
         } else {
             @SuppressWarnings("unchecked")
-            List<RuleMatch>[][] matrix = new List[subMatchCount][];
+            List<RuleMatch>[] matrix = new List[subMatchCount];
             int[] rowSize = new int[subMatchCount];
             int resultSize = computeForallMatchMatrix(matrix, rowSize);
             if (resultSize == 0) {
@@ -148,7 +153,7 @@ public class TreeMatch implements Fixable {
                 do {
                     RuleMatch match = createRuleMatch();
                     for (int row = 0; row < subMatchCount; row++) {
-                        match.getSubMatches().addAll(matrix[row][index[row]]);
+                        match.getSubMatches().add(matrix[row].get(index[row]));
                     }
                     result.add(match);
                 } while (incVector(index, rowSize));
@@ -167,18 +172,17 @@ public class TreeMatch implements Fixable {
      * be initialised to an array of the correct length (the number of submatches)
      * @return the product of the row sizes
      */
-    private int computeForallMatchMatrix(List<RuleMatch>[][] matrix,
-            int[] rowSize) {
+    private int computeForallMatchMatrix(List<RuleMatch>[] matrix, int[] rowSize) {
         int resultSize = 1;
         int i = 0;
         for (TreeMatch subMatch : getSubMatches()) {
-            List<RuleMatch>[] row = subMatch.toForallMatchSet();
+            List<RuleMatch> row = subMatch.toForallMatchSet();
             matrix[i] = row;
-            resultSize *= row.length;
+            resultSize *= row.size();
             if (resultSize == 0) {
                 break;
             }
-            rowSize[i] = row.length;
+            rowSize[i] = row.size();
             i++;
         }
         return resultSize;
@@ -193,51 +197,56 @@ public class TreeMatch implements Fixable {
      * @throws UnsupportedOperationException if the condition of this
      * tree match is not of the correct type.
      */
-    @SuppressWarnings("unchecked")
-    public List<RuleMatch>[] toForallMatchSet() {
+    public List<RuleMatch> toForallMatchSet() {
         setFixed();
         if (getCondition() instanceof Rule) {
             throw new UnsupportedOperationException();
         }
-        List<RuleMatch>[] result;
-        int subMatchCount = getSubMatches().size();
-        if (subMatchCount == 0) {
-            if (getCondition() instanceof ForallCondition
-                && ((ForallCondition) getCondition()).isPositive()) {
-                result = new List[0];
-            } else {
-                result = new List[] {Collections.emptyList()};
-            }
-        } else {
-            int resultSize = 1;
-            List<RuleMatch>[] matrix = new List[subMatchCount];
-            int[] rowSize = new int[subMatchCount];
-            int i = 0;
-            for (TreeMatch subMatch : getSubMatches()) {
-                List<RuleMatch> row = subMatch.toRuleMatchSet();
-                matrix[i] = row;
-                resultSize *= row.size();
-                if (resultSize == 0) {
-                    break;
-                }
-                rowSize[i] = row.size();
-                i++;
-            }
-            result = new List[resultSize];
-            if (resultSize > 0) {
-                int index[] = new int[subMatchCount];
-                i = 0;
-                do {
-                    List<RuleMatch> matches =
-                        new ArrayList<RuleMatch>(subMatchCount);
-                    for (int row = 0; row < subMatchCount; row++) {
-                        matches.add(matrix[row].get(index[row]));
-                    }
-                    result[i] = matches;
-                } while (incVector(index, rowSize));
-            }
+        List<RuleMatch> result = new ArrayList<RuleMatch>();
+        Collector<RuleMatch,?> collector = Visitor.newCollector(result);
+        for (TreeMatch subMatch : getSubMatches()) {
+            subMatch.traverseRuleMatches(collector);
         }
+        collector.dispose();
         return result;
+        //        int subMatchCount = getSubMatches().size();
+        //        if (subMatchCount == 0) {
+        //            if (getCondition() instanceof ForallCondition
+        //                && ((ForallCondition) getCondition()).isPositive()) {
+        //                result = new List[0];
+        //            } else {
+        //                result = new List[] {Collections.emptyList()};
+        //            }
+        //        } else {
+        //            int resultSize = 1;
+        //            List<RuleMatch>[] matrix = new List[subMatchCount];
+        //            int[] rowSize = new int[subMatchCount];
+        //            int i = 0;
+        //            for (TreeMatch subMatch : getSubMatches()) {
+        //                List<RuleMatch> row = subMatch.toRuleMatchSet();
+        //                matrix[i] = row;
+        //                resultSize *= row.size();
+        //                if (resultSize == 0) {
+        //                    break;
+        //                }
+        //                rowSize[i] = row.size();
+        //                i++;
+        //            }
+        //            result = new List[resultSize];
+        //            if (resultSize > 0) {
+        //                int index[] = new int[subMatchCount];
+        //                i = 0;
+        //                do {
+        //                    List<RuleMatch> matches =
+        //                        new ArrayList<RuleMatch>(subMatchCount);
+        //                    for (int row = 0; row < subMatchCount; row++) {
+        //                        matches.add(matrix[row].get(index[row]));
+        //                    }
+        //                    result[i] = matches;
+        //                } while (incVector(index, rowSize));
+        //            }
+        //        }
+        //        return result;
     }
 
     /** Callback factory method for rule matches base don this tree match. */
@@ -367,10 +376,10 @@ public class TreeMatch implements Fixable {
         result.append(getCondition().getName());
         result.append(": ");
         result.append(getPatternMap());
+        result.append('\n');
         for (TreeMatch subMatch : getSubMatches()) {
             result.append(subMatch.toString(level + 1));
         }
-        result.append('\n');
         return result;
     }
 
