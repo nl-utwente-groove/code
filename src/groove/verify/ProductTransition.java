@@ -39,8 +39,8 @@ public class ProductTransition {
      * @param transition the underlying graph-transition
      * @param target the target buchi graph-state
      */
-    public ProductTransition(ProductState source,
-            GraphTransition transition, ProductState target) {
+    public ProductTransition(ProductState source, GraphTransition transition,
+            ProductState target) {
         this.source = source;
         this.graphTransition = transition;
         this.target = target;
@@ -91,7 +91,7 @@ public class ProductTransition {
     }
 
     // ----------------------- OBJECT OVERRIDES -----------------------
-    
+
     /**
      * This implementation compares objects on the basis of the source graph,
      * rule and anchor images.

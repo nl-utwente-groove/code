@@ -24,7 +24,6 @@ import groove.control.parse.MyTree;
 import groove.control.parse.Namespace;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
-import groove.trans.SPORule;
 import groove.util.Groove;
 import groove.view.FormatException;
 
@@ -66,7 +65,7 @@ public class CtrlLoader {
         try {
             Namespace namespace = new Namespace();
             for (Rule rule : grammar.getRules()) {
-                namespace.addRule((SPORule) rule);
+                namespace.addRule(rule);
             }
             AlgebraFamily family;
             if (grammar.getProperties() == null) {

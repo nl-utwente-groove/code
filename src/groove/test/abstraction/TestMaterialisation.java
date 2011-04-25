@@ -26,8 +26,8 @@ import groove.abstraction.ShapeEdge;
 import groove.graph.EdgeRole;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
-import groove.trans.Rule;
 import groove.trans.RuleMatch;
+import groove.trans.Rule;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 

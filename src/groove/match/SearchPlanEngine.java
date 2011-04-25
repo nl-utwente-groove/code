@@ -28,10 +28,8 @@ import groove.rel.RegExpr;
 import groove.rel.VarSupport;
 import groove.trans.Condition;
 import groove.trans.EdgeEmbargo;
-import groove.trans.NotCondition;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
-import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
 import groove.trans.SystemProperties;
@@ -62,14 +60,11 @@ import java.util.TreeSet;
 public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
     /**
      * Private constructor. Get the instance through
-     * {@link #getInstance(boolean,String)}.
-     * @param algebraFamily the name of the set of algebras to be used in
-     * data value manipulation
+     * {@link #getInstance()}.
      * @see AlgebraFamily#getInstance(String)
      */
-    private SearchPlanEngine(String algebraFamily) {
-        this.ignoreNeg = false;
-        this.algebraFamily = AlgebraFamily.getInstance(algebraFamily);
+    private SearchPlanEngine() {
+        // empty
     }
 
     /**
@@ -86,23 +81,24 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
     @Override
     public SearchPlanStrategy createMatcher(Condition condition,
             Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges,
-            Collection<RuleNode> relevantNodes) {
+            Collection<RuleNode> anchorNodes) {
         assert (seedNodes == null) == (seedEdges == null) : "Anchor nodes and edges should be null simultaneously";
+        this.algebraFamily =
+            AlgebraFamily.getInstance(condition.getSystemProperties().getAlgebraFamily());
         if (seedNodes == null) {
-            RuleGraphMorphism patternMap = condition.getRootMap();
-            seedNodes = patternMap.nodeMap().values();
-            seedEdges = patternMap.edgeMap().values();
+            seedNodes = condition.getRootNodes();
+            seedEdges = condition.getRootEdges();
         }
         PlanData planData = new PlanData(condition);
         SearchPlan plan = planData.getPlan(seedNodes, seedEdges);
-        if (relevantNodes != null) {
-            Set<RuleNode> unboundRelevantNodes =
-                new HashSet<RuleNode>(relevantNodes);
-            Set<LabelVar> boundVars = new HashSet<LabelVar>();
-            for (AbstractSearchItem item : plan) {
-                item.setRelevant(unboundRelevantNodes.removeAll(item.bindsNodes())
-                    | boundVars.addAll(item.bindsVars()));
-            }
+        Set<RuleNode> unboundAnchorNodes = new HashSet<RuleNode>();
+        if (anchorNodes != null) {
+            unboundAnchorNodes.addAll(anchorNodes);
+        }
+        Set<LabelVar> boundVars = new HashSet<LabelVar>();
+        for (AbstractSearchItem item : plan) {
+            item.setRelevant(unboundAnchorNodes.removeAll(item.bindsNodes())
+                | boundVars.addAll(item.bindsVars()));
         }
         SearchPlanStrategy result = new SearchPlanStrategy(plan);
         if (PRINT) {
@@ -127,24 +123,14 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
      * If {@code null}, the default will be used.
      * @see AlgebraFamily#getInstance(String)
      */
-    private final AlgebraFamily algebraFamily;
-    /**
-     * Flag indicating if this factory creates matchings that ignore negations
-     * in the source graph.
-     */
-    private final boolean ignoreNeg;
+    private AlgebraFamily algebraFamily;
 
     /** Returns an instance of this factory class.
-     * @param injective if <code>true</code>, the factory produces injective
-     *        matchers only
-     * @param algebraFamily the name of the set of algebras to be used in
-     * data value manipulation
      * @see AlgebraFamily#getInstance(String)
      */
-    static public SearchPlanEngine getInstance(boolean injective,
-            String algebraFamily) {
-        if (instance == null || instance.algebraFamily.equals(algebraFamily)) {
-            instance = new SearchPlanEngine(algebraFamily);
+    static public SearchPlanEngine getInstance() {
+        if (instance == null) {
+            instance = new SearchPlanEngine();
         }
         return instance;
     }
@@ -152,7 +138,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
     static private SearchPlanEngine instance;
 
     /** Flag to control search plan printing. */
-    static private final boolean PRINT = false;
+    static private final boolean PRINT = true;
 
     /**
      * Plan data extension based on a graph condition. Additionally it takes the
@@ -202,7 +188,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
             }
             if (!anchorNodes.isEmpty() || !anchorEdges.isEmpty()) {
                 AbstractSearchItem preMatchItem =
-                    new AnchorSearchItem(anchorNodes, anchorEdges);
+                    new SeedSearchItem(anchorNodes, anchorEdges);
                 result.add(preMatchItem);
                 unmatchedNodes.removeAll(preMatchItem.bindsNodes());
                 unmatchedEdges.removeAll(preMatchItem.bindsEdges());
@@ -237,24 +223,23 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
                     result.add(nodeItem);
                 }
             }
-            int forallConditionCount = 0;
             for (Condition subCondition : this.condition.getSubConditions()) {
+                AbstractSearchItem item;
                 if (subCondition instanceof EdgeEmbargo) {
                     RuleEdge embargoEdge =
                         ((EdgeEmbargo) subCondition).getEmbargoEdge();
                     if (embargoEdge.label().isEmpty()) {
-                        result.add(createEqualitySearchItem(
-                            embargoEdge.source(), embargoEdge.target(), false));
+                        item =
+                            createEqualitySearchItem(embargoEdge.source(),
+                                embargoEdge.target(), false);
                     } else {
-                        result.add(createNegatedSearchItem(createEdgeSearchItem(embargoEdge)));
+                        item =
+                            createNegatedSearchItem(createEdgeSearchItem(embargoEdge));
                     }
-                } else if (subCondition instanceof NotCondition) {
-                    result.add(new NotConditionSearchItem(subCondition));
                 } else {
-                    result.add(new ConditionSearchItem(subCondition,
-                        forallConditionCount));
-                    forallConditionCount++;
+                    item = new ConditionSearchItem(subCondition);
                 }
+                result.add(item);
             }
             return result;
         }
@@ -364,16 +349,12 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
             RuleNode source = edge.source();
             RegExpr negOperand = label.getNegOperand();
             if (negOperand instanceof RegExpr.Empty) {
-                if (!SearchPlanEngine.this.ignoreNeg) {
-                    result = createEqualitySearchItem(source, target, false);
-                }
+                result = createEqualitySearchItem(source, target, false);
             } else if (negOperand != null) {
-                if (!SearchPlanEngine.this.ignoreNeg) {
-                    RuleEdge negatedEdge =
-                        new RuleEdge(source, negOperand.toLabel(), target);
-                    result =
-                        createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
-                }
+                RuleEdge negatedEdge =
+                    new RuleEdge(source, negOperand.toLabel(), target);
+                result =
+                    createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
             } else if (label.getWildcardId() != null) {
                 result = new VarEdgeSearchItem(edge);
             } else if (label.isWildcard()) {
@@ -690,7 +671,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
          * to best:
          * <ul>
          * <li> {@link NodeSearchItem}s of a non-specialised type
-         * <li> {@link NotConditionSearchItem}s
+         * <li> {@link ConditionSearchItem}s
          * <li> {@link RegExprEdgeSearchItem}s
          * <li> {@link VarEdgeSearchItem}s
          * <li> {@link WildcardEdgeSearchItem}s
@@ -699,7 +680,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
          * <li> {@link NegatedSearchItem}s
          * <li> {@link OperatorEdgeSearchItem}s
          * <li> {@link ValueNodeSearchItem}s
-         * <li> {@link AnchorSearchItem}s
+         * <li> {@link SeedSearchItem}s
          * </ul>
          */
         public int compare(SearchItem o1, SearchItem o2) {
@@ -721,10 +702,6 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
             }
             result++;
             if (itemClass == NodeTypeSearchItem.class) {
-                return result;
-            }
-            result++;
-            if (itemClass == NotConditionSearchItem.class) {
                 return result;
             }
             result++;
@@ -764,7 +741,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
             //                return result;
             //            }
             //            result++;
-            if (itemClass == AnchorSearchItem.class) {
+            if (itemClass == SeedSearchItem.class) {
                 return result;
             }
             throw new IllegalArgumentException(String.format(

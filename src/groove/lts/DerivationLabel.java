@@ -19,8 +19,8 @@ package groove.lts;
 import groove.graph.AbstractLabel;
 import groove.trans.AbstractEvent;
 import groove.trans.HostNode;
-import groove.trans.Rule;
 import groove.trans.RuleEvent;
+import groove.trans.Rule;
 
 /** Class of labels that can appear on graph transitions. */
 public class DerivationLabel extends AbstractLabel {

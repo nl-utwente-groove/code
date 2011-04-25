@@ -18,16 +18,15 @@ import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.graph.EdgeRole;
 import groove.trans.AbstractEvent;
-import groove.trans.DefaultApplication;
+import groove.trans.RuleApplication;
 import groove.trans.DeltaApplier;
 import groove.trans.DeltaHostGraph;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.MergeMap;
-import groove.trans.RuleApplication;
+import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
-import groove.trans.SPORule;
 import groove.view.FormatException;
 
 /**
@@ -82,7 +81,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
             result = new HostNode[valueCount];
             HostNode[] parentValues = this.source.getBoundNodes();
             int[] varBinding = ctrlTrans.getTargetVarBinding();
-            SPORule rule = ((SPORule) getEvent().getRule());
+            Rule rule = getEvent().getRule();
             int anchorSize = getEvent().getAnchorSize();
             MergeMap mergeMap = getEvent().getMergeMap();
             for (int i = 0; i < valueCount; i++) {
@@ -121,24 +120,9 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      */
     public HostGraphMorphism getMorphism() {
         RuleApplication appl =
-            new DefaultApplication(getEvent(), source().getGraph(), getGraph(),
+            new RuleApplication(getEvent(), source().getGraph(), getGraph(),
                 getAddedNodes());
-        //        Graph derivedTarget = appl.getTarget();
-        //        Graph realTarget = target().getGraph();
-        //        if (derivedTarget.edgeSet().equals(realTarget.edgeSet())
-        //            && derivedTarget.nodeSet().equals(realTarget.nodeSet())) {
         return appl.getMorphism();
-        //        } else {
-        //            Morphism iso = derivedTarget.getIsomorphismTo(realTarget);
-        //            assert iso != null : "Can't reconstruct derivation from graph transition "
-        //                + this
-        //                + ": \n"
-        //                + AbstractGraphShape.toString(derivedTarget)
-        //                + " and \n"
-        //                + AbstractGraphShape.toString(realTarget)
-        //                + " \nnot isomorphic";
-        //            return appl.getMorphism().then(iso);
-        //        }
     }
 
     /**

@@ -17,7 +17,7 @@
 package groove.lts;
 
 import groove.control.CtrlCall;
-import groove.trans.DefaultApplication;
+import groove.trans.RuleApplication;
 import groove.trans.DeltaApplier;
 import groove.trans.DeltaHostGraph;
 import groove.trans.HostEdge;
@@ -109,7 +109,7 @@ class StateCache {
         DeltaApplier result = null;
         if (this.state instanceof DefaultGraphNextState) {
             DefaultGraphNextState state = (DefaultGraphNextState) this.state;
-            return new DefaultApplication(state.getEvent(),
+            return new RuleApplication(state.getEvent(),
                 state.source().getGraph(), state.getAddedNodes());
         }
         return result;

@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-
 /**
  * Interface offering the functionality to extract anchors from a given graph
  * transformation rule.

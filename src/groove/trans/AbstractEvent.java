@@ -121,7 +121,7 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
     }
 
     public RuleApplication newApplication(HostGraph source) {
-        return new DefaultApplication(this, source);
+        return new RuleApplication(this, source);
     }
 
     /** Returns the cached set of nodes erased by the event. */

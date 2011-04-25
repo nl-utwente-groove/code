@@ -37,25 +37,13 @@ public class EdgeEmbargo extends NotCondition {
         super(graph.newGraph(String.format("%s:!(%s)", graph.getName(),
             embargoEdge)), properties);
         this.embargoEdge = embargoEdge;
-        RuleNode sourceImage = addRoot(embargoEdge.source());
-        RuleNode targetImage = addRoot(embargoEdge.target());
-        getPattern().addEdge(sourceImage, embargoEdge.label(), targetImage);
+        getPattern().addEdge(embargoEdge);
+        getRootNodes().add(embargoEdge.source());
+        getRootNodes().add(embargoEdge.target());
         if (CONSTRUCTOR_DEBUG) {
             Groove.message("Edge embargo: " + this);
             Groove.message("Embargo edge: " + embargoEdge);
         }
-    }
-
-    /**
-     * Adds a node to the root map with a fresh image, and returns the image. 
-     */
-    private RuleNode addRoot(RuleNode root) {
-        RuleNode result = getRootMap().getNode(root);
-        if (result == null) {
-            result = getPattern().addNode();
-            getRootMap().putNode(root, result);
-        }
-        return result;
     }
 
     /**

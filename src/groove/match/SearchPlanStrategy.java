@@ -20,7 +20,7 @@ import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.rel.LabelVar;
-import groove.trans.ForallCondition;
+import groove.trans.Condition;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -34,10 +34,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
@@ -56,9 +54,9 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
         this.nodeIxMap = new HashMap<RuleNode,Integer>();
         this.edgeIxMap = new HashMap<RuleEdge,Integer>();
         this.varIxMap = new HashMap<LabelVar,Integer>();
+        this.condIxMap = new HashMap<Condition,Integer>();
         this.plan = plan;
         this.injective = plan.isInjective();
-        this.forallCount = plan.getForallCount();
     }
 
     @Override
@@ -69,55 +67,6 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
             // do nothing
         }
         return visitor.getResult();
-    }
-
-    @Override
-    @Deprecated
-    public Iterator<TreeMatch> getMatchIter(HostGraph host,
-            RuleToHostMap seedMap) {
-        Iterator<TreeMatch> result;
-        getMatchIterReporter.start();
-        final Search search = createSearch();
-        search.initialise(host, seedMap);
-        result = new Iterator<TreeMatch>() {
-            public boolean hasNext() {
-                // test if there is an unreturned next or if we are done
-                if (this.next == null && !this.atEnd) {
-                    // search for the next solution
-                    if (search.find()) {
-                        this.next = search.getMatch();
-                    } else {
-                        // there is none and will be none; give up
-                        this.atEnd = true;
-                    }
-                }
-                return !this.atEnd;
-            }
-
-            public TreeMatch next() {
-                if (hasNext()) {
-                    TreeMatch result = this.next;
-                    this.next = null;
-                    return result;
-                } else {
-                    throw new NoSuchElementException();
-                }
-            }
-
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-
-            /** The next refinement to be returned. */
-            private TreeMatch next;
-            /**
-             * Flag to indicate that the last refinement has been returned, so
-             * {@link #next()} henceforth will return <code>false</code>.
-             */
-            private boolean atEnd = false;
-        };
-        getMatchIterReporter.stop();
-        return result;
     }
 
     /**
@@ -217,7 +166,7 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
     }
 
     /**
-     * Returns the index of a given variable in the node index map. Adds an
+     * Returns the index of a given variable in the variable index map. Adds an
      * index for the variable to the map if it was not yet there.
      * @param var the variable to be looked up
      * @return an index for <code>var</code>
@@ -227,6 +176,21 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
         if (value == null) {
             testFixed(false);
             this.varIxMap.put(var, value = this.varIxMap.size());
+        }
+        return value;
+    }
+
+    /**
+     * Returns the index of a given subcondition in the index map. Adds an
+     * index for the variable to the map if it was not yet there.
+     * @param cond the condition to be looked up
+     * @return an index for <code>cond</code>
+     */
+    int getCondIx(Condition cond) {
+        Integer value = this.condIxMap.get(cond);
+        if (value == null) {
+            testFixed(false);
+            this.condIxMap.put(cond, value = this.condIxMap.size());
         }
         return value;
     }
@@ -278,8 +242,6 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
     final SearchPlan plan;
     /** Flag indicating that the matching should be injective. */
     final boolean injective;
-    /** Number of {@link ForallCondition}s in the search plan. */
-    final int forallCount;
     /**
      * Map from source graph nodes to (distinct) indices.
      */
@@ -292,6 +254,10 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
      * Map from source graph variables to (distinct) indices.
      */
     private final Map<LabelVar,Integer> varIxMap;
+    /**
+     * Map from subconditions to (distinct) indices.
+     */
+    private final Map<Condition,Integer> condIxMap;
     /**
      * Array of source graph nodes, which is the inverse of {@link #nodeIxMap} .
      */
@@ -314,9 +280,6 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
     /** Reporter instance to profile matcher methods. */
     static private final Reporter reporter =
         Reporter.register(SearchPlanStrategy.class);
-    /** Handle for profiling {@link #getMatchIter(HostGraph, RuleToHostMap)} */
-    static final Reporter getMatchIterReporter =
-        reporter.register("getMatchIter()");
     /** Handle for profiling {@link Search#find()} */
     static public final Reporter searchFindReporter =
         reporter.register("Search.find()");
@@ -346,7 +309,7 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
             this.varSeeds =
                 new TypeLabel[SearchPlanStrategy.this.varKeys.length];
             this.subMatches =
-                new Collection[SearchPlanStrategy.this.forallCount];
+                new Collection[SearchPlanStrategy.this.condIxMap.size()];
         }
 
         /** Initialises the search for a given host graph and anchor map. */
@@ -444,8 +407,7 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
         private SearchItem.Record getRecord(int current) {
             SearchItem.Record result = this.records[current];
             if (result == null) {
-                SearchItem item =
-                    SearchPlanStrategy.this.plan.get(current);
+                SearchItem item = SearchPlanStrategy.this.plan.get(current);
                 // make a new record
                 result = item.createRecord(this);
                 result.initialise(this.host);
@@ -578,27 +540,26 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
                 for (int i = 0; i < this.nodeImages.length; i++) {
                     HostNode image = this.nodeImages[i];
                     if (image != null) {
-                        patternMap.putNode(
-                            SearchPlanStrategy.this.nodeKeys[i], image);
+                        patternMap.putNode(SearchPlanStrategy.this.nodeKeys[i],
+                            image);
                     }
                 }
                 for (int i = 0; i < this.edgeImages.length; i++) {
                     HostEdge image = this.edgeImages[i];
                     if (image != null) {
-                        patternMap.putEdge(
-                            SearchPlanStrategy.this.edgeKeys[i], image);
+                        patternMap.putEdge(SearchPlanStrategy.this.edgeKeys[i],
+                            image);
                     }
                 }
                 for (int i = 0; i < this.varImages.length; i++) {
                     TypeLabel image = this.varImages[i];
                     if (image != null) {
-                        patternMap.putVar(
-                            SearchPlanStrategy.this.varKeys[i], image);
+                        patternMap.putVar(SearchPlanStrategy.this.varKeys[i],
+                            image);
                     }
                 }
                 result =
-                    new TreeMatch(
-                        SearchPlanStrategy.this.plan.getCondition(),
+                    new TreeMatch(SearchPlanStrategy.this.plan.getCondition(),
                         patternMap);
                 for (int i = 0; i < this.subMatches.length; i++) {
                     result.addSubMatches(this.subMatches[i]);

@@ -19,9 +19,9 @@ package groove.explore.util;
 import groove.control.CtrlTransition;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
-import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
+import groove.trans.Rule;
 import groove.trans.SystemRecord;
 
 import java.util.Collection;

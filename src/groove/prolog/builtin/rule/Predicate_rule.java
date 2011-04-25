@@ -25,8 +25,8 @@ import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.builtin.trans.TransPrologCode;
-import groove.trans.Rule;
 import groove.trans.RuleName;
+import groove.trans.Rule;
 import groove.view.RuleView;
 
 /**

@@ -93,7 +93,7 @@ public class SystemRecord {
      * @param eventSet the set of sub-events for the composite event
      */
     public RuleEvent createCompositeEvent(Rule rule,
-            Collection<SPOEvent> eventSet) {
+            Collection<BasicEvent> eventSet) {
         return normaliseEvent(new CompositeEvent(rule, eventSet,
             isReuseEvents()));
     }
@@ -104,8 +104,8 @@ public class SystemRecord {
      * @param rule the rule of the composite event
      * @param elementMap the element map for the simple event
      */
-    public SPOEvent createSimpleEvent(SPORule rule, RuleToHostMap elementMap) {
-        return (SPOEvent) normaliseEvent(new SPOEvent(rule, elementMap,
+    public BasicEvent createSimpleEvent(Rule rule, RuleToHostMap elementMap) {
+        return (BasicEvent) normaliseEvent(new BasicEvent(rule, elementMap,
             isReuseEvents()));
     }
 

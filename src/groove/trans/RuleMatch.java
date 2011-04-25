@@ -16,28 +16,25 @@
  */
 package groove.trans;
 
-import groove.algebra.Algebra;
-import groove.graph.algebra.ValueNode;
-
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Match of an {@link SPORule}.
+ * Match of an {@link Rule}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RuleMatch extends AbstractMatch {
-    /** Constructs a match for a given {@link SPORule}. */
-    public RuleMatch(SPORule rule, RuleToHostMap elementMap) {
+public class RuleMatch {
+    /** Constructs a match for a given {@link Rule}. */
+    public RuleMatch(Rule rule, RuleToHostMap elementMap) {
         this.rule = rule;
         this.elementMap = elementMap;
     }
 
     /** Returns the rule of which this is a match. */
-    public SPORule getRule() {
+    public Rule getRule() {
         return this.rule;
     }
 
@@ -46,16 +43,27 @@ public class RuleMatch extends AbstractMatch {
         return this.elementMap;
     }
 
-    @Override
+    /** Returns the set of matches of sub-rules. */
+    public Collection<RuleMatch> getSubMatches() {
+        return this.subMatches;
+    }
+
+    /** Returns the (host graph) edges used as images in the match. */
     public Collection<HostEdge> getEdgeValues() {
-        Collection<HostEdge> result = super.getEdgeValues();
+        Set<HostEdge> result = new HashSet<HostEdge>();
+        for (RuleMatch subMatch : getSubMatches()) {
+            result.addAll(subMatch.getEdgeValues());
+        }
         result.addAll(this.elementMap.edgeMap().values());
         return result;
     }
 
-    @Override
+    /** Returns the (host graph) nodes used as images in the match. */
     public Collection<HostNode> getNodeValues() {
-        Collection<HostNode> result = super.getNodeValues();
+        Set<HostNode> result = new HashSet<HostNode>();
+        for (RuleMatch subMatch : getSubMatches()) {
+            result.addAll(subMatch.getNodeValues());
+        }
         result.addAll(this.elementMap.nodeMap().values());
         return result;
     }
@@ -69,7 +77,7 @@ public class RuleMatch extends AbstractMatch {
         // because the sorting will not respect the desired event hierarchy.
         // and in fact events may actually occur more than once.
         // SortedSet<SPOEvent> eventSet = new TreeSet<SPOEvent>();
-        Collection<SPOEvent> eventSet = new ArrayList<SPOEvent>();
+        Collection<BasicEvent> eventSet = new ArrayList<BasicEvent>();
         collectEvents(eventSet, nodeFactory);
         assert !eventSet.isEmpty();
         if (eventSet.size() == 1 && !getRule().hasSubRules()) {
@@ -85,25 +93,23 @@ public class RuleMatch extends AbstractMatch {
      * @param events the resulting set of events
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>
      */
-    private void collectEvents(Collection<SPOEvent> events,
+    private void collectEvents(Collection<BasicEvent> events,
             SystemRecord nodeFactory) {
-        SPOEvent myEvent = createSimpleEvent(nodeFactory);
+        BasicEvent myEvent = createSimpleEvent(nodeFactory);
         events.add(myEvent);
-        for (Match subMatch : getSubMatches()) {
-            if (subMatch instanceof RuleMatch) {
-                ((RuleMatch) subMatch).collectEvents(events, nodeFactory);
-            }
+        for (RuleMatch subMatch : getSubMatches()) {
+            subMatch.collectEvents(events, nodeFactory);
         }
     }
 
     /**
      * Callback factory method to create a simple event. Delegates to
-     * {@link SystemRecord#createSimpleEvent(SPORule, RuleToHostMap)} if
+     * {@link SystemRecord#createSimpleEvent(Rule, RuleToHostMap)} if
      * <code>nodeFactory</code> is not <code>null</code>.
      */
-    private SPOEvent createSimpleEvent(SystemRecord record) {
+    private BasicEvent createSimpleEvent(SystemRecord record) {
         if (record == null) {
-            return new SPOEvent(getRule(), getElementMap(), false);
+            return new BasicEvent(getRule(), getElementMap(), false);
         } else {
             return record.createSimpleEvent(getRule(), getElementMap());
         }
@@ -111,11 +117,11 @@ public class RuleMatch extends AbstractMatch {
 
     /**
      * Callback factory method to create a composite event. Delegates to
-     * {@link SystemRecord#createSimpleEvent(SPORule, RuleToHostMap)} if
+     * {@link SystemRecord#createSimpleEvent(Rule, RuleToHostMap)} if
      * <code>nodeFactory</code> is not <code>null</code>.
      */
     private RuleEvent createCompositeEvent(SystemRecord nodeFactory,
-            Collection<SPOEvent> eventSet) {
+            Collection<BasicEvent> eventSet) {
         if (nodeFactory == null) {
             return new CompositeEvent(getRule(), eventSet, false);
         } else {
@@ -123,71 +129,36 @@ public class RuleMatch extends AbstractMatch {
         }
     }
 
-    /**
-     * Returns a set of copies of this rule match, each augmented with 
-     * additional sub-matches taken from a given set of composite matches. For efficiency,
-     * the last match in the result is actually a (modified) alias of this
-     * object, meaning that no references to this object should be kept after
-     * invoking this method.
-     */
-    public List<RuleMatch> addForallChoice(ForallCondition condition,
-            List<CompositeMatch> choices) {
-        List<RuleMatch> result = new ArrayList<RuleMatch>();
-        Iterator<CompositeMatch> choiceIter = choices.iterator();
-        while (choiceIter.hasNext()) {
-            CompositeMatch choice = choiceIter.next();
-            assert condition == choice.getCondition();
-            // process the condition count, if any
-            if (condition.getCountNode() != null) {
-                int newCount = choice.getSubMatches().size();
-                ValueNode oldCountImage =
-                    ((ValueNode) getElementMap().getNode(
-                        condition.getCountNode()));
-                if (oldCountImage == null) {
-                    // the count was not resolved; add it to the match map
-                    Algebra<?> intAlgebra = condition.getIntAlgebra();
-                    HostNode newCountImage =
-                        getElementMap().getFactory().createNode(intAlgebra,
-                            intAlgebra.getValue("" + newCount));
-                    getElementMap().putNode(condition.getCountNode(),
-                        newCountImage);
-                } else if (newCount != Integer.parseInt(oldCountImage.getSymbol())) {
-                    // the (pre-resolved) count was resolved; skip this match
-                    continue;
-                }
-            }
-            RuleMatch copy = choiceIter.hasNext() ? clone() : this;
-            copy.getSubMatches().addAll(choice.getSubMatches());
-            result.add(copy);
-        }
-        return result;
-    }
-
-    @Override
-    protected RuleMatch clone() {
-        RuleMatch result = (RuleMatch) super.clone();
-        result.elementMap.putAll(this.elementMap);
-        return result;
-    }
-
-    @Override
-    protected RuleMatch createMatch() {
-        return new RuleMatch(getRule(), getElementMap());
-    }
-
     /** Equality is determined by rule and element map. */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof RuleMatch
-            && ((RuleMatch) obj).getRule().equals(getRule())
-            && ((RuleMatch) obj).getElementMap().equals(getElementMap())
-            && super.equals(obj);
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof RuleMatch)) {
+            return false;
+        }
+        RuleMatch other = (RuleMatch) obj;
+        return other.getRule().equals(getRule())
+            && other.getElementMap().equals(getElementMap())
+            && other.getSubMatches().equals(getSubMatches());
     }
 
-    /** This implementation takes the rule into account. */
     @Override
+    public int hashCode() {
+        // pre-compute the value, if not yet done
+        if (this.hashCode == 0) {
+            this.hashCode = computeHashCode();
+            if (this.hashCode == 0) {
+                this.hashCode = 1;
+            }
+        }
+        return this.hashCode;
+    }
+
+    /** Computes a value for the hash code. */
     protected int computeHashCode() {
-        return getRule().hashCode() + super.computeHashCode()
+        return getRule().hashCode() + getSubMatches().hashCode()
             ^ getElementMap().hashCode();
     }
 
@@ -200,7 +171,7 @@ public class RuleMatch extends AbstractMatch {
         if (!getSubMatches().isEmpty()) {
             result.append(String.format("%n--- Submatches of %s ---%n",
                 getRule().getName()));
-            for (Match match : getSubMatches()) {
+            for (RuleMatch match : getSubMatches()) {
                 result.append(match.toString());
                 result.append("\n");
             }
@@ -211,7 +182,13 @@ public class RuleMatch extends AbstractMatch {
     }
 
     /** The fixed rule of which this is a match. */
-    private final SPORule rule;
+    private final Rule rule;
     /** The map constituting the match. */
     private final RuleToHostMap elementMap;
+
+    /** The map constituting the match. */
+    private final Collection<RuleMatch> subMatches =
+        new java.util.LinkedHashSet<RuleMatch>();
+    /** The (pre-computed) hash code of this match. */
+    private int hashCode;
 }

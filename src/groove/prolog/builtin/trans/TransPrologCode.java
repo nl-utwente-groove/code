@@ -23,8 +23,8 @@ import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.PrologException;
 import groove.prolog.builtin.graph.GraphPrologCode;
-import groove.trans.Rule;
 import groove.trans.RuleEvent;
+import groove.trans.Rule;
 
 /**
  * 

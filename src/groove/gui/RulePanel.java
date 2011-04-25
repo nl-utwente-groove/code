@@ -31,10 +31,9 @@ import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.Rule;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
-import groove.trans.SPORule;
+import groove.trans.Rule;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -220,10 +219,9 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
             text.append(HTMLConverter.STRONG_TAG.on(view.getName()));
             try {
                 Rule rule = view.toRule();
-                if (rule instanceof SPORule
-                    && getOptionsItem(SHOW_ANCHORS_OPTION).isSelected()) {
+                if (getOptionsItem(SHOW_ANCHORS_OPTION).isSelected()) {
                     text.append(", anchor ");
-                    text.append(getAnchorString((SPORule) rule));
+                    text.append(getAnchorString(rule));
                 }
             } catch (FormatException exc) {
                 // don't add the anchor
@@ -240,12 +238,12 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
     }
 
     /** Returns a string description of the anchors of a given rule. */
-    private String getAnchorString(SPORule rule) {
-        if (rule.getSubRules(false).isEmpty()) {
+    private String getAnchorString(Rule rule) {
+        if (!rule.hasSubRules()) {
             return Groove.toString(rule.anchor(), "(", ")", ",");
         } else {
             List<String> result = new ArrayList<String>();
-            for (SPORule subRule : rule.getSubRules(true)) {
+            for (Rule subRule : rule.getSubRules()) {
                 result.add(subRule.getName().toString()
                     + Groove.toString(subRule.anchor(), "(", ")", ","));
             }

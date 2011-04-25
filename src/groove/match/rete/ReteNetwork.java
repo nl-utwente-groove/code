@@ -25,7 +25,6 @@ import groove.io.FileType;
 import groove.io.xml.DefaultGxl;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.match.rete.ReteNetworkNode.Action;
-import groove.trans.AbstractCondition;
 import groove.trans.Condition;
 import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
@@ -52,7 +51,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -138,7 +136,7 @@ public class ReteNetwork {
     }
 
     /**
-     * Adds one {@link AbstractCondition} to the structure of
+     * Adds one {@link Condition} to the structure of
      * the RETE network. If the condition is complex it recursively
      * adds the sub-conditions as well.
      *  
@@ -351,7 +349,8 @@ public class ReteNetwork {
         }
         if (condition.getSubConditions().size() > 0) {
             Set<NotCondition> nacs = new HashSet<NotCondition>();
-            Set<Condition> positiveSubConditions = new HashSet<Condition>();
+            Set<Condition> positiveSubConditions =
+                new HashSet<Condition>();
             for (Condition c : condition.getSubConditions()) {
                 if (c instanceof NotCondition) {
                     nacs.add((NotCondition) c);
@@ -506,15 +505,14 @@ public class ReteNetwork {
      * Makes a copy of a Nac condition's rootMap given a node renumbering 
      * for the nac's target.  
      * 
-     * @param sourceRootMap The root map to be copied
+     * @param sourceRootNodes the root nodes of the NAC condition
      * @param nodeMapping The node renumbering map  
      */
-    private RuleGraphMorphism copyRootMap(RuleGraphMorphism sourceRootMap,
+    private RuleGraphMorphism copyRootMap(Set<RuleNode> sourceRootNodes,
             RuleGraphMorphism nodeMapping) {
         RuleGraphMorphism result = new RuleGraphMorphism();
-        for (Entry<RuleNode,RuleNode> sourceEntry : sourceRootMap.nodeMap().entrySet()) {
-            result.nodeMap().put(sourceEntry.getKey(),
-                nodeMapping.getNode(sourceEntry.getValue()));
+        for (RuleNode sourceEntry : sourceRootNodes) {
+            result.nodeMap().put(sourceEntry, nodeMapping.getNode(sourceEntry));
         }
         return result;
     }
@@ -553,7 +551,7 @@ public class ReteNetwork {
             RuleGraph newNacGraph =
                 copyAndRenumberNodes(nac.getPattern(), nodeRenumberingMapping);
             RuleGraphMorphism newRootMap =
-                copyRootMap(nac.getRootMap(), nodeRenumberingMapping);
+                copyRootMap(nac.getRootNodes(), nodeRenumberingMapping);
 
             ReteStaticMapping m1 =
                 duplicateAndTranslateMapping(lastSubgraphMapping, newRootMap);

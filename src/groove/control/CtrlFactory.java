@@ -17,9 +17,8 @@
 package groove.control;
 
 import groove.control.parse.Namespace;
-import groove.trans.Rule;
 import groove.trans.RuleSystem;
-import groove.trans.SPORule;
+import groove.trans.Rule;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
@@ -604,7 +603,7 @@ public class CtrlFactory {
         for (Map.Entry<Integer,Set<Rule>> ruleEntry : ruleMap.entrySet()) {
             Set<CtrlCall> newAllGuard = new LinkedHashSet<CtrlCall>(allGuard);
             for (Rule rule : ruleEntry.getValue()) {
-                CtrlCall ruleCall = new CtrlCall((SPORule) rule, null);
+                CtrlCall ruleCall = new CtrlCall(rule, null);
                 result.addTransition(start, createLabel(ruleCall, allGuard),
                     start);
                 newAllGuard.add(ruleCall);

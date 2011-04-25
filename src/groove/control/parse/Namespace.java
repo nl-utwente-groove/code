@@ -18,7 +18,7 @@ package groove.control.parse;
 
 import groove.control.CtrlAut;
 import groove.control.CtrlPar;
-import groove.trans.SPORule;
+import groove.trans.Rule;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -80,15 +80,15 @@ public class Namespace {
     /**
      * Returns the rule with a given name.
      */
-    public SPORule getRule(String name) {
+    public Rule getRule(String name) {
         return this.ruleMap.get(name);
     }
 
     /**
      * Returns the rule associated with a given rule name
      */
-    public SPORule useRule(String name) {
-        SPORule result = this.ruleMap.get(name);
+    public Rule useRule(String name) {
+        Rule result = this.ruleMap.get(name);
         this.usedRules.add(name);
         return result;
     }
@@ -118,7 +118,7 @@ public class Namespace {
     /**
      * Adds a rule to the name space.
      */
-    public boolean addRule(SPORule rule) {
+    public boolean addRule(Rule rule) {
         String ruleName = rule.getName().toString();
         this.ruleMap.put(ruleName, rule);
         List<CtrlPar.Var> oldSig =
@@ -127,7 +127,7 @@ public class Namespace {
     }
 
     /** Mapping from declared rules names to the rules. */
-    private final Map<String,SPORule> ruleMap = new HashMap<String,SPORule>();
+    private final Map<String,Rule> ruleMap = new HashMap<String,Rule>();
     /** Mapping from declared rule names to their signatures. */
     private final Map<String,List<CtrlPar.Var>> sigMap =
         new HashMap<String,List<CtrlPar.Var>>();

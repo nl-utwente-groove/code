@@ -17,8 +17,8 @@
 package groove.view;
 
 import groove.graph.TypeGraph;
-import groove.trans.Rule;
 import groove.trans.RuleName;
+import groove.trans.Rule;
 import groove.trans.SystemProperties;
 
 /**

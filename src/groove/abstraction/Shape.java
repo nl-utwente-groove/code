@@ -28,9 +28,9 @@ import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
-import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
+import groove.trans.Rule;
 
 import java.util.Collection;
 import java.util.HashMap;

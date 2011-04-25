@@ -17,9 +17,9 @@
 package groove.explore.encode;
 
 import groove.gui.Simulator;
-import groove.trans.Rule;
 import groove.trans.RuleName;
 import groove.trans.RuleSystem;
+import groove.trans.Rule;
 import groove.view.FormatException;
 import groove.view.GrammarView;
 

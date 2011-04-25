@@ -119,9 +119,9 @@ public class ConditionChecker extends ReteNetworkNode implements
     }
 
     private void makeRootSearchOrder(Condition c) {
-        if ((c.getRootMap() != null) && (!c.getRootMap().isEmpty())) {
+        if ((c.getRootNodes() != null) && (!c.getRootNodes().isEmpty())) {
             ArrayList<RuleNode> nodes = new ArrayList<RuleNode>();
-            nodes.addAll(c.getRootMap().nodeMap().keySet());
+            nodes.addAll(c.getRootNodes());
             Collections.sort(nodes);
             this.conflictSetSearchTree = new SearchTree(nodes);
         }

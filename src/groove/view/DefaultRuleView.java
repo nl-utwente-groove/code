@@ -40,7 +40,6 @@ import groove.graph.algebra.VariableNode;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
 import groove.rel.VarSupport;
-import groove.trans.AbstractCondition;
 import groove.trans.Condition;
 import groove.trans.EdgeEmbargo;
 import groove.trans.ForallCondition;
@@ -54,7 +53,6 @@ import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleLabel;
 import groove.trans.RuleName;
 import groove.trans.RuleNode;
-import groove.trans.SPORule;
 import groove.trans.SystemProperties;
 import groove.util.DefaultFixable;
 import groove.util.Groove;
@@ -305,15 +303,16 @@ public class DefaultRuleView implements RuleView {
      * @throws FormatException if the view cannot be converted to a valid rule
      */
     private Rule computeRule() throws FormatException {
-        SPORule rule;
+        Rule rule;
         Set<FormatError> errors = new TreeSet<FormatError>();
         if (TO_RULE_DEBUG) {
             System.out.println("");
         }
-        Map<Level,Condition> ruleTree = new HashMap<Level,Condition>();
+        Map<Level,Condition> ruleTree =
+            new HashMap<Level,Condition>();
         for (Level level : this.levelTree.getLevels()) {
             try {
-                AbstractCondition<?> condition = level.computeFlatRule();
+                Condition condition = level.computeFlatRule();
                 ruleTree.put(level, condition);
                 LevelIndex index = level.getIndex();
                 if (!index.isTopLevel()) {
@@ -324,8 +323,8 @@ public class DefaultRuleView implements RuleView {
                     }
 
                     if (index.isExistential()) {
-                        ((SPORule) condition).setParent(
-                            (SPORule) ruleTree.get(parentLevel.getParent()),
+                        ((Rule) condition).setParent(
+                            (Rule) ruleTree.get(parentLevel.getParent()),
                             index.getIntArray());
                     }
                 }
@@ -334,7 +333,7 @@ public class DefaultRuleView implements RuleView {
             }
         }
 
-        rule = (SPORule) ruleTree.get(this.levelTree.getTopLevel());
+        rule = (Rule) ruleTree.get(this.levelTree.getTopLevel());
         if (rule != null) {
             rule.setPriority(getPriority());
             rule.setConfluent(isConfluent());
@@ -1327,9 +1326,9 @@ public class DefaultRuleView implements RuleView {
          * Returns the mapping from the LHS rule elements at the parent level to
          * the LHS rule elements at this level.
          */
-        private RuleGraphMorphism getRootMap() {
+        private RuleGraph getRootGraph() {
             testMode(LevelMode.FIXED);
-            return this.index.isTopLevel() ? null : getConnectingMap(
+            return this.index.isTopLevel() ? null : getIntersection(
                 this.parent.lhsMap, this.lhsMap);
         }
 
@@ -1364,6 +1363,27 @@ public class DefaultRuleView implements RuleView {
                     RuleEdge oldImage =
                         result.putEdge(parentEntry.getValue(), image);
                     assert oldImage == null || oldImage.equals(image);
+                }
+            }
+            return result;
+        }
+
+        /**
+         * Returns a rule graph that forms the intersection of the rule elements
+         * of this and the parent level.
+         */
+        private RuleGraph getIntersection(ViewToRuleMap parentMap,
+                ViewToRuleMap myMap) {
+            RuleGraph result =
+                createGraph(getName() + "-" + getIndex() + "-root");
+            for (Map.Entry<AspectNode,RuleNode> parentEntry : parentMap.nodeMap().entrySet()) {
+                if (myMap.containsNodeKey(parentEntry.getKey())) {
+                    result.addNode(parentEntry.getValue());
+                }
+            }
+            for (Map.Entry<AspectEdge,RuleEdge> parentEntry : parentMap.edgeMap().entrySet()) {
+                if (myMap.containsEdgeKey(parentEntry.getKey())) {
+                    result.addEdge(parentEntry.getValue());
                 }
             }
             return result;
@@ -1453,8 +1473,8 @@ public class DefaultRuleView implements RuleView {
          * Callback method to compute the rule on this nesting level from sets
          * of aspect nodes and edges that appear on this level.
          */
-        public AbstractCondition<?> computeFlatRule() throws FormatException {
-            AbstractCondition<?> result;
+        public Condition computeFlatRule() throws FormatException {
+            Condition result;
             Set<FormatError> errors = new TreeSet<FormatError>();
             // check if label variables are bound
             Set<LabelVar> boundVars =
@@ -1518,11 +1538,11 @@ public class DefaultRuleView implements RuleView {
             if (this.index.isExistential()) {
                 result =
                     createRule(this.index.getName(), this.lhs, this.rhs,
-                        this.ruleMorph, getRootMap(), getCoRootMap());
+                        this.ruleMorph, getRootGraph(), getCoRootMap());
             } else {
                 result =
-                    createForall(this.lhs, getRootMap(), this.index.getName(),
-                        this.index.isPositive());
+                    createForall(this.lhs, getRootGraph(),
+                        this.index.getName(), this.index.isPositive());
             }
             // add the nacs to the rule
             // first add parent type edges for NAC nodes
@@ -1700,7 +1720,9 @@ public class DefaultRuleView implements RuleView {
                 // if we're here it means we couldn't make an embargo
                 result = createNAC(lhs);
                 RuleGraph nacTarget = result.getPattern();
-                RuleGraphMorphism nacPatternMap = result.getRootMap();
+                Set<RuleNode> nacRootNodes = result.getRootNodes();
+                Set<RuleEdge> nacRootEdges = result.getRootEdges();
+                Set<LabelVar> nacRootVars = result.getRootVars();
                 // add all nodes to nacTarget
                 nacTarget.addNodeSet(nacNodeSet);
                 // if the rule is injective, add all lhs nodes to the pattern
@@ -1708,14 +1730,13 @@ public class DefaultRuleView implements RuleView {
                 if (isInjective()) {
                     for (RuleNode node : lhs.nodeSet()) {
                         nacTarget.addNode(node);
-                        nacPatternMap.putNode(node, node);
+                        nacRootNodes.add(node);
                     }
                 }
                 // add edges and embargoes to nacTarget
                 for (RuleEdge edge : nacEdgeSet) {
                     // for all variables in the edge, add a LHS edge to the nac
-                    // that
-                    // binds the variable, if any
+                    // that binds the variable, if any
                     Set<LabelVar> vars = VarSupport.getAllVars(edge);
                     if (!vars.isEmpty()) {
                         Map<LabelVar,RuleEdge> lhsVarBinders =
@@ -1725,38 +1746,27 @@ public class DefaultRuleView implements RuleView {
                             if (nacVarBinder != null) {
                                 // add the edge and its end nodes to the nac, as
                                 // pre-matched elements
-                                addToNacPattern(nacTarget, nacPatternMap,
-                                    nacVarBinder.source());
-                                addToNacPattern(nacTarget, nacPatternMap,
-                                    nacVarBinder.target());
                                 nacTarget.addEdge(nacVarBinder);
-                                nacPatternMap.putEdge(nacVarBinder,
-                                    nacVarBinder);
+                                nacRootEdges.add(nacVarBinder);
+                                nacRootNodes.add(nacVarBinder.source());
+                                nacRootNodes.add(nacVarBinder.target());
+                                nacRootVars.add(nacVar);
                             }
                         }
                     }
                     // add the endpoints that were not in the nac element set;
-                    // it
-                    // means
-                    // they are lhs nodes, so add them to the nacMorphism as
-                    // well
-                    addToNacPattern(nacTarget, nacPatternMap, edge.source());
-                    addToNacPattern(nacTarget, nacPatternMap, edge.target());
+                    // it means they are lhs nodes, so add them to the 
+                    // nacMorphism as well
+                    if (nacTarget.addNode(edge.source())) {
+                        nacRootNodes.add(edge.source());
+                    }
+                    if (nacTarget.addNode(edge.target())) {
+                        nacRootNodes.add(edge.target());
+                    }
                     nacTarget.addEdge(edge);
                 }
             }
             return result;
-        }
-
-        /**
-         * Adds a given node to a NAC pattern map.
-         */
-        private void addToNacPattern(RuleGraph nacTarget,
-                RuleGraphMorphism nacPatternMap, RuleNode node) {
-            if (nacTarget.addNode(node)) {
-                // the node identity in the lhs is the same
-                nacPatternMap.putNode(node, node);
-            }
         }
 
         /**
@@ -1789,34 +1799,33 @@ public class DefaultRuleView implements RuleView {
          * @param lhs the left hand side graph
          * @param rhs the right hand side graph
          * @param ruleMorphism morphism of the new rule to be created
-         * @param rootMap pattern map leading into the LHS
+         * @param rootGraph root graph of the LHS
          * @param coRootMap map of creator nodes in the parent rule to creator
          *        nodes of this rule
          * @return the fresh rule created by the factory
          */
-        private SPORule createRule(String name, RuleGraph lhs, RuleGraph rhs,
-                RuleGraphMorphism ruleMorphism, RuleGraphMorphism rootMap,
+        private Rule createRule(String name, RuleGraph lhs, RuleGraph rhs,
+                RuleGraphMorphism ruleMorphism, RuleGraph rootGraph,
                 RuleGraphMorphism coRootMap) {
-            SPORule result =
-                new SPORule(new RuleName(name), lhs, rhs, ruleMorphism,
-                    rootMap, coRootMap, new GraphProperties(),
-                    getSystemProperties());
+            Rule result =
+                new Rule(new RuleName(name), lhs, rhs, ruleMorphism, rootGraph,
+                    coRootMap, new GraphProperties(), getSystemProperties());
             return result;
         }
 
         /**
          * Factory method for universal conditions.
-         * @param target target graph of the new condition
-         * @param rootMap root map of the new condition
+         * @param pattern target graph of the new condition
+         * @param rootGraph root graph of the new condition
          * @param name name of the new condition to be created
          * @param positive if <code>true</code>, the condition should be matched
          *        non-vacuously
          * @return the fresh condition
          */
-        private ForallCondition createForall(RuleGraph target,
-                RuleGraphMorphism rootMap, String name, boolean positive) {
+        private ForallCondition createForall(RuleGraph pattern,
+                RuleGraph rootGraph, String name, boolean positive) {
             ForallCondition result =
-                new ForallCondition(new RuleName(name), target, rootMap,
+                new ForallCondition(new RuleName(name), pattern, rootGraph,
                     getSystemProperties(), this.matchCountImage);
             if (positive) {
                 result.setPositive();

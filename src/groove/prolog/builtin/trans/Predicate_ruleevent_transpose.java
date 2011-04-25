@@ -28,7 +28,7 @@ import groove.graph.Node;
 import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
 import groove.trans.RuleNode;
-import groove.trans.SPOEvent;
+import groove.trans.BasicEvent;
 
 /**
  * 
@@ -40,10 +40,10 @@ public class Predicate_ruleevent_transpose extends TransPrologCode {
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         RuleEvent re = getRuleEvent(args[0]);
-        if (!(re instanceof SPOEvent)) {
+        if (!(re instanceof BasicEvent)) {
             PrologException.domainError(RULEEVENT_ATOM, args[0]);
         }
-        SPOEvent spo = (SPOEvent) re;
+        BasicEvent spo = (BasicEvent) re;
         if (!(args[1] instanceof JavaObjectTerm)) {
             PrologException.instantiationError();
         }

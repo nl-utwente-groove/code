@@ -19,7 +19,6 @@ package groove.match;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
-import groove.graph.algebra.VariableNode;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
 import groove.rel.VarSupport;
@@ -40,14 +39,14 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-class AnchorSearchItem extends AbstractSearchItem {
+class SeedSearchItem extends AbstractSearchItem {
     /**
      * Creates an instance with given sets of pre-matched nodes, edges and
      * variables.
      * @param nodes the set of pre-matched nodes; not <code>null</code>
      * @param edges the set of pre-matched edges; not <code>null</code>
      */
-    AnchorSearchItem(Collection<RuleNode> nodes, Collection<RuleEdge> edges) {
+    SeedSearchItem(Collection<RuleNode> nodes, Collection<RuleEdge> edges) {
         this.nodes = new HashSet<RuleNode>(nodes);
         this.edges = new HashSet<RuleEdge>(edges);
         this.vars = new HashSet<LabelVar>();
@@ -87,7 +86,7 @@ class AnchorSearchItem extends AbstractSearchItem {
         for (RuleNode node : this.nodes) {
             assert !strategy.isNodeFound(node) : String.format(
                 "Node %s is not fresh", node);
-            if (isAnchorable(node)) {
+            if (isSeeded(node)) {
                 this.nodeIxMap.put(node, strategy.getNodeIx(node));
             }
         }
@@ -95,7 +94,7 @@ class AnchorSearchItem extends AbstractSearchItem {
         for (RuleEdge edge : this.edges) {
             assert !strategy.isEdgeFound(edge) : String.format(
                 "Edge %s is not fresh", edge);
-            if (isAnchorable(edge)) {
+            if (isSeeded(edge)) {
                 this.edgeIxMap.put(edge, strategy.getEdgeIx(edge));
             }
         }
@@ -108,20 +107,20 @@ class AnchorSearchItem extends AbstractSearchItem {
     }
 
     /**
-     * Tests is a give node can serve proper anchor, in the sense that it is
+     * Tests is a give node can serve proper seed, in the sense that it is
      * matched to an actual host graph node. This fails to hold for
-     * {@link ProductNode}s that are not {@link VariableNode}s.
+     * {@link ProductNode}s.
      */
-    private boolean isAnchorable(RuleNode node) {
-        return !(node instanceof ProductNode) || node instanceof VariableNode;
+    private boolean isSeeded(RuleNode node) {
+        return !(node instanceof ProductNode);
     }
 
     /**
-     * Tests is a give edge is a proper anchor, in the sense that it is matched
+     * Tests is a give edge is a proper seed, in the sense that it is matched
      * to an actual host graph edge. This fails to hold for {@link ArgumentEdge}s
      * and {@link OperatorEdge}s.
      */
-    private boolean isAnchorable(RuleEdge edge) {
+    private boolean isSeeded(RuleEdge edge) {
         return !(edge instanceof ArgumentEdge || edge instanceof OperatorEdge);
     }
 
@@ -134,8 +133,7 @@ class AnchorSearchItem extends AbstractSearchItem {
         return String.format("Check %s", elementList);
     }
 
-    public Record createRecord(
-            groove.match.SearchPlanStrategy.Search search) {
+    public Record createRecord(groove.match.SearchPlanStrategy.Search search) {
         assert allElementsMatched(search) : String.format(
             "Elements %s not pre-matched", this.unmatched);
         return new DummyRecord();
