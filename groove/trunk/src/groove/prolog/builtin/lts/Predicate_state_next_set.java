@@ -26,8 +26,7 @@ import groove.lts.GraphState;
 import groove.prolog.util.PrologUtils;
 
 /**
- * <code>graphstate_next_set(GraphState,GraphStateSet)</code>
- * 
+ * Predicate state_next_set(+State,?StateSet)
  * @author Michiel Hendriks
  */
 public class Predicate_state_next_set extends LtsPrologCode {

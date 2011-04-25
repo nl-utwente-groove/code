@@ -27,9 +27,7 @@ import groove.graph.Node;
 import groove.prolog.util.PrologUtils;
 
 /**
- * Get all outgoing edges for a node.
- * <code>out_edge_set(Graph,Node,EdgeSet)</code>
- * 
+ * Predicate node_out_edge_set(+Graph,+Node,?EdgeSetS)
  * @author Michiel Hendriks
  */
 public class Predicate_node_out_edge_set extends GraphPrologCode {

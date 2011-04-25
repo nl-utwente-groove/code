@@ -24,8 +24,7 @@ import gnu.prolog.vm.PrologException;
 import groove.trans.RuleEvent;
 
 /**
- * 
- * 
+ * Predicate ruleevent_conflicts(+RuleEvent,+RuleEvent)
  * @author Michiel Hendriks
  */
 public class Predicate_ruleevent_conflicts extends TransPrologCode {

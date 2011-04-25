@@ -15,9 +15,17 @@
 % License along with this library; if not, write to the Free Software
 % Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
+% rule_name(?RuleName)
 :-build_in(rule_name/1,'groove.prolog.builtin.rule.Predicate_rule_name').
+
+% rule(+RuleName, ?Rule)
+% rule(?RuleName, +Rule)
 :-build_in(rule/2,'groove.prolog.builtin.rule.Predicate_rule').
+
+% rule_enabled(+RuleName)
 :-build_in(rule_enabled/1,'groove.prolog.builtin.rule.Predicate_rule_enabled').
+
+% rule_confluent(+RuleName)
 :-build_in(rule_confluent/1,'groove.prolog.builtin.rule.Predicate_rule_confluent').
 
 % Success if the argument is a JavaObjectTerm with a Rule
@@ -47,7 +55,14 @@
 % @see groove.trans.Rule#getRhs()
 :-build_in(rule_rhs/2, 'groove.prolog.builtin.rule.Predicate_rule_rhs').
 
+% enabled_rule_name(?RuleName)
 enabled_rule_name(RN) :- rule_name(RN), rule_enabled(RN).
+
+% confluent_rule_name(?RuleName)
 confluent_rule_name(RN) :- rule_name(RN), rule_confluent(RN).
+
+% enabled_rule(?Rule)
 enabled_rule(R) :- enabled_rule_name(RN), rule(RN,R).
+
+% confluent_rule(?Rule)
 confluent_rule(R) :- confluent_rule_name(RN), rule(RN,R).

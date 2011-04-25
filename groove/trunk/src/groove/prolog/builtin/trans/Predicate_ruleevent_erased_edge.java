@@ -25,8 +25,7 @@ import gnu.prolog.vm.PrologException;
 import groove.trans.RuleEvent;
 
 /**
- * 
- * 
+ * Predicate erased_edge(+RuleEvent,?Edge)
  * @author Michiel Hendriks
  */
 public class Predicate_ruleevent_erased_edge extends TransPrologCode {

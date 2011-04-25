@@ -68,6 +68,8 @@ RuleMatch:
 % @param The graph belonging to the state
 % @groove.lts.GraphState#getGraph()
 :-build_in(state_graph/2,'groove.prolog.builtin.lts.Predicate_state_graph').
+
+% state_graph(?Graph)
 state_graph(G):-state(GS),state_graph(GS,G).
 
 % Success if the graph state is closed (i.e. all transitions have been found)
@@ -75,7 +77,9 @@ state_graph(G):-state(GS),state_graph(GS,G).
 % @param the graph state
 % @groove.lts.GraphState#isClosed()
 :-build_in(state_is_closed/1,'groove.prolog.builtin.lts.Predicate_state_is_closed').
-state_is_closed:-state(GS),state_is_closed(GS).
+
+% closed_state(?State)
+closed_state(GS):-state(GS),state_is_closed(GS).
 
 % A transition in a state
 % graphstate_transition(+State,?Trans)
@@ -83,7 +87,6 @@ state_is_closed:-state(GS),state_is_closed(GS).
 % @param the transition
 % @groove.lts.GraphState#getTransitionSet()
 :-build_in(state_transition/2,'groove.prolog.builtin.lts.Predicate_state_transition').
-state_transition(T):-state(GS),state_transition(GS,T).
 
 % All current transitions in a state
 % graphstate_transition(+State,?TransSet)
@@ -91,7 +94,6 @@ state_transition(T):-state(GS),state_transition(GS,T).
 % @param the transition set
 % @groove.lts.GraphState#getTransitionSet()
 :-build_in(state_transition_set/2,'groove.prolog.builtin.lts.Predicate_state_transition_set').
-state_transition_set(T):-state(GS),state_transition_set(GS,T).
 
 % A next state from this state
 % graphstate_next(+State,?NextState)
@@ -99,7 +101,6 @@ state_transition_set(T):-state(GS),state_transition_set(GS,T).
 % @param the next state
 % @groove.lts.GraphState#getNextState()
 :-build_in(state_next/2,'groove.prolog.builtin.lts.Predicate_state_next').
-state_next(T):-state(GS),state_next(GS,T).
 
 % All next states from this state
 % graphstate_next_set(+State,?NextStateSet)
@@ -107,7 +108,6 @@ state_next(T):-state(GS),state_next(GS,T).
 % @param the next state set
 % @groove.lts.GraphState#getNextState()
 :-build_in(state_next_set/2,'groove.prolog.builtin.lts.Predicate_state_next_set').
-state_next_set(T):-state(GS),state_next_set(GS,T).
 
 % The source of a transition
 % transition_source(+Trans,?State)
@@ -146,35 +146,29 @@ state_next_set(T):-state(GS),state_next_set(GS,T).
 :-build_in(gts/1,'groove.prolog.builtin.lts.Predicate_gts').
 
 % The start graph state of a GTS
-% gts_start_state(+GTS,?State)
-% @param the gts
+% gts_start_state(?State)
 % @param the start GraphState
 % @see groove.lts.LTS#startState()
-:-build_in(start_state/2,'groove.prolog.builtin.lts.Predicate_start_state').
-start_state(GS):-gts(G),start_state(G,GS).
+:-build_in(start_state/1,'groove.prolog.builtin.lts.Predicate_start_state').
 
 % The final states of a GTS
-% gts_final_state(+GTS,?State)
-% @param the gts
+% gts_final_state(?State)
 % @param the start GraphState
 % @see groove.lts.LTS#getFinalStates()
 % @see groove.lts.LTS#isFinal()
-:-build_in(final_state/2,'groove.prolog.builtin.lts.Predicate_final_state').
-final_state(GS):-gts(G),final_state(G,GS).
+:-build_in(final_state/1,'groove.prolog.builtin.lts.Predicate_final_state').
 
 % The final states of a GTS
-% gts_final_state_set(+GTS,?StateSet)
-% @param the gts
+% gts_final_state_set(?StateSet)
 % @param the start GraphState
 % @see groove.lts.LTS#getFinalStates()
-:-build_in(final_state_set/2,'groove.prolog.builtin.lts.Predicate_final_state_set').
-final_state_set(GS):-gts(G),final_state_set(G,GS).
+:-build_in(final_state_set/1,'groove.prolog.builtin.lts.Predicate_final_state_set').
 
 % Get a matching rule event for a given graph state
-% gts_match(+GTS,+GraphState,?RuleEvent)
-% @param the gts
+% state_ruleevent(+GraphState,?RuleEvent)
 % @param the graphstate
 % @param the ruleevent
-:-build_in(gts_match/3,'groove.prolog.builtin.lts.Predicate_gts_match').
-gts_match(GS,RE):-gts(G),gts_match(G,GS,RE).
-gts_match(RE):-gts(G),state(GS),gts_match(G,GS,RE).
+:-build_in(state_ruleevent/2,'groove.prolog.builtin.lts.Predicate_gts_match').
+
+% ruleevent(?RuleEvent)
+ruleevent(RE):-state(GS),state_ruleevent(GS,RE).

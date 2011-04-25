@@ -26,7 +26,6 @@ import groove.prolog.GrooveEnvironment;
 
 /**
  * Predicate start_graph_name(?Name).
- * 
  * @author Lesley Wevers
  */
 public class Predicate_start_graph_name extends GraphPrologCode {

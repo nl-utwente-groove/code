@@ -26,8 +26,7 @@ import groove.prolog.builtin.trans.TransPrologCode;
 import groove.trans.Rule;
 
 /**
- * 
- * 
+ * Predicate rule_priority(+Rule,?Priority)
  * @author Michiel Hendriks
  */
 public class Predicate_rule_priority extends TransPrologCode {

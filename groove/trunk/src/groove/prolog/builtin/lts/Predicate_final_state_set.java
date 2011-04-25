@@ -23,20 +23,27 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import groove.lts.GTS;
+import groove.prolog.GrooveEnvironment;
 import groove.prolog.util.PrologUtils;
 
 /**
- * <code>graphstate_next(GraphState,GraphState)</code>
- * 
+ * Predicate final_state_set(?StateSet)
  * @author Michiel Hendriks
  */
 public class Predicate_final_state_set extends LtsPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
-        GTS lts = getLTS(args[0]);
+        if (!(interpreter.getEnvironment() instanceof GrooveEnvironment)) {
+            GrooveEnvironment.invalidEnvironment();
+        }
+        GTS lts =
+            ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGts();
+        if (lts == null) {
+            return FAIL;
+        }
         Term resultSet =
             CompoundTerm.getList(PrologUtils.createJOTlist(lts.getFinalStates()));
-        return interpreter.unify(args[1], resultSet);
+        return interpreter.unify(args[0], resultSet);
     }
 }

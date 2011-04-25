@@ -25,8 +25,7 @@ import gnu.prolog.vm.PrologException;
 import groove.graph.Graph;
 
 /**
- * <code>is_graph(X)</code>
- * 
+ * Predicate is_graph(+Graph)
  * @author Michiel Hendriks
  */
 public class Predicate_is_graph extends GraphPrologCode {

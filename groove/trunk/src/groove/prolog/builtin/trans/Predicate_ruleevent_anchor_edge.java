@@ -26,8 +26,7 @@ import groove.trans.RuleEvent;
 import groove.trans.BasicEvent;
 
 /**
- * 
- * 
+ * Predicate ruleevent_anchor_edge(+RuleEvent,?AnchorEdge)
  * @author Michiel Hendriks
  */
 public class Predicate_ruleevent_anchor_edge extends TransPrologCode {

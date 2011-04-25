@@ -31,8 +31,8 @@ import groove.trans.RuleNode;
 import groove.trans.BasicEvent;
 
 /**
- * 
- * 
+ * Predicate ruleevent_transpose(+RuleEvent,+Node,?Node)
+ * Predicate ruleevent_transpose(+RuleEvent,+Edge,?Edge)
  * @author Michiel Hendriks
  */
 public class Predicate_ruleevent_transpose extends TransPrologCode {

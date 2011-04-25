@@ -25,27 +25,26 @@ import groove.view.GrammarView;
 
 /**
  * The current state in groove.
- * 
- * @author Michiel Hendriks
+ * @author Lesley Wevers
  */
 public class GrooveState {
     /**
-     * TODO
+     * The GrammarView
      */
     private GrammarView grammarView;
 
     /**
-     * TODO
+     * The currently selected GraphState
      */
     private GraphState state;
 
     /**
-     * TODO
+     * The GTS
      */
     private GTS gts;
 
     /**
-     * TODO
+     * The currently selected RuleEvent
      */
     private RuleEvent activeRuleEvent;
 
@@ -69,6 +68,7 @@ public class GrooveState {
     }
 
     /**
+     * Gets the grammar view
      * @return The grammar view
      */
     public GrammarView getGrammarView() {
@@ -76,23 +76,24 @@ public class GrooveState {
     }
 
     /**
-     * @return The GTS
+     * Gets the GTS
+     * @return The GTS, or null if there is no GTS
      */
     public GTS getGts() {
         return this.gts;
     }
 
     /**
-     * @return The currently selected state in the GTS
+     * Gets the currently selected state in the GTS
+     * @return The currently selected state in the GTS, or null if there is no selected state
      */
     public GraphState getState() {
         return this.state;
     }
 
     /**
-     * Rule events, used by the RuleEvent filtering exploration system
-     * 
-     * TODO
+     * Gets he rule event of the currently selected transition in the GTS
+     * @return  The rule event of the currently selected transition in the GTS, or null if there is no selected transition
      */
     public RuleEvent getActiveRuleEvent() {
         return this.activeRuleEvent;

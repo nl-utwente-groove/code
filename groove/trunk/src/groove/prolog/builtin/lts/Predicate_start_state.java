@@ -23,6 +23,7 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import groove.lts.GTS;
+import groove.prolog.GrooveEnvironment;
 
 /**
  * Predicate start_state(?State)
@@ -32,8 +33,15 @@ public class Predicate_start_state extends LtsPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
-        GTS lts = getLTS(args[0]);
+        if (!(interpreter.getEnvironment() instanceof GrooveEnvironment)) {
+            GrooveEnvironment.invalidEnvironment();
+        }
+        GTS lts =
+            ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGts();
+        if (lts == null) {
+            return FAIL;
+        }
         Term result = new JavaObjectTerm(lts.startState());
-        return interpreter.unify(args[1], result);
+        return interpreter.unify(args[0], result);
     }
 }

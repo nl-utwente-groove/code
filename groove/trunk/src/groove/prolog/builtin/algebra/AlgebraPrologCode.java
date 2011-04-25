@@ -26,18 +26,20 @@ import groove.graph.algebra.ValueNode;
 import groove.prolog.builtin.graph.GraphPrologCode;
 
 /**
- * 
+ * This class contains some utility methods to extract Java objects from prolog terms
  * 
  * @author Michiel Hendriks
  */
 public abstract class AlgebraPrologCode extends GraphPrologCode {
     /**
-     * TODO
+     * Prolog atom "valuenode"
      */
     public static final AtomTerm VALUENODE_ATOM = AtomTerm.get("valuenode");
 
     /**
-     * TODO
+     * Gets a valuenode from a term
+     * @param term      A term representing a valuenode
+     * @returns         A valuenode
      */
     public static final ValueNode getValueNode(Term term)
         throws PrologException {

@@ -38,7 +38,6 @@ public class Predicate_composite_type_graph extends GraphPrologCode {
         }
 
         try {
-            // TODO: Throws exception when no start graph is loaded.
             TypeGraph typeGraph =
                 ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGrammarView().toGrammar().getType();
 

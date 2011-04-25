@@ -24,8 +24,7 @@ import gnu.prolog.vm.PrologException;
 import groove.lts.GraphState;
 
 /**
- * <code>graphstate_is_closed(GraphState)</code>
- * 
+ * Predicate state_is_closed(+State)
  * @author Michiel Hendriks
  */
 public class Predicate_state_is_closed extends LtsPrologCode {

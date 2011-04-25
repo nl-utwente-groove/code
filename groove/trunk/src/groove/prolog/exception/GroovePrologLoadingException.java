@@ -33,12 +33,13 @@ public class GroovePrologLoadingException extends GroovePrologException {
     private static final long serialVersionUID = -657457775489441336L;
 
     /**
-     * TODO
+     * A list of PrologTestLoaderError
      */
     protected List<PrologTextLoaderError> errors;
 
     /**
-     * TODO
+     * Construct a GroovePrologLoadingException
+     * @param loadingErrors     A list of PrologTextLoaderError
      */
     public GroovePrologLoadingException(
             List<PrologTextLoaderError> loadingErrors) {
@@ -46,16 +47,12 @@ public class GroovePrologLoadingException extends GroovePrologException {
     }
 
     /**
-     * @return the errors
+     * @return A list of PrologTestLoaderError
      */
     public List<PrologTextLoaderError> getLoadingErrors() {
         return Collections.unmodifiableList(this.errors);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.lang.Throwable#getMessage()
-     */
     @Override
     public String getMessage() {
         StringBuilder sb = new StringBuilder();

@@ -28,9 +28,7 @@ import groove.graph.Label;
 import groove.prolog.util.PrologUtils;
 
 /**
- * Get the edge set of a graph with a given label.
- * <code>label_edge_set(Graph,Atom,Edge)</code>
- * 
+ * Predicate label_edge_set(+Graph,+Label,?EdgeSet)
  * @author Michiel Hendriks, Lesley Wevers
  */
 public class Predicate_label_edge_set extends GraphPrologCode {

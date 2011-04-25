@@ -25,8 +25,7 @@ import gnu.prolog.vm.PrologException;
 import groove.graph.Graph;
 
 /**
- * Get the number of edges in a graph. <code>edge_count(Graph,Count)</code>
- * 
+ * Predicate graph_edge_count(+Graph,?EdgeCount)
  * @author Michiel Hendriks
  */
 public class Predicate_graph_edge_count extends GraphPrologCode {

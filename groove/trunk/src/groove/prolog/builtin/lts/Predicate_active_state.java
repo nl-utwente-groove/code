@@ -26,8 +26,7 @@ import groove.lts.GraphState;
 import groove.prolog.GrooveEnvironment;
 
 /**
- * Retrieve the current graph. <code>graphstate(GraphState)</code>
- * 
+ * Predicate active_state(?Graph)
  * @author Michiel Hendriks
  */
 public class Predicate_active_state extends LtsPrologCode {

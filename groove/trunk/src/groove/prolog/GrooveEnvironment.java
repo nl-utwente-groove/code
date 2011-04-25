@@ -38,7 +38,7 @@ import java.io.Reader;
  */
 public class GrooveEnvironment extends Environment {
     /**
-     * TODO
+     * Atom term "no_groove_environment"
      */
     public final static AtomTerm NO_GROOVE_ENV =
         AtomTerm.get("no_groove_environment");
@@ -59,14 +59,14 @@ public class GrooveEnvironment extends Environment {
     protected GrooveState grooveState;
 
     /**
-         * TODO
-         */
+      * No-args constructor
+      */
     public GrooveEnvironment() {
         super();
     }
 
     /**
-     * TODO
+     * Constructs a groove environment with an inputstream and outputstream
      */
     public GrooveEnvironment(InputStream stdin, OutputStream stdout) {
         super(stdin, stdout);

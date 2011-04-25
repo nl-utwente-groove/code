@@ -30,8 +30,7 @@ import java.util.Collection;
 import java.util.HashSet;
 
 /**
- * 
- * 
+ * Predicate created_node(+RuleEvent,?Node)
  * @author Michiel Hendriks
  */
 public class Predicate_ruleevent_created_node extends TransPrologCode {

@@ -41,8 +41,7 @@ import java.util.Map.Entry;
  */
 public final class TermConverter {
     /**
-     * @param rawVars TODO
-     * @return TODO
+     * Converts a map of VariableTerms into a map of java objects
      */
     public static Map<String,Object> convert(Map<String,VariableTerm> rawVars) {
         HashMap<String,Object> result = new HashMap<String,Object>();
@@ -55,8 +54,7 @@ public final class TermConverter {
     }
 
     /**
-     * @param value TODO
-     * @return TODO
+     * Converts a term into a java object
      */
     public static Object convert(Term value) {
         value = value.dereference();
@@ -98,8 +96,6 @@ public final class TermConverter {
                 return compound;
             } else if (ct.tag == CompoundTermTag.divide2) {
                 return CompoundTermTag.get(ct).toString();
-            } else {
-                // TODO?
             }
         }
         return null;
@@ -112,7 +108,7 @@ public final class TermConverter {
      */
     public static enum SpecialValue {
         /**
-         * TODO
+         * ANONYMOUS_LIST_TAIL
          */
         ANONYMOUS_LIST_TAIL
     }

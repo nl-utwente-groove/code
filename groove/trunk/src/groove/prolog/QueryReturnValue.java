@@ -49,9 +49,6 @@ public enum QueryReturnValue {
 
     /**
      * Return the correct enum value based on the PrologCode constants
-     * 
-     * @param value TODO
-     * @return TODO
      */
     public static QueryReturnValue fromInt(int value) {
         switch (value) {

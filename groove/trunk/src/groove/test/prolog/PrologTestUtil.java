@@ -55,12 +55,6 @@ public class PrologTestUtil {
         try {
             QueryResult queryResult = prologQuery.newQuery(query);
 
-            /**
-             * TODO: I think this is a bit ugly
-             * It would be better if there would be a Query class, and an Engine class, 
-             * where the Engine contains the environment and creates Queries, and the 
-             * Query class contains the interpreter.
-             */
             while (prologQuery.next() != null) {
                 // Load all results
             }

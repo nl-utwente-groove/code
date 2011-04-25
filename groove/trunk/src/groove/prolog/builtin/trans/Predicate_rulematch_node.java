@@ -26,8 +26,7 @@ import gnu.prolog.vm.PrologException;
 import groove.trans.RuleMatch;
 
 /**
- * 
- * 
+ * Predicate rulematch_node(+RuleMatch,?Node)
  * @author Michiel Hendriks
  */
 public class Predicate_rulematch_node extends TransPrologCode {

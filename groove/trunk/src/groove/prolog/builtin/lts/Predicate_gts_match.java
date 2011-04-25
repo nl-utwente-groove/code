@@ -31,8 +31,7 @@ import groove.util.TransformIterator;
 import java.util.Iterator;
 
 /**
- * 
- * 
+ * Predicate gts_match(+GraphState,?RuleEvent)
  * @author Michiel Hendriks
  */
 public class Predicate_gts_match extends LtsPrologCode {
@@ -70,7 +69,7 @@ public class Predicate_gts_match extends LtsPrologCode {
             interpreter.undo(bi.startUndoPosition);
             return nextSolution(interpreter, bi);
         } else {
-            GraphState graphState = getGraphState(args[1]);
+            GraphState graphState = getGraphState(args[0]);
             graphState.getTransitionIter();
             Iterator<RuleEvent> it =
                 new TransformIterator<GraphTransition,RuleEvent>(
@@ -82,7 +81,7 @@ public class Predicate_gts_match extends LtsPrologCode {
                 };
             GtsMatchBacktrackInfo bi = new GtsMatchBacktrackInfo();
             bi.it = it;
-            bi.dest = args[2];
+            bi.dest = args[1];
             bi.startUndoPosition = interpreter.getUndoPosition();
             return nextSolution(interpreter, bi);
         }

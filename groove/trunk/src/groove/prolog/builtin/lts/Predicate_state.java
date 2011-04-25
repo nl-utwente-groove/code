@@ -26,7 +26,7 @@ import groove.lts.GTS;
 import groove.prolog.GrooveEnvironment;
 
 /**
- * Retrieve one of the states from the GTS
+ * Predicate state(?state)
  * @author Lesley Wevers
  */
 public class Predicate_state extends LtsPrologCode {

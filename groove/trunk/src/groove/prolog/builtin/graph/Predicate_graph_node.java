@@ -25,8 +25,7 @@ import gnu.prolog.vm.PrologException;
 import groove.graph.Graph;
 
 /**
- * Get a node from the graph. <code>graph_node(Graph,Node)</code>
- * 
+ * Predicate graph_node(+Graph,?Node)
  * @author Michiel Hendriks
  */
 public class Predicate_graph_node extends GraphPrologCode {

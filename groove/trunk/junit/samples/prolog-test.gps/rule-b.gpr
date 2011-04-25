@@ -9,55 +9,55 @@
         </attr>
         <node id="n0">
             <attr name="layout">
-                <string>186 62 28 34</string>
+                <string>186 62 29 34</string>
             </attr>
         </node>
         <node id="n2">
             <attr name="layout">
-                <string>237 181 29 34</string>
+                <string>237 181 55 52</string>
             </attr>
         </node>
         <node id="n1">
             <attr name="layout">
-                <string>147 180 29 34</string>
+                <string>147 180 28 34</string>
             </attr>
         </node>
-        <edge to="n1" from="n0">
-            <attr name="label">
-                <string>new:a</string>
-            </attr>
-            <attr name="layout">
-                <string>500 0 201 79 179 126 161 197 12</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>not:</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>type:B</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>type:A</string>
-            </attr>
-        </edge>
         <edge to="n2" from="n0">
             <attr name="label">
-                <string>a</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>type:A</string>
+                <string>c</string>
             </attr>
         </edge>
         <edge to="n1" from="n1">
             <attr name="label">
                 <string>new:</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>type:C</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>type:A</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n0">
+            <attr name="label">
+                <string>new:c</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 201 79 179 126 161 197 12</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>type:C</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>not:</string>
             </attr>
         </edge>
     </graph>

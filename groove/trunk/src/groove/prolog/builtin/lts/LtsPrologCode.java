@@ -28,33 +28,35 @@ import groove.lts.GraphTransition;
 import groove.prolog.builtin.graph.GraphPrologCode;
 
 /**
- * 
+ * This class contains some utility methods to extract Java objects from prolog terms
  * 
  * @author Michiel Hendriks
  */
 public abstract class LtsPrologCode extends GraphPrologCode {
     /**
-     * TODO
+     * Atom term "graph_state"
      */
     public static final AtomTerm GRAPHSTATE_ATOM = AtomTerm.get("graph_state");
 
     /**
-     * TODO
+     * Atom term "transition"
      */
     public static final AtomTerm TRANSITION_ATOM = AtomTerm.get("transition");
 
     /**
-     * TODO
+     * Atom term "rule"
      */
     public static final AtomTerm RULE_ATOM = AtomTerm.get("rule");
 
     /**
-     * TODO
+     * Atom term "gts"
      */
     public static final AtomTerm GTS_ATOM = AtomTerm.get("gts");
 
     /**
-     * TODO
+     * Get a graph state from a term representing a graph state
+     * @param term      A term representing a graph state
+     * @return          A graph state
      */
     public static final GraphState getGraphState(Term term)
         throws PrologException {
@@ -71,7 +73,9 @@ public abstract class LtsPrologCode extends GraphPrologCode {
     }
 
     /**
-     * TODO
+     * Get a GTS from a term representing a GTS
+     * @param term      A term representing a GTS
+     * @return          A GTS
      */
     public static final GTS getLTS(Term term) throws PrologException {
         if (term instanceof JavaObjectTerm) {
@@ -87,7 +91,9 @@ public abstract class LtsPrologCode extends GraphPrologCode {
     }
 
     /**
-     * TODO
+     * Get a graph transition from a term representing a graph transition
+     * @param term      A term representing a graph transition
+     * @return          A graph transition
      */
     public static final GraphTransition getTransition(Term term)
         throws PrologException {

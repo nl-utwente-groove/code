@@ -25,8 +25,7 @@ import gnu.prolog.vm.PrologException;
 import groove.graph.Edge;
 
 /**
- * <code>is_graph(X)</code>
- * 
+ * Predicate is_edge(+Edge)
  * @author Michiel Hendriks
  */
 public class Predicate_is_edge extends GraphPrologCode {
