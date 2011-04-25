@@ -21,12 +21,12 @@ import groove.algebra.AlgebraFamily;
 import groove.graph.algebra.ValueNode;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
-import groove.rel.VarSupport;
 import groove.trans.Condition;
 import groove.trans.ForallCondition;
 import groove.trans.HostNode;
+import groove.trans.NotCondition;
+import groove.trans.Rule;
 import groove.trans.RuleEdge;
-import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
 import groove.trans.SystemProperties;
@@ -34,7 +34,6 @@ import groove.trans.SystemProperties;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,24 +47,17 @@ class ConditionSearchItem extends AbstractSearchItem {
     /**
      * Constructs a search item for a given condition.
      * @param condition the condition to be matched
-     * @param conditionIx the index of the condition in the search
      */
-    public ConditionSearchItem(Condition condition, int conditionIx) {
+    public ConditionSearchItem(Condition condition) {
         this.condition = condition;
         SystemProperties properties = condition.getSystemProperties();
-        this.matcher =
-            SearchPlanEngine.getInstance(properties.isInjective(),
-                properties.getAlgebraFamily()).createMatcher(condition);
+        this.matcher = SearchPlanEngine.getInstance().createMatcher(condition);
         this.intAlgebra =
             AlgebraFamily.getInstance(properties.getAlgebraFamily()).getAlgebra(
                 "int");
-        this.rootMap = condition.getRootMap();
-        this.neededNodes = this.rootMap.nodeMap().keySet();
-        this.neededEdges = this.rootMap.edgeMap().keySet();
-        this.neededVars = new HashSet<LabelVar>();
-        for (RuleEdge edge : this.rootMap.edgeMap().keySet()) {
-            this.neededVars.addAll(VarSupport.getAllVars(edge));
-        }
+        this.neededNodes = condition.getRootNodes();
+        this.neededEdges = condition.getRootEdges();
+        this.neededVars = condition.getRootVars();
         this.positive =
             (condition instanceof ForallCondition)
                 && ((ForallCondition) condition).isPositive();
@@ -75,7 +67,6 @@ class ConditionSearchItem extends AbstractSearchItem {
         this.boundNodes =
             this.countNode == null ? Collections.<RuleNode>emptySet()
                     : Collections.singleton(this.countNode);
-        this.forallIx = conditionIx;
     }
 
     @Override
@@ -95,7 +86,8 @@ class ConditionSearchItem extends AbstractSearchItem {
 
     @Override
     int getRating() {
-        return -this.condition.getPattern().nodeCount() - this.rootMap.size();
+        return -this.condition.getPattern().nodeCount()
+            - this.neededNodes.size() - this.neededEdges.size();
     }
 
     @Override
@@ -120,15 +112,64 @@ class ConditionSearchItem extends AbstractSearchItem {
             this.preCounted = strategy.isNodeFound(this.countNode);
             this.countNodeIx = strategy.getNodeIx(this.countNode);
         }
+        if (!isNAC()) {
+            this.forallIx = strategy.getCondIx(this.condition);
+        }
     }
 
     public Record createRecord(Search search) {
-        return new NewForallRecord(search);
+        if (isNAC()) {
+            return new NegConditionRecord(search);
+        } else {
+            return new PosConditionRecord(search);
+        }
     }
 
     @Override
     public String toString() {
-        return String.format("Universal condition %s", this.matcher.getPlan());
+        String descr;
+        if (isNAC()) {
+            descr = "NAC";
+        } else if (isRule()) {
+            descr = "Rule";
+        } else {
+            descr = "Universal condition";
+        }
+        return String.format("%s %s", descr, this.matcher.getPlan());
+    }
+
+    /** Indicates if this condition search item tests for a NAC. */
+    public boolean isNAC() {
+        return this.condition instanceof NotCondition;
+    }
+
+    /** Indicates if this condition search item is a rule. */
+    public boolean isRule() {
+        return this.condition instanceof Rule;
+    }
+
+    @Override
+    void setRelevant(boolean relevant) {
+        // only change to irrelevant if there are no modifying rules
+        // in the condition hierarchy
+        super.setRelevant(relevant || isModifying());
+    }
+
+    /** Tests if this condition or one of its subconditions is a modifying rule. */
+    private boolean isModifying() {
+        boolean result = false;
+        if (isRule()) {
+            result = ((Rule) this.condition).isModifying();
+        } else {
+            for (Condition subCondition : this.condition.getSubConditions()) {
+                if (subCondition instanceof Rule
+                    && ((Rule) subCondition).isModifying()) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     /** The graph condition that should be matched by this search item. */
@@ -142,13 +183,11 @@ class ConditionSearchItem extends AbstractSearchItem {
     /** Flag indicating that the condition must be matched at least once. */
     final boolean positive;
     /** The index of the condition in the search. */
-    final int forallIx;
+    int forallIx;
     /** Flag indicating if the match count is predetermined. */
     boolean preCounted;
     /** The index of the count node (if any). */
     int countNodeIx = -1;
-    /** The root map of the graph condition. */
-    private final RuleGraphMorphism rootMap;
     /** The source nodes of the root map. */
     private final Set<RuleNode> neededNodes;
     /** The source edges of the root map. */
@@ -167,9 +206,39 @@ class ConditionSearchItem extends AbstractSearchItem {
     /**
      * Search record for a graph condition.
      */
-    private class NewForallRecord extends SingularRecord {
+    abstract private class AbstractConditionRecord extends SingularRecord {
         /** Constructs a record for a given search. */
-        public NewForallRecord(Search search) {
+        public AbstractConditionRecord(Search search) {
+            super(search);
+        }
+
+        /** Creates a context map for the condition, based one
+         * the elements found so far during the search.
+         */
+        final RuleToHostMap createContextMap() {
+            RuleToHostMap result = this.host.getFactory().createRuleToHostMap();
+            for (Map.Entry<RuleNode,Integer> nodeIxEntry : ConditionSearchItem.this.nodeIxMap.entrySet()) {
+                result.putNode(nodeIxEntry.getKey(),
+                    this.search.getNode(nodeIxEntry.getValue()));
+            }
+            for (Map.Entry<RuleEdge,Integer> edgeIxEntry : ConditionSearchItem.this.edgeIxMap.entrySet()) {
+                result.putEdge(edgeIxEntry.getKey(),
+                    this.search.getEdge(edgeIxEntry.getValue()));
+            }
+            for (Map.Entry<LabelVar,Integer> varIxEntry : ConditionSearchItem.this.varIxMap.entrySet()) {
+                result.putVar(varIxEntry.getKey(),
+                    this.search.getVar(varIxEntry.getValue()));
+            }
+            return result;
+        }
+    }
+
+    /**
+     * Search record for a positive graph condition.
+     */
+    private class PosConditionRecord extends AbstractConditionRecord {
+        /** Constructs a record for a given search. */
+        public PosConditionRecord(Search search) {
             super(search);
         }
 
@@ -182,20 +251,7 @@ class ConditionSearchItem extends AbstractSearchItem {
                 this.preCount =
                     Integer.parseInt(((ValueNode) countImage).getSymbol());
             }
-            RuleToHostMap contextMap =
-                this.host.getFactory().createRuleToHostMap();
-            for (Map.Entry<RuleNode,Integer> nodeIxEntry : ConditionSearchItem.this.nodeIxMap.entrySet()) {
-                contextMap.putNode(nodeIxEntry.getKey(),
-                    this.search.getNode(nodeIxEntry.getValue()));
-            }
-            for (Map.Entry<RuleEdge,Integer> edgeIxEntry : ConditionSearchItem.this.edgeIxMap.entrySet()) {
-                contextMap.putEdge(edgeIxEntry.getKey(),
-                    this.search.getEdge(edgeIxEntry.getValue()));
-            }
-            for (Map.Entry<LabelVar,Integer> varIxEntry : ConditionSearchItem.this.varIxMap.entrySet()) {
-                contextMap.putVar(varIxEntry.getKey(),
-                    this.search.getVar(varIxEntry.getValue()));
-            }
+            RuleToHostMap contextMap = createContextMap();
             List<TreeMatch> matches =
                 ConditionSearchItem.this.matcher.findAll(this.host, contextMap,
                     null);
@@ -254,5 +310,32 @@ class ConditionSearchItem extends AbstractSearchItem {
         private ValueNode countImage;
         /** The matches found for the condition. */
         private Collection<TreeMatch> match;
+    }
+
+    /**
+     * Search record for a negative graph condition.
+     */
+    private class NegConditionRecord extends AbstractConditionRecord {
+        /** Constructs a record for a given search. */
+        public NegConditionRecord(Search search) {
+            super(search);
+        }
+
+        @Override
+        boolean find() {
+            return ConditionSearchItem.this.matcher.find(this.host,
+                createContextMap(), null) == null;
+        }
+
+        @Override
+        boolean write() {
+            // There is nothing to write
+            return true;
+        }
+
+        @Override
+        void erase() {
+            // There is nothing to erase
+        }
     }
 }

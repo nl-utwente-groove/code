@@ -17,13 +17,13 @@
 package groove.abstraction;
 
 import groove.graph.TypeLabel;
-import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
 import groove.trans.RuleGraph;
 import groove.trans.RuleLabel;
 import groove.trans.RuleMatch;
 import groove.trans.RuleNode;
+import groove.trans.Rule;
 import groove.util.Property;
 import groove.util.Visitor;
 

@@ -24,8 +24,8 @@ import groove.lts.AbstractGraphState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.GraphTransitionStub;
-import groove.trans.Rule;
 import groove.trans.RuleEvent;
+import groove.trans.Rule;
 
 import java.util.ArrayList;
 import java.util.Collection;

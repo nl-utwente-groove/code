@@ -449,15 +449,14 @@ public class RuleDependencies {
 
     void collectConditionCharacteristics(Condition cond,
             Set<TypeLabel> positive, Set<TypeLabel> negative) {
-        RuleGraphMorphism pattern = cond.getRootMap();
-        RuleGraph target = cond.getPattern();
+        RuleGraph pattern = cond.getPattern();
         // collected the isolated fresh nodes
-        Set<RuleNode> isolatedNodes = new HashSet<RuleNode>(target.nodeSet());
-        isolatedNodes.removeAll(pattern.nodeMap().values());
+        Set<RuleNode> isolatedNodes = new HashSet<RuleNode>(pattern.nodeSet());
+        isolatedNodes.removeAll(cond.getRootNodes());
         // iterate over the edges that are new in the target
         Set<RuleEdge> freshTargetEdges =
-            new HashSet<RuleEdge>(target.edgeSet());
-        freshTargetEdges.removeAll(pattern.edgeMap().values());
+            new HashSet<RuleEdge>(pattern.edgeSet());
+        freshTargetEdges.removeAll(cond.getRootEdges());
         for (RuleEdge edge : freshTargetEdges) {
             RuleLabel label = edge.label();
             // don't look at attribute-related edges
@@ -481,13 +480,6 @@ public class RuleDependencies {
                 }
             }
         }
-        // if the condition pattern is non-injective, it means merging is part
-        // of the condition
-        if (this.properties.isInjective()
-            || pattern.nodeMap().size() > new HashSet<RuleNode>(
-                pattern.nodeMap().values()).size()) {
-            positive.add(MERGE_LABEL);
-        }
         // if there is a dangling edge check, all labels are negative conditions
         if (this.properties.isCheckDangling()) {
             negative.add(ALL_LABEL);
@@ -500,12 +492,12 @@ public class RuleDependencies {
             Set<TypeLabel> subPositives = new HashSet<TypeLabel>();
             Set<TypeLabel> subNegatives = new HashSet<TypeLabel>();
             collectConditionCharacteristics(negCond, subPositives, subNegatives);
-            if (negCond instanceof SPORule == cond instanceof SPORule
+            if (negCond instanceof Rule == cond instanceof Rule
                 || negCond instanceof ForallCondition) {
                 positive.addAll(subPositives);
                 negative.addAll(subNegatives);
             }
-            if (negCond instanceof SPORule != cond instanceof SPORule
+            if (negCond instanceof Rule != cond instanceof Rule
                 || negCond instanceof ForallCondition) {
                 negative.addAll(subPositives);
                 positive.addAll(subNegatives);
@@ -537,7 +529,7 @@ public class RuleDependencies {
         // do.
         // In order not to miss events, the disabled rule must be re-enabled as
         // well.
-        if (disabled instanceof SPORule && ((SPORule) disabled).hasSubRules()) {
+        if (disabled.hasSubRules()) {
             addEnabling(disabler, disabled);
         }
     }

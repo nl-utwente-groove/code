@@ -48,11 +48,11 @@ public class CompositeEvent extends
      *        dependency tree of the events, meaning the the first element is
      *        the event corresponding to the top level of <code>rule</code>.
      */
-    public CompositeEvent(Rule rule, Collection<SPOEvent> eventSet,
+    public CompositeEvent(Rule rule, Collection<BasicEvent> eventSet,
             boolean reuse) {
         super(reference, rule, reuse);
         assert !eventSet.isEmpty();
-        this.eventArray = new SPOEvent[eventSet.size()];
+        this.eventArray = new BasicEvent[eventSet.size()];
         eventSet.toArray(this.eventArray);
     }
 
@@ -77,7 +77,7 @@ public class CompositeEvent extends
 
     public String getAnchorImageString() {
         List<String> eventLabels = new ArrayList<String>();
-        for (SPOEvent event : this.eventArray) {
+        for (BasicEvent event : this.eventArray) {
             eventLabels.add(event.getRule().getName()
                 + event.getAnchorImageString());
         }
@@ -87,7 +87,7 @@ public class CompositeEvent extends
     public Set<HostNode> getCreatedNodes(Set<? extends HostNode> hostNodes) {
         Set<HostNode> result =
             new LinkedHashSet<HostNode>(this.eventArray.length);
-        for (SPOEvent event : this.eventArray) {
+        for (BasicEvent event : this.eventArray) {
             event.collectCreatedNodes(hostNodes, result);
         }
         return result;
@@ -96,7 +96,7 @@ public class CompositeEvent extends
     @Override
     Set<HostNode> computeErasedNodes() {
         Set<HostNode> result = createNodeSet(this.eventArray.length);
-        for (SPOEvent event : this.eventArray) {
+        for (BasicEvent event : this.eventArray) {
             event.collectErasedNodes(result);
         }
         return result;
@@ -107,7 +107,7 @@ public class CompositeEvent extends
             // the events are ordered according to rule level
             // so we can build a stack of corresponding matches
             Stack<RuleMatch> matchStack = new Stack<RuleMatch>();
-            for (SPOEvent event : this.eventArray) {
+            for (BasicEvent event : this.eventArray) {
                 RuleMatch match =
                     new RuleMatch(event.getRule(),
                         event.getMatch(source).getElementMap());
@@ -162,7 +162,7 @@ public class CompositeEvent extends
 
     public Set<HostEdge> getSimpleCreatedEdges() {
         Set<HostEdge> result = createEdgeSet(this.eventArray.length * 2);
-        for (SPOEvent event : this.eventArray) {
+        for (BasicEvent event : this.eventArray) {
             event.collectSimpleCreatedEdges(getErasedNodes(), result);
         }
         return result;
@@ -172,7 +172,7 @@ public class CompositeEvent extends
             Iterator<HostNode> createdNodes) {
         Set<HostEdge> result = createEdgeSet(this.eventArray.length * 2);
         Map<RuleNode,HostNode> coRootImages = new HashMap<RuleNode,HostNode>();
-        for (SPOEvent event : this.eventArray) {
+        for (BasicEvent event : this.eventArray) {
             event.collectComplexCreatedEdges(getErasedNodes(), createdNodes,
                 coRootImages, result);
         }
@@ -181,7 +181,7 @@ public class CompositeEvent extends
 
     public Set<HostEdge> getSimpleErasedEdges() {
         Set<HostEdge> result = createEdgeSet(this.eventArray.length * 2);
-        for (SPOEvent event : this.eventArray) {
+        for (BasicEvent event : this.eventArray) {
             event.collectSimpleErasedEdges(result);
         }
         return result;
@@ -219,12 +219,12 @@ public class CompositeEvent extends
         int result = getRule().compareTo(other.getRule());
         if (result == 0) {
             // the same rule, so the other is also a composite event
-            SPOEvent[] myEventArray = this.eventArray;
-            SPOEvent[] otherEventArray;
+            BasicEvent[] myEventArray = this.eventArray;
+            BasicEvent[] otherEventArray;
             if (other instanceof CompositeEvent) {
                 otherEventArray = ((CompositeEvent) other).eventArray;
             } else {
-                otherEventArray = new SPOEvent[] {(SPOEvent) other};
+                otherEventArray = new BasicEvent[] {(BasicEvent) other};
             }
             // more events = larger
             result = myEventArray.length - otherEventArray.length;
@@ -239,7 +239,7 @@ public class CompositeEvent extends
     }
 
     /** Returns the set of constituent events of this set event. */
-    public Set<SPOEvent> getEventSet() {
+    public Set<BasicEvent> getEventSet() {
         return getCache().getEventSet();
     }
 
@@ -281,13 +281,13 @@ public class CompositeEvent extends
     @Override
     public void clearCache() {
         super.clearCache();
-        for (SPOEvent event : this.eventArray) {
+        for (BasicEvent event : this.eventArray) {
             event.clearCache();
         }
     }
 
     /** The (non-empty) array of sub-events constituting this event. */
-    final SPOEvent[] eventArray;
+    final BasicEvent[] eventArray;
     /** Cache reference instance for initialisation. */
     static private final CacheReference<CompositeEventCache> reference =
         CacheReference.<CompositeEventCache>newInstance(false);
@@ -298,15 +298,15 @@ public class CompositeEvent extends
          * Reconstructs a set of events from the array stored in the composite
          * event.
          */
-        SortedSet<SPOEvent> getEventSet() {
+        SortedSet<BasicEvent> getEventSet() {
             if (this.eventSet == null) {
                 this.eventSet =
-                    new TreeSet<SPOEvent>(
+                    new TreeSet<BasicEvent>(
                         Arrays.asList(CompositeEvent.this.eventArray));
             }
             return this.eventSet;
         }
 
-        private SortedSet<SPOEvent> eventSet;
+        private SortedSet<BasicEvent> eventSet;
     }
 }

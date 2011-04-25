@@ -30,7 +30,7 @@ import groove.control.CtrlLoader;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlTransition;
 import groove.trans.GraphGrammar;
-import groove.trans.SPORule;
+import groove.trans.Rule;
 import groove.util.Groove;
 import groove.view.FormatException;
 
@@ -92,12 +92,12 @@ public class CtrlBuildTest {
         CtrlAut aut = CtrlFactory.instance().buildDefault(this.prioGrammar);
         assertEquals(2, aut.nodeCount());
         assertEquals(7, aut.edgeCount());
-        SPORule m3 = (SPORule) this.prioGrammar.getRule("m3");
-        SPORule m2 = (SPORule) this.prioGrammar.getRule("m2");
-        SPORule m1 = (SPORule) this.prioGrammar.getRule("m1");
-        SPORule c3 = (SPORule) this.prioGrammar.getRule("c3");
-        SPORule c2 = (SPORule) this.prioGrammar.getRule("c2");
-        SPORule c1 = (SPORule) this.prioGrammar.getRule("c1");
+        Rule m3 = this.prioGrammar.getRule("m3");
+        Rule m2 = this.prioGrammar.getRule("m2");
+        Rule m1 = this.prioGrammar.getRule("m1");
+        Rule c3 = this.prioGrammar.getRule("c3");
+        Rule c2 = this.prioGrammar.getRule("c2");
+        Rule c1 = this.prioGrammar.getRule("c1");
         CtrlCall callM3 = new CtrlCall(m3, null);
         CtrlCall callM2 = new CtrlCall(m2, null);
         CtrlCall callM1 = new CtrlCall(m1, null);

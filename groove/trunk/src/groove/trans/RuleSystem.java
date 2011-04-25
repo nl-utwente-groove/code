@@ -19,7 +19,6 @@ package groove.trans;
 import groove.graph.LabelStore;
 import groove.graph.TypeGraph;
 import groove.util.CollectionOfCollections;
-import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -42,7 +41,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 12:37:40 $
  * @see RuleName
- * @see SPORule
+ * @see Rule
  */
 public class RuleSystem {
     /**
@@ -316,16 +315,6 @@ public class RuleSystem {
     public void testConsistent() throws FormatException {
         List<String> errors = new ArrayList<String>();
         // collect the exceptions of the rules
-        for (Rule rule : getRules()) {
-            try {
-                rule.testConsistent();
-            } catch (FormatException exc) {
-                for (FormatError error : exc.getErrors()) {
-                    errors.add(String.format("Error in %s: %s", rule.getName(),
-                        error));
-                }
-            }
-        }
         if (this.labelStore == null) {
             errors.add(String.format("Labels and subtypes not initialised"));
         }

@@ -23,7 +23,7 @@ import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
 import groove.trans.RuleEvent;
-import groove.trans.SPOEvent;
+import groove.trans.BasicEvent;
 
 /**
  * 
@@ -41,10 +41,10 @@ public class Predicate_ruleevent_anchor_node extends TransPrologCode {
             return it.nextSolution(interpreter);
         } else {
             RuleEvent re = getRuleEvent(args[0]);
-            if (!(re instanceof SPOEvent)) {
+            if (!(re instanceof BasicEvent)) {
                 PrologException.domainError(RULEEVENT_ATOM, args[0]);
             }
-            SPOEvent spo = (SPOEvent) re;
+            BasicEvent spo = (BasicEvent) re;
             PrologCollectionIterator it =
                 new PrologCollectionIterator(
                     spo.getAnchorMap().nodeMap().values(), args[1],

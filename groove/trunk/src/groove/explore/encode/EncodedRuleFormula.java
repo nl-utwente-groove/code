@@ -19,8 +19,8 @@ package groove.explore.encode;
 import groove.explore.result.Predicate;
 import groove.gui.Simulator;
 import groove.lts.GraphState;
-import groove.trans.Rule;
 import groove.trans.RuleSystem;
+import groove.trans.Rule;
 import groove.view.FormatException;
 
 /**

@@ -24,7 +24,7 @@ import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
 import groove.trans.HostNode;
 import groove.trans.RuleEvent;
-import groove.trans.SPOEvent;
+import groove.trans.BasicEvent;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -45,11 +45,11 @@ public class Predicate_ruleevent_created_node extends TransPrologCode {
             return it.nextSolution(interpreter);
         } else {
             RuleEvent event = getRuleEvent(args[0]);
-            if (!(event instanceof SPOEvent)) {
+            if (!(event instanceof BasicEvent)) {
                 return FAIL;
             }
             Collection<? extends HostNode> filterNodes =
-                ((SPOEvent) event).getAnchorMap().nodeMap().values();
+                ((BasicEvent) event).getAnchorMap().nodeMap().values();
             PrologCollectionIterator it =
                 new PrologCollectionIterator(
                     event.getCreatedNodes(new HashSet<HostNode>(filterNodes)),

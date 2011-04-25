@@ -25,7 +25,7 @@ import gnu.prolog.vm.PrologException;
 import groove.trans.HostEdge;
 import groove.trans.HostNode;
 import groove.trans.RuleEvent;
-import groove.trans.SPOEvent;
+import groove.trans.BasicEvent;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -47,8 +47,8 @@ public class Predicate_ruleevent_created_edge extends TransPrologCode {
         } else {
             RuleEvent re = getRuleEvent(args[0]);
             PrologCollectionIterator it;
-            if (re instanceof SPOEvent) {
-                SPOEvent se = (SPOEvent) re;
+            if (re instanceof BasicEvent) {
+                BasicEvent se = (BasicEvent) re;
                 Set<HostEdge> edges = new HashSet<HostEdge>();
                 Set<HostNode> createdNodes = new HashSet<HostNode>();
                 createdNodes.addAll(se.getCreatedNodes(new HashSet<HostNode>(

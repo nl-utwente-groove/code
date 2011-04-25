@@ -16,7 +16,7 @@
  */
 package groove.control;
 
-import groove.trans.SPORule;
+import groove.trans.Rule;
 import groove.util.Groove;
 
 import java.util.HashMap;
@@ -53,7 +53,7 @@ public class CtrlCall {
      * @param rule the rule to be called; non-{@code null}
      * @param args list of arguments for the call; non-{@code null}
      */
-    public CtrlCall(SPORule rule, List<CtrlPar> args) {
+    public CtrlCall(Rule rule, List<CtrlPar> args) {
         this.args = args;
         this.rule = rule;
         this.function = null;
@@ -237,7 +237,7 @@ public class CtrlCall {
      * function call or an omega call.
      * @see #isOmega()
      */
-    public final SPORule getRule() {
+    public final Rule getRule() {
         return this.rule;
     }
 
@@ -245,7 +245,7 @@ public class CtrlCall {
      * The rule being called. 
      * May be {@code null} if this is a function or omega call.
      */
-    private final SPORule rule;
+    private final Rule rule;
 
     /** 
      * Returns the name of the function being called.

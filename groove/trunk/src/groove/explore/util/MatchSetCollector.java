@@ -27,10 +27,10 @@ import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.lts.MatchResultSet;
 import groove.trans.HostNode;
-import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.RuleToHostMap;
+import groove.trans.Rule;
 import groove.trans.SystemRecord;
 import groove.util.Visitor;
 

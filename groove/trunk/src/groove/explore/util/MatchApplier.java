@@ -28,8 +28,8 @@ import groove.lts.GraphTransitionStub;
 import groove.lts.MatchResult;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
-import groove.trans.Rule;
 import groove.trans.RuleEvent;
+import groove.trans.Rule;
 import groove.util.Reporter;
 
 /**

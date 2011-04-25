@@ -23,6 +23,7 @@ import groove.graph.GraphProperties;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
+import groove.trans.RuleApplication;
 import groove.trans.DefaultHostGraph;
 import groove.trans.EdgeEmbargo;
 import groove.trans.HostEdge;
@@ -30,7 +31,7 @@ import groove.trans.HostGraph;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.NotCondition;
-import groove.trans.RuleApplication;
+import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
@@ -38,7 +39,6 @@ import groove.trans.RuleLabel;
 import groove.trans.RuleMatch;
 import groove.trans.RuleName;
 import groove.trans.RuleNode;
-import groove.trans.SPORule;
 import groove.trans.SystemProperties;
 import groove.util.Visitor;
 import groove.view.FormatException;
@@ -77,7 +77,7 @@ public class NACTest {
     protected static final int NR_GRAPHS = 3;
     protected static final int G0_INDEX = 2;
 
-    protected SPORule rule;
+    protected Rule rule;
     protected NotCondition[] NACs = new NotCondition[NR_NACS];
     protected HostGraph[] g = new HostGraph[NR_GRAPHS];
 
@@ -111,7 +111,7 @@ public class NACTest {
         ruleProperties.setPriority(0);
         ruleProperties.setConfluent(false);
         this.rule =
-            new SPORule(new RuleName("test"), lhs, rhs, ruleMorphism,
+            new Rule(new RuleName("test"), lhs, rhs, ruleMorphism,
                 ruleProperties, SystemProperties.DEFAULT_PROPERTIES);
         this.rule.setLabelStore(this.labelStore);
         this.NACs[0] =
@@ -270,7 +270,7 @@ public class NACTest {
         assertEquals(2, derivSet.size());
     }
 
-    private Collection<RuleApplication> getDerivations(SPORule rule,
+    private Collection<RuleApplication> getDerivations(Rule rule,
             final HostGraph graph) {
         final Collection<RuleApplication> result =
             new ArrayList<RuleApplication>();

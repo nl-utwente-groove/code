@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-
 /**
  * A negative graph condition, which tests against the existence of a graph
  * structure. A negative condition has no sub-conditions and returns an (empty)
@@ -24,22 +23,13 @@ package groove.trans;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class NotCondition extends AbstractCondition<CompositeMatch> {
+public class NotCondition extends Condition {
     /**
-     * Creates a negative condition that attempts to match a given graph, with
-     * given root map.
-     */
-    public NotCondition(RuleGraph target, RuleGraphMorphism rootMap,
-            SystemProperties properties) {
-        super(null, target, rootMap, properties);
-    }
-
-    /**
-     * Creates a NAC over a default context and an initially empty target
+     * Creates a NAC over a default root graph and an initially empty target
      * pattern.
      */
     public NotCondition(RuleGraph pattern, SystemProperties properties) {
-        this(pattern, new RuleGraphMorphism(), properties);
+        super(null, pattern, null, properties);
     }
 
     /**

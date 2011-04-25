@@ -26,10 +26,10 @@ import groove.lts.GTSAdapter;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.DefaultApplication;
+import groove.trans.RuleApplication;
 import groove.trans.HostFactory;
-import groove.trans.SPOEvent;
-import groove.trans.SPORule;
+import groove.trans.BasicEvent;
+import groove.trans.Rule;
 import groove.trans.SystemRecord;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
@@ -216,8 +216,8 @@ public class ExplorationStatistics {
         printf("\t\tConfluent:\t%d%n", MatchApplier.getConfluentDiamondCount());
         printf("\t\tEvents:\t\t%d%n", SystemRecord.getEventCount());
         printf("\tCoanchor reuse:\t%d/%d%n",
-            SPOEvent.getCoanchorImageOverlap(),
-            SPOEvent.getCoanchorImageCount());
+            BasicEvent.getCoanchorImageOverlap(),
+            BasicEvent.getCoanchorImageCount());
     }
 
     /** Reports statistics on isomorphism checking. */
@@ -250,7 +250,7 @@ public class ExplorationStatistics {
         HostFactory factory = this.gts.getHostFactory();
         printf("\n\tDefault nodes:\t%d%n", factory.getNodeCount());
         printf("\tDefault labels:\t%d%n", factory.getLabelCount());
-        printf("\tFresh nodes:\t%d%n", DefaultApplication.getFreshNodeCount());
+        printf("\tFresh nodes:\t%d%n", RuleApplication.getFreshNodeCount());
         printf("\tFresh edges:\t%d%n", factory.getEdgeCount());
         double nodeAvg =
             (double) this.statisticsListener.getNodeCount()
@@ -276,7 +276,7 @@ public class ExplorationStatistics {
     private void reportTime() {
         // Timing figures.
         long total = (this.endTime - this.startTime);
-        long matching = SPORule.getMatchingTime();
+        long matching = Rule.getMatchingTime();
         long running = Exploration.getRunningTime();
         long overhead = total - running;
         long isoChecking = IsoChecker.getTotalTime();

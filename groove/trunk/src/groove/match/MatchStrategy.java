@@ -25,7 +25,6 @@ import groove.util.Visitor.Collector;
 import groove.util.Visitor.Finder;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -36,23 +35,6 @@ import java.util.List;
  * @version $Revision $
  */
 abstract public class MatchStrategy<R> {
-    /**
-     * Returns an iterator over all matches to a given graph that extend a given
-     * partial match. The partial match should be defined precisely for the
-     * pre-matched elements indicated when constructing the match strategy. This
-     * method allows the matches to be computed lazily.
-     * @param host the graph into which the matching is to go
-     * @param seedMap a predefined mapping to the elements of
-     *        <code>host</code> that all the solutions should respect. May be
-     *        <code>null</code> if there is no predefined mapping
-     * @return an iterator over all mappings to the elements of
-     *         <code>host</code> that augment <code>preMatch</code> and
-     *         fulfil the requirements to be total matches
-     */
-    @Deprecated
-    abstract public Iterator<R> getMatchIter(HostGraph host,
-            RuleToHostMap seedMap);
-
     /** 
      * Returns the first match that satisfies a given property. 
      * @param host the host graph into which the matching is to go

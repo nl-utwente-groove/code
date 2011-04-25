@@ -16,30 +16,23 @@
  */
 package groove.trans;
 
-import groove.algebra.Algebra;
-import groove.algebra.AlgebraFamily;
 import groove.graph.algebra.VariableNode;
-
-import java.util.Collection;
 
 /**
  * Universally matched condition.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ForallCondition extends AbstractCondition<CompositeMatch> {
+public class ForallCondition extends Condition {
     /**
      * Constructs an instance based on a given pattern graph and root map. 
      * @param countNode node specifying the number of matches of this condition.
      */
     public ForallCondition(RuleName name, RuleGraph pattern,
-            RuleGraphMorphism rootMap, SystemProperties properties,
+            RuleGraph rootGraph, SystemProperties properties,
             VariableNode countNode) {
-        super(name, pattern, rootMap, properties);
+        super(name, pattern, rootGraph, properties);
         this.countNode = countNode;
-        this.intAlgebra =
-            AlgebraFamily.getInstance(getSystemProperties().getAlgebraFamily()).getAlgebra(
-                "int");
     }
 
     @Override
@@ -47,12 +40,6 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
         // sub-conditions of universal conditions must be rules or negatives
         assert !(condition instanceof ForallCondition);
         super.addSubCondition(condition);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    protected Collection<SPORule> getComplexSubConditions() {
-        return super.getComplexSubConditions();
     }
 
     @Override
@@ -63,11 +50,6 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
     /** Returns the match count node of this universal condition, if any. */
     public RuleNode getCountNode() {
         return this.countNode;
-    }
-
-    /** Returns the integer algebra corresponding to the system properties. */
-    public Algebra<?> getIntAlgebra() {
-        return this.intAlgebra;
     }
 
     /** Sets this universal condition to positive (meaning that
@@ -87,9 +69,6 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
 
     /** Node capturing the match count of this condition. */
     private final RuleNode countNode;
-    /** The integer algebra corresponding to the system properties. */
-    private final Algebra<?> intAlgebra;
-
     /**
      * Flag indicating whether the condition is positive, i.e., cannot be
      * vacuously true.

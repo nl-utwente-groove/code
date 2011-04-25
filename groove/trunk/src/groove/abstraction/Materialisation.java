@@ -18,15 +18,15 @@ package groove.abstraction;
 
 import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
-import groove.trans.DefaultApplication;
+import groove.trans.RuleApplication;
 import groove.trans.HostEdge;
 import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
 import groove.trans.RuleLabel;
 import groove.trans.RuleMatch;
 import groove.trans.RuleNode;
-import groove.trans.SPOEvent;
-import groove.trans.SPORule;
+import groove.trans.BasicEvent;
+import groove.trans.Rule;
 import groove.trans.SystemRecord;
 
 import java.util.ArrayList;
@@ -81,7 +81,7 @@ public final class Materialisation implements Cloneable {
     /**
      * The matched rule.
      */
-    private final SPORule matchedRule;
+    private final Rule matchedRule;
     /**
      * A copy of the concrete match of the rule into the (partially) materialised shape.
      * This is left unchanged during the materialisation.
@@ -270,11 +270,11 @@ public final class Materialisation implements Cloneable {
      * transformed shape. This shape is not yet normalised.
      */
     public Shape applyMatch(SystemRecord record) {
-        RuleEvent event = new SPOEvent(this.matchedRule, this.match, true);
+        RuleEvent event = new BasicEvent(this.matchedRule, this.match, true);
         if (record != null) {
             event = record.normaliseEvent(event);
         }
-        DefaultApplication app = new DefaultApplication(event, this.shape);
+        RuleApplication app = new RuleApplication(event, this.shape);
         Shape result = (Shape) app.getTarget();
         return result;
     }

@@ -24,9 +24,7 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.match.SearchEngineFactory;
-import groove.trans.AbstractCondition;
 import groove.trans.Rule;
-import groove.trans.SPORule;
 import groove.trans.SystemRecord;
 
 /**
@@ -70,13 +68,11 @@ public abstract class AbstractStrategy implements Strategy {
 
     /**
      * Iterates through all the rules in the GTS's grammar and calls
-     * their {#link {@link AbstractCondition#resetMatcher()} method. 
+     * their {#link {@link Rule#resetMatcher()} method. 
      */
     protected void resetRulesMatchers() {
         for (Rule r : getGTS().getGrammar().getRules()) {
-            if (r instanceof AbstractCondition<?>) {
-                ((SPORule) r).resetMatcher();
-            }
+            r.resetMatcher();
         }
     }
 

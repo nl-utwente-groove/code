@@ -24,7 +24,6 @@ import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleToHostMap;
-import groove.util.TransformIterator;
 import groove.util.Visitor;
 
 import java.util.ArrayList;
@@ -46,53 +45,6 @@ public class ReteStrategy extends MatchStrategy<TreeMatch> {
         this.owner = owner;
         this.condition = condition;
         assert condition != null;
-    }
-
-    @Override
-    @Deprecated
-    public synchronized Iterator<TreeMatch> getMatchIter(final HostGraph host,
-            RuleToHostMap seedMap) {
-        Iterator<TreeMatch> result = (new ArrayList<TreeMatch>()).iterator();
-        assert this.owner.getNetwork() != null;
-
-        if (host != this.owner.getNetwork().getState().getHostGraph()) {
-            this.owner.getNetwork().processGraph(host);
-        }
-
-        assert graphShapesEqual(host,
-            this.owner.getNetwork().getState().getHostGraph());
-
-        if (this.owner.getNetwork() != null) {
-            //iterate through the conflict set of the production node
-            //associated with this condition
-            ConditionChecker cc =
-                this.owner.getNetwork().getConditionCheckerNodeFor(
-                    this.condition);
-            if (cc != null) {
-                if ((seedMap != null) && (!seedMap.isEmpty())) {
-                    result =
-                        new TransformIterator<ReteMatch,TreeMatch>(
-                            cc.getConflictSetIterator(seedMap)) {
-                            @Override
-                            public TreeMatch toOuter(ReteMatch matchMap) {
-                                return createTreeMatch(matchMap, host);
-                            }
-                        };
-                } else {
-                    result =
-                        new TransformIterator<ReteMatch,TreeMatch>(
-                            cc.getConflictSetIterator()) {
-                            @Override
-                            public TreeMatch toOuter(ReteMatch matchMap) {
-                                return createTreeMatch(matchMap, host);
-                            }
-                        };
-                }
-
-            }
-
-        }
-        return result;
     }
 
     @Override
@@ -237,8 +189,7 @@ public class ReteStrategy extends MatchStrategy<TreeMatch> {
                     result.add(new ReteStrategy(this.owner, subCondition));
                 }
             }
-            this.subMatchers =
-                result.toArray(new ReteStrategy[result.size()]);
+            this.subMatchers = result.toArray(new ReteStrategy[result.size()]);
         }
         return this.subMatchers;
     }

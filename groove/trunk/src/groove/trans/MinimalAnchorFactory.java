@@ -35,7 +35,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
+public class MinimalAnchorFactory implements AnchorFactory<Rule> {
     /** Private empty constructor to make this a singleton class. */
     private MinimalAnchorFactory() {
         // empty constructor
@@ -46,7 +46,7 @@ public class MinimalAnchorFactory implements AnchorFactory<SPORule> {
      * that the rule's internal sets of <tt>lhsOnlyNodes</tt> etc. have been
      * initialised already.
      */
-    public RuleElement[] newAnchors(SPORule rule) {
+    public RuleElement[] newAnchors(Rule rule) {
         Set<RuleElement> anchors =
             new LinkedHashSet<RuleElement>(Arrays.asList(rule.getEraserNodes()));
         Set<RuleNode> parameters = new LinkedHashSet<RuleNode>();

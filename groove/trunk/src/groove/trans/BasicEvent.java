@@ -35,12 +35,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class representing an instance of an {@link SPORule} for a given anchor map.
+ * Class representing an instance of an {@link Rule} for a given anchor map.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-03-04 11:01:33 $
  */
-final public class SPOEvent extends
-        AbstractEvent<SPORule,SPOEvent.SPOEventCache> {
+final public class BasicEvent extends
+        AbstractEvent<Rule,BasicEvent.SPOEventCache> {
     /**
      * Constructs a new event on the basis of a given production rule and anchor
      * map. A further parameter determines whether information should be stored
@@ -50,7 +50,7 @@ final public class SPOEvent extends
      * @param reuse if <code>true</code>, the event should store diverse data
      *        structures to optimise for reuse
      */
-    public SPOEvent(SPORule rule, RuleToHostMap anchorMap, boolean reuse) {
+    public BasicEvent(Rule rule, RuleToHostMap anchorMap, boolean reuse) {
         super(reference, rule, reuse);
         rule.testFixed(true);
         this.anchorImage = computeAnchorImage(anchorMap);
@@ -59,7 +59,7 @@ final public class SPOEvent extends
 
     /**
      * Returns a map from the rule anchors to elements of the host graph. #see
-     * {@link SPORule#anchor()}
+     * {@link Rule#anchor()}
      */
     public RuleToHostMap getAnchorMap() {
         return getCache().getAnchorMap();
@@ -112,10 +112,10 @@ final public class SPOEvent extends
     @Override
     boolean equalsEvent(RuleEvent other) {
         return this == other
-            || other instanceof SPOEvent
+            || other instanceof BasicEvent
             && getRule().equals(other.getRule())
             && Arrays.equals(getAnchorImage(),
-                ((SPOEvent) other).getAnchorImage());
+                ((BasicEvent) other).getAnchorImage());
     }
 
     /**
@@ -154,7 +154,7 @@ final public class SPOEvent extends
     public RuleMatch getMatch(HostGraph host) {
         RuleMatch result = null;
         if (isCorrectFor(host)) {
-            result = getRule().getMatch(this, host);
+            result = getRule().getEventMatch(this, host);
         }
         return result;
     }
@@ -181,7 +181,7 @@ final public class SPOEvent extends
         // we have the same rule (so the other event is also a SPOEvent)
         HostElement[] anchorImage = getAnchorImage();
         // retrieve the other even't anchor image array
-        HostElement[] otherAnchorImage = ((SPOEvent) other).getAnchorImage();
+        HostElement[] otherAnchorImage = ((BasicEvent) other).getAnchorImage();
         // now compare the anchor images
         // find the first index in which the anchor images differ
         int upper = Math.min(anchorImage.length, otherAnchorImage.length);
@@ -263,13 +263,13 @@ final public class SPOEvent extends
 
     public boolean conflicts(RuleEvent other) {
         boolean result;
-        if (other instanceof SPOEvent) {
+        if (other instanceof BasicEvent) {
             result = false;
             // check if the other creates edges that this event erases
             Iterator<HostEdge> myErasedEdgeIter =
                 getSimpleErasedEdges().iterator();
             Set<HostEdge> otherCreatedEdges =
-                ((SPOEvent) other).getSimpleCreatedEdges();
+                ((BasicEvent) other).getSimpleCreatedEdges();
             while (!result && myErasedEdgeIter.hasNext()) {
                 result = otherCreatedEdges.contains(myErasedEdgeIter.next());
             }
@@ -278,7 +278,7 @@ final public class SPOEvent extends
                 Iterator<HostEdge> myCreatedEdgeIter =
                     getSimpleCreatedEdges().iterator();
                 Set<HostEdge> otherErasedEdges =
-                    ((SPOEvent) other).getSimpleErasedEdges();
+                    ((BasicEvent) other).getSimpleErasedEdges();
                 while (!result && myCreatedEdgeIter.hasNext()) {
                     result =
                         otherErasedEdges.contains(myCreatedEdgeIter.next());
@@ -300,7 +300,7 @@ final public class SPOEvent extends
      */
     public boolean disables(RuleEvent other) {
         boolean result = false;
-        Set<HostElement> anchorImage = ((SPOEvent) other).getAnchorImageSet();
+        Set<HostElement> anchorImage = ((BasicEvent) other).getAnchorImageSet();
         Iterator<HostNode> nodeIter = getErasedNodes().iterator();
         while (!result && nodeIter.hasNext()) {
             result = anchorImage.contains(nodeIter.next());
@@ -576,7 +576,7 @@ final public class SPOEvent extends
     /**
      * Adds a node that is fresh with respect to a given graph to a collection
      * of already added node. The previously created fresh nodes are tried first
-     * (see {@link SPOEvent#getFreshNodes(int)}; only if all of those are
+     * (see {@link BasicEvent#getFreshNodes(int)}; only if all of those are
      * already in the graph, a new fresh node is created using
      * {@link #createNode()}.
      * @param creatorIndex index in the rhsOnlyNodes array indicating the node
@@ -613,7 +613,7 @@ final public class SPOEvent extends
      * grammar's node counter.
      */
     private HostNode createNode() {
-        DefaultApplication.freshNodeCount++;
+        RuleApplication.freshNodeCount++;
         HostFactory record = getHostFactory();
         return record.createNode();
     }
@@ -716,7 +716,7 @@ final public class SPOEvent extends
 
     /** Cache holding the anchor map. */
     final class SPOEventCache extends
-            AbstractEvent<SPORule,SPOEventCache>.AbstractEventCache {
+            AbstractEvent<Rule,SPOEventCache>.AbstractEventCache {
         /**
          * @return Returns the anchorMap.
          */
@@ -798,7 +798,7 @@ final public class SPOEvent extends
                     createdValue = anchorMap.getNode(creatorEntry.getValue());
                     assert creatorValue != null : String.format(
                         "Event '%s': No coanchor image for '%s' in %s",
-                        SPOEvent.this, creatorKey, anchorMap);
+                        BasicEvent.this, creatorKey, anchorMap);
                 }
                 if (mergeMap != null) {
                     createdValue = mergeMap.getNode(createdValue);

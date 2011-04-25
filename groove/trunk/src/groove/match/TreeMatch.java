@@ -27,7 +27,6 @@ import groove.trans.RuleElement;
 import groove.trans.RuleMatch;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
-import groove.trans.SPORule;
 import groove.util.Fixable;
 import groove.util.Visitor;
 import groove.util.Visitor.Collector;
@@ -251,7 +250,7 @@ public class TreeMatch implements Fixable {
 
     /** Callback factory method for rule matches base don this tree match. */
     private RuleMatch createRuleMatch() {
-        return new RuleMatch((SPORule) getCondition(), getPatternMap());
+        return new RuleMatch((Rule) getCondition(), getPatternMap());
     }
 
     /** 
@@ -300,7 +299,7 @@ public class TreeMatch implements Fixable {
             // only the anchor images matter to equality of the match
             Map<?,?> nodeMap = getPatternMap().nodeMap();
             Map<?,?> edgeMap = getPatternMap().edgeMap();
-            RuleElement[] anchor = ((SPORule) getCondition()).anchor();
+            RuleElement[] anchor = ((Rule) getCondition()).anchor();
             for (int i = 0; i < anchor.length; i++) {
                 RuleElement element = anchor[i];
                 Map<?,?> map = element instanceof RuleNode ? nodeMap : edgeMap;
@@ -332,7 +331,7 @@ public class TreeMatch implements Fixable {
         }
         if (getCondition() instanceof Rule) {
             // only the anchor images matter to equality of the match
-            RuleElement[] anchor = ((SPORule) getCondition()).anchor();
+            RuleElement[] anchor = ((Rule) getCondition()).anchor();
             Map<RuleNode,? extends HostNode> myNodeMap =
                 getPatternMap().nodeMap();
             Map<RuleNode,? extends HostNode> otherNodeMap =
