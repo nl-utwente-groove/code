@@ -27,28 +27,30 @@ import groove.trans.RuleEvent;
 import groove.trans.Rule;
 
 /**
- * 
+ * This class contains some utility methods to extract Java objects from prolog terms
  * 
  * @author Michiel Hendriks
  */
 public abstract class TransPrologCode extends GraphPrologCode {
     /**
-     * TODO
+     * Atom term "rule_event"
      */
     public static final AtomTerm RULEEVENT_ATOM = AtomTerm.get("rule_event");
 
     /**
-     * TODO
+     * Atom term "rule_match"
      */
     public static final AtomTerm RULEMATCH_ATOM = AtomTerm.get("rule_match");
 
     /**
-     * TODO
+     * Atom term "rule"
      */
     public static final AtomTerm RULE_ATOM = AtomTerm.get("rule");
 
     /**
-     * TODO
+     * Get a rule event from a term representing a rule event
+     * @param term      A term representing a rule event
+     * @return          A rule event
      */
     public static final RuleEvent getRuleEvent(Term term)
         throws PrologException {
@@ -66,7 +68,9 @@ public abstract class TransPrologCode extends GraphPrologCode {
     }
 
     /**
-     * TODO
+     * Get a rule from a term representing a rule
+     * @param term      A term representing a rule
+     * @return          A rule
      */
     public static final Rule getRule(Term term) throws PrologException {
         if (term instanceof JavaObjectTerm) {
@@ -80,13 +84,6 @@ public abstract class TransPrologCode extends GraphPrologCode {
         }
         return null;
 
-    }
-
-    /**
-     * TODO
-     */
-    protected TransPrologCode() {
-        super();
     }
 
 }

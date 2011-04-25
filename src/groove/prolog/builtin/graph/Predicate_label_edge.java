@@ -27,8 +27,7 @@ import groove.graph.Graph;
 import groove.graph.Label;
 
 /**
- * Get an edge with a given label <code>label_edge(Graph,Label,Edge)</code>
- * 
+ * Predicate label_edge(+Graph,+Label,?Edge)
  * @author Michiel Hendriks, Lesley Wevers
  */
 public class Predicate_label_edge extends GraphPrologCode {

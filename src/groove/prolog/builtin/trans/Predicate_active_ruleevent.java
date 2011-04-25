@@ -26,7 +26,7 @@ import groove.prolog.GrooveEnvironment;
 import groove.trans.RuleEvent;
 
 /**
- * 
+ * Predicate active_rulevent(?RuleEvent)
  * 
  * @author Michiel Hendriks
  */

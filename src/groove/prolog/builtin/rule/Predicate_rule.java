@@ -30,7 +30,9 @@ import groove.trans.Rule;
 import groove.view.RuleView;
 
 /**
- * Predicate rule_name(+Name, ?Rule) and rule_name(?Name, +Rule)
+ * Predicate rule_name(+Name, ?Rule)
+ * Predicate rule_name(?Name, +Rule)
+ * @author Lesley Wevers
  */
 public class Predicate_rule extends TransPrologCode {
     @Override

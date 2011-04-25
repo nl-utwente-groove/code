@@ -25,8 +25,7 @@ import gnu.prolog.vm.PrologException;
 import groove.graph.Edge;
 
 /**
- * Get the label of an edge. <code>edge_source(Edge,Node)</code>
- * 
+ * Predicate edge_label(+Edge,?Label)
  * @author Michiel Hendriks
  */
 public class Predicate_edge_label extends GraphPrologCode {

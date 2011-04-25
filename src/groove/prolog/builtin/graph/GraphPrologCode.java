@@ -34,15 +34,16 @@ import groove.lts.GraphState;
 import groove.trans.HostGraph;
 
 /**
- * 
+ * This class contains some utility methods to extract Java objects from prolog terms
  * 
  * @author Michiel Hendriks
  */
 public abstract class GraphPrologCode implements PrologCode {
 
     /**
-     * Get an edge from the given term
-     * TODO
+     * Get a graph from a term representing a graph
+     * @param term      A term representing a graph
+     * @return          A graph
      */
     public static final Graph<?,?> getGraph(Term term) throws PrologException {
         if (term instanceof JavaObjectTerm) {
@@ -61,7 +62,9 @@ public abstract class GraphPrologCode implements PrologCode {
     }
 
     /**
-     * TODO
+     * Get a host graph from a term representing a host graph
+     * @param term      A term representing a host graph
+     * @return          A host graph
      */
     public static final HostGraph getHostGraph(Term term)
         throws PrologException {
@@ -81,8 +84,9 @@ public abstract class GraphPrologCode implements PrologCode {
     }
 
     /**
-     * Get an edge from the given term
-     * TODO
+     * Get an edge from a term representing an edge
+     * @param term      A term representing an edge
+     * @return          An edge
      */
     public static final Edge<?> getEdge(Term term) throws PrologException {
         if (term instanceof JavaObjectTerm) {
@@ -98,7 +102,9 @@ public abstract class GraphPrologCode implements PrologCode {
     }
 
     /**
-     * Get an edge from the given term
+     * Get a node from a term representing a node
+     * @param term      A term representing a node
+     * @return          A node
      */
     public static final Node getNode(Term term) throws PrologException {
         if (term instanceof JavaObjectTerm) {
@@ -114,8 +120,7 @@ public abstract class GraphPrologCode implements PrologCode {
     }
 
     /**
-     * TODO
-     * @return True if the input contains the option with the given values
+     * Returns true if the input contains the option with the given values
      */
     public static final boolean hasOption(Interpreter interpreter, Term input,
             CompoundTermTag opt, Term[] values) throws PrologException {
@@ -156,31 +161,31 @@ public abstract class GraphPrologCode implements PrologCode {
     }
 
     /**
-     * TODO
+     * Atom term "graph"
      */
     public static final AtomTerm GRAPH_ATOM = AtomTerm.get("graph");
 
     /**
-     * TODO
+     * Atom term "node"
      */
     public static final AtomTerm NODE_ATOM = AtomTerm.get("node");
 
     /**
-     * TODO
+     * Atom term "edge"
      */
     public static final AtomTerm EDGE_ATOM = AtomTerm.get("edge");
 
     @Override
     public void install(Environment env) {
         /**
-         * TODO
+         * Left blank by design
          */
     }
 
     @Override
     public void uninstall(Environment env) {
         /**
-         * TODO
+         * Left blank by design
          */
     }
 }

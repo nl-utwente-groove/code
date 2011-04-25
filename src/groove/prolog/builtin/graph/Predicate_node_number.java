@@ -24,8 +24,7 @@ import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 
 /**
- * 
- * 
+ * Predicate node_number(+Node,?NodeNumber)
  * @author Michiel Hendriks
  */
 public class Predicate_node_number extends GraphPrologCode {

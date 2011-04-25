@@ -36,9 +36,6 @@ import java.util.Set;
 public class PrologUtils {
     /**
      * Create a list of JavaObjectTerms from the given collection
-     * 
-     * @param elements TODO
-     * @return TODO
      */
     public static final List<Term> createJOTlist(Collection<?> elements) {
         List<Term> result = new ArrayList<Term>();
@@ -50,9 +47,6 @@ public class PrologUtils {
 
     /**
      * Create a list of JavaObjectTerms from the given collection
-     * 
-     * @param elements TODO
-     * @return TODO
      */
     public static final List<Term> createJOTlist(Object[] elements) {
         List<Term> result = new ArrayList<Term>();
@@ -78,11 +72,11 @@ public class PrologUtils {
     }
 
     /**
-     * TODO
+     * Private constructor
      */
     private PrologUtils() {
         /**
-         * TODO
+         * Left blank by design
          */
     }
 }

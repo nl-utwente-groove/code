@@ -25,16 +25,11 @@ import gnu.prolog.vm.PrologException;
 import groove.graph.algebra.ValueNode;
 
 /**
- * <code>is_value_node(Node)</code>
- * 
+ * Predicate is_valuenode(+ValueNode)
  * @author Michiel Hendriks
  */
 public class Predicate_is_valuenode extends AlgebraPrologCode {
-    /*
-     * (non-Javadoc)
-     * @see gnu.prolog.vm.PrologCode#execute(gnu.prolog.vm.Interpreter, boolean,
-     * gnu.prolog.term.Term[])
-     */
+    @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         if (args[0] instanceof JavaObjectTerm) {

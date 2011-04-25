@@ -25,8 +25,7 @@ import gnu.prolog.vm.PrologException;
 import groove.graph.Edge;
 
 /**
- * Get the opposite node of an edge. <code>edge_opposite(Edge,Node)</code>
- * 
+ * Predicate edge_target(+Edge,?Node)
  * @author Michiel Hendriks
  */
 public class Predicate_edge_target extends GraphPrologCode {

@@ -25,9 +25,7 @@ import gnu.prolog.vm.PrologException;
 import groove.lts.GraphState;
 
 /**
- * The graph of a given graph state
- * <code>graphstate_graph(GraphState,Graph)</code>
- * 
+ * Predicate state_graph(+State,?Graph)
  * @author Michiel Hendriks
  */
 public class Predicate_state_graph extends LtsPrologCode {

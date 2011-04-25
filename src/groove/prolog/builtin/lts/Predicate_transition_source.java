@@ -25,8 +25,7 @@ import gnu.prolog.vm.PrologException;
 import groove.lts.GraphTransition;
 
 /**
- * <code>transition_source(Transition,GraphState)</code>
- * 
+ * Predicate transition_source(+Transition,?State)
  * @author Michiel Hendriks
  */
 public class Predicate_transition_source extends LtsPrologCode {

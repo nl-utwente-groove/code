@@ -26,8 +26,7 @@ import gnu.prolog.vm.PrologException;
 import groove.trans.RuleMatch;
 
 /**
- * 
- * 
+ * Predicate rulematch_edge(+RuleMatch,?Edge)
  * @author Michiel Hendriks
  */
 public class Predicate_rulematch_edge extends TransPrologCode {

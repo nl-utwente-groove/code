@@ -110,6 +110,8 @@ Rule:
 % @param the rule match
 % @see groove.trans.RuleEvent#getMatch()
 :-build_in(ruleevent_match/3,'groove.prolog.builtin.trans.Predicate_ruleevent_match').
+
+% ruleevent_match(+RuleEvent,?RuleMatch)
 ruleevent_match(RE,RM):-state(GS),state_graph(GS,G),ruleevent_match(RE,G,RM).
 
 % Fail if the ruleevents do not conflict
@@ -120,7 +122,8 @@ ruleevent_match(RE,RM):-state(GS),state_graph(GS,G),ruleevent_match(RE,G,RM).
 :-build_in(ruleevent_conflicts/2, 'groove.prolog.builtin.trans.Predicate_ruleevent_conflicts').
 
 % Get all current rule matches
-rulematch(RM):-gts(GTS),state(GS),state_graph(GS,G),gts_match(GTS,GS,RE),ruleevent_match(RE,G,RM).
+% rulematch(?RuleMatch)
+rulematch(RM):-state(GS),state_graph(GS,G),state_ruleevent(GS,RE),ruleevent_match(RE,G,RM).
 
 % The edges in a rule match
 % rulematch_edge(+RuleMatch,?Edge)

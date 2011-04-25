@@ -23,10 +23,10 @@ import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
 import groove.lts.GTS;
+import groove.prolog.GrooveEnvironment;
 
 /**
  * Predicate final_state(?State)
- * 
  * @author Michiel Hendriks
  */
 public class Predicate_final_state extends LtsPrologCode {
@@ -39,9 +39,16 @@ public class Predicate_final_state extends LtsPrologCode {
             interpreter.undo(bi.getUndoPosition());
             return bi.nextSolution(interpreter);
         } else {
-            GTS lts = getLTS(args[0]);
+            if (!(interpreter.getEnvironment() instanceof GrooveEnvironment)) {
+                GrooveEnvironment.invalidEnvironment();
+            }
+            GTS lts =
+                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGts();
+            if (lts == null) {
+                return FAIL;
+            }
             PrologCollectionIterator it =
-                new PrologCollectionIterator(lts.getFinalStates(), args[1],
+                new PrologCollectionIterator(lts.getFinalStates(), args[0],
                     interpreter.getUndoPosition());
             return it.nextSolution(interpreter);
         }

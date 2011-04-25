@@ -26,8 +26,7 @@ import groove.prolog.builtin.trans.TransPrologCode;
 import groove.trans.Rule;
 
 /**
- * 
- * 
+ * Predicate rule_rhs(+Rule,?Rhs)
  * @author Michiel Hendriks
  */
 public class Predicate_rule_rhs extends TransPrologCode {

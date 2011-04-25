@@ -27,8 +27,7 @@ import groove.graph.Node;
 import groove.prolog.util.PrologUtils;
 
 /**
- * Get all edges for a node. <code>node_edge_set(Graph,Node,EdgeSet)</code>
- * 
+ * Predicate node_edge_set(+Graph,+Node,?EdgeSet)
  * @author Michiel Hendriks
  */
 public class Predicate_node_edge_set extends GraphPrologCode {

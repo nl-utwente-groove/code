@@ -26,8 +26,7 @@ import groove.graph.Graph;
 import groove.graph.Node;
 
 /**
- * A single outgoing edge for a node <code>node_out_edge(Graph,Node,Edge)</code>
- * 
+ * Predicate node_out_edge(+Graph,+Node,?Edge)
  * @author Michiel Hendriks
  */
 public class Predicate_node_out_edge extends GraphPrologCode {

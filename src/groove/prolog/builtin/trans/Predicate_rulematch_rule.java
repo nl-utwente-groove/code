@@ -25,8 +25,7 @@ import gnu.prolog.vm.PrologException;
 import groove.trans.RuleMatch;
 
 /**
- * 
- * 
+ * Predicate rulematch_rule(+RuleMatch,?Rule)
  * @author Michiel Hendriks
  */
 public class Predicate_rulematch_rule extends TransPrologCode {

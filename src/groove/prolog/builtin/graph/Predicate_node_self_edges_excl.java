@@ -21,14 +21,12 @@ package groove.prolog.builtin.graph;
 import java.util.List;
 
 /**
- * 
- * 
+ * Predicate node_self_edges(+Graph,+Node,?Edge)
  * @author Michiel Hendriks
  */
 public class Predicate_node_self_edges_excl extends Predicate_node_self_edges {
     @Override
     protected boolean isValidList(List<String> testSet, List<String> curSet) {
-        // TODO: not completely correct
         return super.isValidList(testSet, curSet)
             && testSet.size() == curSet.size();
     }

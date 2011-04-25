@@ -18,7 +18,6 @@
  */
 package groove.prolog;
 
-import gnu.prolog.io.ParseException;
 import gnu.prolog.io.ReadOptions;
 import gnu.prolog.io.TermReader;
 import gnu.prolog.term.AtomTerm;
@@ -74,7 +73,7 @@ public class PrologQuery {
     protected GrooveEnvironment env;
 
     /**
-     * duh
+     * The prolog interpreter
      */
     protected Interpreter interpreter;
 
@@ -94,16 +93,17 @@ public class PrologQuery {
     protected OutputStream userOutput;
 
     /**
-     * TODO
+     * No-args constructor
      */
     public PrologQuery() {
         /**
-         * TODO
+         * Left blank by design
          */
     }
 
     /**
-     * TODO
+     * Construct a PrologQuery with the given GrooveState
+     * @param grooveState       A GrooveState
      */
     public PrologQuery(GrooveState grooveState) {
         this();
@@ -119,10 +119,11 @@ public class PrologQuery {
     }
 
     /**
-     * TODO
+     * Sets the GrooveState
+     * @param grooveState     The grooveState
      */
-    public void setGrooveState(GrooveState value) {
-        this.grooveState = value;
+    public void setGrooveState(GrooveState grooveState) {
+        this.grooveState = grooveState;
         if (this.env != null) {
             this.env.setGrooveState(this.grooveState);
         }
@@ -137,8 +138,6 @@ public class PrologQuery {
 
     /**
      * Initialize the environment
-     * 
-     * @throws GroovePrologLoadingException TODO
      */
     public void init() throws GroovePrologLoadingException {
         init(null, null);
@@ -153,7 +152,6 @@ public class PrologQuery {
      * @param streamName
      *            The name to use for the provided stream, is used when creating
      *            errors. It's best to use the name of a file.
-     * @throws GroovePrologLoadingException TODO
      */
     public void init(Reader initStream, String streamName)
         throws GroovePrologLoadingException {
@@ -176,10 +174,6 @@ public class PrologQuery {
 
     /**
      * Execute a new prolog query
-     * 
-     * @param term TODO
-     * @return TODO
-     * @throws GroovePrologException TODO
      */
     public QueryResult newQuery(String term) throws GroovePrologException {
         if (!this.initialized) {
@@ -201,7 +195,7 @@ public class PrologQuery {
             this.currentResult = new InternalQueryResult(goal, term);
             this.currentResult.rawVars = readOpts.variableNames;
             return next();
-        } catch (ParseException e) {
+        } catch (Exception e) {
             throw new GroovePrologException(e);
         }
     }
@@ -217,7 +211,6 @@ public class PrologQuery {
      * Get the next results
      * 
      * @return Null if there is no next result
-     * @throws GroovePrologException TODO
      */
     public QueryResult next() throws GroovePrologException {
         if (this.currentResult == null) {
@@ -274,37 +267,37 @@ public class PrologQuery {
      */
     protected static class InternalQueryResult implements QueryResult {
         /**
-         * TODO
+         * The goal
          */
         protected Goal goal;
 
         /**
-         * TODO
+         * The query
          */
         protected String query = "";
 
         /**
-         * TODO
+         * The return value
          */
         protected QueryReturnValue returnValue = QueryReturnValue.NOT_RUN;
 
         /**
-         * TODO
+         * The execution time
          */
         protected long executionTime = -1;
 
         /**
-         * TODO
+         * The previous result
          */
         protected InternalQueryResult previousResult;
 
         /**
-         * TODO
+         * The next result
          */
         protected InternalQueryResult nextResult;
 
         /**
-         * TODO
+         * The variables
          */
         protected Map<String,Object> variables = new HashMap<String,Object>();
 
@@ -314,15 +307,15 @@ public class PrologQuery {
         protected Map<String,VariableTerm> rawVars;
 
         /**
-         * TODO
+         * Constructs an internal query result
          */
-        protected InternalQueryResult(Goal queryQoal, String queryString) {
-            this.goal = queryQoal;
-            this.query = queryString;
+        protected InternalQueryResult(Goal goal, String query) {
+            this.goal = goal;
+            this.query = query;
         }
 
         /**
-         * TODO
+         * Constructs an internal query result
          */
         protected InternalQueryResult(InternalQueryResult previous) {
             this.previousResult = previous;
@@ -333,7 +326,7 @@ public class PrologQuery {
         }
 
         /**
-         * TODO
+         * Gets the goal
          */
         protected Goal getGoal() {
             return this.goal;
@@ -426,11 +419,8 @@ public class PrologQuery {
      * Create the prolog environment. This will initialize the environment in
      * the standard groove environment. It can be used when you need to make
      * changes to the environment before loading user code.
-     * 
-     * @return TODO
-     * @throws GroovePrologLoadingException TODO
      */
-    public Environment getEnvironment() throws GroovePrologLoadingException {
+    public Environment getEnvironment() {
         if (this.env == null) {
             this.env = new GrooveEnvironment(null, this.userOutput);
             this.env.setGrooveState(this.grooveState);

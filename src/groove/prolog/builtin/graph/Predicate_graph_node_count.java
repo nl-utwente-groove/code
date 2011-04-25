@@ -25,8 +25,7 @@ import gnu.prolog.vm.PrologException;
 import groove.graph.Graph;
 
 /**
- * Get the number of nodes in the graph. <code>node_count(Graph,Count)</code>
- * 
+ * Predicate graph_node_count(+Graph,?NodeCount)
  * @author Michiel Hendriks
  */
 public class Predicate_graph_node_count extends GraphPrologCode {

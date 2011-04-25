@@ -26,8 +26,7 @@ import groove.trans.HostGraph;
 import groove.trans.RuleEvent;
 
 /**
- * 
- * 
+ * Predicate ruleevent_match(+RuleEvent,+HostGraph,?RuleMatch)
  * @author Michiel Hendriks
  */
 public class Predicate_ruleevent_match extends TransPrologCode {

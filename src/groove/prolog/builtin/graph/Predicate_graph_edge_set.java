@@ -26,8 +26,7 @@ import groove.graph.Graph;
 import groove.prolog.util.PrologUtils;
 
 /**
- * Get a set of edges from either a graph. <code>edge_set(Graph,EdgeSet)</code>
- * 
+ * Predicate graph_edge_set(+Graph,?EdgeSet)
  * @author Michiel Hendriks
  */
 public class Predicate_graph_edge_set extends GraphPrologCode {

@@ -46,10 +46,13 @@ Edge:
 % is_graph(@Edge)
 :-build_in(is_edge/1,'groove.prolog.builtin.graph.Predicate_is_edge').
 
+% start_graph_name(?Name)
 :-build_in(start_graph_name/1,'groove.prolog.builtin.graph.Predicate_start_graph_name').
 
+% graph_name(?Name)
 :-build_in(graph_name/1,'groove.prolog.builtin.graph.Predicate_graph_name').
 
+% graph(+Name, ?Graph)
 :-build_in(graph/2,'groove.prolog.builtin.graph.Predicate_graph').
 
 % Retrieve the start graph
@@ -239,4 +242,5 @@ node_path(Graph,From,To,Path):-
 :-build_in(node_number/2,'groove.prolog.builtin.graph.Predicate_node_number').
 
 % Useful predicate to find the node in the graph with a given number
+% node_number(+Graph,?Node,?Number)
 node_number(Graph,Node,Number):-graph_node(Graph,Node),node_number(Node,Number).

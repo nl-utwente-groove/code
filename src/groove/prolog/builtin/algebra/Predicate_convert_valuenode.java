@@ -35,16 +35,11 @@ import groove.algebra.StringAlgebra;
 import groove.graph.algebra.ValueNode;
 
 /**
- * <code>convert_valuenode(ValueNode,Term)</code>
- * 
+ * Predicate convert_valuenode(+ValueNode,?Atom)
  * @author Michiel Hendriks
  */
 public class Predicate_convert_valuenode extends AlgebraPrologCode {
-    /*
-     * (non-Javadoc)
-     * @see gnu.prolog.vm.PrologCode#execute(gnu.prolog.vm.Interpreter, boolean,
-     * gnu.prolog.term.Term[])
-     */
+    @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         try {
@@ -71,25 +66,17 @@ public class Predicate_convert_valuenode extends AlgebraPrologCode {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see gnu.prolog.vm.PrologCode#install(gnu.prolog.vm.Environment)
-     */
     @Override
     public void install(Environment env) {
         /**
-         * TODO
+         * Left blank by design
          */
     }
 
-    /*
-     * (non-Javadoc)
-     * @see gnu.prolog.vm.PrologCode#uninstall(gnu.prolog.vm.Environment)
-     */
     @Override
     public void uninstall(Environment env) {
         /**
-         * TODO
+         * Left blank by design
          */
     }
 }

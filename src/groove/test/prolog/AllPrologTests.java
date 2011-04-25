@@ -23,7 +23,7 @@ import org.junit.runners.Suite;
  * @author Lesley Wevers
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({BuiltinPredicateTests.class})
+@Suite.SuiteClasses({PredicateTests.class})
 public class AllPrologTests {
     // Empty by design.
 }

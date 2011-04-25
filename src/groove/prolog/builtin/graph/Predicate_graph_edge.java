@@ -25,8 +25,7 @@ import gnu.prolog.vm.PrologException;
 import groove.graph.Graph;
 
 /**
- * Get an edge from the graph. <code>graph_edge(Graph,Edge)</code>
- * 
+ * Predicate graph_edge(+Graph,?Edge)
  * @author Michiel Hendriks
  */
 public class Predicate_graph_edge extends GraphPrologCode {

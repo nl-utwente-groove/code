@@ -26,8 +26,7 @@ import groove.lts.GraphState;
 import groove.prolog.util.PrologUtils;
 
 /**
- * <code>graphstate_transition_set(GraphState,TransitionSet)</code>
- * 
+ * Predicate state_transition_set(+State,?TransitionSet)
  * @author Michiel Hendriks
  */
 public class Predicate_state_transition_set extends LtsPrologCode {

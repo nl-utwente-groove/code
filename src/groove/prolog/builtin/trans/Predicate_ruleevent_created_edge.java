@@ -31,8 +31,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 
- * 
+ * Predicate created_edge(+RuleEvent,?Edge)
  * @author Michiel Hendriks
  */
 public class Predicate_ruleevent_created_edge extends TransPrologCode {

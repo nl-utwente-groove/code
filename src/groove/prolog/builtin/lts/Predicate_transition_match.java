@@ -18,13 +18,16 @@
  */
 package groove.prolog.builtin.lts;
 
+import gnu.prolog.term.JavaObjectTerm;
+import gnu.prolog.term.Term;
+import gnu.prolog.vm.Interpreter;
+import gnu.prolog.vm.PrologException;
+import groove.lts.GraphTransition;
 
 /**
- * <code>transition_match(Transition,RuleMatch)</code>
- * 
+ * Predicate transition_match(+Transition,?RuleMatch)
  * @author Michiel Hendriks
  */
-/*
 public class Predicate_transition_match extends LtsPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
@@ -34,4 +37,3 @@ public class Predicate_transition_match extends LtsPrologCode {
         return interpreter.unify(args[1], result);
     }
 }
-*/

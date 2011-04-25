@@ -39,8 +39,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 
- * 
+ * Predicate node_self_edges(+Graph,+Node,?Edge)
  * @author Michiel Hendriks
  */
 public class Predicate_node_self_edges extends GraphPrologCode {
@@ -94,10 +93,7 @@ public class Predicate_node_self_edges extends GraphPrologCode {
     }
 
     /**
-     * @param interpreter       TODO
-     * @param bi                TODO
-     * @return                  TODO
-     * @throws PrologException  TODO
+     * Returns the next solution
      */
     protected int nextSolution(Interpreter interpreter,
             SelfEdgesBacktrackInfo bi) throws PrologException {
@@ -134,7 +130,7 @@ public class Predicate_node_self_edges extends GraphPrologCode {
     }
 
     /**
-     * TODO
+     * Check if this is a valid list
      */
     protected boolean isValidList(List<String> testSet, List<String> curSet) {
         return curSet.containsAll(testSet);

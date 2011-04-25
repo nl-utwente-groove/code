@@ -25,8 +25,7 @@ import gnu.prolog.vm.PrologException;
 import groove.lts.GTS;
 
 /**
- * <code>is_gts(GTS)</code>
- * 
+ * Predicate is_gts(+GTS)
  * @author Michiel Hendriks
  */
 public class Predicate_is_gts extends LtsPrologCode {

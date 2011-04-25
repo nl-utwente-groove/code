@@ -26,9 +26,7 @@ import groove.graph.Graph;
 import groove.prolog.util.PrologUtils;
 
 /**
- * Get the complete node set of the graph.
- * <code>graph_node_set(Graph,Node,NodeSet)</code>
- * 
+ * Predicate graph_node_set(+Graph,?NodeSet)
  * @author Michiel Hendriks
  */
 public class Predicate_graph_node_set extends GraphPrologCode {

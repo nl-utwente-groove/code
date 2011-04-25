@@ -25,8 +25,7 @@ import gnu.prolog.vm.PrologException;
 import groove.trans.RuleEvent;
 
 /**
- * 
- * 
+ * Predicate erased_node(+RuleEvent,?Node)
  * @author Michiel Hendriks
  */
 public class Predicate_ruleevent_erased_node extends TransPrologCode {

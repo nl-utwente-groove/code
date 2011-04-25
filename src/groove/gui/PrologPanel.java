@@ -50,8 +50,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -988,6 +986,16 @@ public class PrologPanel extends JPanel {
      * @param queryString TODO
      */
     public void executeQuery(String queryString) {
+        if (this.sim.getGrammarView() == null) {
+            this.results.setText("Please first load a grammar and select a start graph.");
+            return;
+        }
+
+        if (this.sim.getGrammarView().getStartGraphView() == null) {
+            this.results.setText("Please first select a start graph.");
+            return;
+        }
+
         if (queryString == null) {
             return;
         }
@@ -999,21 +1007,21 @@ public class PrologPanel extends JPanel {
             queryString = queryString.substring(0, queryString.length() - 1);
         }
 
-        addQueryHistory(queryString);
-        this.results.setText("?- " + queryString + "\n");
-
-        if (!ensureProlog()) {
-            return;
-        }
-
-        this.prolog.setGrooveState(new GrooveState(this.sim.getGrammarView(),
-            this.sim.getGTS(), this.sim.getCurrentState(),
-            this.sim.getCurrentEvent()));
-
         try {
+            addQueryHistory(queryString);
+            this.results.setText("?- " + queryString + "\n");
+
+            if (!ensureProlog()) {
+                return;
+            }
+
+            this.prolog.setGrooveState(new GrooveState(
+                this.sim.getGrammarView(), this.sim.getGTS(),
+                this.sim.getCurrentState(), this.sim.getCurrentEvent()));
+
             this.solutionCount = 0;
             processResults(this.prolog.newQuery(queryString));
-        } catch (GroovePrologException e) {
+        } catch (Exception e) {
             handlePrologException(e);
         }
     }
@@ -1065,9 +1073,11 @@ public class PrologPanel extends JPanel {
                 e = pe;
             }
         }
+        /*
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));
         this.results.append(sw.toString());
+        */
     }
 
     /**

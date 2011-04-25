@@ -22,40 +22,40 @@ import groove.prolog.PrologQuery;
 
 /**
  * A wrapper exception thrown by the {@link PrologQuery}
- * 
+ *
  * @author Michiel Hendriks
  */
 public class GroovePrologException extends Exception {
     private static final long serialVersionUID = -2518965928379660623L;
 
     /**
-     * TODO
+     * No args constructor
      */
     public GroovePrologException() {
         /**
-         * TODO
+         * Left blank by design
          */
     }
 
     /**
-     * @param arg0 TODO
+     * @param message   A message
      */
-    public GroovePrologException(String arg0) {
-        super(arg0);
+    public GroovePrologException(String message) {
+        super(message);
     }
 
     /**
-     * @param arg0 TODO
+     * @param wrapped   A throwable
      */
-    public GroovePrologException(Throwable arg0) {
-        super(arg0);
+    public GroovePrologException(Throwable wrapped) {
+        super(wrapped);
     }
 
     /**
-     * @param arg0 TODO
-     * @param arg1 TODO
+     * @param message           A message
+     * @param throwable   A throwable
      */
-    public GroovePrologException(String arg0, Throwable arg1) {
-        super(arg0, arg1);
+    public GroovePrologException(String message, Throwable throwable) {
+        super(message, throwable);
     }
 }
