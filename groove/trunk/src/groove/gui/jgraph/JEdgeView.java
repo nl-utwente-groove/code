@@ -548,8 +548,10 @@ public class JEdgeView extends EdgeView {
                 g2.setColor(this.line2color);
                 g2.setStroke(JAttr.createStroke(this.line2width, this.line2dash));
                 g2.draw(this.view.lineShape);
-                g2.fill(this.view.endShape);
-                g2.draw(this.view.endShape);
+                if (this.view.endShape != null) {
+                    g2.fill(this.view.endShape);
+                    g2.draw(this.view.endShape);
+                }
 
                 // write text again
 
@@ -563,8 +565,10 @@ public class JEdgeView extends EdgeView {
                 g.setColor(JAttr.ERROR_COLOR);
                 g2.setStroke(JAttr.createStroke(this.lineWidth + s, null));
                 g2.draw(this.view.lineShape);
-                g2.fill(this.view.endShape);
-                g2.draw(this.view.endShape);
+                if (this.view.endShape != null) {
+                    g2.fill(this.view.endShape);
+                    g2.draw(this.view.endShape);
+                }
                 paintLabels(g);
                 g.setColor(JAttr.ERROR_COLOR);
                 g2.fill(this.errorBounds);
