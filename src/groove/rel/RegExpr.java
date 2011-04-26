@@ -518,6 +518,12 @@ abstract public class RegExpr { // implements VarSetSupport {
                 } else {
                     break;
                 }
+            case INV_OPERATOR:
+                String error =
+                    String.format(
+                        "Atom '%s' contains invalid first character '%c'",
+                        text, INV_OPERATOR);
+                throw new FormatException(error);
             default:
                 // default atoms
                 // skip any node type or flag prefix
@@ -806,7 +812,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * and digits.
      * @see ExprParser#isIdentifier(String)
      */
-    static public final String ATOM_CHARS = "_$";
+    static public final String ATOM_CHARS = "_$-";
 
     /**
      * An array of prototype regular expressions, in order of increasing
