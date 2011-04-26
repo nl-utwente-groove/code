@@ -30,7 +30,6 @@ import groove.rel.LabelVar;
 import groove.rel.VarSupport;
 import groove.util.Groove;
 import groove.util.Visitor;
-import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -214,31 +213,21 @@ public class Rule extends Condition implements Comparable<Rule> {
     }
 
     @Override
-    Set<RuleNode> computeRootNodes() {
-        // if this is a top-level rule, the (only) root nodes
-        // are the parameter nodes
+    Set<RuleNode> computeInputNodes() {
+        Set<RuleNode> result;
+        // if this is a top-level rule, the (only) input nodes
+        // are the input-only parameter nodes
         if (isTop()) {
-            Set<RuleNode> result = new HashSet<RuleNode>();
+            result = new HashSet<RuleNode>();
             for (Var var : getSignature()) {
-                RuleNode varNode = var.getRuleNode();
-                if (this.lhs.containsNode(varNode)) {
+                if (var.isInOnly()) {
                     result.add(var.getRuleNode());
                 }
             }
-            return result;
         } else {
-            return super.computeRootNodes();
+            result = super.computeInputNodes();
         }
-    }
-
-    @Override
-    Set<RuleEdge> computeRootEdges() {
-        // if this is a top-level rule, there are no root edges
-        if (isTop()) {
-            return Collections.emptySet();
-        } else {
-            return super.computeRootEdges();
-        }
+        return result;
     }
 
     /**
@@ -301,10 +290,16 @@ public class Rule extends Condition implements Comparable<Rule> {
      * @param hiddenPars the set of hidden (i.e., unnumbered) parameter nodes
      */
     public void setSignature(List<CtrlPar.Var> sig, Set<RuleNode> hiddenPars) {
+        assert !isFixed();
         this.sig = sig;
         this.hiddenPars = hiddenPars;
         List<CtrlPar.Var> derivedSig = new ArrayList<CtrlPar.Var>();
         for (int i = 0; i < sig.size(); i++) {
+            // add the LHS parameters to the root graph
+            RuleNode parNode = sig.get(i).getRuleNode();
+            if (this.lhs.containsNode(parNode)) {
+                getRoot().addNode(parNode);
+            }
             String parName = "arg" + i;
             String parTypeName = sig.get(i).getType().toString();
             CtrlType parType = CtrlType.getType(parTypeName);
@@ -326,6 +321,7 @@ public class Rule extends Condition implements Comparable<Rule> {
 
     /** Returns the signature of the rule. */
     public List<CtrlPar.Var> getSignature() {
+        assert isFixed();
         if (this.sig == null) {
             this.sig = Collections.emptyList();
         }
@@ -344,6 +340,11 @@ public class Rule extends Condition implements Comparable<Rule> {
         return this.parBinding[i];
     }
 
+    /**
+     * Creates the connection between parameter positions and
+     * anchor respectively created node indices.
+     * @see #getParBinding(int)
+     */
     private int[] computeParBinding() {
         int[] result = new int[this.sig.size()];
         int anchorSize = anchor().length;
@@ -550,7 +551,8 @@ public class Rule extends Condition implements Comparable<Rule> {
      */
     public MatchStrategy<TreeMatch> getMatcher() {
         if (this.matcher == null) {
-            this.matcher = createMatcher(getRootNodes(), getRootEdges());
+            this.matcher =
+                createMatcher(getRoot().nodeSet(), getRoot().edgeSet());
         }
         return this.matcher;
     }
@@ -697,14 +699,8 @@ public class Rule extends Condition implements Comparable<Rule> {
                 Groove.toString(anchor())));
         res.append(String.format("LHS: %s%nRHS: %s%nMorphism: %s", lhs(),
             rhs(), getMorphism()));
-        if (!getRootNodes().isEmpty()) {
-            res.append(String.format("%nRoot nodes: %s", getRootNodes()));
-        }
-        if (!getRootEdges().isEmpty()) {
-            res.append(String.format(", edges: %s", getRootEdges()));
-        }
-        if (!getRootVars().isEmpty()) {
-            res.append(String.format(", vars: %s", getRootVars()));
+        if (!getRoot().isEmpty()) {
+            res.append(String.format("%nRoot graph: %s", getRoot()));
         }
         if (!getCoRootMap().isEmpty()) {
             res.append(String.format("%nCo-root map: %s", getCoRootMap()));
@@ -785,7 +781,7 @@ public class Rule extends Condition implements Comparable<Rule> {
                 result.add(node);
             }
         }
-        result.removeAll(getRootNodes());
+        result.removeAll(getRoot().nodeSet());
         return result.toArray(new RuleNode[result.size()]);
     }
 
@@ -1017,7 +1013,7 @@ public class Rule extends Condition implements Comparable<Rule> {
                     // translate anchor nodes from grandchild to child
                     Set<RuleNode> grandchildResult =
                         ((Rule) subCondition).getModifierEnds();
-                    for (RuleNode rootNode : subCondition.getRootNodes()) {
+                    for (RuleNode rootNode : subCondition.getRoot().nodeSet()) {
                         if (grandchildResult.contains(rootNode)) {
                             childResult.add(rootNode);
                         }
@@ -1044,7 +1040,7 @@ public class Rule extends Condition implements Comparable<Rule> {
                     }
                 }
             }
-            for (RuleNode rootNode : condition.getRootNodes()) {
+            for (RuleNode rootNode : condition.getRoot().nodeSet()) {
                 if (childResult.contains(rootNode)) {
                     result.add(rootNode);
                 }
@@ -1304,51 +1300,10 @@ public class Rule extends Condition implements Comparable<Rule> {
             }
         }
         // add the root map images
-        result.addNodeSet(getRootNodes());
-        result.addEdgeSet(getRootEdges());
+        result.addNodeSet(getRoot().nodeSet());
+        result.addEdgeSet(getRoot().edgeSet());
         result.addEdgeSet(Arrays.asList(getEraserEdges()));
         return result;
-    }
-
-    @Override
-    protected void computeUnresolvedNodes() {
-        super.computeUnresolvedNodes();
-        // a variable node may be resolved because it is an input parameter
-        for (CtrlPar.Var par : getSignature()) {
-            if (par.isInOnly()) {
-                this.unresolvedVariableNodes.remove(par.getRuleNode());
-            }
-        }
-    }
-
-    @Override
-    protected void stabilizeUnresolvedNodes() throws FormatException {
-        super.stabilizeUnresolvedNodes();
-        // a variable may be resolved because it is the count node of a universal condition
-        Set<FormatError> errors = new HashSet<FormatError>();
-        for (Condition subCondition : getSubConditions()) {
-            if (!(subCondition instanceof ForallCondition)) {
-                continue;
-            }
-            RuleNode countNode =
-                ((ForallCondition) subCondition).getCountNode();
-            if (countNode != null) {
-                if (this.unresolvedVariableNodes.remove(countNode)) {
-                    // check that the node is not used in any of the subconditions
-                    for (Condition sub2 : getSubConditions()) {
-                        if (sub2.getRootNodes().contains(countNode)) {
-                            errors.add(new FormatError(
-                                "Unresolved count node should not be used in subcondition",
-                                countNode));
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        if (!errors.isEmpty()) {
-            throw new FormatException(errors);
-        }
     }
 
     /**
@@ -1544,7 +1499,7 @@ public class Rule extends Condition implements Comparable<Rule> {
     private static AnchorFactory<Rule> anchorFactory =
         MinimalAnchorFactory.getInstance();
     /** Debug flag for the constructor. */
-    private static final boolean PRINT = true;
+    private static final boolean PRINT = false;
 
     /**
      * The lowest rule priority, which is also the default value if no explicit

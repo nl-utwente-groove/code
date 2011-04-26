@@ -38,8 +38,8 @@ public class EdgeEmbargo extends NotCondition {
             embargoEdge)), properties);
         this.embargoEdge = embargoEdge;
         getPattern().addEdge(embargoEdge);
-        getRootNodes().add(embargoEdge.source());
-        getRootNodes().add(embargoEdge.target());
+        getRoot().addNode(embargoEdge.source());
+        getRoot().addNode(embargoEdge.target());
         if (CONSTRUCTOR_DEBUG) {
             Groove.message("Edge embargo: " + this);
             Groove.message("Embargo edge: " + embargoEdge);

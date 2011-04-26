@@ -452,11 +452,11 @@ public class RuleDependencies {
         RuleGraph pattern = cond.getPattern();
         // collected the isolated fresh nodes
         Set<RuleNode> isolatedNodes = new HashSet<RuleNode>(pattern.nodeSet());
-        isolatedNodes.removeAll(cond.getRootNodes());
+        isolatedNodes.removeAll(cond.getRoot().nodeSet());
         // iterate over the edges that are new in the target
         Set<RuleEdge> freshTargetEdges =
             new HashSet<RuleEdge>(pattern.edgeSet());
-        freshTargetEdges.removeAll(cond.getRootEdges());
+        freshTargetEdges.removeAll(cond.getRoot().edgeSet());
         for (RuleEdge edge : freshTargetEdges) {
             RuleLabel label = edge.label();
             // don't look at attribute-related edges

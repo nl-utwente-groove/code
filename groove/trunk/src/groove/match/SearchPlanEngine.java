@@ -28,6 +28,7 @@ import groove.rel.RegExpr;
 import groove.rel.VarSupport;
 import groove.trans.Condition;
 import groove.trans.EdgeEmbargo;
+import groove.trans.ForallCondition;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
 import groove.trans.RuleLabel;
@@ -86,8 +87,8 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
         this.algebraFamily =
             AlgebraFamily.getInstance(condition.getSystemProperties().getAlgebraFamily());
         if (seedNodes == null) {
-            seedNodes = condition.getRootNodes();
-            seedEdges = condition.getRootEdges();
+            seedNodes = condition.getInputNodes();
+            seedEdges = condition.getRoot().edgeSet();
         }
         PlanData planData = new PlanData(condition);
         SearchPlan plan = planData.getPlan(seedNodes, seedEdges);
@@ -97,8 +98,10 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
         }
         Set<LabelVar> boundVars = new HashSet<LabelVar>();
         for (AbstractSearchItem item : plan) {
-            item.setRelevant(unboundAnchorNodes.removeAll(item.bindsNodes())
-                | boundVars.addAll(item.bindsVars()));
+            boolean relevant = unboundAnchorNodes.removeAll(item.bindsNodes());
+            relevant |= boundVars.addAll(item.bindsVars());
+            relevant |= condition instanceof ForallCondition;
+            item.setRelevant(relevant);
         }
         SearchPlanStrategy result = new SearchPlanStrategy(plan);
         if (PRINT) {
@@ -138,7 +141,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
     static private SearchPlanEngine instance;
 
     /** Flag to control search plan printing. */
-    static private final boolean PRINT = true;
+    static private final boolean PRINT = false;
 
     /**
      * Plan data extension based on a graph condition. Additionally it takes the

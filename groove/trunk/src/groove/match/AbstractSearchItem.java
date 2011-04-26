@@ -127,7 +127,7 @@ abstract class AbstractSearchItem implements SearchItem {
         this.relevant = relevant;
     }
 
-    public boolean isRelevant() {
+    final public boolean isRelevant() {
         return this.relevant;
     }
 

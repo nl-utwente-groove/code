@@ -349,8 +349,7 @@ public class ReteNetwork {
         }
         if (condition.getSubConditions().size() > 0) {
             Set<NotCondition> nacs = new HashSet<NotCondition>();
-            Set<Condition> positiveSubConditions =
-                new HashSet<Condition>();
+            Set<Condition> positiveSubConditions = new HashSet<Condition>();
             for (Condition c : condition.getSubConditions()) {
                 if (c instanceof NotCondition) {
                     nacs.add((NotCondition) c);
@@ -551,7 +550,8 @@ public class ReteNetwork {
             RuleGraph newNacGraph =
                 copyAndRenumberNodes(nac.getPattern(), nodeRenumberingMapping);
             RuleGraphMorphism newRootMap =
-                copyRootMap(nac.getRootNodes(), nodeRenumberingMapping);
+                copyRootMap(nac.getRoot().nodeSet(),
+                    nodeRenumberingMapping);
 
             ReteStaticMapping m1 =
                 duplicateAndTranslateMapping(lastSubgraphMapping, newRootMap);
