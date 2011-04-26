@@ -991,14 +991,14 @@ public class GraphJGraph extends org.jgraph.JGraph {
     /**
      * Creates and returns a fresh zoom menu upon this jgraph.
      */
-    protected ZoomMenu createZoomMenu() {
+    public ZoomMenu createZoomMenu() {
         return new ZoomMenu(this);
     }
 
     /**
      * Creates and returns a fresh show/hide menu upon this jgraph.
      */
-    protected ShowHideMenu createShowHideMenu() {
+    public ShowHideMenu createShowHideMenu() {
         return new ShowHideMenu(this);
     }
 
