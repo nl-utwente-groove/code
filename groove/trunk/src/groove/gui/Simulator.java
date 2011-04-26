@@ -2077,7 +2077,8 @@ public class Simulator {
                         jGraph.addSubmenu(this,
                             ((AspectJGraph) jGraph).createEditMenu(null));
                     }
-                    jGraph.addSubmenu(this, jGraph.createDisplayMenu());
+                    add(jGraph.createShowHideMenu());
+                    add(jGraph.createZoomMenu());
                 } else {
                     // create a dummy JGraph to add the rest of the menu
                     jGraph = new GraphJGraph(null, false);
