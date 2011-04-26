@@ -16,7 +16,6 @@
  */
 package groove.match;
 
-import groove.match.SearchItem.Record;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
 import groove.trans.HostGraph;
