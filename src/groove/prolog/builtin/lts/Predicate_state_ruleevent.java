@@ -34,7 +34,7 @@ import java.util.Iterator;
  * Predicate gts_match(+GraphState,?RuleEvent)
  * @author Michiel Hendriks
  */
-public class Predicate_gts_match extends LtsPrologCode {
+public class Predicate_state_ruleevent extends LtsPrologCode {
     private static class GtsMatchBacktrackInfo extends BacktrackInfo {
         Iterator<RuleEvent> it;
         Term dest;

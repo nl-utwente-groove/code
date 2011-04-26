@@ -168,7 +168,7 @@ closed_state(GS):-state(GS),state_is_closed(GS).
 % state_ruleevent(+GraphState,?RuleEvent)
 % @param the graphstate
 % @param the ruleevent
-:-build_in(state_ruleevent/2,'groove.prolog.builtin.lts.Predicate_gts_match').
+:-build_in(state_ruleevent/2,'groove.prolog.builtin.lts.Predicate_state_ruleevent').
 
 % ruleevent(?RuleEvent)
 ruleevent(RE):-state(GS),state_ruleevent(GS,RE).
