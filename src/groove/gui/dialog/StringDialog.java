@@ -17,14 +17,15 @@
 package groove.gui.dialog;
 
 import groove.gui.Options;
+import groove.view.FormatException;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,14 +49,22 @@ import javax.swing.event.ListDataListener;
  * @author Arend Rensink
  * @version $Revision:  $
  */
-public class StringDialog {
+abstract public class StringDialog {
     /**
-     * Constructs an instance of the dialog for a given parent frame and
-     * a dialog title.
+     * Constructs an instance of the dialog for a given dialog title.
+     * @param parsed if the input string is to be parsed.
      */
-    public StringDialog(String title) {
+    private StringDialog(String title, boolean parsed) {
         this.history = new ArrayList<String>();
         this.title = title;
+        this.parsed = parsed;
+    }
+
+    /**
+     * Constructs an instance of the dialog for a given dialog title.
+     */
+    public StringDialog(String title) {
+        this(title, true);
     }
 
     /**
@@ -63,18 +72,18 @@ public class StringDialog {
      * is modal, this method returns only when the user closes the dialog. The
      * return value indicates if the properties have changed.
      * @param frame the frame on which the dialog is to be displayed
-     * @param parser if {@code true}, the property to be entered is an LTL
-     * property; otherwise it is a CTL property
      */
-    public String showDialog(Component frame, StringParser parser) {
+    public String showDialog(Component frame) {
         if (this.title != null) {
             String[] storedValues = Options.getUserPrefs(this.title);
             this.history.clear();
             for (String value : storedValues) {
-                this.history.add(value);
+                String parsedValue = parseText(value);
+                if (parsedValue != null) {
+                    this.history.add(value);
+                }
             }
         }
-        this.parser = parser;
         this.dialog = createDialog(frame);
         getChoiceBox().setSelectedItem("");
         getEditor().setText("");
@@ -88,7 +97,7 @@ public class StringDialog {
             String[] storedValues =
                 new String[Math.min(this.history.size(), MAX_PERSISTENT_SIZE)];
             for (int i = 0; i < storedValues.length; i++) {
-                storedValues[i] = this.history.get(i);
+                storedValues[i] = this.history.get(i).toString();
             }
             Options.storeUserPrefs(this.title, storedValues);
         }
@@ -102,7 +111,7 @@ public class StringDialog {
         Object[] buttons = new Object[] {getOkButton(), getCancelButton()};
         Object[] panels;
         // add an error label if there is a parser
-        if (this.parser == null) {
+        if (!this.parsed) {
             panels = new Object[] {getChoiceBox()};
         } else {
             JPanel errorPanel = new JPanel(new BorderLayout());
@@ -155,25 +164,40 @@ public class StringDialog {
     /** Reacts to a change in the editor. */
     private void processTextChange() {
         final String currentText = getEditor().getText();
-        String error = parse(currentText);
-        getOkButton().setEnabled(error == null && !currentText.isEmpty());
+        String result = parseText(currentText);
+        getOkButton().setEnabled(result != null && !currentText.isEmpty());
         getModel().setDirty(currentText);
     }
 
-    /** Attempts to parse the given text as a property
-     * of the correct (LTL or CTL) kind.
+    /** Attempts to parse the given text.
+     * Calls {@link #parse(String)} for the actual parsing.
      * @param text the text to be parsed as a property
-     * @return an error if the text cannot be parsed, {@code null}
-     * if the property is syntactically correct
+     * @return {@code null} if the text cannot be parsed, 
+     * or the parsed result otherwise
      */
-    private String parse(String text) {
-        String result = null;
-        if (this.parser != null) {
-            result = this.parser.parse(text);
-            getErrorLabel().setText(result == null ? "" : result);
+    private String parseText(String text) {
+        String result;
+        if (this.parsed) {
+            try {
+                result = parse(text);
+                getErrorLabel().setText(null);
+            } catch (FormatException e) {
+                getErrorLabel().setText(e.getMessage());
+                result = null;
+            }
+        } else {
+            result = text;
         }
         return result;
     }
+
+    /**
+     * Parses a given text as an object of the right kind.
+     * @param text the text to be parsed
+     * @return the parsed object
+     * @throws FormatException if there is a parse error
+     */
+    abstract protected String parse(String text) throws FormatException;
 
     /** The choice box */
     private MyComboBox choiceBox;
@@ -234,13 +258,17 @@ public class StringDialog {
      * Also adds the result to the history.
      */
     private boolean setResult(String resultObject) {
-        this.result = resultObject;
-        boolean ok =
-            this.result == null || !this.result.isEmpty()
-                && parse(this.result) == null;
-        if (this.result != null && ok) {
-            this.history.remove(this.result);
-            this.history.add(0, this.result);
+        boolean ok;
+        if (resultObject == null) {
+            this.result = null;
+            ok = true;
+        } else {
+            this.result = parseText(resultObject);
+            ok = this.result != null;
+        }
+        if (ok) {
+            this.history.remove(resultObject);
+            this.history.add(0, resultObject);
         }
         return ok;
     }
@@ -254,10 +282,9 @@ public class StringDialog {
     }
 
     /**
-     * Flag indicating that the property is an LTL property.
-     * This affects the parse test.
+     * Flag indicating that the input string should be parsed.
      */
-    private StringParser parser;
+    private boolean parsed;
     /** The field in which to store the provided data */
     private String result;
 
@@ -269,14 +296,24 @@ public class StringDialog {
 
     /** Keeps on creating a dialog until the user enters "stop". */
     static public void main(String[] args) {
-        StringDialog dialog = new StringDialog("Input a string");
+        StringDialog dialog = createStringDialog("Input a string");
         boolean stop = false;
         do {
-            dialog.showDialog(null, null);
+            dialog.showDialog(null);
             System.out.printf("Selected string: %s%n", dialog.getResult());
             stop = "stop".equals(dialog.getResult());
         } while (!stop);
         System.exit(0);
+    }
+
+    /** Parser that leaves a given string unchanged. */
+    public static final StringDialog createStringDialog(String title) {
+        return new StringDialog(title, false) {
+            @Override
+            protected String parse(String text) throws FormatException {
+                return text;
+            }
+        };
     }
 
     /** Maximum number of persistently stored entries. */
@@ -326,7 +363,7 @@ public class StringDialog {
         }
 
         @Override
-        public Object getElementAt(int index) {
+        public String getElementAt(int index) {
             synchroniseModel();
             return this.contents.get(index);
         }
@@ -420,7 +457,7 @@ public class StringDialog {
      * Action listener that closes the dialog and makes sure that the property
      * is set (possibly to null).
      */
-    private class CloseListener implements ActionListener, WindowListener {
+    private class CloseListener extends WindowAdapter implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             boolean ok = false;
             if (e.getSource() == getOkButton()
@@ -435,46 +472,10 @@ public class StringDialog {
         }
 
         @Override
-        public void windowActivated(WindowEvent e) {
-            // do nothing
-        }
-
-        @Override
-        public void windowClosed(WindowEvent e) {
-            // do nothing
-        }
-
-        @Override
         public void windowClosing(WindowEvent e) {
             if (setResult(null)) {
                 StringDialog.this.dialog.setVisible(false);
             }
         }
-
-        @Override
-        public void windowDeactivated(WindowEvent e) {
-            // do nothing
-        }
-
-        @Override
-        public void windowDeiconified(WindowEvent e) {
-            // do nothing
-        }
-
-        @Override
-        public void windowIconified(WindowEvent e) {
-            // do nothing
-        }
-
-        @Override
-        public void windowOpened(WindowEvent e) {
-            // do nothing
-        }
-    }
-
-    /** Interface wrapping the functionality to check a string for parse errors. */
-    static public interface StringParser {
-        /** Parses a given string, and returns a message if there is an error.*/
-        String parse(String text);
     }
 }

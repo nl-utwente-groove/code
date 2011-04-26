@@ -26,7 +26,6 @@ import groove.gui.JGraphPanel;
 import groove.gui.jgraph.GraphJGraph.AttributeFactory;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
-import groove.view.FormatException;
 
 import java.awt.Color;
 import java.util.AbstractSet;
@@ -107,19 +106,13 @@ public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition> {
      * @param formula the formula for which to create an equivalent
      *        {@link BuchiGraph}
      * @return the {@link BuchiGraph}
-     * @throws FormatException if the formula contains (parsing) errors
      */
-    public BuchiGraph newBuchiGraph(String formula) throws FormatException {
-        final BuchiGraph result = new BuchiGraph(formula);
-        try {
-            Graph<String> graph =
-                LTL2Buchi.translate(FormulaParser.parse(formula).toLtlFormula());
-            newBuchiGraph(graph, result);
-            if (DEBUG) {
-                result.display();
-            }
-        } catch (ParseException e) {
-            throw new FormatException(e.getMessage());
+    public BuchiGraph newBuchiGraph(gov.nasa.ltl.trans.Formula<String> formula) {
+        final BuchiGraph result = new BuchiGraph(formula.toString());
+        Graph<String> graph = LTL2Buchi.translate(formula);
+        newBuchiGraph(graph, result);
+        if (DEBUG) {
+            result.display();
         }
         return result;
     }
@@ -131,6 +124,10 @@ public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition> {
         Map<Node<String>,BuchiLocation> node2location =
             new HashMap<Node<String>,BuchiLocation>();
         Node<String> init = graph.getInit();
+        if (init == null) {
+            // construct fake initial node
+            init = new Node<String>(graph);
+        }
         result.setInitial(getLocation(node2location, init));
         Set<Node<String>> newNodes = new HashSet<Node<String>>();
         newNodes.add(init);
