@@ -227,7 +227,7 @@ public final class GraphToKth {
         ArrayList<String> flags = new ArrayList<String>();
         for (AspectEdge edge : graph.outEdgeSet(node)) {
             if (edge.getRole() == EdgeRole.FLAG) {
-                flags.add(edge.label().text());
+                flags.add(edge.getInnerText().substring(5));
             }
         }
         return flags;
@@ -331,11 +331,12 @@ public final class GraphToKth {
     private static StringBuilder result;
 
     // Graph types and labels.
-    private static final String FLOW_NODE_TYPE = "FlowNode";
-    private static final String FLOW_EDGE_TYPE = "FlowEdge";
-    private static final String FLOW_PROP_TYPE = "FlowProp";
-    private static final String METHOD_PROP_TYPE = "MethodProp";
-    private static final String EXCEPTION_PROP_TYPE = "ExceptionProp";
+    private static final String TYPE = "type:";
+    private static final String FLOW_NODE_TYPE = TYPE + "FlowNode";
+    private static final String FLOW_EDGE_TYPE = TYPE + "FlowEdge";
+    private static final String FLOW_PROP_TYPE = TYPE + "FlowProp";
+    private static final String METHOD_PROP_TYPE = TYPE + "MethodProp";
+    private static final String EXCEPTION_PROP_TYPE = TYPE + "ExceptionProp";
     private static final String EMPTY_EDGE_LABEL = "empty";
     private static final String TO_EDGE_LABEL = "to";
     private static final String OUT_EDGE_LABEL = "out";
