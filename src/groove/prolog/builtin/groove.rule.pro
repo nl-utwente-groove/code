@@ -29,7 +29,7 @@
 :-build_in(rule_confluent/1,'groove.prolog.builtin.rule.Predicate_rule_confluent').
 
 % Success if the argument is a JavaObjectTerm with a Rule
-% is_ruleevent(@Rule)
+% is_ruleevent(+RuleEvent)
 :-build_in(is_rule/1,'groove.prolog.builtin.rule.Predicate_is_rule').
 
 % The priority of the rule

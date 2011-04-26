@@ -33,11 +33,11 @@ Rule:
 */
 
 % Success if the argument is a JavaObjectTerm with a RuleEvent
-% is_ruleevent(@RuleEvent)
+% is_ruleevent(+RuleEvent)
 :-build_in(is_ruleevent/1,'groove.prolog.builtin.trans.Predicate_is_ruleevent').
 
 % Success if the argument is a JavaObjectTerm with a RuleMatch
-% is_ruleevent(@RuleMatch)
+% is_ruleevent(+RuleMatch)
 :-build_in(is_rulematch/1,'groove.prolog.builtin.trans.Predicate_is_rulematch').
 
 % Get the currently selected rule event.
