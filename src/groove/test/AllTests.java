@@ -34,7 +34,7 @@ import org.junit.runners.Suite;
     AllGraphTests.class, AllPrologTests.class, AllVerifyTests.class,
     AutomatonTest.class, BinaryEdgeTest.class, ExplorationTest.class,
     HashBagTest.class, IOTest.class, LabelStoreTest.class, NACTest.class,
-    TreeHashSetTest.class, LabelParseTest.class})
+    TreeHashSetTest.class})
 public class AllTests {
     // Empty by design.
 }
