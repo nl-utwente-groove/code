@@ -693,20 +693,7 @@ public class Simulator {
          * the user to enter a property (via a getFormulaDialog).
          */
         if (scenario instanceof ModelCheckingScenario) {
-            String property =
-                getFormulaDialog().showDialog(getFrame(),
-                    new StringDialog.StringParser() {
-                        @Override
-                        public String parse(String text) {
-                            String result = null;
-                            try {
-                                FormulaParser.parse(text).toLtlFormula();
-                            } catch (ParseException e) {
-                                result = e.getMessage();
-                            }
-                            return result;
-                        }
-                    });
+            String property = getLtlFormulaDialog().showDialog(getFrame());
             if (property == null) {
                 return;
             }
@@ -2263,11 +2250,39 @@ public class Simulator {
     }
 
     /** Returns a dialog that will ask for a formula to be entered. */
-    public StringDialog getFormulaDialog() {
-        if (this.formulaDialog == null) {
-            this.formulaDialog = new StringDialog("Enter the Temporal Formula");
+    public StringDialog getLtlFormulaDialog() {
+        if (this.ltlFormulaDialog == null) {
+            this.ltlFormulaDialog = new StringDialog("Enter the LTL Formula") {
+                @Override
+                public String parse(String text) throws FormatException {
+                    try {
+                        FormulaParser.parse(text).toLtlFormula();
+                    } catch (ParseException e) {
+                        throw new FormatException(e.getMessage());
+                    }
+                    return text;
+                }
+            };
         }
-        return this.formulaDialog;
+        return this.ltlFormulaDialog;
+    }
+
+    /** Returns a dialog that will ask for a formula to be entered. */
+    public StringDialog getCtlFormulaDialog() {
+        if (this.ctlFormulaDialog == null) {
+            this.ctlFormulaDialog = new StringDialog("Enter the CTL Formula") {
+                @Override
+                public String parse(String text) throws FormatException {
+                    try {
+                        FormulaParser.parse(text).toCtlFormula();
+                    } catch (ParseException efe) {
+                        throw new FormatException(efe.getMessage());
+                    }
+                    return text;
+                }
+            };
+        }
+        return this.ctlFormulaDialog;
     }
 
     /**
@@ -2780,7 +2795,12 @@ public class Simulator {
     /**
      * Dialog for entering temporal formulae.
      */
-    private StringDialog formulaDialog;
+    private StringDialog ltlFormulaDialog;
+
+    /**
+     * Dialog for entering temporal formulae.
+     */
+    private StringDialog ctlFormulaDialog;
 
     /**
      * Set of registered simulation listeners.
@@ -3135,20 +3155,7 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent evt) {
-            String property =
-                getFormulaDialog().showDialog(getFrame(),
-                    new StringDialog.StringParser() {
-                        @Override
-                        public String parse(String text) {
-                            String result = null;
-                            try {
-                                FormulaParser.parse(text).toCtlFormula();
-                            } catch (ParseException efe) {
-                                result = efe.getMessage();
-                            }
-                            return result;
-                        }
-                    });
+            String property = getCtlFormulaDialog().showDialog(getFrame());
             if (property != null) {
                 boolean doCheck = true;
                 if (getGTS().hasOpenStates() && this.full) {
@@ -3157,20 +3164,17 @@ public class Simulator {
                     doCheck = !getGTS().hasOpenStates();
                 }
                 if (doCheck) {
-                    doCheckProperty(property);
+                    try {
+                        doCheckProperty(FormulaParser.parse(property).toCtlFormula());
+                    } catch (ParseException e) {
+                        // the property has already been parsed by the dialog
+                        assert false;
+                    }
                 }
             }
         }
 
-        private void doCheckProperty(String property) {
-            Formula formula;
-            try {
-                formula = FormulaParser.parse(property).toCtlFormula();
-            } catch (ParseException e) {
-                // since the property passed the parser, we can't land here
-                assert false;
-                formula = null;
-            }
+        private void doCheckProperty(Formula formula) {
             DefaultMarker modelChecker = new DefaultMarker(formula, getGTS());
             modelChecker.verify();
             int counterExampleCount = modelChecker.getCount(false);
@@ -3180,7 +3184,7 @@ public class Simulator {
             if (counterExampleCount == 0) {
                 message =
                     String.format("The property '%s' holds for all states",
-                        property);
+                        formula);
             } else {
                 boolean allStates =
                     confirmBehaviour(VERIFY_ALL_STATES_OPTION,
@@ -3192,19 +3196,18 @@ public class Simulator {
                     message =
                         String.format(
                             "The property '%s' fails to hold in the %d highlighted states",
-                            property, counterExampleCount);
+                            formula, counterExampleCount);
                 } else if (modelChecker.hasValue(false)) {
                     counterExamples.add(getGTS().startState());
                     message =
                         String.format(
                             "The property '%s' fails to hold in the initial state",
-                            property);
+                            formula);
                 } else {
                     message =
                         String.format(
                             "The property '%s' holds in the initial state",
-                            property);
-
+                            formula);
                 }
             }
             getLtsPanel().emphasiseStates(counterExamples, false);

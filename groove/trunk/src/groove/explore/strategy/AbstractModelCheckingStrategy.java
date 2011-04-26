@@ -17,6 +17,7 @@
  */
 package groove.explore.strategy;
 
+import gov.nasa.ltl.trans.Formula;
 import groove.explore.result.Acceptor;
 import groove.explore.result.CycleAcceptor;
 import groove.explore.result.Result;
@@ -27,11 +28,12 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.verify.BuchiGraph;
 import groove.verify.BuchiLocation;
+import groove.verify.FormulaParser;
 import groove.verify.ModelChecking;
+import groove.verify.ParseException;
 import groove.verify.ProductState;
 import groove.verify.ProductStateSet;
 import groove.verify.ProductTransition;
-import groove.view.FormatException;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -343,10 +345,12 @@ public abstract class AbstractModelCheckingStrategy extends AbstractStrategy
     public void setProperty(String property) {
         assert property != null;
         try {
+            Formula<String> formula =
+                FormulaParser.parse(property).toLtlFormula();
             BuchiGraph buchiGraph =
-                BuchiGraph.getPrototype().newBuchiGraph("!(" + property + ")");
+                BuchiGraph.getPrototype().newBuchiGraph(Formula.Not(formula));
             this.initialLocation = buchiGraph.getInitial();
-        } catch (FormatException e) {
+        } catch (ParseException e) {
             throw new IllegalStateException(String.format(
                 "Property %s not parsed correctly", property), e);
         }

@@ -549,7 +549,7 @@ public class ShowHideMenu extends JMenu {
         public void actionPerformed(ActionEvent evt) {
             Graph<?,?> graph =
                 ((GraphJModel<?,?>) this.jgraph.getModel()).getGraph();
-            String exprText = exprDialog.showDialog(null, null);
+            String exprText = exprDialog.showDialog(null);
             if (exprText != null) {
                 try {
                     RegExpr expr = RegExpr.parse(exprText);
@@ -604,8 +604,8 @@ public class ShowHideMenu extends JMenu {
          */
         private RelationCalculator calculator;
 
-        private static StringDialog exprDialog = new StringDialog(
-            "Regular Expression: ");
+        private static StringDialog exprDialog =
+            StringDialog.createStringDialog("Regular Expression: ");
     }
 
     /**
