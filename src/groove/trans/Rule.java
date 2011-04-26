@@ -1005,7 +1005,24 @@ public class Rule extends Condition implements Comparable<Rule> {
         }
         // add merged nodes
         result.addAll(getMergeMap().keySet());
-        // add inverse images of subrule modifier ends
+        // add subrule modifier ends
+        // disabled for now, as these nodes are not actually anchors
+        // at this level. The price is that reconstructing a match from
+        // an event may be more costly
+        if (SUBRULE_ANCHORS) {
+            addSubruleModifierEnds(result);
+        }
+        assert lhs().nodeSet().containsAll(result) : String.format(
+            "LHS node set %s does not contain all anchors in %s",
+            lhs().nodeSet(), result);
+        return result;
+    }
+
+    /**
+     * Adds the modifier ends of all subrules, intersected with their
+     * root nodes, to a given set of nodes.
+     */
+    private void addSubruleModifierEnds(Set<RuleNode> result) {
         for (Condition condition : getSubConditions()) {
             Set<RuleNode> childResult = new HashSet<RuleNode>();
             for (Condition subCondition : condition.getSubConditions()) {
@@ -1013,11 +1030,7 @@ public class Rule extends Condition implements Comparable<Rule> {
                     // translate anchor nodes from grandchild to child
                     Set<RuleNode> grandchildResult =
                         ((Rule) subCondition).getModifierEnds();
-                    for (RuleNode rootNode : subCondition.getRoot().nodeSet()) {
-                        if (grandchildResult.contains(rootNode)) {
-                            childResult.add(rootNode);
-                        }
-                    }
+                    grandchildResult.retainAll(subCondition.getRoot().nodeSet());
                     // check coroot map for mergers
                     Set<RuleNode> mergers = new HashSet<RuleNode>();
                     Map<RuleNode,RuleNode> inverseCoroots =
@@ -1040,16 +1053,9 @@ public class Rule extends Condition implements Comparable<Rule> {
                     }
                 }
             }
-            for (RuleNode rootNode : condition.getRoot().nodeSet()) {
-                if (childResult.contains(rootNode)) {
-                    result.add(rootNode);
-                }
-            }
+            childResult.retainAll(condition.getRoot().nodeSet());
+            result.addAll(childResult);
         }
-        assert lhs().nodeSet().containsAll(result) : String.format(
-            "LHS node set %s does not contain all anchors in %s",
-            lhs().nodeSet(), result);
-        return result;
     }
 
     RuleGraphMorphism getCoRootMap() {
@@ -1500,6 +1506,8 @@ public class Rule extends Condition implements Comparable<Rule> {
         MinimalAnchorFactory.getInstance();
     /** Debug flag for the constructor. */
     private static final boolean PRINT = false;
+    /** Flag to include subrule anchors into this rule. */
+    private static final boolean SUBRULE_ANCHORS = false;
 
     /**
      * The lowest rule priority, which is also the default value if no explicit

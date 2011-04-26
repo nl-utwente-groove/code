@@ -245,7 +245,12 @@ public class CompositeEvent extends
 
     @Override
     int computeEventHashCode() {
-        return Arrays.hashCode(this.eventArray);
+        int result = 1;
+        final int prime = 31;
+        for (int i = 0; i < this.eventArray.length; i++) {
+            result = prime * result + this.eventArray[i].hashCode();
+        }
+        return result;
     }
 
     /**
