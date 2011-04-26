@@ -39,7 +39,7 @@ public class PrologTestUtil {
 
     private PrologTestUtil() {
         /**
-         * Left blank by design
+         * Blank by design
          */
     }
 

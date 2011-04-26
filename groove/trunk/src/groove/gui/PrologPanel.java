@@ -150,78 +150,78 @@ public class PrologPanel extends JPanel {
 
     // UI components
     /**
-     * TODO
+     * 
      */
     protected JComboBox query;
 
     /**
-     * TODO
+     * 
      */
     protected JTextComponent queryEdit;
 
     /**
-     * TODO
+     * 
      */
     protected JTextArea results;
 
     /**
-     * TODO
+     * 
      */
     protected JButton nextResultBtn;
 
     /**
-     * TODO
+     * 
      */
     protected JButton consultBtn;
 
     /**
-     * TODO
+     * 
      */
     protected JLabel userCodeConsulted;
 
     /**
-     * TODO
+     * 
      */
     protected JLabel statusBar;
 
     /**
-     * TODO
+     * 
      */
     protected OutputStream userOutput;
 
     /**
-     * TODO
+     * 
      */
     protected JFileChooser prologFileChooser;
 
     /**
-     * TODO
+     * 
      */
     protected JTree predicateTree;
 
     /**
-     * TODO
+     * 
      */
     protected DefaultMutableTreeNode predRootNode;
 
     /**
-     * TODO
+     * 
      */
     protected JTabbedPane prologEditors;
 
     /**
-     * TODO
+     * 
      */
     protected Map<File,PrologFile> prologFileMap =
         new HashMap<File,PrologFile>();
 
     /**
-     * TODO
+     * 
      */
     protected Set<PrologFile> prologFiles = new HashSet<PrologFile>();
 
     /**
-     * TODO
+     * Construct a prolog panel
      */
     public PrologPanel(Simulator simulator) {
         super();
@@ -233,7 +233,6 @@ public class PrologPanel extends JPanel {
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
 
-        // TODO: Fix this
         /*
         final JPopupMenu explorePopup = new JPopupMenu();
         // explorePopup.add(new JMenuItem(createExploreGraphStateAction()));
@@ -419,9 +418,6 @@ public class PrologPanel extends JPanel {
                             proFile.file.getName());
                     }
                 } catch (IOException eex) {
-                    /**
-                     * TODO: Handle this exception
-                     */
                     eex.printStackTrace();
                 }
                 return;
@@ -578,28 +574,28 @@ public class PrologPanel extends JPanel {
             @Override
             public void mouseEntered(MouseEvent e) {
                 /**
-                 * TODO
+                 * Blank by design
                  */
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
                 /**
-                 * TODO
+                 * Blank by design
                  */
             }
 
             @Override
             public void mousePressed(MouseEvent e) {
                 /**
-                 * TODO
+                 * Blank by design
                  */
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 /**
-                 * TODO
+                 * Blank by design
                  */
             }
         });
@@ -625,8 +621,6 @@ public class PrologPanel extends JPanel {
 
     /**
      * Create a prolog editor tab for the given file
-     * 
-     * @param file TODO
      */
     protected void createEditor(File file) {
         createEditor(file, false);
@@ -635,7 +629,6 @@ public class PrologPanel extends JPanel {
     /**
      * Create a new prolog editor tab
      * 
-     * @param file TODO
      * @param delayLoading
      *            if false then do not consule the file, used in case of new
      *            files
@@ -679,9 +672,6 @@ public class PrologPanel extends JPanel {
                     });
                 }
             } catch (IOException eex) {
-                /**
-                 * TODO: Handle this exception
-                 */
                 eex.printStackTrace();
             }
         }
@@ -889,8 +879,6 @@ public class PrologPanel extends JPanel {
     /**
      * Make sure the prolog environment is initialized and clean up previous
      * results.
-     * 
-     * @return TODO
      */
     protected boolean ensureProlog() {
         this.statusBar.setText(" ");
@@ -940,8 +928,6 @@ public class PrologPanel extends JPanel {
 
     /**
      * Update the tree with all known predicates
-     * 
-     * @param module TODO
      */
     protected void updatePredicateTree(Module module) {
         this.predRootNode.removeAllChildren();
@@ -982,8 +968,6 @@ public class PrologPanel extends JPanel {
 
     /**
      * Execute the gven prolog query
-     * 
-     * @param queryString TODO
      */
     public void executeQuery(String queryString) {
         if (this.sim.getGrammarView() == null) {
@@ -993,6 +977,11 @@ public class PrologPanel extends JPanel {
 
         if (this.sim.getGrammarView().getStartGraphView() == null) {
             this.results.setText("Please first select a start graph.");
+            return;
+        }
+
+        if (!ensureProlog()) {
+            this.results.setText("Failed to initialize prolog.");
             return;
         }
 
@@ -1011,10 +1000,6 @@ public class PrologPanel extends JPanel {
             addQueryHistory(queryString);
             this.results.setText("?- " + queryString + "\n");
 
-            if (!ensureProlog()) {
-                return;
-            }
-
             this.prolog.setGrooveState(new GrooveState(
                 this.sim.getGrammarView(), this.sim.getGTS(),
                 this.sim.getCurrentState(), this.sim.getCurrentEvent()));
@@ -1028,8 +1013,6 @@ public class PrologPanel extends JPanel {
 
     /**
      * Add the query to the history
-     * 
-     * @param queryString TODO
      */
     protected void addQueryHistory(String queryString) {
         this.query.removeItem(queryString);
@@ -1052,16 +1035,11 @@ public class PrologPanel extends JPanel {
 
     /**
      * Handler for the exceptions thrown by the prolog environment
-     * 
-     * @param e TODO
      */
     protected void handlePrologException(Throwable e) {
         try {
             this.userOutput.flush();
         } catch (IOException e1) {
-            /**
-             * TODO: Handle this exception
-             */
             e1.printStackTrace();
         }
         if (e.getCause() instanceof PrologException) {
@@ -1098,16 +1076,11 @@ public class PrologPanel extends JPanel {
 
     /**
      * Pretty print the results of the query in the output panel
-     * 
-     * TODO
      */
     protected void processResults(QueryResult queryResult) {
         try {
             this.userOutput.flush();
         } catch (IOException e) {
-            /**
-             * TODO: Handle this exception
-             */
             e.printStackTrace();
         }
         if (queryResult == null) {

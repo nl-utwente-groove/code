@@ -35,15 +35,15 @@ Edge:
 */
 
 % Fail if the first argument is not a Groove Graph
-% is_graph(@Graph)
+% is_graph(+Graph)
 :-build_in(is_graph/1,'groove.prolog.builtin.graph.Predicate_is_graph').
 
 % Fail if the first argument is not a Groove Node
-% is_graph(@Node)
+% is_graph(+Node)
 :-build_in(is_node/1,'groove.prolog.builtin.graph.Predicate_is_node').
 
 % Fail if the first argument is not a Groove Edge
-% is_graph(@Edge)
+% is_graph(+Edge)
 :-build_in(is_edge/1,'groove.prolog.builtin.graph.Predicate_is_edge').
 
 % start_graph_name(?Name)
