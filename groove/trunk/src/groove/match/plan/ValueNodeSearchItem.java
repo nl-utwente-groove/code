@@ -14,13 +14,13 @@
  * 
  * $Id: ValueNodeSearchItem.java,v 1.14 2008-01-30 09:33:30 iovka Exp $
  */
-package groove.match;
+package groove.match.plan;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
-import groove.match.SearchPlanStrategy.Search;
+import groove.match.plan.SearchPlanStrategy.Search;
 import groove.trans.HostGraph;
 import groove.trans.RuleNode;
 
@@ -46,7 +46,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
     }
 
     public ValueNodeRecord createRecord(
-            groove.match.SearchPlanStrategy.Search matcher) {
+            groove.match.plan.SearchPlanStrategy.Search matcher) {
         return new ValueNodeRecord(matcher);
     }
 

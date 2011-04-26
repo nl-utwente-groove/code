@@ -14,9 +14,9 @@
  * 
  * $Id: SearchItem.java,v 1.8 2008-01-30 09:33:29 iovka Exp $
  */
-package groove.match;
+package groove.match.plan;
 
-import groove.match.SearchPlanStrategy.Search;
+import groove.match.plan.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
 import groove.trans.HostGraph;
 import groove.trans.RuleEdge;

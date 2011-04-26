@@ -14,11 +14,11 @@
  * 
  * $Id: Edge2SearchItem.java,v 1.15 2008-01-30 09:33:29 iovka Exp $
  */
-package groove.match;
+package groove.match.plan;
 
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
-import groove.match.SearchPlanStrategy.Search;
+import groove.match.plan.SearchPlanStrategy.Search;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -132,7 +132,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     }
 
     final public Record createRecord(
-            groove.match.SearchPlanStrategy.Search search) {
+            groove.match.plan.SearchPlanStrategy.Search search) {
         if (isPreMatched(search)) {
             // the edge is unexpectedly pre-matched
             return createDummyRecord();

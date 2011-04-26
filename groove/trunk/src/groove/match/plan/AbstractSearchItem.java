@@ -15,10 +15,10 @@
  * $Id $
  */
 
-package groove.match;
+package groove.match.plan;
 
 import groove.graph.TypeLabel;
-import groove.match.SearchPlanStrategy.Search;
+import groove.match.plan.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
@@ -36,7 +36,7 @@ import java.util.List;
  * Abstract implementation of a search item, offering some basic search
  * functionality.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 3291 $
  */
 abstract class AbstractSearchItem implements SearchItem {
     /**
@@ -228,7 +228,7 @@ abstract class AbstractSearchItem implements SearchItem {
     /**
      * Record type for a search item known to yield at most one solution.
      * @author Arend Rensink
-     * @version $Revision$
+     * @version $Revision: 3291 $
      */
     abstract class SingularRecord extends BasicRecord {
         /** Constructs an instance for a given search. */
@@ -327,7 +327,7 @@ abstract class AbstractSearchItem implements SearchItem {
      * Abstract implementation of a search item record expected to have more
      * than one solution.
      * @author Arend Rensink
-     * @version $Revision$
+     * @version $Revision: 3291 $
      */
     abstract class MultipleRecord<E> extends BasicRecord {
         /** Constructs a record for a given search. */

@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.match;
+package groove.match.plan;
 
 import groove.rel.LabelVar;
 import groove.trans.Condition;

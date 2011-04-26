@@ -14,9 +14,9 @@
  * 
  * $Id: NodeSearchItem.java,v 1.13 2008-01-30 09:33:29 iovka Exp $
  */
-package groove.match;
+package groove.match.plan;
 
-import groove.match.SearchPlanStrategy.Search;
+import groove.match.plan.SearchPlanStrategy.Search;
 import groove.trans.HostNode;
 import groove.trans.RuleNode;
 
@@ -36,7 +36,7 @@ class NodeSearchItem extends AbstractSearchItem {
     }
 
     public Record createRecord(
-            groove.match.SearchPlanStrategy.Search search) {
+            groove.match.plan.SearchPlanStrategy.Search search) {
         if (this.nodeMatched || search.getNodeSeed(this.nodeIx) != null) {
             // the node is pre-matched, so there is nothing to do
             return createDummyRecord();

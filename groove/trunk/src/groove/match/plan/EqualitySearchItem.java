@@ -14,9 +14,9 @@
  * 
  * $Id: InjectionSearchItem.java,v 1.12 2008-01-30 09:33:29 iovka Exp $
  */
-package groove.match;
+package groove.match.plan;
 
-import groove.match.SearchPlanStrategy.Search;
+import groove.match.plan.SearchPlanStrategy.Search;
 import groove.trans.RuleNode;
 
 import java.util.Collection;
@@ -46,7 +46,7 @@ public class EqualitySearchItem extends AbstractSearchItem {
     }
 
     public EqualityRecord createRecord(
-            groove.match.SearchPlanStrategy.Search matcher) {
+            groove.match.plan.SearchPlanStrategy.Search matcher) {
         return new EqualityRecord(matcher);
     }
 

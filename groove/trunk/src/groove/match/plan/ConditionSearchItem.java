@@ -14,12 +14,13 @@
  * 
  * $Id: ConditionSearchItem.java,v 1.12 2008-01-30 09:33:28 iovka Exp $
  */
-package groove.match;
+package groove.match.plan;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.graph.algebra.ValueNode;
-import groove.match.SearchPlanStrategy.Search;
+import groove.match.TreeMatch;
+import groove.match.plan.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
 import groove.rel.VarSupport;
 import groove.trans.Condition;

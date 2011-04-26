@@ -14,7 +14,7 @@
  * 
  * $Id: OperatorEdgeSearchItem.java,v 1.15 2008-01-30 09:33:29 iovka Exp $
  */
-package groove.match;
+package groove.match.plan;
 
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Operation;
@@ -22,7 +22,7 @@ import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
-import groove.match.SearchPlanStrategy.Search;
+import groove.match.plan.SearchPlanStrategy.Search;
 import groove.trans.HostFactory;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -66,7 +66,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
     }
 
     public OperatorEdgeRecord createRecord(
-            groove.match.SearchPlanStrategy.Search matcher) {
+            groove.match.plan.SearchPlanStrategy.Search matcher) {
         return new OperatorEdgeRecord(matcher);
     }
 
