@@ -34,10 +34,8 @@ import groove.util.Visitor.Collector;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Encoding of a condition match as a tree structure.
@@ -65,7 +63,7 @@ public class TreeMatch implements Fixable {
     }
 
     /** Returns the current submatches of this match. */
-    private final Set<TreeMatch> getSubMatches() {
+    private final Collection<TreeMatch> getSubMatches() {
         return this.subMatches;
     }
 
@@ -329,26 +327,30 @@ public class TreeMatch implements Fixable {
         if (getSubMatches().size() != other.getSubMatches().size()) {
             return false;
         }
+        // only the anchor images matter to equality of the match
+        RuleElement[] anchor;
         if (getCondition() instanceof Rule) {
-            // only the anchor images matter to equality of the match
-            RuleElement[] anchor = ((Rule) getCondition()).anchor();
-            Map<RuleNode,? extends HostNode> myNodeMap =
-                getPatternMap().nodeMap();
-            Map<RuleNode,? extends HostNode> otherNodeMap =
-                other.getPatternMap().nodeMap();
-            Map<RuleEdge,? extends HostEdge> myEdgeMap =
-                getPatternMap().edgeMap();
-            Map<RuleEdge,? extends HostEdge> otherEdgeMap =
-                other.getPatternMap().edgeMap();
-            for (int i = 0; i < anchor.length; i++) {
-                RuleElement element = anchor[i];
-                Map<?,?> myMap =
-                    element instanceof RuleNode ? myNodeMap : myEdgeMap;
-                Map<?,?> otherMap =
-                    element instanceof RuleNode ? otherNodeMap : otherEdgeMap;
-                if (!myMap.get(element).equals(otherMap.get(element))) {
-                    return false;
-                }
+            anchor = ((Rule) getCondition()).anchor();
+        } else {
+            int size = getCondition().getRoot().nodeCount();
+            anchor =
+                getCondition().getRoot().nodeSet().toArray(
+                    new RuleElement[size]);
+        }
+        Map<RuleNode,? extends HostNode> myNodeMap = getPatternMap().nodeMap();
+        Map<RuleNode,? extends HostNode> otherNodeMap =
+            other.getPatternMap().nodeMap();
+        Map<RuleEdge,? extends HostEdge> myEdgeMap = getPatternMap().edgeMap();
+        Map<RuleEdge,? extends HostEdge> otherEdgeMap =
+            other.getPatternMap().edgeMap();
+        for (int i = 0; i < anchor.length; i++) {
+            RuleElement element = anchor[i];
+            Map<?,?> myMap =
+                element instanceof RuleNode ? myNodeMap : myEdgeMap;
+            Map<?,?> otherMap =
+                element instanceof RuleNode ? otherNodeMap : otherEdgeMap;
+            if (!myMap.get(element).equals(otherMap.get(element))) {
+                return false;
             }
         }
         if (!getSubMatches().equals(other.getSubMatches())) {
@@ -401,6 +403,6 @@ public class TreeMatch implements Fixable {
 
     private final Condition condition;
     private final RuleToHostMap patternMap;
-    private final Set<TreeMatch> subMatches = new LinkedHashSet<TreeMatch>();
+    private final List<TreeMatch> subMatches = new ArrayList<TreeMatch>();
     private int hashCode;
 }

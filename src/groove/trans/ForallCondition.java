@@ -36,19 +36,12 @@ public class ForallCondition extends Condition {
     }
 
     @Override
-    public void addSubCondition(Condition condition) {
-        // sub-conditions of universal conditions must be rules or negatives
-        assert !(condition instanceof ForallCondition);
-        super.addSubCondition(condition);
-    }
-
-    @Override
     public String toString() {
         return "Universal " + super.toString();
     }
 
     /** Returns the match count node of this universal condition, if any. */
-    public RuleNode getCountNode() {
+    public VariableNode getCountNode() {
         return this.countNode;
     }
 
@@ -68,7 +61,7 @@ public class ForallCondition extends Condition {
     }
 
     /** Node capturing the match count of this condition. */
-    private final RuleNode countNode;
+    private final VariableNode countNode;
     /**
      * Flag indicating whether the condition is positive, i.e., cannot be
      * vacuously true.

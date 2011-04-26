@@ -308,8 +308,7 @@ public class DefaultRuleView implements RuleView {
         if (TO_RULE_DEBUG) {
             System.out.println("");
         }
-        Map<Level,Condition> ruleTree =
-            new HashMap<Level,Condition>();
+        Map<Level,Condition> ruleTree = new HashMap<Level,Condition>();
         for (Level level : this.levelTree.getLevels()) {
             try {
                 Condition condition = level.computeFlatRule();
@@ -1720,9 +1719,7 @@ public class DefaultRuleView implements RuleView {
                 // if we're here it means we couldn't make an embargo
                 result = createNAC(lhs);
                 RuleGraph nacTarget = result.getPattern();
-                Set<RuleNode> nacRootNodes = result.getRootNodes();
-                Set<RuleEdge> nacRootEdges = result.getRootEdges();
-                Set<LabelVar> nacRootVars = result.getRootVars();
+                RuleGraph nacRoot = result.getRoot();
                 // add all nodes to nacTarget
                 nacTarget.addNodeSet(nacNodeSet);
                 // if the rule is injective, add all lhs nodes to the pattern
@@ -1730,7 +1727,7 @@ public class DefaultRuleView implements RuleView {
                 if (isInjective()) {
                     for (RuleNode node : lhs.nodeSet()) {
                         nacTarget.addNode(node);
-                        nacRootNodes.add(node);
+                        nacRoot.addNode(node);
                     }
                 }
                 // add edges and embargoes to nacTarget
@@ -1747,10 +1744,7 @@ public class DefaultRuleView implements RuleView {
                                 // add the edge and its end nodes to the nac, as
                                 // pre-matched elements
                                 nacTarget.addEdge(nacVarBinder);
-                                nacRootEdges.add(nacVarBinder);
-                                nacRootNodes.add(nacVarBinder.source());
-                                nacRootNodes.add(nacVarBinder.target());
-                                nacRootVars.add(nacVar);
+                                nacRoot.addEdge(nacVarBinder);
                             }
                         }
                     }
@@ -1758,10 +1752,10 @@ public class DefaultRuleView implements RuleView {
                     // it means they are lhs nodes, so add them to the 
                     // nacMorphism as well
                     if (nacTarget.addNode(edge.source())) {
-                        nacRootNodes.add(edge.source());
+                        nacRoot.addNode(edge.source());
                     }
                     if (nacTarget.addNode(edge.target())) {
-                        nacRootNodes.add(edge.target());
+                        nacRoot.addNode(edge.target());
                     }
                     nacTarget.addEdge(edge);
                 }

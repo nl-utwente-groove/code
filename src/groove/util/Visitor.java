@@ -120,6 +120,11 @@ abstract public class Visitor<T,R> {
         this.cont = false;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + '[' + getResult() + ']';
+    }
+
     /** The result object. */
     private R result;
     /** Flag indicating that the visitor has been disposed. */

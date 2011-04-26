@@ -153,6 +153,12 @@ public class ExplorationTest {
         testExploration("counting.gps", 10, 9);
     }
 
+    /** Tests the quantifier counting sample. */
+    @Test
+    public void testForallCount() {
+        testExploration("forallCount.gps", 8, 24);
+    }
+
     /** Tests the attributes sample. */
     @Test
     public void testAttributes() {

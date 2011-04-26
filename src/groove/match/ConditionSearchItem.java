@@ -21,12 +21,14 @@ import groove.algebra.AlgebraFamily;
 import groove.graph.algebra.ValueNode;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
+import groove.rel.VarSupport;
 import groove.trans.Condition;
 import groove.trans.ForallCondition;
 import groove.trans.HostNode;
 import groove.trans.NotCondition;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
+import groove.trans.RuleGraph;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
 import groove.trans.SystemProperties;
@@ -55,9 +57,9 @@ class ConditionSearchItem extends AbstractSearchItem {
         this.intAlgebra =
             AlgebraFamily.getInstance(properties.getAlgebraFamily()).getAlgebra(
                 "int");
-        this.neededNodes = condition.getRootNodes();
-        this.neededEdges = condition.getRootEdges();
-        this.neededVars = condition.getRootVars();
+        this.rootGraph = condition.getRoot();
+        this.neededNodes = condition.getInputNodes();
+        this.neededVars = VarSupport.getAllVars(this.rootGraph);
         this.positive =
             (condition instanceof ForallCondition)
                 && ((ForallCondition) condition).isPositive();
@@ -86,8 +88,7 @@ class ConditionSearchItem extends AbstractSearchItem {
 
     @Override
     int getRating() {
-        return -this.condition.getPattern().nodeCount()
-            - this.neededNodes.size() - this.neededEdges.size();
+        return -this.condition.getPattern().nodeCount() - this.rootGraph.size();
     }
 
     @Override
@@ -97,15 +98,15 @@ class ConditionSearchItem extends AbstractSearchItem {
 
     public void activate(SearchPlanStrategy strategy) {
         this.nodeIxMap = new HashMap<RuleNode,Integer>();
-        for (RuleNode node : this.neededNodes) {
+        for (RuleNode node : this.rootGraph.nodeSet()) {
             this.nodeIxMap.put(node, strategy.getNodeIx(node));
         }
         this.edgeIxMap = new HashMap<RuleEdge,Integer>();
-        for (RuleEdge edge : this.neededEdges) {
+        for (RuleEdge edge : this.rootGraph.edgeSet()) {
             this.edgeIxMap.put(edge, strategy.getEdgeIx(edge));
         }
         this.varIxMap = new HashMap<LabelVar,Integer>();
-        for (LabelVar var : this.neededVars) {
+        for (LabelVar var : VarSupport.getAllVars(this.rootGraph)) {
             this.varIxMap.put(var, strategy.getVarIx(var));
         }
         if (this.countNode != null) {
@@ -135,7 +136,8 @@ class ConditionSearchItem extends AbstractSearchItem {
         } else {
             descr = "Universal condition";
         }
-        return String.format("%s %s", descr, this.matcher.getPlan());
+        return String.format("%s %s: %s", descr, this.condition.getName(),
+            this.matcher.getPlan());
     }
 
     /** Indicates if this condition search item tests for a NAC. */
@@ -146,6 +148,11 @@ class ConditionSearchItem extends AbstractSearchItem {
     /** Indicates if this condition search item is a rule. */
     public boolean isRule() {
         return this.condition instanceof Rule;
+    }
+
+    /** Indicates if this condition search item is a universal condition. */
+    public boolean isForall() {
+        return this.condition instanceof ForallCondition;
     }
 
     @Override
@@ -188,10 +195,10 @@ class ConditionSearchItem extends AbstractSearchItem {
     boolean preCounted;
     /** The index of the count node (if any). */
     int countNodeIx = -1;
+    /** The root graph of the condition. */
+    private final RuleGraph rootGraph;
     /** The source nodes of the root map. */
     private final Set<RuleNode> neededNodes;
-    /** The source edges of the root map. */
-    private final Set<RuleEdge> neededEdges;
     /** The variables occurring in edges of the root map. */
     private final Set<LabelVar> neededVars;
     /** The set containing the count node of the universal condition, if any. */
@@ -258,7 +265,7 @@ class ConditionSearchItem extends AbstractSearchItem {
             if (ConditionSearchItem.this.positive && matches.size() == 0) {
                 result = false;
             } else if (ConditionSearchItem.this.preCounted) {
-                result = matches.size() != this.preCount;
+                result = matches.size() == this.preCount;
             }
             if (result) {
                 this.match = matches;
@@ -266,7 +273,8 @@ class ConditionSearchItem extends AbstractSearchItem {
                     this.countImage =
                         this.host.getFactory().createNode(
                             ConditionSearchItem.this.intAlgebra,
-                            "" + matches.size());
+                            ConditionSearchItem.this.intAlgebra.getValue(""
+                                + matches.size()));
                 }
                 result = write();
             } else {

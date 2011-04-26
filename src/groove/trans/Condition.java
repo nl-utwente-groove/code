@@ -17,21 +17,19 @@
 package groove.trans;
 
 import groove.graph.LabelStore;
-import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.VariableNode;
-import groove.rel.LabelVar;
-import groove.rel.VarSupport;
 import groove.util.Fixable;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -82,8 +80,8 @@ abstract public class Condition implements Fixable {
      *        ground
      * @param properties properties for matching the condition
      */
-    protected Condition(RuleName name, RuleGraph pattern,
-            RuleGraph rootGraph, SystemProperties properties) {
+    protected Condition(RuleName name, RuleGraph pattern, RuleGraph rootGraph,
+            SystemProperties properties) {
         this.rootGraph =
             rootGraph == null ? pattern.newGraph((name == null ? "root"
                     : name.toString() + "-root")) : rootGraph;
@@ -118,65 +116,32 @@ abstract public class Condition implements Fixable {
     }
 
     /** 
-     * Returns the root nodes of this condition.
-     * These are the nodes that it has in common with its parent
-     * in the condition tree.
+     * Returns the root graph of this condition.
+     * The root graph is the subgraph of the pattern that the
+     * condition has in common with its parent in the condition tree.
      */
-    final public Set<RuleNode> getRootNodes() {
-        if (this.rootNodes == null) {
-            this.rootNodes = computeRootNodes();
-        }
-        return this.rootNodes;
+    public RuleGraph getRoot() {
+        return this.rootGraph;
     }
 
     /**
-     * Computes the set of root nodes of this condition. 
-     * These are the nodes that it has in common with its parent
-     * in the condition tree.
+     * Returns the subset of the root nodes that are certainly
+     * bound before the condition has to be matched.
      */
-    Set<RuleNode> computeRootNodes() {
+    final public Set<RuleNode> getInputNodes() {
+        if (this.inputNodes == null) {
+            this.inputNodes = computeInputNodes();
+        }
+        return this.inputNodes;
+    }
+
+    /**
+     * Computes the set of input nodes nodes of this condition. 
+     * These are the nodes that are certainly
+     * bound before the condition has to be matched.
+     */
+    Set<RuleNode> computeInputNodes() {
         return new HashSet<RuleNode>(this.rootGraph.nodeSet());
-    }
-
-    /** 
-     * Returns the root edges of this condition.
-     * These are the edges that it has in common with its parent
-     * in the condition tree.
-     */
-    final public Set<RuleEdge> getRootEdges() {
-        if (this.rootEdges == null) {
-            this.rootEdges = computeRootEdges();
-        }
-        return this.rootEdges;
-    }
-
-    /**
-     * Computes the set of root nodes of this condition. 
-     * These are the nodes that it has in common with its parent
-     * in the condition tree.
-     */
-    Set<RuleEdge> computeRootEdges() {
-        return new HashSet<RuleEdge>(this.rootGraph.edgeSet());
-    }
-
-    /**
-     * Set of variables in the pattern of this condition that also occur in root
-     * elements.
-     */
-    final public Set<LabelVar> getRootVars() {
-        if (this.rootVars == null) {
-            this.rootVars = computeRootVars();
-        }
-        return this.rootVars;
-    }
-
-    /**
-     * Computes the set of root nodes of this condition. 
-     * These are the nodes that it has in common with its parent
-     * in the condition tree.
-     */
-    Set<LabelVar> computeRootVars() {
-        return new HashSet<LabelVar>(VarSupport.getAllVars(this.rootGraph));
     }
 
     /**
@@ -236,30 +201,13 @@ abstract public class Condition implements Fixable {
             condition.setLabelStore(this.labelStore);
         }
         getSubConditions().add(condition);
-        if (!(condition instanceof NotCondition)) {
-            getComplexSubConditions().add(condition);
-        }
-    }
-
-    /**
-     * Returns the set of sub-conditions that are <i>not</i>
-     * {@link NotCondition}s.
-     * These are the conditions that are not part of the search plan,
-     * and so have to be matched explicitly.
-     */
-    @SuppressWarnings("unchecked")
-    protected <C extends Condition> Collection<C> getComplexSubConditions() {
-        if (this.complexSubConditions == null) {
-            this.complexSubConditions = new ArrayList<Condition>();
-        }
-        return (Collection<C>) this.complexSubConditions;
     }
 
     /** Fixes this condition and all its subconditions. */
     public void setFixed() throws FormatException {
         if (!isFixed()) {
             this.fixed = true;
-            this.ground = this.getRootNodes().isEmpty();
+            this.ground = this.getRoot().isEmpty();
             getPattern().setFixed();
             testAlgebra();
             for (Condition subCondition : getSubConditions()) {
@@ -316,100 +264,139 @@ abstract public class Condition implements Fixable {
      */
     private void testAlgebra() throws FormatException {
         Set<FormatError> errors = new TreeSet<FormatError>();
-        computeUnresolvedNodes();
-        stabilizeUnresolvedNodes();
-        for (RuleNode node : this.unresolvedVariableNodes) {
+        Map<VariableNode,List<Set<VariableNode>>> resolverMap =
+            createResolvers();
+        stabilise(resolverMap);
+        //        computeUnresolvedNodes();
+        //        stabilizeUnresolvedNodes();
+        for (RuleNode node : resolverMap.keySet()) {
             errors.add(new FormatError(
                 "Cannot resolve attribute value node '%s'", node));
         }
-        if (!this.unresolvedProductNodes.isEmpty()) {
-            Map.Entry<ProductNode,BitSet> productEntry =
-                this.unresolvedProductNodes.entrySet().iterator().next();
-            ProductNode product = productEntry.getKey();
-            BitSet arguments = productEntry.getValue();
-            if (arguments.cardinality() != product.arity()) {
-                arguments.flip(0, product.arity());
-                errors.add(new FormatError(
-                    "Argument edges %s of product node %s missing in sub-condition",
-                    arguments, product));
-            }
-        }
+        //        for (RuleNode node : this.unresolvedVariableNodes) {
+        //            errors.add(new FormatError(
+        //                "Cannot resolve attribute value node '%s'", node));
+        //        }
+        //        if (!this.unresolvedProductNodes.isEmpty()) {
+        //            Map.Entry<ProductNode,BitSet> productEntry =
+        //                this.unresolvedProductNodes.entrySet().iterator().next();
+        //            ProductNode product = productEntry.getKey();
+        //            BitSet arguments = productEntry.getValue();
+        //            if (arguments.cardinality() != product.arity()) {
+        //                arguments.flip(0, product.arity());
+        //                errors.add(new FormatError(
+        //                    "Argument edges %s of product node %s missing in sub-condition",
+        //                    arguments, product));
+        //            }
+        //        }
         if (!errors.isEmpty()) {
             throw new FormatException(errors);
         }
     }
 
-    /**
-     * Calculates whether any VariableNode or ProductNode is unresolved,
-     * in the sense of not having an incoming attribute edge or being
-     * part of the seed
+    /** 
+     * Creates a mapping from unresolved variables to potential resolvers.
+     * Each resolver is a set of variables that all have to be resolved in order
+     * for the key to be resolved.
      */
-    protected void computeUnresolvedNodes() {
-        this.unresolvedVariableNodes = new HashSet<VariableNode>();
-        this.unresolvedProductNodes = new HashMap<ProductNode,BitSet>();
-        // test if product nodes have the required arguments
+    Map<VariableNode,List<Set<VariableNode>>> createResolvers() {
+        Map<VariableNode,List<Set<VariableNode>>> result =
+            new HashMap<VariableNode,List<Set<VariableNode>>>();
+        // Set of variable nodes already found to have been resolved
+        Set<VariableNode> resolved = new HashSet<VariableNode>();
+        for (RuleNode node : getInputNodes()) {
+            if (node instanceof VariableNode) {
+                resolved.add((VariableNode) node);
+            }
+        }
+        // first collect the count nodes of subconditions
+        for (Condition subCondition : getSubConditions()) {
+            if (subCondition instanceof ForallCondition) {
+                VariableNode countNode =
+                    ((ForallCondition) subCondition).getCountNode();
+                // check if the condition has a non-constant count node
+                if (countNode != null && countNode.getConstant() == null) {
+                    Set<VariableNode> resolver = new HashSet<VariableNode>();
+                    // add the unresolved root nodes of the subcondition to the resolver
+                    for (RuleNode rootNode : subCondition.getInputNodes()) {
+                        if (rootNode instanceof VariableNode
+                            && ((VariableNode) rootNode).getConstant() == null) {
+                            resolver.add((VariableNode) rootNode);
+                        }
+                    }
+                    resolver.removeAll(resolved);
+                    if (resolver.isEmpty()) {
+                        resolved.add(countNode);
+                    } else {
+                        addResolver(result, countNode, resolver);
+                    }
+                }
+            }
+        }
+        // now add resolvers due to product nodes
         for (RuleNode node : getPattern().nodeSet()) {
             if (node instanceof VariableNode
                 && ((VariableNode) node).getConstant() == null) {
-                boolean hasIncomingNonAttributeEdge = false;
+                VariableNode varNode = (VariableNode) node;
                 for (RuleEdge edge : getPattern().inEdgeSet(node)) {
                     if (edge.label().isMatchable()) {
-                        hasIncomingNonAttributeEdge = true;
-                    }
-                }
-                if (!hasIncomingNonAttributeEdge) {
-                    this.unresolvedVariableNodes.add((VariableNode) node);
-                }
-            } else if (node instanceof ProductNode) {
-                ProductNode product = (ProductNode) node;
-                this.unresolvedProductNodes.put(product,
-                    new BitSet(product.arity()));
-            }
-        }
-        // remove the seed nodes
-        this.unresolvedVariableNodes.removeAll(getRootNodes());
-        for (RuleNode node : getRootNodes()) {
-            this.unresolvedProductNodes.remove(node);
-        }
-    }
-
-    /**
-     * Iterates over unresolved nodes and removes them as necessary. This will 
-     * look at each node in unresolvedProductNodes; if all of its arguments have
-     * been resolved it will remove all of the product "targets" from the
-     * {@code unresolvedVariableNodes} Set. It will keep doing this until both
-     * collections are stable.
-     * @throws FormatException if an error is detected during stabilisation
-     */
-    protected void stabilizeUnresolvedNodes() throws FormatException {
-        // now resolve nodes until stable
-        boolean stable = false;
-        while (!stable) {
-            stable = true;
-            java.util.Iterator<Map.Entry<ProductNode,BitSet>> productIter =
-                this.unresolvedProductNodes.entrySet().iterator();
-            while (productIter.hasNext()) {
-                Map.Entry<ProductNode,BitSet> productEntry = productIter.next();
-                ProductNode product = productEntry.getKey();
-                BitSet arguments = productEntry.getValue();
-                for (RuleEdge edge : getPattern().outEdgeSet(product)) {
-                    if (edge instanceof ArgumentEdge
-                        && !this.unresolvedVariableNodes.contains(edge.target())) {
-                        int argumentNumber = ((ArgumentEdge) edge).getNumber();
-                        arguments.set(argumentNumber);
-                    }
-                }
-                if (arguments.cardinality() == product.arity()) {
-                    // the product node is resolved, so resolve the targets of
-                    // the outgoing operations
-                    for (RuleEdge edge : getPattern().outEdgeSet(product)) {
-                        if (edge instanceof OperatorEdge) {
-                            if (this.unresolvedVariableNodes.remove(((OperatorEdge) edge).target())) {
-                                stable = false;
+                        resolved.add(varNode);
+                        result.remove(node);
+                    } else if (edge instanceof OperatorEdge) {
+                        ProductNode source = ((OperatorEdge) edge).source();
+                        // collect the argument nodes
+                        Set<VariableNode> resolver =
+                            new HashSet<VariableNode>();
+                        for (VariableNode arg : source.getArguments()) {
+                            if (arg.getSymbol() == null) {
+                                resolver.add(arg);
                             }
                         }
+                        resolver.removeAll(resolved);
+                        if (resolver.isEmpty()) {
+                            resolved.add(varNode);
+                        } else {
+                            addResolver(result, varNode, resolver);
+                        }
                     }
-                    productIter.remove();
+                }
+            }
+        }
+        for (VariableNode node : resolved) {
+            result.remove(node);
+        }
+        return result;
+    }
+
+    /** Adds a value to the list of values for a given key. */
+    private <K,V> void addResolver(Map<K,List<V>> map, K key, V value) {
+        List<V> entry = map.get(key);
+        if (entry == null) {
+            map.put(key, entry = new ArrayList<V>());
+        }
+        entry.add(value);
+    }
+
+    /** Removes entries from the resolver map if they have an empty resolver. */
+    private void stabilise(Map<VariableNode,List<Set<VariableNode>>> resolverMap) {
+        boolean stable = false;
+        // repeat until no more changes
+        while (!stable) {
+            stable = true;
+            // iterate over all resolver lists
+            Iterator<List<Set<VariableNode>>> iter =
+                resolverMap.values().iterator();
+            while (iter.hasNext()) {
+                // try each resolver in turn
+                for (Set<VariableNode> resolver : iter.next()) {
+                    // restrict to the unresolved nodes
+                    resolver.retainAll(resolverMap.keySet());
+                    // if there are no unresolved nodes, the entry may be removed
+                    if (resolver.isEmpty()) {
+                        iter.remove();
+                        stable = false;
+                        break;
+                    }
                 }
             }
         }
@@ -420,14 +407,8 @@ abstract public class Condition implements Fixable {
         StringBuilder res =
             new StringBuilder(String.format("Condition %s: ", getName()));
         res.append(String.format("Target: %s", getPattern()));
-        if (!getRootNodes().isEmpty()) {
-            res.append(String.format("%nRoot nodes: %s", getRootNodes()));
-        }
-        if (!getRootEdges().isEmpty()) {
-            res.append(String.format(", edges: %s", getRootEdges()));
-        }
-        if (!getRootVars().isEmpty()) {
-            res.append(String.format(", variables: %s", getRootVars()));
+        if (!getRoot().isEmpty()) {
+            res.append(String.format("%nRoot graph: %s", getRoot()));
         }
         if (!getSubConditions().isEmpty()) {
             res.append(String.format("%nSubconditions:"));
@@ -446,11 +427,6 @@ abstract public class Condition implements Fixable {
     /** The collection of sub-conditions of this condition. */
     private final Collection<Condition> subConditions;
 
-    /**
-     * The sub-conditions that are not negative application conditions.
-     */
-    private Collection<Condition> complexSubConditions;
-
     /** Flag indicating if this condition is now fixed, i.e., unchangeable. */
     private boolean fixed;
     /**
@@ -463,14 +439,8 @@ abstract public class Condition implements Fixable {
      */
     private final RuleGraph rootGraph;
 
-    /** Set of all nodes this condition has in common with its parent. */
-    private Set<RuleNode> rootNodes;
-
-    /** Set of all variables occurring in root elements. */
-    private Set<RuleEdge> rootEdges;
-
-    /** Set of all variables occurring in root edges. */
-    private Set<LabelVar> rootVars;
+    /** Subset of the root nodes that are bound to be bound before the condition is matched. */
+    private Set<RuleNode> inputNodes;
 
     /** The pattern graph of this morphism. */
     private final RuleGraph pattern;
@@ -478,20 +448,7 @@ abstract public class Condition implements Fixable {
     /**
      * Factory instance for creating the correct simulation.
      */
-    protected final SystemProperties systemProperties;
+    private final SystemProperties systemProperties;
     /** Subtyping relation, derived from the SystemProperties. */
     private LabelStore labelStore;
-
-    /**
-     * Set of VariableNodes that have not been resolved, i.e. variable nodes
-     * that have no incoming match-edges.
-     */
-    protected Set<VariableNode> unresolvedVariableNodes;
-
-    /**
-     * A map of unresolved product nodes, i.e. product nodes which have 
-     * unresolved arguments.
-     */
-    protected Map<ProductNode,BitSet> unresolvedProductNodes;
-
 }
