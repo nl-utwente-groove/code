@@ -147,9 +147,11 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
     }
 
     /**
-     * Two rule applications are equal if they have the same rule and anchor
-     * images. Note that the source is not tested; do not collect rule
-     * applications for different sources!
+     * Two events are equal if they have the same rule and anchor
+     * images.
+     * If events are reused, this method only tests for object equality.
+     * Use {@link #equalsEvent(RuleEvent)} to always test for the
+     * content.
      */
     @Override
     public boolean equals(Object obj) {
