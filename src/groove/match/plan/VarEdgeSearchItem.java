@@ -14,10 +14,10 @@
  * 
  * $Id: VarEdgeSearchItem.java,v 1.18 2008-01-30 09:33:29 iovka Exp $
  */
-package groove.match;
+package groove.match.plan;
 
 import groove.graph.TypeLabel;
-import groove.match.SearchPlanStrategy.Search;
+import groove.match.plan.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;

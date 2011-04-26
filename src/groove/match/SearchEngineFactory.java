@@ -16,6 +16,7 @@
  */
 package groove.match;
 
+import groove.match.plan.SearchPlanEngine;
 import groove.match.rete.ReteSearchEngine;
 import groove.trans.SystemProperties;
 

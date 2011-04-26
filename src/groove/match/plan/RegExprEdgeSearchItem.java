@@ -1,9 +1,9 @@
 /* $Id: RegExprEdgeSearchItem.java,v 1.15 2008-01-30 09:33:29 iovka Exp $ */
-package groove.match;
+package groove.match.plan;
 
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
-import groove.match.SearchPlanStrategy.Search;
+import groove.match.plan.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
 import groove.rel.RegAut;
 import groove.rel.RegExpr;
@@ -50,7 +50,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
     }
 
     final public Record createRecord(
-            groove.match.SearchPlanStrategy.Search search) {
+            groove.match.plan.SearchPlanStrategy.Search search) {
         if (isSingular(search)) {
             return createSingularRecord(search);
         } else {

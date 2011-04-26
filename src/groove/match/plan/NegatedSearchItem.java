@@ -14,9 +14,9 @@
  * 
  * $Id: NegatedSearchItem.java,v 1.10 2008-01-30 09:33:29 iovka Exp $
  */
-package groove.match;
+package groove.match.plan;
 
-import groove.match.SearchPlanStrategy.Search;
+import groove.match.plan.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
 import groove.trans.HostGraph;
 import groove.trans.RuleNode;
@@ -44,7 +44,7 @@ class NegatedSearchItem extends AbstractSearchItem {
     }
 
     public NegatedSearchRecord createRecord(
-            groove.match.SearchPlanStrategy.Search search) {
+            groove.match.plan.SearchPlanStrategy.Search search) {
         return new NegatedSearchRecord(search);
     }
 

@@ -14,7 +14,7 @@
  * 
  * $Id: ConditionSearchPlanFactory.java,v 1.23 2008-02-05 13:43:26 rensink Exp $
  */
-package groove.match;
+package groove.match.plan;
 
 import groove.algebra.AlgebraFamily;
 import groove.graph.DefaultNode;
@@ -23,6 +23,9 @@ import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.VariableNode;
+import groove.match.MatchStrategy;
+import groove.match.SearchEngine;
+import groove.match.TreeMatch;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
 import groove.rel.VarSupport;
@@ -56,7 +59,7 @@ import java.util.TreeSet;
  * Factory that adds to a graph search plan the following items the search items
  * for the simple negative conditions (edge and merge embargoes).
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 3291 $
  */
 public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
     /**
@@ -529,7 +532,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
      * all needed parts have been matched, the comparator prefers those of which
      * the most bound parts have also been matched.
      * @author Arend Rensink
-     * @version $Revision$
+     * @version $Revision: 3291 $
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
         NeededPartsComparator(Set<RuleNode> remainingNodes,
@@ -573,7 +576,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
      * Search item comparator that gives higher priority to items of which more
      * parts have been matched.
      * @author Arend Rensink
-     * @version $Revision$
+     * @version $Revision: 3291 $
      */
     static class ConnectedPartsComparator implements Comparator<SearchItem> {
         ConnectedPartsComparator(Set<RuleNode> remainingNodes,
@@ -619,7 +622,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
      * Search item comparator that gives higher priority to items with more
      * unmatched parts.
      * @author Arend Rensink
-     * @version $Revision$
+     * @version $Revision: 3291 $
      */
     static class BoundPartsComparator implements Comparator<SearchItem> {
         BoundPartsComparator(Set<RuleNode> remainingNodes,
@@ -829,7 +832,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
      * should be applied. Comparators will be applied in increating order, so
      * the comparators should be ordered in decreasing priority.
      * @author Arend Rensink
-     * @version $Revision$
+     * @version $Revision: 3291 $
      */
     static class ItemComparatorComparator implements
             Comparator<Comparator<SearchItem>> {

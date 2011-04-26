@@ -14,12 +14,12 @@
  * 
  * $Id: AnchorSearchItem.java,v 1.4 2008-01-30 09:33:29 iovka Exp $
  */
-package groove.match;
+package groove.match.plan;
 
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
-import groove.match.SearchPlanStrategy.Search;
+import groove.match.plan.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
 import groove.rel.VarSupport;
 import groove.trans.RuleEdge;
@@ -133,7 +133,7 @@ class SeedSearchItem extends AbstractSearchItem {
         return String.format("Check %s", elementList);
     }
 
-    public Record createRecord(groove.match.SearchPlanStrategy.Search search) {
+    public Record createRecord(groove.match.plan.SearchPlanStrategy.Search search) {
         assert allElementsMatched(search) : String.format(
             "Elements %s not pre-matched", this.unmatched);
         return new DummyRecord();

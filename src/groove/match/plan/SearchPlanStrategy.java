@@ -14,11 +14,13 @@
  * 
  * $Id: SearchPlanStrategy.java,v 1.18 2007-11-29 12:49:37 rensink Exp $
  */
-package groove.match;
+package groove.match.plan;
 
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
+import groove.match.MatchStrategy;
+import groove.match.TreeMatch;
 import groove.rel.LabelVar;
 import groove.trans.Condition;
 import groove.trans.HostEdge;
@@ -42,7 +44,7 @@ import java.util.Set;
  * This matcher walks through a search tree built up according to a search plan,
  * in which the matching order of the domain elements is determined.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 3288 $
  */
 public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
     /**
