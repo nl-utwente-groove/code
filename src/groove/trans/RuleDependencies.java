@@ -26,6 +26,7 @@ import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.rel.RegAut;
 import groove.rel.RegExpr;
+import groove.trans.Condition.Mode;
 import groove.util.Groove;
 import groove.view.FormatException;
 
@@ -488,17 +489,17 @@ public class RuleDependencies {
         if (!isolatedNodes.isEmpty()) {
             positive.add(ANY_NODE);
         }
-        for (Condition negCond : cond.getSubConditions()) {
+        Condition.Mode condMode = cond.getMode();
+        for (Condition subCond : cond.getSubConditions()) {
             Set<TypeLabel> subPositives = new HashSet<TypeLabel>();
             Set<TypeLabel> subNegatives = new HashSet<TypeLabel>();
-            collectConditionCharacteristics(negCond, subPositives, subNegatives);
-            if (negCond instanceof Rule == cond instanceof Rule
-                || negCond instanceof ForallCondition) {
+            collectConditionCharacteristics(subCond, subPositives, subNegatives);
+            Condition.Mode subCondMode = subCond.getMode();
+            if (subCondMode == Mode.FORALL || subCondMode == condMode) {
                 positive.addAll(subPositives);
                 negative.addAll(subNegatives);
             }
-            if (negCond instanceof Rule != cond instanceof Rule
-                || negCond instanceof ForallCondition) {
+            if (subCondMode == Mode.FORALL || subCondMode != condMode) {
                 negative.addAll(subPositives);
                 positive.addAll(subNegatives);
             }
@@ -525,17 +526,18 @@ public class RuleDependencies {
         add(this.disabledMap, disabler, disabled);
         // if the disabled rule has (universal) subrules, then its
         // events will be {@link CompositeEvents}, meaning that they will
-        // claim that they never match on the next state, even if they actually
-        // do.
+        // claim that they never match on the next state, even if they 
+        // actually do.
         // In order not to miss events, the disabled rule must be re-enabled as
         // well.
-        if (disabled.hasSubRules()) {
-            addEnabling(disabler, disabled);
-        }
+        // NEWSFLASH: this is no longer true!
+        //        if (disabled.hasSubRules()) {
+        //            addEnabling(disabler, disabled);
+        //        }
     }
 
     /**
-     * Initializes a relational map so that all rules are mapped to empty sets.
+     * Initialises a relational map so that all rules are mapped to empty sets.
      */
     void init(Map<Rule,Set<Rule>> map) {
         for (Rule rule : this.rules) {

@@ -192,30 +192,58 @@ abstract public class Condition implements Fixable {
 
     /**
      * Adds a sub-condition to this graph condition.
+     * The sub-condition should already be fixed.
      * @param condition the condition to be added
      * @see #getSubConditions()
      */
     public void addSubCondition(Condition condition) {
+        condition.testFixed(true);
         testFixed(false);
         if (this.labelStore != null) {
             condition.setLabelStore(this.labelStore);
         }
         getSubConditions().add(condition);
+        if (getRule() != null) {
+            for (Rule subRule : condition.getTopRules()) {
+                getRule().addDirectSubRule(subRule);
+            }
+        }
+    }
+
+    /** Returns the collection of top-level (sub)rules of this condition.
+     * This is either the rule associated with this condition (if any),
+     * or, recursively, with any of its subconditions.
+     * @return the collection of top-level (sub)rules of this condition
+     */
+    private List<Rule> getTopRules() {
+        List<Rule> result = new ArrayList<Rule>();
+        if (getRule() == null) {
+            for (Condition subCond : getSubConditions()) {
+                result.addAll(subCond.getTopRules());
+            }
+        } else {
+            result.add(getRule());
+        }
+        return result;
     }
 
     /** Fixes this condition and all its subconditions. */
     public void setFixed() throws FormatException {
         if (!isFixed()) {
+            for (Condition subCondition : getSubConditions()) {
+                subCondition.testFixed(true);
+            }
             this.fixed = true;
             this.ground = this.getRoot().isEmpty();
             getPattern().setFixed();
             testAlgebra();
-            for (Condition subCondition : getSubConditions()) {
-                subCondition.setFixed();
+            if (getRule() != null) {
+                getRule().setFixed();
             }
         }
     }
 
+    @Override
     public boolean isFixed() {
         return this.fixed;
     }
@@ -228,6 +256,7 @@ abstract public class Condition implements Fixable {
      * @throws IllegalStateException if {@link #isFixed()} does not yield
      *         <code>value</code>
      */
+    @Override
     public void testFixed(boolean value) throws IllegalStateException {
         if (isFixed() != value) {
             String message;
@@ -311,25 +340,22 @@ abstract public class Condition implements Fixable {
         }
         // first collect the count nodes of subconditions
         for (Condition subCondition : getSubConditions()) {
-            if (subCondition instanceof ForallCondition) {
-                VariableNode countNode =
-                    ((ForallCondition) subCondition).getCountNode();
-                // check if the condition has a non-constant count node
-                if (countNode != null && countNode.getConstant() == null) {
-                    Set<VariableNode> resolver = new HashSet<VariableNode>();
-                    // add the unresolved root nodes of the subcondition to the resolver
-                    for (RuleNode rootNode : subCondition.getInputNodes()) {
-                        if (rootNode instanceof VariableNode
-                            && ((VariableNode) rootNode).getConstant() == null) {
-                            resolver.add((VariableNode) rootNode);
-                        }
+            VariableNode countNode = subCondition.getCountNode();
+            // check if the condition has a non-constant count node
+            if (countNode != null && countNode.getConstant() == null) {
+                Set<VariableNode> resolver = new HashSet<VariableNode>();
+                // add the unresolved root nodes of the subcondition to the resolver
+                for (RuleNode rootNode : subCondition.getInputNodes()) {
+                    if (rootNode instanceof VariableNode
+                        && ((VariableNode) rootNode).getConstant() == null) {
+                        resolver.add((VariableNode) rootNode);
                     }
-                    resolver.removeAll(resolved);
-                    if (resolver.isEmpty()) {
-                        resolved.add(countNode);
-                    } else {
-                        addResolver(result, countNode, resolver);
-                    }
+                }
+                resolver.removeAll(resolved);
+                if (resolver.isEmpty()) {
+                    resolved.add(countNode);
+                } else {
+                    addResolver(result, countNode, resolver);
                 }
             }
         }
@@ -405,7 +431,8 @@ abstract public class Condition implements Fixable {
     @Override
     public String toString() {
         StringBuilder res =
-            new StringBuilder(String.format("Condition %s: ", getName()));
+            new StringBuilder(String.format("%s condition %s: ",
+                getMode().getName(), getName()));
         res.append(String.format("Target: %s", getPattern()));
         if (!getRoot().isEmpty()) {
             res.append(String.format("%nRoot graph: %s", getRoot()));
@@ -417,6 +444,61 @@ abstract public class Condition implements Fixable {
             }
         }
         return res.toString();
+    }
+
+    /** Returns the mode of this condition. */
+    public abstract Mode getMode();
+
+    /** Sets a count node for this universal condition. 
+     * @see #getCountNode() */
+    public void setCountNode(VariableNode countNode) {
+        assert !isFixed();
+        this.countNode = countNode;
+    }
+
+    /** 
+     * Returns the count node of this universal condition, if any.
+     * The count node is bound to the number of matches of the condition.
+     */
+    public VariableNode getCountNode() {
+        return this.countNode;
+    }
+
+    /** Sets this universal condition to positive (meaning that
+     * it should have at least one match). */
+    public void setPositive() {
+        assert !isFixed();
+        this.positive = true;
+    }
+
+    /**
+     * Indicates if this condition is positive. A universal condition is
+     * positive if it cannot be vacuously fulfilled; i.e., there must always be
+     * at least one match.
+     */
+    public boolean isPositive() {
+        return this.positive;
+    }
+
+    /**
+     * Indicates if there is a rule associated with this condition.
+     * Only existential and universal conditions can have associated rules.
+     * Convenience method for {@code getRule() != null}.
+     * @return {@code true} if there is a rule associated with this condition
+     * @see #getRule()
+     */
+    final public boolean hasRule() {
+        return getRule() != null;
+    }
+
+    /**
+     * Returns the rule associated with this condition, if any.
+     * Only existential and universal conditions can have associated rules.
+     * @return The rule associated with this condition, or {@code null}
+     * if there is no associated rule.
+     */
+    public Rule getRule() {
+        return null;
     }
 
     /**
@@ -451,4 +533,46 @@ abstract public class Condition implements Fixable {
     private final SystemProperties systemProperties;
     /** Subtyping relation, derived from the SystemProperties. */
     private LabelStore labelStore;
+
+    /** Node capturing the match count of this condition. */
+    private VariableNode countNode;
+
+    /**
+     * Flag indicating whether the condition is positive, i.e., cannot be
+     * vacuously true.
+     */
+    private boolean positive;
+
+    /** 
+     * The mode of this condition.
+     * This corresponds to a First Order Logic operator.
+     */
+    public static enum Mode {
+        /** Universally quantified pattern. */
+        FORALL("Universal"),
+        /** Existentially quantified pattern. */
+        EXISTS("Existential"),
+        /** Negated condition. */
+        NOT("Negated"),
+        /** Conjunction of subconditions. */
+        AND("Conjunctive"),
+        /** Disjunction of subconditions. */
+        OR("Disjunctive");
+
+        private Mode(String name) {
+            this.name = name;
+        }
+
+        /** Returns the name of this condition mode. */
+        public final String getName() {
+            return this.name;
+        }
+
+        @Override
+        public String toString() {
+            return getName();
+        }
+
+        private final String name;
+    }
 }

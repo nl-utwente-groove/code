@@ -40,4 +40,9 @@ public class NotCondition extends Condition {
     final public void addSubCondition(Condition condition) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public Mode getMode() {
+        return Mode.NOT;
+    }
 }

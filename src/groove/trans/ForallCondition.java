@@ -16,8 +16,6 @@
  */
 package groove.trans;
 
-import groove.graph.algebra.VariableNode;
-
 /**
  * Universally matched condition.
  * @author Arend Rensink
@@ -26,13 +24,10 @@ import groove.graph.algebra.VariableNode;
 public class ForallCondition extends Condition {
     /**
      * Constructs an instance based on a given pattern graph and root map. 
-     * @param countNode node specifying the number of matches of this condition.
      */
     public ForallCondition(RuleName name, RuleGraph pattern,
-            RuleGraph rootGraph, SystemProperties properties,
-            VariableNode countNode) {
+            RuleGraph rootGraph, SystemProperties properties) {
         super(name, pattern, rootGraph, properties);
-        this.countNode = countNode;
     }
 
     @Override
@@ -40,31 +35,8 @@ public class ForallCondition extends Condition {
         return "Universal " + super.toString();
     }
 
-    /** Returns the match count node of this universal condition, if any. */
-    public VariableNode getCountNode() {
-        return this.countNode;
+    @Override
+    public Mode getMode() {
+        return Mode.FORALL;
     }
-
-    /** Sets this universal condition to positive (meaning that
-     * it should have at least one match). */
-    public void setPositive() {
-        this.positive = true;
-    }
-
-    /**
-     * Indicates if this condition is positive. A universal condition is
-     * positive if it cannot be vacuously fulfilled; i.e., there must always be
-     * at least one match.
-     */
-    public boolean isPositive() {
-        return this.positive;
-    }
-
-    /** Node capturing the match count of this condition. */
-    private final VariableNode countNode;
-    /**
-     * Flag indicating whether the condition is positive, i.e., cannot be
-     * vacuously true.
-     */
-    private boolean positive;
 }

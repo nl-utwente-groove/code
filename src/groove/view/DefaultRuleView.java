@@ -69,13 +69,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
@@ -309,21 +310,17 @@ public class DefaultRuleView implements RuleView {
             System.out.println("");
         }
         Map<Level,Condition> ruleTree = new HashMap<Level,Condition>();
-        for (Level level : this.levelTree.getLevels()) {
+        // construct the rule tree and add parent rules
+        for (Level level : this.levelTree.getLevels(true)) {
             try {
                 Condition condition = level.computeFlatRule();
                 ruleTree.put(level, condition);
                 LevelIndex index = level.getIndex();
                 if (!index.isTopLevel()) {
                     Level parentLevel = level.getParent();
-                    Condition parentCond = ruleTree.get(parentLevel);
-                    if (parentCond != null) {
-                        parentCond.addSubCondition(condition);
-                    }
-
-                    if (index.isExistential()) {
-                        ((Rule) condition).setParent(
-                            (Rule) ruleTree.get(parentLevel.getParent()),
+                    if (condition.hasRule()) {
+                        condition.getRule().setParent(
+                            ruleTree.get(parentLevel.getParent()).getRule(),
                             index.getIntArray());
                     }
                 }
@@ -331,7 +328,21 @@ public class DefaultRuleView implements RuleView {
                 errors.addAll(exc.getErrors());
             }
         }
-
+        // now add subconditions and fix the conditions
+        // this needs to be done bottom-up
+        for (Level level : this.levelTree.getLevels(false)) {
+            try {
+                Condition condition = ruleTree.get(level);
+                LevelIndex index = level.getIndex();
+                if (!index.isTopLevel()) {
+                    condition.setFixed();
+                    Condition parentCond = ruleTree.get(level.getParent());
+                    parentCond.addSubCondition(condition);
+                }
+            } catch (FormatException exc) {
+                errors.addAll(exc.getErrors());
+            }
+        }
         rule = (Rule) ruleTree.get(this.levelTree.getTopLevel());
         if (rule != null) {
             rule.setPriority(getPriority());
@@ -444,16 +455,10 @@ public class DefaultRuleView implements RuleView {
      */
     private class LevelIndex extends DefaultFixable implements
             Comparable<LevelIndex> {
-        /** Constructs the top level. */
-        public LevelIndex() {
-            this(null);
-            this.indexFix.setFixed();
-        }
-
         /**
          * Constructs a new level, without setting parent or children.
          * @param levelNode the view level node representing this level; may be
-         *        <code>null</code> for an implicit level
+         *        <code>null</code> for an implicit or top level
          */
         public LevelIndex(AspectNode levelNode) {
             assert levelNode == null || levelNode.getKind().isQuantifier();
@@ -461,17 +466,26 @@ public class DefaultRuleView implements RuleView {
         }
 
         /**
-         * Sets the parent of this level.
+         * Sets the parent and index of this level.
          * @param parent the parent of this level.
          */
-        public void setParent(LevelIndex parent) {
+        public void setParent(LevelIndex parent, int nr) {
             testFixed(false);
-            assert this.parent == null;
-            this.index.addAll(parent.index);
-            this.index.add(parent.children.size());
+            assert this.parent == null && parent.isFixed();
             this.parent = parent;
-            this.parent.children.add(this);
-            this.indexFix.setFixed();
+            this.index = new ArrayList<Integer>(parent.index.size() + 1);
+            this.index.addAll(parent.index);
+            this.index.add(nr);
+            setFixed();
+        }
+
+        @Override
+        public void setFixed() {
+            // if the index is null, this is the top level node
+            if (this.index == null) {
+                this.index = Collections.emptyList();
+            }
+            super.setFixed();
         }
 
         /** Returns the parent level of this tree index. */
@@ -497,24 +511,20 @@ public class DefaultRuleView implements RuleView {
             }
         }
 
-        /**
-         * Sets the index and the level to fixed.
-         */
-        @Override
-        public void setFixed() {
-            this.indexFix.setFixed();
-            super.setFixed();
-        }
-
-        /** Lexicographically compares the tree indices. */
+        /** Lexicographically compares the tree indices. 
+         * @see #getIntArray() */
         public int compareTo(LevelIndex o) {
-            if (this.levelNode == null) {
-                return -1;
-            } else if (o.levelNode == null) {
-                return 1;
-            } else {
-                return this.levelNode.compareTo(o.levelNode);
+            int result = 0;
+            int[] mine = getIntArray();
+            int[] other = o.getIntArray();
+            int minLength = Math.min(mine.length, other.length);
+            for (int i = 0; result == 0 && i < minLength; i++) {
+                result = mine[i] - other[i];
             }
+            if (result == 0) {
+                result = mine.length - other.length;
+            }
+            return result;
         }
 
         /**
@@ -523,9 +533,8 @@ public class DefaultRuleView implements RuleView {
          * nesting does not exceed that of the other, and the indices at every 
          * (common) level coincide.
          */
-        public boolean smallerThan(LevelIndex other) {
-            testIndexFixed();
-            other.testIndexFixed();
+        public boolean higherThan(LevelIndex other) {
+            assert isFixed() && other.isFixed();
             boolean result = this.index.size() <= other.index.size();
             for (int i = 0; result && i < this.index.size(); i++) {
                 result = this.index.get(i).equals(other.index.get(i));
@@ -535,10 +544,10 @@ public class DefaultRuleView implements RuleView {
 
         /**
          * Converts this level to an array of {@code int}s. May only be called
-         * after {@link #setParent(LevelIndex)}.
+         * after {@link #setParent(LevelIndex,int)}.
          */
         public int[] getIntArray() {
-            testIndexFixed();
+            testFixed(true);
             int[] result = new int[this.index.size()];
             for (int i = 0; i < this.index.size(); i++) {
                 result[i] = this.index.get(i);
@@ -549,19 +558,19 @@ public class DefaultRuleView implements RuleView {
 
         /**
          * Indicates whether this is the top level. May only be called after
-         * {@link #setParent(LevelIndex)}.
+         * {@link #setParent(LevelIndex,int)}.
          */
         public boolean isTopLevel() {
-            testIndexFixed();
+            testFixed(true);
             return this.parent == null;
         }
 
         /**
          * Indicates whether this level is universal. May only be called after
-         * {@link #setParent(LevelIndex)}.
+         * {@link #setParent(LevelIndex,int)}.
          */
         public boolean isUniversal() {
-            testIndexFixed();
+            testFixed(true);
             if (isImplicit()) {
                 // it's an implicit level
                 return !isTopLevel() && this.parent.isExistential();
@@ -573,7 +582,7 @@ public class DefaultRuleView implements RuleView {
 
         /** Indicates whether this level is existential. */
         public boolean isExistential() {
-            testIndexFixed();
+            testFixed(true);
             if (isImplicit()) {
                 // it's an implicit level
                 return isTopLevel() || this.parent.isUniversal();
@@ -581,14 +590,6 @@ public class DefaultRuleView implements RuleView {
                 AspectKind nodeKind = this.levelNode.getKind();
                 return nodeKind == EXISTS;
             }
-        }
-
-        /**
-         * Tests if the information needed to calculate the level index has been
-         * set.
-         */
-        private void testIndexFixed() {
-            this.indexFix.testFixed(true);
         }
 
         /**
@@ -618,16 +619,9 @@ public class DefaultRuleView implements RuleView {
         /** The view node representing this quantification level. */
         final AspectNode levelNode;
         /** The index uniquely identifying this level. */
-        final List<Integer> index = new ArrayList<Integer>();
-        /** List of children of this tree index. */
-        final List<LevelIndex> children = new ArrayList<LevelIndex>();
+        List<Integer> index;
         /** Parent of this tree index; may be <code>null</code> */
         LevelIndex parent;
-        /**
-         * Object to test if the parent has been set, meaning that the index is
-         * fixed.
-         */
-        private final DefaultFixable indexFix = new DefaultFixable();
     }
 
     /** Tree of quantification levels occurring in this rule view. */
@@ -639,93 +633,76 @@ public class DefaultRuleView implements RuleView {
 
         /** Builds the level data maps. */
         private void buildTree() throws FormatException {
-            this.topLevelIndex = new LevelIndex();
+            // First build an explicit tree of level nodes
+            Map<LevelIndex,List<LevelIndex>> indexTree =
+                new HashMap<LevelIndex,List<LevelIndex>>();
+            this.topLevelIndex = createIndex(null, indexTree);
             // initialise the data structures
             this.metaIndexMap = new HashMap<AspectNode,LevelIndex>();
             this.nameIndexMap = new HashMap<String,LevelIndex>();
-            // First build an explicit tree of levels
-            // Mapping from children to parent
-            Map<LevelIndex,LevelIndex> indexParentMap =
-                new HashMap<LevelIndex,LevelIndex>();
-            // Mapping from parent to their set of children
-            Map<LevelIndex,Set<LevelIndex>> metaNodeTree =
-                new HashMap<LevelIndex,Set<LevelIndex>>();
-            metaNodeTree.put(this.topLevelIndex, createChildren());
             // Mapping from levels to match count nodes
             this.matchCountMap = new HashMap<LevelIndex,AspectNode>();
+            indexTree.put(this.topLevelIndex, new ArrayList<LevelIndex>());
             for (AspectNode node : getAspectGraph().nodeSet()) {
                 AspectKind nodeKind = node.getKind();
                 if (nodeKind.isQuantifier()) {
-                    LevelIndex nodeLevel = getIndex(node);
-                    metaNodeTree.put(nodeLevel, createChildren());
                     // look for the parent level
-                    LevelIndex parentLevel;
+                    LevelIndex parentIndex;
                     // by the correctness of the aspect graph we know that
                     // there is at most one outgoing edge, which is a parent
                     // edge and points to the parent level node
                     AspectNode parentNode = node.getNestingParent();
                     if (parentNode == null) {
-                        if (nodeKind == FORALL || nodeKind == FORALL_POS) {
-                            parentLevel = this.topLevelIndex;
-                        } else {
+                        if (nodeKind != FORALL && nodeKind != FORALL_POS) {
                             // create an artificial intermediate level to
                             // accommodate erroneous top-level existential node
-                            parentLevel = new LevelIndex();
-                            metaNodeTree.put(parentLevel, createChildren());
-                            indexParentMap.put(parentLevel, this.topLevelIndex);
+                            parentIndex = createIndex(null, indexTree);
+                            indexTree.get(this.topLevelIndex).add(parentIndex);
+                        } else {
+                            parentIndex = this.topLevelIndex;
                         }
                     } else {
-                        parentLevel = getIndex(parentNode);
+                        parentIndex = getIndex(parentNode, indexTree);
                     }
-                    indexParentMap.put(nodeLevel, parentLevel);
+                    LevelIndex myIndex = getIndex(node, indexTree);
+                    indexTree.get(parentIndex).add(myIndex);
                     if (node.getMatchCount() != null) {
-                        this.matchCountMap.put(nodeLevel, node.getMatchCount());
+                        this.matchCountMap.put(myIndex, node.getMatchCount());
                     }
                 }
             }
-            // Now fill the tree from the parent map
-            for (Map.Entry<LevelIndex,LevelIndex> parentEntry : indexParentMap.entrySet()) {
-                metaNodeTree.get(parentEntry.getValue()).add(
-                    parentEntry.getKey());
-            }
-            List<LevelIndex> indices = new LinkedList<LevelIndex>();
             // Set the parentage in tree preorder
+            // Build the level data map,
+            // in the tree-order of the indices
+            this.indexLevelMap = new TreeMap<LevelIndex,Level>();
             Queue<LevelIndex> indexQueue = new LinkedList<LevelIndex>();
             indexQueue.add(this.topLevelIndex);
             while (!indexQueue.isEmpty()) {
                 LevelIndex next = indexQueue.poll();
-                indices.add(next);
-                // set parent, except for top level
-                if (indexParentMap.containsKey(next)) {
-                    next.setParent(indexParentMap.get(next));
-                }
-                Set<LevelIndex> children = metaNodeTree.get(next);
+                next.setFixed();
+                List<LevelIndex> children = indexTree.get(next);
                 // add an implicit existential sub-level to childless universal
                 // levels
-                if (children.isEmpty() && next.isUniversal()) {
-                    LevelIndex implicitChild = new LevelIndex(null);
-                    metaNodeTree.put(implicitChild, createChildren());
-                    indexParentMap.put(implicitChild, next);
+                if (next.isUniversal() && children.isEmpty()) {
+                    LevelIndex implicitChild = createIndex(null, indexTree);
                     children.add(implicitChild);
                 }
-                indexQueue.addAll(children);
-            }
-            // now fix all levels and build the level data map
-            this.indexLevelMap = new LinkedHashMap<LevelIndex,Level>();
-            for (LevelIndex index : indices) {
-                index.setFixed();
+                for (int i = 0; i < children.size(); i++) {
+                    children.get(i).setParent(next, i);
+                }
                 Level parentData =
-                    index.isTopLevel() ? null
-                            : this.indexLevelMap.get(index.getParent());
-                Level thisData = new Level(index, parentData);
-                this.indexLevelMap.put(index, thisData);
+                    next.isTopLevel() ? null
+                            : this.indexLevelMap.get(next.getParent());
+                Level thisData = new Level(next, parentData);
+                this.indexLevelMap.put(next, thisData);
+                indexQueue.addAll(children);
             }
             // check that match count nodes are defined at super-levels
             for (Map.Entry<LevelIndex,AspectNode> matchCountEntry : this.matchCountMap.entrySet()) {
                 LevelIndex definingLevel =
                     getLevel(matchCountEntry.getValue()).getIndex();
                 LevelIndex usedLevel = matchCountEntry.getKey();
-                if (!definingLevel.smallerThan(usedLevel)
+                if (!definingLevel.higherThan(usedLevel)
                     || definingLevel.equals(usedLevel)) {
                     throw new FormatException(
                         "Match count not defined at appropriate level",
@@ -741,16 +718,17 @@ public class DefaultRuleView implements RuleView {
 
         /**
          * Lazily creates and returns a level index for a given level meta-node.
-         * @param levelNode the level node for which a level is to be created;
+         * @param metaNode the level node for which a level is to be created;
          *        should satisfy
          *        {@link AspectKind#isQuantifier()}
          */
-        private LevelIndex getIndex(AspectNode levelNode) {
-            LevelIndex result = this.metaIndexMap.get(levelNode);
+        private LevelIndex getIndex(AspectNode metaNode,
+                Map<LevelIndex,List<LevelIndex>> indexTree) {
+            LevelIndex result = this.metaIndexMap.get(metaNode);
             if (result == null) {
-                this.metaIndexMap.put(levelNode, result =
-                    new LevelIndex(levelNode));
-                String name = levelNode.getLevelName();
+                this.metaIndexMap.put(metaNode,
+                    result = createIndex(metaNode, indexTree));
+                String name = metaNode.getLevelName();
                 if (name != null && name.length() > 0) {
                     this.nameIndexMap.put(name, result);
                 }
@@ -758,12 +736,17 @@ public class DefaultRuleView implements RuleView {
             return result;
         }
 
-        /**
-         * Creates an ordered set to store the children of a meta-node. The
-         * ordering is based on the meta-node corresponding to the level.
+        /** Creates a level index for a given meta-node and creates
+         * an entry in the level tree.
+         * @param levelNode the quantifier meta-node
+         * @param levelTree the tree of level indices
+         * @return the fresh level index
          */
-        private Set<LevelIndex> createChildren() {
-            return new TreeSet<LevelIndex>();
+        private LevelIndex createIndex(AspectNode levelNode,
+                Map<LevelIndex,List<LevelIndex>> levelTree) {
+            LevelIndex result = new LevelIndex(levelNode);
+            levelTree.put(result, new ArrayList<LevelIndex>());
+            return result;
         }
 
         private void initData() throws FormatException {
@@ -774,8 +757,9 @@ public class DefaultRuleView implements RuleView {
             // of counted subconditions is pushed to the existential level
             for (Map.Entry<LevelIndex,AspectNode> matchCountEntry : this.matchCountMap.entrySet()) {
                 AspectNode matchCount = matchCountEntry.getValue();
-                this.indexLevelMap.get(matchCountEntry.getKey()).setMatchCount(
-                    matchCount, (VariableNode) getNodeImage(matchCount));
+                Level level = this.indexLevelMap.get(matchCountEntry.getKey());
+                level.setMatchCount(matchCount,
+                    (VariableNode) getNodeImage(matchCount));
             }
             // add nodes to nesting data structures
             for (AspectNode node : getAspectGraph().nodeSet()) {
@@ -877,11 +861,14 @@ public class DefaultRuleView implements RuleView {
         }
 
         /**
-         * @return Returns the set of all quantification levels.
+         * Returns the quantification levels in reverse order
          */
-        public final Collection<Level> getLevels() {
+        public final Collection<Level> getLevels(boolean ascending) {
             testFixed(true);
-            return this.indexLevelMap.values();
+            Map<LevelIndex,Level> map =
+                ascending ? this.indexLevelMap
+                        : this.indexLevelMap.descendingMap();
+            return map.values();
         }
 
         /**
@@ -979,7 +966,7 @@ public class DefaultRuleView implements RuleView {
         /** The top level of the rule tree. */
         private LevelIndex topLevelIndex;
         /** The set of all levels in this tree. */
-        private Map<LevelIndex,Level> indexLevelMap;
+        private NavigableMap<LevelIndex,Level> indexLevelMap;
         /** mapping from nesting meta-nodes nodes to nesting levels. */
         private Map<AspectNode,LevelIndex> metaIndexMap;
         /** mapping from nesting level names to nesting levels. */
@@ -1027,9 +1014,9 @@ public class DefaultRuleView implements RuleView {
          * given level; or {@code null} if neither is smaller than the other.
          */
         public Level max(Level other) {
-            if (this.index.smallerThan(other.index)) {
+            if (this.index.higherThan(other.index)) {
                 return other;
-            } else if (other.index.smallerThan(this.index)) {
+            } else if (other.index.higherThan(this.index)) {
                 return this;
             } else {
                 return null;
@@ -1471,6 +1458,7 @@ public class DefaultRuleView implements RuleView {
         /**
          * Callback method to compute the rule on this nesting level from sets
          * of aspect nodes and edges that appear on this level.
+         * The resulting condition is not fixed (see {@link Condition#isFixed()}).
          */
         public Condition computeFlatRule() throws FormatException {
             Condition result;
@@ -1592,7 +1580,12 @@ public class DefaultRuleView implements RuleView {
                     }
                 }
                 // construct the NAC itself
-                result.addSubCondition(computeNac(this.lhs, nacNodes, nacEdges));
+                try {
+                    result.addSubCondition(computeNac(this.lhs, nacNodes,
+                        nacEdges));
+                } catch (FormatException e) {
+                    errors.addAll(e.getErrors());
+                }
             }
             if (errors.isEmpty()) {
                 return result;
@@ -1702,7 +1695,8 @@ public class DefaultRuleView implements RuleView {
          *        NAC target
          */
         private NotCondition computeNac(RuleGraph lhs,
-                Set<RuleNode> nacNodeSet, Set<RuleEdge> nacEdgeSet) {
+                Set<RuleNode> nacNodeSet, Set<RuleEdge> nacEdgeSet)
+            throws FormatException {
             NotCondition result = null;
             // first check for merge end edge embargoes
             // they are characterised by the fact that there is precisely 1
@@ -1760,6 +1754,7 @@ public class DefaultRuleView implements RuleView {
                     nacTarget.addEdge(edge);
                 }
             }
+            result.setFixed();
             return result;
         }
 
@@ -1820,9 +1815,12 @@ public class DefaultRuleView implements RuleView {
                 RuleGraph rootGraph, String name, boolean positive) {
             ForallCondition result =
                 new ForallCondition(new RuleName(name), pattern, rootGraph,
-                    getSystemProperties(), this.matchCountImage);
+                    getSystemProperties());
             if (positive) {
                 result.setPositive();
+            }
+            if (this.matchCountImage != null) {
+                result.setCountNode(this.matchCountImage);
             }
             return result;
         }
