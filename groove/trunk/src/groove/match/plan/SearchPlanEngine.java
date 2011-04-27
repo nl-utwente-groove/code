@@ -30,8 +30,8 @@ import groove.rel.LabelVar;
 import groove.rel.RegExpr;
 import groove.rel.VarSupport;
 import groove.trans.Condition;
+import groove.trans.Condition.Mode;
 import groove.trans.EdgeEmbargo;
-import groove.trans.ForallCondition;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
 import groove.trans.RuleLabel;
@@ -103,7 +103,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
         for (AbstractSearchItem item : plan) {
             boolean relevant = unboundAnchorNodes.removeAll(item.bindsNodes());
             relevant |= boundVars.addAll(item.bindsVars());
-            relevant |= condition instanceof ForallCondition;
+            relevant |= condition.getMode() == Mode.FORALL;
             item.setRelevant(relevant);
         }
         SearchPlanStrategy result = new SearchPlanStrategy(plan);

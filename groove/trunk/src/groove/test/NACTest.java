@@ -23,7 +23,6 @@ import groove.graph.GraphProperties;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
-import groove.trans.RuleApplication;
 import groove.trans.DefaultHostGraph;
 import groove.trans.EdgeEmbargo;
 import groove.trans.HostEdge;
@@ -32,6 +31,7 @@ import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.NotCondition;
 import groove.trans.Rule;
+import groove.trans.RuleApplication;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
@@ -78,7 +78,8 @@ public class NACTest {
     protected static final int G0_INDEX = 2;
 
     protected Rule rule;
-    protected NotCondition[] NACs = new NotCondition[NR_NACS];
+    protected NotCondition NAC0;
+    protected NotCondition NAC3;
     protected HostGraph[] g = new HostGraph[NR_GRAPHS];
 
     protected RuleNode[][] ruleNodes = new RuleNode[2 + NR_NACS][];
@@ -114,16 +115,16 @@ public class NACTest {
             new Rule(new RuleName("test"), lhs, rhs, ruleMorphism,
                 ruleProperties, SystemProperties.DEFAULT_PROPERTIES);
         this.rule.setLabelStore(this.labelStore);
-        this.NACs[0] =
+        this.NAC0 =
             new EdgeEmbargo(lhs, new RuleEdge(this.ruleNodes[0][0],
                 new RuleLabel(RegExpr.empty()), this.ruleNodes[0][1]),
                 SystemProperties.getInstance());
-
-        this.NACs[3] =
+        this.NAC0.setFixed();
+        this.NAC3 =
             new EdgeEmbargo(lhs, new RuleEdge(this.ruleNodes[0][1],
                 new RuleLabel("c"), this.ruleNodes[0][0]),
                 SystemProperties.getInstance());
-
+        this.NAC3.setFixed();
         RuleGraph protGraph = new RuleGraph("protGraph");
         int[] g0Src = {1, 1, 2};
         String[] g0Lab = {"b", "a", "c"};
@@ -211,7 +212,7 @@ public class NACTest {
 
     @Test
     public void testNAC0() {
-        this.rule.addSubCondition(this.NACs[0]);
+        this.rule.addSubCondition(this.NAC0);
         try {
             this.rule.setFixed();
         } catch (FormatException e) {
@@ -231,7 +232,7 @@ public class NACTest {
 
     @Test
     public void testNAC3() {
-        this.rule.addSubCondition(this.NACs[3]);
+        this.rule.addSubCondition(this.NAC3);
         try {
             this.rule.setFixed();
         } catch (FormatException e) {
@@ -251,8 +252,8 @@ public class NACTest {
 
     @Test
     public void testNAC03() {
-        this.rule.addSubCondition(this.NACs[0]);
-        this.rule.addSubCondition(this.NACs[3]);
+        this.rule.addSubCondition(this.NAC0);
+        this.rule.addSubCondition(this.NAC3);
         try {
             this.rule.setFixed();
         } catch (FormatException e) {

@@ -24,9 +24,7 @@ import groove.match.plan.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
 import groove.rel.VarSupport;
 import groove.trans.Condition;
-import groove.trans.ForallCondition;
 import groove.trans.HostNode;
-import groove.trans.NotCondition;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
@@ -61,12 +59,8 @@ class ConditionSearchItem extends AbstractSearchItem {
         this.rootGraph = condition.getRoot();
         this.neededNodes = condition.getInputNodes();
         this.neededVars = VarSupport.getAllVars(this.rootGraph);
-        this.positive =
-            (condition instanceof ForallCondition)
-                && ((ForallCondition) condition).isPositive();
-        this.countNode =
-            condition instanceof ForallCondition
-                    ? ((ForallCondition) condition).getCountNode() : null;
+        this.positive = condition.isPositive();
+        this.countNode = condition.getCountNode();
         this.boundNodes =
             this.countNode == null ? Collections.<RuleNode>emptySet()
                     : Collections.singleton(this.countNode);
@@ -114,13 +108,13 @@ class ConditionSearchItem extends AbstractSearchItem {
             this.preCounted = strategy.isNodeFound(this.countNode);
             this.countNodeIx = strategy.getNodeIx(this.countNode);
         }
-        if (!isNAC()) {
-            this.forallIx = strategy.getCondIx(this.condition);
+        if (this.condition.getMode() != Condition.Mode.NOT) {
+            this.condIx = strategy.getCondIx(this.condition);
         }
     }
 
     public Record createRecord(Search search) {
-        if (isNAC()) {
+        if (this.condition.getMode() == Condition.Mode.NOT) {
             return new NegConditionRecord(search);
         } else {
             return new PosConditionRecord(search);
@@ -129,31 +123,8 @@ class ConditionSearchItem extends AbstractSearchItem {
 
     @Override
     public String toString() {
-        String descr;
-        if (isNAC()) {
-            descr = "NAC";
-        } else if (isRule()) {
-            descr = "Rule";
-        } else {
-            descr = "Universal condition";
-        }
-        return String.format("%s %s: %s", descr, this.condition.getName(),
-            this.matcher.getPlan());
-    }
-
-    /** Indicates if this condition search item tests for a NAC. */
-    public boolean isNAC() {
-        return this.condition instanceof NotCondition;
-    }
-
-    /** Indicates if this condition search item is a rule. */
-    public boolean isRule() {
-        return this.condition instanceof Rule;
-    }
-
-    /** Indicates if this condition search item is a universal condition. */
-    public boolean isForall() {
-        return this.condition instanceof ForallCondition;
+        return String.format("%s %s: %s", this.condition.getMode().getName(),
+            this.condition.getName(), this.matcher.getPlan());
     }
 
     @Override
@@ -166,7 +137,7 @@ class ConditionSearchItem extends AbstractSearchItem {
     /** Tests if this condition or one of its subconditions is a modifying rule. */
     private boolean isModifying() {
         boolean result = false;
-        if (isRule()) {
+        if (this.condition instanceof Rule) {
             result = ((Rule) this.condition).isModifying();
         } else {
             for (Condition subCondition : this.condition.getSubConditions()) {
@@ -191,7 +162,7 @@ class ConditionSearchItem extends AbstractSearchItem {
     /** Flag indicating that the condition must be matched at least once. */
     final boolean positive;
     /** The index of the condition in the search. */
-    int forallIx;
+    int condIx;
     /** Flag indicating if the match count is predetermined. */
     boolean preCounted;
     /** The index of the count node (if any). */
@@ -294,7 +265,7 @@ class ConditionSearchItem extends AbstractSearchItem {
             }
             if (result) {
                 result =
-                    this.search.putSubMatch(ConditionSearchItem.this.forallIx,
+                    this.search.putSubMatch(ConditionSearchItem.this.condIx,
                         this.match);
             }
             return result;
@@ -305,7 +276,7 @@ class ConditionSearchItem extends AbstractSearchItem {
             if (this.countImage != null) {
                 this.search.putNode(ConditionSearchItem.this.countNodeIx, null);
             }
-            this.search.putSubMatch(ConditionSearchItem.this.forallIx, null);
+            this.search.putSubMatch(ConditionSearchItem.this.condIx, null);
         }
 
         @Override

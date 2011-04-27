@@ -100,6 +100,16 @@ public class Rule extends Condition implements Comparable<Rule> {
             rhs().nodeSet(), coRootMap.nodeMap().values());
     }
 
+    @Override
+    public Mode getMode() {
+        return Mode.EXISTS;
+    }
+
+    @Override
+    public Rule getRule() {
+        return this;
+    }
+
     /**
      * Returns the priority of this object. A higher number means higher
      * priority, with {@link #DEFAULT_PRIORITY} the lowest.
@@ -248,6 +258,7 @@ public class Rule extends Condition implements Comparable<Rule> {
      * Returns the set of rules in the rule hierarchy.
      */
     public Collection<Rule> getSubRules() {
+        assert isFixed();
         Collection<Rule> result = new TreeSet<Rule>();
         result.add(this);
         for (Rule subRule : getDirectSubRules()) {
@@ -261,7 +272,20 @@ public class Rule extends Condition implements Comparable<Rule> {
      * Indicates if this rule has sub-rules.
      */
     public boolean hasSubRules() {
+        assert isFixed();
         return !getDirectSubRules().isEmpty();
+    }
+
+    /** 
+     * Adds a direct sub-rule to this rule.
+     * The direct sub-rules are those connected to sub-conditions 
+     * in the associated condition tree.
+     * @param subRule the new direct sub-rule
+     */
+    public void addDirectSubRule(Rule subRule) {
+        assert !isFixed();
+        assert subRule.isFixed();
+        getDirectSubRules().add(subRule);
     }
 
     /**
@@ -721,14 +745,14 @@ public class Rule extends Condition implements Comparable<Rule> {
      */
     public int compareTo(Rule other) {
         int result = 0;
-        if (!equals(other)) {
+        if (this != other) {
             // compare parent rules
-            Rule otherParent = other.getParent();
-            if (equals(getParent())) {
-                other = otherParent;
-            } else {
-                result = getParent().compareTo(otherParent);
-            }
+            //            Rule otherParent = other.getParent();
+            //            if (equals(getParent())) {
+            //                other = otherParent;
+            //            } else {
+            //                result = getParent().compareTo(otherParent);
+            //            }
             if (result == 0) {
                 // compare levels
                 int[] level = getLevel();
@@ -761,6 +785,32 @@ public class Rule extends Condition implements Comparable<Rule> {
         super.setFixed();
         if (PRINT && isTop()) {
             System.out.println(toString());
+        }
+    }
+
+    @Override
+    public boolean isFixed() {
+        return super.isFixed();
+    }
+
+    /**
+     * Tests if the condition is fixed or not. Throws an exception if the
+     * fixedness does not coincide with the given value.
+     * 
+     * @param value the expected fixedness state
+     * @throws IllegalStateException if {@link #isFixed()} does not yield
+     *         <code>value</code>
+     */
+    @Override
+    public void testFixed(boolean value) throws IllegalStateException {
+        if (isFixed() != value) {
+            String message;
+            if (value) {
+                message = "Rule should be fixed";
+            } else {
+                message = "Rule should not be fixed";
+            }
+            throw new IllegalStateException(message);
         }
     }
 
@@ -1352,6 +1402,8 @@ public class Rule extends Condition implements Comparable<Rule> {
      * Indicates if the {@link #modifying} variable has been computed
      */
     private boolean modifyingSet;
+    //    /** Flag indicating if this rule is now fixed, i.e., unchangeable. */
+    //    private boolean fixed;
     /**
      * The underlying production morphism.
      * @invariant ruleMorph : lhs --> rhs
