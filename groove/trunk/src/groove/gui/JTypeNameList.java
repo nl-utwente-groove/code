@@ -123,9 +123,12 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
                     return;
                 }
                 int index = JTypeNameList.this.getSelectedIndex();
-                ListItem item = JTypeNameList.this.model.getElementAt(index);
-                JTypeNameList.this.panel.setSelectedType(item.dataItem);
-                JTypeNameList.this.panel.displayType();
+                if (index >= 0) {
+                    ListItem item =
+                        JTypeNameList.this.model.getElementAt(index);
+                    JTypeNameList.this.panel.setSelectedType(item.dataItem);
+                    JTypeNameList.this.panel.displayType();
+                }
             }
         };
         this.addListSelectionListener(this.selectionListener);
@@ -364,6 +367,9 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
             int index = this.getIndexByName(typeName);
             if (index >= 0) {
                 this.items.remove(index);
+                if (getSelectedIndex() == index) {
+                    clearSelection();
+                }
                 if (saveProp) {
                     JTypeNameList.this.panel.doSaveProperties();
                 }
@@ -422,6 +428,8 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
             int index = this.getIndexByName(typeName);
             if (index >= 0) {
                 JTypeNameList.this.setSelectedIndex(index);
+            } else {
+                JTypeNameList.this.clearSelection();
             }
         }
 
