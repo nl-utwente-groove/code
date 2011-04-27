@@ -48,9 +48,9 @@ public class Predicate_graph extends GraphPrologCode {
                 name = args[0].toString();
             }
 
-            GraphView graphView =
-                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGrammarView().getGraphView(
-                    name);
+            GraphView graphView = null;
+            //    ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getGraph(
+            //       name);
 
             if (graphView == null) {
                 return FAIL;

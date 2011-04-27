@@ -43,7 +43,7 @@ public class Predicate_active_type_graph_name extends GraphPrologCode {
                 GrooveEnvironment.invalidEnvironment();
             }
             ArrayList<String> typeNames =
-                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGrammarView().getProperties().getTypeNames();
+                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getProperties().getTypeNames();
 
             try {
                 PrologStringCollectionIterator it =

@@ -22,8 +22,8 @@ import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.builtin.trans.TransPrologCode;
+import groove.trans.Rule;
 import groove.trans.RuleName;
-import groove.view.RuleView;
 
 /**
  * Predicate rule_enabled(+RuleName)
@@ -41,13 +41,15 @@ public class Predicate_rule_enabled extends TransPrologCode {
         try {
             RuleName name = new RuleName(((AtomTerm) args[0]).value);
 
-            RuleView ruleView =
-                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGrammarView().getRuleView(
-                    name);
+            Rule rule = null;
+            //    ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().
+            //    .getRule(name);
 
-            if (ruleView != null && ruleView.isEnabled()) {
+            /*
+            if (rule != null && rule.isEnabled()) {
                 return SUCCESS_LAST;
             }
+            */
         } catch (Exception e) {
             return FAIL;
         }

@@ -67,18 +67,6 @@ Rule:
 % @param node/edge in the graph
 :-build_in(ruleevent_transpose/3,'groove.prolog.builtin.trans.Predicate_ruleevent_transpose').
 
-% Node anchors in this event. Anchors are the  
-% ruleevent_anchor_node(+RuleEvent,?Node)
-% @param the rule event
-% @param the node
-:-build_in(ruleevent_anchor_node/2,'groove.prolog.builtin.trans.Predicate_ruleevent_anchor_node').
-
-% Edge anchors in this event according to the rule
-% ruleevent_anchor_edge(+RuleEvent,?Edge)
-% @param the rule event
-% @param the edge
-:-build_in(ruleevent_anchor_edge/2,'groove.prolog.builtin.trans.Predicate_ruleevent_anchor_edge').
-
 % Erased edges in this event
 % ruleevent_erased_edge(+RuleEvent,?Edge)
 % @param the rule event
@@ -113,13 +101,6 @@ Rule:
 
 % ruleevent_match(+RuleEvent,?RuleMatch)
 ruleevent_match(RE,RM):-state(GS),state_graph(GS,G),ruleevent_match(RE,G,RM).
-
-% Fail if the ruleevents do not conflict
-% ruleevent_conflicts(+RuleEvent,+RuleEvent)
-% @param a rule event
-% @param a rule event
-% @see groove.trans.RuleEvent#conflicts(RuleEvent)
-:-build_in(ruleevent_conflicts/2, 'groove.prolog.builtin.trans.Predicate_ruleevent_conflicts').
 
 % Get all current rule matches
 % rulematch(?RuleMatch)

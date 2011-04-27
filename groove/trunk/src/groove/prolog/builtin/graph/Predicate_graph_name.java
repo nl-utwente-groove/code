@@ -41,8 +41,8 @@ public class Predicate_graph_name extends GraphPrologCode {
             if (!(interpreter.getEnvironment() instanceof GrooveEnvironment)) {
                 GrooveEnvironment.invalidEnvironment();
             }
-            Set<String> graphNames =
-                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGrammarView().getGraphNames();
+            Set<String> graphNames = null;
+            //    ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getGraphNames();
 
             try {
                 PrologStringCollectionIterator it =
