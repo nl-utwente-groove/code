@@ -22,7 +22,9 @@ import groove.explore.Exploration;
 import groove.lts.GTS;
 import groove.prolog.GrooveState;
 import groove.trans.GraphGrammar;
+import groove.view.FormatException;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -30,21 +32,30 @@ import org.junit.Test;
  * @author Lesley Wevers
  */
 public class PredicateTests {
+    private static GrooveState grooveState;
+
+    /**
+     * Initializes the test suite
+     */
+    @BeforeClass
+    public static void initialize() throws FormatException {
+        GraphGrammar grammar =
+            PrologTestUtil.testGrammar("graph-a").toGrammar();
+        GTS gts = new GTS(grammar);
+        Exploration exploration = new Exploration();
+
+        exploration.play(gts, null);
+
+        grooveState =
+            new GrooveState(grammar, gts, gts.startState(),
+                gts.startState().getTransitionIter().next().getEvent());
+    }
+
     /**
      * Runs all tests in test-graph.pro
      */
     @Test
     public void testGraph() {
-        // Assert that we can see all graph names
-        succ("graph_name('graph-a')");
-        succ("graph_name('graph-b')");
-
-        // Assert that graph 'graph-a' is the start graph
-        succ("graph('graph-a',G), start_graph(G)");
-        fail("graph('graph-b',G), start_graph(G)");
-        succ("start_graph_name('graph-a')");
-        fail("start_graph_name('graph-b')");
-
         // Assert that the start graph is a graph
         succ("start_graph(G), is_graph(G)");
 
@@ -124,9 +135,6 @@ public class PredicateTests {
      */
     @Test
     public void testGraphDerived() {
-        // Test start_graph
-        succ("start_graph(G), is_graph(G)");
-
         // Test graph_binary, graph_flag, graph_node_type
         succ("start_graph(G), graph_binary(G,E), edge_role_binary(E)");
         succ("start_graph(G), graph_flag(G,E), edge_role_flag(E)");
@@ -148,11 +156,7 @@ public class PredicateTests {
         // Assert that all rule names can be retrieved
         succ("rule_name('rule-a')");
         succ("rule_name('rule-b')");
-
-        // Assert that all enabled rule names can be checked
-        succ("rule_enabled('rule-a')");
-        succ("rule_enabled('rule-b')");
-        fail("rule_enabled('rule-disabled')");
+        fail("rule_name('rule-disabled')");
 
         // Assert that confluent rule names can be checked
         succ("rule_confluent('rule-confluent')");
@@ -180,14 +184,8 @@ public class PredicateTests {
      */
     @Test
     public void testRuleDerived() {
-        // Test enabled_rule_name
-        succ("enabled_rule_name(R), rule_enabled(R)");
-
         // Test confluent_rule_name
         succ("confluent_rule_name(R), rule_confluent(R)");
-
-        // Test enabled_rule
-        succ("enabled_rule(R), rule(N,R), rule_enabled(N)");
 
         // Test confluent_rule
         succ("confluent_rule(R), rule(N,R), rule_confluent(N)");
@@ -299,9 +297,6 @@ public class PredicateTests {
         // Assert that rulematch_node gives a node
         succ("active_ruleevent(RE), ruleevent_match(RE,M), rulematch_node(M,N), is_node(N)");
 
-        // Assert that the anchor node of this ruleevent is a node
-        succ("active_ruleevent(RE), ruleevent_anchor_node(RE,N), is_node(N)");
-
         // Test rule event transpose
         succ("active_ruleevent(RE), rule('rule-a',R), rule_rhs(R,RHS), graph_node(RHS,N), ruleevent_transpose(RE,N,T)");
         // TODO: succ("active_ruleevent(RE), rule('rule-a',R), rule_rhs(R,RHS), graph_edge(RHS,E), ruleevent_transpose(RE,E,)");
@@ -392,17 +387,7 @@ public class PredicateTests {
 
     private boolean test(String predicate) {
         try {
-            GraphGrammar grammar =
-                PrologTestUtil.testGrammar("graph-a").toGrammar();
-            GTS gts = new GTS(grammar);
-            Exploration exploration = new Exploration();
-
-            exploration.play(gts, null);
-
-            return PrologTestUtil.test(
-                new GrooveState(grammar, gts, gts.startState(),
-                    gts.startState().getTransitionIter().next().getEvent()),
-                predicate);
+            return PrologTestUtil.test(this.grooveState, predicate);
         } catch (Exception e) {
             e.printStackTrace();
             org.junit.Assert.fail(e.getMessage());

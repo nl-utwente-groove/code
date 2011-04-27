@@ -1051,11 +1051,10 @@ public class PrologPanel extends JPanel {
                 e = pe;
             }
         }
-        /*
-        StringWriter sw = new StringWriter();
-        e.printStackTrace(new PrintWriter(sw));
-        this.results.append(sw.toString());
-        */
+        // StringWriter sw = new StringWriter();
+        // e.printStackTrace(new PrintWriter(sw));
+        // this.results.append(sw.toString());
+        this.results.append(e.getMessage());
     }
 
     /**
