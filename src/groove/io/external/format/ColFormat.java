@@ -106,7 +106,7 @@ public class ColFormat extends AbstractExternalFileFormat<HostGraph> {
     }
 
     private HostNode addNode(HostGraph result, String id) {
-        HostNode node = result.addNode(Integer.parseInt(id));
+        HostNode node = result.getFactory().createNode(Integer.parseInt(id));
         result.addEdge(node, TypeLabel.createLabel(EdgeRole.FLAG, "i" + id),
             node);
         return node;
