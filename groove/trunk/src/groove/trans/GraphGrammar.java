@@ -12,59 +12,334 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphGrammar.java,v 1.20 2008-01-30 09:32:36 iovka Exp $
+ * $Id: RuleSystem.java,v 1.18 2008-01-30 12:37:40 fladder Exp $
  */
 package groove.trans;
 
 import groove.control.CtrlAut;
-import groove.view.FormatError;
+import groove.graph.LabelStore;
+import groove.graph.TypeGraph;
+import groove.util.CollectionOfCollections;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Default model of a graph grammar, consisting of a production rule system and
- * a default start graph. Currently the grammar also keeps track of the GTS
- * generated, which is not really natural.
+ * a default start graph.
+ * Model of a graph grammar, as a simple map of rule names to production
+ * rules and
+ * a default start graph.
  * @author Arend Rensink
- * @version $Revision$ $Date: 2008-01-30 09:32:36 $
+ * @version $Revision$ $Date: 2008-01-30 12:37:40 $
+ * @see RuleName
+ * @see Rule
  */
-public class GraphGrammar extends RuleSystem {
+public class GraphGrammar {
     /**
-     * Constructs an anonymous graph grammar on the basis of a given rule system
-     * and start graph.
-     * @param ruleSystem the underlying rule system
-     * @param startGraph the start graph; if <code>null</code>, an empty
-     *        graph is used
-     * @require ruleSystem != null
-     * @ensure ruleSystem()==ruleSystem, gts().nodeSet().size() == 1,
-     *         gts().edgeSet().size() == 0, getStartGraph().equals(startGraph),
-     *         <tt>getName().equals(name)</tt>
-     */
-    public GraphGrammar(RuleSystem ruleSystem, DefaultHostGraph startGraph) {
-        super(ruleSystem);
-        this.startGraph = startGraph;
-    }
-
-    /**
-     * Constructs a graph grammar on ths basis of a given production system and
-     * name. The initial graph is set to empty.
-     * @param ruleSystem the underlying production system
-     * @require <tt>ruleSystem != null</tt>
-     * @ensure ruleSystem().equals(ruleSystem), gts().nodeSet().size() == 1,
-     *         gts().edgeSet().size() == 0, getStartGraph().isEmpty()
-     */
-    public GraphGrammar(RuleSystem ruleSystem) {
-        this(ruleSystem, null);
-    }
-
-    /**
-     * Constructs a named graph grammar with empty rule system and empty start
-     * graph.
+     * Constructs an initially empty rule system.
      */
     public GraphGrammar(String name) {
-        this(new RuleSystem(name));
+        this.name = name;
+    }
+
+    /**
+     * Constructs a clone of a given rule system.
+     * @param other the rule system to be cloned
+     * @require <tt>ruleSystem != null</tt>
+     * @ensure <tt>equals(ruleSystem)</tt>
+     */
+    public GraphGrammar(GraphGrammar other, DefaultHostGraph startGraph) {
+        this(other.getName());
+        this.startGraph = startGraph;
+        getProperties().putAll(other.getProperties());
+        this.nameRuleMap.putAll(other.nameRuleMap);
+        // the target sets of the priority rule map must be copied, not aliased
+        for (Map.Entry<Integer,Set<Rule>> priorityRuleEntry : other.priorityRuleMap.entrySet()) {
+            Set<Rule> newRuleSet = createRuleSet();
+            newRuleSet.addAll(priorityRuleEntry.getValue());
+            this.priorityRuleMap.put(priorityRuleEntry.getKey(), newRuleSet);
+        }
+    }
+
+    /**
+     * Returns the name of this rule system. May be <tt>null</tt> if the rule
+     * system is anonymous.
+     */
+    public String getName() {
+        return this.name;
+    }
+
+    /**
+     * Returns the production rule known under a given name, if any.
+     * @param name the name of the requested production rule
+     * @return the Rule known as "name"; null if name is not known
+     * @ensure <tt>result.equals(getRuleMap.get(name))</tt>
+     */
+    public Rule getRule(RuleName name) {
+        return this.nameRuleMap.get(name);
+    }
+
+    /** Convenience method to return the rule with a name given as a string. */
+    public Rule getRule(String name) {
+        return getRule(createRuleName(name));
+    }
+
+    /**
+     * Returns an unmodifiable view upon the names of all production rules in
+     * this production system.
+     * @ensure <tt>result.equals(getRuleMap.keySet())</tt>
+     */
+    public Set<RuleName> getRuleNames() {
+        return Collections.unmodifiableSet(this.nameRuleMap.keySet());
+    }
+
+    /**
+     * Returns an unmodifiable view upon the map from available priorities to
+     * rules with that priority. The map is sorted from high to low priority.
+     */
+    public SortedMap<Integer,Set<Rule>> getRuleMap() {
+        return Collections.unmodifiableSortedMap(this.priorityRuleMap);
+    }
+
+    /**
+     * Returns a Set<Rule> Iterator based on the global priorities
+     * 
+     * @return Iterator<Set<Rule>>
+     */
+    public Iterator<Set<Rule>> getRuleSetIter() {
+        return this.priorityRuleMap.values().iterator();
+    }
+
+    /**
+     * Returns an unmodifiable view upon the underlying collection of rules. The
+     * result is ordered by descending priority, and within each priority, by
+     * alphabetical order of the names. Don't invoke {@link Object#equals} on
+     * the result!
+     * @ensure <tt>result: Label -> Rule</tt>
+     */
+    public Collection<Rule> getRules() {
+        Collection<Rule> result = this.ruleSet;
+        if (result == null) {
+            result =
+                Arrays.asList(new CollectionOfCollections<Rule>(
+                    this.priorityRuleMap.values()).toArray(new Rule[0]));
+            if (isFixed()) {
+                this.ruleSet = result;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns <tt>true</tt> if the rule system has rules at more than one
+     * priority.
+     */
+    public boolean hasMultiplePriorities() {
+        return this.priorityRuleMap.size() > 1;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder res = new StringBuilder();
+        res.append("Rule system:\n    ");
+        for (Rule production : getRules()) {
+            res.append(production + "\n");
+        }
+        res.append("\nStart graph:\n    ");
+        res.append(getStartGraph().toString());
+        return res.toString();
+    }
+
+    /**
+     * Adds a production rule to this rule system. Removes the existing rule
+     * with the same name, if any, and returns it. This is only allowed if the
+     * grammar is not yet fixed, as indicated by {@link #isFixed()}.
+     * @param rule the production rule to be added
+     * @require <tt>rule != null</tt>
+     * @throws IllegalStateException if the rule system is fixed
+     * @see #isFixed()
+     */
+    public Rule add(Rule rule) {
+        testFixed(false);
+        RuleName ruleName = rule.getName();
+        int priority = rule.getPriority();
+        Rule oldRuleForName = remove(ruleName);
+        // add the rule to the priority map
+        Set<Rule> priorityRuleSet = this.priorityRuleMap.get(priority);
+        // if there is not yet any rule with this priority, create a set
+        if (priorityRuleSet == null) {
+            this.priorityRuleMap.put(priority, priorityRuleSet =
+                createRuleSet());
+        }
+        priorityRuleSet.add(rule);
+        // add the rule to the map
+        this.nameRuleMap.put(ruleName, rule);
+        // copy the label store to the rule, if it is set
+        if (this.labelStore != null) {
+            rule.setLabelStore(this.labelStore);
+        }
+        return oldRuleForName;
+    }
+
+    /**
+     * Removes a named production rule from this rule system, and returns it.
+     * This is only allowed if the grammar is not yet fixed, as indicated by
+     * {@link #isFixed()}.
+     * @param ruleName the name of the production rule to be added
+     * @throws IllegalStateException if the rule system is fixed
+     * @see #isFixed()
+     */
+    private Rule remove(RuleName ruleName) {
+        testFixed(false);
+        Rule result = this.nameRuleMap.remove(ruleName);
+        // now remove the old rule with this name, if any
+        if (result != null) {
+            int priority = result.getPriority();
+            Set<Rule> priorityRuleSet = this.priorityRuleMap.get(priority);
+            priorityRuleSet.remove(result);
+            // if this is the last rule with this priority, remove the entry
+            // from the map
+            if (priorityRuleSet.isEmpty()) {
+                this.priorityRuleMap.remove(priority);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Indicates if the rule system is fixed. Rules can only be added or edited
+     * in a non-fixed rule system, whereas the rule system can only be used for
+     * derivations when it is fixed.
+     */
+    public final boolean isFixed() {
+        assert !this.fixed || this.labelStore != null;
+        return this.fixed;
+    }
+
+    /**
+     * Sets the rule system to fixed. After invoking this method,
+     * {@link #add(Rule)} will throw an {@link IllegalStateException}.
+     * @throws FormatException if the rules are inconsistent with the system
+     *         properties or there is some other reason why they cannot be used
+     *         in derivations.
+     * @see #testConsistent()
+     */
+    public void setFixed() throws FormatException {
+        testConsistent();
+        for (Rule rule : getRules()) {
+            rule.setFixed();
+        }
+        getStartGraph().setFixed();
+        this.fixed = true;
+    }
+
+    /**
+     * Tests the the fixedness of the rule system.
+     * @param value the expected fixedness
+     * @throws IllegalStateException if {@link #isFixed()} does not equal
+     *         <code>value</code>
+     */
+    public final void testFixed(boolean value) throws IllegalStateException {
+        if (isFixed() != value) {
+            if (value) {
+                throw new IllegalStateException(
+                    "Operation not allowed: Rule system is not fixed");
+            } else {
+                throw new IllegalStateException(
+                    "Operation not allowed: Rule system is fixed");
+            }
+        }
+    }
+
+    /**
+     * Sets the properties of this graph grammar by copying a given property
+     * mapping. Clears the current properties first.
+     * @param properties the new properties mapping
+     */
+    public void setProperties(java.util.Properties properties) {
+        testFixed(false);
+        SystemProperties currentRuleProperties = getProperties();
+        currentRuleProperties.clear();
+        currentRuleProperties.putAll(properties);
+    }
+
+    /**
+     * Convenience method to retrieve the value of a property key.
+     * @see #getProperties()
+     */
+    public String getProperty(String key) {
+        return getProperties().getProperty(key);
+    }
+
+    /**
+     * Returns the properties object for this graph grammar. The properties
+     * object is immutable.
+     */
+    public SystemProperties getProperties() {
+        if (this.properties == null) {
+            this.properties = createProperties();
+        }
+        return this.properties;
+    }
+
+    /** Sets the labels and subtypes used in this rule system. */
+    public void setLabelStore(LabelStore store) {
+        testFixed(false);
+        this.labelStore = store.clone();
+        for (Rule rule : getRules()) {
+            rule.setLabelStore(this.labelStore);
+        }
+    }
+
+    /** Returns the labels and subtypes of this rule system. */
+    public final LabelStore getLabelStore() {
+        return this.labelStore;
+    }
+
+    /**
+     * Tests if the rule system is consistent. This is called in the course of
+     * {@link #setFixed()}.
+     */
+    public void testConsistent() throws FormatException {
+        List<String> errors = new ArrayList<String>();
+        // collect the exceptions of the rules
+        if (this.labelStore == null) {
+            errors.add(String.format("Labels and subtypes not initialised"));
+        }
+        // if any exception was encountered, throw it
+        if (!errors.isEmpty()) {
+            throw new FormatException(errors);
+        }
+    }
+
+    /** Returns the type graph of this grammar. */
+    public final TypeGraph getType() {
+        return this.type;
+    }
+
+    /** Returns the set of constituent type subgraphs of this grammar. */
+    public final Map<String,TypeGraph> getTypeMap() {
+        return this.typeMap;
+    }
+
+    /** Sets the type for this grammar.
+     * @param type the combined type graph
+     * @param typeMap the constituent type subgraphs
+     */
+    public final void setType(TypeGraph type, Map<String,TypeGraph> typeMap) {
+        this.type = type;
+        this.typeMap = typeMap;
     }
 
     /**
@@ -84,7 +359,7 @@ public class GraphGrammar extends RuleSystem {
     /**
      * Returns the rule system that is part of this graph grammar.
      */
-    public RuleSystem getRuleSystem() {
+    public GraphGrammar getRuleSystem() {
         return this;
     }
 
@@ -121,31 +396,6 @@ public class GraphGrammar extends RuleSystem {
         return this.ctrlAut;
     }
 
-    /**
-     * Fixes the start graph, in addition to calling the <code>super</code>
-     * method.
-     */
-    @Override
-    public void setFixed() throws FormatException {
-        getStartGraph().setFixed();
-        super.setFixed();
-    }
-
-    /** Combines the consistency errors in the rules and start graph. */
-    @Override
-    public void testConsistent() throws FormatException {
-        List<FormatError> errors = new ArrayList<FormatError>();
-        // collect the exception of the super test, if any
-        try {
-            super.testConsistent();
-        } catch (FormatException exc) {
-            errors.addAll(exc.getErrors());
-        }
-        if (!errors.isEmpty()) {
-            throw new FormatException(errors);
-        }
-    }
-
     /** Tests for equality of the rule system and the start graph. */
     @Override
     public boolean equals(Object obj) {
@@ -160,10 +410,27 @@ public class GraphGrammar extends RuleSystem {
         return (getStartGraph().hashCode() << 8) ^ super.hashCode();
     }
 
-    @Override
-    public String toString() {
-        return "Rule system:\n    " + super.toString() + "\nStart graph:\n    "
-            + getStartGraph().toString();
+    /**
+     * Callback factory method to create an initially empty
+     * {@link SystemProperties} object for this graph grammar.
+     */
+    private SystemProperties createProperties() {
+        return new SystemProperties();
+    }
+
+    /**
+     * Callback factory method to create a rule name from a {@link String}.
+     */
+    private RuleName createRuleName(String name) {
+        return new RuleName(name);
+    }
+
+    /**
+     * Factory method to create a set to contain rules. This implementation
+     * returns a {@link TreeSet}.
+     */
+    private Set<Rule> createRuleSet() {
+        return new TreeSet<Rule>();
     }
 
     /** Callback factory method to create the start graph. */
@@ -171,6 +438,40 @@ public class GraphGrammar extends RuleSystem {
         return new DefaultHostGraph("start");
     }
 
+    /**
+     * A mapping from the rule names to the rules.
+     */
+    private final Map<RuleName,Rule> nameRuleMap = new TreeMap<RuleName,Rule>();
+    /**
+     * A mapping from priorities to sets of rules having that priority. The
+     * ordering is from high to low priority.
+     */
+    private final SortedMap<Integer,Set<Rule>> priorityRuleMap =
+        new TreeMap<Integer,Set<Rule>>(Rule.PRIORITY_COMPARATOR);
+    /**
+     * Set of rules, collected separately for purposes of speedup.
+     * @see #getRules()
+     */
+    private Collection<Rule> ruleSet;
+    /** Set of constituent type graphs. Is {@code null} iff {@link #type} is. */
+    private Map<String,TypeGraph> typeMap;
+    /** Type graph of this rule system; possibly {@code null}. */
+    private TypeGraph type;
+    /**
+     * The properties bundle of this rule system.
+     */
+    private SystemProperties properties;
+    /** The labels and subtypes occurring in this rule system. */
+    private LabelStore labelStore;
+    /**
+     * Flag indicating that the rule system has been fixed and is ready for use.
+     */
+    private boolean fixed;
+
+    /**
+     * The name of this grammar; <tt>null</tt> if the grammar is anonymous.
+     */
+    private final String name;
     /**
      * The start graph of this graph grammar.
      */

@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Grammar view based on a backing system store.
@@ -341,7 +342,8 @@ public class StoredGrammarView implements GrammarView, Observer {
         // We have constructed all views of the type graphs.
         // Make the composition now.
         try {
-            result.setType(this.getTypeViewList().toModel());
+            result.setType(getTypeViewList().toModel(),
+                getTypeViewList().getTypeGraphMap());
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
@@ -478,8 +480,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     /** Mapping from control names to views on the corresponding automata. */
-    final Map<String,CtrlView> controlMap =
-        new HashMap<String,CtrlView>();
+    final Map<String,CtrlView> controlMap = new HashMap<String,CtrlView>();
 
     /** The store backing this view. */
     private final SystemStore store;
@@ -608,6 +609,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     public class TypeViewList {
 
         private Map<String,TypeView> typeViewMap;
+        private Map<String,TypeGraph> typeGraphMap;
         private TypeGraph model;
         private List<FormatError> errors;
 
@@ -652,11 +654,12 @@ public class StoredGrammarView implements GrammarView, Observer {
             return this.errors;
         }
 
-        /**
-         * @return an unmodifiable map from type names to views.
-         */
-        public Map<String,TypeView> getTypeViewMap() {
-            return Collections.unmodifiableMap(this.typeViewMap);
+        /** Returns a mapping from names to type graphs,
+         * which together make up the combined type model. */
+        public Map<String,TypeGraph> getTypeGraphMap() {
+            this.initialise();
+            return this.model == null ? null
+                    : Collections.unmodifiableMap(this.typeGraphMap);
         }
 
         /** Constructs the model and associated data structures from the view. */
@@ -666,8 +669,10 @@ public class StoredGrammarView implements GrammarView, Observer {
                 // There are no errors in each of the views, try to compose the
                 // type graph.
                 this.model = new TypeGraph("combined type");
+                this.typeGraphMap = new TreeMap<String,TypeGraph>();
                 for (TypeView view : this.typeViewMap.values()) {
                     try {
+                        this.typeGraphMap.put(view.getName(), view.toModel());
                         this.model.add(view.toModel());
                     } catch (FormatException e) {
                         this.errors.addAll(e.getErrors());

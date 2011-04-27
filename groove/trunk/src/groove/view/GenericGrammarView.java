@@ -17,9 +17,9 @@
 package groove.view;
 
 import groove.graph.TypeGraph;
-import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
 import groove.trans.RuleName;
+import groove.trans.GraphGrammar;
 import groove.trans.SystemProperties;
 
 import java.util.Set;

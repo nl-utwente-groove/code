@@ -22,12 +22,12 @@ import groove.match.TreeMatch;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.Condition;
 import groove.trans.DeltaStore;
-import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
+import groove.trans.GraphGrammar;
 import groove.util.Reporter;
 import groove.view.StoredGrammarView;
 

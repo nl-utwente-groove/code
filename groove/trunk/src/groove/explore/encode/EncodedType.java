@@ -17,7 +17,7 @@
 package groove.explore.encode;
 
 import groove.gui.Simulator;
-import groove.trans.RuleSystem;
+import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 
 /**
@@ -46,6 +46,6 @@ public interface EncodedType<A,B> {
      * @param rules - reference to the GTS
      * @param source - the input value of type B
      */
-    public A parse(RuleSystem rules, B source) throws FormatException;
+    public A parse(GraphGrammar rules, B source) throws FormatException;
 
 }

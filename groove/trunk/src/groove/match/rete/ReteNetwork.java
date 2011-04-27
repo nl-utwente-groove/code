@@ -26,7 +26,6 @@ import groove.io.xml.DefaultGxl;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.Condition;
-import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -38,6 +37,7 @@ import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleName;
 import groove.trans.RuleNode;
+import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 

@@ -21,7 +21,7 @@ import groove.explore.encode.Template;
 import groove.explore.encode.Template.Visibility;
 import groove.explore.encode.TemplateList;
 import groove.explore.result.Acceptor;
-import groove.trans.RuleSystem;
+import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 
 import java.util.EnumSet;
@@ -74,7 +74,7 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
      * by finding the template that starts
      * with the given keyword and then using its parse method.
      */
-    public static Acceptor parseAcceptor(RuleSystem rules, Serialized source)
+    public static Acceptor parseAcceptor(GraphGrammar rules, Serialized source)
         throws FormatException {
         return getInstance().parse(rules, source);
     }

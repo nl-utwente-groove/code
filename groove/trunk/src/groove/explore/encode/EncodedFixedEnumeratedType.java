@@ -17,7 +17,7 @@
 package groove.explore.encode;
 
 import groove.gui.Simulator;
-import groove.trans.RuleSystem;
+import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 
 import java.util.Map;
@@ -62,7 +62,7 @@ public abstract class EncodedFixedEnumeratedType<A> extends
      * Implement parsing by inspecting the fixed value map.
      */
     @Override
-    public A parse(RuleSystem rules, String source) throws FormatException {
+    public A parse(GraphGrammar rules, String source) throws FormatException {
         A value = fixedValues().get(source);
         if (value != null) {
             return value;

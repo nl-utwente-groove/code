@@ -21,7 +21,7 @@ import groove.explore.prettyparse.StringConsumer;
 import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.layout.SpringUtilities;
-import groove.trans.RuleSystem;
+import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 
 import java.awt.Dimension;
@@ -307,7 +307,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         }
 
         @Override
-        public X parse(RuleSystem rules, Serialized source)
+        public X parse(GraphGrammar rules, Serialized source)
             throws FormatException {
             if (!source.getKeyword().equals(getKeyword())) {
                 throw new FormatException("Type mismatch between '"
@@ -349,7 +349,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         }
 
         @Override
-        public X parse(RuleSystem rules, Serialized source)
+        public X parse(GraphGrammar rules, Serialized source)
             throws FormatException {
             P1 v1;
 
@@ -408,7 +408,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         }
 
         @Override
-        public X parse(RuleSystem rules, Serialized source)
+        public X parse(GraphGrammar rules, Serialized source)
             throws FormatException {
             P1 v1;
             P2 v2;

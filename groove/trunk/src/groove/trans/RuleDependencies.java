@@ -122,7 +122,7 @@ public class RuleDependencies {
     }
 
     /** Constructs a new dependencies object, for a given rule system. */
-    public RuleDependencies(RuleSystem ruleSystem) {
+    public RuleDependencies(GraphGrammar ruleSystem) {
         this.rules = ruleSystem.getRules();
         this.properties = ruleSystem.getProperties();
         this.labelStore = ruleSystem.getLabelStore();

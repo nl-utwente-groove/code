@@ -22,8 +22,8 @@ import groove.control.parse.CtrlChecker;
 import groove.control.parse.CtrlParser;
 import groove.control.parse.MyTree;
 import groove.control.parse.Namespace;
-import groove.trans.GraphGrammar;
 import groove.trans.Rule;
+import groove.trans.GraphGrammar;
 import groove.util.Groove;
 import groove.view.FormatException;
 

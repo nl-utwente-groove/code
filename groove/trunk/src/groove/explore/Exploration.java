@@ -22,7 +22,7 @@ import groove.explore.result.Result;
 import groove.explore.strategy.Strategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.trans.RuleSystem;
+import groove.trans.GraphGrammar;
 import groove.util.Reporter;
 import groove.view.FormatException;
 
@@ -147,7 +147,7 @@ public class Exploration {
      * If this method does not throw an exception, then neither will {@link #play(GTS, GraphState)}.
      * @throws FormatException if the rule system is not compatible
      */
-    public void test(RuleSystem rules) throws FormatException {
+    public void test(GraphGrammar rules) throws FormatException {
         StrategyEnumerator.parseStrategy(rules, this.strategy);
         AcceptorEnumerator.parseAcceptor(rules, this.acceptor);
     }
@@ -159,10 +159,10 @@ public class Exploration {
      * @param state - the state in which exploration will start (may be null)
      * @throws FormatException if the rule system of {@code gts} is not
      * compatible with this exploration
-     * @see #test(RuleSystem)
+     * @see #test(GraphGrammar)
      */
     final public void play(GTS gts, GraphState state) throws FormatException {
-        RuleSystem rules = gts.getGrammar().getRuleSystem();
+        GraphGrammar rules = gts.getGrammar().getRuleSystem();
         // parse the strategy
         Strategy parsedStrategy =
             StrategyEnumerator.parseStrategy(rules, this.strategy);

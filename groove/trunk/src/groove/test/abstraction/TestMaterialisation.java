@@ -24,10 +24,10 @@ import groove.abstraction.PreMatch;
 import groove.abstraction.Shape;
 import groove.abstraction.ShapeEdge;
 import groove.graph.EdgeRole;
-import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
 import groove.trans.RuleMatch;
 import groove.trans.Rule;
+import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 

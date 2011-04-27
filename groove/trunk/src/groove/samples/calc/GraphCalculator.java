@@ -20,8 +20,8 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.Condition;
 import groove.trans.DefaultHostGraph;
-import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
+import groove.trans.GraphGrammar;
 
 import java.util.Collection;
 

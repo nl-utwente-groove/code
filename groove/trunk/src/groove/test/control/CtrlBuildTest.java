@@ -29,8 +29,8 @@ import groove.control.CtrlLabel;
 import groove.control.CtrlLoader;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlTransition;
-import groove.trans.GraphGrammar;
 import groove.trans.Rule;
+import groove.trans.GraphGrammar;
 import groove.util.Groove;
 import groove.view.FormatException;
 

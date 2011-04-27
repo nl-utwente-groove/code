@@ -51,6 +51,11 @@ Edge:
 % @param the graph
 :-build_in(start_graph/1,'groove.prolog.builtin.graph.Predicate_start_graph').
 
+% Retrieve the start graph name
+% start_graph_name(?String)
+% @param the graph name
+:-build_in(start_graph_name/1,'groove.prolog.builtin.graph.Predicate_start_graph_name').
+
 % Get a node from the graph
 % graph_node(+Graph,?Node)
 % @param the graph
