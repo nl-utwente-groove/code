@@ -432,7 +432,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
             if (getSimulator().confirmBehaviour(Options.DELETE_TYPE_OPTION,
                 String.format("Delete type graph '%s'?", typeName))) {
                 getNameListModel().selectMostAppropriateType();
-                getNameListModel().removeType(typeName, true);
+                getNameListModel().removeType(typeName, false);
                 getSimulator().doDeleteType(typeName);
             }
         }
