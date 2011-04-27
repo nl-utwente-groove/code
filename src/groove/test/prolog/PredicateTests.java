@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 import groove.explore.Exploration;
 import groove.lts.GTS;
 import groove.prolog.GrooveState;
-import groove.view.GrammarView;
+import groove.trans.GraphGrammar;
 
 import org.junit.Test;
 
@@ -301,13 +301,10 @@ public class PredicateTests {
 
         // Assert that the anchor node of this ruleevent is a node
         succ("active_ruleevent(RE), ruleevent_anchor_node(RE,N), is_node(N)");
-        // TODO: succ("active_ruleevent(RE), ruleevent_anchor_edge(RE,E), is_edge(E)");
 
         // Test rule event transpose
         succ("active_ruleevent(RE), rule('rule-a',R), rule_rhs(R,RHS), graph_node(RHS,N), ruleevent_transpose(RE,N,T)");
-        // TODO: succ("active_ruleevent(RE), rule('rule-a',R), rule_rhs(R,RHS), graph_edge(RHS,E), ruleevent_transpose(RE,E,T)");
-
-        // TODO: succ("state(S1), state(S2), state_transition(S1,T1), state_transition(S2,T2), transition_event(T1,E1), transition_event(T2,E2), ruleevent_conflicts(E1,E2)");
+        // TODO: succ("active_ruleevent(RE), rule('rule-a',R), rule_rhs(R,RHS), graph_edge(RHS,E), ruleevent_transpose(RE,E,)");
     }
 
     /**
@@ -395,14 +392,15 @@ public class PredicateTests {
 
     private boolean test(String predicate) {
         try {
-            GrammarView gv = PrologTestUtil.testGrammar("graph-a");
-            GTS gts = new GTS(gv.toGrammar());
+            GraphGrammar grammar =
+                PrologTestUtil.testGrammar("graph-a").toGrammar();
+            GTS gts = new GTS(grammar);
             Exploration exploration = new Exploration();
 
             exploration.play(gts, null);
 
             return PrologTestUtil.test(
-                new GrooveState(gv, gts, gts.startState(),
+                new GrooveState(grammar, gts, gts.startState(),
                     gts.startState().getTransitionIter().next().getEvent()),
                 predicate);
         } catch (Exception e) {

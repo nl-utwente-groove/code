@@ -39,7 +39,7 @@ public class Predicate_composite_type_graph extends GraphPrologCode {
 
         try {
             TypeGraph typeGraph =
-                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGrammarView().toGrammar().getType();
+                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getType();
 
             if (typeGraph == null) {
                 return FAIL;

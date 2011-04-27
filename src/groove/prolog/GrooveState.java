@@ -20,8 +20,8 @@ package groove.prolog;
 
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.trans.GraphGrammar;
 import groove.trans.RuleEvent;
-import groove.view.GrammarView;
 
 /**
  * The current state in groove.
@@ -31,7 +31,7 @@ public class GrooveState {
     /**
      * The GrammarView
      */
-    private GrammarView grammarView;
+    private GraphGrammar graphGrammar;
 
     /**
      * The currently selected GraphState
@@ -50,29 +50,29 @@ public class GrooveState {
 
     /**
      * Constructs a groove state from a graph, a GTS and the current state
-     * @param grammarView       A grammar view
+     * @param graphGrammar      A grammar view
      * @param gts               A GTS
      * @param state             The currently selected state in the GTS
      * @param activeRuleEvent   The currently selected rule event in the GTS
      */
-    public GrooveState(GrammarView grammarView, GTS gts, GraphState state,
+    public GrooveState(GraphGrammar graphGrammar, GTS gts, GraphState state,
             RuleEvent activeRuleEvent) {
-        if (grammarView == null) {
+        if (graphGrammar == null) {
             throw new NullPointerException();
         }
 
-        this.grammarView = grammarView;
+        this.graphGrammar = graphGrammar;
         this.gts = gts;
         this.state = state;
         this.activeRuleEvent = activeRuleEvent;
     }
 
     /**
-     * Gets the grammar view
-     * @return The grammar view
+     * Gets the graph grammar
+     * @return The graph grammar
      */
-    public GrammarView getGrammarView() {
-        return this.grammarView;
+    public GraphGrammar getGraphGrammar() {
+        return this.graphGrammar;
     }
 
     /**

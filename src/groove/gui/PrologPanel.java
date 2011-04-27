@@ -1001,7 +1001,7 @@ public class PrologPanel extends JPanel {
             this.results.setText("?- " + queryString + "\n");
 
             this.prolog.setGrooveState(new GrooveState(
-                this.sim.getGrammarView(), this.sim.getGTS(),
+                this.sim.getGrammarView().toGrammar(), this.sim.getGTS(),
                 this.sim.getCurrentState(), this.sim.getCurrentEvent()));
 
             this.solutionCount = 0;

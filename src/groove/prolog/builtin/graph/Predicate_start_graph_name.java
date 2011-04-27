@@ -38,7 +38,7 @@ public class Predicate_start_graph_name extends GraphPrologCode {
 
         try {
             String startGraphName =
-                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGrammarView().getStartGraphName();
+                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getStartGraph().getName();
 
             if (startGraphName == null) {
                 return FAIL;

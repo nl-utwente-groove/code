@@ -45,7 +45,7 @@ public class Predicate_rule_name extends GraphPrologCode {
                 GrooveEnvironment.invalidEnvironment();
             }
             Set<RuleName> ruleNames =
-                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGrammarView().getRuleNames();
+                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getRuleNames();
 
             Set<String> ruleNameStrings = new HashSet<String>();
             for (RuleName rn : ruleNames) {

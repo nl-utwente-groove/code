@@ -46,9 +46,9 @@ public class Predicate_type_graph extends GraphPrologCode {
                 name = args[0].toString();
             }
 
-            TypeView typeView =
-                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGrammarView().getTypeView(
-                    name);
+            TypeView typeView = null;
+            //    ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getTypeGraph(
+            //        name);
 
             if (typeView == null) {
                 return FAIL;
