@@ -37,6 +37,8 @@ public class PrologTestUtil {
     /** Location of the samples. */
     static public final String GRAMMAR_DIR = "junit/samples";
 
+    private static PrologQuery prologQuery;
+
     private PrologTestUtil() {
         /**
          * Blank by design
@@ -50,7 +52,11 @@ public class PrologTestUtil {
      * @return                  The query result
      */
     public static QueryResult executeQuery(GrooveState grooveState, String query) {
-        PrologQuery prologQuery = new PrologQuery(grooveState);
+        if (prologQuery == null) {
+            prologQuery = new PrologQuery();
+        }
+
+        prologQuery.setGrooveState(grooveState);
 
         try {
             QueryResult queryResult = prologQuery.newQuery(query);
@@ -79,7 +85,11 @@ public class PrologTestUtil {
      */
     public static boolean test(GrooveState grooveState, String query)
         throws GroovePrologException {
-        PrologQuery prologQuery = new PrologQuery(grooveState);
+        if (prologQuery == null) {
+            prologQuery = new PrologQuery();
+        }
+
+        prologQuery.setGrooveState(grooveState);
 
         QueryResult queryResult = prologQuery.newQuery(query);
 
@@ -106,17 +116,11 @@ public class PrologTestUtil {
         return result;
     }
 
-    private static GrammarView testGrammar;
-
     /**
      * Loads the prolog-test grammar
      * @return  A grammar view of the prolog-test grammar
      */
     public static GrammarView testGrammar(String startGraph) {
-        if (testGrammar == null) {
-            testGrammar =
-                PrologTestUtil.loadGrammar("prolog-test.gps", startGraph);
-        }
-        return testGrammar;
+        return PrologTestUtil.loadGrammar("prolog-test.gps", startGraph);
     }
 }

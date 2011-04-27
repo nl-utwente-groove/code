@@ -226,7 +226,6 @@ public class PrologQuery {
         try {
             rc = this.interpreter.execute(this.currentResult.goal);
         } catch (PrologException e) {
-            e.printStackTrace();
             throw new GroovePrologException(e);
         }
         long stopTime = System.nanoTime();

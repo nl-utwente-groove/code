@@ -43,8 +43,14 @@ public class Predicate_type_graph_name extends GraphPrologCode {
                 GrooveEnvironment.invalidEnvironment();
             }
 
+            // TODO: Fix this
             Set<String> typeNames = null;
             //    ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getTypeGraphNames();
+
+            // TODO: Remove this
+            if (typeNames == null) {
+                return FAIL;
+            }
 
             try {
                 PrologStringCollectionIterator it =
