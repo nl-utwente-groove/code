@@ -21,7 +21,7 @@ import groove.explore.encode.Template;
 import groove.explore.encode.Template.Visibility;
 import groove.explore.encode.TemplateList;
 import groove.explore.strategy.Strategy;
-import groove.trans.RuleSystem;
+import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 
 import java.util.EnumSet;
@@ -75,7 +75,7 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
      * by finding the template that starts
      * with the given keyword and then using its parse method.
      */
-    public static Strategy parseStrategy(RuleSystem rules, Serialized source)
+    public static Strategy parseStrategy(GraphGrammar rules, Serialized source)
         throws FormatException {
         return getInstance().parse(rules, source);
     }

@@ -20,9 +20,9 @@ import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
+import groove.graph.TypeGraph;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.builtin.graph.GraphPrologCode;
-import groove.view.TypeView;
 
 /**
  * Predicate type_graph(+Name,?TypeGraph)
@@ -46,16 +46,15 @@ public class Predicate_type_graph extends GraphPrologCode {
                 name = args[0].toString();
             }
 
-            // TODO: Fix this
-            TypeView typeView = null;
-            //    ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getTypeGraph(
-            //        name);
+            TypeGraph typeView =
+                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getTypeMap().get(
+                    name);
 
             if (typeView == null) {
                 return FAIL;
             }
 
-            Term nodeTerm = new JavaObjectTerm(typeView.toModel());
+            Term nodeTerm = new JavaObjectTerm(typeView);
 
             return interpreter.unify(args[1], nodeTerm);
         } catch (Exception e) {

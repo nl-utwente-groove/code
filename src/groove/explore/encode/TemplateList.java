@@ -20,7 +20,7 @@ import groove.explore.encode.Template.Visibility;
 import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.layout.SpringUtilities;
-import groove.trans.RuleSystem;
+import groove.trans.GraphGrammar;
 import groove.util.Version;
 import groove.view.FormatException;
 
@@ -124,7 +124,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      * with the given keyword and then using its parse method.
      */
     @Override
-    public A parse(RuleSystem rules, Serialized source) throws FormatException {
+    public A parse(GraphGrammar rules, Serialized source) throws FormatException {
         for (Template<A> template : this.templates) {
             if (template.getKeyword().equals(source.getKeyword())) {
                 return template.parse(rules, source);

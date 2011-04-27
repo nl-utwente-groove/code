@@ -21,8 +21,10 @@
 % type_graph_name(?Name)
 :-build_in(type_graph_name/1,'groove.prolog.builtin.type.Predicate_type_graph_name').
 
+% The following has been removed, as
+% type_graph_name(?Name) and type_graph(+Name, ?TypeGraph) now only range over the active type graphs
 % active_type_graph_name(?Name)
-:-build_in(active_type_graph_name/1,'groove.prolog.builtin.type.Predicate_active_type_graph_name').
+% :-build_in(active_type_graph_name/1,'groove.prolog.builtin.type.Predicate_active_type_graph_name').
 
 % type_graph(+Name, ?TypeGraph)
 :-build_in(type_graph/2,'groove.prolog.builtin.type.Predicate_type_graph').
@@ -45,8 +47,10 @@
 % type_graph(?TypeGraph)
 type_graph(TG) :- type_graph_name(L), type_graph(L,TG).
 
+% The following has been removed, as
+% type_graph_name(?Name) and type_graph(+Name, ?TypeGraph) now only range over the active type graphs
 % active_type_graph(?TypeGraph)
-active_type_graph(TG) :- active_type_graph_name(TGN), type_graph(TGN,TG).
+% active_type_graph(TG) :- active_type_graph_name(TGN), type_graph(TGN,TG).
 
 % subtype_label(+TypeGraph, +Label, ?Label)
 % subtype_label(+TypeGraph, ?Label, +Label)

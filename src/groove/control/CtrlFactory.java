@@ -17,7 +17,7 @@
 package groove.control;
 
 import groove.control.parse.Namespace;
-import groove.trans.RuleSystem;
+import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.view.FormatError;
 import groove.view.FormatException;
@@ -593,7 +593,7 @@ public class CtrlFactory {
     }
 
     /** Builds the default control automaton for a set of rules. */
-    public CtrlAut buildDefault(RuleSystem rules) {
+    public CtrlAut buildDefault(GraphGrammar rules) {
         CtrlAut result = createCtrlAut("control");
         CtrlState start = result.getStart();
         CtrlState end = result.getFinal();

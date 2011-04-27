@@ -22,8 +22,8 @@ import groove.explore.strategy.GraphNodeSizeBoundary;
 import groove.explore.strategy.RuleSetBorderBoundary;
 import groove.explore.strategy.RuleSetStartBoundary;
 import groove.gui.layout.SpringUtilities;
-import groove.trans.GraphGrammar;
 import groove.trans.Rule;
+import groove.trans.GraphGrammar;
 import groove.verify.ModelChecking;
 
 import java.awt.event.ActionEvent;

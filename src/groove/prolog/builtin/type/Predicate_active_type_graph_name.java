@@ -29,6 +29,7 @@ import java.util.ArrayList;
  * Predicate active_type_graph_name(?Name)
  * @author Lesley Wevers
  */
+@Deprecated
 public class Predicate_active_type_graph_name extends GraphPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,

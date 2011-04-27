@@ -23,10 +23,9 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.Condition;
 import groove.trans.DefaultHostGraph;
-import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
 import groove.trans.Rule;
-import groove.trans.RuleSystem;
+import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 
 import java.util.Collection;
@@ -42,7 +41,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
      * @param rules the rule system for the calculator
      * @param start the start graph for the calculator
      */
-    public DefaultGraphCalculator(RuleSystem rules, DefaultHostGraph start) {
+    public DefaultGraphCalculator(GraphGrammar rules, DefaultHostGraph start) {
         this(new GraphGrammar(rules, start), false);
     }
 
