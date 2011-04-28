@@ -44,6 +44,8 @@ import java.util.StringTokenizer;
 public class Groove {
     /** Toggle this flag to shift between native Look'n'Feel and old one. */
     public static boolean USE_NATIVE_LNF = false;
+    /** Toggle this flag to include the Prolog tab in the Simulator. */
+    public static boolean INCLUDE_PROLOG = true;
 
     /** The working directory of the application. */
     public static final String WORKING_DIR = System.getProperty("user.dir");
