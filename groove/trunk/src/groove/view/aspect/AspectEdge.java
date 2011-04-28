@@ -19,6 +19,7 @@ package groove.view.aspect;
 import static groove.graph.GraphRole.RULE;
 import static groove.view.aspect.AspectKind.ABSTRACT;
 import static groove.view.aspect.AspectKind.ARGUMENT;
+import static groove.view.aspect.AspectKind.CONNECT;
 import static groove.view.aspect.AspectKind.EMBARGO;
 import static groove.view.aspect.AspectKind.ERASER;
 import static groove.view.aspect.AspectKind.LITERAL;
@@ -64,9 +65,9 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     public AspectEdge(AspectNode source, AspectLabel label, AspectNode target) {
         super(source, label, target);
         assert label.isFixed();
-        if (label.isNodeOnly()) {
+        if (!label.hasErrors() && label.isNodeOnly()) {
             if (label.getNodeOnlyAspect() == null) {
-                this.errors.add(new FormatError("Empy edge label not allowed",
+                this.errors.add(new FormatError("Empty edge label not allowed",
                     this));
             } else {
                 this.errors.add(new FormatError(
@@ -243,7 +244,8 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             if (getKind() != NESTED && getKind() != REMARK) {
                 setAspect(NESTED.getAspect().newInstance(getInnerText()));
             }
-        } else if (getKind() != REMARK && getKind() != SUBTYPE) {
+        } else if (getKind() != REMARK && getKind() != SUBTYPE
+            && getKind() != CONNECT) {
             AspectKind sourceRole = null;
             AspectKind targetRole = null;
             if (sourceKind.isRole() && sourceKind != READER) {
@@ -327,7 +329,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
 
     /**
      * Returns the label of this edge as it should be displayed. 
-     * This is either the type edge, or the rule edge, or (if neither are defined)
+     * This is either the type label, or the rule label, or (if neither are defined)
      * a default edge constructed from the inner text of the aspect label.
      */
     public Label getDisplayLabel() {
@@ -343,6 +345,8 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
                 text = getAspect().getContentString();
             } else if (isPredicate()) {
                 text = getPredicate().getContentString();
+            } else if (getKind() == CONNECT) {
+                text = ":or:";
             } else {
                 text = getInnerText();
             }
@@ -364,19 +368,19 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
      */
     private RuleLabel createRuleLabel() throws FormatException {
         RuleLabel result;
-        if (getAttrKind() == ARGUMENT) {
+        if (getKind().isMeta()) {
+            result = null;
+        } else if (getAttrKind() == ARGUMENT) {
             result = new RuleLabel(getArgument());
         } else if (getAttrKind().isData()) {
             result = new RuleLabel(getOperator());
-        } else if (getKind().isRole()) {
+        } else {
+            assert getKind().isRole();
             if (getLabelKind() == LITERAL) {
                 result = new RuleLabel(getInnerText());
             } else {
                 result = new RuleLabel(parse(getInnerText()));
             }
-        } else {
-            assert getKind().isMeta();
-            result = null;
         }
         return result;
     }

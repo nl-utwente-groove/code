@@ -135,7 +135,7 @@ public class Pair<T,U> implements Fixable {
      * @param two second element of the new pair
      * @return a new typed pair for with the given values
      */
-    public static <TT,UU> Pair<TT,UU> createPair(TT one, UU two) {
+    public static <TT,UU> Pair<TT,UU> newPair(TT one, UU two) {
         return new Pair<TT,UU>(one, two);
     }
 
