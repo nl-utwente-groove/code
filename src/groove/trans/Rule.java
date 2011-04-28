@@ -110,6 +110,11 @@ public class Rule extends Condition implements Comparable<Rule> {
         return this;
     }
 
+    /** Returns the condition with which this rule is associated. */
+    public Condition getCondition() {
+        return this;
+    }
+
     /**
      * Returns the priority of this object. A higher number means higher
      * priority, with {@link #DEFAULT_PRIORITY} the lowest.
@@ -255,7 +260,7 @@ public class Rule extends Condition implements Comparable<Rule> {
     }
 
     /**
-     * Returns the set of rules in the rule hierarchy.
+     * Returns the transitively and reflexively closed set of rules in the rule hierarchy.
      */
     public Collection<Rule> getSubRules() {
         assert isFixed();
@@ -1557,7 +1562,7 @@ public class Rule extends Condition implements Comparable<Rule> {
     private static AnchorFactory<Rule> anchorFactory =
         MinimalAnchorFactory.getInstance();
     /** Debug flag for the constructor. */
-    private static final boolean PRINT = false;
+    private static final boolean PRINT = true;
     /** Flag to include subrule anchors into this rule. */
     private static final boolean SUBRULE_ANCHORS = false;
 

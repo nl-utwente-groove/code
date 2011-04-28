@@ -18,6 +18,7 @@ package groove.view.aspect;
 
 import static groove.view.aspect.AspectKind.ABSTRACT;
 import static groove.view.aspect.AspectKind.COLOR;
+import static groove.view.aspect.AspectKind.CONNECT;
 import static groove.view.aspect.AspectKind.EMBARGO;
 import static groove.view.aspect.AspectKind.ID;
 import static groove.view.aspect.AspectKind.NONE;
@@ -251,7 +252,13 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         assert edge.target() == this;
         testFixed(false);
         //setNodeLabelsFixed();
-        if ((edge.isNestedAt() || edge.isNestedIn())
+        if (edge.getKind() == CONNECT) {
+            if (getKind() != EMBARGO) {
+                throw new FormatException(
+                    "Target node of %s-edge should be embargo", edge.label(),
+                    this);
+            }
+        } else if ((edge.isNestedAt() || edge.isNestedIn())
             && !getKind().isQuantifier()) {
             throw new FormatException(
                 "Target node of %s-edge should be quantifier", edge.label(),
@@ -285,7 +292,13 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         testFixed(false);
         //setNodeLabelsFixed();
         AspectLabel edgeLabel = edge.label();
-        if (edge.isNestedAt()) {
+        if (edge.getKind() == CONNECT) {
+            if (getKind() != EMBARGO) {
+                throw new FormatException(
+                    "Source node of %s-edge should be embargo", edge.label(),
+                    this);
+            }
+        } else if (edge.isNestedAt()) {
             if (getKind().isMeta()) {
                 throw new FormatException(
                     "Source node of %s-edge should be rule element", edgeLabel,

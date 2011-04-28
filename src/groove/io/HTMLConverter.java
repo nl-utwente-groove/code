@@ -192,6 +192,8 @@ public class HTMLConverter {
     static public final String HTML_FORALL = "&#8704;"; // &forall;
     /** HTML exists symbol. */
     static public final String HTML_EXISTS = "&#8707;"; // &exist;
+    /** HTML or symbol. */
+    static public final String HTML_OR = "&#8744;"; // &or;
     /** HTML negation symbol. */
     static public final String HTML_NOT = "&#172;"; // &not;
     /** HTML lambda symbol. */

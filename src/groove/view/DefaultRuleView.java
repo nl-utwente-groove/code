@@ -18,6 +18,7 @@
 package groove.view;
 
 import static groove.graph.EdgeRole.NODE_TYPE;
+import static groove.view.aspect.AspectKind.CONNECT;
 import static groove.view.aspect.AspectKind.EXISTS;
 import static groove.view.aspect.AspectKind.FORALL;
 import static groove.view.aspect.AspectKind.FORALL_POS;
@@ -69,6 +70,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -774,9 +776,14 @@ public class DefaultRuleView implements RuleView {
             }
             // add edges to nesting data structures
             for (AspectEdge edge : getAspectGraph().edgeSet()) {
-                if (!edge.getKind().isMeta()) {
+                if (edge.getKind() == CONNECT) {
+                    Level level = getLevel(edge);
+                    RuleNode sourceImage = getNodeImage(edge.source());
+                    RuleNode targetImage = getNodeImage(edge.target());
+                    level.addConnect(edge, sourceImage, targetImage);
+                } else if (!edge.getKind().isMeta()) {
+                    Level level = getLevel(edge);
                     try {
-                        Level level = getLevel(edge);
                         RuleEdge edgeImage = getEdgeImage(edge);
                         if (edgeImage != null) {
                             level.addEdge(edge, edgeImage);
@@ -1071,6 +1078,14 @@ public class DefaultRuleView implements RuleView {
                     sublevel.addParentType(ruleEdge);
                 }
             }
+        }
+
+        /** Adds a connection edge to the level. */
+        public void addConnect(AspectEdge connectEdge, RuleNode node1,
+                RuleNode node2) {
+            Set<RuleNode> nodeSet =
+                new HashSet<RuleNode>(Arrays.asList(node1, node2));
+            this.connectMap.put(connectEdge, nodeSet);
         }
 
         /** Initialises the match count for this (universal) level. */
@@ -1555,8 +1570,38 @@ public class DefaultRuleView implements RuleView {
                     parentTypeMap.put(typeEdge.source(), parentTypes);
                 }
             }
-            for (Pair<Set<RuleNode>,Set<RuleEdge>> nacPair : AbstractGraph.getConnectedSets(
-                this.nacNodeSet, this.nacEdgeSet)) {
+            // find connected sets of NAC nodes, taking the
+            // connection edges into account
+            Set<Pair<Set<RuleNode>,Set<RuleEdge>>> partition =
+                AbstractGraph.getConnectedSets(this.nacNodeSet, this.nacEdgeSet);
+            for (Map.Entry<AspectEdge,Set<RuleNode>> connection : this.connectMap.entrySet()) {
+                // find the (separate) cells for the target nodes of the connect edge
+                Set<RuleNode> newNodes = new HashSet<RuleNode>();
+                Set<RuleEdge> newEdges = new HashSet<RuleEdge>();
+                for (RuleNode node : connection.getValue()) {
+                    boolean found = false;
+                    Iterator<Pair<Set<RuleNode>,Set<RuleEdge>>> cellIter =
+                        partition.iterator();
+                    while (cellIter.hasNext()) {
+                        Pair<Set<RuleNode>,Set<RuleEdge>> cell =
+                            cellIter.next();
+                        if (cell.one().contains(node)) {
+                            found = true;
+                            cellIter.remove();
+                            newNodes.addAll(cell.one());
+                            newEdges.addAll(cell.two());
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        throw new FormatException(
+                            "Connect edge should be between distinct NACs",
+                            connection.getKey());
+                    }
+                }
+                partition.add(Pair.newPair(newNodes, newEdges));
+            }
+            for (Pair<Set<RuleNode>,Set<RuleEdge>> nacPair : partition) {
                 Set<RuleNode> nacNodes = nacPair.one();
                 Set<RuleEdge> nacEdges = nacPair.two();
                 // to avoid duplicate error messages, only check typing if
@@ -1884,6 +1929,9 @@ public class DefaultRuleView implements RuleView {
         private final List<Level> children = new ArrayList<Level>();
         /** Map of all view nodes on this level. */
         private final ViewToRuleMap viewToLevelMap = new ViewToRuleMap();
+        /** Map of all connect edges on this level. */
+        private final Map<AspectEdge,Set<RuleNode>> connectMap =
+            new HashMap<AspectEdge,Set<RuleNode>>();
         /** Set of additional (parent level) node type edges. */
         private final Map<RuleNode,Set<TypeLabel>> parentTypeMap =
             new HashMap<RuleNode,Set<TypeLabel>>();

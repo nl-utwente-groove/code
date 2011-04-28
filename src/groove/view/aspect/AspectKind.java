@@ -62,6 +62,8 @@ public enum AspectKind {
     ADDER("cnew", ContentKind.LEVEL),
     /** Indicates a forbidden element. */
     EMBARGO("not", ContentKind.LEVEL),
+    /** Connects two embargo sub-graphs. */
+    CONNECT("or", ContentKind.EMPTY),
 
     // data types
     /** Indicates a data value of unknown type. */
@@ -334,20 +336,19 @@ public enum AspectKind {
 
     /** Set of role aspects. */
     public static EnumSet<AspectKind> roles = EnumSet.of(ERASER, ADDER,
-        CREATOR, READER, EMBARGO);
+        CREATOR, READER, EMBARGO, CONNECT);
     /** Set of role aspects appearing (only) in NACs. */
-    public static EnumSet<AspectKind> nac = EnumSet.of(EMBARGO, ADDER);
+    public static EnumSet<AspectKind> nac = EnumSet.of(EMBARGO, ADDER, CONNECT);
     /** Set of role aspects appearing in LHSs. */
     public static EnumSet<AspectKind> lhs = EnumSet.of(READER, ERASER);
     /** Set of role aspects appearing in RHSs. */
     public static EnumSet<AspectKind> rhs = EnumSet.of(READER, CREATOR, ADDER);
-    /** Set of typed data aspects. */
     /** Set of data aspects, typed or untyped. */
     public static EnumSet<AspectKind> data = EnumSet.of(UNTYPED, STRING, BOOL,
         INT, REAL);
     /** Set of meta-aspects, i.e., which do not reflect real graph structure. */
     public static EnumSet<AspectKind> meta = EnumSet.of(FORALL, FORALL_POS,
-        EXISTS, NESTED, REMARK);
+        EXISTS, NESTED, REMARK, CONNECT);
     /** Set of parameter aspects. */
     public static EnumSet<AspectKind> params = EnumSet.of(PARAM_BI, PARAM_IN,
         PARAM_OUT);
@@ -379,9 +380,10 @@ public enum AspectKind {
                     CREATOR, ADDER, EMBARGO, UNTYPED, BOOL, INT, REAL, STRING,
                     PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, FORALL, FORALL_POS,
                     EXISTS, ID));
-                allowedEdgeKinds.put(role, EnumSet.of(REMARK, READER, ERASER,
-                    CREATOR, ADDER, EMBARGO, BOOL, INT, REAL, STRING, ARGUMENT,
-                    PATH, LITERAL, FORALL, FORALL_POS, EXISTS, NESTED));
+                allowedEdgeKinds.put(role,
+                    EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO,
+                        CONNECT, BOOL, INT, REAL, STRING, ARGUMENT, PATH,
+                        LITERAL, FORALL, FORALL_POS, EXISTS, NESTED));
                 break;
             case TYPE:
                 allowedNodeKinds.put(role, EnumSet.of(NONE, REMARK, INT, BOOL,
@@ -399,11 +401,37 @@ public enum AspectKind {
 
     /** Type of content that can be wrapped inside an aspect. */
     static public enum ContentKind {
-        /** No content. */
+        /** No content. The label text is not checked. */
         NONE {
             @Override
-            Pair<Object,String> parse(String text, int pos) {
-                assert text.charAt(pos) == SEPARATOR;
+            Pair<Object,String> parse(String text, int pos)
+                throws FormatException {
+                if (text.charAt(pos) != SEPARATOR) {
+                    throw new FormatException("Suffix '%s' not allowed",
+                        text.substring(pos, text.indexOf(SEPARATOR)));
+                }
+                return new Pair<Object,String>(null, text.substring(pos + 1));
+            }
+
+            @Override
+            Object parseContent(String text) {
+                // there is no content, so this method should never be called
+                throw new UnsupportedOperationException();
+            }
+        },
+        /** Empty content: no text may precede or follow the separator. */
+        EMPTY {
+            @Override
+            Pair<Object,String> parse(String text, int pos)
+                throws FormatException {
+                if (text.charAt(pos) != SEPARATOR) {
+                    throw new FormatException("Suffix '%s' not allowed",
+                        text.substring(pos, text.indexOf(SEPARATOR)));
+                }
+                if (pos < text.length() - 1) {
+                    throw new FormatException("Label text '%s' not allowed",
+                        text.substring(pos + 1));
+                }
                 return new Pair<Object,String>(null, text.substring(pos + 1));
             }
 
