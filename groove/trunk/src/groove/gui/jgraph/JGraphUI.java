@@ -359,7 +359,8 @@ public class JGraphUI extends BasicGraphUI {
 
         /** Completes the edge drag action. */
         private void completeEdge(Point point) {
-            if (this.edgeHandler.edgeStart() != this.edgeHandler.edgeEnd()) {
+            if (this.edgeHandler.edgeStart() != null
+                && this.edgeHandler.edgeStart() != this.edgeHandler.edgeEnd()) {
                 Rectangle2D start =
                     this.edgeHandler.getScreenBounds(this.edgeHandler.edgeStart());
                 ((AspectJGraph) getJGraph()).addEdge(
@@ -629,25 +630,28 @@ public class JGraphUI extends BasicGraphUI {
          * Calculates the dirty area and causes the canvas to be repainted.
          */
         private void update(MouseEvent e) {
-            Point point = e.getPoint();
-            Rectangle dirty = getScreenBounds(this.dragOrigVertex).getBounds();
-            if (this.dragCurrPoint != null) {
-                dirty.add(this.dragCurrPoint);
+            if (this.dragOrigVertex != null) {
+                Point point = e.getPoint();
+                Rectangle dirty =
+                    getScreenBounds(this.dragOrigVertex).getBounds();
+                if (this.dragCurrPoint != null) {
+                    dirty.add(this.dragCurrPoint);
+                }
+                if (this.dragCurrVertex != null) {
+                    dirty.add(this.dragCurrVertex.getBounds());
+                }
+                this.dragCurrPoint = point;
+                this.dragCurrVertex = vertexAt(point);
+                dirty.add(point);
+                if (this.dragCurrVertex != null) {
+                    dirty.add(getScreenBounds(this.dragCurrVertex));
+                }
+                dirty.x -= 1;
+                dirty.y -= 1;
+                dirty.width += 2;
+                dirty.height += 2;
+                this.canvas.repaint(dirty);
             }
-            if (this.dragCurrVertex != null) {
-                dirty.add(this.dragCurrVertex.getBounds());
-            }
-            this.dragCurrPoint = point;
-            this.dragCurrVertex = vertexAt(point);
-            dirty.add(point);
-            if (this.dragCurrVertex != null) {
-                dirty.add(getScreenBounds(this.dragCurrVertex));
-            }
-            dirty.x -= 1;
-            dirty.y -= 1;
-            dirty.width += 2;
-            dirty.height += 2;
-            this.canvas.repaint(dirty);
         }
 
         /** Renders the rubber band on the given graphics object. */
@@ -674,6 +678,9 @@ public class JGraphUI extends BasicGraphUI {
 
         /** Returns the cloned and upscaled bounds of a vertex view. */
         Rectangle2D getScreenBounds(JVertexView vertex) {
+            if (vertex == null) {
+                System.out.println("vertex");
+            }
             return this.canvas.toScreen((Rectangle2D) vertex.getBounds().clone());
         }
 
