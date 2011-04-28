@@ -187,6 +187,7 @@ public class JGraphUI extends BasicGraphUI {
                     selectCellsForEvent(Collections.singleton(jCell), e);
                 }
             } else if (e.getButton() == BUTTON1 && getJGraphMode() == EDIT_MODE
+                && e.getClickCount() == 2
                 && getJGraph().getSelectionCell() == null) {
                 // add vertex
                 ((AspectJGraph) getJGraph()).addVertex(e.getPoint());
