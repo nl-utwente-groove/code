@@ -1562,7 +1562,7 @@ public class Rule extends Condition implements Comparable<Rule> {
     private static AnchorFactory<Rule> anchorFactory =
         MinimalAnchorFactory.getInstance();
     /** Debug flag for the constructor. */
-    private static final boolean PRINT = true;
+    private static final boolean PRINT = false;
     /** Flag to include subrule anchors into this rule. */
     private static final boolean SUBRULE_ANCHORS = false;
 
