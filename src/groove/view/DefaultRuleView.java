@@ -313,37 +313,32 @@ public class DefaultRuleView implements RuleView {
         }
         Map<Level,Condition> ruleTree = new HashMap<Level,Condition>();
         // construct the rule tree and add parent rules
-        for (Level level : this.levelTree.getLevels(true)) {
-            try {
+        try {
+            for (Level level : this.levelTree.getLevels(true)) {
                 Condition condition = level.computeFlatRule();
                 ruleTree.put(level, condition);
                 LevelIndex index = level.getIndex();
-                if (!index.isTopLevel()) {
-                    Level parentLevel = level.getParent();
-                    if (condition.hasRule()) {
-                        condition.getRule().setParent(
-                            ruleTree.get(parentLevel.getParent()).getRule(),
-                            index.getIntArray());
-                    }
+                if (condition.hasRule() && !index.isTopLevel()) {
+                    Level grandParentLevel = level.getParent().getParent();
+                    condition.getRule().setParent(
+                        ruleTree.get(grandParentLevel).getRule(),
+                        index.getIntArray());
                 }
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
             }
-        }
-        // now add subconditions and fix the conditions
-        // this needs to be done bottom-up
-        for (Level level : this.levelTree.getLevels(false)) {
-            try {
+            // now add subconditions and fix the conditions
+            // this needs to be done bottom-up
+            for (Level level : this.levelTree.getLevels(false)) {
                 Condition condition = ruleTree.get(level);
+                assert condition != null;
                 LevelIndex index = level.getIndex();
                 if (!index.isTopLevel()) {
                     condition.setFixed();
                     Condition parentCond = ruleTree.get(level.getParent());
                     parentCond.addSubCondition(condition);
                 }
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
             }
+        } catch (FormatException exc) {
+            errors.addAll(exc.getErrors());
         }
         rule = (Rule) ruleTree.get(this.levelTree.getTopLevel());
         if (rule != null) {
@@ -966,6 +961,11 @@ public class DefaultRuleView implements RuleView {
         /** Returns the set of labels occurring in the view. */
         public final Set<TypeLabel> getLabelSet() {
             return this.labelSet;
+        }
+
+        @Override
+        public String toString() {
+            return "LevelMap: " + this.indexLevelMap;
         }
 
         /** Set of all labels occurring in the rule. */
@@ -1921,6 +1921,11 @@ public class DefaultRuleView implements RuleView {
         /** Returns the parent of this level. */
         public final Level getParent() {
             return this.parent;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("Level %s", getIndex());
         }
 
         /** Parent level; {@code null} if this is the top level. */
