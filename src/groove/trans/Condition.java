@@ -338,6 +338,15 @@ abstract public class Condition implements Fixable {
                 resolved.add((VariableNode) node);
             }
         }
+        // Set of variable nodes needing resolution
+        for (RuleNode node : getPattern().nodeSet()) {
+            if (node instanceof VariableNode
+                && ((VariableNode) node).getConstant() == null
+                && !resolved.contains(node)) {
+                result.put((VariableNode) node,
+                    new ArrayList<Set<VariableNode>>());
+            }
+        }
         // first collect the count nodes of subconditions
         for (Condition subCondition : getSubConditions()) {
             VariableNode countNode = subCondition.getCountNode();
@@ -360,7 +369,7 @@ abstract public class Condition implements Fixable {
             }
         }
         // now add resolvers due to product nodes
-        for (RuleNode node : getPattern().nodeSet()) {
+        for (RuleNode node : result.keySet()) {
             if (node instanceof VariableNode
                 && ((VariableNode) node).getConstant() == null) {
                 VariableNode varNode = (VariableNode) node;
