@@ -29,7 +29,7 @@ public class NotCondition extends Condition {
      * pattern.
      */
     public NotCondition(RuleGraph pattern, SystemProperties properties) {
-        super(null, pattern, null, properties);
+        super(new RuleName(pattern.getName()), pattern, null, properties);
     }
 
     /**

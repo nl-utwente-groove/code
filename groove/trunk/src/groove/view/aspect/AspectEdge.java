@@ -346,7 +346,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             } else if (isPredicate()) {
                 text = getPredicate().getContentString();
             } else if (getKind() == CONNECT) {
-                text = ":or:";
+                text = "+";
             } else {
                 text = getInnerText();
             }

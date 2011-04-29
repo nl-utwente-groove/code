@@ -144,7 +144,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
     static private SearchPlanEngine instance;
 
     /** Flag to control search plan printing. */
-    static private final boolean PRINT = false;
+    static private final boolean PRINT = true;
 
     /**
      * Plan data extension based on a graph condition. Additionally it takes the
