@@ -598,11 +598,17 @@ final public class AspectJGraph extends GraphJGraph {
                 v.backColour = Colors.findColor("255 255 180");
                 break;
             case EMBARGO:
-            case CONNECT:
                 v.foreColour = Color.red;
                 v.backColour = null;
                 v.linewidth = 5;
                 v.dash = new float[] {2, 2};
+                v.endFill = false;
+                break;
+            case CONNECT:
+                v.foreColour = Color.red;
+                v.backColour = null;
+                v.linewidth = 4;
+                v.dash = new float[] {2, 4};
                 v.endFill = false;
                 v.lineEnd = GraphConstants.ARROW_NONE;
                 break;

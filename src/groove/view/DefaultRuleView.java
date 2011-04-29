@@ -1174,7 +1174,8 @@ public class DefaultRuleView implements RuleView {
             if (!result) {
                 result =
                     this.index.isUniversal()
-                        && (kind.isEraser() || kind.isCreator() || this.matchCountImage != null);
+                        && (kind.isEraser() || kind.isCreator() || kind.inLHS()
+                            && this.matchCountImage != null);
             }
             return result;
         }
@@ -1330,7 +1331,7 @@ public class DefaultRuleView implements RuleView {
         private RuleGraph getRootGraph() {
             testMode(LevelMode.FIXED);
             return this.index.isTopLevel() ? null : getIntersection(
-                this.parent.lhsMap, this.lhsMap);
+                this.parent.lhs, this.lhs);
         }
 
         /**
@@ -1373,18 +1374,17 @@ public class DefaultRuleView implements RuleView {
          * Returns a rule graph that forms the intersection of the rule elements
          * of this and the parent level.
          */
-        private RuleGraph getIntersection(ViewToRuleMap parentMap,
-                ViewToRuleMap myMap) {
+        private RuleGraph getIntersection(RuleGraph parentLhs, RuleGraph myLhs) {
             RuleGraph result =
                 createGraph(getName() + "-" + getIndex() + "-root");
-            for (Map.Entry<AspectNode,RuleNode> parentEntry : parentMap.nodeMap().entrySet()) {
-                if (myMap.containsNodeKey(parentEntry.getKey())) {
-                    result.addNode(parentEntry.getValue());
+            for (RuleNode node : parentLhs.nodeSet()) {
+                if (myLhs.containsNode(node)) {
+                    result.addNode(node);
                 }
             }
-            for (Map.Entry<AspectEdge,RuleEdge> parentEntry : parentMap.edgeMap().entrySet()) {
-                if (myMap.containsEdgeKey(parentEntry.getKey())) {
-                    result.addEdge(parentEntry.getValue());
+            for (RuleEdge edge : parentLhs.edgeSet()) {
+                if (myLhs.containsEdge(edge)) {
+                    result.addEdge(edge);
                 }
             }
             return result;
