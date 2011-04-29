@@ -76,15 +76,21 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
                 }
             }
         }
-        assert !usedNodes.removeAll(e.needsNodes()) : String.format(
+        assert areDisjoint(usedNodes, e.needsNodes()) : String.format(
             "Required node(s) %s not all bound in search plan %s",
             e.needsNodes(), this);
-        assert !usedVars.removeAll(e.needsVars()) : String.format(
+        assert areDisjoint(usedVars, e.needsVars()) : String.format(
             "Required label variable(s) %s not all bound in search plan %s",
             e.needsVars(), this);
         this.dependencies.add(depend);
         // transitively close the indirect dependencies
         return result;
+    }
+
+    /** Tests if two sets are disjoint. */
+    private <X> boolean areDisjoint(Collection<X> set1, Collection<X> set2) {
+        Set<X> copy = new HashSet<X>(set1);
+        return !copy.removeAll(set2);
     }
 
     @Override
