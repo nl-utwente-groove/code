@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import groove.explore.Exploration;
 import groove.lts.GTS;
 import groove.prolog.GrooveState;
+import groove.view.FormatException;
 import groove.view.GrammarView;
 
 import org.junit.Test;
@@ -395,12 +396,7 @@ public class PredicateTests {
 
     private boolean test(String predicate) {
         try {
-            GrammarView gv = PrologTestUtil.testGrammar("graph-a");
-            GTS gts = new GTS(gv.toGrammar());
-            Exploration exploration = new Exploration();
-
-            exploration.play(gts, null);
-
+            GTS gts = getGTS();
             return PrologTestUtil.test(new GrooveState(gts.getGrammar(), gts,
                 gts.startState(),
                 gts.startState().getTransitionIter().next().getEvent()),
@@ -411,4 +407,20 @@ public class PredicateTests {
             return false;
         }
     }
+
+    private static final GTS getGTS() {
+        if (gts == null) {
+            try {
+                GrammarView gv = PrologTestUtil.testGrammar("graph-a");
+                gts = new GTS(gv.toGrammar());
+                Exploration exploration = new Exploration();
+                exploration.play(gts, null);
+            } catch (FormatException e) {
+                throw new IllegalStateException();
+            }
+        }
+        return gts;
+    }
+
+    private static GTS gts;
 }

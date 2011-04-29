@@ -376,7 +376,6 @@ abstract public class Condition implements Fixable {
                 for (RuleEdge edge : getPattern().inEdgeSet(node)) {
                     if (edge.label().isMatchable()) {
                         resolved.add(varNode);
-                        result.remove(node);
                     } else if (edge instanceof OperatorEdge) {
                         ProductNode source = ((OperatorEdge) edge).source();
                         // collect the argument nodes
@@ -391,7 +390,7 @@ abstract public class Condition implements Fixable {
                         if (resolver.isEmpty()) {
                             resolved.add(varNode);
                         } else {
-                            addResolver(result, varNode, resolver);
+                            result.get(varNode).add(resolver);
                         }
                     }
                 }
