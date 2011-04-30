@@ -17,23 +17,23 @@
 package groove.match;
 
 import groove.trans.Condition;
-import groove.trans.ForallCondition;
+import groove.trans.Condition.Op;
 import groove.trans.HostEdge;
 import groove.trans.HostNode;
-import groove.trans.NotCondition;
-import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
 import groove.trans.RuleMatch;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
 import groove.util.Fixable;
+import groove.util.HashBag;
+import groove.util.Property;
 import groove.util.Visitor;
-import groove.util.Visitor.Collector;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -44,17 +44,43 @@ import java.util.Map;
  */
 public class TreeMatch implements Fixable {
     /**
-     * Constructs a match for a given condition, based on
-     * a given pattern map for that condition.
+     * Constructs an initially empty match for a given condition, based on
+     * an optional pattern map for that condition.
      */
     public TreeMatch(Condition condition, RuleToHostMap patternMap) {
+        this(condition.getOp(), condition, patternMap);
+    }
+
+    /**
+     * Constructs an initially empty match for a given condition, based on
+     * a given top-level operator and an optional pattern map for that condition.
+     */
+    public TreeMatch(Condition.Op op, Condition condition,
+            RuleToHostMap patternMap) {
         this.condition = condition;
+        this.op = op;
+        this.subMatches = createSubMatches(op);
         this.patternMap = patternMap;
+        this.collector =
+            op.isQuantifier() ? new RuleMatchWrapperCollector(null)
+                    : Visitor.<RuleMatch,List<RuleMatch>>newCollector();
+        assert op.isQuantifier() == (patternMap != null && condition.getOp() == op);
     }
 
     /** Returns the condition of this match. */
     public final Condition getCondition() {
         return this.condition;
+    }
+
+    /**
+     * Returns the operator of this tree match.
+     * Note that this may be different from the operator of the condition:
+     * in particular, the match operator may be {@link Condition.Op#AND} when
+     * the condition is {@link Condition.Op#FORALL}, or {@link Condition.Op#OR} when
+     * the condition is {@link Condition.Op#EXISTS}.
+     */
+    public final Condition.Op getOp() {
+        return this.op;
     }
 
     /** Returns the pattern map of this match. */
@@ -65,6 +91,16 @@ public class TreeMatch implements Fixable {
     /** Returns the current submatches of this match. */
     private final Collection<TreeMatch> getSubMatches() {
         return this.subMatches;
+    }
+
+    /** Callback factory method for the submatch collection object. */
+    private Collection<TreeMatch> createSubMatches(Condition.Op op) {
+        // the collection is a bag if the operator is conjunctive,
+        // and a set if it is conjunctive
+        // Since the matches are unordered, for more efficient comparison
+        // the bag is a HashBag
+        return op.isConjunctive() ? new HashBag<TreeMatch>()
+                : new HashSet<TreeMatch>();
     }
 
     /** Adds a sub-match to this tree match. */
@@ -90,12 +126,19 @@ public class TreeMatch implements Fixable {
      */
     public <R> R traverseRuleMatches(Visitor<RuleMatch,R> visitor) {
         setFixed();
-        assert visitor.isContinue();
-        if (!(getCondition() instanceof Rule)) {
-            throw new UnsupportedOperationException();
+        if (this.op.isConjunctive()) {
+            traverseAndMatches(visitor);
+        } else {
+            traverseOrMatches(visitor);
         }
+        return visitor.getResult();
+    }
+
+    /** Traverses the matches for a conjunctive tree match. */
+    private void traverseAndMatches(Visitor<RuleMatch,?> visitor) {
         int subMatchCount = getSubMatches().size();
         if (subMatchCount == 0) {
+            assert this.op == Op.EXISTS;
             visitor.visit(createRuleMatch());
         } else {
             @SuppressWarnings("unchecked")
@@ -103,19 +146,29 @@ public class TreeMatch implements Fixable {
             int[] rowSize = new int[subMatchCount];
             int resultSize = computeForallMatchMatrix(matrix, rowSize);
             if (resultSize > 0) {
-                int index[] = new int[subMatchCount];
-                do {
-                    RuleMatch match = createRuleMatch();
-                    for (int row = 0; row < subMatchCount; row++) {
-                        match.getSubMatches().add(matrix[row].get(index[row]));
-                    }
-                    if (!visitor.visit(match)) {
-                        break;
-                    }
-                } while (incVector(index, rowSize));
+                traverseMatrix(matrix, rowSize, visitor);
             }
         }
-        return visitor.getResult();
+    }
+
+    /**
+     * Traverses the rule matches constructed from this tree match,
+     * if the operator of this tree match is disjunctive.
+     */
+    @SuppressWarnings("unchecked")
+    private void traverseOrMatches(Visitor<RuleMatch,?> visitor) {
+        Visitor<RuleMatch,?> subVisitor;
+        if (getOp().isQuantifier()) {
+            subVisitor = this.wrapper.newInstance(visitor);
+        } else {
+            subVisitor = visitor;
+        }
+        for (TreeMatch subMatch : this.subMatches) {
+            subMatch.traverseRuleMatches(subVisitor);
+            if (!subVisitor.isContinue()) {
+                break;
+            }
+        }
     }
 
     /** 
@@ -129,9 +182,15 @@ public class TreeMatch implements Fixable {
      */
     public List<RuleMatch> toRuleMatchSet() {
         setFixed();
-        if (!(getCondition() instanceof Rule)) {
-            throw new UnsupportedOperationException();
+        if (this.op.isConjunctive()) {
+            return toAndMatchSet();
+        } else {
+            return toOrMatchSet();
         }
+    }
+
+    /** Returns the list of matches for a conjunctive tree match. */
+    private List<RuleMatch> toAndMatchSet() {
         List<RuleMatch> result;
         int subMatchCount = getSubMatches().size();
         if (subMatchCount == 0) {
@@ -146,21 +205,56 @@ public class TreeMatch implements Fixable {
                 result = Collections.emptyList();
             } else {
                 result = new ArrayList<RuleMatch>(resultSize);
-                int index[] = new int[subMatchCount];
-                do {
-                    RuleMatch match = createRuleMatch();
-                    for (int row = 0; row < subMatchCount; row++) {
-                        match.getSubMatches().add(matrix[row].get(index[row]));
-                    }
-                    result.add(match);
-                } while (incVector(index, rowSize));
+                Visitor<RuleMatch,?> collector = Visitor.newCollector(result);
+                traverseMatrix(matrix, rowSize, collector);
+                collector.dispose();
             }
         }
         return result;
     }
 
     /**
-     * Computes the matrix of which the rows are the {@link #toForallMatchSet()}
+     * Returns the rule matches constructed from this tree match,
+     * if the operator of this tree match is disjunctive.
+     */
+    private List<RuleMatch> toOrMatchSet() {
+        List<RuleMatch> result = new ArrayList<RuleMatch>();
+        Visitor<RuleMatch,?> collector = this.collector.newInstance(result);
+        for (TreeMatch subMatch : this.subMatches) {
+            subMatch.traverseRuleMatches(collector);
+        }
+        collector.dispose();
+        return result;
+    }
+
+    /** 
+     * Computes and traverses all rule matches
+     * consisting of one sub-match from each row of a given matrix.
+     */
+    private void traverseMatrix(List<RuleMatch>[] matrix, int[] rowSize,
+            Visitor<RuleMatch,?> visitor) {
+        int rowCount = rowSize.length;
+        int index[] = new int[rowCount];
+        do {
+            RuleMatch match = createRuleMatch();
+            Collection<RuleMatch> subMatches = match.getSubMatches();
+            for (int row = 0; row < rowCount; row++) {
+                RuleMatch subMatch = matrix[row].get(index[row]);
+                if (subMatch.isComposite()) {
+                    subMatches.addAll(subMatch.getSubMatches());
+                } else {
+                    subMatches.add(subMatch);
+                }
+            }
+            // stop the traversal if the visitor asks for it
+            if (!visitor.visit(match)) {
+                break;
+            }
+        } while (incVector(index, rowSize));
+    }
+
+    /**
+     * Computes the matrix of which the rows are the {@link #toRuleMatchSet()}
      * arrays of the submatches.
      * The construction stops prematurely if an empty row is found.
      * @param matrix the matrix of submatches. Should be initialised to 
@@ -173,7 +267,7 @@ public class TreeMatch implements Fixable {
         int resultSize = 1;
         int i = 0;
         for (TreeMatch subMatch : getSubMatches()) {
-            List<RuleMatch> row = subMatch.toForallMatchSet();
+            List<RuleMatch> row = subMatch.toRuleMatchSet();
             matrix[i] = row;
             resultSize *= row.size();
             if (resultSize == 0) {
@@ -185,70 +279,9 @@ public class TreeMatch implements Fixable {
         return resultSize;
     }
 
-    /** 
-     * Converts this tree match to an array of rule match lists.
-     * Each element of the array contains one element for each sub-match 
-     * of this tree match.
-     * This operation is only allowed if the condition is a {@link NotCondition}
-     * or {@link ForallCondition}.
-     * @throws UnsupportedOperationException if the condition of this
-     * tree match is not of the correct type.
-     */
-    public List<RuleMatch> toForallMatchSet() {
-        setFixed();
-        if (getCondition() instanceof Rule) {
-            throw new UnsupportedOperationException();
-        }
-        List<RuleMatch> result = new ArrayList<RuleMatch>();
-        Collector<RuleMatch,?> collector = Visitor.newCollector(result);
-        for (TreeMatch subMatch : getSubMatches()) {
-            subMatch.traverseRuleMatches(collector);
-        }
-        collector.dispose();
-        return result;
-        //        int subMatchCount = getSubMatches().size();
-        //        if (subMatchCount == 0) {
-        //            if (getCondition() instanceof ForallCondition
-        //                && ((ForallCondition) getCondition()).isPositive()) {
-        //                result = new List[0];
-        //            } else {
-        //                result = new List[] {Collections.emptyList()};
-        //            }
-        //        } else {
-        //            int resultSize = 1;
-        //            List<RuleMatch>[] matrix = new List[subMatchCount];
-        //            int[] rowSize = new int[subMatchCount];
-        //            int i = 0;
-        //            for (TreeMatch subMatch : getSubMatches()) {
-        //                List<RuleMatch> row = subMatch.toRuleMatchSet();
-        //                matrix[i] = row;
-        //                resultSize *= row.size();
-        //                if (resultSize == 0) {
-        //                    break;
-        //                }
-        //                rowSize[i] = row.size();
-        //                i++;
-        //            }
-        //            result = new List[resultSize];
-        //            if (resultSize > 0) {
-        //                int index[] = new int[subMatchCount];
-        //                i = 0;
-        //                do {
-        //                    List<RuleMatch> matches =
-        //                        new ArrayList<RuleMatch>(subMatchCount);
-        //                    for (int row = 0; row < subMatchCount; row++) {
-        //                        matches.add(matrix[row].get(index[row]));
-        //                    }
-        //                    result[i] = matches;
-        //                } while (incVector(index, rowSize));
-        //            }
-        //        }
-        //        return result;
-    }
-
     /** Callback factory method for rule matches base don this tree match. */
     private RuleMatch createRuleMatch() {
-        return new RuleMatch((Rule) getCondition(), getPatternMap());
+        return new RuleMatch(getCondition(), getPatternMap());
     }
 
     /** 
@@ -292,20 +325,26 @@ public class TreeMatch implements Fixable {
         final int prime = 31;
         int result = 1;
         result = prime * result + getCondition().hashCode();
-        int patternHashCode = 1;
-        if (getCondition() instanceof Rule) {
-            // only the anchor images matter to equality of the match
-            Map<?,?> nodeMap = getPatternMap().nodeMap();
-            Map<?,?> edgeMap = getPatternMap().edgeMap();
-            RuleElement[] anchor = ((Rule) getCondition()).anchor();
-            for (int i = 0; i < anchor.length; i++) {
-                RuleElement element = anchor[i];
-                Map<?,?> map = element instanceof RuleNode ? nodeMap : edgeMap;
-                patternHashCode =
-                    prime * patternHashCode + map.get(element).hashCode();
+        if (this.op.isQuantifier()) {
+            int patternHashCode = 1;
+            if (getCondition().hasRule()) {
+                // only the anchor images matter to equality of the match
+                Map<?,?> nodeMap = getPatternMap().nodeMap();
+                Map<?,?> edgeMap = getPatternMap().edgeMap();
+                RuleElement[] anchor = getCondition().getRule().anchor();
+                for (int i = 0; i < anchor.length; i++) {
+                    RuleElement element = anchor[i];
+                    Map<?,?> map =
+                        element instanceof RuleNode ? nodeMap : edgeMap;
+                    patternHashCode =
+                        prime * patternHashCode + map.get(element).hashCode();
+                }
+            } else {
+                // the entire pattern map is relevant
+                patternHashCode = getPatternMap().hashCode();
             }
+            result = prime * result + patternHashCode;
         }
-        result = prime * result + patternHashCode;
         result = prime * result + getSubMatches().hashCode();
         return result;
     }
@@ -321,36 +360,42 @@ public class TreeMatch implements Fixable {
         }
         TreeMatch other = (TreeMatch) obj;
         assert other.isFixed();
+        if (!other.getOp().equals(getOp())) {
+            return false;
+        }
         if (!other.getCondition().equals(getCondition())) {
             return false;
         }
         if (getSubMatches().size() != other.getSubMatches().size()) {
             return false;
         }
-        // only the anchor images matter to equality of the match
-        RuleElement[] anchor;
-        if (getCondition() instanceof Rule) {
-            anchor = ((Rule) getCondition()).anchor();
-        } else {
-            int size = getCondition().getRoot().nodeCount();
-            anchor =
-                getCondition().getRoot().nodeSet().toArray(
-                    new RuleElement[size]);
-        }
-        Map<RuleNode,? extends HostNode> myNodeMap = getPatternMap().nodeMap();
-        Map<RuleNode,? extends HostNode> otherNodeMap =
-            other.getPatternMap().nodeMap();
-        Map<RuleEdge,? extends HostEdge> myEdgeMap = getPatternMap().edgeMap();
-        Map<RuleEdge,? extends HostEdge> otherEdgeMap =
-            other.getPatternMap().edgeMap();
-        for (int i = 0; i < anchor.length; i++) {
-            RuleElement element = anchor[i];
-            Map<?,?> myMap =
-                element instanceof RuleNode ? myNodeMap : myEdgeMap;
-            Map<?,?> otherMap =
-                element instanceof RuleNode ? otherNodeMap : otherEdgeMap;
-            if (!myMap.get(element).equals(otherMap.get(element))) {
-                return false;
+        if (getOp().isQuantifier()) {
+            // only the anchor images matter to equality of the match
+            if (getCondition().hasRule()) {
+                RuleElement[] anchor = getCondition().getRule().anchor();
+                Map<RuleNode,? extends HostNode> myNodeMap =
+                    getPatternMap().nodeMap();
+                Map<RuleNode,? extends HostNode> otherNodeMap =
+                    other.getPatternMap().nodeMap();
+                Map<RuleEdge,? extends HostEdge> myEdgeMap =
+                    getPatternMap().edgeMap();
+                Map<RuleEdge,? extends HostEdge> otherEdgeMap =
+                    other.getPatternMap().edgeMap();
+                for (int i = 0; i < anchor.length; i++) {
+                    RuleElement element = anchor[i];
+                    Map<?,?> myMap =
+                        element instanceof RuleNode ? myNodeMap : myEdgeMap;
+                    Map<?,?> otherMap =
+                        element instanceof RuleNode ? otherNodeMap
+                                : otherEdgeMap;
+                    if (!myMap.get(element).equals(otherMap.get(element))) {
+                        return false;
+                    }
+                }
+            } else {
+                if (!getPatternMap().equals(other.getPatternMap())) {
+                    return false;
+                }
             }
         }
         if (!getSubMatches().equals(other.getSubMatches())) {
@@ -401,8 +446,88 @@ public class TreeMatch implements Fixable {
         }
     }
 
+    private final Condition.Op op;
     private final Condition condition;
     private final RuleToHostMap patternMap;
-    private final List<TreeMatch> subMatches = new ArrayList<TreeMatch>();
+    private final Collection<TreeMatch> subMatches;
+    private final Visitor.Collector<RuleMatch,List<RuleMatch>> collector;
+    @SuppressWarnings("rawtypes")
+    private final RuleMatchWrapperVisitor wrapper =
+        new RuleMatchWrapperVisitor();
     private int hashCode;
+
+    /** Collector class for rule matches
+     * that wraps its visited matches into a rule match of this condition.
+     */
+    private class RuleMatchWrapperCollector extends
+            Visitor.Collector<RuleMatch,List<RuleMatch>> {
+        /** Constructor for a prototype object. */
+        public RuleMatchWrapperCollector() {
+            super(null);
+        }
+
+        private RuleMatchWrapperCollector(List<RuleMatch> collection) {
+            super(collection);
+        }
+
+        /** 
+         * Wraps the visited match into a rule match of the top level
+         * pattern, if the operator is a quantifier.
+         */
+        @Override
+        protected boolean process(RuleMatch match) {
+            RuleMatch newMatch = createRuleMatch();
+            newMatch.getSubMatches().add(match);
+            return super.process(newMatch);
+        }
+
+        @Override
+        protected Collector<RuleMatch,List<RuleMatch>> createInstance(
+                List<RuleMatch> collection, Property<RuleMatch> property) {
+            return new RuleMatchWrapperCollector(collection);
+        }
+    }
+
+    /** Visitor class for rule matches
+     * that wraps its visited matches into a rule match of this condition
+     * and then passes on the match to an inner visitor.
+     */
+    private class RuleMatchWrapperVisitor<R> extends Visitor<RuleMatch,R> {
+        /** Constructor for a prototype object. */
+        public RuleMatchWrapperVisitor() {
+            this(null);
+        }
+
+        private RuleMatchWrapperVisitor(Visitor<RuleMatch,R> visitor) {
+            this.visitor = visitor;
+        }
+
+        /** 
+         * Wraps the visited match into a rule match of the top level
+         * pattern, if the operator is a quantifier.
+         */
+        @Override
+        protected boolean process(RuleMatch match) {
+            RuleMatch newMatch = createRuleMatch();
+            newMatch.getSubMatches().add(match);
+            return this.visitor.visit(newMatch);
+        }
+
+        /**
+         * Returns a new wrapped visitor, by either reusing this one 
+         * if it has been disposed, or constructing a fresh one. 
+         */
+        public <T> RuleMatchWrapperVisitor<R> newInstance(
+                Visitor<RuleMatch,R> visitor) {
+            if (isDisposed()) {
+                this.visitor = visitor;
+                resurrect();
+                return this;
+            } else {
+                return new RuleMatchWrapperVisitor<R>(visitor);
+            }
+        }
+
+        private Visitor<RuleMatch,R> visitor;
+    }
 }

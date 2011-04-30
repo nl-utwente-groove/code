@@ -440,7 +440,7 @@ abstract public class Condition implements Fixable {
     public String toString() {
         StringBuilder res =
             new StringBuilder(String.format("%s condition %s: ",
-                getMode().getName(), getName()));
+                getOp().getName(), getName()));
         res.append(String.format("Target: %s", getPattern()));
         if (!getRoot().isEmpty()) {
             res.append(String.format("%nRoot graph: %s", getRoot()));
@@ -455,7 +455,7 @@ abstract public class Condition implements Fixable {
     }
 
     /** Returns the mode of this condition. */
-    public abstract Mode getMode();
+    public abstract Op getOp();
 
     /** Sets a count node for this universal condition. 
      * @see #getCountNode() */
@@ -552,10 +552,9 @@ abstract public class Condition implements Fixable {
     private boolean positive;
 
     /** 
-     * The mode of this condition.
-     * This corresponds to a First Order Logic operator.
+     * The (top-level) operator of this condition.
      */
-    public static enum Mode {
+    public static enum Op {
         /** Universally quantified pattern. */
         FORALL("Universal"),
         /** Existentially quantified pattern. */
@@ -567,11 +566,11 @@ abstract public class Condition implements Fixable {
         /** Disjunction of subconditions. */
         OR("Disjunctive");
 
-        private Mode(String name) {
+        private Op(String name) {
             this.name = name;
         }
 
-        /** Returns the name of this condition mode. */
+        /** Returns the name of this condition operator. */
         public final String getName() {
             return this.name;
         }
@@ -579,6 +578,19 @@ abstract public class Condition implements Fixable {
         @Override
         public String toString() {
             return getName();
+        }
+
+        /** Indicates if this operator is a quantifier. */
+        public boolean isQuantifier() {
+            return this == FORALL || this == EXISTS || this == NOT;
+        }
+
+        /** 
+         * Indicates if this is a conjunctive operator,
+         * meaning that all operands (i.e., subconditions) should all be satisfied.
+         */
+        public boolean isConjunctive() {
+            return this == EXISTS || this == AND;
         }
 
         private final String name;

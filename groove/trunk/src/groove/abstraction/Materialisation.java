@@ -113,7 +113,7 @@ public final class Materialisation implements Cloneable {
     private Materialisation(Shape shape, RuleMatch preMatch) {
         this.shape = shape;
         this.matchedRule = preMatch.getRule();
-        this.originalMatch = (RuleToShapeMap) preMatch.getElementMap();
+        this.originalMatch = (RuleToShapeMap) preMatch.getPatternMap();
         this.match = this.originalMatch.clone();
         this.tasks = new PriorityQueue<MatOp>();
         if (LOG) {

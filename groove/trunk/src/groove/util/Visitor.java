@@ -264,7 +264,7 @@ abstract public class Visitor<T,R> {
                 resurrect();
                 return this;
             } else {
-                return new Collector<T,C>(collection, this.property);
+                return createInstance(collection, this.property);
             }
         }
 
@@ -279,8 +279,17 @@ abstract public class Visitor<T,R> {
                 resurrect();
                 return this;
             } else {
-                return new Collector<T,C>(collection, property);
+                return createInstance(collection, property);
             }
+        }
+
+        /** 
+         * Callback factory method for creating a new collector,
+         * in case this is not yet disposed.
+         */
+        protected Collector<T,C> createInstance(C collection,
+                Property<T> property) {
+            return new Collector<T,C>(collection, property);
         }
 
         /** Filtering property. */

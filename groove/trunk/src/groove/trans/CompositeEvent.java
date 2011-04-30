@@ -110,7 +110,7 @@ public class CompositeEvent extends
             for (BasicEvent event : this.eventArray) {
                 RuleMatch match =
                     new RuleMatch(event.getRule(),
-                        event.getMatch(source).getElementMap());
+                        event.getMatch(source).getPatternMap());
                 int[] eventLevel = event.getRule().getLevel();
                 int eventDepth = eventLevel.length;
                 assert eventDepth / 2 <= matchStack.size();

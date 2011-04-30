@@ -88,7 +88,7 @@ public final class PreMatch {
      * respects node multiplicities.
      */
     public static boolean isValidPreMatch(Shape shape, RuleMatch match) {
-        RuleToShapeMap map = (RuleToShapeMap) match.getElementMap();
+        RuleToShapeMap map = (RuleToShapeMap) match.getPatternMap();
 
         // Since we have non-injective matching of the LHS of the rule
         // we need to check if the multiplicities are respected. 

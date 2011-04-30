@@ -26,7 +26,7 @@ import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.rel.RegAut;
 import groove.rel.RegExpr;
-import groove.trans.Condition.Mode;
+import groove.trans.Condition.Op;
 import groove.util.Groove;
 import groove.view.FormatException;
 
@@ -489,17 +489,17 @@ public class RuleDependencies {
         if (!isolatedNodes.isEmpty()) {
             positive.add(ANY_NODE);
         }
-        Condition.Mode condMode = cond.getMode();
+        Condition.Op condMode = cond.getOp();
         for (Condition subCond : cond.getSubConditions()) {
             Set<TypeLabel> subPositives = new HashSet<TypeLabel>();
             Set<TypeLabel> subNegatives = new HashSet<TypeLabel>();
             collectConditionCharacteristics(subCond, subPositives, subNegatives);
-            Condition.Mode subCondMode = subCond.getMode();
-            if (subCondMode == Mode.FORALL || subCondMode == condMode) {
+            Condition.Op subCondMode = subCond.getOp();
+            if (subCondMode == Op.FORALL || subCondMode == condMode) {
                 positive.addAll(subPositives);
                 negative.addAll(subNegatives);
             }
-            if (subCondMode == Mode.FORALL || subCondMode != condMode) {
+            if (subCondMode == Op.FORALL || subCondMode != condMode) {
                 negative.addAll(subPositives);
                 positive.addAll(subNegatives);
             }

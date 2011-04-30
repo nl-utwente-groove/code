@@ -101,8 +101,8 @@ public class Rule extends Condition implements Comparable<Rule> {
     }
 
     @Override
-    public Mode getMode() {
-        return Mode.EXISTS;
+    public Op getOp() {
+        return Op.EXISTS;
     }
 
     @Override

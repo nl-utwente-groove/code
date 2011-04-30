@@ -36,7 +36,7 @@ public class ForallCondition extends Condition {
     }
 
     @Override
-    public Mode getMode() {
-        return Mode.FORALL;
+    public Op getOp() {
+        return Op.FORALL;
     }
 }
