@@ -33,7 +33,6 @@ import groove.util.Reporter;
 import groove.util.Visitor;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -292,7 +291,6 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
      */
     public class Search {
         /** Constructs a new record for a given graph and partial match. */
-        @SuppressWarnings("unchecked")
         public Search() {
             int planSize = SearchPlanStrategy.this.plan.size();
             this.records = new SearchItem.Record[planSize];
@@ -311,7 +309,7 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
             this.varSeeds =
                 new TypeLabel[SearchPlanStrategy.this.varKeys.length];
             this.subMatches =
-                new Collection[SearchPlanStrategy.this.condIxMap.size()];
+                new TreeMatch[SearchPlanStrategy.this.condIxMap.size()];
         }
 
         /** Initialises the search for a given host graph and anchor map. */
@@ -484,7 +482,7 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
         }
 
         /** Sets the composite match for a given index. */
-        final boolean putSubMatch(int index, Collection<TreeMatch> match) {
+        final boolean putSubMatch(int index, TreeMatch match) {
             this.subMatches[index] = match;
             return true;
         }
@@ -505,7 +503,7 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
         }
 
         /** Returns the composite match at a given index. */
-        final Collection<TreeMatch> getSubMatch(int index) {
+        final TreeMatch getSubMatch(int index) {
             return this.subMatches[index];
         }
 
@@ -564,7 +562,7 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
                     new TreeMatch(SearchPlanStrategy.this.plan.getCondition(),
                         patternMap);
                 for (int i = 0; i < this.subMatches.length; i++) {
-                    result.addSubMatches(this.subMatches[i]);
+                    result.addSubMatch(this.subMatches[i]);
                 }
             }
             return result;
@@ -588,7 +586,7 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
         /** Array of variable images. */
         private final TypeLabel[] varImages;
         /** Array of variable images. */
-        private final Collection<TreeMatch>[] subMatches;
+        private final TreeMatch[] subMatches;
         /**
          * Array indicating, for each index, if the node with that image was
          * pre-matched in the search.

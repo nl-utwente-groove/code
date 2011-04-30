@@ -22,30 +22,64 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Match of an {@link Rule}.
+ * Proof of a {@link Condition}.
+ * A proof may contain the following elements:
+ * <ul>
+ * <li> A match of the condition pattern, if the condition is a quantifier
+ * <li> One or more proofs for one or more subconditions. In particular, for a
+ * universal subcondition there will in general one proof for 
+ * each match of the condition pattern; and if the condition of this proof is
+ * conjunctive, there will be proofs for all subconditions.
+ * </ul>
  * @author Arend Rensink
  * @version $Revision $
  */
 public class RuleMatch {
     /** Constructs a match for a given {@link Rule}. */
-    public RuleMatch(Rule rule, RuleToHostMap elementMap) {
-        this.rule = rule;
-        this.elementMap = elementMap;
+    public RuleMatch(Condition condition, RuleToHostMap patternMap) {
+        this.condition = condition;
+        this.patternMap = patternMap;
+        assert condition.getOp().isQuantifier() || patternMap == null;
     }
 
-    /** Returns the rule of which this is a match. */
+    /** 
+     * Indicates whether the proved condition is a rule.
+     * Convenience method for {@code getCondition().hasRule()}.
+     */
+    public boolean hasRule() {
+        return this.condition.hasRule();
+    }
+
+    /**
+     * Returns the rule of the proved condition, if any. 
+     * Convenience method for {@code getCondition().getRule()}.
+     */
     public Rule getRule() {
-        return this.rule;
+        return this.condition.getRule();
     }
 
-    /** Returns the element map constituting the match. */
-    public RuleToHostMap getElementMap() {
-        return this.elementMap;
+    /** Returns the condition of which this is a proof. */
+    public Condition getCondition() {
+        return this.condition;
+    }
+
+    /** 
+     * Indicates if this is a composite proof.
+     * A composite proof consists of conjunctively interpreted subproofs,
+     * but has no pattern map of its own.
+     */
+    public boolean isComposite() {
+        return this.patternMap == null;
+    }
+
+    /** Returns the pattern map of this proof, if the condition is a quantifier. */
+    public RuleToHostMap getPatternMap() {
+        return this.patternMap;
     }
 
     /** Returns the set of matches of sub-rules. */
     public Collection<RuleMatch> getSubMatches() {
-        return this.subMatches;
+        return this.subProofs;
     }
 
     /** Returns the (host graph) edges used as images in the match. */
@@ -54,7 +88,7 @@ public class RuleMatch {
         for (RuleMatch subMatch : getSubMatches()) {
             result.addAll(subMatch.getEdgeValues());
         }
-        result.addAll(this.elementMap.edgeMap().values());
+        result.addAll(this.patternMap.edgeMap().values());
         return result;
     }
 
@@ -64,19 +98,17 @@ public class RuleMatch {
         for (RuleMatch subMatch : getSubMatches()) {
             result.addAll(subMatch.getNodeValues());
         }
-        result.addAll(this.elementMap.nodeMap().values());
+        result.addAll(this.patternMap.nodeMap().values());
         return result;
     }
 
     /**
-     * Creates an event on the basis of this match.
+     * Creates an event on the basis of this proof.
+     * This is only allowed if the proved condition has an associated rule.
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>
      */
     public RuleEvent newEvent(SystemRecord nodeFactory) {
-        // the event set used to be a sorted set, but I think this is wrong
-        // because the sorting will not respect the desired event hierarchy.
-        // and in fact events may actually occur more than once.
-        // SortedSet<SPOEvent> eventSet = new TreeSet<SPOEvent>();
+        assert hasRule();
         Collection<BasicEvent> eventSet = new ArrayList<BasicEvent>();
         collectEvents(eventSet, nodeFactory);
         assert !eventSet.isEmpty();
@@ -88,15 +120,17 @@ public class RuleMatch {
     }
 
     /**
-     * Recursively collects the events of this match and all sub-matches into a
+     * Recursively collects the events of this proof and all sub-proofs into a
      * given collection.
      * @param events the resulting set of events
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>
      */
     private void collectEvents(Collection<BasicEvent> events,
             SystemRecord nodeFactory) {
-        BasicEvent myEvent = createSimpleEvent(nodeFactory);
-        events.add(myEvent);
+        if (hasRule()) {
+            BasicEvent myEvent = createSimpleEvent(nodeFactory);
+            events.add(myEvent);
+        }
         for (RuleMatch subMatch : getSubMatches()) {
             subMatch.collectEvents(events, nodeFactory);
         }
@@ -108,10 +142,11 @@ public class RuleMatch {
      * <code>nodeFactory</code> is not <code>null</code>.
      */
     private BasicEvent createSimpleEvent(SystemRecord record) {
+        assert hasRule();
         if (record == null) {
-            return new BasicEvent(getRule(), getElementMap(), false);
+            return new BasicEvent(getRule(), getPatternMap(), false);
         } else {
-            return record.createSimpleEvent(getRule(), getElementMap());
+            return record.createSimpleEvent(getRule(), getPatternMap());
         }
     }
 
@@ -139,9 +174,16 @@ public class RuleMatch {
             return false;
         }
         RuleMatch other = (RuleMatch) obj;
-        return other.getRule().equals(getRule())
-            && other.getElementMap().equals(getElementMap())
-            && other.getSubMatches().equals(getSubMatches());
+        if (!other.getCondition().equals(getCondition())) {
+            return false;
+        }
+        if (!other.getPatternMap().equals(getPatternMap())) {
+            return false;
+        }
+        if (getSubMatches() == null) {
+            return other.getSubMatches() == null;
+        }
+        return getSubMatches().equals(other.getSubMatches());
     }
 
     @Override
@@ -158,36 +200,46 @@ public class RuleMatch {
 
     /** Computes a value for the hash code. */
     protected int computeHashCode() {
-        return getRule().hashCode() + getSubMatches().hashCode()
-            ^ getElementMap().hashCode();
+        final int prime = 31;
+        int result = getCondition().hashCode();
+        result = prime * result + getSubMatches().hashCode();
+        if (getPatternMap() != null) {
+            result = prime * result + getPatternMap().hashCode();
+        }
+        return result;
     }
 
     @Override
     public String toString() {
         StringBuilder result =
             new StringBuilder(String.format("Match of %s: Nodes %s, edges %s",
-                getRule().getName(), getElementMap().nodeMap(),
-                getElementMap().edgeMap()));
+                getCondition().getName(), getPatternMap().nodeMap(),
+                getPatternMap().edgeMap()));
         if (!getSubMatches().isEmpty()) {
             result.append(String.format("%n--- Submatches of %s ---%n",
-                getRule().getName()));
+                getCondition().getName()));
             for (RuleMatch match : getSubMatches()) {
                 result.append(match.toString());
                 result.append("\n");
             }
             result.append(String.format("--- End of %s ---",
-                getRule().getName()));
+                getCondition().getName()));
         }
         return result.toString();
     }
 
-    /** The fixed rule of which this is a match. */
-    private final Rule rule;
-    /** The map constituting the match. */
-    private final RuleToHostMap elementMap;
+    /**
+     * The condition of which this is a proof.
+     */
+    private final Condition condition;
+    /** 
+     * The pattern map of the match.
+     * May be {@code null} if this is a conjunctive proof. 
+     */
+    private final RuleToHostMap patternMap;
 
-    /** The map constituting the match. */
-    private final Collection<RuleMatch> subMatches =
+    /** The proofs of the sub-conditions. */
+    private final Collection<RuleMatch> subProofs =
         new java.util.LinkedHashSet<RuleMatch>();
     /** The (pre-computed) hash code of this match. */
     private int hashCode;

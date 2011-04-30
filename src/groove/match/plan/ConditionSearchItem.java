@@ -24,6 +24,7 @@ import groove.match.plan.SearchPlanStrategy.Search;
 import groove.rel.LabelVar;
 import groove.rel.VarSupport;
 import groove.trans.Condition;
+import groove.trans.Condition.Op;
 import groove.trans.HostNode;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
@@ -108,22 +109,22 @@ class ConditionSearchItem extends AbstractSearchItem {
             this.preCounted = strategy.isNodeFound(this.countNode);
             this.countNodeIx = strategy.getNodeIx(this.countNode);
         }
-        if (this.condition.getMode() != Condition.Mode.NOT) {
+        if (this.condition.getOp() != Condition.Op.NOT) {
             this.condIx = strategy.getCondIx(this.condition);
         }
     }
 
     public Record createRecord(Search search) {
-        if (this.condition.getMode() == Condition.Mode.NOT) {
+        if (this.condition.getOp() == Condition.Op.NOT) {
             return new NegConditionRecord(search);
         } else {
-            return new PosConditionRecord(search);
+            return new ForallConditionRecord(search);
         }
     }
 
     @Override
     public String toString() {
-        return String.format("%s %s: %s", this.condition.getMode().getName(),
+        return String.format("%s %s: %s", this.condition.getOp().getName(),
             this.condition.getName(), this.matcher.getPlan());
     }
 
@@ -191,7 +192,7 @@ class ConditionSearchItem extends AbstractSearchItem {
             super(search);
         }
 
-        /** Creates a context map for the condition, based one
+        /** Creates a context map for the condition, based on
          * the elements found so far during the search.
          */
         final RuleToHostMap createContextMap() {
@@ -215,9 +216,9 @@ class ConditionSearchItem extends AbstractSearchItem {
     /**
      * Search record for a positive graph condition.
      */
-    private class PosConditionRecord extends AbstractConditionRecord {
+    private class ForallConditionRecord extends AbstractConditionRecord {
         /** Constructs a record for a given search. */
-        public PosConditionRecord(Search search) {
+        public ForallConditionRecord(Search search) {
             super(search);
         }
 
@@ -240,7 +241,8 @@ class ConditionSearchItem extends AbstractSearchItem {
                 result = matches.size() == this.preCount;
             }
             if (result) {
-                this.match = matches;
+                this.match = createMatch();
+                this.match.addSubMatches(matches);
                 if (ConditionSearchItem.this.countNode != null) {
                     this.countImage =
                         this.host.getFactory().createNode(
@@ -253,6 +255,25 @@ class ConditionSearchItem extends AbstractSearchItem {
                 this.match = null;
             }
             return result;
+        }
+
+        private TreeMatch createMatch() {
+            Condition.Op op;
+            switch (ConditionSearchItem.this.condition.getOp()) {
+            case AND:
+            case OR:
+                op = ConditionSearchItem.this.condition.getOp();
+                break;
+            case EXISTS:
+                op = Op.OR;
+                break;
+            case FORALL:
+                op = Op.AND;
+                break;
+            default:
+                throw new IllegalStateException();
+            }
+            return new TreeMatch(op, ConditionSearchItem.this.condition, null);
         }
 
         @Override
@@ -289,7 +310,7 @@ class ConditionSearchItem extends AbstractSearchItem {
         /** The actual subcondition count. */
         private ValueNode countImage;
         /** The matches found for the condition. */
-        private Collection<TreeMatch> match;
+        private TreeMatch match;
     }
 
     /**

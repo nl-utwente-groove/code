@@ -42,7 +42,7 @@ public class NotCondition extends Condition {
     }
 
     @Override
-    public Mode getMode() {
-        return Mode.NOT;
+    public Op getOp() {
+        return Op.NOT;
     }
 }
