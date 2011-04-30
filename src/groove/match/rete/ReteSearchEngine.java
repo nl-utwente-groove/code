@@ -22,12 +22,12 @@ import groove.match.TreeMatch;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.Condition;
 import groove.trans.DeltaStore;
+import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
-import groove.trans.GraphGrammar;
 import groove.util.Reporter;
 import groove.view.StoredGrammarView;
 
@@ -223,9 +223,9 @@ public class ReteSearchEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
     }
 
     @Override
-    public synchronized ReteStrategy createMatcher(Condition condition,
-            Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges,
-            Collection<RuleNode> relevantNodes) {
+    public synchronized MatchStrategy<TreeMatch> createMatcher(
+            Condition condition, Collection<RuleNode> seedNodes,
+            Collection<RuleEdge> seedEdges, Collection<RuleNode> relevantNodes) {
         //this will get more complicated when we have complex conditions        
         return new ReteStrategy(this, condition);
     }

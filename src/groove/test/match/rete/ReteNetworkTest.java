@@ -18,9 +18,9 @@ package groove.test.match.rete;
 
 import groove.match.rete.ConditionChecker;
 import groove.match.rete.ProductionNode;
-import groove.match.rete.ReteMatch;
 import groove.match.rete.ReteNetwork;
 import groove.match.rete.ReteNetworkNode;
+import groove.match.rete.ReteSimpleMatch;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
@@ -114,7 +114,7 @@ public class ReteNetworkTest extends TestCase {
             new ReteNetwork(g, g.getProperties().isInjective());
         network.processGraph(g.getStartGraph());
         for (ProductionNode pn : network.getProductionNodes()) {
-            Set<ReteMatch> rmList = pn.getConflictSet();
+            Set<ReteSimpleMatch> rmList = pn.getConflictSet();
             assertEquals(1, rmList.size());
         }
     }
@@ -128,7 +128,7 @@ public class ReteNetworkTest extends TestCase {
             new ReteNetwork(g, g.getProperties().isInjective());
         network.processGraph(g.getStartGraph());
         for (ProductionNode pn : network.getProductionNodes()) {
-            Set<ReteMatch> rmList = pn.getConflictSet();
+            Set<ReteSimpleMatch> rmList = pn.getConflictSet();
             if (pn.getProductionRule().getName().toString().equals("addA")) {
                 assertEquals(4, rmList.size());
             } else if (pn.getProductionRule().getName().toString().equals(
@@ -146,7 +146,7 @@ public class ReteNetworkTest extends TestCase {
         ReteNetwork network = new ReteNetwork(g, false);
         network.processGraph(g.getStartGraph());
         for (ProductionNode pn : network.getProductionNodes()) {
-            Set<ReteMatch> rmList = pn.getConflictSet();
+            Set<ReteSimpleMatch> rmList = pn.getConflictSet();
             if (pn.getProductionRule().getName().toString().equals("move")) {
                 assertEquals(pn.toString(), 1, rmList.size());
             } else {

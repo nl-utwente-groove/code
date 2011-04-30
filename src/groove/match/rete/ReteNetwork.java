@@ -26,6 +26,7 @@ import groove.io.xml.DefaultGxl;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.Condition;
+import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -37,7 +38,6 @@ import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleName;
 import groove.trans.RuleNode;
-import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
@@ -142,6 +142,7 @@ public class ReteNetwork {
      *  
      * @param condition The condition to processed and added to the RETE network.
      */
+    @SuppressWarnings("unchecked")
     private void addConditionToNetwork(Condition condition,
             ConditionChecker parent) {
         ConditionChecker result = null;
@@ -550,8 +551,7 @@ public class ReteNetwork {
             RuleGraph newNacGraph =
                 copyAndRenumberNodes(nac.getPattern(), nodeRenumberingMapping);
             RuleGraphMorphism newRootMap =
-                copyRootMap(nac.getRoot().nodeSet(),
-                    nodeRenumberingMapping);
+                copyRootMap(nac.getRoot().nodeSet(), nodeRenumberingMapping);
 
             ReteStaticMapping m1 =
                 duplicateAndTranslateMapping(lastSubgraphMapping, newRootMap);
@@ -913,8 +913,8 @@ public class ReteNetwork {
                 source));
             for (int i = 0; i < ((ProductionNode) nnode).getPattern().length; i++) {
                 RuleElement e = ((ProductionNode) nnode).getPattern()[i];
-                result.add(DefaultEdge.createEdge(source,
-                    "--" + i + " " + e.toString(), source));
+                result.add(DefaultEdge.createEdge(source, "--" + i + " "
+                    + e.toString(), source));
             }
         } else if (nnode instanceof ConditionChecker) {
             result.add(DefaultEdge.createEdge(source, "- Condition Checker "
@@ -922,8 +922,8 @@ public class ReteNetwork {
                 source));
             for (int i = 0; i < ((ConditionChecker) nnode).getPattern().length; i++) {
                 RuleElement e = ((ConditionChecker) nnode).getPattern()[i];
-                result.add(DefaultEdge.createEdge(source,
-                    "--" + i + " " + e.toString(), source));
+                result.add(DefaultEdge.createEdge(source, "--" + i + " "
+                    + e.toString(), source));
             }
         }
         DefaultEdge[] res = new DefaultEdge[result.size()];

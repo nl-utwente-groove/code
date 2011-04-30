@@ -47,8 +47,8 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
      * Collection of partial matches separately kept based on the antecedent
      * that they belong to.
      */
-    protected HashMap<ReteNetworkNode,TreeHashSet<ReteMatch>> partialMatches =
-        new HashMap<ReteNetworkNode,TreeHashSet<ReteMatch>>();
+    protected HashMap<ReteNetworkNode,TreeHashSet<AbstractReteMatch>> partialMatches =
+        new HashMap<ReteNetworkNode,TreeHashSet<AbstractReteMatch>>();
 
     /**
      * Creates a subgraph-checker from a list of antecedents, each of which
@@ -108,17 +108,19 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
      */
     public void receive(ReteNetworkNode source, int repeatIndex,
             HostElement mu, Action action) {
-        ReteMatch sg =
-            (mu instanceof HostEdge) ? new ReteMatch(source, (HostEdge) mu,
-                this.getOwner().isInjective()) : new ReteMatch(source,
-                (HostNode) mu, this.getOwner().isInjective());
+        AbstractReteMatch sg =
+            (mu instanceof HostEdge) ? new ReteSimpleMatch(source,
+                (HostEdge) mu, this.getOwner().isInjective())
+                    : new ReteSimpleMatch(source, (HostNode) mu,
+                        this.getOwner().isInjective());
 
         if (action == Action.ADD) {
             this.receive(source, repeatIndex, sg);
         } else {
-            TreeHashSet<ReteMatch> memory = getPartialMatchesFor(source);
+            TreeHashSet<AbstractReteMatch> memory =
+                getPartialMatchesFor(source);
             if (memory.contains(sg)) {
-                ReteMatch m = sg;
+                AbstractReteMatch m = sg;
                 sg = memory.put(sg);
                 memory.remove(m);
                 sg.dominoDelete(null);
@@ -139,7 +141,8 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
      *        times <code>source</code> occurs in the list of antecedents. 
      * @param match The match object found by <code>source</code>.
      */
-    public void receive(ReteNetworkNode source, int repeatIndex, ReteMatch match) {
+    public void receive(ReteNetworkNode source, int repeatIndex,
+            AbstractReteMatch match) {
         produceAndSendDownNewMatches(source, repeatIndex, match);
     }
 
@@ -158,33 +161,22 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
      * @param m The newly received partial match
      */
     protected void produceAndSendDownNewMatches(ReteNetworkNode antecedent,
-            int repeatIndex, ReteMatch m) {
+            int repeatIndex, AbstractReteMatch m) {
 
-        TreeHashSet<ReteMatch> c = this.getPartialMatchesFor(antecedent);
+        TreeHashSet<AbstractReteMatch> c =
+            this.getPartialMatchesFor(antecedent);
         if (c.isEmpty() || (repeatIndex == 0)) {
             c.add(m);
             m.addContainerCollection(c);
         }
 
-        List<ReteMatch> completeMatches =
+        List<AbstractReteMatch> completeMatches =
             this.makeWholeMatchesIfPossible(antecedent, repeatIndex, m);
 
         if (completeMatches != null) {
             this.matchesProduced += completeMatches.size();
-            for (ReteMatch completeMatch : completeMatches) {
-                ReteNetworkNode previous = null;
-                int repeatedSuccessorIndex = 0;
-                for (ReteNetworkNode n : this.getSuccessors()) {
-                    repeatedSuccessorIndex =
-                        (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
-                    if (n instanceof ConditionChecker) {
-                        ((ConditionChecker) n).receive(this, completeMatch);
-                    } else if (n instanceof SubgraphCheckerNode) {
-                        ((SubgraphCheckerNode) n).receive(this,
-                            repeatedSuccessorIndex, completeMatch);
-                    }
-                    previous = n;
-                }
+            for (AbstractReteMatch completeMatch : completeMatches) {
+                passDownMatchToSuccessors(completeMatch);
             }
         }
     }
@@ -205,9 +197,10 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
      *          with other existing partial matches of other disjoint components.
      */
     @SuppressWarnings("unchecked")
-    protected List<ReteMatch> makeWholeMatchesIfPossible(
-            ReteNetworkNode antecedent, int repeatIndex, ReteMatch newMatch) {
-        List<ReteMatch> result = null;
+    protected List<AbstractReteMatch> makeWholeMatchesIfPossible(
+            ReteNetworkNode antecedent, int repeatIndex,
+            AbstractReteMatch newMatch) {
+        List<AbstractReteMatch> result = null;
         //This is the index of the antecedent that we need to jump over in
         //combining matches because we only need on match out of it and that's the
         //one represented by the variable newMatch
@@ -227,8 +220,8 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
         }
 
         if (isPossible) {
-            result = new ArrayList<ReteMatch>();
-            Iterator<ReteMatch>[] partialMatchIterators =
+            result = new ArrayList<AbstractReteMatch>();
+            Iterator<AbstractReteMatch>[] partialMatchIterators =
                 new Iterator[this.getAntecedents().size()];
             for (int i = 0; i < partialMatchIterators.length; i++) {
                 if (i != jumpIndex) {
@@ -236,8 +229,8 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
                         getPartialMatchesFor(this.getAntecedents().get(i)).iterator();
                 }
             }
-            ReteMatch[] subMatches =
-                new ReteMatch[partialMatchIterators.length];
+            AbstractReteMatch[] subMatches =
+                new AbstractReteMatch[partialMatchIterators.length];
             subMatches[jumpIndex] = newMatch;
             int j = 0;
             boolean injective = this.getOwner().isInjective();
@@ -255,7 +248,8 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
                     j++;
                 }
                 if (j == partialMatchIterators.length) {
-                    ReteMatch m = ReteMatch.merge(this, subMatches, injective);
+                    AbstractReteMatch m =
+                        ReteSimpleMatch.merge(this, subMatches, injective);
                     if (m != null) {
                         result.add(m);
                     }
@@ -284,11 +278,12 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
      * @param antecedent The antecedent the partial matches of which is needed. 
      * @return The list of already received partial matches for a given antecedent.
      */
-    protected TreeHashSet<ReteMatch> getPartialMatchesFor(
+    protected TreeHashSet<AbstractReteMatch> getPartialMatchesFor(
             ReteNetworkNode antecedent) {
-        TreeHashSet<ReteMatch> result = this.partialMatches.get(antecedent);
+        TreeHashSet<AbstractReteMatch> result =
+            this.partialMatches.get(antecedent);
         if (result == null) {
-            result = new TreeHashSet<ReteMatch>();
+            result = new TreeHashSet<AbstractReteMatch>();
             this.partialMatches.put(antecedent, result);
         }
         return result;
@@ -335,7 +330,7 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
     /**
      * This internal counter will be incremented by the number
      * of matches produced upon calling the method 
-     * {@link #produceAndSendDownNewMatches(ReteNetworkNode, int, ReteMatch)}.
+     * {@link #produceAndSendDownNewMatches(ReteNetworkNode, int, AbstractReteMatch)}.
      */
     private int matchesProduced = 0;
 
@@ -344,6 +339,23 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
         this.matchesProduced = 0;
         demandUpdate();
         return this.matchesProduced;
+    }
+
+    @Override
+    protected void passDownMatchToSuccessors(AbstractReteMatch m) {
+        ReteNetworkNode previous = null;
+        int repeatedSuccessorIndex = 0;
+        for (ReteNetworkNode n : this.getSuccessors()) {
+            repeatedSuccessorIndex =
+                (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
+            if (n instanceof ConditionChecker) {
+                ((ConditionChecker) n).receive(this, m);
+            } else if (n instanceof SubgraphCheckerNode) {
+                ((SubgraphCheckerNode<?,?>) n).receive(this,
+                    repeatedSuccessorIndex, m);
+            }
+            previous = n;
+        }
     }
 
 }

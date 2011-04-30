@@ -24,7 +24,7 @@ import groove.trans.RuleNode;
 import java.util.HashMap;
 
 /**
- * A look up table that determines which entry of a {@link ReteMatch}'s list of units
+ * A look up table that determines which entry of a {@link AbstractReteMatch}'s list of units
  * should be looked at to find the image of a specific node  
  * @author Arash Jalali
  * @version $Revision $

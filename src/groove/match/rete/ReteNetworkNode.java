@@ -256,4 +256,10 @@ public abstract class ReteNetworkNode {
         this.isUpToDate = newValue;
         return result;
     }
+
+    /**
+     * Passes down a given match to the successors.
+     * @param m the given match
+     */
+    protected abstract void passDownMatchToSuccessors(AbstractReteMatch m);
 }

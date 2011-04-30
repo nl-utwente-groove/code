@@ -129,4 +129,9 @@ public class RootNode extends ReteNetworkNode {
         // this method is not supposed to be called
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    protected void passDownMatchToSuccessors(AbstractReteMatch m) {
+        throw new UnsupportedOperationException();
+    }
 }
