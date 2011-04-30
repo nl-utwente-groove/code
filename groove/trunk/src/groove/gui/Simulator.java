@@ -52,6 +52,7 @@ import groove.graph.DefaultGraph;
 import groove.graph.Element;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
+import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.gui.dialog.BoundedModelCheckingDialog;
@@ -5015,16 +5016,85 @@ public class Simulator {
             File selectedFile = SaveDialog.show(chooser, getFrame(), null);
             // now save, if so required
             if (selectedFile != null) {
-                name = filter.stripExtension(selectedFile.getName());
-                graph = graph.rename(name);
                 try {
-                    Simulator.this.aspectLoader.marshalGraph(graph,
-                        selectedFile);
+                    marshalGraph(graph, selectedFile, filter);
                 } catch (IOException exc) {
                     showErrorDialog(String.format(
                         "Error while saving graph to '%s'", selectedFile), exc);
                 }
             }
+        }
+
+        private void marshalGraph(AspectGraph graph, File selectedFile,
+                ExtensionFilter filter) throws IOException {
+            // find out if this is within the grammar directory
+            String name = null;
+            Object location = getGrammarView().getStore().getLocation();
+            if (location instanceof File) {
+                String locationPath = ((File) location).getCanonicalPath();
+                String selectedPath =
+                    filter.stripExtension(selectedFile.getCanonicalPath());
+                name = getName(locationPath, selectedPath, graph.getRole());
+            }
+            if (name == null) {
+                name = filter.stripExtension(selectedFile.getName());
+                graph = graph.rename(name);
+                Simulator.this.aspectLoader.marshalGraph(graph, selectedFile);
+            } else {
+                // the graph will be put within the grammar itself
+                graph = graph.rename(name);
+                switch (graph.getRole()) {
+                case HOST:
+                    doAddGraph(graph);
+                    break;
+                case RULE:
+                    doAddRule(graph);
+                    break;
+                case TYPE:
+                    doAddType(graph);
+                    break;
+                default:
+                    assert false;
+                }
+            }
+        }
+
+        /** Constructs an aspect graph name from a  file within the grammar location,
+         * or {@code null} if the file is not within the grammar location.
+         * @throws IOException if the name is not well-formed
+         */
+        private String getName(String grammarPath, String selectedPath,
+                GraphRole role) throws IOException {
+            String name = null;
+            if (selectedPath.startsWith(grammarPath)) {
+                String diff = selectedPath.substring(grammarPath.length());
+                File pathDiff = new File(diff);
+                List<String> pathFragments = new ArrayList<String>();
+                while (pathDiff.getName().length() > 0) {
+                    pathFragments.add(pathDiff.getName());
+                    pathDiff = pathDiff.getParentFile();
+                }
+                assert !pathFragments.isEmpty();
+                int i = pathFragments.size() - 1;
+                if (role == RULE) {
+                    RuleName ruleName = new RuleName(pathFragments.get(i));
+                    for (i--; i >= 0; i--) {
+                        try {
+                            ruleName =
+                                new RuleName(ruleName, pathFragments.get(i));
+                        } catch (FormatException e) {
+                            throw new IOException("Malformed rule name " + diff);
+                        }
+                    }
+                    name = ruleName.toString();
+                } else if (pathFragments.size() > 1) {
+                    throw new IOException(
+                        "Can't save graph or type in a grammar subdirectory");
+                } else {
+                    name = pathFragments.get(0);
+                }
+            }
+            return name;
         }
 
         private void actionForGTS(GTS gts, ExtensionFilter filter) {
