@@ -77,19 +77,19 @@ public class ProductionNode extends ConditionChecker {
     }
 
     @Override
-    public Set<ReteMatch> getConflictSet() {
-        Set<ReteMatch> result;
+    public Set<ReteSimpleMatch> getConflictSet() {
+        Set<ReteSimpleMatch> result;
 
         if (this.getProductionRule().isModifying() || this.isEmpty()) {
             result = super.getConflictSet();
         } else {
-            result = new TreeHashSet<ReteMatch>();
-            Set<ReteMatch> cs = this.conflictSet;
+            result = new TreeHashSet<ReteSimpleMatch>();
+            Set<ReteSimpleMatch> cs = this.conflictSet;
             if (this.hasNacs()) {
                 this.demandUpdateOnlyIfNecessary();
             }
             if (!this.inhibitionMap.isEmpty() && (cs.size() > 0)) {
-                for (ReteMatch m : cs) {
+                for (ReteSimpleMatch m : cs) {
                     if (!this.isInhibited(m)) {
                         result.add(m);
                         break;
@@ -136,7 +136,7 @@ public class ProductionNode extends ConditionChecker {
     }
 
     @Override
-    public Iterator<ReteMatch> getConflictSetIterator() {
+    public Iterator<ReteSimpleMatch> getConflictSetIterator() {
         if (!this.getProductionRule().isModifying()) {
             return this.getConflictSet().iterator();
         } else {

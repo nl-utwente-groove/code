@@ -20,7 +20,7 @@ package groove.match.rete;
  * Any object that needs to be notified of domino-events
  * should implement this interface.
  * 
- * Objects of type {@link ReteMatch} call notify such listeners when something of
+ * Objects of type {@link AbstractReteMatch} call notify such listeners when something of
  * domino-nature, i.e. propagation through direct channels rather than the RETE-network's
  * structure, happens to them. 
  * 
@@ -34,5 +34,5 @@ public interface DominoEventListener {
      * 
      * @param match The match object that is deleted through the domino-deletion scheme 
      */
-    void matchRemoved(ReteMatch match);
+    void matchRemoved(AbstractReteMatch match);
 }

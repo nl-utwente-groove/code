@@ -65,13 +65,15 @@ public class ConditionChecker extends ReteNetworkNode implements
      * used if the matches are stored in the tree-liked index structure of
      * the {@link #conflictSetSearchTree}.
      */
-    protected Set<ReteMatch> conflictSet = new TreeHashSet<ReteMatch>();
+    protected Set<ReteSimpleMatch> conflictSet =
+        new TreeHashSet<ReteSimpleMatch>();
 
     /**
      * A bag structure that keeps the record of number of times (one or more)
      * a given match is inhibited by an associated embargo match. 
      */
-    protected HashBag<ReteMatch> inhibitionMap = new HashBag<ReteMatch>();
+    protected HashBag<ReteSimpleMatch> inhibitionMap =
+        new HashBag<ReteSimpleMatch>();
 
     /**
      * The associated {@link Condition} for this checker node.
@@ -80,7 +82,7 @@ public class ConditionChecker extends ReteNetworkNode implements
 
     /**
      * A reference to the checker node of the parent (upper level) condition.
-     * Its value is null of the upper-most level conditions in a rule.  
+     * Its value is null for the upper-most level conditions in a rule.  
      */
     protected ConditionChecker parent;
 
@@ -96,7 +98,7 @@ public class ConditionChecker extends ReteNetworkNode implements
      */
     protected boolean hasNacSubconditions = false;
 
-    private Set<ReteMatch> oneEmptyMatch;
+    private Set<ReteSimpleMatch> oneEmptyMatch;
 
     /**
      * @param network The owner network of this checker node. 
@@ -115,7 +117,8 @@ public class ConditionChecker extends ReteNetworkNode implements
             this.parent.addSubConditionChecker(this);
         }
         connectToAntecedent(antecedent);
-        this.oneEmptyMatch = Collections.singleton(new ReteMatch(this, false));
+        this.oneEmptyMatch =
+            Collections.singleton(new ReteSimpleMatch(this, false));
     }
 
     private void makeRootSearchOrder(Condition c) {
@@ -203,16 +206,16 @@ public class ConditionChecker extends ReteNetworkNode implements
      * target of the this condition with the host graph filtered 
      * through the NAC subconditions. 
      */
-    public Set<ReteMatch> getConflictSet() {
+    public Set<ReteSimpleMatch> getConflictSet() {
         assert this.conflictSetSearchTree == null;
         demandUpdate();
-        Set<ReteMatch> cs =
+        Set<ReteSimpleMatch> cs =
             this.isEmpty() ? this.oneEmptyMatch : this.conflictSet;
-        Set<ReteMatch> result = cs;
+        Set<ReteSimpleMatch> result = cs;
 
         if (!this.inhibitionMap.isEmpty() && (cs.size() > 0)) {
-            result = new TreeHashSet<ReteMatch>();
-            for (ReteMatch m : cs) {
+            result = new TreeHashSet<ReteSimpleMatch>();
+            for (ReteSimpleMatch m : cs) {
                 if (!this.isInhibited(m)) {
                     result.add(m);
                 }
@@ -226,7 +229,7 @@ public class ConditionChecker extends ReteNetworkNode implements
      * @return <code>true</code> if <code>m</code> is inhibited by some embargo match,
      * <code>false</code> otherwise.
      */
-    protected boolean isInhibited(ReteMatch m) {
+    protected boolean isInhibited(AbstractReteMatch m) {
         boolean result = this.inhibitionMap.contains(m);
         return result;
     }
@@ -243,18 +246,18 @@ public class ConditionChecker extends ReteNetworkNode implements
      * @return an iterator through the eligible matches of this condition checker,
      * that is, those positive matches that are not inhibitted by any Nac conditions. 
      */
-    public Iterator<ReteMatch> getConflictSetIterator() {
-        Iterator<ReteMatch> result;
+    public Iterator<ReteSimpleMatch> getConflictSetIterator() {
+        Iterator<ReteSimpleMatch> result;
         demandUpdate();
         if (this.isEmpty()) {
             result = this.oneEmptyMatch.iterator();
         } else if (!this.inhibitionMap.isEmpty()
             && (this.conflictSet.size() > 0)) {
             result =
-                new FilterIterator<ReteMatch>(this.conflictSet.iterator()) {
+                new FilterIterator<ReteSimpleMatch>(this.conflictSet.iterator()) {
                     @Override
                     protected boolean approves(Object obj) {
-                        ReteMatch m = (ReteMatch) obj;
+                        AbstractReteMatch m = (AbstractReteMatch) obj;
                         return !ConditionChecker.this.isInhibited(m);
 
                     }
@@ -274,23 +277,23 @@ public class ConditionChecker extends ReteNetworkNode implements
      * @return An iterator that returns only those matches that conform with
      * the given anchor map and are not inhibited by any NAC sub-conditions.
      */
-    public Iterator<ReteMatch> getConflictSetIterator(
+    public Iterator<ReteSimpleMatch> getConflictSetIterator(
             final RuleToHostMap anchorMap) {
-        Iterator<ReteMatch> result;
+        Iterator<ReteSimpleMatch> result;
         demandUpdate();
         if (this.isEmpty()) {
             result = this.oneEmptyMatch.iterator();
         } else if (!this.inhibitionMap.isEmpty()) {
             if (this.conflictSetSearchTree != null) {
                 result =
-                    new FilterIterator<ReteMatch>((anchorMap != null)
+                    new FilterIterator<ReteSimpleMatch>((anchorMap != null)
                             ? this.conflictSetSearchTree.getStorageFor(
                                 anchorMap).iterator()
                             : this.getConflictSet().iterator()) {
 
                         @Override
                         protected boolean approves(Object obj) {
-                            return !ConditionChecker.this.isInhibited((ReteMatch) obj);
+                            return !ConditionChecker.this.isInhibited((AbstractReteMatch) obj);
 
                         }
 
@@ -299,15 +302,15 @@ public class ConditionChecker extends ReteNetworkNode implements
             } else {
 
                 result =
-                    new FilterIterator<ReteMatch>(
+                    new FilterIterator<ReteSimpleMatch>(
                         this.getConflictSet().iterator()) {
 
                         RuleToHostMap anchor = anchorMap;
 
                         @Override
                         protected boolean approves(Object obj) {
-                            ReteMatch m = (ReteMatch) obj;
-                            return !ConditionChecker.this.isInhibited((ReteMatch) obj)
+                            AbstractReteMatch m = (AbstractReteMatch) obj;
+                            return !ConditionChecker.this.isInhibited((AbstractReteMatch) obj)
                                 && m.conformsWith(this.anchor);
 
                         }
@@ -320,14 +323,14 @@ public class ConditionChecker extends ReteNetworkNode implements
                     this.conflictSetSearchTree.getStorageFor(anchorMap).iterator();
             } else {
                 result =
-                    new FilterIterator<ReteMatch>(
+                    new FilterIterator<ReteSimpleMatch>(
                         this.getConflictSet().iterator()) {
 
                         RuleToHostMap anchor = anchorMap;
 
                         @Override
                         protected boolean approves(Object obj) {
-                            ReteMatch m = (ReteMatch) obj;
+                            AbstractReteMatch m = (AbstractReteMatch) obj;
                             return m.conformsWith(this.anchor);
                         }
 
@@ -347,7 +350,8 @@ public class ConditionChecker extends ReteNetworkNode implements
      * @param action Indicates if the given edge is going to be added or removed from the network.
      */
     public void receive(HostEdge mu, Action action) {
-        ReteMatch m = new ReteMatch(this, mu, this.getOwner().isInjective());
+        ReteSimpleMatch m =
+            new ReteSimpleMatch(this, mu, this.getOwner().isInjective());
         updateConflictSet(m, action);
     }
 
@@ -358,8 +362,9 @@ public class ConditionChecker extends ReteNetworkNode implements
      *  
      * @param match The match object that is to added/removed to/from the conflict set.
      */
-    public void receive(ReteMatch match) {
-        ReteMatch m = new ReteMatch(this, this.getOwner().isInjective(), match);
+    public void receive(AbstractReteMatch match) {
+        ReteSimpleMatch m =
+            new ReteSimpleMatch(this, this.getOwner().isInjective(), match);
         updateConflictSet(m, Action.ADD);
     }
 
@@ -374,8 +379,10 @@ public class ConditionChecker extends ReteNetworkNode implements
      * @param antecedent The antecedent that is calling this method. 
      * @param match The match that is to be added/removed to/from the conflict set.
      */
-    public void receive(DisconnectedSubgraphChecker antecedent, ReteMatch match) {
-        ReteMatch m = new ReteMatch(this, this.getOwner().isInjective(), match);
+    public void receive(DisconnectedSubgraphChecker antecedent,
+            AbstractReteMatch match) {
+        ReteSimpleMatch m =
+            new ReteSimpleMatch(this, this.getOwner().isInjective(), match);
         updateConflictSet(m, Action.ADD);
     }
 
@@ -389,7 +396,8 @@ public class ConditionChecker extends ReteNetworkNode implements
      * @param action Determines if the match is to be added or removed.
      */
     public void receive(HostNode node, Action action) {
-        ReteMatch m = new ReteMatch(this, node, this.getOwner().isInjective());
+        ReteSimpleMatch m =
+            new ReteSimpleMatch(this, node, this.getOwner().isInjective());
         this.updateConflictSet(m, action);
     }
 
@@ -404,7 +412,7 @@ public class ConditionChecker extends ReteNetworkNode implements
      *               match <code>m</code> is once again inhibited, otherwise it means
      *               one of its (possibly many) inhibitors has been removed.
      */
-    public void receiveInhibitorMatch(ReteMatch m, Action action) {
+    public void receiveInhibitorMatch(ReteSimpleMatch m, Action action) {
 
         if (action == Action.ADD) {
             this.inhibitionMap.add(m);
@@ -418,7 +426,7 @@ public class ConditionChecker extends ReteNetworkNode implements
      * @param m The given match
      * @param action Determines if the match is to be removed or added.
      */
-    protected void updateConflictSet(ReteMatch m, Action action) {
+    protected void updateConflictSet(ReteSimpleMatch m, Action action) {
         if (action == Action.ADD) {
             addMatchToConflictSet(m);
         } else {
@@ -433,8 +441,8 @@ public class ConditionChecker extends ReteNetworkNode implements
      * See the documentation for {@link #conflictSetSearchTree} for more info.
      * @param m The match to be added.
      */
-    protected void addMatchToConflictSet(ReteMatch m) {
-        Collection<ReteMatch> c;
+    protected void addMatchToConflictSet(ReteSimpleMatch m) {
+        Collection<ReteSimpleMatch> c;
         if (this.conflictSetSearchTree == null) {
 
             c = this.conflictSet;
@@ -450,9 +458,9 @@ public class ConditionChecker extends ReteNetworkNode implements
      * Removes a given match from the conflict set. 
      * @param m The given match.
      */
-    protected void removeMatchFromConflictSet(ReteMatch m) {
+    protected void removeMatchFromConflictSet(ReteSimpleMatch m) {
         assert m != null;
-        Collection<ReteMatch> c;
+        Collection<ReteSimpleMatch> c;
         if (this.conflictSetSearchTree == null) {
             c = this.conflictSet;
         } else {
@@ -495,7 +503,7 @@ public class ConditionChecker extends ReteNetworkNode implements
         res.append(String.format("The conflict set size: %s",
             getConflictSet().size()));
         int i = 0;
-        for (ReteMatch rm : getConflictSet()) {
+        for (AbstractReteMatch rm : getConflictSet()) {
             res.append(String.format("Match(%d): %s", ++i, rm));
         }
         return res.toString();
@@ -541,8 +549,8 @@ public class ConditionChecker extends ReteNetworkNode implements
         }
 
         @SuppressWarnings("unchecked")
-        Set<ReteMatch> getStorageFor(ReteMatch m) {
-            Set<ReteMatch> result = null;
+        Set<ReteSimpleMatch> getStorageFor(ReteSimpleMatch m) {
+            Set<ReteSimpleMatch> result = null;
             HashMap<HostElement,Object> leaf = this.root;
             for (int i = 0; i < this.rootSearchOrder.length - 1; i++) {
                 HostElement ei;
@@ -565,16 +573,16 @@ public class ConditionChecker extends ReteNetworkNode implements
                         : m.getEdge((RuleEdge) this.rootSearchOrder[this.rootSearchOrder.length - 1]);
             Object o = leaf.get(ei);
             if (o == null) {
-                o = new TreeHashSet<ReteMatch>();
+                o = new TreeHashSet<AbstractReteMatch>();
                 leaf.put(ei, o);
             }
-            result = (Set<ReteMatch>) o;
+            result = (Set<ReteSimpleMatch>) o;
             return result;
         }
 
         @SuppressWarnings("unchecked")
-        Set<ReteMatch> getStorageFor(RuleToHostMap anchorMap) {
-            Set<ReteMatch> result = null;
+        Set<ReteSimpleMatch> getStorageFor(RuleToHostMap anchorMap) {
+            Set<ReteSimpleMatch> result = null;
             HashMap<HostElement,Object> leaf = this.root;
             for (int i = 0; i < this.rootSearchOrder.length - 1; i++) {
                 HostElement ei;
@@ -599,10 +607,10 @@ public class ConditionChecker extends ReteNetworkNode implements
                             this.rootSearchOrder[this.rootSearchOrder.length - 1]);
             Object o = leaf.get(ei);
             if (o == null) {
-                o = new TreeHashSet<ReteMatch>();
+                o = new TreeHashSet<AbstractReteMatch>();
                 leaf.put(ei, o);
             }
-            result = (Set<ReteMatch>) o;
+            result = (Set<ReteSimpleMatch>) o;
             return result;
         }
     }
@@ -643,6 +651,11 @@ public class ConditionChecker extends ReteNetworkNode implements
         }
         return result;
 
+    }
+
+    @Override
+    protected void passDownMatchToSuccessors(AbstractReteMatch m) {
+        throw new UnsupportedOperationException();
     }
 
 }

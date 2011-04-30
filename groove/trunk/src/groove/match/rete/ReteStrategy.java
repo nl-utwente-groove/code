@@ -66,7 +66,7 @@ public class ReteStrategy extends MatchStrategy<TreeMatch> {
                 this.owner.getNetwork().getConditionCheckerNodeFor(
                     this.condition);
             if (cc != null) {
-                Iterator<ReteMatch> iter;
+                Iterator<ReteSimpleMatch> iter;
                 if ((seedMap != null) && (!seedMap.isEmpty())) {
                     iter = cc.getConflictSetIterator(seedMap);
                 } else {
@@ -88,7 +88,7 @@ public class ReteStrategy extends MatchStrategy<TreeMatch> {
      * @return a tree match constructed by extending {@code patternMap} with
      * matchings of all subconditions 
      */
-    private TreeMatch createTreeMatch(ReteMatch matchMap, HostGraph host) {
+    private TreeMatch createTreeMatch(ReteSimpleMatch matchMap, HostGraph host) {
         RuleToHostMap patternMap = matchMap.toRuleToHostMap(host.getFactory());
         final TreeMatch result = new TreeMatch(this.condition, patternMap);
         ReteStrategy[] subMatchers = getSubMatchers();

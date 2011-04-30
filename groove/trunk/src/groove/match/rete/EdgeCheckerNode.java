@@ -153,6 +153,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void sendDownReceivedEdge(HostEdge gEdge, Action action) {
 
         ReteNetworkNode previous = null;
@@ -246,5 +247,10 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
             }
         }
         return result;
+    }
+
+    @Override
+    protected void passDownMatchToSuccessors(AbstractReteMatch m) {
+        throw new UnsupportedOperationException();
     }
 }

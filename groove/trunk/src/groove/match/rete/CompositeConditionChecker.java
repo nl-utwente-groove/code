@@ -33,7 +33,7 @@ public class CompositeConditionChecker extends ConditionChecker {
     private DominoEventListener conflictSetMatchDominoAdapter =
         new DominoEventListener() {
             @Override
-            public void matchRemoved(ReteMatch match) {
+            public void matchRemoved(AbstractReteMatch match) {
                 matchDeminoRemovedFromConflictSet(match);
             }
         };
@@ -52,16 +52,19 @@ public class CompositeConditionChecker extends ConditionChecker {
     }
 
     @Override
-    public void receive(ReteMatch match) {
+    public void receive(AbstractReteMatch match) {
         match.addDominoListener(this.conflictSetMatchDominoAdapter);
-        ReteMatch actualPrefixMatchWithCorrectOwner =
-            ReteMatch.copyContents(this.parent, match.getSpecialPrefix(), true);
+        ReteSimpleMatch actualPrefixMatchWithCorrectOwner =
+            ReteSimpleMatch.forge(this.parent, this.getOwner().isInjective(),
+                match.getSpecialPrefix());
+
         this.getParent().receiveInhibitorMatch(
             actualPrefixMatchWithCorrectOwner, Action.ADD);
     }
 
     @Override
-    public void receive(DisconnectedSubgraphChecker antecedent, ReteMatch match) {
+    public void receive(DisconnectedSubgraphChecker antecedent,
+            AbstractReteMatch match) {
         throw new UnsupportedOperationException();
     }
 
@@ -81,10 +84,10 @@ public class CompositeConditionChecker extends ConditionChecker {
      * 
      * @param m The composite match that has been removed.
      */
-    public void matchDeminoRemovedFromConflictSet(ReteMatch m) {
-        ReteMatch actualPrefixMatchWithCorrectOwner =
-            ReteMatch.copyContents(this.parent, m.getSpecialPrefix(), true);
-
+    public void matchDeminoRemovedFromConflictSet(AbstractReteMatch m) {
+        ReteSimpleMatch actualPrefixMatchWithCorrectOwner =
+            ReteSimpleMatch.forge(this.parent, this.getOwner().isInjective(),
+                m.getSpecialPrefix());
         this.getParent().receiveInhibitorMatch(
             actualPrefixMatchWithCorrectOwner, Action.REMOVE);
     }

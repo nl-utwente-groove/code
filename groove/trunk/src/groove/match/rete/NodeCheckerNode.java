@@ -90,6 +90,7 @@ public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber 
         receiveNodeReporter.stop();
     }
 
+    @SuppressWarnings("unchecked")
     private void sendDownReceivedNode(HostNode node, Action action) {
         ReteNetworkNode previous = null;
         int repeatedSuccessorIndex = 0;
@@ -178,5 +179,10 @@ public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber 
             }
         }
         return result;
+    }
+
+    @Override
+    protected void passDownMatchToSuccessors(AbstractReteMatch m) {
+        throw new UnsupportedOperationException();
     }
 }

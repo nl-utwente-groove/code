@@ -819,9 +819,10 @@ abstract public class RegExpr { // implements VarSetSupport {
      * priority. In particular, atoms that have special meaning should come
      * before the {@link Atom}.
      */
-    static private final RegExpr[] prototypes = new RegExpr[] {new Atom(),
-        new Neg(), new Choice(), new Seq(), new Inv(), new Star(), new Plus(),
-        new Wildcard(), new Sharp(), new Empty()};
+    static private final RegExpr[] prototypes =
+        new RegExpr[] {new Atom(), new Neg(), new Choice(), new Seq(),
+            new Inv(), new Star(), new Plus(), new Wildcard(), new Sharp(),
+            new Empty()};
 
     /**
      * The list of operators into which a regular expression will be parsed, in
@@ -1604,7 +1605,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         static private final char CONSTRAINT_SEPARATOR = ',';
 
         /** Constraint testing if a label is of a correct type and is or is not in a predefined set of labels. */
-        private static class LabelConstraint extends Property<TypeLabel> {
+        public static class LabelConstraint extends Property<TypeLabel> {
             /** Constructs a new constraint.
              * @param kind The kind of labels tested for; only labels of this type can ever satisfy the constraint
              */
