@@ -643,6 +643,7 @@ final public class AspectJGraph extends GraphJGraph {
             case FORALL:
             case FORALL_POS:
             case EXISTS:
+            case EXISTS_OPT:
             case NESTED:
                 v.dash = JAttr.NESTED_DASH;
                 v.lineEnd = GraphConstants.ARROW_SIMPLE;

@@ -38,7 +38,7 @@ public abstract class SearchEngine<MatcherType extends MatchStrategy<TreeMatch>>
      *        constructed
      */
     public MatcherType createMatcher(Condition condition) {
-        return createMatcher(condition, null, null, null);
+        return createMatcher(condition, null, null);
     }
 
     /**
@@ -52,11 +52,7 @@ public abstract class SearchEngine<MatcherType extends MatchStrategy<TreeMatch>>
      * @param seedEdges the edges of the condition that have been matched
      *        already; if <code>null</code>, the condition's pattern map values
      *        are used
-     * @param relevantNodes nodes from the condition whose image should be a
-     *        distinguishing factor in the returned matches; if
-     *        <code>null</code>, all nodes are relevant
      */
     public abstract MatcherType createMatcher(Condition condition,
-            Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges,
-            Collection<RuleNode> relevantNodes);
+            Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges);
 }

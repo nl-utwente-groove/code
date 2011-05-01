@@ -317,6 +317,8 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
                 for (int i = 0; result && i < domNodes.length; i++) {
                     result = iso.getNode(domNodes[i]).equals(codNodes[i]);
                 }
+            } else {
+                break;
             }
         } while (!result);
         return result;

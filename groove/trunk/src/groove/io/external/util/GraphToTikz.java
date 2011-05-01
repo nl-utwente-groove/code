@@ -563,6 +563,7 @@ public final class GraphToTikz {
             styles.add(ABS_NODE_STYLE);
             break;
         case EXISTS:
+        case EXISTS_OPT:
         case FORALL:
         case FORALL_POS:
             styles.add(QUANTIFIER_NODE_STYLE);

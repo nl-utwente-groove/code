@@ -525,8 +525,7 @@ public class Rule extends Condition implements Comparable<Rule> {
         if (this.eventMatcher == null) {
             this.eventMatcher =
                 getMatcherFactory().createMatcher(this,
-                    getAnchorGraph().nodeSet(), getAnchorGraph().edgeSet(),
-                    null);
+                    getAnchorGraph().nodeSet(), getAnchorGraph().edgeSet());
         }
         return this.eventMatcher;
     }
@@ -590,8 +589,7 @@ public class Rule extends Condition implements Comparable<Rule> {
     private MatchStrategy<TreeMatch> createMatcher(Set<RuleNode> seedNodes,
             Set<RuleEdge> seedEdges) {
         testFixed(true);
-        return getMatcherFactory().createMatcher(this, seedNodes, seedEdges,
-            getAnchorGraph().nodeSet());
+        return getMatcherFactory().createMatcher(this, seedNodes, seedEdges);
     }
 
     /**

@@ -18,6 +18,7 @@ package groove.match.plan;
 
 import groove.algebra.AlgebraFamily;
 import groove.graph.DefaultNode;
+import groove.graph.Element;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
@@ -79,13 +80,12 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
      */
     @Override
     public SearchPlanStrategy createMatcher(Condition condition) {
-        return createMatcher(condition, null, null, null);
+        return createMatcher(condition, null, null);
     }
 
     @Override
     public SearchPlanStrategy createMatcher(Condition condition,
-            Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges,
-            Collection<RuleNode> anchorNodes) {
+            Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges) {
         assert (seedNodes == null) == (seedEdges == null) : "Anchor nodes and edges should be null simultaneously";
         this.algebraFamily =
             AlgebraFamily.getInstance(condition.getSystemProperties().getAlgebraFamily());
@@ -93,16 +93,22 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
             seedNodes = condition.getInputNodes();
             seedEdges = condition.getRoot().edgeSet();
         }
+        Set<RuleNode> anchorNodes = new HashSet<RuleNode>();
+        Set<RuleEdge> anchorEdges = new HashSet<RuleEdge>();
+        if (condition.hasRule()) {
+            for (Element anchorElem : condition.getRule().anchor()) {
+                if (anchorElem instanceof RuleNode) {
+                    anchorNodes.add((RuleNode) anchorElem);
+                } else {
+                    anchorEdges.add((RuleEdge) anchorElem);
+                }
+            }
+        }
         PlanData planData = new PlanData(condition);
         SearchPlan plan = planData.getPlan(seedNodes, seedEdges);
-        Set<RuleNode> unboundAnchorNodes = new HashSet<RuleNode>();
-        if (anchorNodes != null) {
-            unboundAnchorNodes.addAll(anchorNodes);
-        }
-        Set<LabelVar> boundVars = new HashSet<LabelVar>();
         for (AbstractSearchItem item : plan) {
-            boolean relevant = unboundAnchorNodes.removeAll(item.bindsNodes());
-            relevant |= boundVars.addAll(item.bindsVars());
+            boolean relevant = anchorNodes.removeAll(item.bindsNodes());
+            relevant |= anchorEdges.removeAll(item.bindsEdges());
             relevant |= condition.getOp() == Op.FORALL;
             item.setRelevant(relevant);
         }

@@ -225,7 +225,7 @@ public class ReteSearchEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
     @Override
     public synchronized MatchStrategy<TreeMatch> createMatcher(
             Condition condition, Collection<RuleNode> seedNodes,
-            Collection<RuleEdge> seedEdges, Collection<RuleNode> relevantNodes) {
+            Collection<RuleEdge> seedEdges) {
         //this will get more complicated when we have complex conditions        
         return new ReteStrategy(this, condition);
     }
