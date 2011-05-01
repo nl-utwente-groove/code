@@ -83,14 +83,23 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
     /** Tests if two graphs, together with corresponding lists of nodes, are isomorphic. */
     public boolean areIsomorphic(Graph<N,E> dom, Graph<N,E> cod, N[] domNodes,
             N[] codNodes) {
+        if (ISO_PRINT) {
+            System.out.printf("Comparing: %n   %s%n   %s", dom, cod);
+        }
         boolean result;
         if ((domNodes == null) != (codNodes == null)
             || (domNodes != null && domNodes.length != codNodes.length)) {
             result = false;
+            if (ISO_PRINT) {
+                System.out.printf("DIFFERENT NODE COUNTS%n", dom, cod);
+            }
         } else if (areGraphEqual(dom, cod, domNodes, codNodes)) {
             equalGraphsCount++;
             result = true;
         } else {
+            if (ISO_PRINT) {
+                System.out.printf("GRAPHS NOT EQUAL%n", dom, cod);
+            }
             areIsoReporter.start();
             CertificateStrategy<N,E> domCertifier = getCertifier(dom, true);
             CertificateStrategy<N,E> codCertifier = getCertifier(cod, true);
@@ -107,18 +116,18 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
                 CertificateStrategy<N,E> altCodCert =
                     this.certificateFactory.newInstance(cod, this.strong);
                 if (!areIsomorphic(altDomCert, altCodCert, domNodes, codNodes)) {
-                    System.err.printf(
+                    System.out.printf(
                         "Certifier '%s' gives a false negative on%n%s%n%s%n",
                         altDomCert.getClass(), dom, cod);
                     if (SAVE_FALSE_NEGATIVES) {
                         try {
                             File file1 = Groove.saveGraph(dom, "graph1");
                             File file2 = Groove.saveGraph(cod, "graph2");
-                            System.err.printf("Graphs saved as '%s' and '%s'",
+                            System.out.printf("Graphs saved as '%s' and '%s'",
                                 file1, file2);
                             System.exit(0);
                         } catch (IOException exc) {
-                            System.err.printf("Can't save graph: %s",
+                            System.out.printf("Can't save graph: %s",
                                 exc.getMessage());
                         }
                     }
@@ -192,7 +201,9 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
         if (!domCertifier.getGraphCertificate().equals(
             codCertifier.getGraphCertificate())) {
             if (ISO_PRINT) {
-                System.err.println("Unequal graph certificates");
+                System.out.printf("UNEQUAL GRAPH CERTIFICATES: %s versus %s%n",
+                    domCertifier.getGraphCertificate(),
+                    codCertifier.getGraphCertificate());
             }
             intCertOverlap++;
             result = false;
@@ -203,7 +214,7 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
                     areCertEqual(domCertifier, codCertifier, domNodes, codNodes);
             } else {
                 if (ISO_PRINT) {
-                    System.err.println("Codomain has discrete partition but domain has not");
+                    System.out.println("Codomain has discrete partition but domain has not");
                 }
                 distinctCertsCount++;
                 result = false;
@@ -222,7 +233,7 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
                         codNodes);
             } else {
                 if (ISO_PRINT) {
-                    System.err.println("Unequal node partition counts");
+                    System.out.println("Unequal node partition counts");
                 }
                 distinctCertsCount++;
                 result = false;
@@ -286,7 +297,7 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
         }
         if (ISO_PRINT) {
             if (!result) {
-                System.err.printf("Graphs have distinct but unequal certificates%n");
+                System.out.printf("Graphs have distinct but unequal certificates%n");
             }
         }
         return result;
@@ -437,7 +448,7 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
         }
 
         if (ISO_PRINT) {
-            System.err.printf("%nIsomorphism check: ");
+            System.out.printf("%nIsomorphism check: ");
         }
         int i;
         if (state != null) {
@@ -447,7 +458,7 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
         }
         while (i >= 0 && i < records.length) {
             if (ISO_PRINT) {
-                System.err.printf("%d ", i);
+                System.out.printf("%d ", i);
             }
             IsoSearchItem item = plan.get(i);
             if (records[i] == null) {
@@ -527,12 +538,12 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
         }
         if (i < 0) {
             if (ISO_PRINT) {
-                System.err.printf("Failed%n");
+                System.out.printf("Failed%n");
             }
             return null;
         } else {
             if (ISO_PRINT) {
-                System.err.printf("Succeeded%n");
+                System.out.printf("Succeeded%n");
             }
             assert checkIsomorphism(domCertifier.getGraph(), result) : String.format(
                 "Erronous result using plan %s", plan);
@@ -880,7 +891,7 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
         for (E edge : dom.edgeSet()) {
             if (edge.source() != edge.target()
                 && !map.edgeMap().containsKey(edge)) {
-                System.err.printf("Result contains no image for %s%n", edge);
+                System.out.printf("Result contains no image for %s%n", edge);
                 return false;
             }
         }
@@ -890,13 +901,13 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
             N keyTarget = key.target();
             E value = edgeEntry.getValue();
             if (!map.getNode(keySource).equals(value.source())) {
-                System.err.printf(
+                System.out.printf(
                     "Edge %s mapped to %s, but source mapped to %s%n", key,
                     value, keySource, map.getNode(keySource));
                 return false;
             }
             if (!map.getNode(keyTarget).equals(value.target())) {
-                System.err.printf(
+                System.out.printf(
                     "Edge %s mapped to %s, but end %s mapped to %s%n", key,
                     value, key.target(), map.getNode(keyTarget));
                 return false;
@@ -907,7 +918,7 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
                 for (Map.Entry<N,N> second : map.nodeMap().entrySet()) {
                     if (first != second
                         && first.getValue() == second.getValue()) {
-                        System.err.printf("Image of %s and %s both %s%n",
+                        System.out.printf("Image of %s and %s both %s%n",
                             first.getKey(), second.getKey(), first.getValue());
                     }
                 }
@@ -1121,7 +1132,7 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
         } else if (args.length == 2) {
             compareGraphs(args[0], args[1]);
         } else {
-            System.err.println("Usage: DefaultIsoChecker file1 file2");
+            System.out.println("Usage: DefaultIsoChecker file1 file2");
             return;
         }
     }
@@ -1143,7 +1154,7 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
                     graph2.addEdge(nodeMap.mapEdge(edge));
                 }
                 if (!checker.areIsomorphic(graph1, graph2)) {
-                    System.err.println("Error! Graph not isomorphic to itself");
+                    System.out.println("Error! Graph not isomorphic to itself");
                 }
             }
         } catch (IOException e) {

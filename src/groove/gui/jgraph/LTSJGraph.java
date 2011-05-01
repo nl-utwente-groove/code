@@ -55,7 +55,6 @@ public class LTSJGraph extends GraphJGraph {
         this.simulator = simulator;
         // turn off double buffering to improve performance
         setDoubleBuffered(false);
-        setExporter(simulator.getExporter());
     }
 
     @Override
@@ -118,6 +117,16 @@ public class LTSJGraph extends GraphJGraph {
             addSubmenu(result, createShowHideMenu());
             addSubmenu(result, createZoomMenu());
         }
+        return result;
+    }
+
+    @Override
+    public JMenu createExportMenu() {
+        JMenu result = new JMenu();
+        if (getActiveState() != null) {
+            result.add(getSimulator().getSaveHostGraphAction());
+        }
+        addMenuItems(result, super.createExportMenu());
         return result;
     }
 

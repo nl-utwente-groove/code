@@ -69,12 +69,17 @@ public class StringAlgebra extends StringSignature<String,Boolean> implements
         return ExprParser.toQuoted((String) value, ExprParser.DOUBLE_QUOTE_CHAR);
     }
 
-    public String getValue(String constant) {
+    public String getValueFromString(String constant) {
         try {
             return ExprParser.toUnquoted(constant, ExprParser.DOUBLE_QUOTE_CHAR);
         } catch (FormatException e) {
             return null;
         }
+    }
+
+    @Override
+    protected String toValue(String constant) {
+        return constant;
     }
 
     /** The name of this algebra. */

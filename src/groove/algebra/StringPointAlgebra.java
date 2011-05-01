@@ -67,7 +67,12 @@ public class StringPointAlgebra extends StringSignature<Object,Object>
         return value.toString();
     }
 
-    public Object getValue(String constant) {
+    public Object getValueFromString(String constant) {
+        return singleString;
+    }
+
+    @Override
+    public Object toValue(String constant) {
         return singleString;
     }
 

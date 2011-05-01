@@ -59,4 +59,25 @@ public abstract class StringSignature<String,Bool> implements Signature {
             return false;
         }
     }
+
+    /**
+     * Conversion of native Java representation of string constants to
+     * the corresponding algebra values.
+     * @throws IllegalArgumentException if the parameter is not of type {@link java.lang.String}
+     */
+    final public String getValueFromJava(Object constant) {
+        if (!(constant instanceof java.lang.String)) {
+            throw new IllegalArgumentException(java.lang.String.format(
+                "Native int type is %s, not %s",
+                java.lang.String.class.getSimpleName(),
+                constant.getClass().getSimpleName()));
+        }
+        return toValue((java.lang.String) constant);
+    }
+
+    /** 
+     * Callback method to convert from the native ({@link Integer})
+     * representation to the algebra representation.
+     */
+    protected abstract String toValue(java.lang.String constant);
 }

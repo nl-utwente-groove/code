@@ -95,7 +95,7 @@ public class ColFormat extends AbstractExternalFileFormat<HostGraph> {
             if (fragments[0].equals("n")) {
                 HostNode node = this.addNode(graph, fragments[1]);
                 ValueNode valueNode =
-                    graph.addNode(intAlgebra, intAlgebra.getValue(fragments[2]));
+                    graph.addNode(intAlgebra, intAlgebra.getValueFromString(fragments[2]));
                 graph.addEdge(node, valueLabel, valueNode);
             } else if (fragments[0].equals("e")) {
                 HostNode source = this.addNode(graph, fragments[1]);

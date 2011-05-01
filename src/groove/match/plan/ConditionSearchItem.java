@@ -233,23 +233,20 @@ class ConditionSearchItem extends AbstractSearchItem {
             }
             RuleToHostMap contextMap = createContextMap();
             List<TreeMatch> matches =
-                ConditionSearchItem.this.matcher.findAll(this.host, contextMap,
-                    null);
+                ConditionSearchItem.this.matcher.findAll(this.host, contextMap);
             if (ConditionSearchItem.this.positive && matches.size() == 0) {
                 result = false;
             } else if (ConditionSearchItem.this.preCounted) {
                 result = matches.size() == this.preCount;
+            } else if (ConditionSearchItem.this.countNode != null) {
+                this.countImage =
+                    this.host.getFactory().createNodeFromJava(
+                        ConditionSearchItem.this.intAlgebra, matches.size());
             }
             if (result) {
                 this.match = createMatch();
                 this.match.addSubMatches(matches);
-                if (ConditionSearchItem.this.countNode != null) {
-                    this.countImage =
-                        this.host.getFactory().createNode(
-                            ConditionSearchItem.this.intAlgebra,
-                            ConditionSearchItem.this.intAlgebra.getValue(""
-                                + matches.size()));
-                }
+
                 result = write();
             } else {
                 this.match = null;
@@ -325,7 +322,7 @@ class ConditionSearchItem extends AbstractSearchItem {
         @Override
         boolean find() {
             return ConditionSearchItem.this.matcher.find(this.host,
-                createContextMap(), null) == null;
+                createContextMap()) == null;
         }
 
         @Override

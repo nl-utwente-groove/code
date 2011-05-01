@@ -62,14 +62,20 @@ abstract public class AbstractNode implements Node, Cloneable {
      */
     @Override
     public boolean equals(Object obj) {
-        boolean result =
-            (obj == this)
-                || (obj instanceof Node && this.nodeNr == ((Node) obj).getNumber());
-        assert result || !(obj instanceof AbstractNode)
-            || testDiffers((AbstractNode) obj) : String.format(
-            "Distinct nodes with number %d: " + this + " & " + obj + ", "
-                + obj.getClass().getName(), this.nodeNr);
-        return result;
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof Node)) {
+            return false;
+        }
+        Node other = (Node) obj;
+        if (getNumber() != other.getNumber()) {
+            return false;
+        }
+        if (getClass() != other.getClass()) {
+            return false;
+        }
+        return true;
     }
 
     /**

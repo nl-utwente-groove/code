@@ -216,6 +216,11 @@ abstract public class Visitor<T,R> {
             }
         }
 
+        /** Returns a new finder for the same property. */
+        public Finder<T> newInstance() {
+            return newInstance(null);
+        }
+
         /** The property of the object to be found. */
         private Property<T> property;
     }

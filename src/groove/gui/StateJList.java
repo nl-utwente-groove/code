@@ -256,6 +256,7 @@ public class StateJList extends JList implements SimulationListener {
      *        selected before refreshing.
      */
     private void setList(Set<String> names, boolean keepSelection) {
+        int[] currentIndices = getSelectedIndices();
         Object[] currentSelection = getSelectedValues();
         Object[] sortedNames = names.toArray();
         Arrays.sort(sortedNames);
@@ -268,19 +269,30 @@ public class StateJList extends JList implements SimulationListener {
             this.listModel.addElement(name);
         }
         refreshCurrentState(false);
-        int[] newSelection = new int[currentSelection.length];
+        int[] newSelection = new int[currentIndices.length];
         int newSelectionCount = 0;
         if (keepSelection) {
-            for (int i = 0; i < currentSelection.length; i++) {
-                int newIndex =
-                    Arrays.asList(sortedNames).indexOf(currentSelection[i]) + 1;
-                if (newIndex > 0) {
+            for (int i = 0; i < currentIndices.length; i++) {
+                int newIndex;
+                if (currentIndices[i] > 0) {
+                    // look up this value in the new names
+                    newIndex =
+                        Arrays.asList(sortedNames).indexOf(currentSelection[i]);
+                    // increase index by one to account for state entry
+                    if (newIndex >= 0) {
+                        newIndex++;
+                    }
+                } else {
+                    // this must have been the state entry; index is 0
+                    newIndex = 0;
+                }
+                if (newIndex >= 0) {
                     newSelection[newSelectionCount] = newIndex;
                     newSelectionCount++;
                 }
             }
         }
-        if (newSelectionCount == 0) {
+        if (currentIndices.length == 0 && newSelectionCount == 0) {
             restoreListeners();
             if (getStartGraphName() != null) {
                 setSelectedValue(getStartGraphName(), true);

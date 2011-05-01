@@ -77,9 +77,6 @@ final public class AspectJGraph extends GraphJGraph {
         this.editor = null;
         assert role.inGrammar();
         this.graphRole = role;
-        if (simulator != null) {
-            setExporter(simulator.getExporter());
-        }
     }
 
     /**
@@ -95,7 +92,6 @@ final public class AspectJGraph extends GraphJGraph {
         setCloneable(true);
         setConnectable(true);
         setDisconnectable(true);
-        setExporter(editor.getExporter());
     }
 
     @Override
@@ -274,6 +270,17 @@ final public class AspectJGraph extends GraphJGraph {
     }
 
     @Override
+    public JMenu createExportMenu() {
+        // add a save graph action as the first action
+        JMenu result = new JMenu();
+        if (getSimulator() != null && getGraphRole() == GraphRole.HOST) {
+            result.add(getSimulator().getSaveHostGraphAction());
+        }
+        addMenuItems(result, super.createExportMenu());
+        return result;
+    }
+
+    @Override
     public SetLayoutMenu createSetLayoutMenu() {
         if (this.editor != null) {
             SetLayoutMenu result =
@@ -335,7 +342,12 @@ final public class AspectJGraph extends GraphJGraph {
     protected String getExportActionName() {
         switch (getGraphRole()) {
         case HOST:
-            return Options.EXPORT_GRAPH_ACTION_NAME;
+            if (getSimulator() != null
+                && getSimulator().getStatePanel().isShowingState()) {
+                return Options.EXPORT_STATE_ACTION_NAME;
+            } else {
+                return Options.EXPORT_GRAPH_ACTION_NAME;
+            }
         case RULE:
             return Options.EXPORT_RULE_ACTION_NAME;
         case TYPE:

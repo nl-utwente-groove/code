@@ -37,7 +37,12 @@ public class IntPointAlgebra extends IntSignature<Object,Object,Object>
         return value.toString();
     }
 
-    public Object getValue(String constant) {
+    public Object getValueFromString(String constant) {
+        return singleInt;
+    }
+
+    @Override
+    protected Object toValue(Integer constant) {
         return singleInt;
     }
 

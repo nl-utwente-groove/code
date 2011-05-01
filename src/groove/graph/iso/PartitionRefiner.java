@@ -625,7 +625,7 @@ public class PartitionRefiner<N extends Node,E extends Edge<N>> extends
         public MyValueNodeCert(ValueNode node) {
             super((N) node);
             this.node = node;
-            this.value = node.getNumber();
+            this.value = node.getValue().hashCode();
         }
 
         /**
@@ -635,7 +635,8 @@ public class PartitionRefiner<N extends Node,E extends Edge<N>> extends
         @Override
         public boolean equals(Object obj) {
             return obj instanceof MyValueNodeCert
-                && this.node.equals(((MyValueNodeCert<?>) obj).node);
+                && this.node.getValue().equals(
+                    ((MyValueNodeCert<?>) obj).node.getValue());
         }
 
         /**

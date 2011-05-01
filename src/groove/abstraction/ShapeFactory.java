@@ -44,7 +44,7 @@ public class ShapeFactory extends HostFactory {
     @Override
     protected ShapeEdge createEdge(HostNode source, Label label,
             HostNode target, int nr) {
-        return new ShapeEdge((ShapeNode) source, (TypeLabel) label,
+        return new ShapeEdge(this, (ShapeNode) source, (TypeLabel) label,
             (ShapeNode) target, nr);
     }
 

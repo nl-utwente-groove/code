@@ -567,7 +567,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
                 setBackground(this.enabledBackground);
             }
             getLabelTree().setEnabled(enabled);
-            getExportAction().setEnabled(enabled);
             for (JToggleButton button : getModeButtonMap().values()) {
                 button.setEnabled(enabled);
             }
@@ -819,6 +818,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
         if (this.exportAction == null) {
             this.exportAction = new ExportAction();
         }
+        this.exportAction.refresh();
         return this.exportAction;
     }
 
@@ -855,11 +855,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
                 }
             }
         };
-    }
-
-    /** Sets the exporter used in the ExportAction. */
-    public void setExporter(Exporter exporter) {
-        getExportAction().setExporter(exporter);
     }
 
     /** Callback method to return the export action name. */
@@ -911,6 +906,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
 
     /** 
      * Adds to a given menu all the items of another menu.
+     * Precedes the new menu with a separator if it is nonempty.
      * The submenu may be {@code null}, in which case nothing is added 
      * @param menu the menu to be extended
      * @param submenu the menu to be added to the popup menu
@@ -921,6 +917,18 @@ public class GraphJGraph extends org.jgraph.JGraph {
             if (menu.getItemCount() > 0) {
                 menu.addSeparator();
             }
+            addMenuItems(menu, submenu);
+        }
+    }
+
+    /** 
+     * Adds to a given menu all the items of another menu.
+     * The submenu may be {@code null}, in which case nothing is added 
+     * @param menu the menu to be extended
+     * @param submenu the menu to be added to the popup menu
+     */
+    final public void addMenuItems(JMenu menu, JMenu submenu) {
+        if (submenu != null && submenu.getItemCount() > 0) {
             // as we move items from the submenu to the main menu
             // the submenu gets modified
             while (submenu.getItemCount() > 0) {
@@ -1215,7 +1223,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
     private class ExportAction extends AbstractAction {
         /** Constructs an instance of the action. */
         ExportAction() {
-            super(getExportActionName());
+            super(Options.EXPORT_GRAPH_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
         }
 
@@ -1240,12 +1248,14 @@ public class GraphJGraph extends org.jgraph.JGraph {
             }
         }
 
-        /** Sets the exporter to be used. */
-        void setExporter(Exporter exporter) {
-            this.exporter = exporter;
+        /** Refreshes the name of this action. */
+        public void refresh() {
+            setEnabled(GraphJGraph.this.isEnabled());
+            putValue(NAME, getExportActionName());
+            putValue(SHORT_DESCRIPTION, getExportActionName());
         }
 
-        private Exporter exporter;
+        private final Exporter exporter = Exporter.getInstance();
     }
 
     /** Action to turn filtering on for a set of selected cells. */

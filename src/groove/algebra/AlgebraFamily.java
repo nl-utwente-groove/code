@@ -18,6 +18,7 @@ package groove.algebra;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -97,7 +98,7 @@ public class AlgebraFamily {
      * @see #getAlgebraFor(String)
      */
     public Object getValue(String signature, String constant) {
-        return getAlgebra(signature).getValue(constant);
+        return getAlgebra(signature).getValueFromString(constant);
     }
 
     /** 
@@ -178,7 +179,10 @@ public class AlgebraFamily {
         Method[] signatureMethods =
             Algebras.getSignature(algebra).getDeclaredMethods();
         for (Method method : signatureMethods) {
-            methodNames.add(method.getName());
+            if (Modifier.isAbstract(method.getModifiers())
+                && Modifier.isPublic(method.getModifiers())) {
+                methodNames.add(method.getName());
+            }
         }
         // now create an operation for all those declared methods
         Method[] methods = algebra.getClass().getDeclaredMethods();
