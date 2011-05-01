@@ -22,6 +22,7 @@ import groove.algebra.Algebras;
 import groove.algebra.Constant;
 import groove.algebra.Operator;
 import groove.graph.GraphRole;
+import groove.io.HTMLConverter;
 import groove.util.Colors;
 import groove.util.Duo;
 import groove.util.Pair;
@@ -157,6 +158,16 @@ public enum AspectKind {
      */
     public String getPrefix() {
         return getName() + SEPARATOR;
+    }
+
+    /** Returns a HTML-formatted string describing the syntax of this aspect. */
+    public String getSyntax() {
+        StringBuilder result = new StringBuilder();
+        result.append(HTMLConverter.STRONG_TAG.on(" " + getName()));
+        result.append(getContentKind().preSyntax());
+        result.append(HTMLConverter.STRONG_TAG.on(SEPARATOR));
+        result.append(getContentKind().postSyntax());
+        return result.toString();
     }
 
     /** 
@@ -424,7 +435,7 @@ public enum AspectKind {
     /** Type of content that can be wrapped inside an aspect. */
     static public enum ContentKind {
         /** No content. The label text is not checked. */
-        NONE {
+        NONE("", "") {
             @Override
             Pair<Object,String> parse(String text, int pos)
                 throws FormatException {
@@ -442,7 +453,7 @@ public enum AspectKind {
             }
         },
         /** Empty content: no text may precede or follow the separator. */
-        EMPTY {
+        EMPTY("", "") {
             @Override
             Pair<Object,String> parse(String text, int pos)
                 throws FormatException {
@@ -464,7 +475,7 @@ public enum AspectKind {
             }
         },
         /** Quantifier level name. */
-        LEVEL {
+        LEVEL("=<i>level</i>", "") {
             @Override
             Pair<Object,String> parse(String text, int pos)
                 throws FormatException {
@@ -510,7 +521,7 @@ public enum AspectKind {
          * Multiplicity: either a single number,
          * or of the form {@code n..m} where {@code n<m} or {@code m=*}.
          */
-        MULTIPLICITY {
+        MULTIPLICITY("", "<i>low</i>..<b><i>high</i></b>") {
             @Override
             Pair<Object,String> parse(String text, int pos)
                 throws FormatException {
@@ -578,7 +589,7 @@ public enum AspectKind {
          * Parameter number, starting with a dollar sign.
          * The content is a non-negative value of type {@link Integer}. 
          */
-        PARAM {
+        PARAM("", "<i>nr</i>") {
             @Override
             Pair<Object,String> parse(String text, int pos)
                 throws FormatException {
@@ -646,7 +657,7 @@ public enum AspectKind {
          * Argument number.
          * The content is a non-negative value of type {@link Integer}. 
          */
-        NUMBER {
+        NUMBER("", "<b><i>nr</i></b>") {
             @Override
             Pair<Object,String> parse(String text, int pos)
                 throws FormatException {
@@ -675,7 +686,7 @@ public enum AspectKind {
             }
         },
         /** Content must be a {@link NestedValue}. */
-        NESTED {
+        NESTED("", "in|at|count") {
             @Override
             Pair<Object,String> parse(String text, int pos)
                 throws FormatException {
@@ -696,7 +707,7 @@ public enum AspectKind {
             }
         },
         /** Colour name or RGB value. */
-        COLOR {
+        COLOR("", "<b><i>rgb</i></b>|<b><i>name</i></b>") {
             @Override
             Pair<Object,String> parse(String text, int pos)
                 throws FormatException {
@@ -718,7 +729,7 @@ public enum AspectKind {
             }
         },
         /** Node identifier. */
-        NAME {
+        NAME("", "<b><i>name</i></b>") {
             @Override
             Pair<Object,String> parse(String text, int pos)
                 throws FormatException {
@@ -749,7 +760,7 @@ public enum AspectKind {
             }
         },
         /** Predicate (attribute) value. */
-        PRED_VAL {
+        PRED_VAL("", "<b><i>constraint</i></b>") {
             @Override
             Pair<Object,String> parse(String text, int pos)
                 throws FormatException {
@@ -802,7 +813,7 @@ public enum AspectKind {
             }
         },
         /** Let expression content. */
-        LET_EXPR {
+        LET_EXPR("", "<b><i>name</i>=<i>val</i></b>") {
             @Override
             Pair<Object,String> parse(String text, int pos)
                 throws FormatException {
@@ -821,13 +832,17 @@ public enum AspectKind {
         };
 
         /** Default, empty constructor. */
-        private ContentKind() {
-            this(null);
+        private ContentKind(String preSyntax, String postSyntax) {
+            this.signature = null;
+            this.preSyntax = preSyntax;
+            this.postSyntax = postSyntax;
         }
 
         /** Constructor for literals of a given signature. */
         private ContentKind(String signature) {
             this.signature = signature;
+            this.preSyntax = "";
+            this.postSyntax = "<i>const</i>|<i>op</i>";
         }
 
         /** 
@@ -938,7 +953,23 @@ public enum AspectKind {
             return Character.isJavaIdentifierPart(c);
         }
 
+        /** Returns the description of the syntactical element for this content kind
+         * that appears before the aspect colon.
+         */
+        String preSyntax() {
+            return this.preSyntax;
+        }
+
+        /** Returns the description of the syntactical element for this content kind
+         * that appears after the aspect colon.
+         */
+        String postSyntax() {
+            return this.postSyntax;
+        }
+
         private final String signature;
+        private final String preSyntax;
+        private final String postSyntax;
 
         /** Symbolic representation of unbounded multiplicity. */
         static public final String MULT_UNBOUNDED = "*";
