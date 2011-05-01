@@ -26,7 +26,6 @@ import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
 import groove.trans.DefaultHostGraph;
 import groove.trans.GraphGrammar;
-import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.aspect.AspectGraph;
@@ -108,7 +107,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         return Collections.unmodifiableSet(getStore().getGraphs().keySet());
     }
 
-    public Set<RuleName> getRuleNames() {
+    public Set<String> getRuleNames() {
         return Collections.unmodifiableSet(getStore().getRules().keySet());
     }
 
@@ -137,7 +136,8 @@ public class StoredGrammarView implements GrammarView, Observer {
         return result;
     }
 
-    public RuleView getRuleView(RuleName name) {
+    /** Convenience method to obtain a rule by the string version of its rule name. */
+    public RuleView getRuleView(String name) {
         RuleView result = null;
         AspectGraph ruleGraph = getStore().getRules().get(name);
         if (ruleGraph != null) {
@@ -350,7 +350,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         // set a label store (get it from the type graph if that exists)
         if (result.getType() == null) {
             this.labelStore = new LabelStore();
-            for (RuleName ruleName : getRuleNames()) {
+            for (String ruleName : getRuleNames()) {
                 RuleView ruleView = getRuleView(ruleName);
                 this.labelStore.addLabels(ruleView.getLabels());
             }
@@ -370,7 +370,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         }
         result.setLabelStore(this.labelStore);
         // set rules
-        for (RuleName ruleName : getRuleNames()) {
+        for (String ruleName : getRuleNames()) {
             RuleView ruleView = getRuleView(ruleName);
             try {
                 // only add the enabled rules

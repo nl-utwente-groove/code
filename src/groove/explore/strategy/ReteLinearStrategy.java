@@ -26,7 +26,7 @@ import groove.match.SearchEngineFactory;
 import groove.match.SearchEngineFactory.EngineType;
 import groove.match.rete.ReteSearchEngine;
 import groove.trans.DeltaStore;
-import groove.trans.RuleMatch;
+import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.SystemRecord;
 import groove.util.Reporter;
@@ -220,7 +220,7 @@ public class ReteLinearStrategy extends AbstractStrategy {
             MatchResult result = null;
             Rule currentRule = firstCall().getRule();
             while (currentRule != null) {
-                RuleMatch ruleMatch =
+                Proof ruleMatch =
                     currentRule.getMatch(this.state.getGraph(), null);
                 if (ruleMatch != null) {
                     // convert the match to an event

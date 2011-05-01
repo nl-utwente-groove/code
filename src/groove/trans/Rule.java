@@ -62,7 +62,7 @@ public class Rule extends Condition implements Comparable<Rule> {
      * @param ruleProperties the rule properties
      * @param systemProperties the global grammar properties
      */
-    public Rule(RuleName name, RuleGraph lhs, RuleGraph rhs,
+    public Rule(String name, RuleGraph lhs, RuleGraph rhs,
             RuleGraphMorphism morphism, GraphProperties ruleProperties,
             SystemProperties systemProperties) {
         this(name, lhs, rhs, morphism, null, null, ruleProperties,
@@ -83,11 +83,11 @@ public class Rule extends Condition implements Comparable<Rule> {
      * @param ruleProperties the rule properties
      * @param systemProperties the global grammar properties
      */
-    public Rule(RuleName name, RuleGraph lhs, RuleGraph rhs,
+    public Rule(String name, RuleGraph lhs, RuleGraph rhs,
             RuleGraphMorphism morphism, RuleGraph rootGraph,
             RuleGraphMorphism coRootMap, GraphProperties ruleProperties,
             SystemProperties systemProperties) {
-        super(name, lhs, rootGraph, systemProperties);
+        super(name, Op.EXISTS, lhs, rootGraph, systemProperties);
         this.coRootMap =
             coRootMap == null ? new RuleGraphMorphism() : coRootMap;
         this.lhs = lhs;
@@ -98,11 +98,6 @@ public class Rule extends Condition implements Comparable<Rule> {
             || rhs().nodeSet().containsAll(coRootMap.nodeMap().values()) : String.format(
             "RHS nodes %s do not contain all co-root values %s",
             rhs().nodeSet(), coRootMap.nodeMap().values());
-    }
-
-    @Override
-    public Op getOp() {
-        return Op.EXISTS;
     }
 
     @Override
@@ -421,10 +416,10 @@ public class Rule extends Condition implements Comparable<Rule> {
      * contrast with the normal (condition) matcher, which is based on the
      * images of the root map.
      */
-    public RuleMatch getEventMatch(BasicEvent event, final HostGraph host) {
-        RuleMatch result =
+    public Proof getEventMatch(BasicEvent event, final HostGraph host) {
+        Proof result =
             getEventMatcher().traverse(host, event.getAnchorMap(),
-                new Visitor<TreeMatch,RuleMatch>() {
+                new Visitor<TreeMatch,Proof>() {
                     @Override
                     protected boolean process(TreeMatch match) {
                         boolean result =
@@ -451,9 +446,8 @@ public class Rule extends Condition implements Comparable<Rule> {
      *         <code>patternMatch</code> is not compatible with the pattern
      *         graph
      */
-    public RuleMatch getMatch(HostGraph host, RuleToHostMap contextMap) {
-        return traverseMatches(host, contextMap,
-            Visitor.<RuleMatch>newFinder(null));
+    public Proof getMatch(HostGraph host, RuleToHostMap contextMap) {
+        return traverseMatches(host, contextMap, Visitor.<Proof>newFinder(null));
     }
 
     /**
@@ -466,9 +460,9 @@ public class Rule extends Condition implements Comparable<Rule> {
      *         <code>null</code> and the condition is not ground, or if
      *         <code>contextMap</code> is not compatible with the root map
      */
-    public Collection<RuleMatch> getAllMatches(HostGraph host,
+    public Collection<Proof> getAllMatches(HostGraph host,
             RuleToHostMap contextMap) {
-        List<RuleMatch> result = new ArrayList<RuleMatch>();
+        List<Proof> result = new ArrayList<Proof>();
         traverseMatches(host, contextMap, Visitor.newCollector(result));
         return result;
     }
@@ -490,7 +484,7 @@ public class Rule extends Condition implements Comparable<Rule> {
      * @see Visitor#visit(Object)
      */
     public <R> R traverseMatches(final HostGraph host,
-            RuleToHostMap contextMap, final Visitor<RuleMatch,R> visitor) {
+            RuleToHostMap contextMap, final Visitor<Proof,R> visitor) {
         assert isFixed();
         RuleToHostMap seedMap =
             contextMap == null ? host.getFactory().createRuleToHostMap()
@@ -517,8 +511,8 @@ public class Rule extends Condition implements Comparable<Rule> {
      *        {@link #getPattern()} into some host graph
      * @return a match constructed on the basis of <code>map</code>
      */
-    private RuleMatch createMatch(RuleToHostMap matchMap) {
-        return new RuleMatch(this, matchMap);
+    private Proof createMatch(RuleToHostMap matchMap) {
+        return new Proof(this, matchMap);
     }
 
     /**

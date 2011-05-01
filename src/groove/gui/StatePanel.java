@@ -41,8 +41,7 @@ import groove.trans.HostEdge;
 import groove.trans.HostGraph.HostToAspectMap;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
-import groove.trans.RuleMatch;
-import groove.trans.RuleName;
+import groove.trans.Proof;
 import groove.trans.SystemProperties;
 import groove.view.FormatException;
 import groove.view.GraphView;
@@ -245,7 +244,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     /**
      * Resets the emphasis in the state model and the current derivation.
      */
-    public synchronized void setRuleUpdate(RuleName rule) {
+    public synchronized void setRuleUpdate(String rule) {
         if (clearSelectedMatch(true)) {
             refreshStatus();
         }
@@ -261,7 +260,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
             setStateModel(trans.source());
         }
         // now emphasise at will
-        RuleMatch match = trans.getMatch();
+        Proof match = trans.getMatch();
         setMatchUpdate(match);
     }
 
@@ -269,7 +268,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
      * Emphasise the given match.
      * @param match the match to be emphasised (non-null)
      */
-    public void setMatchUpdate(RuleMatch match) {
+    public void setMatchUpdate(Proof match) {
         assert match != null : "Match update should not be called with empty match";
         setStateModel(this.simulator.getCurrentState());
         AspectJModel jModel = getJModel();
@@ -376,7 +375,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         boolean result = !this.changing && this.selectedMatch != null;
         if (result) {
             this.changing = true;
-            RuleName selectedRule = this.selectedMatch.getRule().getName();
+            String selectedRule = this.selectedMatch.getRule().getName();
             this.selectedMatch = null;
             this.simulator.setRule(selectedRule);
             if (clear) {
@@ -602,7 +601,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     private final Map<GraphState,HostToAspectMap> stateToAspectMap =
         new HashMap<GraphState,HostToAspectMap>();
     /** The currently emphasised match (nullable). */
-    private RuleMatch selectedMatch;
+    private Proof selectedMatch;
 
     /** The simulator to which this panel belongs. */
     private final Simulator simulator;

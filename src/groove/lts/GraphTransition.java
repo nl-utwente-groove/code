@@ -20,7 +20,7 @@ import groove.control.CtrlTransition;
 import groove.graph.Edge;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
-import groove.trans.RuleMatch;
+import groove.trans.Proof;
 import groove.view.FormatException;
 
 /**
@@ -59,7 +59,7 @@ public interface GraphTransition extends Edge<GraphState>, MatchResult {
     /**
      * Returns the matching of the LHS into the source graph.
      */
-    public RuleMatch getMatch();
+    public Proof getMatch();
 
     /**
      * Returns the (partial) morphism from the source to the target graph.

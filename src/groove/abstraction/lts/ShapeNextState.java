@@ -27,7 +27,7 @@ import groove.lts.GraphTransitionStub;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.RuleEvent;
-import groove.trans.RuleMatch;
+import groove.trans.Proof;
 import groove.view.FormatException;
 
 /**
@@ -137,7 +137,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
-    public RuleMatch getMatch() {
+    public Proof getMatch() {
         return this.transition.getMatch();
     }
 

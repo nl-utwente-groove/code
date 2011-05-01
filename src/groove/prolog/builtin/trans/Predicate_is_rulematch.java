@@ -22,7 +22,7 @@ import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
-import groove.trans.RuleMatch;
+import groove.trans.Proof;
 
 /**
  * Predicate is_rulematch(+RuleMatch)
@@ -33,7 +33,7 @@ public class Predicate_is_rulematch extends TransPrologCode {
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         if (args[0] instanceof JavaObjectTerm) {
-            if (((JavaObjectTerm) args[0]).value instanceof RuleMatch) {
+            if (((JavaObjectTerm) args[0]).value instanceof Proof) {
                 return SUCCESS_LAST;
             }
         }

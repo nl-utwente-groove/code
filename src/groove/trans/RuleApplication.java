@@ -132,7 +132,7 @@ public class RuleApplication implements DeltaApplier {
      * Returns the match of the rule's LHS in the source graph of this
      * derivation.
      */
-    public RuleMatch getMatch() {
+    public Proof getMatch() {
         if (this.match == null) {
             this.match = computeMatch();
         }
@@ -144,7 +144,7 @@ public class RuleApplication implements DeltaApplier {
      * graph.
      * @see #getMatch()
      */
-    private RuleMatch computeMatch() {
+    private Proof computeMatch() {
         return getEvent().getMatch(this.source);
     }
 
@@ -644,7 +644,7 @@ public class RuleApplication implements DeltaApplier {
      * Matching from the rule's LHS to the source. Created lazily in
      * {@link #getMatch()}.
      */
-    protected RuleMatch match;
+    protected Proof match;
     /**
      * Underlying morphism from the source to the target.
      */

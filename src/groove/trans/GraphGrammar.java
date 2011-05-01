@@ -80,19 +80,9 @@ public class GraphGrammar {
         return this.name;
     }
 
-    /**
-     * Returns the production rule known under a given name, if any.
-     * @param name the name of the requested production rule
-     * @return the Rule known as "name"; null if name is not known
-     * @ensure <tt>result.equals(getRuleMap.get(name))</tt>
-     */
-    public Rule getRule(RuleName name) {
-        return this.nameRuleMap.get(name);
-    }
-
     /** Convenience method to return the rule with a name given as a string. */
     public Rule getRule(String name) {
-        return getRule(createRuleName(name));
+        return this.nameRuleMap.get(name);
     }
 
     /**
@@ -100,7 +90,7 @@ public class GraphGrammar {
      * this production system.
      * @ensure <tt>result.equals(getRuleMap.keySet())</tt>
      */
-    public Set<RuleName> getRuleNames() {
+    public Set<String> getRuleNames() {
         return Collections.unmodifiableSet(this.nameRuleMap.keySet());
     }
 
@@ -172,7 +162,7 @@ public class GraphGrammar {
      */
     public Rule add(Rule rule) {
         testFixed(false);
-        RuleName ruleName = rule.getName();
+        String ruleName = rule.getName();
         int priority = rule.getPriority();
         Rule oldRuleForName = remove(ruleName);
         // add the rule to the priority map
@@ -200,7 +190,7 @@ public class GraphGrammar {
      * @throws IllegalStateException if the rule system is fixed
      * @see #isFixed()
      */
-    private Rule remove(RuleName ruleName) {
+    private Rule remove(String ruleName) {
         testFixed(false);
         Rule result = this.nameRuleMap.remove(ruleName);
         // now remove the old rule with this name, if any
@@ -419,13 +409,6 @@ public class GraphGrammar {
     }
 
     /**
-     * Callback factory method to create a rule name from a {@link String}.
-     */
-    private RuleName createRuleName(String name) {
-        return new RuleName(name);
-    }
-
-    /**
      * Factory method to create a set to contain rules. This implementation
      * returns a {@link TreeSet}.
      */
@@ -441,7 +424,7 @@ public class GraphGrammar {
     /**
      * A mapping from the rule names to the rules.
      */
-    private final Map<RuleName,Rule> nameRuleMap = new TreeMap<RuleName,Rule>();
+    private final Map<String,Rule> nameRuleMap = new TreeMap<String,Rule>();
     /**
      * A mapping from priorities to sets of rules having that priority. The
      * ordering is from high to low priority.

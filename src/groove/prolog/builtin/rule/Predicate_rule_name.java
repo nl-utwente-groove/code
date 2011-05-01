@@ -22,9 +22,7 @@ import gnu.prolog.vm.PrologException;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.builtin.graph.GraphPrologCode;
 import groove.prolog.util.PrologStringCollectionIterator;
-import groove.trans.RuleName;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -44,18 +42,13 @@ public class Predicate_rule_name extends GraphPrologCode {
             if (!(interpreter.getEnvironment() instanceof GrooveEnvironment)) {
                 GrooveEnvironment.invalidEnvironment();
             }
-            Set<RuleName> ruleNames =
+            Set<String> ruleNames =
                 ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getRuleNames();
-
-            Set<String> ruleNameStrings = new HashSet<String>();
-            for (RuleName rn : ruleNames) {
-                ruleNameStrings.add(rn.toString());
-            }
 
             try {
                 PrologStringCollectionIterator it =
-                    new PrologStringCollectionIterator(ruleNameStrings,
-                        args[0], interpreter.getUndoPosition());
+                    new PrologStringCollectionIterator(ruleNames, args[0],
+                        interpreter.getUndoPosition());
                 return it.nextSolution(interpreter);
             } catch (Exception e) {
                 e.printStackTrace();

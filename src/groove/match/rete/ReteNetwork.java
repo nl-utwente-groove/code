@@ -26,17 +26,16 @@ import groove.io.xml.DefaultGxl;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.Condition;
+import groove.trans.Condition.Op;
 import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
-import groove.trans.NotCondition;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
 import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
-import groove.trans.RuleName;
 import groove.trans.RuleNode;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
@@ -94,7 +93,7 @@ public class ReteNetwork {
         this.root = new RootNode(this);
         this.state = new ReteState(this);
         ArrayList<Rule> rules = new ArrayList<Rule>();
-        for (RuleName rn : grammarView.getRuleNames()) {
+        for (String rn : grammarView.getRuleNames()) {
             try {
                 rules.add(grammarView.getRuleView(rn).toModel());
             } catch (FormatException ex) {
@@ -349,11 +348,11 @@ public class ReteNetwork {
             }
         }
         if (condition.getSubConditions().size() > 0) {
-            Set<NotCondition> nacs = new HashSet<NotCondition>();
+            Set<Condition> nacs = new HashSet<Condition>();
             Set<Condition> positiveSubConditions = new HashSet<Condition>();
             for (Condition c : condition.getSubConditions()) {
-                if (c instanceof NotCondition) {
-                    nacs.add((NotCondition) c);
+                if (c.getOp() == Op.NOT) {
+                    nacs.add(c);
                 } else {
                     positiveSubConditions.add(c);
                 }
@@ -531,7 +530,7 @@ public class ReteNetwork {
      *        condition that has negative sub-conditions.
      */
     private void processNacs(ReteStaticMapping lastSubgraphMapping,
-            Set<NotCondition> nacs, ConditionChecker positiveConditionChecker) {
+            Set<Condition> nacs, ConditionChecker positiveConditionChecker) {
 
         assert (lastSubgraphMapping == null)
             || (positiveConditionChecker.getAntecedents().get(0).equals(lastSubgraphMapping.getNNode()));
@@ -539,7 +538,7 @@ public class ReteNetwork {
         StaticMap openList = new StaticMap();
 
         List<ReteStaticMapping> byPassList = new ArrayList<ReteStaticMapping>();
-        for (NotCondition nac : nacs) {
+        for (Condition nac : nacs) {
             byPassList.clear();
             openList.clear();
 
@@ -913,8 +912,8 @@ public class ReteNetwork {
                 source));
             for (int i = 0; i < ((ProductionNode) nnode).getPattern().length; i++) {
                 RuleElement e = ((ProductionNode) nnode).getPattern()[i];
-                result.add(DefaultEdge.createEdge(source, "--" + i + " "
-                    + e.toString(), source));
+                result.add(DefaultEdge.createEdge(source,
+                    "--" + i + " " + e.toString(), source));
             }
         } else if (nnode instanceof ConditionChecker) {
             result.add(DefaultEdge.createEdge(source, "- Condition Checker "
@@ -922,8 +921,8 @@ public class ReteNetwork {
                 source));
             for (int i = 0; i < ((ConditionChecker) nnode).getPattern().length; i++) {
                 RuleElement e = ((ConditionChecker) nnode).getPattern()[i];
-                result.add(DefaultEdge.createEdge(source, "--" + i + " "
-                    + e.toString(), source));
+                result.add(DefaultEdge.createEdge(source,
+                    "--" + i + " " + e.toString(), source));
             }
         }
         DefaultEdge[] res = new DefaultEdge[result.size()];

@@ -19,8 +19,7 @@ package groove.gui;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.RuleMatch;
-import groove.trans.RuleName;
+import groove.trans.Proof;
 import groove.util.Groove;
 import groove.util.History;
 import groove.view.StoredGrammarView;
@@ -121,12 +120,12 @@ class UndoHistory implements SimulationListener {
     }
 
     /** Match updates have no effect on the history. */
-    public void setMatchUpdate(RuleMatch match) {
+    public void setMatchUpdate(Proof match) {
         // explicitly empty
     }
 
     /** Rule updates have no effect on the history. */
-    public void setRuleUpdate(RuleName name) {
+    public void setRuleUpdate(String name) {
         // explicitly empty
     }
 

@@ -23,7 +23,7 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
-import groove.trans.RuleMatch;
+import groove.trans.Proof;
 
 /**
  * Predicate rulematch_node(+RuleMatch,?Node)
@@ -40,7 +40,7 @@ public class Predicate_rulematch_node extends TransPrologCode {
             return it.nextSolution(interpreter);
         } else {
             try {
-                RuleMatch rm = (RuleMatch) ((JavaObjectTerm) args[0]).value;
+                Proof rm = (Proof) ((JavaObjectTerm) args[0]).value;
                 PrologCollectionIterator it =
                     new PrologCollectionIterator(rm.getNodeValues(), args[1],
                         interpreter.getUndoPosition());

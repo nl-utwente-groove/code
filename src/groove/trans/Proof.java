@@ -16,6 +16,8 @@
  */
 package groove.trans;
 
+import groove.trans.Condition.Op;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -34,12 +36,14 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RuleMatch {
-    /** Constructs a match for a given {@link Rule}. */
-    public RuleMatch(Condition condition, RuleToHostMap patternMap) {
+public class Proof {
+    /** Constructs a proof for a given {@link Condition}. */
+    public Proof(Condition condition, RuleToHostMap patternMap) {
         this.condition = condition;
         this.patternMap = patternMap;
-        assert condition.getOp().isQuantifier() || patternMap == null;
+        assert condition.getOp().hasPattern()
+            || (condition.getOp().isConjunctive() || condition.getOp() == Op.TRUE)
+            && patternMap == null;
     }
 
     /** 
@@ -77,25 +81,25 @@ public class RuleMatch {
         return this.patternMap;
     }
 
-    /** Returns the set of matches of sub-rules. */
-    public Collection<RuleMatch> getSubMatches() {
+    /** Returns the set of proofs of sub-conditions. */
+    public Collection<Proof> getSubProofs() {
         return this.subProofs;
     }
 
-    /** Returns the (host graph) edges used as images in the match. */
+    /** Returns the (host graph) edges used as images in the proof. */
     public Collection<HostEdge> getEdgeValues() {
         Set<HostEdge> result = new HashSet<HostEdge>();
-        for (RuleMatch subMatch : getSubMatches()) {
+        for (Proof subMatch : getSubProofs()) {
             result.addAll(subMatch.getEdgeValues());
         }
         result.addAll(this.patternMap.edgeMap().values());
         return result;
     }
 
-    /** Returns the (host graph) nodes used as images in the match. */
+    /** Returns the (host graph) nodes used as images in the proof. */
     public Collection<HostNode> getNodeValues() {
         Set<HostNode> result = new HashSet<HostNode>();
-        for (RuleMatch subMatch : getSubMatches()) {
+        for (Proof subMatch : getSubProofs()) {
             result.addAll(subMatch.getNodeValues());
         }
         result.addAll(this.patternMap.nodeMap().values());
@@ -131,7 +135,7 @@ public class RuleMatch {
             BasicEvent myEvent = createSimpleEvent(nodeFactory);
             events.add(myEvent);
         }
-        for (RuleMatch subMatch : getSubMatches()) {
+        for (Proof subMatch : getSubProofs()) {
             subMatch.collectEvents(events, nodeFactory);
         }
     }
@@ -170,20 +174,20 @@ public class RuleMatch {
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof RuleMatch)) {
+        if (!(obj instanceof Proof)) {
             return false;
         }
-        RuleMatch other = (RuleMatch) obj;
+        Proof other = (Proof) obj;
         if (!other.getCondition().equals(getCondition())) {
             return false;
         }
         if (!other.getPatternMap().equals(getPatternMap())) {
             return false;
         }
-        if (getSubMatches() == null) {
-            return other.getSubMatches() == null;
+        if (getSubProofs() == null) {
+            return other.getSubProofs() == null;
         }
-        return getSubMatches().equals(other.getSubMatches());
+        return getSubProofs().equals(other.getSubProofs());
     }
 
     @Override
@@ -202,7 +206,7 @@ public class RuleMatch {
     protected int computeHashCode() {
         final int prime = 31;
         int result = getCondition().hashCode();
-        result = prime * result + getSubMatches().hashCode();
+        result = prime * result + getSubProofs().hashCode();
         if (getPatternMap() != null) {
             result = prime * result + getPatternMap().hashCode();
         }
@@ -215,10 +219,10 @@ public class RuleMatch {
             new StringBuilder(String.format("Match of %s: Nodes %s, edges %s",
                 getCondition().getName(), getPatternMap().nodeMap(),
                 getPatternMap().edgeMap()));
-        if (!getSubMatches().isEmpty()) {
+        if (!getSubProofs().isEmpty()) {
             result.append(String.format("%n--- Submatches of %s ---%n",
                 getCondition().getName()));
-            for (RuleMatch match : getSubMatches()) {
+            for (Proof match : getSubProofs()) {
                 result.append(match.toString());
                 result.append("\n");
             }
@@ -234,13 +238,17 @@ public class RuleMatch {
     private final Condition condition;
     /** 
      * The pattern map of the match.
-     * May be {@code null} if this is a conjunctive proof. 
+     * May be {@code null} if this is a composite proof:
+     * in that case the proof is only a conjunction of its sub-proofs.
      */
     private final RuleToHostMap patternMap;
 
     /** The proofs of the sub-conditions. */
-    private final Collection<RuleMatch> subProofs =
-        new java.util.LinkedHashSet<RuleMatch>();
+    private final Collection<Proof> subProofs =
+        new java.util.LinkedHashSet<Proof>();
     /** The (pre-computed) hash code of this match. */
     private int hashCode;
+
+    /** Proof of {@link Condition#True}. */
+    public static final Proof TrueProof = new Proof(Condition.True, null);
 }

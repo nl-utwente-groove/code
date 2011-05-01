@@ -23,7 +23,6 @@ import gnu.prolog.vm.PrologException;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.builtin.trans.TransPrologCode;
 import groove.trans.Rule;
-import groove.trans.RuleName;
 
 /**
  * Predicate rule_confluent(+RuleName)
@@ -39,7 +38,7 @@ public class Predicate_rule_confluent extends TransPrologCode {
         }
 
         try {
-            RuleName name = new RuleName(((AtomTerm) args[0]).value);
+            String name = ((AtomTerm) args[0]).value;
 
             Rule rule =
                 ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getRule(

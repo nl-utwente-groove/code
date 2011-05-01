@@ -19,8 +19,7 @@ package groove.gui;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.RuleMatch;
-import groove.trans.RuleName;
+import groove.trans.Proof;
 import groove.view.StoredGrammarView;
 
 /**
@@ -66,7 +65,7 @@ public interface SimulationListener {
      * @param name the name of the new selected derivation rule
      * @require name != null
      */
-    void setRuleUpdate(RuleName name);
+    void setRuleUpdate(String name);
 
     /**
      * Reports the change of the currently selected transition. The new
@@ -80,7 +79,7 @@ public interface SimulationListener {
      * located at the current state
      * @param match the new selected match; non-<code>null</code>
      */
-    void setMatchUpdate(RuleMatch match);
+    void setMatchUpdate(Proof match);
 
     /**
      * Reports the application of a given transition. The target state is

@@ -210,7 +210,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public AspectGraph deleteRule(RuleName name) {
+    public AspectGraph deleteRule(String name) {
         AspectGraph result = null;
         DeleteRuleEdit edit = doDeleteRule(name);
         if (edit != null) {
@@ -222,17 +222,18 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     /**
-     * Implements the functionality of the {@link #deleteRule(RuleName)} method.
+     * Implements the functionality of the {@link #deleteRule(String)} method.
      * Returns a corresponding undoable edit.
      */
-    private DeleteRuleEdit doDeleteRule(RuleName name) {
+    private DeleteRuleEdit doDeleteRule(String name) {
         DeleteRuleEdit result = null;
         testInit();
         AspectGraph rule = this.ruleMap.remove(name);
         if (rule != null) {
-            this.marshaller.deleteGraph(new File(this.file,
-                RULE_FILTER.addExtension(Groove.toString(name.tokens(), "", "",
-                    Groove.FILE_SEPARATOR))));
+            this.marshaller.deleteGraph(new File(
+                this.file,
+                RULE_FILTER.addExtension(Groove.toString(
+                    new RuleName(name).tokens(), "", "", Groove.FILE_SEPARATOR))));
             result = new DeleteRuleEdit(rule);
         }
         return result;
@@ -302,7 +303,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public Map<RuleName,AspectGraph> getRules() {
+    public Map<String,AspectGraph> getRules() {
         testInit();
         return Collections.unmodifiableMap(this.ruleMap);
     }
@@ -402,7 +403,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      */
     private PutRuleEdit doPutRule(AspectGraph rule) throws IOException {
         testInit();
-        RuleName name = new RuleName(rule.getName());
+        String name = rule.getName();
         this.marshaller.marshalGraph(rule.toPlainGraph(), createRuleFile(name));
         AspectGraph oldRule = this.ruleMap.put(name, rule);
         return new PutRuleEdit(oldRule, rule);
@@ -489,19 +490,17 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         throws IOException {
         RenameRuleEdit result = null;
         testInit();
-        RuleName oldRuleName = new RuleName(oldName);
-        RuleName newRuleName = new RuleName(newName);
-        AspectGraph rule = this.ruleMap.remove(oldRuleName);
+        AspectGraph rule = this.ruleMap.remove(oldName);
         if (rule != null) {
-            this.marshaller.deleteGraph(createRuleFile(oldRuleName));
+            this.marshaller.deleteGraph(createRuleFile(oldName));
             rule = rule.rename(newName);
-            AspectGraph oldRule = this.ruleMap.put(newRuleName, rule);
+            AspectGraph oldRule = this.ruleMap.put(newName, rule);
             this.marshaller.marshalGraph(rule.toPlainGraph(),
-                createRuleFile(newRuleName));
+                createRuleFile(newName));
             result = new RenameRuleEdit(oldName, newName, oldRule);
-        } else if (this.ruleMap.containsKey(newRuleName)) {
-            this.marshaller.deleteGraph(createRuleFile(newRuleName));
-            AspectGraph oldRule = this.ruleMap.remove(newRuleName);
+        } else if (this.ruleMap.containsKey(newName)) {
+            this.marshaller.deleteGraph(createRuleFile(newName));
+            AspectGraph oldRule = this.ruleMap.remove(newName);
             result = new RenameRuleEdit(oldName, newName, oldRule);
         }
         return result;
@@ -927,7 +926,8 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                     plainGraph.setName(ruleName.toString());
                     AspectGraph ruleGraph = AspectGraph.newInstance(plainGraph);
                     /* Store the rule graph */
-                    AspectGraph oldRule = this.ruleMap.put(ruleName, ruleGraph);
+                    AspectGraph oldRule =
+                        this.ruleMap.put(ruleName.toString(), ruleGraph);
                     assert oldRule == null : String.format(
                         "Duplicate rule name '%s'", ruleName);
                 }
@@ -970,9 +970,9 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      * Creates a file name from a given rule name. The file name consists of a
      * given parent file, the name, and the state extension.
      */
-    private File createRuleFile(RuleName ruleName) {
+    private File createRuleFile(String ruleName) {
         return new File(this.file, RULE_FILTER.addExtension(Groove.toString(
-            ruleName.tokens(), "", "", Groove.FILE_SEPARATOR)));
+            new RuleName(ruleName).tokens(), "", "", Groove.FILE_SEPARATOR)));
     }
 
     /** Posts the edit, and also notifies the observers. */
@@ -988,8 +988,8 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     /** The name-to-rule map of the source. */
-    private final Map<RuleName,AspectGraph> ruleMap =
-        new HashMap<RuleName,AspectGraph>();
+    private final Map<String,AspectGraph> ruleMap =
+        new HashMap<String,AspectGraph>();
     /** The name-to-graph map of the source. */
     private final Map<String,AspectGraph> graphMap =
         new HashMap<String,AspectGraph>();
@@ -1341,7 +1341,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         @Override
         public void redo() throws CannotRedoException {
             super.redo();
-            doDeleteRule(new RuleName(this.rule.getName()));
+            doDeleteRule(this.rule.getName());
             notifyObservers(this);
         }
 
@@ -1820,7 +1820,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         public void undo() throws CannotUndoException {
             super.undo();
             if (this.oldRule == null) {
-                doDeleteRule(new RuleName(this.newRule.getName()));
+                doDeleteRule(this.newRule.getName());
             } else {
                 try {
                     doPutRule(this.oldRule);

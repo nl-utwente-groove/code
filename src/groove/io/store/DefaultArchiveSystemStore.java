@@ -181,7 +181,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public AspectGraph deleteRule(RuleName name)
+    public AspectGraph deleteRule(String name)
         throws UnsupportedOperationException {
         throw new UnsupportedOperationException(String.format(
             "Archived grammar '%s' is immutable", getName()));
@@ -213,7 +213,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public Map<RuleName,AspectGraph> getRules() {
+    public Map<String,AspectGraph> getRules() {
         testInit();
         return Collections.unmodifiableMap(this.ruleMap);
     }
@@ -460,7 +460,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         for (Map.Entry<String,AspectGraph> entry : loadObjects(file, rules,
             RULE_FILTER, GraphRole.RULE).entrySet()) {
             RuleName name = createRuleName(entry.getKey());
-            this.ruleMap.put(name, entry.getValue());
+            this.ruleMap.put(name.toString(), entry.getValue());
         }
     }
 
@@ -587,8 +587,8 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     /** The name-to-rule map of the source. */
-    private final Map<RuleName,AspectGraph> ruleMap =
-        new HashMap<RuleName,AspectGraph>();
+    private final Map<String,AspectGraph> ruleMap =
+        new HashMap<String,AspectGraph>();
     /** The name-to-type map of the source. */
     private final Map<String,AspectGraph> typeMap =
         new HashMap<String,AspectGraph>();

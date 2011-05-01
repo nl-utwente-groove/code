@@ -24,8 +24,7 @@ import groove.io.store.SystemStore;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.RuleMatch;
-import groove.trans.RuleName;
+import groove.trans.Proof;
 import groove.trans.GraphGrammar;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
@@ -160,7 +159,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         refreshAll();
     }
 
-    public void setRuleUpdate(RuleName name) {
+    public void setRuleUpdate(String name) {
         // nothing happens
     }
 
@@ -168,7 +167,7 @@ public class ControlPanel extends JPanel implements SimulationListener {
         // nothing happens
     }
 
-    public void setMatchUpdate(RuleMatch match) {
+    public void setMatchUpdate(Proof match) {
         // nothing happens
     }
 

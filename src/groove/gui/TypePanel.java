@@ -28,8 +28,7 @@ import groove.io.store.SystemStore;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.RuleMatch;
-import groove.trans.RuleName;
+import groove.trans.Proof;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -125,7 +124,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         // nothing happens
     }
 
-    public void setMatchUpdate(RuleMatch match) {
+    public void setMatchUpdate(Proof match) {
         // nothing happens
     }
 
@@ -133,7 +132,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         // nothing happens
     }
 
-    public synchronized void setRuleUpdate(RuleName rule) {
+    public synchronized void setRuleUpdate(String rule) {
         // nothing happens
     }
 

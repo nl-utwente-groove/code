@@ -21,7 +21,6 @@ import groove.trans.Condition;
 import groove.trans.HostEdge;
 import groove.trans.HostElement;
 import groove.trans.HostNode;
-import groove.trans.NotCondition;
 import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
 import groove.trans.RuleNode;
@@ -236,7 +235,7 @@ public class ConditionChecker extends ReteNetworkNode implements
 
     /**
      * @return <code>true</code> if the condition associated with this
-     * condition-checker has any subconditions of type {@link NotCondition}. 
+     * condition-checker has any negative subconditions (with operator {@link Condition.Op#NOT}). 
      */
     public boolean hasNacs() {
         return this.hasNacSubconditions;

@@ -19,8 +19,7 @@ package groove.gui;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.RuleMatch;
-import groove.trans.RuleName;
+import groove.trans.Proof;
 import groove.view.StoredGrammarView;
 
 /**
@@ -45,7 +44,7 @@ public class SimulationAdapter implements SimulationListener {
     }
 
     /** Provides a default empty implementation. */
-    public void setRuleUpdate(RuleName name) {
+    public void setRuleUpdate(String name) {
         // does nothing by design
     }
 
@@ -55,7 +54,7 @@ public class SimulationAdapter implements SimulationListener {
     }
 
     /** Provides a default empty implementation. */
-    public void setMatchUpdate(RuleMatch match) {
+    public void setMatchUpdate(Proof match) {
         // does nothing by design
     }
 
