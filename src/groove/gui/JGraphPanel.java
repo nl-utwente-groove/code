@@ -163,6 +163,18 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
 
     /** Component on which the graph and the label tree are displayed. */
     protected JComponent createMainPane() {
+        // set up the split editor pane
+        JSplitPane result =
+            new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, createGraphPane(),
+                createLabelPane());
+        result.setOneTouchExpandable(true);
+        result.setResizeWeight(1.0);
+        return result;
+    }
+
+    /** Creates the right hand side label pane. */
+    protected JComponent createLabelPane() {
+        JPanel result = new JPanel(new BorderLayout(), false);
         Box labelPaneTop = Box.createVerticalBox();
         JLabel labelPaneTitle =
             new JLabel(" " + Options.LABEL_PANE_TITLE + " ");
@@ -173,22 +185,19 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
             labelTreeToolbar.setAlignmentX(LEFT_ALIGNMENT);
             labelPaneTop.add(labelTreeToolbar);
         }
-        JScrollPane labelScrollPane = new JScrollPane(getLabelTree()) {
+        result.add(labelPaneTop, BorderLayout.NORTH);
+        result.add(createLabelScrollPane(getLabelTree()), BorderLayout.CENTER);
+        return result;
+    }
+
+    /** Creates a scroll pane of the right dimensions around a given component. */
+    protected JScrollPane createLabelScrollPane(Component component) {
+        return new JScrollPane(component) {
             @Override
             public Dimension getMinimumSize() {
                 return new Dimension(MINIMUM_LABEL_PANE_WIDTH, 0);
             }
         };
-        JPanel labelPane = new JPanel(new BorderLayout(), false);
-        labelPane.add(labelPaneTop, BorderLayout.NORTH);
-        labelPane.add(labelScrollPane, BorderLayout.CENTER);
-        // set up the split editor pane
-        JSplitPane result =
-            new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, createGraphPane(),
-                labelPane);
-        result.setOneTouchExpandable(true);
-        result.setResizeWeight(1.0);
-        return result;
     }
 
     /**

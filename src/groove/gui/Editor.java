@@ -37,6 +37,7 @@ import groove.gui.jgraph.JGraphMode;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
+import groove.io.HTMLConverter;
 import groove.io.PriorityFileName;
 import groove.io.external.Exporter;
 import groove.io.xml.AspectGxl;
@@ -47,6 +48,7 @@ import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView.TypeViewList;
 import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectKind;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -67,6 +69,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -76,10 +80,12 @@ import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -600,14 +606,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     JGraphPanel<?> getGraphPanel() {
         if (this.jGraphPanel == null) {
-            JGraphPanel<?> result =
-                this.jGraphPanel =
-                    new JGraphPanel<AspectJGraph>(this.jgraph, false) {
-                        @Override
-                        protected JToolBar createToolBar() {
-                            return Editor.this.createToolBar();
-                        }
-                    };
+            JGraphPanel<?> result = this.jGraphPanel = new EditorJGraphPanel();
             result.initialise();
             result.addRefreshListener(SHOW_NODE_IDS_OPTION);
             result.addRefreshListener(SHOW_VALUE_NODES_OPTION);
@@ -617,6 +616,77 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             result.getLabelTree().setBackground(JAttr.EDITOR_BACKGROUND);
         }
         return this.jGraphPanel;
+    }
+
+    private class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
+        public EditorJGraphPanel() {
+            super(Editor.this.jgraph, false);
+        }
+
+        @Override
+        protected JToolBar createToolBar() {
+            return Editor.this.createToolBar();
+        }
+
+        @Override
+        protected JComponent createLabelPane() {
+            JComponent labelPane = super.createLabelPane();
+            JSplitPane result =
+                new JSplitPane(JSplitPane.VERTICAL_SPLIT, labelPane,
+                    createSyntaxHelp());
+            return result;
+        }
+
+        private Component createSyntaxHelp() {
+            JPanel result = new JPanel();
+            result.setLayout(new BorderLayout());
+            result.add(new JLabel("Prefixes: (Node/Edge)"), BorderLayout.NORTH);
+            result.add(createLabelScrollPane(createAspectList()),
+                BorderLayout.CENTER);
+            return result;
+        }
+
+        private JList createAspectList() {
+            JList list = new JList();
+            list.setBackground(JAttr.EDITOR_BACKGROUND);
+            list.setListData(createData().toArray());
+            return list;
+        }
+
+        private Collection<? extends Object> createData() {
+            Set<String> result = new TreeSet<String>();
+            for (AspectKind kind : this.edgeKinds) {
+                if (kind != AspectKind.NONE) {
+                    result.add(toString(kind));
+                }
+            }
+            for (AspectKind kind : this.nodeKinds) {
+                if (!this.edgeKinds.contains(kind) && kind != AspectKind.NONE) {
+                    result.add(toString(kind));
+                }
+            }
+            return result;
+        }
+
+        private String toString(AspectKind kind) {
+            StringBuilder result = new StringBuilder();
+            result.append(kind.getSyntax());
+            String suffix;
+            if (!this.nodeKinds.contains(kind)) {
+                suffix = "  (E)";
+            } else if (!this.edgeKinds.contains(kind)) {
+                suffix = "  (N)";
+            } else {
+                suffix = "  (N/E)";
+            }
+            result.append(suffix);
+            return HTMLConverter.HTML_TAG.on(result).toString();
+        }
+
+        private final Set<AspectKind> nodeKinds =
+            AspectKind.allowedNodeKinds.get(getRole());
+        private final Set<AspectKind> edgeKinds =
+            AspectKind.allowedEdgeKinds.get(getRole());
     }
 
     /**

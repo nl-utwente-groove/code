@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import groove.graph.GraphRole;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
@@ -90,6 +91,11 @@ public class EditorPanel extends JPanel {
                     addCopyPasteButtons(toolbar);
                     addGridButtons(toolbar);
                     return toolbar;
+                }
+
+                @Override
+                public GraphRole getRole() {
+                    return graph.getRole();
                 }
             };
         this.graph = graph;

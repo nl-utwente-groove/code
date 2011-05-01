@@ -208,7 +208,7 @@ public class JAttr {
     public static final int DEFAULT_LINE_WIDTH = 1;
 
     /** Default background for the simulator (non-editor) panels. */
-    public static final Color EDITOR_BACKGROUND = new Color(255, 255, 240);
+    public static final Color EDITOR_BACKGROUND = new Color(255, 255, 230);
 
     /** The size of the rounded corners for rounded-rectangle vertices. */
     public static final int ARC_SIZE = 5;
