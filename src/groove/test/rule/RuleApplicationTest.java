@@ -22,9 +22,10 @@ import groove.match.TreeMatch;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
+import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
-import groove.trans.Proof;
+import groove.trans.RuleEvent;
 import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.GrammarView;
@@ -77,11 +78,16 @@ public class RuleApplicationTest {
         test("embargoes");
     }
 
-    /** Tests
     /** Tests the rules in the forallCount grammar. */
     @Test
     public void testForallCount() {
         test("forallCount");
+    }
+
+    /** Tests the rules in the existsOptional grammar. */
+    @Test
+    public void testExistsOptional() {
+        test("existsOptional");
     }
 
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */
@@ -163,36 +169,39 @@ public class RuleApplicationTest {
         Set<TreeMatch> matches =
             new HashSet<TreeMatch>(rule.getMatcher().findAll(start,
                 start.getFactory().createRuleToHostMap()));
+        Set<RuleEvent> eventSet = new HashSet<RuleEvent>();
         for (TreeMatch match : matches) {
             for (Proof proof : match.toRuleMatchSet()) {
-                HostGraph target =
-                    new RuleApplication(proof.newEvent(null), start).getTarget();
-                // look up this graph in the intended results
-                for (int i = 0; target != null && i < results.size(); i++) {
-                    if (!found.get(i)
-                        && checker.areIsomorphic(target, results.get(i))) {
-                        found.set(i);
-                        target = null;
+                eventSet.add(proof.newEvent(null));
+            }
+        }
+        for (RuleEvent event : eventSet) {
+            HostGraph target = new RuleApplication(event, start).getTarget();
+            // look up this graph in the intended results
+            for (int i = 0; target != null && i < results.size(); i++) {
+                if (!found.get(i)
+                    && checker.areIsomorphic(target, results.get(i))) {
+                    found.set(i);
+                    target = null;
+                }
+            }
+            if (target != null) {
+                if (SAVE) {
+                    try {
+                        File tmpFile =
+                            File.createTempFile("error",
+                                FileType.STATE_FILTER.getExtension(), new File(
+                                    INPUT_DIR));
+                        Groove.saveGraph(target.toAspectMap().getAspectGraph(),
+                            tmpFile);
+                        System.out.printf("Graph saved in %s", tmpFile);
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
-                if (target != null) {
-                    if (SAVE) {
-                        try {
-                            File tmpFile =
-                                File.createTempFile("error",
-                                    FileType.STATE_FILTER.getExtension(),
-                                    new File(INPUT_DIR));
-                            Groove.saveGraph(
-                                target.toAspectMap().getAspectGraph(), tmpFile);
-                            System.out.printf("Graph saved in %s", tmpFile);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    Assert.fail(String.format(
-                        "Rule %s, start graph %s: Unexpected target graph %s",
-                        rule.getName(), start.getName(), target));
-                }
+                Assert.fail(String.format(
+                    "Rule %s, start graph %s: Found: %s; unexpected target graph %s",
+                    rule.getName(), start.getName(), found, target));
             }
         }
         int leftOver = found.nextClearBit(0);

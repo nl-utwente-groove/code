@@ -91,8 +91,8 @@ import groove.lts.GTSAdapter;
 import groove.lts.GTSListener;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.RuleEvent;
 import groove.trans.Proof;
+import groove.trans.RuleEvent;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Duo;
@@ -1654,7 +1654,7 @@ public class Simulator {
     /**
      * Returns the simulator panel on which the current state is displayed. Note
      * that this panel may currently not be visible.
-     * @see #switchTabs(JGraphPanel)
+     * @see #switchTabs(Component)
      */
     public StatePanel getStatePanel() {
         if (this.statePanel == null) {
@@ -1676,7 +1676,7 @@ public class Simulator {
     /**
      * Returns the simulator panel on which the currently selected production
      * rule is displayed. Note that this panel may currently not be visible.
-     * @see #switchTabs(JGraphPanel)
+     * @see #switchTabs(Component)
      */
     RulePanel getRulePanel() {
         if (this.rulePanel == null) {
@@ -1692,7 +1692,7 @@ public class Simulator {
      * Returns the simulator panel on which the LTS. Note that: - this panel may
      * currently not be visible. - this panel is always contained in the
      * ConditionalLTSPanel.
-     * @see #switchTabs(JGraphPanel)
+     * @see #switchTabs(Component)
      */
     LTSPanel getLtsPanel() {
         if (this.ltsPanel == null) {
@@ -1717,7 +1717,7 @@ public class Simulator {
     /**
      * Returns the simulator panel on which the current state is displayed. Note
      * that this panel may currently not be visible.
-     * @see #switchTabs(JGraphPanel)
+     * @see #switchTabs(Component)
      */
     TypePanel getTypePanel() {
         if (this.typePanel == null) {
@@ -1730,7 +1730,7 @@ public class Simulator {
 
     /**
      * Returns the prolog panel.
-     * @see #switchTabs(JGraphPanel)
+     * @see #switchTabs(Component)
      */
     public PrologPanel getPrologPanel() {
         if (this.prologPanel == null) {
@@ -1779,7 +1779,7 @@ public class Simulator {
      * @see #getStatePanel()
      * @see #getRulePanel()
      * @see #getLtsPanel()
-     * @see #switchTabs(JGraphPanel)
+     * @see #switchTabs(Component)
      */
     JGraphPanel<?> getGraphPanel() {
         Component selectedComponent =
@@ -1800,23 +1800,25 @@ public class Simulator {
      * @param component the graph view component to bring to the foreground (in
      *        case the LTS panel should be made active, this is expected to be
      *        the inner LTSPanel, instead of the outer ConditionalLTSPanel)
+     * @return {@code true} if now the selected component equals the parameter
      * @see #getStatePanel()
      * @see #getRulePanel()
      * @see #getLtsPanel()
      * @see #getGraphPanel()
      */
-    public void switchTabs(JGraphPanel<?> component) {
-        if (getSimulatorPanel().getSelectedComponent() != component
-            && getSimulatorPanel().indexOfComponent(component) >= 0) {
+    public boolean switchTabs(Component component) {
+        boolean result = getSimulatorPanel().indexOfComponent(component) >= 0;
+        if (getSimulatorPanel().getSelectedComponent() != component && result) {
             this.switchingTabs = true;
             getSimulatorPanel().setSelectedComponent(component);
             this.switchingTabs = false;
         }
+        return result;
     }
 
     /**
      * Indicates that the simulator is processing a 
-     * {@link #switchTabs(JGraphPanel)}.
+     * {@link #switchTabs(Component)}.
      * This may affect the newly selected component's behaviour. 
      */
     public boolean isSwitchingTabs() {
@@ -2777,7 +2779,7 @@ public class Simulator {
     /** Flag to indicate that one of the simulation events is underway. */
     private boolean updating;
 
-    /** Flag to indicate that a {@link #switchTabs(JGraphPanel)} request is underway. */
+    /** Flag to indicate that a {@link #switchTabs(Component)} request is underway. */
     private boolean switchingTabs;
 
     /** Flag to indicate that the Simulator is in abstraction mode. */

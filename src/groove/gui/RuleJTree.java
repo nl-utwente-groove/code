@@ -24,9 +24,9 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
+import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
-import groove.trans.Proof;
 import groove.trans.RuleName;
 import groove.trans.SystemRecord;
 import groove.view.GrammarView;
@@ -651,7 +651,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                 } else {
                     getSimulator().setEvent(event);
                 }
-                if (getSimulator().getGraphPanel() == getSimulator().getRulePanel()) {
+                if (getSimulator().getGraphPanel() != getSimulator().getLtsPanel()) {
                     getSimulator().switchTabs(getSimulator().getStatePanel());
                 }
             }
