@@ -115,6 +115,7 @@ public class SimulatorPanel extends JTabbedPane {
 
     /** Detaches a component (presumably shown as a tab) into its own window. */
     public void detach(Component component) {
+        revertSelection();
         new JGraphWindow(component);
     }
 
@@ -191,8 +192,16 @@ public class SimulatorPanel extends JTabbedPane {
 
     @Override
     public void setSelectedIndex(int index) {
-        super.setSelectedIndex(index);
+        if (getSelectedIndex() != index) {
+            this.lastSelected = getSelectedComponent();
+            super.setSelectedIndex(index);
+        }
         getSelectedComponent().requestFocusInWindow();
+    }
+
+    /** Resets the selected tab to the one before the last call to {@link #setSelectedIndex(int)}. */
+    public void revertSelection() {
+        setSelectedComponent(this.lastSelected);
     }
 
     /** List of components that can appear on this panel. */
@@ -205,6 +214,7 @@ public class SimulatorPanel extends JTabbedPane {
         new HashMap<Component,ImageIcon>();
     private final Map<Component,String> titleMap =
         new HashMap<Component,String>();
+    private Component lastSelected;
 
     /**
      * Independent window wrapping a JGraphPanel.

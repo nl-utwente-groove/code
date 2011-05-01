@@ -268,6 +268,9 @@ public class EditorPanel extends JPanel {
     void dispose() {
         if (getTabbedPane().indexOfComponent(this) >= 0) {
             // we're displayed on a tab in the simulator
+            if (getTabbedPane().getSelectedComponent() == this) {
+                getTabbedPane().revertSelection();
+            }
             getTabbedPane().remove(this);
         } else {
             // we're displayed in a JGraphWindow
